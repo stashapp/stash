@@ -184,7 +184,9 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     <GridCard
       className="performer-card"
       url={`/performers/${performer.id}`}
-      pretitleIcon={<GenderIcon gender={performer.gender} />}
+      pretitleIcon={
+        <GenderIcon className="gender-icon" gender={performer.gender} />
+      }
       title={performer.name ?? ""}
       image={
         <>

@@ -31,7 +31,7 @@ const GenderIcon: React.FC<IIconProps> = ({ gender, className }) => {
       />
     );
   }
-  return <FontAwesomeIcon className={className} icon={faVenusMars} />;
+  return null;
 };
 
 export default GenderIcon;

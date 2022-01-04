@@ -318,7 +318,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <div className="row">
           <div className="performer-head col">
             <h2>
-              <GenderIcon gender={performer.gender} className="mr-2" />
+              <GenderIcon
+                gender={performer.gender}
+                className="gender-icon mr-2"
+              />
               <CountryFlag country={performer.country} className="mr-2" />
               {performer.name}
               {renderIcons()}
