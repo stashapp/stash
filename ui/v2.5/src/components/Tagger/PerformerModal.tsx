@@ -192,7 +192,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           {renderField(
             "gender",
             performer.gender
-              ? intl.formatMessage({ id: "gender." + performer.gender })
+              ? intl.formatMessage({ id: "gender_types." + performer.gender })
               : ""
           )}
           {renderField("birthdate", performer.birthdate)}

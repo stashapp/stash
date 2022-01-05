@@ -96,10 +96,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   return (
     <dl className="details-list">
       <TextField
-        id="gender.gender"
+        id="gender"
         value={
           performer.gender
-            ? intl.formatMessage({ id: "gender." + performer.gender })
+            ? intl.formatMessage({ id: "gender_types." + performer.gender })
             : undefined
         }
       />

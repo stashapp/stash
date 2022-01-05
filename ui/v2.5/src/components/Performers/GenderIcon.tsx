@@ -24,7 +24,7 @@ const GenderIcon: React.FC<IIconProps> = ({ gender, className }) => {
         : faTransgenderAlt;
     return (
       <FontAwesomeIcon
-        title={intl.formatMessage({ id: "gender." + gender })}
+        title={intl.formatMessage({ id: "gender_types." + gender })}
         className={className}
         icon={icon}
       />
