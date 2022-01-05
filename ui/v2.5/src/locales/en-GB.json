@@ -691,8 +691,8 @@
   "galleries": "Galleries",
   "gallery": "Gallery",
   "gallery_count": "Gallery Count",
-  "gender": {
-    "gender": "Gender",
+  "gender": "Gender",
+  "gender_types": {
     "MALE": "Male",
     "FEMALE": "Female",
     "TRANSGENDER_MALE": "Transgender Male",

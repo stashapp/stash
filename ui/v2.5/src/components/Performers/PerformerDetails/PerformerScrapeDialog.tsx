@@ -429,7 +429,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           onChange={(value) => setAliases(value)}
         />
         {renderScrapedGenderRow(
-          intl.formatMessage({ id: "gender.gender" }),
+          intl.formatMessage({ id: "gender" }),
           gender,
           (value) => setGender(value)
         )}
