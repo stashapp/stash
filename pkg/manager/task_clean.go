@@ -210,14 +210,17 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 
 	findFilter := models.BatchFindFilter(batchSize)
 	galleryFilter := gallery.PathsFilter(j.input.Paths)
+
+	if galleryFilter == nil {
+		galleryFilter = &models.GalleryFilterType{
+			Path: &models.StringCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+		}
+	}
+
 	sort := "path"
 	findFilter.Sort = &sort
-
-	galleryFilter := &models.GalleryFilterType{
-		Path: &models.StringCriterionInput{
-			Modifier: models.CriterionModifierNotNull,
-		},
-	}
 
 	var toDelete []deleteSet
 
