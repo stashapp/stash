@@ -24,22 +24,32 @@ For further information you can [read the in-app manual](ui/v2.5/src/docs/en).
 :---:|:---:|:---:|:---:
 [Latest Release](https://github.com/stashapp/stash/releases/latest/download/stash-win.exe) <br /> <sup><sub>[Development Preview](https://github.com/stashapp/stash/releases/download/latest_develop/stash-win.exe)</sub></sup> | [Latest Release (Apple Silicon)](https://github.com/stashapp/stash/releases/latest/download/stash-osx-applesilicon) <br /> <sup><sub>[Development Preview (Apple Silicon)](https://github.com/stashapp/stash/releases/download/latest_develop/stash-osx-applesilicon)</sub></sup> <br>[Latest Release (Intel)](https://github.com/stashapp/stash/releases/latest/download/stash-osx) <br /> <sup><sub>[Development Preview (Intel)](https://github.com/stashapp/stash/releases/download/latest_develop/stash-osx)</sub></sup> | [Latest Release (amd64)](https://github.com/stashapp/stash/releases/latest/download/stash-linux) <br /> <sup><sub>[Development Preview (amd64)](https://github.com/stashapp/stash/releases/download/latest_develop/stash-linux)</sub></sup> <br /> [More Architectures...](https://github.com/stashapp/stash/releases/latest) | [Instructions](docker/production/README.md) <br /> <sup><sub> [Sample docker-compose.yml](docker/production/docker-compose.yml)</sub></sup>
 
-## Getting Started
-Run the executable (double click the exe on windows or run `./stash-osx` / `./stash-linux` from the terminal on macOS / Linux) to get started.
-
-*Note for Windows users:* Running the app might present a security prompt since the binary isn't yet signed.  Bypass this by clicking "more info" and then the "run anyway" button.
+## Installation Notes
 
 #### FFMPEG
 Stash requires ffmpeg. If you don't have it installed, Stash will download a copy for you. It is recommended that Linux users install `ffmpeg` from their distro's package manager.
+#### Windows Users: Security Prompt
+*Note for Windows users:* Running the app might present a security prompt since the binary isn't yet signed.  Bypass this by clicking "more info" and then the "run anyway" button.
 
 # Usage
 
 ## Quickstart Guide
-Download and run Stash. It will prompt you for some configuration options and a directory to index (you can also do this step afterward)
+### Launching
+Once downloaded, Run the executable (double click the exe on windows or run `./stash-osx` / `./stash-linux` from the terminal on macOS / Linux) to get started.
 
-**If you'd like to automatically retrieve and organize information about your entire library,**  You will need to download some [scrapers](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en/Scraping.md). The Stash community has developed scrapers for many popular data sources which can be downloaded and installed from [this repository](https://github.com/stashapp/CommunityScrapers).
+Stash is a web-based application.  Once the application is running, it is availble (by default) from http://localhost:9999.  You can change this in the settings.
 
-The simplest way to tag a large number of files is by using the [Tagger](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Tagger.md) which uses filename keywords to help identify the file and pull in scene and performer information from our stash-box database. Note that this data source is not comprehensive and you may need to use the scrapers to identify some of your media.
+### Configuring and Importing Your Content
+On first run, Stash will prompt you for some configuration options and a directory to index (you can also skip this step and complete afterward)
+
+### Gathering Content Metadata
+After indexing, you can manually view, edit and tag your content as you'd like. 
+
+Stash can pull metadata (performer, description, studio, etc) information from the internet through the use of small snippets of code called  [scrapers](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en/Scraping.md) that interpret external database and website information and import it into your program. Stash comes pre-installed with one such scraper.
+
+In order to maximize this functionality, you will need to download the [Community Scrapers Collection](https://github.com/stashapp/CommunityScrapers). (maintained by the Stash community).  After downloading, copy the contents of the archive to the /scrapers/ subdirectory of your Stash installation, then restart Stash.  The scraper list will show up in the "Metadata Providers" section of your configuration screen.
+
+The simplest way to tag a large number of files is by using the [Tagger](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Tagger.md) view which uses filename keywords to help identify the file and pull in scene and performer information from our stash-box database as well as other sources. Note that Stash-Box not comprehensive and you will likely need to use the scrapers to identify some of your media.
 
 # Translation
 [![Translate](https://translate.stashapp.cc/widgets/stash/-/stash-desktop-client/svg-badge.svg)](https://translate.stashapp.cc/engage/stash/)
