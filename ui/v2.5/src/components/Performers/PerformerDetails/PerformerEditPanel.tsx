@@ -358,7 +358,17 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   async function onSave(performerInput: InputValues) {
     setIsLoading(true);
     try {
-      if (!isNew) {
+      if (isNew) {
+        const input = getCreateValues(performerInput);
+        const result = await createPerformer({
+          variables: {
+            input,
+          },
+        });
+        if (result.data?.performerCreate) {
+          history.push(`/performers/${result.data.performerCreate.id}`);
+        }
+      } else {
         const input = getUpdateValues(performerInput);
 
         await updatePerformer({
@@ -369,20 +379,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             },
           },
         });
-        history.push(`/performers/${performer.id}`);
-      } else {
-        const input = getCreateValues(performerInput);
-        const result = await createPerformer({
-          variables: {
-            input,
-          },
-        });
-        if (result.data?.performerCreate) {
-          history.push(`/performers/${result.data.performerCreate.id}`);
-        }
       }
     } catch (e) {
       Toast.error(e);
+      setIsLoading(false);
+      return;
+    }
+    if (!isNew && onCancelEditing) {
+      onCancelEditing();
     }
     setIsLoading(false);
   }
@@ -677,7 +681,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           <Button
             variant="success"
             disabled={!formik.dirty}
-            onClick={() => formik.submitForm().then(onCancelEditing)}
+            onClick={() => formik.submitForm()}
           >
             <FormattedMessage id="actions.save" />
           </Button>
