@@ -692,13 +692,9 @@
   "gallery": "圖庫",
   "gallery_count": "圖庫數量",
   "gender": {
-    "FEMALE": "女性",
     "INTERSEX": "多元性別",
-    "MALE": "男性",
     "NON_BINARY": "非二元",
-    "TRANSGENDER_FEMALE": "跨性別女性",
-    "TRANSGENDER_MALE": "跨性別男性",
-    "gender": "性別"
+    "TRANSGENDER_MALE": "跨性別男性"
   },
   "hair_color": "頭髮顏色",
   "hasMarkers": "含有章節標記",
