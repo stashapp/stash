@@ -641,7 +641,7 @@
   "donate": "Spenden",
   "dupe_check": {
     "description": "Bei Levels unterhalb von 'Exact' kann die Berechnung länger dauern. Bei niedrigeren Genauigkeitsstufen können auch falsch positive Ergebnisse zurückgegeben werden.",
-    "found_sets": "{setCount, plural, one{# Satz von Duplikaten gefunden.} andere {# Sätze von Duplikaten gefunden.}}",
+    "found_sets": "{setCount, plural, one{# Satz von Duplikaten gefunden.} other {# Sätze von Duplikaten gefunden.}}",
     "options": {
       "exact": "Genau",
       "high": "Hoch",
@@ -691,10 +691,14 @@
   "galleries": "Galerien",
   "gallery": "Galerie",
   "gallery_count": "Galerienanzahl",
-  "gender": {
-    "INTERSEX": "Intersex",
+  "gender": "Geschlecht",
+  "gender_types": {
+    "FEMALE": "Weiblich",
+    "INTERSEX": "Intersexuell",
+    "MALE": "Männlich",
     "NON_BINARY": "Nicht-Binär",
-    "TRANSGENDER_MALE": "trans* männlich"
+    "TRANSGENDER_FEMALE": "Trans* weiblich",
+    "TRANSGENDER_MALE": "Trans* männlich"
   },
   "hair_color": "Haarfarbe",
   "hasMarkers": "Hat Markierungen",
