@@ -20,24 +20,24 @@ import (
 
 func Start() {
 	if IsDesktop() {
-		OpenURLInBrowser(false, "")
+		c := config.GetInstance()
+		if !c.GetNoBrowser() {
+			openURLInBrowser("")
+		}
 		writeStashIcon()
 		startSystray()
 	}
 }
 
-// OpenURLInBrowser opens a browser to the Stash UI. Path can be an empty string for main page.
-func OpenURLInBrowser(force bool, path string) {
+// openURLInBrowser opens a browser to the Stash UI. Path can be an empty string for main page.
+func openURLInBrowser(path string) {
 	// This can be done before actually starting the server, as modern browsers will
 	// automatically reload the page if a local port is closed at page load and then opened.
-	c := config.GetInstance()
-	if force || (!c.GetNoBrowser() && IsDesktop()) {
-		serverAddress := getServerURL(path)
+	serverAddress := getServerURL(path)
 
-		err := browser.OpenURL(serverAddress)
-		if err != nil {
-			logger.Error("Could not open browser: " + err.Error())
-		}
+	err := browser.OpenURL(serverAddress)
+	if err != nil {
+		logger.Error("Could not open browser: " + err.Error())
 	}
 }
 

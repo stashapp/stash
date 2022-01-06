@@ -1,17 +1,22 @@
-IS_WIN =
+IS_WIN_SHELL =
 ifeq (${SHELL}, sh.exe)
-  IS_WIN = true
+  IS_WIN_SHELL = true
 endif
 ifeq (${SHELL}, cmd)
-  IS_WIN = true
+  IS_WIN_SHELL = true
 endif
 
-ifdef IS_WIN
+ifdef IS_WIN_SHELL
   SEPARATOR := &&
   SET := set
 else
   SEPARATOR := ;
   SET := export
+endif
+
+IS_WIN_OS =
+ifeq ($(OS),Windows_NT)
+	IS_WIN_OS = true
 endif
 
 # set LDFLAGS environment variable to any extra ldflags required
@@ -46,7 +51,7 @@ ifndef OFFICIAL_BUILD
 endif
 
 build: pre-build
-ifdef IS_WIN
+ifdef IS_WIN_OS
 PLATFORM_SPECIFIC_LDFLAGS := -H windowsgui
 endif
 build:

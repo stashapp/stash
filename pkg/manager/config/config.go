@@ -232,9 +232,9 @@ type Instance struct {
 
 	cpuProfilePath string
 	isNewSystem    bool
-	configUpdates  chan int
-	certFile       string
-	keyFile        string
+	// configUpdates  chan int
+	certFile string
+	keyFile  string
 	sync.RWMutex
 	// deadlock.RWMutex // for deadlock testing/issues
 }
@@ -286,10 +286,13 @@ func (i *Instance) GetNotificationsEnabled() bool {
 	return i.getBool(NotificationsEnabled)
 }
 
-func (i *Instance) GetConfigUpdatesChannel() chan int {
-	return i.configUpdates
-}
+// func (i *Instance) GetConfigUpdatesChannel() chan int {
+// 	return i.configUpdates
+// }
 
+// GetShowOneTimeMovedNotification shows whether a small notification to inform the user that Stash
+// will no longer show a terminal window, and instead will be available in the tray, should be shown.
+//  It is true when an existing system is started after upgrading, and set to false forever after it is shown.
 func (i *Instance) GetShowOneTimeMovedNotification() bool {
 	return i.getBool(ShowOneTimeMovedNotification)
 }

@@ -65,12 +65,14 @@ func systrayInitialize() {
 					if item == "markers" {
 						item = "scenes/markers"
 					}
-					OpenURLInBrowser(true, item)
+					if c.GetNoBrowser() {
+						openURLInBrowser(item)
+					}
 				}
 			}(item)
 		}
 		systray.AddSeparator()
-		// TODO
+		// TODO - Some ideas for future expansions
 		// systray.AddMenuItem("Start a Scan", "Scan all libraries with default settings")
 		// systray.AddMenuItem("Start Auto Tagging", "Auto Tag all libraries")
 		// systray.AddMenuItem("Check for updates", "Check for a new Stash release")
@@ -83,7 +85,9 @@ func systrayInitialize() {
 		for {
 			select {
 			case <-openStashButton.ClickedCh:
-				OpenURLInBrowser(true, "")
+				if !c.GetNoBrowser() {
+					openURLInBrowser("")
+				}
 			case <-quitStashButton.ClickedCh:
 				Shutdown()
 			}
