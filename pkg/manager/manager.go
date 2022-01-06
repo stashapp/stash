@@ -425,17 +425,3 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 		ConfigPath:     &configFile,
 	}
 }
-
-// Shutdown gracefully stops the manager
-func (s *singleton) Shutdown(code int) {
-	// TODO: Each part of the manager needs to gracefully stop at some point
-	// for now, we just close the database.
-	err := database.Close()
-	if err != nil {
-		logger.Errorf("Error closing database: %s", err)
-		if code == 0 {
-			os.Exit(1)
-		}
-	}
-	os.Exit(code)
-}

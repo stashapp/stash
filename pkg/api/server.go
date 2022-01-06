@@ -266,7 +266,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			logger.Infof("stash is running at " + displayAddress)
 			logger.Error(server.ListenAndServe())
 		}
-		manager.GetInstance().Shutdown(0)
+		config.Shutdown(0)
 	}()
 
 	desktop.Start()

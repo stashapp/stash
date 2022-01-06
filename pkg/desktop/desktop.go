@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/pkg/browser"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/utils"
@@ -121,15 +120,6 @@ func IsAllowedAutoUpdate() bool {
 	}
 
 	return true
-}
-
-func Shutdown() {
-	err := database.Close()
-	if err != nil {
-		logger.Errorf("Error closing database: %s", err)
-		os.Exit(1)
-	}
-	os.Exit(0)
 }
 
 func getIconPath() string {
