@@ -634,7 +634,7 @@
   "display_mode": {
     "grid": "Gitter",
     "list": "Liste",
-    "tagger": "Etikettierer",
+    "tagger": "Tagger",
     "unknown": "Unbekannt",
     "wall": "Wand"
   },
@@ -713,7 +713,7 @@
   "instagram": "Instagram",
   "interactive": "Interaktiv",
   "interactive_speed": "Interaktive Geschwindigkeit",
-  "isMissing": "Wird vermisst",
+  "isMissing": "Fehlt",
   "library": "Bibliothek",
   "loading": {
     "generic": "Wird geladen…"
