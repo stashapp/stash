@@ -31,9 +31,8 @@ export const stringToGender = (
     return undefined;
   }
 
-  const existing = Object.entries(GQL.GenderEnum).find(e => e[1] === value);
-  if (existing)
-    return existing[1];
+  const existing = Object.entries(GQL.GenderEnum).find((e) => e[1] === value);
+  if (existing) return existing[1];
 
   const ret = stringGenderMap.get(value);
   if (ret || !caseInsensitive) {
