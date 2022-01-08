@@ -162,3 +162,15 @@ query Me {
     name
   }
 }
+
+mutation SubmitSceneDraft($input: SceneDraftInput!) {
+  submitSceneDraft(input: $input) {
+    id
+  }
+}
+
+mutation SubmitPerformerDraft($input: PerformerDraftInput!) {
+  submitPerformerDraft(input: $input) {
+    id
+  }
+}

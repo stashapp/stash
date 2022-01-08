@@ -28,6 +28,7 @@ import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
+import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
 
 interface IProps {
@@ -166,6 +167,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             onSave={() => {}}
             onImageChange={() => {}}
           />
+          <PerformerSubmitButton performer={performer} />
         </Row>
       </Col>
       <Tabs

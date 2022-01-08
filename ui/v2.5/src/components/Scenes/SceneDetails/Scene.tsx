@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
@@ -22,7 +23,7 @@ import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
-import Mousetrap from "mousetrap";
+import { SubmitStashBoxDraft } from "src/components/Dialogs/SubmitDraft";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneQueue } from "src/models/sceneQueue";
 import { QueueViewer } from "./QueueViewer";
@@ -54,6 +55,10 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
   const [showScrubber, setShowScrubber] = useState(true);
+
+  const { data } = GQL.useConfigurationQuery();
+  const [showDraftModal, setShowDraftModal] = useState(false);
+  const boxes = data?.configuration?.general?.stashBoxes ?? [];
 
   const {
     data: sceneStreams,
@@ -384,6 +389,15 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         >
           <FormattedMessage id="actions.generate_thumb_default" />
         </Dropdown.Item>
+        {boxes.length > 0 && (
+          <Dropdown.Item
+            key="submit"
+            className="bg-secondary text-white"
+            onClick={() => setShowDraftModal(true)}
+          >
+            <FormattedMessage id="actions.submit_stash_box" />
+          </Dropdown.Item>
+        )}
         <Dropdown.Item
           key="delete-scene"
           className="bg-secondary text-white"
@@ -633,6 +647,13 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
           />
         ) : undefined}
       </div>
+      <SubmitStashBoxDraft
+        boxes={boxes}
+        entity={scene}
+        query={GQL.SubmitStashBoxSceneDraftDocument}
+        show={showDraftModal}
+        onHide={() => setShowDraftModal(false)}
+      />
     </div>
   );
 };
