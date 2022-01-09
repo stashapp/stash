@@ -225,6 +225,7 @@
     "excludes": "исключает",
     "includes": "включает"
   },
+  "custom": "Пользовательский",
   "date": "Дата",
   "descending": "По убыванию",
   "detail": "Дополнительная информация",
@@ -246,6 +247,7 @@
       "source": "Источник"
     },
     "scene_gen": {
+      "transcodes": "Транскоды",
       "video_previews": "Превью"
     },
     "scrape_results_existing": "Существующий"
