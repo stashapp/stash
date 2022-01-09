@@ -385,13 +385,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		}
 		prefix := getProxyPrefix(r.Header)
 
-		port := ""
-		forwardedPort := r.Header.Get("X-Forwarded-Port")
-		if forwardedPort != "" && forwardedPort != "80" && forwardedPort != "8080" && forwardedPort != "443" && !strings.Contains(r.Host, ":") {
-			port = ":" + forwardedPort
-		}
-
-		baseURL := scheme + "://" + r.Host + port + prefix
+		baseURL := scheme + "://" + r.Host + prefix
 
 		externalHost := config.GetInstance().GetExternalHost()
 		if externalHost != "" {
