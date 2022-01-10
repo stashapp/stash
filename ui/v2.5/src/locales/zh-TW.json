@@ -691,7 +691,9 @@
   "galleries": "圖庫",
   "gallery": "圖庫",
   "gallery_count": "圖庫數量",
-  "gender": "性別",
+  "gender": {
+    "NON_BINARY": "非二元"
+  },
   "hair_color": "頭髮顏色",
   "hasMarkers": "含有章節標記",
   "height": "身高",

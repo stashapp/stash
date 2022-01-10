@@ -80,6 +80,7 @@
     "select_folders": "Valitse kansiot",
     "select_none": "Peruuta Valinta",
     "selective_auto_tag": "Valikoiva automaattinen tunnisteiden asetus",
+    "selective_clean": "Valikoiva Puhdistus",
     "selective_scan": "Valikoiva skannaus",
     "set_as_default": "Aseta oletukseksi",
     "set_back_image": "Takakansi…",
@@ -159,20 +160,28 @@
       "build_hash": "Version tiiviste:",
       "build_time": "Version päiväys:",
       "check_for_new_version": "Tarkista onko uutta versiota saatavilla",
+      "latest_version": "Viimeisin Versio",
       "latest_version_build_hash": "Uusimman version tiiviste:",
       "new_version_notice": "[UUSI]",
       "stash_discord": "Liity {url} kanavallemme",
-      "stash_home": "Stashin kotisivut {ur}",
+      "stash_home": "Stashin kotisivut {url}",
       "stash_open_collective": "Tue meitä {url}",
       "stash_wiki": "Stashin {url} -sivu",
       "version": "Versio"
+    },
+    "application_paths": {
+      "heading": "Sovellukset Polut"
     },
     "categories": {
       "about": "Tietoja",
       "interface": "Käyttöliittymä",
       "logs": "Lokit",
+      "metadata_providers": "Metadatan tarjoajat",
       "plugins": "Lisäosat",
       "scraping": "Kaavinta",
+      "security": "Turvallisuus",
+      "services": "Palvelut",
+      "system": "Järjestelmä",
       "tasks": "Tehtävät",
       "tools": "Työkalut"
     },
@@ -195,6 +204,10 @@
         "api_key_desc": "API -avain ulkoisille järjestelmille. Tarvitaan vain jos käyttäjätunnus ja salasana on määritelty. Käyttäjätunnus taytyy tallentaa ennen API -avaimen luomista.",
         "authentication": "Autentikointi",
         "clear_api_key": "Puhdista API -avain",
+        "credentials": {
+          "description": "Tunnukset, joiden pääsyä stashiin rajoitetaan.",
+          "heading": "Tunnukset"
+        },
         "generate_api_key": "Luo API -avain",
         "log_file": "Lokitiedosto",
         "log_file_desc": "Polku lokitiedostoon. Jos jätetty tyhjäksi, ei lokitiedostoa tehdä. Vaatii uudelleenkäynnistyksen.",
@@ -202,7 +215,7 @@
         "log_http_desc": "Kirjaa http -pyynnöt komentoriville. Vaatii uudelleenkäynnistyksen.",
         "log_to_terminal": "Kirjoita loki komentoriville",
         "log_to_terminal_desc": "Kirjaa lokin komentoriville lokitiedoston sijaan. Aina päällä jos lokitiedosto ei ole käytössä. Vaatii uudelleenkäynnistyksen.",
-        "maximum_session_age": "Session keston yläraja",
+        "maximum_session_age": "Istunnon keston yläraja",
         "maximum_session_age_desc": "Yläraja toimettomalle ajalle sekunneissa ennen kuin kirjautuminen vanhenee.",
         "password": "Salasana",
         "password_desc": "Salasana Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia",
@@ -233,7 +246,7 @@
       "generated_file_naming_hash_desc": "Käytä MD5:ttä tai oshashia tiedostojen nimien generoimiseen. Tämän muuttaminen vaatii, että kaikilla kohtauksilla on MD5 tai oshash. Tämän valinnan muuttamisen jälkeen kaikki generoidut tukitiedostot täytyy joko migraatioida tai generoida uudelleen. Katso lisää migraatiosta tehtävät -sivulta.",
       "generated_file_naming_hash_head": "Generoitu tiiviste tiedoston nimeämistä varten",
       "generated_files_location": "Kansion polku generoiduille tiedostoille (kohtauksen merkit, kohtauksien esikatselut, tms)",
-      "generated_path_head": "Generoitu polku",
+      "generated_path_head": "Generoitujen tiedostojen polku",
       "hashing": "Tiivisteen luominen",
       "image_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan kuviksi.",
       "image_ext_head": "Kuvien tiedostopäätteet",
@@ -254,11 +267,20 @@
       "preview_generation": "Esikatsele generointi",
       "scraper_user_agent": "Kaapijan käyttäjäagentti",
       "scraper_user_agent_desc": "Käyttäjäagenttikenttä, jota kaavittaessa käytetään http pyynnöissä",
+      "scrapers_path": {
+        "description": "Kaapijan konfiguraatiotiedostojen kansion sijainti",
+        "heading": "Kaapijoiden polku"
+      },
       "scraping": "Kaapiminen",
       "sqlite_location": "SQLite -tietokannan tiedostosijainti (vaatii uudelleenkäynnistyksen)",
       "video_ext_desc": "Pilkuilla erotettu lista tiedostopäätteistä, jotka tulkitaan videoiksi.",
       "video_ext_head": "Videoiden päätteet",
       "video_head": "Video"
+    },
+    "library": {
+      "exclusions": "Poisjättäminen",
+      "gallery_and_image_options": "Galleria- ja kuva-asetukset",
+      "media_content_extensions": "Mediasisällön tiedostopäätteet"
     },
     "logs": {
       "log_level": "Lokin taso"
@@ -283,6 +305,9 @@
       "name": "Nimi",
       "title": "Stash-box päätepisteet"
     },
+    "system": {
+      "transcoding": "Transkoodaus"
+    },
     "tasks": {
       "added_job_to_queue": "Lisättiin {operation_name} tehtäväjonoon",
       "auto_tag": {
@@ -298,16 +323,20 @@
       "data_management": "Datan hallinta",
       "defaults_set": "Oletukset on asetettu ja niitä käytetään kun painat {action} -painiketta Tehtävät -sivulla.",
       "dont_include_file_extension_as_part_of_the_title": "Elä sisällytä tiedostopäätettä tiedoston nimeen",
+      "empty_queue": "Tehtäviä ei ole menossa.",
       "export_to_json": "Vie tietokannan sisällön JSON -formaatissa samaan kansioon kuin missä tietokanta on.",
       "generate": {
         "generating_from_paths": "Generoidaan kohtauksille seuraavista poluista",
         "generating_scenes": "Generoidaan {num} {scene}"
       },
       "generate_desc": "Generoi kuvat, esikatselut ja muut tukitiedostot.",
-      "generate_phashes_during_scan": "Generoi phash -tiiviste skannauksen aikana (kaksoiskappaleiden ja kohtauksen tunnistamiseen)",
-      "generate_previews_during_scan": "Generoi esikatselukuvat skannauksen aikana (animoitu WebP esikatselu, vaaditaan vain jos esikatselun tyypiksi on valittu animoitu kuva)",
-      "generate_thumbnails_during_scan": "Generoi esikatselukuva skannauksen aikana.",
-      "generate_video_previews_during_scan": "Generoi esikatselu skannauksen aikana (videoesikatselu, joka näytetään kun osoitin menee kohtauksen päälle)",
+      "generate_phashes_during_scan": "Generoi phash -tiivisteet",
+      "generate_phashes_during_scan_tooltip": "Kaksoiskappaleiden löytämiseen ja kohtauksien tunnistamiseen.",
+      "generate_previews_during_scan": "Generoi animoidut esikatselukuvat",
+      "generate_previews_during_scan_tooltip": "Generoi animoidun WebP -esikatselun, vaaditaan vain jos esikatselun tyypiksi on valittu animoitu kuva.",
+      "generate_thumbnails_during_scan": "Generoi esikatselukuva skannauksen aikana",
+      "generate_video_previews_during_scan": "Generoi esikatselu",
+      "generate_video_previews_during_scan_tooltip": "Generoi videoesikatselun, joka näytetään kun osoitin menee kohtauksen päälle",
       "generated_content": "Generoitu sisältö",
       "identify": {
         "and_create_missing": "ja luo puuttuvat",
@@ -342,7 +371,7 @@
         "scanning_paths": "Skannataan seuraavia polkuja"
       },
       "scan_for_content_desc": "Skannaa uusi sisältö ja lisää se tietokantaan.",
-      "set_name_date_details_from_metadata_if_present": "Aseta nimi, päivä ja tiedot metadatasta (jos saatavilla)"
+      "set_name_date_details_from_metadata_if_present": "Aseta nimi, päivä ja tiedot metadatasta"
     },
     "tools": {
       "scene_duplicate_checker": "Kohtauksien kaksoiskappaleiden tarkistus",
@@ -359,8 +388,9 @@
       "scene_tools": "Kohtauksen työkalut"
     },
     "ui": {
+      "basic_settings": "Perusasetukset",
       "custom_css": {
-        "description": "Sivu täytyy ladata uudellee, jotta muutokset tulevat voimaan.",
+        "description": "Sivu täytyy ladata uudelleen, jotta muutokset tulevat voimaan.",
         "heading": "Mukautettu CSS",
         "option_label": "Mukautettu CSS käytössä"
       },
@@ -388,6 +418,7 @@
         "description": "Viive millisekunneissa interaktiivisille skripteille kun toistetaan."
       },
       "images": {
+        "heading": "Kuvat",
         "options": {
           "write_image_thumbnails": {
             "description": "Kirjoita kuvien esikatselut levylle kun generoidaan",
@@ -509,6 +540,7 @@
     "delete_object_overflow": "…ja {count} muuta {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Poista {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "Muokkaa {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "export_include_related_objects": "Sisällytä liittyvät objektit vientiin",
     "export_title": "Vie",
     "lightbox": {
       "delay": "Viive (sek)",
@@ -535,20 +567,29 @@
     },
     "overwrite_filter_confirm": "Haluatko varmasti ylikirjoittaa jo olemassaolevan {entityName}?",
     "scene_gen": {
-      "image_previews": "Esikatselukuvat (Animoitu WebP esikatselu, vaadittu vain jos esikatselutyypiksi on asetettu animoitu kuva)",
-      "marker_image_previews": "Merkkien esikatselukuvat (Animoitu WebP esikatselu, vaadittu vain jos esikatselutyypiksi on asetettu animoitu kuva)",
-      "marker_screenshots": "Merkkien esikatselukuvat (staattinen JPG -kuva, vaadittu vain jos esikatselutyypiksi on asetettu staattinen kuva)",
-      "markers": "Merkit (20 sekunnin video jokaisen aikakoodin alusta)",
+      "force_transcodes": "Pakota transkoodaus",
+      "force_transcodes_tooltip": "Oletuksena transkoodaus tehdään vain, mikäli selain ei tue videotiedostoa. Jos tämä valinta on päällä, transkoodaus tehdään vaikka selain näyttäisi tukevan videotiedostoa.",
+      "image_previews": "Animoidut esikatselukuvat",
+      "image_previews_tooltip": "Animoidut WebP esikatselut, vaaditaan vain jos esikatselun tyyppi on Animoitu kuva.",
+      "marker_image_previews": "Animoidut merkkien esikatselukuvat",
+      "marker_image_previews_tooltip": "Animoidut merkkien WebP esikatselut, vaaditaan vain jos esikatselun tyypiksi on valittu Animoitu kuva.",
+      "marker_screenshots": "Merkkien esikatselukuvat",
+      "marker_screenshots_tooltip": "Merkkien staattinen JPG -kuva, vaadittu vain jos esikatselutyypiksi on asetettu staattinen kuva.",
+      "markers": "Merkkien esikatselut",
+      "markers_tooltip": "20 sekunnin video jokaisen aikakoodin alusta.",
       "overwrite": "Ylikirjoita olemassaolevat generoidut tiedostot",
       "phash": "Tiiviste (kaksoiskappaileiden tunnistamiseen)",
       "preview_exclude_end_time_desc": "Jätä viimeiset x sekuntia pois esikatseluista. Arvo voi olla sekunneissa tai prosenteissa (esim. 2%) kohtauksen kestosta.",
       "preview_exclude_end_time_head": "Lopusta poisjätettävä aika",
       "preview_exclude_start_time_desc": "Jätä ensimmäiset x sekuntia pois esikatseluista. Arvo voi olla sekunneissa tai prosenteissa (esim. 2%) kohtauksen kestosta.",
       "preview_exclude_start_time_head": "Alusta poisjätettävä aika",
+      "preview_generation_options": "Esikatselun generoinnin asetukset",
       "preview_options": "Esikatseluasetukset",
       "preview_preset_head": "Esikatseluidun enkoodaus",
-      "transcodes": "Transkoodaus (MP4 muunto niille tiedostomuodoille, joita ei tueta)",
-      "video_previews": "Esikatselu (esikatseluviedo, joka näytetään kun hiiri on kohtauksen päällä)"
+      "transcodes": "Transkoodaus",
+      "transcodes_tooltip": "MP4 muunto niille tiedostomuodoille, joita ei tueta",
+      "video_previews": "Esikatselu",
+      "video_previews_tooltip": "Esikatseluviedo, joka näytetään kun hiiri on kohtauksen päällä"
     },
     "scenes_found": "{count} kohtausta löydetty",
     "scrape_entity_query": "{entity_type}kaavintajono",
@@ -620,7 +661,9 @@
   "galleries": "Galleriat",
   "gallery": "Galleria",
   "gallery_count": "Gallerioiden määrä",
-  "gender": "Sukupuoli",
+  "gender": {
+    "NON_BINARY": "Ei-Binäärinen"
+  },
   "hair_color": "Hiusten väri",
   "hasMarkers": "On merkki",
   "height": "Pituus",
@@ -633,6 +676,7 @@
   "include_sub_tags": "Sisällytä alitunnisteet",
   "instagram": "Instagram",
   "interactive": "Interaktiivinen",
+  "interactive_speed": "Interaktiivinen nopeus",
   "isMissing": "Puuttuu",
   "library": "Kirjasto",
   "loading": {
@@ -646,6 +690,7 @@
     "checksum": "Tarkistussumma",
     "downloaded_from": "Ladattu kohteesta",
     "hash": "Tiiviste",
+    "interactive_speed": "Interaktiivinen nopeus",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} tässä kohtauksessa"
@@ -730,7 +775,10 @@
       "migration_failed": "Migraatio ei onnistunut",
       "migration_failed_error": "Seuraava virhe tuli tietokannan migraatiossa:",
       "migration_failed_help": "Tee tarvittavat korjaukset. Muussa tapauksessa tee ilmoitus bugista {githubLink} tai pyydä apua {discordLink}.",
-      "migration_required": "Migraatio vaaditaan"
+      "migration_irreversible_warning": "Migraatio ei ole peruutettavissa. Kun migraatio on suoritettu, tietokanta ei ole enää yhteensopiva stashin vanhempien versioiden kanssa.",
+      "migration_required": "Migraatio vaaditaan",
+      "perform_schema_migration": "Suorita migraatio",
+      "schema_too_old": "Tämänhetkinen stash -tietokannan muodon versio on <strong>{databaseSchema}</strong> ja se pitää muuttaa versioon <strong>{appSchema}</strong>. Tämä versio Stashista ei toimi ilman tietokannan migraatiota."
     },
     "paths": {
       "database_filename_empty_for_default": "tietokannan tiedostonimi (oletus jos tyhjä)",
@@ -754,6 +802,7 @@
       "your_system_has_been_created": "Kaikki hyvin! Järjestelmä on nyt luotu!"
     },
     "welcome": {
+      "in_current_stash_directory": "<code>HOME/.stash</code> kansioon",
       "store_stash_config": "Minne haluat tallentaa Stash -konfiguraation?",
       "unable_to_locate_config": "Mikäli luet tätä, Stash ei löydä olemassaolevaa konfiguraatiota. Tämä velho auttaa sinua uuden konfiguraation luomisessa."
     },
@@ -807,6 +856,7 @@
   "up-dir": "Ylös",
   "updated_at": "Päivitetty",
   "url": "URL",
+  "videos": "Videot",
   "weight": "Paino",
   "years_old": "-vuotias"
 }

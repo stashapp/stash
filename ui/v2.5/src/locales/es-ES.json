@@ -324,19 +324,22 @@
       "backup_and_download": "Lleva a cabo una copia de seguridad de la base de datos y la guarda en un fichero de respaldo.",
       "backup_database": "Lleva a cabo una copia de seguridad de la base de datos en el mismo directorio en que se encuentre ésta. El formato de nombre del fichero generado es {filename_format}",
       "cleanup_desc": "Buscar ficheros eliminados del sistema de archivos y eliminarlos de la base de datos. PRECAUCIÓN: esta es una acción destructiva.",
+      "data_management": "Gestión de datos",
       "defaults_set": "Las opciones por defecto se han guardado y serán usadas cada vez que pulses el botoón de {action} en la página de Tareas.",
       "dont_include_file_extension_as_part_of_the_title": "No incluir la extensión del archivo como parte del título",
+      "empty_queue": "Actualmente no hay tareas en ejecución.",
       "export_to_json": "Exporta el contenido de la base de datos en formato JSON en el directorio de metadatos.",
       "generate": {
         "generating_from_paths": "Generando multimedia de soporte para las escenas en las siguientes rutas",
         "generating_scenes": "Generando multimedia de soporte para {num} {scene}"
       },
       "generate_desc": "Generar imagen de soporte, conjuntos de imágenes, vídeo, vtt y resto de archivos.",
-      "generate_phashes_during_scan": "Generar hashes de percepción (Phashes) de los vídeos durante el escaneo (este valor es empleado para la búsqueda de archivos de vídeo duplicados y para la identificación de escenas)",
+      "generate_phashes_during_scan": "Generar hashes de percepción (Phashes)",
+      "generate_phashes_during_scan_tooltip": "Para búsqueda de duplicados e identificación de escenas.",
       "generate_previews_during_scan": "Generar imágenes previas durante el escaneo (vistas previas WebP animadas). Solo requerido si el tipo de previsualización seleccionado es “Imágenes animadas”)",
       "generate_sprites_during_scan": "Generar conjunto de imágenes o “sprites” durante el escaneo (para el depurador/limpiador de escenas)",
-      "generate_thumbnails_during_scan": "Generar miniaturas de las imágenes durante el escaneo.",
-      "generate_video_previews_during_scan": "Generar vistas previas durante el escaneo (vistas previas en vídeo que se muestran al pasar el enlace por encima de una escena)",
+      "generate_thumbnails_during_scan": "Generar miniaturas de las imágenes",
+      "generate_video_previews_during_scan": "Generar vistas previas",
       "generated_content": "Contenido generado",
       "identify": {
         "and_create_missing": "y crear no existentes",
@@ -371,7 +374,7 @@
         "scanning_paths": "Escaneando las siguientes rutas"
       },
       "scan_for_content_desc": "Buscar contenido nuevo y añadirlo a la base de datos.",
-      "set_name_date_details_from_metadata_if_present": "Establecer el nombre, fecha y detalles desde los metadatos embebidos en el archivo (si se encuentran)"
+      "set_name_date_details_from_metadata_if_present": "Establecer el nombre, fecha y detalles desde los metadatos embebidos en el archivo"
     },
     "tools": {
       "scene_duplicate_checker": "Comprobación de escenas duplicadas",
@@ -393,6 +396,7 @@
       "scene_tools": "Herramientas de escenas"
     },
     "ui": {
+      "basic_settings": "Ajustes básicos",
       "custom_css": {
         "description": "La página debe ser recargada para que se lleven a cabo los cambios realizados.",
         "heading": "CSS personalizado",
@@ -427,6 +431,7 @@
         "heading": "Clave para conexión práctica"
       },
       "images": {
+        "heading": "Imágenes",
         "options": {
           "write_image_thumbnails": {
             "description": "Guardar miniaturas de imagen en el sistema de archivos cuando son generadas al vuelo",
@@ -672,7 +677,6 @@
   "galleries": "Galerías",
   "gallery": "Galería",
   "gallery_count": "Número de galerías",
-  "gender": "Género",
   "hair_color": "Color de pelo",
   "hasMarkers": "Tiene marcadores",
   "height": "Estatura",
