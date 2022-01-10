@@ -537,7 +537,7 @@
   "details": "Details",
   "developmentVersion": "Ontwikkelingsversie",
   "dialogs": {
-    "export_title": "Export",
+    "export_title": "Exporteer",
     "lightbox": {
       "delay": "Vertraging (Sec)",
       "display_mode": {
@@ -559,7 +559,7 @@
     },
     "scene_gen": {
       "image_previews": "Geanimeerde afbeelding voorbeelden",
-      "marker_screenshots": "Marker Screenshots",
+      "marker_screenshots": "Markeer Screenshots",
       "markers": "Marker Voorbeelden",
       "preview_exclude_end_time_head": "Eindtijd uitsluiten",
       "preview_exclude_start_time_head": "Starttijd uitsluiten",
