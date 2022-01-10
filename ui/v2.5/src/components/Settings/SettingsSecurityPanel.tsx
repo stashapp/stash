@@ -1,5 +1,5 @@
 import React from "react";
-import { ModalSetting, NumberSetting, StringListSetting } from "./Inputs";
+import { ModalSetting, NumberSetting } from "./Inputs";
 import { SettingSection } from "./SettingSection";
 import * as GQL from "src/core/generated-graphql";
 import { Button, Form } from "react-bootstrap";
