@@ -335,7 +335,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
           {modalPerformer && (
             <PerformerModal
               closeModal={() => setModalPerformer(undefined)}
-              modalVisible={modalPerformer !== undefined}
+              modalVisible={modalPerformer.stored_id === performer.id}
               performer={modalPerformer}
               onSave={handlePerformerUpdate}
               excludedPerformerFields={config.excludedPerformerFields}
