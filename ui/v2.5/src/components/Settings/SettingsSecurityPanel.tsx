@@ -162,14 +162,6 @@ export const SettingsSecurityPanel: React.FC = () => {
           value={general.maxSessionAge ?? undefined}
           onChange={(v) => saveGeneral({ maxSessionAge: v })}
         />
-
-        <StringListSetting
-          id="trusted-proxies"
-          headingID="config.general.auth.trusted_proxies"
-          subHeadingID="config.general.auth.trusted_proxies_desc"
-          value={general.trustedProxies ?? undefined}
-          onChange={(v) => saveGeneral({ trustedProxies: v })}
-        />
       </SettingSection>
     </>
   );

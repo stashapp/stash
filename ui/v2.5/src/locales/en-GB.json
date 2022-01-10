@@ -220,8 +220,6 @@
         "password": "Password",
         "password_desc": "Password to access Stash. Leave blank to disable user authentication",
         "stash-box_integration": "Stash-box integration",
-        "trusted_proxies": "Trusted proxies",
-        "trusted_proxies_desc": "List of proxies that are allowed to proxy traffic into stash. Leave empty to allow from private network.",
         "username": "Username",
         "username_desc": "Username to access Stash. Leave blank to disable user authentication"
       },
