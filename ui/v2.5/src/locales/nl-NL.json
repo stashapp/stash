@@ -498,12 +498,24 @@
         }
       },
       "slideshow_delay": {
+        "description": "Diavoorstelling is beschikbaar in galerijen in de muurweergavemodus",
         "heading": "Diavoorstellingsvertraging"
       },
       "title": "Gebruikers interface"
     }
   },
   "configuration": "Configuratie",
+  "countables": {
+    "files": "{count, plural, one {Bestand} other {Bestanden}}",
+    "galleries": "{count, plural, one {Galerij} other {Galerijen}}",
+    "images": "{count, plural, one {Afbeelding} other {Afbeeldingen}}",
+    "markers": "{count, plural, one {Marker} other {Markers}}",
+    "movies": "{count, plural, one {Film} other {Films}}",
+    "performers": "{count, plural, one {Performer} other {Performers}}",
+    "scenes": "{count, plural, one {Scene} other {Scenes}}",
+    "studios": "{count, plural, one {Studio} other {Studios}}",
+    "tags": "{count, plural, one {Tag} other {Tags}}"
+  },
   "country": "Land",
   "cover_image": "Cover afbeelding",
   "created_at": "Gemaakt op",
@@ -537,6 +549,18 @@
   "details": "Details",
   "developmentVersion": "Ontwikkelingsversie",
   "dialogs": {
+    "aliases_must_be_unique": "aliases moeten uniek zijn",
+    "delete_alert": "De volgende {count, plural, one {{singularEntity}} other {{pluralEntity}}} zal permanent verwijderd worden:",
+    "delete_confirm": "Weet je zeker dat je {entityName} wilt verwijderen?",
+    "delete_entity_desc": "{count, plural, one {Weet u zeker dat u deze {singularEntity} wilt verwijderen? Tenzij het bestand ook wordt verwijderd, wordt deze {singularEntity} opnieuw toegevoegd wanneer de scan wordt uitgevoerd.} other {Weet u zeker dat u deze {pluralEntity} wilt verwijderen? Tenzij de bestanden ook worden verwijderd, worden deze {pluralEntity} opnieuw toegevoegd wanneer de scan wordt uitgevoerd.}}",
+    "delete_entity_title": "{count, plural, one {Verwijder{singularEntity}} other {Verwijder{pluralEntity}}}",
+    "delete_galleries_extra": "... plus alle afbeeldingsbestanden die niet aan een andere galerij zijn gekoppeld.",
+    "delete_gallery_files": "Verwijder de galerijmap/zip-bestand en alle afbeeldingen die niet aan een andere galerij zijn gekoppeld.",
+    "delete_object_desc": "Weet u zeker dat u {count, plural, one {this {singularEntity}} other {these {pluralEntity}}} wilt gaan verwijderen?",
+    "delete_object_overflow": "…en {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+    "delete_object_title": "Verwijder {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "edit_entity_title": "Wijzig {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "export_include_related_objects": "Verwante objecten opnemen met het exporteren",
     "export_title": "Exporteer",
     "lightbox": {
       "delay": "Vertraging (Sec)",
@@ -547,7 +571,13 @@
         "original": "Orgineel"
       },
       "options": "Opties",
+      "reset_zoom_on_nav": "Zoomniveau resetten bij het wijzigen van afbeelding",
+      "scale_up": {
+        "description": "Schaal kleinere afbeeldingen omhoog om het scherm te vullen",
+        "label": "Opschalen om te passen"
+      },
       "scroll_mode": {
+        "description": "Houd shift ingedrukt om tijdelijk een andere modus te gebruiken.",
         "label": "Scroll modus",
         "pan_y": "Pan Y",
         "zoom": "Zoom"
@@ -557,25 +587,47 @@
       "destination": "Bestemming",
       "source": "Afkomst"
     },
+    "overwrite_filter_confirm": "Weet u zeker dat u de bestaande opgeslagen zoekopdracht {entityName} wilt overschrijven?",
     "scene_gen": {
+      "force_transcodes": "Genereren van transcode forceren",
+      "force_transcodes_tooltip": "Standaard worden transcodes alleen gegenereerd als het videobestand niet wordt ondersteund in de browser. Indien ingeschakeld, worden transcodes gegenereerd, zelfs als het videobestand in de browser lijkt te worden ondersteund.",
       "image_previews": "Geanimeerde afbeelding voorbeelden",
+      "image_previews_tooltip": "Geanimeerde WebP-voorbeelden, alleen vereist als Voorbeeldtype is ingesteld op Geanimeerde afbeelding.",
+      "interactive_heatmap_speed": "Genereer heatmaps en snelheden voor interactieve scènes",
+      "marker_image_previews": "Voorvertoningen van geanimeerde markeringen",
+      "marker_image_previews_tooltip": "Geanimeerde markering WebP-voorbeelden, alleen vereist als Voorbeeldtype is ingesteld op Geanimeerde afbeelding.",
       "marker_screenshots": "Markeer Screenshots",
+      "marker_screenshots_tooltip": "Markeer statische JPG-afbeeldingen, alleen vereist als Voorbeeldtype is ingesteld op Statische afbeelding.",
       "markers": "Marker Voorbeelden",
+      "markers_tooltip": "Video's van 20 seconden die beginnen op de opgegeven tijdcode.",
+      "overwrite": "Bestaande gegenereerde bestanden overschrijven",
+      "phash": "Perceptuele hashes (voor deduplicatie)",
+      "preview_exclude_end_time_desc": "Sluit de laatste x seconden uit van scènevoorbeelden. Dit kan een waarde in seconden zijn, of een percentage (bijv. 2%) van de totale duur van de scène.",
       "preview_exclude_end_time_head": "Eindtijd uitsluiten",
+      "preview_exclude_start_time_desc": "Sluit de eerste x seconden uit van scènevoorbeelden. Dit kan een waarde in seconden zijn, of een percentage (bijv. 2%) van de totale duur van de scène.",
       "preview_exclude_start_time_head": "Starttijd uitsluiten",
+      "preview_generation_options": "Opties voor het genereren van voorbeelden",
       "preview_options": "Voorbeeld opties",
+      "preview_preset_desc": "De voorinstelling regelt de grootte, kwaliteit en coderingstijd van het genereren van voorbeelden. Voorinstellingen die verder gaan dan \"langzaam\" hebben een afnemend rendement en worden niet aanbevolen.",
       "preview_preset_head": "Voorbeeld van codering voorinstelling",
+      "preview_seg_count_desc": "Aantal segmenten in voorbeeldbestanden.",
+      "preview_seg_count_head": "Aantal segmenten in voorbeeld",
+      "preview_seg_duration_desc": "Duur van elk voorbeeldsegment, in seconden.",
       "preview_seg_duration_head": "Voorbeeld Segment Duur",
       "sprites": "Scene Scrubber Sprites",
+      "sprites_tooltip": "Sprites (voor de scene scrubber)",
       "transcodes": "Transcodes",
-      "video_previews": "Voorbeelden"
+      "transcodes_tooltip": "MP4-conversies van niet-ondersteunde video-indelingen",
+      "video_previews": "Voorbeelden",
+      "video_previews_tooltip": "Videovoorbeelden die worden afgespeeld wanneer u over een scène beweegt"
     },
     "scenes_found": "{count} scenes gevonden",
     "scrape_entity_query": "{entity_type} Schraper Query",
     "scrape_entity_title": "{entity_type} Schraper Resultaten",
     "scrape_results_existing": "Bestaande",
     "scrape_results_scraped": "Geschraapt",
-    "set_image_url_title": "Afbeelding URL"
+    "set_image_url_title": "Afbeelding URL",
+    "unsaved_changes": "Niet-opgeslagen wijzigingen gaan verloren. Weet je zeker dat je wilt vertrekken?"
   },
   "dimensions": "Dimensies",
   "director": "Regisseur",
@@ -588,6 +640,8 @@
   },
   "donate": "Doneer",
   "dupe_check": {
+    "description": "Niveaus onder 'Exact' kunnen langer duren om te berekenen. Valse positieven kunnen ook worden geretourneerd bij lagere nauwkeurigheidsniveaus.",
+    "found_sets": "{setCount, plural, one{# set duplicaten gevonden.} other {# sets van duplicaten gevonden.}}",
     "options": {
       "exact": "Precies",
       "high": "Hoog",
@@ -613,6 +667,8 @@
     "reset_filters": "Reset Filters",
     "reset_transforms": "Reset Transformaties",
     "rotate": "Roteren",
+    "rotate_left_and_scale": "Naar links draaien en schalen",
+    "rotate_right_and_scale": "Naar rechts draaien en schalen",
     "saturation": "Saturatie",
     "scale": "Schaal",
     "warmth": "Warmte"
@@ -631,6 +687,7 @@
   "filter_name": "Filter Naam",
   "filters": "Filters",
   "framerate": "Frame snelheid",
+  "frames_per_second": "{value} frames per seconde",
   "galleries": "Galerijen",
   "gallery": "Galerij",
   "gallery_count": "Galerij aantal",
@@ -650,6 +707,8 @@
   "image": "Afbeelding",
   "image_count": "Afbeelding aantal",
   "images": "Afbeeldingen",
+  "include_parent_tags": "Bovenliggende tags opnemen",
+  "include_sub_studios": "Dochteronderneming studio's opnemen",
   "include_sub_tags": "Neem sub-tags op",
   "instagram": "Instagram",
   "interactive": "Interactief",
@@ -669,14 +728,17 @@
     "hash": "Hash",
     "interactive_speed": "Interactieve snelheid",
     "performer_card": {
-      "age": "{age} {years_old}"
+      "age": "{age} {years_old}",
+      "age_context": "{age} {years_old} in deze scène"
     },
     "phash": "PHash",
     "stream": "Stream",
     "video_codec": "Video Codec"
   },
+  "megabits_per_second": "{value} megabits per seconde",
   "metadata": "Metadata",
   "movie": "Film",
+  "movie_scene_number": "Film Scene Nummer",
   "movies": "Films",
   "name": "Naam",
   "new": "Nieuw",
@@ -690,8 +752,11 @@
     "next": "Volgende",
     "previous": "Vorige"
   },
+  "parent_of": "Ouder van {children}",
   "parent_studios": "Ouderstudio's",
+  "parent_tag_count": "Aantal bovenliggende tags",
   "parent_tags": "Bovenlagentlabels",
+  "part_of": "Onderdeel van {parent}",
   "path": "Pad",
   "performer": "Performer",
   "performerTags": "Peformer Labels",
@@ -709,6 +774,7 @@
   "scene_count": "Scene Aantal",
   "scene_id": "Scene ID",
   "scenes": "Scènes",
+  "scenes_updated_at": "Scène geüpdatet op",
   "search_filter": {
     "add_filter": "Filter Toevoegen",
     "name": "Filter",
@@ -719,20 +785,78 @@
   "settings": "Instellingen",
   "setup": {
     "confirm": {
+      "almost_ready": "We zijn bijna klaar om de configuratie te voltooien. Bevestig de volgende instellingen. U kunt op terug klikken om iets onjuists te wijzigen. Als alles er goed uitziet, klikt u op Bevestigen om uw systeem aan te maken.",
+      "configuration_file_location": "Locatie configuratiebestand:",
+      "database_file_path": "Pad naar databasebestand",
+      "default_db_location": "<pad met configuratiebestand>/stash-go.sqlite",
+      "default_generated_content_location": "<pad met configuratiebestand>/generated",
       "generated_directory": "Genereerde map",
-      "nearly_there": "Bijna Daar!"
+      "nearly_there": "Bijna Daar!",
+      "stash_library_directories": "Stash bibliotheekmappen"
+    },
+    "creating": {
+      "creating_your_system": "Uw systeem aanmaken",
+      "ffmpeg_notice": "Als <code>ffmpeg</code> nog niet in je pad staat, heb dan even geduld terwijl stash het downloadt. Bekijk de console-uitvoer om de downloadvoortgang te zien."
+    },
+    "errors": {
+      "something_went_wrong": "Oh nee! Er is iets fout gegaan!",
+      "something_went_wrong_description": "Als dit lijkt op een probleem met je invoer, ga je gang en klik je op Terug om ze op te lossen. Breng anders een bug aan op {githubLink} of zoek hulp in de {discordLink}.",
+      "something_went_wrong_while_setting_up_your_system": "Er is iets misgegaan tijdens het instellen van uw systeem. Dit is de fout die we hebben ontvangen: {error}"
     },
     "github_repository": "Github repository",
     "migrate": {
+      "backup_database_path_leave_empty_to_disable_backup": "Pad naar back-up database (leeg laten om back-up uit te schakelen):",
+      "backup_recommended": "Het wordt aanbevolen een back-up van uw bestaande database te maken voordat u migreert. We kunnen dit voor je doen door een kopie van je database te maken naar <code>{defaultBackupPath}</code>.",
       "migrating_database": "Database migreren",
       "migration_failed": "Migratie gefaald",
-      "migration_required": "Migratie benodigd"
+      "migration_failed_error": "De volgende fout is opgetreden tijdens het migreren van de database:",
+      "migration_failed_help": "Breng de nodige correcties aan en probeer het opnieuw. Breng anders een bug aan op {githubLink} of zoek hulp in de {discordLink}.",
+      "migration_irreversible_warning": "Het schemamigratieproces is niet omkeerbaar. Zodra de migratie is uitgevoerd, is uw database incompatibel met eerdere versies van stash.",
+      "migration_required": "Migratie benodigd",
+      "perform_schema_migration": "Schemamigratie uitvoeren",
+      "schema_too_old": "Uw huidige stashdatabase is schemaversie <strong>{databaseSchema}</strong> en moet worden gemigreerd naar versie <strong>{appSchema}</strong>. Deze versie van Stash werkt niet zonder de database te migreren."
     },
+    "paths": {
+      "database_filename_empty_for_default": "database bestandsnaam (leeg als standaard)",
+      "description": "Vervolgens moeten we bepalen waar we je pornocollectie kunnen vinden, waar we de stash-database en gegenereerde bestanden kunnen opslaan. Deze instellingen kunnen indien nodig later worden gewijzigd.",
+      "path_to_generated_directory_empty_for_default": "pad naar gegenereerde map (standaard leeg)",
+      "set_up_your_paths": "Stel je paden in",
+      "stash_alert": "Er zijn geen bibliotheekpaden geselecteerd. Er kan dan geen media worden gescand in Stash. Weet je zeker dat?",
+      "where_can_stash_store_its_database": "Waar kan Stash zijn database opslaan?",
+      "where_can_stash_store_its_database_description": "Stash gebruikt een sqlite-database om je porno-metadata op te slaan. Standaard wordt dit aangemaakt als <code>stash-go.sqlite</code> in de map die je configuratiebestand bevat. Als u dit wilt wijzigen, voert u een absolute of relatieve (ten opzichte van de huidige werkdirectory) bestandsnaam in.",
+      "where_can_stash_store_its_generated_content": "Waar kan Stash de gegenereerde inhoud opslaan?",
+      "where_can_stash_store_its_generated_content_description": "Om thumbnails, previews en sprites aan te bieden, genereert Stash afbeeldingen en video's. Dit omvat ook transcodes voor niet-ondersteunde bestandsindelingen. Standaard zal Stash een <code>generated</code> directory aanmaken in de directory die uw configuratiebestand bevat. Als u wilt wijzigen waar deze gegenereerde media wordt opgeslagen, voert u een absoluut of relatief (ten opzichte van de huidige werkmap) pad in. Stash maakt deze map aan als deze nog niet bestaat.",
+      "where_is_your_porn_located": "Waar staat je porno?",
+      "where_is_your_porn_located_description": "Voeg mappen toe die uw pornovideo's en afbeeldingen bevatten. Stash gebruikt deze mappen om video's en afbeeldingen te vinden tijdens het scannen."
+    },
+    "stash_setup_wizard": "Stash-installatiewizard",
     "success": {
       "getting_help": "Help",
+      "help_links": "Als je problemen tegenkomt of vragen of suggesties hebt, open dan gerust een issue in de {githubLink}, of vraag het de community in de {discordLink}.",
       "in_app_manual_explained": "Het is aanbevolen om de in-app handleiding te bekijken, het is raadpleegbaar via het {icon} icoontje rechts-boven",
-      "support_us": "Ondersteun ons"
-    }
+      "next_config_step_one": "U wordt vervolgens naar de configuratiepagina geleid. Op deze pagina kunt u aanpassen welke bestanden u wilt opnemen en uitsluiten, een gebruikersnaam en wachtwoord instellen om uw systeem te beschermen en een heleboel andere opties.",
+      "next_config_step_two": "Als je tevreden bent met deze instellingen, kun je beginnen met het scannen van je inhoud naar Stash door op <code>{localized_task}</code> te klikken en vervolgens op <code>{localized_scan}</code> te klikken.",
+      "open_collective": "Bekijk onze {open_collective_link} om te zien hoe jij kunt bijdragen aan de verdere ontwikkeling van Stash.",
+      "support_us": "Ondersteun ons",
+      "thanks_for_trying_stash": "Bedankt voor het proberen van Stash!",
+      "welcome_contrib": "We verwelkomen ook bijdragen in de vorm van code (bugfixes, verbeteringen en nieuwe functies), testen, bugrapporten, verbeterings- en functieverzoeken en gebruikersondersteuning. Details zijn te vinden in het gedeelte Bijdrage van de in-app-handleiding.",
+      "your_system_has_been_created": "Succes! Uw systeem is aangemaakt!"
+    },
+    "welcome": {
+      "config_path_logic_explained": "Stash probeert eerst zijn configuratiebestand (<code>config.yml</code>) uit de huidige werkdirectory te vinden, en als het daar niet gevonden wordt, valt het terug naar <code>$HOME/.stash/config. yml</code> (in Windows is dit <code>%USERPROFILE%\\.stash\\config.yml</code>). Je kunt Stash ook laten lezen uit een specifiek configuratiebestand door het uit te voeren met de opties <code>-c <pad naar configuratie bestand></code> of <code>--config <pad naar configuratie bestand></code>.",
+      "in_current_stash_directory": "In de <code>$HOME/.stash</code> map",
+      "in_the_current_working_directory": "In de huidige werkdirectory",
+      "next_step": "Met dat alles uit de weg, als u klaar bent om door te gaan met het opzetten van een nieuw systeem, kiest u waar u uw configuratiebestand wilt opslaan en klikt u op Volgende.",
+      "store_stash_config": "Waar wil jij je Stash-configuratie opslaan?",
+      "unable_to_locate_config": "Als je dit leest, kan Stash geen bestaande configuratie vinden. Deze wizard leidt u door het proces van het opzetten van een nieuwe configuratie.",
+      "unexpected_explained": "Als je dit scherm onverwachts krijgt, probeer dan Stash opnieuw op te starten in de juiste werkmap of met de <code>-c</code> vlag."
+    },
+    "welcome_specific_config": {
+      "config_path": "Stash gebruikt het volgende configuratiebestandspad: <code>{path}</code>",
+      "next_step": "Wanneer u klaar bent om door te gaan met het instellen van een nieuw systeem, klikt u op Volgende.",
+      "unable_to_locate_specified_config": "Als je dit leest, kan Stash het opgegeven configuratiebestand op de opdrachtregel of in de omgeving niet vinden. Deze wizard leidt u door het proces van het opzetten van een nieuwe configuratiebestand."
+    },
+    "welcome_to_stash": "Welkom bij Stash"
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -743,8 +867,10 @@
   },
   "status": "Status: {statusText}",
   "studio": "Studio",
+  "studio_depth": "Niveaus (leeg voor iedereen)",
   "studios": "Studios",
   "sub_tag_count": "Sub-Label aantal",
+  "sub_tag_of": "Sub-tag van {parent}",
   "sub_tags": "Sub-Tags",
   "subsidiary_studios": "Onderliggende Studio's",
   "synopsis": "Synopsis",
@@ -755,10 +881,16 @@
   "title": "Titel",
   "toast": {
     "added_entity": "Toegevoegd {entity}",
+    "added_generation_job_to_queue": "Generatietaak toegevoegd aan wachtrij",
     "created_entity": "{entity} Aangemaakt",
+    "default_filter_set": "Standaard filterset",
+    "delete_entity": "Verwijder {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "delete_past_tense": "Verwijderd {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Screenshot Genereren…",
     "merged_tags": "Samengevoegde Labels",
+    "rescanning_entity": "Opnieuw scannen van {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Opgeslagen {entity}",
+    "started_auto_tagging": "Autotagging gestart",
     "started_generating": "Genereren gestart",
     "started_importing": "Importeren gestart",
     "updated_entity": "Ge-updatet {entity}"
@@ -766,6 +898,7 @@
   "total": "Totaal",
   "true": "Waar",
   "twitter": "Twitter",
+  "up-dir": "Een directory omhoog",
   "updated_at": "Bijgewerkt op",
   "url": "URL",
   "videos": "Video's",
