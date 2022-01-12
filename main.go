@@ -12,7 +12,6 @@ import (
 	"github.com/apenwarr/fixconsole"
 	"github.com/stashapp/stash/pkg/api"
 	"github.com/stashapp/stash/pkg/manager"
-	"github.com/stashapp/stash/pkg/manager/config"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -40,7 +39,7 @@ func main() {
 	defer pprof.StopCPUProfile()
 	blockForever()
 
-	config.Shutdown(0)
+	manager.GetInstance().Shutdown(0)
 }
 
 func blockForever() {

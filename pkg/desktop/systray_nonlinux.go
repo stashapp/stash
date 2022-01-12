@@ -89,7 +89,7 @@ func systrayInitialize() {
 					openURLInBrowser("")
 				}
 			case <-quitStashButton.ClickedCh:
-				config.Shutdown(0)
+				Shutdown()
 			}
 		}
 	}()

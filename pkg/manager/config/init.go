@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -160,18 +159,4 @@ func makeOverrideConfig() *viper.Viper {
 	initEnvs(viper)
 
 	return viper
-}
-
-// Shutdown gracefully stops the application
-func Shutdown(code int) {
-	// TODO: Each part of the manager needs to gracefully stop at some point
-	// for now, we just close the database.
-	err := database.Close()
-	if err != nil {
-		logger.Errorf("Error closing database: %s", err)
-		if code == 0 {
-			os.Exit(1)
-		}
-	}
-	os.Exit(code)
 }
