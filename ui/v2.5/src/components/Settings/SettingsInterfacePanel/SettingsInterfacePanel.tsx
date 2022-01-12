@@ -44,15 +44,19 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.language ?? undefined}
           onChange={(v) => saveInterface({ language: v })}
         >
-          <option value="en-US">English (United States)</option>
+          <option value="de-DE">Deutsch (Deutschland)</option>
           <option value="en-GB">English (United Kingdom)</option>
-          <option value="es-ES">Spanish (Spain)</option>
-          <option value="de-DE">German (Germany)</option>
-          <option value="pt-BR">Portuguese (Brazil)</option>
-          <option value="fr-FR">French (France)</option>
-          <option value="it-IT">Italian (Italy)</option>
-          <option value="fi-FI">Finnish (Finland)</option>
-          <option value="sv-SE">Swedish (Sweden)</option>
+          <option value="en-US">English (United States)</option>
+          <option value="es-ES">Español (España)</option>
+          <option value="fi-FI">Suomi</option>
+          <option value="fr-FR">Français (France)</option>
+          <option value="hr-HR">Hrvatski (Preview)</option>
+          <option value="it-IT">Italiano</option>
+          <option value="nl-NL">Nederlands (Nederland) (Preview)</option>
+          <option value="pt-BR">Português (Brasil) (Preview)</option>
+          <option value="ru-RU">Русский (Россия) (Preview)</option>
+          <option value="sv-SE">Svenska</option>
+          <option value="tr-TR">Türkçe (Türkiye)</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>

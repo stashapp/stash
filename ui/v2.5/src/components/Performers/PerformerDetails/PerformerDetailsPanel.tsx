@@ -4,7 +4,6 @@ import { TagLink } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
-import { genderToString } from "src/utils/gender";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -98,7 +97,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     <dl className="details-list">
       <TextField
         id="gender"
-        value={genderToString(performer.gender ?? undefined)}
+        value={
+          performer.gender
+            ? intl.formatMessage({ id: "gender_types." + performer.gender })
+            : undefined
+        }
       />
       <TextField
         id="birthdate"

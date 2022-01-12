@@ -381,12 +381,19 @@
   }
 
   .fa-icon {
-    animation: fadeOut 2s forwards;
-    animation-delay: 2s;
     color: $success;
     height: 2rem;
     margin: 0;
     width: 2rem;
+  }
+
+  &.success .fa-icon {
+    animation: fadeOut 2s forwards;
+    animation-delay: 2s;
+  }
+
+  &.failed .fa-icon {
+    color: $danger;
   }
 }
 

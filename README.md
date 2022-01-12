@@ -45,9 +45,9 @@ The simplest way to tag a large number of files is by using the [Tagger](https:/
 
 # Translation
 [![Translate](https://translate.stashapp.cc/widgets/stash/-/stash-desktop-client/svg-badge.svg)](https://translate.stashapp.cc/engage/stash/)
-🇧🇷 🇨🇳 🇬🇧 🇫🇮 🇫🇷 🇩🇪 🇮🇹 🇪🇸 🇸🇪 🇹🇼
+🇧🇷 🇨🇳 🇬🇧 🇫🇮 🇫🇷 🇩🇪 🇮🇹 🇪🇸 🇸🇪 🇹🇼 🇹🇷
 
-Stash is available in 10 languages (so far!) and it could be in your language too. If you want to help us translate Stash into your language, you can make an account at [translate.stashapp.cc](https://translate.stashapp.cc/projects/stash/stash-desktop-client/) to get started contributing new languages or improving existing ones. Thanks!
+Stash is available in 11 languages (so far!) and it could be in your language too. If you want to help us translate Stash into your language, you can make an account at [translate.stashapp.cc](https://translate.stashapp.cc/projects/stash/stash-desktop-client/) to get started contributing new languages or improving existing ones. Thanks!
 
 # Support (FAQ)
 

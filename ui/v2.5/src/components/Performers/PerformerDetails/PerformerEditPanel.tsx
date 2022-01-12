@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -18,7 +18,6 @@ import {
   ImageInput,
   LoadingIndicator,
   CollapseButton,
-  Modal,
   TagSelect,
   URLField,
 } from "src/components/Shared";
@@ -46,20 +45,19 @@ interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isNew?: boolean;
   isVisible: boolean;
-  onDelete?: () => void;
   onImageChange?: (image?: string | null) => void;
   onImageEncoding?: (loading?: boolean) => void;
+  onCancelEditing?: () => void;
 }
 
 export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   performer,
   isNew,
   isVisible,
-  onDelete,
   onImageChange,
   onImageEncoding,
+  onCancelEditing,
 }) => {
-  const intl = useIntl();
   const Toast = useToast();
   const history = useHistory();
 
@@ -67,7 +65,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [scraper, setScraper] = useState<GQL.Scraper | IStashBox | undefined>();
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -361,7 +358,17 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   async function onSave(performerInput: InputValues) {
     setIsLoading(true);
     try {
-      if (!isNew) {
+      if (isNew) {
+        const input = getCreateValues(performerInput);
+        const result = await createPerformer({
+          variables: {
+            input,
+          },
+        });
+        if (result.data?.performerCreate) {
+          history.push(`/performers/${result.data.performerCreate.id}`);
+        }
+      } else {
         const input = getUpdateValues(performerInput);
 
         await updatePerformer({
@@ -372,20 +379,14 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             },
           },
         });
-        history.push(`/performers/${performer.id}`);
-      } else {
-        const input = getCreateValues(performerInput);
-        const result = await createPerformer({
-          variables: {
-            input,
-          },
-        });
-        if (result.data?.performerCreate) {
-          history.push(`/performers/${result.data.performerCreate.id}`);
-        }
       }
     } catch (e) {
       Toast.error(e);
+      setIsLoading(false);
+      return;
+    }
+    if (!isNew && onCancelEditing) {
+      onCancelEditing();
     }
     setIsLoading(false);
   }
@@ -396,12 +397,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       Mousetrap.bind("s s", () => {
         onSave?.(formik.values);
       });
-
-      if (!isNew) {
-        Mousetrap.bind("d d", () => {
-          setIsDeleteAlertOpen(true);
-        });
-      }
 
       return () => {
         Mousetrap.unbind("s s");
@@ -655,25 +650,17 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     setScraper(undefined);
   }
 
-  function renderButtons() {
+  function renderButtons(classNames: string) {
     return (
       <Row>
-        <Col className="mt-3" xs={12}>
-          <Button
-            className="mr-2"
-            variant="primary"
-            disabled={!formik.dirty}
-            onClick={() => formik.submitForm()}
-          >
-            <FormattedMessage id="actions.save" />
-          </Button>
-          {!isNew ? (
+        <Col className={classNames} xs={12}>
+          {!isNew && onCancelEditing ? (
             <Button
               className="mr-2"
-              variant="danger"
-              onClick={() => setIsDeleteAlertOpen(true)}
+              variant="primary"
+              onClick={() => onCancelEditing()}
             >
-              <FormattedMessage id="actions.delete" />
+              <FormattedMessage id="actions.cancel" />
             </Button>
           ) : (
             ""
@@ -685,11 +672,18 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             onImageURL={onImageChangeURL}
           />
           <Button
-            className="mx-2"
+            className="mr-2"
             variant="danger"
             onClick={() => formik.setFieldValue("image", null)}
           >
             <FormattedMessage id="actions.clear_image" />
+          </Button>
+          <Button
+            variant="success"
+            disabled={!formik.dirty}
+            onClick={() => formik.submitForm()}
+          >
+            <FormattedMessage id="actions.save" />
           </Button>
         </Col>
       </Row>
@@ -715,28 +709,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       />
     ) : undefined;
   };
-
-  function renderDeleteAlert() {
-    return (
-      <Modal
-        show={isDeleteAlertOpen}
-        icon="trash-alt"
-        accept={{
-          text: intl.formatMessage({ id: "actions.delete" }),
-          variant: "danger",
-          onClick: onDelete,
-        }}
-        cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
-      >
-        <p>
-          <FormattedMessage
-            id="dialogs.delete_confirm"
-            values={{ entityName: performer.name }}
-          />
-        </p>
-      </Modal>
-    );
-  }
 
   function renderTagsField() {
     return (
@@ -837,7 +809,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   return (
     <>
-      {renderDeleteAlert()}
       {renderScrapeModal()}
       {maybeRenderScrapeDialog()}
 
@@ -845,6 +816,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         when={formik.dirty}
         message="Unsaved changes. Are you sure you want to leave?"
       />
+      {renderButtons("mb-3")}
 
       <Form noValidate onSubmit={formik.handleSubmit} id="performer-edit">
         <Form.Group controlId="name" as={Row}>
@@ -970,7 +942,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderStashIDs()}
 
-        {renderButtons()}
+        {renderButtons("mt-3")}
       </Form>
     </>
   );

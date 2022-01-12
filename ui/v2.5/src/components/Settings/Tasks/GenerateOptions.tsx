@@ -8,11 +8,13 @@ import {
 import { useIntl } from "react-intl";
 
 interface IGenerateOptions {
+  selection?: boolean;
   options: GQL.GenerateMetadataInput;
   setOptions: (s: GQL.GenerateMetadataInput) => void;
 }
 
 export const GenerateOptions: React.FC<IGenerateOptions> = ({
+  selection,
   options,
   setOptions: setOptionsState,
 }) => {
@@ -110,6 +112,18 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         tooltipID="dialogs.scene_gen.transcodes_tooltip"
         onChange={(v) => setOptions({ transcodes: v })}
       />
+      {selection ? (
+        <BooleanSetting
+          id="force-transcode"
+          className="sub-setting"
+          checked={options.forceTranscodes ?? false}
+          disabled={!options.transcodes}
+          headingID="dialogs.scene_gen.force_transcodes"
+          tooltipID="dialogs.scene_gen.force_transcodes_tooltip"
+          onChange={(v) => setOptions({ forceTranscodes: v })}
+        />
+      ) : undefined}
+
       <BooleanSetting
         id="phash-task"
         checked={options.phashes ?? false}

@@ -273,7 +273,7 @@ Collectively, these configurations are known as mapped scraping configurations.
 
 A mapped scraping configuration may contain a `common` field, and must contain `performer`, `scene`, `movie` or `gallery` depending on the scraping type it is configured for. 
 
-Within the `performer`/`scene`/`movie`/`gallery` field are key/value pairs corresponding to the [golang fields](#object-fields) on the performer/scene object. These fields are case-sensitive. 
+Within the `performer`/`scene`/`movie`/`gallery` field are key/value pairs corresponding to the [golang fields](/help/ScraperDevelopment.md#object-fields) on the performer/scene object. These fields are case-sensitive. 
 
 The values of these may be either a simple selector value, which tells the system where to get the value of the field from, or a more advanced configuration (see below). For example, for an xpath configuration:
 
@@ -319,10 +319,24 @@ The `common` field is used to configure selector fragments that can be reference
 common:
   $infoPiece: //div[@class="infoPiece"]/span
 performer:
-  Measurements: $infoPiece[text() = 'Measurements:']/../span[@class="smallInfo"]  
+  Measurements: $infoPiece[text() = 'Measurements:']/../span[@class="smallInfo"]
 ```
 
 The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="infoPiece"]/span`, resulting in: `//div[@class="infoPiece"]/span[text() = 'Measurements:']/../span[@class="smallInfo"]`.
+
+> **⚠️ Note:** Recursive common fragments are **not** supported.  
+Referencing a common fragment within another common fragment will cause an error. For example:
+```yaml
+common:
+  $info: //div[@class="info"]
+  # Referencing $info in $models will cause an error
+  $models: $info/a[@class="model"]
+scene:
+  Title: $info/h1
+  Performers:
+    Name: $models
+    URL: $models/@href
+```
 
 ### Post-processing options
 

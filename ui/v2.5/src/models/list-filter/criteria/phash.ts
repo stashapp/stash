@@ -1,5 +1,5 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { CriterionOption } from "./criterion";
+import { CriterionOption, StringCriterion } from "./criterion";
 
 export const PhashCriterionOption = new CriterionOption({
   messageID: "media_info.phash",
@@ -13,3 +13,9 @@ export const PhashCriterionOption = new CriterionOption({
     CriterionModifier.NotNull,
   ],
 });
+
+export class PhashCriterion extends StringCriterion {
+  constructor() {
+    super(PhashCriterionOption);
+  }
+}

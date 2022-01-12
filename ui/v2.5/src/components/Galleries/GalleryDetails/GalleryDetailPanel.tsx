@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FormattedDate } from "react-intl";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
@@ -15,6 +15,8 @@ interface IGalleryDetailProps {
 export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
   gallery,
 }) => {
+  const intl = useIntl();
+
   function renderDetails() {
     if (!gallery.details) return;
     return (
@@ -86,6 +88,14 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
           ) : (
             ""
           )}
+          <h6>
+            <FormattedMessage id="created_at" />:{" "}
+            {TextUtils.formatDateTime(intl, gallery.created_at)}{" "}
+          </h6>
+          <h6>
+            <FormattedMessage id="updated_at" />:{" "}
+            {TextUtils.formatDateTime(intl, gallery.updated_at)}{" "}
+          </h6>
         </div>
         {gallery.studio && (
           <div className="col-3 d-xl-none">

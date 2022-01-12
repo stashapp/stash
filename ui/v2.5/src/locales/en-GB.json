@@ -267,6 +267,10 @@
       "preview_generation": "Preview Generation",
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string used during scrape http requests",
+      "scrapers_path": {
+        "description": "Directory location of scraper configuration files",
+        "heading": "Scrapers Path"
+      },
       "scraping": "Scraping",
       "sqlite_location": "File location for the SQLite database (requires restart)",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
@@ -587,6 +591,8 @@
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
+      "force_transcodes": "Force Transcode generation",
+      "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_previews": "Animated Image Previews",
       "image_previews_tooltip": "Animated WebP previews, only required if Preview Type is set to Animated Image.",
       "interactive_heatmap_speed": "Generate heatmaps and speeds for interactive scenes",
@@ -688,6 +694,14 @@
   "gallery": "Gallery",
   "gallery_count": "Gallery Count",
   "gender": "Gender",
+  "gender_types": {
+    "MALE": "Male",
+    "FEMALE": "Female",
+    "TRANSGENDER_MALE": "Transgender Male",
+    "TRANSGENDER_FEMALE": "Transgender Female",
+    "INTERSEX": "Intersex",
+    "NON_BINARY": "Non-Binary"
+  },
   "hair_color": "Hair Colour",
   "hasMarkers": "Has Markers",
   "height": "Height",

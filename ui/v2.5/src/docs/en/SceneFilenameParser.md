@@ -1,6 +1,6 @@
 # Scene Filename Parser
 
-This tool parses the scene filenames in your library and allows setting the metadata from those filenames.
+[This tool](/sceneFilenameParser) parses the scene filenames in your library and allows setting the metadata from those filenames.
 
 ## Parser Options
 

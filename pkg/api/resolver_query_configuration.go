@@ -2,9 +2,12 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/utils"
 	"golang.org/x/text/collate"
 )
@@ -189,4 +192,39 @@ func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
 		DeleteFile:      &deleteFileDefault,
 		DeleteGenerated: &deleteGeneratedDefault,
 	}
+}
+
+func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input models.StashBoxInput) (*models.StashBoxValidationResult, error) {
+	client := stashbox.NewClient(models.StashBox{Endpoint: input.Endpoint, APIKey: input.APIKey}, r.txnManager)
+	user, err := client.GetUser(ctx)
+
+	valid := user != nil && user.Me != nil
+	var status string
+	if valid {
+		status = fmt.Sprintf("Successfully authenticated as %s", user.Me.Name)
+	} else {
+		switch {
+		case strings.Contains(strings.ToLower(err.Error()), "doctype"):
+			// Index file returned rather than graphql
+			status = "Invalid endpoint"
+		case strings.Contains(err.Error(), "request failed"):
+			status = "No response from server"
+		case strings.HasPrefix(err.Error(), "invalid character") ||
+			strings.HasPrefix(err.Error(), "illegal base64 data") ||
+			err.Error() == "unexpected end of JSON input" ||
+			err.Error() == "token contains an invalid number of segments":
+			status = "Malformed API key."
+		case err.Error() == "" || err.Error() == "signature is invalid":
+			status = "Invalid or expired API key."
+		default:
+			status = fmt.Sprintf("Unknown error: %s", err)
+		}
+	}
+
+	result := models.StashBoxValidationResult{
+		Valid:  valid,
+		Status: status,
+	}
+
+	return &result, nil
 }

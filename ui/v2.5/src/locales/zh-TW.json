@@ -80,6 +80,7 @@
     "select_folders": "選擇資料夾",
     "select_none": "清除選擇",
     "selective_auto_tag": "選擇性套用標籤",
+    "selective_clean": "選擇性清理",
     "selective_scan": "選擇性掃描",
     "set_as_default": "設為預設",
     "set_back_image": "設定背面圖…",
@@ -159,6 +160,7 @@
       "build_hash": "編譯版本雜湊值：",
       "build_time": "編譯時間：",
       "check_for_new_version": "檢查新版本",
+      "latest_version": "最新版本",
       "latest_version_build_hash": "最新版本的雜湊值：",
       "new_version_notice": "[新版本]",
       "stash_discord": "加入我們的 {url} 頻道",
@@ -167,12 +169,19 @@
       "stash_wiki": "Stash 的 {url} 頁面",
       "version": "版本"
     },
+    "application_paths": {
+      "heading": "應用程式路徑"
+    },
     "categories": {
       "about": "關於",
       "interface": "介面",
       "logs": "日誌",
+      "metadata_providers": "Metadata 來源",
       "plugins": "插件",
       "scraping": "爬蟲設定",
+      "security": "安全性",
+      "services": "服務",
+      "system": "系統",
       "tasks": "排程",
       "tools": "工具"
     },
@@ -195,6 +204,10 @@
         "api_key_desc": "外部系統的 API 金鑰，有設定用戶名/密碼時才需要。在生成 API 金鑰之前必須先設定用戶名。",
         "authentication": "驗證設定",
         "clear_api_key": "清除 API 金鑰",
+        "credentials": {
+          "description": "用以限制存取 stash 權限的帳戶資料。",
+          "heading": "帳戶資料"
+        },
         "generate_api_key": "生成 API 金鑰",
         "log_file": "日誌檔案",
         "log_file_desc": "輸出日誌記錄到的檔案路徑，留空以關閉日誌檔案記錄。需重啟。",
@@ -224,8 +237,6 @@
       "create_galleries_from_folders_label": "從包含圖片的資料夾建立圖庫",
       "db_path_head": "資料庫路徑",
       "directory_locations_to_your_content": "多媒體的檔案位置",
-      "exclude_image": "排除圖片",
-      "exclude_video": "排除影片",
       "excluded_image_gallery_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的圖片及圖庫檔案/路徑的正則表達式",
       "excluded_image_gallery_patterns_head": "圖片/圖庫排除規則",
       "excluded_video_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的影片檔案/路徑的正則表達式",
@@ -256,11 +267,20 @@
       "preview_generation": "預覽檔案生成",
       "scraper_user_agent": "爬蟲用戶代理名稱 (User Agent)",
       "scraper_user_agent_desc": "抓取 HTTP 資料時所用的用戶代理字串 (User-Agent)",
+      "scrapers_path": {
+        "description": "含有爬蟲設定檔的資料夾位置",
+        "heading": "爬蟲路徑"
+      },
       "scraping": "爬蟲設定",
       "sqlite_location": "SQLite 資料庫的位置（需重新啟動）",
       "video_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將被視為影片。",
       "video_ext_head": "影片副檔名",
       "video_head": "影片設定"
+    },
+    "library": {
+      "exclusions": "白名單",
+      "gallery_and_image_options": "圖庫及圖片選項",
+      "media_content_extensions": "多媒體檔案副檔名"
     },
     "logs": {
       "log_level": "日誌級別"
@@ -289,6 +309,9 @@
       "name": "名稱",
       "title": "Stash-box 端點"
     },
+    "system": {
+      "transcoding": "轉碼"
+    },
     "tasks": {
       "added_job_to_queue": "已將『{operation_name}』加入至工作排程",
       "auto_tag": {
@@ -301,19 +324,24 @@
       "backup_and_download": "執行資料庫備份，並下載其生成的檔案。",
       "backup_database": "將整個資料庫備份至與資料庫相同的目錄下，該匯出的名稱格式為 {filename_format}",
       "cleanup_desc": "檢查缺失的檔案，並將它們從資料庫中刪除。此動作具無法復原。",
+      "data_management": "資料管理",
       "defaults_set": "已設定預設值；以後按下「{action}」按鈕時將會使用這些設定。",
       "dont_include_file_extension_as_part_of_the_title": "不要在標題中附上檔案副檔名",
+      "empty_queue": "目前尚無任何運行中的排程。",
       "export_to_json": "將資料庫中的 Metadata 匯出為 JSON 檔。",
       "generate": {
         "generating_from_paths": "為以下路徑之短片生成檔案中",
         "generating_scenes": "為{num}個{scene}生成檔案中"
       },
       "generate_desc": "產生輔助圖片、預覽、影片檔、VTT 字幕等檔案。",
-      "generate_phashes_during_scan": "掃描時，順便產生 PHash（用於偵測重複的影片檔案及辨認短片）",
-      "generate_previews_during_scan": "掃描時，順便產生圖像預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
-      "generate_sprites_during_scan": "掃描時，順便產生時間軸預覽（用於短片中時間軸的預覽圖）",
-      "generate_thumbnails_during_scan": "掃描圖片時，順便產生縮圖。",
-      "generate_video_previews_during_scan": "掃描時，順便產生影片預覽（當滑鼠移至任一短片上時所播放的預覽短片）",
+      "generate_phashes_during_scan": "產生 PHash",
+      "generate_phashes_during_scan_tooltip": "可用於辨認短片或偵測重複的短片。",
+      "generate_previews_during_scan": "產生動態預覽圖",
+      "generate_previews_during_scan_tooltip": "產生 WebP 動圖作為預覽，僅適用於設置為『動圖』的預覽類型。",
+      "generate_sprites_during_scan": "產生時間軸預覽",
+      "generate_thumbnails_during_scan": "替圖片產生縮圖",
+      "generate_video_previews_during_scan": "產生影片預覽",
+      "generate_video_previews_during_scan_tooltip": "產生影片預覽，此預覽將於滑鼠移至影片上時自動播放",
       "generated_content": "生成的內容",
       "identify": {
         "and_create_missing": "及建立尚有欄位",
@@ -370,6 +398,7 @@
       "scene_tools": "短片工具"
     },
     "ui": {
+      "basic_settings": "一般設定",
       "custom_css": {
         "description": "如需套用，請重新整理頁面。",
         "heading": "自定義 CSS",
@@ -400,10 +429,11 @@
         "heading": "Funscript 偏移量 (毫秒)"
       },
       "handy_connection_key": {
-        "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。",
+        "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。設定此金鑰後，Stash 將可把當前短片中的對應資訊分享至 handyfeeling.com",
         "heading": "Handy 連線金鑰"
       },
       "images": {
+        "heading": "圖片",
         "options": {
           "write_image_thumbnails": {
             "description": "建立縮圖時，將檔案寫至磁碟中",
@@ -411,6 +441,7 @@
           }
         }
       },
+      "interactive_options": "互動性選項",
       "language": {
         "heading": "語言"
       },
@@ -558,16 +589,24 @@
     },
     "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
     "scene_gen": {
-      "image_previews": "圖像預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
-      "marker_image_previews": "章節預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
-      "marker_screenshots": "章節截圖（靜態 JPG 預覽，僅當預覽類型設置為『靜態』時才需要）",
-      "markers": "章節標記（於給定時間碼開始的 20 秒影片）",
+      "force_transcodes": "強制產生轉碼檔案",
+      "force_transcodes_tooltip": "預設情況下，只有無法正常於瀏覽器中播放的影片檔會被轉碼成可播放的格式。開啟此設定後，即使是可正常播放的影片檔，也會被視為需轉碼的檔案。",
+      "image_previews": "動圖預覽",
+      "image_previews_tooltip": "產生 WebP 動圖作為預覽，僅適用於設置為『動圖』的預覽類型。",
+      "interactive_heatmap_speed": "替可互動的短片產生熱圖 (heatmaps) 及速度",
+      "marker_image_previews": "章節動圖預覽",
+      "marker_image_previews_tooltip": "產生 WebP 動圖作為章節預覽，僅適用於設置為『動圖』的預覽類型。",
+      "marker_screenshots": "章節截圖",
+      "marker_screenshots_tooltip": "靜態 JPG 預覽，僅適用於設置為『靜態』的預覽類型。",
+      "markers": "章節預覽",
+      "markers_tooltip": "自標記的時間點算起長度20秒的短片預覽。",
       "overwrite": "覆蓋現有的生成檔案",
       "phash": "PHash（用於偵測重複的影片檔案及辨認短片）",
       "preview_exclude_end_time_desc": "從場景預覽中排除最後 x 秒。這可以是一個以秒為單位的值，也可以是整個場景持續時間的百分比（例如 2%）。",
       "preview_exclude_end_time_head": "排除結束時間",
       "preview_exclude_start_time_desc": "從場景預覽中排除前 x 秒。這可以是一個以秒為單位的值，也可以是整個場景持續時間的百分比（例如 2%）。",
       "preview_exclude_start_time_head": "排除開始時間",
+      "preview_generation_options": "預覽生成設定",
       "preview_options": "預覽選項",
       "preview_preset_desc": "預設值會影響預覽影像的大小、品質和編碼時間。“slow” 以下的預設值會隨著層級降低整體CP值，不推薦使用。",
       "preview_preset_head": "調整預設值 (Preset)",
@@ -575,9 +614,12 @@
       "preview_seg_count_head": "預覽影片段數",
       "preview_seg_duration_desc": "每個預覽片段的長度，以秒為單位。",
       "preview_seg_duration_head": "預覽片段長度",
-      "sprites": "時間軸預覽（用於短片中時間軸的預覽圖）",
-      "transcodes": "轉碼（將不支援的影片格式轉換成 MP4）",
-      "video_previews": "影片預覽（當滑鼠移至任一短片上時所播放的預覽短片）"
+      "sprites": "時間軸預覽",
+      "sprites_tooltip": "時間軸預覽（用於短片中時間軸的預覽圖）",
+      "transcodes": "轉碼",
+      "transcodes_tooltip": "將不支援的影片格式轉換成 MP4",
+      "video_previews": "影片預覽",
+      "video_previews_tooltip": "此預覽將於滑鼠移至影片上時自動播放"
     },
     "scenes_found": "已找到 {count} 個短片",
     "scrape_entity_query": "{entity_type}爬蟲搜尋",
@@ -649,7 +691,9 @@
   "galleries": "圖庫",
   "gallery": "圖庫",
   "gallery_count": "圖庫數量",
-  "gender": "性別",
+  "gender": {
+    "NON_BINARY": "非二元"
+  },
   "hair_color": "頭髮顏色",
   "hasMarkers": "含有章節標記",
   "height": "身高",
@@ -662,6 +706,7 @@
   "include_sub_tags": "包含子標籤",
   "instagram": "Instagram",
   "interactive": "互動性支援",
+  "interactive_speed": "互動速度",
   "isMissing": "缺失",
   "library": "收藏庫",
   "loading": {
@@ -675,6 +720,7 @@
     "checksum": "校驗值",
     "downloaded_from": "下載於",
     "hash": "雜湊值",
+    "interactive_speed": "互動速度",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "這齣戲裡面 {age} {years_old}"
@@ -849,6 +895,7 @@
   "up-dir": "往上一層",
   "updated_at": "更新於",
   "url": "連結",
+  "videos": "影片",
   "weight": "體重",
   "years_old": "歲"
 }
