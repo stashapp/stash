@@ -16,8 +16,7 @@ export const PerformerSubmitButton: React.FC<IPerformerOperationsProps> = ({
   const { data } = GQL.useConfigurationQuery();
   const boxes = data?.configuration?.general?.stashBoxes ?? [];
 
-  if (boxes.length === 0)
-    return null;
+  if (boxes.length === 0) return null;
 
   return (
     <>

@@ -860,6 +860,9 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 
 		var tags []*graphql.DraftEntityInput
 		sceneTags, err := r.Tag().FindBySceneID(scene.ID)
+		if err != nil {
+			return err
+		}
 		for _, tag := range sceneTags {
 			tags = append(tags, &graphql.DraftEntityInput{Name: tag.Name})
 		}
@@ -881,9 +884,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 	var id *string
 	var ret graphql.SubmitSceneDraftPayload
 	err := c.submitDraft(ctx, graphql.SubmitSceneDraftQuery, draft, image, &ret)
-	if &ret != nil {
-		id = ret.SubmitSceneDraft.ID
-	}
+	id = ret.SubmitSceneDraft.ID
 
 	return id, err
 }
@@ -960,9 +961,7 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	var id *string
 	var ret graphql.SubmitPerformerDraftPayload
 	err := c.submitDraft(ctx, graphql.SubmitPerformerDraftQuery, draft, image, &ret)
-	if &ret != nil {
-		id = ret.SubmitPerformerDraft.ID
-	}
+	id = ret.SubmitPerformerDraft.ID
 
 	return id, err
 }
@@ -985,19 +984,27 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	writer.WriteField("operations", string(requestBody[:]))
+	if err := writer.WriteField("operations", string(requestBody)); err != nil {
+		return err
+	}
 
 	if image != nil {
-		writer.WriteField("map", "{ \"0\": [\"variables.input.image\"] }")
+		if err := writer.WriteField("map", "{ \"0\": [\"variables.input.image\"] }"); err != nil {
+			return err
+		}
 		part, _ := writer.CreateFormFile("0", "draft")
-		io.Copy(part, image)
+		if _, err := io.Copy(part, image); err != nil {
+			return err
+		}
 	} else {
-		writer.WriteField("map", "{}")
+		if err := writer.WriteField("map", "{}"); err != nil {
+			return err
+		}
 	}
 
 	writer.Close()
 
-	req, _ := http.NewRequest("POST", c.box.Endpoint, body)
+	req, _ := http.NewRequestWithContext(ctx, "POST", c.box.Endpoint, body)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	req.Header.Set("ApiKey", c.box.APIKey)
 
