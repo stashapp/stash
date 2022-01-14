@@ -996,10 +996,8 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 		if _, err := io.Copy(part, image); err != nil {
 			return err
 		}
-	} else {
-		if err := writer.WriteField("map", "{}"); err != nil {
-			return err
-		}
+	} else if err := writer.WriteField("map", "{}"); err != nil {
+		return err
 	}
 
 	writer.Close()
