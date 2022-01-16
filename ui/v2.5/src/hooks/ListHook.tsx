@@ -526,6 +526,7 @@ const RenderList = <
           onAddCriterion={onAddCriterion}
           onCancel={onCancelAddCriterion}
           editingCriterion={editingCriterion}
+          existingCriterions={filter.criteria}
         />
       )}
       {newCriterion &&
