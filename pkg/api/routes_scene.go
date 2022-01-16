@@ -93,15 +93,53 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rs.streamTranscode(w, r, ffmpeg.CodecMKVAudio)
+	// rs.streamTranscode(w, r, ffmpeg.CodecMKVAudio)
+	ss := manager.SceneServer{
+		TXNManager: rs.txnManager,
+	}
+	ss.StreamSceneDirect(scene, w, r)
 }
 
 func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.CodecVP9)
+	// only allow webm streaming if the scene container is an mkv already
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	container := getSceneFileContainer(scene)
+	if container != ffmpeg.Webm {
+		w.WriteHeader(http.StatusBadRequest)
+		if _, err := w.Write([]byte("not an mkv file")); err != nil {
+			logger.Warnf("[stream] error writing to stream: %v", err)
+		}
+		return
+	}
+
+	// rs.streamTranscode(w, r, ffmpeg.CodecVP9)
+	ss := manager.SceneServer{
+		TXNManager: rs.txnManager,
+	}
+	ss.StreamSceneDirect(scene, w, r)
+
 }
 
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.CodecH264)
+	// only allow MP4 streaming if the scene container is an mkv already
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	container := getSceneFileContainer(scene)
+	if container != ffmpeg.Mp4 {
+		w.WriteHeader(http.StatusBadRequest)
+		if _, err := w.Write([]byte("not an mkv file")); err != nil {
+			logger.Warnf("[stream] error writing to stream: %v", err)
+		}
+		return
+	}
+
+	// rs.streamTranscode(w, r, ffmpeg.CodecH264)
+	ss := manager.SceneServer{
+		TXNManager: rs.txnManager,
+	}
+	ss.StreamSceneDirect(scene, w, r)
+
 }
 
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
