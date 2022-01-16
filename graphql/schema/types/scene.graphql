@@ -13,6 +13,7 @@ type ScenePathsType {
   screenshot: String # Resolver
   preview: String # Resolver
   stream: String # Resolver
+  stream_org: String # Resolver
   webp: String # Resolver
   vtt: String # Resolver
   chapters_vtt: String # Resolver

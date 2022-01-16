@@ -35,6 +35,7 @@ fragment SceneData on Scene {
     screenshot
     preview
     stream
+    stream_org
     webp
     vtt
     chapters_vtt
