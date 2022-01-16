@@ -107,7 +107,7 @@ func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
 	container := getSceneFileContainer(scene)
 	if container != ffmpeg.Webm {
 		w.WriteHeader(http.StatusBadRequest)
-		if _, err := w.Write([]byte("not an mkv file")); err != nil {
+		if _, err := w.Write([]byte("not an webm file")); err != nil {
 			logger.Warnf("[stream] error writing to stream: %v", err)
 		}
 		return
@@ -128,7 +128,7 @@ func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
 	container := getSceneFileContainer(scene)
 	if container != ffmpeg.Mp4 {
 		w.WriteHeader(http.StatusBadRequest)
-		if _, err := w.Write([]byte("not an mkv file")); err != nil {
+		if _, err := w.Write([]byte("not an mp4 file")); err != nil {
 			logger.Warnf("[stream] error writing to stream: %v", err)
 		}
 		return
