@@ -390,3 +390,8 @@ func MatchExtension(path string, extensions []string) bool {
 
 	return false
 }
+
+// return file extension
+func GetExt(path string) string {
+	return filepath.Ext(path)
+}

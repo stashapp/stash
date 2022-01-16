@@ -125,6 +125,13 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         value={props.scene.paths.stream}
         truncate
       />
+      <URLField
+        id="media_info.stream_org"
+        url={props.scene.paths.stream_org}
+        value={props.scene.paths.stream_org}
+        target="_self"
+        truncate
+      />
       {renderFunscript()}
       {renderInteractiveSpeed()}
       {renderFileSize()}

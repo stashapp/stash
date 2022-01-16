@@ -16,13 +16,10 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
 
   const { paths, path, title } = scene;
 
-  if (!paths || !paths.stream || (!isAndroid && !isAppleDevice))
-    return <span />;
-
-  const { stream } = paths;
+  const { stream, stream_org } = paths;
   const sceneTitle = title ?? TextUtils.fileNameFromPath(path);
 
-  let url;
+  let url, prompt;
   const streamURL = new URL(stream);
   if (isAndroid) {
     const scheme = streamURL.protocol.slice(0, -1);
@@ -31,6 +28,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     )};end`;
     streamURL.protocol = "intent";
     url = streamURL.toString();
+    prompt = "Open in Android's media player"
   } else if (isAppleDevice) {
     streamURL.host = "x-callback-url";
     streamURL.port = "";
@@ -38,17 +36,18 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     streamURL.search = `url=${encodeURIComponent(stream)}`;
     streamURL.protocol = "vlc-x-callback";
     url = streamURL.toString();
+    prompt = "Open in iOS media player"
+  } else {
+    url = stream_org;
+    prompt = "Drag this link to an external media player, e.g. VLC, MPV.\nIf you are using DeoVR, click the button directly." 
   }
 
   return (
-    <Button
-      className="minimal px-0 px-sm-2 pt-2"
-      variant="secondary"
-      title="Open in external player"
-    >
-      <a href={url}>
-        <Icon icon="external-link-alt" color="white" />
-      </a>
-    </Button>
+        <div className="btn-group btn" title="Click here if you're using Android/iOS/DeoVR/HereSphere.&#10;In Windows or MacOS, drag me to an external media player, e.g. VLC, MPV.">
+          <a href={url} target="_self">
+              <span><Icon icon="external-link-alt" color="white" /></span>
+              <span className="ml-2">Launch &#47; Drag Me</span>
+          </a>
+        </div>
   );
 };

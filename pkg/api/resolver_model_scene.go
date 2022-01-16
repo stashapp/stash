@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"path/filepath"
 	"time"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
@@ -98,11 +99,16 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
+	// Set streamOrgPath by extension.
+	streamOrgPath := ""
+	ext := filepath.Ext(obj.Path)
+	streamOrgPath = builder.GetStreamOrgURL(ext)
 
 	return &models.ScenePathsType{
 		Screenshot:         &screenshotPath,
 		Preview:            &previewPath,
 		Stream:             &streamPath,
+		StreamOrg:          &streamOrgPath,
 		Webp:               &webpPath,
 		Vtt:                &vttPath,
 		ChaptersVtt:        &chaptersVttPath,
