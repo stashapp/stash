@@ -12,14 +12,13 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
 }) => {
   const isAndroid = /(android)/i.test(navigator.userAgent);
   const isAppleDevice = /(ipod|iphone|ipad)/i.test(navigator.userAgent);
-
-  const { paths, path, title } = scene;
-
-  const { stream, stream_org } = paths;
-  const sceneTitle = title ?? TextUtils.fileNameFromPath(path);
+  const scenePath = scene.path;
+  const sceneTitle = scene.title ?? TextUtils.fileNameFromPath(scenePath);
+  const sceneStream = scene.paths.stream ?? "";
+  const sceneStream_org = scene.paths.stream_org ?? "";
 
   let url, prompt;
-  const streamURL = new URL(stream);
+  const streamURL = new URL(sceneStream);
   if (isAndroid) {
     const scheme = streamURL.protocol.slice(0, -1);
     streamURL.hash = `Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;S.title=${encodeURI(
@@ -32,12 +31,12 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     streamURL.host = "x-callback-url";
     streamURL.port = "";
     streamURL.pathname = "stream";
-    streamURL.search = `url=${encodeURIComponent(stream)}`;
+    streamURL.search = `url=${encodeURIComponent(sceneStream)}`;
     streamURL.protocol = "vlc-x-callback";
     url = streamURL.toString();
     prompt = "Click here to open the video in iOS's default media player";
   } else {
-    url = stream_org;
+    url = sceneStream_org;
     prompt =
       "Click here if you're using Android/iOS/DeoVR/HereSphere.\n" +
       "In Windows or MacOS, drag me to an external media player, e.g. VLC, MPV.";
