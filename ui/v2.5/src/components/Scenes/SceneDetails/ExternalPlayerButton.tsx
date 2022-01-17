@@ -1,5 +1,4 @@
 import React from "react";
-// import { Button } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import { SceneDataFragment } from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
@@ -28,7 +27,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     )};end`;
     streamURL.protocol = "intent";
     url = streamURL.toString();
-    prompt = "Click here to open the video in Android's default media player"
+    prompt = "Click here to open the video in Android's default media player";
   } else if (isAppleDevice) {
     streamURL.host = "x-callback-url";
     streamURL.port = "";
@@ -36,18 +35,22 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     streamURL.search = `url=${encodeURIComponent(stream)}`;
     streamURL.protocol = "vlc-x-callback";
     url = streamURL.toString();
-    prompt = "Click here to open the video in iOS's default media player"
+    prompt = "Click here to open the video in iOS's default media player";
   } else {
     url = stream_org;
-    prompt = "Click here if you're using Android/iOS/DeoVR/HereSphere.\nIn Windows or MacOS, drag me to an external media player, e.g. VLC, MPV."
+    prompt =
+      "Click here if you're using Android/iOS/DeoVR/HereSphere.\n" +
+      "In Windows or MacOS, drag me to an external media player, e.g. VLC, MPV.";
   }
 
   return (
-        <div className="btn-group btn" title={prompt}>
-          <a href={url} target="_self">
-              <span><Icon icon="external-link-alt" color="white" /></span>
-              <span className="ml-2">Launch &#47; Drag Me</span>
-          </a>
-        </div>
+    <div className="btn-group btn" title={prompt}>
+      <a href={url} target="_self">
+        <span>
+          <Icon icon="external-link-alt" color="white" />
+        </span>
+        <span className="ml-2">Launch / Drag Me</span>
+      </a>
+    </div>
   );
 };
