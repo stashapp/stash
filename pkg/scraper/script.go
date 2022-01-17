@@ -202,6 +202,12 @@ func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sc
 
 	err = s.runScraperScript(string(inString), &ret)
 
+	if err == nil {
+		if !isValidScrapedScene(&ret) {
+			return nil, nil
+		}
+	}
+
 	return &ret, err
 }
 

@@ -68,7 +68,7 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) 
 		}
 
 		// if results were found then return
-		if isValidScrape(scraped) {
+		if scraped != nil {
 			return &scrapeResult{
 				result: scraped,
 				source: source,
@@ -272,34 +272,4 @@ func shouldSetSingleValueField(strategy *models.IdentifyFieldOptionsInput, hasEx
 	}
 
 	return !hasExistingValue || fs == models.IdentifyFieldStrategyOverwrite
-}
-
-// isValidScrape checks if a scraped scene contains at least one valid element
-func isValidScrape(s *models.ScrapedScene) bool {
-	if s != nil {
-		switch {
-		case s.Title != nil && *s.Title != "":
-			return true
-		case s.Date != nil && *s.Date != "":
-			return true
-		case s.Details != nil && *s.Details != "":
-			return true
-		case len(s.Fingerprints) > 0:
-			return true
-		case s.Image != nil && *s.Image != "":
-			return true
-		case len(s.Movies) > 0:
-			return true
-		case len(s.Performers) > 0:
-			return true
-		case s.Studio != nil:
-			return true
-		case len(s.Tags) > 0:
-			return true
-		default:
-			return false
-		}
-
-	}
-	return false
 }

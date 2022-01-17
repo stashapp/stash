@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/identify"
@@ -237,6 +238,10 @@ func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*models.Sc
 	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, models.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
+	}
+
+	if reflect.ValueOf(content).IsZero() {
+		return nil, errors.New("no scraped data for scene")
 	}
 
 	if scene, ok := content.(models.ScrapedScene); ok {

@@ -8,14 +8,20 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/utils"
+
 	"github.com/stretchr/testify/mock"
 )
 
 type mockSceneScraper struct {
+	errIDs  []int
 	results map[int]*models.ScrapedScene
 }
 
 func (s mockSceneScraper) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
+	if utils.IntInclude(s.errIDs, sceneID) {
+		return nil, errors.New("scrape scene error")
+	}
 	return s.results[sceneID], nil
 }
 
@@ -27,7 +33,9 @@ func (s mockHookExecutor) ExecuteSceneUpdatePostHooks(ctx context.Context, input
 
 func TestSceneIdentifier_Identify(t *testing.T) {
 	const (
-		missingID = iota
+		errID1 = iota
+		errID2
+		missingID
 		found1ID
 		found2ID
 		errUpdateID
@@ -39,6 +47,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	sources := []ScraperSource{
 		{
 			Scraper: mockSceneScraper{
+				errIDs: []int{errID1},
 				results: map[int]*models.ScrapedScene{
 					found1ID: {
 						Title: &scrapedTitle,
@@ -48,6 +57,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		},
 		{
 			Scraper: mockSceneScraper{
+				errIDs: []int{errID2},
 				results: map[int]*models.ScrapedScene{
 					found2ID: {
 						Title: &scrapedTitle,
@@ -73,6 +83,16 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		sceneID int
 		wantErr bool
 	}{
+		{
+			"unable to identify", // scraping errors are skipped -> sources exhausted -> not identified, no identify error
+			errID1,
+			false,
+		},
+		{
+			"unable to identify", // scraping errors are skipped -> sources exhausted -> not identified, no identify error
+			errID2,
+			false,
+		},
 		{
 			"found in first scraper",
 			found1ID,

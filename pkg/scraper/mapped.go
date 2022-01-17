@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -776,7 +777,7 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 
 		// now apply the tags
 		if performerTagsMap != nil {
-			logger.Debug(`Processing performer tags:`)
+			logger.Debug("Processing performer tags:")
 			tagResults := performerTagsMap.process(ctx, q, s.Common)
 
 			for _, p := range tagResults {
@@ -830,7 +831,7 @@ func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mapped
 
 	// now apply the performers and tags
 	if scenePerformersMap.mappedConfig != nil {
-		logger.Debug(`Processing scene performers:`)
+		logger.Debug("Processing scene performers:")
 		performerResults := scenePerformersMap.process(ctx, q, s.Common)
 
 		for _, p := range performerResults {
@@ -848,7 +849,7 @@ func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mapped
 	}
 
 	if sceneTagsMap != nil {
-		logger.Debug(`Processing scene tags:`)
+		logger.Debug("Processing scene tags:")
 		tagResults := sceneTagsMap.process(ctx, q, s.Common)
 
 		for _, p := range tagResults {
@@ -859,7 +860,7 @@ func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mapped
 	}
 
 	if sceneStudioMap != nil {
-		logger.Debug(`Processing scene studio:`)
+		logger.Debug("Processing scene studio:")
 		studioResults := sceneStudioMap.process(ctx, q, s.Common)
 
 		if len(studioResults) > 0 {
@@ -870,7 +871,7 @@ func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mapped
 	}
 
 	if sceneMoviesMap != nil {
-		logger.Debug(`Processing scene movies:`)
+		logger.Debug("Processing scene movies:")
 		movieResults := sceneMoviesMap.process(ctx, q, s.Common)
 
 		for _, p := range movieResults {
@@ -892,7 +893,7 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*mode
 		return nil, nil
 	}
 
-	logger.Debug(`Processing scenes:`)
+	logger.Debug("Processing scenes:")
 	results := sceneMap.process(ctx, q, s.Common)
 	for _, r := range results {
 		logger.Debug(`Processing scene:`)
@@ -911,11 +912,16 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.
 		return nil, nil
 	}
 
-	logger.Debug(`Processing scene:`)
+	logger.Debug("Processing scene:")
 	results := sceneMap.process(ctx, q, s.Common)
 	if len(results) > 0 {
 		ss := s.processScene(ctx, q, results[0])
 		ret = *ss
+	}
+	logger.Debug("Validating scraped scene:")
+	if !isValidScrapedScene(&ret) {
+		logger.Warnf("Invalid scraped scene. No data detected")
+		return nil, nil
 	}
 
 	return &ret, nil
@@ -934,14 +940,14 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 	galleryTagsMap := galleryScraperConfig.Tags
 	galleryStudioMap := galleryScraperConfig.Studio
 
-	logger.Debug(`Processing gallery:`)
+	logger.Debug("Processing gallery:")
 	results := galleryMap.process(ctx, q, s.Common)
 	if len(results) > 0 {
 		results[0].apply(&ret)
 
 		// now apply the performers and tags
 		if galleryPerformersMap != nil {
-			logger.Debug(`Processing gallery performers:`)
+			logger.Debug("Processing gallery performers:")
 			performerResults := galleryPerformersMap.process(ctx, q, s.Common)
 
 			for _, p := range performerResults {
@@ -952,7 +958,7 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 		}
 
 		if galleryTagsMap != nil {
-			logger.Debug(`Processing gallery tags:`)
+			logger.Debug("Processing gallery tags:")
 			tagResults := galleryTagsMap.process(ctx, q, s.Common)
 
 			for _, p := range tagResults {
@@ -963,7 +969,7 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 		}
 
 		if galleryStudioMap != nil {
-			logger.Debug(`Processing gallery studio:`)
+			logger.Debug("Processing gallery studio:")
 			studioResults := galleryStudioMap.process(ctx, q, s.Common)
 
 			if len(studioResults) > 0 {
@@ -993,7 +999,7 @@ func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.
 		results[0].apply(&ret)
 
 		if movieStudioMap != nil {
-			logger.Debug(`Processing movie studio:`)
+			logger.Debug("Processing movie studio:")
 			studioResults := movieStudioMap.process(ctx, q, s.Common)
 
 			if len(studioResults) > 0 {
@@ -1005,4 +1011,34 @@ func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.
 	}
 
 	return &ret, nil
+}
+
+// isValidScrapedScene checks if a scraped scene contains at least one valid element
+func isValidScrapedScene(s *models.ScrapedScene) bool {
+	if s != nil {
+		switch {
+		case s.Title != nil && *s.Title != "":
+			return true
+		case s.Date != nil && *s.Date != "":
+			return true
+		case s.Details != nil && *s.Details != "":
+			return true
+		case len(s.Fingerprints) > 0:
+			return true
+		case s.Image != nil && *s.Image != "":
+			return true
+		case len(s.Movies) > 0:
+			return true
+		case len(s.Performers) > 0:
+			return true
+		case s.Studio != nil:
+			return true
+		case len(s.Tags) > 0:
+			return true
+		default:
+			return false
+		}
+
+	}
+	return false
 }
