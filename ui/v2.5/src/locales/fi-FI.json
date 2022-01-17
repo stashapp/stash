@@ -661,6 +661,15 @@
   "galleries": "Galleriat",
   "gallery": "Galleria",
   "gallery_count": "Gallerioiden määrä",
+  "gender": "Sukupuoli",
+  "gender_types": {
+    "FEMALE": "Nainen",
+    "INTERSEX": "Intersukupuolinen",
+    "MALE": "Mies",
+    "NON_BINARY": "Ei-Binäärinen",
+    "TRANSGENDER_FEMALE": "Transnainen",
+    "TRANSGENDER_MALE": "Transmies"
+  },
   "hair_color": "Hiusten väri",
   "hasMarkers": "On merkki",
   "height": "Pituus",
