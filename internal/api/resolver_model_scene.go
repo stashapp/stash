@@ -94,6 +94,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt.Timestamp)
 	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL()
+	streamOrgPath := builder.GetStreamOrgURL(filepath.Ext(obj.Path))
 	webpPath := builder.GetStreamPreviewImageURL()
 	vttPath := builder.GetSpriteVTTURL()
 	spritePath := builder.GetSpriteURL()
@@ -101,10 +102,6 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	funscriptPath := builder.GetFunscriptURL()
 	captionBasePath := builder.GetCaptionURL()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
-	// Set streamOrgPath by extension.
-	streamOrgPath := ""
-	ext := filepath.Ext(obj.Path)
-	streamOrgPath = builder.GetStreamOrgURL(ext)
 
 	return &models.ScenePathsType{
 		Screenshot:         &screenshotPath,

@@ -43,7 +43,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/webp", rs.Webp)
 		r.Get("/vtt/chapter", rs.ChapterVtt)
 		r.Get("/funscript", rs.Funscript)
-		r.Get("/steam.org.funscript", rs.Funscript)
+		r.Get("/stream.org.funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
 		r.Get("/caption", rs.CaptionLang)
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
