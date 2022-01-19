@@ -61,7 +61,6 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
     loading: streamableLoading,
   } = useSceneStreams(scene.id);
 
-  const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene.id);
   const [decrementO] = useSceneDecrementO(scene.id);
   const [resetO] = useSceneResetO(scene.id);
@@ -163,34 +162,25 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
 
   const onIncrementClick = async () => {
     try {
-      setOLoading(true);
       await incrementO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
   const onDecrementClick = async () => {
     try {
-      setOLoading(true);
       await decrementO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
   const onResetClick = async () => {
     try {
-      setOLoading(true);
       await resetO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
@@ -467,7 +457,6 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
             </Nav.Item>
             <Nav.Item className="ml-auto">
               <OCounterButton
-                loading={oLoading}
                 value={scene.o_counter || 0}
                 onIncrement={onIncrementClick}
                 onDecrement={onDecrementClick}
