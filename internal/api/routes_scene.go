@@ -31,19 +31,17 @@ func (rs sceneRoutes) Routes() chi.Router {
 		// streaming endpoints
 		r.Get("/stream", rs.StreamDirect)
 		r.Get("/stream.mkv", rs.StreamMKV)
-		r.Get("/stream.org.mkv", rs.StreamOrgMKV)
+		r.Get("/stream.org.funscript", rs.Funscript)
+		r.Get("/stream.org.*", rs.StreamDirect)
 		r.Get("/stream.webm", rs.StreamWebM)
-		r.Get("/stream.org.webm", rs.StreamOrgWebM)
 		r.Get("/stream.m3u8", rs.StreamHLS)
 		r.Get("/stream.ts", rs.StreamTS)
 		r.Get("/stream.mp4", rs.StreamMp4)
-		r.Get("/stream.org.mp4", rs.StreamOrgMp4)
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
 		r.Get("/vtt/chapter", rs.ChapterVtt)
 		r.Get("/funscript", rs.Funscript)
-		r.Get("/stream.org.funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
 		r.Get("/caption", rs.CaptionLang)
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
@@ -85,67 +83,12 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 	rs.streamTranscode(w, r, ffmpeg.CodecMKVAudio)
 }
 
-func (rs sceneRoutes) StreamOrgMKV(w http.ResponseWriter, r *http.Request) {
-	// only allow mkv streaming if the scene container is an mkv already
-	scene := r.Context().Value(sceneKey).(*models.Scene)
-
-	container := getSceneFileContainer(scene)
-	if container != ffmpeg.Matroska {
-		w.WriteHeader(http.StatusBadRequest)
-		if _, err := w.Write([]byte("not a mkv file")); err != nil {
-			logger.Warnf("[stream] error serving stream: %v", err)
-		}
-		return
-	}
-	// Instead of transcoding, direct serve the file.
-	ss := manager.SceneServer{
-		TXNManager: rs.txnManager,
-	}
-	ss.StreamSceneDirect(scene, w, r)
-}
-
 func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
 	rs.streamTranscode(w, r, ffmpeg.CodecVP9)
 }
 
-func (rs sceneRoutes) StreamOrgWebM(w http.ResponseWriter, r *http.Request) {
-	// only allow webm streaming if the scene container is webm already
-	scene := r.Context().Value(sceneKey).(*models.Scene)
-
-	container := getSceneFileContainer(scene)
-	if container != ffmpeg.Webm {
-		w.WriteHeader(http.StatusBadRequest)
-		if _, err := w.Write([]byte("not a webm file")); err != nil {
-			logger.Warnf("[stream] error serving stream: %v", err)
-		}
-		return
-	}
-	ss := manager.SceneServer{
-		TXNManager: rs.txnManager,
-	}
-	ss.StreamSceneDirect(scene, w, r)
-}
-
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
 	rs.streamTranscode(w, r, ffmpeg.CodecH264)
-}
-
-func (rs sceneRoutes) StreamOrgMp4(w http.ResponseWriter, r *http.Request) {
-	// only allow mp4 streaming if the scene container is mp4 already
-	scene := r.Context().Value(sceneKey).(*models.Scene)
-
-	container := getSceneFileContainer(scene)
-	if container != ffmpeg.Mp4 {
-		w.WriteHeader(http.StatusBadRequest)
-		if _, err := w.Write([]byte("not a mp4 file")); err != nil {
-			logger.Warnf("[stream] error serving stream: %v", err)
-		}
-		return
-	}
-	ss := manager.SceneServer{
-		TXNManager: rs.txnManager,
-	}
-	ss.StreamSceneDirect(scene, w, r)
 }
 
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
