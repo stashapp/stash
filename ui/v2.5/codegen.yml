@@ -11,4 +11,4 @@ generates:
       - typescript-operations
       - typescript-react-apollo
     config:
-            withRefetchFn: true
+      withRefetchFn: true

@@ -19,6 +19,7 @@ The output of a Javascript plugin is derived from the evaluated value of the scr
 There are a number of ways to return the plugin output:
 
 ### Example #1
+
 ```
 (function() {
     return {
@@ -28,6 +29,7 @@ There are a number of ways to return the plugin output:
 ```
 
 ### Example #2
+
 ```
 function main() {
     return {
@@ -39,6 +41,7 @@ main();
 ```
 
 ### Example #3
+
 ```
 var output = {
     Output: "ok"
@@ -76,7 +79,8 @@ For embedded plugins, the `exec` field is a list with the first element being th
 ## interface
 
 For embedded plugins, the `interface` field must be set to one of the following values:
-* `js`
+
+- `js`
 
 # Javascript API
 
@@ -84,21 +88,21 @@ For embedded plugins, the `interface` field must be set to one of the following 
 
 Stash provides the following API for logging in Javascript plugins:
 
-| Method | Description |
-|--------|-------------|
-| `log.Trace(<string>)` | Log with the `trace` log level. |
-| `log.Debug(<string>)` | Log with the `debug` log level. |
-| `log.Info(<string>)` | Log with the `info` log level. |
-| `log.Warn(<string>)` | Log with the `warn` log level. |
-| `log.Error(<string>)` | Log with the `error` log level. |
+| Method                                  | Description                                                                                        |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `log.Trace(<string>)`                   | Log with the `trace` log level.                                                                    |
+| `log.Debug(<string>)`                   | Log with the `debug` log level.                                                                    |
+| `log.Info(<string>)`                    | Log with the `info` log level.                                                                     |
+| `log.Warn(<string>)`                    | Log with the `warn` log level.                                                                     |
+| `log.Error(<string>)`                   | Log with the `error` log level.                                                                    |
 | `log.Progress(<float between 0 and 1>)` | Sets the progress of the plugin task, as a float, where `0` represents 0% and `1` represents 100%. |
 
 ## GQL
 
 Stash provides the following API for communicating with stash using the graphql interface:
 
-| Method | Description |
-|--------|-------------|
+| Method                                                | Description                                                                                                       |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `gql.Do(<query/mutation string>, <variables object>)` | Executes a graphql query/mutation on the stash server. Returns an object in the same way as a graphql query does. |
 
 ### Example
@@ -126,6 +130,6 @@ log.Info("tag id = " + result.tagCreate.id);
 
 Stash provides the following API for utility functions:
 
-| Method | Description |
-|--------|-------------|
+| Method                       | Description                                             |
+| ---------------------------- | ------------------------------------------------------- |
 | `util.Sleep(<milliseconds>)` | Suspends the current thread for the specified duration. |

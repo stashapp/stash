@@ -45,6 +45,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   } else {
     url = sceneStream_org;
     prompt =
+      "To play the scene in external players:\n" +
       "Click here if you're using Android/iOS/DeoVR/HereSphere.\n" +
       "In Windows or MacOS, drag me to an external media player, e.g. VLC, MPV.";
   }

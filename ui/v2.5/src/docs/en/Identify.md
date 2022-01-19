@@ -10,22 +10,22 @@ For each Scene, the Identify task iterates through the scraper sources, in the o
 
 The following options can be set:
 
-| Option | Description |
-|--------|-------------|
-| Include male performers | If false, then male performers will not be created or set on scenes. |
-| Set cover images | If false, then scene cover images will not be modified. |
-| Set organised flag | If true, the organised flag is set to true when a scene is organised. |
+| Option                  | Description                                                           |
+| ----------------------- | --------------------------------------------------------------------- |
+| Include male performers | If false, then male performers will not be created or set on scenes.  |
+| Set cover images        | If false, then scene cover images will not be modified.               |
+| Set organised flag      | If true, the organised flag is set to true when a scene is organised. |
 
 Field specific options may be set as well. Each field may have a Strategy. The behaviour for each strategy value is as follows:
 
-| Strategy | Description |
-|----------|-------------|
-| Ignore | Not set. |
-| Overwrite | Overwrite existing value. |
-| Merge (*default*) | For multi-value fields, adds to existing values. For single-value fields, only sets if not already set. |
+| Strategy          | Description                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------- |
+| Ignore            | Not set.                                                                                                |
+| Overwrite         | Overwrite existing value.                                                                               |
+| Merge (_default_) | For multi-value fields, adds to existing values. For single-value fields, only sets if not already set. |
 
 For Studio, Performers and Tags, an option is also available to Create Missing objects. This is false by default. When true, if a Studio/Performer/Tag is included during the identification process and does not exist in the system, then it will be created.
 
-Default Options are applied to all sources unless overridden in specific source options. 
+Default Options are applied to all sources unless overridden in specific source options.
 
 The result of the identification process for each scene is output to the log.

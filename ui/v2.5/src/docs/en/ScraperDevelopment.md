@@ -1,4 +1,4 @@
-# Contributing Scrapers 
+# Contributing Scrapers
 
 Scrapers can be contributed to the community by creating a PR in [this repository](https://github.com/stashapp/CommunityScrapers/pulls).
 
@@ -35,20 +35,19 @@ A scraper configuration in any of the top-level fields must at least have an `ac
 
 The scraping types and their required fields are outlined in the following table:
 
-| Behavior | Required configuration |
-|-----------|------------------------|
+| Behavior                                                      | Required configuration                                            |
+| ------------------------------------------------------------- | ----------------------------------------------------------------- |
 | Scraper in `Scrape...` dropdown button in Performer Edit page | Valid `performerByName` and `performerByFragment` configurations. |
-| Scrape performer from URL | Valid `performerByURL` configuration with matching URL. |
-| Scraper in query dropdown button in Scene Edit page | Valid `sceneByName` and `sceneByQueryFragment` configurations. |
-| Scraper in `Scrape...` dropdown button in Scene Edit page | Valid `sceneByFragment` configuration. |
-| Scrape scene from URL | Valid `sceneByURL` configuration with matching URL. |
-| Scrape movie from URL | Valid `movieByURL` configuration with matching URL. |
-| Scraper in `Scrape...` dropdown button in Gallery Edit page | Valid `galleryByFragment` configuration. |
-| Scrape gallery from URL | Valid `galleryByURL` configuration with matching URL. |
+| Scrape performer from URL                                     | Valid `performerByURL` configuration with matching URL.           |
+| Scraper in query dropdown button in Scene Edit page           | Valid `sceneByName` and `sceneByQueryFragment` configurations.    |
+| Scraper in `Scrape...` dropdown button in Scene Edit page     | Valid `sceneByFragment` configuration.                            |
+| Scrape scene from URL                                         | Valid `sceneByURL` configuration with matching URL.               |
+| Scrape movie from URL                                         | Valid `movieByURL` configuration with matching URL.               |
+| Scraper in `Scrape...` dropdown button in Gallery Edit page   | Valid `galleryByFragment` configuration.                          |
+| Scrape gallery from URL                                       | Valid `galleryByURL` configuration with matching URL.             |
 
-URL-based scraping accepts multiple scrape configurations, and each configuration requires a `url` field. stash iterates through these configurations, attempting to match the entered URL against the `url` fields in the configuration. It executes the first scraping configuration where the entered URL contains the value of the `url` field. 
+URL-based scraping accepts multiple scrape configurations, and each configuration requires a `url` field. stash iterates through these configurations, attempting to match the entered URL against the `url` fields in the configuration. It executes the first scraping configuration where the entered URL contains the value of the `url` field.
 
-    
 ## Actions
 
 ### Script
@@ -70,22 +69,22 @@ Stash sends data to the script process's `stdin` stream and expects the output t
 
 The script is sent input and expects output based on the scraping type, as detailed in the following table:
 
-| Scrape type | Input | Output |
-|-------------|-------|--------|
-| `performerByName` | `{"name": "<performer query string>"}` | Array of JSON-encoded performer fragments (including at least `name`) |
-| `performerByFragment` | JSON-encoded performer fragment | JSON-encoded performer fragment |
-| `performerByURL` | `{"url": "<url>"}` | JSON-encoded performer fragment |
-| `sceneByName` | `{"name": "<scene query string>"}` | Array of JSON-encoded scene fragments |
-| `sceneByQueryFragment`, `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
-| `sceneByURL` | `{"url": "<url>"}` | JSON-encoded scene fragment |
-| `movieByURL` | `{"url": "<url>"}` | JSON-encoded movie fragment |
-| `galleryByFragment` | JSON-encoded gallery fragment | JSON-encoded gallery fragment |
-| `galleryByURL` | `{"url": "<url>"}` | JSON-encoded gallery fragment |
+| Scrape type                               | Input                                  | Output                                                                |
+| ----------------------------------------- | -------------------------------------- | --------------------------------------------------------------------- |
+| `performerByName`                         | `{"name": "<performer query string>"}` | Array of JSON-encoded performer fragments (including at least `name`) |
+| `performerByFragment`                     | JSON-encoded performer fragment        | JSON-encoded performer fragment                                       |
+| `performerByURL`                          | `{"url": "<url>"}`                     | JSON-encoded performer fragment                                       |
+| `sceneByName`                             | `{"name": "<scene query string>"}`     | Array of JSON-encoded scene fragments                                 |
+| `sceneByQueryFragment`, `sceneByFragment` | JSON-encoded scene fragment            | JSON-encoded scene fragment                                           |
+| `sceneByURL`                              | `{"url": "<url>"}`                     | JSON-encoded scene fragment                                           |
+| `movieByURL`                              | `{"url": "<url>"}`                     | JSON-encoded movie fragment                                           |
+| `galleryByFragment`                       | JSON-encoded gallery fragment          | JSON-encoded gallery fragment                                         |
+| `galleryByURL`                            | `{"url": "<url>"}`                     | JSON-encoded gallery fragment                                         |
 
 For `performerByName`, only `name` is required in the returned performer fragments. One entire object is sent back to `performerByFragment` to scrape a specific performer, so the other fields may be included to assist in scraping a performer. For example, the `url` field may be filled in for the specific performer page, then `performerByFragment` can extract by using its value.
-  
+
 Python example of a performer Scraper:
-  
+
 ```python
 import json
 import sys
@@ -101,13 +100,13 @@ def searchPerformer(name):
 
     # fill in the output
     ret = []
-    
-    # example shown for a single found performer 
+
+    # example shown for a single found performer
     p = {}
     p['name'] = "some name"
     p['url'] = "performer url"
     ret.append(p)
-    
+
     return ret
 
 def scrapePerformer(input):
@@ -122,7 +121,7 @@ def debugPrint(t):
 def scrapePerformerURL(url):
     debugPrint("Reading url...")
     debugPrint("Parsing html...")
-    
+
     # parse html
 
     # fill in performer details - single object
@@ -135,7 +134,7 @@ def scrapePerformerURL(url):
 
     return ret
 
-# read the input 
+# read the input
 i = readJSONInput()
 
 if sys.argv[1] == "query":
@@ -157,15 +156,16 @@ This action requires that the top-level `xPathScrapers` configuration is populat
 
 ```yaml
 sceneByURL:
-- action: scrapeXPath
-  url: 
-    - pornhub.com/view_video.php
-  scraper: sceneScraper
+  - action: scrapeXPath
+    url:
+      - pornhub.com/view_video.php
+    scraper: sceneScraper
 ```
 
 The above configuration requires that `sceneScraper` exists in the `xPathScrapers` configuration.
 
 XPath scraping configurations specify the mapping between object fields and an xpath selector. The xpath scraper scrapes the applicable URL and uses xpath to populate the object fields.
+
 >
 
 ### scrapeJson
@@ -173,7 +173,6 @@ XPath scraping configurations specify the mapping between object fields and an x
 This action works in the same way as `scrapeXPath`, but uses a mapped json configuration to parse. It uses the top-level `jsonScrapers` configuration. This action is **not valid** for `performerByFragment`.
 
 JSON scraping configurations specify the mapping between object fields and a GJSON selector. The JSON scraper scrapes the applicable URL and uses [GJSON](https://github.com/tidwall/gjson/blob/master/SYNTAX.md) to parse the returned JSON object and populate the object fields.
-
 
 ### scrapeXPath and scrapeJson use with `performerByName`
 
@@ -187,7 +186,7 @@ performerByName:
   scraper: performerSearch
 performerByURL:
   - action: scrapeXPath
-    url: 
+    url:
       - boobpedia.com/boobs/
     scraper: performerScraper
 xPathScrapers:
@@ -202,11 +201,12 @@ xPathScrapers:
 ### scrapeXPath and scrapeJson use with `sceneByFragment` and `sceneByQueryFragment`
 
 For `sceneByFragment` and `sceneByQueryFragment`, the `queryURL` field must also be present. This field is used to build a query URL for scenes. For `sceneByFragment`, the `queryURL` field supports the following placeholder fields:
-* `{checksum}` - the MD5 checksum of the scene
-* `{oshash}` - the oshash of the scene
-* `{filename}` - the base filename of the scene
-* `{title}` - the title of the scene
-* `{url}` - the url of the scene
+
+- `{checksum}` - the MD5 checksum of the scene
+- `{oshash}` - the oshash of the scene
+- `{filename}` - the base filename of the scene
+- `{title}` - the title of the scene
+- `{url}` - the url of the scene
 
 These placeholder field values may be manipulated with regex replacements by adding a `queryURLReplace` section, containing a map of placeholder field to regex configuration which uses the same format as the `replace` post-process action covered below.
 
@@ -228,7 +228,8 @@ The above configuration would scrape from the value of `queryURL`, replacing `{f
 ### scrapeXPath and scrapeJson use with `<scene|performer|gallery|movie>ByURL`
 
 For `sceneByURL`, `performerByURL`, `galleryByURL` the `queryURL` can also be present if we want to use `queryURLReplace`. The functionality is the same as `sceneByFragment`, the only placeholder field available though is the `url`:
-* `{url}` - the url of the scene/performer/gallery
+
+- `{url}` - the url of the scene/performer/gallery
 
 ```yaml
 sceneByURL:
@@ -262,18 +263,18 @@ sceneByFragment:
 stashServer:
   url: http://stashserver.com:9999
 ```
-  
+
 ## Xpath and JSON scrapers configuration
 
-The top-level `xPathScrapers` field contains xpath scraping configurations, freely named. These are referenced in the `scraper` field for `scrapeXPath` scrapers. 
+The top-level `xPathScrapers` field contains xpath scraping configurations, freely named. These are referenced in the `scraper` field for `scrapeXPath` scrapers.
 
 Likewise, the top-level `jsonScrapers` field contains json scraping configurations.
 
-Collectively, these configurations are known as mapped scraping configurations. 
+Collectively, these configurations are known as mapped scraping configurations.
 
-A mapped scraping configuration may contain a `common` field, and must contain `performer`, `scene`, `movie` or `gallery` depending on the scraping type it is configured for. 
+A mapped scraping configuration may contain a `common` field, and must contain `performer`, `scene`, `movie` or `gallery` depending on the scraping type it is configured for.
 
-Within the `performer`/`scene`/`movie`/`gallery` field are key/value pairs corresponding to the [golang fields](/help/ScraperDevelopment.md#object-fields) on the performer/scene object. These fields are case-sensitive. 
+Within the `performer`/`scene`/`movie`/`gallery` field are key/value pairs corresponding to the [golang fields](/help/ScraperDevelopment.md#object-fields) on the performer/scene object. These fields are case-sensitive.
 
 The values of these may be either a simple selector value, which tells the system where to get the value of the field from, or a more advanced configuration (see below). For example, for an xpath configuration:
 
@@ -295,7 +296,7 @@ The value may also be a sub-object. If it is a sub-object, then the selector mus
 
 ```yaml
 performer:
-  Name: 
+  Name:
     selector: //h1[@itemprop="name"]
     postProcess:
       # post-processing config values
@@ -307,7 +308,7 @@ Alternatively, an attribute value may be set to a fixed value, rather than scrap
 
 ```yaml
 performer:
-  Gender: 
+  Gender:
     fixed: Female
 ```
 
@@ -325,7 +326,8 @@ performer:
 The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="infoPiece"]/span`, resulting in: `//div[@class="infoPiece"]/span[text() = 'Measurements:']/../span[@class="smallInfo"]`.
 
 > **⚠️ Note:** Recursive common fragments are **not** supported.  
-Referencing a common fragment within another common fragment will cause an error. For example:
+> Referencing a common fragment within another common fragment will cause an error. For example:
+
 ```yaml
 common:
   $info: //div[@class="info"]
@@ -341,11 +343,13 @@ scene:
 ### Post-processing options
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
-* `feetToCm`: converts a string containing feet and inches numbers into centimeters. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimeters.
-* `lbToKg`: converts a string containing lbs to kg.
-* `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
+
+- `feetToCm`: converts a string containing feet and inches numbers into centimeters. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimeters.
+- `lbToKg`: converts a string containing lbs to kg.
+- `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
 
 Example:
+
 ```yaml
 performer:
   Gender:
@@ -363,13 +367,15 @@ performer:
     postProcess:
       - lbToKg: true
 ```
+
 Gets the contents of the selected div element, and sets the returned value to `Female` if the scraped value is `F`; `Male` if the scraped value is `M`.
 Height and weight are extracted from the selected spans and converted to `cm` and `kg`.
 
-* `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them.
+- `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them.
 
-* `subtractDays`: if set to `true` it subtracts the value in days from the current date and returns the resulting date in stash's date format.
-Example:
+- `subtractDays`: if set to `true` it subtracts the value in days from the current date and returns the resulting date in stash's date format.
+  Example:
+
 ```yaml
 Date:
   selector: //strong[contains(text(),"Added:")]/following-sibling::text()
@@ -380,34 +386,38 @@ Date:
     - subtractDays: true
 ```
 
-* `replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array.
+- `replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array.
 
 Example:
+
 ```yaml
-CareerLength: 
+CareerLength:
   selector: $infoPiece[text() = 'Career Start and End:']/../span[@class="smallInfo"]
     postProcess:
       - replace:
           - regex: \s+to\s+
             with: "-"
 ```
+
 Replaces `2001 to 2003` with `2001-2003`.
 
-* `subScraper`: if present, the sub-scraper will be executed after all other post-processes are complete and before parseDate. It then takes the value and performs an http request, using the value as the URL. Within the `subScraper` config is a nested scraping configuration. This allows you to traverse to other webpages to get the attribute value you are after. For more info and examples have a look at [#370](https://github.com/stashapp/stash/pull/370), [#606](https://github.com/stashapp/stash/pull/606)
+- `subScraper`: if present, the sub-scraper will be executed after all other post-processes are complete and before parseDate. It then takes the value and performs an http request, using the value as the URL. Within the `subScraper` config is a nested scraping configuration. This allows you to traverse to other webpages to get the attribute value you are after. For more info and examples have a look at [#370](https://github.com/stashapp/stash/pull/370), [#606](https://github.com/stashapp/stash/pull/606)
 
 Additionally, there are a number of fixed post-processing fields that are specified at the attribute level (not in `postProcess`) that are performed after the `postProcess` operations:
-* `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
-* `split`: the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
+
+- `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
+- `split`: the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
 
 Example:
+
 ```yaml
 Tags:
   Name:
     selector: //span[@class="list_attributes"]
     split: ","
 ```
-Splits a comma separated list of tags located in the span and returns the tags.
 
+Splits a comma separated list of tags located in the span and returns the tags.
 
 For backwards compatibility, `replace`, `subscraper` and `parseDate` are also allowed as keys for the attribute.
 
@@ -423,7 +433,9 @@ Post-processing on attribute post-process is done in the following order: `conca
 - GJSON Path Syntax: https://github.com/tidwall/gjson/blob/master/SYNTAX.md
 
 ### Debugging support
+
 To print the received html/json from a scraper request to the log file, add the following to your scraper yml file:
+
 ```yaml
 debug:
   printHTML: true
@@ -434,6 +446,7 @@ debug:
 Some websites deliver content that cannot be scraped using the raw html file alone. These websites use javascript to dynamically load the content. As such, direct xpath scraping will not work on these websites. There is an option to use Chrome DevTools Protocol to load the webpage using an instance of Chrome, then scrape the result.
 
 Chrome CDP support can be enabled for a specific scraping configuration by adding the following to the root of the yml configuration:
+
 ```yaml
 driver:
   useCDP: true
@@ -441,13 +454,13 @@ driver:
 
 Optionally, you can add a `sleep` value under the `driver` section. This specifies the amount of time (in seconds) that the scraper should wait after loading the website to perform the scrape. This is needed as some sites need more time for loading scripts to finish. If unset, this value defaults to 2 seconds.
 
-When `useCDP` is set to true, stash will execute or connect to an instance of Chrome. The behavior is dictated by the `Chrome CDP path` setting in the user configuration. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one. 
+When `useCDP` is set to true, stash will execute or connect to an instance of Chrome. The behavior is dictated by the `Chrome CDP path` setting in the user configuration. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one.
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`). As remote instance a docker container can also be used with the `chromedp/headless-shell` image being highly recommended.
 
 ### CDP Click support
 
-When using CDP you can use  the `clicks` part of the `driver` section to do Mouse Clicks on elements you need to collapse or toggle. Each click element has an `xpath` value that holds the XPath for the button/element you need to click and an optional `sleep` value that is the time in seconds to wait for after clicking.
+When using CDP you can use the `clicks` part of the `driver` section to do Mouse Clicks on elements you need to collapse or toggle. Each click element has an `xpath` value that holds the XPath for the button/element you need to click and an optional `sleep` value that is the time in seconds to wait for after clicking.
 If the `sleep` value is not set it defaults to `2` seconds.
 
 A demo scraper using `clicks` follows.
@@ -490,9 +503,9 @@ In some websites the use of cookies is needed to bypass a welcoming message or s
 To use the cookie functionality a `cookies` sub section needs to be added to the `driver` section.
 Each cookie element can consist of a `CookieURL` and a number of `Cookies`.
 
-* `CookieURL` is only needed if you are using the direct / native scraper method. It is the request url that we expect from the site we scrape. It must be in the same domain as the cookies we try to set otherwise all cookies in the same group will fail to set. If the `CookieURL` is not a valid URL then again the cookies of that group will fail.
+- `CookieURL` is only needed if you are using the direct / native scraper method. It is the request url that we expect from the site we scrape. It must be in the same domain as the cookies we try to set otherwise all cookies in the same group will fail to set. If the `CookieURL` is not a valid URL then again the cookies of that group will fail.
 
-* `Cookies` are the actual cookies we set. When using CDP that's the only part required. They have  `Name`, `Value`, `Domain`, `Path` values.
+- `Cookies` are the actual cookies we set. When using CDP that's the only part required. They have `Name`, `Value`, `Domain`, `Path` values.
 
 In the following example we use cookies for a site using the direct / native xpath scraper. We expect requests to come from `https://www.example.com` and `https://api.somewhere.com` that look for a `_warning` and a `_warn` cookie. A `_test2` cookie is also set just as a demo.
 
@@ -566,9 +579,9 @@ driver:
 
 When developing a scraper you can have a look at the cookies set by a site by adding
 
-* a `CookieURL` if you use the direct xpath scraper
+- a `CookieURL` if you use the direct xpath scraper
 
-* a `Domain` if you use the CDP scraper
+- a `Domain` if you use the CDP scraper
 
 and having a look at the log / console in debug mode.
 
@@ -587,8 +600,8 @@ driver:
       Value: Bearer ds3sdfcFdfY17p4qBkTVF03zscUU2glSjWF17bZyoe8
 ```
 
-* headers are set after stash's `User-Agent` configuration option is applied.
-This means setting a `User-Agent` header from the scraper overrides the one in the configuration settings.
+- headers are set after stash's `User-Agent` configuration option is applied.
+  This means setting a `User-Agent` header from the scraper overrides the one in the configuration settings.
 
 ### XPath scraper example
 
@@ -598,12 +611,12 @@ A performer and scene xpath scraper is shown as an example below:
 name: Pornhub
 performerByURL:
   - action: scrapeXPath
-    url: 
+    url:
       - pornhub.com
     scraper: performerScraper
 sceneByURL:
   - action: scrapeXPath
-    url: 
+    url:
       - pornhub.com/view_video.php
     scraper: sceneScraper
 xPathScrapers:
@@ -612,42 +625,42 @@ xPathScrapers:
       $infoPiece: //div[@class="infoPiece"]/span
     performer:
       Name: //h1[@itemprop="name"]
-      Birthdate: 
+      Birthdate:
         selector: //span[@itemprop="birthDate"]
         parseDate: Jan 2, 2006
       Twitter: //span[text() = 'Twitter']/../@href
       Instagram: //span[text() = 'Instagram']/../@href
       Measurements: $infoPiece[text() = 'Measurements:']/../span[@class="smallInfo"]
-      Height: 
+      Height:
         selector: $infoPiece[text() = 'Height:']/../span[@class="smallInfo"]
         postProcess:
-          - replace: 
+          - replace:
               - regex: .*\((\d+) cm\)
                 with: $1
       Ethnicity: $infoPiece[text() = 'Ethnicity:']/../span[@class="smallInfo"]
       FakeTits: $infoPiece[text() = 'Fake Boobs:']/../span[@class="smallInfo"]
       Piercings: $infoPiece[text() = 'Piercings:']/../span[@class="smallInfo"]
       Tattoos: $infoPiece[text() = 'Tattoos:']/../span[@class="smallInfo"]
-      CareerLength: 
+      CareerLength:
         selector: $infoPiece[text() = 'Career Start and End:']/../span[@class="smallInfo"]
         postProcess:
           - replace:
-            - regex: \s+to\s+
-              with: "-"
+              - regex: \s+to\s+
+                with: "-"
   sceneScraper:
     common:
       $performer: //div[@class="pornstarsWrapper"]/a[@data-mxptype="Pornstar"]
       $studio: //div[@data-type="channel"]/a
     scene:
       Title: //div[@id="main-container"]/@data-video-title
-      Tags: 
+      Tags:
         Name: //div[@class="categoriesWrapper"]//a[not(@class="add-btn-small ")]
       Performers:
         Name: $performer/@data-mxptext
         URL: $performer/@href
       Studio:
         Name: $studio
-        URL: $studio/@href    
+        URL: $studio/@href
 ```
 
 See also [#333](https://github.com/stashapp/stash/pull/333) for more examples.
@@ -754,11 +767,12 @@ driver:
     - Key: User-Agent
       Value: Stash JSON Scraper
     - Key: Authorization
-      Value: Bearer lPdwFdfY17p4qBkTVF03zscUU2glSjdf17bZyoe  # use an actual API Key here
+      Value: Bearer lPdwFdfY17p4qBkTVF03zscUU2glSjdf17bZyoe # use an actual API Key here
 # Last Updated April 7, 2021
 ```
 
 ## Object fields
+
 ### Performer
 
 ```
@@ -786,9 +800,10 @@ Image
 Details
 ```
 
-*Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
+_Note:_ - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
 
 ### Scene
+
 ```
 Title
 Details
@@ -800,18 +815,22 @@ Movies (see Movie Fields)
 Tags (see Tag fields)
 Performers (list of Performer fields)
 ```
+
 ### Studio
+
 ```
 Name
 URL
 ```
 
 ### Tag
+
 ```
 Name
 ```
 
 ### Movie
+
 ```
 Name
 Aliases
@@ -827,6 +846,7 @@ BackImage
 ```
 
 ### Gallery
+
 ```
 Title
 Details
