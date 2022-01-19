@@ -16,7 +16,7 @@ Loaded plugins can be viewed in the Plugins page of the Settings. After plugins 
 
 # Using plugins
 
-Plugins provide tasks which can be run from the Tasks page. 
+Plugins provide tasks which can be run from the Tasks page.
 
 # Creating plugins
 
@@ -27,6 +27,7 @@ See [Embedded Plugins](/help/EmbeddedPlugins.md) for details for making embedded
 ## Plugin input
 
 Plugins may accept an input from the stash server. This input is encoded according to the interface, and has the following structure (presented here in JSON format):
+
 ```
 {
     "server_connection": {
@@ -82,7 +83,7 @@ tasks:
       argKey: argValue
 ```
 
-A plugin configuration may contain multiple tasks. 
+A plugin configuration may contain multiple tasks.
 
 The `defaultArgs` field is used to add inputs to the plugin input sent to the plugin.
 
@@ -112,20 +113,22 @@ Trigger types use the following format:
 For example, a post-hook on a scene create operation will be `Scene.Create.Post`.
 
 The following object types are supported:
-* `Scene`
-* `SceneMarker`
-* `Image`
-* `Gallery`
-* `Movie`
-* `Performer`
-* `Studio`
-* `Tag`
+
+- `Scene`
+- `SceneMarker`
+- `Image`
+- `Gallery`
+- `Movie`
+- `Performer`
+- `Studio`
+- `Tag`
 
 The following operations are supported:
-* `Create`
-* `Update`
-* `Destroy`
-* `Merge` (for `Tag` only)
+
+- `Create`
+- `Update`
+- `Destroy`
+- `Merge` (for `Tag` only)
 
 Currently, only `Post` hook types are supported. These are executed after the operation has completed and the transaction is committed.
 

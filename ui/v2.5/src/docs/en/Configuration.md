@@ -18,6 +18,7 @@ When added through the config file directly special care must be given to double
 Some examples
 
 For the config file you need the following added
+
 ```
 exclude:
 - "sample\\.mp4$"
@@ -26,11 +27,12 @@ exclude:
 - "^/stash/videos/exclude/"
 - "\\\\\\\\stash\\network\\\\share\\\\excl\\\\"
 ```
-* the first excludes all files ending in `sample.mp4` ( `.` needs to be escaped also)
-* the second hidden directories `/.directoryname/`
-* the third is an example for a windows directory `c:\stash\videos\exclude`
-* the fourth the directory `/stash/videos/exclude/`
-* and the last a windows network path `\\stash\network\share\excl\`
+
+- the first excludes all files ending in `sample.mp4` ( `.` needs to be escaped also)
+- the second hidden directories `/.directoryname/`
+- the third is an example for a windows directory `c:\stash\videos\exclude`
+- the fourth the directory `/stash/videos/exclude/`
+- and the last a windows network path `\\stash\network\share\excl\`
 
 **Note:** if a directory is excluded for images and videos, then the directory will be excluded from scans completely.
 
@@ -62,7 +64,6 @@ These instructions are for existing users whose systems will be defaulted to use
 2. In Settings -> Configuration page, untick `Calculate MD5` and select `oshash` as file naming hash. Save the configuration.
 3. In Settings -> Tasks page, click on the `Rename generated files` migration button.
 
-
 ## Parallel Scan/Generation
 
 #### Number of parallel task for scan/generation
@@ -72,8 +73,9 @@ This setting controls how many sub-tasks will be run in parallel during scanning
 Auto-detection can be enabled by setting this to zero. This will calculate the number of parallel tasks to be cpu_cores/4 + 1.
 
 This setting can be used to increase/decrease overall CPU utilisation in two scenarios:
-1) High performance 4+ core cpus.
-2) Media files stored on remote/cloud filesystem.
+
+1. High performance 4+ core cpus.
+2. Media files stored on remote/cloud filesystem.
 
 Note: If this is set too high it will decrease overall performance and causes failures (out of memory).
 
@@ -106,20 +108,21 @@ The logout button is situated in the upper-right part of the screen when you are
 ### Recovering from a forgotten username or password
 
 Stash saves login credentials in the config.yml file. You must reset both login and password if you have forgotten your password by doing the following:
-* Close your Stash process
-* Open the `config.yml` file found in your Stash directory with a text editor
-* Delete the `login` and `password` lines from the file and save
-Stash authentication should now be reset with no authentication credentials.
+
+- Close your Stash process
+- Open the `config.yml` file found in your Stash directory with a text editor
+- Delete the `login` and `password` lines from the file and save
+  Stash authentication should now be reset with no authentication credentials.
 
 ## Advanced configuration options
 
 These options are typically not exposed in the UI and must be changed manually in the `config.yml` file.
 
-| Field | Remarks |
-|-------|---------|
-| `custom_served_folders` | A map of URLs to file system folders. See below. |
-| `custom_ui_location` | The file system folder where the UI files will be served from, instead of using the embedded UI. Empty to disable. Stash must be restarted to take effect. |
-| `max_upload_size` | Maximum file upload size for import files. Defaults to 1GB. |
+| Field                   | Remarks                                                                                                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `custom_served_folders` | A map of URLs to file system folders. See below.                                                                                                           |
+| `custom_ui_location`    | The file system folder where the UI files will be served from, instead of using the embedded UI. Empty to disable. Stash must be restarted to take effect. |
+| `max_upload_size`       | Maximum file upload size for import files. Defaults to 1GB.                                                                                                |
 
 ### Custom served folders
 
@@ -131,6 +134,6 @@ custom_served_folders:
   /foo: D:\bar
 ```
 
-With the above configuration, a request for `/custom/foo/bar.png` would serve `D:\bar\bar.png`. 
+With the above configuration, a request for `/custom/foo/bar.png` would serve `D:\bar\bar.png`.
 
 The `/` entry matches anything that is not otherwise mapped by the other entries. For example, `/custom/baz/xyz.png` would serve `D:\stash\static\baz\xyz.png`.
