@@ -6,11 +6,17 @@
   "javascript.preferences.importModuleSpecifier": "relative",
   "typescript.preferences.importModuleSpecifier": "relative",
   "editor.wordWrapColumn": 120,
-  "editor.rulers": [120],
-  "i18n-ally.localesPaths": ["src/locales"],
+  "editor.rulers": [
+    120
+  ],
+  "i18n-ally.localesPaths": [
+    "src/locales"
+  ],
   "i18n-ally.keystyle": "nested",
   "i18n-ally.sourceLanguage": "en-GB",
-  "spellright.language": ["en"],
+  "spellright.language": [
+    "en"
+  ],
   "spellright.documentTypes": [
     "markdown",
     "latex",

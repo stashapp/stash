@@ -16,10 +16,9 @@ For those with web page experience, we also welcome contributions to our [websit
 
 ## Testing features, improvements and bug fixes
 
-Testing is currently covered by a very small group, so new testers are welcomed. Being able to build stash locally is ideal, but custom binaries for pull requests are available by navigating to the `continuous-integration/travis-ci/pr` travis check details.
+Testing is currently covered by a very small group, so new testers are welcomed. Being able to build stash locally is ideal, but custom binaries for pull requests are available by navigating to the `continuous-integration/travis-ci/pr` travis check details. 
 
 The link to the custom binary for each platform can be found at the end of the build log, and looks like the following:
-
 ```
 $ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sh ./scripts/upload-pull-request.sh; fi
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -36,12 +35,12 @@ stash-win.exe uploaded to url: https://transfer.sh/.../stash-win.exe
 stash-linux uploaded to url: https://transfer.sh/.../stash-linux
 
 ```
-
 The `if` line will need to be expanded to see the details.
 
 ## Submitting and contributing to bug reports, improvements and new features
 
 We welcome contributions for future improvements and features, and bug reports help everyone. These can all be found in the [github issues](https://github.com/stashapp/stash/issues).
+
 
 ## Providing support
 

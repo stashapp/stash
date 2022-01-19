@@ -1,122 +1,115 @@
 # Import/Export JSON Specification
 
 The metadata given to Stash can be exported into the JSON format. This structure can be modified, or replicated by other means. The resulting data can then be imported again, giving the possibility for automatic scraping of all kinds. The format of this metadata bulk is a folder structure, containing the following folders:
-
-- `downloads`
-- `galleries`
-- `performers`
-- `scenes`
-- `studios`
-- `movies`
-
+  
+* `downloads`
+* `galleries`
+* `performers`
+* `scenes`
+* `studios`
+* `movies`
+  
 Additionally, it contains a `mappings.json` file.
-
-The mappings file contains a reference to all files within the folders, by including their checksum. All files in the aforementioned folders are named by their checksum (like `967ddf2e028f10fc8d36901833c25732.json`), which (at least in the case of galleries and scenes) is generated from the file that this metadata relates to. The algorithm for the checksum is MD5.
+  
+The mappings file contains a reference to all files within the folders, by including their checksum. All files in the aforementioned folders are named by their checksum (like `967ddf2e028f10fc8d36901833c25732.json`), which (at least in the case of galleries and scenes) is generated from the file that this metadata relates to. The algorithm for the checksum is MD5. 
 
 # Content of the json files
 
 In the following, the values of the according jsons will be shown. If the value should be a number, it is written with after comma values (like `29.98` or `50.0`), but still as a string. The meaning from most of them should be obvious due to the previous explanation or from the possible values stash offers when editing, otherwise a short comment will be added.
 
-The json values are given as strings, if not stated otherwise. Every new line will stand for a new value in the json. If the value is a list of objects, the values of that object will be shown indented.
+The json values are given as strings, if not stated otherwise. Every new line will stand for a new value in the json. If the value is a list of objects, the values of that object will be shown indented.  
 
 If a value is empty in any but the `mappings.json` file, it can be left out of the file entirely. In the `mappings.json` however, all values must be present, if there are no objects of a type (for example, no performers), the value is simply null.  
 Many files have an `created_at` and `updated_at`, both are kept in the following format:
-
+```  
+YYYY-MM-DDThh:mm:ssTZD  
 ```
-YYYY-MM-DDThh:mm:ssTZD
-```
-
-Example:
-
+Example:  
 ```
 "created_at": "2019-05-03T21:36:58+01:00"
 ```
 
 ## `mappings.json`
-
 ```
-performers
-  name
-  checksum
-studios
-  name
-  checksum
-galleries
-  path
-  checksum
-scenes
-  path
-  checksum
+performers  
+  name  
+  checksum  
+studios  
+  name  
+  checksum  
+galleries  
+  path   
+  checksum  
+scenes  
+  path   
+  checksum  
 ```
 
 ## Performer
-
 ```
-name
-url
-twitter
-instagram
-birthdate
-death_date
-ethnicity
-country
-hair_color
-eye_color
-height
-weight
-measurements
-fake_tits
-career_length
-tattoos
-piercings
-image (base64 encoding of the image file)
-created_at
+name  
+url  
+twitter  
+instagram  
+birthdate  
+death_date  
+ethnicity  
+country  
+hair_color  
+eye_color  
+height  
+weight  
+measurements  
+fake_tits  
+career_length  
+tattoos  
+piercings  
+image (base64 encoding of the image file)  
+created_at  
 updated_at
 rating (integer)
 details
 ```
 
 ## Studio
-
 ```
-name
-url
-image (base64 encoding of the image file)
-created_at
+name  
+url  
+image (base64 encoding of the image file)  
+created_at  
 updated_at
-rating (integer)
-details
+rating (integer)  
+details  
 ```
 
 ## Scene
-
 ```
-title
-studio
-url
-date
-rating (integer)
-details
-performers (list of strings, performers name)
-tags (list of strings)
-markers
-  title
-  seconds
-  primary_tag
-  tags (list of strings)
-  created_at
-  updated_at
-file (not a list, but a single object)
-  size (in bytes, no after comma values)
-  duration (in seconds)
-  video_codec (example value: h264)
-  audio_codec (example value: aac)
-  width (integer, in pixel)
-  height (integer, in pixel)
-  framerate
-  bitrate (integer, in Bit)
-created_at
-updated_at
+title  
+studio  
+url  
+date  
+rating (integer)  
+details  
+performers (list of strings, performers name)  
+tags (list of strings)  
+markers     
+  title  
+  seconds  
+  primary_tag  
+  tags (list of strings)  
+  created_at  
+  updated_at  
+file (not a list, but a single object)  
+  size (in bytes, no after comma values)  
+  duration (in seconds)  
+  video_codec (example value: h264)  
+  audio_codec (example value: aac)  
+  width (integer, in pixel)  
+  height (integer, in pixel)  
+  framerate  
+  bitrate (integer, in Bit)  
+created_at  
+updated_at  
 ```
 
 ## Gallery
@@ -213,10 +206,9 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
   "required": ["performers", "studios", "galleries", "scenes"]
 }
 ```
-
 ## performer.json
 
-```json
+``` json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/stashapp/stash/wiki/JSON-Specification/performer.json",
@@ -311,11 +303,12 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
   },
   "required": ["name", "ethnicity", "image", "created_at", "updated_at"]
 }
+
 ```
 
 ## studio.json
 
-```json
+``` json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/stashapp/stash/wiki/JSON-Specification/studio.json",
@@ -439,6 +432,7 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
             "description": "The time this marker was updated the last time. Format is YYYY-MM-DDThh:mm:ssTZD",
             "type": "string"
           }
+
         },
         "required": ["seconds", "primary_tag", "created_at", "updated_at"]
       },
@@ -481,17 +475,9 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
           "description": "The bitrate of the video, in bits",
           "type": "integer"
         }
+
       },
-      "required": [
-        "size",
-        "duration",
-        "video_codec",
-        "audio_codec",
-        "height",
-        "width",
-        "framerate",
-        "bitrate"
-      ]
+      "required": ["size", "duration", "video_codec", "audio_codec", "height", "width", "framerate", "bitrate"]
     },
     "created_at": {
       "description": "The time this studios data was added to the database. Format is YYYY-MM-DDThh:mm:ssTZD",
