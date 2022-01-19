@@ -50,11 +50,11 @@ The `name`, `description`, `version` and `url` fields are displayed on the plugi
 
 ## exec
 
-For external plugins, the `exec` field is a list with the first element being the binary that will be executed, and the subsequent elements are the arguments passed. The execution process will search the path for the binary, then will attempt to find the program in the same directory as the plugin configuration file. The `exe` extension is not necessary on Windows systems.
+For external plugins, the `exec` field is a list with the first element being the binary that will be executed, and the subsequent elements are the arguments passed. The execution process will search the path for the binary, then will attempt to find the program in the same directory as the plugin configuration file. The `exe` extension is not necessary on Windows systems. 
 
 > **⚠️ Note:** The plugin execution process sets the current working directory to that of the stash process.
 
-Arguments can include the plugin's directory with the special string `{pluginDir}`.
+Arguments can include the plugin's directory with the special string `{pluginDir}`. 
 
 For example, if the plugin executable `my_plugin` is placed in the `plugins` subdirectory and requires arguments `foo` and `bar`, then the `exec` part of the configuration would look like the following:
 
@@ -76,9 +76,8 @@ exec:
 ## interface
 
 For external plugins, the `interface` field must be set to one of the following values:
-
-- `rpc`
-- `raw`
+* `rpc`
+* `raw`
 
 See the `Plugin interfaces` section above for details on these interface types.
 
