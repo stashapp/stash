@@ -109,7 +109,7 @@ export const SettingsLogsPanel: React.FC = () => {
 
   return (
     <>
-      <h1>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h1>
+      <h2>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h2>
       <JobTable />
       <SettingSection headingID="config.categories.logs">
         <SelectSetting
