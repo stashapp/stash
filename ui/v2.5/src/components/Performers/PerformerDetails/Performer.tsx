@@ -259,7 +259,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       // provided by the server
       return (
         <div>
-          {performer.death_date ? "🪦 " : ""}
           <span className="age">
             {TextUtils.age(performer.birthdate, performer.death_date)}
           </span>
