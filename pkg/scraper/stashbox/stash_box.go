@@ -811,7 +811,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 			draft.Studio = &studioDraft
 		}
 
-		var fingerprints []*graphql.FingerprintInput
+		fingerprints := []*graphql.FingerprintInput{}
 		if scene.OSHash.Valid && scene.Duration.Valid {
 			fingerprint := graphql.FingerprintInput{
 				Hash:      scene.OSHash.String,
@@ -836,7 +836,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 			return err
 		}
 
-		var performers []*graphql.DraftEntityInput
+		performers := []*graphql.DraftEntityInput{}
 		for _, p := range scenePerformers {
 			performerDraft := graphql.DraftEntityInput{
 				Name: p.Name.String,
