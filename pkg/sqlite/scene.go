@@ -661,15 +661,19 @@ func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *
 func scenePerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if performerfavorite != nil {
-			f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
-			f.addLeftJoin("performers", "", "performers.id = performers_scenes.performer_id")
-			var v string
 			if *performerfavorite {
-				v = "1"
+				// contains at least one favorite
+				f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+				f.addLeftJoin("performers", "", "performers.id = performers_scenes.performer_id")
+				f.addWhere("performers.favorite = 1")
 			} else {
-				v = "0"
+				// contains zero favorites
+				f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+				f.addLeftJoin(`(SELECT performers_scenes.scene_id as id FROM performers_scenes
+JOIN performers ON performers.id = performers_scenes.performer_id
+GROUP BY performers_scenes.scene_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "scenes.id = nofaves.id")
+				f.addWhere("performers_scenes.scene_id IS NULL OR nofaves.id IS NOT NULL")
 			}
-			f.addWhere("performers.favorite = " + v)
 		}
 	}
 }

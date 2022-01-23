@@ -1,4 +1,5 @@
 import { createStringCriterionOption } from "./criteria/criterion";
+import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
@@ -47,6 +48,7 @@ const criterionOptions = [
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
   createStringCriterionOption("performer_count"),
+  PerformerFavoriteCriterionOption,
   createStringCriterionOption("image_count"),
   StudiosCriterionOption,
   createStringCriterionOption("url"),
