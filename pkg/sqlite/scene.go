@@ -392,6 +392,8 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterion(sceneStudioCriterionHandler(qb, sceneFilter.Studios))
 	query.handleCriterion(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterion(scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
+	query.handleCriterion(scenePerformerFavoriteCriterionHandler(sceneFilter.PerformerFavorite))
+	query.handleCriterion(scenePhashDuplicatedCriterionHandler(sceneFilter.Duplicated))
 
 	return query
 }
@@ -500,6 +502,20 @@ func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHa
 					f.addWhere("scenes.phash IS NOT NULL")
 				}
 			}
+		}
+	}
+}
+
+func scenePhashDuplicatedCriterionHandler(duplicated *bool) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if duplicated != nil {
+			var v string
+			if *duplicated {
+				v = ">"
+			} else {
+				v = "="
+			}
+			f.addInnerJoin("(SELECT id FROM scenes JOIN (SELECT phash FROM scenes GROUP BY phash HAVING COUNT(phash) "+v+" 1) dupes on scenes.phash = dupes.phash)", "scph", "scenes.id = scph.id")
 		}
 	}
 }
@@ -640,6 +656,22 @@ func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *
 	}
 
 	return h.handler(performerCount)
+}
+
+func scenePerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerfavorite != nil {
+			f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+			f.addLeftJoin("performers", "", "performers.id = performers_scenes.performer_id")
+			var v string
+			if *performerfavorite {
+				v = "1"
+			} else {
+				v = "0"
+			}
+			f.addWhere("performers.favorite = " + v)
+		}
+	}
 }
 
 func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {

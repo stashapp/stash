@@ -26,9 +26,9 @@ export class PhashCriterion extends StringCriterion {
 }
 
 export const DuplicatedCriterionOption = new BooleanCriterionOption(
+  "duplicated_phash",
   "duplicated",
-  "duplicated",
-  "filter_duplicated"
+  "duplicated"
 );
 
 export class DuplicatedCriterion extends BooleanCriterion {

@@ -15,7 +15,7 @@ export class FavoriteCriterion extends BooleanCriterion {
 export const PerformerFavoriteCriterionOption = new BooleanCriterionOption(
   "performer_favorite",
   "performer_favorite",
-  "filter_performer_favorites"
+  "performer_favorite"
 );
 
 export class PerformerFavoriteCriterion extends BooleanCriterion {

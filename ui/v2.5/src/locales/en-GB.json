@@ -651,7 +651,7 @@
     "search_accuracy_label": "Search Accuracy",
     "title": "Duplicate Scenes"
   },
-  "duplicated": "Duplicated (phash)",
+  "duplicated_phash": "Duplicated (phash)",
   "duration": "Duration",
   "effect_filters": {
     "aspect": "Aspect",
@@ -763,7 +763,7 @@
   "performer": "Performer",
   "performerTags": "Performer Tags",
   "performer_count": "Performer Count",
-  "performer_favorite": "Performer Favorite",
+  "performer_favorite": "Favorited Performer",
   "performer_image": "Performer Image",
   "performers": "Performers",
   "piercings": "Piercings",
