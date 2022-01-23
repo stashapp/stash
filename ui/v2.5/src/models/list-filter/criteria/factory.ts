@@ -135,7 +135,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "phash":
       return new StringCriterion(PhashCriterionOption);
     case "duplicated":
-      return new DuplicatedCriterion()
+      return new DuplicatedCriterion();
     case "ethnicity":
     case "country":
     case "hair_color":
