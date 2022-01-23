@@ -150,7 +150,7 @@ input SceneFilterType {
   tag_count: IntCriterionInput
   """Filter to only include scenes with performers with these tags"""
   performer_tags: HierarchicalMultiCriterionInput
-  """Filter scenes that have perfromers that have been favorited"""
+  """Filter scenes that have performers that have been favorited"""
   performer_favorite: Boolean
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
