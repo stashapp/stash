@@ -247,7 +247,7 @@ input GalleryFilterType {
   performers: MultiCriterionInput
   """Filter by performer count"""
   performer_count: IntCriterionInput
-  """Filter galleries that have perfromers that have been favorited"""
+  """Filter galleries that have performers that have been favorited"""
   performer_favorite: Boolean
   """Filter by number of images in this gallery"""
   image_count: IntCriterionInput
