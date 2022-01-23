@@ -119,4 +119,6 @@ export type CriterionType =
   | "director"
   | "synopsis"
   | "parent_tag_count"
-  | "child_tag_count";
+  | "child_tag_count"
+  | "performer_favorite"
+  | "duplicated";

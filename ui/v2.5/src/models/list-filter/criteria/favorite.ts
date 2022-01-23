@@ -11,3 +11,15 @@ export class FavoriteCriterion extends BooleanCriterion {
     super(FavoriteCriterionOption);
   }
 }
+
+export const PerformerFavoriteCriterionOption = new BooleanCriterionOption(
+  "performer_favorite",
+  "performer_favorite",
+  "filter_performer_favorites"
+);
+
+export class PerformerFavoriteCriterion extends BooleanCriterion {
+  constructor() {
+    super(PerformerFavoriteCriterionOption);
+  }
+}

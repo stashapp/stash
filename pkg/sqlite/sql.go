@@ -66,6 +66,10 @@ func getSort(sort string, direction string, tableName string) string {
 	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
 		return " ORDER BY cast(" + colName + " as integer) " + direction
+	case strings.Compare(sort, "perceptual_similarity") == 0:
+		colName := getColumn(tableName, "phash")
+		secondaryColName := getColumn(tableName, "size")
+		return " ORDER BY " + colName + " " + direction + ", " + secondaryColName + " DESC"
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		// turn the provided seed into a float

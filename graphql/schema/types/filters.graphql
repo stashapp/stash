@@ -130,6 +130,8 @@ input SceneFilterType {
   organized: Boolean
   """Filter by o-counter"""
   o_counter: IntCriterionInput
+  """Filter Scenes that have an exact phash match available"""
+  duplicated: Boolean
   """Filter by resolution"""
   resolution: ResolutionCriterionInput
   """Filter by duration (in seconds)"""
@@ -148,6 +150,8 @@ input SceneFilterType {
   tag_count: IntCriterionInput
   """Filter to only include scenes with performers with these tags"""
   performer_tags: HierarchicalMultiCriterionInput
+  """Filter scenes that have perfromers that have been favorited"""
+  performer_favorite: Boolean
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
   """Filter by performer count"""
