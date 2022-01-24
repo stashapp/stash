@@ -1,7 +1,7 @@
 {
   "actions": {
     "add": "追加",
-    "add_directory": "ディレクトリーを追加",
+    "add_directory": "ディレクトリを追加",
     "add_entity": "{entityType}を追加",
     "add_to_entity": "{entityType}に追加",
     "allow": "許可",
