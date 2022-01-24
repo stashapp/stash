@@ -13,6 +13,7 @@ import hrHR from "./hr-HR.json";
 import nlNL from "./nl-NL.json";
 import ruRU from "./ru-RU.json";
 import trTR from "./tr-TR.json";
+import jaJP from "./ja-JP.json";
 
 export default {
   deDE,
