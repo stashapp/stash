@@ -31,4 +31,5 @@ export default {
   nlNL,
   ruRU,
   trTR,
+  jaJP,
 };
