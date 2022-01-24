@@ -268,8 +268,8 @@
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string usado durante solicitações http do scrape",
       "scrapers_path": {
-        "description": "Caminho para o diretório para os arquivos de configuração de buscadores",
-        "heading": "Caminho dos buscadores"
+        "description": "Caminho para o diretório para os arquivos de configuração de scrapers",
+        "heading": "Caminho dos scrapers"
       },
       "scraping": "Scraping",
       "sqlite_location": "Localização do arquivo para o banco de dados SQLite (requer reinicialização)",
@@ -291,10 +291,10 @@
     },
     "scraping": {
       "entity_metadata": "{entityType} metadados",
-      "entity_scrapers": "{entityType} scrapers",
+      "entity_scrapers": "Scrapers de {entityType}",
       "excluded_tag_patterns_desc": "Expressões regulares de tags para excluir dos resultados da busca",
       "excluded_tag_patterns_head": "Padrões de Tag Excluídos",
-      "scraper": "Buscador",
+      "scraper": "Scraper",
       "scrapers": "Scrapers",
       "search_by_name": "Buscar por nome",
       "supported_types": "Tipos suportados",
@@ -347,7 +347,7 @@
         "and_create_missing": "e criar ausentes",
         "create_missing": "Criar ausentes",
         "default_options": "Opções padrão",
-        "description": "Defina meta-dados de cena automaticamente usando stash-box e fontes de buscadores.",
+        "description": "Defina meta-dados de cena automaticamente usando stash-box e fontes de scrapers.",
         "explicit_set_description": "As opções a seguir serão usadas se não sobrescreverem as opções específicas de cada fonte.",
         "field": "Campo",
         "field_behaviour": "{strategy} {field}",
@@ -579,6 +579,7 @@
       "scroll_mode": {
         "description": "Mantenha shift pressionado para usar outro modo temporariamente.",
         "label": "Modo scroll",
+        "pan_y": "Pan Y",
         "zoom": "Zoom"
       }
     },
@@ -624,7 +625,7 @@
     "scrape_entity_query": "Query de busca de {entity_type}",
     "scrape_entity_title": "{entity_type} resultados de scrape",
     "scrape_results_existing": "Existem",
-    "scrape_results_scraped": "Scraped",
+    "scrape_results_scraped": "Scrape finalizado",
     "set_image_url_title": "URL da imagem",
     "unsaved_changes": "Mudanças não salvas. Você tem certeza de que quer sair?"
   },
