@@ -393,6 +393,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterion(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterion(scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
 	query.handleCriterion(scenePerformerFavoriteCriterionHandler(sceneFilter.PerformerFavorite))
+	query.handleCriterion(scenePerformerAgeCriterionHandler(sceneFilter.PerformerAge))
 	query.handleCriterion(scenePhashDuplicatedCriterionHandler(sceneFilter.Duplicated))
 
 	return query
@@ -673,6 +674,35 @@ func scenePerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHa
 JOIN performers ON performers.id = performers_scenes.performer_id
 GROUP BY performers_scenes.scene_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "scenes.id = nofaves.id")
 				f.addWhere("performers_scenes.scene_id IS NULL OR nofaves.id IS NOT NULL")
+			}
+		}
+	}
+}
+
+func scenePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerAge != nil {
+			f.addInnerJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+			f.addInnerJoin("performers", "", "performers_scenes.performer_id = performers.id")
+
+			f.addWhere("scenes.date != '' AND performers.birthdate != ''")
+			f.addWhere("scenes.date IS NOT NULL AND performers.birthdate IS NOT NULL")
+			f.addWhere("scenes.date != '0001-01-01' AND performers.birthdate != '0001-01-01'")
+
+			ageCalc := "cast(strftime('%Y.%m%d', scenes.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			switch performerAge.Modifier {
+			case models.CriterionModifierEquals:
+				f.addWhere(fmt.Sprintf("%s = %d", ageCalc, performerAge.Value))
+			case models.CriterionModifierNotEquals:
+				f.addWhere(fmt.Sprintf("%s != %d", ageCalc, performerAge.Value))
+			case models.CriterionModifierBetween:
+				f.addWhere(fmt.Sprintf("%s BETWEEN %d AND %d", ageCalc, performerAge.Value, *performerAge.Value2))
+			case models.CriterionModifierNotBetween:
+				f.addWhere(fmt.Sprintf("%s NOT BETWEEN %d AND %d", ageCalc, performerAge.Value, *performerAge.Value2))
+			case models.CriterionModifierLessThan:
+				f.addWhere(fmt.Sprintf("%s < %d", ageCalc, performerAge.Value))
+			case models.CriterionModifierGreaterThan:
+				f.addWhere(fmt.Sprintf("%s > %d", ageCalc, performerAge.Value))
 			}
 		}
 	}
