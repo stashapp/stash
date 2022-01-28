@@ -37,7 +37,7 @@ Stash requires ffmpeg. If you don't have it installed, Stash will download a cop
 ### Launching
 Once downloaded, Run the executable (double click the exe on windows or run `./stash-osx` / `./stash-linux` from the terminal on macOS / Linux) to get started.
 
-Stash is a web-based application.  Once the application is running, it is availble (by default) from http://localhost:9999.  You can change this in the settings.
+Stash is a web-based application.  Once the application is running, it is available (by default) from http://localhost:9999.  You can change this in the settings.
 
 ### Configuring and Importing Your Content
 On first run, Stash will prompt you for some configuration options and a directory to index (you can also skip this step and complete afterward)
