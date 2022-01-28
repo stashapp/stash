@@ -38,6 +38,7 @@ const criterionOptions = [
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
+  createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
   StudiosCriterionOption,
 ];

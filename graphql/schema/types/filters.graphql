@@ -152,6 +152,8 @@ input SceneFilterType {
   performer_tags: HierarchicalMultiCriterionInput
   """Filter scenes that have performers that have been favorited"""
   performer_favorite: Boolean
+  """Filter scenes by performer age at time of scene"""
+  performer_age: IntCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
   """Filter by performer count"""
@@ -249,6 +251,8 @@ input GalleryFilterType {
   performer_count: IntCriterionInput
   """Filter galleries that have performers that have been favorited"""
   performer_favorite: Boolean
+  """Filter galleries by performer age at time of gallery"""
+  performer_age: IntCriterionInput
   """Filter by number of images in this gallery"""
   image_count: IntCriterionInput
   """Filter by url"""
@@ -332,6 +336,8 @@ input ImageFilterType {
   performer_count: IntCriterionInput
   """Filter images that have performers that have been favorited"""
   performer_favorite: Boolean
+  """Filter images by performer age at time of image"""
+  performer_age: IntCriterionInput
   """Filter to only include images with these galleries"""
   galleries: MultiCriterionInput
 }

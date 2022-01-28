@@ -121,4 +121,5 @@ export type CriterionType =
   | "parent_tag_count"
   | "child_tag_count"
   | "performer_favorite"
+  | "performer_age"
   | "duplicated";
