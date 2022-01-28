@@ -782,8 +782,9 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		if scene.Details.Valid {
 			draft.Details = &scene.Details.String
 		}
-		if scene.URL.Valid {
-			draft.URL = &scene.URL.String
+		if len(strings.TrimSpace(scene.URL.String)) > 0 {
+			url := strings.TrimSpace(scene.URL.String)
+			draft.URL = &url
 		}
 		if scene.Date.Valid {
 			draft.Date = &scene.Date.String
@@ -816,6 +817,15 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 			fingerprint := graphql.FingerprintInput{
 				Hash:      scene.OSHash.String,
 				Algorithm: graphql.FingerprintAlgorithmOshash,
+				Duration:  int(scene.Duration.Float64),
+			}
+			fingerprints = append(fingerprints, &fingerprint)
+		}
+
+		if scene.Checksum.Valid && scene.Duration.Valid {
+			fingerprint := graphql.FingerprintInput{
+				Hash:      scene.Checksum.String,
+				Algorithm: graphql.FingerprintAlgorithmMd5,
 				Duration:  int(scene.Duration.Float64),
 			}
 			fingerprints = append(fingerprints, &fingerprint)
@@ -940,14 +950,14 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		}
 
 		var urls []string
-		if performer.Twitter.Valid {
-			urls = append(urls, "https://twitter.com/"+performer.Twitter.String)
+		if len(strings.TrimSpace(performer.Twitter.String)) > 0 {
+			urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter.String))
 		}
-		if performer.Instagram.Valid {
-			urls = append(urls, "https://instagram.com/"+performer.Instagram.String)
+		if len(strings.TrimSpace(performer.Instagram.String)) > 0 {
+			urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram.String))
 		}
-		if performer.URL.Valid {
-			urls = append(urls, performer.URL.String)
+		if len(strings.TrimSpace(performer.URL.String)) > 0 {
+			urls = append(urls, strings.TrimSpace(performer.URL.String))
 		}
 		if len(urls) > 0 {
 			draft.Urls = urls
