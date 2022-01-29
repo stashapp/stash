@@ -37,3 +37,7 @@ func sendNotification(notificationTitle string, notificationText string) {
 		logger.Errorf("Error sending notification on Linux: %s", err.Error())
 	}
 }
+
+func revealInFileManager(path string) {
+
+}

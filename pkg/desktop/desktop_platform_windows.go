@@ -46,3 +46,7 @@ func sendNotification(notificationTitle string, notificationText string) {
 		logger.Errorf("Error creating Windows notification: %s", err.Error())
 	}
 }
+
+func revealInFileManager(path string) {
+	exec.Command(`explorer`, `\select`, path)
+}

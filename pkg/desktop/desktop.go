@@ -126,7 +126,6 @@ func IsAllowedAutoUpdate() bool {
 func Shutdown() {
 	err := database.Close()
 	if err != nil {
-		logger.Errorf("Error closing database: %s", err)
 		os.Exit(1)
 	}
 	os.Exit(0)
@@ -134,6 +133,17 @@ func Shutdown() {
 
 func getIconPath() string {
 	return path.Join(config.GetInstance().GetConfigPath(), "icon.png")
+}
+
+func RevealInFileManager(path string) {
+	exists, err := utils.FileExists(path)
+	if err != nil {
+		logger.Errorf("Error checking file: %s", err)
+		return
+	}
+	if exists && IsDesktop() {
+		revealInFileManager(path)
+	}
 }
 
 func getServerURL(path string) string {

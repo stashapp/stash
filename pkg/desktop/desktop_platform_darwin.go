@@ -34,3 +34,7 @@ func sendNotification(notificationTitle string, notificationText string) {
 		logger.Errorf("Could not send MacOS notification: %s", err.Error())
 	}
 }
+
+func revealInFileManager(path string) {
+	exec.Command(`open`, `-R`, path)
+}
