@@ -56,6 +56,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
       <video
         disableRemotePlayback
         playsInline
+        muted={!soundActive}
         className="scene-card-preview-video"
         loop
         preload="none"

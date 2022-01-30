@@ -2,6 +2,7 @@ import { Button, Modal } from "react-bootstrap";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ImageInput } from "src/components/Shared";
+import cx from "classnames";
 
 interface IProps {
   objectName?: string;
@@ -20,6 +21,7 @@ interface IProps {
   onClearBackImage?: () => void;
   acceptSVG?: boolean;
   customButtons?: JSX.Element;
+  classNames?: string;
 }
 
 export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
@@ -127,7 +129,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   }
 
   return (
-    <div className="details-edit">
+    <div className={cx("details-edit", props.classNames)}>
       {renderEditButton()}
       <ImageInput
         isEditing={props.isEditing}
