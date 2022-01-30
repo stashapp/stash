@@ -166,9 +166,13 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             isEditing={false}
             onSave={() => {}}
             onImageChange={() => {}}
-            classNames="mb-4"
-          />
-          <PerformerSubmitButton performer={performer} />
+            classNames="mb-2"
+            customButtons={
+              <div>
+                <PerformerSubmitButton performer={performer} />
+              </div>
+            }
+          ></DetailsEditNavbar>
         </Row>
       </Col>
       <Tabs

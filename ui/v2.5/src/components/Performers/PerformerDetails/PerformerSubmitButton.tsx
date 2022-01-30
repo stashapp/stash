@@ -20,7 +20,7 @@ export const PerformerSubmitButton: React.FC<IPerformerOperationsProps> = ({
 
   return (
     <>
-      <Button className="ml-3" onClick={() => setShowDraftModal(true)}>
+      <Button onClick={() => setShowDraftModal(true)}>
         <FormattedMessage id="actions.submit_stash_box" />
       </Button>
       <SubmitStashBoxDraft
