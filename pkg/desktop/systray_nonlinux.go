@@ -13,7 +13,7 @@ import (
 )
 
 // MUST be run on the main goroutine or will have no effect on macOS
-func startSystray() {
+func startSystray(shutdownHandler ShutdownHandler) {
 
 	// Shows a small notification to inform that Stash will no longer show a terminal window,
 	// and instead will be available in the tray. Will only show the first time a pre-desktop integration
@@ -38,11 +38,13 @@ func startSystray() {
 	// }()
 
 	for {
-		systray.Run(systrayInitialize, nil)
+		systray.Run(func() {
+			systrayInitialize(shutdownHandler)
+		}, nil)
 	}
 }
 
-func systrayInitialize() {
+func systrayInitialize(shutdownHandler ShutdownHandler) {
 	favicon := favicon_png
 	if runtime.GOOS == "windows" {
 		favicon = favicon_ico
@@ -89,7 +91,7 @@ func systrayInitialize() {
 					openURLInBrowser("")
 				}
 			case <-quitStashButton.ClickedCh:
-				Shutdown()
+				shutdownHandler.Shutdown(0)
 			}
 		}
 	}()

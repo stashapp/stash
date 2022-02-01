@@ -269,7 +269,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		manager.GetInstance().Shutdown(0)
 	}()
 
-	desktop.Start()
+	desktop.Start(manager.GetInstance())
 }
 
 func printVersion() {

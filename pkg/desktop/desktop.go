@@ -11,21 +11,24 @@ import (
 	"strings"
 
 	"github.com/pkg/browser"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/utils"
 	"golang.org/x/term"
 )
 
-func Start() {
+type ShutdownHandler interface {
+	Shutdown(code int)
+}
+
+func Start(shutdownHandler ShutdownHandler) {
 	if IsDesktop() {
 		c := config.GetInstance()
 		if !c.GetNoBrowser() {
 			openURLInBrowser("")
 		}
 		writeStashIcon()
-		startSystray()
+		startSystray(shutdownHandler)
 	}
 }
 
@@ -121,14 +124,6 @@ func IsAllowedAutoUpdate() bool {
 	}
 
 	return true
-}
-
-func Shutdown() {
-	err := database.Close()
-	if err != nil {
-		os.Exit(1)
-	}
-	os.Exit(0)
 }
 
 func getIconPath() string {
