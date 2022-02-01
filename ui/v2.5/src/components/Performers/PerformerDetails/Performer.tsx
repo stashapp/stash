@@ -28,6 +28,7 @@ import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
+import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
 
 interface IProps {
@@ -165,7 +166,13 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             isEditing={false}
             onSave={() => {}}
             onImageChange={() => {}}
-          />
+            classNames="mb-2"
+            customButtons={
+              <div>
+                <PerformerSubmitButton performer={performer} />
+              </div>
+            }
+          ></DetailsEditNavbar>
         </Row>
       </Col>
       <Tabs
@@ -309,7 +316,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
     }
   }
 
-  const renderIcons = () => (
+  const renderClickableIcons = () => (
     <span className="name-icons">
       <Button
         className={cx(
@@ -393,11 +400,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             <h2>
               <GenderIcon
                 gender={performer.gender}
-                className="gender-icon mr-2"
+                className="gender-icon mr-2 flag-icon"
               />
               <CountryFlag country={performer.country} className="mr-2" />
               {performer.name}
-              {renderIcons()}
+              {renderClickableIcons()}
             </h2>
             <RatingStars
               value={performer.rating ?? undefined}

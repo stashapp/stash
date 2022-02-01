@@ -31,16 +31,24 @@
 }
 
 .details-edit {
+  /* 
+    The penultimate button should be wrapped in an unstyled div. 
+    This allows the div to expand, to right-justify the last (save / delete) button.
+  */
+
   display: flex;
+  flex-wrap: wrap;
   justify-content: left;
+  row-gap: 0.5rem;
 
   .btn {
     margin-right: 0.5rem;
+    white-space: nowrap;
   }
 
-  .delete,
-  .save {
-    margin-left: auto;
+  div:nth-last-child(2) {
+    flex: 1;
+    max-width: 100%;
   }
 }
 
