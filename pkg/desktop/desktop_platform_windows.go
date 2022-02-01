@@ -39,8 +39,12 @@ func sendNotification(notificationTitle string, notificationText string) {
 		Title:   notificationTitle,
 		Message: notificationText,
 		Icon:    getIconPath(),
-		Actions: []toast.Action{
-			{"protocol", "Open Stash", getServerURL("")}}}
+		Actions: []toast.Action{{
+			Type:      "protocol",
+			Label:     "Open Stash",
+			Arguments: getServerURL(""),
+		}},
+	}
 	err := notification.Push()
 	if err != nil {
 		logger.Errorf("Error creating Windows notification: %s", err.Error())
