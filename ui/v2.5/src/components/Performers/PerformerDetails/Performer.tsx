@@ -28,6 +28,7 @@ import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
+import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
 
 interface IProps {
@@ -165,8 +166,13 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             isEditing={false}
             onSave={() => {}}
             onImageChange={() => {}}
-            classNames="mb-4"
-          />
+            classNames="mb-2"
+            customButtons={
+              <div>
+                <PerformerSubmitButton performer={performer} />
+              </div>
+            }
+          ></DetailsEditNavbar>
         </Row>
       </Col>
       <Tabs

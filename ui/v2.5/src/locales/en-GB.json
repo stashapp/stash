@@ -88,6 +88,7 @@
     "show": "Show",
     "skip": "Skip",
     "stop": "Stop",
+    "submit_stash_box": "Submit to Stash-Box",
     "tasks": {
       "clean_confirm_message": "Are you sure you want to Clean? This will delete database information and generated content for all scenes and galleries that are no longer found in the filesystem.",
       "dry_mode_selected": "Dry Mode selected. No actual deleting will take place, only logging.",
