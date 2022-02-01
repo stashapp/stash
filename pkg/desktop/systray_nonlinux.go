@@ -4,7 +4,6 @@
 package desktop
 
 import (
-	"runtime"
 	"strings"
 
 	"github.com/kermieisinthehouse/systray"
@@ -13,7 +12,7 @@ import (
 )
 
 // MUST be run on the main goroutine or will have no effect on macOS
-func startSystray(shutdownHandler ShutdownHandler) {
+func startSystray(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
 
 	// Shows a small notification to inform that Stash will no longer show a terminal window,
 	// and instead will be available in the tray. Will only show the first time a pre-desktop integration
@@ -39,16 +38,13 @@ func startSystray(shutdownHandler ShutdownHandler) {
 
 	for {
 		systray.Run(func() {
-			systrayInitialize(shutdownHandler)
+			systrayInitialize(shutdownHandler, faviconProvider)
 		}, nil)
 	}
 }
 
-func systrayInitialize(shutdownHandler ShutdownHandler) {
-	favicon := favicon_png
-	if runtime.GOOS == "windows" {
-		favicon = favicon_ico
-	}
+func systrayInitialize(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
+	favicon := faviconProvider.GetFavicon()
 	systray.SetTemplateIcon(favicon, favicon)
 	systray.SetTooltip("🟢 Stash is Running.")
 

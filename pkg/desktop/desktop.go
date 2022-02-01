@@ -21,14 +21,19 @@ type ShutdownHandler interface {
 	Shutdown(code int)
 }
 
-func Start(shutdownHandler ShutdownHandler) {
+type FaviconProvider interface {
+	GetFavicon() []byte
+	GetFaviconPng() []byte
+}
+
+func Start(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
 	if IsDesktop() {
 		c := config.GetInstance()
 		if !c.GetNoBrowser() {
 			openURLInBrowser("")
 		}
-		writeStashIcon()
-		startSystray(shutdownHandler)
+		writeStashIcon(faviconProvider)
+		startSystray(shutdownHandler, faviconProvider)
 	}
 }
 
@@ -82,11 +87,11 @@ func HideExecShell(cmd *exec.Cmd) {
 }
 
 // writeStashIcon writes the current stash logo to config/icon.png
-func writeStashIcon() {
+func writeStashIcon(faviconProvider FaviconProvider) {
 	c := config.GetInstance()
 	if !c.IsNewSystem() {
 		iconPath := path.Join(c.GetConfigPath(), "icon.png")
-		err := ioutil.WriteFile(iconPath, favicon_png, 0644)
+		err := ioutil.WriteFile(iconPath, faviconProvider.GetFaviconPng(), 0644)
 		if err != nil {
 			logger.Errorf("Couldn't write icon file: %s", err.Error())
 		}

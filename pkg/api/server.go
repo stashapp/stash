@@ -268,8 +268,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		}
 		manager.GetInstance().Shutdown(0)
 	}()
-
-	desktop.Start(manager.GetInstance())
+	desktop.Start(manager.GetInstance(), &FaviconProvider{uiBox: uiBox})
 }
 
 func printVersion() {

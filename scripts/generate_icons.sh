@@ -1,7 +1,7 @@
 #!/bin/bash
 # Update the Stash icon throughout the project from a master stash-logo.png
 
-# Imagemagick, and go packages 2goarray, icns and rsrc are required.
+# Imagemagick, and go packages icns and rsrc are required.
 # Copy a high-resolution stash-logo.png to this stash/scripts folder
 # and run this script from said folder, commit the result.
 
@@ -12,13 +12,6 @@ fi
 
 if [ -z "$GOPATH" ]; then
     echo "GOPATH environment variable not set"
-    exit
-fi
-
-if [ ! -e "$GOPATH/bin/2goarray" ]; then
-    echo "Missing Dependency:"
-    echo "Please run the following /outside/ of the stash folder:"
-    echo "go install github.com/cratonica/2goarray@latest" 
     exit
 fi
 
@@ -39,7 +32,6 @@ fi
 # Favicon, used for web favicon, windows systray icon, windows executable icon
 convert stash-logo.png -define icon:auto-resize=256,64,48,32,16 favicon.ico
 cp favicon.ico ../ui/v2.5/public/
-"$GOPATH"/bin/2goarray favicon_ico desktop < favicon.ico > ../pkg/desktop/favicon_ico.go
 
 # Build .syso for Windows icon, consumed by linker while building stash-win.exe
 "$GOPATH"/bin/rsrc -ico favicon.ico -o icon_windows.syso
@@ -47,9 +39,7 @@ mv icon_windows.syso ../pkg/desktop/
 
 # *nixes systray icon
 convert stash-logo.png -resize x256 favicon.png
-# Add icons for systray / notifications
-"$GOPATH"/bin/2goarray favicon_png desktop < favicon.png > ../pkg/desktop/favicon_png.go
-
+cp favicon.png ../ui/v2.5/public/
 
 # MacOS, used for bundle icon
 # https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html
