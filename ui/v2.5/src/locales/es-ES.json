@@ -337,9 +337,11 @@
       "generate_phashes_during_scan": "Generar hashes de percepción (Phashes)",
       "generate_phashes_during_scan_tooltip": "Para búsqueda de duplicados e identificación de escenas.",
       "generate_previews_during_scan": "Generar imágenes previas durante el escaneo (vistas previas WebP animadas). Solo requerido si el tipo de previsualización seleccionado es “Imágenes animadas”)",
+      "generate_previews_during_scan_tooltip": "Generar vistas previas animadas WebP, solo requerido si Tipo de Vista Previa es Imagen Animada.",
       "generate_sprites_during_scan": "Generar conjunto de imágenes o “sprites” durante el escaneo (para el depurador/limpiador de escenas)",
       "generate_thumbnails_during_scan": "Generar miniaturas de las imágenes",
       "generate_video_previews_during_scan": "Generar vistas previas",
+      "generate_video_previews_during_scan_tooltip": "Generar vistas previas en vídeo que se reproducen al pasar el ratón por encima de una escena",
       "generated_content": "Contenido generado",
       "identify": {
         "and_create_missing": "y crear no existentes",
@@ -439,6 +441,7 @@
           }
         }
       },
+      "interactive_options": "Opciones Interactivas",
       "language": {
         "heading": "Lenguaje"
       },
@@ -586,6 +589,7 @@
     },
     "overwrite_filter_confirm": "¿Estás seguro de sobreescribir la consulta guardada {entityName}?",
     "scene_gen": {
+      "force_transcodes": "Forzar generación de transcodificación",
       "image_previews": "Vistas previas en imagen (animadas en formato WebP, solo requerido si el tipo de previsualización seleccionado es “Imágenes animadas”)",
       "marker_image_previews": "Vistas previas de marcadores (animadas en formato WebP, solo requerido si el tipo de previsualización seleccionado es “Imágenes animadas”)",
       "marker_screenshots": "Capturas de pantalla de marcadores (imagen JPG estática, solo requerido si el tipo de previsualización seleccionado es “Imagen estática”)",

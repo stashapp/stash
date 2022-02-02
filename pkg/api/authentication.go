@@ -57,14 +57,9 @@ func authenticateHandler() func(http.Handler) http.Handler {
 
 			if err := session.CheckAllowPublicWithoutAuth(c, r); err != nil {
 				var externalAccess session.ExternalAccessError
-				var untrustedProxy session.UntrustedProxyError
 				switch {
 				case errors.As(err, &externalAccess):
 					securityActivateTripwireAccessedFromInternetWithoutAuth(c, externalAccess, w)
-					return
-				case errors.As(err, &untrustedProxy):
-					logger.Warnf("Rejected request from untrusted proxy: %v", net.IP(untrustedProxy))
-					w.WriteHeader(http.StatusForbidden)
 					return
 				default:
 					logger.Errorf("Error checking external access security: %v", err)

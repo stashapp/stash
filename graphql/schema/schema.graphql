@@ -282,6 +282,11 @@ type Mutation {
   """Submit fingerprints to stash-box instance"""
   submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
 
+  """Submit scene as draft to stash-box instance"""
+  submitStashBoxSceneDraft(input: StashBoxDraftSubmissionInput!): ID
+  """Submit performer as draft to stash-box instance"""
+  submitStashBoxPerformerDraft(input: StashBoxDraftSubmissionInput!): ID
+
   """Backup the database. Optionally returns a link to download the database file"""
   backupDatabase(input: BackupDatabaseInput!): String
 

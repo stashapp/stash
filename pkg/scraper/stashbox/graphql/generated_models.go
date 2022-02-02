@@ -11,12 +11,28 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
+type DraftData interface {
+	IsDraftData()
+}
+
 type EditDetails interface {
 	IsEditDetails()
 }
 
 type EditTarget interface {
 	IsEditTarget()
+}
+
+type SceneDraftPerformer interface {
+	IsSceneDraftPerformer()
+}
+
+type SceneDraftStudio interface {
+	IsSceneDraftStudio()
+}
+
+type SceneDraftTag interface {
+	IsSceneDraftTag()
 }
 
 type ActivateNewUserInput struct {
@@ -60,6 +76,37 @@ type DateCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type Draft struct {
+	ID      string    `json:"id"`
+	Created time.Time `json:"created"`
+	Expires time.Time `json:"expires"`
+	Data    DraftData `json:"data"`
+}
+
+type DraftEntity struct {
+	Name string  `json:"name"`
+	ID   *string `json:"id"`
+}
+
+func (DraftEntity) IsSceneDraftPerformer() {}
+func (DraftEntity) IsSceneDraftStudio()    {}
+func (DraftEntity) IsSceneDraftTag()       {}
+
+type DraftEntityInput struct {
+	Name string  `json:"name"`
+	ID   *string `json:"id"`
+}
+
+type DraftFingerprint struct {
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+}
+
+type DraftSubmissionStatus struct {
+	ID *string `json:"id"`
+}
+
 type Edit struct {
 	ID   string `json:"id"`
 	User *User  `json:"user"`
@@ -75,13 +122,15 @@ type Edit struct {
 	// Entity specific options
 	Options  *PerformerEditOptions `json:"options"`
 	Comments []*EditComment        `json:"comments"`
-	Votes    []*VoteComment        `json:"votes"`
+	Votes    []*EditVote           `json:"votes"`
 	//  = Accepted - Rejected
-	VoteCount int            `json:"vote_count"`
-	Status    VoteStatusEnum `json:"status"`
-	Applied   bool           `json:"applied"`
-	Created   time.Time      `json:"created"`
-	Updated   time.Time      `json:"updated"`
+	VoteCount int `json:"vote_count"`
+	// Is the edit considered destructive.
+	Destructive bool           `json:"destructive"`
+	Status      VoteStatusEnum `json:"status"`
+	Applied     bool           `json:"applied"`
+	Created     time.Time      `json:"created"`
+	Updated     time.Time      `json:"updated"`
 }
 
 type EditComment struct {
@@ -123,10 +172,15 @@ type EditInput struct {
 	Comment        *string  `json:"comment"`
 }
 
+type EditVote struct {
+	User *User        `json:"user"`
+	Date time.Time    `json:"date"`
+	Vote VoteTypeEnum `json:"vote"`
+}
+
 type EditVoteInput struct {
-	ID      string       `json:"id"`
-	Comment *string      `json:"comment"`
-	Type    VoteTypeEnum `json:"type"`
+	ID   string       `json:"id"`
+	Vote VoteTypeEnum `json:"vote"`
 }
 
 type EyeColorCriterionInput struct {
@@ -135,24 +189,30 @@ type EyeColorCriterionInput struct {
 }
 
 type Fingerprint struct {
-	Hash        string               `json:"hash"`
-	Algorithm   FingerprintAlgorithm `json:"algorithm"`
-	Duration    int                  `json:"duration"`
-	Submissions int                  `json:"submissions"`
-	Created     time.Time            `json:"created"`
-	Updated     time.Time            `json:"updated"`
+	Hash          string               `json:"hash"`
+	Algorithm     FingerprintAlgorithm `json:"algorithm"`
+	Duration      int                  `json:"duration"`
+	Submissions   int                  `json:"submissions"`
+	Created       time.Time            `json:"created"`
+	Updated       time.Time            `json:"updated"`
+	UserSubmitted bool                 `json:"user_submitted"`
 }
 
 type FingerprintEditInput struct {
-	Hash        string               `json:"hash"`
-	Algorithm   FingerprintAlgorithm `json:"algorithm"`
-	Duration    int                  `json:"duration"`
-	Submissions int                  `json:"submissions"`
-	Created     time.Time            `json:"created"`
-	Updated     time.Time            `json:"updated"`
+	UserIds   []string             `json:"user_ids"`
+	Hash      string               `json:"hash"`
+	Algorithm FingerprintAlgorithm `json:"algorithm"`
+	Duration  int                  `json:"duration"`
+	Created   time.Time            `json:"created"`
+	// @deprecated(reason: "unused")
+	Submissions *int `json:"submissions"`
+	// @deprecated(reason: "unused")
+	Updated *time.Time `json:"updated"`
 }
 
 type FingerprintInput struct {
+	// assumes current user if omitted. Ignored for non-modify Users
+	UserIds   []string             `json:"user_ids"`
 	Hash      string               `json:"hash"`
 	Algorithm FingerprintAlgorithm `json:"algorithm"`
 	Duration  int                  `json:"duration"`
@@ -166,6 +226,7 @@ type FingerprintQueryInput struct {
 type FingerprintSubmission struct {
 	SceneID     string            `json:"scene_id"`
 	Fingerprint *FingerprintInput `json:"fingerprint"`
+	Unmatch     *bool             `json:"unmatch"`
 }
 
 type FuzzyDate struct {
@@ -238,6 +299,11 @@ type MultiIDCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+type MultiStringCriterionInput struct {
+	Value    []string          `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
 type NewUserInput struct {
 	Email     string  `json:"email"`
 	InviteKey *string `json:"invite_key"`
@@ -272,7 +338,8 @@ type Performer struct {
 	Studios         []*PerformerStudio  `json:"studios"`
 }
 
-func (Performer) IsEditTarget() {}
+func (Performer) IsEditTarget()          {}
+func (Performer) IsSceneDraftPerformer() {}
 
 type PerformerAppearance struct {
 	Performer *Performer `json:"performer"`
@@ -305,10 +372,53 @@ type PerformerCreateInput struct {
 	Tattoos         []*BodyModificationInput `json:"tattoos"`
 	Piercings       []*BodyModificationInput `json:"piercings"`
 	ImageIds        []string                 `json:"image_ids"`
+	DraftID         *string                  `json:"draft_id"`
 }
 
 type PerformerDestroyInput struct {
 	ID string `json:"id"`
+}
+
+type PerformerDraft struct {
+	Name            string   `json:"name"`
+	Aliases         *string  `json:"aliases"`
+	Gender          *string  `json:"gender"`
+	Birthdate       *string  `json:"birthdate"`
+	Urls            []string `json:"urls"`
+	Ethnicity       *string  `json:"ethnicity"`
+	Country         *string  `json:"country"`
+	EyeColor        *string  `json:"eye_color"`
+	HairColor       *string  `json:"hair_color"`
+	Height          *string  `json:"height"`
+	Measurements    *string  `json:"measurements"`
+	BreastType      *string  `json:"breast_type"`
+	Tattoos         *string  `json:"tattoos"`
+	Piercings       *string  `json:"piercings"`
+	CareerStartYear *int     `json:"career_start_year"`
+	CareerEndYear   *int     `json:"career_end_year"`
+	Image           *Image   `json:"image"`
+}
+
+func (PerformerDraft) IsDraftData() {}
+
+type PerformerDraftInput struct {
+	Name            string          `json:"name"`
+	Aliases         *string         `json:"aliases"`
+	Gender          *string         `json:"gender"`
+	Birthdate       *string         `json:"birthdate"`
+	Urls            []string        `json:"urls"`
+	Ethnicity       *string         `json:"ethnicity"`
+	Country         *string         `json:"country"`
+	EyeColor        *string         `json:"eye_color"`
+	HairColor       *string         `json:"hair_color"`
+	Height          *string         `json:"height"`
+	Measurements    *string         `json:"measurements"`
+	BreastType      *string         `json:"breast_type"`
+	Tattoos         *string         `json:"tattoos"`
+	Piercings       *string         `json:"piercings"`
+	CareerStartYear *int            `json:"career_start_year"`
+	CareerEndYear   *int            `json:"career_end_year"`
+	Image           *graphql.Upload `json:"image"`
 }
 
 type PerformerEdit struct {
@@ -340,6 +450,7 @@ type PerformerEdit struct {
 	RemovedPiercings []*BodyModification `json:"removed_piercings"`
 	AddedImages      []*Image            `json:"added_images"`
 	RemovedImages    []*Image            `json:"removed_images"`
+	DraftID          *string             `json:"draft_id"`
 }
 
 func (PerformerEdit) IsEditDetails() {}
@@ -363,6 +474,7 @@ type PerformerEditDetailsInput struct {
 	Tattoos         []*BodyModificationInput `json:"tattoos"`
 	Piercings       []*BodyModificationInput `json:"piercings"`
 	ImageIds        []string                 `json:"image_ids"`
+	DraftID         *string                  `json:"draft_id"`
 }
 
 type PerformerEditInput struct {
@@ -459,6 +571,11 @@ type QueryScenesResultType struct {
 	Scenes []*Scene `json:"scenes"`
 }
 
+type QuerySitesResultType struct {
+	Count int     `json:"count"`
+	Sites []*Site `json:"sites"`
+}
+
 type QuerySpec struct {
 	Page      *int               `json:"page"`
 	PerPage   *int               `json:"per_page"`
@@ -514,6 +631,7 @@ type Scene struct {
 	Duration     *int                   `json:"duration"`
 	Director     *string                `json:"director"`
 	Deleted      bool                   `json:"deleted"`
+	Edits        []*Edit                `json:"edits"`
 }
 
 func (Scene) IsEditTarget() {}
@@ -536,13 +654,39 @@ type SceneDestroyInput struct {
 	ID string `json:"id"`
 }
 
+type SceneDraft struct {
+	Title        *string               `json:"title"`
+	Details      *string               `json:"details"`
+	URL          *URL                  `json:"url"`
+	Date         *string               `json:"date"`
+	Studio       SceneDraftStudio      `json:"studio"`
+	Performers   []SceneDraftPerformer `json:"performers"`
+	Tags         []SceneDraftTag       `json:"tags"`
+	Image        *Image                `json:"image"`
+	Fingerprints []*DraftFingerprint   `json:"fingerprints"`
+}
+
+func (SceneDraft) IsDraftData() {}
+
+type SceneDraftInput struct {
+	Title        *string             `json:"title"`
+	Details      *string             `json:"details"`
+	URL          *string             `json:"url"`
+	Date         *string             `json:"date"`
+	Studio       *DraftEntityInput   `json:"studio"`
+	Performers   []*DraftEntityInput `json:"performers"`
+	Tags         []*DraftEntityInput `json:"tags"`
+	Image        *graphql.Upload     `json:"image"`
+	Fingerprints []*FingerprintInput `json:"fingerprints"`
+}
+
 type SceneEdit struct {
 	Title       *string `json:"title"`
 	Details     *string `json:"details"`
 	AddedUrls   []*URL  `json:"added_urls"`
 	RemovedUrls []*URL  `json:"removed_urls"`
 	Date        *string `json:"date"`
-	StudioID    *string `json:"studio_id"`
+	Studio      *Studio `json:"studio"`
 	// Added or modified performer appearance entries
 	AddedPerformers     []*PerformerAppearance `json:"added_performers"`
 	RemovedPerformers   []*PerformerAppearance `json:"removed_performers"`
@@ -554,6 +698,7 @@ type SceneEdit struct {
 	RemovedFingerprints []*Fingerprint         `json:"removed_fingerprints"`
 	Duration            *int                   `json:"duration"`
 	Director            *string                `json:"director"`
+	DraftID             *string                `json:"draft_id"`
 }
 
 func (SceneEdit) IsEditDetails() {}
@@ -567,9 +712,10 @@ type SceneEditDetailsInput struct {
 	Performers   []*PerformerAppearanceInput `json:"performers"`
 	TagIds       []string                    `json:"tag_ids"`
 	ImageIds     []string                    `json:"image_ids"`
-	Fingerprints []*FingerprintEditInput     `json:"fingerprints"`
 	Duration     *int                        `json:"duration"`
 	Director     *string                     `json:"director"`
+	Fingerprints []*FingerprintInput         `json:"fingerprints"`
+	DraftID      *string                     `json:"draft_id"`
 }
 
 type SceneEditInput struct {
@@ -599,7 +745,7 @@ type SceneFilterType struct {
 	// Filter to include scenes with performer appearing as alias
 	Alias *StringCriterionInput `json:"alias"`
 	// Filter to only include scenes with these fingerprints
-	Fingerprints *MultiIDCriterionInput `json:"fingerprints"`
+	Fingerprints *MultiStringCriterionInput `json:"fingerprints"`
 }
 
 type SceneUpdateInput struct {
@@ -617,6 +763,50 @@ type SceneUpdateInput struct {
 	Director     *string                     `json:"director"`
 }
 
+type Site struct {
+	ID          string              `json:"id"`
+	Name        string              `json:"name"`
+	Description *string             `json:"description"`
+	URL         *string             `json:"url"`
+	Regex       *string             `json:"regex"`
+	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
+	Icon        string              `json:"icon"`
+	Created     time.Time           `json:"created"`
+	Updated     time.Time           `json:"updated"`
+}
+
+type SiteCreateInput struct {
+	Name        string              `json:"name"`
+	Description *string             `json:"description"`
+	URL         *string             `json:"url"`
+	Regex       *string             `json:"regex"`
+	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
+}
+
+type SiteDestroyInput struct {
+	ID string `json:"id"`
+}
+
+type SiteUpdateInput struct {
+	ID          string              `json:"id"`
+	Name        string              `json:"name"`
+	Description *string             `json:"description"`
+	URL         *string             `json:"url"`
+	Regex       *string             `json:"regex"`
+	ValidTypes  []ValidSiteTypeEnum `json:"valid_types"`
+}
+
+type StashBoxConfig struct {
+	HostURL                    string `json:"host_url"`
+	RequireInvite              bool   `json:"require_invite"`
+	RequireActivation          bool   `json:"require_activation"`
+	VotePromotionThreshold     *int   `json:"vote_promotion_threshold"`
+	VoteApplicationThreshold   int    `json:"vote_application_threshold"`
+	VotingPeriod               int    `json:"voting_period"`
+	MinDestructiveVotingPeriod int    `json:"min_destructive_voting_period"`
+	VoteCronInterval           string `json:"vote_cron_interval"`
+}
+
 type StringCriterionInput struct {
 	Value    string            `json:"value"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -632,14 +822,14 @@ type Studio struct {
 	Deleted      bool      `json:"deleted"`
 }
 
-func (Studio) IsEditTarget() {}
+func (Studio) IsEditTarget()       {}
+func (Studio) IsSceneDraftStudio() {}
 
 type StudioCreateInput struct {
-	Name           string      `json:"name"`
-	Urls           []*URLInput `json:"urls"`
-	ParentID       *string     `json:"parent_id"`
-	ChildStudioIds []string    `json:"child_studio_ids"`
-	ImageIds       []string    `json:"image_ids"`
+	Name     string      `json:"name"`
+	Urls     []*URLInput `json:"urls"`
+	ParentID *string     `json:"parent_id"`
+	ImageIds []string    `json:"image_ids"`
 }
 
 type StudioDestroyInput struct {
@@ -649,23 +839,20 @@ type StudioDestroyInput struct {
 type StudioEdit struct {
 	Name *string `json:"name"`
 	// Added and modified URLs
-	AddedUrls           []*URL    `json:"added_urls"`
-	RemovedUrls         []*URL    `json:"removed_urls"`
-	Parent              *Studio   `json:"parent"`
-	AddedChildStudios   []*Studio `json:"added_child_studios"`
-	RemovedChildStudios []*Studio `json:"removed_child_studios"`
-	AddedImages         []*Image  `json:"added_images"`
-	RemovedImages       []*Image  `json:"removed_images"`
+	AddedUrls     []*URL   `json:"added_urls"`
+	RemovedUrls   []*URL   `json:"removed_urls"`
+	Parent        *Studio  `json:"parent"`
+	AddedImages   []*Image `json:"added_images"`
+	RemovedImages []*Image `json:"removed_images"`
 }
 
 func (StudioEdit) IsEditDetails() {}
 
 type StudioEditDetailsInput struct {
-	Name           *string     `json:"name"`
-	Urls           []*URLInput `json:"urls"`
-	ParentID       *string     `json:"parent_id"`
-	ChildStudioIds []string    `json:"child_studio_ids"`
-	ImageIds       []string    `json:"image_ids"`
+	Name     *string     `json:"name"`
+	Urls     []*URLInput `json:"urls"`
+	ParentID *string     `json:"parent_id"`
+	ImageIds []string    `json:"image_ids"`
 }
 
 type StudioEditInput struct {
@@ -686,12 +873,11 @@ type StudioFilterType struct {
 }
 
 type StudioUpdateInput struct {
-	ID             string      `json:"id"`
-	Name           *string     `json:"name"`
-	Urls           []*URLInput `json:"urls"`
-	ParentID       *string     `json:"parent_id"`
-	ChildStudioIds []string    `json:"child_studio_ids"`
-	ImageIds       []string    `json:"image_ids"`
+	ID       string      `json:"id"`
+	Name     *string     `json:"name"`
+	Urls     []*URLInput `json:"urls"`
+	ParentID *string     `json:"parent_id"`
+	ImageIds []string    `json:"image_ids"`
 }
 
 type Tag struct {
@@ -704,7 +890,8 @@ type Tag struct {
 	Category    *TagCategory `json:"category"`
 }
 
-func (Tag) IsEditTarget() {}
+func (Tag) IsEditTarget()    {}
+func (Tag) IsSceneDraftTag() {}
 
 type TagCategory struct {
 	ID          string       `json:"id"`
@@ -742,11 +929,11 @@ type TagDestroyInput struct {
 }
 
 type TagEdit struct {
-	Name           *string  `json:"name"`
-	Description    *string  `json:"description"`
-	AddedAliases   []string `json:"added_aliases"`
-	RemovedAliases []string `json:"removed_aliases"`
-	CategoryID     *string  `json:"category_id"`
+	Name           *string      `json:"name"`
+	Description    *string      `json:"description"`
+	AddedAliases   []string     `json:"added_aliases"`
+	RemovedAliases []string     `json:"removed_aliases"`
+	Category       *TagCategory `json:"category"`
 }
 
 func (TagEdit) IsEditDetails() {}
@@ -786,11 +973,12 @@ type TagUpdateInput struct {
 type URL struct {
 	URL  string `json:"url"`
 	Type string `json:"type"`
+	Site *Site  `json:"site"`
 }
 
 type URLInput struct {
-	URL  string `json:"url"`
-	Type string `json:"type"`
+	URL    string `json:"url"`
+	SiteID string `json:"site_id"`
 }
 
 type User struct {
@@ -801,12 +989,11 @@ type User struct {
 	// Should not be visible to other users
 	Email *string `json:"email"`
 	// Should not be visible to other users
-	APIKey            *string `json:"api_key"`
-	SuccessfulEdits   int     `json:"successful_edits"`
-	UnsuccessfulEdits int     `json:"unsuccessful_edits"`
-	SuccessfulVotes   int     `json:"successful_votes"`
-	// Votes on unsuccessful edits
-	UnsuccessfulVotes int `json:"unsuccessful_votes"`
+	APIKey *string `json:"api_key"`
+	//  Vote counts by type
+	VoteCount *UserVoteCount `json:"vote_count"`
+	//  Edit counts by status
+	EditCount *UserEditCount `json:"edit_count"`
 	// Calls to the API from this user over a configurable time period
 	APICalls          int      `json:"api_calls"`
 	InvitedBy         *User    `json:"invited_by"`
@@ -832,6 +1019,16 @@ type UserCreateInput struct {
 
 type UserDestroyInput struct {
 	ID string `json:"id"`
+}
+
+type UserEditCount struct {
+	Accepted          int `json:"accepted"`
+	Rejected          int `json:"rejected"`
+	Pending           int `json:"pending"`
+	ImmediateAccepted int `json:"immediate_accepted"`
+	ImmediateRejected int `json:"immediate_rejected"`
+	Failed            int `json:"failed"`
+	Canceled          int `json:"canceled"`
 }
 
 type UserFilterType struct {
@@ -866,17 +1063,19 @@ type UserUpdateInput struct {
 	Email    *string    `json:"email"`
 }
 
+type UserVoteCount struct {
+	Abstain         int `json:"abstain"`
+	Accept          int `json:"accept"`
+	Reject          int `json:"reject"`
+	ImmediateAccept int `json:"immediate_accept"`
+	ImmediateReject int `json:"immediate_reject"`
+}
+
 type Version struct {
 	Hash      string `json:"hash"`
 	BuildTime string `json:"build_time"`
+	BuildType string `json:"build_type"`
 	Version   string `json:"version"`
-}
-
-type VoteComment struct {
-	User    *User         `json:"user"`
-	Date    *string       `json:"date"`
-	Comment *string       `json:"comment"`
-	Type    *VoteTypeEnum `json:"type"`
 }
 
 type BreastTypeEnum string
@@ -1435,6 +1634,7 @@ const (
 	RoleEnumInvite RoleEnum = "INVITE"
 	// May grant and rescind invite tokens and resind invite keys
 	RoleEnumManageInvites RoleEnum = "MANAGE_INVITES"
+	RoleEnumBot           RoleEnum = "BOT"
 )
 
 var AllRoleEnum = []RoleEnum{
@@ -1445,11 +1645,12 @@ var AllRoleEnum = []RoleEnum{
 	RoleEnumAdmin,
 	RoleEnumInvite,
 	RoleEnumManageInvites,
+	RoleEnumBot,
 }
 
 func (e RoleEnum) IsValid() bool {
 	switch e {
-	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumAdmin, RoleEnumInvite, RoleEnumManageInvites:
+	case RoleEnumRead, RoleEnumVote, RoleEnumEdit, RoleEnumModify, RoleEnumAdmin, RoleEnumInvite, RoleEnumManageInvites, RoleEnumBot:
 		return true
 	}
 	return false
@@ -1605,6 +1806,49 @@ func (e TargetTypeEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type ValidSiteTypeEnum string
+
+const (
+	ValidSiteTypeEnumPerformer ValidSiteTypeEnum = "PERFORMER"
+	ValidSiteTypeEnumScene     ValidSiteTypeEnum = "SCENE"
+	ValidSiteTypeEnumStudio    ValidSiteTypeEnum = "STUDIO"
+)
+
+var AllValidSiteTypeEnum = []ValidSiteTypeEnum{
+	ValidSiteTypeEnumPerformer,
+	ValidSiteTypeEnumScene,
+	ValidSiteTypeEnumStudio,
+}
+
+func (e ValidSiteTypeEnum) IsValid() bool {
+	switch e {
+	case ValidSiteTypeEnumPerformer, ValidSiteTypeEnumScene, ValidSiteTypeEnumStudio:
+		return true
+	}
+	return false
+}
+
+func (e ValidSiteTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *ValidSiteTypeEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ValidSiteTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ValidSiteTypeEnum", str)
+	}
+	return nil
+}
+
+func (e ValidSiteTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type VoteStatusEnum string
 
 const (
@@ -1613,6 +1857,8 @@ const (
 	VoteStatusEnumPending           VoteStatusEnum = "PENDING"
 	VoteStatusEnumImmediateAccepted VoteStatusEnum = "IMMEDIATE_ACCEPTED"
 	VoteStatusEnumImmediateRejected VoteStatusEnum = "IMMEDIATE_REJECTED"
+	VoteStatusEnumFailed            VoteStatusEnum = "FAILED"
+	VoteStatusEnumCanceled          VoteStatusEnum = "CANCELED"
 )
 
 var AllVoteStatusEnum = []VoteStatusEnum{
@@ -1621,11 +1867,13 @@ var AllVoteStatusEnum = []VoteStatusEnum{
 	VoteStatusEnumPending,
 	VoteStatusEnumImmediateAccepted,
 	VoteStatusEnumImmediateRejected,
+	VoteStatusEnumFailed,
+	VoteStatusEnumCanceled,
 }
 
 func (e VoteStatusEnum) IsValid() bool {
 	switch e {
-	case VoteStatusEnumAccepted, VoteStatusEnumRejected, VoteStatusEnumPending, VoteStatusEnumImmediateAccepted, VoteStatusEnumImmediateRejected:
+	case VoteStatusEnumAccepted, VoteStatusEnumRejected, VoteStatusEnumPending, VoteStatusEnumImmediateAccepted, VoteStatusEnumImmediateRejected, VoteStatusEnumFailed, VoteStatusEnumCanceled:
 		return true
 	}
 	return false
@@ -1655,7 +1903,7 @@ func (e VoteStatusEnum) MarshalGQL(w io.Writer) {
 type VoteTypeEnum string
 
 const (
-	VoteTypeEnumComment VoteTypeEnum = "COMMENT"
+	VoteTypeEnumAbstain VoteTypeEnum = "ABSTAIN"
 	VoteTypeEnumAccept  VoteTypeEnum = "ACCEPT"
 	VoteTypeEnumReject  VoteTypeEnum = "REJECT"
 	// Immediately accepts the edit - bypassing the vote
@@ -1665,7 +1913,7 @@ const (
 )
 
 var AllVoteTypeEnum = []VoteTypeEnum{
-	VoteTypeEnumComment,
+	VoteTypeEnumAbstain,
 	VoteTypeEnumAccept,
 	VoteTypeEnumReject,
 	VoteTypeEnumImmediateAccept,
@@ -1674,7 +1922,7 @@ var AllVoteTypeEnum = []VoteTypeEnum{
 
 func (e VoteTypeEnum) IsValid() bool {
 	switch e {
-	case VoteTypeEnumComment, VoteTypeEnumAccept, VoteTypeEnumReject, VoteTypeEnumImmediateAccept, VoteTypeEnumImmediateReject:
+	case VoteTypeEnumAbstain, VoteTypeEnumAccept, VoteTypeEnumReject, VoteTypeEnumImmediateAccept, VoteTypeEnumImmediateReject:
 		return true
 	}
 	return false
