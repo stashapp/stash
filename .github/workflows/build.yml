@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:5
+  COMPILER_IMAGE: stashapp/compiler:6
 
 jobs:
   build:
