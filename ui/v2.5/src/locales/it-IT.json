@@ -692,6 +692,14 @@
   "gallery": "Galleria",
   "gallery_count": "Numero Gallerie",
   "gender": "Genere",
+  "gender_types": {
+    "FEMALE": "Donna",
+    "INTERSEX": "Intersessualità",
+    "MALE": "Uomo",
+    "NON_BINARY": "Non-Binario",
+    "TRANSGENDER_FEMALE": "Donna Transgender",
+    "TRANSGENDER_MALE": "Uomo Transgender"
+  },
   "hair_color": "Colore Capelli",
   "hasMarkers": "Ha Marcatori",
   "height": "Altezza",

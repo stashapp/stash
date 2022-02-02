@@ -184,6 +184,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	}
 
 	customUILocation := c.GetCustomUILocation()
+	static := statigz.FileServer(uiBox)
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
@@ -222,7 +223,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			}
 			r.URL.Path = uiRootDir + r.URL.Path
 
-			statigz.FileServer(uiBox).ServeHTTP(w, r)
+			static.ServeHTTP(w, r)
 		}
 	})
 
@@ -364,7 +365,6 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 
 		w.Header().Set("Referrer-Policy", "same-origin")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("X-XSS-Protection", "1")
 		w.Header().Set("Content-Security-Policy", cspDirectives)
 
@@ -385,13 +385,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		}
 		prefix := getProxyPrefix(r.Header)
 
-		port := ""
-		forwardedPort := r.Header.Get("X-Forwarded-Port")
-		if forwardedPort != "" && forwardedPort != "80" && forwardedPort != "8080" && forwardedPort != "443" && !strings.Contains(r.Host, ":") {
-			port = ":" + forwardedPort
-		}
-
-		baseURL := scheme + "://" + r.Host + port + prefix
+		baseURL := scheme + "://" + r.Host + prefix
 
 		externalHost := config.GetInstance().GetExternalHost()
 		if externalHost != "" {
