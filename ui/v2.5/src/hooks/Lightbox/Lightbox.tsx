@@ -725,12 +725,6 @@ export const LightboxComponent: React.FC<IProps> = ({
         <div className={CLASSNAME_FOOTER_LEFT}>
           {currentImage.id !== undefined && (
             <>
-              <RatingStars
-                value={currentImage.rating ?? undefined}
-                onSetRating={(v) => {
-                  setRating(v ?? null);
-                }}
-              />
               <div>
                 <OCounterButton
                   onDecrement={onDecrementClick}
@@ -739,6 +733,12 @@ export const LightboxComponent: React.FC<IProps> = ({
                   value={currentImage.o_counter ?? 0}
                 />
               </div>
+              <RatingStars
+                value={currentImage.rating ?? undefined}
+                onSetRating={(v) => {
+                  setRating(v ?? null);
+                }}
+              />
             </>
           )}
         </div>
