@@ -66,7 +66,7 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 	}
 
 	{
-		// X-FORWARDED-FOR without trusted proxy
+		// X-FORWARDED-FOR
 		testCases := []struct {
 			proxyChain string
 			err        error
@@ -92,39 +92,6 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 	}
 
 	{
-		// X-FORWARDED-FOR with trusted proxy
-		var trustedProxies = []string{"8.8.8.8", "4.4.4.4"}
-		c.Set(config.TrustedProxies, trustedProxies)
-
-		testCases := []struct {
-			address    string
-			proxyChain string
-			err        error
-		}{
-			{"192.168.1.1:8080", "192.168.1.1, 192.168.1.2, 100.64.0.1, 127.0.0.1", &UntrustedProxyError{}},
-			{"8.8.8.8:8080", "192.168.1.2, 127.0.0.1", &UntrustedProxyError{}},
-			{"8.8.8.8:8080", "193.168.1.1, 4.4.4.4", &ExternalAccessError{}},
-			{"8.8.8.8:8080", "4.4.4.4", &ExternalAccessError{}},
-			{"8.8.8.8:8080", "192.168.1.1, 4.4.4.4a", &UntrustedProxyError{}},
-			{"8.8.8.8:8080", "192.168.1.1a, 4.4.4.4", &ExternalAccessError{}},
-			{"8.8.8.8:8080", "192.168.1.1, 4.4.4.4", nil},
-			{"8.8.8.8:8080", "192.168.1.1", nil},
-		}
-
-		header := make(http.Header)
-
-		for i, tc := range testCases {
-			header.Set("X-FORWARDED-FOR", tc.proxyChain)
-			r := &http.Request{
-				RemoteAddr: tc.address,
-				Header:     header,
-			}
-
-			doTest(i, r, tc.err)
-		}
-	}
-
-	{
 		// test invalid request IPs
 		invalidIPs := []string{"192.168.1.a:9999", "192.168.1.1"}
 
@@ -134,11 +101,6 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 			}
 
 			err := CheckAllowPublicWithoutAuth(c, r)
-			if errors.As(err, &UntrustedProxyError{}) || errors.As(err, &ExternalAccessError{}) {
-				t.Errorf("[%s]: unexpected error: %v", remoteAddr, err)
-				continue
-			}
-
 			if err == nil {
 				t.Errorf("[%s]: expected error", remoteAddr)
 				continue
