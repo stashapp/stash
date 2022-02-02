@@ -246,6 +246,18 @@ textarea.text-input {
       opacity: 0.8;
     }
   }
+
+  @media (hover: none), (pointer: coarse) {
+    // always show preview button when hovering not supported
+    align-items: flex-end;
+    justify-content: right;
+
+    .fa-icon {
+      height: 3em;
+      opacity: 0.8;
+      width: 3em;
+    }
+  }
 }
 
 /* this is a bit of a hack, because we can't supply direct class names
