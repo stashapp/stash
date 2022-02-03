@@ -15,6 +15,24 @@ interface IListOperationProps {
   onClose: (applied: boolean) => void;
 }
 
+const ChangeableTextFields = [
+  "ethnicity",
+  "country",
+  "eye_color",
+  "height",
+  "measurements",
+  "fake_tits",
+  "career_length",
+  "tattoos",
+  "piercings",
+  "hair_color"
+]
+
+interface ITextFieldState {
+  value: string | undefined;
+  setter: (newValue: string | undefined) => void;
+}
+
 export const EditPerformersDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
@@ -27,7 +45,12 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [tagIds, setTagIds] = useState<string[]>();
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
   const [favorite, setFavorite] = useState<boolean | undefined>();
-  const [country, setCountry] = useState<string | undefined>();
+  const textFields = new Map<string, ITextFieldState>();
+  for (const fieldName of ChangeableTextFields)
+  {
+    const [value, setter] = useState<string | undefined>();
+    textFields.set(fieldName, { value, setter });
+  }
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
 
@@ -35,7 +58,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [isUpdating, setIsUpdating] = useState(false);
 
   const checkboxRef = React.createRef<HTMLInputElement>();
-  const countryRef = React.createRef<HTMLInputElement>();
 
   function makeBulkUpdateIds(
     ids: string[],
@@ -90,8 +112,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       performerInput.favorite = favorite;
     }
 
-    if (country != undefined) {
-      performerInput.country = country;
+    for (const [fieldName, fieldState] of textFields) {
+      if (fieldState.value !== undefined) {
+        (performerInput as any)[fieldName] = fieldState.value;
+      }
     }
 
     return performerInput;
@@ -188,7 +212,11 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setExistingTagIds(updateTagIds);
     setFavorite(updateFavorite);
     setRating(updateRating);
-    setCountry(undefined); // no country in SlimPerformer
+
+    // the text fields are not part of SlimPerformerDataFragment
+    for (const [, textField] of textFields) {
+      textField.setter(undefined);
+    }
   }, [props.selected, tagMode]);
 
   useEffect(() => {
@@ -196,12 +224,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       checkboxRef.current.indeterminate = favorite === undefined;
     }
   }, [favorite, checkboxRef]);
-
-  useEffect(() => {
-    if (countryRef.current) {
-      countryRef.current.indeterminate = country == undefined;
-    }
-  }, [country, countryRef]);
 
   function cycleFavorite() {
     if (favorite) {
@@ -211,6 +233,25 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     } else {
       setFavorite(true);
     }
+  }
+
+  function renderTextFields() {
+    const rows: JSX.Element[] = [];
+    for (const [fieldName, fieldState] of textFields) {
+      rows.push(
+        <Form.Group controlId={fieldName}>
+          <Form.Label>
+            <FormattedMessage id={fieldName} />
+          </Form.Label>
+          <Form.Control
+            type="text"
+            value={fieldState.value}
+            onChange={(event) => fieldState.setter(event.currentTarget.value)}
+          />
+        </Form.Group>
+      );
+    }
+    return rows;
   }
 
   function render() {
@@ -268,17 +309,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             />
           </Form.Group>
 
-          <Form.Group controlId="country">
-            <Form.Label>
-              <FormattedMessage id="country" />
-            </Form.Label>
-            <Form.Control
-              type="text"
-              value={country}
-              ref={countryRef}
-              onChange={(event) => setCountry(event.currentTarget.value)}
-            />
-          </Form.Group>
+          {renderTextFields()}
         </Form>
       </Modal>
     );
