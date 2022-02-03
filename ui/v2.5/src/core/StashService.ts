@@ -1149,3 +1149,19 @@ export const stashBoxPerformerBatchQuery = (
       },
     },
   });
+
+export const stashBoxSubmitSceneDraft = (
+  input: GQL.StashBoxDraftSubmissionInput
+) =>
+  client.mutate<GQL.SubmitStashBoxSceneDraftMutation>({
+    mutation: GQL.SubmitStashBoxSceneDraftDocument,
+    variables: { input },
+  });
+
+export const stashBoxSubmitPerformerDraft = (
+  input: GQL.StashBoxDraftSubmissionInput
+) =>
+  client.mutate<GQL.SubmitStashBoxPerformerDraftMutation>({
+    mutation: GQL.SubmitStashBoxPerformerDraftDocument,
+    variables: { input },
+  });

@@ -61,6 +61,7 @@ func newEvent(w LevelWriter, level Level) *Event {
 	e.buf = enc.AppendBeginMarker(e.buf)
 	e.w = w
 	e.level = level
+	e.stack = false
 	return e
 }
 
@@ -317,7 +318,6 @@ func (e *Event) Errs(key string, errs []error) *Event {
 
 // Err adds the field "error" with serialized err to the *Event context.
 // If err is nil, no field is added.
-// To customize the key name, change zerolog.ErrorFieldName.
 //
 // To customize the key name, change zerolog.ErrorFieldName.
 //

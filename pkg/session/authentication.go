@@ -16,12 +16,6 @@ func (e ExternalAccessError) Error() string {
 	return fmt.Sprintf("stash accessed from external IP %s", net.IP(e).String())
 }
 
-type UntrustedProxyError net.IP
-
-func (e UntrustedProxyError) Error() string {
-	return fmt.Sprintf("untrusted proxy %s", net.IP(e).String())
-}
-
 func CheckAllowPublicWithoutAuth(c *config.Instance, r *http.Request) error {
 	if !c.HasCredentials() && !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
 		requestIPString, _, err := net.SplitHostPort(r.RemoteAddr)
@@ -42,43 +36,21 @@ func CheckAllowPublicWithoutAuth(c *config.Instance, r *http.Request) error {
 
 		if r.Header.Get("X-FORWARDED-FOR") != "" {
 			// Request was proxied
-			trustedProxies := c.GetTrustedProxies()
 			proxyChain := strings.Split(r.Header.Get("X-FORWARDED-FOR"), ", ")
 
-			if len(trustedProxies) == 0 {
-				// validate proxies against local network only
-				if !isLocalIP(requestIP) {
-					return ExternalAccessError(requestIP)
-				} else {
-					// Safe to validate X-Forwarded-For
-					for i := range proxyChain {
-						ip := net.ParseIP(proxyChain[i])
-						if !isLocalIP(ip) {
-							return ExternalAccessError(ip)
-						}
-					}
-				}
+			// validate proxies against local network only
+			if !isLocalIP(requestIP) {
+				return ExternalAccessError(requestIP)
 			} else {
-				// validate proxies against trusted proxies list
-				if isIPTrustedProxy(requestIP, trustedProxies) {
-					// Safe to validate X-Forwarded-For
-					// validate backwards, as only the last one is not attacker-controlled
-					for i := len(proxyChain) - 1; i >= 0; i-- {
-						ip := net.ParseIP(proxyChain[i])
-						if i == 0 {
-							// last entry is originating device, check if from the public internet
-							if !isLocalIP(ip) {
-								return ExternalAccessError(ip)
-							}
-						} else if !isIPTrustedProxy(ip, trustedProxies) {
-							return UntrustedProxyError(ip)
-						}
+				// Safe to validate X-Forwarded-For
+				for i := range proxyChain {
+					ip := net.ParseIP(proxyChain[i])
+					if !isLocalIP(ip) {
+						return ExternalAccessError(ip)
 					}
-				} else {
-					// Proxy not on safe proxy list
-					return UntrustedProxyError(requestIP)
 				}
 			}
+
 		} else if !isLocalIP(requestIP) { // request was not proxied
 			return ExternalAccessError(requestIP)
 		}
@@ -102,18 +74,6 @@ func CheckExternalAccessTripwire(c *config.Instance) *ExternalAccessError {
 func isLocalIP(requestIP net.IP) bool {
 	_, cgNatAddrSpace, _ := net.ParseCIDR("100.64.0.0/10")
 	return requestIP.IsPrivate() || requestIP.IsLoopback() || requestIP.IsLinkLocalUnicast() || cgNatAddrSpace.Contains(requestIP)
-}
-
-func isIPTrustedProxy(ip net.IP, trustedProxies []string) bool {
-	if len(trustedProxies) == 0 {
-		return isLocalIP(ip)
-	}
-	for _, v := range trustedProxies {
-		if ip.Equal(net.ParseIP(v)) {
-			return true
-		}
-	}
-	return false
 }
 
 func LogExternalAccessError(err ExternalAccessError) {

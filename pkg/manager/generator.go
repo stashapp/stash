@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
@@ -72,6 +73,7 @@ func (g *GeneratorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 		}
 
 		command := exec.Command(string(instance.FFMPEG), args...)
+		desktop.HideExecShell(command)
 		var stdErrBuffer bytes.Buffer
 		command.Stderr = &stdErrBuffer // Frames go to stderr rather than stdout
 		if err := command.Run(); err == nil {

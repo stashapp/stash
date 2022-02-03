@@ -197,10 +197,6 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.MaxSessionAge, *input.MaxSessionAge)
 	}
 
-	if input.TrustedProxies != nil {
-		c.Set(config.TrustedProxies, input.TrustedProxies)
-	}
-
 	if input.LogFile != nil {
 		c.Set(config.LogFile, input.LogFile)
 	}
@@ -297,6 +293,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 	setBool(config.WallShowTitle, input.WallShowTitle)
 
 	setBool(config.NoBrowser, input.NoBrowser)
+
+	setBool(config.NotificationsEnabled, input.NotificationsEnabled)
 
 	if input.WallPlayback != nil {
 		c.Set(config.WallPlayback, *input.WallPlayback)
