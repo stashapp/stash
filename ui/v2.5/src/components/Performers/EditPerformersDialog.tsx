@@ -15,24 +15,6 @@ interface IListOperationProps {
   onClose: (applied: boolean) => void;
 }
 
-const ChangeableTextFields = [
-  "ethnicity",
-  "country",
-  "eye_color",
-  "height",
-  "measurements",
-  "fake_tits",
-  "career_length",
-  "tattoos",
-  "piercings",
-  "hair_color"
-]
-
-interface ITextFieldState {
-  value: string | undefined;
-  setter: (newValue: string | undefined) => void;
-}
-
 export const EditPerformersDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
@@ -45,12 +27,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [tagIds, setTagIds] = useState<string[]>();
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
   const [favorite, setFavorite] = useState<boolean | undefined>();
-  const textFields = new Map<string, ITextFieldState>();
-  for (const fieldName of ChangeableTextFields)
-  {
-    const [value, setter] = useState<string | undefined>();
-    textFields.set(fieldName, { value, setter });
-  }
+  const [ethnicity, setEthnicity] = useState<string | undefined>();
+  const [country, setCountry] = useState<string | undefined>();
+  const [eyeColor, setEyeColor] = useState<string | undefined>();
+  const [height, setHeight] = useState<string | undefined>();
+  const [measurements, setMeasurements] = useState<string | undefined>();
+  const [fakeTits, setFakeTits] = useState<string | undefined>();
+  const [careerLength, setCareerLength] = useState<string | undefined>();
+  const [tattoos, setTattoos] = useState<string | undefined>();
+  const [piercings, setPiercings] = useState<string | undefined>();
+  const [hairColor, setHairColor] = useState<string | undefined>();
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
 
@@ -108,15 +94,17 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       performerInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
     }
 
-    if (favorite !== undefined) {
-      performerInput.favorite = favorite;
-    }
-
-    for (const [fieldName, fieldState] of textFields) {
-      if (fieldState.value !== undefined) {
-        (performerInput as any)[fieldName] = fieldState.value;
-      }
-    }
+    performerInput.favorite = favorite;
+    performerInput.ethnicity = ethnicity;
+    performerInput.country = country;
+    performerInput.eye_color = eyeColor;
+    performerInput.height = height;
+    performerInput.measurements = measurements;
+    performerInput.fake_tits = fakeTits;
+    performerInput.career_length = careerLength;
+    performerInput.tattoos = tattoos;
+    performerInput.piercings = piercings;
+    performerInput.hair_color = hairColor;
 
     return performerInput;
   }
@@ -213,10 +201,17 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setFavorite(updateFavorite);
     setRating(updateRating);
 
-    // the text fields are not part of SlimPerformerDataFragment
-    for (const [, textField] of textFields) {
-      textField.setter(undefined);
-    }
+    // these fields are not part of SlimPerformerDataFragment
+    setEthnicity(undefined);
+    setCountry(undefined);
+    setEyeColor(undefined);
+    setHeight(undefined);
+    setMeasurements(undefined);
+    setFakeTits(undefined);
+    setCareerLength(undefined);
+    setTattoos(undefined);
+    setPiercings(undefined);
+    setHairColor(undefined);
   }, [props.selected, tagMode]);
 
   useEffect(() => {
@@ -235,23 +230,24 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     }
   }
 
-  function renderTextFields() {
-    const rows: JSX.Element[] = [];
-    for (const [fieldName, fieldState] of textFields) {
-      rows.push(
-        <Form.Group controlId={fieldName}>
-          <Form.Label>
-            <FormattedMessage id={fieldName} />
-          </Form.Label>
-          <Form.Control
-            type="text"
-            value={fieldState.value}
-            onChange={(event) => fieldState.setter(event.currentTarget.value)}
-          />
-        </Form.Group>
-      );
-    }
-    return rows;
+  function renderTextField(
+    name: string,
+    value: string | undefined,
+    setter: (newValue: string | undefined) => void
+  ) {
+    return (
+      <Form.Group controlId={name}>
+        <Form.Label>
+          <FormattedMessage id={name} />
+        </Form.Label>
+        <Form.Control
+          type="text"
+          value={value}
+          onChange={(event) => setter(event.currentTarget.value)}
+          placeholder={intl.formatMessage({ id: name })}
+        />
+      </Form.Group>
+    );
   }
 
   function render() {
@@ -284,6 +280,27 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           </Col>
         </Form.Group>
         <Form>
+          <Form.Group controlId="favorite">
+            <Form.Check
+              type="checkbox"
+              label="Favorite"
+              checked={favorite}
+              ref={checkboxRef}
+              onChange={() => cycleFavorite()}
+            />
+          </Form.Group>
+
+          {renderTextField("country", country, setCountry)}
+          {renderTextField("ethnicity", ethnicity, setEthnicity)}
+          {renderTextField("hair_color", hairColor, setHairColor)}
+          {renderTextField("eye_color", eyeColor, setEyeColor)}
+          {renderTextField("height", height, setHeight)}
+          {renderTextField("measurements", measurements, setMeasurements)}
+          {renderTextField("fake_tits", fakeTits, setFakeTits)}
+          {renderTextField("tattoos", tattoos, setTattoos)}
+          {renderTextField("piercings", piercings, setPiercings)}
+          {renderTextField("career_length", careerLength, setCareerLength)}
+
           <Form.Group controlId="tags">
             <Form.Label>
               <FormattedMessage id="tags" />
@@ -298,18 +315,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
               mode={tagMode}
             />
           </Form.Group>
-
-          <Form.Group controlId="favorite">
-            <Form.Check
-              type="checkbox"
-              label="Favorite"
-              checked={favorite}
-              ref={checkboxRef}
-              onChange={() => cycleFavorite()}
-            />
-          </Form.Group>
-
-          {renderTextFields()}
         </Form>
       </Modal>
     );
