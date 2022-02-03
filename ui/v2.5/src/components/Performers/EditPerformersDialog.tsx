@@ -9,6 +9,10 @@ import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
+import {
+  genderStrings,
+  stringToGender,
+} from "src/utils/gender";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -35,6 +39,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [tattoos, setTattoos] = useState<string | undefined>();
   const [piercings, setPiercings] = useState<string | undefined>();
   const [hairColor, setHairColor] = useState<string | undefined>();
+  const [gender, setGender] = useState<GQL.GenderEnum | undefined>();
+  const genderOptions = [""].concat(genderStrings);
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
 
@@ -101,6 +107,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     performerInput.tattoos = tattoos;
     performerInput.piercings = piercings;
     performerInput.hair_color = hairColor;
+    performerInput.gender = gender;
 
     return performerInput;
   }
@@ -169,6 +176,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     let updateTagIds: string[] = [];
     let updateFavorite: boolean | undefined;
     let updateRating: number | undefined;
+    let updateGender: GQL.GenderEnum | undefined;
     let first = true;
 
     state.forEach((performer: GQL.SlimPerformerDataFragment) => {
@@ -180,6 +188,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         first = false;
         updateFavorite = performer.favorite;
         updateRating = performerRating ?? undefined;
+        updateGender = performer.gender ?? undefined;
       } else {
         if (!_.isEqual(performerTagIDs, updateTagIds)) {
           updateTagIds = [];
@@ -190,12 +199,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         if (performerRating !== updateRating) {
           updateRating = undefined;
         }
+        if (performer.gender !== updateGender) {
+          updateGender = undefined;
+        }
       }
     });
 
     setExistingTagIds(updateTagIds);
     setFavorite(updateFavorite);
     setRating(updateRating);
+    setGender(updateGender);
 
     // these fields are not part of SlimPerformerDataFragment
     setEthnicity(undefined);
@@ -235,6 +248,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           <FormattedMessage id={name} />
         </Form.Label>
         <Form.Control
+          className="input-control"
           type="text"
           value={value}
           onChange={(event) => setter(event.currentTarget.value)}
@@ -282,6 +296,23 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
               ref={checkboxRef}
               onChange={() => cycleFavorite()}
             />
+          </Form.Group>
+
+          <Form.Group>
+            <Form.Label>
+              <FormattedMessage id="gender"/>
+            </Form.Label>
+            <Form.Control
+              as="select"
+              className="input-control"
+              onChange={(event) => setGender(stringToGender(event.currentTarget.value))}
+            >
+              {genderOptions.map((opt) => (
+                <option value={opt} key={opt}>
+                  {opt}
+                </option>
+              ))}
+            </Form.Control>
           </Form.Group>
 
           {renderTextField("country", country, setCountry)}
