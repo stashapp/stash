@@ -50,6 +50,12 @@ github.com/antchfx/htmlquery
 # github.com/antchfx/xpath v1.2.0
 ## explicit; go 1.14
 github.com/antchfx/xpath
+# github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
+## explicit; go 1.12
+github.com/apenwarr/fixconsole
+# github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab
+## explicit
+github.com/apenwarr/w32
 # github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 ## explicit; go 1.14
 github.com/chromedp/cdproto
@@ -130,6 +136,16 @@ github.com/fvbommel/sortorder
 ## explicit
 github.com/go-chi/chi
 github.com/go-chi/chi/middleware
+# github.com/go-chi/chi/v5 v5.0.0
+## explicit; go 1.16
+github.com/go-chi/chi/v5
+github.com/go-chi/chi/v5/middleware
+# github.com/go-chi/httplog v0.2.1
+## explicit; go 1.14
+github.com/go-chi/httplog
+# github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
+## explicit
+github.com/go-toast/toast
 # github.com/gobwas/httphead v0.1.0
 ## explicit; go 1.15
 github.com/gobwas/httphead
@@ -212,6 +228,12 @@ github.com/josharian/intern
 # github.com/json-iterator/go v1.1.11
 ## explicit; go 1.12
 github.com/json-iterator/go
+# github.com/kermieisinthehouse/gosx-notifier v0.1.1
+## explicit
+github.com/kermieisinthehouse/gosx-notifier
+# github.com/kermieisinthehouse/systray v1.2.3
+## explicit; go 1.17
+github.com/kermieisinthehouse/systray
 # github.com/lucasb-eyer/go-colorful v1.2.0
 ## explicit; go 1.12
 github.com/lucasb-eyer/go-colorful
@@ -249,6 +271,9 @@ github.com/natefinch/pie
 # github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 ## explicit
 github.com/nfnt/resize
+# github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
+## explicit
+github.com/nu7hatch/gouuid
 # github.com/pelletier/go-toml v1.9.4
 ## explicit; go 1.12
 github.com/pelletier/go-toml
@@ -276,7 +301,7 @@ github.com/robertkrimen/otto/token
 # github.com/rs/cors v1.6.0
 ## explicit
 github.com/rs/cors
-# github.com/rs/zerolog v1.18.0
+# github.com/rs/zerolog v1.18.1-0.20200514152719-663cbb4c8469
 ## explicit
 github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor
@@ -399,7 +424,7 @@ golang.org/x/net/internal/iana
 golang.org/x/net/internal/socket
 golang.org/x/net/ipv4
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
+# golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -407,6 +432,7 @@ golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+golang.org/x/sys/windows/svc
 # golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 ## explicit; go 1.17
 golang.org/x/term

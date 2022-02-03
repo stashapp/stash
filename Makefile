@@ -1,17 +1,22 @@
-IS_WIN =
+IS_WIN_SHELL =
 ifeq (${SHELL}, sh.exe)
-  IS_WIN = true
+  IS_WIN_SHELL = true
 endif
 ifeq (${SHELL}, cmd)
-  IS_WIN = true
+  IS_WIN_SHELL = true
 endif
 
-ifdef IS_WIN
+ifdef IS_WIN_SHELL
   SEPARATOR := &&
   SET := set
 else
   SEPARATOR := ;
   SET := export
+endif
+
+IS_WIN_OS =
+ifeq ($(OS),Windows_NT)
+	IS_WIN_OS = true
 endif
 
 # set LDFLAGS environment variable to any extra ldflags required
@@ -46,9 +51,13 @@ ifndef OFFICIAL_BUILD
 endif
 
 build: pre-build
+ifdef IS_WIN_OS
+PLATFORM_SPECIFIC_LDFLAGS := -H windowsgui
+endif
+build:
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.officialBuild=$(OFFICIAL_BUILD)')
-	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/manager/config.officialBuild=$(OFFICIAL_BUILD)')
+	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS) $(PLATFORM_SPECIFIC_LDFLAGS)"
 
 # strips debug symbols from the release build
 build-release: EXTRA_LDFLAGS := -s -w
@@ -65,23 +74,38 @@ cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
 cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
 cross-compile-windows: OUTPUT := -o dist/stash-win.exe
+cross-compile-windows: PLATFORM_SPECIFIC_LDFLAGS := -H windowsgui
 cross-compile-windows: build-release-static
 
-cross-compile-osx-intel: export GOOS := darwin
-cross-compile-osx-intel: export GOARCH := amd64
-cross-compile-osx-intel: export CC := o64-clang
-cross-compile-osx-intel: export CXX := o64-clang++
-cross-compile-osx-intel: OUTPUT := -o dist/stash-osx
+cross-compile-macos-intel: export GOOS := darwin
+cross-compile-macos-intel: export GOARCH := amd64
+cross-compile-macos-intel: export CC := o64-clang
+cross-compile-macos-intel: export CXX := o64-clang++
+cross-compile-macos-intel: OUTPUT := -o dist/stash-macos-intel
 # can't use static build for OSX
-cross-compile-osx-intel: build-release
+cross-compile-macos-intel: build-release
 
-cross-compile-osx-applesilicon: export GOOS := darwin
-cross-compile-osx-applesilicon: export GOARCH := arm64
-cross-compile-osx-applesilicon: export CC := oa64e-clang
-cross-compile-osx-applesilicon: export CXX := oa64e-clang++
-cross-compile-osx-applesilicon: OUTPUT := -o dist/stash-osx-applesilicon
+cross-compile-macos-applesilicon: export GOOS := darwin
+cross-compile-macos-applesilicon: export GOARCH := arm64
+cross-compile-macos-applesilicon: export CC := oa64e-clang
+cross-compile-macos-applesilicon: export CXX := oa64e-clang++
+cross-compile-macos-applesilicon: OUTPUT := -o dist/stash-macos-applesilicon
 # can't use static build for OSX
-cross-compile-osx-applesilicon: build-release
+cross-compile-macos-applesilicon: build-release
+
+cross-compile-macos: 
+	rm -rf dist/Stash.app dist/Stash-macos.zip
+	make cross-compile-macos-applesilicon
+	make cross-compile-macos-intel
+	# Combine into one universal binary
+	lipo -create -output dist/stash-macos-universal dist/stash-macos-intel dist/stash-macos-applesilicon
+	rm dist/stash-macos-intel dist/stash-macos-applesilicon
+	# Place into bundle and zip up
+	cp -R scripts/macos-bundle dist/Stash.app
+	mkdir dist/Stash.app/Contents/MacOS
+	mv dist/stash-macos-universal dist/Stash.app/Contents/MacOS/stash
+	cd dist && zip -r Stash-macos.zip Stash.app && cd ..
+	rm -rf dist/Stash.app
 
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
@@ -101,21 +125,20 @@ cross-compile-linux-arm32v7: export CC := arm-linux-gnueabihf-gcc
 cross-compile-linux-arm32v7: OUTPUT := -o dist/stash-linux-arm32v7
 cross-compile-linux-arm32v7: build-release-static
 
-cross-compile-pi: export GOOS := linux
-cross-compile-pi: export GOARCH := arm
-cross-compile-pi: export GOARM := 6
-cross-compile-pi: export CC := arm-linux-gnueabi-gcc
-cross-compile-pi: OUTPUT := -o dist/stash-pi
-cross-compile-pi: build-release-static
+cross-compile-linux-arm32v6: export GOOS := linux
+cross-compile-linux-arm32v6: export GOARCH := arm
+cross-compile-linux-arm32v6: export GOARM := 6
+cross-compile-linux-arm32v6: export CC := arm-linux-gnueabi-gcc
+cross-compile-linux-arm32v6: OUTPUT := -o dist/stash-linux-arm32v6
+cross-compile-linux-arm32v6: build-release-static
 
 cross-compile-all:
 	make cross-compile-windows
-	make cross-compile-osx-intel
-	make cross-compile-osx-applesilicon
+	make cross-compile-macos
 	make cross-compile-linux
 	make cross-compile-linux-arm64v8
 	make cross-compile-linux-arm32v7
-	make cross-compile-pi
+	make cross-compile-linux-arm32v6
 
 # Regenerates GraphQL files
 generate: generate-backend generate-frontend

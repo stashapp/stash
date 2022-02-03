@@ -36,6 +36,7 @@ import { stashboxDisplayName } from "src/utils/stashbox";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
+import cx from "classnames";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -652,25 +653,25 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   function renderButtons(classNames: string) {
     return (
-      <Row>
-        <Col className={classNames} xs={12}>
-          {!isNew && onCancelEditing ? (
-            <Button
-              className="mr-2"
-              variant="primary"
-              onClick={() => onCancelEditing()}
-            >
-              <FormattedMessage id="actions.cancel" />
-            </Button>
-          ) : (
-            ""
-          )}
-          {renderScraperMenu()}
-          <ImageInput
-            isEditing
-            onImageChange={onImageChangeHandler}
-            onImageURL={onImageChangeURL}
-          />
+      <div className={cx("details-edit", classNames)}>
+        {!isNew && onCancelEditing ? (
+          <Button
+            className="mr-2"
+            variant="primary"
+            onClick={() => onCancelEditing()}
+          >
+            <FormattedMessage id="actions.cancel" />
+          </Button>
+        ) : (
+          ""
+        )}
+        {renderScraperMenu()}
+        <ImageInput
+          isEditing
+          onImageChange={onImageChangeHandler}
+          onImageURL={onImageChangeURL}
+        />
+        <div>
           <Button
             className="mr-2"
             variant="danger"
@@ -678,15 +679,15 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           >
             <FormattedMessage id="actions.clear_image" />
           </Button>
-          <Button
-            variant="success"
-            disabled={!formik.dirty}
-            onClick={() => formik.submitForm()}
-          >
-            <FormattedMessage id="actions.save" />
-          </Button>
-        </Col>
-      </Row>
+        </div>
+        <Button
+          variant="success"
+          disabled={!formik.dirty}
+          onClick={() => formik.submitForm()}
+        >
+          <FormattedMessage id="actions.save" />
+        </Button>
+      </div>
     );
   }
 

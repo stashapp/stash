@@ -14,3 +14,4 @@ export { default as useFocus } from "./focus";
 export { default as downloadFile } from "./download";
 export * from "./data";
 export { getStashIDs } from "./stashIds";
+export * from "./stashbox";

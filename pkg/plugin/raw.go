@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"sync"
 
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
@@ -87,6 +88,7 @@ func (t *rawPluginTask) Start() error {
 
 	t.waitGroup.Add(1)
 	t.done = make(chan bool, 1)
+	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		return fmt.Errorf("error running plugin: %v", err)
 	}

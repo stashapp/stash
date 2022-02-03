@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, MouseEvent } from "react";
 import { useIntl } from "react-intl";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
@@ -30,56 +30,10 @@ interface IImageWallProps {
   onChangePage: (page: number) => void;
   currentPage: number;
   pageCount: number;
+  handleImageOpen: (index: number) => void;
 }
 
-const ImageWall: React.FC<IImageWallProps> = ({
-  images,
-  onChangePage,
-  currentPage,
-  pageCount,
-}) => {
-  const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
-  const handleLightBoxPage = useCallback(
-    (direction: number) => {
-      if (direction === -1) {
-        if (currentPage === 1) {
-          onChangePage(pageCount);
-        } else {
-          onChangePage(currentPage - 1);
-        }
-      } else if (direction === 1) {
-        if (currentPage === pageCount) {
-          // return to the first page
-          onChangePage(1);
-        } else {
-          onChangePage(currentPage + 1);
-        }
-      }
-    },
-    [onChangePage, currentPage, pageCount]
-  );
-
-  const handleClose = useCallback(() => {
-    setSlideshowRunning(false);
-  }, [setSlideshowRunning]);
-
-  const showLightbox = useLightbox({
-    images,
-    showNavigation: false,
-    pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
-    pageHeader: `Page ${currentPage} / ${pageCount}`,
-    slideshowEnabled: slideshowRunning,
-    onClose: handleClose,
-  });
-
-  const handleImageOpen = useCallback(
-    (index) => {
-      setSlideshowRunning(true);
-      showLightbox(index, true);
-    },
-    [showLightbox]
-  );
-
+const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
   const thumbs = images.map((image, index) => (
     <div
       role="link"
@@ -102,6 +56,116 @@ const ImageWall: React.FC<IImageWallProps> = ({
       <div className="flexbin">{thumbs}</div>
     </div>
   );
+};
+
+interface IImageListImages {
+  images: SlimImageDataFragment[];
+  filter: ListFilterModel;
+  selectedIds: Set<string>;
+  onChangePage: (page: number) => void;
+  pageCount: number;
+  onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+}
+
+const ImageListImages: React.FC<IImageListImages> = ({
+  images,
+  filter,
+  selectedIds,
+  onChangePage,
+  pageCount,
+  onSelectChange,
+}) => {
+  const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
+  const handleLightBoxPage = useCallback(
+    (direction: number) => {
+      const { currentPage } = filter;
+      if (direction === -1) {
+        if (currentPage === 1) {
+          onChangePage(pageCount);
+        } else {
+          onChangePage(currentPage - 1);
+        }
+      } else if (direction === 1) {
+        if (currentPage === pageCount) {
+          // return to the first page
+          onChangePage(1);
+        } else {
+          onChangePage(currentPage + 1);
+        }
+      }
+    },
+    [onChangePage, filter, pageCount]
+  );
+
+  const handleClose = useCallback(() => {
+    setSlideshowRunning(false);
+  }, [setSlideshowRunning]);
+
+  const showLightbox = useLightbox({
+    images,
+    showNavigation: false,
+    pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
+    pageHeader: `Page ${filter.currentPage} / ${pageCount}`,
+    slideshowEnabled: slideshowRunning,
+    onClose: handleClose,
+  });
+
+  const handleImageOpen = useCallback(
+    (index) => {
+      setSlideshowRunning(true);
+      showLightbox(index, true);
+    },
+    [showLightbox]
+  );
+
+  function onPreview(index: number, ev: MouseEvent) {
+    handleImageOpen(index);
+    ev.preventDefault();
+  }
+
+  function renderImageCard(
+    index: number,
+    image: SlimImageDataFragment,
+    zoomIndex: number
+  ) {
+    return (
+      <ImageCard
+        key={image.id}
+        image={image}
+        zoomIndex={zoomIndex}
+        selecting={selectedIds.size > 0}
+        selected={selectedIds.has(image.id)}
+        onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
+          onSelectChange(image.id, selected, shiftKey)
+        }
+        onPreview={(ev) => onPreview(index, ev)}
+      />
+    );
+  }
+
+  if (filter.displayMode === DisplayMode.Grid) {
+    return (
+      <div className="row justify-content-center">
+        {images.map((image, index) =>
+          renderImageCard(index, image, filter.zoomIndex)
+        )}
+      </div>
+    );
+  }
+  if (filter.displayMode === DisplayMode.Wall) {
+    return (
+      <ImageWall
+        images={images}
+        onChangePage={onChangePage}
+        currentPage={filter.currentPage}
+        pageCount={pageCount}
+        handleImageOpen={handleImageOpen}
+      />
+    );
+  }
+
+  // should not happen
+  return <></>;
 };
 
 interface IImageList {
@@ -237,23 +301,8 @@ export const ImageList: React.FC<IImageList> = ({
     );
   }
 
-  function renderImageCard(
-    image: SlimImageDataFragment,
-    selectedIds: Set<string>,
-    zoomIndex: number
-  ) {
-    return (
-      <ImageCard
-        key={image.id}
-        image={image}
-        zoomIndex={zoomIndex}
-        selecting={selectedIds.size > 0}
-        selected={selectedIds.has(image.id)}
-        onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-          onSelectChange(image.id, selected, shiftKey)
-        }
-      />
-    );
+  function selectChange(id: string, selected: boolean, shiftKey: boolean) {
+    onSelectChange(id, selected, shiftKey);
   }
 
   function renderImages(
@@ -266,25 +315,17 @@ export const ImageList: React.FC<IImageList> = ({
     if (!result.data || !result.data.findImages) {
       return;
     }
-    if (filter.displayMode === DisplayMode.Grid) {
-      return (
-        <div className="row justify-content-center">
-          {result.data.findImages.images.map((image) =>
-            renderImageCard(image, selectedIds, filter.zoomIndex)
-          )}
-        </div>
-      );
-    }
-    if (filter.displayMode === DisplayMode.Wall) {
-      return (
-        <ImageWall
-          images={result.data.findImages.images}
-          onChangePage={onChangePage}
-          currentPage={filter.currentPage}
-          pageCount={pageCount}
-        />
-      );
-    }
+
+    return (
+      <ImageListImages
+        filter={filter}
+        images={result.data.findImages.images}
+        onChangePage={onChangePage}
+        onSelectChange={selectChange}
+        pageCount={pageCount}
+        selectedIds={selectedIds}
+      />
+    );
   }
 
   function renderContent(

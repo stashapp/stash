@@ -99,7 +99,6 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(DefaultIdentifySettings, i.GetDefaultIdentifySettings())
 				i.Set(DeleteGeneratedDefault, i.GetDeleteGeneratedDefault())
 				i.Set(DeleteFileDefault, i.GetDeleteFileDefault())
-				i.Set(TrustedProxies, i.GetTrustedProxies())
 				i.Set(dangerousAllowPublicWithoutAuth, i.GetDangerousAllowPublicWithoutAuth())
 				i.Set(SecurityTripwireAccessedFromPublicInternet, i.GetSecurityTripwireAccessedFromPublicInternet())
 				i.Set(DisableDropdownCreatePerformer, i.GetDisableDropdownCreate().Performer)
