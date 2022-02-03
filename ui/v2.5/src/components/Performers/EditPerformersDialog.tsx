@@ -30,8 +30,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [ethnicity, setEthnicity] = useState<string | undefined>();
   const [country, setCountry] = useState<string | undefined>();
   const [eyeColor, setEyeColor] = useState<string | undefined>();
-  const [height, setHeight] = useState<string | undefined>();
-  const [measurements, setMeasurements] = useState<string | undefined>();
   const [fakeTits, setFakeTits] = useState<string | undefined>();
   const [careerLength, setCareerLength] = useState<string | undefined>();
   const [tattoos, setTattoos] = useState<string | undefined>();
@@ -98,8 +96,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     performerInput.ethnicity = ethnicity;
     performerInput.country = country;
     performerInput.eye_color = eyeColor;
-    performerInput.height = height;
-    performerInput.measurements = measurements;
     performerInput.fake_tits = fakeTits;
     performerInput.career_length = careerLength;
     performerInput.tattoos = tattoos;
@@ -205,8 +201,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setEthnicity(undefined);
     setCountry(undefined);
     setEyeColor(undefined);
-    setHeight(undefined);
-    setMeasurements(undefined);
     setFakeTits(undefined);
     setCareerLength(undefined);
     setTattoos(undefined);
@@ -294,8 +288,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("ethnicity", ethnicity, setEthnicity)}
           {renderTextField("hair_color", hairColor, setHairColor)}
           {renderTextField("eye_color", eyeColor, setEyeColor)}
-          {renderTextField("height", height, setHeight)}
-          {renderTextField("measurements", measurements, setMeasurements)}
           {renderTextField("fake_tits", fakeTits, setFakeTits)}
           {renderTextField("tattoos", tattoos, setTattoos)}
           {renderTextField("piercings", piercings, setPiercings)}
