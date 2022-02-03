@@ -76,7 +76,7 @@ input ConfigGeneralInput {
   """Maximum session cookie age"""
   maxSessionAge: Int
   """Comma separated list of proxies to allow traffic from"""
-  trustedProxies: [String!]
+  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
@@ -157,7 +157,7 @@ type ConfigGeneralResult {
   """Maximum session cookie age"""
   maxSessionAge: Int!
   """Comma separated list of proxies to allow traffic from"""
-  trustedProxies: [String!]!
+  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""

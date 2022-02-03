@@ -188,6 +188,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	}
 
 	customUILocation := c.GetCustomUILocation()
+	static := statigz.FileServer(uiBox)
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
@@ -226,7 +227,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			}
 			r.URL.Path = uiRootDir + r.URL.Path
 
-			statigz.FileServer(uiBox).ServeHTTP(w, r)
+			static.ServeHTTP(w, r)
 		}
 	})
 

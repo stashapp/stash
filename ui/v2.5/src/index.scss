@@ -216,6 +216,50 @@ textarea.text-input {
   width: 100%;
 }
 
+.preview-button {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+
+  button.btn,
+  button.btn:not(:disabled):not(.disabled):hover,
+  button.btn:not(:disabled):not(.disabled):focus,
+  button.btn:not(:disabled):not(.disabled):active {
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+
+  .fa-icon {
+    color: $text-color;
+    filter: drop-shadow(2px 4px 6px black);
+    height: 5em;
+    opacity: 0;
+    transition: opacity 0.5s;
+    width: 5em;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    // always show preview button when hovering not supported
+    align-items: flex-end;
+    justify-content: right;
+
+    .fa-icon {
+      height: 3em;
+      opacity: 0.8;
+      width: 3em;
+    }
+  }
+}
+
 /* this is a bit of a hack, because we can't supply direct class names
    to the react-select controls */
 /* stylelint-disable selector-class-pattern */

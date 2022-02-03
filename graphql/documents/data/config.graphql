@@ -25,7 +25,6 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   username
   password
   maxSessionAge
-  trustedProxies
   logFile
   logOut
   logLevel

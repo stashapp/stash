@@ -24,3 +24,8 @@ input StashBoxFingerprintSubmissionInput {
   scene_ids: [String!]!
   stash_box_index: Int!
 }
+
+input StashBoxDraftSubmissionInput {
+  id: String!
+  stash_box_index: Int!
+}

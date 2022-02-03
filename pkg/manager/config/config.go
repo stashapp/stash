@@ -149,7 +149,6 @@ const (
 	FunscriptOffset = "funscript_offset"
 
 	// Security
-	TrustedProxies                                    = "trusted_proxies"
 	dangerousAllowPublicWithoutAuth                   = "dangerous_allow_public_without_auth"
 	dangerousAllowPublicWithoutAuthDefault            = "false"
 	SecurityTripwireAccessedFromPublicInternet        = "security_tripwire_accessed_from_public_internet"
@@ -1041,12 +1040,6 @@ func (i *Instance) GetDefaultGenerateSettings() *models.GenerateMetadataOptions 
 	}
 
 	return nil
-}
-
-// GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.
-// When empty, allow from any private network
-func (i *Instance) GetTrustedProxies() []string {
-	return i.getStringSlice(TrustedProxies)
 }
 
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
