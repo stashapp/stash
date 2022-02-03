@@ -9,10 +9,7 @@ import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
-import {
-  genderStrings,
-  stringToGender,
-} from "src/utils/gender";
+import { genderStrings, stringToGender } from "src/utils/gender";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -300,12 +297,14 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
           <Form.Group>
             <Form.Label>
-              <FormattedMessage id="gender"/>
+              <FormattedMessage id="gender" />
             </Form.Label>
             <Form.Control
               as="select"
               className="input-control"
-              onChange={(event) => setGender(stringToGender(event.currentTarget.value))}
+              onChange={(event) =>
+                setGender(stringToGender(event.currentTarget.value))
+              }
             >
               {genderOptions.map((opt) => (
                 <option value={opt} key={opt}>
