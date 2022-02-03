@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:5
+  COMPILER_IMAGE: stashapp/compiler:6
 
 jobs:
   build:
@@ -91,12 +91,11 @@ jobs:
     - name: Compile for all supported platforms
       run: |
         docker exec -t build /bin/bash -c "make cross-compile-windows"
-        docker exec -t build /bin/bash -c "make cross-compile-osx-intel"
-        docker exec -t build /bin/bash -c "make cross-compile-osx-applesilicon"
+        docker exec -t build /bin/bash -c "make cross-compile-macos"
         docker exec -t build /bin/bash -c "make cross-compile-linux"
         docker exec -t build /bin/bash -c "make cross-compile-linux-arm64v8"
         docker exec -t build /bin/bash -c "make cross-compile-linux-arm32v7"
-        docker exec -t build /bin/bash -c "make cross-compile-pi"
+        docker exec -t build /bin/bash -c "make cross-compile-linux-arm32v6"
 
     - name: Cleanup build container
       run: docker rm -f -v build
@@ -121,8 +120,8 @@ jobs:
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
-        name: stash-osx
-        path: dist/stash-osx
+        name: Stash-macos.zip
+        path: dist/Stash-macos.zip
 
     - name: Upload Linux binary
       # only upload binaries for pull requests
@@ -145,13 +144,12 @@ jobs:
         automatic_release_tag: latest_develop
         title: "${{ env.STASH_VERSION }}: Latest development build"
         files: |
-          dist/stash-osx
-          dist/stash-osx-applesilicon
+          dist/Stash-macos.zip
           dist/stash-win.exe
           dist/stash-linux
           dist/stash-linux-arm64v8
           dist/stash-linux-arm32v7
-          dist/stash-pi
+          dist/stash-linux-arm32v6
           CHECKSUMS_SHA1
 
     - name: Master release
@@ -161,13 +159,12 @@ jobs:
         token: "${{ secrets.GITHUB_TOKEN }}"
         allow_override: true
         files: |
-          dist/stash-osx
-          dist/stash-osx-applesilicon
+          dist/Stash-macos.zip
           dist/stash-win.exe
           dist/stash-linux
           dist/stash-linux-arm64v8
           dist/stash-linux-arm32v7
-          dist/stash-pi
+          dist/stash-linux-arm32v6
           CHECKSUMS_SHA1
         gzip: false
 

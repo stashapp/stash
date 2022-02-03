@@ -53,6 +53,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   wallPlayback
   maximumLoopDuration
   noBrowser
+  notificationsEnabled
   autostartVideo
   autostartVideoOnPlaySelected
   continuePlaylistDefault

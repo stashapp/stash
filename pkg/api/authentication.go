@@ -130,9 +130,4 @@ func securityActivateTripwireAccessedFromInternetWithoutAuth(c *config.Instance,
 	if err != nil {
 		logger.Error(err)
 	}
-
-	err = manager.GetInstance().Shutdown()
-	if err != nil {
-		logger.Error(err)
-	}
 }

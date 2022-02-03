@@ -32,6 +32,7 @@ func Init(logFile string, logOut bool, logLevel string) {
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
 	customFormatter.ForceColors = true
 	customFormatter.FullTimestamp = true
+	logger.SetOutput(os.Stderr)
 	logger.SetFormatter(customFormatter)
 
 	// #1837 - trigger the console to use color-mode since it won't be

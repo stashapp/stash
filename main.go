@@ -3,13 +3,14 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"os"
 	"os/signal"
 	"runtime/pprof"
 	"syscall"
 
+	"github.com/apenwarr/fixconsole"
 	"github.com/stashapp/stash/pkg/api"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -22,6 +23,14 @@ var uiBox embed.FS
 //go:embed ui/login
 var loginUIBox embed.FS
 
+func init() {
+	// On Windows, attach to parent shell
+	err := fixconsole.FixConsoleIfNeeded()
+	if err != nil {
+		fmt.Printf("FixConsoleOutput: %v\n", err)
+	}
+}
+
 func main() {
 	manager.Initialize()
 	api.Start(uiBox, loginUIBox)
@@ -30,10 +39,7 @@ func main() {
 	defer pprof.StopCPUProfile()
 	blockForever()
 
-	err := manager.GetInstance().Shutdown()
-	if err != nil {
-		logger.Errorf("Error when closing: %s", err)
-	}
+	manager.GetInstance().Shutdown(0)
 }
 
 func blockForever() {
