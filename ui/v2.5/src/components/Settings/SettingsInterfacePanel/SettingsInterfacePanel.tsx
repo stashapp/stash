@@ -93,6 +93,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={iface.noBrowser ?? undefined}
           onChange={(v) => saveInterface({ noBrowser: v })}
         />
+        <BooleanSetting
+          id="notifications-enabled"
+          headingID="config.ui.desktop_integration.notifications_enabled"
+          subHeadingID="config.ui.desktop_integration.send_desktop_notifications_for_events"
+          checked={iface.notificationsEnabled ?? undefined}
+          onChange={(v) => saveInterface({ notificationsEnabled: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.scene_wall.heading">

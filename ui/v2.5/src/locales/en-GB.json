@@ -25,6 +25,7 @@
     "delete": "Delete",
     "delete_entity": "Delete {entityType}",
     "delete_file": "Delete file",
+    "delete_file_and_funscript": "Delete file (and funscript)",
     "delete_generated_supporting_files": "Delete generated supporting files",
     "disallow": "Disallow",
     "download": "Download",
@@ -221,8 +222,6 @@
         "password": "Password",
         "password_desc": "Password to access Stash. Leave blank to disable user authentication",
         "stash-box_integration": "Stash-box integration",
-        "trusted_proxies": "Trusted proxies",
-        "trusted_proxies_desc": "List of proxies that are allowed to proxy traffic into stash. Leave empty to allow from private network.",
         "username": "Username",
         "username_desc": "Username to access Stash. Leave blank to disable user authentication"
       },
@@ -416,7 +415,9 @@
       "desktop_integration": {
         "desktop_integration": "Desktop Integration",
         "skip_opening_browser": "Skip Opening Browser",
-        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
+        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup",
+        "notifications_enabled": "Enable Notifications",
+        "send_desktop_notifications_for_events": "Send desktop notifications for events"
       },
       "editing": {
         "disable_dropdown_create": {

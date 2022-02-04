@@ -29,7 +29,7 @@ type syncWriter struct {
 // This syncer can be the call to writer's Write method is not thread safe.
 // Note that os.File Write operation is using write() syscall which is supposed
 // to be thread-safe on POSIX systems. So there is no need to use this with
-// os.File on such systems as zerolog guaranties to issue a single Write call
+// os.File on such systems as zerolog guarantees to issue a single Write call
 // per log event.
 func SyncWriter(w io.Writer) io.Writer {
 	if lw, ok := w.(LevelWriter); ok {

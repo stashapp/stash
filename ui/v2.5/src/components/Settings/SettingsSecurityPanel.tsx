@@ -1,5 +1,5 @@
 import React from "react";
-import { ModalSetting, NumberSetting, StringListSetting } from "./Inputs";
+import { ModalSetting, NumberSetting } from "./Inputs";
 import { SettingSection } from "./SettingSection";
 import * as GQL from "src/core/generated-graphql";
 import { Button, Form } from "react-bootstrap";
@@ -161,14 +161,6 @@ export const SettingsSecurityPanel: React.FC = () => {
           subHeadingID="config.general.auth.maximum_session_age_desc"
           value={general.maxSessionAge ?? undefined}
           onChange={(v) => saveGeneral({ maxSessionAge: v })}
-        />
-
-        <StringListSetting
-          id="trusted-proxies"
-          headingID="config.general.auth.trusted_proxies"
-          subHeadingID="config.general.auth.trusted_proxies_desc"
-          value={general.trustedProxies ?? undefined}
-          onChange={(v) => saveGeneral({ trustedProxies: v })}
         />
       </SettingSection>
     </>

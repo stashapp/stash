@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -229,7 +230,9 @@ type FFProbe string
 // Execute exec command and bind result to struct.
 func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
-	out, err := exec.Command(string(*f), args...).Output()
+	cmd := exec.Command(string(*f), args...)
+	desktop.HideExecShell(cmd)
+	out, err := cmd.Output()
 
 	if err != nil {
 		return nil, fmt.Errorf("FFProbe encountered an error with <%s>.\nError JSON:\n%s\nError: %s", videoPath, string(out), err.Error())
