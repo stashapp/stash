@@ -26,6 +26,7 @@
     "delete": "Radera",
     "delete_entity": "Radera {entityType}",
     "delete_file": "Radera fil",
+    "delete_file_and_funscript": "Radera fil (och funskript)",
     "delete_generated_supporting_files": "Radera genererade filer",
     "disallow": "Tillåt ej",
     "download": "Ladda ner",
@@ -89,6 +90,7 @@
     "show": "Visa",
     "skip": "Hoppa över",
     "stop": "Stoppa",
+    "submit_stash_box": "Skicka till Stash-Box",
     "tasks": {
       "clean_confirm_message": "Är du säker att du vill rensa? Detta kommer radera databasinformation och genererade filer för alla scener och gallerier som inte längre finns på filsystemet.",
       "dry_mode_selected": "Torrt läge valt. Inget kommer raderas utan bara loggning kommer ske.",
@@ -220,7 +222,6 @@
         "password": "Lösenord",
         "password_desc": "Lösenord till Stash. Lämna tom för att inaktivera användarautentisering",
         "stash-box_integration": "Integration med Stash-box",
-        "trusted_proxies_desc": "Lista över proxyer som tillåts omdirigera trafik till stash. Lämna blank för att tillåta från privat nätverk.",
         "username": "Användarnamn",
         "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"
       },
@@ -413,6 +414,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Desktopintegration",
+        "notifications_enabled": "Aktivera Notifikationer",
+        "send_desktop_notifications_for_events": "Skicka skrivbordsnotifikationer för händelser",
         "skip_opening_browser": "Öppna inte webbläsare",
         "skip_opening_browser_on_startup": "Öppna inte webbläsaren under serverstart"
       },
