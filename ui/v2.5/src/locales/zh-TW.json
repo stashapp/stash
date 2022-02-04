@@ -26,6 +26,7 @@
     "delete": "刪除",
     "delete_entity": "刪除{entityType}",
     "delete_file": "刪除檔案",
+    "delete_file_and_funscript": "刪除檔案 (及其 Funscript)",
     "delete_generated_supporting_files": "刪除已生成的資訊檔案",
     "disallow": "不允許",
     "download": "下載",
@@ -221,7 +222,6 @@
         "password": "密碼",
         "password_desc": "使用 Stash 時所需的密碼，留空以關閉身份驗證",
         "stash-box_integration": "整合 Stash-box",
-        "trusted_proxies_desc": "允許代理 stash 流量的代理伺服器列表。留空以允許內網。",
         "username": "用戶名",
         "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證"
       },
@@ -414,6 +414,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "桌面整合",
+        "notifications_enabled": "開啟通知",
+        "send_desktop_notifications_for_events": "當事件發生時，傳送瀏覽器通知",
         "skip_opening_browser": "關閉瀏覽器自動開啟",
         "skip_opening_browser_on_startup": "伺服器啟動時，不要自動開啟瀏覽器"
       },
