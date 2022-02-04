@@ -221,7 +221,6 @@
         "password": "密碼",
         "password_desc": "使用 Stash 時所需的密碼，留空以關閉身份驗證",
         "stash-box_integration": "整合 Stash-box",
-        "trusted_proxies": "已信任代理伺服器",
         "trusted_proxies_desc": "允許代理 stash 流量的代理伺服器列表。留空以允許內網。",
         "username": "用戶名",
         "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證"

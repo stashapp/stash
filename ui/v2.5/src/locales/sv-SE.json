@@ -220,7 +220,6 @@
         "password": "Lösenord",
         "password_desc": "Lösenord till Stash. Lämna tom för att inaktivera användarautentisering",
         "stash-box_integration": "Integration med Stash-box",
-        "trusted_proxies": "Pålitliga proxyer",
         "trusted_proxies_desc": "Lista över proxyer som tillåts omdirigera trafik till stash. Lämna blank för att tillåta från privat nätverk.",
         "username": "Användarnamn",
         "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"

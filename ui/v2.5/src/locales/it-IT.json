@@ -220,7 +220,6 @@
         "password": "Password",
         "password_desc": "Password per accedere a Stash. Lasciare vuota per disabilitare l'autenticazione utente",
         "stash-box_integration": "Integrazione Stash-box",
-        "trusted_proxies": "Proxy fidati",
         "trusted_proxies_desc": "Lista di Proxy con accesso per incanalare traffico verso Stash. Lasciare vuoto per acconsentire da rete privata.",
         "username": "Nome Utente",
         "username_desc": "Nome Utente per accedere a Stash. Lasciare vuoto per disabilitare l'autenticazione"

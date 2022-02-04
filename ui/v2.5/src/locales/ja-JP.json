@@ -220,7 +220,6 @@
         "password": "パスワード",
         "password_desc": "Stashにアクセスするためのパスワードです。空白にすると、ユーザー認証を無効にします",
         "stash-box_integration": "Stash-boxの連携",
-        "trusted_proxies": "信頼済みのプロキシ",
         "trusted_proxies_desc": "Stashへのアクセスを許可するプロキシのリストです。空白にすることでアクセスをプライベートネットワークからのみアクセスを許可します。",
         "username": "ユーザー名",
         "username_desc": "Stashにアクセスするためのユーザー名です。空白にすると、ユーザー認証を無効にします"
