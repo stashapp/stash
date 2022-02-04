@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import _ from "lodash";
 import { useBulkMovieUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { Modal, StudioSelect } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
-import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
 
 interface IListOperationProps {
@@ -29,14 +27,44 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
   const [isUpdating, setIsUpdating] = useState(false);
 
   function getMovieInput(): GQL.BulkMovieUpdateInput {
+    const aggregateRating = getRating(props.selected);
+
     const movieInput: GQL.BulkMovieUpdateInput = {
       ids: props.selected.map((movie) => movie.id),
-      rating,
       studio_id: studioId,
       director,
     };
 
+    // if rating is undefined
+    if (rating === undefined) {
+      // and all galleries have the same rating, then we are unsetting the rating.
+      if (aggregateRating) {
+        // null to unset rating
+        movieInput.rating = null;
+      }
+      // otherwise not setting the rating
+    } else {
+      // if rating is set, then we are setting the rating for all
+      movieInput.rating = rating;
+    }
+
     return movieInput;
+  }
+
+  function getRating(state: GQL.MovieDataFragment[]) {
+    let ret: number | undefined;
+    let first = true;
+
+    state.forEach((movie) => {
+      if (first) {
+        ret = movie.rating ?? undefined;
+        first = false;
+      } else if (ret !== movie.rating) {
+        ret = undefined;
+      }
+    });
+
+    return ret;
   }
 
   async function onSave() {
@@ -59,9 +87,34 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
   }
 
   useEffect(() => {
-    setRating(undefined);
-    setStudioId(undefined);
-    setDirector(undefined);
+    const state = props.selected;
+    let updateRating: number | undefined;
+    let updateStudioId: string | undefined;
+    let updateDirector: string | undefined;
+    let first = true;
+
+    state.forEach((movie: GQL.MovieDataFragment) => {
+      if (first) {
+        first = false;
+        updateRating = movie.rating ?? undefined;
+        updateStudioId = movie.studio?.id ?? undefined;
+        updateDirector = movie.director ?? undefined;
+      } else {
+        if (movie.rating !== updateRating) {
+          updateRating = undefined;
+        }
+        if (movie.studio?.id !== updateStudioId) {
+          updateStudioId = undefined;
+        }
+        if (movie.director !== updateDirector) {
+          updateDirector = undefined;
+        }
+      }
+    });
+
+    setRating(updateRating);
+    setStudioId(updateStudioId);
+    setDirector(updateDirector);
   }, [props.selected]);
 
   function render() {
