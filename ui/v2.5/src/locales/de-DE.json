@@ -89,6 +89,7 @@
     "show": "Anzeigen",
     "skip": "Überspringen",
     "stop": "Stopp",
+    "submit_stash_box": "Zu Stash-Box übermitteln",
     "tasks": {
       "clean_confirm_message": "Wollen Sie wirklich die Datenbank aufräumen? Dies wird alle Informationen und Hilfsdaten für Szenen und Galerien löschen, die nicht mehr auf dem Dateisystem vorhanden sind.",
       "dry_mode_selected": "Trockenmodus ausgewählt. Es findet keine Löschung der Daten statt, lediglich Protokollierung.",
