@@ -34,6 +34,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@types/react-select": "^4.0.8",
+    "@vitejs/plugin-legacy": "^1.6.4",
     "ansi-regex": "^5.0.1",
     "apollo-upload-client": "^14.1.3",
     "axios": "0.21.2",

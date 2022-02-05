@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import tsconfigPaths from "vite-tsconfig-paths";
 import viteCompression from 'vite-plugin-compression';
+import legacy from '@vitejs/plugin-legacy';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -17,6 +18,7 @@ export default defineConfig({
   publicDir: 'public',
   assetsInclude: ['**/*.md'],
   plugins: [tsconfigPaths(),
+    legacy(),
     viteCompression({
     algorithm: 'gzip',
     disable: false,
