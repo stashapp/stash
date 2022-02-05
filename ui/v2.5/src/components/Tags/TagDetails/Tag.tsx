@@ -277,6 +277,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 onClearImage={() => {}}
                 onAutoTag={onAutoTag}
                 onDelete={onDelete}
+                classNames="mb-2"
                 customButtons={renderMergeButton()}
               />
             </>

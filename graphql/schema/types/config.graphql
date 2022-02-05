@@ -76,7 +76,7 @@ input ConfigGeneralInput {
   """Maximum session cookie age"""
   maxSessionAge: Int
   """Comma separated list of proxies to allow traffic from"""
-  trustedProxies: [String!]
+  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
@@ -157,7 +157,7 @@ type ConfigGeneralResult {
   """Maximum session cookie age"""
   maxSessionAge: Int!
   """Comma separated list of proxies to allow traffic from"""
-  trustedProxies: [String!]!
+  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
@@ -239,6 +239,8 @@ input ConfigInterfaceInput {
   funscriptOffset: Int
   """True if we should not auto-open a browser window on startup"""
   noBrowser: Boolean
+  """True if we should send notifications to the desktop"""
+  notificationsEnabled: Boolean
 }
 
 type ConfigDisableDropdownCreate {
@@ -261,8 +263,10 @@ type ConfigInterfaceResult {
 
   """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
   maximumLoopDuration: Int
-  """"True if we should not auto-open a browser window on startup"""
+  """True if we should not auto-open a browser window on startup"""
   noBrowser: Boolean
+  """True if we should send desktop notifications"""
+  notificationsEnabled: Boolean
   """If true, video will autostart on load in the scene player"""
   autostartVideo: Boolean
   """If true, video will autostart when loading from play random or play selected"""

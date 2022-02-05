@@ -1,4 +1,4 @@
-import React from "react";
+import React, { MouseEvent } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
@@ -14,6 +14,7 @@ interface IImageCardProps {
   selected: boolean | undefined;
   zoomIndex: number;
   onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
+  onPreview?: (ev: MouseEvent) => void;
 }
 
 export const ImageCard: React.FC<IImageCardProps> = (
@@ -119,6 +120,13 @@ export const ImageCard: React.FC<IImageCardProps> = (
               alt={props.image.title ?? ""}
               src={props.image.paths.thumbnail ?? ""}
             />
+            {props.onPreview ? (
+              <div className="preview-button">
+                <Button onClick={props.onPreview}>
+                  <Icon icon="search" />
+                </Button>
+              </div>
+            ) : undefined}
           </div>
           <RatingBanner rating={props.image.rating} />
         </>

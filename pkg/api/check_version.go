@@ -33,7 +33,7 @@ var stashReleases = func() map[string]string {
 		"darwin/arm64":  "stash-osx-applesilicon",
 		"linux/amd64":   "stash-linux",
 		"windows/amd64": "stash-win.exe",
-		"linux/arm":     "stash-pi",
+		"linux/arm":     "stash-linux-arm32v6",
 		"linux/arm64":   "stash-linux-arm64v8",
 		"linux/armv7":   "stash-linux-arm32v7",
 	}

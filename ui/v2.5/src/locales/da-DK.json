@@ -122,7 +122,11 @@
       "query_mode_filename": "Filnavn",
       "query_mode_filename_desc": "Bruger kun filnavn",
       "query_mode_label": "Forespørgselstilstand",
-      "query_mode_metadata": "Metadata"
+      "query_mode_metadata": "Metadata",
+      "query_mode_metadata_desc": "Brug kun metadata",
+      "query_mode_path": "Sti",
+      "query_mode_path_desc": "Brug fuld file sti",
+      "set_cover_desc": "Overskriv scene billedet hvis en er fundet."
     }
   }
 }
