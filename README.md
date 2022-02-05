@@ -2,7 +2,7 @@
 https://stashapp.cc
 
 [![Build](https://github.com/stashapp/stash/actions/workflows/build.yml/badge.svg?branch=develop&event=push)](https://github.com/stashapp/stash/actions/workflows/build.yml)
-[![Docker pulls](https://img.shields.io/docker/pulls/stashapp/stash.svg)](https://hub.docker.com/r/stashapp/Stash 'DockerHub')
+[![Docker pulls](https://img.shields.io/docker/pulls/stashapp/stash.svg)](https://hub.docker.com/r/stashapp/stash 'DockerHub')
 [![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash)](https://goreportcard.com/report/github.com/stashapp/stash)
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
 
@@ -37,22 +37,15 @@ Stash requires ffmpeg. If you don't have it installed, Stash will download a cop
 # Usage
 
 ## Quickstart Guide
-### Launching
-Once downloaded, Run the executable (double click the exe on windows or run `./stash-osx` / `./stash-linux` from the terminal on macOS / Linux) to get started.
+Stash is a web-based application. Once the application is running, the interface is available (by default) from http://localhost:9999.
 
-Stash is a web-based application.  Once the application is running, it is available (by default) from http://localhost:9999.  You can change this in the settings.
+On first run, Stash will prompt you for some configuration options and media directories to index, called "Scanning" in Stash. After scanning, your media will be available for browsing, curating, editing, and tagging.
 
-### Configuring and Importing Your Content
-On first run, Stash will prompt you for some configuration options and a directory to index (you can also skip this step and complete afterward)
+Stash can pull metadata (performers, tags, descriptions, studios, and more) directly from many sites through the use of [scrapers](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en/Scraping.md), which integrate directly into Stash.
 
-### Gathering Content Metadata
-After indexing, you can manually view, edit and tag your content as you'd like. 
+Many community-maintained scrapers are available for download at the [Community Scrapers Collection](https://github.com/stashapp/CommunityScrapers). The community also maintains StashDB, a crowd-sourced repository of scene, studio, and performer information, that can automatically identify much of a typical media collection. Inquire in the Discord for details. Identifying an entire collection will typically require a mix of multiple sources. 
 
-Stash can pull metadata (performer, description, studio, etc) information from the internet through the use of small snippets of code called  [scrapers](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en/Scraping.md) that interpret external database and website information and import it into your program. Stash comes pre-installed with one such scraper.
-
-In order to maximize this functionality, you will need to download Scrapers from the [Community Scrapers Collection](https://github.com/stashapp/CommunityScrapers). (maintained by the Stash community).  Start with a few and add to them as necessary. After downloading, copy the contents of the archive to the /scrapers/ subdirectory of your Stash installation, then restart Stash.  The scraper list will show up in the "Metadata Providers" section of your configuration screen.
-
-The simplest way to tag a large number of files is by using the [Tagger](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/docs/en/Tagger.md) view which uses filename keywords to help identify the file and pull in scene and performer information from our stash-box database as well as other sources. Note that Stash-Box not comprehensive and you will likely need to use the scrapers to identify some of your media.
+<sub>StashDB is the canonical instance of our open source metadata API, [stash-box](https://github.com/stashapp/stash-box).</sub>
 
 # Translation
 [![Translate](https://translate.stashapp.cc/widgets/stash/-/stash-desktop-client/svg-badge.svg)](https://translate.stashapp.cc/engage/stash/)
