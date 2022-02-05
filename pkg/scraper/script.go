@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -66,6 +67,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		logger.Error("Scraper stdout not available: " + err.Error())
 	}
 
+	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		logger.Error("Error running scraper script: " + err.Error())
 		return errors.New("error running scraper script")

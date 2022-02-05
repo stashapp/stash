@@ -67,10 +67,28 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
     props.onClose(true);
   }
 
+  function funscriptPath(scenePath: string) {
+    const extIndex = scenePath.lastIndexOf(".");
+    if (extIndex !== -1) {
+      return scenePath.substring(0, extIndex + 1) + "funscript";
+    }
+
+    return scenePath;
+  }
+
   function maybeRenderDeleteFileAlert() {
     if (!deleteFile) {
       return;
     }
+
+    const deletedFiles: string[] = [];
+
+    props.selected.forEach((s) => {
+      deletedFiles.push(s.path);
+      if (s.interactive) {
+        deletedFiles.push(funscriptPath(s.path));
+      }
+    });
 
     return (
       <div className="delete-dialog alert alert-danger text-break">
@@ -85,13 +103,13 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
           />
         </p>
         <ul>
-          {props.selected.slice(0, 5).map((s) => (
-            <li key={s.path}>{s.path}</li>
+          {deletedFiles.slice(0, 5).map((s) => (
+            <li key={s}>{s}</li>
           ))}
-          {props.selected.length > 5 && (
+          {deletedFiles.length > 5 && (
             <FormattedMessage
               values={{
-                count: props.selected.length - 5,
+                count: deletedFiles.length - 5,
                 singularEntity: intl.formatMessage({ id: "file" }),
                 pluralEntity: intl.formatMessage({ id: "files" }),
               }}
@@ -126,7 +144,9 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
         <Form.Check
           id="delete-file"
           checked={deleteFile}
-          label={intl.formatMessage({ id: "actions.delete_file" })}
+          label={intl.formatMessage({
+            id: "actions.delete_file_and_funscript",
+          })}
           onChange={() => setDeleteFile(!deleteFile)}
         />
         <Form.Check

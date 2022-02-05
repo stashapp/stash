@@ -23,8 +23,10 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
-	"github.com/pkg/browser"
+
+	"github.com/go-chi/httplog"
 	"github.com/rs/cors"
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -36,7 +38,6 @@ import (
 var version string
 var buildstamp string
 var githash string
-var officialBuild string
 
 func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	initialiseImages()
@@ -52,7 +53,10 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 	c := config.GetInstance()
 	if c.GetLogAccess() {
-		r.Use(middleware.Logger)
+		httpLogger := httplog.NewLogger("Stash", httplog.Options{
+			Concise: true,
+		})
+		r.Use(httplog.RequestLogger(httpLogger))
 	}
 	r.Use(SecurityHeadersMiddleware)
 	r.Use(middleware.DefaultCompress)
@@ -184,6 +188,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 	}
 
 	customUILocation := c.GetCustomUILocation()
+	static := statigz.FileServer(uiBox)
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
@@ -222,7 +227,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			}
 			r.URL.Path = uiRootDir + r.URL.Path
 
-			statigz.FileServer(uiBox).ServeHTTP(w, r)
+			static.ServeHTTP(w, r)
 		}
 	})
 
@@ -245,25 +250,16 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		TLSConfig: tlsConfig,
 	}
 
+	printVersion()
+	go printLatestVersion(context.TODO())
+	logger.Infof("stash is listening on " + address)
+	if tlsConfig != nil {
+		displayAddress = "https://" + displayAddress + "/"
+	} else {
+		displayAddress = "http://" + displayAddress + "/"
+	}
+
 	go func() {
-		printVersion()
-		printLatestVersion(context.TODO())
-		logger.Infof("stash is listening on " + address)
-		if tlsConfig != nil {
-			displayAddress = "https://" + displayAddress + "/"
-		} else {
-			displayAddress = "http://" + displayAddress + "/"
-		}
-
-		// This can be done before actually starting the server, as modern browsers will
-		// automatically reload the page if a local port is closed at page load and then opened.
-		if !c.GetNoBrowser() && manager.GetInstance().IsDesktop() {
-			err = browser.OpenURL(displayAddress)
-			if err != nil {
-				logger.Error("Could not open browser: " + err.Error())
-			}
-		}
-
 		if tlsConfig != nil {
 			logger.Infof("stash is running at " + displayAddress)
 			logger.Error(server.ListenAndServeTLS("", ""))
@@ -271,12 +267,14 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 			logger.Infof("stash is running at " + displayAddress)
 			logger.Error(server.ListenAndServe())
 		}
+		manager.GetInstance().Shutdown(0)
 	}()
+	desktop.Start(manager.GetInstance(), &FaviconProvider{uiBox: uiBox})
 }
 
 func printVersion() {
 	versionString := githash
-	if IsOfficialBuild() {
+	if config.IsOfficialBuild() {
 		versionString += " - Official Build"
 	} else {
 		versionString += " - Unofficial Build"
@@ -285,10 +283,6 @@ func printVersion() {
 		versionString = version + " (" + versionString + ")"
 	}
 	fmt.Printf("stash version: %s - %s\n", versionString, buildstamp)
-}
-
-func IsOfficialBuild() bool {
-	return officialBuild == "true"
 }
 
 func GetVersion() (string, string, string) {
@@ -364,7 +358,6 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 
 		w.Header().Set("Referrer-Policy", "same-origin")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("X-XSS-Protection", "1")
 		w.Header().Set("Content-Security-Policy", cspDirectives)
 
@@ -385,13 +378,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		}
 		prefix := getProxyPrefix(r.Header)
 
-		port := ""
-		forwardedPort := r.Header.Get("X-Forwarded-Port")
-		if forwardedPort != "" && forwardedPort != "80" && forwardedPort != "8080" && forwardedPort != "443" && !strings.Contains(r.Host, ":") {
-			port = ":" + forwardedPort
-		}
-
-		baseURL := scheme + "://" + r.Host + port + prefix
+		baseURL := scheme + "://" + r.Host + prefix
 
 		externalHost := config.GetInstance().GetExternalHost()
 		if externalHost != "" {

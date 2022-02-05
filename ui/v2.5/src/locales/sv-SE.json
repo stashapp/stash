@@ -692,6 +692,14 @@
   "gallery": "Galleri",
   "gallery_count": "Antal Gallerier",
   "gender": "Kön",
+  "gender_types": {
+    "FEMALE": "Kvinna",
+    "INTERSEX": "Intersex",
+    "MALE": "Man",
+    "NON_BINARY": "Icke-binär",
+    "TRANSGENDER_FEMALE": "Trans Kvinna",
+    "TRANSGENDER_MALE": "Trans Man"
+  },
   "hair_color": "Hårfärg",
   "hasMarkers": "Har markörer",
   "height": "Längd",

@@ -22,14 +22,17 @@ For further information you can [read the in-app manual](ui/v2.5/src/docs/en).
 
 <img src="docs/readme_assets/windows_logo.svg" width="100%" height="75"> Windows | <img src="docs/readme_assets/mac_logo.svg" width="100%" height="75"> MacOS| <img src="docs/readme_assets/linux_logo.svg" width="100%" height="75"> Linux | <img src="docs/readme_assets/docker_logo.svg" width="100%" height="75"> Docker
 :---:|:---:|:---:|:---:
-[Latest Release](https://github.com/stashapp/stash/releases/latest/download/stash-win.exe) <br /> <sup><sub>[Development Preview](https://github.com/stashapp/stash/releases/download/latest_develop/stash-win.exe)</sub></sup> | [Latest Release (Apple Silicon)](https://github.com/stashapp/stash/releases/latest/download/stash-osx-applesilicon) <br /> <sup><sub>[Development Preview (Apple Silicon)](https://github.com/stashapp/stash/releases/download/latest_develop/stash-osx-applesilicon)</sub></sup> <br>[Latest Release (Intel)](https://github.com/stashapp/stash/releases/latest/download/stash-osx) <br /> <sup><sub>[Development Preview (Intel)](https://github.com/stashapp/stash/releases/download/latest_develop/stash-osx)</sub></sup> | [Latest Release (amd64)](https://github.com/stashapp/stash/releases/latest/download/stash-linux) <br /> <sup><sub>[Development Preview (amd64)](https://github.com/stashapp/stash/releases/download/latest_develop/stash-linux)</sub></sup> <br /> [More Architectures...](https://github.com/stashapp/stash/releases/latest) | [Instructions](docker/production/README.md) <br /> <sup><sub> [Sample docker-compose.yml](docker/production/docker-compose.yml)</sub></sup>
+[Latest Release](https://github.com/stashapp/stash/releases/latest/download/stash-win.exe) <br /> <sup><sub>[Development Preview](https://github.com/stashapp/stash/releases/download/latest_develop/stash-win.exe)</sub></sup> | [Latest Release](https://github.com/stashapp/stash/releases/latest/download/Stash-macos.zip) <br /> <sup><sub>[Development Preview](https://github.com/stashapp/stash/releases/download/latest_develop/Stash-macos.zip)</sub></sup> | [Latest Release (amd64)](https://github.com/stashapp/stash/releases/latest/download/stash-linux) <br /> <sup><sub>[Development Preview (amd64)](https://github.com/stashapp/stash/releases/download/latest_develop/stash-linux)</sub></sup> <br /> [More Architectures...](https://github.com/stashapp/stash/releases/latest) | [Instructions](docker/production/README.md) <br /> <sup><sub> [Sample docker-compose.yml](docker/production/docker-compose.yml)</sub></sup>
 
-## Installation Notes
+## First Run
+Run the executable by double-clicking it.
 
+#### Windows Users: Security Prompt
+Running the app might present a security prompt since the binary isn't yet signed.  Bypass this by clicking "more info" and then the "run anyway" button.
+#### macOS Users: Security Prompt
+Running the app will present a security prompt since the binary isn't yet signed. Bypass this by right (ctrl) clicking on the app and hitting "Open", then "Open" in the next popup.
 #### FFMPEG
 Stash requires ffmpeg. If you don't have it installed, Stash will download a copy for you. It is recommended that Linux users install `ffmpeg` from their distro's package manager.
-#### Windows Users: Security Prompt
-*Note for Windows users:* Running the app might present a security prompt since the binary isn't yet signed.  Bypass this by clicking "more info" and then the "run anyway" button.
 
 # Usage
 
@@ -53,9 +56,9 @@ The simplest way to tag a large number of files is by using the [Tagger](https:/
 
 # Translation
 [![Translate](https://translate.stashapp.cc/widgets/stash/-/stash-desktop-client/svg-badge.svg)](https://translate.stashapp.cc/engage/stash/)
-🇧🇷 🇨🇳 🇬🇧 🇫🇮 🇫🇷 🇩🇪 🇮🇹 🇪🇸 🇸🇪 🇹🇼 🇹🇷
+🇧🇷 🇨🇳 🇳🇱 🇬🇧 🇫🇮 🇫🇷 🇩🇪 🇮🇹 🇯🇵 🇪🇸 🇸🇪 🇹🇼 🇹🇷
 
-Stash is available in 11 languages (so far!) and it could be in your language too. If you want to help us translate Stash into your language, you can make an account at [translate.stashapp.cc](https://translate.stashapp.cc/projects/stash/stash-desktop-client/) to get started contributing new languages or improving existing ones. Thanks!
+Stash is available in 13 languages (so far!) and it could be in your language too. If you want to help us translate Stash into your language, you can make an account at [translate.stashapp.cc](https://translate.stashapp.cc/projects/stash/stash-desktop-client/) to get started contributing new languages or improving existing ones. Thanks!
 
 # Support (FAQ)
 

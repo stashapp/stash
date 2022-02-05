@@ -4,12 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"runtime/pprof"
-	"strings"
 	"sync"
 	"time"
 
@@ -407,34 +404,6 @@ func (s *singleton) Migrate(ctx context.Context, input models.MigrateInput) erro
 	return nil
 }
 
-func (s *singleton) IsDesktop() bool {
-	// check if running under root
-	if os.Getuid() == 0 {
-		return false
-	}
-	// check if started by init, e.g. stash is a *nix systemd service / MacOS launchd service
-	if os.Getppid() == 1 {
-		return false
-	}
-	if IsServerDockerized() {
-		return false
-	}
-
-	return true
-}
-
-func IsServerDockerized() bool {
-	if runtime.GOOS == "linux" {
-		_, dockerEnvErr := os.Stat("/.dockerenv")
-		cgroups, _ := ioutil.ReadFile("/proc/self/cgroup")
-		if os.IsExist(dockerEnvErr) || strings.Contains(string(cgroups), "docker") {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (s *singleton) GetSystemStatus() *models.SystemStatus {
 	status := models.SystemStatusEnumOk
 	dbSchema := int(database.Version())
@@ -458,8 +427,15 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 }
 
 // Shutdown gracefully stops the manager
-func (s *singleton) Shutdown() error {
+func (s *singleton) Shutdown(code int) {
 	// TODO: Each part of the manager needs to gracefully stop at some point
 	// for now, we just close the database.
-	return database.Close()
+	err := database.Close()
+	if err != nil {
+		logger.Errorf("Error closing database: %s", err)
+		if code == 0 {
+			os.Exit(1)
+		}
+	}
+	os.Exit(code)
 }

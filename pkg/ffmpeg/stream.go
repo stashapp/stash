@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -220,6 +221,7 @@ func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) 
 		return nil, err
 	}
 
+	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		return nil, err
 	}

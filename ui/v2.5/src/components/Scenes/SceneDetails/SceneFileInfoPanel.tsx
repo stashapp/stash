@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { NavUtils, TextUtils } from "src/utils";
+import { NavUtils, TextUtils, getStashboxBase } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
 
 interface ISceneFileInfoPanelProps {
@@ -49,7 +49,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         <dd>
           <ul>
             {props.scene.stash_ids.map((stashID) => {
-              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+              const base = getStashboxBase(stashID.endpoint);
               const link = base ? (
                 <a
                   href={`${base}scenes/${stashID.stash_id}`}

@@ -692,6 +692,14 @@
   "gallery": "图库",
   "gallery_count": "图库数量",
   "gender": "性别",
+  "gender_types": {
+    "FEMALE": "女性",
+    "INTERSEX": "多性别",
+    "MALE": "男性",
+    "NON_BINARY": "非二元",
+    "TRANSGENDER_FEMALE": "跨性别女性",
+    "TRANSGENDER_MALE": "跨性别男性"
+  },
   "hair_color": "头发颜色",
   "hasMarkers": "含有章节标记",
   "height": "身高",

@@ -45,6 +45,7 @@ func Initialize() (*Instance, error) {
 		_ = GetInstance()
 		instance.overrides = overrides
 		instance.cpuProfilePath = flags.cpuProfilePath
+		// instance.configUpdates = make(chan int)
 
 		if err = initConfig(instance, flags); err != nil {
 			return
