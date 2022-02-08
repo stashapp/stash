@@ -139,7 +139,7 @@ const ImageListImages: React.FC<IImageListImages> = ({
           onSelectChange(image.id, selected, shiftKey)
         }
         onPreview={
-          selectedIds.size < 1 (ev) => onPreview(index, ev) : undefined
+          selectedIds.size < 1 ? (ev) => onPreview(index, ev) : undefined
         }
       />
     );
