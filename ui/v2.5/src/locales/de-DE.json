@@ -221,7 +221,6 @@
         "password": "Passwort",
         "password_desc": "Passwort für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren",
         "stash-box_integration": "Stash-box Einbindung",
-        "trusted_proxies_desc": "Liste von Proxys denen eine Durchleitung zu Stash erlaubt ist. Leer lassen, um Traffic des privaten Netzwerks zu erlauben.",
         "username": "Benutzername",
         "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren"
       },

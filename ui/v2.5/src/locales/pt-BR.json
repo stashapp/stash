@@ -220,7 +220,6 @@
         "password": "Senha",
         "password_desc": "Senha para acesso Stash. Deixe em branco para desativar a autenticação do usuário",
         "stash-box_integration": "Integração com Stash-box",
-        "trusted_proxies_desc": "Lista de proxies permitidos a acessar o Stash. Deixe em branco para permitir redes privadas.",
         "username": "Usuário",
         "username_desc": "Username para acessar o Stash. Deixe em branco para desativar a autenticação do usuário"
       },

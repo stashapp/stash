@@ -220,7 +220,6 @@
         "password": "Salasana",
         "password_desc": "Salasana Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia",
         "stash-box_integration": "Stash-box integraatio",
-        "trusted_proxies_desc": "Lista välityspalvelimista, joiden liikenne Stashiin sallitaan. Jätä tyhjäksi salliaksesi pääsyn sisäverkosta.",
         "username": "Käyttäjätunnus",
         "username_desc": "Käyttäjätunnus Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia"
       },
