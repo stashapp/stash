@@ -26,6 +26,7 @@
     "delete": "Cancella",
     "delete_entity": "Cancella {entityType}",
     "delete_file": "Cancella file",
+    "delete_file_and_funscript": "Cancella file (e funscript)",
     "delete_generated_supporting_files": "Cancella file di supporto creati",
     "disallow": "Non Acconsentire",
     "download": "Scarica",
@@ -89,6 +90,7 @@
     "show": "Mostra",
     "skip": "Salta",
     "stop": "Stop",
+    "submit_stash_box": "Invia a Stash-Box",
     "tasks": {
       "clean_confirm_message": "Sei sicuro di voler Pulire? Questa azione cancellerà informazioni e contenuto creato dal database per tutte le scene e gallerie che non si trovano più nel file system.",
       "dry_mode_selected": "Dry Mode selezionato. Nessuna cancellazione avverrà, solo log.",
@@ -412,6 +414,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Integrazione Desktop",
+        "notifications_enabled": "Attiva Notifiche",
+        "send_desktop_notifications_for_events": "Invia notifiche desktop per gli eventi",
         "skip_opening_browser": "Salta l'Apertura del Browser",
         "skip_opening_browser_on_startup": "Salta l'apertura automatica del browser durante l'avvio"
       },
@@ -548,7 +552,7 @@
   "developmentVersion": "Versione Sviluppo",
   "dialogs": {
     "aliases_must_be_unique": "gli alias devono essere univoci",
-    "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno eliminati permanentemente:",
+    "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
     "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
     "delete_entity_desc": "{count, plural, one {Sei sicuro di voler cancellare questo/a {singularEntity}? A meno che anche il file venga cancellato, questo/a {singularEntity} sarà riaggiunto quando la scansione verrà effettuata.} other {Sei sicuro di voler cancellare questi/e {pluralEntity}? A meno che anche i file vengano cancellati, questi/e {pluralEntity} verranno riaggiunti quando la scansione verrà effettuata.}}",
     "delete_entity_title": "{count, plural, one {Cancellazione {singularEntity}} other {Cancellazione {pluralEntity}}}",
