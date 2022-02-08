@@ -507,11 +507,12 @@ func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHa
 	}
 }
 
-func scenePhashDuplicatedCriterionHandler(duplicated *bool) criterionHandlerFunc {
+func scenePhashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
-		if duplicated != nil {
+		// TODO: Wishlist item: Implement Distance matching
+		if duplicatedFilter != nil {
 			var v string
-			if *duplicated {
+			if *duplicatedFilter.Duplicated {
 				v = ">"
 			} else {
 				v = "="
