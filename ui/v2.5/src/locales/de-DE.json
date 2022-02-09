@@ -26,6 +26,7 @@
     "delete": "Löschen",
     "delete_entity": "Lösche {entityType}",
     "delete_file": "Lösche Datei",
+    "delete_file_and_funscript": "Datei löschen (inkl. funscript)",
     "delete_generated_supporting_files": "Lösche generierte Hilfsdaten",
     "disallow": "Nicht erlauben",
     "download": "Herunterladen",
@@ -413,6 +414,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Schreibtisch Integration",
+        "notifications_enabled": "Benachrichtigungen aktivieren",
+        "send_desktop_notifications_for_events": "Bei Neuigkeiten Benachrichtigungen auf den Desktop senden",
         "skip_opening_browser": "Überspringe Öffnen des Browsers",
         "skip_opening_browser_on_startup": "Überspringe automatisches Öffnen des Browsers bei Start"
       },
