@@ -4,6 +4,7 @@ import { Button, Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { getStashboxBase } from "src/utils";
+import { FormattedMessage } from "react-intl";
 
 interface IProps {
   show: boolean;
@@ -62,7 +63,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
   return (
     <Modal
       icon="paper-plane"
-      header="Submit to Stash-Box"
+      header={<FormattedMessage id="actions.submit_stash_box" />}
       isRunning={loading}
       show={show}
       accept={{
@@ -73,7 +74,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
         <>
           <Form.Group className="form-row align-items-end">
             <Form.Label className="col-6">
-              Selected Stash-Box endpoint:
+              <FormattedMessage id="stashbox.selected_stash_box" />:
             </Form.Label>
             <Form.Control
               as="select"
@@ -88,12 +89,15 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
             </Form.Control>
           </Form.Group>
           <Button onClick={handleSubmit}>
-            Submit {`"${entity.name ?? entity.title}"`}
+            <FormattedMessage id="actions.submit" />{" "}
+            {`"${entity.name ?? entity.title}"`}
           </Button>
         </>
       ) : (
         <>
-          <h6>Submission successful</h6>
+          <h6>
+            <FormattedMessage id="stashbox.submission_successful" />
+          </h6>
           <div>
             <a
               target="_blank"
@@ -102,14 +106,19 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
                 boxes[selectedBox].endpoint
               )}drafts/${getResponseId(data)}`}
             >
-              Go to {boxes[selectedBox].name} to review draft.
+              <FormattedMessage
+                id="stashbox.go_review_draft"
+                values={{ endpoint_name: boxes[selectedBox].name }}
+              />
             </a>
           </div>
         </>
       )}
       {error !== undefined && (
         <>
-          <h6 className="mt-2">Submission failed</h6>
+          <h6 className="mt-2">
+            <FormattedMessage id="stashbox.submission_failed" />
+          </h6>
           <div>{error.message}</div>
         </>
       )}
