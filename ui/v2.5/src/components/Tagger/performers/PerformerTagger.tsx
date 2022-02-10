@@ -20,7 +20,6 @@ import PerformerConfig from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
-import { values } from "lodash";
 
 type JobFragment = Pick<
   GQL.Job,
