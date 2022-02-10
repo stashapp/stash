@@ -908,6 +908,46 @@ func (i *Instance) GetCSSPath() string {
 	return fn
 }
 
+func (i *Instance) GetUIPropertiesPath() string {
+	// use custom.css in the same directory as the config file
+	configFileUsed := i.GetConfigFile()
+	configDir := filepath.Dir(configFileUsed)
+
+	fn := filepath.Join(configDir, "ui.properties")
+
+	return fn
+}
+
+func (i *Instance) CreateUIProperties() {
+	content := "#menu bar color\ntheme_color=#202b33\n"
+	fn := i.GetUIPropertiesPath()
+	i.Lock()
+	defer i.Unlock()
+
+	buf := []byte(content)
+
+	if err := os.WriteFile(fn, buf, 0777); err != nil {
+		logger.Warnf("error while writing %v bytes to %v: %v", len(buf), fn, err)
+	}
+}
+
+func (i *Instance) GetUIProperty(property string) string {
+	fn := i.GetUIPropertiesPath()
+
+	exists, _ := utils.FileExists(fn)
+	if !exists {
+		return ""
+	}
+
+	prop, err := os.ReadPropertiesFile(fn)
+
+	if err != nil {
+		return ""
+	}
+
+	return prop[property]
+}
+
 func (i *Instance) GetCSS() string {
 	fn := i.GetCSSPath()
 

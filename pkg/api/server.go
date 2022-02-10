@@ -58,6 +58,11 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		})
 		r.Use(httplog.RequestLogger(httpLogger))
 	}
+	uiPropPath := c.GetUIPropertiesPath()
+	exists, _ := utils.FileExists(uiPropPath)
+	if !exists {
+		c.CreateUIProperties()
+	}
 	r.Use(SecurityHeadersMiddleware)
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
@@ -206,13 +211,16 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		}
 
 		if ext == ".html" || ext == "" {
+			themeColor := c.GetUIProperty("theme_color")
+
 			data, err := uiBox.ReadFile(uiRootDir + "/index.html")
 			if err != nil {
 				panic(err)
 			}
 
 			prefix := getProxyPrefix(r.Header)
-			baseURLIndex := strings.ReplaceAll(string(data), "/%BASE_URL%", prefix)
+			baseURLIndex := strings.ReplaceAll(string(data), "%COLOR%", themeColor)
+			baseURLIndex = strings.ReplaceAll(baseURLIndex, "/%BASE_URL%", prefix)
 			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 1)
 			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
