@@ -200,6 +200,8 @@ var (
 	defaultMenuItems         = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
 )
 
+type AppConfigProperties map[string]string
+
 type MissingConfigError struct {
 	missingFields []string
 }
@@ -908,8 +910,6 @@ func (i *Instance) GetCSSPath() string {
 
 	return fn
 }
-
-type AppConfigProperties map[string]string
 
 func ReadPropertiesFile(filename string) (AppConfigProperties, error) {
 	config := AppConfigProperties{}
