@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -908,6 +909,41 @@ func (i *Instance) GetCSSPath() string {
 	return fn
 }
 
+type AppConfigProperties map[string]string
+
+func ReadPropertiesFile(filename string) (AppConfigProperties, error) {
+	config := AppConfigProperties{}
+
+	if len(filename) == 0 {
+		return config, nil
+	}
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if equal := strings.Index(line, "="); equal >= 0 {
+			if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
+				value := ""
+				if len(line) > equal {
+					value = strings.TrimSpace(line[equal+1:])
+				}
+				config[key] = value
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return config, nil
+}
+
 func (i *Instance) GetUIPropertiesPath() string {
 	// use custom.css in the same directory as the config file
 	configFileUsed := i.GetConfigFile()
@@ -939,7 +975,7 @@ func (i *Instance) GetUIProperty(property string) string {
 		return ""
 	}
 
-	prop, err := os.ReadPropertiesFile(fn)
+	prop, err := ReadPropertiesFile(fn)
 
 	if err != nil {
 		return ""
