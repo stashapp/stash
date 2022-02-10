@@ -4,7 +4,7 @@ import { Button, Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { getStashboxBase } from "src/utils";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 interface IProps {
   show: boolean;
@@ -43,6 +43,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
     query
   );
   const [selectedBox, setSelectedBox] = useState(0);
+  const intl = useIntl();
 
   const handleSubmit = () => {
     submit({
@@ -63,7 +64,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
   return (
     <Modal
       icon="paper-plane"
-      header={<FormattedMessage id="actions.submit_stash_box" />}
+      header={intl.formatMessage({ id: "actions.submit_stash_box" })}
       isRunning={loading}
       show={show}
       accept={{
