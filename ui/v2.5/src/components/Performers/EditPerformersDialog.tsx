@@ -9,6 +9,7 @@ import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
+import { genderStrings, stringToGender } from "src/utils/gender";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -27,6 +28,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [tagIds, setTagIds] = useState<string[]>();
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
   const [favorite, setFavorite] = useState<boolean | undefined>();
+  const [ethnicity, setEthnicity] = useState<string | undefined>();
+  const [country, setCountry] = useState<string | undefined>();
+  const [eyeColor, setEyeColor] = useState<string | undefined>();
+  const [fakeTits, setFakeTits] = useState<string | undefined>();
+  const [careerLength, setCareerLength] = useState<string | undefined>();
+  const [tattoos, setTattoos] = useState<string | undefined>();
+  const [piercings, setPiercings] = useState<string | undefined>();
+  const [hairColor, setHairColor] = useState<string | undefined>();
+  const [gender, setGender] = useState<GQL.GenderEnum | undefined>();
+  const genderOptions = [""].concat(genderStrings);
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
 
@@ -84,9 +95,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       performerInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
     }
 
-    if (favorite !== undefined) {
-      performerInput.favorite = favorite;
-    }
+    performerInput.favorite = favorite;
+    performerInput.ethnicity = ethnicity;
+    performerInput.country = country;
+    performerInput.eye_color = eyeColor;
+    performerInput.fake_tits = fakeTits;
+    performerInput.career_length = careerLength;
+    performerInput.tattoos = tattoos;
+    performerInput.piercings = piercings;
+    performerInput.hair_color = hairColor;
+    performerInput.gender = gender;
 
     return performerInput;
   }
@@ -155,6 +173,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     let updateTagIds: string[] = [];
     let updateFavorite: boolean | undefined;
     let updateRating: number | undefined;
+    let updateGender: GQL.GenderEnum | undefined;
     let first = true;
 
     state.forEach((performer: GQL.SlimPerformerDataFragment) => {
@@ -166,6 +185,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         first = false;
         updateFavorite = performer.favorite;
         updateRating = performerRating ?? undefined;
+        updateGender = performer.gender ?? undefined;
       } else {
         if (!_.isEqual(performerTagIDs, updateTagIds)) {
           updateTagIds = [];
@@ -176,12 +196,26 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         if (performerRating !== updateRating) {
           updateRating = undefined;
         }
+        if (performer.gender !== updateGender) {
+          updateGender = undefined;
+        }
       }
     });
 
     setExistingTagIds(updateTagIds);
     setFavorite(updateFavorite);
     setRating(updateRating);
+    setGender(updateGender);
+
+    // these fields are not part of SlimPerformerDataFragment
+    setEthnicity(undefined);
+    setCountry(undefined);
+    setEyeColor(undefined);
+    setFakeTits(undefined);
+    setCareerLength(undefined);
+    setTattoos(undefined);
+    setPiercings(undefined);
+    setHairColor(undefined);
   }, [props.selected, tagMode]);
 
   useEffect(() => {
@@ -198,6 +232,27 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     } else {
       setFavorite(true);
     }
+  }
+
+  function renderTextField(
+    name: string,
+    value: string | undefined,
+    setter: (newValue: string | undefined) => void
+  ) {
+    return (
+      <Form.Group controlId={name}>
+        <Form.Label>
+          <FormattedMessage id={name} />
+        </Form.Label>
+        <Form.Control
+          className="input-control"
+          type="text"
+          value={value}
+          onChange={(event) => setter(event.currentTarget.value)}
+          placeholder={intl.formatMessage({ id: name })}
+        />
+      </Form.Group>
+    );
   }
 
   function render() {
@@ -230,6 +285,44 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           </Col>
         </Form.Group>
         <Form>
+          <Form.Group controlId="favorite">
+            <Form.Check
+              type="checkbox"
+              label="Favorite"
+              checked={favorite}
+              ref={checkboxRef}
+              onChange={() => cycleFavorite()}
+            />
+          </Form.Group>
+
+          <Form.Group>
+            <Form.Label>
+              <FormattedMessage id="gender" />
+            </Form.Label>
+            <Form.Control
+              as="select"
+              className="input-control"
+              onChange={(event) =>
+                setGender(stringToGender(event.currentTarget.value))
+              }
+            >
+              {genderOptions.map((opt) => (
+                <option value={opt} key={opt}>
+                  {opt}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+
+          {renderTextField("country", country, setCountry)}
+          {renderTextField("ethnicity", ethnicity, setEthnicity)}
+          {renderTextField("hair_color", hairColor, setHairColor)}
+          {renderTextField("eye_color", eyeColor, setEyeColor)}
+          {renderTextField("fake_tits", fakeTits, setFakeTits)}
+          {renderTextField("tattoos", tattoos, setTattoos)}
+          {renderTextField("piercings", piercings, setPiercings)}
+          {renderTextField("career_length", careerLength, setCareerLength)}
+
           <Form.Group controlId="tags">
             <Form.Label>
               <FormattedMessage id="tags" />
@@ -242,16 +335,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
               existingIds={existingTagIds ?? []}
               ids={tagIds ?? []}
               mode={tagMode}
-            />
-          </Form.Group>
-
-          <Form.Group controlId="favorite">
-            <Form.Check
-              type="checkbox"
-              label="Favorite"
-              checked={favorite}
-              ref={checkboxRef}
-              onChange={() => cycleFavorite()}
             />
           </Form.Group>
         </Form>
