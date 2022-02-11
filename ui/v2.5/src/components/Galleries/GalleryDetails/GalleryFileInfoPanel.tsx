@@ -23,7 +23,7 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
         truncate
       />
       <URLField
-        id="path"
+        id="media_info.downloaded_from"
         url={props.gallery.url}
         value={props.gallery.url}
         truncate
