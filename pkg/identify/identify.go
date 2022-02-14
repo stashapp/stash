@@ -40,7 +40,7 @@ func (t *SceneIdentifier) Identify(ctx context.Context, txnManager models.Transa
 	}
 
 	if result == nil {
-		logger.Infof("Unable to identify %s", scene.Path)
+		logger.Debugf("Unable to identify %s", scene.Path)
 		return nil
 	}
 
@@ -176,7 +176,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.Tra
 
 		// don't update anything if nothing was set
 		if updater.IsEmpty() {
-			logger.Infof("Nothing to set for %s", s.Path)
+			logger.Debugf("Nothing to set for %s", s.Path)
 			return nil
 		}
 
