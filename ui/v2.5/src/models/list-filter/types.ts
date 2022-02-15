@@ -28,6 +28,11 @@ export interface INumberValue {
   value2: number | undefined;
 }
 
+export interface IPHashDuplicationValue {
+  duplicated: boolean;
+  distance?: number; // currently not implemented
+}
+
 export function criterionIsHierarchicalLabelValue(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any

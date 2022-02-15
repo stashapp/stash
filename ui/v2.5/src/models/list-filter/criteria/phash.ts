@@ -1,8 +1,8 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
-  BooleanCriterion,
   BooleanCriterionOption,
   CriterionOption,
+  PhashDuplicateCriterion,
   StringCriterion,
 } from "./criterion";
 
@@ -31,7 +31,7 @@ export const DuplicatedCriterionOption = new BooleanCriterionOption(
   "duplicated"
 );
 
-export class DuplicatedCriterion extends BooleanCriterion {
+export class DuplicatedCriterion extends PhashDuplicateCriterion {
   constructor() {
     super(DuplicatedCriterionOption);
   }
