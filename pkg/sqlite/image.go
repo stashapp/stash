@@ -450,14 +450,14 @@ func imagePerformerCountCriterionHandler(qb *imageQueryBuilder, performerCount *
 func imagePerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if performerfavorite != nil {
+			f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
+
 			if *performerfavorite {
 				// contains at least one favorite
-				f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
 				f.addLeftJoin("performers", "", "performers.id = performers_images.performer_id")
 				f.addWhere("performers.favorite = 1")
 			} else {
 				// contains zero favorites
-				f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
 				f.addLeftJoin(`(SELECT performers_images.image_id as id FROM performers_images
 JOIN performers ON performers.id = performers_images.performer_id
 GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "images.id = nofaves.id")

@@ -426,14 +426,14 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 func galleryPerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if performerfavorite != nil {
+			f.addLeftJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
+
 			if *performerfavorite {
 				// contains at least one favorite
-				f.addLeftJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
 				f.addLeftJoin("performers", "", "performers.id = performers_galleries.performer_id")
 				f.addWhere("performers.favorite = 1")
 			} else {
 				// contains zero favorites
-				f.addLeftJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
 				f.addLeftJoin(`(SELECT performers_galleries.gallery_id as id FROM performers_galleries 
 JOIN performers ON performers.id = performers_galleries.performer_id
 GROUP BY performers_galleries.gallery_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "galleries.id = nofaves.id")
@@ -454,20 +454,8 @@ func galleryPerformerAgeCriterionHandler(performerAge *models.IntCriterionInput)
 			f.addWhere("galleries.date != '0001-01-01' AND performers.birthdate != '0001-01-01'")
 
 			ageCalc := "cast(strftime('%Y.%m%d', galleries.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
-			switch performerAge.Modifier {
-			case models.CriterionModifierEquals:
-				f.addWhere(fmt.Sprintf("%s = %d", ageCalc, performerAge.Value))
-			case models.CriterionModifierNotEquals:
-				f.addWhere(fmt.Sprintf("%s != %d", ageCalc, performerAge.Value))
-			case models.CriterionModifierBetween:
-				f.addWhere(fmt.Sprintf("%s BETWEEN %d AND %d", ageCalc, performerAge.Value, *performerAge.Value2))
-			case models.CriterionModifierNotBetween:
-				f.addWhere(fmt.Sprintf("%s NOT BETWEEN %d AND %d", ageCalc, performerAge.Value, *performerAge.Value2))
-			case models.CriterionModifierLessThan:
-				f.addWhere(fmt.Sprintf("%s < %d", ageCalc, performerAge.Value))
-			case models.CriterionModifierGreaterThan:
-				f.addWhere(fmt.Sprintf("%s > %d", ageCalc, performerAge.Value))
-			}
+			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
+			f.addWhere(whereClause, args...)
 		}
 	}
 }
