@@ -7,6 +7,11 @@ import { Modal, StudioSelect } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
+import {
+  getAggregateInputValue,
+  getAggregateRating,
+  getAggregateStudioId,
+} from "src/utils/bulkUpdate";
 
 interface IListOperationProps {
   selected: GQL.MovieDataFragment[];
@@ -27,44 +32,19 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
   const [isUpdating, setIsUpdating] = useState(false);
 
   function getMovieInput(): GQL.BulkMovieUpdateInput {
-    const aggregateRating = getRating(props.selected);
+    const aggregateRating = getAggregateRating(props.selected);
+    const aggregateStudioId = getAggregateStudioId(props.selected);
 
     const movieInput: GQL.BulkMovieUpdateInput = {
       ids: props.selected.map((movie) => movie.id),
-      studio_id: studioId,
       director,
     };
 
     // if rating is undefined
-    if (rating === undefined) {
-      // and all galleries have the same rating, then we are unsetting the rating.
-      if (aggregateRating) {
-        // null to unset rating
-        movieInput.rating = null;
-      }
-      // otherwise not setting the rating
-    } else {
-      // if rating is set, then we are setting the rating for all
-      movieInput.rating = rating;
-    }
+    movieInput.rating = getAggregateInputValue(rating, aggregateRating);
+    movieInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
 
     return movieInput;
-  }
-
-  function getRating(state: GQL.MovieDataFragment[]) {
-    let ret: number | undefined;
-    let first = true;
-
-    state.forEach((movie) => {
-      if (first) {
-        ret = movie.rating ?? undefined;
-        first = false;
-      } else if (ret !== movie.rating) {
-        ret = undefined;
-      }
-    });
-
-    return ret;
   }
 
   async function onSave() {

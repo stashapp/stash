@@ -9,6 +9,14 @@ import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
+import {
+  getAggregateInputIDs,
+  getAggregateInputValue,
+  getAggregatePerformerIds,
+  getAggregateRating,
+  getAggregateStudioId,
+  getAggregateTagIds,
+} from "src/utils/bulkUpdate";
 
 interface IListOperationProps {
   selected: GQL.SlimImageDataFragment[];
@@ -42,22 +50,12 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
 
   const checkboxRef = React.createRef<HTMLInputElement>();
 
-  function makeBulkUpdateIds(
-    ids: string[],
-    mode: GQL.BulkUpdateIdMode
-  ): GQL.BulkUpdateIds {
-    return {
-      mode,
-      ids,
-    };
-  }
-
   function getImageInput(): GQL.BulkImageUpdateInput {
     // need to determine what we are actually setting on each image
-    const aggregateRating = getRating(props.selected);
-    const aggregateStudioId = getStudioId(props.selected);
-    const aggregatePerformerIds = getPerformerIds(props.selected);
-    const aggregateTagIds = getTagIds(props.selected);
+    const aggregateRating = getAggregateRating(props.selected);
+    const aggregateStudioId = getAggregateStudioId(props.selected);
+    const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
+    const aggregateTagIds = getAggregateTagIds(props.selected);
 
     const imageInput: GQL.BulkImageUpdateInput = {
       ids: props.selected.map((image) => {
@@ -65,67 +63,15 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       }),
     };
 
-    // if rating is undefined
-    if (rating === undefined) {
-      // and all images have the same rating, then we are unsetting the rating.
-      if (aggregateRating) {
-        // null rating to unset it
-        imageInput.rating = null;
-      }
-      // otherwise not setting the rating
-    } else {
-      // if rating is set, then we are setting the rating for all
-      imageInput.rating = rating;
-    }
+    imageInput.rating = getAggregateInputValue(rating, aggregateRating);
+    imageInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
 
-    // if studioId is undefined
-    if (studioId === undefined) {
-      // and all images have the same studioId,
-      // then unset the studioId, otherwise ignoring studioId
-      if (aggregateStudioId) {
-        // null studio_id to unset it
-        imageInput.studio_id = null;
-      }
-    } else {
-      // if studioId is set, then we are setting it
-      imageInput.studio_id = studioId;
-    }
-
-    // if performerIds are empty
-    if (
-      performerMode === GQL.BulkUpdateIdMode.Set &&
-      (!performerIds || performerIds.length === 0)
-    ) {
-      // and all images have the same ids,
-      if (aggregatePerformerIds.length > 0) {
-        // then unset the performerIds, otherwise ignore
-        imageInput.performer_ids = makeBulkUpdateIds(
-          performerIds || [],
-          performerMode
-        );
-      }
-    } else {
-      // if performerIds non-empty, then we are setting them
-      imageInput.performer_ids = makeBulkUpdateIds(
-        performerIds || [],
-        performerMode
-      );
-    }
-
-    // if tagIds non-empty, then we are setting them
-    if (
-      tagMode === GQL.BulkUpdateIdMode.Set &&
-      (!tagIds || tagIds.length === 0)
-    ) {
-      // and all images have the same ids,
-      if (aggregateTagIds.length > 0) {
-        // then unset the tagIds, otherwise ignore
-        imageInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
-      }
-    } else {
-      // if tagIds non-empty, then we are setting them
-      imageInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
-    }
+    imageInput.performer_ids = getAggregateInputIDs(
+      performerMode,
+      performerIds,
+      aggregatePerformerIds
+    );
+    imageInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
 
     if (organized !== undefined) {
       imageInput.organized = organized;
@@ -153,83 +99,6 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       Toast.error(e);
     }
     setIsUpdating(false);
-  }
-
-  function getRating(state: GQL.SlimImageDataFragment[]) {
-    let ret: number | undefined;
-    let first = true;
-
-    state.forEach((image: GQL.SlimImageDataFragment) => {
-      if (first) {
-        ret = image.rating ?? undefined;
-        first = false;
-      } else if (ret !== image.rating) {
-        ret = undefined;
-      }
-    });
-
-    return ret;
-  }
-
-  function getStudioId(state: GQL.SlimImageDataFragment[]) {
-    let ret: string | undefined;
-    let first = true;
-
-    state.forEach((image: GQL.SlimImageDataFragment) => {
-      if (first) {
-        ret = image?.studio?.id;
-        first = false;
-      } else {
-        const studio = image?.studio?.id;
-        if (ret !== studio) {
-          ret = undefined;
-        }
-      }
-    });
-
-    return ret;
-  }
-
-  function getPerformerIds(state: GQL.SlimImageDataFragment[]) {
-    let ret: string[] = [];
-    let first = true;
-
-    state.forEach((image: GQL.SlimImageDataFragment) => {
-      if (first) {
-        ret = image.performers ? image.performers.map((p) => p.id).sort() : [];
-        first = false;
-      } else {
-        const perfIds = image.performers
-          ? image.performers.map((p) => p.id).sort()
-          : [];
-
-        if (!_.isEqual(ret, perfIds)) {
-          ret = [];
-        }
-      }
-    });
-
-    return ret;
-  }
-
-  function getTagIds(state: GQL.SlimImageDataFragment[]) {
-    let ret: string[] = [];
-    let first = true;
-
-    state.forEach((image: GQL.SlimImageDataFragment) => {
-      if (first) {
-        ret = image.tags ? image.tags.map((t) => t.id).sort() : [];
-        first = false;
-      } else {
-        const tIds = image.tags ? image.tags.map((t) => t.id).sort() : [];
-
-        if (!_.isEqual(ret, tIds)) {
-          ret = [];
-        }
-      }
-    });
-
-    return ret;
   }
 
   useEffect(() => {
