@@ -138,7 +138,9 @@ const ImageListImages: React.FC<IImageListImages> = ({
         onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
           onSelectChange(image.id, selected, shiftKey)
         }
-        onPreview={(ev) => onPreview(index, ev)}
+        onPreview={
+          selectedIds.size < 1 ? (ev) => onPreview(index, ev) : undefined
+        }
       />
     );
   }

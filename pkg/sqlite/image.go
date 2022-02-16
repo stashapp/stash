@@ -248,6 +248,7 @@ func (qb *imageQueryBuilder) makeFilter(imageFilter *models.ImageFilterType) *fi
 	query.handleCriterion(imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
 	query.handleCriterion(imageStudioCriterionHandler(qb, imageFilter.Studios))
 	query.handleCriterion(imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
+	query.handleCriterion(imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
 
 	return query
 }
@@ -444,6 +445,26 @@ func imagePerformerCountCriterionHandler(qb *imageQueryBuilder, performerCount *
 	}
 
 	return h.handler(performerCount)
+}
+
+func imagePerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerfavorite != nil {
+			f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
+
+			if *performerfavorite {
+				// contains at least one favorite
+				f.addLeftJoin("performers", "", "performers.id = performers_images.performer_id")
+				f.addWhere("performers.favorite = 1")
+			} else {
+				// contains zero favorites
+				f.addLeftJoin(`(SELECT performers_images.image_id as id FROM performers_images
+JOIN performers ON performers.id = performers_images.performer_id
+GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "images.id = nofaves.id")
+				f.addWhere("performers_images.image_id IS NULL OR nofaves.id IS NOT NULL")
+			}
+		}
+	}
 }
 
 func imageStudioCriterionHandler(qb *imageQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
