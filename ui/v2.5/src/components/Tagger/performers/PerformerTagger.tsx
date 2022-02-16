@@ -636,6 +636,10 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
     }
   }
 
+  const showHideConfigId = showConfig
+    ? "actions.hide_configuration"
+    : "actions.show_configuration";
+
   return (
     <>
       <Manual
@@ -649,7 +653,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
           <>
             <div className="row mb-2 no-gutters">
               <Button onClick={() => setShowConfig(!showConfig)} variant="link">
-                {showConfig ? "Hide" : "Show"} Configuration
+                {intl.formatMessage({ id: showHideConfigId })}
               </Button>
               <Button
                 className="ml-auto"
