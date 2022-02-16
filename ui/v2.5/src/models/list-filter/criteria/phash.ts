@@ -1,5 +1,10 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { CriterionOption, StringCriterion } from "./criterion";
+import {
+  BooleanCriterionOption,
+  CriterionOption,
+  PhashDuplicateCriterion,
+  StringCriterion,
+} from "./criterion";
 
 export const PhashCriterionOption = new CriterionOption({
   messageID: "media_info.phash",
@@ -17,5 +22,17 @@ export const PhashCriterionOption = new CriterionOption({
 export class PhashCriterion extends StringCriterion {
   constructor() {
     super(PhashCriterionOption);
+  }
+}
+
+export const DuplicatedCriterionOption = new BooleanCriterionOption(
+  "duplicated_phash",
+  "duplicated",
+  "duplicated"
+);
+
+export class DuplicatedCriterion extends PhashDuplicateCriterion {
+  constructor() {
+    super(DuplicatedCriterionOption);
   }
 }

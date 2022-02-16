@@ -653,6 +653,7 @@
     "search_accuracy_label": "Search Accuracy",
     "title": "Duplicate Scenes"
   },
+  "duplicated_phash": "Duplicated (phash)",
   "duration": "Duration",
   "effect_filters": {
     "aspect": "Aspect",
@@ -760,9 +761,12 @@
   "parent_tags": "Parent Tags",
   "part_of": "Part of {parent}",
   "path": "Path",
+  "perceptual_similarity": "Perceptual Similarity (phash)",
   "performer": "Performer",
   "performerTags": "Performer Tags",
   "performer_count": "Performer Count",
+  "performer_favorite": "Performer Favourited",
+  "performer_age": "Performer Age",
   "performer_image": "Performer Image",
   "performers": "Performers",
   "piercings": "Piercings",
