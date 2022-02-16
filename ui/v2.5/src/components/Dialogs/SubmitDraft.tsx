@@ -59,8 +59,6 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
   const handleSelectBox = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setSelectedBox(Number.parseInt(e.currentTarget.value) ?? 0);
 
-  console.log(data);
-
   return (
     <Modal
       icon="paper-plane"
