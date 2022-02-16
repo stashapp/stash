@@ -9,6 +9,14 @@ import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
+import {
+  getAggregateInputIDs,
+  getAggregateInputValue,
+  getAggregatePerformerIds,
+  getAggregateRating,
+  getAggregateStudioId,
+  getAggregateTagIds,
+} from "src/utils/bulkUpdate";
 
 interface IListOperationProps {
   selected: GQL.SlimGalleryDataFragment[];
@@ -42,22 +50,12 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
 
   const checkboxRef = React.createRef<HTMLInputElement>();
 
-  function makeBulkUpdateIds(
-    ids: string[],
-    mode: GQL.BulkUpdateIdMode
-  ): GQL.BulkUpdateIds {
-    return {
-      mode,
-      ids,
-    };
-  }
-
   function getGalleryInput(): GQL.BulkGalleryUpdateInput {
     // need to determine what we are actually setting on each gallery
-    const aggregateRating = getRating(props.selected);
-    const aggregateStudioId = getStudioId(props.selected);
-    const aggregatePerformerIds = getPerformerIds(props.selected);
-    const aggregateTagIds = getTagIds(props.selected);
+    const aggregateRating = getAggregateRating(props.selected);
+    const aggregateStudioId = getAggregateStudioId(props.selected);
+    const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
+    const aggregateTagIds = getAggregateTagIds(props.selected);
 
     const galleryInput: GQL.BulkGalleryUpdateInput = {
       ids: props.selected.map((gallery) => {
@@ -65,67 +63,22 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       }),
     };
 
-    // if rating is undefined
-    if (rating === undefined) {
-      // and all galleries have the same rating, then we are unsetting the rating.
-      if (aggregateRating) {
-        // null to unset rating
-        galleryInput.rating = null;
-      }
-      // otherwise not setting the rating
-    } else {
-      // if rating is set, then we are setting the rating for all
-      galleryInput.rating = rating;
-    }
+    galleryInput.rating = getAggregateInputValue(rating, aggregateRating);
+    galleryInput.studio_id = getAggregateInputValue(
+      studioId,
+      aggregateStudioId
+    );
 
-    // if studioId is undefined
-    if (studioId === undefined) {
-      // and all galleries have the same studioId,
-      // then unset the studioId, otherwise ignoring studioId
-      if (aggregateStudioId) {
-        // null to unset studio_id
-        galleryInput.studio_id = null;
-      }
-    } else {
-      // if studioId is set, then we are setting it
-      galleryInput.studio_id = studioId;
-    }
-
-    // if performerIds are empty
-    if (
-      performerMode === GQL.BulkUpdateIdMode.Set &&
-      (!performerIds || performerIds.length === 0)
-    ) {
-      // and all galleries have the same ids,
-      if (aggregatePerformerIds.length > 0) {
-        // then unset the performerIds, otherwise ignore
-        galleryInput.performer_ids = makeBulkUpdateIds(
-          performerIds || [],
-          performerMode
-        );
-      }
-    } else {
-      // if performerIds non-empty, then we are setting them
-      galleryInput.performer_ids = makeBulkUpdateIds(
-        performerIds || [],
-        performerMode
-      );
-    }
-
-    // if tagIds non-empty, then we are setting them
-    if (
-      tagMode === GQL.BulkUpdateIdMode.Set &&
-      (!tagIds || tagIds.length === 0)
-    ) {
-      // and all galleries have the same ids,
-      if (aggregateTagIds.length > 0) {
-        // then unset the tagIds, otherwise ignore
-        galleryInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
-      }
-    } else {
-      // if tagIds non-empty, then we are setting them
-      galleryInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
-    }
+    galleryInput.performer_ids = getAggregateInputIDs(
+      performerMode,
+      performerIds,
+      aggregatePerformerIds
+    );
+    galleryInput.tag_ids = getAggregateInputIDs(
+      tagMode,
+      tagIds,
+      aggregateTagIds
+    );
 
     if (organized !== undefined) {
       galleryInput.organized = organized;
@@ -155,85 +108,6 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       Toast.error(e);
     }
     setIsUpdating(false);
-  }
-
-  function getRating(state: GQL.SlimGalleryDataFragment[]) {
-    let ret: number | undefined;
-    let first = true;
-
-    state.forEach((gallery) => {
-      if (first) {
-        ret = gallery.rating ?? undefined;
-        first = false;
-      } else if (ret !== gallery.rating) {
-        ret = undefined;
-      }
-    });
-
-    return ret;
-  }
-
-  function getStudioId(state: GQL.SlimGalleryDataFragment[]) {
-    let ret: string | undefined;
-    let first = true;
-
-    state.forEach((gallery) => {
-      if (first) {
-        ret = gallery?.studio?.id;
-        first = false;
-      } else {
-        const studio = gallery?.studio?.id;
-        if (ret !== studio) {
-          ret = undefined;
-        }
-      }
-    });
-
-    return ret;
-  }
-
-  function getPerformerIds(state: GQL.SlimGalleryDataFragment[]) {
-    let ret: string[] = [];
-    let first = true;
-
-    state.forEach((gallery) => {
-      if (first) {
-        ret = gallery.performers
-          ? gallery.performers.map((p) => p.id).sort()
-          : [];
-        first = false;
-      } else {
-        const perfIds = gallery.performers
-          ? gallery.performers.map((p) => p.id).sort()
-          : [];
-
-        if (!_.isEqual(ret, perfIds)) {
-          ret = [];
-        }
-      }
-    });
-
-    return ret;
-  }
-
-  function getTagIds(state: GQL.SlimGalleryDataFragment[]) {
-    let ret: string[] = [];
-    let first = true;
-
-    state.forEach((gallery) => {
-      if (first) {
-        ret = gallery.tags ? gallery.tags.map((t) => t.id).sort() : [];
-        first = false;
-      } else {
-        const tIds = gallery.tags ? gallery.tags.map((t) => t.id).sort() : [];
-
-        if (!_.isEqual(ret, tIds)) {
-          ret = [];
-        }
-      }
-    });
-
-    return ret;
   }
 
   useEffect(() => {

@@ -33,6 +33,12 @@ input ResolutionCriterionInput {
   modifier: CriterionModifier!
 }
 
+input PHashDuplicationCriterionInput {
+  duplicated: Boolean
+  """Currently unimplemented"""
+  distance: Int
+}
+
 input PerformerFilterType {
   AND: PerformerFilterType
   OR: PerformerFilterType
@@ -130,6 +136,8 @@ input SceneFilterType {
   organized: Boolean
   """Filter by o-counter"""
   o_counter: IntCriterionInput
+  """Filter Scenes that have an exact phash match available"""
+  duplicated: PHashDuplicationCriterionInput
   """Filter by resolution"""
   resolution: ResolutionCriterionInput
   """Filter by duration (in seconds)"""
@@ -148,6 +156,10 @@ input SceneFilterType {
   tag_count: IntCriterionInput
   """Filter to only include scenes with performers with these tags"""
   performer_tags: HierarchicalMultiCriterionInput
+  """Filter scenes that have performers that have been favorited"""
+  performer_favorite: Boolean
+  """Filter scenes by performer age at time of scene"""
+  performer_age: IntCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
   """Filter by performer count"""
@@ -243,6 +255,10 @@ input GalleryFilterType {
   performers: MultiCriterionInput
   """Filter by performer count"""
   performer_count: IntCriterionInput
+  """Filter galleries that have performers that have been favorited"""
+  performer_favorite: Boolean
+  """Filter galleries by performer age at time of gallery"""
+  performer_age: IntCriterionInput
   """Filter by number of images in this gallery"""
   image_count: IntCriterionInput
   """Filter by url"""
@@ -324,6 +340,8 @@ input ImageFilterType {
   performers: MultiCriterionInput
   """Filter by performer count"""
   performer_count: IntCriterionInput
+  """Filter images that have performers that have been favorited"""
+  performer_favorite: Boolean
   """Filter to only include images with these galleries"""
   galleries: MultiCriterionInput
 }

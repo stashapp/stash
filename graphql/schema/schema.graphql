@@ -224,6 +224,7 @@ type Mutation {
   movieUpdate(input: MovieUpdateInput!): Movie
   movieDestroy(input: MovieDestroyInput!): Boolean!
   moviesDestroy(ids: [ID!]!): Boolean!
+  bulkMovieUpdate(input: BulkMovieUpdateInput!): [Movie!]
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag

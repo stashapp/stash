@@ -38,7 +38,7 @@ func excludeFiles(files []string, patterns []string) ([]string, int) {
 
 func matchFileRegex(file string, fileRegexps []*regexp.Regexp) bool {
 	for _, regPattern := range fileRegexps {
-		if regPattern.MatchString(strings.ToLower(file)) {
+		if regPattern.MatchString(file) {
 			return true
 		}
 	}
@@ -60,7 +60,10 @@ func generateRegexps(patterns []string) []*regexp.Regexp {
 	var fileRegexps []*regexp.Regexp
 
 	for _, pattern := range patterns {
-		reg, err := regexp.Compile(strings.ToLower(pattern))
+		if !strings.HasPrefix(pattern, "(?i)") {
+			pattern = "(?i)" + pattern
+		}
+		reg, err := regexp.Compile(pattern)
 		if err != nil {
 			logger.Errorf("Exclude :%v", err)
 		} else {
@@ -78,7 +81,7 @@ func generateRegexps(patterns []string) []*regexp.Regexp {
 
 func matchFileSimple(file string, regExps []*regexp.Regexp) bool {
 	for _, regPattern := range regExps {
-		if regPattern.MatchString(strings.ToLower(file)) {
+		if regPattern.MatchString(file) {
 			return true
 		}
 	}

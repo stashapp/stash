@@ -6,6 +6,7 @@ import {
   HierarchicalMultiCriterionInput,
   IntCriterionInput,
   MultiCriterionInput,
+  PHashDuplicationCriterionInput,
 } from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
 import {
@@ -519,5 +520,13 @@ export class DurationCriterion extends Criterion<INumberValue> {
         this.modifier === CriterionModifier.NotEquals
       ? DurationUtils.secondsToString(this.value.value)
       : "?";
+  }
+}
+
+export class PhashDuplicateCriterion extends StringCriterion {
+  protected toCriterionInput(): PHashDuplicationCriterionInput {
+    return {
+      duplicated: this.value === "true",
+    };
   }
 }

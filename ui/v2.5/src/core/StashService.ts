@@ -659,6 +659,14 @@ export const useMovieUpdate = () =>
     update: deleteCache(movieMutationImpactedQueries),
   });
 
+export const useBulkMovieUpdate = (input: GQL.BulkMovieUpdateInput) =>
+  GQL.useBulkMovieUpdateMutation({
+    variables: {
+      input,
+    },
+    update: deleteCache(movieMutationImpactedQueries),
+  });
+
 export const useMovieDestroy = (input: GQL.MovieDestroyInput) =>
   GQL.useMovieDestroyMutation({
     variables: input,

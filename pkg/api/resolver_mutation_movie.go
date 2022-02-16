@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -218,6 +219,71 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 
 	r.hookExecutor.ExecutePostHooks(ctx, movie.ID, plugin.MovieUpdatePost, input, translator.getFields())
 	return r.getMovie(ctx, movie.ID)
+}
+
+func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input models.BulkMovieUpdateInput) ([]*models.Movie, error) {
+	movieIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return nil, err
+	}
+
+	updatedTime := time.Now()
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	updatedMovie := models.MoviePartial{
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+	}
+
+	updatedMovie.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedMovie.Director = translator.nullString(input.Director, "director")
+
+	ret := []*models.Movie{}
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Movie()
+
+		for _, movieID := range movieIDs {
+			updatedMovie.ID = movieID
+
+			existing, err := qb.Find(movieID)
+			if err != nil {
+				return err
+			}
+
+			if existing == nil {
+				return fmt.Errorf("movie with id %d not found", movieID)
+			}
+
+			movie, err := qb.Update(updatedMovie)
+			if err != nil {
+				return err
+			}
+
+			ret = append(ret, movie)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	var newRet []*models.Movie
+	for _, movie := range ret {
+		r.hookExecutor.ExecutePostHooks(ctx, movie.ID, plugin.MovieUpdatePost, input, translator.getFields())
+
+		movie, err = r.getMovie(ctx, movie.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		newRet = append(newRet, movie)
+	}
+
+	return newRet, nil
 }
 
 func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieDestroyInput) (bool, error) {
