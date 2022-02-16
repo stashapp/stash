@@ -22,7 +22,12 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     ));
     return (
       <>
-        <h6>Tags</h6>
+        <h6>
+          <FormattedMessage
+            id="countables.tags"
+            values={{ count: props.image.tags.length }}
+          />
+        </h6>
         {tags}
       </>
     );
@@ -37,7 +42,12 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
 
     return (
       <>
-        <h6>Performers</h6>
+        <h6>
+          <FormattedMessage
+            id="countables.performers"
+            values={{ count: props.image.performers.length }}
+          />
+        </h6>
         <div className="row justify-content-center image-performers">
           {cards}
         </div>
@@ -52,7 +62,12 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     ));
     return (
       <>
-        <h6>Galleries</h6>
+        <h6>
+          <FormattedMessage
+            id="countables.galleries"
+            values={{ count: props.image.galleries.length }}
+          />
+        </h6>
         {tags}
       </>
     );
@@ -77,7 +92,8 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           </div>
           {props.image.rating ? (
             <h6>
-              Rating: <RatingStars value={props.image.rating} />
+              <FormattedMessage id="rating" />:{" "}
+              <RatingStars value={props.image.rating} />
             </h6>
           ) : (
             ""
@@ -85,7 +101,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           {renderGalleries()}
           {props.image.file.width && props.image.file.height ? (
             <h6>
-              Resolution:{" "}
+              <FormattedMessage id="resolution" />:{" "}
               {TextUtils.resolution(
                 props.image.file.width,
                 props.image.file.height
