@@ -12,7 +12,7 @@ import {
 } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { stringToGender } from "src/utils/gender";
-import country, { getCountryByISO } from "src/utils/country";
+import { getCountryByISO } from "src/utils/country";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
