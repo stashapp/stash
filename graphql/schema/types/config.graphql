@@ -207,6 +207,9 @@ input ConfigInterfaceInput {
   wallShowTitle: Boolean
   """Wall playback type"""
   wallPlayback: String
+
+  """Show scene scrubber by default"""
+  showScrubber: Boolean
   
   """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
   maximumLoopDuration: Int
@@ -260,6 +263,9 @@ type ConfigInterfaceResult {
   wallShowTitle: Boolean
   """Wall playback type"""
   wallPlayback: String
+
+  """Show scene scrubber by default"""
+  showScrubber: Boolean
 
   """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
   maximumLoopDuration: Int
