@@ -228,7 +228,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOCounter() {
     if (props.scene.o_counter) {
       return (
-        <div className="o-counter">
+        <div className="o-count">
           <Button className="minimal">
             <span className="fa-icon">
               <SweatDrops />

@@ -111,7 +111,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   function maybeRenderOrganized() {
     if (props.gallery.organized) {
       return (
-        <div>
+        <div className="organized">
           <Button className="minimal">
             <Icon icon="box" />
           </Button>

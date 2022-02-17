@@ -85,12 +85,14 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
         </>
       }
       details={
-        <>
-          <span>{props.movie.date}</span>
-          <p>
-            <TruncatedText text={props.movie.synopsis} lineCount={3} />
-          </p>
-        </>
+        <div className="movie-card__details">
+          <span className="movie-card__date">{props.movie.date}</span>
+          <TruncatedText
+            className="movie-card__description"
+            text={props.movie.synopsis}
+            lineCount={3}
+          />
+        </div>
       }
       selected={props.selected}
       selecting={props.selecting}
