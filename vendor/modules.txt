@@ -56,6 +56,9 @@ github.com/apenwarr/fixconsole
 # github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab
 ## explicit
 github.com/apenwarr/w32
+# github.com/biter777/countries v1.3.4
+## explicit; go 1.13
+github.com/biter777/countries
 # github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 ## explicit; go 1.14
 github.com/chromedp/cdproto

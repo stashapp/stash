@@ -48,6 +48,7 @@ require (
 
 require (
 	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
+	github.com/biter777/countries v1.3.4
 	github.com/go-chi/httplog v0.2.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/kermieisinthehouse/gosx-notifier v0.1.1

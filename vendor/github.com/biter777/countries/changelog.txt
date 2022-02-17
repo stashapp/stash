@@ -1,0 +1,28 @@
+v 1.3.1
++ Add synonyms for some countries
++ textPrepare() func improved
++ driver.Value changed to local Value interface
+
+v 1.3
+
++ Small bugs fixes
++ Add country synonyms
++ Add more comments
++ Add more tests
+
+v 1.2
++ Add Kosovo missing funcs
++ Add South Sudan currency
++ Add Egypt domain
+
+v 1.1
++ Сhanged CallCode() to CallCodes() for multicodes support
++ Add IOC three-letter abbreviation country codes
++ Add FIFA three-letter country codes
++ Add "Ascension and Tristan da Cunha"
++ Add multi callcodes (Dominicana, Jamaica, Puerto Rico and others)
++ Add detection of deleted ISO 3166 codes 
++ Add indeterminate reservations ISO 3166 codes 
++ Add transitional reservations ISO 3166 codes 
++ Add non-countries call codes (Inmarsat, International Freephone and others)
++ Add Kosovo codes and values

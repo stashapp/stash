@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/biter777/countries"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -101,7 +102,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				partial.CareerLength = &value
 			}
 			if performer.Country != nil && !excluded["country"] {
-				value := getNullString(performer.Country)
+				value := getNullCountryString(performer.Country)
 				partial.Country = &value
 			}
 			if performer.Ethnicity != nil && !excluded["ethnicity"] {
@@ -145,7 +146,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				partial.Tattoos = &value
 			}
 			if performer.Twitter != nil && !excluded["twitter"] {
-				value := getNullString(performer.Tattoos)
+				value := getNullString(performer.Twitter)
 				partial.Twitter = &value
 			}
 			if performer.URL != nil && !excluded["url"] {
@@ -198,7 +199,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				Birthdate:    getDate(performer.Birthdate),
 				CareerLength: getNullString(performer.CareerLength),
 				Checksum:     utils.MD5FromString(*performer.Name),
-				Country:      getNullString(performer.Country),
+				Country:      getNullCountryString(performer.Country),
 				CreatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 				Ethnicity:    getNullString(performer.Ethnicity),
 				EyeColor:     getNullString(performer.EyeColor),
@@ -270,5 +271,20 @@ func getNullString(val *string) sql.NullString {
 		return sql.NullString{Valid: false}
 	} else {
 		return sql.NullString{String: *val, Valid: true}
+	}
+}
+
+func getNullCountryString(val *string) sql.NullString {
+	if val == nil {
+		return getNullString(val)
+	}
+
+	countryCode := countries.ByName(*val)
+
+	if countryCode != countries.Unknown {
+		countryName := countryCode.String()
+		return getNullString(&countryName)
+	} else {
+		return getNullString(val)
 	}
 }
