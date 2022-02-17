@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
+	"path"
 	"strconv"
 	"strings"
 
@@ -59,7 +61,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/stream.mkv", rs.StreamMKV)
 		r.Get("/stream.webm", rs.StreamWebM)
 		r.Get("/stream.m3u8", rs.StreamHLS)
-		r.Get("/stream.ts", rs.StreamTS)
+		r.Get("/stream/{segment}.ts", rs.StreamTS)
 		r.Get("/stream.mp4", rs.StreamMp4)
 
 		r.Get("/screenshot", rs.Screenshot)
@@ -125,6 +127,16 @@ func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
 	rs.streamTranscode(w, r, ffmpeg.StreamFormatH264)
 }
 
+func (rs sceneRoutes) getTSURL(manifestURL string, params url.Values) string {
+	parent := path.Dir(manifestURL)
+	encoded := params.Encode()
+	ret := parent + "/stream/%d.ts"
+	if encoded != "" {
+		ret += "?" + encoded
+	}
+	return ret
+}
+
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
@@ -133,13 +145,25 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	streamManager := manager.GetInstance().StreamManager
+	if streamManager == nil {
+		http.Error(w, "HLS streaming disabled", http.StatusServiceUnavailable)
+		return
+	}
+
+	// start stream based on query param, if provided
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[stream] error parsing query form: %v", err)
+	}
+
 	logger.Debug("Returning HLS playlist")
 
 	// getting the playlist manifest only
 	w.Header().Set("Content-Type", ffmpeg.MimeHLS)
 	var str strings.Builder
 
-	ffmpeg.WriteHLSPlaylist(pf.Duration, r.URL.String(), &str)
+	urlFormat := rs.getTSURL(r.URL.String(), r.Form)
+	streamManager.WriteHLSPlaylist(pf.Duration, urlFormat, &str)
 
 	requestByteRange := createByteRange(r.Header.Get("Range"))
 	if requestByteRange.RawString != "" {
@@ -156,9 +180,28 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatHLS)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	streamManager := manager.GetInstance().StreamManager
+	if streamManager == nil {
+		http.Error(w, "HLS streaming disabled", http.StatusServiceUnavailable)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[stream] error parsing query form: %v", err)
+	}
+
+	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
+	hash := scene.GetHash(fileNamingAlgo)
+
+	segment, _ := strconv.Atoi(chi.URLParam(r, "segment"))
+	handler := streamManager.StreamTS(scene.Path, hash, segment, ffmpeg.VideoCodec(r.Form.Get("videoCodec")))
+
+	handler(w, r)
 }
 
+// deprecated
 func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, streamFormat ffmpeg.StreamFormat) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
@@ -212,10 +255,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		if _, err := w.Write([]byte(err.Error())); err != nil {
-			logger.Warnf("[stream] error writing response: %v", err)
-		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

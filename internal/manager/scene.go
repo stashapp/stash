@@ -110,6 +110,11 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 			// set mkv to mp4 to trick the client, since many clients won't try mkv
 			MimeType: &mimeMp4,
 			Label:    &label,
+
+			// TODO - change this to use hls when we move to videojs
+			// still use HLS - but copy the video stream
+			// URL:      directStreamURL + ".m3u8?videoCodec=copy",
+			// MimeType: &mimeHLS,
 		})
 	}
 

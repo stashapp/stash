@@ -48,23 +48,9 @@ type StreamFormat struct {
 	codec     VideoCodec
 	format    Format
 	extraArgs []string
-	hls       bool
 }
 
 var (
-	StreamFormatHLS = StreamFormat{
-		codec:    VideoCodecLibX264,
-		format:   FormatMpegTS,
-		MimeType: MimeMpegts,
-		extraArgs: []string{
-			"-acodec", "aac",
-			"-pix_fmt", "yuv420p",
-			"-preset", "veryfast",
-			"-crf", "25",
-		},
-		hls: true,
-	}
-
 	StreamFormatH264 = StreamFormat{
 		codec:    VideoCodecLibX264,
 		format:   FormatMP4,
@@ -153,11 +139,6 @@ func (o TranscodeStreamOptions) getStreamArgs() Args {
 
 	if o.StartTime != 0 {
 		args = args.Seek(o.StartTime)
-	}
-
-	if o.Codec.hls {
-		// we only serve a fixed segment length
-		args = args.Duration(hlsSegmentLength)
 	}
 
 	args = args.Input(o.Input)
