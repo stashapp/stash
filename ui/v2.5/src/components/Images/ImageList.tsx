@@ -1,4 +1,4 @@
-import React, { useCallback, useState, MouseEvent } from "react";
+import React, { useCallback, useState, useMemo, MouseEvent } from "react";
 import { useIntl } from "react-intl";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
@@ -78,37 +78,47 @@ const ImageListImages: React.FC<IImageListImages> = ({
   const [slideshowRunning, setSlideshowRunning] = useState<boolean>(false);
   const handleLightBoxPage = useCallback(
     (direction: number) => {
-      const { currentPage } = filter;
       if (direction === -1) {
-        if (currentPage === 1) {
+        if (filter.currentPage === 1) {
           onChangePage(pageCount);
         } else {
-          onChangePage(currentPage - 1);
+          onChangePage(filter.currentPage - 1);
         }
       } else if (direction === 1) {
-        if (currentPage === pageCount) {
+        if (filter.currentPage === pageCount) {
           // return to the first page
           onChangePage(1);
         } else {
-          onChangePage(currentPage + 1);
+          onChangePage(filter.currentPage + 1);
         }
       }
     },
-    [onChangePage, filter, pageCount]
+    [onChangePage, filter.currentPage, pageCount]
   );
 
   const handleClose = useCallback(() => {
     setSlideshowRunning(false);
   }, [setSlideshowRunning]);
 
-  const showLightbox = useLightbox({
+  const lightboxState = useMemo(() => {
+    return {
+      images,
+      showNavigation: false,
+      pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
+      pageHeader: `Page ${filter.currentPage} / ${pageCount}`,
+      slideshowEnabled: slideshowRunning,
+      onClose: handleClose,
+    };
+  }, [
     images,
-    showNavigation: false,
-    pageCallback: pageCount > 1 ? handleLightBoxPage : undefined,
-    pageHeader: `Page ${filter.currentPage} / ${pageCount}`,
-    slideshowEnabled: slideshowRunning,
-    onClose: handleClose,
-  });
+    pageCount,
+    filter.currentPage,
+    slideshowRunning,
+    handleClose,
+    handleLightBoxPage,
+  ]);
+
+  const showLightbox = useLightbox(lightboxState);
 
   const handleImageOpen = useCallback(
     (index) => {
@@ -138,7 +148,9 @@ const ImageListImages: React.FC<IImageListImages> = ({
         onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
           onSelectChange(image.id, selected, shiftKey)
         }
-        onPreview={(ev) => onPreview(index, ev)}
+        onPreview={
+          selectedIds.size < 1 ? (ev) => onPreview(index, ev) : undefined
+        }
       />
     );
   }

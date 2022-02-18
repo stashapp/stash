@@ -2,6 +2,8 @@ package manager
 
 import (
 	"archive/zip"
+	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -14,20 +16,26 @@ func walkGalleryZip(path string, walkFunc func(file *zip.File) error) error {
 	}
 	defer readCloser.Close()
 
-	for _, file := range readCloser.File {
-		if file.FileInfo().IsDir() {
+	excludeImgRegex := generateRegexps(config.GetInstance().GetImageExcludes())
+
+	for _, f := range readCloser.File {
+		if f.FileInfo().IsDir() {
 			continue
 		}
 
-		if strings.Contains(file.Name, "__MACOSX") {
+		if strings.Contains(f.Name, "__MACOSX") {
 			continue
 		}
 
-		if !isImage(file.Name) {
+		if !isImage(f.Name) {
 			continue
 		}
 
-		err := walkFunc(file)
+		if matchFileRegex(file.ZipFile(path, f).Path(), excludeImgRegex) {
+			continue
+		}
+
+		err := walkFunc(f)
 		if err != nil {
 			return err
 		}
