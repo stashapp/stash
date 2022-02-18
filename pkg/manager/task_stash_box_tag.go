@@ -145,7 +145,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				partial.Tattoos = &value
 			}
 			if performer.Twitter != nil && !excluded["twitter"] {
-				value := getNullString(performer.Tattoos)
+				value := getNullString(performer.Twitter)
 				partial.Twitter = &value
 			}
 			if performer.URL != nil && !excluded["url"] {

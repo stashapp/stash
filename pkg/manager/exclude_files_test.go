@@ -26,7 +26,9 @@ var excludeTestFilenames = []string{
 	"\\\\network\\videos\\filename  windows network.mp4",
 	"\\\\network\\share\\windows network wanted.mp4",
 	"\\\\network\\share\\windows network wanted sample.mp4",
-	"\\\\network\\private\\windows.network.skip.mp4"}
+	"\\\\network\\private\\windows.network.skip.mp4",
+	"/stash/videos/a5.mp4",
+	"/stash/videos/mIxEdCaSe.mp4"}
 
 var excludeTests = []struct {
 	testPattern []string
@@ -42,6 +44,10 @@ var excludeTests = []struct {
 	{[]string{"^\\\\\\\\network"}, 4},                              // windows net share
 	{[]string{"\\\\private\\\\"}, 1},                               // windows net share
 	{[]string{"\\\\private\\\\", "sample\\.mp4"}, 3},               // windows net share
+	{[]string{"\\D\\d\\.mp4"}, 1},                                  // validates that \D doesn't get converted to lowercase \d
+	{[]string{"mixedcase\\.mp4"}, 1},                               // validates we can match the mixed case file
+	{[]string{"MIXEDCASE\\.mp4"}, 1},                               // validates we can match the mixed case file
+	{[]string{"(?i)MIXEDCASE\\.mp4"}, 1},                           // validates we can match the mixed case file without adding another (?i) to it
 }
 
 func TestExcludeFiles(t *testing.T) {

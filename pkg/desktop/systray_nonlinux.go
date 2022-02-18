@@ -87,6 +87,7 @@ func systrayInitialize(shutdownHandler ShutdownHandler, faviconProvider FaviconP
 					openURLInBrowser("")
 				}
 			case <-quitStashButton.ClickedCh:
+				systray.Quit()
 				shutdownHandler.Shutdown(0)
 			}
 		}

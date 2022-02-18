@@ -9,6 +9,12 @@ import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
+import {
+  getAggregateInputIDs,
+  getAggregateInputValue,
+  getAggregateRating,
+  getAggregateTagIds,
+} from "src/utils/bulkUpdate";
 import { genderStrings, stringToGender } from "src/utils/gender";
 
 interface IListOperationProps {
@@ -46,20 +52,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
   const checkboxRef = React.createRef<HTMLInputElement>();
 
-  function makeBulkUpdateIds(
-    ids: string[],
-    mode: GQL.BulkUpdateIdMode
-  ): GQL.BulkUpdateIds {
-    return {
-      mode,
-      ids,
-    };
-  }
-
   function getPerformerInput(): GQL.BulkPerformerUpdateInput {
     // need to determine what we are actually setting on each performer
-    const aggregateTagIds = getTagIds(props.selected);
-    const aggregateRating = getRating(props.selected);
+    const aggregateTagIds = getAggregateTagIds(props.selected);
+    const aggregateRating = getAggregateRating(props.selected);
 
     const performerInput: GQL.BulkPerformerUpdateInput = {
       ids: props.selected.map((performer) => {
@@ -67,33 +63,13 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       }),
     };
 
-    // if rating is undefined
-    if (rating === undefined) {
-      // and all galleries have the same rating, then we are unsetting the rating.
-      if (aggregateRating) {
-        // null to unset rating
-        performerInput.rating = null;
-      }
-      // otherwise not setting the rating
-    } else {
-      // if rating is set, then we are setting the rating for all
-      performerInput.rating = rating;
-    }
+    performerInput.rating = getAggregateInputValue(rating, aggregateRating);
 
-    // if tagIds non-empty, then we are setting them
-    if (
-      tagMode === GQL.BulkUpdateIdMode.Set &&
-      (!tagIds || tagIds.length === 0)
-    ) {
-      // and all performers have the same ids,
-      if (aggregateTagIds.length > 0) {
-        // then unset the tagIds, otherwise ignore
-        performerInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
-      }
-    } else {
-      // if tagIds non-empty, then we are setting them
-      performerInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
-    }
+    performerInput.tag_ids = getAggregateInputIDs(
+      tagMode,
+      tagIds,
+      aggregateTagIds
+    );
 
     performerInput.favorite = favorite;
     performerInput.ethnicity = ethnicity;
@@ -128,44 +104,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       Toast.error(e);
     }
     setIsUpdating(false);
-  }
-
-  function getTagIds(state: GQL.SlimPerformerDataFragment[]) {
-    let ret: string[] = [];
-    let first = true;
-
-    state.forEach((performer: GQL.SlimPerformerDataFragment) => {
-      if (first) {
-        ret = performer.tags ? performer.tags.map((t) => t.id).sort() : [];
-        first = false;
-      } else {
-        const tIds = performer.tags
-          ? performer.tags.map((t) => t.id).sort()
-          : [];
-
-        if (!_.isEqual(ret, tIds)) {
-          ret = [];
-        }
-      }
-    });
-
-    return ret;
-  }
-
-  function getRating(state: GQL.SlimPerformerDataFragment[]) {
-    let ret: number | undefined;
-    let first = true;
-
-    state.forEach((performer) => {
-      if (first) {
-        ret = performer.rating ?? undefined;
-        first = false;
-      } else if (ret !== performer.rating) {
-        ret = undefined;
-      }
-    });
-
-    return ret;
   }
 
   useEffect(() => {

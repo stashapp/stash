@@ -811,7 +811,17 @@ func nativeLoop() {
 }
 
 func quit() {
-	const WM_CLOSE = 0x0010
+	const (
+		WM_ENDSESSION = 0x0016
+		WM_CLOSE      = 0x0010
+	)
+
+	pPostMessage.Call(
+		uintptr(wt.window),
+		WM_ENDSESSION,
+		0,
+		0,
+	)
 
 	pPostMessage.Call(
 		uintptr(wt.window),

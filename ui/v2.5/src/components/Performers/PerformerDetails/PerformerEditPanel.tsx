@@ -653,7 +653,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   function renderButtons(classNames: string) {
     return (
-      <div className={cx("details-edit", classNames)}>
+      <div className={cx("details-edit", "col-xl-9", classNames)}>
         {!isNew && onCancelEditing ? (
           <Button
             className="mr-2"
