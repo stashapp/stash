@@ -21,7 +21,9 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
     if (!gallery.details) return;
     return (
       <>
-        <h6>Details</h6>
+        <h6>
+          <FormattedMessage id="details" />
+        </h6>
         <p className="pre">{gallery.details}</p>
       </>
     );
@@ -34,7 +36,12 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
     ));
     return (
       <>
-        <h6>Tags</h6>
+        <h6>
+          <FormattedMessage
+            id="countables.tags"
+            values={{ count: gallery.tags.length }}
+          />
+        </h6>
         {tags}
       </>
     );
@@ -53,7 +60,12 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
 
     return (
       <>
-        <h6>Performers</h6>
+        <h6>
+          <FormattedMessage
+            id="countables.performers"
+            values={{ count: gallery.performers.length }}
+          />
+        </h6>
         <div className="row justify-content-center gallery-performers">
           {cards}
         </div>
@@ -83,7 +95,8 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
           ) : undefined}
           {gallery.rating ? (
             <h6>
-              Rating: <RatingStars value={gallery.rating} />
+              <FormattedMessage id="rating" />:{" "}
+              <RatingStars value={gallery.rating} />
             </h6>
           ) : (
             ""
