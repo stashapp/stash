@@ -498,6 +498,8 @@ github.com/kermieisinthehouse/gosx-notifier v0.1.1 h1:lVXyKsa1c1RUkckp3KayloNLoI
 github.com/kermieisinthehouse/gosx-notifier v0.1.1/go.mod h1:xyWT07azFtUOcHl96qMVvKhvKzsMcS7rKTHQyv8WTho=
 github.com/kermieisinthehouse/systray v1.2.3 h1:tawLahcam/Ccs/F2n6EOQo8qJnSTD2hLzOYqTGsUsbA=
 github.com/kermieisinthehouse/systray v1.2.3/go.mod h1:axh6C/jNuSyC0QGtidZJURc9h+h41HNoMySoLVrhVR4=
+github.com/kermieisinthehouse/systray v1.2.4 h1:pdH5vnl+KKjRrVCRU4g/2W1/0HVzuuJ6WXHlPPHYY6s=
+github.com/kermieisinthehouse/systray v1.2.4/go.mod h1:axh6C/jNuSyC0QGtidZJURc9h+h41HNoMySoLVrhVR4=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=

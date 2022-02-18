@@ -231,7 +231,7 @@ github.com/json-iterator/go
 # github.com/kermieisinthehouse/gosx-notifier v0.1.1
 ## explicit
 github.com/kermieisinthehouse/gosx-notifier
-# github.com/kermieisinthehouse/systray v1.2.3
+# github.com/kermieisinthehouse/systray v1.2.4
 ## explicit; go 1.17
 github.com/kermieisinthehouse/systray
 # github.com/lucasb-eyer/go-colorful v1.2.0
