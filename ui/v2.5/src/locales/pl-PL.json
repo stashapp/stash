@@ -146,16 +146,102 @@
       "fp_matches": "Czas trwania jest identyczny",
       "match_failed_already_tagged": "Scena jest już otagowana",
       "match_failed_no_result": "Nie znaleziono żadnych wyników",
-      "match_success": "Scena pomyślnie otagowana"
+      "match_success": "Scena pomyślnie otagowana",
+      "phash_matches": "{count} dopasowań PHashy",
+      "unnamed": "Nienazwany"
     },
-    "verb_scrape_all": "Scrapuj wszystko"
+    "verb_match_fp": "Dopasowanie odcisków palców",
+    "verb_matched": "Dopasowane",
+    "verb_scrape_all": "Scrapuj wszystko",
+    "verb_toggle_unmatched": "{toggle} niedopasowane sceny"
   },
   "config": {
+    "about": {
+      "build_hash": "Hash buildu:",
+      "build_time": "Czas buildu:",
+      "check_for_new_version": "Sprawdź, czy jest nowa wersja",
+      "latest_version": "Najnowsza wersja",
+      "latest_version_build_hash": "Hash buildu najnowszej wersji:",
+      "new_version_notice": "[NOWA]",
+      "stash_discord": "Dołącz do naszego kanału {url}",
+      "stash_home": "Dom Stasha {url}",
+      "stash_open_collective": "Wesprzyj nas poprzez {url}",
+      "stash_wiki": "Strona Stasha {url}",
+      "version": "Wersja"
+    },
+    "application_paths": {
+      "heading": "Ścieżki aplikacji"
+    },
     "categories": {
-      "plugins": "Wtyczki"
+      "about": "O aplikacji",
+      "interface": "Interfejs",
+      "logs": "Logi",
+      "metadata_providers": "Dostawcy metadanych",
+      "plugins": "Wtyczki",
+      "scraping": "Scrapowanie",
+      "security": "Bezpieczeństwo",
+      "services": "Usługi",
+      "system": "System",
+      "tasks": "Zadania",
+      "tools": "Narzędzia"
+    },
+    "dlna": {
+      "allow_temp_ip": "Zezwól na {tempIP}",
+      "allowed_ip_addresses": "Dozwolone adresy IP",
+      "default_ip_whitelist": "Domyślna biała lista IP",
+      "default_ip_whitelist_desc": "Domyślne adresy IP umożliwiają dostęp do DLNA. Użyj {wildcard}, aby zezwolić na wszystkie adresy IP.",
+      "enabled_by_default": "Domyślnie włączone",
+      "network_interfaces": "Interfejsy",
+      "network_interfaces_desc": "Interfejsy, na których ma być wystawiony serwer DLNA. Pusta lista spowoduje, że serwer będzie działał na wszystkich interfejsach. Wymaga ponownego uruchomienia DLNA po zmianie.",
+      "recent_ip_addresses": "Ostatnie adresy IP",
+      "server_display_name": "Wyświetlana nazwa serwera",
+      "server_display_name_desc": "Wyświetlana nazwa serwera DLNA. Domyślnie {server_name}, jeśli jest pusta.",
+      "until_restart": "do ponownego uruchomienia"
     },
     "general": {
+      "auth": {
+        "api_key": "Klucz API",
+        "api_key_desc": "Klucz API dla systemów zewnętrznych. Wymagany tylko wtedy, gdy skonfigurowana jest nazwa użytkownika/hasło. Nazwa użytkownika musi być zapisana przed wygenerowaniem klucza API.",
+        "authentication": "Uwierzytelnianie",
+        "clear_api_key": "Wyczyść klucz API",
+        "credentials": {
+          "description": "Dane uwierzytelniające ograniczające dostęp do Stasha.",
+          "heading": "Uprawnienia"
+        },
+        "generate_api_key": "Wygeneruj klucz API",
+        "log_file": "Plik dziennika",
+        "log_file_desc": "Ścieżka do pliku, do którego mają być zapisywane logi. Puste, aby wyłączyć zapisywanie do pliku. Wymaga ponownego uruchomienia.",
+        "log_http": "Logi dostępu http",
+        "log_http_desc": "Loguje dostęp http do terminala. Wymaga ponownego uruchomienia.",
+        "log_to_terminal": "Logi do terminala",
+        "log_to_terminal_desc": "Przekazuje logi do terminala oprócz logów do pliku. Zawsze prawdziwe, jeśli logowanie do pliku jest wyłączone. Wymaga restartu.",
+        "maximum_session_age": "Maksymalny czas sesji",
+        "maximum_session_age_desc": "Maksymalny czas bezczynności przed wygaśnięciem sesji logowania, w sekundach.",
+        "password": "Hasło",
+        "password_desc": "Hasło dostępu do Stash. Pozostaw puste, aby wyłączyć uwierzytelnianie użytkownika",
+        "stash-box_integration": "Integracja ze Stash-box",
+        "username": "Nazwa użytkownika",
+        "username_desc": "Nazwa użytkownika umożliwiająca dostęp do Stash. Pozostaw puste, aby wyłączyć uwierzytelnianie użytkownika"
+      },
+      "cache_location": "Lokalizacja katalogu pamięci podręcznej",
+      "cache_path_head": "Ścieżka pamięci podręcznej",
+      "calculate_md5_and_ohash_desc": "Oblicz sumę kontrolną MD5 jako dodatek do oshash. Włączenie spowoduje, że początkowe skanowanie będzie wolniejsze. Aby wyłączyć obliczanie MD5, hash nazwy pliku musi być ustawiony na oshash.",
+      "calculate_md5_and_ohash_label": "Obliczanie MD5 dla filmów",
+      "check_for_insecure_certificates": "Sprawdź, czy nie ma niepewnych certyfikatów",
       "check_for_insecure_certificates_desc": "Niektóre strony używają niepewnych certyfikatów ssl. Gdy opcja ta nie jest zaznaczona, scraper pomija sprawdzanie niepewnych certyfikatów i pozwala na skrobanie tych stron. Jeśli podczas skrobania pojawia się błąd certyfikatu, usuń zaznaczenie tej opcji.",
+      "chrome_cdp_path": "Ścieżka Chrome CDP",
+      "chrome_cdp_path_desc": "Ścieżka do pliku wykonywalnego Chrome lub adres zdalny (zaczynający się od http:// lub https://, na przykład http://localhost:9222/json/version) do instancji Chrome.",
+      "create_galleries_from_folders_desc": "Jeśli prawda, tworzy galerie z folderów zawierających obrazy.",
+      "create_galleries_from_folders_label": "Tworzenie galerii z folderów zawierających obrazy",
+      "db_path_head": "Ścieżka bazy danych",
+      "directory_locations_to_your_content": "Lokalizacje katalogów z twoimi treściami",
+      "excluded_image_gallery_patterns_desc": "Wyrażenia regularne dotyczące plików/ścieżek obrazów i galerii do wykluczenia ze skanowania i dodania do czyszczenia",
+      "excluded_image_gallery_patterns_head": "Wykluczone wzorce obrazów/galerii",
+      "excluded_video_patterns_desc": "Wyrażenia regularne plików/ścieżek wideo do wykluczenia ze skanowania i dodania do czyszczenia",
+      "excluded_video_patterns_head": "Wykluczone wzorce wideo",
+      "gallery_ext_desc": "Rozdzielona przecinkami lista rozszerzeń plików, które będą identyfikowane jako pliki zip galerii.",
+      "gallery_ext_head": "Rozszerzenia zip galerii",
+      "generated_file_naming_hash_desc": "Użyj MD5 lub oshash dla wygenerowanych nazw plików. Zmiana tego ustawienia wymaga, aby wszystkie sceny miały uzupełnioną odpowiednią wartość MD5/oshash. Po zmianie tej wartości, istniejące wygenerowane pliki będą musiały zostać zmigrowane lub zregenerowane. Zobacz stronę Zadania, aby uzyskać informacje na temat migracji.",
       "scraper_user_agent": "User Agent scrapera",
       "scraper_user_agent_desc": "Ciąg User-Agent używany podczas skrobania zapytań http",
       "scrapers_path": {
