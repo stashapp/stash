@@ -134,7 +134,19 @@
       "set_cover_desc": "Zamień okładkę sceny, jeśli zostanie znaleziona.",
       "set_cover_label": "Ustaw obraz okładki sceny",
       "set_tag_desc": "Dołącz tagi do sceny, nadpisując lub łącząc z istniejącymi tagami w scenie.",
-      "set_tag_label": "Ustaw tagi"
+      "set_tag_label": "Ustaw tagi",
+      "show_male_desc": "Włączenie opcji tagowania aktorów płci męskiej.",
+      "show_male_label": "Pokaż męskich aktorów",
+      "source": "Źródło"
+    },
+    "noun_query": "Zapytanie",
+    "results": {
+      "duration_off": "Czas trwania przesunięty o co najmniej {number}s",
+      "duration_unknown": "Czas trwania nieznany",
+      "fp_matches": "Czas trwania jest identyczny",
+      "match_failed_already_tagged": "Scena jest już otagowana",
+      "match_failed_no_result": "Nie znaleziono żadnych wyników",
+      "match_success": "Scena pomyślnie otagowana"
     },
     "verb_scrape_all": "Scrapuj wszystko"
   },
