@@ -16,6 +16,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
+import { FormattedNumber } from "react-intl";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -91,8 +92,25 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     missingStudioImage || (configuration?.interface.showStudioAsText ?? false);
 
   function maybeRenderSceneSpecsOverlay() {
+    let sizeObj = null;
+    if (props.scene.file.size) {
+      sizeObj = TextUtils.fileSize(parseInt(props.scene.file.size));
+    }
     return (
       <div className="scene-specs-overlay">
+        {sizeObj != null ? (
+          <span className="overlay-filesize">
+            <FormattedNumber
+              value={sizeObj.size}
+              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                sizeObj.unit
+              )}
+            />
+            {TextUtils.formatFileSizeUnit(sizeObj.unit)}
+          </span>
+        ) : (
+          ""
+        )}
         {props.scene.file.width && props.scene.file.height ? (
           <span className="overlay-resolution">
             {" "}
