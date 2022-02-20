@@ -296,6 +296,8 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 	setBool(config.NotificationsEnabled, input.NotificationsEnabled)
 
+	setBool(config.ShowScrubber, input.ShowScrubber)
+
 	if input.WallPlayback != nil {
 		c.Set(config.WallPlayback, *input.WallPlayback)
 	}
