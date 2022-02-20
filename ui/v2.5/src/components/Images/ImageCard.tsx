@@ -62,6 +62,27 @@ export const ImageCard: React.FC<IImageCardProps> = (
     }
   }
 
+  function maybeRenderGallery() {
+    if (props.image.galleries.length <= 0) return;
+
+    const popoverContent = props.image.galleries.map((gallery) => (
+      <TagLink key={gallery.id} gallery={gallery} />
+    ));
+
+    return (
+      <HoverPopover
+        className="gallery-count"
+        placement="bottom"
+        content={popoverContent}
+      >
+        <Button className="minimal">
+          <Icon icon="images" />
+          <span>{props.image.galleries.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
   function maybeRenderOrganized() {
     if (props.image.organized) {
       return (
@@ -79,6 +100,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
       props.image.tags.length > 0 ||
       props.image.performers.length > 0 ||
       props.image.o_counter ||
+      props.image.galleries.length > 0 ||
       props.image.organized
     ) {
       return (
@@ -88,6 +110,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderOCounter()}
+            {maybeRenderGallery()}
             {maybeRenderOrganized()}
           </ButtonGroup>
         </>
