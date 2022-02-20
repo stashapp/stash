@@ -80,7 +80,13 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
 
   function maybeRenderInteractiveHeatmap() {
     if (props.interactiveHeatmap) {
-      return <img src={props.interactiveHeatmap} alt="interactive heatmap" />;
+      return (
+        <img
+          src={props.interactiveHeatmap}
+          alt="interactive heatmap"
+          className="interactive-heatmap"
+        />
+      );
     }
   }
 

@@ -208,6 +208,10 @@ textarea.scene-description {
     }
   }
 
+  &__details {
+    margin-bottom: 1rem;
+  }
+
   &:hover,
   &:active {
     .scene-specs-overlay,

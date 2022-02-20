@@ -228,7 +228,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOCounter() {
     if (props.scene.o_counter) {
       return (
-        <div className="o-counter">
+        <div className="o-count">
           <Button className="minimal">
             <span className="fa-icon">
               <SweatDrops />
@@ -354,12 +354,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       }
       overlays={maybeRenderSceneStudioOverlay()}
       details={
-        <>
-          <span>{props.scene.date}</span>
-          <p>
-            <TruncatedText text={props.scene.details} lineCount={3} />
-          </p>
-        </>
+        <div className="scene-card__details">
+          <span className="scene-card__date">{props.scene.date}</span>
+          <TruncatedText
+            className="scene-card__description"
+            text={props.scene.details}
+            lineCount={3}
+          />
+        </div>
       }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={props.selected}

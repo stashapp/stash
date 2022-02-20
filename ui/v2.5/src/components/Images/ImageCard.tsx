@@ -50,7 +50,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
   function maybeRenderOCounter() {
     if (props.image.o_counter) {
       return (
-        <div>
+        <div className="o-count">
           <Button className="minimal">
             <span className="fa-icon">
               <SweatDrops />
@@ -65,7 +65,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
   function maybeRenderOrganized() {
     if (props.image.organized) {
       return (
-        <div>
+        <div className="organized">
           <Button className="minimal">
             <Icon icon="box" />
           </Button>
