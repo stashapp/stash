@@ -21,15 +21,15 @@ func TestPerformerScenes(t *testing.T) {
 	performerNames := []test{
 		{
 			"performer name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\w\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		},
 		{
 			"performer + name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		},
 		{
 			`performer + name\`,
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\w\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\w\d])`,
 		},
 	}
 
@@ -100,11 +100,11 @@ func TestPerformerImages(t *testing.T) {
 	performerNames := []test{
 		{
 			"performer name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\w\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		},
 		{
 			"performer + name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		},
 	}
 
@@ -175,11 +175,11 @@ func TestPerformerGalleries(t *testing.T) {
 	performerNames := []test{
 		{
 			"performer name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\w\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		},
 		{
 			"performer + name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		},
 	}
 

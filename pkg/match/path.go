@@ -22,7 +22,7 @@ func getPathQueryRegex(name string) string {
 	const separator = `[` + separatorChars + `]`
 
 	ret := strings.ReplaceAll(name, " ", separator+"*")
-	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
+	ret = `(?:^|_|[^\p{L}\w\d])` + ret + `(?:$|_|[^\p{L}\w\d])`
 	return ret
 }
 
@@ -36,7 +36,7 @@ func getPathWords(path string) []string {
 	}
 
 	// handle path separators
-	const separator = `(?:_|[^\w\d])+`
+	const separator = `(?:_|[^\p{L}\w\d])+`
 	re := regexp.MustCompile(separator)
 	retStr = re.ReplaceAllString(retStr, " ")
 
@@ -52,7 +52,9 @@ func getPathWords(path string) []string {
 			// we post-match afterwards, so we can afford to be a little loose
 			// with the query
 			// just use the first two characters
-			ret = append(ret, w[0:2])
+			// #2293 - need to convert to unicode runes for the substring, otherwise
+			// the resulting string is corrupted.
+			ret = append(ret, string([]rune(w)[0:2]))
 		}
 	}
 
@@ -72,7 +74,7 @@ func nameMatchesPath(name, path string) int {
 	const separator = `[` + separatorChars + `]`
 
 	reStr := strings.ReplaceAll(name, " ", separator+"*")
-	reStr = `(?:^|_|[^\w\d])` + reStr + `(?:$|_|[^\w\d])`
+	reStr = `(?:^|_|[^\p{L}\w\d])` + reStr + `(?:$|_|[^\p{L}\w\d])`
 
 	re := regexp.MustCompile(reStr)
 	found := re.FindAllStringIndex(path, -1)

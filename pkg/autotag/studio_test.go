@@ -20,39 +20,39 @@ type testStudioCase struct {
 var testStudioCases = []testStudioCase{
 	{
 		"studio name",
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\w\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		"",
 		"",
 	},
 	{
 		"studio + name",
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		"",
 		"",
 	},
 	{
 		`studio + name\`,
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\w\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\w\d])`,
 		"",
 		"",
 	},
 	{
 		"studio name",
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\w\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		"alias name",
-		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\w\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 	},
 	{
 		"studio + name",
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 		"alias + name",
-		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\w\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\w\d])`,
 	},
 	{
 		`studio + name\`,
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\w\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\w\d])`,
 		`alias + name\`,
-		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\w\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\w\d])`,
 	},
 }
 
