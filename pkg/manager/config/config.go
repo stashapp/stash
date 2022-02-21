@@ -135,6 +135,9 @@ const (
 	ShowStudioAsText                    = "show_studio_as_text"
 	CSSEnabled                          = "cssEnabled"
 
+	ShowScrubber        = "show_scrubber"
+	showScrubberDefault = true
+
 	WallPlayback        = "wall_playback"
 	defaultWallPlayback = "video"
 
@@ -395,6 +398,18 @@ func (i *Instance) getBool(key string) bool {
 	return i.viper(key).GetBool(key)
 }
 
+func (i *Instance) getBoolDefault(key string, def bool) bool {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := def
+	v := i.viper(key)
+	if v.IsSet(key) {
+		ret = v.GetBool(key)
+	}
+	return ret
+}
+
 func (i *Instance) getInt(key string) int {
 	i.RLock()
 	defer i.RUnlock()
@@ -559,16 +574,7 @@ func (i *Instance) GetScraperCDPPath() string {
 // GetScraperCertCheck returns true if the scraper should check for insecure
 // certificates when fetching an image or a page.
 func (i *Instance) GetScraperCertCheck() bool {
-	ret := true
-	i.RLock()
-	defer i.RUnlock()
-
-	v := i.viper(ScraperCertCheck)
-	if v.IsSet(ScraperCertCheck) {
-		ret = v.GetBool(ScraperCertCheck)
-	}
-
-	return ret
+	return i.getBoolDefault(ScraperCertCheck, true)
 }
 
 func (i *Instance) GetScraperExcludeTagPatterns() []string {
@@ -848,6 +854,10 @@ func (i *Instance) GetWallPlayback() string {
 	return ret
 }
 
+func (i *Instance) GetShowScrubber() bool {
+	return i.getBoolDefault(ShowScrubber, showScrubberDefault)
+}
+
 func (i *Instance) GetMaximumLoopDuration() int {
 	return i.getInt(MaximumLoopDuration)
 }
@@ -857,16 +867,7 @@ func (i *Instance) GetAutostartVideo() bool {
 }
 
 func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
-	i.Lock()
-	defer i.Unlock()
-
-	ret := autostartVideoOnPlaySelectedDefault
-	v := i.viper(AutostartVideoOnPlaySelected)
-	if v.IsSet(AutostartVideoOnPlaySelected) {
-		ret = v.GetBool(AutostartVideoOnPlaySelected)
-	}
-
-	return ret
+	return i.getBoolDefault(AutostartVideoOnPlaySelected, autostartVideoOnPlaySelectedDefault)
 }
 
 func (i *Instance) GetContinuePlaylistDefault() bool {
@@ -954,16 +955,7 @@ func (i *Instance) GetDeleteFileDefault() bool {
 }
 
 func (i *Instance) GetDeleteGeneratedDefault() bool {
-	i.RLock()
-	defer i.RUnlock()
-	ret := deleteGeneratedDefaultDefault
-
-	v := i.viper(DeleteGeneratedDefault)
-	if v.IsSet(DeleteGeneratedDefault) {
-		ret = v.GetBool(DeleteGeneratedDefault)
-	}
-
-	return ret
+	return i.getBoolDefault(DeleteGeneratedDefault, deleteGeneratedDefaultDefault)
 }
 
 // GetDefaultIdentifySettings returns the default Identify task settings.
@@ -1088,17 +1080,7 @@ func (i *Instance) GetLogFile() string {
 // in addition to writing to a log file. Logging will be output to the
 // terminal if file logging is disabled. Defaults to true.
 func (i *Instance) GetLogOut() bool {
-	i.RLock()
-	defer i.RUnlock()
-
-	ret := defaultLogOut
-	v := i.viper(LogOut)
-
-	if v.IsSet(LogOut) {
-		ret = v.GetBool(LogOut)
-	}
-
-	return ret
+	return i.getBoolDefault(LogOut, defaultLogOut)
 }
 
 // GetLogLevel returns the lowest log level to write to the log.
@@ -1115,16 +1097,7 @@ func (i *Instance) GetLogLevel() string {
 // GetLogAccess returns true if http requests should be logged to the terminal.
 // HTTP requests are not logged to the log file. Defaults to true.
 func (i *Instance) GetLogAccess() bool {
-	i.RLock()
-	defer i.RUnlock()
-	ret := defaultLogAccess
-
-	v := i.viper(LogAccess)
-	if v.IsSet(LogAccess) {
-		ret = v.GetBool(LogAccess)
-	}
-
-	return ret
+	return i.getBoolDefault(LogAccess, defaultLogAccess)
 }
 
 // Max allowed graphql upload size in megabytes

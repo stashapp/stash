@@ -109,6 +109,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	menuItems := config.GetMenuItems()
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
+	showScrubber := config.GetShowScrubber()
 	wallPlayback := config.GetWallPlayback()
 	noBrowser := config.GetNoBrowser()
 	notificationsEnabled := config.GetNotificationsEnabled()
@@ -132,6 +133,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		SoundOnPreview:               &soundOnPreview,
 		WallShowTitle:                &wallShowTitle,
 		WallPlayback:                 &wallPlayback,
+		ShowScrubber:                 &showScrubber,
 		MaximumLoopDuration:          &maximumLoopDuration,
 		NoBrowser:                    &noBrowser,
 		NotificationsEnabled:         &notificationsEnabled,

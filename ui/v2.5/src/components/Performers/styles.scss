@@ -60,6 +60,10 @@
 .performer-card {
   width: 20rem;
 
+  .thumbnail-section {
+    position: relative;
+  }
+
   &-image {
     height: 30rem;
     min-width: 11.25rem;
@@ -70,6 +74,7 @@
 
   .flag-icon {
     bottom: 1rem;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
     height: 2rem;
     position: absolute;
     right: 1rem;
@@ -82,6 +87,15 @@
     position: absolute;
     right: 5px;
     top: 10px;
+  }
+
+  &__age {
+    color: $muted-gray;
+  }
+
+  // allow country string to be shown, but disable by default
+  &__country-string {
+    display: none;
   }
 }
 
