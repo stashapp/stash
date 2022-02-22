@@ -840,7 +840,7 @@ func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mapped
 			for _, p := range performerTagResults {
 				tag := &models.ScrapedTag{}
 				p.apply(tag)
-				ret.Tags = append(ret.Tags, tag)
+				performer.Tags = append(performer.Tags, tag)
 			}
 
 			ret.Performers = append(ret.Performers, performer)
