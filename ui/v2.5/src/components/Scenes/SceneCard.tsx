@@ -291,15 +291,18 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
-  function maybeRenderDupeCopies(){
+  function maybeRenderDupeCopies() {
     if (props.scene.phash) {
       return (
         <div className="other-copies extra-scene-info">
-          <Button href={NavUtils.makeScenesPHashMatchUrl(props.scene.phash)} className="minimal">
-            <Icon icon="copy"/>
+          <Button
+            href={NavUtils.makeScenesPHashMatchUrl(props.scene.phash)}
+            className="minimal"
+          >
+            <Icon icon="copy" />
           </Button>
         </div>
-      )
+      );
     }
   }
 
