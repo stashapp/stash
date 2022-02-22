@@ -10,7 +10,7 @@ import {
   SweatDrops,
   TruncatedText,
 } from "src/components/Shared";
-import { TextUtils } from "src/utils";
+import { NavUtils, TextUtils } from "src/utils";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
@@ -99,7 +99,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     return (
       <div className="scene-specs-overlay">
         {sizeObj != null ? (
-          <span className="overlay-filesize">
+          <span className="overlay-filesize extra-scene-info">
             <FormattedNumber
               value={sizeObj.size}
               maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
@@ -291,6 +291,18 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  function maybeRenderDupeCopies(){
+    if (props.scene.phash) {
+      return (
+        <div className="other-copies extra-scene-info">
+          <Button href={NavUtils.makeScenesPHashMatchUrl(props.scene.phash)} className="minimal">
+            <Icon icon="copy"/>
+          </Button>
+        </div>
+      )
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       !props.compact &&
@@ -313,6 +325,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             {maybeRenderOCounter()}
             {maybeRenderGallery()}
             {maybeRenderOrganized()}
+            {maybeRenderDupeCopies()}
           </ButtonGroup>
         </>
       );
