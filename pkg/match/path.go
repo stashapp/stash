@@ -22,7 +22,14 @@ func getPathQueryRegex(name string) string {
 	const separator = `[` + separatorChars + `]`
 
 	ret := strings.ReplaceAll(name, " ", separator+"*")
-	ret = `(?:^|_|[^\p{L}\w\d])` + ret + `(?:$|_|[^\p{L}\w\d])`
+
+	// \p{L} is specifically omitted here because of the performance hit when
+	// including it. It does mean that paths where the name is bounded by
+	// unicode letters will be returned. However, the results should be tested
+	// by nameMatchesPath which does include \p{L}. The improvement in query
+	// performance should be outweigh the performance hit of testing any extra
+	// results.
+	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
 	return ret
 }
 
