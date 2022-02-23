@@ -492,7 +492,8 @@
           "continue_playlist_default": {
             "description": "當影片播放完畢時，自動跳至下一個短片",
             "heading": "持續播放播放清單"
-          }
+          },
+          "show_scrubber": "顯示預覽軸"
         }
       },
       "scene_wall": {
