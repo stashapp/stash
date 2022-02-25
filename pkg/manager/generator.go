@@ -114,15 +114,12 @@ func (g *GeneratorInfo) configure() error {
 		return err
 	}
 
-	// #2250 - ensure ChunkCount and ChunkDuration are valid
+	// #2250 - ensure ChunkCount is valid
 	if g.ChunkCount < 1 {
 		logger.Warnf("[generator] Segment count (%d) must be > 0. Using 1 instead.", g.ChunkCount)
 		g.ChunkCount = 1
 	}
-	if g.ChunkDuration < 0.75 {
-		logger.Warnf("[generator] Segment duration (%f) must be >= 0.75. Using 0.75 instead.", g.ChunkDuration)
-		g.ChunkDuration = 0.75
-	}
+
 	g.NthFrame = g.NumberOfFrames / g.ChunkCount
 
 	return nil
