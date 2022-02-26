@@ -220,8 +220,6 @@
         "password": "密码",
         "password_desc": "登录 Stash 时所需的密码.留空表示关闭身份验证",
         "stash-box_integration": "整合 Stash-box",
-        "trusted_proxies": "可信任的代理服务器",
-        "trusted_proxies_desc": "允许网络流进入stash的代理服务器列表.如留空则为允许私有网络的流入.",
         "username": "用户名",
         "username_desc": "登录 Stash 时所需的用户名.留空表示关闭身份验证"
       },

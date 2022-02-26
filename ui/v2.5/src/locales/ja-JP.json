@@ -26,6 +26,7 @@
     "delete": "削除",
     "delete_entity": "{entityType}を削除",
     "delete_file": "ファイルを削除",
+    "delete_file_and_funscript": "ファイルを削除 (ファンスクリプトを含む)",
     "delete_generated_supporting_files": "生成済みのサポートファイルを削除",
     "disallow": "拒否",
     "download": "ダウンロード",
@@ -44,6 +45,7 @@
     "generate_thumb_from_current": "現在のものからサムネイルを生成",
     "hash_migration": "ハッシュ移行",
     "hide": "非表示",
+    "hide_configuration": "設定を非表示",
     "identify": "識別",
     "ignore": "無視",
     "import": "インポート…",
@@ -87,8 +89,11 @@
     "set_front_image": "ジャケット画像…",
     "set_image": "画像を設定…",
     "show": "表示",
+    "show_configuration": "設定を表示",
     "skip": "スキップ",
     "stop": "停止",
+    "submit": "送信",
+    "submit_stash_box": "Stash-Boxに送信",
     "tasks": {
       "clean_confirm_message": "クリーニングを実行してもよろしいですか？この操作により、ファイルシステムで利用されていないすべてのシーンとギャラリーから生成されたコンテンツとデータベース情報が削除されます。",
       "dry_mode_selected": "ドライモードが選択されています。実際の削除は実施されず、ログ処理だけが実行されます。",
@@ -220,8 +225,6 @@
         "password": "パスワード",
         "password_desc": "Stashにアクセスするためのパスワードです。空白にすると、ユーザー認証を無効にします",
         "stash-box_integration": "Stash-boxの連携",
-        "trusted_proxies": "信頼済みのプロキシ",
-        "trusted_proxies_desc": "Stashへのアクセスを許可するプロキシのリストです。空白にすることでアクセスをプライベートネットワークからのみアクセスを許可します。",
         "username": "ユーザー名",
         "username_desc": "Stashにアクセスするためのユーザー名です。空白にすると、ユーザー認証を無効にします"
       },
@@ -414,6 +417,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "デスクトップ連携",
+        "notifications_enabled": "通知を有効にする",
+        "send_desktop_notifications_for_events": "イベント発生時にデスクトップ通知を送信",
         "skip_opening_browser": "ブラウザーの起動をスキップ",
         "skip_opening_browser_on_startup": "起動時のブラウザーの自動起動をスキップする"
       },
@@ -487,7 +492,8 @@
           "continue_playlist_default": {
             "description": "動画の再生が終了した際にキューに入っている次の動画を再生します",
             "heading": "デフォルトでプレイリストを続行"
-          }
+          },
+          "show_scrubber": "スクラバーを表示"
         }
       },
       "scene_wall": {
@@ -651,6 +657,7 @@
     "search_accuracy_label": "検索精度",
     "title": "重複シーン"
   },
+  "duplicated_phash": "重複 (phash)",
   "duration": "長さ",
   "effect_filters": {
     "aspect": "アスペクト比",
@@ -758,10 +765,48 @@
   "parent_tags": "親タグ",
   "part_of": "{parent}の一部",
   "path": "パス",
+  "perceptual_similarity": "知覚的類似性 (phash)",
   "performer": "出演者",
   "performerTags": "出演者タグ",
+  "performer_age": "出演者の年齢",
   "performer_count": "出演者数",
+  "performer_favorite": "出演者をお気に入り済み",
   "performer_image": "出演者画像",
+  "performer_tagger": {
+    "add_new_performers": "新しい出演者を追加",
+    "any_names_entered_will_be_queried": "入力された全ての名前は外部のStash-Boxインスタンスで検索され、見つかった場合追加されます。完全一致のみ、一致とみなされます。",
+    "batch_add_performers": "出演者を一括追加",
+    "batch_update_performers": "出演者の一括更新",
+    "config": {
+      "active_stash-box_instance": "アクティブなstash-boxインスタンス:",
+      "edit_excluded_fields": "除外する欄を編集",
+      "excluded_fields": "除外する欄:",
+      "no_fields_are_excluded": "除外する欄なし",
+      "no_instances_found": "インスタンスが見つかりませんでした",
+      "these_fields_will_not_be_changed_when_updating_performers": "これらの欄は、出演者の更新時に変更されません。"
+    },
+    "current_page": "現在のページ",
+    "failed_to_save_performer": "出演者\"{performer}\"の保存に失敗しました",
+    "name_already_exists": "既に使用されている名前です",
+    "network_error": "ネットワークエラー",
+    "no_results_found": "結果が見つかりませんでした。",
+    "number_of_performers_will_be_processed": "{performer_count}人の出演者が処理されます",
+    "performer_already_tagged": "出演者は既にタグ付けされています",
+    "performer_names_separated_by_comma": "出演者の名前はコンマで区切ってください",
+    "performer_selection": "出演者の選択",
+    "performer_successfully_tagged": "出演者のタグ付けに成功しました:",
+    "query_all_performers_in_the_database": "データベース内の全出演者",
+    "refresh_tagged_performers": "タグ付けされている出演者を更新",
+    "refreshing_will_update_the_data": "更新機能を使用すると、stash-boxインスタンスからタグ付け済みの出演者のデータを更新します。",
+    "status_tagging_job_queued": "状態: タグ付けをキューに追加済み",
+    "status_tagging_performers": "状態: 出演者をタグ付け中",
+    "tag_status": "タグの状態",
+    "to_use_the_performer_tagger": "stash-boxインスタンスからの出演者タグ付け機能を使用するには、設定が必要です。",
+    "untagged_performers": "タグ付けされていない出演者",
+    "update_performer": "出演者を更新",
+    "update_performers": "出演者を更新",
+    "updating_untagged_performers_description": "タグ付けされていない出演者の更新機能により、stash IDがない出演者のマッチングを試み、メタデータを更新します。"
+  },
   "performers": "出演者",
   "piercings": "ピアス",
   "queue": "キュー",
@@ -860,6 +905,12 @@
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash ID",
+  "stashbox": {
+    "go_review_draft": "下書きを確認するには、{endpoint_name}に移動してください。",
+    "selected_stash_box": "選択済みのStash-Boxエンドポイント",
+    "submission_failed": "送信に失敗しました",
+    "submission_successful": "送信完了しました"
+  },
   "stats": {
     "image_size": "画像サイズ",
     "scenes_duration": "シーンの再生時間",

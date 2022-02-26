@@ -220,8 +220,6 @@
         "password": "Contraseña",
         "password_desc": "Contraseña para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación",
         "stash-box_integration": "Integración Stash-box",
-        "trusted_proxies": "Proxies verificados",
-        "trusted_proxies_desc": "Lista de proxies que tienen permitido el acceso a Stash. Dejar en blanco para permitir redes privadas.",
         "username": "Usuario",
         "username_desc": "Usuario para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación"
       },
