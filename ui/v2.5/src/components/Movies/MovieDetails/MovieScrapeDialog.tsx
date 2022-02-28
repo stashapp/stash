@@ -44,7 +44,7 @@ function renderScrapedStudioRow(
 ) {
   return (
     <ScrapeDialogRow
-      title={intl.formatMessage({ id: "studio" })}
+      title="Studio"
       result={result}
       renderOriginalField={() => renderScrapedStudio(result)}
       renderNewField={() =>

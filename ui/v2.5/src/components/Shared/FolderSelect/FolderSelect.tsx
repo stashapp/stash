@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Button, InputGroup, Form } from "react-bootstrap";
 import { debounce } from "lodash";
 import { Icon, LoadingIndicator } from "src/components/Shared";

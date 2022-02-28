@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "react-bootstrap";
+import { useIntl } from "react-intl";
 import { Icon } from "src/components/Shared";
 import { SceneDataFragment } from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
@@ -13,6 +14,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
 }) => {
   const isAndroid = /(android)/i.test(navigator.userAgent);
   const isAppleDevice = /(ipod|iphone|ipad)/i.test(navigator.userAgent);
+  const intl = useIntl();
 
   const { paths, path, title } = scene;
 
