@@ -25,47 +25,46 @@ interface IMenuItem {
   hotkey: string;
   userCreatable?: boolean;
 }
-const intl = useIntl();
 const messages = defineMessages({
   scenes: {
     id: "scenes",
-    defaultMessage: intl.formatMessage({ id: "scenes" }),
+    defaultMessage: "Scenes",
   },
   images: {
     id: "images",
-    defaultMessage: intl.formatMessage({ id: "images" }),
+    defaultMessage: "Images",
   },
   movies: {
     id: "movies",
-    defaultMessage: intl.formatMessage({ id: "movies" }),
+    defaultMessage: "Movies",
   },
   markers: {
     id: "markers",
-    defaultMessage: intl.formatMessage({ id: "markers" }),
+    defaultMessage: "Markers",
   },
   performers: {
     id: "performers",
-    defaultMessage: intl.formatMessage({ id: "performers" }),
+    defaultMessage: "Performers",
   },
   studios: {
     id: "studios",
-    defaultMessage: intl.formatMessage({ id: "studios" }),
+    defaultMessage: "Studios",
   },
   tags: {
     id: "tags",
-    defaultMessage: intl.formatMessage({ id: "tags" }),
+    defaultMessage: "Tags",
   },
   galleries: {
     id: "galleries",
-    defaultMessage: intl.formatMessage({ id: "galleries" }),
+    defaultMessage: "Galleries",
   },
   sceneTagger: {
     id: "sceneTagger",
-    defaultMessage: intl.formatMessage({ id: "sceneTagger" }),
+    defaultMessage: "Scene Tagger",
   },
   donate: {
     id: "donate",
-    defaultMessage: intl.formatMessage({ id: "donate" }),
+    defaultMessage: "Donate",
   },
 });
 
