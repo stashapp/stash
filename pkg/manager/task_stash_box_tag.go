@@ -135,6 +135,8 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			if excluded["name"] && performer.Name != nil {
 				value := sql.NullString{String: *performer.Name, Valid: true}
 				partial.Name = &value
+				checksum := utils.MD5FromString(*performer.Name)
+				partial.Checksum = &checksum
 			}
 			if performer.Piercings != nil && !excluded["piercings"] {
 				value := getNullString(performer.Piercings)
