@@ -25,47 +25,47 @@ interface IMenuItem {
   hotkey: string;
   userCreatable?: boolean;
 }
-
+const intl = useIntl();
 const messages = defineMessages({
   scenes: {
     id: "scenes",
-    defaultMessage: "Scenes",
+    defaultMessage: intl.formatMessage({ id: "scenes" }),
   },
   images: {
     id: "images",
-    defaultMessage: "Images",
+    defaultMessage: intl.formatMessage({ id: "images" }),
   },
   movies: {
     id: "movies",
-    defaultMessage: "Movies",
+    defaultMessage: intl.formatMessage({ id: "movies" }),
   },
   markers: {
     id: "markers",
-    defaultMessage: "Markers",
+    defaultMessage: intl.formatMessage({ id: "markers" }),
   },
   performers: {
     id: "performers",
-    defaultMessage: "Performers",
+    defaultMessage: intl.formatMessage({ id: "performers" }),
   },
   studios: {
     id: "studios",
-    defaultMessage: "Studios",
+    defaultMessage: intl.formatMessage({ id: "studios" }),
   },
   tags: {
     id: "tags",
-    defaultMessage: "Tags",
+    defaultMessage: intl.formatMessage({ id: "tags" }),
   },
   galleries: {
     id: "galleries",
-    defaultMessage: "Galleries",
+    defaultMessage: intl.formatMessage({ id: "galleries" }),
   },
   sceneTagger: {
     id: "sceneTagger",
-    defaultMessage: "Scene Tagger",
+    defaultMessage: intl.formatMessage({ id: "sceneTagger" }),
   },
   donate: {
     id: "donate",
-    defaultMessage: "Donate",
+    defaultMessage: intl.formatMessage({ id: "donate" }),
   },
 });
 
@@ -231,7 +231,7 @@ export const MainNavbar: React.FC = () => {
         <Button
           className="minimal logout-button d-flex align-items-center"
           href="/logout"
-          title="Log out"
+          title={intl.formatMessage({ id: "actions.logout" })}
         >
           <Icon icon="sign-out-alt" />
         </Button>
@@ -250,7 +250,10 @@ export const MainNavbar: React.FC = () => {
           target="_blank"
           onClick={handleDismiss}
         >
-          <Button className="minimal donate" title="Donate">
+          <Button
+            className="minimal donate"
+            title={intl.formatMessage({ id: "donate" })}
+          >
             <Icon icon="heart" />
             <span className="d-none d-sm-inline">
               {intl.formatMessage(messages.donate)}
@@ -268,7 +271,7 @@ export const MainNavbar: React.FC = () => {
         <Button
           className="nav-utility minimal"
           onClick={() => openManual()}
-          title="Help"
+          title={intl.formatMessage({ id: "help" })}
         >
           <Icon icon="question-circle" />
         </Button>

@@ -519,7 +519,9 @@ export const LightboxComponent: React.FC<IProps> = ({
                   <Button
                     ref={overlayTarget}
                     variant="link"
-                    title="Options"
+                    title={intl.formatMessage({
+                      id: "dialogs.lightbox.options",
+                    })}
                     onClick={() => setShowOptions(!showOptions)}
                   >
                     <Icon icon="cog" />

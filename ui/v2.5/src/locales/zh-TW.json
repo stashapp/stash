@@ -102,7 +102,12 @@
     "temp_disable": "暫時關閉…",
     "temp_enable": "暫時啟用…",
     "use_default": "使用預設選項",
-    "view_random": "隨機開啟"
+    "view_random": "隨機開啟",
+    "logout": "登出",
+    "remove_from_gallery": "自圖庫中移除",
+    "delete_stashid": "刪除 StashID",
+    "edit_entity": "編輯{entityType}",
+    "open_in_external_player": "透過外部播放器開啟"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -201,7 +206,12 @@
       "recent_ip_addresses": "最近的 IP 位址",
       "server_display_name": "伺服器顯示名稱",
       "server_display_name_desc": "DLNA 伺服器的顯示名稱。如果為空，則預設為 {server_name}。",
-      "until_restart": "直到重啟"
+      "until_restart": "直到重啟",
+      "allowed_ip_temporarily": "已暫時允許 IP 位址",
+      "disabled_dlna_temporarily": "已暫時關閉 DLNA 伺服器",
+      "disallowed_ip": "已禁止的 IP 位址",
+      "enabled_dlna_temporarily": "已暫時開啟 DLNA 伺服器",
+      "successfully_cancelled_temporary_behaviour": "已關閉暫時啟用伺服器的功能"
     },
     "general": {
       "auth": {
@@ -901,7 +911,11 @@
       "next_step": "當您準備繼續設定時，點擊「下一步」。",
       "unable_to_locate_specified_config": "如果看到此畫面的話，則代表 Stash 無法找到您在命令列所提供的設定檔路徑。本安裝畫面將帶您建立新的設定檔案。"
     },
-    "welcome_to_stash": "歡迎使用 Stash"
+    "welcome_to_stash": "歡迎使用 Stash",
+    "folder": {
+      "up_dir": "往上一層",
+      "file_path": "檔案路徑"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -949,7 +963,6 @@
   "total": "總計",
   "true": "是",
   "twitter": "Twitter",
-  "up-dir": "往上一層",
   "updated_at": "更新於",
   "url": "連結",
   "videos": "影片",

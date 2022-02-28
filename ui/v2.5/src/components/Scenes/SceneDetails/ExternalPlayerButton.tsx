@@ -44,7 +44,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     <Button
       className="minimal px-0 px-sm-2 pt-2"
       variant="secondary"
-      title="Open in external player"
+      title={intl.formatMessage({ id: "actions.open_in_external_player" })}
     >
       <a href={url}>
         <Icon icon="external-link-alt" color="white" />
