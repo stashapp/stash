@@ -448,6 +448,7 @@ export const StudioSelect: React.FC<
   const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllStudiosForFilter();
   const [createStudio] = useStudioCreate();
+  const intl = useIntl();
 
   const { configuration } = React.useContext(ConfigurationContext);
   const defaultCreatable =
@@ -574,6 +575,7 @@ export const StudioSelect: React.FC<
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllMoviesForFilter();
   const items = data?.allMovies ?? [];
+  const intl = useIntl();
 
   return (
     <FilterSelectComponent
@@ -600,6 +602,7 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
   const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllTagsForFilter();
   const [createTag] = useTagCreate();
+  const intl = useIntl();
   const placeholder =
     props.noSelectionString ??
     intl.formatMessage(
