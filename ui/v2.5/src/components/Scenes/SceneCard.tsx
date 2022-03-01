@@ -10,12 +10,13 @@ import {
   SweatDrops,
   TruncatedText,
 } from "src/components/Shared";
-import { TextUtils } from "src/utils";
+import { NavUtils, TextUtils } from "src/utils";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
+import { FormattedNumber } from "react-intl";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -91,8 +92,25 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     missingStudioImage || (configuration?.interface.showStudioAsText ?? false);
 
   function maybeRenderSceneSpecsOverlay() {
+    let sizeObj = null;
+    if (props.scene.file.size) {
+      sizeObj = TextUtils.fileSize(parseInt(props.scene.file.size));
+    }
     return (
       <div className="scene-specs-overlay">
+        {sizeObj != null ? (
+          <span className="overlay-filesize extra-scene-info">
+            <FormattedNumber
+              value={sizeObj.size}
+              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                sizeObj.unit
+              )}
+            />
+            {TextUtils.formatFileSizeUnit(sizeObj.unit)}
+          </span>
+        ) : (
+          ""
+        )}
         {props.scene.file.width && props.scene.file.height ? (
           <span className="overlay-resolution">
             {" "}
@@ -228,7 +246,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderOCounter() {
     if (props.scene.o_counter) {
       return (
-        <div className="o-counter">
+        <div className="o-count">
           <Button className="minimal">
             <span className="fa-icon">
               <SweatDrops />
@@ -273,6 +291,21 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  function maybeRenderDupeCopies() {
+    if (props.scene.phash) {
+      return (
+        <div className="other-copies extra-scene-info">
+          <Button
+            href={NavUtils.makeScenesPHashMatchUrl(props.scene.phash)}
+            className="minimal"
+          >
+            <Icon icon="copy" />
+          </Button>
+        </div>
+      );
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       !props.compact &&
@@ -295,6 +328,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             {maybeRenderOCounter()}
             {maybeRenderGallery()}
             {maybeRenderOrganized()}
+            {maybeRenderDupeCopies()}
           </ButtonGroup>
         </>
       );
@@ -354,12 +388,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       }
       overlays={maybeRenderSceneStudioOverlay()}
       details={
-        <>
-          <span>{props.scene.date}</span>
-          <p>
-            <TruncatedText text={props.scene.details} lineCount={3} />
-          </p>
-        </>
+        <div className="scene-card__details">
+          <span className="scene-card__date">{props.scene.date}</span>
+          <TruncatedText
+            className="scene-card__description"
+            text={props.scene.details}
+            lineCount={3}
+          />
+        </div>
       }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={props.selected}

@@ -1,6 +1,6 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useContext } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -39,6 +39,7 @@ import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { GenerateDialog } from "../../Dialogs/GenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 import { OrganizedButton } from "./OrganizedButton";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -54,11 +55,14 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
-  const [showScrubber, setShowScrubber] = useState(true);
 
-  const { data } = GQL.useConfigurationQuery();
+  const { configuration } = useContext(ConfigurationContext);
+
+  const [showScrubber, setShowScrubber] = useState(
+    configuration?.interface.showScrubber ?? true
+  );
   const [showDraftModal, setShowDraftModal] = useState(false);
-  const boxes = data?.configuration?.general?.stashBoxes ?? [];
+  const boxes = configuration?.general?.stashBoxes ?? [];
 
   const {
     data: sceneStreams,

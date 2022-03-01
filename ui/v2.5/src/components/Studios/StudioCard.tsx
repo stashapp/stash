@@ -22,7 +22,7 @@ function maybeRenderParent(
 ) {
   if (!hideParent && studio.parent_studio) {
     return (
-      <div>
+      <div className="studio-parent-studios">
         <FormattedMessage
           id="part_of"
           values={{
@@ -41,7 +41,7 @@ function maybeRenderParent(
 function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   if (studio.child_studios.length > 0) {
     return (
-      <div>
+      <div className="studio-child-studios">
         <FormattedMessage
           id="parent_of"
           values={{
@@ -151,12 +151,12 @@ export const StudioCard: React.FC<IProps> = ({
         />
       }
       details={
-        <>
+        <div className="studio-card__details">
           {maybeRenderParent(studio, hideParent)}
           {maybeRenderChildren(studio)}
           <RatingBanner rating={studio.rating} />
           {maybeRenderPopoverButtonGroup()}
-        </>
+        </div>
       }
       selected={selected}
       selecting={selecting}
