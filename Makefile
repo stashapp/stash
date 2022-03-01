@@ -57,7 +57,7 @@ endif
 build:
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/manager/config.officialBuild=$(OFFICIAL_BUILD)')
-	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS) $(PLATFORM_SPECIFIC_LDFLAGS)"
+	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS) $(PLATFORM_SPECIFIC_LDFLAGS)" ./cmd/stash
 
 # strips debug symbols from the release build
 build-release: EXTRA_LDFLAGS := -s -w
@@ -149,7 +149,7 @@ generate-frontend:
 
 .PHONY: generate-backend
 generate-backend:
-	go generate -mod=vendor
+	go generate -mod=vendor ./cmd/stash
 
 # Regenerates stash-box client files
 .PHONY: generate-stash-box-client

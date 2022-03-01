@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"crypto/tls"
-	"embed"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -23,6 +22,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
+	"github.com/vearutop/statigz"
 
 	"github.com/go-chi/httplog"
 	"github.com/rs/cors"
@@ -32,14 +32,17 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"github.com/vearutop/statigz"
+	"github.com/stashapp/stash/ui"
 )
 
 var version string
 var buildstamp string
 var githash string
 
-func Start(uiBox embed.FS, loginUIBox embed.FS) {
+var uiBox = ui.UIBox
+var loginUIBox = ui.LoginUIBox
+
+func Start() {
 	initialiseImages()
 
 	r := chi.NewRouter()
@@ -192,7 +195,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
-		const uiRootDir = "ui/v2.5/build"
+		const uiRootDir = "v2.5/build"
 
 		ext := path.Ext(r.URL.Path)
 

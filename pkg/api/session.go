@@ -12,7 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/session"
 )
 
-const loginRootDir = "ui/login"
+const loginRootDir = "login"
 const returnURLParam = "returnURL"
 
 func getLoginPage(loginUIBox embed.FS) []byte {

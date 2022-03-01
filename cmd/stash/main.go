@@ -2,7 +2,6 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"os"
 	"os/signal"
@@ -17,12 +16,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-//go:embed ui/v2.5/build
-var uiBox embed.FS
-
-//go:embed ui/login
-var loginUIBox embed.FS
-
 func init() {
 	// On Windows, attach to parent shell
 	err := fixconsole.FixConsoleIfNeeded()
@@ -33,7 +26,7 @@ func init() {
 
 func main() {
 	manager.Initialize()
-	api.Start(uiBox, loginUIBox)
+	api.Start()
 
 	blockForever()
 
