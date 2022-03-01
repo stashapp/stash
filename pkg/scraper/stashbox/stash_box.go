@@ -14,6 +14,7 @@ import (
 
 	"github.com/Yamashou/gqlgenc/client"
 	"github.com/Yamashou/gqlgenc/graphqljson"
+	"github.com/corona10/goimagehash"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
@@ -71,6 +72,18 @@ func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*mod
 	return ret, nil
 }
 
+func phashMatches(hash, other int64) bool {
+	// HACK - stash-box match distance is configurable. This needs to be fixed on
+	// the stash-box end.
+	const stashBoxDistance = 4
+
+	imageHash := goimagehash.NewImageHash(uint64(hash), goimagehash.PHash)
+	otherHash := goimagehash.NewImageHash(uint64(other), goimagehash.PHash)
+
+	distance, _ := imageHash.Distance(otherHash)
+	return distance <= stashBoxDistance
+}
+
 // FindStashBoxScenesByFingerprints queries stash-box for scenes using every
 // scene's MD5/OSHASH checksum, or PHash, and returns results in the same order
 // as the input slice.
@@ -83,6 +96,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs [
 	var fingerprints []*graphql.FingerprintQueryInput
 	// map fingerprints to their scene index
 	fpToScene := make(map[string][]int)
+	phashToScene := make(map[int64][]int)
 
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Scene()
@@ -120,6 +134,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs [
 					Algorithm: graphql.FingerprintAlgorithmPhash,
 				})
 				fpToScene[phashStr] = append(fpToScene[phashStr], index)
+				phashToScene[scene.Phash.Int64] = append(phashToScene[scene.Phash.Int64], index)
 			}
 		}
 
@@ -137,12 +152,30 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs [
 	ret := make([][]*models.ScrapedScene, len(sceneIDs))
 	for _, s := range allScenes {
 		var addedTo []int
-		for _, fp := range s.Fingerprints {
-			sceneIndexes := fpToScene[fp.Hash]
+
+		addScene := func(sceneIndexes []int) {
 			for _, index := range sceneIndexes {
 				if !utils.IntInclude(addedTo, index) {
 					addedTo = append(addedTo, index)
 					ret[index] = append(ret[index], s)
+				}
+			}
+		}
+
+		for _, fp := range s.Fingerprints {
+			addScene(fpToScene[fp.Hash])
+
+			// HACK - we really need stash-box to return specific hash-to-result sets
+			if fp.Algorithm == graphql.FingerprintAlgorithmPhash.String() {
+				hash, err := utils.StringToPhash(fp.Hash)
+				if err != nil {
+					continue
+				}
+
+				for phash, sceneIndexes := range phashToScene {
+					if phashMatches(hash, phash) {
+						addScene(sceneIndexes)
+					}
 				}
 			}
 		}
