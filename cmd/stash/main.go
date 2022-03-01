@@ -9,7 +9,7 @@ import (
 	"syscall"
 
 	"github.com/apenwarr/fixconsole"
-	"github.com/stashapp/stash/pkg/api"
+	"github.com/stashapp/stash/internal/api"
 	"github.com/stashapp/stash/pkg/manager"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"

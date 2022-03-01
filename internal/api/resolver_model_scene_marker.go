@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/stashapp/stash/pkg/api/urlbuilders"
+	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
 )
 
