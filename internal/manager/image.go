@@ -2,9 +2,10 @@ package manager
 
 import (
 	"archive/zip"
-	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"strings"
+
+	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/file"
 
 	"github.com/stashapp/stash/pkg/logger"
 )

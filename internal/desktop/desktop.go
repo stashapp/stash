@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/pkg/browser"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/utils"
 	"golang.org/x/term"
 )

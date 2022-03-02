@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/internal/manager/config"
 )
 
 var ErrInvalidToken = errors.New("invalid apikey")

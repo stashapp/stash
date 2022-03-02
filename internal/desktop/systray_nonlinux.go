@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/kermieisinthehouse/systray"
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 )
 
 // MUST be run on the main goroutine or will have no effect on macOS
