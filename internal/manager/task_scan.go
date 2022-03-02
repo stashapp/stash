@@ -367,7 +367,7 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 
 	generatedPath := config.GetGeneratedPath()
 
-	return utils.SymWalk(s.Path, func(path string, info os.FileInfo, err error) error {
+	return fsutil.SymWalk(s.Path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logger.Warnf("error scanning %s: %s", path, err.Error())
 			return nil
