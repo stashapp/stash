@@ -1,4 +1,4 @@
-package utils
+package job
 
 import (
 	"context"
@@ -19,10 +19,4 @@ func (valueOnlyContext) Done() <-chan struct{} {
 
 func (valueOnlyContext) Err() error {
 	return nil
-}
-
-func ValueOnlyContext(ctx context.Context) context.Context {
-	return valueOnlyContext{
-		ctx,
-	}
 }

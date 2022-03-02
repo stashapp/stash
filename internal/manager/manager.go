@@ -7,11 +7,13 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/pprof"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/job"
@@ -74,7 +76,7 @@ func Initialize() *singleton {
 		instance = &singleton{
 			Config:        cfg,
 			Logger:        l,
-			JobManager:    job.NewManager(),
+			JobManager:    initJobManager(),
 			DownloadStore: NewDownloadStore(),
 			PluginCache:   plugin.NewCache(cfg),
 
@@ -128,6 +130,33 @@ func Initialize() *singleton {
 	})
 
 	return instance
+}
+
+func initJobManager() *job.Manager {
+	ret := job.NewManager()
+
+	// desktop notifications
+	ctx := context.Background()
+	c := ret.Subscribe(context.Background())
+	go func() {
+		for {
+			select {
+			case j := <-c.RemovedJob:
+				cleanDesc := strings.TrimRight(j.Description, ".")
+				timeElapsed := j.EndTime.Sub(*j.StartTime)
+
+				desktop.SendNotification("Task Finished", "Task \""+cleanDesc+"\" is finished in "+formatDuration(timeElapsed)+".")
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
+	return ret
+}
+
+func formatDuration(t time.Duration) string {
+	return fmt.Sprintf("%02.f:%02.f:%02.f", t.Hours(), t.Minutes(), t.Seconds())
 }
 
 func initSecurity(cfg *config.Instance) {
