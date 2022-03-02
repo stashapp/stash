@@ -5,7 +5,7 @@ import (
 	"runtime"
 )
 
-const faviconDir = "ui/v2.5/build/"
+const faviconDir = "v2.5/build/"
 
 type FaviconProvider struct {
 	uiBox embed.FS
