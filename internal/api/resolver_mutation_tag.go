@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -48,14 +49,14 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	var childIDs []int
 
 	if len(input.ParentIds) > 0 {
-		parentIDs, err = utils.StringSliceToIntSlice(input.ParentIds)
+		parentIDs, err = stringslice.StringSliceToIntSlice(input.ParentIds)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if len(input.ChildIds) > 0 {
-		childIDs, err = utils.StringSliceToIntSlice(input.ChildIds)
+		childIDs, err = stringslice.StringSliceToIntSlice(input.ChildIds)
 		if err != nil {
 			return nil, err
 		}
@@ -148,14 +149,14 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	var childIDs []int
 
 	if translator.hasField("parent_ids") {
-		parentIDs, err = utils.StringSliceToIntSlice(input.ParentIds)
+		parentIDs, err = stringslice.StringSliceToIntSlice(input.ParentIds)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if translator.hasField("child_ids") {
-		childIDs, err = utils.StringSliceToIntSlice(input.ChildIds)
+		childIDs, err = stringslice.StringSliceToIntSlice(input.ChildIds)
 		if err != nil {
 			return nil, err
 		}
@@ -264,7 +265,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestr
 }
 
 func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bool, error) {
-	ids, err := utils.StringSliceToIntSlice(tagIDs)
+	ids, err := stringslice.StringSliceToIntSlice(tagIDs)
 	if err != nil {
 		return false, err
 	}
@@ -290,7 +291,7 @@ func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bo
 }
 
 func (r *mutationResolver) TagsMerge(ctx context.Context, input models.TagsMergeInput) (*models.Tag, error) {
-	source, err := utils.StringSliceToIntSlice(input.Source)
+	source, err := stringslice.StringSliceToIntSlice(input.Source)
 	if err != nil {
 		return nil, err
 	}

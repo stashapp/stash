@@ -8,7 +8,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -18,7 +18,7 @@ type mockSceneScraper struct {
 }
 
 func (s mockSceneScraper) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
-	if utils.IntInclude(s.errIDs, sceneID) {
+	if intslice.IntInclude(s.errIDs, sceneID) {
 		return nil, errors.New("scrape scene error")
 	}
 	return s.results[sceneID], nil

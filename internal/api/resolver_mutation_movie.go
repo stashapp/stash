@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -222,7 +223,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 }
 
 func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input models.BulkMovieUpdateInput) ([]*models.Movie, error) {
-	movieIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	movieIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, err
 	}
@@ -304,7 +305,7 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieD
 }
 
 func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string) (bool, error) {
-	ids, err := utils.StringSliceToIntSlice(movieIDs)
+	ids, err := stringslice.StringSliceToIntSlice(movieIDs)
 	if err != nil {
 		return false, err
 	}

@@ -22,6 +22,8 @@ import (
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
@@ -60,7 +62,7 @@ func newExportSpec(input *models.ExportObjectTypeInput) *exportSpec {
 		return &exportSpec{}
 	}
 
-	ids, _ := utils.StringSliceToIntSlice(input.Ids)
+	ids, _ := stringslice.StringSliceToIntSlice(input.Ids)
 
 	ret := &exportSpec{
 		IDs: ids,
@@ -286,7 +288,7 @@ func (t *ExportTask) populateMovieScenes(repo models.ReaderRepository) {
 		}
 
 		for _, s := range scenes {
-			t.scenes.IDs = utils.IntAppendUnique(t.scenes.IDs, s.ID)
+			t.scenes.IDs = intslice.IntAppendUnique(t.scenes.IDs, s.ID)
 		}
 	}
 }
@@ -316,7 +318,7 @@ func (t *ExportTask) populateGalleryImages(repo models.ReaderRepository) {
 		}
 
 		for _, i := range images {
-			t.images.IDs = utils.IntAppendUnique(t.images.IDs, i.ID)
+			t.images.IDs = intslice.IntAppendUnique(t.images.IDs, i.ID)
 		}
 	}
 }
@@ -426,26 +428,26 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, repo models.R
 
 		if t.includeDependencies {
 			if s.StudioID.Valid {
-				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
 			}
 
-			t.galleries.IDs = utils.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
+			t.galleries.IDs = intslice.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
 
 			tagIDs, err := scene.GetDependentTagIDs(tagReader, sceneMarkerReader, s)
 			if err != nil {
 				logger.Errorf("[scenes] <%s> error getting scene tags: %s", sceneHash, err.Error())
 				continue
 			}
-			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tagIDs)
+			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tagIDs)
 
 			movieIDs, err := scene.GetDependentMovieIDs(sceneReader, s)
 			if err != nil {
 				logger.Errorf("[scenes] <%s> error getting scene movies: %s", sceneHash, err.Error())
 				continue
 			}
-			t.movies.IDs = utils.IntAppendUniques(t.movies.IDs, movieIDs)
+			t.movies.IDs = intslice.IntAppendUniques(t.movies.IDs, movieIDs)
 
-			t.performers.IDs = utils.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		sceneJSON, err := t.json.getScene(sceneHash)
@@ -548,12 +550,12 @@ func exportImage(wg *sync.WaitGroup, jobChan <-chan *models.Image, repo models.R
 
 		if t.includeDependencies {
 			if s.StudioID.Valid {
-				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
 			}
 
-			t.galleries.IDs = utils.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))
-			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
-			t.performers.IDs = utils.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+			t.galleries.IDs = intslice.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))
+			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		imageJSON, err := t.json.getImage(imageHash)
@@ -662,11 +664,11 @@ func exportGallery(wg *sync.WaitGroup, jobChan <-chan *models.Gallery, repo mode
 
 		if t.includeDependencies {
 			if g.StudioID.Valid {
-				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(g.StudioID.Int64))
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(g.StudioID.Int64))
 			}
 
-			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
-			t.performers.IDs = utils.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		galleryJSON, err := t.json.getGallery(galleryHash)
@@ -742,7 +744,7 @@ func (t *ExportTask) exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.
 		newPerformerJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
-			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
 		}
 
 		performerJSON, err := t.json.getPerformer(p.Checksum)
@@ -951,7 +953,7 @@ func (t *ExportTask) exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movi
 
 		if t.includeDependencies {
 			if m.StudioID.Valid {
-				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(m.StudioID.Int64))
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(m.StudioID.Int64))
 			}
 		}
 

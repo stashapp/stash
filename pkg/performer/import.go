@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -66,8 +67,8 @@ func importTags(tagWriter models.TagReaderWriter, names []string, missingRefBeha
 		pluckedNames = append(pluckedNames, tag.Name)
 	}
 
-	missingTags := utils.StrFilter(names, func(name string) bool {
-		return !utils.StrInclude(pluckedNames, name)
+	missingTags := stringslice.StrFilter(names, func(name string) bool {
+		return !stringslice.StrInclude(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {

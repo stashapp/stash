@@ -17,6 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -1129,7 +1130,7 @@ func linkPerformerTags(qb models.PerformerReaderWriter) error {
 			return err
 		}
 
-		tagIDs = utils.IntAppendUnique(tagIDs, tagID)
+		tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
 
 		return qb.UpdateTags(performerID, tagIDs)
 	})

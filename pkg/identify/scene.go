@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -89,12 +91,12 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 		}
 
 		if performerID != nil {
-			performerIDs = utils.IntAppendUnique(performerIDs, *performerID)
+			performerIDs = intslice.IntAppendUnique(performerIDs, *performerID)
 		}
 	}
 
 	// don't return if nothing was added
-	if utils.SliceSame(originalPerformerIDs, performerIDs) {
+	if sliceutil.SliceSame(originalPerformerIDs, performerIDs) {
 		return nil, nil
 	}
 
@@ -137,7 +139,7 @@ func (g sceneRelationships) tags() ([]int, error) {
 				return nil, fmt.Errorf("error converting tag ID %s: %w", *t.StoredID, err)
 			}
 
-			tagIDs = utils.IntAppendUnique(tagIDs, int(tagID))
+			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
 			now := time.Now()
 			created, err := r.Tag().Create(models.Tag{
@@ -154,7 +156,7 @@ func (g sceneRelationships) tags() ([]int, error) {
 	}
 
 	// don't return if nothing was added
-	if utils.SliceSame(originalTagIDs, tagIDs) {
+	if sliceutil.SliceSame(originalTagIDs, tagIDs) {
 		return nil, nil
 	}
 
@@ -216,7 +218,7 @@ func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
 		Endpoint: endpoint,
 	})
 
-	if utils.SliceSame(originalStashIDs, stashIDs) {
+	if sliceutil.SliceSame(originalStashIDs, stashIDs) {
 		return nil, nil
 	}
 

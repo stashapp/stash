@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 // only keep the 10 most recent IP addresses
@@ -31,7 +31,7 @@ func (m *ipWhitelistManager) addRecent(addr string) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	i := utils.StrIndex(m.recentIPAddresses, addr)
+	i := stringslice.StrIndex(m.recentIPAddresses, addr)
 	if i != -1 {
 		if i == 0 {
 			// don't do anything if it's already at the start

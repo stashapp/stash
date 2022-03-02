@@ -7,7 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
@@ -86,11 +86,11 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 			result, err = repo.Scene().Query(models.SceneQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: filter,
-					Count:      utils.StrInclude(fields, "count"),
+					Count:      stringslice.StrInclude(fields, "count"),
 				},
 				SceneFilter:   sceneFilter,
-				TotalDuration: utils.StrInclude(fields, "duration"),
-				TotalSize:     utils.StrInclude(fields, "filesize"),
+				TotalDuration: stringslice.StrInclude(fields, "duration"),
+				TotalSize:     stringslice.StrInclude(fields, "filesize"),
 			})
 			if err == nil {
 				scenes, err = result.Resolve()
@@ -141,11 +141,11 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 		result, err := repo.Scene().Query(models.SceneQueryOptions{
 			QueryOptions: models.QueryOptions{
 				FindFilter: queryFilter,
-				Count:      utils.StrInclude(fields, "count"),
+				Count:      stringslice.StrInclude(fields, "count"),
 			},
 			SceneFilter:   sceneFilter,
-			TotalDuration: utils.StrInclude(fields, "duration"),
-			TotalSize:     utils.StrInclude(fields, "filesize"),
+			TotalDuration: stringslice.StrInclude(fields, "duration"),
+			TotalSize:     stringslice.StrInclude(fields, "filesize"),
 		})
 		if err != nil {
 			return err

@@ -13,6 +13,8 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -181,7 +183,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 }
 
 func (r *mutationResolver) updateScenePerformers(qb models.SceneReaderWriter, sceneID int, performerIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return err
 	}
@@ -215,7 +217,7 @@ func (r *mutationResolver) updateSceneMovies(qb models.SceneReaderWriter, sceneI
 }
 
 func (r *mutationResolver) updateSceneTags(qb models.SceneReaderWriter, sceneID int, tagsIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(tagsIDs)
+	ids, err := stringslice.StringSliceToIntSlice(tagsIDs)
 	if err != nil {
 		return err
 	}
@@ -223,7 +225,7 @@ func (r *mutationResolver) updateSceneTags(qb models.SceneReaderWriter, sceneID 
 }
 
 func (r *mutationResolver) updateSceneGalleries(qb models.SceneReaderWriter, sceneID int, galleryIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(galleryIDs)
+	ids, err := stringslice.StringSliceToIntSlice(galleryIDs)
 	if err != nil {
 		return err
 	}
@@ -231,7 +233,7 @@ func (r *mutationResolver) updateSceneGalleries(qb models.SceneReaderWriter, sce
 }
 
 func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.BulkSceneUpdateInput) ([]*models.Scene, error) {
-	sceneIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	sceneIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, err
 	}
@@ -593,7 +595,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
-	tagIDs, err := utils.StringSliceToIntSlice(input.TagIds)
+	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
 	if err != nil {
 		return nil, err
 	}
@@ -633,7 +635,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
-	tagIDs, err := utils.StringSliceToIntSlice(input.TagIds)
+	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
 	if err != nil {
 		return nil, err
 	}
@@ -746,7 +748,7 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 
 		// Save the marker tags
 		// If this tag is the primary tag, then let's not add it.
-		tagIDs = utils.IntExclude(tagIDs, []int{changedMarker.PrimaryTagID})
+		tagIDs = intslice.IntExclude(tagIDs, []int{changedMarker.PrimaryTagID})
 		return qb.UpdateTags(sceneMarker.ID, tagIDs)
 	}); err != nil {
 		fileDeleter.Rollback()

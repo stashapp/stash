@@ -2,7 +2,7 @@ package gallery
 
 import (
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 func UpdateFileModTime(qb models.GalleryWriter, id int, modTime models.NullSQLiteTimestamp) (*models.Gallery, error) {
@@ -18,7 +18,7 @@ func AddImage(qb models.GalleryReaderWriter, galleryID int, imageID int) error {
 		return err
 	}
 
-	imageIDs = utils.IntAppendUnique(imageIDs, imageID)
+	imageIDs = intslice.IntAppendUnique(imageIDs, imageID)
 	return qb.UpdateImages(galleryID, imageIDs)
 }
 
@@ -29,7 +29,7 @@ func AddPerformer(qb models.GalleryReaderWriter, id int, performerID int) (bool,
 	}
 
 	oldLen := len(performerIDs)
-	performerIDs = utils.IntAppendUnique(performerIDs, performerID)
+	performerIDs = intslice.IntAppendUnique(performerIDs, performerID)
 
 	if len(performerIDs) != oldLen {
 		if err := qb.UpdatePerformers(id, performerIDs); err != nil {
@@ -49,7 +49,7 @@ func AddTag(qb models.GalleryReaderWriter, id int, tagID int) (bool, error) {
 	}
 
 	oldLen := len(tagIDs)
-	tagIDs = utils.IntAppendUnique(tagIDs, tagID)
+	tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
 
 	if len(tagIDs) != oldLen {
 		if err := qb.UpdateTags(id, tagIDs); err != nil {

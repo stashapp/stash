@@ -19,7 +19,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 	"github.com/stashapp/stash/pkg/session"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 type ServerConfig interface {
@@ -203,7 +203,7 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, h
 		hooks := p.getHooks(hookType)
 		// don't revisit a plugin we've already visited
 		// only log if there's hooks that we're skipping
-		if len(hooks) > 0 && utils.StrInclude(visitedPlugins, p.id) {
+		if len(hooks) > 0 && stringslice.StrInclude(visitedPlugins, p.id) {
 			logger.Debugf("plugin ID '%s' already triggered, not re-triggering", p.id)
 			continue
 		}

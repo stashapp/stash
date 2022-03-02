@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 
 	"github.com/stashapp/stash/internal/manager"
@@ -219,7 +220,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 }
 
 func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []string) (bool, error) {
-	ids, err := utils.StringSliceToIntSlice(studioIDs)
+	ids, err := stringslice.StringSliceToIntSlice(studioIDs)
 	if err != nil {
 		return false, err
 	}

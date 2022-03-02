@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -285,7 +286,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) updatePerformerTags(qb models.PerformerReaderWriter, performerID int, tagsIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(tagsIDs)
+	ids, err := stringslice.StringSliceToIntSlice(tagsIDs)
 	if err != nil {
 		return err
 	}
@@ -293,7 +294,7 @@ func (r *mutationResolver) updatePerformerTags(qb models.PerformerReaderWriter, 
 }
 
 func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models.BulkPerformerUpdateInput) ([]*models.Performer, error) {
-	performerIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	performerIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, err
 	}
@@ -420,7 +421,7 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 }
 
 func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs []string) (bool, error) {
-	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return false, err
 	}

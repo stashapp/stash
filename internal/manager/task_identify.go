@@ -13,7 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 var ErrInput = errors.New("invalid request input")
@@ -57,7 +57,7 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 			return j.identifyAllScenes(ctx, r, sources)
 		}
 
-		sceneIDs, err := utils.StringSliceToIntSlice(j.input.SceneIDs)
+		sceneIDs, err := stringslice.StringSliceToIntSlice(j.input.SceneIDs)
 		if err != nil {
 			return fmt.Errorf("invalid scene IDs: %w", err)
 		}

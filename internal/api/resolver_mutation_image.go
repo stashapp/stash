@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -133,7 +134,7 @@ func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator
 }
 
 func (r *mutationResolver) updateImageGalleries(qb models.ImageReaderWriter, imageID int, galleryIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(galleryIDs)
+	ids, err := stringslice.StringSliceToIntSlice(galleryIDs)
 	if err != nil {
 		return err
 	}
@@ -141,7 +142,7 @@ func (r *mutationResolver) updateImageGalleries(qb models.ImageReaderWriter, ima
 }
 
 func (r *mutationResolver) updateImagePerformers(qb models.ImageReaderWriter, imageID int, performerIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return err
 	}
@@ -149,7 +150,7 @@ func (r *mutationResolver) updateImagePerformers(qb models.ImageReaderWriter, im
 }
 
 func (r *mutationResolver) updateImageTags(qb models.ImageReaderWriter, imageID int, tagsIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(tagsIDs)
+	ids, err := stringslice.StringSliceToIntSlice(tagsIDs)
 	if err != nil {
 		return err
 	}
@@ -157,7 +158,7 @@ func (r *mutationResolver) updateImageTags(qb models.ImageReaderWriter, imageID 
 }
 
 func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.BulkImageUpdateInput) (ret []*models.Image, err error) {
-	imageIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	imageIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, err
 	}
@@ -320,7 +321,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 }
 
 func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.ImagesDestroyInput) (ret bool, err error) {
-	imageIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	imageIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return false, err
 	}

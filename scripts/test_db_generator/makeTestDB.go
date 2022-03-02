@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package main
@@ -16,6 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/yaml.v2"
@@ -378,7 +380,7 @@ func makeMarkers(n int) {
 
 				tags := getRandomTags(r, 0, 5)
 				// remove primary tag
-				tags = utils.IntExclude(tags, []int{marker.PrimaryTagID})
+				tags = intslice.IntExclude(tags, []int{marker.PrimaryTagID})
 				if err := r.SceneMarker().UpdateTags(created.ID, tags); err != nil {
 					return err
 				}
@@ -504,12 +506,12 @@ func getRandomPerformers(r models.Repository) []int {
 	// 	}
 
 	// 	for _, pp := range p {
-	// 		ret = utils.IntAppendUnique(ret, pp.ID)
+	// 		ret = intslice.IntAppendUnique(ret, pp.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = utils.IntAppendUnique(ret, rand.Intn(c.Performers)+1)
+		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Performers)+1)
 	}
 
 	return ret
@@ -535,12 +537,12 @@ func getRandomTags(r models.Repository, min, max int) []int {
 	// 	}
 
 	// 	for _, tt := range t {
-	// 		ret = utils.IntAppendUnique(ret, tt.ID)
+	// 		ret = intslice.IntAppendUnique(ret, tt.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = utils.IntAppendUnique(ret, rand.Intn(c.Tags)+1)
+		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Tags)+1)
 	}
 
 	return ret
@@ -557,12 +559,12 @@ func getRandomImages(r models.Repository) []int {
 	// 	}
 
 	// 	for _, tt := range t {
-	// 		ret = utils.IntAppendUnique(ret, tt.ID)
+	// 		ret = intslice.IntAppendUnique(ret, tt.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = utils.IntAppendUnique(ret, rand.Intn(c.Images)+1)
+		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Images)+1)
 	}
 
 	return ret

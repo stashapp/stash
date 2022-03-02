@@ -6,7 +6,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *string) (*models.Image, error) {
@@ -47,11 +47,11 @@ func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.Imag
 		result, err := qb.Query(models.ImageQueryOptions{
 			QueryOptions: models.QueryOptions{
 				FindFilter: filter,
-				Count:      utils.StrInclude(fields, "count"),
+				Count:      stringslice.StrInclude(fields, "count"),
 			},
 			ImageFilter: imageFilter,
-			Megapixels:  utils.StrInclude(fields, "megapixels"),
-			TotalSize:   utils.StrInclude(fields, "filesize"),
+			Megapixels:  stringslice.StrInclude(fields, "megapixels"),
+			TotalSize:   stringslice.StrInclude(fields, "filesize"),
 		})
 		if err != nil {
 			return err

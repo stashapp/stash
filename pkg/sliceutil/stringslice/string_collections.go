@@ -1,4 +1,4 @@
-package utils
+package stringslice
 
 import "strconv"
 

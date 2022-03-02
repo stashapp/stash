@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -57,11 +58,11 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 		defer close(queue)
 
 		var totals totalsGenerate
-		sceneIDs, err := utils.StringSliceToIntSlice(j.input.SceneIDs)
+		sceneIDs, err := stringslice.StringSliceToIntSlice(j.input.SceneIDs)
 		if err != nil {
 			logger.Error(err.Error())
 		}
-		markerIDs, err := utils.StringSliceToIntSlice(j.input.MarkerIDs)
+		markerIDs, err := stringslice.StringSliceToIntSlice(j.input.MarkerIDs)
 		if err != nil {
 			logger.Error(err.Error())
 		}

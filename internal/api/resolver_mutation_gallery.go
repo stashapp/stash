@@ -14,6 +14,8 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -110,7 +112,7 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input models.Galle
 }
 
 func (r *mutationResolver) updateGalleryPerformers(qb models.GalleryReaderWriter, galleryID int, performerIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return err
 	}
@@ -118,7 +120,7 @@ func (r *mutationResolver) updateGalleryPerformers(qb models.GalleryReaderWriter
 }
 
 func (r *mutationResolver) updateGalleryTags(qb models.GalleryReaderWriter, galleryID int, tagIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(tagIDs)
+	ids, err := stringslice.StringSliceToIntSlice(tagIDs)
 	if err != nil {
 		return err
 	}
@@ -126,7 +128,7 @@ func (r *mutationResolver) updateGalleryTags(qb models.GalleryReaderWriter, gall
 }
 
 func (r *mutationResolver) updateGalleryScenes(qb models.GalleryReaderWriter, galleryID int, sceneIDs []string) error {
-	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return err
 	}
@@ -392,7 +394,7 @@ func adjustGallerySceneIDs(qb models.GalleryReader, galleryID int, ids models.Bu
 }
 
 func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.GalleryDestroyInput) (bool, error) {
-	galleryIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	galleryIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return false, err
 	}
@@ -529,7 +531,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.Ga
 		return false, err
 	}
 
-	imageIDs, err := utils.StringSliceToIntSlice(input.ImageIds)
+	imageIDs, err := stringslice.StringSliceToIntSlice(input.ImageIds)
 	if err != nil {
 		return false, err
 	}
@@ -554,7 +556,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.Ga
 			return err
 		}
 
-		newIDs = utils.IntAppendUniques(newIDs, imageIDs)
+		newIDs = intslice.IntAppendUniques(newIDs, imageIDs)
 		return qb.UpdateImages(galleryID, newIDs)
 	}); err != nil {
 		return false, err
@@ -569,7 +571,7 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input models
 		return false, err
 	}
 
-	imageIDs, err := utils.StringSliceToIntSlice(input.ImageIds)
+	imageIDs, err := stringslice.StringSliceToIntSlice(input.ImageIds)
 	if err != nil {
 		return false, err
 	}
@@ -594,7 +596,7 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input models
 			return err
 		}
 
-		newIDs = utils.IntExclude(newIDs, imageIDs)
+		newIDs = intslice.IntExclude(newIDs, imageIDs)
 		return qb.UpdateImages(galleryID, newIDs)
 	}); err != nil {
 		return false, err
