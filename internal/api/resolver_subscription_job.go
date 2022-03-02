@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/job"
-	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 )
 

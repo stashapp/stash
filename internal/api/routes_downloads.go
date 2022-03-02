@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/internal/manager"
 )
 
 type downloadsRoutes struct{}

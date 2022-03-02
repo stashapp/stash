@@ -3,11 +3,12 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *queryResolver) Logs(ctx context.Context) ([]*models.LogEntry, error) {
+	logger := manager.GetInstance().Logger
 	logCache := logger.GetLogCache()
 	ret := make([]*models.LogEntry, len(logCache))
 

@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -27,6 +28,7 @@ import (
 
 type singleton struct {
 	Config *config.Instance
+	Logger *log.Logger
 
 	Paths *paths.Paths
 
@@ -66,11 +68,12 @@ func Initialize() *singleton {
 			panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
 		}
 
-		initLog()
+		l := initLog()
 		initProfiling(cfg.GetCPUProfilePath())
 
 		instance = &singleton{
 			Config:        cfg,
+			Logger:        l,
 			JobManager:    job.NewManager(),
 			DownloadStore: NewDownloadStore(),
 			PluginCache:   plugin.NewCache(cfg),
@@ -189,9 +192,13 @@ func initFFMPEG() error {
 	return nil
 }
 
-func initLog() {
+func initLog() *log.Logger {
 	config := config.GetInstance()
-	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
+	l := log.NewLogger()
+	l.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
+	logger.Logger = l
+
+	return l
 }
 
 // PostInit initialises the paths, caches and txnManager after the initial

@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/internal/manager"
 )
 
 func (r *mutationResolver) ReloadScrapers(ctx context.Context) (bool, error) {

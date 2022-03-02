@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/session"
 )

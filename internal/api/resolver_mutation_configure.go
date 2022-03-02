@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -211,6 +211,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	if input.LogLevel != nil && *input.LogLevel != c.GetLogLevel() {
 		c.Set(config.LogLevel, input.LogLevel)
+		logger := manager.GetInstance().Logger
 		logger.SetLogLevel(*input.LogLevel)
 	}
 

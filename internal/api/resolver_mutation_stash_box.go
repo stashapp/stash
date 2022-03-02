@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"

@@ -8,7 +8,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/studio"
 
-	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"

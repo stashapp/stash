@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )

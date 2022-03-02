@@ -7,7 +7,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/session"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/internal/manager"
 )
 
 func (r *mutationResolver) StopJob(ctx context.Context, jobID string) (bool, error) {

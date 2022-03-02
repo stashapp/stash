@@ -3,7 +3,8 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/internal/log"
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -26,7 +27,7 @@ func getLogLevel(logType string) models.LogLevel {
 	}
 }
 
-func logEntriesFromLogItems(logItems []logger.LogItem) []*models.LogEntry {
+func logEntriesFromLogItems(logItems []log.LogItem) []*models.LogEntry {
 	ret := make([]*models.LogEntry, len(logItems))
 
 	for i, entry := range logItems {
@@ -43,6 +44,7 @@ func logEntriesFromLogItems(logItems []logger.LogItem) []*models.LogEntry {
 func (r *subscriptionResolver) LoggingSubscribe(ctx context.Context) (<-chan []*models.LogEntry, error) {
 	ret := make(chan []*models.LogEntry, 100)
 	stop := make(chan int, 1)
+	logger := manager.GetInstance().Logger
 	logSub := logger.SubscribeToLog(stop)
 
 	go func() {
