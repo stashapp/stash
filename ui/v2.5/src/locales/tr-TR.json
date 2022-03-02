@@ -220,8 +220,6 @@
         "password": "Parola",
         "password_desc": "Stash'a erişim için parola. Kullanıcı yetkilendirme yapmak istemiyorsanız boş bırakın",
         "stash-box_integration": "Stash-box entegrasyonu",
-        "trusted_proxies": "Güvenilen proxy sunucular",
-        "trusted_proxies_desc": "Stash'a veri göndermesine izin verdiğiniz proxy listesi. Özel ağdan erişime izin vermek için boş bırakın.",
         "username": "Kullanıcı adı",
         "username_desc": "Stash'a erişim için kullanıcı adı. Kullanıcı yetkilendirme yapmak istemiyorsanız boş bırakın"
       },

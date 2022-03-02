@@ -26,6 +26,7 @@
     "delete": "Poista",
     "delete_entity": "Poista {entityType}",
     "delete_file": "Poista tiedosto",
+    "delete_file_and_funscript": "Poista tiedosto (ja funscript)",
     "delete_generated_supporting_files": "Poista generoidut lisätiedostot",
     "disallow": "Kiellä",
     "download": "Lataa",
@@ -89,6 +90,7 @@
     "show": "Näytä",
     "skip": "Ohita",
     "stop": "Pysäytä",
+    "submit_stash_box": "Lähetä Stash-Boxiin",
     "tasks": {
       "clean_confirm_message": "Haluatko varmasti puhdistaa? Tämä poistaa tietokannan tiedot ja poistaa kaikki generoidut tukitiedostot kaikista kohtauksista ja gallerioista, eikä niitä enää ole löydettävissä levyltä.",
       "dry_mode_selected": "Kuivatila käytössä. Poistoa ei oikeasti tehdä, vain lokikirjaus.",
@@ -220,8 +222,6 @@
         "password": "Salasana",
         "password_desc": "Salasana Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia",
         "stash-box_integration": "Stash-box integraatio",
-        "trusted_proxies": "Luotetut välityspalvelimet",
-        "trusted_proxies_desc": "Lista välityspalvelimista, joiden liikenne Stashiin sallitaan. Jätä tyhjäksi salliaksesi pääsyn sisäverkosta.",
         "username": "Käyttäjätunnus",
         "username_desc": "Käyttäjätunnus Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia"
       },

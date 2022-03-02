@@ -220,8 +220,6 @@
         "password": "Wachtwoord",
         "password_desc": "Wachtwoord om Stash te openen. Laat leeg om aanmelden uit te schakelen",
         "stash-box_integration": "Stash-box integratie",
-        "trusted_proxies": "Vertrouwde proxy's",
-        "trusted_proxies_desc": "Lijst van proxy's die netwerkverkeer naar Stash mogen sturen. Laat leeg om privaat netwerk toe te laten.",
         "username": "Gebruikersnaam",
         "username_desc": "Gebruikersnaam om Stash te openen. Laat leeg om aanmelden uit te schakelen"
       },

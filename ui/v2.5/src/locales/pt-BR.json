@@ -26,6 +26,7 @@
     "delete": "Apagar",
     "delete_entity": "Apagar {entityType}",
     "delete_file": "Apagar arquivo",
+    "delete_file_and_funscript": "Deletar arquivo (e funscript)",
     "delete_generated_supporting_files": "Apagar arquivos gerados de suporte",
     "disallow": "Não permitir",
     "download": "Download",
@@ -44,6 +45,7 @@
     "generate_thumb_from_current": "Gerar thumbnail do atual",
     "hash_migration": "migrar hash",
     "hide": "Esconder",
+    "hide_configuration": "Esconder Configuração",
     "identify": "Identificar",
     "ignore": "Ignorar",
     "import": "Importar…",
@@ -87,8 +89,11 @@
     "set_front_image": "Imagem frontal…",
     "set_image": "Aplicar imagem…",
     "show": "Mostrar",
+    "show_configuration": "Exibir Configuração",
     "skip": "Pular",
     "stop": "Parar",
+    "submit": "Enviar",
+    "submit_stash_box": "Enviar para o Stash-Box",
     "tasks": {
       "clean_confirm_message": "Tem certeza de que quer limpar? Isto irá apagar as informações do banco de dados e conteúdos gerados de todas as cenas e galerias que não são mais encontradas no sistema.",
       "dry_mode_selected": "Modo não destrutivo. Nenhum arquivo será apagado, apenas será logado.",
@@ -220,8 +225,6 @@
         "password": "Senha",
         "password_desc": "Senha para acesso Stash. Deixe em branco para desativar a autenticação do usuário",
         "stash-box_integration": "Integração com Stash-box",
-        "trusted_proxies": "Proxies confiáveis",
-        "trusted_proxies_desc": "Lista de proxies permitidos a acessar o Stash. Deixe em branco para permitir redes privadas.",
         "username": "Usuário",
         "username_desc": "Username para acessar o Stash. Deixe em branco para desativar a autenticação do usuário"
       },
@@ -355,7 +358,7 @@
         "heading": "Identificar",
         "identifying_from_paths": "Identificação de cenas nos seguintes caminhos",
         "identifying_scenes": "Identificando {num} {scene}",
-        "include_male_performers": "Incluir atores (homens)",
+        "include_male_performers": "Incluir atores",
         "set_cover_images": "Definir imagens de capa",
         "set_organized": "Marcar cena como \"organizada\"",
         "source": "Fonte",
@@ -414,6 +417,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Integração com o Desktop",
+        "notifications_enabled": "Ativar Notificações",
+        "send_desktop_notifications_for_events": "Enviar notificações desktop para eventos",
         "skip_opening_browser": "Pular abertura do navegador",
         "skip_opening_browser_on_startup": "Pular abertura automática do navegador durante a inicialização"
       },
@@ -487,7 +492,8 @@
           "continue_playlist_default": {
             "description": "Reproduzir próxima cena na fila quando o vídeo finalizar",
             "heading": "Continuar playlist por padrão"
-          }
+          },
+          "show_scrubber": "Mostrar Scrubber"
         }
       },
       "scene_wall": {
@@ -651,6 +657,7 @@
     "search_accuracy_label": "Precisão de pesquisa",
     "title": "Cenas duplicadas"
   },
+  "duplicated_phash": "Duplicado (phash)",
   "duration": "Duração",
   "effect_filters": {
     "aspect": "Aspecto",
@@ -758,10 +765,48 @@
   "parent_tags": "Tags pai",
   "part_of": "Parte de {parent}",
   "path": "Caminho",
+  "perceptual_similarity": "Semelhança Perceptiva (phash)",
   "performer": "Artista",
   "performerTags": "Tags de artitas",
+  "performer_age": "Idade do Artista",
   "performer_count": "Contagem de artistas",
+  "performer_favorite": "Artista Favoritado",
   "performer_image": "Imagem do(a) artita",
+  "performer_tagger": {
+    "add_new_performers": "Adicionar Novos Artistas",
+    "any_names_entered_will_be_queried": "Quaisquer nomes inseridos serão consultados na instância remota do Stash-Box e adicionados caso encontrados. Apenas correspondências exatas serão consideradas.",
+    "batch_add_performers": "Adicionar Artistas em Lote",
+    "batch_update_performers": "Atualizar Artistas em Lote",
+    "config": {
+      "active_stash-box_instance": "Instância Stash-Box ativa:",
+      "edit_excluded_fields": "Editar Campos Excluídos",
+      "excluded_fields": "Campos excluídos:",
+      "no_fields_are_excluded": "Nenhum campo é excluído",
+      "no_instances_found": "Nenhuma instância encontrada",
+      "these_fields_will_not_be_changed_when_updating_performers": "Estes campos não serão alterados ao atualizar artistas."
+    },
+    "current_page": "Página atual",
+    "failed_to_save_performer": "Falha ao salvar artista \"{performer}\"",
+    "name_already_exists": "Nome já existe",
+    "network_error": "Erro de Rede",
+    "no_results_found": "Nenhum resultado encontrado.",
+    "number_of_performers_will_be_processed": "{performer_count} artistas serão processados",
+    "performer_already_tagged": "Artista já taggeado",
+    "performer_names_separated_by_comma": "Nomes de artistas separados por vírgula",
+    "performer_selection": "Seleção de artista",
+    "performer_successfully_tagged": "Artista taggeado com sucesso:",
+    "query_all_performers_in_the_database": "Todos os artistas no banco de dados",
+    "refresh_tagged_performers": "Recarregar artistas taggeados",
+    "refreshing_will_update_the_data": "Recarregar irá atualizar os dados de qualquer artista taggeado da instância do stash-box.",
+    "status_tagging_job_queued": "Status: Taggeamento adicionado à fila",
+    "status_tagging_performers": "Status: Taggeando artistas",
+    "tag_status": "Status da Tag",
+    "to_use_the_performer_tagger": "Para usar o tagger de artistas, uma instância do stash-box deve ser configurada.",
+    "untagged_performers": "Artistas sem tag",
+    "update_performer": "Atualizar Artista",
+    "update_performers": "Atualizar Artistas",
+    "updating_untagged_performers_description": "A atualização de artistas sem tag tentará corresponder a qualquer artista sem um shashid e atualizar os metadados."
+  },
   "performers": "Artistas",
   "piercings": "Piercings",
   "queue": "Fila",
@@ -860,6 +905,12 @@
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
+  "stashbox": {
+    "go_review_draft": "Vá para {endpoint_name} para revisar rascunho.",
+    "selected_stash_box": "Endpoint do Stash-Box selecionado",
+    "submission_failed": "Falha no envio",
+    "submission_successful": "Envio bem-sucedido"
+  },
   "stats": {
     "image_size": "Tamanho das imagens",
     "scenes_duration": "Duração das cenas",

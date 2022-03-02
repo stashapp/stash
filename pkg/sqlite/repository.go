@@ -171,6 +171,8 @@ func (r *repository) runSumQuery(query string, args []interface{}) (float64, err
 }
 
 func (r *repository) queryFunc(query string, args []interface{}, single bool, f func(rows *sqlx.Rows) error) error {
+	logger.Tracef("SQL: %s, args: %v", query, args)
+
 	rows, err := r.tx.Queryx(query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

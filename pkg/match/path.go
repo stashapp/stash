@@ -22,6 +22,13 @@ func getPathQueryRegex(name string) string {
 	const separator = `[` + separatorChars + `]`
 
 	ret := strings.ReplaceAll(name, " ", separator+"*")
+
+	// \p{L} is specifically omitted here because of the performance hit when
+	// including it. It does mean that paths where the name is bounded by
+	// unicode letters will be returned. However, the results should be tested
+	// by nameMatchesPath which does include \p{L}. The improvement in query
+	// performance should be outweigh the performance hit of testing any extra
+	// results.
 	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
 	return ret
 }
@@ -36,7 +43,7 @@ func getPathWords(path string) []string {
 	}
 
 	// handle path separators
-	const separator = `(?:_|[^\w\d])+`
+	const separator = `(?:_|[^\p{L}\w\d])+`
 	re := regexp.MustCompile(separator)
 	retStr = re.ReplaceAllString(retStr, " ")
 
@@ -52,7 +59,9 @@ func getPathWords(path string) []string {
 			// we post-match afterwards, so we can afford to be a little loose
 			// with the query
 			// just use the first two characters
-			ret = append(ret, w[0:2])
+			// #2293 - need to convert to unicode runes for the substring, otherwise
+			// the resulting string is corrupted.
+			ret = append(ret, string([]rune(w)[0:2]))
 		}
 	}
 
@@ -72,7 +81,7 @@ func nameMatchesPath(name, path string) int {
 	const separator = `[` + separatorChars + `]`
 
 	reStr := strings.ReplaceAll(name, " ", separator+"*")
-	reStr = `(?:^|_|[^\w\d])` + reStr + `(?:$|_|[^\w\d])`
+	reStr = `(?:^|_|[^\p{L}\w\d])` + reStr + `(?:$|_|[^\p{L}\w\d])`
 
 	re := regexp.MustCompile(reStr)
 	found := re.FindAllStringIndex(path, -1)
