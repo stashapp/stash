@@ -19,10 +19,6 @@ func isServerDockerized() bool {
 	return false
 }
 
-func hideExecShell(cmd *exec.Cmd) {
-
-}
-
 func sendNotification(notificationTitle string, notificationText string) {
 	notification := gosxnotifier.NewNotification(notificationText)
 	notification.Title = notificationTitle

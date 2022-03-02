@@ -5,9 +5,6 @@ package desktop
 
 import (
 	"os/exec"
-	"syscall"
-
-	"golang.org/x/sys/windows"
 
 	"github.com/go-toast/toast"
 	"github.com/stashapp/stash/pkg/logger"
@@ -25,12 +22,6 @@ func isService() bool {
 
 func isServerDockerized() bool {
 	return false
-}
-
-// On Windows, calling exec.Cmd.Start() will create a cmd window, even if we live in the taskbar.
-// We don't want every ffmpeg / plugin to pop up a window.
-func hideExecShell(cmd *exec.Cmd) {
-	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: windows.DETACHED_PROCESS}
 }
 
 func sendNotification(notificationTitle string, notificationText string) {

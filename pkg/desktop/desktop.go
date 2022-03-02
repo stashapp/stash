@@ -3,7 +3,6 @@ package desktop
 import (
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -79,11 +78,6 @@ func IsDesktop() bool {
 
 func IsServerDockerized() bool {
 	return isServerDockerized()
-}
-
-// Set a command to execute in the background, instead of spawning a shell window
-func HideExecShell(cmd *exec.Cmd) {
-	hideExecShell(cmd)
 }
 
 // writeStashIcon writes the current stash logo to config/icon.png

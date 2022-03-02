@@ -13,7 +13,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -203,8 +203,7 @@ func pathBinaryHasCorrectFlags() bool {
 	if err != nil {
 		return false
 	}
-	cmd := exec.Command(ffmpegPath)
-	desktop.HideExecShell(cmd)
+	cmd := stashExec.Command(ffmpegPath)
 	bytes, _ := cmd.CombinedOutput()
 	output := string(bytes)
 	hasOpus := strings.Contains(output, "--enable-libopus")

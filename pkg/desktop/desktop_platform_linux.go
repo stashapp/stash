@@ -27,10 +27,6 @@ func isServerDockerized() bool {
 	return false
 }
 
-func hideExecShell(cmd *exec.Cmd) {
-
-}
-
 func sendNotification(notificationTitle string, notificationText string) {
 	err := exec.Command("notify-send", "-i", getIconPath(), notificationTitle, notificationText, "-a", "Stash").Run()
 	if err != nil {
