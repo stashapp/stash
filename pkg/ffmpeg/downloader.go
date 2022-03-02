@@ -40,7 +40,7 @@ func GetPaths(paths []string) (string, string) {
 
 func Download(ctx context.Context, configDirectory string) error {
 	for _, url := range getFFMPEGURL() {
-		err := DownloadSingle(ctx, configDirectory, url)
+		err := downloadSingle(ctx, configDirectory, url)
 		if err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func (r *progressReader) Read(p []byte) (int, error) {
 	return read, err
 }
 
-func DownloadSingle(ctx context.Context, configDirectory, url string) error {
+func downloadSingle(ctx context.Context, configDirectory, url string) error {
 	if url == "" {
 		return fmt.Errorf("no ffmpeg url for this platform")
 	}
