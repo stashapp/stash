@@ -16,8 +16,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/utils"
 )
 

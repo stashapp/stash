@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/paths"
+	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/utils"
 )
 

@@ -2,8 +2,8 @@ package image
 
 import (
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/utils"
 )
 

@@ -1,8 +1,8 @@
 package manager
 
 import (
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
-	"github.com/stashapp/stash/pkg/manager/paths"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/models/paths"
 )
 
 type jsonUtils struct {
