@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
@@ -11,9 +12,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/internal/desktop"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/dlna"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/job"
@@ -26,6 +27,7 @@ import (
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/ui"
 )
 
 type singleton struct {
@@ -76,7 +78,6 @@ func Initialize() *singleton {
 		instance = &singleton{
 			Config:        cfg,
 			Logger:        l,
-			JobManager:    initJobManager(),
 			DownloadStore: NewDownloadStore(),
 			PluginCache:   plugin.NewCache(cfg),
 
@@ -84,6 +85,8 @@ func Initialize() *singleton {
 
 			scanSubs: &subscriptionManager{},
 		}
+
+		instance.JobManager = initJobManager()
 
 		sceneServer := SceneServer{
 			TXNManager: instance.TxnManager,
@@ -142,10 +145,12 @@ func initJobManager() *job.Manager {
 		for {
 			select {
 			case j := <-c.RemovedJob:
-				cleanDesc := strings.TrimRight(j.Description, ".")
-				timeElapsed := j.EndTime.Sub(*j.StartTime)
+				if instance.Config.GetNotificationsEnabled() {
+					cleanDesc := strings.TrimRight(j.Description, ".")
+					timeElapsed := j.EndTime.Sub(*j.StartTime)
 
-				desktop.SendNotification("Task Finished", "Task \""+cleanDesc+"\" is finished in "+formatDuration(timeElapsed)+".")
+					desktop.SendNotification("Task Finished", "Task \""+cleanDesc+"\" is finished in "+formatDuration(timeElapsed)+".")
+				}
 			case <-ctx.Done():
 				return
 			}
@@ -248,6 +253,8 @@ func (s *singleton) PostInit(ctx context.Context) error {
 	}
 
 	s.ScraperCache = instance.initScraperCache()
+	writeStashIcon()
+	go desktop.Start(instance, &FaviconProvider{uiBox: ui.UIBox})
 
 	// clear the downloads and tmp directories
 	// #1021 - only clear these directories if the generated folder is non-empty
@@ -277,6 +284,18 @@ func (s *singleton) PostInit(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func writeStashIcon() {
+	p := FaviconProvider{
+		uiBox: ui.UIBox,
+	}
+
+	iconPath := filepath.Join(instance.Config.GetConfigPath(), "icon.png")
+	err := ioutil.WriteFile(iconPath, p.GetFaviconPng(), 0644)
+	if err != nil {
+		logger.Errorf("Couldn't write icon file: %s", err.Error())
+	}
 }
 
 // initScraperCache initializes a new scraper cache and returns it.

@@ -27,7 +27,6 @@ import (
 	"github.com/go-chi/httplog"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
@@ -274,7 +273,6 @@ func Start() {
 		}
 		manager.GetInstance().Shutdown(0)
 	}()
-	desktop.Start(manager.GetInstance(), &FaviconProvider{uiBox: uiBox})
 }
 
 func printVersion() {

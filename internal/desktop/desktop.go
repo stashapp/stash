@@ -25,6 +25,7 @@ type FaviconProvider interface {
 	GetFaviconPng() []byte
 }
 
+// Start starts the desktop icon process. It blocks until the process exits.
 func Start(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
 	if IsDesktop() {
 		c := config.GetInstance()
