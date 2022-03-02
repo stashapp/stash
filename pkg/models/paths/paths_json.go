@@ -3,8 +3,8 @@ package paths
 import (
 	"path/filepath"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type JSONPaths struct {
@@ -44,28 +44,28 @@ func GetJSONPaths(baseDir string) *JSONPaths {
 
 func EnsureJSONDirs(baseDir string) {
 	jsonPaths := GetJSONPaths(baseDir)
-	if err := utils.EnsureDir(jsonPaths.Metadata); err != nil {
+	if err := fsutil.EnsureDir(jsonPaths.Metadata); err != nil {
 		logger.Warnf("couldn't create directories for Metadata: %v", err)
 	}
-	if err := utils.EnsureDir(jsonPaths.Scenes); err != nil {
+	if err := fsutil.EnsureDir(jsonPaths.Scenes); err != nil {
 		logger.Warnf("couldn't create directories for Scenes: %v", err)
 	}
-	if err := utils.EnsureDir(jsonPaths.Images); err != nil {
+	if err := fsutil.EnsureDir(jsonPaths.Images); err != nil {
 		logger.Warnf("couldn't create directories for Images: %v", err)
 	}
-	if err := utils.EnsureDir(jsonPaths.Galleries); err != nil {
+	if err := fsutil.EnsureDir(jsonPaths.Galleries); err != nil {
 		logger.Warnf("couldn't create directories for Galleries: %v", err)
 	}
-	if err := utils.EnsureDir(jsonPaths.Performers); err != nil {
+	if err := fsutil.EnsureDir(jsonPaths.Performers); err != nil {
 		logger.Warnf("couldn't create directories for Performers: %v", err)
 	}
-	if err := utils.EnsureDir(jsonPaths.Studios); err != nil {
+	if err := fsutil.EnsureDir(jsonPaths.Studios); err != nil {
 		logger.Warnf("couldn't create directories for Studios: %v", err)
 	}
-	if err := utils.EnsureDir(jsonPaths.Movies); err != nil {
+	if err := fsutil.EnsureDir(jsonPaths.Movies); err != nil {
 		logger.Warnf("couldn't create directories for Movies: %v", err)
 	}
-	if err := utils.EnsureDir(jsonPaths.Tags); err != nil {
+	if err := fsutil.EnsureDir(jsonPaths.Tags); err != nil {
 		logger.Warnf("couldn't create directories for Tags: %v", err)
 	}
 }

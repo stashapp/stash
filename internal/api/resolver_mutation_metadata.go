@@ -12,9 +12,9 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *mutationResolver) MetadataScan(ctx context.Context, input models.ScanMetadataInput) (string, error) {
@@ -113,7 +113,7 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input models.Back
 	mgr := manager.GetInstance()
 	var backupPath string
 	if download {
-		if err := utils.EnsureDir(mgr.Paths.Generated.Downloads); err != nil {
+		if err := fsutil.EnsureDir(mgr.Paths.Generated.Downloads); err != nil {
 			return nil, fmt.Errorf("could not create backup directory %v: %w", mgr.Paths.Generated.Downloads, err)
 		}
 		f, err := os.CreateTemp(mgr.Paths.Generated.Downloads, "backup*.sqlite")

@@ -15,6 +15,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
@@ -263,8 +264,8 @@ func (i *Instance) InitTLS() {
 		paths.GetStashHomeDirectory(),
 	}
 
-	i.certFile = utils.FindInPaths(tlsPaths, "stash.crt")
-	i.keyFile = utils.FindInPaths(tlsPaths, "stash.key")
+	i.certFile = fsutil.FindInPaths(tlsPaths, "stash.crt")
+	i.keyFile = fsutil.FindInPaths(tlsPaths, "stash.key")
 }
 
 func (i *Instance) GetTLSFiles() (certFile, keyFile string) {
@@ -919,7 +920,7 @@ func (i *Instance) GetCSSPath() string {
 func (i *Instance) GetCSS() string {
 	fn := i.GetCSSPath()
 
-	exists, _ := utils.FileExists(fn)
+	exists, _ := fsutil.FileExists(fn)
 	if !exists {
 		return ""
 	}

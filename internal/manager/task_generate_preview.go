@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GeneratePreviewTask struct {
@@ -74,7 +74,7 @@ func (t *GeneratePreviewTask) doesVideoPreviewExist(sceneChecksum string) bool {
 		return false
 	}
 
-	videoExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewPath(sceneChecksum))
+	videoExists, _ := fsutil.FileExists(instance.Paths.Scene.GetStreamPreviewPath(sceneChecksum))
 	return videoExists
 }
 
@@ -83,7 +83,7 @@ func (t *GeneratePreviewTask) doesImagePreviewExist(sceneChecksum string) bool {
 		return false
 	}
 
-	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewImagePath(sceneChecksum))
+	imageExists, _ := fsutil.FileExists(instance.Paths.Scene.GetStreamPreviewImagePath(sceneChecksum))
 	return imageExists
 }
 

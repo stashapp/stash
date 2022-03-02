@@ -6,9 +6,9 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GenerateTranscodeTask struct {
@@ -86,7 +86,7 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 		}
 	}
 
-	if err := utils.SafeMove(outputPath, instance.Paths.Scene.GetTranscodePath(sceneHash)); err != nil {
+	if err := fsutil.SafeMove(outputPath, instance.Paths.Scene.GetTranscodePath(sceneHash)); err != nil {
 		logger.Errorf("[transcode] error generating transcode: %s", err.Error())
 		return
 	}

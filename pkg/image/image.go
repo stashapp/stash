@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -245,5 +246,5 @@ func GetTitle(s *models.Image) string {
 // If stripExt is set the file extension is omitted from the name
 func GetFilename(s *models.Image, stripExt bool) string {
 	_, fn := file.ZipFilePath(s.Path)
-	return utils.GetNameFromPath(fn, stripExt)
+	return fsutil.GetNameFromPath(fn, stripExt)
 }

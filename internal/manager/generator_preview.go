@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type PreviewGenerator struct {
@@ -28,7 +28,7 @@ type PreviewGenerator struct {
 }
 
 func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, videoFilename string, imageFilename string, outputDirectory string, generateVideo bool, generateImage bool, previewPreset string) (*PreviewGenerator, error) {
-	exists, err := utils.FileExists(videoFile.Path)
+	exists, err := fsutil.FileExists(videoFile.Path)
 	if !exists {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (g *PreviewGenerator) generateConcatFile() error {
 
 func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool) error {
 	outputPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
-	outputExists, _ := utils.FileExists(outputPath)
+	outputExists, _ := fsutil.FileExists(outputPath)
 	if !g.Overwrite && outputExists {
 		return nil
 	}
@@ -143,7 +143,7 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool)
 
 func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
 	outputPath := filepath.Join(g.OutputDirectory, g.ImageFilename)
-	outputExists, _ := utils.FileExists(outputPath)
+	outputExists, _ := fsutil.FileExists(outputPath)
 	if !g.Overwrite && outputExists {
 		return nil
 	}
@@ -153,7 +153,7 @@ func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
 	if err := encoder.ScenePreviewVideoToImage(g.Info.VideoFile, 640, videoPreviewPath, tmpOutputPath); err != nil {
 		return err
 	}
-	if err := utils.SafeMove(tmpOutputPath, outputPath); err != nil {
+	if err := fsutil.SafeMove(tmpOutputPath, outputPath); err != nil {
 		return err
 	}
 	logger.Debug("created video preview image: ", outputPath)

@@ -10,8 +10,10 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -201,7 +203,15 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
-	utils.ServeFileNoCache(w, r, filepath)
+	serveFileNoCache(w, r, filepath)
+}
+
+// serveFileNoCache serves the provided file, ensuring that the response
+// contains headers to prevent caching.
+func serveFileNoCache(w http.ResponseWriter, r *http.Request, filepath string) {
+	w.Header().Add("Cache-Control", "no-cache")
+
+	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
@@ -269,9 +279,9 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value(sceneKey).(*models.Scene)
-	funscript := utils.GetFunscriptPath(scene.Path)
-	utils.ServeFileNoCache(w, r, funscript)
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	funscript := scene.GetFunscriptPath(s.Path)
+	serveFileNoCache(w, r, funscript)
 }
 
 func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request) {
@@ -340,7 +350,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
-	exists, _ := utils.FileExists(filepath)
+	exists, _ := fsutil.FileExists(filepath)
 	if !exists {
 		w.Header().Set("Content-Type", "image/png")
 		w.Header().Set("Cache-Control", "no-store")
@@ -373,7 +383,7 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
-	exists, _ := utils.FileExists(filepath)
+	exists, _ := fsutil.FileExists(filepath)
 	if !exists {
 		w.Header().Set("Content-Type", "image/png")
 		w.Header().Set("Cache-Control", "no-store")

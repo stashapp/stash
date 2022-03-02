@@ -11,8 +11,8 @@ import (
 
 	"github.com/pkg/browser"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 	"golang.org/x/term"
 )
 
@@ -114,7 +114,7 @@ func IsAllowedAutoUpdate() bool {
 			logger.Errorf("Cannot get executable path: %s", err)
 			return false
 		}
-		if utils.IsPathInDir("/usr", executablePath) || utils.IsPathInDir("/opt", executablePath) {
+		if fsutil.IsPathInDir("/usr", executablePath) || fsutil.IsPathInDir("/opt", executablePath) {
 			return false
 		}
 
@@ -131,7 +131,7 @@ func getIconPath() string {
 }
 
 func RevealInFileManager(path string) {
-	exists, err := utils.FileExists(path)
+	exists, err := fsutil.FileExists(path)
 	if err != nil {
 		logger.Errorf("Error checking file: %s", err)
 		return

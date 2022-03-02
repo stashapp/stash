@@ -14,8 +14,8 @@ import (
 	"strings"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func GetPaths(paths []string) (string, string) {
@@ -29,10 +29,10 @@ func GetPaths(paths []string) (string, string) {
 
 	// Check if ffmpeg exists in the config directory
 	if ffmpegPath == "" {
-		ffmpegPath = utils.FindInPaths(paths, getFFMPEGFilename())
+		ffmpegPath = fsutil.FindInPaths(paths, getFFMPEGFilename())
 	}
 	if ffprobePath == "" {
-		ffprobePath = utils.FindInPaths(paths, getFFProbeFilename())
+		ffprobePath = fsutil.FindInPaths(paths, getFFProbeFilename())
 	}
 
 	return ffmpegPath, ffprobePath

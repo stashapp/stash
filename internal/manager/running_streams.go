@@ -6,6 +6,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -99,7 +100,7 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 	filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 
 	// fall back to the scene image blob if the file isn't present
-	screenshotExists, _ := utils.FileExists(filepath)
+	screenshotExists, _ := fsutil.FileExists(filepath)
 	if screenshotExists {
 		http.ServeFile(w, r, filepath)
 	} else {

@@ -1,4 +1,4 @@
-package utils
+package fsutil
 
 import (
 	"os"
@@ -75,7 +75,5 @@ func TestDirExists(t *testing.T) {
 			result, _ := DirExists(tc.dir)
 			assert.Equal(tc.expected, result, "[%d] expected: %t for dir: %s;", i, tc.expected, tc.dir)
 		}
-
 	}
-
 }

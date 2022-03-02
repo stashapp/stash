@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const thumbDirDepth int = 2
@@ -41,15 +41,15 @@ func (gp *generatedPaths) GetTmpPath(fileName string) string {
 }
 
 func (gp *generatedPaths) EnsureTmpDir() error {
-	return utils.EnsureDir(gp.Tmp)
+	return fsutil.EnsureDir(gp.Tmp)
 }
 
 func (gp *generatedPaths) EmptyTmpDir() error {
-	return utils.EmptyDir(gp.Tmp)
+	return fsutil.EmptyDir(gp.Tmp)
 }
 
 func (gp *generatedPaths) RemoveTmpDir() error {
-	return utils.RemoveDir(gp.Tmp)
+	return fsutil.RemoveDir(gp.Tmp)
 }
 
 func (gp *generatedPaths) TempDir(pattern string) (string, error) {
@@ -61,7 +61,7 @@ func (gp *generatedPaths) TempDir(pattern string) (string, error) {
 		return "", err
 	}
 
-	if err = utils.EmptyDir(ret); err != nil {
+	if err = fsutil.EmptyDir(ret); err != nil {
 		logger.Warnf("could not recursively empty dir: %v", err)
 	}
 
@@ -70,5 +70,5 @@ func (gp *generatedPaths) TempDir(pattern string) (string, error) {
 
 func (gp *generatedPaths) GetThumbnailPath(checksum string, width int) string {
 	fname := fmt.Sprintf("%s_%d.jpg", checksum, width)
-	return filepath.Join(gp.Thumbnails, utils.GetIntraDir(checksum, thumbDirDepth, thumbDirLength), fname)
+	return filepath.Join(gp.Thumbnails, fsutil.GetIntraDir(checksum, thumbDirDepth, thumbDirLength), fname)
 }

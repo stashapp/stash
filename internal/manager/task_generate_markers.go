@@ -7,9 +7,9 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GenerateMarkersTask struct {
@@ -91,7 +91,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 
 	// Make the folder for the scenes markers
 	markersFolder := filepath.Join(instance.Paths.Generated.Markers, sceneHash)
-	if err := utils.EnsureDir(markersFolder); err != nil {
+	if err := fsutil.EnsureDir(markersFolder); err != nil {
 		logger.Warnf("could not create the markers folder (%v): %v", markersFolder, err)
 	}
 
@@ -130,7 +130,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		if err := encoder.SceneMarkerVideo(*videoFile, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker video: %s", err)
 		} else {
-			_ = utils.SafeMove(options.OutputPath, videoPath)
+			_ = fsutil.SafeMove(options.OutputPath, videoPath)
 			logger.Debug("created marker video: ", videoPath)
 		}
 	}
@@ -143,7 +143,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		if err := encoder.SceneMarkerImage(*videoFile, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker image: %s", err)
 		} else {
-			_ = utils.SafeMove(options.OutputPath, imagePath)
+			_ = fsutil.SafeMove(options.OutputPath, imagePath)
 			logger.Debug("created marker image: ", imagePath)
 		}
 	}
@@ -161,7 +161,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		if err := encoder.Screenshot(*videoFile, screenshotOptions); err != nil {
 			logger.Errorf("[generator] failed to generate marker screenshot: %s", err)
 		} else {
-			_ = utils.SafeMove(screenshotOptions.OutputPath, screenshotPath)
+			_ = fsutil.SafeMove(screenshotOptions.OutputPath, screenshotPath)
 			logger.Debug("created marker screenshot: ", screenshotPath)
 		}
 	}
@@ -213,7 +213,7 @@ func (t *GenerateMarkersTask) videoExists(sceneChecksum string, seconds int) boo
 	}
 
 	videoPath := instance.Paths.SceneMarkers.GetStreamPath(sceneChecksum, seconds)
-	videoExists, _ := utils.FileExists(videoPath)
+	videoExists, _ := fsutil.FileExists(videoPath)
 
 	return videoExists
 }
@@ -224,7 +224,7 @@ func (t *GenerateMarkersTask) imageExists(sceneChecksum string, seconds int) boo
 	}
 
 	imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(sceneChecksum, seconds)
-	imageExists, _ := utils.FileExists(imagePath)
+	imageExists, _ := fsutil.FileExists(imagePath)
 
 	return imageExists
 }
@@ -235,7 +235,7 @@ func (t *GenerateMarkersTask) screenshotExists(sceneChecksum string, seconds int
 	}
 
 	screenshotPath := instance.Paths.SceneMarkers.GetStreamScreenshotPath(sceneChecksum, seconds)
-	screenshotExists, _ := utils.FileExists(screenshotPath)
+	screenshotExists, _ := fsutil.FileExists(screenshotPath)
 
 	return screenshotExists
 }

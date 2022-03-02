@@ -10,8 +10,8 @@ import (
 	"github.com/disintegration/imaging"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type PhashGenerator struct {
@@ -23,7 +23,7 @@ type PhashGenerator struct {
 }
 
 func NewPhashGenerator(videoFile ffmpeg.VideoFile, checksum string) (*PhashGenerator, error) {
-	exists, err := utils.FileExists(videoFile.Path)
+	exists, err := fsutil.FileExists(videoFile.Path)
 	if !exists {
 		return nil, err
 	}

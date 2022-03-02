@@ -3,7 +3,7 @@ package paths
 import (
 	"path/filepath"
 
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/fsutil"
 )
 
 type Paths struct {
@@ -23,7 +23,7 @@ func NewPaths(generatedPath string) *Paths {
 }
 
 func GetStashHomeDirectory() string {
-	return filepath.Join(utils.GetHomeDirectory(), ".stash")
+	return filepath.Join(fsutil.GetHomeDirectory(), ".stash")
 }
 
 func GetDefaultDatabaseFilePath() string {

@@ -13,6 +13,7 @@ import (
 	"github.com/disintegration/imaging"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -31,7 +32,7 @@ type SpriteGenerator struct {
 }
 
 func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageOutputPath string, vttOutputPath string, rows int, cols int) (*SpriteGenerator, error) {
-	exists, err := utils.FileExists(videoFile.Path)
+	exists, err := fsutil.FileExists(videoFile.Path)
 	if !exists {
 		return nil, err
 	}
@@ -205,11 +206,11 @@ func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
 }
 
 func (g *SpriteGenerator) imageExists() bool {
-	exists, _ := utils.FileExists(g.ImageOutputPath)
+	exists, _ := fsutil.FileExists(g.ImageOutputPath)
 	return exists
 }
 
 func (g *SpriteGenerator) vttExists() bool {
-	exists, _ := utils.FileExists(g.VTTOutputPath)
+	exists, _ := fsutil.FileExists(g.VTTOutputPath)
 	return exists
 }

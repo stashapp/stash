@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -32,7 +33,7 @@ type GeneratorInfo struct {
 }
 
 func newGeneratorInfo(videoFile ffmpeg.VideoFile) (*GeneratorInfo, error) {
-	exists, err := utils.FileExists(videoFile.Path)
+	exists, err := fsutil.FileExists(videoFile.Path)
 	if !exists {
 		logger.Errorf("video file not found")
 		return nil, err

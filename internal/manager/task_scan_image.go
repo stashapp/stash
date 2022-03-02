@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -112,7 +113,7 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			Title: sql.NullString{
-				String: utils.GetNameFromPath(path, false),
+				String: fsutil.GetNameFromPath(path, false),
 				Valid:  true,
 			},
 		}
@@ -138,7 +139,7 @@ func (t *ScanTask) generateThumbnail(i *models.Image) {
 	}
 
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
-	exists, _ := utils.FileExists(thumbPath)
+	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
 		return
 	}
@@ -158,7 +159,7 @@ func (t *ScanTask) generateThumbnail(i *models.Image) {
 			return
 		}
 
-		err = utils.WriteFile(thumbPath, data)
+		err = fsutil.WriteFile(thumbPath, data)
 		if err != nil {
 			logger.Errorf("error writing thumbnail for image %s: %s", i.Path, err)
 		}

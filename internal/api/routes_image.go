@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type imageRoutes struct {
@@ -39,7 +39,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=604800000")
 
 	// if the thumbnail doesn't exist, encode on the fly
-	exists, _ := utils.FileExists(filepath)
+	exists, _ := fsutil.FileExists(filepath)
 	if exists {
 		http.ServeFile(w, r, filepath)
 	} else {
@@ -55,7 +55,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 
 		// write the generated thumbnail to disk if enabled
 		if manager.GetInstance().Config.IsWriteImageThumbnails() {
-			if err := utils.WriteFile(filepath, data); err != nil {
+			if err := fsutil.WriteFile(filepath, data); err != nil {
 				logger.Errorf("error writing thumbnail for image %s: %s", img.Path, err)
 			}
 		}

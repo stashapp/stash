@@ -3,7 +3,7 @@ package paths
 import (
 	"path/filepath"
 
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/fsutil"
 )
 
 type scenePaths struct {
@@ -30,7 +30,7 @@ func (sp *scenePaths) GetTranscodePath(checksum string) string {
 
 func (sp *scenePaths) GetStreamPath(scenePath string, checksum string) string {
 	transcodePath := sp.GetTranscodePath(checksum)
-	transcodeExists, _ := utils.FileExists(transcodePath)
+	transcodeExists, _ := fsutil.FileExists(transcodePath)
 	if transcodeExists {
 		return transcodePath
 	}

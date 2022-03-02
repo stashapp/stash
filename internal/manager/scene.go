@@ -5,8 +5,8 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
@@ -183,6 +183,6 @@ func HasTranscode(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) bool
 	}
 
 	transcodePath := instance.Paths.Scene.GetTranscodePath(sceneHash)
-	ret, _ := utils.FileExists(transcodePath)
+	ret, _ := fsutil.FileExists(transcodePath)
 	return ret
 }

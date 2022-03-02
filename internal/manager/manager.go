@@ -18,6 +18,7 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -262,10 +263,10 @@ func (s *singleton) PostInit(ctx context.Context) error {
 		const deleteTimeout = 1 * time.Second
 
 		utils.Timeout(func() {
-			if err := utils.EmptyDir(instance.Paths.Generated.Downloads); err != nil {
+			if err := fsutil.EmptyDir(instance.Paths.Generated.Downloads); err != nil {
 				logger.Warnf("could not empty Downloads directory: %v", err)
 			}
-			if err := utils.EmptyDir(instance.Paths.Generated.Tmp); err != nil {
+			if err := fsutil.EmptyDir(instance.Paths.Generated.Tmp); err != nil {
 				logger.Warnf("could not empty Tmp directory: %v", err)
 			}
 		}, deleteTimeout, func(done chan struct{}) {
@@ -313,22 +314,22 @@ func (s *singleton) RefreshConfig() {
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	config := s.Config
 	if config.Validate() == nil {
-		if err := utils.EnsureDir(s.Paths.Generated.Screenshots); err != nil {
+		if err := fsutil.EnsureDir(s.Paths.Generated.Screenshots); err != nil {
 			logger.Warnf("could not create directory for Screenshots: %v", err)
 		}
-		if err := utils.EnsureDir(s.Paths.Generated.Vtt); err != nil {
+		if err := fsutil.EnsureDir(s.Paths.Generated.Vtt); err != nil {
 			logger.Warnf("could not create directory for VTT: %v", err)
 		}
-		if err := utils.EnsureDir(s.Paths.Generated.Markers); err != nil {
+		if err := fsutil.EnsureDir(s.Paths.Generated.Markers); err != nil {
 			logger.Warnf("could not create directory for Markers: %v", err)
 		}
-		if err := utils.EnsureDir(s.Paths.Generated.Transcodes); err != nil {
+		if err := fsutil.EnsureDir(s.Paths.Generated.Transcodes); err != nil {
 			logger.Warnf("could not create directory for Transcodes: %v", err)
 		}
-		if err := utils.EnsureDir(s.Paths.Generated.Downloads); err != nil {
+		if err := fsutil.EnsureDir(s.Paths.Generated.Downloads); err != nil {
 			logger.Warnf("could not create directory for Downloads: %v", err)
 		}
-		if err := utils.EnsureDir(s.Paths.Generated.InteractiveHeatmap); err != nil {
+		if err := fsutil.EnsureDir(s.Paths.Generated.InteractiveHeatmap); err != nil {
 			logger.Warnf("could not create directory for Interactive Heatmaps: %v", err)
 		}
 	}
@@ -342,7 +343,7 @@ func (s *singleton) RefreshScraperCache() {
 
 func setSetupDefaults(input *models.SetupInput) {
 	if input.ConfigLocation == "" {
-		input.ConfigLocation = filepath.Join(utils.GetHomeDirectory(), ".stash", "config.yml")
+		input.ConfigLocation = filepath.Join(fsutil.GetHomeDirectory(), ".stash", "config.yml")
 	}
 
 	configDir := filepath.Dir(input.ConfigLocation)
@@ -363,13 +364,13 @@ func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
 	// don't do anything if config is already set in the environment
 	if !config.FileEnvSet() {
 		configDir := filepath.Dir(input.ConfigLocation)
-		if exists, _ := utils.DirExists(configDir); !exists {
+		if exists, _ := fsutil.DirExists(configDir); !exists {
 			if err := os.Mkdir(configDir, 0755); err != nil {
 				return fmt.Errorf("error creating config directory: %v", err)
 			}
 		}
 
-		if err := utils.Touch(input.ConfigLocation); err != nil {
+		if err := fsutil.Touch(input.ConfigLocation); err != nil {
 			return fmt.Errorf("error creating config file: %v", err)
 		}
 
@@ -378,7 +379,7 @@ func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
 
 	// create the generated directory if it does not exist
 	if !c.HasOverride(config.Generated) {
-		if exists, _ := utils.DirExists(input.GeneratedLocation); !exists {
+		if exists, _ := fsutil.DirExists(input.GeneratedLocation); !exists {
 			if err := os.Mkdir(input.GeneratedLocation, 0755); err != nil {
 				return fmt.Errorf("error creating generated directory: %v", err)
 			}

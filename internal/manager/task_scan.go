@@ -12,6 +12,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -154,7 +155,7 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, s
 	wg := sizedwaitgroup.New(parallelTasks)
 
 	for _, sp := range paths {
-		csFs, er := utils.IsFsPathCaseSensitive(sp.Path)
+		csFs, er := fsutil.IsFsPathCaseSensitive(sp.Path)
 		if er != nil {
 			logger.Warnf("Cannot determine fs case sensitivity: %s", er.Error())
 		}
@@ -220,17 +221,17 @@ func (j *ScanJob) doesPathExist(path string) bool {
 	ret := false
 	txnErr := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		switch {
-		case utils.MatchExtension(path, gExt):
+		case fsutil.MatchExtension(path, gExt):
 			g, _ := r.Gallery().FindByPath(path)
 			if g != nil {
 				ret = true
 			}
-		case utils.MatchExtension(path, vidExt):
+		case fsutil.MatchExtension(path, vidExt):
 			s, _ := r.Scene().FindByPath(path)
 			if s != nil {
 				ret = true
 			}
-		case utils.MatchExtension(path, imgExt):
+		case fsutil.MatchExtension(path, imgExt):
 			i, _ := r.Image().FindByPath(path)
 			if i != nil {
 				ret = true
@@ -374,7 +375,7 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 
 		if info.IsDir() {
 			// #1102 - ignore files in generated path
-			if utils.IsPathInDir(generatedPath, path) {
+			if fsutil.IsPathInDir(generatedPath, path) {
 				return filepath.SkipDir
 			}
 
@@ -388,12 +389,12 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 			return nil
 		}
 
-		if !s.ExcludeVideo && utils.MatchExtension(path, vidExt) && !matchFileRegex(path, excludeVidRegex) {
+		if !s.ExcludeVideo && fsutil.MatchExtension(path, vidExt) && !matchFileRegex(path, excludeVidRegex) {
 			return f(path, info, err)
 		}
 
 		if !s.ExcludeImage {
-			if (utils.MatchExtension(path, imgExt) || utils.MatchExtension(path, gExt)) && !matchFileRegex(path, excludeImgRegex) {
+			if (fsutil.MatchExtension(path, imgExt) || fsutil.MatchExtension(path, gExt)) && !matchFileRegex(path, excludeImgRegex) {
 				return f(path, info, err)
 			}
 		}

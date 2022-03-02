@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 var (
@@ -90,11 +90,11 @@ func initConfig(instance *Instance, flags flagStruct) error {
 		v.SetConfigFile(configFile)
 
 		// if file does not exist, assume it is a new system
-		if exists, _ := utils.FileExists(configFile); !exists {
+		if exists, _ := fsutil.FileExists(configFile); !exists {
 			instance.isNewSystem = true
 
 			// ensure we can write to the file
-			if err := utils.Touch(configFile); err != nil {
+			if err := fsutil.Touch(configFile); err != nil {
 				return fmt.Errorf(`could not write to provided config path "%s": %s`, configFile, err.Error())
 			} else {
 				// remove the file

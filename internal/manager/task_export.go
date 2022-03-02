@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -112,7 +113,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 		}
 
 		defer func() {
-			err := utils.RemoveDir(t.baseDir)
+			err := fsutil.RemoveDir(t.baseDir)
 			if err != nil {
 				logger.Errorf("error removing directory %s: %s", t.baseDir, err.Error())
 			}
@@ -173,7 +174,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 func (t *ExportTask) generateDownload() error {
 	// zip the files and register a download link
-	if err := utils.EnsureDir(instance.Paths.Generated.Downloads); err != nil {
+	if err := fsutil.EnsureDir(instance.Paths.Generated.Downloads); err != nil {
 		return err
 	}
 	z, err := os.CreateTemp(instance.Paths.Generated.Downloads, "export*.zip")

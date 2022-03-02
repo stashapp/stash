@@ -3,12 +3,13 @@ package api
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
-	"github.com/stashapp/stash/pkg/utils"
 	"golang.org/x/text/collate"
 )
 
@@ -27,17 +28,35 @@ func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*m
 	if path != nil {
 		dirPath = *path
 	}
-	currentDir := utils.GetDir(dirPath)
-	directories, err := utils.ListDir(col, currentDir)
+	currentDir := getDir(dirPath)
+	directories, err := listDir(col, currentDir)
 	if err != nil {
 		return directory, err
 	}
 
 	directory.Path = currentDir
-	directory.Parent = utils.GetParent(currentDir)
+	directory.Parent = getParent(currentDir)
 	directory.Directories = directories
 
 	return directory, err
+}
+
+func getDir(path string) string {
+	if path == "" {
+		path = fsutil.GetHomeDirectory()
+	}
+
+	return path
+}
+
+func getParent(path string) *string {
+	isRoot := path[len(path)-1:] == "/"
+	if isRoot {
+		return nil
+	} else {
+		parentPath := filepath.Clean(path + "/..")
+		return &parentPath
+	}
 }
 
 func makeConfigResult() *models.ConfigResult {

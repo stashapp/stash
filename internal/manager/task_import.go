@@ -13,6 +13,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -24,7 +25,6 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImportTask struct {
@@ -82,7 +82,7 @@ func (t *ImportTask) GetDescription() string {
 func (t *ImportTask) Start(ctx context.Context) {
 	if t.TmpZip != "" {
 		defer func() {
-			err := utils.RemoveDir(t.BaseDir)
+			err := fsutil.RemoveDir(t.BaseDir)
 			if err != nil {
 				logger.Errorf("error removing directory %s: %s", t.BaseDir, err.Error())
 			}

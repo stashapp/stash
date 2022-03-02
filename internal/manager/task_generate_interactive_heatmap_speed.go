@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type GenerateInteractiveHeatmapSpeedTask struct {
@@ -27,7 +28,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	}
 
 	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
-	funscriptPath := utils.GetFunscriptPath(t.Scene.Path)
+	funscriptPath := scene.GetFunscriptPath(t.Scene.Path)
 	heatmapPath := instance.Paths.Scene.GetInteractiveHeatmapPath(videoChecksum)
 
 	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath)
@@ -82,6 +83,6 @@ func (t *GenerateInteractiveHeatmapSpeedTask) doesHeatmapExist(sceneChecksum str
 		return false
 	}
 
-	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetInteractiveHeatmapPath(sceneChecksum))
+	imageExists, _ := fsutil.FileExists(instance.Paths.Scene.GetInteractiveHeatmapPath(sceneChecksum))
 	return imageExists
 }

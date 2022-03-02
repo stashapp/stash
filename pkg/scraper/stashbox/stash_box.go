@@ -16,6 +16,7 @@ import (
 	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/corona10/goimagehash"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -911,7 +912,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		}
 		draft.Tags = tags
 
-		exists, _ := utils.FileExists(imagePath)
+		exists, _ := fsutil.FileExists(imagePath)
 		if exists {
 			file, err := os.Open(imagePath)
 			if err == nil {

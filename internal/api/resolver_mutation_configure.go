@@ -8,9 +8,9 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 var ErrOverriddenConfig = errors.New("cannot set overridden value")
@@ -40,7 +40,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 				}
 			}
 			if isNew {
-				exists, err := utils.DirExists(s.Path)
+				exists, err := fsutil.DirExists(s.Path)
 				if !exists {
 					return makeConfigGeneralResult(), err
 				}
@@ -63,7 +63,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		}
 
 		if !optional || value != "" {
-			if err := utils.EnsureDir(value); err != nil {
+			if err := fsutil.EnsureDir(value); err != nil {
 				return err
 			}
 		}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
@@ -14,7 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type cleanJob struct {
@@ -285,7 +285,7 @@ func (j *cleanJob) shouldClean(path string) bool {
 
 	// #1102 - clean anything in generated path
 	generatedPath := config.GetInstance().GetGeneratedPath()
-	if !fileExists || getStashFromPath(path) == nil || utils.IsPathInDir(generatedPath, path) {
+	if !fileExists || getStashFromPath(path) == nil || fsutil.IsPathInDir(generatedPath, path) {
 		logger.Infof("File not found. Marking to clean: \"%s\"", path)
 		return true
 	}
@@ -305,7 +305,7 @@ func (j *cleanJob) shouldCleanScene(s *models.Scene) bool {
 	}
 
 	config := config.GetInstance()
-	if !utils.MatchExtension(s.Path, config.GetVideoExtensions()) {
+	if !fsutil.MatchExtension(s.Path, config.GetVideoExtensions()) {
 		logger.Infof("File extension does not match video extensions. Marking to clean: \"%s\"", s.Path)
 		return true
 	}
@@ -337,7 +337,7 @@ func (j *cleanJob) shouldCleanGallery(g *models.Gallery, qb models.ImageReader) 
 
 	config := config.GetInstance()
 	if g.Zip {
-		if !utils.MatchExtension(path, config.GetGalleryExtensions()) {
+		if !fsutil.MatchExtension(path, config.GetGalleryExtensions()) {
 			logger.Infof("File extension does not match gallery extensions. Marking to clean: \"%s\"", path)
 			return true
 		}
@@ -379,7 +379,7 @@ func (j *cleanJob) shouldCleanImage(s *models.Image) bool {
 	}
 
 	config := config.GetInstance()
-	if !utils.MatchExtension(s.Path, config.GetImageExtensions()) {
+	if !fsutil.MatchExtension(s.Path, config.GetImageExtensions()) {
 		logger.Infof("File extension does not match image extensions. Marking to clean: \"%s\"", s.Path)
 		return true
 	}
@@ -490,7 +490,7 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 
 func getStashFromPath(pathToCheck string) *models.StashConfig {
 	for _, s := range config.GetInstance().GetStashPaths() {
-		if utils.IsPathInDir(s.Path, filepath.Dir(pathToCheck)) {
+		if fsutil.IsPathInDir(s.Path, filepath.Dir(pathToCheck)) {
 			return s
 		}
 	}
@@ -499,7 +499,7 @@ func getStashFromPath(pathToCheck string) *models.StashConfig {
 
 func getStashFromDirPath(pathToCheck string) *models.StashConfig {
 	for _, s := range config.GetInstance().GetStashPaths() {
-		if utils.IsPathInDir(s.Path, pathToCheck) {
+		if fsutil.IsPathInDir(s.Path, pathToCheck) {
 			return s
 		}
 	}

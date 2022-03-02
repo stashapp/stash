@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GenerateSpriteTask struct {
@@ -59,7 +59,7 @@ func (t *GenerateSpriteTask) doesSpriteExist(sceneChecksum string) bool {
 		return false
 	}
 
-	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetSpriteImageFilePath(sceneChecksum))
-	vttExists, _ := utils.FileExists(instance.Paths.Scene.GetSpriteVttFilePath(sceneChecksum))
+	imageExists, _ := fsutil.FileExists(instance.Paths.Scene.GetSpriteImageFilePath(sceneChecksum))
+	vttExists, _ := fsutil.FileExists(instance.Paths.Scene.GetSpriteVttFilePath(sceneChecksum))
 	return imageExists && vttExists
 }

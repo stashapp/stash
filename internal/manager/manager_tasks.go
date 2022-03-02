@@ -8,25 +8,25 @@ import (
 	"sync"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func isGallery(pathname string) bool {
 	gExt := config.GetInstance().GetGalleryExtensions()
-	return utils.MatchExtension(pathname, gExt)
+	return fsutil.MatchExtension(pathname, gExt)
 }
 
 func isVideo(pathname string) bool {
 	vidExt := config.GetInstance().GetVideoExtensions()
-	return utils.MatchExtension(pathname, vidExt)
+	return fsutil.MatchExtension(pathname, vidExt)
 }
 
 func isImage(pathname string) bool {
 	imgExt := config.GetInstance().GetImageExtensions()
-	return utils.MatchExtension(pathname, imgExt)
+	return fsutil.MatchExtension(pathname, imgExt)
 }
 
 func getScanPaths(inputPaths []string) []*models.StashConfig {

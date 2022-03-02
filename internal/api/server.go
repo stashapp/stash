@@ -28,9 +28,9 @@ import (
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stashapp/stash/ui"
 )
 
@@ -146,7 +146,7 @@ func Start() {
 
 		// search for custom.css in current directory, then $HOME/.stash
 		fn := c.GetCSSPath()
-		exists, _ := utils.FileExists(fn)
+		exists, _ := fsutil.FileExists(fn)
 		if !exists {
 			return
 		}
