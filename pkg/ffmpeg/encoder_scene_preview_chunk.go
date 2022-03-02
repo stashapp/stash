@@ -3,8 +3,6 @@ package ffmpeg
 import (
 	"fmt"
 	"strconv"
-
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ScenePreviewChunkOptions struct {
@@ -97,7 +95,7 @@ func (e *Encoder) ScenePreviewVideoChunkCombine(probeResult VideoFile, concatFil
 	args := []string{
 		"-v", "error",
 		"-f", "concat",
-		"-i", utils.FixWindowsPath(concatFilePath),
+		"-i", concatFilePath,
 		"-y",
 		"-c", "copy",
 		outputPath,
