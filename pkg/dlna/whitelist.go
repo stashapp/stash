@@ -4,7 +4,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -21,7 +20,7 @@ type tempIPWhitelist struct {
 
 type ipWhitelistManager struct {
 	recentIPAddresses []string
-	config            *config.Instance
+	config            Config
 	tempWhitelist     []tempIPWhitelist
 	mutex             sync.Mutex
 }

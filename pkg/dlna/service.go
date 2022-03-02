@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -28,9 +27,15 @@ type sceneServer interface {
 	ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request)
 }
 
+type Config interface {
+	GetDLNAInterfaces() []string
+	GetDLNAServerName() string
+	GetDLNADefaultIPWhitelist() []string
+}
+
 type Service struct {
 	txnManager     models.TransactionManager
-	config         *config.Instance
+	config         Config
 	sceneServer    sceneServer
 	ipWhitelistMgr *ipWhitelistManager
 
@@ -162,7 +167,7 @@ func (s *Service) init() error {
 // }
 
 // NewService initialises and returns a new DLNA service.
-func NewService(txnManager models.TransactionManager, cfg *config.Instance, sceneServer sceneServer) *Service {
+func NewService(txnManager models.TransactionManager, cfg Config, sceneServer sceneServer) *Service {
 	ret := &Service{
 		txnManager:  txnManager,
 		sceneServer: sceneServer,
