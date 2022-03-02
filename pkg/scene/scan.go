@@ -12,7 +12,6 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -61,7 +60,6 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	path := scanned.New.Path
 	interactive := getInteractive(path)
 
-	config := config.GetInstance()
 	oldHash := s.GetHash(scanner.FileNamingAlgorithm)
 	changed := false
 
@@ -140,7 +138,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		}
 
 		// Migrate any generated files if the hash has changed
-		newHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
+		newHash := s.GetHash(scanner.FileNamingAlgorithm)
 		if newHash != oldHash {
 			MigrateHash(scanner.Paths, oldHash, newHash)
 		}
