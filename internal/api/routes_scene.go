@@ -124,13 +124,13 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 
 	ffmpeg.WriteHLSPlaylist(*videoFile, r.URL.String(), &str)
 
-	requestByteRange := utils.CreateByteRange(r.Header.Get("Range"))
+	requestByteRange := createByteRange(r.Header.Get("Range"))
 	if requestByteRange.RawString != "" {
 		logger.Debugf("Requested range: %s", requestByteRange.RawString)
 	}
 
-	ret := requestByteRange.Apply([]byte(str.String()))
-	rangeStr := requestByteRange.ToHeaderValue(int64(str.Len()))
+	ret := requestByteRange.apply([]byte(str.String()))
+	rangeStr := requestByteRange.toHeaderValue(int64(str.Len()))
 	w.Header().Set("Content-Range", rangeStr)
 
 	if n, err := w.Write(ret); err != nil {

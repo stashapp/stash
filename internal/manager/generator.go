@@ -12,7 +12,6 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GeneratorInfo struct {
@@ -53,12 +52,12 @@ func (g *GeneratorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 
 	numberOfFrames, _ := strconv.Atoi(videoStream.NbFrames)
 
-	if numberOfFrames == 0 && utils.IsValidFloat64(framerate) && g.VideoFile.Duration > 0 { // TODO: test
+	if numberOfFrames == 0 && isValidFloat64(framerate) && g.VideoFile.Duration > 0 { // TODO: test
 		numberOfFrames = int(framerate * g.VideoFile.Duration)
 	}
 
 	// If we are missing the frame count or frame rate then seek through the file and extract the info with regex
-	if numberOfFrames == 0 || !utils.IsValidFloat64(framerate) {
+	if numberOfFrames == 0 || !isValidFloat64(framerate) {
 		args := []string{
 			"-nostats",
 			"-i", g.VideoFile.Path,
@@ -80,7 +79,7 @@ func (g *GeneratorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 			if numberOfFrames == 0 {
 				numberOfFrames = ffmpeg.GetFrameFromRegex(stdErrString)
 			}
-			if !utils.IsValidFloat64(framerate) {
+			if !isValidFloat64(framerate) {
 				time := ffmpeg.GetTimeFromRegex(stdErrString)
 				framerate = math.Round((float64(numberOfFrames)/time)*100) / 100
 			}
@@ -88,7 +87,7 @@ func (g *GeneratorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 	}
 
 	// Something seriously wrong with this file
-	if numberOfFrames == 0 || !utils.IsValidFloat64(framerate) {
+	if numberOfFrames == 0 || !isValidFloat64(framerate) {
 		logger.Errorf(
 			"number of frames or framerate is 0.  nb_frames <%s> framerate <%f> duration <%f>",
 			videoStream.NbFrames,
@@ -101,6 +100,11 @@ func (g *GeneratorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 	g.NumberOfFrames = numberOfFrames
 
 	return nil
+}
+
+// isValidFloat64 ensures the given value is a valid number (not NaN) which is not equal to 0
+func isValidFloat64(value float64) bool {
+	return !math.IsNaN(value) && value != 0
 }
 
 func (g *GeneratorInfo) configure() error {

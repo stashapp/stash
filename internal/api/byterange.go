@@ -1,22 +1,22 @@
-package utils
+package api
 
 import (
 	"strconv"
 	"strings"
 )
 
-type ByteRange struct {
+type byteRange struct {
 	Start     int64
 	End       *int64
 	RawString string
 }
 
-func CreateByteRange(s string) ByteRange {
+func createByteRange(s string) byteRange {
 	// strip bytes=
 	r := strings.TrimPrefix(s, "bytes=")
 	e := strings.Split(r, "-")
 
-	ret := ByteRange{
+	ret := byteRange{
 		RawString: s,
 	}
 	if len(e) > 0 {
@@ -30,7 +30,7 @@ func CreateByteRange(s string) ByteRange {
 	return ret
 }
 
-func (r ByteRange) ToHeaderValue(fileLength int64) string {
+func (r byteRange) toHeaderValue(fileLength int64) string {
 	if r.End == nil {
 		return ""
 	}
@@ -38,7 +38,7 @@ func (r ByteRange) ToHeaderValue(fileLength int64) string {
 	return "bytes " + strconv.FormatInt(r.Start, 10) + "-" + strconv.FormatInt(end, 10) + "/" + strconv.FormatInt(fileLength, 10)
 }
 
-func (r ByteRange) Apply(bytes []byte) []byte {
+func (r byteRange) apply(bytes []byte) []byte {
 	if r.End == nil {
 		return bytes[r.Start:]
 	}
