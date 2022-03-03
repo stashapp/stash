@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/identify"
+	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
