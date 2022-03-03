@@ -10,11 +10,11 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (t *ScanTask) scanImage() {
@@ -99,7 +99,7 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 	}
 
 	if g == nil {
-		checksum := utils.MD5FromString(path)
+		checksum := md5.FromString(path)
 
 		// create the gallery
 		currentTime := time.Now()

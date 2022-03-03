@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -26,7 +27,7 @@ func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Mo
 
 func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCreateInput) (*models.Movie, error) {
 	// generate checksum from movie name rather than image
-	checksum := utils.MD5FromString(input.Name)
+	checksum := md5.FromString(input.Name)
 
 	var frontimageData []byte
 	var backimageData []byte
@@ -157,7 +158,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 
 	if input.Name != nil {
 		// generate checksum from movie name rather than image
-		checksum := utils.MD5FromString(*input.Name)
+		checksum := md5.FromString(*input.Name)
 		updatedMovie.Name = &sql.NullString{String: *input.Name, Valid: true}
 		updatedMovie.Checksum = &checksum
 	}

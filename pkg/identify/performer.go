@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func getPerformerID(endpoint string, r models.Repository, p *models.ScrapedPerformer, createMissing bool) (*int, error) {
@@ -50,7 +50,7 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 	currentTime := time.Now()
 	ret := models.Performer{
 		Name:      sql.NullString{String: *performer.Name, Valid: true},
-		Checksum:  utils.MD5FromString(*performer.Name),
+		Checksum:  md5.FromString(*performer.Name),
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		Favorite:  sql.NullBool{Bool: false, Valid: true},

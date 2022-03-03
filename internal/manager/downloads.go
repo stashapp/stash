@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/hash"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 // DownloadStore manages single-use generated files for the UI to download.
@@ -30,31 +30,35 @@ func NewDownloadStore() *DownloadStore {
 	}
 }
 
-func (s *DownloadStore) RegisterFile(fp string, contentType string, keep bool) string {
+func (s *DownloadStore) RegisterFile(fp string, contentType string, keep bool) (string, error) {
 	const keyLength = 4
 	const attempts = 100
 
 	// keep generating random keys until we get a free one
 	// prevent infinite loop by only attempting a finite amount of times
-	var hash string
+	var h string
 	generate := true
 	a := 0
 
 	s.mutex.Lock()
 	for generate && a < attempts {
-		hash = utils.GenerateRandomKey(keyLength)
-		_, generate = s.m[hash]
+		var err error
+		h, err = hash.GenerateRandomKey(keyLength)
+		if err != nil {
+			return "", err
+		}
+		_, generate = s.m[h]
 		a++
 	}
 
-	s.m[hash] = &storeFile{
+	s.m[h] = &storeFile{
 		path:        fp,
 		contentType: contentType,
 		keep:        keep,
 	}
 	s.mutex.Unlock()
 
-	return hash
+	return h, nil
 }
 
 func (s *DownloadStore) Serve(hash string, w http.ResponseWriter, r *http.Request) {

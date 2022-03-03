@@ -11,9 +11,9 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
-	"github.com/stashapp/stash/pkg/utils"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -149,7 +149,7 @@ func createScenes(sqb models.SceneReaderWriter) error {
 
 func makeScene(name string, expectedResult bool) *models.Scene {
 	scene := &models.Scene{
-		Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+		Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
 		Path:     name,
 	}
 
@@ -211,7 +211,7 @@ func createImages(sqb models.ImageReaderWriter) error {
 
 func makeImage(name string, expectedResult bool) *models.Image {
 	image := &models.Image{
-		Checksum: utils.MD5FromString(name),
+		Checksum: md5.FromString(name),
 		Path:     name,
 	}
 
@@ -273,7 +273,7 @@ func createGalleries(sqb models.GalleryReaderWriter) error {
 
 func makeGallery(name string, expectedResult bool) *models.Gallery {
 	gallery := &models.Gallery{
-		Checksum: utils.MD5FromString(name),
+		Checksum: md5.FromString(name),
 		Path:     models.NullString(name),
 	}
 

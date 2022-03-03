@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -27,7 +28,7 @@ func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *model
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
 	// generate checksum from performer name rather than image
-	checksum := utils.MD5FromString(input.Name)
+	checksum := md5.FromString(input.Name)
 
 	var imageData []byte
 	var err error
@@ -187,7 +188,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 
 	if input.Name != nil {
 		// generate checksum from performer name rather than image
-		checksum := utils.MD5FromString(*input.Name)
+		checksum := md5.FromString(*input.Name)
 
 		updatedPerformer.Name = &sql.NullString{String: *input.Name, Valid: true}
 		updatedPerformer.Checksum = &checksum

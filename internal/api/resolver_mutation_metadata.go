@@ -133,7 +133,10 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input models.Back
 	}
 
 	if download {
-		downloadHash := mgr.DownloadStore.RegisterFile(backupPath, "", false)
+		downloadHash, err := mgr.DownloadStore.RegisterFile(backupPath, "", false)
+		if err != nil {
+			return nil, fmt.Errorf("error registering file for download: %w", err)
+		}
 		logger.Debugf("Generated backup file %s with hash %s", backupPath, downloadHash)
 
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)

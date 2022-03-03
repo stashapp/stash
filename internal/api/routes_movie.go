@@ -43,7 +43,7 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(image) == 0 {
-		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+		image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
 	if err := utils.ServeImage(image, w, r); err != nil {
@@ -66,7 +66,7 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(image) == 0 {
-		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+		image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
 	if err := utils.ServeImage(image, w, r); err != nil {

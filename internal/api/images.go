@@ -8,8 +8,8 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/internal/static"
+	"github.com/stashapp/stash/pkg/hash"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type imageBox struct {
@@ -102,7 +102,7 @@ func getRandomPerformerImageUsingName(name, gender, customPath string) ([]byte, 
 	}
 
 	imageFiles := box.files
-	index := utils.IntFromString(name) % uint64(len(imageFiles))
+	index := hash.IntFromString(name) % uint64(len(imageFiles))
 	img, err := box.box.Open(imageFiles[index])
 	if err != nil {
 		return nil, err

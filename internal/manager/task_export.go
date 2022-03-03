@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -190,7 +191,10 @@ func (t *ExportTask) generateDownload() error {
 		return err
 	}
 
-	t.DownloadHash = instance.DownloadStore.RegisterFile(z.Name(), "", false)
+	t.DownloadHash, err = instance.DownloadStore.RegisterFile(z.Name(), "", false)
+	if err != nil {
+		return fmt.Errorf("error registering file for download: %w", err)
+	}
 	logger.Debugf("Generated zip file %s with hash %s", z.Name(), t.DownloadHash)
 	return nil
 }
@@ -857,7 +861,7 @@ func (t *ExportTask) ExportTags(workers int, repo models.ReaderRepository) {
 		logger.Progressf("[tags] %d of %d", index, len(tags))
 
 		// generate checksum on the fly by name, since we don't store it
-		checksum := utils.MD5FromString(tag.Name)
+		checksum := md5.FromString(tag.Name)
 
 		t.Mappings.Tags = append(t.Mappings.Tags, jsonschema.PathNameMapping{Name: tag.Name, Checksum: checksum})
 		jobCh <- tag // feed workers
@@ -883,7 +887,7 @@ func (t *ExportTask) exportTag(wg *sync.WaitGroup, jobChan <-chan *models.Tag, r
 		}
 
 		// generate checksum on the fly by name, since we don't store it
-		checksum := utils.MD5FromString(thisTag.Name)
+		checksum := md5.FromString(thisTag.Name)
 
 		tagJSON, err := t.json.getTag(checksum)
 		if err == nil && jsonschema.CompareJSON(*tagJSON, *newTagJSON) {

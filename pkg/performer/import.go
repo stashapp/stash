@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -33,7 +34,7 @@ func (i *Importer) PreImport() error {
 
 	var err error
 	if len(i.Input.Image) > 0 {
-		_, i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
+		i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
 		if err != nil {
 			return fmt.Errorf("invalid image: %v", err)
 		}
@@ -174,7 +175,7 @@ func (i *Importer) Update(id int) error {
 }
 
 func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Performer {
-	checksum := utils.MD5FromString(performerJSON.Name)
+	checksum := md5.FromString(performerJSON.Name)
 
 	newPerformer := models.Performer{
 		Checksum:  checksum,

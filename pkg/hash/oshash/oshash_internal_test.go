@@ -1,4 +1,4 @@
-package utils
+package oshash
 
 import (
 	"math/rand"

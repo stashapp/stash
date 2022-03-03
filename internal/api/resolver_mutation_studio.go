@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/studio"
 
@@ -28,7 +29,7 @@ func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.S
 
 func (r *mutationResolver) StudioCreate(ctx context.Context, input models.StudioCreateInput) (*models.Studio, error) {
 	// generate checksum from studio name rather than image
-	checksum := utils.MD5FromString(input.Name)
+	checksum := md5.FromString(input.Name)
 
 	var imageData []byte
 	var err error
@@ -138,7 +139,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	}
 	if input.Name != nil {
 		// generate checksum from studio name rather than image
-		checksum := utils.MD5FromString(*input.Name)
+		checksum := md5.FromString(*input.Name)
 		updatedStudio.Name = &sql.NullString{String: *input.Name, Valid: true}
 		updatedStudio.Checksum = &checksum
 	}

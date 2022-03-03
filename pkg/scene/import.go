@@ -58,7 +58,7 @@ func (i *Importer) PreImport() error {
 
 	var err error
 	if len(i.Input.Cover) > 0 {
-		_, i.coverImageData, err = utils.ProcessBase64Image(i.Input.Cover)
+		i.coverImageData, err = utils.ProcessBase64Image(i.Input.Cover)
 		if err != nil {
 			return fmt.Errorf("invalid cover image: %v", err)
 		}

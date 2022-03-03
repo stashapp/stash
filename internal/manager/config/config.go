@@ -16,10 +16,10 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/hash"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 var officialBuild string
@@ -1253,12 +1253,18 @@ func (i *Instance) setInitialConfig(write bool) error {
 	const apiKeyLength = 32
 
 	if string(i.GetJWTSignKey()) == "" {
-		signKey := utils.GenerateRandomKey(apiKeyLength)
+		signKey, err := hash.GenerateRandomKey(apiKeyLength)
+		if err != nil {
+			return fmt.Errorf("error generating JWTSignKey: %w", err)
+		}
 		i.Set(JWTSignKey, signKey)
 	}
 
 	if string(i.GetSessionStoreKey()) == "" {
-		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
+		sessionStoreKey, err := hash.GenerateRandomKey(apiKeyLength)
+		if err != nil {
+			return fmt.Errorf("error generating session store key: %w", err)
+		}
 		i.Set(SessionStoreKey, sessionStoreKey)
 	}
 

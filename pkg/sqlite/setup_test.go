@@ -15,11 +15,11 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -756,7 +756,7 @@ func createMovies(mqb models.MovieReaderWriter, n int, o int) error {
 		movie := models.Movie{
 			Name:     sql.NullString{String: name, Valid: true},
 			URL:      getMovieNullStringValue(index, urlField),
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 		}
 
 		created, err := mqb.Create(movie)
@@ -977,7 +977,7 @@ func getStudioNullStringValue(index int, field string) sql.NullString {
 func createStudio(sqb models.StudioReaderWriter, name string, parentID *int64) (*models.Studio, error) {
 	studio := models.Studio{
 		Name:     sql.NullString{String: name, Valid: true},
-		Checksum: utils.MD5FromString(name),
+		Checksum: md5.FromString(name),
 	}
 
 	if parentID != nil {
@@ -1015,7 +1015,7 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 		name = getStudioStringValue(index, name)
 		studio := models.Studio{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 			URL:      getStudioNullStringValue(index, urlField),
 		}
 		created, err := createStudioFromModel(sqb, studio)

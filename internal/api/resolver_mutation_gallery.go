@@ -11,6 +11,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -37,7 +38,7 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input models.Galle
 	}
 
 	// for manually created galleries, generate checksum from title
-	checksum := utils.MD5FromString(input.Title)
+	checksum := md5.FromString(input.Title)
 
 	// Populate a new performer from the input
 	currentTime := time.Now()
@@ -227,7 +228,7 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, transl
 
 		// if gallery is not zip-based, then generate the checksum from the title
 		if !originalGallery.Path.Valid {
-			checksum := utils.MD5FromString(*input.Title)
+			checksum := md5.FromString(*input.Title)
 			updatedGallery.Checksum = &checksum
 		}
 

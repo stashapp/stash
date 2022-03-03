@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func createMissingStudio(endpoint string, repo models.Repository, studio *models.ScrapedStudio) (*int64, error) {
@@ -34,7 +34,7 @@ func scrapedToStudioInput(studio *models.ScrapedStudio) models.Studio {
 	currentTime := time.Now()
 	ret := models.Studio{
 		Name:      sql.NullString{String: studio.Name, Valid: true},
-		Checksum:  utils.MD5FromString(studio.Name),
+		Checksum:  md5.FromString(studio.Name),
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}

@@ -1,4 +1,8 @@
-package utils
+// Package oshash implements the algorithm that OpenSubtitles.org uses to generate unique hashes.
+//
+// Calculation is as follows:
+// size + 64 bit checksum of the first and last 64k bytes of the file.
+package oshash
 
 import (
 	"encoding/binary"
@@ -42,7 +46,8 @@ func oshash(size int64, head []byte, tail []byte) (string, error) {
 	return fmt.Sprintf("%016x", result), nil
 }
 
-func OSHashFromReader(src io.ReadSeeker, fileSize int64) (string, error) {
+// FromFilePath calculates the hash reading from src.
+func FromReader(src io.ReadSeeker, fileSize int64) (string, error) {
 	if fileSize == 0 {
 		return "", nil
 	}
@@ -76,12 +81,8 @@ func OSHashFromReader(src io.ReadSeeker, fileSize int64) (string, error) {
 	return oshash(fileSize, head, tail)
 }
 
-// OSHashFromFilePath calculates the hash using the same algorithm that
-// OpenSubtitles.org uses.
-//
-// Calculation is as follows:
-// size + 64 bit checksum of the first and last 64k bytes of the file.
-func OSHashFromFilePath(filePath string) (string, error) {
+// Is the equivalent of opening filePath, and calling FromReader with the data and file size.
+func FromFilePath(filePath string) (string, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return "", err
@@ -95,5 +96,5 @@ func OSHashFromFilePath(filePath string) (string, error) {
 
 	fileSize := fi.Size()
 
-	return OSHashFromReader(f, fileSize)
+	return FromReader(f, fileSize)
 }
