@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stashapp/stash/pkg/autotag"
+	"github.com/stashapp/stash/internal/autotag"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
