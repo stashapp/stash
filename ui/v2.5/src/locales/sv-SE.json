@@ -606,6 +606,8 @@
       "marker_screenshots_tooltip": "Markör statiska JPG-bilder, krävs bara om Typ av Förhandsvisning är Statisk Bild.",
       "markers": "Markörförhandsvisningar",
       "markers_tooltip": "20-sekunders videor som börjar vid angiven tidsstämpel.",
+      "override_preview_generation_options": "Åsidosätt Inställningar för Förhandsvisningsgeneration",
+      "override_preview_generation_options_desc": "Åsidosätt inställningar för Förhandsvisningsgeneration. Standarder ställs in i System -> Förhandsvisningsgeneration.",
       "overwrite": "Ersätt existerande genererade filer",
       "phash": "Perceptuella hashar (för de-duplikation)",
       "preview_exclude_end_time_desc": "Exkludera de sista x sekunderna från videoförhandsvisning. Detta kan vara ett värde i sekunder, eller en procent (ex. 2%) av scenes totala speltid.",
