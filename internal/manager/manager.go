@@ -18,6 +18,7 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/ffmpeg2"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -38,6 +39,7 @@ type singleton struct {
 	Paths *paths.Paths
 
 	FFMPEG  ffmpeg.Encoder
+	FFMPEG2 ffmpeg2.FFMpeg
 	FFProbe ffmpeg.FFProbe
 
 	SessionStore *session.Store

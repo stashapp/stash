@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/stashapp/stash/internal/video/encoder"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/ffmpeg2"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
@@ -57,17 +59,17 @@ func (g *PreviewGenerator) Generate() error {
 		return err
 	}
 
-	encoder := instance.FFMPEG
+	ff := instance.FFMPEG2
 	if g.GenerateVideo {
-		if err := g.generateVideo(&encoder, false); err != nil {
+		if err := g.generateVideo(ff, false); err != nil {
 			logger.Warnf("[generator] failed generating scene preview, trying fallback")
-			if err := g.generateVideo(&encoder, true); err != nil {
+			if err := g.generateVideo(ff, true); err != nil {
 				return err
 			}
 		}
 	}
 	if g.GenerateImage {
-		if err := g.generateImage(&encoder); err != nil {
+		if err := g.generateImage(ff); err != nil {
 			return err
 		}
 	}
@@ -90,7 +92,7 @@ func (g *PreviewGenerator) generateConcatFile() error {
 	return w.Flush()
 }
 
-func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool) error {
+func (g *PreviewGenerator) generateVideo(ff ffmpeg2.FFMpeg, fallback bool) error {
 	outputPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
 	outputExists, _ := fsutil.FileExists(outputPath)
 	if !g.Overwrite && outputExists {
@@ -121,27 +123,27 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool)
 		filename := "preview_" + g.VideoChecksum + "_" + num + ".mp4"
 		chunkOutputPath := instance.Paths.Generated.GetTmpPath(filename)
 		tmpFiles = append(tmpFiles, chunkOutputPath) // add chunk filename to tmpFiles
-		options := ffmpeg.ScenePreviewChunkOptions{
+		options := encoder.ScenePreviewChunkOptions{
 			StartTime:  time,
 			Duration:   durationSegment,
-			Width:      640,
 			OutputPath: chunkOutputPath,
 			Audio:      includeAudio,
+			Preset:     g.PreviewPreset,
 		}
-		if err := encoder.ScenePreviewVideoChunk(g.Info.VideoFile, options, g.PreviewPreset, fallback); err != nil {
+		if err := encoder.ScenePreviewVideoChunk(ff, g.Info.VideoFile.Path, options, fallback); err != nil {
 			return err
 		}
 	}
 
 	videoOutputPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
-	if err := encoder.ScenePreviewVideoChunkCombine(g.Info.VideoFile, g.getConcatFilePath(), videoOutputPath); err != nil {
+	if err := encoder.ScenePreviewVideoChunkCombine(ff, g.getConcatFilePath(), videoOutputPath); err != nil {
 		return err
 	}
 	logger.Debug("created video preview: ", videoOutputPath)
 	return nil
 }
 
-func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
+func (g *PreviewGenerator) generateImage(ff ffmpeg2.FFMpeg) error {
 	outputPath := filepath.Join(g.OutputDirectory, g.ImageFilename)
 	outputExists, _ := fsutil.FileExists(outputPath)
 	if !g.Overwrite && outputExists {
@@ -150,7 +152,7 @@ func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
 
 	videoPreviewPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
 	tmpOutputPath := instance.Paths.Generated.GetTmpPath(g.ImageFilename)
-	if err := encoder.ScenePreviewVideoToImage(g.Info.VideoFile, 640, videoPreviewPath, tmpOutputPath); err != nil {
+	if err := encoder.ScenePreviewVideoToImage(ff, videoPreviewPath, tmpOutputPath); err != nil {
 		return err
 	}
 	if err := fsutil.SafeMove(tmpOutputPath, outputPath); err != nil {

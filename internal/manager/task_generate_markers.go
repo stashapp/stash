@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/stashapp/stash/internal/video/encoder"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -113,21 +114,17 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 
 	baseFilename := strconv.Itoa(seconds)
 
-	options := ffmpeg.SceneMarkerOptions{
-		ScenePath: scene.Path,
-		Seconds:   seconds,
-		Width:     640,
-		Audio:     instance.Config.GetPreviewAudio(),
+	options := encoder.SceneMarkerOptions{
+		Seconds: seconds,
+		Audio:   instance.Config.GetPreviewAudio(),
 	}
-
-	encoder := instance.FFMPEG
 
 	if t.Overwrite || !videoExists {
 		videoFilename := baseFilename + ".mp4"
 		videoPath := instance.Paths.SceneMarkers.GetStreamPath(sceneHash, seconds)
 
 		options.OutputPath = instance.Paths.Generated.GetTmpPath(videoFilename) // tmp output in case the process ends abruptly
-		if err := encoder.SceneMarkerVideo(*videoFile, options); err != nil {
+		if err := encoder.SceneMarkerVideo(instance.FFMPEG2, videoFile.Path, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker video: %s", err)
 		} else {
 			_ = fsutil.SafeMove(options.OutputPath, videoPath)
@@ -140,7 +137,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(sceneHash, seconds)
 
 		options.OutputPath = instance.Paths.Generated.GetTmpPath(imageFilename) // tmp output in case the process ends abruptly
-		if err := encoder.SceneMarkerImage(*videoFile, options); err != nil {
+		if err := encoder.SceneMarkerImage(instance.FFMPEG2, videoFile.Path, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker image: %s", err)
 		} else {
 			_ = fsutil.SafeMove(options.OutputPath, imagePath)
@@ -152,13 +149,12 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		screenshotFilename := baseFilename + ".jpg"
 		screenshotPath := instance.Paths.SceneMarkers.GetStreamScreenshotPath(sceneHash, seconds)
 
-		screenshotOptions := ffmpeg.ScreenshotOptions{
+		screenshotOptions := encoder.SceneMarkerScreenshotOptions{
 			OutputPath: instance.Paths.Generated.GetTmpPath(screenshotFilename), // tmp output in case the process ends abruptly
-			Quality:    2,
 			Width:      videoFile.Width,
-			Time:       float64(seconds),
+			Seconds:    seconds,
 		}
-		if err := encoder.Screenshot(*videoFile, screenshotOptions); err != nil {
+		if err := encoder.SceneMarkerScreenshot(instance.FFMPEG2, videoFile.Path, screenshotOptions); err != nil {
 			logger.Errorf("[generator] failed to generate marker screenshot: %s", err)
 		} else {
 			_ = fsutil.SafeMove(screenshotOptions.OutputPath, screenshotPath)

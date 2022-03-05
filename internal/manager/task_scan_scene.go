@@ -3,11 +3,21 @@ package manager
 import (
 	"context"
 
+	"github.com/stashapp/stash/internal/video/encoder"
+	"github.com/stashapp/stash/pkg/ffmpeg2"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 )
+
+type sceneScreenshotter struct {
+	ff ffmpeg2.FFMpeg
+}
+
+func (ss *sceneScreenshotter) Screenshot(input string, options encoder.ScreenshotOptions) error {
+	return encoder.Screenshot(ss.ff, input, options)
+}
 
 func (t *ScanTask) scanScene() *models.Scene {
 	logError := func(err error) *models.Scene {
@@ -34,11 +44,13 @@ func (t *ScanTask) scanScene() *models.Scene {
 		Ctx:                 t.ctx,
 		TxnManager:          t.TxnManager,
 		Paths:               GetInstance().Paths,
-		Screenshotter:       &instance.FFMPEG,
-		VideoFileCreator:    &instance.FFProbe,
-		PluginCache:         instance.PluginCache,
-		MutexManager:        t.mutexManager,
-		UseFileMetadata:     t.UseFileMetadata,
+		Screenshotter: &sceneScreenshotter{
+			ff: instance.FFMPEG2,
+		},
+		VideoFileCreator: &instance.FFProbe,
+		PluginCache:      instance.PluginCache,
+		MutexManager:     t.mutexManager,
+		UseFileMetadata:  t.UseFileMetadata,
 	}
 
 	if s != nil {

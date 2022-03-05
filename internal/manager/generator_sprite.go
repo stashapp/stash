@@ -12,11 +12,15 @@ import (
 
 	"github.com/disintegration/imaging"
 
+	"github.com/stashapp/stash/internal/video/encoder"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/ffmpeg2"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+const spriteScreenshotWidth = 160
 
 type SpriteGenerator struct {
 	Info *GeneratorInfo
@@ -79,23 +83,27 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 }
 
 func (g *SpriteGenerator) Generate() error {
-	encoder := instance.FFMPEG
+	ff := instance.FFMPEG2
 
-	if err := g.generateSpriteImage(&encoder); err != nil {
+	if err := g.generateSpriteImage(ff); err != nil {
 		return err
 	}
-	if err := g.generateSpriteVTT(&encoder); err != nil {
+	if err := g.generateSpriteVTT(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
+func (g *SpriteGenerator) generateSpriteImage(ff ffmpeg2.FFMpeg) error {
 	if !g.Overwrite && g.imageExists() {
 		return nil
 	}
 
 	var images []image.Image
+
+	options := encoder.SpriteScreenshotOptions{
+		Width: spriteScreenshotWidth,
+	}
 
 	if !g.SlowSeek {
 		logger.Infof("[generator] generating sprite image for %s", g.Info.VideoFile.Path)
@@ -105,13 +113,7 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 		for i := 0; i < g.Info.ChunkCount; i++ {
 			time := float64(i) * stepSize
 
-			options := ffmpeg.SpriteScreenshotOptions{
-				Time:  time,
-				Width: 160,
-			}
-
-			img, err := encoder.SpriteScreenshot(g.Info.VideoFile, options)
-
+			img, err := encoder.SpriteScreenshot(ff, g.Info.VideoFile.Path, time, options)
 			if err != nil {
 				return err
 			}
@@ -128,11 +130,8 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 			if frame >= math.MaxInt || frame <= math.MinInt {
 				return errors.New("invalid frame number conversion")
 			}
-			options := ffmpeg.SpriteScreenshotOptions{
-				Frame: int(frame),
-				Width: 160,
-			}
-			img, err := encoder.SpriteScreenshotSlow(g.Info.VideoFile, options)
+
+			img, err := encoder.SpriteScreenshotSlow(ff, g.Info.VideoFile.Path, int(frame), options)
 			if err != nil {
 				return err
 			}
@@ -160,7 +159,7 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 	return imaging.Save(montage, g.ImageOutputPath)
 }
 
-func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
+func (g *SpriteGenerator) generateSpriteVTT() error {
 	if !g.Overwrite && g.vttExists() {
 		return nil
 	}
