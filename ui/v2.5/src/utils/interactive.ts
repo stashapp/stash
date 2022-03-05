@@ -28,6 +28,7 @@ export class Interactive {
   private _playing: boolean;
   private _scriptOffset: number;
   private _handy: Handy;
+  private _lastSyncTime: number;
 
   constructor(handyKey: string, scriptOffset: number) {
     this._handy = new Handy();
@@ -35,6 +36,7 @@ export class Interactive {
     this._scriptOffset = scriptOffset;
     this._connected = false;
     this._playing = false;
+    this._lastSyncTime = -1;
   }
 
   get handyKey(): string {
@@ -91,8 +93,24 @@ export class Interactive {
 
   async ensurePlaying(position: number) {
     if (this._playing) {
+      await this.adjustTimestamp(position);
       return;
     }
     await this.play(position);
   }
+
+  async adjustTimestamp(position: number) {
+    var seconds: number = Math.round(position * 1000);
+    if (!this._playing || (this._lastSyncTime >= 0 && Math.abs(seconds - this._lastSyncTime) < 10000)) return;
+    var filter: number = 0.5;
+    if (this._lastSyncTime < 0) {
+      filter = 1.0;
+    }
+    this._lastSyncTime = seconds;
+    try {
+      await this._handy.syncAdjustTimestamp(seconds+Number(this._scriptOffset), filter);
+    } catch (error) {
+      throw new Error("Unable to adjust timestamp: " + error);
+    }
+  };
 }
