@@ -202,8 +202,6 @@ var (
 	defaultMenuItems         = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
 )
 
-type AppConfigProperties map[string]string
-
 type MissingConfigError struct {
 	missingFields []string
 }
