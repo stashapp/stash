@@ -100,17 +100,24 @@ export class Interactive {
   }
 
   async adjustTimestamp(position: number) {
-    var seconds: number = Math.round(position * 1000);
-    if (!this._playing || (this._lastSyncTime >= 0 && Math.abs(seconds - this._lastSyncTime) < 10000)) return;
+    var videoTimeMilliseconds: number = Math.round(position * 1000);
+    if (
+      !this._playing ||
+      (this._lastSyncTime >= 0 &&
+        Math.abs(videoTimeMilliseconds - this._lastSyncTime) < 10000)
+    )
+      return;
     var filter: number = 0.5;
     if (this._lastSyncTime < 0) {
       filter = 1.0;
     }
-    this._lastSyncTime = seconds;
+    this._lastSyncTime = videoTimeMilliseconds;
+    const handyVideoTimeSeconds =
+      (videoTimeMilliseconds + Number(this._scriptOffset)) / 1000.0;
     try {
-      await this._handy.syncAdjustTimestamp(seconds+Number(this._scriptOffset), filter);
+      await this._handy.syncAdjustTimestamp(handyVideoTimeSeconds, filter);
     } catch (error) {
       throw new Error("Unable to adjust timestamp: " + error);
     }
-  };
+  }
 }
