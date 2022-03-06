@@ -71,11 +71,21 @@ func getPathWords(path string) []string {
 // nameMatchesPath returns the index in the path for the right-most match.
 // Returns -1 if not found.
 func nameMatchesPath(name, path string) int {
+	re := nameToRegexp(name)
+	found := re.FindAllStringIndex(path, -1)
+
+	if found == nil {
+		return -1
+	}
+
+	return found[len(found)-1][0]
+}
+
+func nameToRegexp(name string) *regexp.Regexp {
 	// escape specific regex characters
 	name = regexp.QuoteMeta(name)
 
 	name = strings.ToLower(name)
-	path = strings.ToLower(path)
 
 	// handle path separators
 	const separator = `[` + separatorChars + `]`
@@ -84,12 +94,15 @@ func nameMatchesPath(name, path string) int {
 	reStr = `(?:^|_|[^\p{L}\w\d])` + reStr + `(?:$|_|[^\p{L}\w\d])`
 
 	re := regexp.MustCompile(reStr)
-	found := re.FindAllStringIndex(path, -1)
+	return re
+}
 
+func regexpMatchesPath(r *regexp.Regexp, path string) int {
+	path = strings.ToLower(path)
+	found := r.FindAllStringIndex(path, -1)
 	if found == nil {
 		return -1
 	}
-
 	return found[len(found)-1][0]
 }
 
@@ -208,8 +221,9 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 	}
 
 	var ret []*models.Scene
+	r := nameToRegexp(name)
 	for _, p := range scenes {
-		if nameMatchesPath(name, p.Path) != -1 {
+		if regexpMatchesPath(r, p.Path) != -1 {
 			ret = append(ret, p)
 		}
 	}
@@ -240,8 +254,9 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 	}
 
 	var ret []*models.Image
+	r := nameToRegexp(name)
 	for _, p := range images {
-		if nameMatchesPath(name, p.Path) != -1 {
+		if regexpMatchesPath(r, p.Path) != -1 {
 			ret = append(ret, p)
 		}
 	}
@@ -272,8 +287,9 @@ func PathToGalleries(name string, paths []string, galleryReader models.GalleryRe
 	}
 
 	var ret []*models.Gallery
+	r := nameToRegexp(name)
 	for _, p := range gallerys {
-		if nameMatchesPath(name, p.Path.String) != -1 {
+		if regexpMatchesPath(r, p.Path.String) != -1 {
 			ret = append(ret, p)
 		}
 	}
