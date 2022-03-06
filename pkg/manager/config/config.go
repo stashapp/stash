@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -148,6 +147,9 @@ const (
 
 	HandyKey        = "handy_key"
 	FunscriptOffset = "funscript_offset"
+
+	ThemeColor        = "theme_color"
+	DefaultThemeColor = "#202b33"
 
 	// Security
 	dangerousAllowPublicWithoutAuth                   = "dangerous_allow_public_without_auth"
@@ -616,6 +618,10 @@ func (i *Instance) GetPort() int {
 	return ret
 }
 
+func (i *Instance) GetThemeColor() string {
+	return i.getString(ThemeColor)
+}
+
 func (i *Instance) GetExternalHost() string {
 	return i.getString(ExternalHost)
 }
@@ -911,79 +917,6 @@ func (i *Instance) GetCSSPath() string {
 	return fn
 }
 
-func ReadPropertiesFile(filename string) (AppConfigProperties, error) {
-	config := AppConfigProperties{}
-
-	if len(filename) == 0 {
-		return config, nil
-	}
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		if equal := strings.Index(line, "="); equal >= 0 {
-			if key := strings.TrimSpace(line[:equal]); len(key) > 0 {
-				value := ""
-				if len(line) > equal {
-					value = strings.TrimSpace(line[equal+1:])
-				}
-				config[key] = value
-			}
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return config, nil
-}
-
-func (i *Instance) GetUIPropertiesPath() string {
-	// use custom.css in the same directory as the config file
-	configFileUsed := i.GetConfigFile()
-	configDir := filepath.Dir(configFileUsed)
-
-	fn := filepath.Join(configDir, "ui.properties")
-
-	return fn
-}
-
-func (i *Instance) CreateUIProperties() {
-	content := "#menu bar color\ntheme_color=#202b33\n"
-	fn := i.GetUIPropertiesPath()
-	i.Lock()
-	defer i.Unlock()
-
-	buf := []byte(content)
-
-	if err := os.WriteFile(fn, buf, 0777); err != nil {
-		logger.Warnf("error while writing %v bytes to %v: %v", len(buf), fn, err)
-	}
-}
-
-func (i *Instance) GetUIProperty(property string) string {
-	fn := i.GetUIPropertiesPath()
-
-	exists, _ := utils.FileExists(fn)
-	if !exists {
-		return ""
-	}
-
-	prop, err := ReadPropertiesFile(fn)
-
-	if err != nil {
-		return ""
-	}
-
-	return prop[property]
-}
-
 func (i *Instance) GetCSS() string {
 	fn := i.GetCSSPath()
 
@@ -1277,6 +1210,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	i.main.SetDefault(PreviewAudio, previewAudioDefault)
 	i.main.SetDefault(SoundOnPreview, false)
+
+	i.main.SetDefault(ThemeColor, DefaultThemeColor)
 
 	i.main.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
 

@@ -58,11 +58,6 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		})
 		r.Use(httplog.RequestLogger(httpLogger))
 	}
-	uiPropPath := c.GetUIPropertiesPath()
-	exists, _ := utils.FileExists(uiPropPath)
-	if !exists {
-		c.CreateUIProperties()
-	}
 	r.Use(SecurityHeadersMiddleware)
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
@@ -211,7 +206,7 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		}
 
 		if ext == ".html" || ext == "" {
-			themeColor := c.GetUIProperty("theme_color")
+			themeColor := c.GetThemeColor()
 
 			data, err := uiBox.ReadFile(uiRootDir + "/index.html")
 			if err != nil {
