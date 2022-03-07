@@ -26,6 +26,8 @@ type tagger struct {
 	Type string
 	Name string
 	Path string
+
+	cache *match.Cache
 }
 
 type addLinkFunc func(subjectID, otherID int) (bool, error)
@@ -39,7 +41,7 @@ func (t *tagger) addLog(otherType, otherName string) {
 }
 
 func (t *tagger) tagPerformers(performerReader models.PerformerReader, addFunc addLinkFunc) error {
-	others, err := match.PathToPerformers(t.Path, performerReader)
+	others, err := match.PathToPerformers(t.Path, performerReader, t.cache)
 	if err != nil {
 		return err
 	}
@@ -60,7 +62,7 @@ func (t *tagger) tagPerformers(performerReader models.PerformerReader, addFunc a
 }
 
 func (t *tagger) tagStudios(studioReader models.StudioReader, addFunc addLinkFunc) error {
-	studio, err := match.PathToStudio(t.Path, studioReader)
+	studio, err := match.PathToStudio(t.Path, studioReader, t.cache)
 	if err != nil {
 		return err
 	}
@@ -81,7 +83,7 @@ func (t *tagger) tagStudios(studioReader models.StudioReader, addFunc addLinkFun
 }
 
 func (t *tagger) tagTags(tagReader models.TagReader, addFunc addLinkFunc) error {
-	others, err := match.PathToTags(t.Path, tagReader)
+	others, err := match.PathToTags(t.Path, tagReader, t.cache)
 	if err != nil {
 		return err
 	}

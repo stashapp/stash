@@ -21,12 +21,6 @@ WHERE performers_tags.tag_id = ?
 GROUP BY performers_tags.performer_id
 `
 
-// KNOWN ISSUE: using \p{L} to find single unicode character names results in
-// very slow queries.
-// Suggested solution will be to cache single-character names and not include it
-// in the autotag query.
-const singleFirstCharacterRegex = `^[\w][.\-_ ]`
-
 type performerQueryBuilder struct {
 	repository
 }
@@ -188,9 +182,6 @@ func (qb *performerQueryBuilder) QueryForAutoTag(words []string) ([]*models.Perf
 
 	var whereClauses []string
 	var args []interface{}
-
-	whereClauses = append(whereClauses, "name regexp ?")
-	args = append(args, singleFirstCharacterRegex)
 
 	for _, w := range words {
 		whereClauses = append(whereClauses, "name like ?")
