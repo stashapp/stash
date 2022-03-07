@@ -24,7 +24,7 @@ The maximum loop duration option allows looping of shorter videos. Set this valu
 
 The stash UI can be customised using custom CSS. See [here](https://github.com/stashapp/stash/wiki/Custom-CSS-snippets) for a community-curated set of CSS snippets to customise your UI. 
 
-[Stash Plex Theme](https://github.com/stashapp/stash/wiki/Stash-Plex-Theme) is a community created theme inspired by the popular Plex interface.
+[Stash Plex Theme](https://github.com/stashapp/stash/wiki/Theme-Plex) is a community created theme inspired by the popular Plex interface.
 
 
 ## Custom served folders

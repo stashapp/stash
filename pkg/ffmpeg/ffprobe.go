@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -218,6 +219,7 @@ type VideoFile struct {
 	Height       int
 	FrameRate    float64
 	Rotation     int64
+	FrameCount   int64
 
 	AudioCodec string
 }
@@ -228,7 +230,9 @@ type FFProbe string
 // Execute exec command and bind result to struct.
 func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
-	out, err := exec.Command(string(*f), args...).Output()
+	cmd := exec.Command(string(*f), args...)
+	desktop.HideExecShell(cmd)
+	out, err := cmd.Output()
 
 	if err != nil {
 		return nil, fmt.Errorf("FFProbe encountered an error with <%s>.\nError JSON:\n%s\nError: %s", videoPath, string(out), err.Error())
@@ -240,6 +244,24 @@ func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, err
 	}
 
 	return parse(videoPath, probeJSON, stripExt)
+}
+
+// GetReadFrameCount counts the actual frames of the video file
+func (f *FFProbe) GetReadFrameCount(vf *VideoFile) (int64, error) {
+	args := []string{"-v", "quiet", "-print_format", "json", "-count_frames", "-show_format", "-show_streams", "-show_error", vf.Path}
+	out, err := exec.Command(string(*f), args...).Output()
+
+	if err != nil {
+		return 0, fmt.Errorf("FFProbe encountered an error with <%s>.\nError JSON:\n%s\nError: %s", vf.Path, string(out), err.Error())
+	}
+
+	probeJSON := &FFProbeJSON{}
+	if err := json.Unmarshal(out, probeJSON); err != nil {
+		return 0, fmt.Errorf("error unmarshalling video data for <%s>: %s", vf.Path, err.Error())
+	}
+
+	fc, err := parse(vf.Path, probeJSON, false)
+	return fc.FrameCount, err
 }
 
 func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, error) {
@@ -263,8 +285,8 @@ func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, 
 	}
 
 	result.Comment = probeJSON.Format.Tags.Comment
-
 	result.Bitrate, _ = strconv.ParseInt(probeJSON.Format.BitRate, 10, 64)
+
 	result.Container = probeJSON.Format.FormatName
 	duration, _ := strconv.ParseFloat(probeJSON.Format.Duration, 64)
 	result.Duration = math.Round(duration*100) / 100
@@ -288,6 +310,15 @@ func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, 
 	if videoStream != nil {
 		result.VideoStream = videoStream
 		result.VideoCodec = videoStream.CodecName
+		result.FrameCount, _ = strconv.ParseInt(videoStream.NbFrames, 10, 64)
+		if videoStream.NbReadFrames != "" { // if ffprobe counted the frames use that instead
+			fc, _ := strconv.ParseInt(videoStream.NbReadFrames, 10, 64)
+			if fc > 0 {
+				result.FrameCount, _ = strconv.ParseInt(videoStream.NbReadFrames, 10, 64)
+			} else {
+				logger.Debugf("[ffprobe] <%s> invalid Read Frames count", videoStream.NbReadFrames)
+			}
+		}
 		result.VideoBitrate, _ = strconv.ParseInt(videoStream.BitRate, 10, 64)
 		var framerate float64
 		if strings.Contains(videoStream.AvgFrameRate, "/") {

@@ -135,6 +135,14 @@ func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDelet
 		if err := fileDeleter.Files([]string{scene.Path}); err != nil {
 			return err
 		}
+
+		funscriptPath := utils.GetFunscriptPath(scene.Path)
+		funscriptExists, _ := utils.FileExists(funscriptPath)
+		if funscriptExists {
+			if err := fileDeleter.Files([]string{funscriptPath}); err != nil {
+				return err
+			}
+		}
 	}
 
 	if deleteGenerated {

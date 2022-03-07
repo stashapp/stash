@@ -21,6 +21,8 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+var officialBuild string
+
 const (
 	Stash         = "stash"
 	Cache         = "cache"
@@ -133,6 +135,9 @@ const (
 	ShowStudioAsText                    = "show_studio_as_text"
 	CSSEnabled                          = "cssEnabled"
 
+	ShowScrubber        = "show_scrubber"
+	showScrubberDefault = true
+
 	WallPlayback        = "wall_playback"
 	defaultWallPlayback = "video"
 
@@ -147,7 +152,6 @@ const (
 	FunscriptOffset = "funscript_offset"
 
 	// Security
-	TrustedProxies                                    = "trusted_proxies"
 	dangerousAllowPublicWithoutAuth                   = "dangerous_allow_public_without_auth"
 	dangerousAllowPublicWithoutAuthDefault            = "false"
 	SecurityTripwireAccessedFromPublicInternet        = "security_tripwire_accessed_from_public_internet"
@@ -179,8 +183,12 @@ const (
 	deleteGeneratedDefaultDefault = true
 
 	// Desktop Integration Options
-	NoBrowser        = "noBrowser"
-	NoBrowserDefault = false
+	NoBrowser                           = "noBrowser"
+	NoBrowserDefault                    = false
+	NotificationsEnabled                = "notifications_enabled"
+	NotificationsEnabledDefault         = true
+	ShowOneTimeMovedNotification        = "show_one_time_moved_notification"
+	ShowOneTimeMovedNotificationDefault = false
 
 	// File upload options
 	MaxUploadSize = "max_upload_size"
@@ -212,6 +220,10 @@ func (s *StashBoxError) Error() string {
 	return "Stash-box: " + s.msg
 }
 
+func IsOfficialBuild() bool {
+	return officialBuild == "true"
+}
+
 type Instance struct {
 	// main instance - backed by config file
 	main *viper.Viper
@@ -222,8 +234,9 @@ type Instance struct {
 
 	cpuProfilePath string
 	isNewSystem    bool
-	certFile       string
-	keyFile        string
+	// configUpdates  chan int
+	certFile string
+	keyFile  string
 	sync.RWMutex
 	// deadlock.RWMutex // for deadlock testing/issues
 }
@@ -271,7 +284,25 @@ func (i *Instance) GetNoBrowser() bool {
 	return i.getBool(NoBrowser)
 }
 
+func (i *Instance) GetNotificationsEnabled() bool {
+	return i.getBool(NotificationsEnabled)
+}
+
+// func (i *Instance) GetConfigUpdatesChannel() chan int {
+// 	return i.configUpdates
+// }
+
+// GetShowOneTimeMovedNotification shows whether a small notification to inform the user that Stash
+// will no longer show a terminal window, and instead will be available in the tray, should be shown.
+//  It is true when an existing system is started after upgrading, and set to false forever after it is shown.
+func (i *Instance) GetShowOneTimeMovedNotification() bool {
+	return i.getBool(ShowOneTimeMovedNotification)
+}
+
 func (i *Instance) Set(key string, value interface{}) {
+	// if key == MenuItems {
+	// 	i.configUpdates <- 0
+	// }
 	i.Lock()
 	defer i.Unlock()
 	i.main.Set(key, value)
@@ -365,6 +396,18 @@ func (i *Instance) getBool(key string) bool {
 	defer i.RUnlock()
 
 	return i.viper(key).GetBool(key)
+}
+
+func (i *Instance) getBoolDefault(key string, def bool) bool {
+	i.RLock()
+	defer i.RUnlock()
+
+	ret := def
+	v := i.viper(key)
+	if v.IsSet(key) {
+		ret = v.GetBool(key)
+	}
+	return ret
 }
 
 func (i *Instance) getInt(key string) int {
@@ -531,16 +574,7 @@ func (i *Instance) GetScraperCDPPath() string {
 // GetScraperCertCheck returns true if the scraper should check for insecure
 // certificates when fetching an image or a page.
 func (i *Instance) GetScraperCertCheck() bool {
-	ret := true
-	i.RLock()
-	defer i.RUnlock()
-
-	v := i.viper(ScraperCertCheck)
-	if v.IsSet(ScraperCertCheck) {
-		ret = v.GetBool(ScraperCertCheck)
-	}
-
-	return ret
+	return i.getBoolDefault(ScraperCertCheck, true)
 }
 
 func (i *Instance) GetScraperExcludeTagPatterns() []string {
@@ -820,6 +854,10 @@ func (i *Instance) GetWallPlayback() string {
 	return ret
 }
 
+func (i *Instance) GetShowScrubber() bool {
+	return i.getBoolDefault(ShowScrubber, showScrubberDefault)
+}
+
 func (i *Instance) GetMaximumLoopDuration() int {
 	return i.getInt(MaximumLoopDuration)
 }
@@ -829,16 +867,7 @@ func (i *Instance) GetAutostartVideo() bool {
 }
 
 func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
-	i.Lock()
-	defer i.Unlock()
-
-	ret := autostartVideoOnPlaySelectedDefault
-	v := i.viper(AutostartVideoOnPlaySelected)
-	if v.IsSet(AutostartVideoOnPlaySelected) {
-		ret = v.GetBool(AutostartVideoOnPlaySelected)
-	}
-
-	return ret
+	return i.getBoolDefault(AutostartVideoOnPlaySelected, autostartVideoOnPlaySelectedDefault)
 }
 
 func (i *Instance) GetContinuePlaylistDefault() bool {
@@ -926,16 +955,7 @@ func (i *Instance) GetDeleteFileDefault() bool {
 }
 
 func (i *Instance) GetDeleteGeneratedDefault() bool {
-	i.RLock()
-	defer i.RUnlock()
-	ret := deleteGeneratedDefaultDefault
-
-	v := i.viper(DeleteGeneratedDefault)
-	if v.IsSet(DeleteGeneratedDefault) {
-		ret = v.GetBool(DeleteGeneratedDefault)
-	}
-
-	return ret
+	return i.getBoolDefault(DeleteGeneratedDefault, deleteGeneratedDefaultDefault)
 }
 
 // GetDefaultIdentifySettings returns the default Identify task settings.
@@ -1014,12 +1034,6 @@ func (i *Instance) GetDefaultGenerateSettings() *models.GenerateMetadataOptions 
 	return nil
 }
 
-// GetTrustedProxies returns a comma separated list of ip addresses that should allow proxying.
-// When empty, allow from any private network
-func (i *Instance) GetTrustedProxies() []string {
-	return i.getStringSlice(TrustedProxies)
-}
-
 // GetDangerousAllowPublicWithoutAuth determines if the security feature is enabled.
 // See https://github.com/stashapp/stash/wiki/Authentication-Required-When-Accessing-Stash-From-the-Internet
 func (i *Instance) GetDangerousAllowPublicWithoutAuth() bool {
@@ -1066,17 +1080,7 @@ func (i *Instance) GetLogFile() string {
 // in addition to writing to a log file. Logging will be output to the
 // terminal if file logging is disabled. Defaults to true.
 func (i *Instance) GetLogOut() bool {
-	i.RLock()
-	defer i.RUnlock()
-
-	ret := defaultLogOut
-	v := i.viper(LogOut)
-
-	if v.IsSet(LogOut) {
-		ret = v.GetBool(LogOut)
-	}
-
-	return ret
+	return i.getBoolDefault(LogOut, defaultLogOut)
 }
 
 // GetLogLevel returns the lowest log level to write to the log.
@@ -1093,16 +1097,7 @@ func (i *Instance) GetLogLevel() string {
 // GetLogAccess returns true if http requests should be logged to the terminal.
 // HTTP requests are not logged to the log file. Defaults to true.
 func (i *Instance) GetLogAccess() bool {
-	i.RLock()
-	defer i.RUnlock()
-	ret := defaultLogAccess
-
-	v := i.viper(LogAccess)
-	if v.IsSet(LogAccess) {
-		ret = v.GetBool(LogAccess)
-	}
-
-	return ret
+	return i.getBoolDefault(LogAccess, defaultLogAccess)
 }
 
 // Max allowed graphql upload size in megabytes
@@ -1191,6 +1186,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(Generated, i.main.GetString(Metadata))
 
 	i.main.SetDefault(NoBrowser, NoBrowserDefault)
+	i.main.SetDefault(NotificationsEnabled, NotificationsEnabledDefault)
+	i.main.SetDefault(ShowOneTimeMovedNotification, ShowOneTimeMovedNotificationDefault)
 
 	// Set default scrapers and plugins paths
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)
@@ -1215,6 +1212,12 @@ func (i *Instance) setExistingSystemDefaults() error {
 		if !i.main.InConfig(NoBrowser) {
 			configDirtied = true
 			i.main.Set(NoBrowser, true)
+		}
+
+		// Existing systems as of the introduction of the taskbar should inform users.
+		if !i.main.InConfig(ShowOneTimeMovedNotification) {
+			configDirtied = true
+			i.main.Set(ShowOneTimeMovedNotification, true)
 		}
 
 		if configDirtied {
@@ -1254,4 +1257,5 @@ func (i *Instance) setInitialConfig(write bool) error {
 
 func (i *Instance) FinalizeSetup() {
 	i.isNewSystem = false
+	// i.configUpdates <- 0
 }

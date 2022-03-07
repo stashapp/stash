@@ -391,13 +391,7 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 				case models.CriterionModifierNotNull:
 					f.addWhere("(" + column + " IS NOT NULL AND TRIM(" + column + ") != '')")
 				default:
-					clause, count := getSimpleCriterionClause(modifier, "?")
-
-					if count == 1 {
-						f.addWhere(column+" "+clause, c.Value)
-					} else {
-						f.addWhere(column + " " + clause)
-					}
+					panic("unsupported string filter modifier")
 				}
 			}
 		}

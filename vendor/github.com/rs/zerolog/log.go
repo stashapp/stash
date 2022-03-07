@@ -234,6 +234,10 @@ func (l Logger) With() Context {
 	l.context = make([]byte, 0, 500)
 	if context != nil {
 		l.context = append(l.context, context...)
+	} else {
+		// This is needed for AppendKey to not check len of input
+		// thus making it inlinable
+		l.context = enc.AppendBeginMarker(l.context)
 	}
 	return Context{l}
 }
@@ -415,7 +419,7 @@ func (l *Logger) newEvent(level Level, done func(string)) *Event {
 	if level != NoLevel {
 		e.Str(LevelFieldName, LevelFieldMarshalFunc(level))
 	}
-	if l.context != nil && len(l.context) > 0 {
+	if l.context != nil && len(l.context) > 1 {
 		e.buf = enc.AppendObjectData(e.buf, l.context)
 	}
 	return e

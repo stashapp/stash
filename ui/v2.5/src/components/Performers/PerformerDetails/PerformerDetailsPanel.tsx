@@ -2,9 +2,8 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { TagLink } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
+import { TextUtils, getStashboxBase } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
-import { genderToString } from "src/utils/gender";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -48,7 +47,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <dd>
           <ul className="pl-0">
             {performer.stash_ids.map((stashID) => {
-              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+              const base = getStashboxBase(stashID.endpoint);
               const link = base ? (
                 <a
                   href={`${base}performers/${stashID.stash_id}`}
@@ -98,7 +97,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     <dl className="details-list">
       <TextField
         id="gender"
-        value={genderToString(performer.gender ?? undefined)}
+        value={
+          performer.gender
+            ? intl.formatMessage({ id: "gender_types." + performer.gender })
+            : undefined
+        }
       />
       <TextField
         id="birthdate"

@@ -44,15 +44,20 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.language ?? undefined}
           onChange={(v) => saveInterface({ language: v })}
         >
-          <option value="en-US">English (United States)</option>
+          <option value="de-DE">Deutsch (Deutschland)</option>
           <option value="en-GB">English (United Kingdom)</option>
-          <option value="es-ES">Spanish (Spain)</option>
-          <option value="de-DE">German (Germany)</option>
-          <option value="pt-BR">Portuguese (Brazil)</option>
-          <option value="fr-FR">French (France)</option>
-          <option value="it-IT">Italian (Italy)</option>
-          <option value="fi-FI">Finnish (Finland)</option>
-          <option value="sv-SE">Swedish (Sweden)</option>
+          <option value="en-US">English (United States)</option>
+          <option value="es-ES">Español (España)</option>
+          <option value="fi-FI">Suomi</option>
+          <option value="fr-FR">Français (France)</option>
+          <option value="hr-HR">Hrvatski (Preview)</option>
+          <option value="it-IT">Italiano</option>
+          <option value="ja-JP">日本語 (日本)</option>
+          <option value="nl-NL">Nederlands (Nederland)</option>
+          <option value="pt-BR">Português (Brasil)</option>
+          <option value="ru-RU">Русский (Россия) (Preview)</option>
+          <option value="sv-SE">Svenska</option>
+          <option value="tr-TR">Türkçe (Türkiye)</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>
@@ -87,6 +92,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           subHeadingID="config.ui.desktop_integration.skip_opening_browser_on_startup"
           checked={iface.noBrowser ?? undefined}
           onChange={(v) => saveInterface({ noBrowser: v })}
+        />
+        <BooleanSetting
+          id="notifications-enabled"
+          headingID="config.ui.desktop_integration.notifications_enabled"
+          subHeadingID="config.ui.desktop_integration.send_desktop_notifications_for_events"
+          checked={iface.notificationsEnabled ?? undefined}
+          onChange={(v) => saveInterface({ notificationsEnabled: v })}
         />
       </SettingSection>
 
@@ -137,6 +149,12 @@ export const SettingsInterfacePanel: React.FC = () => {
       </SettingSection>
 
       <SettingSection headingID="config.ui.scene_player.heading">
+        <BooleanSetting
+          id="show-scrubber"
+          headingID="config.ui.scene_player.options.show_scrubber"
+          checked={iface.showScrubber ?? undefined}
+          onChange={(v) => saveInterface({ showScrubber: v })}
+        />
         <BooleanSetting
           id="auto-start-video"
           headingID="config.ui.scene_player.options.auto_start_video"
