@@ -14,11 +14,14 @@ import (
 )
 
 const (
-	separatorChars = `.\-_ `
+	separatorChars   = `.\-_ `
+	separatorPattern = `(?:_|[^\p{L}\w\d])+`
 
 	reNotLetterWordUnicode = `[^\p{L}\w\d]`
 	reNotLetterWord        = `[^\w\d]`
 )
+
+var separatorRE = regexp.MustCompile(separatorPattern)
 
 func getPathQueryRegex(name string) string {
 	// escape specific regex characters
@@ -49,9 +52,7 @@ func getPathWords(path string) []string {
 	}
 
 	// handle path separators
-	const separator = `(?:_|[^\p{L}\w\d])+`
-	re := regexp.MustCompile(separator)
-	retStr = re.ReplaceAllString(retStr, " ")
+	retStr = separatorRE.ReplaceAllString(retStr, " ")
 
 	words := strings.Split(retStr, " ")
 
