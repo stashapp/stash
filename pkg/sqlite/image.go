@@ -517,8 +517,8 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 }
 
 func (qb *imageQueryBuilder) getImageSort(findFilter *models.FindFilterType) string {
-	if findFilter == nil {
-		return " ORDER BY images.path ASC "
+	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
+		return ""
 	}
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
