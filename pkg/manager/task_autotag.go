@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/stashapp/stash/pkg/autotag"
 	"github.com/stashapp/stash/pkg/image"
@@ -586,6 +587,7 @@ func (t *autoTagFilesTask) processGalleries(r models.ReaderRepository) error {
 }
 
 func (t *autoTagFilesTask) process() {
+	begin := time.Now()
 	if err := t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		total, err := t.getCount(r)
 		if err != nil {
@@ -617,7 +619,7 @@ func (t *autoTagFilesTask) process() {
 		logger.Error(err.Error())
 	}
 
-	logger.Info("Finished autotag")
+	logger.Infof("Finished autotag after %s", time.Since(begin).String())
 }
 
 type autoTagSceneTask struct {
