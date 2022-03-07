@@ -156,7 +156,7 @@ jobs:
 
     - name: Master release
       if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
-      uses: WithoutPants/github-release@2.0.4
+      uses: WithoutPants/github-release@v2.0.4
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
         allow_override: true
