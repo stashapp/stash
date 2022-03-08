@@ -47,14 +47,14 @@ func getSingleLetterPerformers(c *Cache, reader models.PerformerReader) ([]*mode
 	return c.singleCharPerformers, nil
 }
 
-// getSingleLetterStudios returns all performers with names that start with single character words.
+// getSingleLetterStudios returns all studios with names that start with single character words.
 // See getSingleLetterPerformers for details.
 func getSingleLetterStudios(c *Cache, reader models.StudioReader) ([]*models.Studio, error) {
 	if c == nil {
 		c = &Cache{}
 	}
 
-	if c.singleCharPerformers == nil {
+	if c.singleCharStudios == nil {
 		pp := -1
 		studios, _, err := reader.Query(&models.StudioFilterType{
 			Name: &models.StringCriterionInput{
@@ -80,14 +80,14 @@ func getSingleLetterStudios(c *Cache, reader models.StudioReader) ([]*models.Stu
 	return c.singleCharStudios, nil
 }
 
-// getSingleLetterTags returns all performers with names that start with single character words.
+// getSingleLetterTags returns all tags with names that start with single character words.
 // See getSingleLetterPerformers for details.
 func getSingleLetterTags(c *Cache, reader models.TagReader) ([]*models.Tag, error) {
 	if c == nil {
 		c = &Cache{}
 	}
 
-	if c.singleCharPerformers == nil {
+	if c.singleCharTags == nil {
 		pp := -1
 		tags, _, err := reader.Query(&models.TagFilterType{
 			Name: &models.StringCriterionInput{
