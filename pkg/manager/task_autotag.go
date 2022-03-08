@@ -492,6 +492,10 @@ func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
 			more = false
 		} else {
 			*findFilter.Page++
+
+			if *findFilter.Page%10 == 1 {
+				logger.Infof("Processed %d scenes...", (*findFilter.Page-1)*batchSize)
+			}
 		}
 	}
 
@@ -541,6 +545,10 @@ func (t *autoTagFilesTask) processImages(r models.ReaderRepository) error {
 			more = false
 		} else {
 			*findFilter.Page++
+
+			if *findFilter.Page%10 == 1 {
+				logger.Infof("Processed %d images...", (*findFilter.Page-1)*batchSize)
+			}
 		}
 	}
 
@@ -590,6 +598,10 @@ func (t *autoTagFilesTask) processGalleries(r models.ReaderRepository) error {
 			more = false
 		} else {
 			*findFilter.Page++
+
+			if *findFilter.Page%10 == 1 {
+				logger.Infof("Processed %d galleries...", (*findFilter.Page-1)*batchSize)
+			}
 		}
 	}
 
@@ -607,14 +619,17 @@ func (t *autoTagFilesTask) process() {
 
 		logger.Infof("Starting autotag of %d files", total)
 
+		logger.Info("Autotagging scenes...")
 		if err := t.processScenes(r); err != nil {
 			return err
 		}
 
+		logger.Info("Autotagging images...")
 		if err := t.processImages(r); err != nil {
 			return err
 		}
 
+		logger.Info("Autotagging galleries...")
 		if err := t.processGalleries(r); err != nil {
 			return err
 		}
