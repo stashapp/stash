@@ -7,19 +7,18 @@ import (
 	"image"
 
 	"github.com/stashapp/stash/pkg/ffmpeg2"
-	"github.com/stashapp/stash/pkg/video"
 )
 
 func doGenerate(encoder ffmpeg2.FFMpeg, fn string, args ffmpeg2.Args) error {
 	ctx, cancel := readLockManager.ReadLock(context.Background(), fn)
 	defer cancel()
-	return video.Generate(encoder, ctx, args)
+	return ffmpeg2.Generate(ctx, encoder, args)
 }
 
 func doGenerateOutput(encoder ffmpeg2.FFMpeg, fn string, args ffmpeg2.Args) ([]byte, error) {
 	ctx, cancel := readLockManager.ReadLock(context.Background(), fn)
 	defer cancel()
-	return video.GenerateOutput(encoder, ctx, args)
+	return ffmpeg2.GenerateOutput(ctx, encoder, args)
 }
 
 func doGenerateImage(encoder ffmpeg2.FFMpeg, input string, args ffmpeg2.Args) (image.Image, error) {

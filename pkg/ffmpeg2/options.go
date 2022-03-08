@@ -2,7 +2,7 @@ package ffmpeg2
 
 import "fmt"
 
-type arger interface {
+type Arger interface {
 	Args() []string
 }
 
@@ -81,7 +81,7 @@ func (a Args) Format(f Format) Args {
 	return append(a, f.Args()...)
 }
 
-func (a Args) AppendArgs(o arger) Args {
+func (a Args) AppendArgs(o Arger) Args {
 	return append(a, o.Args()...)
 }
 

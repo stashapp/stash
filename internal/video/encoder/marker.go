@@ -2,7 +2,6 @@ package encoder
 
 import (
 	"github.com/stashapp/stash/pkg/ffmpeg2"
-	"github.com/stashapp/stash/pkg/video"
 )
 
 const (
@@ -40,7 +39,7 @@ func SceneMarkerVideo(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerOpti
 		"-strict", "-2",
 	)
 
-	trimOptions := video.TranscodeOptions{
+	trimOptions := ffmpeg2.TranscodeOptions{
 		Duration:   markerPreviewDuration,
 		StartTime:  float64(options.Seconds),
 		OutputPath: options.OutputPath,
@@ -56,7 +55,7 @@ func SceneMarkerVideo(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerOpti
 		trimOptions.AudioArgs = audioArgs
 	}
 
-	args := video.Transcode(fn, trimOptions)
+	args := ffmpeg2.Transcode(fn, trimOptions)
 
 	return doGenerate(encoder, fn, args)
 }
@@ -77,7 +76,7 @@ func SceneMarkerImage(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerOpti
 		"-threads", "4",
 	)
 
-	trimOptions := video.TranscodeOptions{
+	trimOptions := ffmpeg2.TranscodeOptions{
 		Duration:   markerImageDuration,
 		StartTime:  float64(options.Seconds),
 		OutputPath: options.OutputPath,
@@ -85,7 +84,7 @@ func SceneMarkerImage(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerOpti
 		VideoArgs:  videoArgs,
 	}
 
-	args := video.Transcode(fn, trimOptions)
+	args := ffmpeg2.Transcode(fn, trimOptions)
 
 	return doGenerate(encoder, fn, args)
 }
@@ -97,14 +96,14 @@ type SceneMarkerScreenshotOptions struct {
 }
 
 func SceneMarkerScreenshot(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerScreenshotOptions) error {
-	ssOptions := video.ScreenshotOptions{
+	ssOptions := ffmpeg2.ScreenshotOptions{
 		OutputPath: options.OutputPath,
-		OutputType: video.ScreenshotOutputTypeImage2,
+		OutputType: ffmpeg2.ScreenshotOutputTypeImage2,
 		Quality:    markerScreenshotQuality,
 		Width:      options.Width,
 	}
 
-	args := video.ScreenshotTime(fn, float64(options.Seconds), ssOptions)
+	args := ffmpeg2.ScreenshotTime(fn, float64(options.Seconds), ssOptions)
 
 	return doGenerate(encoder, fn, args)
 }

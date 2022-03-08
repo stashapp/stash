@@ -4,12 +4,12 @@ import "fmt"
 
 type VideoFilter string
 
-func (l VideoFilter) Args() []string {
-	if l == "" {
+func (f VideoFilter) Args() []string {
+	if f == "" {
 		return nil
 	}
 
-	return []string{"-vf", string(l)}
+	return []string{"-vf", string(f)}
 }
 
 func (f VideoFilter) ScaleWidth(w int) VideoFilter {

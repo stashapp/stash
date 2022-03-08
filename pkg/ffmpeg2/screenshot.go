@@ -1,8 +1,4 @@
-package video
-
-import (
-	"github.com/stashapp/stash/pkg/ffmpeg2"
-)
+package ffmpeg2
 
 type ScreenshotOptions struct {
 	OutputPath string
@@ -14,20 +10,20 @@ type ScreenshotOptions struct {
 	Width int
 
 	// Verbosity is the logging verbosity. Defaults to LogLevelError if not set.
-	Verbosity ffmpeg2.LogLevel
+	Verbosity LogLevel
 
 	UseSelectFilter bool
 }
 
 func (o *ScreenshotOptions) setDefaults() {
 	if o.Verbosity == "" {
-		o.Verbosity = ffmpeg2.LogLevelError
+		o.Verbosity = LogLevelError
 	}
 }
 
 type ScreenshotOutputType struct {
-	codec  ffmpeg2.VideoCodec
-	format ffmpeg2.Format
+	codec  VideoCodec
+	format Format
 }
 
 func (t ScreenshotOutputType) Args() []string {
@@ -47,15 +43,15 @@ var (
 		format: "image2",
 	}
 	ScreenshotOutputTypeBMP = ScreenshotOutputType{
-		codec:  ffmpeg2.VideoCodecBMP,
+		codec:  VideoCodecBMP,
 		format: "rawvideo",
 	}
 )
 
-func ScreenshotTime(input string, t float64, options ScreenshotOptions) ffmpeg2.Args {
+func ScreenshotTime(input string, t float64, options ScreenshotOptions) Args {
 	options.setDefaults()
 
-	var args ffmpeg2.Args
+	var args Args
 	args = args.LogLevel(options.Verbosity)
 	args = args.Overwrite()
 	args = args.Seek(t)
@@ -67,7 +63,7 @@ func ScreenshotTime(input string, t float64, options ScreenshotOptions) ffmpeg2.
 		args = args.FixedQualityScaleVideo(options.Quality)
 	}
 
-	var vf ffmpeg2.VideoFilter
+	var vf VideoFilter
 
 	if options.Width > 0 {
 		vf = vf.ScaleWidth(options.Width)
@@ -82,19 +78,19 @@ func ScreenshotTime(input string, t float64, options ScreenshotOptions) ffmpeg2.
 
 // ScreenshotFrame uses the select filter to get a single frame from the video.
 // It is very slow and should only be used for files with very small duration in secs / frame count.
-func ScreenshotFrame(input string, frame int, options ScreenshotOptions) ffmpeg2.Args {
+func ScreenshotFrame(input string, frame int, options ScreenshotOptions) Args {
 	options.setDefaults()
 
-	var args ffmpeg2.Args
+	var args Args
 	args = args.LogLevel(options.Verbosity)
 	args = args.Overwrite()
 
 	args = args.Input(input)
 	args = args.VideoFrames(1)
 
-	args = args.VSync(ffmpeg2.VSyncMethodPassthrough)
+	args = args.VSync(VSyncMethodPassthrough)
 
-	var vf ffmpeg2.VideoFilter
+	var vf VideoFilter
 	// keep only frame number options.Frame)
 	vf = vf.Select(frame)
 

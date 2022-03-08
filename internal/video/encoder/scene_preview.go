@@ -2,7 +2,6 @@ package encoder
 
 import (
 	"github.com/stashapp/stash/pkg/ffmpeg2"
-	"github.com/stashapp/stash/pkg/video"
 )
 
 const (
@@ -37,7 +36,7 @@ func ScenePreviewVideoChunk(encoder ffmpeg2.FFMpeg, fn string, options ScenePrev
 		"-strict", "-2",
 	)
 
-	trimOptions := video.TranscodeOptions{
+	trimOptions := ffmpeg2.TranscodeOptions{
 		OutputPath: options.OutputPath,
 		StartTime:  options.StartTime,
 		Duration:   options.Duration,
@@ -57,7 +56,7 @@ func ScenePreviewVideoChunk(encoder ffmpeg2.FFMpeg, fn string, options ScenePrev
 		trimOptions.AudioArgs = audioArgs
 	}
 
-	args := video.Transcode(fn, trimOptions)
+	args := ffmpeg2.Transcode(fn, trimOptions)
 
 	return doGenerate(encoder, fn, args)
 }
@@ -79,24 +78,24 @@ func ScenePreviewVideoToImage(encoder ffmpeg2.FFMpeg, fn string, outputPath stri
 		"-threads", "4",
 	)
 
-	encodeOptions := video.TranscodeOptions{
+	encodeOptions := ffmpeg2.TranscodeOptions{
 		OutputPath: outputPath,
 
 		VideoCodec: ffmpeg2.VideoCodecLibWebP,
 		VideoArgs:  videoArgs,
 	}
 
-	args := video.Transcode(fn, encodeOptions)
+	args := ffmpeg2.Transcode(fn, encodeOptions)
 
 	return doGenerate(encoder, fn, args)
 }
 
 func ScenePreviewVideoChunkCombine(encoder ffmpeg2.FFMpeg, concatFilePath string, outputPath string) error {
-	spliceOptions := video.SpliceOptions{
+	spliceOptions := ffmpeg2.SpliceOptions{
 		OutputPath: outputPath,
 	}
 
-	args := video.Splice(concatFilePath, spliceOptions)
+	args := ffmpeg2.Splice(concatFilePath, spliceOptions)
 
 	return doGenerate(encoder, concatFilePath, args)
 }

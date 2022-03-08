@@ -2,7 +2,6 @@ package encoder
 
 import (
 	"github.com/stashapp/stash/pkg/ffmpeg2"
-	"github.com/stashapp/stash/pkg/video"
 )
 
 type ScreenshotOptions struct {
@@ -13,14 +12,14 @@ type ScreenshotOptions struct {
 }
 
 func Screenshot(encoder ffmpeg2.FFMpeg, input string, options ScreenshotOptions) error {
-	ssOptions := video.ScreenshotOptions{
+	ssOptions := ffmpeg2.ScreenshotOptions{
 		OutputPath: options.OutputPath,
-		OutputType: video.ScreenshotOutputTypeImage2,
+		OutputType: ffmpeg2.ScreenshotOutputTypeImage2,
 		Quality:    options.Quality,
 		Width:      options.Width,
 	}
 
-	args := video.ScreenshotTime(input, options.Time, ssOptions)
+	args := ffmpeg2.ScreenshotTime(input, options.Time, ssOptions)
 
 	return doGenerate(encoder, input, args)
 }

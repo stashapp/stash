@@ -4,7 +4,6 @@ import (
 	"image"
 
 	"github.com/stashapp/stash/pkg/ffmpeg2"
-	"github.com/stashapp/stash/pkg/video"
 )
 
 type SpriteScreenshotOptions struct {
@@ -12,25 +11,25 @@ type SpriteScreenshotOptions struct {
 }
 
 func SpriteScreenshot(encoder ffmpeg2.FFMpeg, input string, seconds float64, options SpriteScreenshotOptions) (image.Image, error) {
-	ssOptions := video.ScreenshotOptions{
+	ssOptions := ffmpeg2.ScreenshotOptions{
 		OutputPath: "-",
-		OutputType: video.ScreenshotOutputTypeBMP,
+		OutputType: ffmpeg2.ScreenshotOutputTypeBMP,
 		Width:      options.Width,
 	}
 
-	args := video.ScreenshotTime(input, seconds, ssOptions)
+	args := ffmpeg2.ScreenshotTime(input, seconds, ssOptions)
 
 	return doGenerateImage(encoder, input, args)
 }
 
 func SpriteScreenshotSlow(encoder ffmpeg2.FFMpeg, input string, frame int, options SpriteScreenshotOptions) (image.Image, error) {
-	ssOptions := video.ScreenshotOptions{
+	ssOptions := ffmpeg2.ScreenshotOptions{
 		OutputPath: "-",
-		OutputType: video.ScreenshotOutputTypeBMP,
+		OutputType: ffmpeg2.ScreenshotOutputTypeBMP,
 		Width:      options.Width,
 	}
 
-	args := video.ScreenshotFrame(input, frame, ssOptions)
+	args := ffmpeg2.ScreenshotFrame(input, frame, ssOptions)
 
 	return doGenerateImage(encoder, input, args)
 }

@@ -1,15 +1,14 @@
-package video
+package ffmpeg2
 
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
-
-	"github.com/stashapp/stash/pkg/ffmpeg2"
 )
 
-func Generate(f ffmpeg2.FFMpeg, ctx context.Context, args ffmpeg2.Args) error {
+func Generate(ctx context.Context, f FFMpeg, args Args) error {
 	cmd := f.Command(ctx, args)
 
 	var stderr bytes.Buffer
@@ -20,14 +19,18 @@ func Generate(f ffmpeg2.FFMpeg, ctx context.Context, args ffmpeg2.Args) error {
 	}
 
 	if err := cmd.Wait(); err != nil {
-		err.(*exec.ExitError).Stderr = stderr.Bytes()
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			exitErr.Stderr = stderr.Bytes()
+			return exitErr
+		}
 		return err
 	}
 
 	return nil
 }
 
-func GenerateOutput(f ffmpeg2.FFMpeg, ctx context.Context, args ffmpeg2.Args) ([]byte, error) {
+func GenerateOutput(ctx context.Context, f FFMpeg, args Args) ([]byte, error) {
 	cmd := f.Command(ctx, args)
 
 	return cmd.Output()
