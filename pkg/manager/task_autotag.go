@@ -26,6 +26,8 @@ type autoTagJob struct {
 }
 
 func (j *autoTagJob) Execute(ctx context.Context, progress *job.Progress) {
+	begin := time.Now()
+
 	input := j.input
 	if j.isFileBasedAutoTag(input) {
 		// doing file-based auto-tag
@@ -34,6 +36,8 @@ func (j *autoTagJob) Execute(ctx context.Context, progress *job.Progress) {
 		// doing specific performer/studio/tag auto-tag
 		j.autoTagSpecific(ctx, progress)
 	}
+
+	logger.Infof("Finished autotag after %s", time.Since(begin).String())
 }
 
 func (j *autoTagJob) isFileBasedAutoTag(input models.AutoTagMetadataInput) bool {
@@ -110,8 +114,6 @@ func (j *autoTagJob) autoTagSpecific(ctx context.Context, progress *job.Progress
 	j.autoTagPerformers(ctx, progress, input.Paths, performerIds)
 	j.autoTagStudios(ctx, progress, input.Paths, studioIds)
 	j.autoTagTags(ctx, progress, input.Paths, tagIds)
-
-	logger.Info("Finished autotag")
 }
 
 func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progress, paths []string, performerIds []string) {
@@ -595,7 +597,6 @@ func (t *autoTagFilesTask) processGalleries(r models.ReaderRepository) error {
 }
 
 func (t *autoTagFilesTask) process() {
-	begin := time.Now()
 	if err := t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		total, err := t.getCount(r)
 		if err != nil {
@@ -626,8 +627,6 @@ func (t *autoTagFilesTask) process() {
 	}); err != nil {
 		logger.Error(err.Error())
 	}
-
-	logger.Infof("Finished autotag after %s", time.Since(begin).String())
 }
 
 type autoTagSceneTask struct {
