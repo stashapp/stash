@@ -606,6 +606,8 @@
       "marker_screenshots_tooltip": "靜態 JPG 預覽，僅適用於設置為『靜態』的預覽類型。",
       "markers": "章節預覽",
       "markers_tooltip": "自標記的時間點算起長度20秒的短片預覽。",
+      "override_preview_generation_options": "強制使用所選的預覽產生設定",
+      "override_preview_generation_options_desc": "在本次工作排程中，強制使用所選的預覽產生設定。預設設定請見『系統』->『預覽生成設定』。",
       "overwrite": "覆蓋現有的生成檔案",
       "phash": "PHash（用於偵測重複的影片檔案及辨認短片）",
       "preview_exclude_end_time_desc": "從場景預覽中排除最後 x 秒。這可以是一個以秒為單位的值，也可以是整個場景持續時間的百分比（例如 2%）。",
