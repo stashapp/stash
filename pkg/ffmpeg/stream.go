@@ -49,7 +49,7 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type Codec struct {
+type StreamFormat struct {
 	Codec     string
 	format    string
 	MimeType  string
@@ -57,128 +57,121 @@ type Codec struct {
 	hls       bool
 }
 
-var CodecHLS = Codec{
-	Codec:    "libx264",
-	format:   "mpegts",
-	MimeType: MimeMpegts,
-	extraArgs: []string{
-		"-acodec", "aac",
-		"-pix_fmt", "yuv420p",
-		"-preset", "veryfast",
-		"-crf", "25",
-	},
-	hls: true,
-}
+var (
+	StreamFormatHLS = StreamFormat{
+		Codec:    "libx264",
+		format:   "mpegts",
+		MimeType: MimeMpegts,
+		extraArgs: []string{
+			"-acodec", "aac",
+			"-pix_fmt", "yuv420p",
+			"-preset", "veryfast",
+			"-crf", "25",
+		},
+		hls: true,
+	}
 
-var CodecH264 = Codec{
-	Codec:    "libx264",
-	format:   "mp4",
-	MimeType: MimeMp4,
-	extraArgs: []string{
-		"-movflags", "frag_keyframe+empty_moov",
-		"-pix_fmt", "yuv420p",
-		"-preset", "veryfast",
-		"-crf", "25",
-	},
-}
+	StreamFormatH264 = StreamFormat{
+		Codec:    "libx264",
+		format:   "mp4",
+		MimeType: MimeMp4,
+		extraArgs: []string{
+			"-movflags", "frag_keyframe+empty_moov",
+			"-pix_fmt", "yuv420p",
+			"-preset", "veryfast",
+			"-crf", "25",
+		},
+	}
 
-var CodecVP9 = Codec{
-	Codec:    "libvpx-vp9",
-	format:   "webm",
-	MimeType: MimeWebm,
-	extraArgs: []string{
-		"-deadline", "realtime",
-		"-cpu-used", "5",
-		"-row-mt", "1",
-		"-crf", "30",
-		"-b:v", "0",
-	},
-}
+	StreamFormatVP9 = StreamFormat{
+		Codec:    "libvpx-vp9",
+		format:   "webm",
+		MimeType: MimeWebm,
+		extraArgs: []string{
+			"-deadline", "realtime",
+			"-cpu-used", "5",
+			"-row-mt", "1",
+			"-crf", "30",
+			"-b:v", "0",
+		},
+	}
 
-var CodecVP8 = Codec{
-	Codec:    "libvpx",
-	format:   "webm",
-	MimeType: MimeWebm,
-	extraArgs: []string{
-		"-deadline", "realtime",
-		"-cpu-used", "5",
-		"-crf", "12",
-		"-b:v", "3M",
-		"-pix_fmt", "yuv420p",
-	},
-}
+	StreamFormatVP8 = StreamFormat{
+		Codec:    "libvpx",
+		format:   "webm",
+		MimeType: MimeWebm,
+		extraArgs: []string{
+			"-deadline", "realtime",
+			"-cpu-used", "5",
+			"-crf", "12",
+			"-b:v", "3M",
+			"-pix_fmt", "yuv420p",
+		},
+	}
 
-var CodecHEVC = Codec{
-	Codec:    "libx265",
-	format:   "mp4",
-	MimeType: MimeMp4,
-	extraArgs: []string{
-		"-movflags", "frag_keyframe",
-		"-preset", "veryfast",
-		"-crf", "30",
-	},
-}
+	StreamFormatHEVC = StreamFormat{
+		Codec:    "libx265",
+		format:   "mp4",
+		MimeType: MimeMp4,
+		extraArgs: []string{
+			"-movflags", "frag_keyframe",
+			"-preset", "veryfast",
+			"-crf", "30",
+		},
+	}
 
-// it is very common in MKVs to have just the audio codec unsupported
-// copy the video stream, transcode the audio and serve as Matroska
-var CodecMKVAudio = Codec{
-	Codec:    CopyStreamCodec,
-	format:   "matroska",
-	MimeType: MimeMkv,
-	extraArgs: []string{
-		"-c:a", "libopus",
-		"-b:a", "96k",
-		"-vbr", "on",
-	},
-}
+	// it is very common in MKVs to have just the audio codec unsupported
+	// copy the video stream, transcode the audio and serve as Matroska
+	StreamFormatMKVAudio = StreamFormat{
+		Codec:    CopyStreamCodec,
+		format:   "matroska",
+		MimeType: MimeMkv,
+		extraArgs: []string{
+			"-c:a", "libopus",
+			"-b:a", "96k",
+			"-vbr", "on",
+		},
+	}
+)
 
 type TranscodeStreamOptions struct {
-	ProbeResult      VideoFile
-	Codec            Codec
+	Input            string
+	Codec            StreamFormat
 	StartTime        string
 	MaxTranscodeSize int
+
+	// original video dimensions
+	VideoWidth  int
+	VideoHeight int
+
 	// transcode the video, remove the audio
 	// in some videos where the audio codec is not supported by ffmpeg
 	// ffmpeg fails if you try to transcode the audio
 	VideoOnly bool
 }
 
-func GetTranscodeStreamOptions(probeResult VideoFile, videoCodec Codec, audioCodec AudioCodec) TranscodeStreamOptions {
-	options := TranscodeStreamOptions{
-		ProbeResult: probeResult,
-		Codec:       videoCodec,
-	}
-
-	if audioCodec == MissingUnsupported {
-		// ffmpeg fails if it trys to transcode a non supported audio codec
-		options.VideoOnly = true
-	}
-
-	return options
-}
-
-func calculateTranscodeScale(probeResult VideoFile, maxSize int) string {
+func (o TranscodeStreamOptions) calculateTranscodeScale() string {
 	// get the smaller dimension of the video file
-	videoSize := probeResult.Height
-	if probeResult.Width < videoSize {
-		videoSize = probeResult.Width
+	videoSize := o.VideoHeight
+	if o.VideoWidth < videoSize {
+		videoSize = o.VideoWidth
 	}
 
 	// if our streaming resolution is larger than the video dimension
 	// or we are streaming the original resolution, then just set the
 	// input width
-	if maxSize >= videoSize || maxSize == 0 {
+	if o.MaxTranscodeSize >= videoSize || o.MaxTranscodeSize == 0 {
 		return "iw:-2"
 	}
 
 	// we're setting either the width or height
 	// we'll set the smaller dimesion
-	if probeResult.Width > probeResult.Height {
+	if o.VideoWidth > o.VideoHeight {
 		// set the height
-		return "-2:" + strconv.Itoa(maxSize)
+		return "-2:" + strconv.Itoa(o.MaxTranscodeSize)
 	}
 
-	return strconv.Itoa(maxSize) + ":-2"
+	return strconv.Itoa(o.MaxTranscodeSize) + ":-2"
 }
 
 func (o TranscodeStreamOptions) getStreamArgs() []string {
@@ -197,7 +190,7 @@ func (o TranscodeStreamOptions) getStreamArgs() []string {
 	}
 
 	args = append(args,
-		"-i", o.ProbeResult.Path,
+		"-i", o.Input,
 	)
 
 	if o.VideoOnly {
@@ -210,7 +203,7 @@ func (o TranscodeStreamOptions) getStreamArgs() []string {
 
 	// don't set scale when copying video stream
 	if o.Codec.Codec != CopyStreamCodec {
-		scale := calculateTranscodeScale(o.ProbeResult, o.MaxTranscodeSize)
+		scale := o.calculateTranscodeScale()
 		args = append(args,
 			"-vf", "scale="+scale,
 		)
@@ -231,10 +224,6 @@ func (o TranscodeStreamOptions) getStreamArgs() []string {
 }
 
 func (e *Encoder) GetTranscodeStream(options TranscodeStreamOptions) (*Stream, error) {
-	return e.stream(options.ProbeResult, options)
-}
-
-func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) (*Stream, error) {
 	args := options.getStreamArgs()
 	cmd := stashExec.Command(string(*e), args...)
 	logger.Debugf("Streaming via: %s", strings.Join(cmd.Args, " "))
@@ -255,9 +244,9 @@ func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) 
 		return nil, err
 	}
 
-	registerRunningEncoder(probeResult.Path, cmd.Process)
+	registerRunningEncoder(options.Input, cmd.Process)
 	go func() {
-		if err := waitAndDeregister(probeResult.Path, cmd); err != nil {
+		if err := waitAndDeregister(options.Input, cmd); err != nil {
 			logger.Warnf("Error while deregistering ffmpeg stream: %v", err)
 		}
 	}()

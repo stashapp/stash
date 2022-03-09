@@ -95,15 +95,15 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rs.streamTranscode(w, r, ffmpeg.CodecMKVAudio)
+	rs.streamTranscode(w, r, ffmpeg.StreamFormatMKVAudio)
 }
 
 func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.CodecVP9)
+	rs.streamTranscode(w, r, ffmpeg.StreamFormatVP9)
 }
 
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.CodecH264)
+	rs.streamTranscode(w, r, ffmpeg.StreamFormatH264)
 }
 
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
@@ -139,45 +139,44 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.CodecHLS)
+	rs.streamTranscode(w, r, ffmpeg.StreamFormatHLS)
 }
 
-func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, videoCodec ffmpeg.Codec) {
+func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, videoCodec ffmpeg.StreamFormat) {
 	logger.Debugf("Streaming as %s", videoCodec.MimeType)
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	// needs to be transcoded
-	ffprobe := manager.GetInstance().FFProbe
-	videoFile, err := ffprobe.NewVideoFile(scene.Path, false)
-	if err != nil {
-		logger.Errorf("[stream] error reading video file: %v", err)
-		return
-	}
-
 	// start stream based on query param, if provided
-	if err = r.ParseForm(); err != nil {
+	if err := r.ParseForm(); err != nil {
 		logger.Warnf("[stream] error parsing query form: %v", err)
 	}
 
 	startTime := r.Form.Get("start")
 	requestedSize := r.Form.Get("resolution")
 
-	var stream *ffmpeg.Stream
-
 	audioCodec := ffmpeg.MissingUnsupported
 	if scene.AudioCodec.Valid {
 		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
 	}
 
-	options := ffmpeg.GetTranscodeStreamOptions(*videoFile, videoCodec, audioCodec)
-	options.StartTime = startTime
-	options.MaxTranscodeSize = config.GetInstance().GetMaxStreamingTranscodeSize().GetMaxResolution()
+	options := ffmpeg.TranscodeStreamOptions{
+		Input:     scene.Path,
+		Codec:     videoCodec,
+		VideoOnly: audioCodec == ffmpeg.MissingUnsupported,
+
+		VideoWidth:  int(scene.Width.Int64),
+		VideoHeight: int(scene.Height.Int64),
+
+		StartTime:        startTime,
+		MaxTranscodeSize: config.GetInstance().GetMaxStreamingTranscodeSize().GetMaxResolution(),
+	}
+
 	if requestedSize != "" {
 		options.MaxTranscodeSize = models.StreamingResolutionEnum(requestedSize).GetMaxResolution()
 	}
 
 	encoder := manager.GetInstance().FFMPEG
-	stream, err = encoder.GetTranscodeStream(options)
+	stream, err := encoder.GetTranscodeStream(options)
 
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %v", err)
