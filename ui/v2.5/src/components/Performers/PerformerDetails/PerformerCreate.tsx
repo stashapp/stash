@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 
@@ -7,6 +8,7 @@ const PerformerCreate: React.FC = () => {
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
 
   const activeImage = imagePreview ?? "";
+  const intl = useIntl();
 
   const onImageChange = (image?: string | null) => setImagePreview(image);
   const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
@@ -16,7 +18,13 @@ const PerformerCreate: React.FC = () => {
       return <LoadingIndicator message="Encoding image..." />;
     }
     if (activeImage) {
-      return <img className="performer" src={activeImage} alt="Performer" />;
+      return (
+        <img
+          className="performer"
+          src={activeImage}
+          alt={intl.formatMessage({ id: "performer" })}
+        />
+      );
     }
   }
 
@@ -26,7 +34,12 @@ const PerformerCreate: React.FC = () => {
         {renderPerformerImage()}
       </div>
       <div className="col-md-8">
-        <h2>Create Performer</h2>
+        <h2>
+          <FormattedMessage
+            id="actions.create_entity"
+            values={{ entityType: intl.formatMessage({ id: "performer" }) }}
+          />
+        </h2>
         <PerformerEditPanel
           performer={{}}
           isVisible

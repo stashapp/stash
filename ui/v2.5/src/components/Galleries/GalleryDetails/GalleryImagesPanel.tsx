@@ -78,7 +78,7 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
 
   const otherOperations = [
     {
-      text: "Remove from Gallery",
+      text: intl.formatMessage({ id: "actions.remove_from_gallery" }),
       onClick: removeImages,
       isDisplayed: showWhenSelected,
       postRefetch: true,

@@ -21,8 +21,6 @@ WHERE performers_tags.tag_id = ?
 GROUP BY performers_tags.performer_id
 `
 
-const singleFirstCharacterRegex = `^[\w\p{L}][.\-_ ]`
-
 type performerQueryBuilder struct {
 	repository
 }
@@ -184,9 +182,6 @@ func (qb *performerQueryBuilder) QueryForAutoTag(words []string) ([]*models.Perf
 
 	var whereClauses []string
 	var args []interface{}
-
-	whereClauses = append(whereClauses, "name regexp ?")
-	args = append(args, singleFirstCharacterRegex)
 
 	for _, w := range words {
 		whereClauses = append(whereClauses, "name like ?")

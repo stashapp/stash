@@ -486,15 +486,12 @@ func galleryAverageResolutionCriterionHandler(qb *galleryQueryBuilder, resolutio
 }
 
 func (qb *galleryQueryBuilder) getGallerySort(findFilter *models.FindFilterType) string {
-	var sort string
-	var direction string
-	if findFilter == nil {
-		sort = "path"
-		direction = "ASC"
-	} else {
-		sort = findFilter.GetSort("path")
-		direction = findFilter.GetDirection()
+	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
+		return ""
 	}
+
+	sort := findFilter.GetSort("path")
+	direction := findFilter.GetDirection()
 
 	switch sort {
 	case "images_count":

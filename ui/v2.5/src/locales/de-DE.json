@@ -858,7 +858,10 @@
       "next_step": "Wenn du bereit bist ein neues System anzulegen, klicke Weiter.",
       "unable_to_locate_specified_config": "Wenn du das hier liest, konnte Stash die Konfigurationsdatei, welche spezifiziert wurde, nicht finden. Dieser Wizard wird dich deshalb durch den Prozess führen, eine neue Konfiguration anzulegen."
     },
-    "welcome_to_stash": "Willkommen zu Stash"
+    "welcome_to_stash": "Willkommen zu Stash",
+    "folder": {
+      "up_dir": "Ein Verzeichnis hoch"
+    }
   },
   "stash_id": "Stash-ID",
   "stash_ids": "Stash IDs",
@@ -900,7 +903,6 @@
   "total": "Gesamt",
   "true": "Wahr",
   "twitter": "Twitter",
-  "up-dir": "Ein Verzeichnis hoch",
   "updated_at": "Aktualisiert am",
   "url": "URL",
   "videos": "Videos",

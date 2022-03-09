@@ -854,7 +854,10 @@
       "next_step": "当你准备好建立一个新系统时，点击“下一个”。",
       "unable_to_locate_specified_config": "如果你看到这，就意味着Stash无法用命令行或者环境变量找到配置文件。这个向导将指引你去建立一个新的配置。"
     },
-    "welcome_to_stash": "欢迎使用Stash"
+    "welcome_to_stash": "欢迎使用Stash",
+    "folder": {
+      "up_dir": "上级目录"
+    }
   },
   "stash_id": "Stash 号",
   "stash_ids": "Stash号",
@@ -896,7 +899,6 @@
   "total": "总共",
   "true": "真",
   "twitter": "推特",
-  "up-dir": "上级目录",
   "updated_at": "更新时间",
   "url": "链接",
   "videos": "视频",

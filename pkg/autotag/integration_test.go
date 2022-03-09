@@ -361,7 +361,7 @@ func TestParsePerformerScenes(t *testing.T) {
 
 	for _, p := range performers {
 		if err := withTxn(func(r models.Repository) error {
-			return PerformerScenes(p, nil, r.Scene())
+			return PerformerScenes(p, nil, r.Scene(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -413,7 +413,7 @@ func TestParseStudioScenes(t *testing.T) {
 				return err
 			}
 
-			return StudioScenes(s, nil, aliases, r.Scene())
+			return StudioScenes(s, nil, aliases, r.Scene(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -469,7 +469,7 @@ func TestParseTagScenes(t *testing.T) {
 				return err
 			}
 
-			return TagScenes(s, nil, aliases, r.Scene())
+			return TagScenes(s, nil, aliases, r.Scene(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -516,7 +516,7 @@ func TestParsePerformerImages(t *testing.T) {
 
 	for _, p := range performers {
 		if err := withTxn(func(r models.Repository) error {
-			return PerformerImages(p, nil, r.Image())
+			return PerformerImages(p, nil, r.Image(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -568,7 +568,7 @@ func TestParseStudioImages(t *testing.T) {
 				return err
 			}
 
-			return StudioImages(s, nil, aliases, r.Image())
+			return StudioImages(s, nil, aliases, r.Image(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -624,7 +624,7 @@ func TestParseTagImages(t *testing.T) {
 				return err
 			}
 
-			return TagImages(s, nil, aliases, r.Image())
+			return TagImages(s, nil, aliases, r.Image(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -671,7 +671,7 @@ func TestParsePerformerGalleries(t *testing.T) {
 
 	for _, p := range performers {
 		if err := withTxn(func(r models.Repository) error {
-			return PerformerGalleries(p, nil, r.Gallery())
+			return PerformerGalleries(p, nil, r.Gallery(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -723,7 +723,7 @@ func TestParseStudioGalleries(t *testing.T) {
 				return err
 			}
 
-			return StudioGalleries(s, nil, aliases, r.Gallery())
+			return StudioGalleries(s, nil, aliases, r.Gallery(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -779,7 +779,7 @@ func TestParseTagGalleries(t *testing.T) {
 				return err
 			}
 
-			return TagGalleries(s, nil, aliases, r.Gallery())
+			return TagGalleries(s, nil, aliases, r.Gallery(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}

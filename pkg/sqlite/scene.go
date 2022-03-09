@@ -760,8 +760,7 @@ func (qb *sceneQueryBuilder) getDefaultSceneSort() string {
 }
 
 func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
-	if findFilter == nil {
-		query.sortAndPagination += qb.getDefaultSceneSort()
+	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
 		return
 	}
 	sort := findFilter.GetSort("title")
