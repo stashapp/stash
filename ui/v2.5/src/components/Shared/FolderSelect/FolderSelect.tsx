@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Button, InputGroup, Form } from "react-bootstrap";
 import { debounce } from "lodash";
 import { Icon, LoadingIndicator } from "src/components/Shared";
@@ -22,6 +22,7 @@ export const FolderSelect: React.FC<IProps> = ({
     currentDirectory
   );
   const { data, error, loading } = useDirectory(debouncedDirectory);
+  const intl = useIntl();
 
   const selectableDirectories: string[] = currentDirectory
     ? data?.directory.directories ?? defaultDirectories ?? []
@@ -62,7 +63,7 @@ export const FolderSelect: React.FC<IProps> = ({
     currentDirectory && data?.directory?.parent ? (
       <li className="folder-list-parent folder-list-item">
         <Button variant="link" onClick={() => goUp()}>
-          <FormattedMessage defaultMessage="Up a directory" id="up-dir" />
+          <FormattedMessage id="setup.folder.up_dir" />
         </Button>
       </li>
     ) : null;
@@ -71,7 +72,7 @@ export const FolderSelect: React.FC<IProps> = ({
     <>
       <InputGroup>
         <Form.Control
-          placeholder="File path"
+          placeholder={intl.formatMessage({ id: "setup.folder.file_path" })}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             setDebounced(e.currentTarget.value);
           }}

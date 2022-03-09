@@ -390,7 +390,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           <LoadingIndicator message="Encoding image..." />
         ) : (
           <Button variant="link" onClick={() => showLightbox()}>
-            <img className="performer" src={activeImage} alt="Performer" />
+            <img
+              className="performer"
+              src={activeImage}
+              alt={intl.formatMessage({ id: "performer" })}
+            />
           </Button>
         )}
       </div>

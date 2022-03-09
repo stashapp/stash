@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
@@ -84,6 +84,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
   const [createTag] = useTagCreate();
+  const intl = useIntl();
 
   const genderOptions = [""].concat(genderStrings);
 
@@ -775,7 +776,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                   <Button
                     variant="danger"
                     className="mr-2 py-0"
-                    title="Delete StashID"
+                    title={intl.formatMessage({ id: "actions.delete_stashid" })}
                     onClick={() => removeStashID(stashID)}
                   >
                     <Icon icon="trash-alt" />
@@ -815,7 +816,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
       <Prompt
         when={formik.dirty}
-        message="Unsaved changes. Are you sure you want to leave?"
+        message={intl.formatMessage({ id: "dialogs.unsaved_changes" })}
       />
       {renderButtons("mb-3")}
 
@@ -827,7 +828,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
               className="text-input"
-              placeholder="Name"
+              placeholder={intl.formatMessage({ id: "name" })}
               {...formik.getFieldProps("name")}
               isInvalid={!!formik.errors.name}
             />
@@ -845,7 +846,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <Form.Control
               as="textarea"
               className="text-input"
-              placeholder="Alias"
+              placeholder={intl.formatMessage({ id: "aliases" })}
               {...formik.getFieldProps("aliases")}
             />
           </Col>
@@ -889,7 +890,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <Form.Control
               as="textarea"
               className="text-input"
-              placeholder="Tattoos"
+              placeholder={intl.formatMessage({ id: "tattoos" })}
               {...formik.getFieldProps("tattoos")}
             />
           </Col>
@@ -903,7 +904,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <Form.Control
               as="textarea"
               className="text-input"
-              placeholder="Piercings"
+              placeholder={intl.formatMessage({ id: "piercings" })}
               {...formik.getFieldProps("piercings")}
             />
           </Col>
@@ -934,7 +935,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             <Form.Control
               as="textarea"
               className="text-input"
-              placeholder="Details"
+              placeholder={intl.formatMessage({ id: "details" })}
               {...formik.getFieldProps("details")}
             />
           </Col>

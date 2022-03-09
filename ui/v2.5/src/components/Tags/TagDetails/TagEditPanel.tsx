@@ -135,7 +135,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
           <Col xs={fieldXS} xl={fieldXL}>
             <Form.Control
               className="text-input"
-              placeholder="Name"
+              placeholder={intl.formatMessage({ id: "name" })}
               {...formik.getFieldProps("name")}
               isInvalid={!!formik.errors.name}
             />
