@@ -199,8 +199,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         show
         icon="pencil-alt"
         header={intl.formatMessage(
-          { id: "actions.add_entity" },
-          { entityType: intl.formatMessage({ id: "performer" }) }
+          { id: "actions.edit_entity" },
+          { entityType: intl.formatMessage({ id: "performers" }) }
         )}
         accept={{
           onClick: onSave,

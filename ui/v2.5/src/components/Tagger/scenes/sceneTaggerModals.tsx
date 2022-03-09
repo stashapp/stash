@@ -114,7 +114,7 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
           onSave={handlePerformerSave}
           icon="tags"
           header={intl.formatMessage(
-            { id: "actions.add_entity" },
+            { id: "actions.create_entity" },
             { entityType: intl.formatMessage({ id: "performer" }) }
           )}
           endpoint={endpoint}
@@ -129,7 +129,7 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
           handleStudioCreate={handleStudioSave}
           icon="tags"
           header={intl.formatMessage(
-            { id: "actions.add_entity" },
+            { id: "actions.create_entity" },
             { entityType: intl.formatMessage({ id: "studio" }) }
           )}
         />
