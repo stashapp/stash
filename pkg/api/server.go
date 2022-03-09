@@ -206,13 +206,15 @@ func Start(uiBox embed.FS, loginUIBox embed.FS) {
 		}
 
 		if ext == ".html" || ext == "" {
+			themeColor := c.GetThemeColor()
 			data, err := uiBox.ReadFile(uiRootDir + "/index.html")
 			if err != nil {
 				panic(err)
 			}
 
 			prefix := getProxyPrefix(r.Header)
-			baseURLIndex := strings.ReplaceAll(string(data), "/%BASE_URL%", prefix)
+			baseURLIndex := strings.ReplaceAll(string(data), "%COLOR%", themeColor)
+			baseURLIndex = strings.ReplaceAll(baseURLIndex, "/%BASE_URL%", prefix)
 			baseURLIndex = strings.Replace(baseURLIndex, "base href=\"/\"", fmt.Sprintf("base href=\"%s\"", prefix+"/"), 1)
 			_, _ = w.Write([]byte(baseURLIndex))
 		} else {
