@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -233,6 +234,12 @@ func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, tot
 		}
 	}
 
+	g := &generate.Generator{
+		Encoder:     instance.FFMPEG,
+		MarkerPaths: instance.Paths.SceneMarkers,
+		Overwrite:   j.overwrite,
+	}
+
 	if utils.IsTrue(j.input.Markers) {
 		task := &GenerateMarkersTask{
 			TxnManager:          j.txnManager,
@@ -241,6 +248,8 @@ func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, tot
 			fileNamingAlgorithm: j.fileNamingAlgo,
 			ImagePreview:        utils.IsTrue(j.input.MarkerImagePreviews),
 			Screenshot:          utils.IsTrue(j.input.MarkerScreenshots),
+
+			generator: g,
 		}
 
 		markers := task.markersNeeded()
