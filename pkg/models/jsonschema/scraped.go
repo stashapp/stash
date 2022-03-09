@@ -2,26 +2,27 @@ package jsonschema
 
 import (
 	"fmt"
-	"github.com/json-iterator/go"
-	"github.com/stashapp/stash/pkg/models"
 	"os"
+
+	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/models/json"
 )
 
 type ScrapedItem struct {
-	Title           string          `json:"title,omitempty"`
-	Description     string          `json:"description,omitempty"`
-	URL             string          `json:"url,omitempty"`
-	Date            string          `json:"date,omitempty"`
-	Rating          string          `json:"rating,omitempty"`
-	Tags            string          `json:"tags,omitempty"`
-	Models          string          `json:"models,omitempty"`
-	Episode         int             `json:"episode,omitempty"`
-	GalleryFilename string          `json:"gallery_filename,omitempty"`
-	GalleryURL      string          `json:"gallery_url,omitempty"`
-	VideoFilename   string          `json:"video_filename,omitempty"`
-	VideoURL        string          `json:"video_url,omitempty"`
-	Studio          string          `json:"studio,omitempty"`
-	UpdatedAt       models.JSONTime `json:"updated_at,omitempty"`
+	Title           string        `json:"title,omitempty"`
+	Description     string        `json:"description,omitempty"`
+	URL             string        `json:"url,omitempty"`
+	Date            string        `json:"date,omitempty"`
+	Rating          string        `json:"rating,omitempty"`
+	Tags            string        `json:"tags,omitempty"`
+	Models          string        `json:"models,omitempty"`
+	Episode         int           `json:"episode,omitempty"`
+	GalleryFilename string        `json:"gallery_filename,omitempty"`
+	GalleryURL      string        `json:"gallery_url,omitempty"`
+	VideoFilename   string        `json:"video_filename,omitempty"`
+	VideoURL        string        `json:"video_url,omitempty"`
+	Studio          string        `json:"studio,omitempty"`
+	UpdatedAt       json.JSONTime `json:"updated_at,omitempty"`
 }
 
 func LoadScrapedFile(filePath string) ([]ScrapedItem, error) {

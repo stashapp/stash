@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -93,10 +94,10 @@ func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonsch
 		Name:    studioName,
 		URL:     url,
 		Details: details,
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 		ParentStudio: parentStudio,
@@ -111,10 +112,10 @@ func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonsch
 
 func createEmptyJSONStudio() *jsonschema.Studio {
 	return &jsonschema.Studio{
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 	}

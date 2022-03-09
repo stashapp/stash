@@ -5,23 +5,23 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 )
 
 type Movie struct {
-	Name       string          `json:"name,omitempty"`
-	Aliases    string          `json:"aliases,omitempty"`
-	Duration   int             `json:"duration,omitempty"`
-	Date       string          `json:"date,omitempty"`
-	Rating     int             `json:"rating,omitempty"`
-	Director   string          `json:"director,omitempty"`
-	Synopsis   string          `json:"sypnopsis,omitempty"`
-	FrontImage string          `json:"front_image,omitempty"`
-	BackImage  string          `json:"back_image,omitempty"`
-	URL        string          `json:"url,omitempty"`
-	Studio     string          `json:"studio,omitempty"`
-	CreatedAt  models.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt  models.JSONTime `json:"updated_at,omitempty"`
+	Name       string        `json:"name,omitempty"`
+	Aliases    string        `json:"aliases,omitempty"`
+	Duration   int           `json:"duration,omitempty"`
+	Date       string        `json:"date,omitempty"`
+	Rating     int           `json:"rating,omitempty"`
+	Director   string        `json:"director,omitempty"`
+	Synopsis   string        `json:"sypnopsis,omitempty"`
+	FrontImage string        `json:"front_image,omitempty"`
+	BackImage  string        `json:"back_image,omitempty"`
+	URL        string        `json:"url,omitempty"`
+	Studio     string        `json:"studio,omitempty"`
+	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
 }
 
 func LoadMovieFile(filePath string) (*Movie, error) {

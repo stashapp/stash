@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -12,8 +13,8 @@ import (
 func ToJSON(reader models.TagReader, tag *models.Tag) (*jsonschema.Tag, error) {
 	newTagJSON := jsonschema.Tag{
 		Name:      tag.Name,
-		CreatedAt: models.JSONTime{Time: tag.CreatedAt.Timestamp},
-		UpdatedAt: models.JSONTime{Time: tag.UpdatedAt.Timestamp},
+		CreatedAt: json.JSONTime{Time: tag.CreatedAt.Timestamp},
+		UpdatedAt: json.JSONTime{Time: tag.UpdatedAt.Timestamp},
 	}
 
 	aliases, err := reader.GetAliases(tag.ID)

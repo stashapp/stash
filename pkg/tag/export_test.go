@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -45,10 +46,10 @@ func createJSONTag(aliases []string, image string, parents []string) *jsonschema
 	return &jsonschema.Tag{
 		Name:    tagName,
 		Aliases: aliases,
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 		Image:   image,

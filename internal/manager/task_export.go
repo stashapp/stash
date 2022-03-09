@@ -18,6 +18,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/movie"
@@ -1038,7 +1039,7 @@ func (t *ExportTask) ExportScrapedItems(repo models.ReaderRepository) {
 		}
 
 		newScrapedItemJSON.Studio = studioName
-		updatedAt := models.JSONTime{Time: scrapedItem.UpdatedAt.Timestamp} // TODO keeping ruby format
+		updatedAt := json.JSONTime{Time: scrapedItem.UpdatedAt.Timestamp} // TODO keeping ruby format
 		newScrapedItemJSON.UpdatedAt = updatedAt
 
 		scraped = append(scraped, newScrapedItemJSON)
