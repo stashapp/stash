@@ -35,9 +35,10 @@ func main() {
 	manager.Initialize()
 	api.Start(uiBox, loginUIBox)
 
-	// stop any profiling at exit
-	defer pprof.StopCPUProfile()
 	blockForever()
+
+	// stop any profiling at exit
+	pprof.StopCPUProfile()
 
 	manager.GetInstance().Shutdown(0)
 }

@@ -21,7 +21,11 @@ WHERE performers_tags.tag_id = ?
 GROUP BY performers_tags.performer_id
 `
 
-const singleFirstCharacterRegex = `^[\w\p{L}][.\-_ ]`
+// KNOWN ISSUE: using \p{L} to find single unicode character names results in
+// very slow queries.
+// Suggested solution will be to cache single-character names and not include it
+// in the autotag query.
+const singleFirstCharacterRegex = `^[\w][.\-_ ]`
 
 type performerQueryBuilder struct {
 	repository
