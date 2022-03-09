@@ -50,7 +50,7 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 	videoCodec := t.Scene.VideoCodec.String
 	audioCodec := ffmpeg.MissingUnsupported
 	if t.Scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.AudioCodec(t.Scene.AudioCodec.String)
+		audioCodec = ffmpeg.ProbeAudioCodec(t.Scene.AudioCodec.String)
 	}
 
 	if !t.Force && ffmpeg.IsStreamable(videoCodec, audioCodec, container) {
@@ -74,7 +74,7 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 		Height: h,
 	}
 
-	ff := instance.FFMPEG2
+	ff := instance.FFMPEG
 
 	if videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
 		if audioCodec == ffmpeg.MissingUnsupported {
@@ -121,7 +121,7 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 	container := ""
 	audioCodec := ffmpeg.MissingUnsupported
 	if t.Scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.AudioCodec(t.Scene.AudioCodec.String)
+		audioCodec = ffmpeg.ProbeAudioCodec(t.Scene.AudioCodec.String)
 	}
 
 	if t.Scene.Format.Valid {

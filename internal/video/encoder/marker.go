@@ -1,7 +1,8 @@
 package encoder
 
 import (
-	"github.com/stashapp/stash/pkg/ffmpeg2"
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 )
 
 const (
@@ -20,11 +21,11 @@ type SceneMarkerOptions struct {
 	Audio      bool
 }
 
-func SceneMarkerVideo(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerOptions) error {
-	var videoFilter ffmpeg2.VideoFilter
+func SceneMarkerVideo(encoder ffmpeg.FFMpeg, fn string, options SceneMarkerOptions) error {
+	var videoFilter ffmpeg.VideoFilter
 	videoFilter = videoFilter.ScaleWidth(markerPreviewWidth)
 
-	var videoArgs ffmpeg2.Args
+	var videoArgs ffmpeg.Args
 	videoArgs = videoArgs.VideoFilter(videoFilter)
 
 	videoArgs = append(videoArgs,
@@ -39,33 +40,33 @@ func SceneMarkerVideo(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerOpti
 		"-strict", "-2",
 	)
 
-	trimOptions := ffmpeg2.TranscodeOptions{
+	trimOptions := transcoder.TranscodeOptions{
 		Duration:   markerPreviewDuration,
 		StartTime:  float64(options.Seconds),
 		OutputPath: options.OutputPath,
-		VideoCodec: ffmpeg2.VideoCodecLibX264,
+		VideoCodec: ffmpeg.VideoCodecLibX264,
 		VideoArgs:  videoArgs,
 	}
 
 	if options.Audio {
-		var audioArgs ffmpeg2.Args
+		var audioArgs ffmpeg.Args
 		audioArgs = audioArgs.AudioBitrate(markerPreviewAudioBitrate)
 
-		trimOptions.AudioCodec = ffmpeg2.AudioCodecAAC
+		trimOptions.AudioCodec = ffmpeg.AudioCodecAAC
 		trimOptions.AudioArgs = audioArgs
 	}
 
-	args := ffmpeg2.Transcode(fn, trimOptions)
+	args := transcoder.Transcode(fn, trimOptions)
 
 	return doGenerate(encoder, fn, args)
 }
 
-func SceneMarkerImage(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerOptions) error {
-	var videoFilter ffmpeg2.VideoFilter
+func SceneMarkerImage(encoder ffmpeg.FFMpeg, fn string, options SceneMarkerOptions) error {
+	var videoFilter ffmpeg.VideoFilter
 	videoFilter = videoFilter.ScaleWidth(markerPreviewWidth)
 	videoFilter = videoFilter.Fps(12)
 
-	var videoArgs ffmpeg2.Args
+	var videoArgs ffmpeg.Args
 	videoArgs = videoArgs.VideoFilter(videoFilter)
 	videoArgs = append(videoArgs,
 		"-lossless", "1",
@@ -76,15 +77,15 @@ func SceneMarkerImage(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerOpti
 		"-threads", "4",
 	)
 
-	trimOptions := ffmpeg2.TranscodeOptions{
+	trimOptions := transcoder.TranscodeOptions{
 		Duration:   markerImageDuration,
 		StartTime:  float64(options.Seconds),
 		OutputPath: options.OutputPath,
-		VideoCodec: ffmpeg2.VideoCodecLibWebP,
+		VideoCodec: ffmpeg.VideoCodecLibWebP,
 		VideoArgs:  videoArgs,
 	}
 
-	args := ffmpeg2.Transcode(fn, trimOptions)
+	args := transcoder.Transcode(fn, trimOptions)
 
 	return doGenerate(encoder, fn, args)
 }
@@ -95,15 +96,15 @@ type SceneMarkerScreenshotOptions struct {
 	Width      int
 }
 
-func SceneMarkerScreenshot(encoder ffmpeg2.FFMpeg, fn string, options SceneMarkerScreenshotOptions) error {
-	ssOptions := ffmpeg2.ScreenshotOptions{
+func SceneMarkerScreenshot(encoder ffmpeg.FFMpeg, fn string, options SceneMarkerScreenshotOptions) error {
+	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: options.OutputPath,
-		OutputType: ffmpeg2.ScreenshotOutputTypeImage2,
+		OutputType: transcoder.ScreenshotOutputTypeImage2,
 		Quality:    markerScreenshotQuality,
 		Width:      options.Width,
 	}
 
-	args := ffmpeg2.ScreenshotTime(fn, float64(options.Seconds), ssOptions)
+	args := transcoder.ScreenshotTime(fn, float64(options.Seconds), ssOptions)
 
 	return doGenerate(encoder, fn, args)
 }

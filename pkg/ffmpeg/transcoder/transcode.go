@@ -1,14 +1,16 @@
-package ffmpeg2
+package transcoder
+
+import "github.com/stashapp/stash/pkg/ffmpeg"
 
 type TranscodeOptions struct {
 	OutputPath string
-	Format     Format
+	Format     ffmpeg.Format
 
-	VideoCodec VideoCodec
-	VideoArgs  Args
+	VideoCodec ffmpeg.VideoCodec
+	VideoArgs  ffmpeg.Args
 
-	AudioCodec AudioCodec
-	AudioArgs  Args
+	AudioCodec ffmpeg.AudioCodec
+	AudioArgs  ffmpeg.Args
 
 	// if XError is true, then ffmpeg will fail on warnings
 	XError bool
@@ -18,16 +20,16 @@ type TranscodeOptions struct {
 	Duration  float64
 
 	// Verbosity is the logging verbosity. Defaults to LogLevelError if not set.
-	Verbosity LogLevel
+	Verbosity ffmpeg.LogLevel
 }
 
 func (o *TranscodeOptions) setDefaults() {
 	if o.Verbosity == "" {
-		o.Verbosity = LogLevelError
+		o.Verbosity = ffmpeg.LogLevelError
 	}
 }
 
-func Transcode(input string, options TranscodeOptions) Args {
+func Transcode(input string, options TranscodeOptions) ffmpeg.Args {
 	options.setDefaults()
 
 	// TODO - this should probably be generalised and applied to all operations. Need to verify impact on phash algorithm.
@@ -55,7 +57,7 @@ func Transcode(input string, options TranscodeOptions) Args {
 		}
 	}
 
-	var args Args
+	var args ffmpeg.Args
 	args = args.LogLevel(options.Verbosity)
 
 	if options.XError {

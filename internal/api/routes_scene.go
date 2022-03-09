@@ -122,7 +122,7 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", ffmpeg.MimeHLS)
 	var str strings.Builder
 
-	ffmpeg.WriteHLSPlaylist(*videoFile, r.URL.String(), &str)
+	ffmpeg.WriteHLSPlaylist(videoFile.Duration, r.URL.String(), &str)
 
 	requestByteRange := createByteRange(r.Header.Get("Range"))
 	if requestByteRange.RawString != "" {
@@ -156,7 +156,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 
 	audioCodec := ffmpeg.MissingUnsupported
 	if scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
+		audioCodec = ffmpeg.ProbeAudioCodec(scene.AudioCodec.String)
 	}
 
 	options := ffmpeg.TranscodeStreamOptions{
@@ -176,7 +176,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	}
 
 	encoder := manager.GetInstance().FFMPEG
-	stream, err := encoder.GetTranscodeStream(options)
+	stream, err := ffmpeg.GetTranscodeStream(encoder, options)
 
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %v", err)

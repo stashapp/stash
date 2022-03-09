@@ -44,7 +44,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	// which also generates the thumbnail
 
 	logger.Debugf("Creating screenshot for %s", scenePath)
-	makeScreenshot(instance.FFMPEG2, probeResult.Path, normalPath, 2, probeResult.Width, at)
+	makeScreenshot(instance.FFMPEG, probeResult.Path, normalPath, 2, probeResult.Width, at)
 
 	f, err := os.Open(normalPath)
 	if err != nil {

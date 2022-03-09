@@ -124,7 +124,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		videoPath := instance.Paths.SceneMarkers.GetStreamPath(sceneHash, seconds)
 
 		options.OutputPath = instance.Paths.Generated.GetTmpPath(videoFilename) // tmp output in case the process ends abruptly
-		if err := encoder.SceneMarkerVideo(instance.FFMPEG2, videoFile.Path, options); err != nil {
+		if err := encoder.SceneMarkerVideo(instance.FFMPEG, videoFile.Path, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker video: %s", err)
 		} else {
 			_ = fsutil.SafeMove(options.OutputPath, videoPath)
@@ -137,7 +137,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(sceneHash, seconds)
 
 		options.OutputPath = instance.Paths.Generated.GetTmpPath(imageFilename) // tmp output in case the process ends abruptly
-		if err := encoder.SceneMarkerImage(instance.FFMPEG2, videoFile.Path, options); err != nil {
+		if err := encoder.SceneMarkerImage(instance.FFMPEG, videoFile.Path, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker image: %s", err)
 		} else {
 			_ = fsutil.SafeMove(options.OutputPath, imagePath)
@@ -154,7 +154,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 			Width:      videoFile.Width,
 			Seconds:    seconds,
 		}
-		if err := encoder.SceneMarkerScreenshot(instance.FFMPEG2, videoFile.Path, screenshotOptions); err != nil {
+		if err := encoder.SceneMarkerScreenshot(instance.FFMPEG, videoFile.Path, screenshotOptions); err != nil {
 			logger.Errorf("[generator] failed to generate marker screenshot: %s", err)
 		} else {
 			_ = fsutil.SafeMove(screenshotOptions.OutputPath, screenshotPath)

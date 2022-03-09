@@ -1,37 +1,39 @@
-package ffmpeg2
+package transcoder
+
+import "github.com/stashapp/stash/pkg/ffmpeg"
 
 type SpliceOptions struct {
 	OutputPath string
-	Format     Format
+	Format     ffmpeg.Format
 
-	VideoCodec VideoCodec
-	VideoArgs  Args
+	VideoCodec ffmpeg.VideoCodec
+	VideoArgs  ffmpeg.Args
 
-	AudioCodec AudioCodec
-	AudioArgs  Args
+	AudioCodec ffmpeg.AudioCodec
+	AudioArgs  ffmpeg.Args
 
 	// Verbosity is the logging verbosity. Defaults to LogLevelError if not set.
-	Verbosity LogLevel
+	Verbosity ffmpeg.LogLevel
 }
 
 func (o *SpliceOptions) setDefaults() {
 	if o.Verbosity == "" {
-		o.Verbosity = LogLevelError
+		o.Verbosity = ffmpeg.LogLevelError
 	}
 }
 
-func Splice(concatFile string, options SpliceOptions) Args {
+func Splice(concatFile string, options SpliceOptions) ffmpeg.Args {
 	options.setDefaults()
 
-	var args Args
+	var args ffmpeg.Args
 	args = args.LogLevel(options.Verbosity)
-	args = args.Format(FormatConcat)
+	args = args.Format(ffmpeg.FormatConcat)
 	args = args.Input(concatFile)
 	args = args.Overwrite()
 
 	// if video codec is not provided, then use copy
 	if options.VideoCodec == "" {
-		options.VideoCodec = VideoCodecCopy
+		options.VideoCodec = ffmpeg.VideoCodecCopy
 	}
 
 	args = args.VideoCodec(options.VideoCodec)

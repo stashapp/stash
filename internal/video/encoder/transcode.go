@@ -1,7 +1,8 @@
 package encoder
 
 import (
-	"github.com/stashapp/stash/pkg/ffmpeg2"
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 )
 
 type TranscodeOptions struct {
@@ -9,10 +10,10 @@ type TranscodeOptions struct {
 	Height int
 }
 
-func Transcode(encoder ffmpeg2.FFMpeg, input string, output string, options TranscodeOptions) error {
-	var videoArgs ffmpeg2.Args
+func Transcode(encoder ffmpeg.FFMpeg, input string, output string, options TranscodeOptions) error {
+	var videoArgs ffmpeg.Args
 	if options.Width != 0 && options.Height != 0 {
-		var videoFilter ffmpeg2.VideoFilter
+		var videoFilter ffmpeg.VideoFilter
 		videoFilter = videoFilter.ScaleDimensions(options.Width, options.Height)
 		videoArgs = videoArgs.VideoFilter(videoFilter)
 	}
@@ -25,11 +26,11 @@ func Transcode(encoder ffmpeg2.FFMpeg, input string, output string, options Tran
 		"-crf", "23",
 	)
 
-	args := ffmpeg2.Transcode(input, ffmpeg2.TranscodeOptions{
+	args := transcoder.Transcode(input, transcoder.TranscodeOptions{
 		OutputPath: output,
-		VideoCodec: ffmpeg2.VideoCodecLibX264,
+		VideoCodec: ffmpeg.VideoCodecLibX264,
 		VideoArgs:  videoArgs,
-		AudioCodec: ffmpeg2.AudioCodecAAC,
+		AudioCodec: ffmpeg.AudioCodecAAC,
 	})
 
 	return doGenerate(encoder, input, args)
@@ -38,10 +39,10 @@ func Transcode(encoder ffmpeg2.FFMpeg, input string, output string, options Tran
 // TranscodeVideo transcodes the video, and removes the audio.
 // In some videos where the audio codec is not supported by ffmpeg,
 // ffmpeg fails if you try to transcode the audio
-func TranscodeVideo(encoder ffmpeg2.FFMpeg, input string, output string, options TranscodeOptions) error {
-	var videoArgs ffmpeg2.Args
+func TranscodeVideo(encoder ffmpeg.FFMpeg, input string, output string, options TranscodeOptions) error {
+	var videoArgs ffmpeg.Args
 	if options.Width != 0 && options.Height != 0 {
-		var videoFilter ffmpeg2.VideoFilter
+		var videoFilter ffmpeg.VideoFilter
 		videoFilter = videoFilter.ScaleDimensions(options.Width, options.Height)
 		videoArgs = videoArgs.VideoFilter(videoFilter)
 	}
@@ -54,12 +55,12 @@ func TranscodeVideo(encoder ffmpeg2.FFMpeg, input string, output string, options
 		"-crf", "23",
 	)
 
-	var audioArgs ffmpeg2.Args
+	var audioArgs ffmpeg.Args
 	audioArgs = audioArgs.SkipAudio()
 
-	args := ffmpeg2.Transcode(input, ffmpeg2.TranscodeOptions{
+	args := transcoder.Transcode(input, transcoder.TranscodeOptions{
 		OutputPath: output,
-		VideoCodec: ffmpeg2.VideoCodecLibX264,
+		VideoCodec: ffmpeg.VideoCodecLibX264,
 		VideoArgs:  videoArgs,
 		AudioArgs:  audioArgs,
 	})
@@ -68,39 +69,39 @@ func TranscodeVideo(encoder ffmpeg2.FFMpeg, input string, output string, options
 }
 
 // TranscodeAudio will copy the video stream as is, and transcode audio.
-func TranscodeAudio(encoder ffmpeg2.FFMpeg, input string, output string, options TranscodeOptions) error {
-	var videoArgs ffmpeg2.Args
+func TranscodeAudio(encoder ffmpeg.FFMpeg, input string, output string, options TranscodeOptions) error {
+	var videoArgs ffmpeg.Args
 	if options.Width != 0 && options.Height != 0 {
-		var videoFilter ffmpeg2.VideoFilter
+		var videoFilter ffmpeg.VideoFilter
 		videoFilter = videoFilter.ScaleDimensions(options.Width, options.Height)
 		videoArgs = videoArgs.VideoFilter(videoFilter)
 	}
 
-	args := ffmpeg2.Transcode(input, ffmpeg2.TranscodeOptions{
+	args := transcoder.Transcode(input, transcoder.TranscodeOptions{
 		OutputPath: output,
-		VideoCodec: ffmpeg2.VideoCodecCopy,
+		VideoCodec: ffmpeg.VideoCodecCopy,
 		VideoArgs:  videoArgs,
-		AudioCodec: ffmpeg2.AudioCodecAAC,
+		AudioCodec: ffmpeg.AudioCodecAAC,
 	})
 
 	return doGenerate(encoder, input, args)
 }
 
 // CopyVideo will copy the video stream as is, and drop the audio stream.
-func CopyVideo(encoder ffmpeg2.FFMpeg, input string, output string, options TranscodeOptions) error {
-	var videoArgs ffmpeg2.Args
+func CopyVideo(encoder ffmpeg.FFMpeg, input string, output string, options TranscodeOptions) error {
+	var videoArgs ffmpeg.Args
 	if options.Width != 0 && options.Height != 0 {
-		var videoFilter ffmpeg2.VideoFilter
+		var videoFilter ffmpeg.VideoFilter
 		videoFilter = videoFilter.ScaleDimensions(options.Width, options.Height)
 		videoArgs = videoArgs.VideoFilter(videoFilter)
 	}
 
-	var audioArgs ffmpeg2.Args
+	var audioArgs ffmpeg.Args
 	audioArgs = audioArgs.SkipAudio()
 
-	args := ffmpeg2.Transcode(input, ffmpeg2.TranscodeOptions{
+	args := transcoder.Transcode(input, transcoder.TranscodeOptions{
 		OutputPath: output,
-		VideoCodec: ffmpeg2.VideoCodecCopy,
+		VideoCodec: ffmpeg.VideoCodecCopy,
 		VideoArgs:  videoArgs,
 		AudioArgs:  audioArgs,
 	})

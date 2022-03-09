@@ -1,13 +1,13 @@
 package ffmpeg
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 
-	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -223,9 +223,9 @@ func (o TranscodeStreamOptions) getStreamArgs() []string {
 	return args
 }
 
-func (e *Encoder) GetTranscodeStream(options TranscodeStreamOptions) (*Stream, error) {
+func GetTranscodeStream(encoder FFMpeg, options TranscodeStreamOptions) (*Stream, error) {
 	args := options.getStreamArgs()
-	cmd := stashExec.Command(string(*e), args...)
+	cmd := encoder.Command(context.TODO(), args)
 	logger.Debugf("Streaming via: %s", strings.Join(cmd.Args, " "))
 
 	stdout, err := cmd.StdoutPipe()

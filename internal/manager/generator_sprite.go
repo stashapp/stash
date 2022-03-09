@@ -14,7 +14,6 @@ import (
 
 	"github.com/stashapp/stash/internal/video/encoder"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/ffmpeg2"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
@@ -83,7 +82,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 }
 
 func (g *SpriteGenerator) Generate() error {
-	ff := instance.FFMPEG2
+	ff := instance.FFMPEG
 
 	if err := g.generateSpriteImage(ff); err != nil {
 		return err
@@ -94,7 +93,7 @@ func (g *SpriteGenerator) Generate() error {
 	return nil
 }
 
-func (g *SpriteGenerator) generateSpriteImage(ff ffmpeg2.FFMpeg) error {
+func (g *SpriteGenerator) generateSpriteImage(ff ffmpeg.FFMpeg) error {
 	if !g.Overwrite && g.imageExists() {
 		return nil
 	}

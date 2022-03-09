@@ -9,8 +9,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-type Encoder string
-
 var (
 	runningEncoders      = make(map[string][]*os.Process)
 	runningEncodersMutex = sync.RWMutex{}

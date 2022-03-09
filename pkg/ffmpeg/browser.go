@@ -13,11 +13,11 @@ var validForVp9 = []Container{Webm}
 var validForHevcMkv = []Container{Mp4, Matroska}
 var validForHevc = []Container{Mp4}
 
-var validAudioForMkv = []AudioCodec{Aac, Mp3, Vorbis, Opus}
-var validAudioForWebm = []AudioCodec{Vorbis, Opus}
-var validAudioForMp4 = []AudioCodec{Aac, Mp3}
+var validAudioForMkv = []ProbeAudioCodec{Aac, Mp3, Vorbis, Opus}
+var validAudioForWebm = []ProbeAudioCodec{Vorbis, Opus}
+var validAudioForMp4 = []ProbeAudioCodec{Aac, Mp3}
 
-func IsStreamable(videoCodec string, audioCodec AudioCodec, container Container) bool {
+func IsStreamable(videoCodec string, audioCodec ProbeAudioCodec, container Container) bool {
 	supportedVideoCodecs := defaultSupportedCodecs
 
 	// check if the video codec matches the supported codecs
@@ -33,7 +33,7 @@ func isValidCodec(codecName string, supportedCodecs []string) bool {
 	return false
 }
 
-func isValidAudio(audio AudioCodec, validCodecs []AudioCodec) bool {
+func isValidAudio(audio ProbeAudioCodec, validCodecs []ProbeAudioCodec) bool {
 	// if audio codec is missing or unsupported by ffmpeg we can't do anything about it
 	// report it as valid so that the file can at least be streamed directly if the video codec is supported
 	if audio == MissingUnsupported {
@@ -49,7 +49,7 @@ func isValidAudio(audio AudioCodec, validCodecs []AudioCodec) bool {
 	return false
 }
 
-func IsValidAudioForContainer(audio AudioCodec, format Container) bool {
+func IsValidAudioForContainer(audio ProbeAudioCodec, format Container) bool {
 	switch format {
 	case Matroska:
 		return isValidAudio(audio, validAudioForMkv)

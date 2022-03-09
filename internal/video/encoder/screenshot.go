@@ -1,7 +1,8 @@
 package encoder
 
 import (
-	"github.com/stashapp/stash/pkg/ffmpeg2"
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 )
 
 type ScreenshotOptions struct {
@@ -11,15 +12,15 @@ type ScreenshotOptions struct {
 	Width      int
 }
 
-func Screenshot(encoder ffmpeg2.FFMpeg, input string, options ScreenshotOptions) error {
-	ssOptions := ffmpeg2.ScreenshotOptions{
+func Screenshot(encoder ffmpeg.FFMpeg, input string, options ScreenshotOptions) error {
+	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: options.OutputPath,
-		OutputType: ffmpeg2.ScreenshotOutputTypeImage2,
+		OutputType: transcoder.ScreenshotOutputTypeImage2,
 		Quality:    options.Quality,
 		Width:      options.Width,
 	}
 
-	args := ffmpeg2.ScreenshotTime(input, options.Time, ssOptions)
+	args := transcoder.ScreenshotTime(input, options.Time, ssOptions)
 
 	return doGenerate(encoder, input, args)
 }

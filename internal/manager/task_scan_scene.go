@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/internal/video/encoder"
-	"github.com/stashapp/stash/pkg/ffmpeg2"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -12,7 +12,7 @@ import (
 )
 
 type sceneScreenshotter struct {
-	ff ffmpeg2.FFMpeg
+	ff ffmpeg.FFMpeg
 }
 
 func (ss *sceneScreenshotter) Screenshot(input string, options encoder.ScreenshotOptions) error {
@@ -45,7 +45,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		TxnManager:          t.TxnManager,
 		Paths:               GetInstance().Paths,
 		Screenshotter: &sceneScreenshotter{
-			ff: instance.FFMPEG2,
+			ff: instance.FFMPEG,
 		},
 		VideoFileCreator: &instance.FFProbe,
 		PluginCache:      instance.PluginCache,

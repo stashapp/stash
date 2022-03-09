@@ -6,22 +6,22 @@ import (
 	"fmt"
 	"image"
 
-	"github.com/stashapp/stash/pkg/ffmpeg2"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 )
 
-func doGenerate(encoder ffmpeg2.FFMpeg, fn string, args ffmpeg2.Args) error {
+func doGenerate(encoder ffmpeg.FFMpeg, fn string, args ffmpeg.Args) error {
 	ctx, cancel := readLockManager.ReadLock(context.Background(), fn)
 	defer cancel()
-	return ffmpeg2.Generate(ctx, encoder, args)
+	return ffmpeg.Generate(ctx, encoder, args)
 }
 
-func doGenerateOutput(encoder ffmpeg2.FFMpeg, fn string, args ffmpeg2.Args) ([]byte, error) {
+func doGenerateOutput(encoder ffmpeg.FFMpeg, fn string, args ffmpeg.Args) ([]byte, error) {
 	ctx, cancel := readLockManager.ReadLock(context.Background(), fn)
 	defer cancel()
-	return ffmpeg2.GenerateOutput(ctx, encoder, args)
+	return ffmpeg.GenerateOutput(ctx, encoder, args)
 }
 
-func doGenerateImage(encoder ffmpeg2.FFMpeg, input string, args ffmpeg2.Args) (image.Image, error) {
+func doGenerateImage(encoder ffmpeg.FFMpeg, input string, args ffmpeg.Args) (image.Image, error) {
 	out, err := doGenerateOutput(encoder, input, args)
 	if err != nil {
 		return nil, err

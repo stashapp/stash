@@ -8,7 +8,6 @@ import (
 
 	"github.com/stashapp/stash/internal/video/encoder"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/ffmpeg2"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
@@ -59,7 +58,7 @@ func (g *PreviewGenerator) Generate() error {
 		return err
 	}
 
-	ff := instance.FFMPEG2
+	ff := instance.FFMPEG
 	if g.GenerateVideo {
 		if err := g.generateVideo(ff, false); err != nil {
 			logger.Warnf("[generator] failed generating scene preview, trying fallback")
@@ -92,7 +91,7 @@ func (g *PreviewGenerator) generateConcatFile() error {
 	return w.Flush()
 }
 
-func (g *PreviewGenerator) generateVideo(ff ffmpeg2.FFMpeg, fallback bool) error {
+func (g *PreviewGenerator) generateVideo(ff ffmpeg.FFMpeg, fallback bool) error {
 	outputPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
 	outputExists, _ := fsutil.FileExists(outputPath)
 	if !g.Overwrite && outputExists {
@@ -143,7 +142,7 @@ func (g *PreviewGenerator) generateVideo(ff ffmpeg2.FFMpeg, fallback bool) error
 	return nil
 }
 
-func (g *PreviewGenerator) generateImage(ff ffmpeg2.FFMpeg) error {
+func (g *PreviewGenerator) generateImage(ff ffmpeg.FFMpeg) error {
 	outputPath := filepath.Join(g.OutputDirectory, g.ImageFilename)
 	outputExists, _ := fsutil.FileExists(outputPath)
 	if !g.Overwrite && outputExists {

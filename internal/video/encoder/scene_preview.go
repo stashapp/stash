@@ -1,7 +1,8 @@
 package encoder
 
 import (
-	"github.com/stashapp/stash/pkg/ffmpeg2"
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 )
 
 const (
@@ -19,11 +20,11 @@ type ScenePreviewChunkOptions struct {
 	Preset     string
 }
 
-func ScenePreviewVideoChunk(encoder ffmpeg2.FFMpeg, fn string, options ScenePreviewChunkOptions, fallback bool) error {
-	var videoFilter ffmpeg2.VideoFilter
+func ScenePreviewVideoChunk(encoder ffmpeg.FFMpeg, fn string, options ScenePreviewChunkOptions, fallback bool) error {
+	var videoFilter ffmpeg.VideoFilter
 	videoFilter = videoFilter.ScaleWidth(scenePreviewWidth)
 
-	var videoArgs ffmpeg2.Args
+	var videoArgs ffmpeg.Args
 	videoArgs = videoArgs.VideoFilter(videoFilter)
 
 	videoArgs = append(videoArgs,
@@ -36,7 +37,7 @@ func ScenePreviewVideoChunk(encoder ffmpeg2.FFMpeg, fn string, options ScenePrev
 		"-strict", "-2",
 	)
 
-	trimOptions := ffmpeg2.TranscodeOptions{
+	trimOptions := transcoder.TranscodeOptions{
 		OutputPath: options.OutputPath,
 		StartTime:  options.StartTime,
 		Duration:   options.Duration,
@@ -44,29 +45,29 @@ func ScenePreviewVideoChunk(encoder ffmpeg2.FFMpeg, fn string, options ScenePrev
 		XError:   !fallback,
 		SlowSeek: fallback,
 
-		VideoCodec: ffmpeg2.VideoCodecLibX264,
+		VideoCodec: ffmpeg.VideoCodecLibX264,
 		VideoArgs:  videoArgs,
 	}
 
 	if options.Audio {
-		var audioArgs ffmpeg2.Args
+		var audioArgs ffmpeg.Args
 		audioArgs = audioArgs.AudioBitrate(scenePreviewAudioBitrate)
 
-		trimOptions.AudioCodec = ffmpeg2.AudioCodecAAC
+		trimOptions.AudioCodec = ffmpeg.AudioCodecAAC
 		trimOptions.AudioArgs = audioArgs
 	}
 
-	args := ffmpeg2.Transcode(fn, trimOptions)
+	args := transcoder.Transcode(fn, trimOptions)
 
 	return doGenerate(encoder, fn, args)
 }
 
-func ScenePreviewVideoToImage(encoder ffmpeg2.FFMpeg, fn string, outputPath string) error {
-	var videoFilter ffmpeg2.VideoFilter
+func ScenePreviewVideoToImage(encoder ffmpeg.FFMpeg, fn string, outputPath string) error {
+	var videoFilter ffmpeg.VideoFilter
 	videoFilter = videoFilter.ScaleWidth(scenePreviewWidth)
 	videoFilter = videoFilter.Fps(scenePreviewImageFPS)
 
-	var videoArgs ffmpeg2.Args
+	var videoArgs ffmpeg.Args
 	videoArgs = videoArgs.VideoFilter(videoFilter)
 
 	videoArgs = append(videoArgs,
@@ -78,24 +79,24 @@ func ScenePreviewVideoToImage(encoder ffmpeg2.FFMpeg, fn string, outputPath stri
 		"-threads", "4",
 	)
 
-	encodeOptions := ffmpeg2.TranscodeOptions{
+	encodeOptions := transcoder.TranscodeOptions{
 		OutputPath: outputPath,
 
-		VideoCodec: ffmpeg2.VideoCodecLibWebP,
+		VideoCodec: ffmpeg.VideoCodecLibWebP,
 		VideoArgs:  videoArgs,
 	}
 
-	args := ffmpeg2.Transcode(fn, encodeOptions)
+	args := transcoder.Transcode(fn, encodeOptions)
 
 	return doGenerate(encoder, fn, args)
 }
 
-func ScenePreviewVideoChunkCombine(encoder ffmpeg2.FFMpeg, concatFilePath string, outputPath string) error {
-	spliceOptions := ffmpeg2.SpliceOptions{
+func ScenePreviewVideoChunkCombine(encoder ffmpeg.FFMpeg, concatFilePath string, outputPath string) error {
+	spliceOptions := transcoder.SpliceOptions{
 		OutputPath: outputPath,
 	}
 
-	args := ffmpeg2.Splice(concatFilePath, spliceOptions)
+	args := transcoder.Splice(concatFilePath, spliceOptions)
 
 	return doGenerate(encoder, concatFilePath, args)
 }

@@ -1,36 +1,35 @@
-package ffmpeg2
+package transcoder
 
 import (
 	"errors"
+
+	"github.com/stashapp/stash/pkg/ffmpeg"
 )
 
 var ErrUnsupportedFormat = errors.New("unsupported image format")
 
 type ImageThumbnailOptions struct {
-	InputFormat   ImageFormat
+	InputFormat   ffmpeg.ImageFormat
 	OutputPath    string
 	MaxDimensions int
 	Quality       int
 }
 
-func ImageThumbnail(input string, options ImageThumbnailOptions) Args {
-	var videoFilter VideoFilter
+func ImageThumbnail(input string, options ImageThumbnailOptions) ffmpeg.Args {
+	var videoFilter ffmpeg.VideoFilter
 	videoFilter = videoFilter.ScaleMaxSize(options.MaxDimensions)
 
-	var videoArgs Args
-	videoArgs = videoArgs.VideoFilter(videoFilter)
-
-	var args Args
+	var args ffmpeg.Args
 
 	args = args.ImageFormat(options.InputFormat).Input(input).
 		VideoFilter(videoFilter).
-		VideoCodec(VideoCodecMJpeg)
+		VideoCodec(ffmpeg.VideoCodecMJpeg)
 
 	if options.Quality > 0 {
 		args = args.FixedQualityScaleVideo(options.Quality)
 	}
 
-	args = args.ImageFormat(ImageFormatImage2Pipe).
+	args = args.ImageFormat(ffmpeg.ImageFormatImage2Pipe).
 		Output(options.OutputPath)
 
 	return args

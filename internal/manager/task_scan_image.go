@@ -151,7 +151,7 @@ func (t *ScanTask) generateThumbnail(i *models.Image) {
 	}
 
 	if config.Height > models.DefaultGthumbWidth || config.Width > models.DefaultGthumbWidth {
-		encoder := image.NewThumbnailEncoder(instance.FFMPEG2)
+		encoder := image.NewThumbnailEncoder(instance.FFMPEG)
 		data, err := encoder.GetThumbnail(i, models.DefaultGthumbWidth)
 
 		if err != nil {

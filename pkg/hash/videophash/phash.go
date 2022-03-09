@@ -12,7 +12,7 @@ import (
 	"github.com/disintegration/imaging"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/ffmpeg2"
+	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -22,12 +22,7 @@ const (
 	rows           = 5
 )
 
-// isValidFloat64 ensures the given value is a valid number (not NaN) which is not equal to 0
-func isValidFloat64(value float64) bool {
-	return !math.IsNaN(value) && value != 0
-}
-
-func Generate(encoder ffmpeg2.FFMpeg, videoFile *ffmpeg.VideoFile) (*uint64, error) {
+func Generate(encoder ffmpeg.FFMpeg, videoFile *ffmpeg.VideoFile) (*uint64, error) {
 	sprite, err := generateSprite(encoder, videoFile)
 	if err != nil {
 		return nil, err
@@ -41,15 +36,15 @@ func Generate(encoder ffmpeg2.FFMpeg, videoFile *ffmpeg.VideoFile) (*uint64, err
 	return &hashValue, nil
 }
 
-func generateSpriteScreenshot(encoder ffmpeg2.FFMpeg, input string, t float64) (image.Image, error) {
-	options := ffmpeg2.ScreenshotOptions{
+func generateSpriteScreenshot(encoder ffmpeg.FFMpeg, input string, t float64) (image.Image, error) {
+	options := transcoder.ScreenshotOptions{
 		Width:      screenshotSize,
 		OutputPath: "-",
-		OutputType: ffmpeg2.ScreenshotOutputTypeBMP,
+		OutputType: transcoder.ScreenshotOutputTypeBMP,
 	}
 
-	args := ffmpeg2.ScreenshotTime(input, t, options)
-	data, err := ffmpeg2.GenerateOutput(context.Background(), encoder, args)
+	args := transcoder.ScreenshotTime(input, t, options)
+	data, err := ffmpeg.GenerateOutput(context.Background(), encoder, args)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +75,7 @@ func combineImages(images []image.Image) image.Image {
 	return montage
 }
 
-func generateSprite(encoder ffmpeg2.FFMpeg, videoFile *ffmpeg.VideoFile) (image.Image, error) {
+func generateSprite(encoder ffmpeg.FFMpeg, videoFile *ffmpeg.VideoFile) (image.Image, error) {
 	logger.Infof("[generator] generating phash sprite for %s", videoFile.Path)
 
 	// Generate sprite image offset by 5% on each end to avoid intro/outros

@@ -2,12 +2,12 @@ package manager
 
 import (
 	"github.com/stashapp/stash/internal/video/encoder"
-	"github.com/stashapp/stash/pkg/ffmpeg2"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
 // TODO - replace with scene.makeScreenshot
-func makeScreenshot(ff ffmpeg2.FFMpeg, input string, outputPath string, quality int, width int, time float64) {
+func makeScreenshot(ff ffmpeg.FFMpeg, input string, outputPath string, quality int, width int, time float64) {
 	options := encoder.ScreenshotOptions{
 		OutputPath: outputPath,
 		Quality:    quality,

@@ -1,7 +1,7 @@
 package ffmpeg
 
 type Container string
-type AudioCodec string
+type ProbeAudioCodec string
 
 const (
 	Mp4      Container = "mp4"
@@ -14,11 +14,11 @@ const (
 	Flv      Container = "flv"
 	Mpegts   Container = "mpegts"
 
-	Aac                AudioCodec = "aac"
-	Mp3                AudioCodec = "mp3"
-	Opus               AudioCodec = "opus"
-	Vorbis             AudioCodec = "vorbis"
-	MissingUnsupported AudioCodec = ""
+	Aac                ProbeAudioCodec = "aac"
+	Mp3                ProbeAudioCodec = "mp3"
+	Opus               ProbeAudioCodec = "opus"
+	Vorbis             ProbeAudioCodec = "vorbis"
+	MissingUnsupported ProbeAudioCodec = ""
 
 	Mp4Ffmpeg      string = "mov,mp4,m4a,3gp,3g2,mj2" // browsers support all of them
 	M4vFfmpeg      string = "mov,mp4,m4a,3gp,3g2,mj2" // so we don't care that ffmpeg
