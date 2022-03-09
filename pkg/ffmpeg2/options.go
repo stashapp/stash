@@ -81,6 +81,10 @@ func (a Args) Format(f Format) Args {
 	return append(a, f.Args()...)
 }
 
+func (a Args) ImageFormat(f ImageFormat) Args {
+	return append(a, f.Args()...)
+}
+
 func (a Args) AppendArgs(o Arger) Args {
 	return append(a, o.Args()...)
 }
