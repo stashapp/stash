@@ -1,15 +1,11 @@
 package ffmpeg
 
 import (
-	"bytes"
-	"io"
 	"os"
 	"os/exec"
-	"strings"
 	"sync"
 	"time"
 
-	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -75,33 +71,4 @@ func KillRunningEncoders(path string) {
 			return
 		}
 	}
-}
-
-func (e *Encoder) run(sourcePath string, args []string, stdin io.Reader) (string, error) {
-	cmd := stashExec.Command(string(*e), args...)
-
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	cmd.Stdin = stdin
-
-	if err := cmd.Start(); err != nil {
-		return "", err
-	}
-
-	var err error
-	if sourcePath != "" {
-		registerRunningEncoder(sourcePath, cmd.Process)
-		err = waitAndDeregister(sourcePath, cmd)
-	} else {
-		err = cmd.Wait()
-	}
-
-	if err != nil {
-		// error message should be in the stderr stream
-		logger.Errorf("ffmpeg error when running command <%s>: %s", strings.Join(cmd.Args, " "), stderr.String())
-		return stdout.String(), err
-	}
-
-	return stdout.String(), nil
 }

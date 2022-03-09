@@ -28,8 +28,8 @@ func (r *ResolutionEnum) GetMaxResolution() int {
 
 // GetMinResolution returns the minimum width or height that media must be
 // to qualify as this resolution.
-func (r *ResolutionEnum) GetMinResolution() int {
-	return resolutionRanges[*r].min
+func (r ResolutionEnum) GetMinResolution() int {
+	return resolutionRanges[r].min
 }
 
 var streamingResolutionMax = map[StreamingResolutionEnum]int{
@@ -41,6 +41,6 @@ var streamingResolutionMax = map[StreamingResolutionEnum]int{
 	StreamingResolutionEnumOriginal:   0,
 }
 
-func (r *StreamingResolutionEnum) GetMaxResolution() int {
-	return streamingResolutionMax[*r]
+func (r StreamingResolutionEnum) GetMaxResolution() int {
+	return streamingResolutionMax[r]
 }

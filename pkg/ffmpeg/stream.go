@@ -9,10 +9,17 @@ import (
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 )
 
 const CopyStreamCodec = "copy"
+
+const (
+	MimeWebm   string = "video/webm"
+	MimeMkv    string = "video/x-matroska"
+	MimeMp4    string = "video/mp4"
+	MimeHLS    string = "application/vnd.apple.mpegurl"
+	MimeMpegts string = "video/MP2T"
+)
 
 type Stream struct {
 	Stdout   io.ReadCloser
@@ -129,7 +136,7 @@ type TranscodeStreamOptions struct {
 	ProbeResult      VideoFile
 	Codec            Codec
 	StartTime        string
-	MaxTranscodeSize models.StreamingResolutionEnum
+	MaxTranscodeSize int
 	// transcode the video, remove the audio
 	// in some videos where the audio codec is not supported by ffmpeg
 	// ffmpeg fails if you try to transcode the audio
@@ -148,6 +155,30 @@ func GetTranscodeStreamOptions(probeResult VideoFile, videoCodec Codec, audioCod
 	}
 
 	return options
+}
+
+func calculateTranscodeScale(probeResult VideoFile, maxSize int) string {
+	// get the smaller dimension of the video file
+	videoSize := probeResult.Height
+	if probeResult.Width < videoSize {
+		videoSize = probeResult.Width
+	}
+
+	// if our streaming resolution is larger than the video dimension
+	// or we are streaming the original resolution, then just set the
+	// input width
+	if maxSize >= videoSize || maxSize == 0 {
+		return "iw:-2"
+	}
+
+	// we're setting either the width or height
+	// we'll set the smaller dimesion
+	if probeResult.Width > probeResult.Height {
+		// set the height
+		return "-2:" + strconv.Itoa(maxSize)
+	}
+
+	return strconv.Itoa(maxSize) + ":-2"
 }
 
 func (o TranscodeStreamOptions) getStreamArgs() []string {
