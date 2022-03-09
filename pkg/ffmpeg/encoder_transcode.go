@@ -6,11 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type TranscodeOptions struct {
-	OutputPath       string
-	MaxTranscodeSize models.StreamingResolutionEnum
-}
-
 func calculateTranscodeScale(probeResult VideoFile, maxTranscodeSize models.StreamingResolutionEnum) string {
 	maxSize := 0
 	switch maxTranscodeSize {
@@ -47,65 +42,4 @@ func calculateTranscodeScale(probeResult VideoFile, maxTranscodeSize models.Stre
 	}
 
 	return strconv.Itoa(maxSize) + ":-2"
-}
-
-func (e *Encoder) Transcode(probeResult VideoFile, options TranscodeOptions) {
-	scale := calculateTranscodeScale(probeResult, options.MaxTranscodeSize)
-	args := []string{
-		"-i", probeResult.Path,
-		"-c:v", "libx264",
-		"-pix_fmt", "yuv420p",
-		"-profile:v", "high",
-		"-level", "4.2",
-		"-preset", "superfast",
-		"-crf", "23",
-		"-vf", "scale=" + scale,
-		"-c:a", "aac",
-		"-strict", "-2",
-		options.OutputPath,
-	}
-	_, _ = e.runTranscode(probeResult, args)
-}
-
-// TranscodeVideo transcodes the video, and removes the audio.
-// In some videos where the audio codec is not supported by ffmpeg,
-// ffmpeg fails if you try to transcode the audio
-func (e *Encoder) TranscodeVideo(probeResult VideoFile, options TranscodeOptions) {
-	scale := calculateTranscodeScale(probeResult, options.MaxTranscodeSize)
-	args := []string{
-		"-i", probeResult.Path,
-		"-an",
-		"-c:v", "libx264",
-		"-pix_fmt", "yuv420p",
-		"-profile:v", "high",
-		"-level", "4.2",
-		"-preset", "superfast",
-		"-crf", "23",
-		"-vf", "scale=" + scale,
-		options.OutputPath,
-	}
-	_, _ = e.runTranscode(probeResult, args)
-}
-
-// TranscodeAudio will copy the video stream as is, and transcode audio.
-func (e *Encoder) TranscodeAudio(probeResult VideoFile, options TranscodeOptions) {
-	args := []string{
-		"-i", probeResult.Path,
-		"-c:v", "copy",
-		"-c:a", "aac",
-		"-strict", "-2",
-		options.OutputPath,
-	}
-	_, _ = e.runTranscode(probeResult, args)
-}
-
-// CopyVideo will copy the video stream as is, and drop the audio stream.
-func (e *Encoder) CopyVideo(probeResult VideoFile, options TranscodeOptions) {
-	args := []string{
-		"-i", probeResult.Path,
-		"-an",
-		"-c:v", "copy",
-		options.OutputPath,
-	}
-	_, _ = e.runTranscode(probeResult, args)
 }

@@ -222,6 +222,33 @@ type VideoFile struct {
 	AudioCodec string
 }
 
+// TranscodeScale calculates the dimension scaling for a transcode, where maxSize is the maximum size of the longest dimension of the input video.
+// If no scaling is required, then returns 0, 0.
+// Returns -2 for the dimension that will scale to maintain aspect ratio.
+func (v *VideoFile) TranscodeScale(maxSize int) (int, int) {
+	// get the smaller dimension of the video file
+	videoSize := v.Height
+	if v.Width < videoSize {
+		videoSize = v.Width
+	}
+
+	// if our streaming resolution is larger than the video dimension
+	// or we are streaming the original resolution, then just set the
+	// input width
+	if maxSize >= videoSize || maxSize == 0 {
+		return 0, 0
+	}
+
+	// we're setting either the width or height
+	// we'll set the smaller dimesion
+	if v.Width > v.Height {
+		// set the height
+		return -2, maxSize
+	}
+
+	return maxSize, -2
+}
+
 // FFProbe
 type FFProbe string
 

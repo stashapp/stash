@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/video/encoder"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -65,25 +66,34 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	outputPath := instance.Paths.Generated.GetTmpPath(sceneHash + ".mp4")
 	transcodeSize := config.GetInstance().GetMaxTranscodeSize()
-	options := ffmpeg.TranscodeOptions{
-		OutputPath:       outputPath,
-		MaxTranscodeSize: transcodeSize,
+
+	w, h := videoFile.TranscodeScale(transcodeSize.GetMaxResolution())
+
+	options := encoder.TranscodeOptions{
+		Width:  w,
+		Height: h,
 	}
-	encoder := instance.FFMPEG
+
+	ff := instance.FFMPEG2
 
 	if videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
 		if audioCodec == ffmpeg.MissingUnsupported {
-			encoder.CopyVideo(*videoFile, options)
+			err = encoder.CopyVideo(ff, videoFile.Path, outputPath, options)
 		} else {
-			encoder.TranscodeAudio(*videoFile, options)
+			err = encoder.TranscodeAudio(ff, videoFile.Path, outputPath, options)
 		}
 	} else {
 		if audioCodec == ffmpeg.MissingUnsupported {
 			// ffmpeg fails if it trys to transcode an unsupported audio codec
-			encoder.TranscodeVideo(*videoFile, options)
+			err = encoder.TranscodeVideo(ff, videoFile.Path, outputPath, options)
 		} else {
-			encoder.Transcode(*videoFile, options)
+			err = encoder.Transcode(ff, videoFile.Path, outputPath, options)
 		}
+	}
+
+	if err != nil {
+		logger.Errorf("[transcode] error generating transcode: %v", err)
+		return
 	}
 
 	if err := fsutil.SafeMove(outputPath, instance.Paths.Scene.GetTranscodePath(sceneHash)); err != nil {
