@@ -63,7 +63,8 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) 
 		// scrape using the source
 		scraped, err := source.Scraper.ScrapeScene(ctx, scene.ID)
 		if err != nil {
-			return nil, fmt.Errorf("error scraping from %v: %v", source.Scraper, err)
+			logger.Errorf("error scraping from %v: %v", source.Scraper, err)
+			continue
 		}
 
 		// if results were found then return
