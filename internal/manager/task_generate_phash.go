@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/hash/videophash"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -32,14 +33,7 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 		return
 	}
 
-	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
-	generator, err := NewPhashGenerator(*videoFile, sceneHash)
-
-	if err != nil {
-		logger.Errorf("error creating phash generator: %s", err.Error())
-		return
-	}
-	hash, err := generator.Generate()
+	hash, err := videophash.Generate(instance.FFMPEG2, videoFile)
 	if err != nil {
 		logger.Errorf("error generating phash: %s", err.Error())
 		return
