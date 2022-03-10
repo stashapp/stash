@@ -606,6 +606,8 @@
       "marker_screenshots_tooltip": "マーカーのJPG画像は、プレビュータイプが静止画に設定されている場合のみ必要です。",
       "markers": "マーカーのプレビュー",
       "markers_tooltip": "マーカーに設定されたタイムコードから２０秒間の動画を生成します。",
+      "override_preview_generation_options": "プレビュー生成の設定を上書きする",
+      "override_preview_generation_options_desc": "この操作に限り、プレビュー生成の設定を上書きします。デフォルト設定は、システム -> プレビュー生成から変更できます。",
       "overwrite": "既に生成済みの生成ファイルを上書きする",
       "phash": "視覚的ハッシュ (重複排除用)",
       "preview_exclude_end_time_desc": "シーンプレビューから最後のX秒を除外します。値は、秒またはシーンの再生時間の割合(2%など)で指定できます。",
@@ -727,7 +729,7 @@
   },
   "marker_count": "マーカー数",
   "markers": "マーカー",
-  "measurements": "測定",
+  "measurements": "スリーサイズ",
   "media_info": {
     "audio_codec": "音声コーデック",
     "checksum": "チェックサム",
@@ -954,5 +956,5 @@
   "url": "URL",
   "videos": "動画",
   "weight": "幅",
-  "years_old": "年前"
+  "years_old": "歳"
 }
