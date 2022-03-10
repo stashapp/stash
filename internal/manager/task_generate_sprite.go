@@ -44,6 +44,7 @@ func (t *GenerateSpriteTask) Start(ctx context.Context) {
 
 	if err := generator.Generate(); err != nil {
 		logger.Errorf("error generating sprite: %s", err.Error())
+		logErrorOutput(err)
 		return
 	}
 }

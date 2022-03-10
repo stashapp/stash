@@ -81,7 +81,7 @@ func (g Generator) CombineSpriteImages(images []image.Image) image.Image {
 }
 
 func (g Generator) SpriteVTT(ctx context.Context, output string, spritePath string, stepSize float64) error {
-	return g.generateFile(ctx, g.MarkerPaths, vttPattern, output, g.spriteVTT(spritePath, stepSize))
+	return g.generateFile(ctx, g.ScenePaths, vttPattern, output, g.spriteVTT(spritePath, stepSize))
 }
 
 func (g Generator) spriteVTT(spritePath string, stepSize float64) generateFn {

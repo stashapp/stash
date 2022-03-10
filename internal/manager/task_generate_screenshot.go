@@ -56,6 +56,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		At: &at,
 	}); err != nil {
 		logger.Errorf("Error generating screenshot: %v", err)
+		logErrorOutput(err)
 		return
 	}
 

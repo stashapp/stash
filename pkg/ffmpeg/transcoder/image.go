@@ -21,7 +21,9 @@ func ImageThumbnail(input string, options ImageThumbnailOptions) ffmpeg.Args {
 
 	var args ffmpeg.Args
 
-	args = args.ImageFormat(options.InputFormat).Input(input).
+	args = args.Overwrite().
+		ImageFormat(options.InputFormat).
+		Input(input).
 		VideoFilter(videoFilter).
 		VideoCodec(ffmpeg.VideoCodecMJpeg)
 

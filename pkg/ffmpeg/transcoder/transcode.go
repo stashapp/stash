@@ -58,7 +58,7 @@ func Transcode(input string, options TranscodeOptions) ffmpeg.Args {
 	}
 
 	var args ffmpeg.Args
-	args = args.LogLevel(options.Verbosity)
+	args = args.LogLevel(options.Verbosity).Overwrite()
 
 	if options.XError {
 		args = args.XError()

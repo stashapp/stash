@@ -66,5 +66,5 @@ func (f VideoFilter) Append(s string) VideoFilter {
 		return VideoFilter(s)
 	}
 
-	return VideoFilter(fmt.Sprintf(",%s", s))
+	return VideoFilter(fmt.Sprintf("%s,%s", f, s))
 }

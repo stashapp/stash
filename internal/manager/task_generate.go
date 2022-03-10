@@ -209,19 +209,19 @@ func getGeneratePreviewOptions(optionsInput models.GeneratePreviewOptionsInput) 
 		ret.Segments = *optionsInput.PreviewSegments
 	}
 
-	if optionsInput.PreviewSegmentDuration == nil {
+	if optionsInput.PreviewSegmentDuration != nil {
 		ret.SegmentDuration = *optionsInput.PreviewSegmentDuration
 	}
 
-	if optionsInput.PreviewExcludeStart == nil {
+	if optionsInput.PreviewExcludeStart != nil {
 		ret.ExcludeStart = *optionsInput.PreviewExcludeStart
 	}
 
-	if optionsInput.PreviewExcludeEnd == nil {
+	if optionsInput.PreviewExcludeEnd != nil {
 		ret.ExcludeEnd = *optionsInput.PreviewExcludeEnd
 	}
 
-	if optionsInput.PreviewPreset == nil {
+	if optionsInput.PreviewPreset != nil {
 		ret.Preset = optionsInput.PreviewPreset.String()
 	}
 
@@ -257,6 +257,7 @@ func (j *GenerateJob) queueSceneJobs(g *generate.Generator, scene *models.Scene,
 			Options:             options,
 			Overwrite:           j.overwrite,
 			fileNamingAlgorithm: j.fileNamingAlgo,
+			generator:           g,
 		}
 
 		sceneHash := scene.GetHash(task.fileNamingAlgorithm)
@@ -305,6 +306,7 @@ func (j *GenerateJob) queueSceneJobs(g *generate.Generator, scene *models.Scene,
 			Overwrite:           j.overwrite,
 			Force:               forceTranscode,
 			fileNamingAlgorithm: j.fileNamingAlgo,
+			g:                   g,
 		}
 		if task.isTranscodeNeeded() {
 			totals.transcodes++

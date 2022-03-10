@@ -35,7 +35,7 @@ func (g Generator) Screenshot(ctx context.Context, input string, hash string, vi
 		at = *options.At
 	}
 
-	if err := g.generateFile(ctx, g.MarkerPaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
+	if err := g.generateFile(ctx, g.ScenePaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
 		Time:    at,
 		Quality: screenshotQuality,
 		// default Width is video width
@@ -61,7 +61,7 @@ func (g Generator) Thumbnail(ctx context.Context, input string, hash string, vid
 		at = *options.At
 	}
 
-	if err := g.generateFile(ctx, g.MarkerPaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
+	if err := g.generateFile(ctx, g.ScenePaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
 		Time:    at,
 		Quality: thumbnailQuality,
 		Width:   thumbnailWidth,

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strings"
 )
 
 func Generate(ctx context.Context, f FFMpeg, args Args) error {
@@ -22,9 +23,9 @@ func Generate(ctx context.Context, f FFMpeg, args Args) error {
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
 			exitErr.Stderr = stderr.Bytes()
-			return exitErr
+			err = exitErr
 		}
-		return err
+		return fmt.Errorf("error running ffmpeg command <%s>: %w", strings.Join(args, " "), err)
 	}
 
 	return nil

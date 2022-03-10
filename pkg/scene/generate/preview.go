@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -74,6 +75,8 @@ func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration
 			return nil
 		}
 	}
+
+	logger.Infof("[generator] generating video preview for %s", input)
 
 	if err := g.generateFile(ctx, g.ScenePaths, mp4Pattern, output, g.previewVideo(input, videoDuration, options, fallback)); err != nil {
 		return err
@@ -198,7 +201,9 @@ func (g Generator) generateConcatFile(chunkFiles []string) (fn string, err error
 
 	w := bufio.NewWriter(concatFile)
 	for _, f := range chunkFiles {
-		if _, err := w.WriteString(fmt.Sprintf("file '%s'\n", f)); err != nil {
+		// files in concat file should be relative to concat
+		relFile := filepath.Base(f)
+		if _, err := w.WriteString(fmt.Sprintf("file '%s'\n", relFile)); err != nil {
 			return concatFile.Name(), fmt.Errorf("writing concat file: %w", err)
 		}
 	}
@@ -225,7 +230,7 @@ func removeFiles(list []string) {
 
 // PreviewWebp generates a webp file based on the preview video input.
 // TODO - this should really generate a new webp using chunks.
-func (g Generator) PreviewWebp(ctx context.Context, hash string) error {
+func (g Generator) PreviewWebp(ctx context.Context, input string, hash string) error {
 	output := g.ScenePaths.GetWebpPreviewPath(hash)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {
@@ -233,9 +238,11 @@ func (g Generator) PreviewWebp(ctx context.Context, hash string) error {
 		}
 	}
 
-	input := g.ScenePaths.GetVideoPreviewPath(hash)
+	logger.Infof("[generator] generating webp preview for %s", input)
 
-	if err := g.generateFile(ctx, g.ScenePaths, webpPattern, output, g.previewVideoToImage(input)); err != nil {
+	src := g.ScenePaths.GetVideoPreviewPath(hash)
+
+	if err := g.generateFile(ctx, g.ScenePaths, webpPattern, output, g.previewVideoToImage(src)); err != nil {
 		return err
 	}
 

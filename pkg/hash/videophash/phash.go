@@ -30,7 +30,7 @@ func Generate(encoder ffmpeg.FFMpeg, videoFile *ffmpeg.VideoFile) (*uint64, erro
 
 	hash, err := goimagehash.PerceptionHash(sprite)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("computing phash from sprite: %w", err)
 	}
 	hashValue := hash.GetHash()
 	return &hashValue, nil
@@ -53,7 +53,7 @@ func generateSpriteScreenshot(encoder ffmpeg.FFMpeg, input string, t float64) (i
 
 	img, _, err := image.Decode(reader)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decoding image: %w", err)
 	}
 
 	return img, nil
@@ -88,7 +88,7 @@ func generateSprite(encoder ffmpeg.FFMpeg, videoFile *ffmpeg.VideoFile) (image.I
 
 		img, err := generateSpriteScreenshot(encoder, videoFile.Path, time)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("generating sprite screenshot: %w", err)
 		}
 
 		images = append(images, img)

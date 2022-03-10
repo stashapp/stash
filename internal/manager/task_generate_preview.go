@@ -42,18 +42,20 @@ func (t *GeneratePreviewTask) Start(ctx context.Context) {
 
 	if err := t.generateVideo(videoChecksum, videoFile.Duration); err != nil {
 		logger.Errorf("error generating preview: %v", err)
+		logErrorOutput(err)
 		return
 	}
 
 	if t.ImagePreview {
 		if err := t.generateWebp(videoChecksum); err != nil {
 			logger.Errorf("error generating preview webp: %v", err)
+			logErrorOutput(err)
 		}
 	}
 }
 
 func (t GeneratePreviewTask) generateVideo(videoChecksum string, videoDuration float64) error {
-	videoFilename := t.videoFilename()
+	videoFilename := t.Scene.Path
 
 	if err := t.generator.PreviewVideo(context.TODO(), videoFilename, videoDuration, videoChecksum, t.Options, true); err != nil {
 		logger.Warnf("[generator] failed generating scene preview, trying fallback")
@@ -66,7 +68,8 @@ func (t GeneratePreviewTask) generateVideo(videoChecksum string, videoDuration f
 }
 
 func (t GeneratePreviewTask) generateWebp(videoChecksum string) error {
-	return t.generator.PreviewWebp(context.TODO(), videoChecksum)
+	videoFilename := t.Scene.Path
+	return t.generator.PreviewWebp(context.TODO(), videoFilename, videoChecksum)
 }
 
 func (t GeneratePreviewTask) required() bool {
@@ -92,8 +95,4 @@ func (t *GeneratePreviewTask) doesImagePreviewExist(sceneChecksum string) bool {
 
 	imageExists, _ := fsutil.FileExists(instance.Paths.Scene.GetWebpPreviewPath(sceneChecksum))
 	return imageExists
-}
-
-func (t *GeneratePreviewTask) videoFilename() string {
-	return t.Scene.GetHash(t.fileNamingAlgorithm) + ".mp4"
 }
