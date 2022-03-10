@@ -9,12 +9,6 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 )
 
-func doGenerate(encoder ffmpeg.FFMpeg, fn string, args ffmpeg.Args) error {
-	ctx, cancel := readLockManager.ReadLock(context.Background(), fn)
-	defer cancel()
-	return ffmpeg.Generate(ctx, encoder, args)
-}
-
 func doGenerateOutput(encoder ffmpeg.FFMpeg, fn string, args ffmpeg.Args) ([]byte, error) {
 	ctx, cancel := readLockManager.ReadLock(context.Background(), fn)
 	defer cancel()

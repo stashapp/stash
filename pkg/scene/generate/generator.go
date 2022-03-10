@@ -36,6 +36,8 @@ type ScenePaths interface {
 
 	GetScreenshotPath(checksum string) string
 	GetThumbnailScreenshotPath(checksum string) string
+
+	GetTranscodePath(checksum string) string
 }
 
 type Generator struct {

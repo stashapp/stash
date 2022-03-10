@@ -5,11 +5,10 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/internal/video/encoder"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
 type GenerateTranscodeTask struct {
@@ -19,6 +18,8 @@ type GenerateTranscodeTask struct {
 
 	// is true, generate even if video is browser-supported
 	Force bool
+
+	g *generate.Generator
 }
 
 func (t *GenerateTranscodeTask) GetDescription() string {
@@ -57,6 +58,8 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 		return
 	}
 
+	// TODO - move transcode generation logic elsewhere
+
 	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("[transcode] error reading video file: %s", err.Error())
@@ -64,30 +67,27 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 	}
 
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
-	outputPath := instance.Paths.Generated.GetTmpPath(sceneHash + ".mp4")
 	transcodeSize := config.GetInstance().GetMaxTranscodeSize()
 
 	w, h := videoFile.TranscodeScale(transcodeSize.GetMaxResolution())
 
-	options := encoder.TranscodeOptions{
+	options := generate.TranscodeOptions{
 		Width:  w,
 		Height: h,
 	}
 
-	ff := instance.FFMPEG
-
 	if videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
 		if audioCodec == ffmpeg.MissingUnsupported {
-			err = encoder.CopyVideo(ff, videoFile.Path, outputPath, options)
+			err = t.g.TranscodeCopyVideo(context.TODO(), videoFile.Path, sceneHash, options)
 		} else {
-			err = encoder.TranscodeAudio(ff, videoFile.Path, outputPath, options)
+			err = t.g.TranscodeAudio(context.TODO(), videoFile.Path, sceneHash, options)
 		}
 	} else {
 		if audioCodec == ffmpeg.MissingUnsupported {
-			// ffmpeg fails if it trys to transcode an unsupported audio codec
-			err = encoder.TranscodeVideo(ff, videoFile.Path, outputPath, options)
+			// ffmpeg fails if it tries to transcode an unsupported audio codec
+			err = t.g.TranscodeVideo(context.TODO(), videoFile.Path, sceneHash, options)
 		} else {
-			err = encoder.Transcode(ff, videoFile.Path, outputPath, options)
+			err = t.g.Transcode(context.TODO(), videoFile.Path, sceneHash, options)
 		}
 	}
 
@@ -95,13 +95,6 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 		logger.Errorf("[transcode] error generating transcode: %v", err)
 		return
 	}
-
-	if err := fsutil.SafeMove(outputPath, instance.Paths.Scene.GetTranscodePath(sceneHash)); err != nil {
-		logger.Errorf("[transcode] error generating transcode: %s", err.Error())
-		return
-	}
-
-	logger.Debugf("[transcode] <%s> created transcode: %s", sceneHash, outputPath)
 }
 
 // return true if transcode is needed
