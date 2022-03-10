@@ -851,7 +851,10 @@
       "next_step": "Kun olet valmis etenemään järjestelmän luontiin, paina Seuraava.",
       "unable_to_locate_specified_config": "Mikäli luet tätä, Stash ei löydä konfiguraatiotiedostoa, joka on määritelty joko komentorivillä tai muualla. Tämä velho auttaa sinua uuden konfiguraation luomisessa."
     },
-    "welcome_to_stash": "Tervetuloa Stashiin"
+    "welcome_to_stash": "Tervetuloa Stashiin",
+    "folder": {
+      "up_dir": "Ylös"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash ID:t",
@@ -898,7 +901,6 @@
   "total": "Yhteensä",
   "true": "On",
   "twitter": "Twitter",
-  "up-dir": "Ylös",
   "updated_at": "Päivitetty",
   "url": "URL",
   "videos": "Videot",

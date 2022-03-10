@@ -903,7 +903,10 @@
       "next_step": "新しいシステムの構築準備が整ったら、次へをクリックしてください。",
       "unable_to_locate_specified_config": "このメッセージをお読みいただいている場合、Stashはコマンドラインまたは環境変数で指定された構成ファイルを見つけることができませんでした。 このウィザードで、新しい構成をセットアップするプロセスをご案内します。"
     },
-    "welcome_to_stash": "Stashへようこそ"
+    "welcome_to_stash": "Stashへようこそ",
+    "folder": {
+      "up_dir": "上の階層へ"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash ID",
@@ -951,7 +954,6 @@
   "total": "合計",
   "true": "有効",
   "twitter": "Twitter",
-  "up-dir": "上の階層へ",
   "updated_at": "更新日:",
   "url": "URL",
   "videos": "動画",

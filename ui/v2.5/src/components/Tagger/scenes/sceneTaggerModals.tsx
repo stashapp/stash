@@ -4,6 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import StudioModal from "./StudioModal";
 import PerformerModal from "../PerformerModal";
 import { TaggerStateContext } from "../context";
+import { useIntl } from "react-intl";
 
 type PerformerModalCallback = (toCreate?: GQL.PerformerCreateInput) => void;
 type StudioModalCallback = (toCreate?: GQL.StudioCreateInput) => void;
@@ -42,6 +43,8 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
   const [studioCallback, setStudioCallback] = useState<
     StudioModalCallback | undefined
   >();
+
+  const intl = useIntl();
 
   function handlePerformerSave(toCreate: GQL.PerformerCreateInput) {
     if (performerCallback) {
@@ -110,7 +113,10 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
           performer={performerToCreate}
           onSave={handlePerformerSave}
           icon="tags"
-          header="Create Performer"
+          header={intl.formatMessage(
+            { id: "actions.create_entity" },
+            { entityType: intl.formatMessage({ id: "performer" }) }
+          )}
           endpoint={endpoint}
           create
         />
@@ -122,7 +128,10 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
           studio={studioToCreate}
           handleStudioCreate={handleStudioSave}
           icon="tags"
-          header="Create Studio"
+          header={intl.formatMessage(
+            { id: "actions.create_entity" },
+            { entityType: intl.formatMessage({ id: "studio" }) }
+          )}
         />
       )}
       {children}

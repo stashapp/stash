@@ -37,6 +37,7 @@ func TestImagePerformers(t *testing.T) {
 		mockPerformerReader := &mocks.PerformerReaderWriter{}
 		mockImageReader := &mocks.ImageReaderWriter{}
 
+		mockPerformerReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockPerformerReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		if test.Matches {
@@ -48,7 +49,7 @@ func TestImagePerformers(t *testing.T) {
 			ID:   imageID,
 			Path: test.Path,
 		}
-		err := ImagePerformers(&image, mockImageReader, mockPerformerReader)
+		err := ImagePerformers(&image, mockImageReader, mockPerformerReader, nil)
 
 		assert.Nil(err)
 		mockPerformerReader.AssertExpectations(t)
@@ -92,7 +93,7 @@ func TestImageStudios(t *testing.T) {
 			ID:   imageID,
 			Path: test.Path,
 		}
-		err := ImageStudios(&image, mockImageReader, mockStudioReader)
+		err := ImageStudios(&image, mockImageReader, mockStudioReader, nil)
 
 		assert.Nil(err)
 		mockStudioReader.AssertExpectations(t)
@@ -103,6 +104,7 @@ func TestImageStudios(t *testing.T) {
 		mockStudioReader := &mocks.StudioReaderWriter{}
 		mockImageReader := &mocks.ImageReaderWriter{}
 
+		mockStudioReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
 		mockStudioReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
 
@@ -117,6 +119,7 @@ func TestImageStudios(t *testing.T) {
 		mockStudioReader := &mocks.StudioReaderWriter{}
 		mockImageReader := &mocks.ImageReaderWriter{}
 
+		mockStudioReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
 		mockStudioReader.On("GetAliases", studioID).Return([]string{
 			studioName,
@@ -159,7 +162,7 @@ func TestImageTags(t *testing.T) {
 			ID:   imageID,
 			Path: test.Path,
 		}
-		err := ImageTags(&image, mockImageReader, mockTagReader)
+		err := ImageTags(&image, mockImageReader, mockTagReader, nil)
 
 		assert.Nil(err)
 		mockTagReader.AssertExpectations(t)
@@ -170,6 +173,7 @@ func TestImageTags(t *testing.T) {
 		mockTagReader := &mocks.TagReaderWriter{}
 		mockImageReader := &mocks.ImageReaderWriter{}
 
+		mockTagReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
 		mockTagReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
 
@@ -184,6 +188,7 @@ func TestImageTags(t *testing.T) {
 		mockTagReader := &mocks.TagReaderWriter{}
 		mockImageReader := &mocks.ImageReaderWriter{}
 
+		mockTagReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
 		mockTagReader.On("GetAliases", tagID).Return([]string{
 			tagName,

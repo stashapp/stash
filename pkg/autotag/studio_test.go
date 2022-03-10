@@ -20,39 +20,39 @@ type testStudioCase struct {
 var testStudioCases = []testStudioCase{
 	{
 		"studio name",
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		"",
 		"",
 	},
 	{
 		"studio + name",
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		"",
 		"",
 	},
 	{
 		`studio + name\`,
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
 		"",
 		"",
 	},
 	{
 		"studio name",
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		"alias name",
-		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 	},
 	{
 		"studio + name",
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		"alias + name",
-		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 	},
 	{
 		`studio + name\`,
-		`(?i)(?:^|_|[^\w\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
 		`alias + name\`,
-		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
 	},
 }
 
@@ -142,7 +142,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioScenes(&studio, nil, aliases, mockSceneReader)
+	err := StudioScenes(&studio, nil, aliases, mockSceneReader, nil)
 
 	assert := assert.New(t)
 
@@ -234,7 +234,7 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioImages(&studio, nil, aliases, mockImageReader)
+	err := StudioImages(&studio, nil, aliases, mockImageReader, nil)
 
 	assert := assert.New(t)
 
@@ -324,7 +324,7 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioGalleries(&studio, nil, aliases, mockGalleryReader)
+	err := StudioGalleries(&studio, nil, aliases, mockGalleryReader, nil)
 
 	assert := assert.New(t)
 

@@ -288,14 +288,14 @@ export const SettingModal = <T extends {}>(props: ISettingModal<T>) => {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => close()}>
-            Cancel
+            <FormattedMessage id="actions.cancel" />
           </Button>
           <Button
             type="submit"
             variant="primary"
             onClick={() => close(currentValue)}
           >
-            Confirm
+            <FormattedMessage id="actions.confirm" />
           </Button>
         </Modal.Footer>
       </Form>
