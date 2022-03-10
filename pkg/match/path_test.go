@@ -55,6 +55,12 @@ func Test_nameMatchesPath(t *testing.T) {
 			6,
 		},
 		{
+			"within string case insensitive",
+			name,
+			"before FIRST last/after",
+			6,
+		},
+		{
 			"not within string",
 			name,
 			"beforefirst last/after",
