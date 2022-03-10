@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
 type GenerateScreenshotTask struct {
@@ -44,7 +45,19 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	// which also generates the thumbnail
 
 	logger.Debugf("Creating screenshot for %s", scenePath)
-	makeScreenshot(instance.FFMPEG, probeResult.Path, normalPath, 2, probeResult.Width, at)
+
+	g := generate.Generator{
+		Encoder:    instance.FFMPEG,
+		ScenePaths: instance.Paths.Scene,
+		Overwrite:  true,
+	}
+
+	if err := g.Screenshot(context.TODO(), probeResult.Path, checksum, probeResult.Width, probeResult.Duration, generate.ScreenshotOptions{
+		At: &at,
+	}); err != nil {
+		logger.Errorf("Error generating screenshot: %v", err)
+		return
+	}
 
 	f, err := os.Open(normalPath)
 	if err != nil {

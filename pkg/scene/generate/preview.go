@@ -68,14 +68,14 @@ func (g PreviewOptions) getStepSizeAndOffset(videoDuration float64) (stepSize fl
 }
 
 func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration float64, hash string, options PreviewOptions, fallback bool) error {
-	output := g.PreviewPaths.GetVideoPreviewPath(hash)
+	output := g.ScenePaths.GetVideoPreviewPath(hash)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {
 			return nil
 		}
 	}
 
-	if err := g.generateFile(ctx, g.PreviewPaths, mp4Pattern, output, g.previewVideo(input, videoDuration, options, fallback)); err != nil {
+	if err := g.generateFile(ctx, g.ScenePaths, mp4Pattern, output, g.previewVideo(input, videoDuration, options, fallback)); err != nil {
 		return err
 	}
 
@@ -103,7 +103,7 @@ func (g *Generator) previewVideo(input string, videoDuration float64, options Pr
 		}
 
 		for i := 0; i < options.Segments; i++ {
-			chunkFile, err := g.tempFile(g.PreviewPaths, mp4Pattern)
+			chunkFile, err := g.tempFile(g.ScenePaths, mp4Pattern)
 			if err != nil {
 				return fmt.Errorf("generating video preview chunk file: %w", err)
 			}
@@ -190,7 +190,7 @@ func (g Generator) previewVideoChunk(ctx context.Context, fn string, options pre
 }
 
 func (g Generator) generateConcatFile(chunkFiles []string) (fn string, err error) {
-	concatFile, err := g.PreviewPaths.TempFile(txtPattern)
+	concatFile, err := g.ScenePaths.TempFile(txtPattern)
 	if err != nil {
 		return "", fmt.Errorf("creating concat file: %w", err)
 	}
@@ -226,16 +226,16 @@ func removeFiles(list []string) {
 // PreviewWebp generates a webp file based on the preview video input.
 // TODO - this should really generate a new webp using chunks.
 func (g Generator) PreviewWebp(ctx context.Context, hash string) error {
-	output := g.PreviewPaths.GetWebpPreviewPath(hash)
+	output := g.ScenePaths.GetWebpPreviewPath(hash)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {
 			return nil
 		}
 	}
 
-	input := g.PreviewPaths.GetVideoPreviewPath(hash)
+	input := g.ScenePaths.GetVideoPreviewPath(hash)
 
-	if err := g.generateFile(ctx, g.PreviewPaths, webpPattern, output, g.previewVideoToImage(input)); err != nil {
+	if err := g.generateFile(ctx, g.ScenePaths, webpPattern, output, g.previewVideoToImage(input)); err != nil {
 		return err
 	}
 

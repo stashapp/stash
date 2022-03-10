@@ -28,18 +28,21 @@ type MarkerPaths interface {
 	GetScreenshotPath(checksum string, seconds int) string
 }
 
-type PreviewPaths interface {
+type ScenePaths interface {
 	Paths
 
 	GetVideoPreviewPath(checksum string) string
 	GetWebpPreviewPath(checksum string) string
+
+	GetScreenshotPath(checksum string) string
+	GetThumbnailScreenshotPath(checksum string) string
 }
 
 type Generator struct {
-	Encoder      ffmpeg.FFMpeg
-	MarkerPaths  MarkerPaths
-	PreviewPaths PreviewPaths
-	Overwrite    bool
+	Encoder     ffmpeg.FFMpeg
+	MarkerPaths MarkerPaths
+	ScenePaths  ScenePaths
+	Overwrite   bool
 }
 
 type generateFn func(ctx context.Context, tmpFn string) error

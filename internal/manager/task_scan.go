@@ -325,10 +325,10 @@ func (t *ScanTask) Start(ctx context.Context) {
 			const overwrite = false
 
 			g := &generate.Generator{
-				Encoder:      instance.FFMPEG,
-				MarkerPaths:  instance.Paths.SceneMarkers,
-				PreviewPaths: instance.Paths.Scene,
-				Overwrite:    overwrite,
+				Encoder:     instance.FFMPEG,
+				MarkerPaths: instance.Paths.SceneMarkers,
+				ScenePaths:  instance.Paths.Scene,
+				Overwrite:   overwrite,
 			}
 
 			taskPreview := GeneratePreviewTask{

@@ -2,13 +2,12 @@ package scene
 
 import (
 	"bytes"
+	"context"
 	"image"
 	"image/jpeg"
 	"os"
 
-	"github.com/stashapp/stash/internal/video/encoder"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 
@@ -20,20 +19,8 @@ import (
 )
 
 type screenshotter interface {
-	Screenshot(input string, options encoder.ScreenshotOptions) error
-}
-
-func makeScreenshot(ss screenshotter, probeResult ffmpeg.VideoFile, outputPath string, quality int, width int, time float64) {
-	options := encoder.ScreenshotOptions{
-		OutputPath: outputPath,
-		Quality:    quality,
-		Time:       time,
-		Width:      width,
-	}
-
-	if err := ss.Screenshot(probeResult.Path, options); err != nil {
-		logger.Warnf("[encoder] failure to generate screenshot: %v", err)
-	}
+	GenerateScreenshot(ctx context.Context, probeResult *ffmpeg.VideoFile, hash string) error
+	GenerateThumbnail(ctx context.Context, probeResult *ffmpeg.VideoFile, hash string) error
 }
 
 type ScreenshotSetter interface {
