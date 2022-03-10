@@ -22,7 +22,7 @@ import (
 const spriteScreenshotWidth = 160
 
 type SpriteGenerator struct {
-	Info *GeneratorInfo
+	Info *generatorInfo
 
 	VideoChecksum   string
 	ImageOutputPath string

@@ -23,12 +23,12 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 	newPath = scenePaths.GetScreenshotPath(newHash)
 	migrateSceneFiles(oldPath, newPath)
 
-	oldPath = scenePaths.GetStreamPreviewPath(oldHash)
-	newPath = scenePaths.GetStreamPreviewPath(newHash)
+	oldPath = scenePaths.GetVideoPreviewPath(oldHash)
+	newPath = scenePaths.GetVideoPreviewPath(newHash)
 	migrateSceneFiles(oldPath, newPath)
 
-	oldPath = scenePaths.GetStreamPreviewImagePath(oldHash)
-	newPath = scenePaths.GetStreamPreviewImagePath(newHash)
+	oldPath = scenePaths.GetWebpPreviewPath(oldHash)
+	newPath = scenePaths.GetWebpPreviewPath(newHash)
 	migrateSceneFiles(oldPath, newPath)
 
 	oldPath = scenePaths.GetTranscodePath(oldHash)

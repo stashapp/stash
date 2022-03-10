@@ -48,13 +48,13 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 		files = append(files, normalPath)
 	}
 
-	streamPreviewPath := d.Paths.Scene.GetStreamPreviewPath(sceneHash)
+	streamPreviewPath := d.Paths.Scene.GetVideoPreviewPath(sceneHash)
 	exists, _ = fsutil.FileExists(streamPreviewPath)
 	if exists {
 		files = append(files, streamPreviewPath)
 	}
 
-	streamPreviewImagePath := d.Paths.Scene.GetStreamPreviewImagePath(sceneHash)
+	streamPreviewImagePath := d.Paths.Scene.GetWebpPreviewPath(sceneHash)
 	exists, _ = fsutil.FileExists(streamPreviewImagePath)
 	if exists {
 		files = append(files, streamPreviewImagePath)

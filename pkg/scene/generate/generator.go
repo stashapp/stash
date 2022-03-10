@@ -9,6 +9,13 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 )
 
+const (
+	mp4Pattern  = "*.mp4"
+	webpPattern = "*.webp"
+	jpgPattern  = "*.jpg"
+	txtPattern  = "*.txt"
+)
+
 type Paths interface {
 	TempFile(pattern string) (*os.File, error)
 }
@@ -21,16 +28,24 @@ type MarkerPaths interface {
 	GetScreenshotPath(checksum string, seconds int) string
 }
 
+type PreviewPaths interface {
+	Paths
+
+	GetVideoPreviewPath(checksum string) string
+	GetWebpPreviewPath(checksum string) string
+}
+
 type Generator struct {
-	Encoder     ffmpeg.FFMpeg
-	MarkerPaths MarkerPaths
-	Overwrite   bool
+	Encoder      ffmpeg.FFMpeg
+	MarkerPaths  MarkerPaths
+	PreviewPaths PreviewPaths
+	Overwrite    bool
 }
 
 type generateFn func(ctx context.Context, tmpFn string) error
 
 func (g Generator) tempFile(p Paths, pattern string) (*os.File, error) {
-	tmpFile, err := p.TempFile("*.mp4") // tmp output in case the process ends abruptly
+	tmpFile, err := p.TempFile(pattern) // tmp output in case the process ends abruptly
 	if err != nil {
 		return nil, fmt.Errorf("creating temporary file: %w", err)
 	}

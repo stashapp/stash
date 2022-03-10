@@ -201,7 +201,7 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	filepath := manager.GetInstance().Paths.Scene.GetVideoPreviewPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 	serveFileNoCache(w, r, filepath)
 }
 
@@ -215,7 +215,7 @@ func serveFileNoCache(w http.ResponseWriter, r *http.Request, filepath string) {
 
 func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	filepath := manager.GetInstance().Paths.Scene.GetWebpPreviewPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 	http.ServeFile(w, r, filepath)
 }
 

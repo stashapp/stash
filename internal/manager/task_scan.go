@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -320,28 +321,23 @@ func (t *ScanTask) Start(ctx context.Context) {
 		iwg.Add()
 
 		go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", path), func() {
-			config := config.GetInstance()
-			var previewSegmentDuration = config.GetPreviewSegmentDuration()
-			var previewSegments = config.GetPreviewSegments()
-			var previewExcludeStart = config.GetPreviewExcludeStart()
-			var previewExcludeEnd = config.GetPreviewExcludeEnd()
-			var previewPresent = config.GetPreviewPreset()
+			options := getGeneratePreviewOptions(models.GeneratePreviewOptionsInput{})
+			const overwrite = false
 
-			// NOTE: the reuse of this model like this is painful.
-			previewOptions := models.GeneratePreviewOptionsInput{
-				PreviewSegments:        &previewSegments,
-				PreviewSegmentDuration: &previewSegmentDuration,
-				PreviewExcludeStart:    &previewExcludeStart,
-				PreviewExcludeEnd:      &previewExcludeEnd,
-				PreviewPreset:          &previewPresent,
+			g := &generate.Generator{
+				Encoder:      instance.FFMPEG,
+				MarkerPaths:  instance.Paths.SceneMarkers,
+				PreviewPaths: instance.Paths.Scene,
+				Overwrite:    overwrite,
 			}
 
 			taskPreview := GeneratePreviewTask{
 				Scene:               *s,
 				ImagePreview:        t.GenerateImagePreview,
-				Options:             previewOptions,
-				Overwrite:           false,
+				Options:             options,
+				Overwrite:           overwrite,
 				fileNamingAlgorithm: t.fileNamingAlgorithm,
+				generator:           g,
 			}
 			taskPreview.Start(ctx)
 			iwg.Done()

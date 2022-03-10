@@ -68,15 +68,22 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			logger.Error(err.Error())
 		}
 
+		g := &generate.Generator{
+			Encoder:      instance.FFMPEG,
+			MarkerPaths:  instance.Paths.SceneMarkers,
+			PreviewPaths: instance.Paths.Scene,
+			Overwrite:    j.overwrite,
+		}
+
 		if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			qb := r.Scene()
 			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 {
-				totals = j.queueTasks(ctx, queue)
+				totals = j.queueTasks(ctx, g, queue)
 			} else {
 				if len(j.input.SceneIDs) > 0 {
 					scenes, err = qb.FindMany(sceneIDs)
 					for _, s := range scenes {
-						j.queueSceneJobs(s, queue, &totals)
+						j.queueSceneJobs(g, s, queue, &totals)
 					}
 				}
 
@@ -86,7 +93,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 						return err
 					}
 					for _, m := range markers {
-						j.queueMarkerJob(m, queue, &totals)
+						j.queueMarkerJob(g, m, queue, &totals)
 					}
 				}
 			}
@@ -143,7 +150,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 	logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 }
 
-func (j *GenerateJob) queueTasks(ctx context.Context, queue chan<- Task) totalsGenerate {
+func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, queue chan<- Task) totalsGenerate {
 	var totals totalsGenerate
 
 	const batchSize = 1000
@@ -166,7 +173,7 @@ func (j *GenerateJob) queueTasks(ctx context.Context, queue chan<- Task) totalsG
 					return context.Canceled
 				}
 
-				j.queueSceneJobs(ss, queue, &totals)
+				j.queueSceneJobs(g, ss, queue, &totals)
 			}
 
 			if len(scenes) != batchSize {
@@ -186,7 +193,42 @@ func (j *GenerateJob) queueTasks(ctx context.Context, queue chan<- Task) totalsG
 	return totals
 }
 
-func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, totals *totalsGenerate) {
+func getGeneratePreviewOptions(optionsInput models.GeneratePreviewOptionsInput) generate.PreviewOptions {
+	config := config.GetInstance()
+
+	ret := generate.PreviewOptions{
+		Segments:        config.GetPreviewSegments(),
+		SegmentDuration: config.GetPreviewSegmentDuration(),
+		ExcludeStart:    config.GetPreviewExcludeStart(),
+		ExcludeEnd:      config.GetPreviewExcludeEnd(),
+		Preset:          config.GetPreviewPreset().String(),
+		Audio:           config.GetPreviewAudio(),
+	}
+
+	if optionsInput.PreviewSegments != nil {
+		ret.Segments = *optionsInput.PreviewSegments
+	}
+
+	if optionsInput.PreviewSegmentDuration == nil {
+		ret.SegmentDuration = *optionsInput.PreviewSegmentDuration
+	}
+
+	if optionsInput.PreviewExcludeStart == nil {
+		ret.ExcludeStart = *optionsInput.PreviewExcludeStart
+	}
+
+	if optionsInput.PreviewExcludeEnd == nil {
+		ret.ExcludeEnd = *optionsInput.PreviewExcludeEnd
+	}
+
+	if optionsInput.PreviewPreset == nil {
+		ret.Preset = optionsInput.PreviewPreset.String()
+	}
+
+	return ret
+}
+
+func (j *GenerateJob) queueSceneJobs(g *generate.Generator, scene *models.Scene, queue chan<- Task, totals *totalsGenerate) {
 	if utils.IsTrue(j.input.Sprites) {
 		task := &GenerateSpriteTask{
 			Scene:               *scene,
@@ -201,17 +243,18 @@ func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, tot
 		}
 	}
 
+	generatePreviewOptions := j.input.PreviewOptions
+	if generatePreviewOptions == nil {
+		generatePreviewOptions = &models.GeneratePreviewOptionsInput{}
+	}
+	options := getGeneratePreviewOptions(*generatePreviewOptions)
+
 	if utils.IsTrue(j.input.Previews) {
-		generatePreviewOptions := j.input.PreviewOptions
-		if generatePreviewOptions == nil {
-			generatePreviewOptions = &models.GeneratePreviewOptionsInput{}
-		}
-		setGeneratePreviewOptionsInput(generatePreviewOptions)
 
 		task := &GeneratePreviewTask{
 			Scene:               *scene,
 			ImagePreview:        utils.IsTrue(j.input.ImagePreviews),
-			Options:             *generatePreviewOptions,
+			Options:             options,
 			Overwrite:           j.overwrite,
 			fileNamingAlgorithm: j.fileNamingAlgo,
 		}
@@ -232,12 +275,6 @@ func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, tot
 			totals.tasks++
 			queue <- task
 		}
-	}
-
-	g := &generate.Generator{
-		Encoder:     instance.FFMPEG,
-		MarkerPaths: instance.Paths.SceneMarkers,
-		Overwrite:   j.overwrite,
 	}
 
 	if utils.IsTrue(j.input.Markers) {
@@ -307,12 +344,13 @@ func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, tot
 	}
 }
 
-func (j *GenerateJob) queueMarkerJob(marker *models.SceneMarker, queue chan<- Task, totals *totalsGenerate) {
+func (j *GenerateJob) queueMarkerJob(g *generate.Generator, marker *models.SceneMarker, queue chan<- Task, totals *totalsGenerate) {
 	task := &GenerateMarkersTask{
 		TxnManager:          j.txnManager,
 		Marker:              marker,
 		Overwrite:           j.overwrite,
 		fileNamingAlgorithm: j.fileNamingAlgo,
+		generator:           g,
 	}
 	totals.markers++
 	totals.tasks++

@@ -28,7 +28,7 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 		}
 	}
 
-	if err := g.generateFile(ctx, g.MarkerPaths, "*.mp4", output, g.markerPreviewVideo(input, sceneMarkerOptions{
+	if err := g.generateFile(ctx, g.MarkerPaths, mp4Pattern, output, g.markerPreviewVideo(input, sceneMarkerOptions{
 		Seconds: seconds,
 		Audio:   includeAudio,
 	})); err != nil {
@@ -95,7 +95,7 @@ func (g Generator) SceneMarkerWebp(ctx context.Context, input string, hash strin
 		}
 	}
 
-	if err := g.generateFile(ctx, g.MarkerPaths, "*.webp", output, g.sceneMarkerWebp(input, sceneMarkerOptions{
+	if err := g.generateFile(ctx, g.MarkerPaths, webpPattern, output, g.sceneMarkerWebp(input, sceneMarkerOptions{
 		Seconds: seconds,
 	})); err != nil {
 		return err
@@ -145,7 +145,7 @@ func (g Generator) SceneMarkerScreenshot(ctx context.Context, input string, hash
 		}
 	}
 
-	if err := g.generateFile(ctx, g.MarkerPaths, "*.jpg", output, g.sceneMarkerScreenshot(input, SceneMarkerScreenshotOptions{
+	if err := g.generateFile(ctx, g.MarkerPaths, jpgPattern, output, g.sceneMarkerScreenshot(input, SceneMarkerScreenshotOptions{
 		Seconds: seconds,
 		Width:   width,
 	})); err != nil {
