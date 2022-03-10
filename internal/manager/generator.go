@@ -21,13 +21,7 @@ type generatorInfo struct {
 	// NthFrame used for sprite generation
 	NthFrame int
 
-	ChunkDuration float64
-	ExcludeStart  string
-	ExcludeEnd    string
-
 	VideoFile ffmpeg.VideoFile
-
-	Audio bool // used for preview generation
 }
 
 func newGeneratorInfo(videoFile ffmpeg.VideoFile) (*generatorInfo, error) {

@@ -14,6 +14,7 @@ const (
 	webpPattern = "*.webp"
 	jpgPattern  = "*.jpg"
 	txtPattern  = "*.txt"
+	vttPattern  = "*.vtt"
 )
 
 type Paths interface {
@@ -36,6 +37,9 @@ type ScenePaths interface {
 
 	GetScreenshotPath(checksum string) string
 	GetThumbnailScreenshotPath(checksum string) string
+
+	GetSpriteImageFilePath(checksum string) string
+	GetSpriteVttFilePath(checksum string) string
 
 	GetTranscodePath(checksum string) string
 }
