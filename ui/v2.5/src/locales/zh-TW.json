@@ -28,10 +28,12 @@
     "delete_file": "刪除檔案",
     "delete_file_and_funscript": "刪除檔案 (及其 Funscript)",
     "delete_generated_supporting_files": "刪除已生成的資訊檔案",
+    "delete_stashid": "刪除 StashID",
     "disallow": "不允許",
     "download": "下載",
     "download_backup": "下載備份",
     "edit": "編輯",
+    "edit_entity": "編輯{entityType}",
     "export": "匯出…",
     "export_all": "匯出所有…",
     "find": "搜尋",
@@ -50,11 +52,13 @@
     "ignore": "忽略",
     "import": "匯入…",
     "import_from_file": "自檔案匯入",
+    "logout": "登出",
     "merge": "合併",
     "merge_from": "與其他項目合併",
     "merge_into": "合併至其他項目",
     "next_action": "下一步",
     "not_running": "尚未運行",
+    "open_in_external_player": "透過外部播放器開啟",
     "open_random": "隨機開啟",
     "overwrite": "覆寫",
     "play_random": "隨機播放",
@@ -65,6 +69,7 @@
     "reload_plugins": "重新整理插件",
     "reload_scrapers": "重新整理爬蟲",
     "remove": "移除",
+    "remove_from_gallery": "自圖庫中移除",
     "rename_gen_files": "重新命名已產生的檔案",
     "rescan": "重新掃描",
     "reshuffle": "重新隨機排列",
@@ -79,6 +84,7 @@
     "scrape_with": "透過爬蟲取得資訊…",
     "search": "搜尋",
     "select_all": "全選",
+    "select_entity": "選擇{entityType}",
     "select_folders": "選擇資料夾",
     "select_none": "清除選擇",
     "selective_auto_tag": "選擇性套用標籤",
@@ -102,12 +108,7 @@
     "temp_disable": "暫時關閉…",
     "temp_enable": "暫時啟用…",
     "use_default": "使用預設選項",
-    "view_random": "隨機開啟",
-    "logout": "登出",
-    "remove_from_gallery": "自圖庫中移除",
-    "delete_stashid": "刪除 StashID",
-    "edit_entity": "編輯{entityType}",
-    "open_in_external_player": "透過外部播放器開啟"
+    "view_random": "隨機開啟"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -198,20 +199,20 @@
     "dlna": {
       "allow_temp_ip": "允許 {tempIP}",
       "allowed_ip_addresses": "已允許的 IP 位址",
+      "allowed_ip_temporarily": "已暫時允許 IP 位址",
       "default_ip_whitelist": "預設 IP 白名單",
       "default_ip_whitelist_desc": "預設可存取 DLNA 的 IP 位址，使用 {wildcard} 以允許所有 IP 位址。",
+      "disabled_dlna_temporarily": "已暫時關閉 DLNA 伺服器",
+      "disallowed_ip": "已禁止的 IP 位址",
       "enabled_by_default": "預設啟用",
+      "enabled_dlna_temporarily": "已暫時開啟 DLNA 伺服器",
       "network_interfaces": "網路裝置",
       "network_interfaces_desc": "選擇要在哪個網路裝置上開放 DLNA 連線。當本列表為空時，則會在所有網路裝置上聽取連線。需重啟。",
       "recent_ip_addresses": "最近的 IP 位址",
       "server_display_name": "伺服器顯示名稱",
       "server_display_name_desc": "DLNA 伺服器的顯示名稱。如果為空，則預設為 {server_name}。",
-      "until_restart": "直到重啟",
-      "allowed_ip_temporarily": "已暫時允許 IP 位址",
-      "disabled_dlna_temporarily": "已暫時關閉 DLNA 伺服器",
-      "disallowed_ip": "已禁止的 IP 位址",
-      "enabled_dlna_temporarily": "已暫時開啟 DLNA 伺服器",
-      "successfully_cancelled_temporary_behaviour": "已關閉暫時啟用伺服器的功能"
+      "successfully_cancelled_temporary_behaviour": "已關閉暫時啟用伺服器的功能",
+      "until_restart": "直到重啟"
     },
     "general": {
       "auth": {
@@ -860,6 +861,10 @@
       "something_went_wrong_description": "如果您所輸入的資料看起來有問題，請點選上一步返回以更正您的資料。否則，請在 {githubLink} 上提出錯誤或在 {discordLink} 中尋求幫助。",
       "something_went_wrong_while_setting_up_your_system": "設定系統時出了些問題。以下是我們收到的錯誤：{error}"
     },
+    "folder": {
+      "file_path": "檔案路徑",
+      "up_dir": "往上一層"
+    },
     "github_repository": "GitHub 版本庫",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "備份資料庫路徑（留空以關閉備份）：",
@@ -913,11 +918,7 @@
       "next_step": "當您準備繼續設定時，點擊「下一步」。",
       "unable_to_locate_specified_config": "如果看到此畫面的話，則代表 Stash 無法找到您在命令列所提供的設定檔路徑。本安裝畫面將帶您建立新的設定檔案。"
     },
-    "welcome_to_stash": "歡迎使用 Stash",
-    "folder": {
-      "up_dir": "往上一層",
-      "file_path": "檔案路徑"
-    }
+    "welcome_to_stash": "歡迎使用 Stash"
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
