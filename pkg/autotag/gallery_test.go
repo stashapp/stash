@@ -37,6 +37,7 @@ func TestGalleryPerformers(t *testing.T) {
 		mockPerformerReader := &mocks.PerformerReaderWriter{}
 		mockGalleryReader := &mocks.GalleryReaderWriter{}
 
+		mockPerformerReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockPerformerReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		if test.Matches {
@@ -48,7 +49,7 @@ func TestGalleryPerformers(t *testing.T) {
 			ID:   galleryID,
 			Path: models.NullString(test.Path),
 		}
-		err := GalleryPerformers(&gallery, mockGalleryReader, mockPerformerReader)
+		err := GalleryPerformers(&gallery, mockGalleryReader, mockPerformerReader, nil)
 
 		assert.Nil(err)
 		mockPerformerReader.AssertExpectations(t)
@@ -92,7 +93,7 @@ func TestGalleryStudios(t *testing.T) {
 			ID:   galleryID,
 			Path: models.NullString(test.Path),
 		}
-		err := GalleryStudios(&gallery, mockGalleryReader, mockStudioReader)
+		err := GalleryStudios(&gallery, mockGalleryReader, mockStudioReader, nil)
 
 		assert.Nil(err)
 		mockStudioReader.AssertExpectations(t)
@@ -103,6 +104,7 @@ func TestGalleryStudios(t *testing.T) {
 		mockStudioReader := &mocks.StudioReaderWriter{}
 		mockGalleryReader := &mocks.GalleryReaderWriter{}
 
+		mockStudioReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
 		mockStudioReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
 
@@ -117,6 +119,7 @@ func TestGalleryStudios(t *testing.T) {
 		mockStudioReader := &mocks.StudioReaderWriter{}
 		mockGalleryReader := &mocks.GalleryReaderWriter{}
 
+		mockStudioReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
 		mockStudioReader.On("GetAliases", studioID).Return([]string{
 			studioName,
@@ -159,7 +162,7 @@ func TestGalleryTags(t *testing.T) {
 			ID:   galleryID,
 			Path: models.NullString(test.Path),
 		}
-		err := GalleryTags(&gallery, mockGalleryReader, mockTagReader)
+		err := GalleryTags(&gallery, mockGalleryReader, mockTagReader, nil)
 
 		assert.Nil(err)
 		mockTagReader.AssertExpectations(t)
@@ -170,6 +173,7 @@ func TestGalleryTags(t *testing.T) {
 		mockTagReader := &mocks.TagReaderWriter{}
 		mockGalleryReader := &mocks.GalleryReaderWriter{}
 
+		mockTagReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
 		mockTagReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
 
@@ -183,6 +187,7 @@ func TestGalleryTags(t *testing.T) {
 		mockTagReader := &mocks.TagReaderWriter{}
 		mockGalleryReader := &mocks.GalleryReaderWriter{}
 
+		mockTagReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
 		mockTagReader.On("GetAliases", tagID).Return([]string{
 			tagName,

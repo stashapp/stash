@@ -25,7 +25,6 @@ interface IMenuItem {
   hotkey: string;
   userCreatable?: boolean;
 }
-
 const messages = defineMessages({
   scenes: {
     id: "scenes",
@@ -231,7 +230,7 @@ export const MainNavbar: React.FC = () => {
         <Button
           className="minimal logout-button d-flex align-items-center"
           href="/logout"
-          title="Log out"
+          title={intl.formatMessage({ id: "actions.logout" })}
         >
           <Icon icon="sign-out-alt" />
         </Button>
@@ -250,7 +249,10 @@ export const MainNavbar: React.FC = () => {
           target="_blank"
           onClick={handleDismiss}
         >
-          <Button className="minimal donate" title="Donate">
+          <Button
+            className="minimal donate"
+            title={intl.formatMessage({ id: "donate" })}
+          >
             <Icon icon="heart" />
             <span className="d-none d-sm-inline">
               {intl.formatMessage(messages.donate)}
@@ -268,7 +270,7 @@ export const MainNavbar: React.FC = () => {
         <Button
           className="nav-utility minimal"
           onClick={() => openManual()}
-          title="Help"
+          title={intl.formatMessage({ id: "help" })}
         >
           <Icon icon="question-circle" />
         </Button>

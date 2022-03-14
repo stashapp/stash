@@ -151,6 +151,9 @@ const (
 	HandyKey        = "handy_key"
 	FunscriptOffset = "funscript_offset"
 
+	ThemeColor        = "theme_color"
+	DefaultThemeColor = "#202b33"
+
 	// Security
 	dangerousAllowPublicWithoutAuth                   = "dangerous_allow_public_without_auth"
 	dangerousAllowPublicWithoutAuthDefault            = "false"
@@ -617,6 +620,10 @@ func (i *Instance) GetPort() int {
 	}
 
 	return ret
+}
+
+func (i *Instance) GetThemeColor() string {
+	return i.getString(ThemeColor)
 }
 
 func (i *Instance) GetExternalHost() string {
@@ -1174,6 +1181,8 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	i.main.SetDefault(PreviewAudio, previewAudioDefault)
 	i.main.SetDefault(SoundOnPreview, false)
+
+	i.main.SetDefault(ThemeColor, DefaultThemeColor)
 
 	i.main.SetDefault(WriteImageThumbnails, writeImageThumbnailsDefault)
 

@@ -21,15 +21,15 @@ func TestPerformerScenes(t *testing.T) {
 	performerNames := []test{
 		{
 			"performer name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		},
 		{
 			"performer + name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		},
 		{
 			`performer + name\`,
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
 		},
 	}
 
@@ -81,7 +81,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 		mockSceneReader.On("UpdatePerformers", sceneID, []int{performerID}).Return(nil).Once()
 	}
 
-	err := PerformerScenes(&performer, nil, mockSceneReader)
+	err := PerformerScenes(&performer, nil, mockSceneReader, nil)
 
 	assert := assert.New(t)
 
@@ -100,11 +100,11 @@ func TestPerformerImages(t *testing.T) {
 	performerNames := []test{
 		{
 			"performer name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		},
 		{
 			"performer + name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		},
 	}
 
@@ -156,7 +156,7 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 		mockImageReader.On("UpdatePerformers", imageID, []int{performerID}).Return(nil).Once()
 	}
 
-	err := PerformerImages(&performer, nil, mockImageReader)
+	err := PerformerImages(&performer, nil, mockImageReader, nil)
 
 	assert := assert.New(t)
 
@@ -175,11 +175,11 @@ func TestPerformerGalleries(t *testing.T) {
 	performerNames := []test{
 		{
 			"performer name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		},
 		{
 			"performer + name",
-			`(?i)(?:^|_|[^\w\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		},
 	}
 
@@ -230,7 +230,7 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 		mockGalleryReader.On("UpdatePerformers", galleryID, []int{performerID}).Return(nil).Once()
 	}
 
-	err := PerformerGalleries(&performer, nil, mockGalleryReader)
+	err := PerformerGalleries(&performer, nil, mockGalleryReader, nil)
 
 	assert := assert.New(t)
 

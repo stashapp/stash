@@ -901,7 +901,10 @@
       "next_step": "När du är redo att fortsätta med uppstarten av ett nytt system tryck på Nästa.",
       "unable_to_locate_specified_config": "Om du läser detta så kunde Stash inte hitta konfigurationsfilen som specifierades via kommandoraden eller miljön. Denna hjälp kommer guida dig genom processen av att ställa in en ny konfiguration."
     },
-    "welcome_to_stash": "Välkommen till Stash"
+    "welcome_to_stash": "Välkommen till Stash",
+    "folder": {
+      "up_dir": "Upp en mapp"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash ID:er",
@@ -949,7 +952,6 @@
   "total": "Total",
   "true": "Sant",
   "twitter": "Twitter",
-  "up-dir": "Upp en mapp",
   "updated_at": "Uppdaterad vid",
   "url": "URL",
   "videos": "Videor",

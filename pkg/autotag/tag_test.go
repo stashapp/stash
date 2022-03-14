@@ -20,39 +20,39 @@ type testTagCase struct {
 var testTagCases = []testTagCase{
 	{
 		"tag name",
-		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		"",
 		"",
 	},
 	{
 		"tag + name",
-		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		"",
 		"",
 	},
 	{
 		`tag + name\`,
-		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
 		"",
 		"",
 	},
 	{
 		"tag name",
-		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		"alias name",
-		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 	},
 	{
 		"tag + name",
-		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		"alias + name",
-		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 	},
 	{
 		`tag + name\`,
-		`(?i)(?:^|_|[^\w\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
 		`alias + name\`,
-		`(?i)(?:^|_|[^\w\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\w\d])`,
+		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
 	},
 }
 
@@ -137,7 +137,7 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 		mockSceneReader.On("UpdateTags", sceneID, []int{tagID}).Return(nil).Once()
 	}
 
-	err := TagScenes(&tag, nil, aliases, mockSceneReader)
+	err := TagScenes(&tag, nil, aliases, mockSceneReader, nil)
 
 	assert := assert.New(t)
 
@@ -225,7 +225,7 @@ func testTagImages(t *testing.T, tc testTagCase) {
 		mockImageReader.On("UpdateTags", imageID, []int{tagID}).Return(nil).Once()
 	}
 
-	err := TagImages(&tag, nil, aliases, mockImageReader)
+	err := TagImages(&tag, nil, aliases, mockImageReader, nil)
 
 	assert := assert.New(t)
 
@@ -312,7 +312,7 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 		mockGalleryReader.On("UpdateTags", galleryID, []int{tagID}).Return(nil).Once()
 	}
 
-	err := TagGalleries(&tag, nil, aliases, mockGalleryReader)
+	err := TagGalleries(&tag, nil, aliases, mockGalleryReader, nil)
 
 	assert := assert.New(t)
 

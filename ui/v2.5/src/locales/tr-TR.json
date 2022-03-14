@@ -845,7 +845,10 @@
       "next_step": "Yeni bir sistem oluşturmak için hazır olduğunuzda Sonraki düğmesine basın.",
       "unable_to_locate_specified_config": "Eğer bunu okuyorsanız, Stash yapılandırma dosyasını bulamamış demektir. Bu sihirbaz yeni bir yapılandırma sırasında size yol gösterecektir."
     },
-    "welcome_to_stash": "Stash uygulamasına hoşgeldiniz"
+    "welcome_to_stash": "Stash uygulamasına hoşgeldiniz",
+    "folder": {
+      "up_dir": "Bir dizin üste çık"
+    }
   },
   "stash_id": "Stash Kimliği (ID)",
   "stash_ids": "Stash Kimlikleri (ID)",
@@ -887,7 +890,6 @@
   "total": "Toplam",
   "true": "Doğru",
   "twitter": "Twitter",
-  "up-dir": "Bir dizin üste çık",
   "updated_at": "Güncellenme Zamanı",
   "url": "Internet Adresi (URL)",
   "videos": "Videolar",

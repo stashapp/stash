@@ -16,6 +16,7 @@ import V0100 from "./versions/v0100.md";
 import V0110 from "./versions/v0110.md";
 import V0120 from "./versions/v0120.md";
 import V0130 from "./versions/v0130.md";
+import V0140 from "./versions/v0140.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 // to avoid use of explicit any
@@ -56,7 +57,7 @@ const Changelog: React.FC = () => {
   // then update the current fields.
   const currentVersion = stashVersion || "v0.13.0";
   const currentDate = buildDate;
-  const currentPage = V0130;
+  const currentPage = V0140;
 
   const releases: IStashRelease[] = [
     {
@@ -64,6 +65,11 @@ const Changelog: React.FC = () => {
       date: currentDate,
       page: currentPage,
       defaultOpen: true,
+    },
+    {
+      version: "v0.13.0",
+      date: "2021-03-08",
+      page: V0130,
     },
     {
       version: "v0.12.0",
