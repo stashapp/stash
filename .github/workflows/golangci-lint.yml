@@ -30,10 +30,7 @@ jobs:
           docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated -w /stash $COMPILER_IMAGE tail -f /dev/null
 
       - name: Generate Backend
-        run: |
-          mkdir -p ui/v2.5/build
-          touch ui/v2.5/build/index.html
-          docker exec -t build /bin/bash -c "make generate-backend"
+        run: docker exec -t build /bin/bash -c "make generate-backend"
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v2

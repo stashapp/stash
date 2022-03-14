@@ -143,6 +143,12 @@ cross-compile-all:
 	make cross-compile-linux-arm32v7
 	make cross-compile-linux-arm32v6
 
+# ensures a file is present in ui/v2.5/build since this is required
+# for the embedded ui library
+touch-ui:
+	@mkdir -p ui/v2.5/build
+	@touch ui/v2.5/build/index.html
+
 # Regenerates GraphQL files
 generate: generate-backend generate-frontend
 
@@ -151,7 +157,7 @@ generate-frontend:
 	cd ui/v2.5 && yarn run gqlgen
 
 .PHONY: generate-backend
-generate-backend:
+generate-backend: touch-ui 
 	go generate -mod=vendor ./cmd/stash
 
 # Regenerates stash-box client files
