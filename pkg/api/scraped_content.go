@@ -12,7 +12,7 @@ func marshalScrapedScenes(content []models.ScrapedContent) ([]*models.ScrapedSce
 	var ret []*models.ScrapedScene
 	for _, c := range content {
 		if c == nil {
-			ret = append(ret, nil)
+			// graphql schema requires scenes to be non-nil
 			continue
 		}
 
@@ -35,7 +35,7 @@ func marshalScrapedPerformers(content []models.ScrapedContent) ([]*models.Scrape
 	var ret []*models.ScrapedPerformer
 	for _, c := range content {
 		if c == nil {
-			ret = append(ret, nil)
+			// graphql schema requires performers to be non-nil
 			continue
 		}
 
@@ -58,7 +58,7 @@ func marshalScrapedGalleries(content []models.ScrapedContent) ([]*models.Scraped
 	var ret []*models.ScrapedGallery
 	for _, c := range content {
 		if c == nil {
-			ret = append(ret, nil)
+			// graphql schema requires galleries to be non-nil
 			continue
 		}
 
@@ -81,7 +81,7 @@ func marshalScrapedMovies(content []models.ScrapedContent) ([]*models.ScrapedMov
 	var ret []*models.ScrapedMovie
 	for _, c := range content {
 		if c == nil {
-			ret = append(ret, nil)
+			// graphql schema requires movies to be non-nil
 			continue
 		}
 

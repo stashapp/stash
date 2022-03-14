@@ -761,7 +761,7 @@ func (r mappedResults) setKey(index int, key string, value string) mappedResults
 }
 
 func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*models.ScrapedPerformer, error) {
-	var ret models.ScrapedPerformer
+	var ret *models.ScrapedPerformer
 
 	performerMap := s.Performer
 	if performerMap == nil {
@@ -772,7 +772,8 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 
 	results := performerMap.process(ctx, q, s.Common)
 	if len(results) > 0 {
-		results[0].apply(&ret)
+		ret = &models.ScrapedPerformer{}
+		results[0].apply(ret)
 
 		// now apply the tags
 		if performerTagsMap != nil {
@@ -787,7 +788,7 @@ func (s mappedScraper) scrapePerformer(ctx context.Context, q mappedQuery) (*mod
 		}
 	}
 
-	return &ret, nil
+	return ret, nil
 }
 
 func (s mappedScraper) scrapePerformers(ctx context.Context, q mappedQuery) ([]*models.ScrapedPerformer, error) {
@@ -903,7 +904,7 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*mode
 }
 
 func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.ScrapedScene, error) {
-	var ret models.ScrapedScene
+	var ret *models.ScrapedScene
 
 	sceneScraperConfig := s.Scene
 	sceneMap := sceneScraperConfig.mappedConfig
@@ -914,15 +915,14 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.
 	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(ctx, q, s.Common)
 	if len(results) > 0 {
-		ss := s.processScene(ctx, q, results[0])
-		ret = *ss
+		ret = s.processScene(ctx, q, results[0])
 	}
 
-	return &ret, nil
+	return ret, nil
 }
 
 func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*models.ScrapedGallery, error) {
-	var ret models.ScrapedGallery
+	var ret *models.ScrapedGallery
 
 	galleryScraperConfig := s.Gallery
 	galleryMap := galleryScraperConfig.mappedConfig
@@ -937,7 +937,9 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 	logger.Debug(`Processing gallery:`)
 	results := galleryMap.process(ctx, q, s.Common)
 	if len(results) > 0 {
-		results[0].apply(&ret)
+		ret = &models.ScrapedGallery{}
+
+		results[0].apply(ret)
 
 		// now apply the performers and tags
 		if galleryPerformersMap != nil {
@@ -974,11 +976,11 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 		}
 	}
 
-	return &ret, nil
+	return ret, nil
 }
 
 func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.ScrapedMovie, error) {
-	var ret models.ScrapedMovie
+	var ret *models.ScrapedMovie
 
 	movieScraperConfig := s.Movie
 	movieMap := movieScraperConfig.mappedConfig
@@ -990,7 +992,8 @@ func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.
 
 	results := movieMap.process(ctx, q, s.Common)
 	if len(results) > 0 {
-		results[0].apply(&ret)
+		ret = &models.ScrapedMovie{}
+		results[0].apply(ret)
 
 		if movieStudioMap != nil {
 			logger.Debug(`Processing movie studio:`)
@@ -1004,5 +1007,5 @@ func (s mappedScraper) scrapeMovie(ctx context.Context, q mappedQuery) (*models.
 		}
 	}
 
-	return &ret, nil
+	return ret, nil
 }

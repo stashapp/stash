@@ -221,10 +221,14 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 				return nil, fmt.Errorf("%w: sceneID is not an integer: '%s'", ErrInput, *input.SceneID)
 			}
 			c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, sceneID, models.ScrapeContentTypeScene)
-			content = []models.ScrapedContent{c}
+			if c != nil {
+				content = []models.ScrapedContent{c}
+			}
 		case input.SceneInput != nil:
 			c, err = r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Scene: input.SceneInput})
-			content = []models.ScrapedContent{c}
+			if c != nil {
+				content = []models.ScrapedContent{c}
+			}
 		case input.Query != nil:
 			content, err = r.scraperCache().ScrapeName(ctx, *source.ScraperID, *input.Query, models.ScrapeContentTypeScene)
 		default:

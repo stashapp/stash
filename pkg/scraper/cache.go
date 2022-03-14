@@ -273,9 +273,15 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 			return nil, fmt.Errorf("scraper %s: unable to load scene id %v: %w", scraperID, id, err)
 		}
 
-		ret, err = ss.viaScene(ctx, c.client, scene)
+		// don't assign nil concrete pointer to ret interface, otherwise nil
+		// detection is harder
+		scraped, err := ss.viaScene(ctx, c.client, scene)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
+		}
+
+		if scraped != nil {
+			ret = scraped
 		}
 	case models.ScrapeContentTypeGallery:
 		gs, ok := s.(galleryScraper)
@@ -288,9 +294,15 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 			return nil, fmt.Errorf("scraper %s: unable to load gallery id %v: %w", scraperID, id, err)
 		}
 
-		ret, err = gs.viaGallery(ctx, c.client, gallery)
+		// don't assign nil concrete pointer to ret interface, otherwise nil
+		// detection is harder
+		scraped, err := gs.viaGallery(ctx, c.client, gallery)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
+		}
+
+		if scraped != nil {
+			ret = scraped
 		}
 	}
 

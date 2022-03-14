@@ -239,6 +239,11 @@ func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*models.Sc
 		return nil, err
 	}
 
+	// don't try to convert nil return value
+	if content == nil {
+		return nil, nil
+	}
+
 	if scene, ok := content.(models.ScrapedScene); ok {
 		return &scene, nil
 	}

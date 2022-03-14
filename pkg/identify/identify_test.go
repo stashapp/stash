@@ -85,12 +85,12 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		{
 			"error scraping",
 			errID1,
-			true,
+			false,
 		},
 		{
 			"error scraping from second",
 			errID2,
-			true,
+			false,
 		},
 		{
 			"found in first scraper",
