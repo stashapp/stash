@@ -45,7 +45,7 @@ func GetHomeDirectory() string {
 
 // EnsureDir will create a directory at the given path if it doesn't already exist
 func EnsureDir(path string) error {
-	exists, err := FileExists(path)
+	exists, err := DirExists(path)
 	if !exists {
 		err = os.Mkdir(path, 0755)
 		return err
