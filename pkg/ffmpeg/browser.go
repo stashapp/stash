@@ -1,5 +1,10 @@
 package ffmpeg
 
+import (
+	"errors"
+	"fmt"
+)
+
 // only support H264 by default, since Safari does not support VP8/VP9
 var defaultSupportedCodecs = []string{H264, H265}
 
@@ -17,11 +22,35 @@ var validAudioForMkv = []ProbeAudioCodec{Aac, Mp3, Vorbis, Opus}
 var validAudioForWebm = []ProbeAudioCodec{Vorbis, Opus}
 var validAudioForMp4 = []ProbeAudioCodec{Aac, Mp3}
 
-func IsStreamable(videoCodec string, audioCodec ProbeAudioCodec, container Container) bool {
+var (
+	// ErrUnsupportedVideoCodecForBrowser is returned when the video codec is not supported for browser streaming.
+	ErrUnsupportedVideoCodecForBrowser = errors.New("unsupported video codec for browser")
+
+	// ErrUnsupportedVideoCodecContainer is returned when the video codec/container combination is not supported for browser streaming.
+	ErrUnsupportedVideoCodecContainer = errors.New("video codec/container combination is unsupported for browser streaming")
+
+	// ErrUnsupportedAudioCodecContainer is returned when the audio codec/container combination is not supported for browser streaming.
+	ErrUnsupportedAudioCodecContainer = errors.New("audio codec/container combination is unsupported for browser streaming")
+)
+
+// IsStreamable returns nil if the file is streamable, or an error if it is not.
+func IsStreamable(videoCodec string, audioCodec ProbeAudioCodec, container Container) error {
 	supportedVideoCodecs := defaultSupportedCodecs
 
 	// check if the video codec matches the supported codecs
-	return isValidCodec(videoCodec, supportedVideoCodecs) && isValidCombo(videoCodec, container, supportedVideoCodecs) && IsValidAudioForContainer(audioCodec, container)
+	if !isValidCodec(videoCodec, supportedVideoCodecs) {
+		return fmt.Errorf("%w: %s", ErrUnsupportedVideoCodecForBrowser, videoCodec)
+	}
+
+	if !isValidCombo(videoCodec, container, supportedVideoCodecs) {
+		return fmt.Errorf("%w: %s/%s", ErrUnsupportedVideoCodecContainer, videoCodec, container)
+	}
+
+	if !IsValidAudioForContainer(audioCodec, container) {
+		return fmt.Errorf("%w: %s/%s", ErrUnsupportedAudioCodecContainer, audioCodec, container)
+	}
+
+	return nil
 }
 
 func isValidCodec(codecName string, supportedCodecs []string) bool {
@@ -49,6 +78,7 @@ func isValidAudio(audio ProbeAudioCodec, validCodecs []ProbeAudioCodec) bool {
 	return false
 }
 
+// IsValidAudioForContainer returns true if the audio codec is valid for the container.
 func IsValidAudioForContainer(audio ProbeAudioCodec, format Container) bool {
 	switch format {
 	case Matroska:
