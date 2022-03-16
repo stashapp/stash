@@ -39,7 +39,7 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 		container = ffmpeg.Container(t.Scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen unless user hasn't scanned after updating to PR#384+ version
-		tmpVideoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
+		tmpVideoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
 		if err != nil {
 			logger.Errorf("[transcode] error reading video file: %s", err.Error())
 			return
@@ -60,7 +60,7 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 
 	// TODO - move transcode generation logic elsewhere
 
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
 	if err != nil {
 		logger.Errorf("[transcode] error reading video file: %s", err.Error())
 		return

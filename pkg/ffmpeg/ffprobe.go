@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -72,7 +71,7 @@ func (v *VideoFile) TranscodeScale(maxSize int) (int, int) {
 type FFProbe string
 
 // NewVideoFile runs ffprobe on the given path and returns a VideoFile.
-func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, error) {
+func (f *FFProbe) NewVideoFile(videoPath string) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
 	cmd := exec.Command(string(*f), args...)
 	out, err := cmd.Output()
@@ -86,7 +85,7 @@ func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, err
 		return nil, fmt.Errorf("error unmarshalling video data for <%s>: %s", videoPath, err.Error())
 	}
 
-	return parse(videoPath, probeJSON, stripExt)
+	return parse(videoPath, probeJSON)
 }
 
 // GetReadFrameCount counts the actual frames of the video file.
@@ -104,11 +103,11 @@ func (f *FFProbe) GetReadFrameCount(path string) (int64, error) {
 		return 0, fmt.Errorf("error unmarshalling video data for <%s>: %s", path, err.Error())
 	}
 
-	fc, err := parse(path, probeJSON, false)
+	fc, err := parse(path, probeJSON)
 	return fc.FrameCount, err
 }
 
-func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, error) {
+func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 	if probeJSON == nil {
 		return nil, fmt.Errorf("failed to get ffprobe json for <%s>", filePath)
 	}
@@ -122,11 +121,6 @@ func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, 
 
 	result.Path = filePath
 	result.Title = probeJSON.Format.Tags.Title
-
-	if result.Title == "" {
-		// default title to filename
-		result.SetTitleFromPath(stripExt)
-	}
 
 	result.Comment = probeJSON.Format.Tags.Comment
 	result.Bitrate, _ = strconv.ParseInt(probeJSON.Format.BitRate, 10, 64)
@@ -210,13 +204,4 @@ func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
 	}
 
 	return -1
-}
-
-// SetTitleFromPath sets the title of the video file from the path.
-func (v *VideoFile) SetTitleFromPath(stripExtension bool) {
-	v.Title = filepath.Base(v.Path)
-	if stripExtension {
-		ext := filepath.Ext(v.Title)
-		v.Title = strings.TrimSuffix(v.Title, ext)
-	}
 }

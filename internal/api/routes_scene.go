@@ -61,7 +61,7 @@ func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
 		ffprobe := manager.GetInstance().FFProbe
-		tmpVideoFile, err := ffprobe.NewVideoFile(scene.Path, false)
+		tmpVideoFile, err := ffprobe.NewVideoFile(scene.Path)
 		if err != nil {
 			logger.Errorf("[transcode] error reading video file: %v", err)
 			return ffmpeg.Container("")
@@ -110,7 +110,7 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	ffprobe := manager.GetInstance().FFProbe
-	videoFile, err := ffprobe.NewVideoFile(scene.Path, false)
+	videoFile, err := ffprobe.NewVideoFile(scene.Path)
 	if err != nil {
 		logger.Errorf("[stream] error reading video file: %v", err)
 		return

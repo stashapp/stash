@@ -57,7 +57,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 		}
 
 		ffprobe := instance.FFProbe
-		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
+		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
 		if err != nil {
 			logger.Errorf("error reading video file: %s", err.Error())
 			return
@@ -83,7 +83,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 	}
 
 	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return

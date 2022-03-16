@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -22,7 +23,7 @@ import (
 const mutexType = "scene"
 
 type videoFileCreator interface {
-	NewVideoFile(path string, stripFileExtension bool) (*ffmpeg.VideoFile, error)
+	NewVideoFile(path string) (*ffmpeg.VideoFile, error)
 }
 
 type Scanner struct {
@@ -71,7 +72,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 		s.SetFile(*scanned.New)
 
-		videoFile, err = scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
+		videoFile, err = scanner.VideoFileCreator.NewVideoFile(path)
 		if err != nil {
 			return err
 		}
@@ -89,7 +90,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	// check for container
 	if !s.Format.Valid {
 		if videoFile == nil {
-			videoFile, err = scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
+			videoFile, err = scanner.VideoFileCreator.NewVideoFile(path)
 			if err != nil {
 				return err
 			}
@@ -234,14 +235,18 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 		logger.Infof("%s doesn't exist. Creating new item...", path)
 		currentTime := time.Now()
 
-		videoFile, err := scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
+		videoFile, err := scanner.VideoFileCreator.NewVideoFile(path)
 		if err != nil {
 			return nil, err
 		}
 
-		// Override title to be filename if UseFileMetadata is false
-		if !scanner.UseFileMetadata {
-			videoFile.SetTitleFromPath(scanner.StripFileExtension)
+		title := filepath.Base(path)
+		if scanner.StripFileExtension {
+			title = stripExtension(title)
+		}
+
+		if scanner.UseFileMetadata && videoFile.Title != "" {
+			title = videoFile.Title
 		}
 
 		newScene := models.Scene{
@@ -252,7 +257,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 				Timestamp: scanned.FileModTime,
 				Valid:     true,
 			},
-			Title:       sql.NullString{String: videoFile.Title, Valid: true},
+			Title:       sql.NullString{String: title, Valid: true},
 			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			Interactive: interactive,
@@ -278,6 +283,11 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 	}
 
 	return retScene, nil
+}
+
+func stripExtension(path string) string {
+	ext := filepath.Ext(path)
+	return strings.TrimSuffix(path, ext)
 }
 
 func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
@@ -307,7 +317,7 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 
 	if probeResult == nil {
 		var err error
-		probeResult, err = scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
+		probeResult, err = scanner.VideoFileCreator.NewVideoFile(path)
 
 		if err != nil {
 			logger.Error(err.Error())
