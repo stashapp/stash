@@ -25,6 +25,7 @@ import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { SelectComponents } from "react-select/src/components";
 import { ConfigurationContext } from "src/hooks/Config";
+import { useIntl } from "react-intl";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -402,6 +403,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const [createPerformer] = usePerformerCreate();
 
   const { configuration } = React.useContext(ConfigurationContext);
+  const intl = useIntl();
   const defaultCreatable =
     !configuration?.interface.disableDropdownCreate.performer ?? true;
 
@@ -426,7 +428,13 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
       type="performers"
       isLoading={loading}
       items={performers}
-      placeholder={props.noSelectionString ?? "Select performer..."}
+      placeholder={
+        props.noSelectionString ??
+        intl.formatMessage(
+          { id: "actions.select_entity" },
+          { entityType: intl.formatMessage({ id: "performer" }) }
+        )
+      }
     />
   );
 };
@@ -440,6 +448,7 @@ export const StudioSelect: React.FC<
   const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllStudiosForFilter();
   const [createStudio] = useStudioCreate();
+  const intl = useIntl();
 
   const { configuration } = React.useContext(ConfigurationContext);
   const defaultCreatable =
@@ -550,7 +559,13 @@ export const StudioSelect: React.FC<
       type="studios"
       isLoading={loading}
       items={studios}
-      placeholder={props.noSelectionString ?? "Select studio..."}
+      placeholder={
+        props.noSelectionString ??
+        intl.formatMessage(
+          { id: "actions.select_entity" },
+          { entityType: intl.formatMessage({ id: "studio" }) }
+        )
+      }
       creatable={props.creatable ?? defaultCreatable}
       onCreate={onCreate}
     />
@@ -560,6 +575,7 @@ export const StudioSelect: React.FC<
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllMoviesForFilter();
   const items = data?.allMovies ?? [];
+  const intl = useIntl();
 
   return (
     <FilterSelectComponent
@@ -568,7 +584,13 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
       type="movies"
       isLoading={loading}
       items={items}
-      placeholder={props.noSelectionString ?? "Select movie..."}
+      placeholder={
+        props.noSelectionString ??
+        intl.formatMessage(
+          { id: "actions.select_entity" },
+          { entityType: intl.formatMessage({ id: "movie" }) }
+        )
+      }
     />
   );
 };
@@ -580,7 +602,13 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
   const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllTagsForFilter();
   const [createTag] = useTagCreate();
-  const placeholder = props.noSelectionString ?? "Select tags...";
+  const intl = useIntl();
+  const placeholder =
+    props.noSelectionString ??
+    intl.formatMessage(
+      { id: "actions.select_entity" },
+      { entityType: intl.formatMessage({ id: "tags" }) }
+    );
 
   const { configuration } = React.useContext(ConfigurationContext);
   const defaultCreatable =

@@ -348,7 +348,7 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         variant="secondary"
         id="operation-menu"
         className="minimal"
-        title="Operations"
+        title={intl.formatMessage({ id: "operations" })}
       >
         <Icon icon="ellipsis-v" />
       </Dropdown.Toggle>

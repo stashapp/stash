@@ -102,7 +102,10 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
       <Modal
         show
         icon="pencil-alt"
-        header="Edit Movies"
+        header={intl.formatMessage(
+          { id: "actions.edit_entity" },
+          { entityType: intl.formatMessage({ id: "movies" }) }
+        )}
         accept={{
           onClick: onSave,
           text: intl.formatMessage({ id: "actions.apply" }),
