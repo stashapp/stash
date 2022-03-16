@@ -40,6 +40,8 @@ type singleton struct {
 	FFMPEG  ffmpeg.FFMpeg
 	FFProbe ffmpeg.FFProbe
 
+	ReadLockManager *fsutil.ReadLockManager
+
 	SessionStore *session.Store
 
 	JobManager *job.Manager
@@ -77,10 +79,11 @@ func Initialize() *singleton {
 		initProfiling(cfg.GetCPUProfilePath())
 
 		instance = &singleton{
-			Config:        cfg,
-			Logger:        l,
-			DownloadStore: NewDownloadStore(),
-			PluginCache:   plugin.NewCache(cfg),
+			Config:          cfg,
+			Logger:          l,
+			ReadLockManager: fsutil.NewReadLockManager(),
+			DownloadStore:   NewDownloadStore(),
+			PluginCache:     plugin.NewCache(cfg),
 
 			TxnManager: sqlite.NewTransactionManager(),
 

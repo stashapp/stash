@@ -32,14 +32,7 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) {
 
 	logger.Infof("[stream] transcoding video file to %s", s.mimeType)
 
-	// handle if client closes the connection
-	notify := r.Context().Done()
-	go func() {
-		<-notify
-		if err := s.Process.Kill(); err != nil {
-			logger.Warnf("unable to kill os process %v: %v", s.Process.Pid, err)
-		}
-	}()
+	// process killing should be handled by command context
 
 	_, err := io.Copy(w, s.Stdout)
 	if err != nil {
@@ -215,13 +208,6 @@ func (f *FFMpeg) GetTranscodeStream(ctx context.Context, options TranscodeStream
 	if err = cmd.Start(); err != nil {
 		return nil, err
 	}
-
-	registerRunningEncoder(options.Input, cmd.Process)
-	go func() {
-		if err := waitAndDeregister(options.Input, cmd); err != nil {
-			logger.Warnf("Error while deregistering ffmpeg stream: %v", err)
-		}
-	}()
 
 	// stderr must be consumed or the process deadlocks
 	go func() {

@@ -26,6 +26,10 @@ const (
 )
 
 func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds float64) (image.Image, error) {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: "-",
 		OutputType: transcoder.ScreenshotOutputTypeBMP,
@@ -38,6 +42,10 @@ func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds f
 }
 
 func (g Generator) SpriteScreenshotSlow(ctx context.Context, input string, frame int) (image.Image, error) {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: "-",
 		OutputType: transcoder.ScreenshotOutputTypeBMP,

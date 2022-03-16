@@ -70,6 +70,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 
 		g := &generate.Generator{
 			Encoder:     instance.FFMPEG,
+			LockManager: instance.ReadLockManager,
 			MarkerPaths: instance.Paths.SceneMarkers,
 			ScenePaths:  instance.Paths.Scene,
 			Overwrite:   j.overwrite,

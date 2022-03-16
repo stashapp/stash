@@ -46,6 +46,7 @@ type ScenePaths interface {
 
 type Generator struct {
 	Encoder     ffmpeg.FFMpeg
+	LockManager *fsutil.ReadLockManager
 	MarkerPaths MarkerPaths
 	ScenePaths  ScenePaths
 	Overwrite   bool

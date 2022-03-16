@@ -15,6 +15,10 @@ type TranscodeOptions struct {
 }
 
 func (g Generator) Transcode(ctx context.Context, input string, hash string, options TranscodeOptions) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	return g.makeTranscode(ctx, hash, g.transcode(input, options))
 }
 
@@ -22,16 +26,28 @@ func (g Generator) Transcode(ctx context.Context, input string, hash string, opt
 // In some videos where the audio codec is not supported by ffmpeg,
 // ffmpeg fails if you try to transcode the audio
 func (g Generator) TranscodeVideo(ctx context.Context, input string, hash string, options TranscodeOptions) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	return g.makeTranscode(ctx, hash, g.transcodeVideo(input, options))
 }
 
 // TranscodeAudio will copy the video stream as is, and transcode audio.
 func (g Generator) TranscodeAudio(ctx context.Context, input string, hash string, options TranscodeOptions) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	return g.makeTranscode(ctx, hash, g.transcodeAudio(input, options))
 }
 
 // TranscodeCopyVideo will copy the video stream as is, and drop the audio stream.
 func (g Generator) TranscodeCopyVideo(ctx context.Context, input string, hash string, options TranscodeOptions) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	return g.makeTranscode(ctx, hash, g.transcodeCopyVideo(input, options))
 }
 

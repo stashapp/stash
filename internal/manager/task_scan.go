@@ -326,6 +326,7 @@ func (t *ScanTask) Start(ctx context.Context) {
 
 			g := &generate.Generator{
 				Encoder:     instance.FFMPEG,
+				LockManager: instance.ReadLockManager,
 				MarkerPaths: instance.Paths.SceneMarkers,
 				ScenePaths:  instance.Paths.Scene,
 				Overwrite:   overwrite,

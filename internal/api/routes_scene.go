@@ -177,7 +177,12 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	}
 
 	encoder := manager.GetInstance().FFMPEG
-	stream, err := encoder.GetTranscodeStream(r.Context(), options)
+
+	lm := manager.GetInstance().ReadLockManager
+	ctx, cancel := lm.ReadLock(r.Context(), scene.Path)
+	defer cancel()
+
+	stream, err := encoder.GetTranscodeStream(ctx, options)
 
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %v", err)

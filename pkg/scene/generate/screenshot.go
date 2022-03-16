@@ -22,6 +22,10 @@ type ScreenshotOptions struct {
 }
 
 func (g Generator) Screenshot(ctx context.Context, input string, hash string, videoWidth int, videoDuration float64, options ScreenshotOptions) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	output := g.ScenePaths.GetScreenshotPath(hash)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {
@@ -48,6 +52,10 @@ func (g Generator) Screenshot(ctx context.Context, input string, hash string, vi
 }
 
 func (g Generator) Thumbnail(ctx context.Context, input string, hash string, videoDuration float64, options ScreenshotOptions) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	output := g.ScenePaths.GetThumbnailScreenshotPath(hash)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {

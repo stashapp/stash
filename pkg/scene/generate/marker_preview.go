@@ -21,6 +21,10 @@ const (
 )
 
 func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds int, includeAudio bool) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	output := g.MarkerPaths.GetVideoPreviewPath(hash, seconds)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {
@@ -88,6 +92,10 @@ func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) 
 }
 
 func (g Generator) SceneMarkerWebp(ctx context.Context, input string, hash string, seconds int) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	output := g.MarkerPaths.GetWebpPreviewPath(hash, seconds)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {
@@ -138,6 +146,10 @@ func (g Generator) sceneMarkerWebp(input string, options sceneMarkerOptions) gen
 }
 
 func (g Generator) SceneMarkerScreenshot(ctx context.Context, input string, hash string, seconds int, width int) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	output := g.MarkerPaths.GetScreenshotPath(hash, seconds)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {

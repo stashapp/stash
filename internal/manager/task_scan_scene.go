@@ -42,8 +42,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 	}
 
 	g := &generate.Generator{
-		Encoder:    instance.FFMPEG,
-		ScenePaths: instance.Paths.Scene,
+		Encoder:     instance.FFMPEG,
+		LockManager: instance.ReadLockManager,
+		ScenePaths:  instance.Paths.Scene,
 	}
 
 	scanner := scene.Scanner{

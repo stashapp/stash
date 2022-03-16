@@ -69,6 +69,10 @@ func (g PreviewOptions) getStepSizeAndOffset(videoDuration float64) (stepSize fl
 }
 
 func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration float64, hash string, options PreviewOptions, fallback bool) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	output := g.ScenePaths.GetVideoPreviewPath(hash)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {
@@ -231,6 +235,10 @@ func removeFiles(list []string) {
 // PreviewWebp generates a webp file based on the preview video input.
 // TODO - this should really generate a new webp using chunks.
 func (g Generator) PreviewWebp(ctx context.Context, input string, hash string) error {
+	var cancel context.CancelFunc
+	ctx, cancel = g.LockManager.ReadLock(ctx, input)
+	defer cancel()
+
 	output := g.ScenePaths.GetWebpPreviewPath(hash)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {
