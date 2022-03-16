@@ -1,6 +1,9 @@
 package ffmpeg
 
-import "fmt"
+import (
+	"fmt"
+	"runtime"
+)
 
 // Arger is an interface that can be used to append arguments to an Args slice.
 type Arger interface {
@@ -44,9 +47,22 @@ func (a Args) Input(i string) Args {
 	return append(a, "-i", i)
 }
 
-// Output adds the output (-o) and returns the result.
+// Output adds the output o and returns the result.
 func (a Args) Output(o string) Args {
 	return append(a, o)
+}
+
+// NullOutput adds a null output and returns the result.
+// On Windows, this outputs to NUL, on everything else, /dev/null.
+func (a Args) NullOutput() Args {
+	var output string
+	if runtime.GOOS == "windows" {
+		output = "nul" // https://stackoverflow.com/questions/313111/is-there-a-dev-null-on-windows
+	} else {
+		output = "/dev/null"
+	}
+
+	return a.Output(output)
 }
 
 // VideoFrames adds the -frames:v with f and returns the result.

@@ -1,13 +1,11 @@
 package manager
 
 import (
-	"bytes"
+	"context"
 	"fmt"
 	"math"
-	"runtime"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -51,30 +49,15 @@ func (g *generatorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 
 	// If we are missing the frame count or frame rate then seek through the file and extract the info with regex
 	if numberOfFrames == 0 || !isValidFloat64(framerate) {
-		args := []string{
-			"-nostats",
-			"-i", g.VideoFile.Path,
-			"-vcodec", "copy",
-			"-f", "rawvideo",
-			"-y",
-		}
-		if runtime.GOOS == "windows" {
-			args = append(args, "nul") // https://stackoverflow.com/questions/313111/is-there-a-dev-null-on-windows
+		info, err := instance.FFMPEG.CalculateFrameRate(context.TODO(), &g.VideoFile)
+		if err != nil {
+			logger.Errorf("error calculating frame rate: %v", err)
 		} else {
-			args = append(args, "/dev/null")
-		}
-
-		command := exec.Command(string(instance.FFMPEG), args...)
-		var stdErrBuffer bytes.Buffer
-		command.Stderr = &stdErrBuffer // Frames go to stderr rather than stdout
-		if err := command.Run(); err == nil {
-			stdErrString := stdErrBuffer.String()
 			if numberOfFrames == 0 {
-				numberOfFrames = ffmpeg.GetFrameFromRegex(stdErrString)
+				numberOfFrames = info.NumberOfFrames
 			}
 			if !isValidFloat64(framerate) {
-				time := ffmpeg.GetTimeFromRegex(stdErrString)
-				framerate = math.Round((float64(numberOfFrames)/time)*100) / 100
+				framerate = info.FrameRate
 			}
 		}
 	}
