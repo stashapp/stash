@@ -8,6 +8,7 @@ import (
 
 const hlsSegmentLength = 10.0
 
+// WriteHLSPlaylist writes a HLS playlist to w using baseUrl as the base URL for TS streams.
 func WriteHLSPlaylist(duration float64, baseUrl string, w io.Writer) {
 	fmt.Fprint(w, "#EXTM3U\n")
 	fmt.Fprint(w, "#EXT-X-VERSION:3\n")

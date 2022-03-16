@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
+// VideoFile represents the ffprobe output for a video file.
 type VideoFile struct {
 	JSON        FFProbeJSON
 	AudioStream *FFProbeStream
@@ -67,10 +68,10 @@ func (v *VideoFile) TranscodeScale(maxSize int) (int, int) {
 	return maxSize, -2
 }
 
-// FFProbe
+// FFProbe provides an interface to the ffprobe executable.
 type FFProbe string
 
-// Execute exec command and bind result to struct.
+// NewVideoFile runs ffprobe on the given path and returns a VideoFile.
 func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
 	cmd := exec.Command(string(*f), args...)
@@ -88,21 +89,22 @@ func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, err
 	return parse(videoPath, probeJSON, stripExt)
 }
 
-// GetReadFrameCount counts the actual frames of the video file
-func (f *FFProbe) GetReadFrameCount(vf *VideoFile) (int64, error) {
-	args := []string{"-v", "quiet", "-print_format", "json", "-count_frames", "-show_format", "-show_streams", "-show_error", vf.Path}
+// GetReadFrameCount counts the actual frames of the video file.
+// Used when the frame count is missing or incorrect.
+func (f *FFProbe) GetReadFrameCount(path string) (int64, error) {
+	args := []string{"-v", "quiet", "-print_format", "json", "-count_frames", "-show_format", "-show_streams", "-show_error", path}
 	out, err := exec.Command(string(*f), args...).Output()
 
 	if err != nil {
-		return 0, fmt.Errorf("FFProbe encountered an error with <%s>.\nError JSON:\n%s\nError: %s", vf.Path, string(out), err.Error())
+		return 0, fmt.Errorf("FFProbe encountered an error with <%s>.\nError JSON:\n%s\nError: %s", path, string(out), err.Error())
 	}
 
 	probeJSON := &FFProbeJSON{}
 	if err := json.Unmarshal(out, probeJSON); err != nil {
-		return 0, fmt.Errorf("error unmarshalling video data for <%s>: %s", vf.Path, err.Error())
+		return 0, fmt.Errorf("error unmarshalling video data for <%s>: %s", path, err.Error())
 	}
 
-	fc, err := parse(vf.Path, probeJSON, false)
+	fc, err := parse(path, probeJSON, false)
 	return fc.FrameCount, err
 }
 
@@ -210,6 +212,7 @@ func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
 	return -1
 }
 
+// SetTitleFromPath sets the title of the video file from the path.
 func (v *VideoFile) SetTitleFromPath(stripExtension bool) {
 	v.Title = filepath.Base(v.Path)
 	if stripExtension {

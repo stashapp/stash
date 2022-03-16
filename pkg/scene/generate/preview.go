@@ -189,7 +189,7 @@ func (g Generator) previewVideoChunk(ctx context.Context, fn string, options pre
 
 	args := transcoder.Transcode(fn, trimOptions)
 
-	return ffmpeg.Generate(ctx, g.Encoder, args)
+	return g.Encoder.Generate(ctx, args)
 }
 
 func (g Generator) generateConcatFile(chunkFiles []string) (fn string, err error) {
@@ -217,7 +217,7 @@ func (g Generator) previewVideoChunkCombine(ctx context.Context, concatFilePath 
 
 	args := transcoder.Splice(concatFilePath, spliceOptions)
 
-	return ffmpeg.Generate(ctx, g.Encoder, args)
+	return g.Encoder.Generate(ctx, args)
 }
 
 func removeFiles(list []string) {
@@ -278,6 +278,6 @@ func (g Generator) previewVideoToImage(input string) generateFn {
 
 		args := transcoder.Transcode(input, encodeOptions)
 
-		return ffmpeg.Generate(ctx, g.Encoder, args)
+		return g.Encoder.Generate(ctx, args)
 	}
 }

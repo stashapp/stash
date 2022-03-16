@@ -3,7 +3,6 @@ package generate
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -91,6 +90,6 @@ func (g Generator) screenshot(input string, options screenshotOptions) generateF
 
 		args := transcoder.ScreenshotTime(input, options.Time, ssOptions)
 
-		return ffmpeg.Generate(ctx, g.Encoder, args)
+		return g.Encoder.Generate(ctx, args)
 	}
 }

@@ -83,7 +83,7 @@ func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) 
 
 		args := transcoder.Transcode(input, trimOptions)
 
-		return ffmpeg.Generate(ctx, g.Encoder, args)
+		return g.Encoder.Generate(ctx, args)
 	}
 }
 
@@ -133,7 +133,7 @@ func (g Generator) sceneMarkerWebp(input string, options sceneMarkerOptions) gen
 
 		args := transcoder.Transcode(input, trimOptions)
 
-		return ffmpeg.Generate(ctx, g.Encoder, args)
+		return g.Encoder.Generate(ctx, args)
 	}
 }
 
@@ -173,6 +173,6 @@ func (g Generator) sceneMarkerScreenshot(input string, options SceneMarkerScreen
 
 		args := transcoder.ScreenshotTime(input, float64(options.Seconds), ssOptions)
 
-		return ffmpeg.Generate(ctx, g.Encoder, args)
+		return g.Encoder.Generate(ctx, args)
 	}
 }

@@ -1,7 +1,9 @@
 package ffmpeg
 
+// Format represents the input/output format for ffmpeg.
 type Format string
 
+// Args converts the Format to a slice of arguments to be passed to ffmpeg.
 func (f Format) Args() []string {
 	if f == "" {
 		return nil
@@ -20,8 +22,10 @@ var (
 	FormatMatroska Format = "matroska"
 )
 
+// ImageFormat represents the input format for an image for ffmpeg.
 type ImageFormat string
 
+// Args converts the ImageFormat to a slice of arguments to be passed to ffmpeg.
 func (f ImageFormat) Args() []string {
 	if f == "" {
 		return nil

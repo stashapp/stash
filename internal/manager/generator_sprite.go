@@ -48,7 +48,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 		slowSeek = true
 		// do an actual frame count of the file ( number of frames = read frames)
 		ffprobe := GetInstance().FFProbe
-		fc, err := ffprobe.GetReadFrameCount(&videoFile)
+		fc, err := ffprobe.GetReadFrameCount(videoFile.Path)
 		if err == nil {
 			if fc != videoFile.FrameCount {
 				logger.Warnf("[generator] updating framecount (%d) for %s with read frames count (%d)", videoFile.FrameCount, videoFile.Path, fc)

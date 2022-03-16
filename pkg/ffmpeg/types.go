@@ -4,6 +4,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
+// FFProbeJSON is the JSON output of ffprobe.
 type FFProbeJSON struct {
 	Format struct {
 		BitRate        string `json:"bit_rate"`
@@ -33,6 +34,7 @@ type FFProbeJSON struct {
 	} `json:"error"`
 }
 
+// FFProbeStream is a JSON representation of an ffmpeg stream.
 type FFProbeStream struct {
 	AvgFrameRate       string `json:"avg_frame_rate"`
 	BitRate            string `json:"bit_rate"`
