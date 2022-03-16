@@ -3,6 +3,7 @@ package image
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os/exec"
 	"runtime"
 	"sync"
@@ -14,7 +15,10 @@ import (
 var vipsPath string
 var once sync.Once
 
-var ErrUnsupportedFormat = errors.New("unsupported image format")
+var (
+	// ErrNotSupportedForThumbnail is returned if the image format is not supported for thumbnail generation
+	ErrNotSupportedForThumbnail = errors.New("unsupported image format for thumbnail")
+)
 
 type ThumbnailEncoder struct {
 	ffmpeg ffmpeg.Encoder
@@ -62,8 +66,8 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 		return nil, err
 	}
 
-	if format != nil && *format == "gif" {
-		return buf.Bytes(), nil
+	if format != nil && !supportThumbnail(*format) {
+		return nil, fmt.Errorf("%w: %s", ErrNotSupportedForThumbnail, *format)
 	}
 
 	// vips has issues loading files from stdin on Windows
@@ -72,4 +76,10 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 	} else {
 		return e.ffmpeg.ImageThumbnail(buf, format, maxSize, img.Path)
 	}
+}
+
+// supportThumbnail returns false if thumbnails should not be generated for the given format.
+// Returns false for animated formats: gif and webp
+func supportThumbnail(format string) bool {
+	return format != "gif" && format != "webp"
 }
