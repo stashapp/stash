@@ -142,8 +142,8 @@ func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
 	rs.streamTranscode(w, r, ffmpeg.StreamFormatHLS)
 }
 
-func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, videoCodec ffmpeg.StreamFormat) {
-	logger.Debugf("Streaming as %s", videoCodec.MimeType)
+func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, streamFormat ffmpeg.StreamFormat) {
+	logger.Debugf("Streaming as %s", streamFormat.MimeType)
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	// start stream based on query param, if provided
@@ -152,6 +152,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	}
 
 	startTime := r.Form.Get("start")
+	ss, _ := strconv.ParseFloat(startTime, 64)
 	requestedSize := r.Form.Get("resolution")
 
 	audioCodec := ffmpeg.MissingUnsupported
@@ -161,13 +162,13 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 
 	options := ffmpeg.TranscodeStreamOptions{
 		Input:     scene.Path,
-		Codec:     videoCodec,
+		Codec:     streamFormat,
 		VideoOnly: audioCodec == ffmpeg.MissingUnsupported,
 
 		VideoWidth:  int(scene.Width.Int64),
 		VideoHeight: int(scene.Height.Int64),
 
-		StartTime:        startTime,
+		StartTime:        ss,
 		MaxTranscodeSize: config.GetInstance().GetMaxStreamingTranscodeSize().GetMaxResolution(),
 	}
 
@@ -176,7 +177,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	}
 
 	encoder := manager.GetInstance().FFMPEG
-	stream, err := ffmpeg.GetTranscodeStream(encoder, options)
+	stream, err := encoder.GetTranscodeStream(r.Context(), options)
 
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %v", err)

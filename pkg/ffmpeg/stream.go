@@ -5,13 +5,10 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 )
-
-const CopyStreamCodec = "copy"
 
 const (
 	MimeWebm   string = "video/webm"
@@ -21,13 +18,14 @@ const (
 	MimeMpegts string = "video/MP2T"
 )
 
+// Stream represents an ongoing transcoded stream.
 type Stream struct {
 	Stdout   io.ReadCloser
 	Process  *os.Process
-	options  TranscodeStreamOptions
 	mimeType string
 }
 
+// Serve is an http handler function that serves the stream.
 func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", s.mimeType)
 	w.WriteHeader(http.StatusOK)
@@ -49,18 +47,19 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// StreamFormat represents a transcode stream format.
 type StreamFormat struct {
-	Codec     string
-	format    string
 	MimeType  string
+	codec     VideoCodec
+	format    Format
 	extraArgs []string
 	hls       bool
 }
 
 var (
 	StreamFormatHLS = StreamFormat{
-		Codec:    "libx264",
-		format:   "mpegts",
+		codec:    VideoCodecLibX264,
+		format:   FormatMpegTS,
 		MimeType: MimeMpegts,
 		extraArgs: []string{
 			"-acodec", "aac",
@@ -72,8 +71,8 @@ var (
 	}
 
 	StreamFormatH264 = StreamFormat{
-		Codec:    "libx264",
-		format:   "mp4",
+		codec:    VideoCodecLibX264,
+		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe+empty_moov",
@@ -84,8 +83,8 @@ var (
 	}
 
 	StreamFormatVP9 = StreamFormat{
-		Codec:    "libvpx-vp9",
-		format:   "webm",
+		codec:    VideoCodecVP9,
+		format:   FormatWebm,
 		MimeType: MimeWebm,
 		extraArgs: []string{
 			"-deadline", "realtime",
@@ -97,8 +96,8 @@ var (
 	}
 
 	StreamFormatVP8 = StreamFormat{
-		Codec:    "libvpx",
-		format:   "webm",
+		codec:    VideoCodecVPX,
+		format:   FormatWebm,
 		MimeType: MimeWebm,
 		extraArgs: []string{
 			"-deadline", "realtime",
@@ -110,8 +109,8 @@ var (
 	}
 
 	StreamFormatHEVC = StreamFormat{
-		Codec:    "libx265",
-		format:   "mp4",
+		codec:    VideoCodecLibX265,
+		format:   FormatMP4,
 		MimeType: MimeMp4,
 		extraArgs: []string{
 			"-movflags", "frag_keyframe",
@@ -123,8 +122,8 @@ var (
 	// it is very common in MKVs to have just the audio codec unsupported
 	// copy the video stream, transcode the audio and serve as Matroska
 	StreamFormatMKVAudio = StreamFormat{
-		Codec:    CopyStreamCodec,
-		format:   "matroska",
+		codec:    VideoCodecCopy,
+		format:   FormatMatroska,
 		MimeType: MimeMkv,
 		extraArgs: []string{
 			"-c:a", "libopus",
@@ -134,10 +133,11 @@ var (
 	}
 )
 
+// TranscodeStreamOptions represents options for live transcoding a video file.
 type TranscodeStreamOptions struct {
 	Input            string
 	Codec            StreamFormat
-	StartTime        string
+	StartTime        float64
 	MaxTranscodeSize int
 
 	// original video dimensions
@@ -150,63 +150,33 @@ type TranscodeStreamOptions struct {
 	VideoOnly bool
 }
 
-func (o TranscodeStreamOptions) calculateTranscodeScale() string {
-	// get the smaller dimension of the video file
-	videoSize := o.VideoHeight
-	if o.VideoWidth < videoSize {
-		videoSize = o.VideoWidth
-	}
+func (o TranscodeStreamOptions) getStreamArgs() Args {
+	var args Args
+	args = append(args, "-hide_banner")
+	args = args.LogLevel(LogLevelError)
 
-	// if our streaming resolution is larger than the video dimension
-	// or we are streaming the original resolution, then just set the
-	// input width
-	if o.MaxTranscodeSize >= videoSize || o.MaxTranscodeSize == 0 {
-		return "iw:-2"
-	}
-
-	// we're setting either the width or height
-	// we'll set the smaller dimesion
-	if o.VideoWidth > o.VideoHeight {
-		// set the height
-		return "-2:" + strconv.Itoa(o.MaxTranscodeSize)
-	}
-
-	return strconv.Itoa(o.MaxTranscodeSize) + ":-2"
-}
-
-func (o TranscodeStreamOptions) getStreamArgs() []string {
-	args := []string{
-		"-hide_banner",
-		"-v", "error",
-	}
-
-	if o.StartTime != "" {
-		args = append(args, "-ss", o.StartTime)
+	if o.StartTime != 0 {
+		args = args.Seek(o.StartTime)
 	}
 
 	if o.Codec.hls {
 		// we only serve a fixed segment length
-		args = append(args, "-t", strconv.Itoa(int(hlsSegmentLength)))
+		args = args.Duration(hlsSegmentLength)
 	}
 
-	args = append(args,
-		"-i", o.Input,
-	)
+	args = args.Input(o.Input)
 
 	if o.VideoOnly {
-		args = append(args, "-an")
+		args = args.SkipAudio()
 	}
 
-	args = append(args,
-		"-c:v", o.Codec.Codec,
-	)
+	args = args.VideoCodec(o.Codec.codec)
 
 	// don't set scale when copying video stream
-	if o.Codec.Codec != CopyStreamCodec {
-		scale := o.calculateTranscodeScale()
-		args = append(args,
-			"-vf", "scale="+scale,
-		)
+	if o.Codec.codec != VideoCodecCopy {
+		var videoFilter VideoFilter
+		videoFilter = videoFilter.ScaleMax(o.VideoWidth, o.VideoHeight, o.MaxTranscodeSize)
+		args = args.VideoFilter(videoFilter)
 	}
 
 	if len(o.Codec.extraArgs) > 0 {
@@ -216,16 +186,18 @@ func (o TranscodeStreamOptions) getStreamArgs() []string {
 	args = append(args,
 		// this is needed for 5-channel ac3 files
 		"-ac", "2",
-		"-f", o.Codec.format,
-		"pipe:",
 	)
+
+	args = args.Format(o.Codec.format)
+	args = args.Output("pipe:")
 
 	return args
 }
 
-func GetTranscodeStream(encoder FFMpeg, options TranscodeStreamOptions) (*Stream, error) {
+// GetTranscodeStream starts the live transcoding process using ffmpeg and returns a stream.
+func (f *FFMpeg) GetTranscodeStream(ctx context.Context, options TranscodeStreamOptions) (*Stream, error) {
 	args := options.getStreamArgs()
-	cmd := encoder.Command(context.TODO(), args)
+	cmd := f.Command(ctx, args)
 	logger.Debugf("Streaming via: %s", strings.Join(cmd.Args, " "))
 
 	stdout, err := cmd.StdoutPipe()
@@ -263,7 +235,6 @@ func GetTranscodeStream(encoder FFMpeg, options TranscodeStreamOptions) (*Stream
 	ret := &Stream{
 		Stdout:   stdout,
 		Process:  cmd.Process,
-		options:  options,
 		mimeType: options.Codec.MimeType,
 	}
 	return ret, nil
