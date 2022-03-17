@@ -69,9 +69,8 @@ func (g PreviewOptions) getStepSizeAndOffset(videoDuration float64) (stepSize fl
 }
 
 func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration float64, hash string, options PreviewOptions, fallback bool) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
 	output := g.ScenePaths.GetVideoPreviewPath(hash)
 	if !g.Overwrite {
@@ -82,7 +81,7 @@ func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration
 
 	logger.Infof("[generator] generating video preview for %s", input)
 
-	if err := g.generateFile(ctx, g.ScenePaths, mp4Pattern, output, g.previewVideo(input, videoDuration, options, fallback)); err != nil {
+	if err := g.generateFile(lockCtx, g.ScenePaths, mp4Pattern, output, g.previewVideo(input, videoDuration, options, fallback)); err != nil {
 		return err
 	}
 
@@ -92,7 +91,7 @@ func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration
 }
 
 func (g *Generator) previewVideo(input string, videoDuration float64, options PreviewOptions, fallback bool) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		// a list of tmp files used during the preview generation
 		var tmpFiles []string
 
@@ -127,7 +126,7 @@ func (g *Generator) previewVideo(input string, videoDuration float64, options Pr
 				Preset:     options.Preset,
 			}
 
-			if err := g.previewVideoChunk(ctx, input, chunkOptions, fallback); err != nil {
+			if err := g.previewVideoChunk(lockCtx, input, chunkOptions, fallback); err != nil {
 				return err
 			}
 		}
@@ -142,7 +141,7 @@ func (g *Generator) previewVideo(input string, videoDuration float64, options Pr
 			return err
 		}
 
-		return g.previewVideoChunkCombine(ctx, concatFilePath, tmpFn)
+		return g.previewVideoChunkCombine(lockCtx, concatFilePath, tmpFn)
 	}
 }
 
@@ -154,7 +153,7 @@ type previewChunkOptions struct {
 	Preset     string
 }
 
-func (g Generator) previewVideoChunk(ctx context.Context, fn string, options previewChunkOptions, fallback bool) error {
+func (g Generator) previewVideoChunk(lockCtx *fsutil.LockContext, fn string, options previewChunkOptions, fallback bool) error {
 	var videoFilter ffmpeg.VideoFilter
 	videoFilter = videoFilter.ScaleWidth(scenePreviewWidth)
 
@@ -193,7 +192,7 @@ func (g Generator) previewVideoChunk(ctx context.Context, fn string, options pre
 
 	args := transcoder.Transcode(fn, trimOptions)
 
-	return g.Encoder.Generate(ctx, args)
+	return g.generate(lockCtx, args)
 }
 
 func (g Generator) generateConcatFile(chunkFiles []string) (fn string, err error) {
@@ -214,14 +213,14 @@ func (g Generator) generateConcatFile(chunkFiles []string) (fn string, err error
 	return concatFile.Name(), w.Flush()
 }
 
-func (g Generator) previewVideoChunkCombine(ctx context.Context, concatFilePath string, outputPath string) error {
+func (g Generator) previewVideoChunkCombine(lockCtx *fsutil.LockContext, concatFilePath string, outputPath string) error {
 	spliceOptions := transcoder.SpliceOptions{
 		OutputPath: outputPath,
 	}
 
 	args := transcoder.Splice(concatFilePath, spliceOptions)
 
-	return g.Encoder.Generate(ctx, args)
+	return g.generate(lockCtx, args)
 }
 
 func removeFiles(list []string) {
@@ -235,9 +234,8 @@ func removeFiles(list []string) {
 // PreviewWebp generates a webp file based on the preview video input.
 // TODO - this should really generate a new webp using chunks.
 func (g Generator) PreviewWebp(ctx context.Context, input string, hash string) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
 	output := g.ScenePaths.GetWebpPreviewPath(hash)
 	if !g.Overwrite {
@@ -250,7 +248,7 @@ func (g Generator) PreviewWebp(ctx context.Context, input string, hash string) e
 
 	src := g.ScenePaths.GetVideoPreviewPath(hash)
 
-	if err := g.generateFile(ctx, g.ScenePaths, webpPattern, output, g.previewVideoToImage(src)); err != nil {
+	if err := g.generateFile(lockCtx, g.ScenePaths, webpPattern, output, g.previewVideoToImage(src)); err != nil {
 		return err
 	}
 
@@ -260,7 +258,7 @@ func (g Generator) PreviewWebp(ctx context.Context, input string, hash string) e
 }
 
 func (g Generator) previewVideoToImage(input string) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		var videoFilter ffmpeg.VideoFilter
 		videoFilter = videoFilter.ScaleWidth(scenePreviewWidth)
 		videoFilter = videoFilter.Fps(scenePreviewImageFPS)
@@ -286,6 +284,6 @@ func (g Generator) previewVideoToImage(input string) generateFn {
 
 		args := transcoder.Transcode(input, encodeOptions)
 
-		return g.Encoder.Generate(ctx, args)
+		return g.generate(lockCtx, args)
 	}
 }

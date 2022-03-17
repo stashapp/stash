@@ -21,9 +21,8 @@ const (
 )
 
 func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash string, seconds int, includeAudio bool) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
 	output := g.MarkerPaths.GetVideoPreviewPath(hash, seconds)
 	if !g.Overwrite {
@@ -32,7 +31,7 @@ func (g Generator) MarkerPreviewVideo(ctx context.Context, input string, hash st
 		}
 	}
 
-	if err := g.generateFile(ctx, g.MarkerPaths, mp4Pattern, output, g.markerPreviewVideo(input, sceneMarkerOptions{
+	if err := g.generateFile(lockCtx, g.MarkerPaths, mp4Pattern, output, g.markerPreviewVideo(input, sceneMarkerOptions{
 		Seconds: seconds,
 		Audio:   includeAudio,
 	})); err != nil {
@@ -50,7 +49,7 @@ type sceneMarkerOptions struct {
 }
 
 func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		var videoFilter ffmpeg.VideoFilter
 		videoFilter = videoFilter.ScaleWidth(markerPreviewWidth)
 
@@ -87,14 +86,13 @@ func (g Generator) markerPreviewVideo(input string, options sceneMarkerOptions) 
 
 		args := transcoder.Transcode(input, trimOptions)
 
-		return g.Encoder.Generate(ctx, args)
+		return g.generate(lockCtx, args)
 	}
 }
 
 func (g Generator) SceneMarkerWebp(ctx context.Context, input string, hash string, seconds int) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
 	output := g.MarkerPaths.GetWebpPreviewPath(hash, seconds)
 	if !g.Overwrite {
@@ -103,7 +101,7 @@ func (g Generator) SceneMarkerWebp(ctx context.Context, input string, hash strin
 		}
 	}
 
-	if err := g.generateFile(ctx, g.MarkerPaths, webpPattern, output, g.sceneMarkerWebp(input, sceneMarkerOptions{
+	if err := g.generateFile(lockCtx, g.MarkerPaths, webpPattern, output, g.sceneMarkerWebp(input, sceneMarkerOptions{
 		Seconds: seconds,
 	})); err != nil {
 		return err
@@ -115,7 +113,7 @@ func (g Generator) SceneMarkerWebp(ctx context.Context, input string, hash strin
 }
 
 func (g Generator) sceneMarkerWebp(input string, options sceneMarkerOptions) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		var videoFilter ffmpeg.VideoFilter
 		videoFilter = videoFilter.ScaleWidth(markerPreviewWidth)
 		videoFilter = videoFilter.Fps(markerWebpFPS)
@@ -141,14 +139,13 @@ func (g Generator) sceneMarkerWebp(input string, options sceneMarkerOptions) gen
 
 		args := transcoder.Transcode(input, trimOptions)
 
-		return g.Encoder.Generate(ctx, args)
+		return g.generate(lockCtx, args)
 	}
 }
 
 func (g Generator) SceneMarkerScreenshot(ctx context.Context, input string, hash string, seconds int, width int) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
 	output := g.MarkerPaths.GetScreenshotPath(hash, seconds)
 	if !g.Overwrite {
@@ -157,7 +154,7 @@ func (g Generator) SceneMarkerScreenshot(ctx context.Context, input string, hash
 		}
 	}
 
-	if err := g.generateFile(ctx, g.MarkerPaths, jpgPattern, output, g.sceneMarkerScreenshot(input, SceneMarkerScreenshotOptions{
+	if err := g.generateFile(lockCtx, g.MarkerPaths, jpgPattern, output, g.sceneMarkerScreenshot(input, SceneMarkerScreenshotOptions{
 		Seconds: seconds,
 		Width:   width,
 	})); err != nil {
@@ -175,7 +172,7 @@ type SceneMarkerScreenshotOptions struct {
 }
 
 func (g Generator) sceneMarkerScreenshot(input string, options SceneMarkerScreenshotOptions) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		ssOptions := transcoder.ScreenshotOptions{
 			OutputPath: tmpFn,
 			OutputType: transcoder.ScreenshotOutputTypeImage2,
@@ -185,6 +182,6 @@ func (g Generator) sceneMarkerScreenshot(input string, options SceneMarkerScreen
 
 		args := transcoder.ScreenshotTime(input, float64(options.Seconds), ssOptions)
 
-		return g.Encoder.Generate(ctx, args)
+		return g.generate(lockCtx, args)
 	}
 }

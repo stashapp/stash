@@ -22,9 +22,8 @@ type ScreenshotOptions struct {
 }
 
 func (g Generator) Screenshot(ctx context.Context, input string, hash string, videoWidth int, videoDuration float64, options ScreenshotOptions) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
 	output := g.ScenePaths.GetScreenshotPath(hash)
 	if !g.Overwrite {
@@ -38,7 +37,7 @@ func (g Generator) Screenshot(ctx context.Context, input string, hash string, vi
 		at = *options.At
 	}
 
-	if err := g.generateFile(ctx, g.ScenePaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
+	if err := g.generateFile(lockCtx, g.ScenePaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
 		Time:    at,
 		Quality: screenshotQuality,
 		// default Width is video width
@@ -52,9 +51,8 @@ func (g Generator) Screenshot(ctx context.Context, input string, hash string, vi
 }
 
 func (g Generator) Thumbnail(ctx context.Context, input string, hash string, videoDuration float64, options ScreenshotOptions) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
 	output := g.ScenePaths.GetThumbnailScreenshotPath(hash)
 	if !g.Overwrite {
@@ -68,7 +66,7 @@ func (g Generator) Thumbnail(ctx context.Context, input string, hash string, vid
 		at = *options.At
 	}
 
-	if err := g.generateFile(ctx, g.ScenePaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
+	if err := g.generateFile(lockCtx, g.ScenePaths, jpgPattern, output, g.screenshot(input, screenshotOptions{
 		Time:    at,
 		Quality: thumbnailQuality,
 		Width:   thumbnailWidth,
@@ -88,7 +86,7 @@ type screenshotOptions struct {
 }
 
 func (g Generator) screenshot(input string, options screenshotOptions) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		ssOptions := transcoder.ScreenshotOptions{
 			OutputPath: tmpFn,
 			OutputType: transcoder.ScreenshotOutputTypeImage2,
@@ -98,6 +96,6 @@ func (g Generator) screenshot(input string, options screenshotOptions) generateF
 
 		args := transcoder.ScreenshotTime(input, options.Time, ssOptions)
 
-		return g.Encoder.Generate(ctx, args)
+		return g.generate(lockCtx, args)
 	}
 }

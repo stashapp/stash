@@ -14,6 +14,7 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -26,9 +27,8 @@ const (
 )
 
 func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds float64) (image.Image, error) {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
 	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: "-",
@@ -38,13 +38,12 @@ func (g Generator) SpriteScreenshot(ctx context.Context, input string, seconds f
 
 	args := transcoder.ScreenshotTime(input, seconds, ssOptions)
 
-	return g.generateImage(ctx, args)
+	return g.generateImage(lockCtx, args)
 }
 
 func (g Generator) SpriteScreenshotSlow(ctx context.Context, input string, frame int) (image.Image, error) {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
 	ssOptions := transcoder.ScreenshotOptions{
 		OutputPath: "-",
@@ -54,11 +53,11 @@ func (g Generator) SpriteScreenshotSlow(ctx context.Context, input string, frame
 
 	args := transcoder.ScreenshotFrame(input, frame, ssOptions)
 
-	return g.generateImage(ctx, args)
+	return g.generateImage(lockCtx, args)
 }
 
-func (g Generator) generateImage(ctx context.Context, args ffmpeg.Args) (image.Image, error) {
-	out, err := g.Encoder.GenerateOutput(ctx, args)
+func (g Generator) generateImage(lockCtx *fsutil.LockContext, args ffmpeg.Args) (image.Image, error) {
+	out, err := g.generateOutput(lockCtx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -89,11 +88,14 @@ func (g Generator) CombineSpriteImages(images []image.Image) image.Image {
 }
 
 func (g Generator) SpriteVTT(ctx context.Context, output string, spritePath string, stepSize float64) error {
-	return g.generateFile(ctx, g.ScenePaths, vttPattern, output, g.spriteVTT(spritePath, stepSize))
+	lockCtx := g.LockManager.ReadLock(ctx, spritePath)
+	defer lockCtx.Cancel()
+
+	return g.generateFile(lockCtx, g.ScenePaths, vttPattern, output, g.spriteVTT(spritePath, stepSize))
 }
 
 func (g Generator) spriteVTT(spritePath string, stepSize float64) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		spriteImage, err := os.Open(spritePath)
 		if err != nil {
 			return err

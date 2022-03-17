@@ -15,43 +15,39 @@ type TranscodeOptions struct {
 }
 
 func (g Generator) Transcode(ctx context.Context, input string, hash string, options TranscodeOptions) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
-	return g.makeTranscode(ctx, hash, g.transcode(input, options))
+	return g.makeTranscode(lockCtx, hash, g.transcode(input, options))
 }
 
 // TranscodeVideo transcodes the video, and removes the audio.
 // In some videos where the audio codec is not supported by ffmpeg,
 // ffmpeg fails if you try to transcode the audio
 func (g Generator) TranscodeVideo(ctx context.Context, input string, hash string, options TranscodeOptions) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
-	return g.makeTranscode(ctx, hash, g.transcodeVideo(input, options))
+	return g.makeTranscode(lockCtx, hash, g.transcodeVideo(input, options))
 }
 
 // TranscodeAudio will copy the video stream as is, and transcode audio.
 func (g Generator) TranscodeAudio(ctx context.Context, input string, hash string, options TranscodeOptions) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
-	return g.makeTranscode(ctx, hash, g.transcodeAudio(input, options))
+	return g.makeTranscode(lockCtx, hash, g.transcodeAudio(input, options))
 }
 
 // TranscodeCopyVideo will copy the video stream as is, and drop the audio stream.
 func (g Generator) TranscodeCopyVideo(ctx context.Context, input string, hash string, options TranscodeOptions) error {
-	var cancel context.CancelFunc
-	ctx, cancel = g.LockManager.ReadLock(ctx, input)
-	defer cancel()
+	lockCtx := g.LockManager.ReadLock(ctx, input)
+	defer lockCtx.Cancel()
 
-	return g.makeTranscode(ctx, hash, g.transcodeCopyVideo(input, options))
+	return g.makeTranscode(lockCtx, hash, g.transcodeCopyVideo(input, options))
 }
 
-func (g Generator) makeTranscode(ctx context.Context, hash string, generateFn generateFn) error {
+func (g Generator) makeTranscode(lockCtx *fsutil.LockContext, hash string, generateFn generateFn) error {
 	output := g.ScenePaths.GetTranscodePath(hash)
 	if !g.Overwrite {
 		if exists, _ := fsutil.FileExists(output); exists {
@@ -59,7 +55,7 @@ func (g Generator) makeTranscode(ctx context.Context, hash string, generateFn ge
 		}
 	}
 
-	if err := g.generateFile(ctx, g.ScenePaths, mp4Pattern, output, generateFn); err != nil {
+	if err := g.generateFile(lockCtx, g.ScenePaths, mp4Pattern, output, generateFn); err != nil {
 		return err
 	}
 
@@ -69,7 +65,7 @@ func (g Generator) makeTranscode(ctx context.Context, hash string, generateFn ge
 }
 
 func (g Generator) transcode(input string, options TranscodeOptions) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		var videoArgs ffmpeg.Args
 		if options.Width != 0 && options.Height != 0 {
 			var videoFilter ffmpeg.VideoFilter
@@ -92,12 +88,12 @@ func (g Generator) transcode(input string, options TranscodeOptions) generateFn 
 			AudioCodec: ffmpeg.AudioCodecAAC,
 		})
 
-		return g.Encoder.Generate(ctx, args)
+		return g.generate(lockCtx, args)
 	}
 }
 
 func (g Generator) transcodeVideo(input string, options TranscodeOptions) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		var videoArgs ffmpeg.Args
 		if options.Width != 0 && options.Height != 0 {
 			var videoFilter ffmpeg.VideoFilter
@@ -123,12 +119,12 @@ func (g Generator) transcodeVideo(input string, options TranscodeOptions) genera
 			AudioArgs:  audioArgs,
 		})
 
-		return g.Encoder.Generate(ctx, args)
+		return g.generate(lockCtx, args)
 	}
 }
 
 func (g Generator) transcodeAudio(input string, options TranscodeOptions) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		var videoArgs ffmpeg.Args
 		if options.Width != 0 && options.Height != 0 {
 			var videoFilter ffmpeg.VideoFilter
@@ -143,12 +139,12 @@ func (g Generator) transcodeAudio(input string, options TranscodeOptions) genera
 			AudioCodec: ffmpeg.AudioCodecAAC,
 		})
 
-		return g.Encoder.Generate(ctx, args)
+		return g.generate(lockCtx, args)
 	}
 }
 
 func (g Generator) transcodeCopyVideo(input string, options TranscodeOptions) generateFn {
-	return func(ctx context.Context, tmpFn string) error {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		var videoArgs ffmpeg.Args
 		if options.Width != 0 && options.Height != 0 {
 			var videoFilter ffmpeg.VideoFilter
@@ -166,6 +162,6 @@ func (g Generator) transcodeCopyVideo(input string, options TranscodeOptions) ge
 			AudioArgs:  audioArgs,
 		})
 
-		return g.Encoder.Generate(ctx, args)
+		return g.generate(lockCtx, args)
 	}
 }

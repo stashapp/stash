@@ -2,30 +2,59 @@ package fsutil
 
 import (
 	"context"
+	"os/exec"
 	"sync"
+	"time"
 )
 
-type cancelContext struct {
-	ctx    context.Context
+type LockContext struct {
+	Ctx    context.Context
 	cancel context.CancelFunc
+
+	cmd *exec.Cmd
+}
+
+func (c *LockContext) AttachCommand(cmd *exec.Cmd) {
+	c.cmd = cmd
+}
+
+func (c *LockContext) Cancel() {
+	c.cancel()
+
+	if c.cmd != nil {
+		// wait for the process to die before returning
+		// don't wait more than a few seconds
+		done := make(chan error)
+		go func() {
+			err := c.cmd.Wait()
+			done <- err
+		}()
+
+		select {
+		case <-done:
+			return
+		case <-time.After(5 * time.Second):
+			return
+		}
+	}
 }
 
 // ReadLockManager manages read locks on file paths.
 type ReadLockManager struct {
-	readLocks map[string][]*cancelContext
+	readLocks map[string][]*LockContext
 	mutex     sync.RWMutex
 }
 
 // NewReadLockManager creates a new ReadLockManager.
 func NewReadLockManager() *ReadLockManager {
 	return &ReadLockManager{
-		readLocks: make(map[string][]*cancelContext),
+		readLocks: make(map[string][]*LockContext),
 	}
 }
 
 // ReadLock adds a pending file read lock for fn to its storage, returning a context and cancel function.
 // Per standard WithCancel usage, cancel must be called when the lock is freed.
-func (m *ReadLockManager) ReadLock(ctx context.Context, fn string) (context.Context, context.CancelFunc) {
+func (m *ReadLockManager) ReadLock(ctx context.Context, fn string) *LockContext {
 	retCtx, cancel := context.WithCancel(ctx)
 
 	m.mutex.Lock()
@@ -33,16 +62,19 @@ func (m *ReadLockManager) ReadLock(ctx context.Context, fn string) (context.Cont
 
 	locks := m.readLocks[fn]
 
-	cc := &cancelContext{retCtx, cancel}
+	cc := &LockContext{
+		Ctx:    retCtx,
+		cancel: cancel,
+	}
 	m.readLocks[fn] = append(locks, cc)
 
 	go m.waitAndUnlock(fn, cc)
 
-	return retCtx, cancel
+	return cc
 }
 
-func (m *ReadLockManager) waitAndUnlock(fn string, cc *cancelContext) {
-	<-cc.ctx.Done()
+func (m *ReadLockManager) waitAndUnlock(fn string, cc *LockContext) {
+	<-cc.Ctx.Done()
 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -63,6 +95,7 @@ func (m *ReadLockManager) Cancel(fn string) {
 	m.mutex.RUnlock()
 
 	for _, l := range locks {
-		l.cancel()
+		l.Cancel()
+		<-l.Ctx.Done()
 	}
 }

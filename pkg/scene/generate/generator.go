@@ -1,9 +1,12 @@
 package generate
 
 import (
-	"context"
+	"bytes"
+	"errors"
 	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -52,7 +55,7 @@ type Generator struct {
 	Overwrite   bool
 }
 
-type generateFn func(ctx context.Context, tmpFn string) error
+type generateFn func(lockCtx *fsutil.LockContext, tmpFn string) error
 
 func (g Generator) tempFile(p Paths, pattern string) (*os.File, error) {
 	tmpFile, err := p.TempFile(pattern) // tmp output in case the process ends abruptly
@@ -65,7 +68,7 @@ func (g Generator) tempFile(p Paths, pattern string) (*os.File, error) {
 
 // generateFile performs a generate operation by generating a temporary file using p and pattern, then
 // moving it to output on success.
-func (g Generator) generateFile(ctx context.Context, p Paths, pattern string, output string, generateFn generateFn) error {
+func (g Generator) generateFile(lockCtx *fsutil.LockContext, p Paths, pattern string, output string, generateFn generateFn) error {
 	tmpFile, err := g.tempFile(p, pattern) // tmp output in case the process ends abruptly
 	if err != nil {
 		return err
@@ -76,7 +79,7 @@ func (g Generator) generateFile(ctx context.Context, p Paths, pattern string, ou
 		_ = os.Remove(tmpFn)
 	}()
 
-	if err := generateFn(ctx, tmpFn); err != nil {
+	if err := generateFn(lockCtx, tmpFn); err != nil {
 		return err
 	}
 
@@ -85,4 +88,59 @@ func (g Generator) generateFile(ctx context.Context, p Paths, pattern string, ou
 	}
 
 	return nil
+}
+
+// generate runs ffmpeg with the given args and waits for it to finish.
+// Returns an error if the command fails. If the command fails, the return
+// value will be of type *exec.ExitError.
+func (g Generator) generate(lockCtx *fsutil.LockContext, args []string) error {
+	cmd := g.Encoder.Command(lockCtx.Ctx, args)
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("error starting command: %w", err)
+	}
+
+	lockCtx.AttachCommand(cmd)
+
+	if err := cmd.Wait(); err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			exitErr.Stderr = stderr.Bytes()
+			err = exitErr
+		}
+		return fmt.Errorf("error running ffmpeg command <%s>: %w", strings.Join(args, " "), err)
+	}
+
+	return nil
+}
+
+// GenerateOutput runs ffmpeg with the given args and returns it standard output.
+func (g Generator) generateOutput(lockCtx *fsutil.LockContext, args []string) ([]byte, error) {
+	cmd := g.Encoder.Command(lockCtx.Ctx, args)
+
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("error starting command: %w", err)
+	}
+
+	lockCtx.AttachCommand(cmd)
+
+	if err := cmd.Wait(); err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			exitErr.Stderr = stderr.Bytes()
+			err = exitErr
+		}
+		return nil, fmt.Errorf("error running ffmpeg command <%s>: %w", strings.Join(args, " "), err)
+	}
+
+	return stdout.Bytes(), nil
 }

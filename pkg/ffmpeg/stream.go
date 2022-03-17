@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -21,7 +21,7 @@ const (
 // Stream represents an ongoing transcoded stream.
 type Stream struct {
 	Stdout   io.ReadCloser
-	Process  *os.Process
+	Cmd      *exec.Cmd
 	mimeType string
 }
 
@@ -220,7 +220,7 @@ func (f *FFMpeg) GetTranscodeStream(ctx context.Context, options TranscodeStream
 
 	ret := &Stream{
 		Stdout:   stdout,
-		Process:  cmd.Process,
+		Cmd:      cmd,
 		mimeType: options.Codec.MimeType,
 	}
 	return ret, nil

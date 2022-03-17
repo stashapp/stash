@@ -31,8 +31,8 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 
 	filepath := GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(fileNamingAlgo))
-	_, cancel := GetInstance().ReadLockManager.ReadLock(r.Context(), filepath)
-	defer cancel()
+	lockCtx := GetInstance().ReadLockManager.ReadLock(r.Context(), filepath)
+	defer lockCtx.Cancel()
 	http.ServeFile(w, r, filepath)
 }
 
