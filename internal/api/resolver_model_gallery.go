@@ -26,7 +26,10 @@ func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*stri
 func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret []*models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
-		ret, err = repo.Image().FindByGalleryID(obj.ID)
+
+		// #2376 - sort images by path
+		ret, err = image.FindByGalleryID(repo.Image(), obj.ID, "path", models.SortDirectionEnumAsc)
+
 		return err
 	}); err != nil {
 		return nil, err
@@ -37,7 +40,7 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		imgs, err := repo.Image().FindByGalleryID(obj.ID)
+		imgs, err := image.FindByGalleryID(repo.Image(), obj.ID, "", "")
 		if err != nil {
 			return err
 		}
