@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"image"
 	"os/exec"
 	"runtime"
 	"sync"
@@ -49,7 +50,7 @@ func NewThumbnailEncoder(ffmpegEncoder ffmpeg.Encoder) ThumbnailEncoder {
 // GetThumbnail returns the thumbnail image of the provided image resized to
 // the provided max size. It resizes based on the largest X/Y direction.
 // It returns nil and an error if an error occurs reading, decoding or encoding
-// the image.
+// the image, or if the image is not suitable for thumbnails.
 func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte, error) {
 	reader, err := openSourceImage(img.Path)
 	if err != nil {
@@ -61,13 +62,24 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 		return nil, err
 	}
 
-	_, format, err := DecodeSourceImage(img)
+	data := buf.Bytes()
+
+	// use NewBufferString to copy the buffer, rather than reuse it
+	_, format, err := image.DecodeConfig(bytes.NewBufferString(string(data)))
 	if err != nil {
 		return nil, err
 	}
 
-	if format != nil && !supportThumbnail(*format) {
-		return nil, fmt.Errorf("%w: %s", ErrNotSupportedForThumbnail, *format)
+	animated := format == formatGif
+
+	// #2266 - if image is webp, then determine if it is animated
+	if format == formatWebP {
+		animated = isWebPAnimated(data)
+	}
+
+	// #2266 - don't generate a thumbnail for animated images
+	if animated {
+		return nil, fmt.Errorf("%w: %s", ErrNotSupportedForThumbnail, format)
 	}
 
 	// vips has issues loading files from stdin on Windows
@@ -76,10 +88,4 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 	} else {
 		return e.ffmpeg.ImageThumbnail(buf, format, maxSize, img.Path)
 	}
-}
-
-// supportThumbnail returns false if thumbnails should not be generated for the given format.
-// Returns false for animated formats: gif and webp
-func supportThumbnail(format string) bool {
-	return format != "gif" && format != "webp"
 }

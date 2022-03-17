@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"path/filepath"
 	"time"
 
@@ -154,7 +155,10 @@ func (t *ScanTask) generateThumbnail(i *models.Image) {
 		data, err := encoder.GetThumbnail(i, models.DefaultGthumbWidth)
 
 		if err != nil {
-			logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
+			// don't log for animated images
+			if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
+				logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
+			}
 			return
 		}
 
