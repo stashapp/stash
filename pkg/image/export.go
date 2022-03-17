@@ -1,8 +1,8 @@
 package image
 
 import (
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
 )
 
 // ToBasicJSON converts a image object into its JSON object equivalent. It

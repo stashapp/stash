@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/manager/paths"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/models/paths"
 )
 
 // FileDeleter is an extension of file.Deleter that handles deletion of scene files.
@@ -27,7 +27,7 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 
 	markersFolder := filepath.Join(d.Paths.Generated.Markers, sceneHash)
 
-	exists, _ := utils.FileExists(markersFolder)
+	exists, _ := fsutil.FileExists(markersFolder)
 	if exists {
 		if err := d.Dirs([]string{markersFolder}); err != nil {
 			return err
@@ -37,49 +37,49 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 	var files []string
 
 	thumbPath := d.Paths.Scene.GetThumbnailScreenshotPath(sceneHash)
-	exists, _ = utils.FileExists(thumbPath)
+	exists, _ = fsutil.FileExists(thumbPath)
 	if exists {
 		files = append(files, thumbPath)
 	}
 
 	normalPath := d.Paths.Scene.GetScreenshotPath(sceneHash)
-	exists, _ = utils.FileExists(normalPath)
+	exists, _ = fsutil.FileExists(normalPath)
 	if exists {
 		files = append(files, normalPath)
 	}
 
 	streamPreviewPath := d.Paths.Scene.GetStreamPreviewPath(sceneHash)
-	exists, _ = utils.FileExists(streamPreviewPath)
+	exists, _ = fsutil.FileExists(streamPreviewPath)
 	if exists {
 		files = append(files, streamPreviewPath)
 	}
 
 	streamPreviewImagePath := d.Paths.Scene.GetStreamPreviewImagePath(sceneHash)
-	exists, _ = utils.FileExists(streamPreviewImagePath)
+	exists, _ = fsutil.FileExists(streamPreviewImagePath)
 	if exists {
 		files = append(files, streamPreviewImagePath)
 	}
 
 	transcodePath := d.Paths.Scene.GetTranscodePath(sceneHash)
-	exists, _ = utils.FileExists(transcodePath)
+	exists, _ = fsutil.FileExists(transcodePath)
 	if exists {
 		files = append(files, transcodePath)
 	}
 
 	spritePath := d.Paths.Scene.GetSpriteImageFilePath(sceneHash)
-	exists, _ = utils.FileExists(spritePath)
+	exists, _ = fsutil.FileExists(spritePath)
 	if exists {
 		files = append(files, spritePath)
 	}
 
 	vttPath := d.Paths.Scene.GetSpriteVttFilePath(sceneHash)
-	exists, _ = utils.FileExists(vttPath)
+	exists, _ = fsutil.FileExists(vttPath)
 	if exists {
 		files = append(files, vttPath)
 	}
 
 	heatmapPath := d.Paths.Scene.GetInteractiveHeatmapPath(sceneHash)
-	exists, _ = utils.FileExists(heatmapPath)
+	exists, _ = fsutil.FileExists(heatmapPath)
 	if exists {
 		files = append(files, heatmapPath)
 	}
@@ -96,17 +96,17 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 
 	var files []string
 
-	exists, _ := utils.FileExists(videoPath)
+	exists, _ := fsutil.FileExists(videoPath)
 	if exists {
 		files = append(files, videoPath)
 	}
 
-	exists, _ = utils.FileExists(imagePath)
+	exists, _ = fsutil.FileExists(imagePath)
 	if exists {
 		files = append(files, imagePath)
 	}
 
-	exists, _ = utils.FileExists(screenshotPath)
+	exists, _ = fsutil.FileExists(screenshotPath)
 	if exists {
 		files = append(files, screenshotPath)
 	}
@@ -136,8 +136,8 @@ func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDelet
 			return err
 		}
 
-		funscriptPath := utils.GetFunscriptPath(scene.Path)
-		funscriptExists, _ := utils.FileExists(funscriptPath)
+		funscriptPath := GetFunscriptPath(scene.Path)
+		funscriptExists, _ := fsutil.FileExists(funscriptPath)
 		if funscriptExists {
 			if err := fileDeleter.Files([]string{funscriptPath}); err != nil {
 				return err

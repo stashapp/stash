@@ -13,8 +13,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestPerformerFindBySceneID(t *testing.T) {
@@ -266,7 +266,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 		const name = "TestPerformerUpdatePerformerImage"
 		performer := models.Performer{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 			Favorite: sql.NullBool{Bool: false, Valid: true},
 		}
 		created, err := qb.Create(performer)
@@ -307,7 +307,7 @@ func TestPerformerDestroyPerformerImage(t *testing.T) {
 		const name = "TestPerformerDestroyPerformerImage"
 		performer := models.Performer{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 			Favorite: sql.NullBool{Bool: false, Valid: true},
 		}
 		created, err := qb.Create(performer)
@@ -827,7 +827,7 @@ func TestPerformerStashIDs(t *testing.T) {
 		const name = "TestStashIDs"
 		performer := models.Performer{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 			Favorite: sql.NullBool{Bool: false, Valid: true},
 		}
 		created, err := qb.Create(performer)

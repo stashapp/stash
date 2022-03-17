@@ -5,10 +5,10 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -57,7 +57,7 @@ func TestImporterPreImport(t *testing.T) {
 
 	assert.Nil(t, err)
 	expectedPerformer := *createFullPerformer(0, performerName)
-	expectedPerformer.Checksum = utils.MD5FromString(performerName)
+	expectedPerformer.Checksum = md5.FromString(performerName)
 	assert.Equal(t, expectedPerformer, i.performer)
 }
 

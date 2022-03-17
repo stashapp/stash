@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -121,7 +122,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 
 		g, _ = qb.FindByChecksum(checksum)
 		if g != nil {
-			exists, _ := utils.FileExists(g.Path.String)
+			exists, _ := fsutil.FileExists(g.Path.String)
 			if !scanner.CaseSensitiveFs {
 				// #1426 - if file exists but is a case-insensitive match for the
 				// original filename, then treat it as a move
@@ -151,7 +152,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 			g = &models.Gallery{
 				Zip: true,
 				Title: sql.NullString{
-					String: utils.GetNameFromPath(path, scanner.StripFileExtension),
+					String: fsutil.GetNameFromPath(path, scanner.StripFileExtension),
 					Valid:  true,
 				},
 				CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
@@ -161,7 +162,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 			g.SetFile(*scanned)
 
 			// only warn when creating the gallery
-			ok, err := utils.IsZipFileUncompressed(path)
+			ok, err := isZipFileUncompressed(path)
 			if err == nil && !ok {
 				logger.Warnf("%s is using above store (0) level compression.", path)
 			}
@@ -193,8 +194,26 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 	return
 }
 
+// IsZipFileUnmcompressed returns true if zip file in path is using 0 compression level
+func isZipFileUncompressed(path string) (bool, error) {
+	r, err := zip.OpenReader(path)
+	if err != nil {
+		fmt.Printf("Error reading zip file %s: %s\n", path, err)
+		return false, err
+	} else {
+		defer r.Close()
+		for _, f := range r.File {
+			if f.FileInfo().IsDir() { // skip dirs, they always get store level compression
+				continue
+			}
+			return f.Method == 0, nil // check compression level of first actual  file
+		}
+	}
+	return false, nil
+}
+
 func (scanner *Scanner) isImage(pathname string) bool {
-	return utils.MatchExtension(pathname, scanner.ImageExtensions)
+	return fsutil.MatchExtension(pathname, scanner.ImageExtensions)
 }
 
 func (scanner *Scanner) hasImages(path string) bool {

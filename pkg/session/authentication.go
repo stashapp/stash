@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 )
 
 type ExternalAccessError net.IP
@@ -16,7 +15,7 @@ func (e ExternalAccessError) Error() string {
 	return fmt.Sprintf("stash accessed from external IP %s", net.IP(e).String())
 }
 
-func CheckAllowPublicWithoutAuth(c *config.Instance, r *http.Request) error {
+func CheckAllowPublicWithoutAuth(c ExternalAccessConfig, r *http.Request) error {
 	if !c.HasCredentials() && !c.GetDangerousAllowPublicWithoutAuth() && !c.IsNewSystem() {
 		requestIPString, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
@@ -60,7 +59,7 @@ func CheckAllowPublicWithoutAuth(c *config.Instance, r *http.Request) error {
 	return nil
 }
 
-func CheckExternalAccessTripwire(c *config.Instance) *ExternalAccessError {
+func CheckExternalAccessTripwire(c ExternalAccessConfig) *ExternalAccessError {
 	if !c.HasCredentials() && !c.GetDangerousAllowPublicWithoutAuth() {
 		if remoteIP := c.GetSecurityTripwireAccessedFromPublicInternet(); remoteIP != "" {
 			err := ExternalAccessError(net.ParseIP(remoteIP))

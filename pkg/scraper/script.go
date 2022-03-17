@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -41,7 +41,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		}
 	}
 
-	cmd := exec.Command(command[0], command[1:]...)
+	cmd := stashExec.Command(command[0], command[1:]...)
 	cmd.Dir = filepath.Dir(s.config.path)
 
 	stdin, err := cmd.StdinPipe()
@@ -67,7 +67,6 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		logger.Error("Scraper stdout not available: " + err.Error())
 	}
 
-	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		logger.Error("Error running scraper script: " + err.Error())
 		return errors.New("error running scraper script")
@@ -241,8 +240,9 @@ func handleScraperStderr(name string, scraperOutputReader io.ReadCloser) {
 	const scraperPrefix = "[Scrape / %s] "
 
 	lgr := logger.PluginLogger{
+		Logger:          logger.Logger,
 		Prefix:          fmt.Sprintf(scraperPrefix, name),
 		DefaultLogLevel: &logger.ErrorLevel,
 	}
-	lgr.HandlePluginStdErr(scraperOutputReader)
+	lgr.ReadLogMessages(scraperOutputReader)
 }

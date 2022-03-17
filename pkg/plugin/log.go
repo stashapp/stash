@@ -17,10 +17,11 @@ func (t *pluginTask) handlePluginStderr(name string, pluginOutputReader io.ReadC
 	const pluginPrefix = "[Plugin / %s] "
 
 	lgr := logger.PluginLogger{
+		Logger:          logger.Logger,
 		Prefix:          fmt.Sprintf(pluginPrefix, name),
 		DefaultLogLevel: logLevel,
 		ProgressChan:    t.progress,
 	}
 
-	lgr.HandlePluginStdErr(pluginOutputReader)
+	lgr.ReadLogMessages(pluginOutputReader)
 }

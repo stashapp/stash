@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -36,6 +36,7 @@ type GlobalConfig interface {
 	GetScrapersPath() string
 	GetScraperCDPPath() string
 	GetScraperCertCheck() bool
+	GetScraperExcludeTagPatterns() []string
 }
 
 func isCDPPathHTTP(c GlobalConfig) bool {
@@ -110,7 +111,7 @@ func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManage
 	logger.Debugf("Reading scraper configs from %s", path)
 
 	scraperFiles := []string{}
-	err := utils.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
+	err := fsutil.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
 			c, err := loadConfigFromYAMLFile(fp)
 			if err != nil {

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
-	stash_config "github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -51,7 +50,7 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
-		tags, err := postProcessTags(tqb, p.Tags)
+		tags, err := postProcessTags(c.globalConfig, tqb, p.Tags)
 		if err != nil {
 			return err
 		}
@@ -94,7 +93,7 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
-		tags, err := postProcessTags(tqb, p.Tags)
+		tags, err := postProcessTags(c.globalConfig, tqb, p.Tags)
 		if err != nil {
 			return err
 		}
@@ -136,7 +135,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene) (
 			}
 		}
 
-		tags, err := postProcessTags(tqb, scene.Tags)
+		tags, err := postProcessTags(c.globalConfig, tqb, scene.Tags)
 		if err != nil {
 			return err
 		}
@@ -175,7 +174,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery) (
 			}
 		}
 
-		tags, err := postProcessTags(tqb, g.Tags)
+		tags, err := postProcessTags(c.globalConfig, tqb, g.Tags)
 		if err != nil {
 			return err
 		}
@@ -196,10 +195,10 @@ func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery) (
 	return g, nil
 }
 
-func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
+func postProcessTags(globalConfig GlobalConfig, tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
 	var ret []*models.ScrapedTag
 
-	excludePatterns := stash_config.GetInstance().GetScraperExcludeTagPatterns()
+	excludePatterns := globalConfig.GetScraperExcludeTagPatterns()
 	var excludeRegexps []*regexp.Regexp
 
 	for _, excludePattern := range excludePatterns {

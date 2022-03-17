@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/hash/md5"
 )
 
 type Performer struct {
@@ -68,7 +68,7 @@ type PerformerPartial struct {
 func NewPerformer(name string) *Performer {
 	currentTime := time.Now()
 	return &Performer{
-		Checksum:  utils.MD5FromString(name),
+		Checksum:  md5.FromString(name),
 		Name:      sql.NullString{String: name, Valid: true},
 		Favorite:  sql.NullBool{Bool: false, Valid: true},
 		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},

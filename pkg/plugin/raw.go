@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"sync"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
@@ -60,7 +60,7 @@ func (t *rawPluginTask) Start() error {
 		}
 	}
 
-	cmd := exec.Command(command[0], command[1:]...)
+	cmd := stashExec.Command(command[0], command[1:]...)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -88,7 +88,6 @@ func (t *rawPluginTask) Start() error {
 
 	t.waitGroup.Add(1)
 	t.done = make(chan bool, 1)
-	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		return fmt.Errorf("error running plugin: %v", err)
 	}

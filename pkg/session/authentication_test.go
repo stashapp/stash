@@ -4,13 +4,33 @@ import (
 	"errors"
 	"net/http"
 	"testing"
-
-	"github.com/stashapp/stash/pkg/manager/config"
 )
 
+type config struct {
+	username                                   string
+	password                                   string
+	dangerousAllowPublicWithoutAuth            bool
+	securityTripwireAccessedFromPublicInternet string
+}
+
+func (c *config) HasCredentials() bool {
+	return c.username != "" && c.password != ""
+}
+
+func (c *config) GetDangerousAllowPublicWithoutAuth() bool {
+	return c.dangerousAllowPublicWithoutAuth
+}
+
+func (c *config) GetSecurityTripwireAccessedFromPublicInternet() string {
+	return c.securityTripwireAccessedFromPublicInternet
+}
+
+func (c *config) IsNewSystem() bool {
+	return false
+}
+
 func TestCheckAllowPublicWithoutAuth(t *testing.T) {
-	c := config.GetInstance()
-	_ = c.SetInitialMemoryConfig()
+	c := &config{}
 
 	doTest := func(caseIndex int, r *http.Request, expectedErr interface{}) {
 		t.Helper()
@@ -114,18 +134,17 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 			RemoteAddr: "193.168.1.1:8080",
 		}
 
-		c.Set(config.Username, "admin")
-		c.Set(config.Password, "admin")
+		c.username = "admin"
+		c.password = "admin"
 
 		if err := CheckAllowPublicWithoutAuth(c, r); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
 
-		c.Set(config.Username, "")
-		c.Set(config.Password, "")
+		c.username = ""
+		c.password = ""
 
-		// HACK - this key isn't publically exposed
-		c.Set("dangerous_allow_public_without_auth", true)
+		c.dangerousAllowPublicWithoutAuth = true
 
 		if err := CheckAllowPublicWithoutAuth(c, r); err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -134,36 +153,34 @@ func TestCheckAllowPublicWithoutAuth(t *testing.T) {
 }
 
 func TestCheckExternalAccessTripwire(t *testing.T) {
-	c := config.GetInstance()
-	_ = c.SetInitialMemoryConfig()
-
-	c.Set(config.SecurityTripwireAccessedFromPublicInternet, "4.4.4.4")
+	c := &config{}
+	c.securityTripwireAccessedFromPublicInternet = "4.4.4.4"
 
 	// always return nil if authentication configured or dangerous key set
-	c.Set(config.Username, "admin")
-	c.Set(config.Password, "admin")
+	c.username = "admin"
+	c.password = "admin"
 
 	if err := CheckExternalAccessTripwire(c); err != nil {
 		t.Errorf("unexpected error %v", err)
 	}
 
-	c.Set(config.Username, "")
-	c.Set(config.Password, "")
+	c.username = ""
+	c.password = ""
 
 	// HACK - this key isn't publically exposed
-	c.Set("dangerous_allow_public_without_auth", true)
+	c.dangerousAllowPublicWithoutAuth = true
 
 	if err := CheckExternalAccessTripwire(c); err != nil {
 		t.Errorf("unexpected error %v", err)
 	}
 
-	c.Set("dangerous_allow_public_without_auth", false)
+	c.dangerousAllowPublicWithoutAuth = false
 
 	if err := CheckExternalAccessTripwire(c); err == nil {
 		t.Errorf("expected error %v", ExternalAccessError("4.4.4.4"))
 	}
 
-	c.Set(config.SecurityTripwireAccessedFromPublicInternet, "")
+	c.securityTripwireAccessedFromPublicInternet = ""
 
 	if err := CheckExternalAccessTripwire(c); err != nil {
 		t.Errorf("unexpected error %v", err)
