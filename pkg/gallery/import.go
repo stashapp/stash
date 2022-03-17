@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 type Importer struct {
@@ -135,8 +135,8 @@ func (i *Importer) populatePerformers() error {
 			pluckedNames = append(pluckedNames, performer.Name.String)
 		}
 
-		missingPerformers := utils.StrFilter(names, func(name string) bool {
-			return !utils.StrInclude(pluckedNames, name)
+		missingPerformers := stringslice.StrFilter(names, func(name string) bool {
+			return !stringslice.StrInclude(pluckedNames, name)
 		})
 
 		if len(missingPerformers) > 0 {
@@ -191,8 +191,8 @@ func (i *Importer) populateTags() error {
 			pluckedNames = append(pluckedNames, tag.Name)
 		}
 
-		missingTags := utils.StrFilter(names, func(name string) bool {
-			return !utils.StrInclude(pluckedNames, name)
+		missingTags := stringslice.StrFilter(names, func(name string) bool {
+			return !stringslice.StrInclude(pluckedNames, name)
 		})
 
 		if len(missingTags) > 0 {

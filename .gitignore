@@ -55,6 +55,6 @@ node_modules
 
 *.db
 
-stash
+/stash
 dist
 .DS_Store

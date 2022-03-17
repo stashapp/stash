@@ -13,7 +13,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"gopkg.in/yaml.v2"
 )
 
@@ -680,8 +680,8 @@ func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 }
 
 func (c mappedScraperAttrConfig) cleanResults(nodes []string) []string {
-	cleaned := utils.StrUnique(nodes)      // remove duplicate values
-	cleaned = utils.StrDelete(cleaned, "") // remove empty values
+	cleaned := stringslice.StrUnique(nodes)      // remove duplicate values
+	cleaned = stringslice.StrDelete(cleaned, "") // remove empty values
 	return cleaned
 }
 

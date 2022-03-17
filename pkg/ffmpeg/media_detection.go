@@ -38,11 +38,11 @@ func containsMatroskaSignature(buf, subType []byte) bool {
 	return buf[index-3] == 0x42 && buf[index-2] == 0x82
 }
 
-// MagicContainer returns the container type of a file path.
+// magicContainer returns the container type of a file path.
 // Returns the zero-value on errors or no-match. Implements mkv or
 // webm only, as ffprobe can't distinguish between them and not all
 // browsers support mkv
-func MagicContainer(filePath string) Container {
+func magicContainer(filePath string) Container {
 	file, err := os.Open(filePath)
 	if err != nil {
 		logger.Errorf("[magicfile] %v", err)

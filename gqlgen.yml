@@ -8,7 +8,7 @@ exec:
 model:
   filename: pkg/models/generated_models.go
 resolver:
-  filename: pkg/api/resolver.go
+  filename: internal/api/resolver.go
   type: Resolver
 
 struct_tag: gqlgen

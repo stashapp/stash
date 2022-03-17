@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -79,7 +79,7 @@ func KillRunningEncoders(path string) {
 
 // FFmpeg runner with progress output, used for transcodes
 func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, error) {
-	cmd := exec.Command(string(*e), args...)
+	cmd := stashExec.Command(string(*e), args...)
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -91,7 +91,6 @@ func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, er
 		logger.Error("FFMPEG stdout not available: " + err.Error())
 	}
 
-	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		return "", err
 	}
@@ -136,14 +135,13 @@ func (e *Encoder) runTranscode(probeResult VideoFile, args []string) (string, er
 }
 
 func (e *Encoder) run(sourcePath string, args []string, stdin io.Reader) (string, error) {
-	cmd := exec.Command(string(*e), args...)
+	cmd := stashExec.Command(string(*e), args...)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Stdin = stdin
 
-	desktop.HideExecShell(cmd)
 	if err := cmd.Start(); err != nil {
 		return "", err
 	}
