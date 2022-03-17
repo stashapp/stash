@@ -1,0 +1,202 @@
+name: BuildIt
+
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+      - develop
+
+  pull_request:
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COMPILER_IMAGE: stashapp/compiler:6
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Checkout
+      run: git fetch --prune --unshallow --tags
+
+    - name: Pull compiler image
+      run: docker pull $COMPILER_IMAGE
+
+    - name: Cache node modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-node_modules
+      with:
+        path: ui/v2.5/node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock') }}
+
+    - name: Cache UI build
+      uses: actions/cache@v2
+      id: cache-ui
+      env:
+        cache-name: cache-ui
+      with:
+        path: ui/v2.5/build
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
+
+    - name: Cache go build
+      uses: actions/cache@v2
+      env:
+        # increment the number suffix to bump the cache
+        cache-name: cache-go-cache-1
+      with:
+        path: .go-cache
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('go.mod', '**/go.sum') }}
+
+    - name: Start build container
+      env:
+        official-build: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'release' && github.ref != 'refs/tags/latest_develop') }}
+      run: |
+        mkdir -p .go-cache
+        docker run -d --name build --mount type=bind,source="$(pwd)",target=/stash,consistency=delegated --mount type=bind,source="$(pwd)/.go-cache",target=/root/.cache/go-build,consistency=delegated --env OFFICIAL_BUILD=${{ env.official-build }} -w /stash $COMPILER_IMAGE tail -f /dev/null
+
+    - name: Pre-install
+      run: docker exec -t build /bin/bash -c "make pre-ui"
+
+    - name: Generate
+      run: docker exec -t build /bin/bash -c "make generate"
+
+    - name: Validate UI
+      # skip UI validation for pull requests if UI is unchanged
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: docker exec -t build /bin/bash -c "make validate-frontend"
+
+    # Static validation happens in the linter workflow in parallel to this workflow
+    # Run Dynamic validation here, to make sure we pass all the projects integration tests
+    #
+    # create UI file so that the embed doesn't fail
+    - name: Test Backend
+      run: |
+        mkdir -p ui/v2.5/build
+        touch ui/v2.5/build/index.html
+        docker exec -t build /bin/bash -c "make it"
+
+    - name: Build UI
+      # skip UI build for pull requests if UI is unchanged (UI was cached)
+      # this means that the build version/time may be incorrect if the UI is
+      # not changed in a pull request
+      if: ${{ github.event_name != 'pull_request' || steps.cache-ui.outputs.cache-hit != 'true' }}
+      run: docker exec -t build /bin/bash -c "make ui"
+
+    - name: Compile for all supported platforms
+      run: |
+        docker exec -t build /bin/bash -c "make cross-compile-windows"
+        docker exec -t build /bin/bash -c "make cross-compile-macos-intel"
+        docker exec -t build /bin/bash -c "make cross-compile-macos-applesilicon"
+        docker exec -t build /bin/bash -c "make cross-compile-linux"
+        docker exec -t build /bin/bash -c "make cross-compile-linux-arm64v8"
+        docker exec -t build /bin/bash -c "make cross-compile-linux-arm32v7"
+        docker exec -t build /bin/bash -c "make cross-compile-linux-arm32v6"
+
+    - name: Cleanup build container
+      run: docker rm -f -v build
+
+    - name: Generate checksums
+      run: |
+        git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
+        sha1sum dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
+        echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
+        echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
+
+    - name: Upload Windows binary
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-win.exe
+        path: dist/stash-win.exe
+
+    - name: Upload OSX binary
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-macos-intel
+        path: dist/stash-macos-intel
+
+    - name: Upload Linux binary
+      # only upload binaries for pull requests
+      if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-linux
+        path: dist/stash-linux
+
+    - name: Update latest_develop tag
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      run : git tag -f latest_develop; git push -f --tags
+
+    - name: Development Release
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      uses: marvinpinto/action-automatic-releases@v1.1.2
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: true
+        automatic_release_tag: latest_develop
+        title: "${{ env.STASH_VERSION }}: Latest development build"
+        files: |
+          dist/stash-macos-intel
+          dist/stash-macos-applesilicon
+          dist/stash-win.exe
+          dist/stash-linux
+          dist/stash-linux-arm64v8
+          dist/stash-linux-arm32v7
+          dist/stash-linux-arm32v6
+          CHECKSUMS_SHA1
+
+    - name: Master release
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      uses: WithoutPants/github-release@v2.0.4
+      with:
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        allow_override: true
+        files: |
+          dist/stash-macos-intel
+          dist/stash-macos-applesilicon
+          dist/stash-win.exe
+          dist/stash-linux
+          dist/stash-linux-arm64v8
+          dist/stash-linux-arm32v7
+          dist/stash-linux-arm32v6
+          CHECKSUMS_SHA1
+        gzip: false
+
+    - name: Development Docker
+      if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+        docker info
+        docker buildx create --name builder --use
+        docker buildx inspect --bootstrap
+        docker buildx ls
+        bash ./docker/ci/x86_64/docker_push.sh development
+
+    - name: Release Docker
+      if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: |
+        docker run --rm --privileged docker/binfmt:a7996909642ee92942dcd6cff44b9b95f08dad64
+        docker info
+        docker buildx create --name builder --use
+        docker buildx inspect --bootstrap
+        docker buildx ls
+        bash ./docker/ci/x86_64/docker_push.sh latest "${{ github.event.release.tag_name }}"
