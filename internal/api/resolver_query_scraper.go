@@ -4,9 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
@@ -99,7 +103,13 @@ func (r *queryResolver) ScrapeSceneQuery(ctx context.Context, scraperID string, 
 		return nil, err
 	}
 
-	return marshalScrapedScenes(content)
+	ret, err := marshalScrapedScenes(content)
+	if err != nil {
+		return nil, err
+	}
+
+	filterSceneTags(ret)
+	return ret, nil
 }
 
 func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
@@ -113,7 +123,52 @@ func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene
 		return nil, err
 	}
 
-	return marshalScrapedScene(content)
+	ret, err := marshalScrapedScene(content)
+	if err != nil {
+		return nil, err
+	}
+
+	filterSceneTags([]*models.ScrapedScene{ret})
+
+	return ret, nil
+}
+
+// filterSceneTags removes tags matching excluded tag patterns from the provided scraped scenes
+func filterSceneTags(scenes []*models.ScrapedScene) {
+	excludePatterns := manager.GetInstance().Config.GetScraperExcludeTagPatterns()
+	var excludeRegexps []*regexp.Regexp
+
+	for _, excludePattern := range excludePatterns {
+		reg, err := regexp.Compile(strings.ToLower(excludePattern))
+		if err != nil {
+			logger.Errorf("Invalid tag exclusion pattern: %v", err)
+		} else {
+			excludeRegexps = append(excludeRegexps, reg)
+		}
+	}
+
+	if len(excludeRegexps) == 0 {
+		return
+	}
+
+	for _, s := range scenes {
+		var newTags []*models.ScrapedTag
+		for _, t := range s.Tags {
+			ignore := false
+			for _, reg := range excludeRegexps {
+				if reg.MatchString(strings.ToLower(t.Name)) {
+					ignore = true
+					break
+				}
+			}
+
+			if !ignore {
+				newTags = append(newTags, t)
+			}
+		}
+
+		s.Tags = newTags
+	}
 }
 
 func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
@@ -122,7 +177,14 @@ func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models
 		return nil, err
 	}
 
-	return marshalScrapedScene(content)
+	ret, err := marshalScrapedScene(content)
+	if err != nil {
+		return nil, err
+	}
+
+	filterSceneTags([]*models.ScrapedScene{ret})
+
+	return ret, nil
 }
 
 func (r *queryResolver) ScrapeGallery(ctx context.Context, scraperID string, gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
@@ -208,10 +270,13 @@ func (r *queryResolver) getStashBoxClient(index int) (*stashbox.Client, error) {
 }
 
 func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeSingleSceneInput) ([]*models.ScrapedScene, error) {
-	if source.ScraperID != nil {
+	var ret []*models.ScrapedScene
+
+	switch {
+	case source.ScraperID != nil:
+		var err error
 		var c models.ScrapedContent
 		var content []models.ScrapedContent
-		var err error
 
 		switch {
 		case input.SceneID != nil:
@@ -239,23 +304,35 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 			return nil, err
 		}
 
-		return marshalScrapedScenes(content)
-	} else if source.StashBoxIndex != nil {
+		ret, err = marshalScrapedScenes(content)
+		if err != nil {
+			return nil, err
+		}
+	case source.StashBoxIndex != nil:
 		client, err := r.getStashBoxClient(*source.StashBoxIndex)
 		if err != nil {
 			return nil, err
 		}
 
-		if input.SceneID != nil {
-			return client.FindStashBoxScenesByFingerprintsFlat(ctx, []string{*input.SceneID})
-		} else if input.Query != nil {
-			return client.QueryStashBoxScene(ctx, *input.Query)
+		switch {
+		case input.SceneID != nil:
+			ret, err = client.FindStashBoxScenesByFingerprintsFlat(ctx, []string{*input.SceneID})
+		case input.Query != nil:
+			ret, err = client.QueryStashBoxScene(ctx, *input.Query)
+		default:
+			return nil, fmt.Errorf("%w: scene_id or query must be set", ErrInput)
 		}
 
-		return nil, fmt.Errorf("%w: scene_id or query must be set", ErrInput)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("%w: scraper_id or stash_box_index must be set", ErrInput)
 	}
 
-	return nil, fmt.Errorf("%w: scraper_id or stash_box_index must be set", ErrInput)
+	filterSceneTags(ret)
+
+	return ret, nil
 }
 
 func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeMultiScenesInput) ([][]*models.ScrapedScene, error) {
