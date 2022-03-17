@@ -110,7 +110,9 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         setSearchResults(results);
         setSearchErrors({
           ...searchErrors,
-          [performerID]: "Network Error",
+          [performerID]: intl.formatMessage({
+            id: "performer_tagger.network_error",
+          }),
         });
       });
 
@@ -178,11 +180,16 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         setError({
           ...error,
           [performerID]: {
-            message: `Failed to save performer "${modalPerformer?.name}"`,
+            message: intl.formatMessage(
+              { id: "performer_tagger.failed_to_save_performer" },
+              { performer: modalPerformer?.name }
+            ),
             details:
               res?.errors?.[0].message ===
               "UNIQUE constraint failed: performers.checksum"
-                ? "Name already exists"
+                ? intl.formatMessage({
+                    id: "performer_tagger.name_already_exists",
+                  })
                 : res?.errors?.[0].message,
           },
         });
@@ -198,7 +205,9 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       if (!isTagged && hasStashIDs) {
         mainContent = (
           <div className="text-left">
-            <h5 className="text-bold">Performer already tagged</h5>
+            <h5 className="text-bold">
+              <FormattedMessage id="performer_tagger.performer_already_tagged" />
+            </h5>
           </div>
         );
       } else if (!isTagged && !hasStashIDs) {
@@ -239,7 +248,9 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       } else if (isTagged) {
         mainContent = (
           <div className="d-flex flex-column text-left">
-            <h5>Performer successfully tagged:</h5>
+            <h5>
+              <FormattedMessage id="performer_tagger.performer_successfully_tagged" />
+            </h5>
             <h6>
               <Link className="bold" to={`/performers/${performer.id}`}>
                 {taggedPerformers[performer.id].name}
@@ -285,7 +296,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
                       {loadingUpdate === stashID.stash_id ? (
                         <LoadingIndicator inline small message="" />
                       ) : (
-                        "Refresh"
+                        <FormattedMessage id="actions.refresh" />
                       )}
                     </Button>
                   )}
@@ -312,7 +323,9 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
         );
       } else if (searchResults[performer.id]?.length === 0) {
         subContent = (
-          <div className="text-danger font-weight-bold">No results found.</div>
+          <div className="text-danger font-weight-bold">
+            <FormattedMessage id="performer_tagger.no_results_found" />
+          </div>
         );
       }
 
@@ -340,7 +353,9 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
               onSave={handlePerformerUpdate}
               excludedPerformerFields={config.excludedPerformerFields}
               icon="tags"
-              header="Update Performer"
+              header={intl.formatMessage({
+                id: "performer_tagger.update_performer",
+              })}
               endpoint={selectedEndpoint.endpoint}
             />
           )}
@@ -367,8 +382,15 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       <Modal
         show={showBatchUpdate}
         icon="tags"
-        header="Update Performers"
-        accept={{ text: "Update Performers", onClick: handleBatchUpdate }}
+        header={intl.formatMessage({
+          id: "performer_tagger.update_performers",
+        })}
+        accept={{
+          text: intl.formatMessage({
+            id: "performer_tagger.update_performers",
+          }),
+          onClick: handleBatchUpdate,
+        }}
         cancel={{
           text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "danger",
@@ -378,13 +400,15 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       >
         <Form.Group>
           <Form.Label>
-            <h6>Performer selection</h6>
+            <h6>
+              <FormattedMessage id="performer_tagger.performer_selection" />
+            </h6>
           </Form.Label>
           <Form.Check
             id="query-page"
             type="radio"
             name="performer-query"
-            label="Current page"
+            label={<FormattedMessage id="performer_tagger.current_page" />}
             defaultChecked
             onChange={() => setQueryAll(false)}
           />
@@ -392,53 +416,71 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
             id="query-all"
             type="radio"
             name="performer-query"
-            label="All performers in the database"
+            label={intl.formatMessage({
+              id: "performer_tagger.query_all_performers_in_the_database",
+            })}
             defaultChecked={false}
             onChange={() => setQueryAll(true)}
           />
         </Form.Group>
         <Form.Group>
           <Form.Label>
-            <h6>Tag Status</h6>
+            <h6>
+              <FormattedMessage id="performer_tagger.tag_status" />
+            </h6>
           </Form.Label>
           <Form.Check
             id="untagged-performers"
             type="radio"
             name="performer-refresh"
-            label="Untagged performers"
+            label={intl.formatMessage({
+              id: "performer_tagger.untagged_performers",
+            })}
             defaultChecked
             onChange={() => setRefresh(false)}
           />
           <Form.Text>
-            Updating untagged performers will try to match any performers that
-            lack a stashid and update the metadata.
+            <FormattedMessage id="performer_tagger.updating_untagged_performers_description" />
           </Form.Text>
           <Form.Check
             id="tagged-performers"
             type="radio"
             name="performer-refresh"
-            label="Refresh tagged performers"
+            label={intl.formatMessage({
+              id: "performer_tagger.refresh_tagged_performers",
+            })}
             defaultChecked={false}
             onChange={() => setRefresh(true)}
           />
           <Form.Text>
-            Refreshing will update the data of any tagged performers from the
-            stash-box instance.
+            <FormattedMessage id="performer_tagger.refreshing_will_update_the_data" />
           </Form.Text>
         </Form.Group>
-        <b>{`${
-          queryAll
-            ? allPerformers?.findPerformers.count
-            : performers.filter((p) =>
-                refresh ? p.stash_ids.length > 0 : p.stash_ids.length === 0
-              ).length
-        } performers will be processed`}</b>
+        <b>
+          <FormattedMessage
+            id="performer_tagger.number_of_performers_will_be_processed"
+            values={{
+              performer_count: queryAll
+                ? allPerformers?.findPerformers.count
+                : performers.filter((p) =>
+                    refresh ? p.stash_ids.length > 0 : p.stash_ids.length === 0
+                  ).length,
+            }}
+          />
+        </b>
       </Modal>
       <Modal
         show={showBatchAdd}
         icon="star"
-        header="Add New Performers"
-        accept={{ text: "Add Performers", onClick: handleBatchAdd }}
+        header={intl.formatMessage({
+          id: "performer_tagger.add_new_performers",
+        })}
+        accept={{
+          text: intl.formatMessage({
+            id: "performer_tagger.add_new_performers",
+          }),
+          onClick: handleBatchAdd,
+        }}
         cancel={{
           text: intl.formatMessage({ id: "actions.cancel" }),
           variant: "danger",
@@ -450,20 +492,21 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
           className="text-input"
           as="textarea"
           ref={performerInput}
-          placeholder="Performer names separated by comma"
+          placeholder={intl.formatMessage({
+            id: "performer_tagger.performer_names_separated_by_comma",
+          })}
           rows={6}
         />
         <Form.Text>
-          Any names entered will be queried from the remote Stash-Box instance
-          and added if found. Only exact matches will be considered a match.
+          <FormattedMessage id="performer_tagger.any_names_entered_will_be_queried" />
         </Form.Text>
       </Modal>
       <div className="ml-auto mb-3">
         <Button onClick={() => setShowBatchAdd(true)}>
-          Batch Add Performers
+          <FormattedMessage id="performer_tagger.batch_add_performers" />
         </Button>
         <Button className="ml-3" onClick={() => setShowBatchUpdate(true)}>
-          Batch Update Performers
+          <FormattedMessage id="performer_tagger.batch_update_performers" />
         </Button>
       </div>
       <div className={CLASSNAME}>{renderPerformers()}</div>
@@ -477,6 +520,7 @@ interface ITaggerProps {
 
 export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
   const jobsSubscribe = useJobsSubscribe();
+  const intl = useIntl();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
   const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
     LOCAL_FORAGE_KEY,
@@ -567,7 +611,9 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
           : undefined;
       return (
         <Form.Group className="px-4">
-          <h5>Status: Tagging performers</h5>
+          <h5>
+            <FormattedMessage id="performer_tagger.status_tagging_performers" />
+          </h5>
           {progress !== undefined && (
             <ProgressBar
               animated
@@ -582,11 +628,17 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
     if (batchJobID !== undefined) {
       return (
         <Form.Group className="px-4">
-          <h5>Status: Tagging job queued</h5>
+          <h5>
+            <FormattedMessage id="performer_tagger.status_tagging_job_queued" />
+          </h5>
         </Form.Group>
       );
     }
   }
+
+  const showHideConfigId = showConfig
+    ? "actions.hide_configuration"
+    : "actions.show_configuration";
 
   return (
     <>
@@ -601,15 +653,15 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
           <>
             <div className="row mb-2 no-gutters">
               <Button onClick={() => setShowConfig(!showConfig)} variant="link">
-                {showConfig ? "Hide" : "Show"} Configuration
+                {intl.formatMessage({ id: showHideConfigId })}
               </Button>
               <Button
                 className="ml-auto"
                 onClick={() => setShowManual(true)}
-                title="Help"
+                title={intl.formatMessage({ id: "help" })}
                 variant="link"
               >
-                Help
+                <FormattedMessage id="help" />
               </Button>
             </div>
 
@@ -634,8 +686,7 @@ export const PerformerTagger: React.FC<ITaggerProps> = ({ performers }) => {
         ) : (
           <div className="my-4">
             <h3 className="text-center mt-4">
-              To use the performer tagger a stash-box instance needs to be
-              configured.
+              <FormattedMessage id="performer_tagger.to_use_the_performer_tagger" />
             </h3>
             <h5 className="text-center">
               Please see{" "}

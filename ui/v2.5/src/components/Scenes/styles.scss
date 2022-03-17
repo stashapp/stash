@@ -160,6 +160,10 @@ textarea.scene-description {
   }
 }
 
+.extra-scene-info {
+  display: none;
+}
+
 .overlay-resolution {
   font-weight: 900;
   margin-right: 0.3rem;
@@ -206,6 +210,10 @@ textarea.scene-description {
         object-fit: contain;
       }
     }
+  }
+
+  &__details {
+    margin-bottom: 1rem;
   }
 
   &:hover,

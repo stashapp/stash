@@ -1,9 +1,10 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useContext } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
@@ -22,7 +23,7 @@ import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
-import Mousetrap from "mousetrap";
+import { SubmitStashBoxDraft } from "src/components/Dialogs/SubmitDraft";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneQueue } from "src/models/sceneQueue";
 import { QueueViewer } from "./QueueViewer";
@@ -38,6 +39,7 @@ import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { GenerateDialog } from "../../Dialogs/GenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 import { OrganizedButton } from "./OrganizedButton";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -53,7 +55,14 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
-  const [showScrubber, setShowScrubber] = useState(true);
+
+  const { configuration } = useContext(ConfigurationContext);
+
+  const [showScrubber, setShowScrubber] = useState(
+    configuration?.interface.showScrubber ?? true
+  );
+  const [showDraftModal, setShowDraftModal] = useState(false);
+  const boxes = configuration?.general?.stashBoxes ?? [];
 
   const {
     data: sceneStreams,
@@ -61,7 +70,6 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
     loading: streamableLoading,
   } = useSceneStreams(scene.id);
 
-  const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene.id);
   const [decrementO] = useSceneDecrementO(scene.id);
   const [resetO] = useSceneResetO(scene.id);
@@ -163,34 +171,25 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
 
   const onIncrementClick = async () => {
     try {
-      setOLoading(true);
       await incrementO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
   const onDecrementClick = async () => {
     try {
-      setOLoading(true);
       await decrementO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
   const onResetClick = async () => {
     try {
-      setOLoading(true);
       await resetO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
@@ -384,6 +383,15 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
         >
           <FormattedMessage id="actions.generate_thumb_default" />
         </Dropdown.Item>
+        {boxes.length > 0 && (
+          <Dropdown.Item
+            key="submit"
+            className="bg-secondary text-white"
+            onClick={() => setShowDraftModal(true)}
+          >
+            <FormattedMessage id="actions.submit_stash_box" />
+          </Dropdown.Item>
+        )}
         <Dropdown.Item
           key="delete-scene"
           className="bg-secondary text-white"
@@ -467,7 +475,6 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
             </Nav.Item>
             <Nav.Item className="ml-auto">
               <OCounterButton
-                loading={oLoading}
                 value={scene.o_counter || 0}
                 onIncrement={onIncrementClick}
                 onDecrement={onDecrementClick}
@@ -633,6 +640,13 @@ const ScenePage: React.FC<IProps> = ({ scene, refetch }) => {
           />
         ) : undefined}
       </div>
+      <SubmitStashBoxDraft
+        boxes={boxes}
+        entity={scene}
+        query={GQL.SubmitStashBoxSceneDraftDocument}
+        show={showDraftModal}
+        onHide={() => setShowDraftModal(false)}
+      />
     </div>
   );
 };

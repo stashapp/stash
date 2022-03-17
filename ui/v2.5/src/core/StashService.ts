@@ -541,21 +541,64 @@ const updateImageO = (
 export const useImageIncrementO = (id: string) =>
   GQL.useImageIncrementOMutation({
     variables: { id },
-    update: (cache, data) =>
-      updateImageO(id, cache, data.data?.imageIncrementO),
+    update: (cache, data) => {
+      updateImageO(id, cache, data.data?.imageIncrementO);
+      // impacts FindImages as well as FindImage
+      deleteCache([GQL.FindImagesDocument])(cache);
+    },
+  });
+
+export const mutateImageIncrementO = (id: string) =>
+  client.mutate<GQL.ImageIncrementOMutation>({
+    mutation: GQL.ImageIncrementODocument,
+    variables: { id },
+    update: (cache, data) => {
+      updateImageO(id, cache, data.data?.imageIncrementO);
+      // impacts FindImages as well as FindImage
+      deleteCache([GQL.FindImagesDocument])(cache);
+    },
   });
 
 export const useImageDecrementO = (id: string) =>
   GQL.useImageDecrementOMutation({
     variables: { id },
-    update: (cache, data) =>
-      updateImageO(id, cache, data.data?.imageDecrementO),
+    update: (cache, data) => {
+      updateImageO(id, cache, data.data?.imageDecrementO);
+      // impacts FindImages as well as FindImage
+      deleteCache([GQL.FindImagesDocument])(cache);
+    },
+  });
+
+export const mutateImageDecrementO = (id: string) =>
+  client.mutate<GQL.ImageDecrementOMutation>({
+    mutation: GQL.ImageDecrementODocument,
+    variables: { id },
+    update: (cache, data) => {
+      updateImageO(id, cache, data.data?.imageDecrementO);
+      // impacts FindImages as well as FindImage
+      deleteCache([GQL.FindImagesDocument])(cache);
+    },
   });
 
 export const useImageResetO = (id: string) =>
   GQL.useImageResetOMutation({
     variables: { id },
-    update: (cache, data) => updateImageO(id, cache, data.data?.imageResetO),
+    update: (cache, data) => {
+      updateImageO(id, cache, data.data?.imageResetO);
+      // impacts FindImages as well as FindImage
+      deleteCache([GQL.FindImagesDocument])(cache);
+    },
+  });
+
+export const mutateImageResetO = (id: string) =>
+  client.mutate<GQL.ImageResetOMutation>({
+    mutation: GQL.ImageResetODocument,
+    variables: { id },
+    update: (cache, data) => {
+      updateImageO(id, cache, data.data?.imageResetO);
+      // impacts FindImages as well as FindImage
+      deleteCache([GQL.FindImagesDocument])(cache);
+    },
   });
 
 const galleryMutationImpactedQueries = [
@@ -656,6 +699,14 @@ export const useMovieCreate = () =>
 
 export const useMovieUpdate = () =>
   GQL.useMovieUpdateMutation({
+    update: deleteCache(movieMutationImpactedQueries),
+  });
+
+export const useBulkMovieUpdate = (input: GQL.BulkMovieUpdateInput) =>
+  GQL.useBulkMovieUpdateMutation({
+    variables: {
+      input,
+    },
     update: deleteCache(movieMutationImpactedQueries),
   });
 
@@ -1148,4 +1199,20 @@ export const stashBoxPerformerBatchQuery = (
         performer_ids: performerIds,
       },
     },
+  });
+
+export const stashBoxSubmitSceneDraft = (
+  input: GQL.StashBoxDraftSubmissionInput
+) =>
+  client.mutate<GQL.SubmitStashBoxSceneDraftMutation>({
+    mutation: GQL.SubmitStashBoxSceneDraftDocument,
+    variables: { input },
+  });
+
+export const stashBoxSubmitPerformerDraft = (
+  input: GQL.StashBoxDraftSubmissionInput
+) =>
+  client.mutate<GQL.SubmitStashBoxPerformerDraftMutation>({
+    mutation: GQL.SubmitStashBoxPerformerDraftDocument,
+    variables: { input },
   });

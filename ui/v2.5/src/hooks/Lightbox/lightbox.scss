@@ -9,22 +9,22 @@
   top: 0;
   z-index: 1040;
 
-  .fa-icon {
-    path {
-      fill: white;
-    }
-    opacity: 0.4;
-
-    &:hover {
-      opacity: 1;
-    }
-  }
-
   &-header {
     align-items: center;
     display: flex;
     flex-shrink: 0;
     height: 4rem;
+
+    .fa-icon {
+      path {
+        fill: white;
+      }
+      opacity: 0.4;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
 
     &-left-spacer {
       display: flex;
@@ -72,11 +72,42 @@
     }
   }
 
+  &-footer {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    height: 4.5rem;
+
+    & > div {
+      flex: 1;
+
+      &:nth-child(2) {
+        text-align: center;
+      }
+    }
+
+    .rating-stars {
+      padding-left: 0.38rem;
+    }
+
+    &-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      padding-left: 1em;
+    }
+
+    a {
+      color: $text-color;
+      font-weight: bold;
+      text-decoration: none;
+    }
+  }
+
   &-display {
     display: flex;
     height: 100%;
     justify-content: space-between;
-    margin-bottom: 2rem;
     position: relative;
   }
 
@@ -125,7 +156,16 @@
 
     .fa-icon {
       height: 4rem;
+      opacity: 0.4;
       width: 4rem;
+
+      path {
+        fill: white;
+      }
+
+      &:hover {
+        opacity: 1;
+      }
     }
 
     &:focus {

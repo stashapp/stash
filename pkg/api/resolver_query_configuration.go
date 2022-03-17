@@ -86,7 +86,6 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Username:                     config.GetUsername(),
 		Password:                     config.GetPasswordHash(),
 		MaxSessionAge:                config.GetMaxSessionAge(),
-		TrustedProxies:               config.GetTrustedProxies(),
 		LogFile:                      &logFile,
 		LogOut:                       config.GetLogOut(),
 		LogLevel:                     config.GetLogLevel(),
@@ -110,8 +109,10 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	menuItems := config.GetMenuItems()
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
+	showScrubber := config.GetShowScrubber()
 	wallPlayback := config.GetWallPlayback()
 	noBrowser := config.GetNoBrowser()
+	notificationsEnabled := config.GetNotificationsEnabled()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
 	autostartVideoOnPlaySelected := config.GetAutostartVideoOnPlaySelected()
@@ -132,8 +133,10 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		SoundOnPreview:               &soundOnPreview,
 		WallShowTitle:                &wallShowTitle,
 		WallPlayback:                 &wallPlayback,
+		ShowScrubber:                 &showScrubber,
 		MaximumLoopDuration:          &maximumLoopDuration,
 		NoBrowser:                    &noBrowser,
+		NotificationsEnabled:         &notificationsEnabled,
 		AutostartVideo:               &autostartVideo,
 		ShowStudioAsText:             &showStudioAsText,
 		AutostartVideoOnPlaySelected: &autostartVideoOnPlaySelected,

@@ -111,6 +111,7 @@ export const LibraryTasks: React.FC = () => {
   type DialogOpenState = typeof dialogOpen;
 
   const { configuration } = React.useContext(ConfigurationContext);
+  const [configRead, setConfigRead] = useState(false);
 
   useEffect(() => {
     if (!configuration?.defaults) {
@@ -126,33 +127,41 @@ export const LibraryTasks: React.FC = () => {
       setAutoTagOptions(withoutTypename(autoTag));
     }
 
-    if (configuration?.defaults.generate) {
-      const { generate } = configuration.defaults;
-      setGenerateOptions(withoutTypename(generate));
-    } else if (configuration?.general) {
-      // backwards compatibility
-      const { general } = configuration;
-      setGenerateOptions((existing) => ({
-        ...existing,
-        previewOptions: {
-          ...existing.previewOptions,
-          previewSegments:
-            general.previewSegments ?? existing.previewOptions?.previewSegments,
-          previewSegmentDuration:
-            general.previewSegmentDuration ??
-            existing.previewOptions?.previewSegmentDuration,
-          previewExcludeStart:
-            general.previewExcludeStart ??
-            existing.previewOptions?.previewExcludeStart,
-          previewExcludeEnd:
-            general.previewExcludeEnd ??
-            existing.previewOptions?.previewExcludeEnd,
-          previewPreset:
-            general.previewPreset ?? existing.previewOptions?.previewPreset,
-        },
-      }));
+    // combine the defaults with the system preview generation settings
+    // only do this once
+    if (!configRead) {
+      if (configuration?.defaults.generate) {
+        const { generate } = configuration.defaults;
+        setGenerateOptions(withoutTypename(generate));
+      }
+
+      if (configuration?.general) {
+        const { general } = configuration;
+        setGenerateOptions((existing) => ({
+          ...existing,
+          previewOptions: {
+            ...existing.previewOptions,
+            previewSegments:
+              general.previewSegments ??
+              existing.previewOptions?.previewSegments,
+            previewSegmentDuration:
+              general.previewSegmentDuration ??
+              existing.previewOptions?.previewSegmentDuration,
+            previewExcludeStart:
+              general.previewExcludeStart ??
+              existing.previewOptions?.previewExcludeStart,
+            previewExcludeEnd:
+              general.previewExcludeEnd ??
+              existing.previewOptions?.previewExcludeEnd,
+            previewPreset:
+              general.previewPreset ?? existing.previewOptions?.previewPreset,
+          },
+        }));
+      }
+
+      setConfigRead(true);
     }
-  }, [configuration]);
+  }, [configuration, configRead]);
 
   function setDialogOpen(s: Partial<DialogOpenState>) {
     setDialogOpenState((v) => {

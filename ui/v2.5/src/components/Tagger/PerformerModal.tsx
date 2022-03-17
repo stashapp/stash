@@ -12,6 +12,7 @@ import {
 } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { stringToGender } from "src/utils/gender";
+import { getCountryByISO } from "src/utils/country";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
@@ -124,7 +125,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       birthdate: performer.birthdate,
       ethnicity: performer.ethnicity,
       eye_color: performer.eye_color,
-      country: performer.country,
+      country: getCountryByISO(performer.country),
       height: performer.height,
       measurements: performer.measurements,
       fake_tits: performer.fake_tits,
@@ -198,7 +199,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           {renderField("birthdate", performer.birthdate)}
           {renderField("death_date", performer.death_date)}
           {renderField("ethnicity", performer.ethnicity)}
-          {renderField("country", performer.country)}
+          {renderField("country", getCountryByISO(performer.country))}
           {renderField("hair_color", performer.hair_color)}
           {renderField("eye_color", performer.eye_color)}
           {renderField("height", performer.height)}

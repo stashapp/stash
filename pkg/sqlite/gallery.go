@@ -220,6 +220,8 @@ func (qb *galleryQueryBuilder) makeFilter(galleryFilter *models.GalleryFilterTyp
 	query.handleCriterion(galleryPerformerTagsCriterionHandler(qb, galleryFilter.PerformerTags))
 	query.handleCriterion(galleryAverageResolutionCriterionHandler(qb, galleryFilter.AverageResolution))
 	query.handleCriterion(galleryImageCountCriterionHandler(qb, galleryFilter.ImageCount))
+	query.handleCriterion(galleryPerformerFavoriteCriterionHandler(galleryFilter.PerformerFavorite))
+	query.handleCriterion(galleryPerformerAgeCriterionHandler(galleryFilter.PerformerAge))
 
 	return query
 }
@@ -417,6 +419,43 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 			f.addLeftJoin("performer_tags", "", "performer_tags.gallery_id = galleries.id")
 
 			addHierarchicalConditionClauses(f, tags, "performer_tags", "root_tag_id")
+		}
+	}
+}
+
+func galleryPerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerfavorite != nil {
+			f.addLeftJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
+
+			if *performerfavorite {
+				// contains at least one favorite
+				f.addLeftJoin("performers", "", "performers.id = performers_galleries.performer_id")
+				f.addWhere("performers.favorite = 1")
+			} else {
+				// contains zero favorites
+				f.addLeftJoin(`(SELECT performers_galleries.gallery_id as id FROM performers_galleries 
+JOIN performers ON performers.id = performers_galleries.performer_id
+GROUP BY performers_galleries.gallery_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "galleries.id = nofaves.id")
+				f.addWhere("performers_galleries.gallery_id IS NULL OR nofaves.id IS NOT NULL")
+			}
+		}
+	}
+}
+
+func galleryPerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerAge != nil {
+			f.addInnerJoin("performers_galleries", "", "galleries.id = performers_galleries.gallery_id")
+			f.addInnerJoin("performers", "", "performers_galleries.performer_id = performers.id")
+
+			f.addWhere("galleries.date != '' AND performers.birthdate != ''")
+			f.addWhere("galleries.date IS NOT NULL AND performers.birthdate IS NOT NULL")
+			f.addWhere("galleries.date != '0001-01-01' AND performers.birthdate != '0001-01-01'")
+
+			ageCalc := "cast(strftime('%Y.%m%d', galleries.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
+			f.addWhere(whereClause, args...)
 		}
 	}
 }

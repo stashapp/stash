@@ -102,6 +102,7 @@
   "age": "Возраст",
   "aliases": "Псевдонимы",
   "all": "все",
+  "also_known_as": "Так же известный как",
   "ascending": "По возрастанию",
   "average_resolution": "Среднее разрешение",
   "birth_year": "Год рождения",
@@ -118,26 +119,39 @@
       "query_mode_filename": "Имя файла",
       "query_mode_label": "Режим Очереди",
       "query_mode_metadata": "Метаданные",
+      "query_mode_metadata_desc": "Только используя метадату",
       "query_mode_path": "Путь",
+      "query_mode_path_desc": "Используя полный путь до файла",
+      "set_cover_desc": "Заменить обложку сцены, если она будет найдена.",
+      "set_cover_label": "Выставить обложку для данной сцены",
       "set_tag_label": "Установить теги",
+      "show_male_label": "Показывать актеров мужского пола",
       "source": "Источник"
     },
     "noun_query": "Запрос",
     "results": {
       "duration_unknown": "Длительность неизвестна",
+      "fp_matches": "Продолжительность совпадает",
+      "match_failed_already_tagged": "Сцена уже помечена",
+      "match_failed_no_result": "Ничего не найдено",
+      "match_success": "Сцена успешно помечена",
       "unnamed": "Безымянный"
     },
     "verb_matched": "Совпавший"
   },
   "config": {
     "about": {
+      "check_for_new_version": "Проверить наличие обновления",
+      "latest_version": "Последняя версия",
       "new_version_notice": "[НОВЫЙ]",
+      "stash_open_collective": "Поддержи нас через {url}",
       "version": "Версия"
     },
     "categories": {
       "about": "О программе",
       "interface": "Интерфейс",
       "logs": "Журнал",
+      "metadata_providers": "Источники метадаты",
       "plugins": "Плагины",
       "scraping": "Скрейпинг",
       "security": "Безопасность",
@@ -147,19 +161,54 @@
       "tools": "Инструменты"
     },
     "dlna": {
-      "network_interfaces": "Интерфейсы"
+      "allowed_ip_addresses": "Разрешенные IP адреса",
+      "enabled_by_default": "Включено по умолчанию",
+      "network_interfaces": "Интерфейсы",
+      "recent_ip_addresses": "Последние IP адреса",
+      "server_display_name": "Наименование сервера",
+      "until_restart": "до перезагрузки"
     },
     "general": {
       "auth": {
+        "api_key": "API ключ",
+        "api_key_desc": "API ключ для внешних систем. Необходимо только когда настроены логин и пароль. Логин должен быть сохранён перед генерацией ключа API.",
         "authentication": "Аутентификация",
+        "clear_api_key": "Стереть ключ API",
         "credentials": {
           "heading": "Реквизиты для входа"
         },
+        "generate_api_key": "Сгенерировать ключ API",
+        "maximum_session_age": "Максимальное время активной сессии",
+        "maximum_session_age_desc": "Максимальное время ожидания, в секундах, до истечения срока действия сессии.",
         "password": "Пароль",
-        "username": "Имя пользователя"
+        "password_desc": "Пароль для доступа к Stash. Оставьте пустым для отключения аутентификации",
+        "username": "Имя пользователя",
+        "username_desc": "Имя для доступа к Stash. Оставьте пустым для отключения аутентификации"
       },
+      "cache_location": "Папка для расположения кэша",
+      "cache_path_head": "Путь кэша",
+      "calculate_md5_and_ohash_label": "Просчитать MD5 для видеофайлов",
+      "check_for_insecure_certificates": "Проверить на незащищённость сертификата",
+      "create_galleries_from_folders_desc": "Если включено, генерирует галлереи из папок с картинками.",
+      "create_galleries_from_folders_label": "Генерация галлереи из папок с картинками",
+      "db_path_head": "Путь к базе данных",
+      "directory_locations_to_your_content": "Адреса папок с вашим контентом",
+      "generated_file_naming_hash_head": "Сгенерированный хеш для наименования файлов",
+      "generated_path_head": "Сгенерированный путь",
       "hashing": "Хэширование",
+      "image_ext_head": "Расширения изображений",
+      "include_audio_desc": "Включает аудио при генерации превью.",
+      "include_audio_head": "Включать аудио",
       "logging": "Ведение журнала",
+      "maximum_streaming_transcode_size_desc": "Максимальный размер транскодируемых потоков",
+      "maximum_streaming_transcode_size_head": "Максимальный размер потокового транскодирования",
+      "maximum_transcode_size_desc": "Максимальный размер генерируемых транскодов",
+      "maximum_transcode_size_head": "Максимальный размер перекодирования",
+      "metadata_path": {
+        "description": "Местоположение каталога, используемое при выполнении полного экспорта или импорта",
+        "heading": "Путь к метаданным"
+      },
+      "number_of_parallel_task_for_scan_generation_desc": "Установите 0 для автоматического определения. Предупреждение: запуск большего количества задач, чем требуется для достижения 100% загрузки процессора, снизит производительность и может вызвать другие проблемы.",
       "scraping": "Скрейпинг",
       "video_head": "Видео"
     },

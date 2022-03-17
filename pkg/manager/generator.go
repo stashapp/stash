@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/desktop"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
@@ -72,6 +73,7 @@ func (g *GeneratorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) er
 		}
 
 		command := exec.Command(string(instance.FFMPEG), args...)
+		desktop.HideExecShell(command)
 		var stdErrBuffer bytes.Buffer
 		command.Stderr = &stdErrBuffer // Frames go to stderr rather than stdout
 		if err := command.Run(); err == nil {
@@ -110,6 +112,12 @@ func (g *GeneratorInfo) configure() error {
 
 	if err := g.calculateFrameRate(videoStream); err != nil {
 		return err
+	}
+
+	// #2250 - ensure ChunkCount is valid
+	if g.ChunkCount < 1 {
+		logger.Warnf("[generator] Segment count (%d) must be > 0. Using 1 instead.", g.ChunkCount)
+		g.ChunkCount = 1
 	}
 
 	g.NthFrame = g.NumberOfFrames / g.ChunkCount

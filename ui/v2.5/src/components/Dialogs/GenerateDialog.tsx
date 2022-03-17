@@ -51,12 +51,14 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
       return;
     }
 
+    // combine the defaults with the system preview generation settings
     if (configuration?.defaults.generate) {
       const { generate } = configuration.defaults;
       setOptions(withoutTypename(generate));
       setConfigRead(true);
-    } else if (configuration?.general) {
-      // backwards compatibility
+    }
+
+    if (configuration?.general) {
       const { general } = configuration;
       setOptions((existing) => ({
         ...existing,

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -66,6 +65,10 @@ func getSort(sort string, direction string, tableName string) string {
 	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
 		return " ORDER BY cast(" + colName + " as integer) " + direction
+	case strings.Compare(sort, "perceptual_similarity") == 0:
+		colName := getColumn(tableName, "phash")
+		secondaryColName := getColumn(tableName, "size")
+		return " ORDER BY " + colName + " " + direction + ", " + secondaryColName + " DESC"
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		// turn the provided seed into a float
@@ -149,54 +152,39 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func getSimpleCriterionClause(criterionModifier models.CriterionModifier, rhs string) (string, int) {
-	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
-		switch modifier {
-		case "EQUALS":
-			return "= " + rhs, 1
-		case "NOT_EQUALS":
-			return "!= " + rhs, 1
-		case "GREATER_THAN":
-			return "> " + rhs, 1
-		case "LESS_THAN":
-			return "< " + rhs, 1
-		case "IS_NULL":
-			return "IS NULL", 0
-		case "NOT_NULL":
-			return "IS NOT NULL", 0
-		case "BETWEEN":
-			return "BETWEEN (" + rhs + ") AND (" + rhs + ")", 2
-		case "NOT_BETWEEN":
-			return "NOT BETWEEN (" + rhs + ") AND (" + rhs + ")", 2
-		default:
-			logger.Errorf("todo")
-			return "= ?", 1 // TODO
-		}
-	}
-
-	return "= ?", 1 // TODO
+func getIntCriterionWhereClause(column string, input models.IntCriterionInput) (string, []interface{}) {
+	return getIntWhereClause(column, input.Modifier, input.Value, input.Value2)
 }
 
-func getIntCriterionWhereClause(column string, input models.IntCriterionInput) (string, []interface{}) {
-	binding, _ := getSimpleCriterionClause(input.Modifier, "?")
-	var args []interface{}
-
-	switch input.Modifier {
-	case "EQUALS", "NOT_EQUALS":
-		args = []interface{}{input.Value}
-	case "LESS_THAN":
-		args = []interface{}{input.Value}
-	case "GREATER_THAN":
-		args = []interface{}{input.Value}
-	case "BETWEEN", "NOT_BETWEEN":
-		upper := 0
-		if input.Value2 != nil {
-			upper = *input.Value2
-		}
-		args = []interface{}{input.Value, upper}
+func getIntWhereClause(column string, modifier models.CriterionModifier, value int, upper *int) (string, []interface{}) {
+	if upper == nil {
+		u := 0
+		upper = &u
 	}
 
-	return column + " " + binding, args
+	args := []interface{}{value}
+	betweenArgs := []interface{}{value, *upper}
+
+	switch modifier {
+	case models.CriterionModifierIsNull:
+		return fmt.Sprintf("%s IS NULL", column), nil
+	case models.CriterionModifierNotNull:
+		return fmt.Sprintf("%s IS NOT NULL", column), nil
+	case models.CriterionModifierEquals:
+		return fmt.Sprintf("%s = ?", column), args
+	case models.CriterionModifierNotEquals:
+		return fmt.Sprintf("%s != ?", column), args
+	case models.CriterionModifierBetween:
+		return fmt.Sprintf("%s BETWEEN ? AND ?", column), betweenArgs
+	case models.CriterionModifierNotBetween:
+		return fmt.Sprintf("%s NOT BETWEEN ? AND ?", column), betweenArgs
+	case models.CriterionModifierLessThan:
+		return fmt.Sprintf("%s < ?", column), args
+	case models.CriterionModifierGreaterThan:
+		return fmt.Sprintf("%s > ?", column), args
+	}
+
+	panic("unsupported int modifier type")
 }
 
 // returns where clause and having clause

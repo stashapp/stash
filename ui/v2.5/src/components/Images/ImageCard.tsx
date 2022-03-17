@@ -1,4 +1,4 @@
-import React from "react";
+import React, { MouseEvent } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
@@ -14,6 +14,7 @@ interface IImageCardProps {
   selected: boolean | undefined;
   zoomIndex: number;
   onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
+  onPreview?: (ev: MouseEvent) => void;
 }
 
 export const ImageCard: React.FC<IImageCardProps> = (
@@ -49,7 +50,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
   function maybeRenderOCounter() {
     if (props.image.o_counter) {
       return (
-        <div>
+        <div className="o-count">
           <Button className="minimal">
             <span className="fa-icon">
               <SweatDrops />
@@ -61,10 +62,31 @@ export const ImageCard: React.FC<IImageCardProps> = (
     }
   }
 
+  function maybeRenderGallery() {
+    if (props.image.galleries.length <= 0) return;
+
+    const popoverContent = props.image.galleries.map((gallery) => (
+      <TagLink key={gallery.id} gallery={gallery} />
+    ));
+
+    return (
+      <HoverPopover
+        className="gallery-count"
+        placement="bottom"
+        content={popoverContent}
+      >
+        <Button className="minimal">
+          <Icon icon="images" />
+          <span>{props.image.galleries.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
   function maybeRenderOrganized() {
     if (props.image.organized) {
       return (
-        <div>
+        <div className="organized">
           <Button className="minimal">
             <Icon icon="box" />
           </Button>
@@ -78,6 +100,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
       props.image.tags.length > 0 ||
       props.image.performers.length > 0 ||
       props.image.o_counter ||
+      props.image.galleries.length > 0 ||
       props.image.organized
     ) {
       return (
@@ -87,6 +110,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderOCounter()}
+            {maybeRenderGallery()}
             {maybeRenderOrganized()}
           </ButtonGroup>
         </>
@@ -119,6 +143,13 @@ export const ImageCard: React.FC<IImageCardProps> = (
               alt={props.image.title ?? ""}
               src={props.image.paths.thumbnail ?? ""}
             />
+            {props.onPreview ? (
+              <div className="preview-button">
+                <Button onClick={props.onPreview}>
+                  <Icon icon="search" />
+                </Button>
+              </div>
+            ) : undefined}
           </div>
           <RatingBanner rating={props.image.rating} />
         </>

@@ -26,6 +26,7 @@
     "delete": "Löschen",
     "delete_entity": "Lösche {entityType}",
     "delete_file": "Lösche Datei",
+    "delete_file_and_funscript": "Datei löschen (inkl. funscript)",
     "delete_generated_supporting_files": "Lösche generierte Hilfsdaten",
     "disallow": "Nicht erlauben",
     "download": "Herunterladen",
@@ -43,7 +44,7 @@
     "generate_thumb_default": "Erstelle voreingestelltes Vorschaubild",
     "generate_thumb_from_current": "Erstelle Vorschaubild vom Gegenwärtigen",
     "hash_migration": "Hash Umwandlung",
-    "hide": "Verstecken",
+    "hide": "Verstecke",
     "identify": "Identifizieren",
     "ignore": "Ignorieren",
     "import": "Importieren…",
@@ -89,6 +90,7 @@
     "show": "Anzeigen",
     "skip": "Überspringen",
     "stop": "Stopp",
+    "submit_stash_box": "Zu Stash-Box übermitteln",
     "tasks": {
       "clean_confirm_message": "Wollen Sie wirklich die Datenbank aufräumen? Dies wird alle Informationen und Hilfsdaten für Szenen und Galerien löschen, die nicht mehr auf dem Dateisystem vorhanden sind.",
       "dry_mode_selected": "Trockenmodus ausgewählt. Es findet keine Löschung der Daten statt, lediglich Protokollierung.",
@@ -220,8 +222,6 @@
         "password": "Passwort",
         "password_desc": "Passwort für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren",
         "stash-box_integration": "Stash-box Einbindung",
-        "trusted_proxies": "Vertrauenswürdige Proxys",
-        "trusted_proxies_desc": "Liste von Proxys denen eine Durchleitung zu Stash erlaubt ist. Leer lassen, um Traffic des privaten Netzwerks zu erlauben.",
         "username": "Benutzername",
         "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren"
       },
@@ -414,6 +414,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Schreibtisch Integration",
+        "notifications_enabled": "Benachrichtigungen aktivieren",
+        "send_desktop_notifications_for_events": "Bei Neuigkeiten Benachrichtigungen auf den Desktop senden",
         "skip_opening_browser": "Überspringe Öffnen des Browsers",
         "skip_opening_browser_on_startup": "Überspringe automatisches Öffnen des Browsers bei Start"
       },

@@ -26,6 +26,7 @@
     "delete": "Radera",
     "delete_entity": "Radera {entityType}",
     "delete_file": "Radera fil",
+    "delete_file_and_funscript": "Radera fil (och funskript)",
     "delete_generated_supporting_files": "Radera genererade filer",
     "disallow": "Tillåt ej",
     "download": "Ladda ner",
@@ -44,6 +45,7 @@
     "generate_thumb_from_current": "Generera miniatyrbild från nuvarande",
     "hash_migration": "Hash-migration",
     "hide": "Dölj",
+    "hide_configuration": "Göm konfigurering",
     "identify": "Identifiera",
     "ignore": "Ignorera",
     "import": "Importera…",
@@ -87,8 +89,11 @@
     "set_front_image": "Frambild…",
     "set_image": "Välj bild…",
     "show": "Visa",
+    "show_configuration": "Visa konfigureringen",
     "skip": "Hoppa över",
     "stop": "Stoppa",
+    "submit": "Skicka",
+    "submit_stash_box": "Skicka till Stash-Box",
     "tasks": {
       "clean_confirm_message": "Är du säker att du vill rensa? Detta kommer radera databasinformation och genererade filer för alla scener och gallerier som inte längre finns på filsystemet.",
       "dry_mode_selected": "Torrt läge valt. Inget kommer raderas utan bara loggning kommer ske.",
@@ -220,8 +225,6 @@
         "password": "Lösenord",
         "password_desc": "Lösenord till Stash. Lämna tom för att inaktivera användarautentisering",
         "stash-box_integration": "Integration med Stash-box",
-        "trusted_proxies": "Pålitliga proxyer",
-        "trusted_proxies_desc": "Lista över proxyer som tillåts omdirigera trafik till stash. Lämna blank för att tillåta från privat nätverk.",
         "username": "Användarnamn",
         "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"
       },
@@ -414,6 +417,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Desktopintegration",
+        "notifications_enabled": "Aktivera Notifikationer",
+        "send_desktop_notifications_for_events": "Skicka skrivbordsnotifikationer för händelser",
         "skip_opening_browser": "Öppna inte webbläsare",
         "skip_opening_browser_on_startup": "Öppna inte webbläsaren under serverstart"
       },
@@ -487,7 +492,8 @@
           "continue_playlist_default": {
             "description": "Spela nästa scen i kö efter scenens slut",
             "heading": "Fortsätt spellista som standard"
-          }
+          },
+          "show_scrubber": "Visa skrubbaren"
         }
       },
       "scene_wall": {
@@ -651,6 +657,7 @@
     "search_accuracy_label": "Sökprecision",
     "title": "Duplikata scener"
   },
+  "duplicated_phash": "Duplikat (phash)",
   "duration": "Varaktighet",
   "effect_filters": {
     "aspect": "Bildförhållande",
@@ -758,10 +765,48 @@
   "parent_tags": "Överordnade Taggar",
   "part_of": "Del av {parent}",
   "path": "Sökväg",
+  "perceptual_similarity": "Perceptuell likhet (phash)",
   "performer": "Stjärna",
   "performerTags": "Stjärntagg",
+  "performer_age": "Ålder på stjärna",
   "performer_count": "Antal stjärnor",
+  "performer_favorite": "Favoritiserad stjärna",
   "performer_image": "Stjärnbild",
+  "performer_tagger": {
+    "add_new_performers": "Lägg till stjärnor",
+    "any_names_entered_will_be_queried": "Alla namn kommer skickas till Stash-Box-instansen och läggas till om de hittas. Endast exakta matchningar kommer övervägas.",
+    "batch_add_performers": "Lägg till flera stjärnor",
+    "batch_update_performers": "Uppdatera flera stjärnor",
+    "config": {
+      "active_stash-box_instance": "Aktiv Stash-Box-instans:",
+      "edit_excluded_fields": "Ändra exkluderade fält",
+      "excluded_fields": "Exkluderade fält:",
+      "no_fields_are_excluded": "Inga fält är exkluderade",
+      "no_instances_found": "Inga instanser hittades",
+      "these_fields_will_not_be_changed_when_updating_performers": "Dessa fält kommer inte ändras när stjärnor uppdateras."
+    },
+    "current_page": "Nuvarande sida",
+    "failed_to_save_performer": "Misslyckades med att spara \"{performer}\"",
+    "name_already_exists": "Namnet finns redan",
+    "network_error": "Nätverksfel",
+    "no_results_found": "Inga resultat hittades.",
+    "number_of_performers_will_be_processed": "{performer_count} stjärnor kommer behandlas",
+    "performer_already_tagged": "Stjärna som redan är taggad",
+    "performer_names_separated_by_comma": "Namn på stjärnor separerade med ett komma",
+    "performer_selection": "Val av stjärna",
+    "performer_successfully_tagged": "Lyckad taggning av stjärna:",
+    "query_all_performers_in_the_database": "Alla stjärnor i databasen",
+    "refresh_tagged_performers": "Återuppdatera redan taggade stjärnor",
+    "refreshing_will_update_the_data": "Återuppdatering kommer uppdatera redan taggade stjärnor med data från stash-box-instansen.",
+    "status_tagging_job_queued": "Status: Taggande köat",
+    "status_tagging_performers": "Status: Taggar stjärnor",
+    "tag_status": "Tagg-status",
+    "to_use_the_performer_tagger": "För att använda stjärntaggaren krävs en konfigurerad stash-box-instans.",
+    "untagged_performers": "Ej taggade stjärnor",
+    "update_performer": "Uppdatera stjärna",
+    "update_performers": "Uppdatera stjärnor",
+    "updating_untagged_performers_description": "Uppdatering av ej taggade stjärnor kommer försöka att matcha alla stjärnor som saknar StashID och uppdatera metadatan."
+  },
   "performers": "Stjärnor",
   "piercings": "Piercingar",
   "queue": "Kö",
@@ -860,6 +905,12 @@
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash ID:er",
+  "stashbox": {
+    "go_review_draft": "Gå till {endpoint_name} för att granska utkast.",
+    "selected_stash_box": "Vald stash-box adress",
+    "submission_failed": "Misslyckad inskickning",
+    "submission_successful": "Lyckad inskickning"
+  },
   "stats": {
     "image_size": "Storlek på bilder",
     "scenes_duration": "Total speltid",
