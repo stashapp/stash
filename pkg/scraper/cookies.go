@@ -3,6 +3,7 @@ package scraper
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -14,7 +15,6 @@ import (
 	"golang.org/x/net/publicsuffix"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 // jar constructs a cookie jar from a configuration
@@ -60,9 +60,20 @@ func (c config) jar() (*cookiejar.Jar, error) {
 
 func getCookieValue(cookie *scraperCookies) string {
 	if cookie.ValueRandom > 0 {
-		return utils.RandomSequence(cookie.ValueRandom)
+		return randomSequence(cookie.ValueRandom)
 	}
 	return cookie.Value
+}
+
+var characters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
+func randomSequence(n int) string {
+	b := make([]rune, n)
+	rand.Seed(time.Now().UnixNano())
+	for i := range b {
+		b[i] = characters[rand.Intn(len(characters))]
+	}
+	return string(b)
 }
 
 // printCookies prints all cookies from the given cookie jar

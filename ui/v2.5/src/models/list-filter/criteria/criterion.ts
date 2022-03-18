@@ -6,6 +6,7 @@ import {
   HierarchicalMultiCriterionInput,
   IntCriterionInput,
   MultiCriterionInput,
+  PHashDuplicationCriterionInput,
 } from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
 import {
@@ -206,7 +207,10 @@ export function createStringCriterionOption(
 
 export class StringCriterion extends Criterion<string> {
   public getLabelValue() {
-    return this.value;
+    let ret = this.value;
+    ret = StringCriterion.unreplaceSpecialCharacter(ret, "&");
+    ret = StringCriterion.unreplaceSpecialCharacter(ret, "+");
+    return ret;
   }
 
   public encodeValue() {
@@ -219,6 +223,10 @@ export class StringCriterion extends Criterion<string> {
 
   private static replaceSpecialCharacter(str: string, c: string) {
     return str.replaceAll(c, encodeURIComponent(c));
+  }
+
+  private static unreplaceSpecialCharacter(str: string, c: string) {
+    return str.replaceAll(encodeURIComponent(c), c);
   }
 
   constructor(type: CriterionOption) {
@@ -435,7 +443,9 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
   }
 
   public getLabelValue(): string {
-    const labels = (this.value.items ?? []).map((v) => v.label).join(", ");
+    const labels = decodeURI(
+      (this.value.items ?? []).map((v) => v.label).join(", ")
+    );
 
     if (this.value.depth === 0) {
       return labels;
@@ -510,5 +520,13 @@ export class DurationCriterion extends Criterion<INumberValue> {
         this.modifier === CriterionModifier.NotEquals
       ? DurationUtils.secondsToString(this.value.value)
       : "?";
+  }
+}
+
+export class PhashDuplicateCriterion extends StringCriterion {
+  protected toCriterionInput(): PHashDuplicationCriterionInput {
+    return {
+      duplicated: this.value === "true",
+    };
   }
 }

@@ -2,6 +2,8 @@ fragment GalleryData on Gallery {
   id
   checksum
   path
+  created_at
+  updated_at
   title
   date
   url

@@ -470,7 +470,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
       </Form>
 
       <DetailsEditNavbar
-        objectName={movie?.name ?? "movie"}
+        objectName={movie?.name ?? intl.formatMessage({ id: "movie" })}
         isNew={isNew}
         isEditing={isEditing}
         onToggleEdit={onCancel}

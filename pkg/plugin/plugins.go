@@ -16,16 +16,23 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 	"github.com/stashapp/stash/pkg/session"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
+
+type ServerConfig interface {
+	GetHost() string
+	GetPort() int
+	GetConfigPath() string
+	HasTLSConfig() bool
+	GetPluginsPath() string
+}
 
 // Cache stores plugin details.
 type Cache struct {
-	config       *config.Instance
+	config       ServerConfig
 	plugins      []Config
 	sessionStore *session.Store
 	gqlHandler   http.Handler
@@ -38,7 +45,7 @@ type Cache struct {
 //
 // Does not load plugins. Plugins will need to be
 // loaded explicitly using ReloadPlugins.
-func NewCache(config *config.Instance) *Cache {
+func NewCache(config ServerConfig) *Cache {
 	return &Cache{
 		config: config,
 	}
@@ -196,7 +203,7 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, h
 		hooks := p.getHooks(hookType)
 		// don't revisit a plugin we've already visited
 		// only log if there's hooks that we're skipping
-		if len(hooks) > 0 && utils.StrInclude(visitedPlugins, p.id) {
+		if len(hooks) > 0 && stringslice.StrInclude(visitedPlugins, p.id) {
 			logger.Debugf("plugin ID '%s' already triggered, not re-triggering", p.id)
 			continue
 		}

@@ -13,8 +13,9 @@ import (
 	"runtime"
 	"strings"
 
+	stashExec "github.com/stashapp/stash/pkg/exec"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func GetPaths(paths []string) (string, string) {
@@ -28,10 +29,10 @@ func GetPaths(paths []string) (string, string) {
 
 	// Check if ffmpeg exists in the config directory
 	if ffmpegPath == "" {
-		ffmpegPath = utils.FindInPaths(paths, getFFMPEGFilename())
+		ffmpegPath = fsutil.FindInPaths(paths, getFFMPEGFilename())
 	}
 	if ffprobePath == "" {
-		ffprobePath = utils.FindInPaths(paths, getFFProbeFilename())
+		ffprobePath = fsutil.FindInPaths(paths, getFFProbeFilename())
 	}
 
 	return ffmpegPath, ffprobePath
@@ -39,14 +40,14 @@ func GetPaths(paths []string) (string, string) {
 
 func Download(ctx context.Context, configDirectory string) error {
 	for _, url := range getFFMPEGURL() {
-		err := DownloadSingle(ctx, configDirectory, url)
+		err := downloadSingle(ctx, configDirectory, url)
 		if err != nil {
 			return err
 		}
 	}
 
 	// validate that the urls contained what we needed
-	executables := []string{"ffmpeg", "ffprobe"}
+	executables := []string{getFFMPEGFilename(), getFFProbeFilename()}
 	for _, executable := range executables {
 		_, err := os.Stat(filepath.Join(configDirectory, executable))
 		if err != nil {
@@ -79,7 +80,7 @@ func (r *progressReader) Read(p []byte) (int, error) {
 	return read, err
 }
 
-func DownloadSingle(ctx context.Context, configDirectory, url string) error {
+func downloadSingle(ctx context.Context, configDirectory, url string) error {
 	if url == "" {
 		return fmt.Errorf("no ffmpeg url for this platform")
 	}
@@ -202,7 +203,8 @@ func pathBinaryHasCorrectFlags() bool {
 	if err != nil {
 		return false
 	}
-	bytes, _ := exec.Command(ffmpegPath).CombinedOutput()
+	cmd := stashExec.Command(ffmpegPath)
+	bytes, _ := cmd.CombinedOutput()
 	output := string(bytes)
 	hasOpus := strings.Contains(output, "--enable-libopus")
 	hasVpx := strings.Contains(output, "--enable-libvpx")

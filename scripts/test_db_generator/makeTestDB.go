@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package main
@@ -14,10 +15,11 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
-	"github.com/stashapp/stash/pkg/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -149,7 +151,7 @@ func makeStudios(n int) {
 				name := names[c.Naming.Tags].generateName(rand.Intn(5) + 1)
 				studio := models.Studio{
 					Name:     sql.NullString{String: name, Valid: true},
-					Checksum: utils.MD5FromString(name),
+					Checksum: md5.FromString(name),
 				}
 
 				if rand.Intn(100) > 5 {
@@ -182,7 +184,7 @@ func makePerformers(n int) {
 				name := generatePerformerName()
 				performer := models.Performer{
 					Name:     sql.NullString{String: name, Valid: true},
-					Checksum: utils.MD5FromString(name),
+					Checksum: md5.FromString(name),
 					Favorite: sql.NullBool{
 						Bool:  false,
 						Valid: true,
@@ -256,14 +258,14 @@ func getDate() string {
 }
 
 func generateScene(i int) models.Scene {
-	path := utils.MD5FromString("scene/" + strconv.Itoa(i))
+	path := md5.FromString("scene/" + strconv.Itoa(i))
 	w, h := getResolution()
 
 	return models.Scene{
 		Path:     path,
 		Title:    sql.NullString{String: names[c.Naming.Scenes].generateName(rand.Intn(7) + 1), Valid: true},
-		Checksum: sql.NullString{String: utils.MD5FromString(path), Valid: true},
-		OSHash:   sql.NullString{String: utils.MD5FromString(path), Valid: true},
+		Checksum: sql.NullString{String: md5.FromString(path), Valid: true},
+		OSHash:   sql.NullString{String: md5.FromString(path), Valid: true},
 		Duration: sql.NullFloat64{
 			Float64: rand.Float64() * 14400,
 			Valid:   true,
@@ -305,14 +307,14 @@ func makeImages(n int) {
 }
 
 func generateImage(i int) models.Image {
-	path := utils.MD5FromString("image/" + strconv.Itoa(i))
+	path := md5.FromString("image/" + strconv.Itoa(i))
 
 	w, h := getResolution()
 
 	return models.Image{
 		Title:    sql.NullString{String: names[c.Naming.Images].generateName(rand.Intn(7) + 1), Valid: true},
 		Path:     path,
-		Checksum: utils.MD5FromString(path),
+		Checksum: md5.FromString(path),
 		Height:   models.NullInt64(h),
 		Width:    models.NullInt64(w),
 	}
@@ -347,12 +349,12 @@ func makeGalleries(n int) {
 }
 
 func generateGallery(i int) models.Gallery {
-	path := utils.MD5FromString("gallery/" + strconv.Itoa(i))
+	path := md5.FromString("gallery/" + strconv.Itoa(i))
 
 	return models.Gallery{
 		Title:    sql.NullString{String: names[c.Naming.Galleries].generateName(rand.Intn(7) + 1), Valid: true},
 		Path:     sql.NullString{String: path, Valid: true},
-		Checksum: utils.MD5FromString(path),
+		Checksum: md5.FromString(path),
 		Date: models.SQLiteDate{
 			String: getDate(),
 			Valid:  true,
@@ -378,7 +380,7 @@ func makeMarkers(n int) {
 
 				tags := getRandomTags(r, 0, 5)
 				// remove primary tag
-				tags = utils.IntExclude(tags, []int{marker.PrimaryTagID})
+				tags = intslice.IntExclude(tags, []int{marker.PrimaryTagID})
 				if err := r.SceneMarker().UpdateTags(created.ID, tags); err != nil {
 					return err
 				}
@@ -504,12 +506,12 @@ func getRandomPerformers(r models.Repository) []int {
 	// 	}
 
 	// 	for _, pp := range p {
-	// 		ret = utils.IntAppendUnique(ret, pp.ID)
+	// 		ret = intslice.IntAppendUnique(ret, pp.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = utils.IntAppendUnique(ret, rand.Intn(c.Performers)+1)
+		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Performers)+1)
 	}
 
 	return ret
@@ -535,12 +537,12 @@ func getRandomTags(r models.Repository, min, max int) []int {
 	// 	}
 
 	// 	for _, tt := range t {
-	// 		ret = utils.IntAppendUnique(ret, tt.ID)
+	// 		ret = intslice.IntAppendUnique(ret, tt.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = utils.IntAppendUnique(ret, rand.Intn(c.Tags)+1)
+		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Tags)+1)
 	}
 
 	return ret
@@ -557,12 +559,12 @@ func getRandomImages(r models.Repository) []int {
 	// 	}
 
 	// 	for _, tt := range t {
-	// 		ret = utils.IntAppendUnique(ret, tt.ID)
+	// 		ret = intslice.IntAppendUnique(ret, tt.ID)
 	// 	}
 	// }
 
 	for i := 0; i < n; i++ {
-		ret = utils.IntAppendUnique(ret, rand.Intn(c.Images)+1)
+		ret = intslice.IntAppendUnique(ret, rand.Intn(c.Images)+1)
 	}
 
 	return ret

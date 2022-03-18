@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FormattedDate, FormattedMessage } from "react-intl";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
@@ -13,6 +13,8 @@ interface ISceneDetailProps {
 }
 
 export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
+  const intl = useIntl();
+
   function renderDetails() {
     if (!props.scene.details || props.scene.details === "") return;
     return (
@@ -112,6 +114,14 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               )}
             </h6>
           )}
+          <h6>
+            <FormattedMessage id="created_at" />:{" "}
+            {TextUtils.formatDateTime(intl, props.scene.created_at)}{" "}
+          </h6>
+          <h6>
+            <FormattedMessage id="updated_at" />:{" "}
+            {TextUtils.formatDateTime(intl, props.scene.updated_at)}{" "}
+          </h6>
         </div>
         {props.scene.studio && (
           <div className="col-3 d-xl-none">

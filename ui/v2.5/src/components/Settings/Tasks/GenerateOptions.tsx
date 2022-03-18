@@ -5,19 +5,18 @@ import {
   VideoPreviewInput,
   VideoPreviewSettingsInput,
 } from "../GeneratePreviewOptions";
-import { useIntl } from "react-intl";
 
 interface IGenerateOptions {
+  selection?: boolean;
   options: GQL.GenerateMetadataInput;
   setOptions: (s: GQL.GenerateMetadataInput) => void;
 }
 
 export const GenerateOptions: React.FC<IGenerateOptions> = ({
+  selection,
   options,
   setOptions: setOptionsState,
 }) => {
-  const intl = useIntl();
-
   const previewOptions: GQL.GeneratePreviewOptionsInput =
     options.previewOptions ?? {};
 
@@ -44,27 +43,29 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         onChange={(v) => setOptions({ imagePreviews: v })}
       />
 
-      <ModalSetting<VideoPreviewSettingsInput>
-        id="video-preview-settings"
-        className="sub-setting"
-        disabled={!options.previews}
-        buttonText={`${intl.formatMessage({
-          id: "dialogs.scene_gen.preview_generation_options",
-        })}…`}
-        value={{
-          previewExcludeEnd: previewOptions.previewExcludeEnd,
-          previewExcludeStart: previewOptions.previewExcludeStart,
-          previewSegmentDuration: previewOptions.previewSegmentDuration,
-          previewSegments: previewOptions.previewSegments,
-        }}
-        onChange={(v) => setOptions({ previewOptions: v })}
-        renderField={(value, setValue) => (
-          <VideoPreviewInput value={value ?? {}} setValue={setValue} />
-        )}
-        renderValue={() => {
-          return <></>;
-        }}
-      />
+      {/* #2251 - only allow preview generation options to be overridden when generating from a selection */}
+      {selection ? (
+        <ModalSetting<VideoPreviewSettingsInput>
+          id="video-preview-settings"
+          className="sub-setting"
+          disabled={!options.previews}
+          headingID="dialogs.scene_gen.override_preview_generation_options"
+          tooltipID="dialogs.scene_gen.override_preview_generation_options_desc"
+          value={{
+            previewExcludeEnd: previewOptions.previewExcludeEnd,
+            previewExcludeStart: previewOptions.previewExcludeStart,
+            previewSegmentDuration: previewOptions.previewSegmentDuration,
+            previewSegments: previewOptions.previewSegments,
+          }}
+          onChange={(v) => setOptions({ previewOptions: v })}
+          renderField={(value, setValue) => (
+            <VideoPreviewInput value={value ?? {}} setValue={setValue} />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
+        />
+      ) : undefined}
 
       <BooleanSetting
         id="sprite-task"
@@ -110,6 +111,18 @@ export const GenerateOptions: React.FC<IGenerateOptions> = ({
         tooltipID="dialogs.scene_gen.transcodes_tooltip"
         onChange={(v) => setOptions({ transcodes: v })}
       />
+      {selection ? (
+        <BooleanSetting
+          id="force-transcode"
+          className="sub-setting"
+          checked={options.forceTranscodes ?? false}
+          disabled={!options.transcodes}
+          headingID="dialogs.scene_gen.force_transcodes"
+          tooltipID="dialogs.scene_gen.force_transcodes_tooltip"
+          onChange={(v) => setOptions({ forceTranscodes: v })}
+        />
+      ) : undefined}
+
       <BooleanSetting
         id="phash-task"
         checked={options.phashes ?? false}

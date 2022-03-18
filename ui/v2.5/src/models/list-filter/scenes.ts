@@ -18,7 +18,11 @@ import {
 } from "./criteria/tags";
 import { ListFilterOptions, MediaSortByOptions } from "./filter-options";
 import { DisplayMode } from "./types";
-import { PhashCriterionOption } from "./criteria/phash";
+import {
+  DuplicatedCriterionOption,
+  PhashCriterionOption,
+} from "./criteria/phash";
+import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -32,6 +36,7 @@ const sortByOptions = [
   "movie_scene_number",
   "interactive",
   "interactive_speed",
+  "perceptual_similarity",
   ...MediaSortByOptions,
 ].map(ListFilterOptions.createSortBy);
 
@@ -53,6 +58,7 @@ const criterionOptions = [
     "checksum"
   ),
   PhashCriterionOption,
+  DuplicatedCriterionOption,
   RatingCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
@@ -65,6 +71,8 @@ const criterionOptions = [
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
   createMandatoryNumberCriterionOption("performer_count"),
+  createMandatoryNumberCriterionOption("performer_age"),
+  PerformerFavoriteCriterionOption,
   StudiosCriterionOption,
   MoviesCriterionOption,
   createStringCriterionOption("url"),

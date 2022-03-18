@@ -5,13 +5,24 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"unicode"
 
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
-const separatorChars = `.\-_ `
+const (
+	separatorChars   = `.\-_ `
+	separatorPattern = `(?:_|[^\p{L}\w\d])+`
+
+	reNotLetterWordUnicode = `[^\p{L}\w\d]`
+	reNotLetterWord        = `[^\w\d]`
+)
+
+var separatorRE = regexp.MustCompile(separatorPattern)
 
 func getPathQueryRegex(name string) string {
 	// escape specific regex characters
@@ -21,7 +32,8 @@ func getPathQueryRegex(name string) string {
 	const separator = `[` + separatorChars + `]`
 
 	ret := strings.ReplaceAll(name, " ", separator+"*")
-	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
+
+	ret = `(?:^|_|[^\p{L}\d])` + ret + `(?:$|_|[^\p{L}\d])`
 	return ret
 }
 
@@ -35,9 +47,7 @@ func getPathWords(path string) []string {
 	}
 
 	// handle path separators
-	const separator = `(?:_|[^\w\d])+`
-	re := regexp.MustCompile(separator)
-	retStr = re.ReplaceAllString(retStr, " ")
+	retStr = separatorRE.ReplaceAllString(retStr, " ")
 
 	words := strings.Split(retStr, " ")
 
@@ -51,42 +61,85 @@ func getPathWords(path string) []string {
 			// we post-match afterwards, so we can afford to be a little loose
 			// with the query
 			// just use the first two characters
-			ret = append(ret, w[0:2])
+			// #2293 - need to convert to unicode runes for the substring, otherwise
+			// the resulting string is corrupted.
+			ret = stringslice.StrAppendUnique(ret, string([]rune(w)[0:2]))
 		}
 	}
 
 	return ret
 }
 
+// https://stackoverflow.com/a/53069799
+func allASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
+}
+
 // nameMatchesPath returns the index in the path for the right-most match.
 // Returns -1 if not found.
 func nameMatchesPath(name, path string) int {
+	// #2363 - optimisation: only use unicode character regexp if path contains
+	// unicode characters
+	re := nameToRegexp(name, !allASCII(path))
+	return regexpMatchesPath(re, path)
+}
+
+// nameToRegexp compiles a regexp pattern to match paths from the given name.
+// Set useUnicode to true if this regexp is to be used on any strings with unicode characters.
+func nameToRegexp(name string, useUnicode bool) *regexp.Regexp {
 	// escape specific regex characters
 	name = regexp.QuoteMeta(name)
 
 	name = strings.ToLower(name)
-	path = strings.ToLower(path)
 
 	// handle path separators
 	const separator = `[` + separatorChars + `]`
 
+	// performance optimisation: only use \p{L} is useUnicode is true
+	notWord := reNotLetterWord
+	if useUnicode {
+		notWord = reNotLetterWordUnicode
+	}
+
 	reStr := strings.ReplaceAll(name, " ", separator+"*")
-	reStr = `(?:^|_|[^\w\d])` + reStr + `(?:$|_|[^\w\d])`
+	reStr = `(?:^|_|` + notWord + `)` + reStr + `(?:$|_|` + notWord + `)`
 
 	re := regexp.MustCompile(reStr)
-	found := re.FindAllStringIndex(path, -1)
+	return re
+}
 
+func regexpMatchesPath(r *regexp.Regexp, path string) int {
+	path = strings.ToLower(path)
+	found := r.FindAllStringIndex(path, -1)
 	if found == nil {
 		return -1
 	}
-
 	return found[len(found)-1][0]
 }
 
-func PathToPerformers(path string, performerReader models.PerformerReader) ([]*models.Performer, error) {
-	words := getPathWords(path)
+func getPerformers(words []string, performerReader models.PerformerReader, cache *Cache) ([]*models.Performer, error) {
 	performers, err := performerReader.QueryForAutoTag(words)
+	if err != nil {
+		return nil, err
+	}
 
+	swPerformers, err := getSingleLetterPerformers(cache, performerReader)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(performers, swPerformers...), nil
+}
+
+func PathToPerformers(path string, reader models.PerformerReader, cache *Cache) ([]*models.Performer, error) {
+	words := getPathWords(path)
+
+	performers, err := getPerformers(words, reader, cache)
 	if err != nil {
 		return nil, err
 	}
@@ -102,12 +155,26 @@ func PathToPerformers(path string, performerReader models.PerformerReader) ([]*m
 	return ret, nil
 }
 
+func getStudios(words []string, reader models.StudioReader, cache *Cache) ([]*models.Studio, error) {
+	studios, err := reader.QueryForAutoTag(words)
+	if err != nil {
+		return nil, err
+	}
+
+	swStudios, err := getSingleLetterStudios(cache, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(studios, swStudios...), nil
+}
+
 // PathToStudio returns the Studio that matches the given path.
 // Where multiple matching studios are found, the one that matches the latest
 // position in the path is returned.
-func PathToStudio(path string, reader models.StudioReader) (*models.Studio, error) {
+func PathToStudio(path string, reader models.StudioReader, cache *Cache) (*models.Studio, error) {
 	words := getPathWords(path)
-	candidates, err := reader.QueryForAutoTag(words)
+	candidates, err := getStudios(words, reader, cache)
 
 	if err != nil {
 		return nil, err
@@ -139,9 +206,23 @@ func PathToStudio(path string, reader models.StudioReader) (*models.Studio, erro
 	return ret, nil
 }
 
-func PathToTags(path string, tagReader models.TagReader) ([]*models.Tag, error) {
+func getTags(words []string, reader models.TagReader, cache *Cache) ([]*models.Tag, error) {
+	tags, err := reader.QueryForAutoTag(words)
+	if err != nil {
+		return nil, err
+	}
+
+	swTags, err := getSingleLetterTags(cache, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(tags, swTags...), nil
+}
+
+func PathToTags(path string, reader models.TagReader, cache *Cache) ([]*models.Tag, error) {
 	words := getPathWords(path)
-	tags, err := tagReader.QueryForAutoTag(words)
+	tags, err := getTags(words, reader, cache)
 
 	if err != nil {
 		return nil, err
@@ -155,7 +236,7 @@ func PathToTags(path string, tagReader models.TagReader) ([]*models.Tag, error) 
 		}
 
 		if !matches {
-			aliases, err := tagReader.GetAliases(t.ID)
+			aliases, err := reader.GetAliases(t.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -175,38 +256,6 @@ func PathToTags(path string, tagReader models.TagReader) ([]*models.Tag, error) 
 	return ret, nil
 }
 
-func scenePathsFilter(paths []string) *models.SceneFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.SceneFilterType
-	var or *models.SceneFilterType
-	for _, p := range paths {
-		newOr := &models.SceneFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
-}
-
 func PathToScenes(name string, paths []string, sceneReader models.SceneReader) ([]*models.Scene, error) {
 	regex := getPathQueryRegex(name)
 	organized := false
@@ -218,7 +267,7 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 		Organized: &organized,
 	}
 
-	filter.And = scenePathsFilter(paths)
+	filter.And = scene.PathsFilter(paths)
 
 	pp := models.PerPageAll
 	scenes, err := scene.Query(sceneReader, &filter, &models.FindFilterType{
@@ -230,45 +279,18 @@ func PathToScenes(name string, paths []string, sceneReader models.SceneReader) (
 	}
 
 	var ret []*models.Scene
+
+	// paths may have unicode characters
+	const useUnicode = true
+
+	r := nameToRegexp(name, useUnicode)
 	for _, p := range scenes {
-		if nameMatchesPath(name, p.Path) != -1 {
+		if regexpMatchesPath(r, p.Path) != -1 {
 			ret = append(ret, p)
 		}
 	}
 
 	return ret, nil
-}
-
-func imagePathsFilter(paths []string) *models.ImageFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.ImageFilterType
-	var or *models.ImageFilterType
-	for _, p := range paths {
-		newOr := &models.ImageFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
 }
 
 func PathToImages(name string, paths []string, imageReader models.ImageReader) ([]*models.Image, error) {
@@ -282,7 +304,7 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 		Organized: &organized,
 	}
 
-	filter.And = imagePathsFilter(paths)
+	filter.And = image.PathsFilter(paths)
 
 	pp := models.PerPageAll
 	images, err := image.Query(imageReader, &filter, &models.FindFilterType{
@@ -294,45 +316,18 @@ func PathToImages(name string, paths []string, imageReader models.ImageReader) (
 	}
 
 	var ret []*models.Image
+
+	// paths may have unicode characters
+	const useUnicode = true
+
+	r := nameToRegexp(name, useUnicode)
 	for _, p := range images {
-		if nameMatchesPath(name, p.Path) != -1 {
+		if regexpMatchesPath(r, p.Path) != -1 {
 			ret = append(ret, p)
 		}
 	}
 
 	return ret, nil
-}
-
-func galleryPathsFilter(paths []string) *models.GalleryFilterType {
-	if paths == nil {
-		return nil
-	}
-
-	sep := string(filepath.Separator)
-
-	var ret *models.GalleryFilterType
-	var or *models.GalleryFilterType
-	for _, p := range paths {
-		newOr := &models.GalleryFilterType{}
-		if or != nil {
-			or.Or = newOr
-		} else {
-			ret = newOr
-		}
-
-		or = newOr
-
-		if !strings.HasSuffix(p, sep) {
-			p += sep
-		}
-
-		or.Path = &models.StringCriterionInput{
-			Modifier: models.CriterionModifierEquals,
-			Value:    p + "%",
-		}
-	}
-
-	return ret
 }
 
 func PathToGalleries(name string, paths []string, galleryReader models.GalleryReader) ([]*models.Gallery, error) {
@@ -346,7 +341,7 @@ func PathToGalleries(name string, paths []string, galleryReader models.GalleryRe
 		Organized: &organized,
 	}
 
-	filter.And = galleryPathsFilter(paths)
+	filter.And = gallery.PathsFilter(paths)
 
 	pp := models.PerPageAll
 	gallerys, _, err := galleryReader.Query(&filter, &models.FindFilterType{
@@ -358,8 +353,13 @@ func PathToGalleries(name string, paths []string, galleryReader models.GalleryRe
 	}
 
 	var ret []*models.Gallery
+
+	// paths may have unicode characters
+	const useUnicode = true
+
+	r := nameToRegexp(name, useUnicode)
 	for _, p := range gallerys {
-		if nameMatchesPath(name, p.Path.String) != -1 {
+		if regexpMatchesPath(r, p.Path.String) != -1 {
 			ret = append(ret, p)
 		}
 	}

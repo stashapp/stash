@@ -8,8 +8,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 type key int
@@ -40,16 +39,16 @@ var ErrUnauthorized = errors.New("unauthorized")
 
 type Store struct {
 	sessionStore *sessions.CookieStore
-	config       *config.Instance
+	config       SessionConfig
 }
 
-func NewStore(c *config.Instance) *Store {
+func NewStore(c SessionConfig) *Store {
 	ret := &Store{
-		sessionStore: sessions.NewCookieStore(config.GetInstance().GetSessionStoreKey()),
+		sessionStore: sessions.NewCookieStore(c.GetSessionStoreKey()),
 		config:       c,
 	}
 
-	ret.sessionStore.MaxAge(config.GetInstance().GetMaxSessionAge())
+	ret.sessionStore.MaxAge(c.GetMaxSessionAge())
 
 	return ret
 }
@@ -62,7 +61,7 @@ func (s *Store) Login(w http.ResponseWriter, r *http.Request) error {
 	password := r.FormValue(passwordFormKey)
 
 	// authenticate the user
-	if !config.GetInstance().ValidateCredentials(username, password) {
+	if !s.config.ValidateCredentials(username, password) {
 		return ErrInvalidCredentials
 	}
 
@@ -165,7 +164,7 @@ func GetVisitedPlugins(ctx context.Context) []string {
 
 func AddVisitedPlugin(ctx context.Context, pluginID string) context.Context {
 	curVal := GetVisitedPlugins(ctx)
-	curVal = utils.StrAppendUnique(curVal, pluginID)
+	curVal = stringslice.StrAppendUnique(curVal, pluginID)
 	return setVisitedPlugins(ctx, curVal)
 }
 

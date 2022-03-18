@@ -4,8 +4,6 @@ import (
 	"context"
 	"sync"
 	"time"
-
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const maxGraveyardSize = 10
@@ -177,7 +175,9 @@ func (m *Manager) dispatch(j *Job) (done chan struct{}) {
 	j.StartTime = &t
 	j.Status = StatusRunning
 
-	ctx, cancelFunc := context.WithCancel(utils.ValueOnlyContext(j.outerCtx))
+	ctx, cancelFunc := context.WithCancel(valueOnlyContext{
+		j.outerCtx,
+	})
 	j.cancelFunc = cancelFunc
 
 	done = make(chan struct{})
@@ -204,7 +204,6 @@ func (m *Manager) onJobFinish(job *Job) {
 	} else {
 		job.Status = StatusFinished
 	}
-
 	t := time.Now()
 	job.EndTime = &t
 }

@@ -26,6 +26,7 @@
     "delete": "刪除",
     "delete_entity": "刪除{entityType}",
     "delete_file": "刪除檔案",
+    "delete_file_and_funscript": "刪除檔案 (及其 Funscript)",
     "delete_generated_supporting_files": "刪除已生成的資訊檔案",
     "disallow": "不允許",
     "download": "下載",
@@ -44,6 +45,7 @@
     "generate_thumb_from_current": "從現在的畫面產生預覽圖",
     "hash_migration": "雜湊值遷移",
     "hide": "隱藏",
+    "hide_configuration": "隱藏設定",
     "identify": "辨認",
     "ignore": "忽略",
     "import": "匯入…",
@@ -80,14 +82,18 @@
     "select_folders": "選擇資料夾",
     "select_none": "清除選擇",
     "selective_auto_tag": "選擇性套用標籤",
+    "selective_clean": "選擇性清理",
     "selective_scan": "選擇性掃描",
     "set_as_default": "設為預設",
     "set_back_image": "設定背面圖…",
     "set_front_image": "設定正面圖…",
     "set_image": "設定圖像…",
     "show": "顯示",
+    "show_configuration": "顯示設定",
     "skip": "跳過",
     "stop": "停止",
+    "submit": "提交",
+    "submit_stash_box": "提交至 Stash-Box",
     "tasks": {
       "clean_confirm_message": "您確定要進行清理嗎？這將從資料庫及產生的文件中清除已不在的短片及圖庫。",
       "dry_mode_selected": "已選擇了模擬作業模式。不會進行任何實際刪除作業，只會進行模擬記錄。",
@@ -96,7 +102,12 @@
     "temp_disable": "暫時關閉…",
     "temp_enable": "暫時啟用…",
     "use_default": "使用預設選項",
-    "view_random": "隨機開啟"
+    "view_random": "隨機開啟",
+    "logout": "登出",
+    "remove_from_gallery": "自圖庫中移除",
+    "delete_stashid": "刪除 StashID",
+    "edit_entity": "編輯{entityType}",
+    "open_in_external_player": "透過外部播放器開啟"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -159,6 +170,7 @@
       "build_hash": "編譯版本雜湊值：",
       "build_time": "編譯時間：",
       "check_for_new_version": "檢查新版本",
+      "latest_version": "最新版本",
       "latest_version_build_hash": "最新版本的雜湊值：",
       "new_version_notice": "[新版本]",
       "stash_discord": "加入我們的 {url} 頻道",
@@ -167,12 +179,19 @@
       "stash_wiki": "Stash 的 {url} 頁面",
       "version": "版本"
     },
+    "application_paths": {
+      "heading": "應用程式路徑"
+    },
     "categories": {
       "about": "關於",
       "interface": "介面",
       "logs": "日誌",
+      "metadata_providers": "Metadata 來源",
       "plugins": "插件",
       "scraping": "爬蟲設定",
+      "security": "安全性",
+      "services": "服務",
+      "system": "系統",
       "tasks": "排程",
       "tools": "工具"
     },
@@ -187,7 +206,12 @@
       "recent_ip_addresses": "最近的 IP 位址",
       "server_display_name": "伺服器顯示名稱",
       "server_display_name_desc": "DLNA 伺服器的顯示名稱。如果為空，則預設為 {server_name}。",
-      "until_restart": "直到重啟"
+      "until_restart": "直到重啟",
+      "allowed_ip_temporarily": "已暫時允許 IP 位址",
+      "disabled_dlna_temporarily": "已暫時關閉 DLNA 伺服器",
+      "disallowed_ip": "已禁止的 IP 位址",
+      "enabled_dlna_temporarily": "已暫時開啟 DLNA 伺服器",
+      "successfully_cancelled_temporary_behaviour": "已關閉暫時啟用伺服器的功能"
     },
     "general": {
       "auth": {
@@ -195,6 +219,10 @@
         "api_key_desc": "外部系統的 API 金鑰，有設定用戶名/密碼時才需要。在生成 API 金鑰之前必須先設定用戶名。",
         "authentication": "驗證設定",
         "clear_api_key": "清除 API 金鑰",
+        "credentials": {
+          "description": "用以限制存取 stash 權限的帳戶資料。",
+          "heading": "帳戶資料"
+        },
         "generate_api_key": "生成 API 金鑰",
         "log_file": "日誌檔案",
         "log_file_desc": "輸出日誌記錄到的檔案路徑，留空以關閉日誌檔案記錄。需重啟。",
@@ -207,8 +235,6 @@
         "password": "密碼",
         "password_desc": "使用 Stash 時所需的密碼，留空以關閉身份驗證",
         "stash-box_integration": "整合 Stash-box",
-        "trusted_proxies": "已信任代理伺服器",
-        "trusted_proxies_desc": "允許代理 stash 流量的代理伺服器列表。留空以允許內網。",
         "username": "用戶名",
         "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證"
       },
@@ -224,8 +250,6 @@
       "create_galleries_from_folders_label": "從包含圖片的資料夾建立圖庫",
       "db_path_head": "資料庫路徑",
       "directory_locations_to_your_content": "多媒體的檔案位置",
-      "exclude_image": "排除圖片",
-      "exclude_video": "排除影片",
       "excluded_image_gallery_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的圖片及圖庫檔案/路徑的正則表達式",
       "excluded_image_gallery_patterns_head": "圖片/圖庫排除規則",
       "excluded_video_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的影片檔案/路徑的正則表達式",
@@ -256,11 +280,20 @@
       "preview_generation": "預覽檔案生成",
       "scraper_user_agent": "爬蟲用戶代理名稱 (User Agent)",
       "scraper_user_agent_desc": "抓取 HTTP 資料時所用的用戶代理字串 (User-Agent)",
+      "scrapers_path": {
+        "description": "含有爬蟲設定檔的資料夾位置",
+        "heading": "爬蟲路徑"
+      },
       "scraping": "爬蟲設定",
       "sqlite_location": "SQLite 資料庫的位置（需重新啟動）",
       "video_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將被視為影片。",
       "video_ext_head": "影片副檔名",
       "video_head": "影片設定"
+    },
+    "library": {
+      "exclusions": "白名單",
+      "gallery_and_image_options": "圖庫及圖片選項",
+      "media_content_extensions": "多媒體檔案副檔名"
     },
     "logs": {
       "log_level": "日誌級別"
@@ -289,6 +322,9 @@
       "name": "名稱",
       "title": "Stash-box 端點"
     },
+    "system": {
+      "transcoding": "轉碼"
+    },
     "tasks": {
       "added_job_to_queue": "已將『{operation_name}』加入至工作排程",
       "auto_tag": {
@@ -301,19 +337,24 @@
       "backup_and_download": "執行資料庫備份，並下載其生成的檔案。",
       "backup_database": "將整個資料庫備份至與資料庫相同的目錄下，該匯出的名稱格式為 {filename_format}",
       "cleanup_desc": "檢查缺失的檔案，並將它們從資料庫中刪除。此動作具無法復原。",
+      "data_management": "資料管理",
       "defaults_set": "已設定預設值；以後按下「{action}」按鈕時將會使用這些設定。",
       "dont_include_file_extension_as_part_of_the_title": "不要在標題中附上檔案副檔名",
+      "empty_queue": "目前尚無任何運行中的排程。",
       "export_to_json": "將資料庫中的 Metadata 匯出為 JSON 檔。",
       "generate": {
         "generating_from_paths": "為以下路徑之短片生成檔案中",
         "generating_scenes": "為{num}個{scene}生成檔案中"
       },
       "generate_desc": "產生輔助圖片、預覽、影片檔、VTT 字幕等檔案。",
-      "generate_phashes_during_scan": "掃描時，順便產生 PHash（用於偵測重複的影片檔案及辨認短片）",
-      "generate_previews_during_scan": "掃描時，順便產生圖像預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
-      "generate_sprites_during_scan": "掃描時，順便產生時間軸預覽（用於短片中時間軸的預覽圖）",
-      "generate_thumbnails_during_scan": "掃描圖片時，順便產生縮圖。",
-      "generate_video_previews_during_scan": "掃描時，順便產生影片預覽（當滑鼠移至任一短片上時所播放的預覽短片）",
+      "generate_phashes_during_scan": "產生 PHash",
+      "generate_phashes_during_scan_tooltip": "可用於辨認短片或偵測重複的短片。",
+      "generate_previews_during_scan": "產生動態預覽圖",
+      "generate_previews_during_scan_tooltip": "產生 WebP 動圖作為預覽，僅適用於設置為『動圖』的預覽類型。",
+      "generate_sprites_during_scan": "產生時間軸預覽",
+      "generate_thumbnails_during_scan": "替圖片產生縮圖",
+      "generate_video_previews_during_scan": "產生影片預覽",
+      "generate_video_previews_during_scan_tooltip": "產生影片預覽，此預覽將於滑鼠移至影片上時自動播放",
       "generated_content": "生成的內容",
       "identify": {
         "and_create_missing": "及建立尚有欄位",
@@ -370,6 +411,7 @@
       "scene_tools": "短片工具"
     },
     "ui": {
+      "basic_settings": "一般設定",
       "custom_css": {
         "description": "如需套用，請重新整理頁面。",
         "heading": "自定義 CSS",
@@ -385,6 +427,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "桌面整合",
+        "notifications_enabled": "開啟通知",
+        "send_desktop_notifications_for_events": "當事件發生時，傳送瀏覽器通知",
         "skip_opening_browser": "關閉瀏覽器自動開啟",
         "skip_opening_browser_on_startup": "伺服器啟動時，不要自動開啟瀏覽器"
       },
@@ -400,10 +444,11 @@
         "heading": "Funscript 偏移量 (毫秒)"
       },
       "handy_connection_key": {
-        "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。",
+        "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。設定此金鑰後，Stash 將可把當前短片中的對應資訊分享至 handyfeeling.com",
         "heading": "Handy 連線金鑰"
       },
       "images": {
+        "heading": "圖片",
         "options": {
           "write_image_thumbnails": {
             "description": "建立縮圖時，將檔案寫至磁碟中",
@@ -411,6 +456,7 @@
           }
         }
       },
+      "interactive_options": "互動性選項",
       "language": {
         "heading": "語言"
       },
@@ -456,7 +502,8 @@
           "continue_playlist_default": {
             "description": "當影片播放完畢時，自動跳至下一個短片",
             "heading": "持續播放播放清單"
-          }
+          },
+          "show_scrubber": "顯示預覽軸"
         }
       },
       "scene_wall": {
@@ -558,16 +605,24 @@
     },
     "overwrite_filter_confirm": "您確定要覆蓋現有的條件 {entityName} 嗎？",
     "scene_gen": {
-      "image_previews": "圖像預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
-      "marker_image_previews": "章節預覽（動態 WebP 預覽，僅當預覽類型設置為『動圖』時才需要）",
-      "marker_screenshots": "章節截圖（靜態 JPG 預覽，僅當預覽類型設置為『靜態』時才需要）",
-      "markers": "章節標記（於給定時間碼開始的 20 秒影片）",
+      "force_transcodes": "強制產生轉碼檔案",
+      "force_transcodes_tooltip": "預設情況下，只有無法正常於瀏覽器中播放的影片檔會被轉碼成可播放的格式。開啟此設定後，即使是可正常播放的影片檔，也會被視為需轉碼的檔案。",
+      "image_previews": "動圖預覽",
+      "image_previews_tooltip": "產生 WebP 動圖作為預覽，僅適用於設置為『動圖』的預覽類型。",
+      "interactive_heatmap_speed": "替可互動的短片產生熱圖 (heatmaps) 及速度",
+      "marker_image_previews": "章節動圖預覽",
+      "marker_image_previews_tooltip": "產生 WebP 動圖作為章節預覽，僅適用於設置為『動圖』的預覽類型。",
+      "marker_screenshots": "章節截圖",
+      "marker_screenshots_tooltip": "靜態 JPG 預覽，僅適用於設置為『靜態』的預覽類型。",
+      "markers": "章節預覽",
+      "markers_tooltip": "自標記的時間點算起長度20秒的短片預覽。",
       "overwrite": "覆蓋現有的生成檔案",
       "phash": "PHash（用於偵測重複的影片檔案及辨認短片）",
       "preview_exclude_end_time_desc": "從場景預覽中排除最後 x 秒。這可以是一個以秒為單位的值，也可以是整個場景持續時間的百分比（例如 2%）。",
       "preview_exclude_end_time_head": "排除結束時間",
       "preview_exclude_start_time_desc": "從場景預覽中排除前 x 秒。這可以是一個以秒為單位的值，也可以是整個場景持續時間的百分比（例如 2%）。",
       "preview_exclude_start_time_head": "排除開始時間",
+      "preview_generation_options": "預覽生成設定",
       "preview_options": "預覽選項",
       "preview_preset_desc": "預設值會影響預覽影像的大小、品質和編碼時間。“slow” 以下的預設值會隨著層級降低整體CP值，不推薦使用。",
       "preview_preset_head": "調整預設值 (Preset)",
@@ -575,9 +630,12 @@
       "preview_seg_count_head": "預覽影片段數",
       "preview_seg_duration_desc": "每個預覽片段的長度，以秒為單位。",
       "preview_seg_duration_head": "預覽片段長度",
-      "sprites": "時間軸預覽（用於短片中時間軸的預覽圖）",
-      "transcodes": "轉碼（將不支援的影片格式轉換成 MP4）",
-      "video_previews": "影片預覽（當滑鼠移至任一短片上時所播放的預覽短片）"
+      "sprites": "時間軸預覽",
+      "sprites_tooltip": "時間軸預覽（用於短片中時間軸的預覽圖）",
+      "transcodes": "轉碼",
+      "transcodes_tooltip": "將不支援的影片格式轉換成 MP4",
+      "video_previews": "影片預覽",
+      "video_previews_tooltip": "此預覽將於滑鼠移至影片上時自動播放"
     },
     "scenes_found": "已找到 {count} 個短片",
     "scrape_entity_query": "{entity_type}爬蟲搜尋",
@@ -609,6 +667,7 @@
     "search_accuracy_label": "搜尋準確度",
     "title": "相近的短片"
   },
+  "duplicated_phash": "重複的檔案 (PHash)",
   "duration": "長度",
   "effect_filters": {
     "aspect": "比例",
@@ -650,6 +709,14 @@
   "gallery": "圖庫",
   "gallery_count": "圖庫數量",
   "gender": "性別",
+  "gender_types": {
+    "FEMALE": "女性",
+    "INTERSEX": "多性別",
+    "MALE": "男性",
+    "NON_BINARY": "非二元",
+    "TRANSGENDER_FEMALE": "跨性別女性",
+    "TRANSGENDER_MALE": "跨型別男性"
+  },
   "hair_color": "頭髮顏色",
   "hasMarkers": "含有章節標記",
   "height": "身高",
@@ -662,6 +729,7 @@
   "include_sub_tags": "包含子標籤",
   "instagram": "Instagram",
   "interactive": "互動性支援",
+  "interactive_speed": "互動速度",
   "isMissing": "缺失",
   "library": "收藏庫",
   "loading": {
@@ -675,6 +743,7 @@
     "checksum": "校驗值",
     "downloaded_from": "下載於",
     "hash": "雜湊值",
+    "interactive_speed": "互動速度",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "這齣戲裡面 {age} {years_old}"
@@ -706,10 +775,48 @@
   "parent_tags": "母標籤",
   "part_of": "{parent} 的一部分",
   "path": "路徑",
+  "perceptual_similarity": "感知相似度 (PHash)",
   "performer": "演員",
   "performerTags": "演員標籤",
+  "performer_age": "演員年齡",
   "performer_count": "演員數量",
+  "performer_favorite": "已收藏的演員",
   "performer_image": "演員圖像",
+  "performer_tagger": {
+    "add_new_performers": "新增演員",
+    "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為匹配。",
+    "batch_add_performers": "大量新增演員",
+    "batch_update_performers": "大量更新演員",
+    "config": {
+      "active_stash-box_instance": "目前使用的 Stash-box：",
+      "edit_excluded_fields": "編輯排除的種類",
+      "excluded_fields": "已排除種類：",
+      "no_fields_are_excluded": "尚無排除任何種類",
+      "no_instances_found": "尚未設定端點",
+      "these_fields_will_not_be_changed_when_updating_performers": "以下種類的資訊將不會於更新演員時更動。"
+    },
+    "current_page": "目前頁面",
+    "failed_to_save_performer": "無法新增演員「{performer}」",
+    "name_already_exists": "名稱已存在",
+    "network_error": "網路錯誤",
+    "no_results_found": "找不到結果。",
+    "number_of_performers_will_be_processed": "將自動處理 {performer_count} 個演員",
+    "performer_already_tagged": "演員資料早已新增",
+    "performer_names_separated_by_comma": "演員名稱 (以逗號分隔)",
+    "performer_selection": "選取演員",
+    "performer_successfully_tagged": "成功新增演員資料：",
+    "query_all_performers_in_the_database": "查詢所有資料庫中的演員",
+    "refresh_tagged_performers": "重新整理已新增的演員資料",
+    "refreshing_will_update_the_data": "重新整理資料將會把任何現有的演員資料重新與 Stash-Box 端點上的資料同步。",
+    "status_tagging_job_queued": "狀態：已排成資料標記",
+    "status_tagging_performers": "狀態：新增演員資料中",
+    "tag_status": "標記狀態",
+    "to_use_the_performer_tagger": "在使用演員標記工具前，請先設定 Stash-Box 端點。",
+    "untagged_performers": "未標記的演員",
+    "update_performer": "更新演員資料",
+    "update_performers": "更新演員",
+    "updating_untagged_performers_description": "更新未標記的演員將試著把尚有 stashid 的演員在 Stash-Box 上找尋對應的資料，並將其資料加入至本地的 Metadata 中。"
+  },
   "performers": "演員",
   "piercings": "穿洞",
   "queue": "佇列",
@@ -804,10 +911,20 @@
       "next_step": "當您準備繼續設定時，點擊「下一步」。",
       "unable_to_locate_specified_config": "如果看到此畫面的話，則代表 Stash 無法找到您在命令列所提供的設定檔路徑。本安裝畫面將帶您建立新的設定檔案。"
     },
-    "welcome_to_stash": "歡迎使用 Stash"
+    "welcome_to_stash": "歡迎使用 Stash",
+    "folder": {
+      "up_dir": "往上一層",
+      "file_path": "檔案路徑"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
+  "stashbox": {
+    "go_review_draft": "到 {endpoint_name} 預覽草稿。",
+    "selected_stash_box": "已選擇的 Stash-Box 端點",
+    "submission_failed": "提交失敗",
+    "submission_successful": "提交成功"
+  },
   "stats": {
     "image_size": "圖片大小",
     "scenes_duration": "短片長度",
@@ -846,9 +963,9 @@
   "total": "總計",
   "true": "是",
   "twitter": "Twitter",
-  "up-dir": "往上一層",
   "updated_at": "更新於",
   "url": "連結",
+  "videos": "影片",
   "weight": "體重",
   "years_old": "歲"
 }

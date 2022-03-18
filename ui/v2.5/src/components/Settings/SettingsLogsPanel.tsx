@@ -1,9 +1,10 @@
 import React, { useEffect, useReducer, useState } from "react";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { useLogs, useLoggingSubscribe } from "src/core/StashService";
 import { SelectSetting } from "./Inputs";
 import { SettingSection } from "./SettingSection";
-
+import { JobTable } from "./Tasks/JobTable";
 function convertTime(logEntry: GQL.LogEntryDataFragment) {
   function pad(val: number) {
     let ret = val.toString();
@@ -79,6 +80,7 @@ export const SettingsLogsPanel: React.FC = () => {
   const { data: existingData } = useLogs();
   const [currentData, dispatchLogUpdate] = useReducer(logReducer, []);
   const [logLevel, setLogLevel] = useState<string>("Info");
+  const intl = useIntl();
 
   useEffect(() => {
     const newData = (data?.loggingSubscribe ?? []).map((e) => new LogEntry(e));
@@ -107,6 +109,8 @@ export const SettingsLogsPanel: React.FC = () => {
 
   return (
     <>
+      <h2>{intl.formatMessage({ id: "config.tasks.job_queue" })}</h2>
+      <JobTable />
       <SettingSection headingID="config.categories.logs">
         <SelectSetting
           id="log-level"

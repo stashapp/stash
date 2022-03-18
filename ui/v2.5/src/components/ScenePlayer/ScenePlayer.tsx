@@ -83,6 +83,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
 
     playerRef.current = player;
+
+    player.focus();
   }, [playerRef]);
 
   useEffect(() => {

@@ -26,6 +26,7 @@
     "delete": "Cancella",
     "delete_entity": "Cancella {entityType}",
     "delete_file": "Cancella file",
+    "delete_file_and_funscript": "Cancella file (e funscript)",
     "delete_generated_supporting_files": "Cancella file di supporto creati",
     "disallow": "Non Acconsentire",
     "download": "Scarica",
@@ -44,6 +45,7 @@
     "generate_thumb_from_current": "Genera thumbnail dall'attuale schermata",
     "hash_migration": "migrazione hash",
     "hide": "Nascondi",
+    "hide_configuration": "Nascondi Configurazione",
     "identify": "Identifica",
     "ignore": "Ignora",
     "import": "Importa…",
@@ -80,14 +82,18 @@
     "select_folders": "Seleziona cartelle",
     "select_none": "Deseleziona Tutto",
     "selective_auto_tag": "Tag Automatico Selettivo",
+    "selective_clean": "Pulizia Selettiva",
     "selective_scan": "Scansione Selettiva",
     "set_as_default": "Imposta come Predefinito",
     "set_back_image": "Immagine Retro…",
     "set_front_image": "Immagine Frontale…",
     "set_image": "Imposta immagine…",
     "show": "Mostra",
+    "show_configuration": "Mostra Configurazione",
     "skip": "Salta",
     "stop": "Stop",
+    "submit": "Invia",
+    "submit_stash_box": "Invia a Stash-Box",
     "tasks": {
       "clean_confirm_message": "Sei sicuro di voler Pulire? Questa azione cancellerà informazioni e contenuto creato dal database per tutte le scene e gallerie che non si trovano più nel file system.",
       "dry_mode_selected": "Dry Mode selezionato. Nessuna cancellazione avverrà, solo log.",
@@ -129,8 +135,8 @@
       "set_cover_label": "Imposta la copertina della scena",
       "set_tag_desc": "Attacca tag alla scena, sovrascrivendoli o unendoli a quelli esistenti sulla scena.",
       "set_tag_label": "Imposta i tags",
-      "show_male_desc": "Attiva/Disattiva l'opzione di taggare attori.",
-      "show_male_label": "Mostra attori",
+      "show_male_desc": "Attiva/Disattiva l'opzione di taggare attori maschi.",
+      "show_male_label": "Mostra attori maschi",
       "source": "Sorgente"
     },
     "noun_query": "Query",
@@ -159,6 +165,7 @@
       "build_hash": "Hash della build:",
       "build_time": "Data della build:",
       "check_for_new_version": "Cerca nuova versione",
+      "latest_version": "Ultima Versione",
       "latest_version_build_hash": "Hash dell'ultima Versione:",
       "new_version_notice": "[NUOVA]",
       "stash_discord": "Unisciti al nostro canale {url}",
@@ -167,12 +174,19 @@
       "stash_wiki": "Pagina {url} di Stash",
       "version": "Versione"
     },
+    "application_paths": {
+      "heading": "Percorsi Applicazione"
+    },
     "categories": {
       "about": "Chi siamo",
       "interface": "Interfaccia",
       "logs": "Log",
+      "metadata_providers": "Provider dei Metadata",
       "plugins": "Plugin",
       "scraping": "Scraping",
+      "security": "Sicurezza",
+      "services": "Servizi",
+      "system": "Sistema",
       "tasks": "Attività",
       "tools": "Strumenti"
     },
@@ -195,6 +209,10 @@
         "api_key_desc": "Chiave API per sistemi esterni. Richiesta solo se nome untente/password sono configurati. Il nome utente dev'essere salvato prima di poter generare la chiave API.",
         "authentication": "Autenticazione",
         "clear_api_key": "Elimina chiave API",
+        "credentials": {
+          "description": "Credenziali per restringere l'accesso a Stash.",
+          "heading": "Credenziali"
+        },
         "generate_api_key": "Genera chiave API",
         "log_file": "File di Log",
         "log_file_desc": "Percorso al file di log. Vuoto per disabilitare log su file. Richiede riavvio.",
@@ -207,8 +225,6 @@
         "password": "Password",
         "password_desc": "Password per accedere a Stash. Lasciare vuota per disabilitare l'autenticazione utente",
         "stash-box_integration": "Integrazione Stash-box",
-        "trusted_proxies": "Proxy fidati",
-        "trusted_proxies_desc": "Lista di Proxy con accesso per incanalare traffico verso Stash. Lasciare vuoto per acconsentire da rete privata.",
         "username": "Nome Utente",
         "username_desc": "Nome Utente per accedere a Stash. Lasciare vuoto per disabilitare l'autenticazione"
       },
@@ -224,8 +240,6 @@
       "create_galleries_from_folders_label": "Crea gallerie dalle cartelle con immagini",
       "db_path_head": "Percorso del Database",
       "directory_locations_to_your_content": "Percorso della Cartella del tuo contenuto",
-      "exclude_image": "Escludi Immagini",
-      "exclude_video": "Escludi Video",
       "excluded_image_gallery_patterns_desc": "Espressioni Regolari di file/percorsi di immagini e gallerie per escluderle dalla Scansione e aggiungerle alla Pulizia",
       "excluded_image_gallery_patterns_head": "Schema Immagini/Gallerie Escluse",
       "excluded_video_patterns_desc": "Espressioni Regolari di file/percorsi di video per escluderli dalla Scansione e aggiungerli alla Pulizia",
@@ -256,11 +270,20 @@
       "preview_generation": "Creazione Anteprime",
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "Stringa User-Agent usata durante le richieste http scrape",
+      "scrapers_path": {
+        "description": "Cartella dei file di configurazione degli scraper",
+        "heading": "Percorso Scraper"
+      },
       "scraping": "Scraping",
       "sqlite_location": "Locazione del file per il database SQLite (richiede riavvio)",
       "video_ext_desc": "Lista di estensioni delimitate da Virgola che saranno identificate come video.",
       "video_ext_head": "Estensioni Video",
       "video_head": "Video"
+    },
+    "library": {
+      "exclusions": "Esclusioni",
+      "gallery_and_image_options": "Opzioni Galleria e Immagine",
+      "media_content_extensions": "Estensioni contenuto media"
     },
     "logs": {
       "log_level": "Livello di Log"
@@ -283,11 +306,14 @@
     "stashbox": {
       "add_instance": "Aggiungi istanza stash-box",
       "api_key": "Chiave API",
-      "description": "Stash-box facilita il tag automatico delle scene e degli/delle attori/attrici basandosi sulle impronte e nomi file.\nL'endpoint e la chiave API possono essere trovati sul tuo account sull'istanza stash-box. I nomi sono richiesti quando più di un'istanza è aggiunta..",
+      "description": "Stash-box facilita il tag automatico delle scene e degli attori basandosi sulle impronte e nomi file.\nL'endpoint e la chiave API possono essere trovati sul tuo account sull'istanza stash-box. I nomi sono richiesti quando più di un'istanza è aggiunta..",
       "endpoint": "Endpoint",
       "graphql_endpoint": "Endpoint del GraphQL",
       "name": "Nome",
       "title": "Endpoint della Stash-box"
+    },
+    "system": {
+      "transcoding": "Transcodificando"
     },
     "tasks": {
       "added_job_to_queue": "Aggiunto/a {operation_name} alla coda lavori",
@@ -301,19 +327,24 @@
       "backup_and_download": "Esegue il backup del database e scarica il file risultante.",
       "backup_database": "Esegue il backup del database nella stessa cartella del database, con il formato nome file {filename_format}",
       "cleanup_desc": "Controlla il database per file mancanti e li rimuove. Questa è un'azione distruttiva.",
+      "data_management": "Gestione dati",
       "defaults_set": "I default sono stati scelti e saranno usati quando si clicca il bottone {action} nella pagina Attività.",
       "dont_include_file_extension_as_part_of_the_title": "Non includere l'estensione file come parte del titolo",
+      "empty_queue": "Nessuna attività in esecuzione.",
       "export_to_json": "Esporta il contenuto del database in formato JSON nella cartella metadati.",
       "generate": {
         "generating_from_paths": "Creando per le scene dai seguenti percorsi",
         "generating_scenes": "Creando per {num} {scene}"
       },
       "generate_desc": "Crea i file di supporto immagini, sprite, video, vtt e altri file.",
-      "generate_phashes_during_scan": "Crea i phash durante la scansione (per deduplicazione e identificazione scene)",
-      "generate_previews_during_scan": "Crea le anteprime immagini durante la scansione (anteprime animate WebP, sono richieste solo se il Tipo Anteprima è impostato su Immagine Animata)",
-      "generate_sprites_during_scan": "Crea sprite durante la scansione (per lo scrubber scene)",
-      "generate_thumbnails_during_scan": "Crea thumbnail per le immagini durante la scansione.",
-      "generate_video_previews_during_scan": "Crea anteprime durante la scansione (anteprime video che si riproducono quando si muove il mouse su una scena)",
+      "generate_phashes_during_scan": "Crea i phash",
+      "generate_phashes_during_scan_tooltip": "Per deduplicazione e identificazione scena.",
+      "generate_previews_during_scan": "Crea le anteprime immagini animate",
+      "generate_previews_during_scan_tooltip": "Crea anteprime animate WebP, richiesto solo se Immagine Animata è selezionata come Tipo Anteprima.",
+      "generate_sprites_during_scan": "Crea gli sprite per lo scrubber",
+      "generate_thumbnails_during_scan": "Crea thumbnail per le immagini",
+      "generate_video_previews_during_scan": "Crea anteprime",
+      "generate_video_previews_during_scan_tooltip": "Crea anteprime video che vengono riprodotte quando si passa il mouse su una scena",
       "generated_content": "Contenuto Creato",
       "identify": {
         "and_create_missing": "e crea mancante",
@@ -348,7 +379,7 @@
         "scanning_paths": "Scansione dei seguenti percorsi"
       },
       "scan_for_content_desc": "Scansiona per cercare nuovo contenuto e lo aggiunge al database.",
-      "set_name_date_details_from_metadata_if_present": "Imposta il nome, data e dettagli dai metadati (se presenti)"
+      "set_name_date_details_from_metadata_if_present": "Imposta il nome, data e dettagli dai metadati"
     },
     "tools": {
       "scene_duplicate_checker": "Controllo Scene Duplicate",
@@ -370,6 +401,7 @@
       "scene_tools": "Strumenti Scena"
     },
     "ui": {
+      "basic_settings": "Opzioni Base",
       "custom_css": {
         "description": "La pagina dev'essere ricaricata per applicare i cambiamenti.",
         "heading": "CSS Personalizzato",
@@ -385,6 +417,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Integrazione Desktop",
+        "notifications_enabled": "Attiva Notifiche",
+        "send_desktop_notifications_for_events": "Invia notifiche desktop per gli eventi",
         "skip_opening_browser": "Salta l'Apertura del Browser",
         "skip_opening_browser_on_startup": "Salta l'apertura automatica del browser durante l'avvio"
       },
@@ -400,10 +434,11 @@
         "heading": "Funscript Offset (ms)"
       },
       "handy_connection_key": {
-        "description": "Chiave di connessione Handy per l'uso con scene interattive.",
+        "description": "Chiave di connessione Handy per l'uso con scene interattive. Impostare questa chiave permetterà a Stash di condividere le informazioni della scena attuale con handyfeeling.com",
         "heading": "Chiave Connessione Handy"
       },
       "images": {
+        "heading": "Immagini",
         "options": {
           "write_image_thumbnails": {
             "description": "Scrive gli thumbnail sul disco quando vengono creati al volo",
@@ -411,6 +446,7 @@
           }
         }
       },
+      "interactive_options": "Opzioni Interattive",
       "language": {
         "heading": "Lingua"
       },
@@ -425,8 +461,8 @@
       "performers": {
         "options": {
           "image_location": {
-            "description": "Percorso personalizzato per le immagini predefinite degli/delle attori/attrici. Lasciare vuoto per usare il predefinito interno",
-            "heading": "Percorso Immagini Attori/Attrici Personalizzato"
+            "description": "Percorso personalizzato per le immagini predefinite degli attori. Lasciare vuoto per usare il predefinito interno",
+            "heading": "Percorso Immagine Attore/Attrice Personalizzato"
           }
         }
       },
@@ -456,7 +492,8 @@
           "continue_playlist_default": {
             "description": "Avvia la prossima scena in coda quando il video finisce",
             "heading": "Continua la playlist per impostazione predefinita"
-          }
+          },
+          "show_scrubber": "Mostra Scrubber"
         }
       },
       "scene_wall": {
@@ -519,7 +556,7 @@
   "developmentVersion": "Versione Sviluppo",
   "dialogs": {
     "aliases_must_be_unique": "gli alias devono essere univoci",
-    "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno eliminati permanentemente:",
+    "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
     "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
     "delete_entity_desc": "{count, plural, one {Sei sicuro di voler cancellare questo/a {singularEntity}? A meno che anche il file venga cancellato, questo/a {singularEntity} sarà riaggiunto quando la scansione verrà effettuata.} other {Sei sicuro di voler cancellare questi/e {pluralEntity}? A meno che anche i file vengano cancellati, questi/e {pluralEntity} verranno riaggiunti quando la scansione verrà effettuata.}}",
     "delete_entity_title": "{count, plural, one {Cancellazione {singularEntity}} other {Cancellazione {pluralEntity}}}",
@@ -558,16 +595,24 @@
     },
     "overwrite_filter_confirm": "Sei sicuro di voler sovrascrivere le esistenti query salvate {entityName}?",
     "scene_gen": {
-      "image_previews": "Anteprime Immagini (anteprime animate WebP, richieste solo se il Tipo di Anteprima è impostato su Immagine Animata)",
-      "marker_image_previews": "Anteprime Marcatori (anteprime animate WebP, richieste solo se il Tipo di Anteprima è impostato su Immagine Animata)",
-      "marker_screenshots": "Schermate Marcatori (immagini statiche JPG, richieste solo se il Tipo di Anteprima è impostato su Immagine Statica)",
-      "markers": "Marcatori (video di 20 secondi che iniziano a un tempo indicato)",
+      "force_transcodes": "Forza la creazione delle Transcodifiche",
+      "force_transcodes_tooltip": "Per standard, le transcodifiche vengono generate solamente quando il file video non è supportato dal browser. Quando abilitato, le transcodifiche verranno generate anche quando il file sembra essere supportato dal browser.",
+      "image_previews": "Anteprime Immagini Animate",
+      "image_previews_tooltip": "Anteprime Animate WebP, richiesto solamente se Immagine Animata è selezionata come Tipo Anteprima.",
+      "interactive_heatmap_speed": "Crea le mappe di calore e velocità per le scene interattive",
+      "marker_image_previews": "Marcatori Anteprime Immagini Animate",
+      "marker_image_previews_tooltip": "Anteprime marcatore animato WebP, richiesto solo se Immagine Animata è selezionata come Tipo Anteprima.",
+      "marker_screenshots": "Schermate Marcatori",
+      "marker_screenshots_tooltip": "Immagini marcatore statico JPG, richiesto solo se Immagine Statica è selezionata come Tipo Anteprima.",
+      "markers": "Anteprime Marcatori",
+      "markers_tooltip": "Video di 20 secondi che iniziano ad un determinato momento.",
       "overwrite": "Sovrascrive gli esistenti file creati",
       "phash": "Perceptual hashes/Hash Percettivo (per i duplicati)",
       "preview_exclude_end_time_desc": "Esclude gli ultimi x secondi dall'anteprima scena. Può essere un valore in secondi, o una percentuale (es. 2%) della lunghezza totale della scena.",
       "preview_exclude_end_time_head": "Esclude Tempo Finale",
       "preview_exclude_start_time_desc": "Esclude i primi x secondi dall'anteprima scena. Può essere un valore in secondi, o una percentuale (es. 2%) della lunghezza totale della scena.",
       "preview_exclude_start_time_head": "Esclude Tempo Iniziale",
+      "preview_generation_options": "Opzioni Creazione Anteprime",
       "preview_options": "Opzioni Anteprima",
       "preview_preset_desc": "Regola la dimensione, qualità e tempo di codifica della creazione delle anteprime. Impostazioni oltre 'lento' hanno rendimenti marginali e non sono raccomandati.",
       "preview_preset_head": "Impostazione codifica Anteprima",
@@ -575,9 +620,12 @@
       "preview_seg_count_head": "Numero di segmenti nell'anteprima",
       "preview_seg_duration_desc": "Lunghezza di ogni segmento anteprima, in secondi.",
       "preview_seg_duration_head": "Lunghezza segmento anteprima",
-      "sprites": "Sprites (per lo scrubber scena)",
-      "transcodes": "Transcodifiche (conversione MP4 di formati video non supportati)",
-      "video_previews": "Anteprime (anteprime video che vengono riprodotte quando si sposta il mouse sopra una scena)"
+      "sprites": "Sprites Scena Scrubber",
+      "sprites_tooltip": "Sprite (per lo scrubber delle scene)",
+      "transcodes": "Transcodifiche",
+      "transcodes_tooltip": "Conversioni in MP4 di formati video non supportati",
+      "video_previews": "Anteprime",
+      "video_previews_tooltip": "Anteprime video che vengono riprodotte quando si passa il mouse sopra una scena"
     },
     "scenes_found": "{count} scene trovate",
     "scrape_entity_query": "{entity_type} Richiesta Scrape",
@@ -609,6 +657,7 @@
     "search_accuracy_label": "Accuratezza Ricerca",
     "title": "Scene Duplicate"
   },
+  "duplicated_phash": "Duplicato (phash)",
   "duration": "Lunghezza",
   "effect_filters": {
     "aspect": "Aspetto",
@@ -650,6 +699,14 @@
   "gallery": "Galleria",
   "gallery_count": "Numero Gallerie",
   "gender": "Genere",
+  "gender_types": {
+    "FEMALE": "Donna",
+    "INTERSEX": "Intersessualità",
+    "MALE": "Uomo",
+    "NON_BINARY": "Non-Binario",
+    "TRANSGENDER_FEMALE": "Donna Transgender",
+    "TRANSGENDER_MALE": "Uomo Transgender"
+  },
   "hair_color": "Colore Capelli",
   "hasMarkers": "Ha Marcatori",
   "height": "Altezza",
@@ -662,6 +719,7 @@
   "include_sub_tags": "Include sotto-tags",
   "instagram": "Instagram",
   "interactive": "Interattivo",
+  "interactive_speed": "Velocità interattiva",
   "isMissing": "Manca di",
   "library": "Libreria",
   "loading": {
@@ -675,6 +733,7 @@
     "checksum": "Checksum",
     "downloaded_from": "Scaricato Da",
     "hash": "Hash",
+    "interactive_speed": "Velocità interattiva",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} in questa scena"
@@ -706,11 +765,49 @@
   "parent_tags": "Tag Principali",
   "part_of": "Parte di {parent}",
   "path": "Percorso",
+  "perceptual_similarity": "Somiglianza percettiva (phash)",
   "performer": "Attore/Attrice",
-  "performerTags": "Tag Attori/Attrici",
+  "performerTags": "Tag Attore/Attrice",
+  "performer_age": "Età Attore/Attrice",
   "performer_count": "Numero Attori",
+  "performer_favorite": "Attore/Attrice Favorito",
   "performer_image": "Immagine Attore/Attrice",
-  "performers": "Attori/Attrici",
+  "performer_tagger": {
+    "add_new_performers": "Aggiungi Nuovi Attori",
+    "any_names_entered_will_be_queried": "Qualsiasi nome inserito sarà richiesto dall'istanza remota Stash-Box e aggiunto se trovato. Solo corrispondenze esatte saranno considerate corrispondenze.",
+    "batch_add_performers": "Aggiungi Attori in Blocco",
+    "batch_update_performers": "Aggiorna Attori in Blocco",
+    "config": {
+      "active_stash-box_instance": "Istanza stash-box attiva:",
+      "edit_excluded_fields": "Modifica Campi Esclusi",
+      "excluded_fields": "Campi esclusi:",
+      "no_fields_are_excluded": "Nessun campo escluso",
+      "no_instances_found": "Nessuna istanza trovata",
+      "these_fields_will_not_be_changed_when_updating_performers": "Questi campi non saranno modificati quando si aggiorneranno gli attori."
+    },
+    "current_page": "Pagina corrente",
+    "failed_to_save_performer": "Salvataggio attore/attrice \"{performer}\" fallito",
+    "name_already_exists": "Nome già esistente",
+    "network_error": "Errore di Rete",
+    "no_results_found": "Nessun risultato trovato.",
+    "number_of_performers_will_be_processed": "{performer_count} attori saranno processati",
+    "performer_already_tagged": "Attore/Attrice già taggato/a",
+    "performer_names_separated_by_comma": "Nome attore/attrice separato da virgola",
+    "performer_selection": "Selezione attore/attrice",
+    "performer_successfully_tagged": "Attore/Attrice taggato/a con successo:",
+    "query_all_performers_in_the_database": "Tutti gli attori nel database",
+    "refresh_tagged_performers": "Aggiorna attori taggati",
+    "refreshing_will_update_the_data": "Aggiornare aggiornerà i dati di qualsiasi attore/attrice taggato dall'istanza stash-box.",
+    "status_tagging_job_queued": "Stato: Lavoro tag in coda",
+    "status_tagging_performers": "Stato: Taggando attori",
+    "tag_status": "Stato tag",
+    "to_use_the_performer_tagger": "Per usare un tagger per attore/attrice un'istanza stash-box dev'essere configurata.",
+    "untagged_performers": "Attori non taggati",
+    "update_performer": "Aggiornare Attore/Attrice",
+    "update_performers": "Aggiorna Attori",
+    "updating_untagged_performers_description": "Aggiornare gli attori non taggati cercherà di abbinare qualsiasi attore/attrice senza stashid e aggiornerà i metadata."
+  },
+  "performers": "Attori",
   "piercings": "Piercing",
   "queue": "Coda",
   "random": "Casuale",
@@ -804,10 +901,19 @@
       "next_step": "Quando siete pronti a procedere all'impostazione di un nuovo sistema, cliccate Prossimo.",
       "unable_to_locate_specified_config": "Se state leggendo questo, allora Stash non ha potuto trovare il file di configurazione specificato nella linea di comando o ambiente. Questa procedura guidata vi guiderà attraverso il processo di impostazione di una nuova configurazione."
     },
-    "welcome_to_stash": "Benvenuti su Stash"
+    "welcome_to_stash": "Benvenuti su Stash",
+    "folder": {
+      "up_dir": "Sali una cartella"
+    }
   },
   "stash_id": "ID Stash",
   "stash_ids": "ID Stash",
+  "stashbox": {
+    "go_review_draft": "Vai al {endpoint_name} per revisionare la bozza.",
+    "selected_stash_box": "Endpoint Stash-Box selezionato",
+    "submission_failed": "Invio fallito",
+    "submission_successful": "Invio riuscito"
+  },
   "stats": {
     "image_size": "Dimensione immagini",
     "scenes_duration": "Lunghezza scene",
@@ -846,9 +952,9 @@
   "total": "Totale",
   "true": "Vero",
   "twitter": "Twitter",
-  "up-dir": "Sali una cartella",
   "updated_at": "Aggiornato Al",
   "url": "URL",
+  "videos": "Video",
   "weight": "Peso",
   "years_old": "anni"
 }

@@ -9,6 +9,8 @@ input GenerateMetadataInput {
   markerImagePreviews: Boolean
   markerScreenshots: Boolean
   transcodes: Boolean
+  """Generate transcodes even if not required"""
+  forceTranscodes: Boolean
   phashes: Boolean
   interactiveHeatmapsSpeeds: Boolean
 
@@ -106,6 +108,8 @@ type ScanMetadataOptions {
 }
 
 input CleanMetadataInput {
+  paths: [String!]
+  
   """Do a dry run. Don't delete any files"""
   dryRun: Boolean!
 }

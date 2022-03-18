@@ -20,7 +20,7 @@ RUN apt-get update && \
 	gcc-arm-linux-gnueabi libc-dev-armel-cross linux-libc-dev-armel-cross \
     gcc-arm-linux-gnueabihf libc-dev-armhf-cross \
     gcc-aarch64-linux-gnu libc-dev-arm64-cross \
-	nodejs yarn --no-install-recommends || exit 1; \
+	nodejs yarn zip --no-install-recommends || exit 1; \
 	rm -rf /var/lib/apt/lists/*;
 
 # Cross compile setup

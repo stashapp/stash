@@ -9,6 +9,15 @@ import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "./SceneDetails/RatingStars";
+import {
+  getAggregateInputIDs,
+  getAggregateInputValue,
+  getAggregateMovieIds,
+  getAggregatePerformerIds,
+  getAggregateRating,
+  getAggregateStudioId,
+  getAggregateTagIds,
+} from "src/utils/bulkUpdate";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
@@ -47,23 +56,13 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
 
   const checkboxRef = React.createRef<HTMLInputElement>();
 
-  function makeBulkUpdateIds(
-    ids: string[],
-    mode: GQL.BulkUpdateIdMode
-  ): GQL.BulkUpdateIds {
-    return {
-      mode,
-      ids,
-    };
-  }
-
   function getSceneInput(): GQL.BulkSceneUpdateInput {
     // need to determine what we are actually setting on each scene
-    const aggregateRating = getRating(props.selected);
-    const aggregateStudioId = getStudioId(props.selected);
-    const aggregatePerformerIds = getPerformerIds(props.selected);
-    const aggregateTagIds = getTagIds(props.selected);
-    const aggregateMovieIds = getMovieIds(props.selected);
+    const aggregateRating = getAggregateRating(props.selected);
+    const aggregateStudioId = getAggregateStudioId(props.selected);
+    const aggregatePerformerIds = getAggregatePerformerIds(props.selected);
+    const aggregateTagIds = getAggregateTagIds(props.selected);
+    const aggregateMovieIds = getAggregateMovieIds(props.selected);
 
     const sceneInput: GQL.BulkSceneUpdateInput = {
       ids: props.selected.map((scene) => {
@@ -71,82 +70,20 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       }),
     };
 
-    // if rating is undefined
-    if (rating === undefined) {
-      // and all scenes have the same rating, then we are unsetting the rating.
-      if (aggregateRating) {
-        // null rating unsets it
-        sceneInput.rating = null;
-      }
-      // otherwise not setting the rating
-    } else {
-      // if rating is set, then we are setting the rating for all
-      sceneInput.rating = rating;
-    }
+    sceneInput.rating = getAggregateInputValue(rating, aggregateRating);
+    sceneInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
 
-    // if studioId is undefined
-    if (studioId === undefined) {
-      // and all scenes have the same studioId,
-      // then unset the studioId, otherwise ignoring studioId
-      if (aggregateStudioId) {
-        // null studio_id unsets it
-        sceneInput.studio_id = null;
-      }
-    } else {
-      // if studioId is set, then we are setting it
-      sceneInput.studio_id = studioId;
-    }
-
-    // if performerIds are empty
-    if (
-      performerMode === GQL.BulkUpdateIdMode.Set &&
-      (!performerIds || performerIds.length === 0)
-    ) {
-      // and all scenes have the same ids,
-      if (aggregatePerformerIds.length > 0) {
-        // then unset the performerIds, otherwise ignore
-        sceneInput.performer_ids = makeBulkUpdateIds(
-          performerIds || [],
-          performerMode
-        );
-      }
-    } else {
-      // if performerIds non-empty, then we are setting them
-      sceneInput.performer_ids = makeBulkUpdateIds(
-        performerIds || [],
-        performerMode
-      );
-    }
-
-    // if tagIds non-empty, then we are setting them
-    if (
-      tagMode === GQL.BulkUpdateIdMode.Set &&
-      (!tagIds || tagIds.length === 0)
-    ) {
-      // and all scenes have the same ids,
-      if (aggregateTagIds.length > 0) {
-        // then unset the tagIds, otherwise ignore
-        sceneInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
-      }
-    } else {
-      // if tagIds non-empty, then we are setting them
-      sceneInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
-    }
-
-    // if movieIds non-empty, then we are setting them
-    if (
-      movieMode === GQL.BulkUpdateIdMode.Set &&
-      (!movieIds || movieIds.length === 0)
-    ) {
-      // and all scenes have the same ids,
-      if (aggregateMovieIds.length > 0) {
-        // then unset the movieIds, otherwise ignore
-        sceneInput.movie_ids = makeBulkUpdateIds(movieIds || [], movieMode);
-      }
-    } else {
-      // if movieIds non-empty, then we are setting them
-      sceneInput.movie_ids = makeBulkUpdateIds(movieIds || [], movieMode);
-    }
+    sceneInput.performer_ids = getAggregateInputIDs(
+      performerMode,
+      performerIds,
+      aggregatePerformerIds
+    );
+    sceneInput.tag_ids = getAggregateInputIDs(tagMode, tagIds, aggregateTagIds);
+    sceneInput.movie_ids = getAggregateInputIDs(
+      movieMode,
+      movieIds,
+      aggregateMovieIds
+    );
 
     if (organized !== undefined) {
       sceneInput.organized = organized;
@@ -170,105 +107,6 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       Toast.error(e);
     }
     setIsUpdating(false);
-  }
-
-  function getRating(state: GQL.SlimSceneDataFragment[]) {
-    let ret: number | undefined;
-    let first = true;
-
-    state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      if (first) {
-        ret = scene.rating ?? undefined;
-        first = false;
-      } else if (ret !== scene.rating) {
-        ret = undefined;
-      }
-    });
-
-    return ret;
-  }
-
-  function getStudioId(state: GQL.SlimSceneDataFragment[]) {
-    let ret: string | undefined;
-    let first = true;
-
-    state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      if (first) {
-        ret = scene?.studio?.id;
-        first = false;
-      } else {
-        const studio = scene?.studio?.id;
-        if (ret !== studio) {
-          ret = undefined;
-        }
-      }
-    });
-
-    return ret;
-  }
-
-  function getPerformerIds(state: GQL.SlimSceneDataFragment[]) {
-    let ret: string[] = [];
-    let first = true;
-
-    state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      if (first) {
-        ret = scene.performers ? scene.performers.map((p) => p.id).sort() : [];
-        first = false;
-      } else {
-        const perfIds = scene.performers
-          ? scene.performers.map((p) => p.id).sort()
-          : [];
-
-        if (!_.isEqual(ret, perfIds)) {
-          ret = [];
-        }
-      }
-    });
-
-    return ret;
-  }
-
-  function getTagIds(state: GQL.SlimSceneDataFragment[]) {
-    let ret: string[] = [];
-    let first = true;
-
-    state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      if (first) {
-        ret = scene.tags ? scene.tags.map((t) => t.id).sort() : [];
-        first = false;
-      } else {
-        const tIds = scene.tags ? scene.tags.map((t) => t.id).sort() : [];
-
-        if (!_.isEqual(ret, tIds)) {
-          ret = [];
-        }
-      }
-    });
-
-    return ret;
-  }
-
-  function getMovieIds(state: GQL.SlimSceneDataFragment[]) {
-    let ret: string[] = [];
-    let first = true;
-
-    state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      if (first) {
-        ret = scene.movies ? scene.movies.map((m) => m.movie.id).sort() : [];
-        first = false;
-      } else {
-        const mIds = scene.movies
-          ? scene.movies.map((m) => m.movie.id).sort()
-          : [];
-
-        if (!_.isEqual(ret, mIds)) {
-          ret = [];
-        }
-      }
-    });
-
-    return ret;
   }
 
   useEffect(() => {

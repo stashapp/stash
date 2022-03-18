@@ -26,6 +26,7 @@
     "delete": "Radera",
     "delete_entity": "Radera {entityType}",
     "delete_file": "Radera fil",
+    "delete_file_and_funscript": "Radera fil (och funskript)",
     "delete_generated_supporting_files": "Radera genererade filer",
     "disallow": "Tillåt ej",
     "download": "Ladda ner",
@@ -44,6 +45,7 @@
     "generate_thumb_from_current": "Generera miniatyrbild från nuvarande",
     "hash_migration": "Hash-migration",
     "hide": "Dölj",
+    "hide_configuration": "Göm konfigurering",
     "identify": "Identifiera",
     "ignore": "Ignorera",
     "import": "Importera…",
@@ -80,14 +82,18 @@
     "select_folders": "Välj mappar",
     "select_none": "Välj inga",
     "selective_auto_tag": "Selektiv Auto Tag",
+    "selective_clean": "Selektiv städning",
     "selective_scan": "Selektiv skanning",
     "set_as_default": "Välj som standard",
     "set_back_image": "Bakbild…",
     "set_front_image": "Frambild…",
     "set_image": "Välj bild…",
     "show": "Visa",
+    "show_configuration": "Visa konfigureringen",
     "skip": "Hoppa över",
     "stop": "Stoppa",
+    "submit": "Skicka",
+    "submit_stash_box": "Skicka till Stash-Box",
     "tasks": {
       "clean_confirm_message": "Är du säker att du vill rensa? Detta kommer radera databasinformation och genererade filer för alla scener och gallerier som inte längre finns på filsystemet.",
       "dry_mode_selected": "Torrt läge valt. Inget kommer raderas utan bara loggning kommer ske.",
@@ -159,6 +165,7 @@
       "build_hash": "Bygghash:",
       "build_time": "Byggtid:",
       "check_for_new_version": "Kolla efter ny version",
+      "latest_version": "Senaste version",
       "latest_version_build_hash": "Senaste versionens bygghash:",
       "new_version_notice": "[Ny]",
       "stash_discord": "Gå med i vår {url}-kanal",
@@ -167,12 +174,19 @@
       "stash_wiki": "Stash {url}-sida",
       "version": "Version"
     },
+    "application_paths": {
+      "heading": "Applikationssökväg"
+    },
     "categories": {
       "about": "Om",
       "interface": "Gränssnitt",
       "logs": "Loggar",
+      "metadata_providers": "Metadataleverantörer",
       "plugins": "Tillägg",
       "scraping": "Skrapare",
+      "security": "Säkerhet",
+      "services": "Tjänster",
+      "system": "System",
       "tasks": "Uppgifter",
       "tools": "Verktyg"
     },
@@ -195,6 +209,10 @@
         "api_key_desc": "API-nyckel för externa system. Krävs bara när användarnamn/lösenord är satt. Användarnamn måste vara sparat innan API-nyckeln genereras.",
         "authentication": "Autentisering",
         "clear_api_key": "Rensa API-nyckel",
+        "credentials": {
+          "description": "Uppgifter för att begränsa tillgången till Stash.",
+          "heading": "Uppgifter"
+        },
         "generate_api_key": "Generera API-nyckel",
         "log_file": "Loggfil",
         "log_file_desc": "Sökväg till en fil att logga till. Tom för att inte logga till fil. Kräver omstart.",
@@ -206,9 +224,7 @@
         "maximum_session_age_desc": "Maximal väntetid innan inloggingen upphör, i sekunder.",
         "password": "Lösenord",
         "password_desc": "Lösenord till Stash. Lämna tom för att inaktivera användarautentisering",
-        "stash-box_integration": "Stash-box integration",
-        "trusted_proxies": "Pålitliga proxyer",
-        "trusted_proxies_desc": "Lista över proxyer som tillåts omdirigera trafik till stash. Lämna blank för att tillåta från privat nätverk.",
+        "stash-box_integration": "Integration med Stash-box",
         "username": "Användarnamn",
         "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"
       },
@@ -224,8 +240,6 @@
       "create_galleries_from_folders_label": "Skapa gallerier från mappar som innehåller bilder",
       "db_path_head": "Databassökväg",
       "directory_locations_to_your_content": "Sökväg till ditt innehåll",
-      "exclude_image": "Exkludera bild",
-      "exclude_video": "Exkludera video",
       "excluded_image_gallery_patterns_desc": "Regexps av bilder och gallery filer/sökväg att exkludera från Skanna och lägga till på Rensa",
       "excluded_image_gallery_patterns_head": "Mönster för Bild/Galleri exklusion",
       "excluded_video_patterns_desc": "Regexps av video filer/sökväg att exkludera från Skanna och lägga till på Rensa",
@@ -239,7 +253,7 @@
       "hashing": "Hashande",
       "image_ext_desc": "Kommaavgränsad lista av filändelser som kommer identifieras som bilder.",
       "image_ext_head": "Bildfiländelser",
-      "include_audio_desc": "Inkluderar ljudström vid förhandsvisningsgeneration.",
+      "include_audio_desc": "Inkluderar ljud vid förhandsvisningsgeneration.",
       "include_audio_head": "Inkludera ljud",
       "logging": "Loggning",
       "maximum_streaming_transcode_size_desc": "Maximal storlek av transkodade strömmar",
@@ -256,11 +270,20 @@
       "preview_generation": "Generera förhandsvisningar",
       "scraper_user_agent": "Användaragent för skrapning",
       "scraper_user_agent_desc": "Användaragent-sträng som används under http-förfrågningar under skrapning",
+      "scrapers_path": {
+        "description": "Mappsökväg till skraparnas konfigurationsfiler",
+        "heading": "Skraparnas sökväg"
+      },
       "scraping": "Skrapning",
       "sqlite_location": "Filsökväg för SQLite databasen (kräver omstart)",
       "video_ext_desc": "Kommaavgränsad lista av filändelser som kommer identifieras som videor.",
       "video_ext_head": "Videofiländelser",
       "video_head": "Video"
+    },
+    "library": {
+      "exclusions": "Exkludera",
+      "gallery_and_image_options": "Galleri- och Bildinställningar",
+      "media_content_extensions": "Filändelser för media"
     },
     "logs": {
       "log_level": "Loggnivå"
@@ -289,6 +312,9 @@
       "name": "Namn",
       "title": "Stash-box Adresser"
     },
+    "system": {
+      "transcoding": "Omkodning"
+    },
     "tasks": {
       "added_job_to_queue": "Köade {operation_name}",
       "auto_tag": {
@@ -301,19 +327,24 @@
       "backup_and_download": "Säkerhetskopierar databasen och laddar ner den resulterande filen.",
       "backup_database": "Säkerhetskopierar databasen i databasens mapp med filnamnsformatet {filename_format}",
       "cleanup_desc": "Kollar efter saknade filer och raderar dem från databasen. Detta är en destruktiv handling.",
+      "data_management": "Datahantering",
       "defaults_set": "Standard har valts och kommer användas när {action} trycks på Jobbsidan.",
       "dont_include_file_extension_as_part_of_the_title": "Inkludera inte filändelse som del av titeln",
+      "empty_queue": "Inga jobb körs nu.",
       "export_to_json": "Exporterar databasens innehåll i JSON format till metadatamappen.",
       "generate": {
         "generating_from_paths": "Genererar för scener från följande sökvägar",
         "generating_scenes": "Genererar för {num} {scene}"
       },
       "generate_desc": "Generera stöttande bilder, sprites, videor, vtt och andra filer.",
-      "generate_phashes_during_scan": "Generera phash under skanning (för de-duplikation och scenidentifiering)",
-      "generate_previews_during_scan": "Generera bildförhandsvisning under skanning (animerade WebP förhandsvisningar, krävs bara om typ är Animerad Bild)",
-      "generate_sprites_during_scan": "Generera sprites under skanning (för scen-skrubbaren)",
-      "generate_thumbnails_during_scan": "Generera miniatyrer för bilder under skanning.",
-      "generate_video_previews_during_scan": "Generera förhandsvisningar under skanning (videoförhandsvisning som visas när man håller över en video)",
+      "generate_phashes_during_scan": "Generera phash",
+      "generate_phashes_during_scan_tooltip": "För deduplikation och identifiering av scener.",
+      "generate_previews_during_scan": "Generera animerade bildförhandsvisningar",
+      "generate_previews_during_scan_tooltip": "Generera animera WebP-förhandsvisningar, krävs bara om Typ av Förhandsvisning är Animerad Bild.",
+      "generate_sprites_during_scan": "Generera sprites för videoskrubbaren",
+      "generate_thumbnails_during_scan": "Generera miniatyrer för bilder",
+      "generate_video_previews_during_scan": "Generera förhandsvisningar",
+      "generate_video_previews_during_scan_tooltip": "Generera videoförhandsvisningar som spelas när man håller över en video",
       "generated_content": "Genererat Material",
       "identify": {
         "and_create_missing": "och skapa saknade",
@@ -348,7 +379,7 @@
         "scanning_paths": "Skannar följande sökvägar"
       },
       "scan_for_content_desc": "Skannar för nytt innehåll och lägger till det i databasen.",
-      "set_name_date_details_from_metadata_if_present": "Sätt namn, datum, beskrivning från metadata (om det finns)"
+      "set_name_date_details_from_metadata_if_present": "Sätt namn, datum, beskrivning från medföljande metadata"
     },
     "tools": {
       "scene_duplicate_checker": "Scen Duplikat Kontroll",
@@ -370,6 +401,7 @@
       "scene_tools": "Scenverktyg"
     },
     "ui": {
+      "basic_settings": "Grundinställningar",
       "custom_css": {
         "description": "Sidan måste laddas om för att ändringar ska ta effekt.",
         "heading": "Anpassad CSS",
@@ -385,6 +417,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Desktopintegration",
+        "notifications_enabled": "Aktivera Notifikationer",
+        "send_desktop_notifications_for_events": "Skicka skrivbordsnotifikationer för händelser",
         "skip_opening_browser": "Öppna inte webbläsare",
         "skip_opening_browser_on_startup": "Öppna inte webbläsaren under serverstart"
       },
@@ -400,10 +434,11 @@
         "heading": "Funscript fördröjning (ms)"
       },
       "handy_connection_key": {
-        "description": "Handy anslutningsnyckel för interaktiva scener.",
+        "description": "Handy anslutningsnyckel för interaktiva scener. Denna nyckel kommer låta Stash dela din nuvarande sceninformation med handyfeeling.com",
         "heading": "Handy Uppkopplingsnyckel"
       },
       "images": {
+        "heading": "Bilder",
         "options": {
           "write_image_thumbnails": {
             "description": "Skriv miniatyrer till disk när de genereras",
@@ -411,6 +446,7 @@
           }
         }
       },
+      "interactive_options": "Interaktiva Inställningar",
       "language": {
         "heading": "Språk"
       },
@@ -456,7 +492,8 @@
           "continue_playlist_default": {
             "description": "Spela nästa scen i kö efter scenens slut",
             "heading": "Fortsätt spellista som standard"
-          }
+          },
+          "show_scrubber": "Visa skrubbaren"
         }
       },
       "scene_wall": {
@@ -558,16 +595,24 @@
     },
     "overwrite_filter_confirm": "Är du säker på att du vill skriva över existerande sökning {entityName}?",
     "scene_gen": {
-      "image_previews": "Bildförhandsvisning (animerade WebP-förhandsvisningar, krävs enbart om typ är vald till Animerad Bild)",
-      "marker_image_previews": "Markörförhandsvisning (animerad WebP, krävs bara om Förhandsvisningstyp är Animerad Bild)",
-      "marker_screenshots": "Markörskärmklipp (JPG-bild, krävs bara om Förhandsvisningstyp är Statisk Bild)",
-      "markers": "Markörer (20-sekunders videor som börjar vid given tidsstämpel)",
+      "force_transcodes": "Tvinga omkodning",
+      "force_transcodes_tooltip": "Som standard blir videofiler bara omkodade om formatet inte stöds i webbläsaren. Vid aktivering kommer alla videofiler bli omkodande, även om de antas vara stöttade i webbläsaren.",
+      "image_previews": "Animerad Bildförhandsvisning",
+      "image_previews_tooltip": "Animerade WebP-förhandsvisningar, krävs enbart om Typ av Förhandsvisning är Animerad Bild.",
+      "interactive_heatmap_speed": "Generera värmekartor och hastigheter för interaktiva scener",
+      "marker_image_previews": "Markörer Animerad bildförhandsvisning",
+      "marker_image_previews_tooltip": "Animerad markör WebP-föhandsvisning, krävs bara om Typ av Förhandsvisning är Animerad Bild.",
+      "marker_screenshots": "Markörskärmklipp",
+      "marker_screenshots_tooltip": "Markör statiska JPG-bilder, krävs bara om Typ av Förhandsvisning är Statisk Bild.",
+      "markers": "Markörförhandsvisningar",
+      "markers_tooltip": "20-sekunders videor som börjar vid angiven tidsstämpel.",
       "overwrite": "Ersätt existerande genererade filer",
       "phash": "Perceptuella hashar (för de-duplikation)",
       "preview_exclude_end_time_desc": "Exkludera de sista x sekunderna från videoförhandsvisning. Detta kan vara ett värde i sekunder, eller en procent (ex. 2%) av scenes totala speltid.",
       "preview_exclude_end_time_head": "Exludera sluttid",
       "preview_exclude_start_time_desc": "Exkludera de första x sekunderna från videoförhandsvisning. Detta kan vara ett värde i sekunder, eller en procent (ex. 2%) av scenes totala speltid.",
       "preview_exclude_start_time_head": "Exkludera starttid",
+      "preview_generation_options": "Inställningar för Förhandsvisningsgeneration",
       "preview_options": "Förhandsvisningsinställningar",
       "preview_preset_desc": "Förinställningarna bestämmer storlek, kvalite och kodningstiden of förhandsvisningsgeneration. Förinställningar bortom “långsam” har minskande vinst och är inte rekommenderade.",
       "preview_preset_head": "Förinställningar för förhandsvisningskodning",
@@ -575,9 +620,12 @@
       "preview_seg_count_head": "Antal segment i förhandsvisning",
       "preview_seg_duration_desc": "Varaktighet av varje segment i sekunder.",
       "preview_seg_duration_head": "Segmentvaraktighet",
-      "sprites": "Sprites (för scenskrubbaren)",
-      "transcodes": "Transkoder (MP4-konvertering från videoformat som ej stöds)",
-      "video_previews": "Förhandsvisning (videoförhandsvisning som visas när man pekar på en scen)"
+      "sprites": "Scenskrubbarsprites",
+      "sprites_tooltip": "Sprites (för scenskrubbaren)",
+      "transcodes": "Omkodning",
+      "transcodes_tooltip": "MP4-konvertering från videoformat som ej stöds",
+      "video_previews": "Förhandsvisning",
+      "video_previews_tooltip": "Videoförhandsvisning som visas när man håller över en scen"
     },
     "scenes_found": "{count} scener hittades",
     "scrape_entity_query": "{entity_type} Skrapa text",
@@ -609,6 +657,7 @@
     "search_accuracy_label": "Sökprecision",
     "title": "Duplikata scener"
   },
+  "duplicated_phash": "Duplikat (phash)",
   "duration": "Varaktighet",
   "effect_filters": {
     "aspect": "Bildförhållande",
@@ -650,6 +699,14 @@
   "gallery": "Galleri",
   "gallery_count": "Antal Gallerier",
   "gender": "Kön",
+  "gender_types": {
+    "FEMALE": "Kvinna",
+    "INTERSEX": "Intersex",
+    "MALE": "Man",
+    "NON_BINARY": "Icke-binär",
+    "TRANSGENDER_FEMALE": "Trans Kvinna",
+    "TRANSGENDER_MALE": "Trans Man"
+  },
   "hair_color": "Hårfärg",
   "hasMarkers": "Har markörer",
   "height": "Längd",
@@ -662,6 +719,7 @@
   "include_sub_tags": "Inkludera underordnade taggar",
   "instagram": "Instagram",
   "interactive": "Interaktiv",
+  "interactive_speed": "Interaktiv hastighet",
   "isMissing": "Saknas",
   "library": "Bibliotek",
   "loading": {
@@ -675,6 +733,7 @@
     "checksum": "Checksumma",
     "downloaded_from": "Nedladdad från",
     "hash": "Hash",
+    "interactive_speed": "Interaktiv hastighet",
     "performer_card": {
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} i den här scenen"
@@ -706,10 +765,48 @@
   "parent_tags": "Överordnade Taggar",
   "part_of": "Del av {parent}",
   "path": "Sökväg",
+  "perceptual_similarity": "Perceptuell likhet (phash)",
   "performer": "Stjärna",
   "performerTags": "Stjärntagg",
+  "performer_age": "Ålder på stjärna",
   "performer_count": "Antal stjärnor",
+  "performer_favorite": "Favoritiserad stjärna",
   "performer_image": "Stjärnbild",
+  "performer_tagger": {
+    "add_new_performers": "Lägg till stjärnor",
+    "any_names_entered_will_be_queried": "Alla namn kommer skickas till Stash-Box-instansen och läggas till om de hittas. Endast exakta matchningar kommer övervägas.",
+    "batch_add_performers": "Lägg till flera stjärnor",
+    "batch_update_performers": "Uppdatera flera stjärnor",
+    "config": {
+      "active_stash-box_instance": "Aktiv Stash-Box-instans:",
+      "edit_excluded_fields": "Ändra exkluderade fält",
+      "excluded_fields": "Exkluderade fält:",
+      "no_fields_are_excluded": "Inga fält är exkluderade",
+      "no_instances_found": "Inga instanser hittades",
+      "these_fields_will_not_be_changed_when_updating_performers": "Dessa fält kommer inte ändras när stjärnor uppdateras."
+    },
+    "current_page": "Nuvarande sida",
+    "failed_to_save_performer": "Misslyckades med att spara \"{performer}\"",
+    "name_already_exists": "Namnet finns redan",
+    "network_error": "Nätverksfel",
+    "no_results_found": "Inga resultat hittades.",
+    "number_of_performers_will_be_processed": "{performer_count} stjärnor kommer behandlas",
+    "performer_already_tagged": "Stjärna som redan är taggad",
+    "performer_names_separated_by_comma": "Namn på stjärnor separerade med ett komma",
+    "performer_selection": "Val av stjärna",
+    "performer_successfully_tagged": "Lyckad taggning av stjärna:",
+    "query_all_performers_in_the_database": "Alla stjärnor i databasen",
+    "refresh_tagged_performers": "Återuppdatera redan taggade stjärnor",
+    "refreshing_will_update_the_data": "Återuppdatering kommer uppdatera redan taggade stjärnor med data från stash-box-instansen.",
+    "status_tagging_job_queued": "Status: Taggande köat",
+    "status_tagging_performers": "Status: Taggar stjärnor",
+    "tag_status": "Tagg-status",
+    "to_use_the_performer_tagger": "För att använda stjärntaggaren krävs en konfigurerad stash-box-instans.",
+    "untagged_performers": "Ej taggade stjärnor",
+    "update_performer": "Uppdatera stjärna",
+    "update_performers": "Uppdatera stjärnor",
+    "updating_untagged_performers_description": "Uppdatering av ej taggade stjärnor kommer försöka att matcha alla stjärnor som saknar StashID och uppdatera metadatan."
+  },
   "performers": "Stjärnor",
   "piercings": "Piercingar",
   "queue": "Kö",
@@ -804,10 +901,19 @@
       "next_step": "När du är redo att fortsätta med uppstarten av ett nytt system tryck på Nästa.",
       "unable_to_locate_specified_config": "Om du läser detta så kunde Stash inte hitta konfigurationsfilen som specifierades via kommandoraden eller miljön. Denna hjälp kommer guida dig genom processen av att ställa in en ny konfiguration."
     },
-    "welcome_to_stash": "Välkommen till Stash"
+    "welcome_to_stash": "Välkommen till Stash",
+    "folder": {
+      "up_dir": "Upp en mapp"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash ID:er",
+  "stashbox": {
+    "go_review_draft": "Gå till {endpoint_name} för att granska utkast.",
+    "selected_stash_box": "Vald stash-box adress",
+    "submission_failed": "Misslyckad inskickning",
+    "submission_successful": "Lyckad inskickning"
+  },
   "stats": {
     "image_size": "Storlek på bilder",
     "scenes_duration": "Total speltid",
@@ -846,9 +952,9 @@
   "total": "Total",
   "true": "Sant",
   "twitter": "Twitter",
-  "up-dir": "Upp en mapp",
   "updated_at": "Uppdaterad vid",
   "url": "URL",
+  "videos": "Videor",
   "weight": "Vikt",
   "years_old": "år gammal"
 }

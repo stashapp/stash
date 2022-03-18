@@ -9,6 +9,11 @@ import fiFI from "./fi-FI.json";
 import svSE from "./sv-SE.json";
 import zhTW from "./zh-TW.json";
 import zhCN from "./zh-CN.json";
+import hrHR from "./hr-HR.json";
+import nlNL from "./nl-NL.json";
+import ruRU from "./ru-RU.json";
+import trTR from "./tr-TR.json";
+import jaJP from "./ja-JP.json";
 
 export default {
   deDE,
@@ -22,4 +27,9 @@ export default {
   svSE,
   zhTW,
   zhCN,
+  hrHR,
+  nlNL,
+  ruRU,
+  trTR,
+  jaJP,
 };

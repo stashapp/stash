@@ -171,6 +171,8 @@ func (r *repository) runSumQuery(query string, args []interface{}) (float64, err
 }
 
 func (r *repository) queryFunc(query string, args []interface{}, single bool, f func(rows *sqlx.Rows) error) error {
+	logger.Tracef("SQL: %s, args: %v", query, args)
+
 	rows, err := r.tx.Queryx(query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -297,6 +299,7 @@ func (r *repository) join(j joiner, as string, parentIDCol string) {
 	j.addLeftJoin(r.tableName, as, fmt.Sprintf("%s.%s = %s", t, r.idColumn, parentIDCol))
 }
 
+//nolint:golint,unused
 func (r *repository) innerJoin(j joiner, as string, parentIDCol string) {
 	t := r.tableName
 	if as != "" {

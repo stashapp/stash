@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -100,11 +101,11 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	ret := u.Partial.UpdateInput()
 
 	if u.PerformerIDs != nil {
-		ret.PerformerIds = utils.IntSliceToStringSlice(u.PerformerIDs)
+		ret.PerformerIds = intslice.IntSliceToStringSlice(u.PerformerIDs)
 	}
 
 	if u.TagIDs != nil {
-		ret.TagIds = utils.IntSliceToStringSlice(u.TagIDs)
+		ret.TagIds = intslice.IntSliceToStringSlice(u.TagIDs)
 	}
 
 	if u.StashIDs != nil {
@@ -167,7 +168,7 @@ func AddPerformer(qb models.SceneReaderWriter, id int, performerID int) (bool, e
 	}
 
 	oldLen := len(performerIDs)
-	performerIDs = utils.IntAppendUnique(performerIDs, performerID)
+	performerIDs = intslice.IntAppendUnique(performerIDs, performerID)
 
 	if len(performerIDs) != oldLen {
 		if err := qb.UpdatePerformers(id, performerIDs); err != nil {
@@ -187,7 +188,7 @@ func AddTag(qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
 	}
 
 	oldLen := len(tagIDs)
-	tagIDs = utils.IntAppendUnique(tagIDs, tagID)
+	tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
 
 	if len(tagIDs) != oldLen {
 		if err := qb.UpdateTags(id, tagIDs); err != nil {
@@ -207,7 +208,7 @@ func AddGallery(qb models.SceneReaderWriter, id int, galleryID int) (bool, error
 	}
 
 	oldLen := len(galleryIDs)
-	galleryIDs = utils.IntAppendUnique(galleryIDs, galleryID)
+	galleryIDs = intslice.IntAppendUnique(galleryIDs, galleryID)
 
 	if len(galleryIDs) != oldLen {
 		if err := qb.UpdateGalleries(id, galleryIDs); err != nil {

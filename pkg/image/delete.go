@@ -2,9 +2,9 @@ package image
 
 import (
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/manager/paths"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/models/paths"
 )
 
 type Destroyer interface {
@@ -21,7 +21,7 @@ type FileDeleter struct {
 // MarkGeneratedFiles marks for deletion the generated files for the provided image.
 func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 	thumbPath := d.Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
-	exists, _ := utils.FileExists(thumbPath)
+	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
 		return d.Files([]string{thumbPath})
 	}

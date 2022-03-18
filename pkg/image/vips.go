@@ -3,9 +3,9 @@ package image
 import (
 	"bytes"
 	"fmt"
-	"os/exec"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 )
 

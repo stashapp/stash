@@ -119,6 +119,7 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.S
 	}
 
 	q := s.getJsonQuery(doc)
+	q.setType(SearchQuery)
 
 	var content []models.ScrapedContent
 	switch ty {
@@ -240,15 +241,27 @@ func (s *jsonScraper) getJsonQuery(doc string) *jsonQuery {
 }
 
 type jsonQuery struct {
-	doc     string
-	scraper *jsonScraper
+	doc       string
+	scraper   *jsonScraper
+	queryType QueryType
+}
+
+func (q *jsonQuery) getType() QueryType {
+	return q.queryType
+}
+
+func (q *jsonQuery) setType(t QueryType) {
+	q.queryType = t
 }
 
 func (q *jsonQuery) runQuery(selector string) ([]string, error) {
 	value := gjson.Get(q.doc, selector)
 
 	if !value.Exists() {
-		return nil, fmt.Errorf("could not find json path '%s' in json object", selector)
+		// many possible reasons why the selector may not be in the json object
+		// and not all are errors.
+		// Just return nil
+		return nil, nil
 	}
 
 	var ret []string

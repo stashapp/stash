@@ -25,11 +25,13 @@
     "delete": "Delete",
     "delete_entity": "Delete {entityType}",
     "delete_file": "Delete file",
+    "delete_file_and_funscript": "Delete file (and funscript)",
     "delete_generated_supporting_files": "Delete generated supporting files",
     "disallow": "Disallow",
     "download": "Download",
     "download_backup": "Download Backup",
     "edit": "Edit",
+    "edit_entity": "Edit {entityType}",
     "export": "Export…",
     "export_all": "Export all…",
     "find": "Find",
@@ -43,6 +45,7 @@
     "generate_thumb_from_current": "Generate thumbnail from current",
     "hash_migration": "hash migration",
     "hide": "Hide",
+    "hide_configuration": "Hide Configuration",
     "identify": "Identify",
     "ignore": "Ignore",
     "import": "Import…",
@@ -79,14 +82,18 @@
     "select_folders": "Select folders",
     "select_none": "Select None",
     "selective_auto_tag": "Selective Auto Tag",
+    "selective_clean": "Selective Clean",
     "selective_scan": "Selective Scan",
+    "select_entity": "Select {entityType}",
     "set_as_default": "Set as default",
     "set_back_image": "Back image…",
     "set_front_image": "Front image…",
     "set_image": "Set image…",
     "show": "Show",
+    "show_configuration": "Show Configuration",
     "skip": "Skip",
     "stop": "Stop",
+    "submit_stash_box": "Submit to Stash-Box",
     "tasks": {
       "clean_confirm_message": "Are you sure you want to Clean? This will delete database information and generated content for all scenes and galleries that are no longer found in the filesystem.",
       "dry_mode_selected": "Dry Mode selected. No actual deleting will take place, only logging.",
@@ -96,7 +103,12 @@
     "temp_enable": "Enable temporarily…",
     "use_default": "Use default",
     "view_random": "View Random",
-    "continue": "Continue"
+    "continue": "Continue",
+    "submit": "Submit",
+    "logout": "Log out",
+    "remove_from_gallery": "Remove from Gallery",
+    "delete_stashid": "Delete StashID",
+    "open_in_external_player": "Open in external player"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -195,7 +207,12 @@
       "recent_ip_addresses": "Recent IP addresses",
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
-      "until_restart": "until restart"
+      "until_restart": "until restart",
+      "allowed_ip_temporarily": "Allowed IP temporarily",
+      "disabled_dlna_temporarily": "Disabled DLNA temporarily",
+      "disallowed_ip": "Disallowed IP",
+      "enabled_dlna_temporarily": "Enabled DLNA temporarily",
+      "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour"
     },
     "general": {
       "auth": {
@@ -219,8 +236,6 @@
         "password": "Password",
         "password_desc": "Password to access Stash. Leave blank to disable user authentication",
         "stash-box_integration": "Stash-box integration",
-        "trusted_proxies": "Trusted proxies",
-        "trusted_proxies_desc": "List of proxies that are allowed to proxy traffic into stash. Leave empty to allow from private network.",
         "username": "Username",
         "username_desc": "Username to access Stash. Leave blank to disable user authentication"
       },
@@ -266,6 +281,10 @@
       "preview_generation": "Preview Generation",
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string used during scrape http requests",
+      "scrapers_path": {
+        "description": "Directory location of scraper configuration files",
+        "heading": "Scrapers Path"
+      },
       "scraping": "Scraping",
       "sqlite_location": "File location for the SQLite database (requires restart)",
       "video_ext_desc": "Comma-delimited list of file extensions that will be identified as videos.",
@@ -410,7 +429,9 @@
       "desktop_integration": {
         "desktop_integration": "Desktop Integration",
         "skip_opening_browser": "Skip Opening Browser",
-        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
+        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup",
+        "notifications_enabled": "Enable Notifications",
+        "send_desktop_notifications_for_events": "Send desktop notifications for events"
       },
       "editing": {
         "disable_dropdown_create": {
@@ -482,7 +503,8 @@
           "continue_playlist_default": {
             "description": "Play next scene in queue when video finishes",
             "heading": "Continue playlist by default"
-          }
+          },
+          "show_scrubber": "Show Scrubber"
         }
       },
       "scene_wall": {
@@ -584,6 +606,8 @@
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
     "scene_gen": {
+      "force_transcodes": "Force Transcode generation",
+      "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
       "image_previews": "Animated Image Previews",
       "image_previews_tooltip": "Animated WebP previews, only required if Preview Type is set to Animated Image.",
       "interactive_heatmap_speed": "Generate heatmaps and speeds for interactive scenes",
@@ -593,6 +617,8 @@
       "marker_screenshots_tooltip": "Marker static JPG images, only required if Preview Type is set to Static Image.",
       "markers": "Marker Previews",
       "markers_tooltip": "20 second videos which begin at the given timecode.",
+      "override_preview_generation_options": "Override Preview Generation Options",
+      "override_preview_generation_options_desc": "Override Preview Generation Options for this operation. Defaults are set in System -> Preview Generation.",
       "overwrite": "Overwrite existing generated files",
       "phash": "Perceptual hashes (for deduplication)",
       "preview_exclude_end_time_desc": "Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg 2%) of the total scene duration.",
@@ -644,6 +670,7 @@
     "search_accuracy_label": "Search Accuracy",
     "title": "Duplicate Scenes"
   },
+  "duplicated_phash": "Duplicated (phash)",
   "duration": "Duration",
   "effect_filters": {
     "aspect": "Aspect",
@@ -685,6 +712,14 @@
   "gallery": "Gallery",
   "gallery_count": "Gallery Count",
   "gender": "Gender",
+  "gender_types": {
+    "MALE": "Male",
+    "FEMALE": "Female",
+    "TRANSGENDER_MALE": "Transgender Male",
+    "TRANSGENDER_FEMALE": "Transgender Female",
+    "INTERSEX": "Intersex",
+    "NON_BINARY": "Non-Binary"
+  },
   "hair_color": "Hair Colour",
   "hasMarkers": "Has Markers",
   "height": "Height",
@@ -743,9 +778,12 @@
   "parent_tags": "Parent Tags",
   "part_of": "Part of {parent}",
   "path": "Path",
+  "perceptual_similarity": "Perceptual Similarity (phash)",
   "performer": "Performer",
   "performerTags": "Performer Tags",
   "performer_count": "Performer Count",
+  "performer_favorite": "Performer Favourited",
+  "performer_age": "Performer Age",
   "performer_image": "Performer Image",
   "performers": "Performers",
   "piercings": "Piercings",
@@ -841,7 +879,11 @@
       "next_step": "When you're ready to proceed with setting up a new system, click Next.",
       "unable_to_locate_specified_config": "If you're reading this, then Stash couldn't find the configuration file specified at the command line or the environment. This wizard will guide you through the process of setting up a new configuration."
     },
-    "welcome_to_stash": "Welcome to Stash"
+    "welcome_to_stash": "Welcome to Stash",
+    "folder": {
+      "file_path": "File path",
+      "up_dir": "Up a directory"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -883,10 +925,50 @@
   "total": "Total",
   "true": "True",
   "twitter": "Twitter",
-  "up-dir": "Up a directory",
   "updated_at": "Updated At",
   "url": "URL",
   "videos": "Videos",
   "weight": "Weight",
-  "years_old": "years old"
+  "years_old": "years old",
+  "stashbox": {
+    "selected_stash_box": "Selected Stash-Box endpoint",
+    "submission_successful": "Submission successful",
+    "submission_failed": "Submission failed",
+    "go_review_draft": "Go to {endpoint_name} to review draft."
+  },
+  "performer_tagger": {
+    "network_error": "Network Error",
+    "failed_to_save_performer": "Failed to save performer \"{performer}\"",
+    "name_already_exists": "Name already exists",
+    "performer_already_tagged": "Performer already tagged",
+    "current_page": "Current page",
+    "performer_successfully_tagged": "Performer successfully tagged:",
+    "no_results_found": "No results found.",
+    "update_performer": "Update Performer",
+    "update_performers": "Update Performers",
+    "query_all_performers_in_the_database": "All performers in the database",
+    "tag_status": "Tag Status",
+    "untagged_performers": "Untagged performers",
+    "updating_untagged_performers_description": "Updating untagged performers will try to match any performers that lack a stashid and update the metadata.",
+    "refresh_tagged_performers": "Refresh tagged performers",
+    "refreshing_will_update_the_data": "Refreshing will update the data of any tagged performers from the stash-box instance.",
+    "add_new_performers": "Add New Performers",
+    "to_use_the_performer_tagger": "To use the performer tagger a stash-box instance needs to be configured.",
+    "performer_selection": "Performer selection",
+    "performer_names_separated_by_comma": "Performer names separated by comma",
+    "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
+    "batch_add_performers": "Batch Add Performers",
+    "batch_update_performers": "Batch Update Performers",
+    "status_tagging_performers": "Status: Tagging performers",
+    "status_tagging_job_queued": "Status: Tagging job queued",
+    "number_of_performers_will_be_processed": "{performer_count} performers will be processed",
+    "config": {
+      "excluded_fields": "Excluded fields:",
+      "these_fields_will_not_be_changed_when_updating_performers": "These fields will not be changed when updating performers.",
+      "edit_excluded_fields": "Edit Excluded Fields",
+      "no_fields_are_excluded": "No fields are excluded",
+      "active_stash-box_instance": "Active stash-box instance:",
+      "no_instances_found": "No instances found"
+    }
+  }
 }

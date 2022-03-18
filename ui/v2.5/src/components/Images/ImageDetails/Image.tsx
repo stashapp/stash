@@ -34,7 +34,6 @@ export const Image: React.FC = () => {
 
   const { data, error, loading } = useFindImage(id);
   const image = data?.findImage;
-  const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useImageIncrementO(image?.id ?? "0");
   const [decrementO] = useImageDecrementO(image?.id ?? "0");
   const [resetO] = useImageResetO(image?.id ?? "0");
@@ -87,34 +86,25 @@ export const Image: React.FC = () => {
 
   const onIncrementClick = async () => {
     try {
-      setOLoading(true);
       await incrementO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
   const onDecrementClick = async () => {
     try {
-      setOLoading(true);
       await decrementO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
   const onResetClick = async () => {
     try {
-      setOLoading(true);
       await resetO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
@@ -196,7 +186,6 @@ export const Image: React.FC = () => {
             </Nav.Item>
             <Nav.Item className="ml-auto">
               <OCounterButton
-                loading={oLoading}
                 value={image.o_counter || 0}
                 onIncrement={onIncrementClick}
                 onDecrement={onDecrementClick}

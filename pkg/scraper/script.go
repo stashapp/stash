@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -40,7 +41,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		}
 	}
 
-	cmd := exec.Command(command[0], command[1:]...)
+	cmd := stashExec.Command(command[0], command[1:]...)
 	cmd.Dir = filepath.Dir(s.config.path)
 
 	stdin, err := cmd.StdinPipe()
@@ -171,21 +172,21 @@ func (s *scriptScraper) scrapeByURL(ctx context.Context, url string, ty models.S
 func (s *scriptScraper) scrape(ctx context.Context, input string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		var performer models.ScrapedPerformer
+		var performer *models.ScrapedPerformer
 		err := s.runScraperScript(input, &performer)
-		return &performer, err
+		return performer, err
 	case models.ScrapeContentTypeGallery:
-		var gallery models.ScrapedGallery
+		var gallery *models.ScrapedGallery
 		err := s.runScraperScript(input, &gallery)
-		return &gallery, err
+		return gallery, err
 	case models.ScrapeContentTypeScene:
-		var scene models.ScrapedScene
+		var scene *models.ScrapedScene
 		err := s.runScraperScript(input, &scene)
-		return &scene, err
+		return scene, err
 	case models.ScrapeContentTypeMovie:
-		var movie models.ScrapedMovie
+		var movie *models.ScrapedMovie
 		err := s.runScraperScript(input, &movie)
-		return &movie, err
+		return movie, err
 	}
 
 	return nil, ErrNotSupported
@@ -198,11 +199,11 @@ func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sc
 		return nil, err
 	}
 
-	var ret models.ScrapedScene
+	var ret *models.ScrapedScene
 
 	err = s.runScraperScript(string(inString), &ret)
 
-	return &ret, err
+	return ret, err
 }
 
 func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
@@ -212,11 +213,11 @@ func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mod
 		return nil, err
 	}
 
-	var ret models.ScrapedGallery
+	var ret *models.ScrapedGallery
 
 	err = s.runScraperScript(string(inString), &ret)
 
-	return &ret, err
+	return ret, err
 }
 
 func findPythonExecutable() (string, error) {
@@ -239,8 +240,9 @@ func handleScraperStderr(name string, scraperOutputReader io.ReadCloser) {
 	const scraperPrefix = "[Scrape / %s] "
 
 	lgr := logger.PluginLogger{
+		Logger:          logger.Logger,
 		Prefix:          fmt.Sprintf(scraperPrefix, name),
 		DefaultLogLevel: &logger.ErrorLevel,
 	}
-	lgr.HandlePluginStdErr(scraperOutputReader)
+	lgr.ReadLogMessages(scraperOutputReader)
 }

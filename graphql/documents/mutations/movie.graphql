@@ -22,6 +22,12 @@ mutation MovieUpdate($input: MovieUpdateInput!) {
   }
 }
 
+mutation BulkMovieUpdate($input: BulkMovieUpdateInput!) {
+  bulkMovieUpdate(input: $input) {
+    ...MovieData
+  }
+}
+
 mutation MovieDestroy($id: ID!) {
   movieDestroy(input: { id: $id })
 }

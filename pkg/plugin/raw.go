@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"sync"
 
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
@@ -59,7 +60,7 @@ func (t *rawPluginTask) Start() error {
 		}
 	}
 
-	cmd := exec.Command(command[0], command[1:]...)
+	cmd := stashExec.Command(command[0], command[1:]...)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
