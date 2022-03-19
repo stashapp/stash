@@ -1,12 +1,6 @@
 name: BuildIt
 
-on:
-  push:
-    branches: [ develop, master ]
-  pull_request:
-    branches: [ develop ]
-  release:
-    types: [ published ]
+on: workflow_dispatch
 
 concurrency:
   group: ${{ github.ref }}
