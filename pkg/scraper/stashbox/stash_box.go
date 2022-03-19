@@ -16,10 +16,13 @@ import (
 	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/corona10/goimagehash"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -88,7 +91,7 @@ func phashMatches(hash, other int64) bool {
 // scene's MD5/OSHASH checksum, or PHash, and returns results in the same order
 // as the input slice.
 func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs []string) ([][]*models.ScrapedScene, error) {
-	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +158,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs [
 
 		addScene := func(sceneIndexes []int) {
 			for _, index := range sceneIndexes {
-				if !utils.IntInclude(addedTo, index) {
+				if !intslice.IntInclude(addedTo, index) {
 					addedTo = append(addedTo, index)
 					ret[index] = append(ret[index], s)
 				}
@@ -187,7 +190,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs [
 // FindStashBoxScenesByFingerprintsFlat queries stash-box for scenes using every
 // scene's MD5/OSHASH checksum, or PHash, and returns results a flat slice.
 func (c Client) FindStashBoxScenesByFingerprintsFlat(ctx context.Context, sceneIDs []string) ([]*models.ScrapedScene, error) {
-	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +268,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, fingerprin
 }
 
 func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
-	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return false, err
 	}
@@ -395,7 +398,7 @@ func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 
 // FindStashBoxPerformersByNames queries stash-box for performers by name
 func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs []string) ([]*models.StashBoxPerformerQueryResult, error) {
-	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -429,7 +432,7 @@ func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs 
 }
 
 func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, performerIDs []string) ([][]*models.ScrapedPerformer, error) {
-	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -911,7 +914,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		}
 		draft.Tags = tags
 
-		exists, _ := utils.FileExists(imagePath)
+		exists, _ := fsutil.FileExists(imagePath)
 		if exists {
 			file, err := os.Open(imagePath)
 			if err == nil {

@@ -9,39 +9,40 @@ import (
 	"strings"
 )
 
+// PluginLogLevel represents a logging level for plugins to send log messages to stash.
 type PluginLogLevel struct {
 	char byte
-	Name string
+	name string
 }
 
 // Valid Level values.
 var (
 	TraceLevel = PluginLogLevel{
 		char: 't',
-		Name: "trace",
+		name: "trace",
 	}
 	DebugLevel = PluginLogLevel{
 		char: 'd',
-		Name: "debug",
+		name: "debug",
 	}
 	InfoLevel = PluginLogLevel{
 		char: 'i',
-		Name: "info",
+		name: "info",
 	}
 	WarningLevel = PluginLogLevel{
 		char: 'w',
-		Name: "warning",
+		name: "warning",
 	}
 	ErrorLevel = PluginLogLevel{
 		char: 'e',
-		Name: "error",
+		name: "error",
 	}
 	ProgressLevel = PluginLogLevel{
 		char: 'p',
-		Name: "progress",
+		name: "progress",
 	}
 	NoneLevel = PluginLogLevel{
-		Name: "none",
+		name: "none",
 	}
 )
 
@@ -66,6 +67,8 @@ func (l PluginLogLevel) prefix() string {
 	})
 }
 
+// Log prints the provided message to os.Stderr in a format that provides the correct LogLevel for stash.
+// The message is formatted in the same way as fmt.Println.
 func (l PluginLogLevel) Log(args ...interface{}) {
 	if l.char == 0 {
 		return
@@ -78,6 +81,8 @@ func (l PluginLogLevel) Log(args ...interface{}) {
 	fmt.Fprintln(os.Stderr, argsToUse...)
 }
 
+// Logf prints the provided message to os.Stderr in a format that provides the correct LogLevel for stash.
+// The message is formatted in the same way as fmt.Printf.
 func (l PluginLogLevel) Logf(format string, args ...interface{}) {
 	if l.char == 0 {
 		return
@@ -87,11 +92,11 @@ func (l PluginLogLevel) Logf(format string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, formatToUse, args...)
 }
 
-// PluginLogLevelFromName returns the Level that matches the provided name or nil if
+// PluginLogLevelFromName returns the PluginLogLevel that matches the provided name or nil if
 // the name does not match a valid value.
 func PluginLogLevelFromName(name string) *PluginLogLevel {
 	for _, l := range validLevels {
-		if l.Name == name {
+		if l.name == name {
 			return &l
 		}
 	}
@@ -99,11 +104,11 @@ func PluginLogLevelFromName(name string) *PluginLogLevel {
 	return nil
 }
 
-// DetectLogLevel returns the Level and the logging string for a provided line
+// detectLogLevel returns the Level and the logging string for a provided line
 // of plugin output. It parses the string for logging control characters and
 // determines the log level, if present. If not present, the plugin output
 // is returned unchanged with a nil Level.
-func DetectLogLevel(line string) (*PluginLogLevel, string) {
+func detectLogLevel(line string) (*PluginLogLevel, string) {
 	if len(line) < 4 || line[0] != startLevelChar || line[2] != endLevelChar {
 		return nil, line
 	}
@@ -127,14 +132,26 @@ func DetectLogLevel(line string) (*PluginLogLevel, string) {
 	return level, line
 }
 
+// PluginLogger interprets incoming log messages from plugins and logs to the appropriate log level.
 type PluginLogger struct {
-	Prefix          string
+	// Logger is the LoggerImpl to forward log messages to.
+	Logger LoggerImpl
+	// Prefix is the prefix to prepend to log messages.
+	Prefix string
+	// DefaultLogLevel is the log level used if a log level prefix is not present in the received log message.
 	DefaultLogLevel *PluginLogLevel
-	ProgressChan    chan float64
+	// ProgressChan is a channel that receives float64s indicating the current progress of an operation.
+	ProgressChan chan float64
 }
 
-func (log *PluginLogger) HandleStderrLine(line string) {
-	level, ll := DetectLogLevel(line)
+func (log *PluginLogger) handleStderrLine(line string) {
+	if log.Logger == nil {
+		return
+	}
+
+	logger := log.Logger
+
+	level, ll := detectLogLevel(line)
 
 	// if no log level, just output to info
 	if level == nil {
@@ -147,19 +164,19 @@ func (log *PluginLogger) HandleStderrLine(line string) {
 
 	switch *level {
 	case TraceLevel:
-		Trace(log.Prefix, ll)
+		logger.Trace(log.Prefix, ll)
 	case DebugLevel:
-		Debug(log.Prefix, ll)
+		logger.Debug(log.Prefix, ll)
 	case InfoLevel:
-		Info(log.Prefix, ll)
+		logger.Info(log.Prefix, ll)
 	case WarningLevel:
-		Warn(log.Prefix, ll)
+		logger.Warn(log.Prefix, ll)
 	case ErrorLevel:
-		Error(log.Prefix, ll)
+		logger.Error(log.Prefix, ll)
 	case ProgressLevel:
 		p, err := strconv.ParseFloat(ll, 64)
 		if err != nil {
-			Errorf("Error parsing progress value '%s': %s", ll, err.Error())
+			logger.Errorf("Error parsing progress value '%s': %s", ll, err.Error())
 		} else if log.ProgressChan != nil { // only pass progress through if channel present
 			// don't block on this
 			select {
@@ -167,24 +184,28 @@ func (log *PluginLogger) HandleStderrLine(line string) {
 			default:
 			}
 		}
-
 	}
 }
 
-func (log *PluginLogger) HandlePluginStdErr(pluginStdErr io.ReadCloser) {
+// ReadLogMessages reads plugin log messages from src, forwarding them to the PluginLoggers Logger.
+// ProgressLevel messages are parsed as float64 and forwarded to ProgressChan. If ProgressChan is full,
+// then the progress message is not forwarded.
+// This method only returns when it reaches the end of src or encounters an error while reading src.
+// This method closes src before returning.
+func (log *PluginLogger) ReadLogMessages(src io.ReadCloser) {
 	// pipe plugin stderr to our logging
-	scanner := bufio.NewScanner(pluginStdErr)
+	scanner := bufio.NewScanner(src)
 	for scanner.Scan() {
 		str := scanner.Text()
 		if str != "" {
-			log.HandleStderrLine(str)
+			log.handleStderrLine(str)
 		}
 	}
 
 	str := scanner.Text()
 	if str != "" {
-		log.HandleStderrLine(str)
+		log.handleStderrLine(str)
 	}
 
-	pluginStdErr.Close()
+	src.Close()
 }

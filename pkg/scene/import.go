@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -57,7 +58,7 @@ func (i *Importer) PreImport() error {
 
 	var err error
 	if len(i.Input.Cover) > 0 {
-		_, i.coverImageData, err = utils.ProcessBase64Image(i.Input.Cover)
+		i.coverImageData, err = utils.ProcessBase64Image(i.Input.Cover)
 		if err != nil {
 			return fmt.Errorf("invalid cover image: %v", err)
 		}
@@ -192,8 +193,8 @@ func (i *Importer) populateGalleries() error {
 			pluckedChecksums = append(pluckedChecksums, gallery.Checksum)
 		}
 
-		missingGalleries := utils.StrFilter(checksums, func(checksum string) bool {
-			return !utils.StrInclude(pluckedChecksums, checksum)
+		missingGalleries := stringslice.StrFilter(checksums, func(checksum string) bool {
+			return !stringslice.StrInclude(pluckedChecksums, checksum)
 		})
 
 		if len(missingGalleries) > 0 {
@@ -226,8 +227,8 @@ func (i *Importer) populatePerformers() error {
 			pluckedNames = append(pluckedNames, performer.Name.String)
 		}
 
-		missingPerformers := utils.StrFilter(names, func(name string) bool {
-			return !utils.StrInclude(pluckedNames, name)
+		missingPerformers := stringslice.StrFilter(names, func(name string) bool {
+			return !stringslice.StrInclude(pluckedNames, name)
 		})
 
 		if len(missingPerformers) > 0 {
@@ -458,8 +459,8 @@ func importTags(tagWriter models.TagReaderWriter, names []string, missingRefBeha
 		pluckedNames = append(pluckedNames, tag.Name)
 	}
 
-	missingTags := utils.StrFilter(names, func(name string) bool {
-		return !utils.StrInclude(pluckedNames, name)
+	missingTags := stringslice.StrFilter(names, func(name string) bool {
+		return !stringslice.StrInclude(pluckedNames, name)
 	})
 
 	if len(missingTags) > 0 {

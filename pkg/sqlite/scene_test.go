@@ -12,8 +12,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestSceneFind(t *testing.T) {
@@ -761,7 +761,7 @@ func createScene(queryBuilder models.SceneReaderWriter, width int64, height int6
 			Int64: height,
 			Valid: true,
 		},
-		Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+		Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
 	}
 
 	return queryBuilder.Create(scene)
@@ -1597,7 +1597,7 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 		const name = "TestSceneUpdateSceneCover"
 		scene := models.Scene{
 			Path:     name,
-			Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
 		}
 		created, err := qb.Create(scene)
 		if err != nil {
@@ -1637,7 +1637,7 @@ func TestSceneDestroySceneCover(t *testing.T) {
 		const name = "TestSceneDestroySceneCover"
 		scene := models.Scene{
 			Path:     name,
-			Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
 		}
 		created, err := qb.Create(scene)
 		if err != nil {
@@ -1676,7 +1676,7 @@ func TestSceneStashIDs(t *testing.T) {
 		const name = "TestSceneStashIDs"
 		scene := models.Scene{
 			Path:     name,
-			Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
 		}
 		created, err := qb.Create(scene)
 		if err != nil {

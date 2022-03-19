@@ -4,9 +4,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/paths"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/models/paths"
 )
 
 func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
@@ -49,7 +49,7 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 }
 
 func migrateSceneFiles(oldName, newName string) {
-	oldExists, err := utils.FileExists(oldName)
+	oldExists, err := fsutil.FileExists(oldName)
 	if err != nil && !os.IsNotExist(err) {
 		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())
 		return

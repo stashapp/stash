@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -29,13 +30,13 @@ func (i *Importer) PreImport() error {
 
 	var err error
 	if len(i.Input.FrontImage) > 0 {
-		_, i.frontImageData, err = utils.ProcessBase64Image(i.Input.FrontImage)
+		i.frontImageData, err = utils.ProcessBase64Image(i.Input.FrontImage)
 		if err != nil {
 			return fmt.Errorf("invalid front_image: %v", err)
 		}
 	}
 	if len(i.Input.BackImage) > 0 {
-		_, i.backImageData, err = utils.ProcessBase64Image(i.Input.BackImage)
+		i.backImageData, err = utils.ProcessBase64Image(i.Input.BackImage)
 		if err != nil {
 			return fmt.Errorf("invalid back_image: %v", err)
 		}
@@ -45,7 +46,7 @@ func (i *Importer) PreImport() error {
 }
 
 func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Movie {
-	checksum := utils.MD5FromString(movieJSON.Name)
+	checksum := md5.FromString(movieJSON.Name)
 
 	newMovie := models.Movie{
 		Checksum:  checksum,

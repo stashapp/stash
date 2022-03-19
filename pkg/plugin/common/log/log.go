@@ -126,20 +126,3 @@ func LevelFromName(name string) *Level {
 
 	return nil
 }
-
-// DetectLogLevel returns the Level and the logging string for a provided line
-// of plugin output. It parses the string for logging control characters and
-// determines the log level, if present. If not present, the plugin output
-// is returned unchanged with a nil Level.
-func DetectLogLevel(line string) (*Level, string) {
-	var level *logger.PluginLogLevel
-	level, line = logger.DetectLogLevel(line)
-
-	if level == nil {
-		return nil, line
-	}
-
-	return &Level{
-		level,
-	}, line
-}
