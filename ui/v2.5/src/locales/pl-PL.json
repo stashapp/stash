@@ -28,10 +28,12 @@
     "delete_file": "Usuń plik",
     "delete_file_and_funscript": "Usuń plik (i skrypt funkcyjny)",
     "delete_generated_supporting_files": "Usuń wygenerowane pliki pomocnicze",
+    "delete_stashid": "Usuń StashID",
     "disallow": "Nie zezwalaj",
     "download": "Pobierz",
     "download_backup": "Pobierz kopię zapasową",
     "edit": "Edytuj",
+    "edit_entity": "Edytuj {entityType}",
     "export": "Eksport…",
     "export_all": "Wyeksportuj wszystko…",
     "find": "Znajdź",
@@ -50,11 +52,13 @@
     "ignore": "Ignoruj",
     "import": "Importowanie…",
     "import_from_file": "Import z pliku",
+    "logout": "Wyloguj się",
     "merge": "Połącz",
     "merge_from": "Scal z",
     "merge_into": "Scal w",
     "next_action": "Dalej",
     "not_running": "nie uruchomiony",
+    "open_in_external_player": "Otwórz w odtwarzaczu zewnętrznym",
     "open_random": "Otwórz losowo",
     "overwrite": "Nadpisz",
     "play_random": "Odtwórz losowo",
@@ -65,6 +69,7 @@
     "reload_plugins": "Przeładuj wtyczki",
     "reload_scrapers": "Przeładuj scrapery",
     "remove": "Usuń",
+    "remove_from_gallery": "Usuń z galerii",
     "rename_gen_files": "Zmień nazwy wygenerowanych plików",
     "rescan": "Skanuj ponownie",
     "reshuffle": "Przetasuj",
@@ -79,6 +84,7 @@
     "scrape_with": "Scrapuj z…",
     "search": "Szukaj",
     "select_all": "Zaznacz wszystko",
+    "select_entity": "Wybierz {entityType}",
     "select_folders": "Wybierz foldery",
     "select_none": "Odznacz wszystko",
     "selective_auto_tag": "Selektywne automatyczne tagowanie",
@@ -193,14 +199,19 @@
     "dlna": {
       "allow_temp_ip": "Pozwalaj {tempIP}",
       "allowed_ip_addresses": "Dozwolone adresy IP",
+      "allowed_ip_temporarily": "Tymczasowo dozwolony adres IP",
       "default_ip_whitelist": "Domyślna biała lista adresów IP",
       "default_ip_whitelist_desc": "Domyślne adresy IP z dostępem do urządzenia DLNA. Użyj {wildcard}, aby zezwolić na dostęp wszystkim adresom IP.",
+      "disabled_dlna_temporarily": "Tymczasowe wyłączenie funkcji DLNA",
+      "disallowed_ip": "Niedozwolony adres IP",
       "enabled_by_default": "Domyślnie włączone",
+      "enabled_dlna_temporarily": "Tymczasowe włączenie funkcji DLNA",
       "network_interfaces": "Interfejsy",
       "network_interfaces_desc": "Interfejsy, na których ma działać serwer DLNA. Pusta lista spowoduje, że serwer będzie działał na wszystkich interfejsach. Wymaga ponownego uruchomienia DLNA po zmianie.",
       "recent_ip_addresses": "Ostatnie adresy IP",
       "server_display_name": "Wyświetlana nazwa serwera",
       "server_display_name_desc": "Nazwa wyświetlana dla serwera DLNA. Domyślnie {server_name}, jeśli jest pusta.",
+      "successfully_cancelled_temporary_behaviour": "Pomyślnie anulowano zachowanie tymczasowe",
       "until_restart": "do ponownego uruchomienia"
     },
     "general": {
@@ -306,7 +317,7 @@
     "stashbox": {
       "add_instance": "Dodaj instancję stash-box",
       "api_key": "Klucz API",
-      "description": "Stash-box ułatwia automatyczne tagowanie scen i aktorów na podstawie odcisków palców i nazw plików. Punkt końcowy oraz klucz API można znaleźć na stronie swojego konta w instancji stash-box. Nazwy są wymagane, gdy dodawana jest więcej niż jedna instancja.",
+      "description": "Stash-box ułatwia automatyczne tagowanie scen i aktorów na podstawie odcisków palców i nazw plików.\nPunkt końcowy oraz klucz API można znaleźć na stronie swojego konta w instancji stash-box. Nazwy są wymagane, gdy dodawana jest więcej niż jedna instancja.",
       "endpoint": "Punkt końcowy",
       "graphql_endpoint": "Punkt końcowy GraphQL",
       "name": "Nazwa",
@@ -325,7 +336,7 @@
       "auto_tagging": "Automatyczne tagowanie",
       "backing_up_database": "Tworzenie kopii zapasowej bazy danych",
       "backup_and_download": "Wykonuje kopię zapasową bazy danych i pobiera plik wynikowy.",
-      "backup_database": "Wykonuje kopię zapasową bazy danych w tym samym katalogu, w którym znajduje się baza danych, z nazwą pliku w formacie {filename_format}.",
+      "backup_database": "Wykonuje kopię zapasową bazy danych w tym samym katalogu, w którym znajduje się baza danych, z nazwą pliku w formacie {filename_format}",
       "cleanup_desc": "Sprawdza, czy nie ma brakujących plików i usuwa je z bazy danych. Jest to działanie destrukcyjne.",
       "data_management": "Zarządzanie danymi",
       "defaults_set": "Zostały ustawione wartości domyślne, które będą używane po kliknięciu przycisku {action} na stronie Zadania.",
@@ -434,7 +445,7 @@
         "heading": "Przesunięcie Funscript (ms)"
       },
       "handy_connection_key": {
-        "description": "Klucz połączenia Handy używany w scenach interaktywnych. Ustawienie tego klucza umożliwi Stash udostępnianie informacji o bieżącej scenie w witrynie handyfeeling.com.",
+        "description": "Klucz połączenia Handy używany w scenach interaktywnych. Ustawienie tego klucza umożliwi Stash udostępnianie informacji o bieżącej scenie w witrynie handyfeeling.com",
         "heading": "Klucz połączenia Handy"
       },
       "images": {
@@ -461,7 +472,7 @@
       "performers": {
         "options": {
           "image_location": {
-            "description": "Niestandardowa ścieżka dostępu do domyślnych obrazów aktorów. Pozostaw puste, aby użyć domyślnych ustawień wbudowanych.",
+            "description": "Niestandardowa ścieżka dostępu do domyślnych obrazów aktorów. Pozostaw puste, aby użyć domyślnych ustawień wbudowanych",
             "heading": "Niestandardowa ścieżka obrazów aktorów"
           }
         }
@@ -835,6 +846,8 @@
       "almost_ready": "Jesteśmy prawie gotowi do zakończenia konfiguracji. Prosimy o potwierdzenie następujących ustawień. Możesz kliknąć przycisk Wstecz, aby zmienić wszystkie nieprawidłowe ustawienia. Jeśli wszystko wygląda dobrze, kliknij przycisk Zatwierdź, aby utworzyć system.",
       "configuration_file_location": "Lokalizacja pliku konfiguracyjnego:",
       "database_file_path": "Ścieżka do pliku bazy danych",
+      "default_db_location": "<ścieżka zawierająca plik konfiguracyjny>/stash-go.sqlite",
+      "default_generated_content_location": "<ścieżka zawierająca plik konfiguracyjny>/generated",
       "generated_directory": "Folder z wygenerowaną zawartością",
       "nearly_there": "Już prawie gotowe!",
       "stash_library_directories": "Katalogi biblioteki Stash"
@@ -847,6 +860,10 @@
       "something_went_wrong": "O nie! Coś poszło nie tak!",
       "something_went_wrong_description": "Wygląda to na problem z twoimi danymi wejściowymi, kliknij Wstecz, aby je poprawić. W przeciwnym razie zgłoś błąd na stronie {githubLink} lub poszukaj pomocy na {discordLink}.",
       "something_went_wrong_while_setting_up_your_system": "Coś poszło nie tak podczas konfigurowania systemu. Oto błąd, który otrzymaliśmy: {error}"
+    },
+    "folder": {
+      "file_path": "Ścieżka do pliku",
+      "up_dir": "W górę katalogu"
     },
     "github_repository": "Repozytorium na Githubie",
     "migrate": {
