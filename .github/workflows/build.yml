@@ -111,7 +111,7 @@ jobs:
 
     - name: Upload Windows binary
       # only upload binaries for pull requests
-      if: ${{ true || github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      if: ${{ true || (github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master')}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-win.exe
@@ -119,7 +119,7 @@ jobs:
 
     - name: Upload OSX binary
       # only upload binaries for pull requests
-      if: ${{ true || github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      if: ${{ true || (github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master')}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-macos-intel
@@ -127,7 +127,7 @@ jobs:
 
     - name: Upload Linux binary
       # only upload binaries for pull requests
-      if: ${{ true || github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      if: ${{ true || (github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master')}}
       uses: actions/upload-artifact@v2
       with:
         name: stash-linux
