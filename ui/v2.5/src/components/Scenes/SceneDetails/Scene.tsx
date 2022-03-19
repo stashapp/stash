@@ -4,7 +4,6 @@ import React, { useEffect, useState, useMemo, useContext } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataScan,
@@ -20,9 +19,11 @@ import {
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { SubmitStashBoxDraft } from "src/components/Dialogs/SubmitDraft";
 import { ScenePlayer, getPlayerPosition } from "src/components/ScenePlayer";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { TextUtils } from "src/utils";
+import Mousetrap from "mousetrap";
 import { SceneQueue } from "src/models/sceneQueue";
 import { QueueViewer } from "./QueueViewer";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
@@ -81,6 +82,12 @@ const ScenePage: React.FC<IProps> = ({
   const intl = useIntl();
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
+  const { configuration } = useContext(ConfigurationContext);
+  const [showScrubber, setShowScrubber] = useState(
+    configuration?.interface.showScrubber ?? true
+  );
+  const [showDraftModal, setShowDraftModal] = useState(false);
+  const boxes = configuration?.general?.stashBoxes ?? [];
 
   const [incrementO] = useSceneIncrementO(scene.id);
   const [decrementO] = useSceneDecrementO(scene.id);
@@ -95,26 +102,19 @@ const ScenePage: React.FC<IProps> = ({
 
   const onIncrementClick = async () => {
     try {
-      setOLoading(true);
       await incrementO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
 
   const onDecrementClick = async () => {
     try {
-      setOLoading(true);
       await decrementO();
     } catch (e) {
       Toast.error(e);
-    } finally {
-      setOLoading(false);
     }
   };
-
 
   // set up hotkeys
   useEffect(() => {
@@ -122,22 +122,26 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("q", () => setActiveTabKey("scene-queue-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
     Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
-    Mousetrap.bind("f", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("i", () => setActiveTabKey("scene-file-info-panel"));
     Mousetrap.bind("o", () => onIncrementClick());
     Mousetrap.bind("p n", () => onQueueNext());
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
+    Mousetrap.bind(",", () => setCollapsed(!collapsed));
+    Mousetrap.bind(".", () => setShowScrubber(!showScrubber));
 
     return () => {
       Mousetrap.unbind("a");
       Mousetrap.unbind("q");
       Mousetrap.unbind("e");
       Mousetrap.unbind("k");
-      Mousetrap.unbind("f");
+      Mousetrap.unbind("i");
       Mousetrap.unbind("o");
       Mousetrap.unbind("p n");
       Mousetrap.unbind("p p");
       Mousetrap.unbind("p r");
+      Mousetrap.unbind(",");
+      Mousetrap.unbind(".");
     };
   });
 
@@ -479,6 +483,13 @@ const ScenePage: React.FC<IProps> = ({
           {getCollapseButtonText()}
         </Button>
       </div>
+      <SubmitStashBoxDraft
+        boxes={boxes}
+        entity={scene}
+        query={GQL.SubmitStashBoxSceneDraftDocument}
+        show={showDraftModal}
+        onHide={() => setShowDraftModal(false)}
+      />
     </>
   );
 };
@@ -492,16 +503,18 @@ const SceneLoader: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [continuePlaylist, setContinuePlaylist] = useState(false);
 
-
-  const sceneQueue = useMemo(() => SceneQueue.fromQueryParameters(location.search), [location.search]);
-  const [queueScenes, setQueueScenes] = useState<GQL.SceneDataFragment[]>(
-    []
+  const sceneQueue = useMemo(
+    () => SceneQueue.fromQueryParameters(location.search),
+    [location.search]
   );
+  const [queueScenes, setQueueScenes] = useState<GQL.SceneDataFragment[]>([]);
 
   const [queueTotal, setQueueTotal] = useState(0);
   const [queueStart, setQueueStart] = useState(1);
 
-  const queryParams = useMemo(() => queryString.parse(location.search), [location.search]);
+  const queryParams = useMemo(() => queryString.parse(location.search), [
+    location.search,
+  ]);
 
   function getInitialTimestamp() {
     const params = queryString.parse(location.search);
@@ -513,8 +526,14 @@ const SceneLoader: React.FC = () => {
   }
 
   const autoplay = queryParams?.autoplay === "true";
-  const currentQueueIndex = queueScenes ? queueScenes.findIndex((s) => s.id === id) : -1;
+  const currentQueueIndex = queueScenes
+    ? queueScenes.findIndex((s) => s.id === id)
+    : -1;
 
+  useEffect(() => {
+    // reset timestamp after notifying player
+    if (timestamp !== -1) setTimestamp(-1);
+  }, [timestamp]);
 
   async function getQueueFilterScenes(filter: ListFilterModel) {
     const query = await queryFindScenes(filter);
@@ -631,7 +650,7 @@ const SceneLoader: React.FC = () => {
     }
   }
 
-    /*
+  /*
   if (error) return <ErrorMessage error={error.message} />;
   if (!loading && !data?.findScene)
     return <ErrorMessage error={`No scene found with id ${id}.`} />;
@@ -641,7 +660,7 @@ const SceneLoader: React.FC = () => {
 
   return (
     <div className="row">
-      { !loading && scene ? (
+      {!loading && scene ? (
         <ScenePage
           scene={scene}
           refetch={refetch}
@@ -660,7 +679,9 @@ const SceneLoader: React.FC = () => {
           setCollapsed={setCollapsed}
           setContinuePlaylist={setContinuePlaylist}
         />
-      ): <div className="scene-tabs" /> }
+      ) : (
+        <div className="scene-tabs" />
+      )}
       <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
           key="ScenePlayer"
@@ -669,8 +690,12 @@ const SceneLoader: React.FC = () => {
           timestamp={timestamp}
           autoplay={autoplay}
           onComplete={onComplete}
-          onNext={(currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1) ? onQueueNext : undefined}
-          onPrevious={(currentQueueIndex > 0) ? onQueuePrevious : undefined}
+          onNext={
+            currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1
+              ? onQueueNext
+              : undefined
+          }
+          onPrevious={currentQueueIndex > 0 ? onQueuePrevious : undefined}
         />
       </div>
     </div>

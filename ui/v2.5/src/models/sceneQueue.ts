@@ -122,13 +122,10 @@ export class SceneQueue {
 
   public makeLink(sceneID: string, options?: IPlaySceneOptions) {
     const params = [
-      this.makeQueryParameters(
-        options?.sceneIndex,
-        options?.newPage
-      ),
+      this.makeQueryParameters(options?.sceneIndex, options?.newPage),
       options?.autoPlay ? "autoplay=true" : "",
       options?.continue ? "continue=true" : "",
-    ].filter(param => !!param);
-    return `/scenes/${sceneID}${params.length ? '?' + params.join('&') : ''}`;
+    ].filter((param) => !!param);
+    return `/scenes/${sceneID}${params.length ? "?" + params.join("&") : ""}`;
   }
 }

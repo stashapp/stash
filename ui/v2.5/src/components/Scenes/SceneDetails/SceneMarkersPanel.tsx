@@ -18,8 +18,8 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
 ) => {
   const { data, loading } = GQL.useFindSceneMarkerTagsQuery({
     variables: {
-      id: props.sceneId
-    }
+      id: props.sceneId,
+    },
   });
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
   const [

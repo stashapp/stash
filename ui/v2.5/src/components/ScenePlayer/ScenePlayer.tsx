@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
-import "./landscapeFullscreen";
+import "videojs-landscape-fullscreen";
 import "./live";
 import "./PlaylistButtons";
 import cx from "classnames";
@@ -11,6 +11,7 @@ import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
+import { Interactive } from "src/utils/interactive";
 
 export const VIDEO_PLAYER_ID = "VideoJsPlayer";
 
@@ -19,9 +20,6 @@ interface IScenePlayerProps {
   scene: GQL.SceneDataFragment | undefined | null;
   timestamp: number;
   autoplay?: boolean;
-  onReady?: () => void;
-  onSeeked?: () => void;
-  onTime?: () => void;
   onComplete?: () => void;
   onNext?: () => void;
   onPrevious?: () => void;
@@ -40,12 +38,25 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const config = configuration?.interface;
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<VideoJsPlayer | undefined>();
+  const skipButtonsRef = useRef<any>();
+
   const [time, setTime] = useState(0);
+
+  const [interactiveClient] = useState(
+    new Interactive(config?.handyKey || "", config?.funscriptOffset || 0)
+  );
+
+  const [initialTimestamp] = useState(timestamp);
 
   const maxLoopDuration = config?.maximumLoopDuration ?? 0;
 
   useEffect(() => {
-    if (playerRef.current) playerRef.current.currentTime(timestamp);
+    if (playerRef.current && timestamp >= 0) {
+      const player = playerRef.current;
+      player.play()?.then(() => {
+        player.currentTime(timestamp);
+      });
+    }
   }, [timestamp]);
 
   useEffect(() => {
@@ -53,49 +64,64 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!videoElement) return;
 
     const options: VideoJsPlayerOptions = {
-      autoplay: false,
       controls: true,
+      controlBar: {
+        pictureInPictureToggle: false,
+      },
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
       inactivityTimeout: 2000,
+      preload: "none",
+      userActions: {
+        hotkeys: true,
+      },
     };
 
     const player = VideoJS(videoElement, options);
-    player.seekButtons({
-      forward: 10,
-      back: 10,
-    });
-    const skipButtons = player.skipButtons();
-    if (skipButtons) {
-      skipButtons.setForwardHandler(onNext);
-      skipButtons.setBackwardHandler(onPrevious);
-    }
+
     player.on("error", () => {
       player.error(null);
     });
-    (player as any).offset();
     (player as any).landscapeFullscreen({
       fullscreen: {
         enterOnRotate: true,
         exitOnRotate: true,
         alwaysInLandscapeMode: true,
-        iOS: true
-      }
+        iOS: true,
+      },
     });
 
-    playerRef.current = player;
+    (player as any).offset();
 
     player.focus();
-  }, [playerRef]);
+    playerRef.current = player;
+  }, []);
 
   useEffect(() => {
-    const skipButtons = playerRef?.current?.skipButtons?.();
-    if (skipButtons) {
-      skipButtons.setForwardHandler(onNext);
-      skipButtons.setBackwardHandler(onPrevious);
+    if (scene?.interactive) {
+      interactiveClient.uploadScript(scene.paths.funscript || "");
+    }
+  }, [interactiveClient, scene?.interactive, scene?.paths.funscript]);
+
+  useEffect(() => {
+    if (skipButtonsRef.current) {
+      skipButtonsRef.current.setForwardHandler(onNext);
+      skipButtonsRef.current.setBackwardHandler(onPrevious);
     }
   }, [onNext, onPrevious]);
 
   useEffect(() => {
+    const player = playerRef.current;
+    if (player) {
+      player.seekButtons({
+        forward: 10,
+        back: 10,
+      });
+
+      skipButtonsRef.current = player.skipButtons() ?? undefined;
+
+      player.focus();
+    }
+
     // Video player destructor
     return () => {
       if (playerRef.current) {
@@ -111,11 +137,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const player = playerRef.current;
     if (!player) return;
 
-    const auto = autoplay || (config?.autostartVideo ?? false) || timestamp > 0;
-    if (!auto && scene.paths?.screenshot)
-      player.poster(scene.paths.screenshot);
-    else
-      player.poster('');
+    const auto =
+      autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
+    if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
+    else player.poster("");
     player.src(
       scene.sceneStreams.map((stream) => ({
         src: stream.url,
@@ -123,39 +148,59 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }))
     );
     player.currentTime(0);
-    if (auto)
-      player.play();
 
-    player.loop(!!scene.file.duration && maxLoopDuration !== 0 && scene.file.duration < maxLoopDuration);
+    player.loop(
+      !!scene.file.duration &&
+        maxLoopDuration !== 0 &&
+        scene.file.duration < maxLoopDuration
+    );
 
-    const isDirect = new URL(scene.sceneStreams[0].url).pathname.endsWith("/stream");
+    const isDirect = new URL(scene.sceneStreams[0].url).pathname.endsWith(
+      "/stream"
+    );
     if (!isDirect) {
       (player as any).setOffsetDuration(scene.file.duration);
     } else {
       (player as any).clearOffsetDuration();
-    };
+    }
 
-    player.on("timeupdate", function (this: VideoJsPlayer) {
-      setTime(this.currentTime());
-    });
-    player.on("seeking", function (this: VideoJsPlayer) {
-      if (!isDirect) {
-        // remove the start parameter
-        const srcUrl = new URL(player.src());
-        srcUrl.searchParams.delete("start");
-
-        /* eslint-disable no-param-reassign */
-        srcUrl.searchParams.append("start", player.currentTime().toString());
-        player.src(srcUrl.toString());
-        /* eslint-enable no-param-reassign */
-
-        player.play();
+    player.on("play", function (this: VideoJsPlayer) {
+      if (scene.interactive) {
+        interactiveClient.play(this.currentTime());
       }
     });
-    player.play()?.catch(() => {
-      if (scene.paths.screenshot)
-        player.poster(scene.paths.screenshot);
+
+    player.on("pause", () => {
+      if (scene.interactive) {
+        interactiveClient.pause();
+      }
     });
+
+    player.on("timeupdate", function (this: VideoJsPlayer) {
+      if (scene.interactive) {
+        interactiveClient.ensurePlaying(this.currentTime());
+      }
+
+      setTime(this.currentTime());
+    });
+
+    player.on("seeking", function (this: VideoJsPlayer) {
+      // backwards compatibility - may want to remove this in future
+      this.play();
+    });
+
+    if (auto) {
+      player
+        .play()
+        ?.then(() => {
+          if (initialTimestamp > 0) {
+            player.currentTime(initialTimestamp);
+          }
+        })
+        .catch(() => {
+          if (scene.paths.screenshot) player.poster(scene.paths.screenshot);
+        });
+    }
 
     if ((player as any).vttThumbnails?.src)
       (player as any).vttThumbnails?.src(scene?.paths.vtt);
@@ -164,7 +209,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         src: scene?.paths.vtt,
         showTimestamp: true,
       });
-  }, [scene]);
+  }, [
+    scene,
+    config?.autostartVideo,
+    maxLoopDuration,
+    initialTimestamp,
+    autoplay,
+    interactiveClient,
+  ]);
 
   useEffect(() => {
     // Attach handler for onComplete event
@@ -177,7 +229,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     return () => player.off("ended");
   }, [onComplete]);
-
 
   const onScrubberScrolled = () => {
     playerRef.current?.pause();
@@ -201,7 +252,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           className="video-js vjs-big-play-centered"
         />
       </div>
-      { scene && (
+      {scene && (
         <ScenePlayerScrubber
           scene={scene}
           position={time}

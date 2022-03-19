@@ -26,16 +26,16 @@ $sceneTabWidth: 450px;
   }
 
   .vjs-button {
-    outline: none !important;
+    outline: none;
   }
 
   .vjs-touch-enabled {
-    width: 100vw;
     margin: 0 -15px;
+    width: 100vw;
 
     .vjs-control-bar {
-      height: 100%;
       align-items: end;
+      height: 100%;
     }
 
     .vjs-button {
@@ -64,25 +64,27 @@ $sceneTabWidth: 450px;
 
     .vjs-play-control,
     .vjs-skip-button {
+      bottom: calc(50% - 3rem);
       font-size: 6rem;
       height: 6rem;
-      width: 6rem;
       position: absolute;
-      bottom: calc(50% - 3rem);
+      width: 6rem;
     }
 
     .vjs-play-control {
       left: calc(50% - 3rem);
     }
+
     .vjs-skip-button.vjs-icon-next-item {
       left: calc(80% - 3rem);
     }
+
     .vjs-skip-button.vjs-icon-previous-item {
       left: calc(20% - 3rem);
     }
 
-    .vjs-play-control .vjs-icon-placeholder:before,
-    .vjs-skip-button:before {
+    .vjs-play-control .vjs-icon-placeholder::before,
+    .vjs-skip-button::before {
       font-size: 1em;
       line-height: 1em;
     }
@@ -98,8 +100,8 @@ $sceneTabWidth: 450px;
 
     &.vjs-fullscreen {
       .vjs-progress-control {
-        height: 1em;
         bottom: 4rem;
+        height: 1em;
       }
     }
 
@@ -107,8 +109,8 @@ $sceneTabWidth: 450px;
       .vjs-progress-control {
         bottom: 0;
         height: unset;
-        width: 100%;
         margin: 0;
+        width: 100%;
 
         .vjs-progress-holder {
           margin: 0;
@@ -125,26 +127,31 @@ $sceneTabWidth: 450px;
 .video-js {
   .vjs-control-bar {
     background: none;
+
     /* Scales control size */
     font-size: 15px;
     opacity: 0;
-    transition: opacity .25s cubic-bezier(0,0,0.2,1);
+    transition: opacity 0.25s cubic-bezier(0, 0, 0.2, 1);
 
-    &:before {
-      content: '';
-      background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
-      width: 100%;
+    &::before {
+      background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.4) 0%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      bottom: 0;
+      content: "";
       height: 10rem;
       position: absolute;
-      bottom: 0px;
+      width: 100%;
     }
   }
 
   .vjs-time-control {
     display: block;
-    padding: 0 4px;
     min-width: 0;
-		pointer-events: none;
+    padding: 0 4px;
+    pointer-events: none;
 
     .vjs-control-text {
       display: none;
@@ -167,9 +174,9 @@ $sceneTabWidth: 450px;
   }
 
   .vjs-progress-control {
-    position: absolute;
-    bottom: 2rem;
+    bottom: 3rem;
     margin-left: 1%;
+    position: absolute;
     width: 98%;
   }
 
@@ -180,9 +187,12 @@ $sceneTabWidth: 450px;
     position: absolute;
   }
 
-  .vjs-big-play-button {
+  .vjs-big-play-button,
+  .vjs-big-play-button:hover,
+  .vjs-big-play-button:focus,
+  &:hover .vjs-big-play-button {
+    background: none;
     border: none;
-    background: none !important;
     font-size: 10em;
   }
 
@@ -312,6 +322,7 @@ $sceneTabWidth: 450px;
   -webkit-overflow-scrolling: touch;
   position: relative;
   -webkit-user-select: none;
+  user-select: none;
   width: 96%;
 
   &.dragging {
@@ -408,9 +419,9 @@ $sceneTabWidth: 450px;
 }
 
 .vjs-skip-button {
-  &:before {
-      font-size: 1.8em;
-      line-height: 1.67;
+  &::before {
+    font-size: 1.8em;
+    line-height: 1.67;
   }
 }
 
@@ -418,10 +429,10 @@ $sceneTabWidth: 450px;
   .vjs-icon-next-item,
   .vjs-icon-previous-item {
     display: none;
-  };
+  }
 
   &-prev .vjs-icon-previous-item,
   &-next .vjs-icon-next-item {
-    display: inline-block !important;
+    display: inline-block;
   }
 }

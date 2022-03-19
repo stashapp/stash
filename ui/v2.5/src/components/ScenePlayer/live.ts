@@ -1,7 +1,8 @@
 import videojs, { VideoJsPlayer } from "video.js";
 
 const offset = function (this: VideoJsPlayer) {
-  const Player = this.constructor;
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  const Player = this.constructor as any;
 
   if (!Player.__super__ || !Player.__super__.__offsetInit) {
     Player.__super__ = {

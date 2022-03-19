@@ -8046,6 +8046,13 @@ videojs-font@3.2.0:
   resolved "https://registry.yarnpkg.com/videojs-font/-/videojs-font-3.2.0.tgz#212c9d3f4e4ec3fa7345167d64316add35e92232"
   integrity sha512-g8vHMKK2/JGorSfqAZQUmYYNnXmfec4MLhwtEFS+mMs2IDY398GLysy6BH6K+aS1KMNu/xWZ8Sue/X/mdQPliA==
 
+videojs-landscape-fullscreen@^11.33.0:
+  version "11.33.0"
+  resolved "https://registry.yarnpkg.com/videojs-landscape-fullscreen/-/videojs-landscape-fullscreen-11.33.0.tgz#4033100b3a97399c994426e825662860dfc232e0"
+  integrity sha512-Eex5ovlvIipHHif9LEhVL63zxxmOEQQi6Bt1P+EaA0QpjJAPF+CocWfhMItfGF1GcFQeP1ZFGCPTGw60n7vyUg==
+  dependencies:
+    global "^4.4.0"
+
 videojs-seek-buttons@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/videojs-seek-buttons/-/videojs-seek-buttons-2.2.0.tgz#50b8da1178a5718ee5a7649fbb90a64a518103f7"
