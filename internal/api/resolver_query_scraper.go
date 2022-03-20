@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 func (r *queryResolver) ScrapeURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
@@ -151,6 +152,8 @@ func filterSceneTags(scenes []*models.ScrapedScene) {
 		return
 	}
 
+	var ignoredTags []string
+
 	for _, s := range scenes {
 		var newTags []*models.ScrapedTag
 		for _, t := range s.Tags {
@@ -158,6 +161,7 @@ func filterSceneTags(scenes []*models.ScrapedScene) {
 			for _, reg := range excludeRegexps {
 				if reg.MatchString(strings.ToLower(t.Name)) {
 					ignore = true
+					ignoredTags = stringslice.StrAppendUnique(ignoredTags, t.Name)
 					break
 				}
 			}
@@ -168,6 +172,10 @@ func filterSceneTags(scenes []*models.ScrapedScene) {
 		}
 
 		s.Tags = newTags
+	}
+
+	if len(ignoredTags) > 0 {
+		logger.Debugf("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
 	}
 }
 
