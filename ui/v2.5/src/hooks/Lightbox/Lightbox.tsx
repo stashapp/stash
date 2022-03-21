@@ -27,6 +27,10 @@ import {
   mutateImageResetO,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
+import {
+  IImageLightboxSettings,
+  useInterfaceLocalForage,
+} from "../LocalForage";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -97,12 +101,6 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const oldImages = useRef<ILightboxImage[]>([]);
 
-  const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
-  const oldDisplayMode = useRef(displayMode);
-
-  const [scaleUp, setScaleUp] = useState(false);
-  const [scrollMode, setScrollMode] = useState(ScrollMode.ZOOM);
-  const [resetZoomOnNav, setResetZoomOnNav] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [resetPosition, setResetPosition] = useState(false);
 
@@ -119,9 +117,52 @@ export const LightboxComponent: React.FC<IProps> = ({
   const Toast = useToast();
   const intl = useIntl();
   const { configuration: config } = React.useContext(ConfigurationContext);
+  const [
+    interfaceLocalForage,
+    setInterfaceLocalForage,
+  ] = useInterfaceLocalForage();
 
-  const userSelectedSlideshowDelayOrDefault =
-    config?.interface.slideshowDelay ?? DEFAULT_SLIDESHOW_DELAY;
+  const lightboxSettings = interfaceLocalForage.data?.imageLightbox;
+
+  function setLightboxSettings(v: Partial<IImageLightboxSettings>) {
+    setInterfaceLocalForage((prev) => {
+      return {
+        ...prev,
+        imageLightbox: {
+          ...prev.imageLightbox,
+          ...v,
+        },
+      };
+    });
+  }
+
+  function setScaleUp(value: boolean) {
+    setLightboxSettings({ scaleUp: value });
+  }
+
+  function setResetZoomOnNav(v: boolean) {
+    setLightboxSettings({ resetZoomOnNav: v });
+  }
+
+  function setScrollMode(v: ScrollMode) {
+    setLightboxSettings({ scrollMode: v });
+  }
+
+  const slideshowDelay =
+    lightboxSettings?.slideshowDelay ??
+    config?.interface.slideshowDelay ??
+    DEFAULT_SLIDESHOW_DELAY;
+
+  function setSlideshowDelay(v: number) {
+    setLightboxSettings({ slideshowDelay: v });
+  }
+
+  const displayMode = lightboxSettings?.displayMode ?? DisplayMode.FIT_XY;
+  const oldDisplayMode = useRef(displayMode);
+
+  function setDisplayMode(v: DisplayMode) {
+    setLightboxSettings({ displayMode: v });
+  }
 
   // slideshowInterval is used for controlling the logic
   // displaySlideshowInterval is for display purposes only
@@ -130,12 +171,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [slideshowInterval, setSlideshowInterval] = useState<number | null>(
     null
   );
+
   const [
     displayedSlideshowInterval,
     setDisplayedSlideshowInterval,
-  ] = useState<string>(
-    (userSelectedSlideshowDelayOrDefault / SECONDS_TO_MS).toString()
-  );
+  ] = useState<string>(slideshowDelay.toString());
 
   useEffect(() => {
     if (images !== oldImages.current && isSwitchingPage) {
@@ -163,7 +203,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     // reset zoom status
     // setResetZoom((r) => !r);
     // setZoomed(false);
-    if (resetZoomOnNav) {
+    if (lightboxSettings?.resetZoomOnNav) {
       setZoom(1);
     }
     setResetPosition((r) => !r);
@@ -191,20 +231,20 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
 
     oldIndex.current = index;
-  }, [index, images.length, resetZoomOnNav]);
+  }, [index, images.length, lightboxSettings?.resetZoomOnNav]);
 
   useEffect(() => {
     if (displayMode !== oldDisplayMode.current) {
       // reset zoom status
       // setResetZoom((r) => !r);
       // setZoomed(false);
-      if (resetZoomOnNav) {
+      if (lightboxSettings?.resetZoomOnNav) {
         setZoom(1);
       }
       setResetPosition((r) => !r);
     }
     oldDisplayMode.current = displayMode;
-  }, [displayMode, resetZoomOnNav]);
+  }, [displayMode, lightboxSettings?.resetZoomOnNav]);
 
   const selectIndex = (e: React.MouseEvent, i: number) => {
     setIndex(i);
@@ -223,20 +263,10 @@ export const LightboxComponent: React.FC<IProps> = ({
   const toggleSlideshow = useCallback(() => {
     if (slideshowInterval) {
       setSlideshowInterval(null);
-    } else if (
-      displayedSlideshowInterval !== null &&
-      typeof displayedSlideshowInterval !== "undefined"
-    ) {
-      const intervalNumber = Number.parseInt(displayedSlideshowInterval, 10);
-      setSlideshowInterval(intervalNumber * SECONDS_TO_MS);
     } else {
-      setSlideshowInterval(userSelectedSlideshowDelayOrDefault);
+      setSlideshowInterval(slideshowDelay * SECONDS_TO_MS);
     }
-  }, [
-    slideshowInterval,
-    userSelectedSlideshowDelayOrDefault,
-    displayedSlideshowInterval,
-  ]);
+  }, [slideshowInterval, slideshowDelay]);
 
   usePageVisibility(() => {
     toggleSlideshow();
@@ -347,10 +377,6 @@ export const LightboxComponent: React.FC<IProps> = ({
     else document.exitFullscreen();
   }, [isFullscreen]);
 
-  const handleSlideshowIntervalChange = (newSlideshowInterval: number) => {
-    setSlideshowInterval(newSlideshowInterval);
-  };
-
   const navItems = images.map((image, i) => (
     <img
       src={image.paths.thumbnail ?? ""}
@@ -367,19 +393,22 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const onDelayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let numberValue = Number.parseInt(e.currentTarget.value, 10);
+    setDisplayedSlideshowInterval(e.currentTarget.value);
+
     // Without this exception, the blocking of updates for invalid values is even weirder
     if (e.currentTarget.value === "-" || e.currentTarget.value === "") {
-      setDisplayedSlideshowInterval(e.currentTarget.value);
       return;
     }
 
-    setDisplayedSlideshowInterval(e.currentTarget.value);
+    numberValue =
+      numberValue >= MIN_VALID_INTERVAL_SECONDS
+        ? numberValue
+        : MIN_VALID_INTERVAL_SECONDS;
+
+    setSlideshowDelay(numberValue);
+
     if (slideshowInterval !== null) {
-      numberValue =
-        numberValue >= MIN_VALID_INTERVAL_SECONDS
-          ? numberValue
-          : MIN_VALID_INTERVAL_SECONDS;
-      handleSlideshowIntervalChange(numberValue * SECONDS_TO_MS);
+      setSlideshowInterval(numberValue * SECONDS_TO_MS);
     }
   };
 
@@ -446,7 +475,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               label={intl.formatMessage({
                 id: "dialogs.lightbox.scale_up.label",
               })}
-              checked={scaleUp}
+              checked={lightboxSettings?.scaleUp}
               disabled={displayMode === DisplayMode.ORIGINAL}
               onChange={(v) => setScaleUp(v.currentTarget.checked)}
             />
@@ -466,7 +495,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               label={intl.formatMessage({
                 id: "dialogs.lightbox.reset_zoom_on_nav",
               })}
-              checked={resetZoomOnNav}
+              checked={lightboxSettings?.resetZoomOnNav}
               onChange={(v) => setResetZoomOnNav(v.currentTarget.checked)}
             />
           </Col>
@@ -483,7 +512,7 @@ export const LightboxComponent: React.FC<IProps> = ({
             <Form.Control
               as="select"
               onChange={(e) => setScrollMode(e.target.value as ScrollMode)}
-              value={scrollMode}
+              value={lightboxSettings?.scrollMode}
               className="btn-secondary mx-1 mb-1"
             >
               <option value={ScrollMode.ZOOM} key={ScrollMode.ZOOM}>
@@ -681,8 +710,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                 <LightboxImage
                   src={image.paths.image ?? ""}
                   displayMode={displayMode}
-                  scaleUp={scaleUp}
-                  scrollMode={scrollMode}
+                  scaleUp={lightboxSettings?.scaleUp ?? false}
+                  scrollMode={lightboxSettings?.scrollMode ?? ScrollMode.ZOOM}
                   onLeft={handleLeft}
                   onRight={handleRight}
                   zoom={i === currentIndex ? zoom : 1}

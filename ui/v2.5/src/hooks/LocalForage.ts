@@ -1,6 +1,7 @@
 import localForage from "localforage";
 import _ from "lodash";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
+import { DisplayMode, ScrollMode } from "./Lightbox/LightboxImage";
 
 interface IInterfaceQueryConfig {
   filter: string;
@@ -8,7 +9,19 @@ interface IInterfaceQueryConfig {
   currentPage: number;
 }
 
-type IInterfaceConfig = Record<string, IInterfaceQueryConfig>;
+type IQueryConfig = Record<string, IInterfaceQueryConfig>;
+
+export interface IImageLightboxSettings {
+  slideshowDelay?: number;
+  displayMode?: DisplayMode;
+  resetZoomOnNav?: boolean;
+  scrollMode?: ScrollMode;
+  scaleUp?: boolean;
+}
+interface IInterfaceConfig {
+  queryConfig: IQueryConfig;
+  imageLightbox: IImageLightboxSettings;
+}
 
 export interface IChangelogConfig {
   versions: Record<string, boolean>;
