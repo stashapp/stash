@@ -89,6 +89,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [updateImage] = useImageUpdate();
 
   const [index, setIndex] = useState<number | null>(null);
+  const [movingLeft, setMovingLeft] = useState(false);
   const oldIndex = useRef<number | null>(null);
   const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
@@ -261,6 +262,8 @@ export const LightboxComponent: React.FC<IProps> = ({
     (isUserAction = true) => {
       if (isSwitchingPage || index === -1) return;
 
+      setMovingLeft(true);
+
       if (index === 0) {
         // go to next page, or loop back if no callback is set
         if (pageCallback) {
@@ -280,6 +283,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   const handleRight = useCallback(
     (isUserAction = true) => {
       if (isSwitchingPage) return;
+
+      setMovingLeft(false);
 
       if (index === images.length - 1) {
         // go to preview page, or loop back if no callback is set
@@ -685,6 +690,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                   scrollMode={scrollMode}
                   onLeft={handleLeft}
                   onRight={handleRight}
+                  alignBottom={movingLeft}
                   zoom={i === currentIndex ? zoom : 1}
                   setZoom={(v) => setZoom(v)}
                   resetPosition={resetPosition}
