@@ -184,24 +184,60 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
-    const percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
-    const minY = (defaultZoom * height - height) / 2 - defaultZoom * height + 1;
-    const maxY = (defaultZoom * height - height) / 2 + boxHeight - 1;
+  function onImageScrollPanY(ev: React.WheelEvent<HTMLDivElement>) {
+    const appliedZoom = zoom * defaultZoom;
+
+    let minY, maxY: number;
+    const inBounds = zoom * defaultZoom * height <= boxHeight;
+
+    // NOTE: I don't even know how these work, but they do
+    if (!inBounds) {
+      if (height > boxHeight) {
+        minY =
+          (appliedZoom * height - height) / 2 -
+          appliedZoom * height +
+          boxHeight;
+        maxY = (appliedZoom * height - height) / 2;
+      } else {
+        minY = (boxHeight - appliedZoom * height) / 2;
+        maxY = (appliedZoom * height - boxHeight) / 2;
+      }
+    } else {
+      minY = Math.min((boxHeight - height) / 2, 0);
+      maxY = minY;
+    }
+
     let newPositionY =
       positionY + (ev.deltaY < 0 ? SCROLL_PAN_STEP : -SCROLL_PAN_STEP);
+
+    // #2389 - if scroll up and at top, then go to previous image
+    // if scroll down and at bottom, then go to next image
+    if (newPositionY > maxY && positionY === maxY) {
+      onLeft();
+    } else if (newPositionY < minY && positionY === minY) {
+      onRight();
+    } else {
+      // ensure image doesn't go offscreen
+      console.log("unconstrained y: " + newPositionY);
+      newPositionY = Math.max(newPositionY, minY);
+      newPositionY = Math.min(newPositionY, maxY);
+      console.log("positionY: " + positionY + " newPositionY: " + newPositionY);
+
+      setPositionY(newPositionY);
+    }
+
+    ev.stopPropagation();
+  }
+
+  function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
+    const percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
 
     switch (getScrollMode(ev)) {
       case ScrollMode.ZOOM:
         setZoom(zoom * percent);
         break;
       case ScrollMode.PAN_Y:
-        // ensure image doesn't go offscreen
-        newPositionY = Math.max(newPositionY, minY);
-        newPositionY = Math.min(newPositionY, maxY);
-
-        setPositionY(newPositionY);
-        ev.stopPropagation();
+        onImageScrollPanY(ev);
         break;
     }
   }
