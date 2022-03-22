@@ -14,6 +14,8 @@ interface IProps {
   scrollMode: GQL.ImageLightboxScrollMode;
   resetPosition?: boolean;
   zoom: number;
+  // set to true to align image with bottom instead of top
+  alignBottom?: boolean;
   setZoom: (v: number) => void;
   onLeft: () => void;
   onRight: () => void;
@@ -26,6 +28,7 @@ export const LightboxImage: React.FC<IProps> = ({
   displayMode,
   scaleUp,
   scrollMode,
+  alignBottom,
   zoom,
   setZoom,
   resetPosition,
@@ -122,37 +125,45 @@ export const LightboxImage: React.FC<IProps> = ({
       newPositionY = Math.min((boxHeight - height) / 2, 0);
     } else {
       // otherwise, align top of image with container
-      newPositionY = Math.min((height * newZoom - height) / 2, 0);
+      if (!alignBottom) {
+        newPositionY = Math.min((height * newZoom - height) / 2, 0);
+      } else {
+        newPositionY = boxHeight - height * newZoom;
+      }
     }
 
     setDefaultZoom(newZoom);
     setPositionX(newPositionX);
     setPositionY(newPositionY);
-  }, [width, height, boxWidth, boxHeight, displayMode, scaleUp]);
+  }, [width, height, boxWidth, boxHeight, displayMode, scaleUp, alignBottom]);
 
-  const calculateTopPosition = useCallback(() => {
+  const calculateInitialPosition = useCallback(() => {
     // Center image from container's center
     const newPositionX = Math.min((boxWidth - width) / 2, 0);
     let newPositionY: number;
 
     if (zoom * defaultZoom * height > boxHeight) {
-      newPositionY = (height * zoom * defaultZoom - height) / 2;
+      if (!alignBottom) {
+        newPositionY = (height * zoom * defaultZoom - height) / 2;
+      } else {
+        newPositionY = boxHeight - height * zoom * defaultZoom;
+      }
     } else {
       newPositionY = Math.min((boxHeight - height) / 2, 0);
     }
 
     return [newPositionX, newPositionY];
-  }, [boxWidth, width, boxHeight, height, zoom, defaultZoom]);
+  }, [boxWidth, width, boxHeight, height, zoom, defaultZoom, alignBottom]);
 
   useEffect(() => {
     if (resetPosition !== resetPositionRef.current) {
       resetPositionRef.current = resetPosition;
 
-      const [x, y] = calculateTopPosition();
+      const [x, y] = calculateInitialPosition();
       setPositionX(x);
       setPositionY(y);
     }
-  }, [resetPosition, resetPositionRef, calculateTopPosition]);
+  }, [resetPosition, resetPositionRef, calculateInitialPosition]);
 
   function getScrollMode(ev: React.WheelEvent<HTMLDivElement>) {
     if (ev.shiftKey) {
@@ -174,24 +185,60 @@ export const LightboxImage: React.FC<IProps> = ({
     }
   }
 
-  function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
-    const percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
-    const minY = (defaultZoom * height - height) / 2 - defaultZoom * height + 1;
-    const maxY = (defaultZoom * height - height) / 2 + boxHeight - 1;
+  function onImageScrollPanY(ev: React.WheelEvent<HTMLDivElement>) {
+    const appliedZoom = zoom * defaultZoom;
+
+    let minY, maxY: number;
+    const inBounds = zoom * defaultZoom * height <= boxHeight;
+
+    // NOTE: I don't even know how these work, but they do
+    if (!inBounds) {
+      if (height > boxHeight) {
+        minY =
+          (appliedZoom * height - height) / 2 -
+          appliedZoom * height +
+          boxHeight;
+        maxY = (appliedZoom * height - height) / 2;
+      } else {
+        minY = (boxHeight - appliedZoom * height) / 2;
+        maxY = (appliedZoom * height - boxHeight) / 2;
+      }
+    } else {
+      minY = Math.min((boxHeight - height) / 2, 0);
+      maxY = minY;
+    }
+
     let newPositionY =
       positionY + (ev.deltaY < 0 ? SCROLL_PAN_STEP : -SCROLL_PAN_STEP);
+
+    // #2389 - if scroll up and at top, then go to previous image
+    // if scroll down and at bottom, then go to next image
+    if (newPositionY > maxY && positionY === maxY) {
+      onLeft();
+    } else if (newPositionY < minY && positionY === minY) {
+      onRight();
+    } else {
+      // ensure image doesn't go offscreen
+      console.log("unconstrained y: " + newPositionY);
+      newPositionY = Math.max(newPositionY, minY);
+      newPositionY = Math.min(newPositionY, maxY);
+      console.log("positionY: " + positionY + " newPositionY: " + newPositionY);
+
+      setPositionY(newPositionY);
+    }
+
+    ev.stopPropagation();
+  }
+
+  function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
+    const percent = ev.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
 
     switch (getScrollMode(ev)) {
       case GQL.ImageLightboxScrollMode.Zoom:
         setZoom(zoom * percent);
         break;
       case GQL.ImageLightboxScrollMode.PanY:
-        // ensure image doesn't go offscreen
-        newPositionY = Math.max(newPositionY, minY);
-        newPositionY = Math.min(newPositionY, maxY);
-
-        setPositionY(newPositionY);
-        ev.stopPropagation();
+        onImageScrollPanY(ev);
         break;
     }
   }
