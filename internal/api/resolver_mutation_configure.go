@@ -286,6 +286,12 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		}
 	}
 
+	setString := func(key string, v *string) {
+		if v != nil {
+			c.Set(key, *v)
+		}
+	}
+
 	if input.MenuItems != nil {
 		c.Set(config.MenuItems, input.MenuItems)
 	}
@@ -316,8 +322,22 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.Language, *input.Language)
 	}
 
+	// deprecated field
 	if input.SlideshowDelay != nil {
-		c.Set(config.SlideshowDelay, *input.SlideshowDelay)
+		c.Set(config.ImageLightboxSlideshowDelay, *input.SlideshowDelay)
+	}
+
+	if input.ImageLightbox != nil {
+		options := input.ImageLightbox
+
+		if options.SlideshowDelay != nil {
+			c.Set(config.ImageLightboxSlideshowDelay, *options.SlideshowDelay)
+		}
+
+		setString(config.ImageLightboxDisplayMode, (*string)(options.DisplayMode))
+		setBool(config.ImageLightboxScaleUp, options.ScaleUp)
+		setBool(config.ImageLightboxResetZoomOnNav, options.ResetZoomOnNav)
+		setString(config.ImageLightboxScrollMode, (*string)(options.ScrollMode))
 	}
 
 	if input.CSS != nil {

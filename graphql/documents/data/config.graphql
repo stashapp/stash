@@ -62,7 +62,13 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   css
   cssEnabled
   language
-  slideshowDelay
+  imageLightbox {
+    slideshowDelay
+    displayMode
+    scaleUp
+    resetZoomOnNav
+    scrollMode
+  }
   disableDropdownCreate {
     performer
     tag
