@@ -14,24 +14,28 @@ func (p *Python) Command(ctx context.Context, args []string) *exec.Cmd {
 }
 
 // New returns a new Python instance at the given path.
-func New(path string) Python {
-	return Python(path)
+func New(path string) *Python {
+	ret := Python(path)
+	return &ret
 }
 
 // Resolve tries to find the python executable in the system.
 // It first checks for python3, then python.
-// Returns an empty string and an exec.ErrNotFound error if not found.
-func Resolve() (Python, error) {
+// Returns nil and an exec.ErrNotFound error if not found.
+func Resolve() (*Python, error) {
 	_, err := exec.LookPath("python3")
 
 	if err != nil {
 		_, err = exec.LookPath("python")
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		return "python", nil
+		ret := Python("python")
+		return &ret, nil
 	}
-	return "python3", nil
+
+	ret := Python("python3")
+	return &ret, nil
 }
 
 // IsPythonCommand returns true if arg is "python" or "python3"

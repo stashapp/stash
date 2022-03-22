@@ -37,8 +37,15 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 
 	var cmd *exec.Cmd
 	if python.IsPythonCommand(command[0]) {
-		p, err := python.Resolve()
-		if err == nil {
+		pythonPath := s.globalConfig.GetPythonPath()
+		var p *python.Python
+		if pythonPath != "" {
+			p = python.New(pythonPath)
+		} else {
+			p, _ = python.Resolve()
+		}
+
+		if p != nil {
 			cmd = p.Command(context.TODO(), command[1:])
 		}
 

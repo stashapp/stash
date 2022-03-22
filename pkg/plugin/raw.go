@@ -44,12 +44,19 @@ func (t *rawPluginTask) Start() error {
 
 	var cmd *exec.Cmd
 	if python.IsPythonCommand(command[0]) {
-		p, err := python.Resolve()
-		if err == nil {
+		pythonPath := t.serverConfig.GetPythonPath()
+		var p *python.Python
+		if pythonPath != "" {
+			p = python.New(pythonPath)
+		} else {
+			p, _ = python.Resolve()
+		}
+
+		if p != nil {
 			cmd = p.Command(context.TODO(), command[1:])
 		}
 
-		// if err not nil then use the command args as-is
+		// if could not find python, just use the command args as-is
 	}
 
 	if cmd == nil {
