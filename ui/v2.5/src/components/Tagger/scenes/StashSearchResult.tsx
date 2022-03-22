@@ -339,6 +339,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           stash_id: scene.remote_site_id,
         },
       ];
+    } else {
+      // #2348 - don't include stash_ids if we're not setting them
+      delete sceneCreateInput.stash_ids;
     }
 
     await saveScene(sceneCreateInput, includeStashID);
