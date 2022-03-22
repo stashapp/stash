@@ -40,7 +40,8 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		imgs, err := image.FindByGalleryID(repo.Image(), obj.ID, "", "")
+		// #2376 - use first image (sorted by path) if no cover is present
+		imgs, err := image.FindByGalleryID(repo.Image(), obj.ID, "path", models.SortDirectionEnumAsc)
 		if err != nil {
 			return err
 		}
