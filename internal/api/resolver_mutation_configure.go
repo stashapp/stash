@@ -265,6 +265,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.StashBoxes, input.StashBoxes)
 	}
 
+	if input.PythonPath != nil {
+		c.Set(config.PythonPath, input.PythonPath)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}

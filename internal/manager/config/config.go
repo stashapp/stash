@@ -105,6 +105,8 @@ const (
 	// stash-box options
 	StashBoxes = "stash_boxes"
 
+	PythonPath = "python_path"
+
 	// plugin options
 	PluginsPath = "plugins_path"
 
@@ -603,6 +605,10 @@ func (i *Instance) GetDefaultPluginsPath() string {
 
 func (i *Instance) GetPluginsPath() string {
 	return i.getString(PluginsPath)
+}
+
+func (i *Instance) GetPythonPath() string {
+	return i.getString(PythonPath)
 }
 
 func (i *Instance) GetHost() string {
