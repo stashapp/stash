@@ -196,6 +196,33 @@ input ConfigDisableDropdownCreateInput {
   studio: Boolean
 }
 
+enum ImageLightboxDisplayMode {
+  ORIGINAL
+  FIT_XY
+  FIT_X
+}
+
+enum ImageLightboxScrollMode {
+  ZOOM
+  PAN_Y
+}
+
+input ConfigImageLightboxInput {
+  slideshowDelay: Int
+  displayMode: ImageLightboxDisplayMode
+  scaleUp: Boolean
+  resetZoomOnNav: Boolean
+  scrollMode: ImageLightboxScrollMode
+}
+
+type ConfigImageLightboxResult {
+  slideshowDelay: Int
+  displayMode: ImageLightboxDisplayMode
+  scaleUp: Boolean
+  resetZoomOnNav: Boolean
+  scrollMode: ImageLightboxScrollMode
+}
+
 input ConfigInterfaceInput {
   """Ordered list of items that should be shown in the menu"""
   menuItems: [String!]
@@ -229,9 +256,11 @@ input ConfigInterfaceInput {
   
   """Interface language"""
   language: String
-  
+
   """Slideshow Delay"""
-  slideshowDelay: Int
+  slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
+  
+  imageLightbox: ConfigImageLightboxInput
   
   """Set to true to disable creating new objects via the dropdown menus"""
   disableDropdownCreate: ConfigDisableDropdownCreateInput
@@ -291,7 +320,9 @@ type ConfigInterfaceResult {
   language: String
 
   """Slideshow Delay"""
-  slideshowDelay: Int
+  slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
+
+  imageLightbox: ConfigImageLightboxResult!
 
   """Fields are true if creating via dropdown menus are disabled"""
   disableDropdownCreate: ConfigDisableDropdownCreate!
