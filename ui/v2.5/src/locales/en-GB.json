@@ -279,6 +279,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
       "parallel_scan_head": "Parallel Scan/Generation",
       "preview_generation": "Preview Generation",
+      "python_path": {
+        "description": "Location of python executable. Used for script scrapers and plugins. If blank, python will be resolved from the environment",
+        "heading": "Python Path"
+      },
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string used during scrape http requests",
       "scrapers_path": {
