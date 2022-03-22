@@ -78,9 +78,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     const player = VideoJS(videoElement, options);
 
-    player.on("error", () => {
-      player.error(null);
-    });
     (player as any).landscapeFullscreen({
       fullscreen: {
         enterOnRotate: true,
@@ -132,6 +129,56 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
 
   useEffect(() => {
+    function handleOffset(player: VideoJsPlayer) {
+      if (!scene) return;
+
+      const currentSrc = player.currentSrc();
+
+      const isDirect = currentSrc.endsWith("/stream");
+      if (!isDirect) {
+        (player as any).setOffsetDuration(scene.file.duration);
+      } else {
+        (player as any).clearOffsetDuration();
+      }
+    }
+
+    function handleError(play: boolean) {
+      const player = playerRef.current;
+      if (!player) return;
+
+      const currentFile = player.currentSource();
+      if (currentFile) {
+        // eslint-disable-next-line no-console
+        console.log(`Source failed: ${currentFile.src}`);
+        player.focus();
+      }
+
+      if (tryNextStream()) {
+        // eslint-disable-next-line no-console
+        console.log(`Trying next source in playlist: ${player.currentSrc()}`);
+        player.load();
+        handleOffset(player);
+        if (play) {
+          player.play();
+        }
+      }
+    }
+
+    function tryNextStream() {
+      const player = playerRef.current;
+      if (!player) return;
+
+      const sources = player.currentSources();
+
+      if (sources.length > 1) {
+        sources.shift();
+        player.src(sources);
+        return true;
+      }
+
+      return false;
+    }
+
     if (!scene) return;
 
     const player = playerRef.current;
@@ -155,14 +202,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         scene.file.duration < maxLoopDuration
     );
 
-    const isDirect = new URL(scene.sceneStreams[0].url).pathname.endsWith(
-      "/stream"
-    );
-    if (!isDirect) {
-      (player as any).setOffsetDuration(scene.file.duration);
-    } else {
-      (player as any).clearOffsetDuration();
-    }
+    handleOffset(player);
 
     player.on("play", function (this: VideoJsPlayer) {
       if (scene.interactive) {
@@ -187,6 +227,23 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.on("seeking", function (this: VideoJsPlayer) {
       // backwards compatibility - may want to remove this in future
       this.play();
+    });
+
+    player.on("error", () => {
+      handleError(true);
+    });
+
+    player.on("loadedmetadata", () => {
+      if (!player.videoWidth() && !player.videoHeight()) {
+        // Occurs during preload when videos with supported audio/unsupported video are preloaded.
+        // Treat this as a decoding error and try the next source without playing.
+        // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
+        const currentFile = player.currentSrc();
+        if (currentFile != null && !currentFile.includes("m3u8")) {
+          const play = !player.paused();
+          handleError(play);
+        }
+      }
     });
 
     if (auto) {
