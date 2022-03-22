@@ -15,7 +15,7 @@ import debounce from "lodash/debounce";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useInterval, usePageVisibility, useToast } from "src/hooks";
 import { FormattedMessage, useIntl } from "react-intl";
-import { DisplayMode, LightboxImage, ScrollMode } from "./LightboxImage";
+import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
@@ -27,10 +27,8 @@ import {
   mutateImageResetO,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import {
-  IImageLightboxSettings,
-  useInterfaceLocalForage,
-} from "../LocalForage";
+import { useInterfaceLocalForage } from "../LocalForage";
+import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -124,7 +122,7 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const lightboxSettings = interfaceLocalForage.data?.imageLightbox;
 
-  function setLightboxSettings(v: Partial<IImageLightboxSettings>) {
+  function setLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
     setInterfaceLocalForage((prev) => {
       return {
         ...prev,
@@ -144,23 +142,24 @@ export const LightboxComponent: React.FC<IProps> = ({
     setLightboxSettings({ resetZoomOnNav: v });
   }
 
-  function setScrollMode(v: ScrollMode) {
+  function setScrollMode(v: GQL.ImageLightboxScrollMode) {
     setLightboxSettings({ scrollMode: v });
   }
 
   const slideshowDelay =
     lightboxSettings?.slideshowDelay ??
-    config?.interface.slideshowDelay ??
+    config?.interface.imageLightbox.slideshowDelay ??
     DEFAULT_SLIDESHOW_DELAY;
 
   function setSlideshowDelay(v: number) {
     setLightboxSettings({ slideshowDelay: v });
   }
 
-  const displayMode = lightboxSettings?.displayMode ?? DisplayMode.FIT_XY;
+  const displayMode =
+    lightboxSettings?.displayMode ?? GQL.ImageLightboxDisplayMode.FitXy;
   const oldDisplayMode = useRef(displayMode);
 
-  function setDisplayMode(v: DisplayMode) {
+  function setDisplayMode(v: GQL.ImageLightboxDisplayMode) {
     setLightboxSettings({ displayMode: v });
   }
 
@@ -405,7 +404,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         ? numberValue
         : MIN_VALID_INTERVAL_SECONDS;
 
-    setSlideshowDelay(numberValue);
+    setSlideshowDelay(numberValue * SECONDS_TO_MS);
 
     if (slideshowInterval !== null) {
       setSlideshowInterval(numberValue * SECONDS_TO_MS);
@@ -445,25 +444,19 @@ export const LightboxComponent: React.FC<IProps> = ({
         <Col xs={8}>
           <Form.Control
             as="select"
-            onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
+            onChange={(e) =>
+              setDisplayMode(e.target.value as GQL.ImageLightboxDisplayMode)
+            }
             value={displayMode}
             className="btn-secondary mx-1 mb-1"
           >
-            <option value={DisplayMode.ORIGINAL} key={DisplayMode.ORIGINAL}>
-              {intl.formatMessage({
-                id: "dialogs.lightbox.display_mode.original",
-              })}
-            </option>
-            <option value={DisplayMode.FIT_XY} key={DisplayMode.FIT_XY}>
-              {intl.formatMessage({
-                id: "dialogs.lightbox.display_mode.fit_to_screen",
-              })}
-            </option>
-            <option value={DisplayMode.FIT_X} key={DisplayMode.FIT_X}>
-              {intl.formatMessage({
-                id: "dialogs.lightbox.display_mode.fit_horizontally",
-              })}
-            </option>
+            {Array.from(imageLightboxDisplayModeIntlMap.entries()).map((v) => (
+              <option key={v[0]} value={v[0]}>
+                {intl.formatMessage({
+                  id: v[1],
+                })}
+              </option>
+            ))}
           </Form.Control>
         </Col>
       </Form.Group>
@@ -475,8 +468,8 @@ export const LightboxComponent: React.FC<IProps> = ({
               label={intl.formatMessage({
                 id: "dialogs.lightbox.scale_up.label",
               })}
-              checked={lightboxSettings?.scaleUp}
-              disabled={displayMode === DisplayMode.ORIGINAL}
+              checked={lightboxSettings?.scaleUp ?? false}
+              disabled={displayMode === GQL.ImageLightboxDisplayMode.Original}
               onChange={(v) => setScaleUp(v.currentTarget.checked)}
             />
           </Col>
@@ -495,7 +488,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               label={intl.formatMessage({
                 id: "dialogs.lightbox.reset_zoom_on_nav",
               })}
-              checked={lightboxSettings?.resetZoomOnNav}
+              checked={lightboxSettings?.resetZoomOnNav ?? false}
               onChange={(v) => setResetZoomOnNav(v.currentTarget.checked)}
             />
           </Col>
@@ -511,16 +504,26 @@ export const LightboxComponent: React.FC<IProps> = ({
           <Col xs={8}>
             <Form.Control
               as="select"
-              onChange={(e) => setScrollMode(e.target.value as ScrollMode)}
-              value={lightboxSettings?.scrollMode}
+              onChange={(e) =>
+                setScrollMode(e.target.value as GQL.ImageLightboxScrollMode)
+              }
+              value={
+                lightboxSettings?.scrollMode ?? GQL.ImageLightboxScrollMode.Zoom
+              }
               className="btn-secondary mx-1 mb-1"
             >
-              <option value={ScrollMode.ZOOM} key={ScrollMode.ZOOM}>
+              <option
+                value={GQL.ImageLightboxScrollMode.Zoom}
+                key={GQL.ImageLightboxScrollMode.Zoom}
+              >
                 {intl.formatMessage({
                   id: "dialogs.lightbox.scroll_mode.zoom",
                 })}
               </option>
-              <option value={ScrollMode.PAN_Y} key={ScrollMode.PAN_Y}>
+              <option
+                value={GQL.ImageLightboxScrollMode.PanY}
+                key={GQL.ImageLightboxScrollMode.PanY}
+              >
                 {intl.formatMessage({
                   id: "dialogs.lightbox.scroll_mode.pan_y",
                 })}
@@ -711,7 +714,10 @@ export const LightboxComponent: React.FC<IProps> = ({
                   src={image.paths.image ?? ""}
                   displayMode={displayMode}
                   scaleUp={lightboxSettings?.scaleUp ?? false}
-                  scrollMode={lightboxSettings?.scrollMode ?? ScrollMode.ZOOM}
+                  scrollMode={
+                    lightboxSettings?.scrollMode ??
+                    GQL.ImageLightboxScrollMode.Zoom
+                  }
                   onLeft={handleLeft}
                   onRight={handleRight}
                   zoom={i === currentIndex ? zoom : 1}

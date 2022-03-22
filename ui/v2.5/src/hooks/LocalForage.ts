@@ -1,7 +1,7 @@
 import localForage from "localforage";
 import _ from "lodash";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
-import { DisplayMode, ScrollMode } from "./Lightbox/LightboxImage";
+import { ConfigImageLightboxInput } from "src/core/generated-graphql";
 
 interface IInterfaceQueryConfig {
   filter: string;
@@ -11,16 +11,9 @@ interface IInterfaceQueryConfig {
 
 type IQueryConfig = Record<string, IInterfaceQueryConfig>;
 
-export interface IImageLightboxSettings {
-  slideshowDelay?: number;
-  displayMode?: DisplayMode;
-  resetZoomOnNav?: boolean;
-  scrollMode?: ScrollMode;
-  scaleUp?: boolean;
-}
 interface IInterfaceConfig {
   queryConfig: IQueryConfig;
-  imageLightbox: IImageLightboxSettings;
+  imageLightbox: ConfigImageLightboxInput;
 }
 
 export interface IChangelogConfig {

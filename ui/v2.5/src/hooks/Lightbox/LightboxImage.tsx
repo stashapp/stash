@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
+import * as GQL from "src/core/generated-graphql";
 
 const ZOOM_STEP = 1.1;
 const SCROLL_PAN_STEP = 75;
@@ -6,22 +7,11 @@ const CLASSNAME = "Lightbox";
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
 
-export enum DisplayMode {
-  ORIGINAL = "ORIGINAL",
-  FIT_XY = "FIT_XY",
-  FIT_X = "FIT_X",
-}
-
-export enum ScrollMode {
-  ZOOM = "ZOOM",
-  PAN_Y = "PAN_Y",
-}
-
 interface IProps {
   src: string;
-  displayMode: DisplayMode;
+  displayMode: GQL.ImageLightboxDisplayMode;
   scaleUp: boolean;
-  scrollMode: ScrollMode;
+  scrollMode: GQL.ImageLightboxScrollMode;
   resetPosition?: boolean;
   zoom: number;
   setZoom: (v: number) => void;
@@ -102,7 +92,7 @@ export const LightboxImage: React.FC<IProps> = ({
     let newZoom = 1;
     let newPositionY = 0;
     switch (displayMode) {
-      case DisplayMode.FIT_XY:
+      case GQL.ImageLightboxDisplayMode.FitXy:
         xZoom = boxWidth / width;
         yZoom = boxHeight / height;
 
@@ -112,14 +102,14 @@ export const LightboxImage: React.FC<IProps> = ({
         }
         newZoom = Math.min(xZoom, yZoom);
         break;
-      case DisplayMode.FIT_X:
+      case GQL.ImageLightboxDisplayMode.FitX:
         newZoom = boxWidth / width;
 
         if (!scaleUp) {
           newZoom = Math.min(newZoom, 1);
         }
         break;
-      case DisplayMode.ORIGINAL:
+      case GQL.ImageLightboxDisplayMode.Original:
         newZoom = 1;
         break;
     }
@@ -128,7 +118,7 @@ export const LightboxImage: React.FC<IProps> = ({
     const newPositionX = Math.min((boxWidth - width) / 2, 0);
 
     // if fitting to screen, then centre, other
-    if (displayMode === DisplayMode.FIT_XY) {
+    if (displayMode === GQL.ImageLightboxDisplayMode.FitXy) {
       newPositionY = Math.min((boxHeight - height) / 2, 0);
     } else {
       // otherwise, align top of image with container
@@ -167,10 +157,10 @@ export const LightboxImage: React.FC<IProps> = ({
   function getScrollMode(ev: React.WheelEvent<HTMLDivElement>) {
     if (ev.shiftKey) {
       switch (scrollMode) {
-        case ScrollMode.ZOOM:
-          return ScrollMode.PAN_Y;
-        case ScrollMode.PAN_Y:
-          return ScrollMode.ZOOM;
+        case GQL.ImageLightboxScrollMode.Zoom:
+          return GQL.ImageLightboxScrollMode.PanY;
+        case GQL.ImageLightboxScrollMode.PanY:
+          return GQL.ImageLightboxScrollMode.Zoom;
       }
     }
 
@@ -179,7 +169,7 @@ export const LightboxImage: React.FC<IProps> = ({
 
   function onContainerScroll(ev: React.WheelEvent<HTMLDivElement>) {
     // don't zoom if mouse isn't over image
-    if (getScrollMode(ev) === ScrollMode.PAN_Y) {
+    if (getScrollMode(ev) === GQL.ImageLightboxScrollMode.PanY) {
       onImageScroll(ev);
     }
   }
@@ -192,10 +182,10 @@ export const LightboxImage: React.FC<IProps> = ({
       positionY + (ev.deltaY < 0 ? SCROLL_PAN_STEP : -SCROLL_PAN_STEP);
 
     switch (getScrollMode(ev)) {
-      case ScrollMode.ZOOM:
+      case GQL.ImageLightboxScrollMode.Zoom:
         setZoom(zoom * percent);
         break;
-      case ScrollMode.PAN_Y:
+      case GQL.ImageLightboxScrollMode.PanY:
         // ensure image doesn't go offscreen
         newPositionY = Math.max(newPositionY, minY);
         newPositionY = Math.min(newPositionY, maxY);

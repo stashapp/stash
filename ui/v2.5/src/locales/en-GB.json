@@ -457,6 +457,9 @@
           }
         }
       },
+      "image_lightbox": {
+        "heading": "Image Lightbox"
+      },
       "interactive_options": "Interactive Options",
       "language": {
         "heading": "Language"
