@@ -120,6 +120,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		ScraperCertCheck:             config.GetScraperCertCheck(),
 		ScraperCDPPath:               &scraperCDPPath,
 		StashBoxes:                   config.GetStashBoxes(),
+		PythonPath:                   config.GetPythonPath(),
 	}
 }
 

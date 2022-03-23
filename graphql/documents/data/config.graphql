@@ -44,6 +44,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     endpoint
     api_key
   }
+  pythonPath
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
