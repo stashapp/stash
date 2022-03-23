@@ -30,18 +30,18 @@ func (rs sceneRoutes) Routes() chi.Router {
 		// streaming endpoints
 		r.Get("/stream", rs.StreamDirect)
 		r.Get("/stream.mkv", rs.StreamMKV)
+		r.Get("/stream.org.funscript", rs.Funscript)
+		r.Get("/stream.org.*", rs.StreamDirect)
 		r.Get("/stream.webm", rs.StreamWebM)
 		r.Get("/stream.m3u8", rs.StreamHLS)
 		r.Get("/stream.ts", rs.StreamTS)
 		r.Get("/stream.mp4", rs.StreamMp4)
-
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
 		r.Get("/vtt/chapter", rs.ChapterVtt)
 		r.Get("/funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
-
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
 		r.Get("/scene_marker/{sceneMarkerId}/screenshot", rs.SceneMarkerScreenshot)
@@ -75,7 +75,6 @@ func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
 
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-
 	ss := manager.SceneServer{
 		TXNManager: rs.txnManager,
 	}
@@ -85,16 +84,14 @@ func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 	// only allow mkv streaming if the scene container is an mkv already
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-
 	container := getSceneFileContainer(scene)
 	if container != ffmpeg.Matroska {
 		w.WriteHeader(http.StatusBadRequest)
-		if _, err := w.Write([]byte("not an mkv file")); err != nil {
+		if _, err := w.Write([]byte("not a mkv file")); err != nil {
 			logger.Warnf("[stream] error writing to stream: %v", err)
 		}
 		return
 	}
-
 	rs.streamTranscode(w, r, ffmpeg.CodecMKVAudio)
 }
 

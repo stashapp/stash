@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"path/filepath"
 	"time"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -92,6 +93,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt.Timestamp)
 	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL()
+	streamOrgPath := builder.GetStreamOrgURL(filepath.Ext(obj.Path))
 	webpPath := builder.GetStreamPreviewImageURL()
 	vttPath := builder.GetSpriteVTTURL()
 	spritePath := builder.GetSpriteURL()
@@ -103,6 +105,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		Screenshot:         &screenshotPath,
 		Preview:            &previewPath,
 		Stream:             &streamPath,
+		StreamOrg:          &streamOrgPath,
 		Webp:               &webpPath,
 		Vtt:                &vttPath,
 		ChaptersVtt:        &chaptersVttPath,
