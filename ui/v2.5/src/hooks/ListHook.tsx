@@ -586,6 +586,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     (updatedFilter: ListFilterModel, level: PersistanceLevel) => {
       if (level === PersistanceLevel.VIEW) {
         setInterfaceState((prevState) => {
+          if (!prevState.queryConfig) {
+            prevState.queryConfig = {};
+          }
           return {
             ...prevState,
             queryConfig: {
