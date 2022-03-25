@@ -135,7 +135,7 @@ func (qb *galleryQueryBuilder) FindBySceneID(sceneID int) ([]*models.Gallery, er
 
 func (qb *galleryQueryBuilder) FindByImageID(imageID int) ([]*models.Gallery, error) {
 	query := selectAll(galleryTable) + `
-	LEFT JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
+	INNER JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
 	WHERE images_join.image_id = ?
 	GROUP BY galleries.id
 	`
