@@ -28,6 +28,7 @@ type ServerConfig interface {
 	GetConfigPath() string
 	HasTLSConfig() bool
 	GetPluginsPath() string
+	GetPythonPath() string
 }
 
 // Cache stores plugin details.
@@ -167,11 +168,12 @@ func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName st
 	}
 
 	task := pluginTask{
-		plugin:     plugin,
-		operation:  operation,
-		input:      buildPluginInput(plugin, operation, serverConnection, args),
-		progress:   progress,
-		gqlHandler: c.gqlHandler,
+		plugin:       plugin,
+		operation:    operation,
+		input:        buildPluginInput(plugin, operation, serverConnection, args),
+		progress:     progress,
+		gqlHandler:   c.gqlHandler,
+		serverConfig: c.config,
 	}
 	return task.createTask(), nil
 }
@@ -216,10 +218,11 @@ func (c Cache) executePostHooks(ctx context.Context, hookType HookTriggerEnum, h
 			addHookContext(pluginInput.Args, hookContext)
 
 			pt := pluginTask{
-				plugin:     &p,
-				operation:  &h.OperationConfig,
-				input:      pluginInput,
-				gqlHandler: c.gqlHandler,
+				plugin:       &p,
+				operation:    &h.OperationConfig,
+				input:        pluginInput,
+				gqlHandler:   c.gqlHandler,
+				serverConfig: c.config,
 			}
 
 			task := pt.createTask()

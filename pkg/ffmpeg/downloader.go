@@ -124,10 +124,16 @@ func downloadSingle(ctx context.Context, configDirectory, url string) error {
 	if err != nil {
 		return err
 	}
-
 	logger.Info("Downloading complete")
 
-	if resp.Header.Get("Content-Type") == "application/zip" {
+	mime := resp.Header.Get("Content-Type")
+	if mime != "application/zip" { // try detecting MIME type since some servers don't return the correct one
+		data := make([]byte, 500) // http.DetectContentType only reads up to 500 bytes
+		_, _ = out.ReadAt(data, 0)
+		mime = http.DetectContentType(data)
+	}
+
+	if mime == "application/zip" {
 		logger.Infof("Unzipping %s...", archivePath)
 		if err := unzip(archivePath, configDirectory); err != nil {
 			return err

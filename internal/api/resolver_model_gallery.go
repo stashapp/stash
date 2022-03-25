@@ -28,7 +28,11 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 		var err error
 
 		// #2376 - sort images by path
-		ret, err = image.FindByGalleryID(repo.Image(), obj.ID, "path", models.SortDirectionEnumAsc)
+		// doing this via Query is really slow, so stick with FindByGalleryID
+		ret, err = repo.Image().FindByGalleryID(obj.ID)
+		if err != nil {
+			return err
+		}
 
 		return err
 	}); err != nil {
@@ -40,8 +44,8 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		// #2376 - use first image (sorted by path) if no cover is present
-		imgs, err := image.FindByGalleryID(repo.Image(), obj.ID, "path", models.SortDirectionEnumAsc)
+		// doing this via Query is really slow, so stick with FindByGalleryID
+		imgs, err := repo.Image().FindByGalleryID(obj.ID)
 		if err != nil {
 			return err
 		}

@@ -4,6 +4,7 @@
 package main
 
 import (
+	"context"
 	"time"
 
 	exampleCommon "github.com/stashapp/stash/pkg/plugin/examples/common"
@@ -37,14 +38,15 @@ func (a *api) Stop(input struct{}, output *bool) error {
 // acts accordingly.
 func (a *api) Run(input common.PluginInput, output *common.PluginOutput) error {
 	modeArg := input.Args.String("mode")
+	ctx := context.TODO()
 
 	var err error
 	if modeArg == "" || modeArg == "add" {
 		client := util.NewClient(input.ServerConnection)
-		err = exampleCommon.AddTag(client)
+		err = exampleCommon.AddTag(ctx, client)
 	} else if modeArg == "remove" {
 		client := util.NewClient(input.ServerConnection)
-		err = exampleCommon.RemoveTag(client)
+		err = exampleCommon.RemoveTag(ctx, client)
 	} else if modeArg == "long" {
 		err = a.doLongTask()
 	} else if modeArg == "indef" {

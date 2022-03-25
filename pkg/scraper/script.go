@@ -13,6 +13,7 @@ import (
 	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/python"
 )
 
 var ErrScraperScript = errors.New("scraper script error")
@@ -34,14 +35,27 @@ func newScriptScraper(scraper scraperTypeConfig, config config, globalConfig Glo
 func (s *scriptScraper) runScraperScript(inString string, out interface{}) error {
 	command := s.scraper.Script
 
-	if command[0] == "python" || command[0] == "python3" {
-		executable, err := findPythonExecutable()
-		if err == nil {
-			command[0] = executable
+	var cmd *exec.Cmd
+	if python.IsPythonCommand(command[0]) {
+		pythonPath := s.globalConfig.GetPythonPath()
+		var p *python.Python
+		if pythonPath != "" {
+			p = python.New(pythonPath)
+		} else {
+			p, _ = python.Resolve()
 		}
+
+		if p != nil {
+			cmd = p.Command(context.TODO(), command[1:])
+		}
+
+		// if could not find python, just use the command args as-is
 	}
 
-	cmd := stashExec.Command(command[0], command[1:]...)
+	if cmd == nil {
+		cmd = stashExec.Command(command[0], command[1:]...)
+	}
+
 	cmd.Dir = filepath.Dir(s.config.path)
 
 	stdin, err := cmd.StdinPipe()
@@ -218,22 +232,6 @@ func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mod
 	err = s.runScraperScript(string(inString), &ret)
 
 	return ret, err
-}
-
-func findPythonExecutable() (string, error) {
-	_, err := exec.LookPath("python3")
-
-	if err != nil {
-		_, err = exec.LookPath("python")
-
-		if err != nil {
-			return "", err
-		}
-
-		return "python", nil
-	}
-
-	return "python3", nil
 }
 
 func handleScraperStderr(name string, scraperOutputReader io.ReadCloser) {

@@ -108,6 +108,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.SetChecksumDefaultValues(i.GetVideoFileNamingAlgorithm(), i.IsCalculateMD5())
 				i.Set(AutostartVideoOnPlaySelected, i.GetAutostartVideoOnPlaySelected())
 				i.Set(ContinuePlaylistDefault, i.GetContinuePlaylistDefault())
+				i.Set(PythonPath, i.GetPythonPath())
 			}
 			wg.Done()
 		}(k)
