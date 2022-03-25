@@ -67,7 +67,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       controls: true,
       controlBar: {
         pictureInPictureToggle: false,
+        volumePanel: {
+          inline: false,
+        },
       },
+      nativeControlsForTouch: false,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
       inactivityTimeout: 2000,
       preload: "none",
