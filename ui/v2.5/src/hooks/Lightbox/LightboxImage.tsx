@@ -267,6 +267,8 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   function onImageMouseUp(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    if (ev.button !== 0) return;
+    
     if (
       !mouseDownEvent.current ||
       ev.timeStamp - mouseDownEvent.current.timeStamp > 200
