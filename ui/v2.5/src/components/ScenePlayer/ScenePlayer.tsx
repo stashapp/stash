@@ -134,7 +134,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
       const currentSrc = player.currentSrc();
 
-      const isDirect = currentSrc.endsWith("/stream");
+      const isDirect =
+        currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
       if (!isDirect) {
         (player as any).setOffsetDuration(scene.file.duration);
       } else {
@@ -157,7 +158,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         // eslint-disable-next-line no-console
         console.log(`Trying next source in playlist: ${player.currentSrc()}`);
         player.load();
-        handleOffset(player);
         if (play) {
           player.play();
         }
@@ -192,6 +192,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       scene.sceneStreams.map((stream) => ({
         src: stream.url,
         type: stream.mime_type ?? undefined,
+        label: stream.label ?? undefined,
       }))
     );
     player.currentTime(0);
@@ -202,7 +203,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         scene.file.duration < maxLoopDuration
     );
 
-    handleOffset(player);
+    player.on("loadstart", function (this: VideoJsPlayer) {
+      // handle offset after loading so that we get the correct current source
+      handleOffset(this);
+    });
 
     player.on("play", function (this: VideoJsPlayer) {
       if (scene.interactive) {
