@@ -29,18 +29,15 @@ $sceneTabWidth: 450px;
     outline: none;
   }
 
+  .vjs-vtt-thumbnail-display {
+    // default opacity to 0, it gets set to 1 when moused-over.
+    // prevents the border from showing up when initially loaded
+    opacity: 0;
+  }
+
   .vjs-touch-enabled {
     margin: 0 -15px;
     width: 100vw;
-
-    .vjs-control-bar {
-      align-items: end;
-      height: 100%;
-    }
-
-    .vjs-button {
-      pointer-events: none;
-    }
 
     &:hover.vjs-user-active {
       .vjs-button {
@@ -48,74 +45,30 @@ $sceneTabWidth: 450px;
       }
     }
 
-    .vjs-button,
-    .vjs-volume-panel {
-      display: none;
-    }
+    // make controls a little more compact on smaller screens
+    @media (max-width: 576px) {
+      .vjs-control-bar {
+        height: 2.5em;
+      }
 
-    .vjs-fullscreen-control {
-      display: inline-block;
-      height: 3em;
-    }
+      .vjs-control-bar .vjs-control:not(.vjs-progress-control) {
+        width: 2.5em;
+      }
 
-    .vjs-play-control {
-      display: inline-block;
-    }
+      .vjs-time-control {
+        font-size: 12px;
+        line-height: 4em;
+      }
 
-    .vjs-play-control,
-    .vjs-skip-button {
-      bottom: calc(50% - 3rem);
-      font-size: 6rem;
-      height: 6rem;
-      position: absolute;
-      width: 6rem;
-    }
-
-    .vjs-play-control {
-      left: calc(50% - 3rem);
-    }
-
-    .vjs-skip-button.vjs-icon-next-item {
-      left: calc(80% - 3rem);
-    }
-
-    .vjs-skip-button.vjs-icon-previous-item {
-      left: calc(20% - 3rem);
-    }
-
-    .vjs-play-control .vjs-icon-placeholder::before,
-    .vjs-skip-button::before {
-      font-size: 1em;
-      line-height: 1em;
+      .vjs-button > .vjs-icon-placeholder::before,
+      .vjs-skip-button::before {
+        font-size: 1.5em;
+        line-height: 2;
+      }
     }
 
     .vjs-current-time {
       margin-left: 1em;
-    }
-
-    .vjs-time-control {
-      font-size: 1em;
-      height: unset;
-    }
-
-    &.vjs-fullscreen {
-      .vjs-progress-control {
-        bottom: 4rem;
-        height: 1em;
-      }
-    }
-
-    &:not(.vjs-fullscreen) {
-      .vjs-progress-control {
-        bottom: 0;
-        height: unset;
-        margin: 0;
-        width: 100%;
-
-        .vjs-progress-holder {
-          margin: 0;
-        }
-      }
     }
 
     .vjs-vtt-thumbnail-display {
