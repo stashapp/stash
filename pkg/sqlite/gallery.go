@@ -135,7 +135,7 @@ func (qb *galleryQueryBuilder) FindBySceneID(sceneID int) ([]*models.Gallery, er
 
 func (qb *galleryQueryBuilder) FindByImageID(imageID int) ([]*models.Gallery, error) {
 	query := selectAll(galleryTable) + `
-	LEFT JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
+	INNER JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
 	WHERE images_join.image_id = ?
 	GROUP BY galleries.id
 	`
@@ -486,15 +486,12 @@ func galleryAverageResolutionCriterionHandler(qb *galleryQueryBuilder, resolutio
 }
 
 func (qb *galleryQueryBuilder) getGallerySort(findFilter *models.FindFilterType) string {
-	var sort string
-	var direction string
-	if findFilter == nil {
-		sort = "path"
-		direction = "ASC"
-	} else {
-		sort = findFilter.GetSort("path")
-		direction = findFilter.GetDirection()
+	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
+		return ""
 	}
+
+	sort := findFilter.GetSort("path")
+	direction := findFilter.GetDirection()
 
 	switch sort {
 	case "images_count":

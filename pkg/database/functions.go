@@ -1,14 +1,9 @@
 package database
 
 import (
-	"regexp"
 	"strconv"
 	"strings"
 )
-
-func regexFn(re, s string) (bool, error) {
-	return regexp.MatchString(re, s)
-}
 
 func durationToTinyIntFn(str string) (int64, error) {
 	splits := strings.Split(str, ":")

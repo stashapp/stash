@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -36,6 +36,7 @@ type GlobalConfig interface {
 	GetScrapersPath() string
 	GetScraperCDPPath() string
 	GetScraperCertCheck() bool
+	GetPythonPath() string
 }
 
 func isCDPPathHTTP(c GlobalConfig) bool {
@@ -110,7 +111,7 @@ func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManage
 	logger.Debugf("Reading scraper configs from %s", path)
 
 	scraperFiles := []string{}
-	err := utils.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
+	err := fsutil.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
 			c, err := loadConfigFromYAMLFile(fp)
 			if err != nil {
@@ -273,9 +274,15 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 			return nil, fmt.Errorf("scraper %s: unable to load scene id %v: %w", scraperID, id, err)
 		}
 
-		ret, err = ss.viaScene(ctx, c.client, scene)
+		// don't assign nil concrete pointer to ret interface, otherwise nil
+		// detection is harder
+		scraped, err := ss.viaScene(ctx, c.client, scene)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
+		}
+
+		if scraped != nil {
+			ret = scraped
 		}
 	case models.ScrapeContentTypeGallery:
 		gs, ok := s.(galleryScraper)
@@ -288,9 +295,15 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 			return nil, fmt.Errorf("scraper %s: unable to load gallery id %v: %w", scraperID, id, err)
 		}
 
-		ret, err = gs.viaGallery(ctx, c.client, gallery)
+		// don't assign nil concrete pointer to ret interface, otherwise nil
+		// detection is harder
+		scraped, err := gs.viaGallery(ctx, c.client, gallery)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: %w", scraperID, err)
+		}
+
+		if scraped != nil {
+			ret = scraped
 		}
 	}
 

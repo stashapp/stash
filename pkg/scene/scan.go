@@ -11,10 +11,10 @@ import (
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
-	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -61,7 +61,6 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	path := scanned.New.Path
 	interactive := getInteractive(path)
 
-	config := config.GetInstance()
 	oldHash := s.GetHash(scanner.FileNamingAlgorithm)
 	changed := false
 
@@ -140,7 +139,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		}
 
 		// Migrate any generated files if the hash has changed
-		newHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
+		newHash := s.GetHash(scanner.FileNamingAlgorithm)
 		if newHash != oldHash {
 			MigrateHash(scanner.Paths, oldHash, newHash)
 		}
@@ -203,7 +202,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 	interactive := getInteractive(file.Path())
 
 	if s != nil {
-		exists, _ := utils.FileExists(s.Path)
+		exists, _ := fsutil.FileExists(s.Path)
 		if !scanner.CaseSensitiveFs {
 			// #1426 - if file exists but is a case-insensitive match for the
 			// original filename, then treat it as a move
@@ -299,8 +298,8 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 	thumbPath := scanner.Paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := scanner.Paths.Scene.GetScreenshotPath(checksum)
 
-	thumbExists, _ := utils.FileExists(thumbPath)
-	normalExists, _ := utils.FileExists(normalPath)
+	thumbExists, _ := fsutil.FileExists(thumbPath)
+	normalExists, _ := fsutil.FileExists(normalPath)
 
 	if thumbExists && normalExists {
 		return
@@ -331,6 +330,6 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 }
 
 func getInteractive(path string) bool {
-	_, err := os.Stat(utils.GetFunscriptPath(path))
+	_, err := os.Stat(GetFunscriptPath(path))
 	return err == nil
 }

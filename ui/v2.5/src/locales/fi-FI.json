@@ -26,6 +26,7 @@
     "delete": "Poista",
     "delete_entity": "Poista {entityType}",
     "delete_file": "Poista tiedosto",
+    "delete_file_and_funscript": "Poista tiedosto (ja funscript)",
     "delete_generated_supporting_files": "Poista generoidut lisätiedostot",
     "disallow": "Kiellä",
     "download": "Lataa",
@@ -44,6 +45,7 @@
     "generate_thumb_from_current": "Generoi esikatselukuva nykyisestä",
     "hash_migration": "Tiivisteen yhdistäminen",
     "hide": "Piilota",
+    "hide_configuration": "Piilota Asetus",
     "identify": "Tunnista",
     "ignore": "Jätä huomiotta",
     "import": "Tuo…",
@@ -87,8 +89,11 @@
     "set_front_image": "Etukansi…",
     "set_image": "Aseta kuva…",
     "show": "Näytä",
+    "show_configuration": "Näytä Asetus",
     "skip": "Ohita",
     "stop": "Pysäytä",
+    "submit": "Lähetä",
+    "submit_stash_box": "Lähetä Stash-Boxiin",
     "tasks": {
       "clean_confirm_message": "Haluatko varmasti puhdistaa? Tämä poistaa tietokannan tiedot ja poistaa kaikki generoidut tukitiedostot kaikista kohtauksista ja gallerioista, eikä niitä enää ole löydettävissä levyltä.",
       "dry_mode_selected": "Kuivatila käytössä. Poistoa ei oikeasti tehdä, vain lokikirjaus.",
@@ -220,8 +225,6 @@
         "password": "Salasana",
         "password_desc": "Salasana Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia",
         "stash-box_integration": "Stash-box integraatio",
-        "trusted_proxies": "Luotetut välityspalvelimet",
-        "trusted_proxies_desc": "Lista välityspalvelimista, joiden liikenne Stashiin sallitaan. Jätä tyhjäksi salliaksesi pääsyn sisäverkosta.",
         "username": "Käyttäjätunnus",
         "username_desc": "Käyttäjätunnus Stashiin. Jätä tyhjäksi, mikäli et halua autentikointia"
       },
@@ -264,7 +267,7 @@
       "number_of_parallel_task_for_scan_generation_desc": "Automaattinen tunnistus on käytössä jos asetat 0. Varoitus: jos sallit enemmän tehtäviä kuin mitä suoritimesi kykenee suorittamaan voi järjestelmän suorituskyky laskea tai se voi aiheuttaa muita ongelmia.",
       "number_of_parallel_task_for_scan_generation_head": "Rinnakkaisten skannaus- ja generointitehtävien määrä",
       "parallel_scan_head": "Rinnakkainen skannaus ja generointi",
-      "preview_generation": "Esikatsele generointi",
+      "preview_generation": "Esikatselun generointi",
       "scraper_user_agent": "Kaapijan käyttäjäagentti",
       "scraper_user_agent_desc": "Käyttäjäagenttikenttä, jota kaavittaessa käytetään http pyynnöissä",
       "scrapers_path": {
@@ -404,6 +407,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Työpöytäintegraatio",
+        "notifications_enabled": "Laita ilmoitukset päälle",
+        "send_desktop_notifications_for_events": "Lähetä työpöytäilmoituksia tapahtumista",
         "skip_opening_browser": "Ohita selaimen avaus",
         "skip_opening_browser_on_startup": "Ohita selaimen automaattinen avaus käynnistäessä"
       },
@@ -577,6 +582,8 @@
       "marker_screenshots_tooltip": "Merkkien staattinen JPG -kuva, vaadittu vain jos esikatselutyypiksi on asetettu staattinen kuva.",
       "markers": "Merkkien esikatselut",
       "markers_tooltip": "20 sekunnin video jokaisen aikakoodin alusta.",
+      "override_preview_generation_options": "Ohita Esikatselun generoinnin asetukset",
+      "override_preview_generation_options_desc": "Ohita Esikatselun generoinnin asetukset tälle tehtävälle. Oletukset voi asettaa Järjestelmä -> Esikatselun generointi.",
       "overwrite": "Ylikirjoita olemassaolevat generoidut tiedostot",
       "phash": "Tiiviste (kaksoiskappaileiden tunnistamiseen)",
       "preview_exclude_end_time_desc": "Jätä viimeiset x sekuntia pois esikatseluista. Arvo voi olla sekunneissa tai prosenteissa (esim. 2%) kohtauksen kestosta.",
@@ -621,6 +628,7 @@
     "search_accuracy_label": "Haun tarkkuus",
     "title": "Kohtauksien kaksoiskappaleet"
   },
+  "duplicated_phash": "Kaksoiskappale (phash)",
   "duration": "Kesto",
   "effect_filters": {
     "aspect": "Kuvasuhde",
@@ -730,8 +738,34 @@
   "path": "Polku",
   "performer": "Esiintyjä",
   "performerTags": "Esiintyjien tunnisteet",
+  "performer_age": "Esiintyjän ikä",
   "performer_count": "Esiintyjien määrä",
   "performer_image": "Esiintyjän kuva",
+  "performer_tagger": {
+    "add_new_performers": "Lisää uusia esiintyjiä",
+    "batch_add_performers": "Lisää joukko esiintyjiä",
+    "batch_update_performers": "Päivitä joukko esiintyjiä",
+    "config": {
+      "active_stash-box_instance": "Aktiivinen stash-box instanssi:",
+      "edit_excluded_fields": "Muokkaa poisjätettyjä kenttiä",
+      "excluded_fields": "Poisjätetyt kentät:",
+      "no_fields_are_excluded": "Ei poisjätettyjä kenttiä",
+      "these_fields_will_not_be_changed_when_updating_performers": "Näitä kenttiä ei muokata kun päivitetään esiintyjiä."
+    },
+    "current_page": "Nykyinen sivu",
+    "failed_to_save_performer": "Esiintyjän \"{performer}\" tallentaminen ei onnistunut",
+    "name_already_exists": "Nimi on jo olemassa",
+    "network_error": "Verkkovirhe",
+    "no_results_found": "Ei tuloksia.",
+    "number_of_performers_will_be_processed": "{performer_count} esintyjää prosessoidaan",
+    "performer_names_separated_by_comma": "Erota esiintyjien nimet pilkulla",
+    "performer_selection": "Esiintyjän valinta",
+    "query_all_performers_in_the_database": "Kaikki esiintyjät tietokannassa",
+    "status_tagging_job_queued": "Tila: Tunnisteiden asettaminen laitettu jonoon",
+    "status_tagging_performers": "Tila: Asetetaan esiintyjien tunnisteita",
+    "update_performer": "Päivitä esiintyjä",
+    "update_performers": "Päivitä esiintyjät"
+  },
   "performers": "Esiintyjät",
   "piercings": "Lävistykset",
   "queue": "Jono",
@@ -817,10 +851,18 @@
       "next_step": "Kun olet valmis etenemään järjestelmän luontiin, paina Seuraava.",
       "unable_to_locate_specified_config": "Mikäli luet tätä, Stash ei löydä konfiguraatiotiedostoa, joka on määritelty joko komentorivillä tai muualla. Tämä velho auttaa sinua uuden konfiguraation luomisessa."
     },
-    "welcome_to_stash": "Tervetuloa Stashiin"
+    "welcome_to_stash": "Tervetuloa Stashiin",
+    "folder": {
+      "up_dir": "Ylös"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash ID:t",
+  "stashbox": {
+    "go_review_draft": "Mene {endpoint_name} katsoaksesi luonnosta.",
+    "submission_failed": "Lähettäminen ei onnistunut",
+    "submission_successful": "Lähettäminen onnistui"
+  },
   "stats": {
     "image_size": "Kuvien koko",
     "scenes_duration": "Kohtausten kesto",
@@ -859,7 +901,6 @@
   "total": "Yhteensä",
   "true": "On",
   "twitter": "Twitter",
-  "up-dir": "Ylös",
   "updated_at": "Päivitetty",
   "url": "URL",
   "videos": "Videot",

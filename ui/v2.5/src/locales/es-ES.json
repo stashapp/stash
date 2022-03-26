@@ -220,8 +220,6 @@
         "password": "Contraseña",
         "password_desc": "Contraseña para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación",
         "stash-box_integration": "Integración Stash-box",
-        "trusted_proxies": "Proxies verificados",
-        "trusted_proxies_desc": "Lista de proxies que tienen permitido el acceso a Stash. Dejar en blanco para permitir redes privadas.",
         "username": "Usuario",
         "username_desc": "Usuario para acceder a Stash. Dejar en blanco para deshabilitar la exigencia de identificación para acceder a la aplicación"
       },
@@ -835,7 +833,10 @@
       "next_step": "Cuando estés preparado para la creación de un nuevo entorno pulsa Siguiente.",
       "unable_to_locate_specified_config": "Si estás leyendo esto es que Stash no ha podido encontrar el fichero de configuración especificado en la línea de comandos o en el entorno en el que está instalado. Este asistente te guiará durante el proceso de creación de una nueva configuración."
     },
-    "welcome_to_stash": "Bienvenido a Stash"
+    "welcome_to_stash": "Bienvenido a Stash",
+    "folder": {
+      "up_dir": "Ascender en el árbol de directorios"
+    }
   },
   "stash_id": "Identificador único Stash",
   "stash_ids": "Stash IDs",
@@ -877,7 +878,6 @@
   "total": "Total",
   "true": "Sí",
   "twitter": "Twitter",
-  "up-dir": "Ascender en el árbol de directorios",
   "updated_at": "Fecha de modificación",
   "url": "URL",
   "weight": "Peso",

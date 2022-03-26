@@ -50,14 +50,17 @@ ifndef OFFICIAL_BUILD
     $(eval OFFICIAL_BUILD := false)
 endif
 
-build: pre-build
 ifdef IS_WIN_OS
+ifndef SUPPRESS_WINDOWSGUI
 PLATFORM_SPECIFIC_LDFLAGS := -H windowsgui
 endif
+endif
+
+build: pre-build
 build:
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
-	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/manager/config.officialBuild=$(OFFICIAL_BUILD)')
-	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS) $(PLATFORM_SPECIFIC_LDFLAGS)"
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/internal/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/internal/api.githash=$(GITHASH)')
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/manager/config.officialBuild=$(OFFICIAL_BUILD)')
+	go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" $(GO_BUILD_FLAGS) -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS) $(PLATFORM_SPECIFIC_LDFLAGS)" ./cmd/stash
 
 # strips debug symbols from the release build
 build-release: EXTRA_LDFLAGS := -s -w
@@ -140,6 +143,16 @@ cross-compile-all:
 	make cross-compile-linux-arm32v7
 	make cross-compile-linux-arm32v6
 
+.PHONY: touch-ui
+touch-ui:
+ifndef IS_WIN_SHELL
+	@mkdir -p ui/v2.5/build
+	@touch ui/v2.5/build/index.html
+else
+	@if not exist "ui\\v2.5\\build" mkdir ui\\v2.5\\build
+	@type nul >> ui/v2.5/build/index.html
+endif
+
 # Regenerates GraphQL files
 generate: generate-backend generate-frontend
 
@@ -148,8 +161,8 @@ generate-frontend:
 	cd ui/v2.5 && yarn run gqlgen
 
 .PHONY: generate-backend
-generate-backend:
-	go generate -mod=vendor
+generate-backend: touch-ui 
+	go generate -mod=vendor ./cmd/stash
 
 # Regenerates stash-box client files
 .PHONY: generate-stash-box-client

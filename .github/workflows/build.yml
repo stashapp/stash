@@ -73,13 +73,8 @@ jobs:
 
     # Static validation happens in the linter workflow in parallel to this workflow
     # Run Dynamic validation here, to make sure we pass all the projects integration tests
-    #
-    # create UI file so that the embed doesn't fail
     - name: Test Backend
-      run: |
-        mkdir -p ui/v2.5/build
-        touch ui/v2.5/build/index.html
-        docker exec -t build /bin/bash -c "make it"
+      run: docker exec -t build /bin/bash -c "make it"
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)
@@ -91,7 +86,8 @@ jobs:
     - name: Compile for all supported platforms
       run: |
         docker exec -t build /bin/bash -c "make cross-compile-windows"
-        docker exec -t build /bin/bash -c "make cross-compile-macos"
+        docker exec -t build /bin/bash -c "make cross-compile-macos-intel"
+        docker exec -t build /bin/bash -c "make cross-compile-macos-applesilicon"
         docker exec -t build /bin/bash -c "make cross-compile-linux"
         docker exec -t build /bin/bash -c "make cross-compile-linux-arm64v8"
         docker exec -t build /bin/bash -c "make cross-compile-linux-arm32v7"
@@ -120,8 +116,8 @@ jobs:
       if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
       uses: actions/upload-artifact@v2
       with:
-        name: Stash-macos.zip
-        path: dist/Stash-macos.zip
+        name: stash-macos-intel
+        path: dist/stash-macos-intel
 
     - name: Upload Linux binary
       # only upload binaries for pull requests
@@ -144,7 +140,8 @@ jobs:
         automatic_release_tag: latest_develop
         title: "${{ env.STASH_VERSION }}: Latest development build"
         files: |
-          dist/Stash-macos.zip
+          dist/stash-macos-intel
+          dist/stash-macos-applesilicon
           dist/stash-win.exe
           dist/stash-linux
           dist/stash-linux-arm64v8
@@ -154,12 +151,13 @@ jobs:
 
     - name: Master release
       if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
-      uses: meeDamian/github-release@2.0
+      uses: WithoutPants/github-release@v2.0.4
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
         allow_override: true
         files: |
-          dist/Stash-macos.zip
+          dist/stash-macos-intel
+          dist/stash-macos-applesilicon
           dist/stash-win.exe
           dist/stash-linux
           dist/stash-linux-arm64v8
@@ -169,7 +167,7 @@ jobs:
         gzip: false
 
     - name: Development Docker
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+      if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -183,7 +181,7 @@ jobs:
         bash ./docker/ci/x86_64/docker_push.sh development
 
     - name: Release Docker
-      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}

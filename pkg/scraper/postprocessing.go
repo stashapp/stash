@@ -2,11 +2,8 @@ package scraper
 
 import (
 	"context"
-	"regexp"
-	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
-	stash_config "github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -199,37 +196,12 @@ func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery) (
 func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
 	var ret []*models.ScrapedTag
 
-	excludePatterns := stash_config.GetInstance().GetScraperExcludeTagPatterns()
-	var excludeRegexps []*regexp.Regexp
-
-	for _, excludePattern := range excludePatterns {
-		reg, err := regexp.Compile(strings.ToLower(excludePattern))
-		if err != nil {
-			logger.Errorf("Invalid tag exclusion pattern :%v", err)
-		} else {
-			excludeRegexps = append(excludeRegexps, reg)
-		}
-	}
-
-	var ignoredTags []string
-ScrapeTag:
 	for _, t := range scrapedTags {
-		for _, reg := range excludeRegexps {
-			if reg.MatchString(strings.ToLower(t.Name)) {
-				ignoredTags = append(ignoredTags, t.Name)
-				continue ScrapeTag
-			}
-		}
-
 		err := match.ScrapedTag(tqb, t)
 		if err != nil {
 			return nil, err
 		}
 		ret = append(ret, t)
-	}
-
-	if len(ignoredTags) > 0 {
-		logger.Infof("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
 	}
 
 	return ret, nil

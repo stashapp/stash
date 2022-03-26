@@ -26,11 +26,14 @@
     "delete": "删除",
     "delete_entity": "删除 {entityType}",
     "delete_file": "删除文件",
+    "delete_file_and_funscript": "删除文件（和funscript）",
     "delete_generated_supporting_files": "删除已经生成的支持文件",
+    "delete_stashid": "删除 StashID",
     "disallow": "不允许",
     "download": "下载",
     "download_backup": "下载备份",
     "edit": "编辑",
+    "edit_entity": "编辑 {entityType}",
     "export": "导出…",
     "export_all": "导出所有…",
     "find": "搜索",
@@ -44,15 +47,18 @@
     "generate_thumb_from_current": "从现在的画面生成预览图",
     "hash_migration": "识别码迁移",
     "hide": "隐藏",
+    "hide_configuration": "隐藏设定",
     "identify": "鉴定",
     "ignore": "略过",
     "import": "导入…",
     "import_from_file": "从文件导入",
+    "logout": "注销",
     "merge": "合并",
     "merge_from": "合并源",
     "merge_into": "合并入",
     "next_action": "下一个",
     "not_running": "未运行",
+    "open_in_external_player": "由外部播放器打开",
     "open_random": "开启随机",
     "overwrite": "覆盖",
     "play_random": "随机播放",
@@ -63,6 +69,7 @@
     "reload_plugins": "重新加载插件",
     "reload_scrapers": "重新加载网页挖掘器",
     "remove": "移除",
+    "remove_from_gallery": "从图库中删除",
     "rename_gen_files": "重命名生成的文件",
     "rescan": "重新扫描",
     "reshuffle": "重新排列",
@@ -77,6 +84,7 @@
     "scrape_with": "使用挖掘器…",
     "search": "搜索",
     "select_all": "选择所有",
+    "select_entity": "选择 {entityType}",
     "select_folders": "选择目录",
     "select_none": "清除选择",
     "selective_auto_tag": "选择性自动生成标签",
@@ -87,8 +95,11 @@
     "set_front_image": "设置正面图…",
     "set_image": "设置图片…",
     "show": "展示",
+    "show_configuration": "显示设定",
     "skip": "跳过",
     "stop": "停止",
+    "submit": "提交",
+    "submit_stash_box": "提交给 Stash-Box",
     "tasks": {
       "clean_confirm_message": "确定要清除吗？ 这将删除系统中不存在的所有短片和图库的数据库信息和已经生成的内容。",
       "dry_mode_selected": "已经选择了模拟删除模式。不会实际删除文件，只会写下记录。",
@@ -188,14 +199,19 @@
     "dlna": {
       "allow_temp_ip": "允许 {tempIP}",
       "allowed_ip_addresses": "已经允许的 IP 地址",
+      "allowed_ip_temporarily": "暂时允许 IP 地址",
       "default_ip_whitelist": "默认 IP 白名单",
       "default_ip_whitelist_desc": "默认IP地址允许连接到DLNA，使用 {wildcard} 以允许所有IP地址连接。",
+      "disabled_dlna_temporarily": "暂时禁止 DLNA",
+      "disallowed_ip": "不允许的 IP 地址",
       "enabled_by_default": "默认启用",
+      "enabled_dlna_temporarily": "暂时允许 DLNA",
       "network_interfaces": "网络接口",
       "network_interfaces_desc": "选择要在哪个接口上暴露 DLNA 服务，如果为空，则表示所有接口都可用，更改之后需要重启DLNA。",
       "recent_ip_addresses": "最近连接的IP地址",
       "server_display_name": "服务器名称",
       "server_display_name_desc": "DLAN服务器的名称。如果为空，则默认为 {server_name}。",
+      "successfully_cancelled_temporary_behaviour": "成功取消暂时的服务行为",
       "until_restart": "直到服务重启"
     },
     "general": {
@@ -220,8 +236,6 @@
         "password": "密码",
         "password_desc": "登录 Stash 时所需的密码.留空表示关闭身份验证",
         "stash-box_integration": "整合 Stash-box",
-        "trusted_proxies": "可信任的代理服务器",
-        "trusted_proxies_desc": "允许网络流进入stash的代理服务器列表.如留空则为允许私有网络的流入.",
         "username": "用户名",
         "username_desc": "登录 Stash 时所需的用户名.留空表示关闭身份验证"
       },
@@ -414,6 +428,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "桌面一体化",
+        "notifications_enabled": "允许通知",
+        "send_desktop_notifications_for_events": "传送事件给桌面通知",
         "skip_opening_browser": "不打开浏览器",
         "skip_opening_browser_on_startup": "启动时不自动打开浏览器"
       },
@@ -487,7 +503,8 @@
           "continue_playlist_default": {
             "description": "当视频结束时播放下一短片",
             "heading": "默认继续播放清单"
-          }
+          },
+          "show_scrubber": "显示预览轴"
         }
       },
       "scene_wall": {
@@ -600,6 +617,8 @@
       "marker_screenshots_tooltip": "标记使用静态JPG图，仅用于预览类型设为【静图】时。",
       "markers": "标记预览",
       "markers_tooltip": "从给出的时间码开始20秒的视频.",
+      "override_preview_generation_options": "凌驾预览生成选项",
+      "override_preview_generation_options_desc": "在本次操作中凌驾于预览生成设定的选项。默认的选项在 系统 -> 预览生成。",
       "overwrite": "覆盖已经生成的文件",
       "phash": "感知识别码PHash（用于检测短片是否重复）",
       "preview_exclude_end_time_desc": "从短片预览中排除最后 x 秒。可以是一个以秒为单位的值，也可以是百分比（比如2%）。",
@@ -651,6 +670,7 @@
     "search_accuracy_label": "搜索准确度",
     "title": "重复短片"
   },
+  "duplicated_phash": "重复的（感知码）",
   "duration": "时长",
   "effect_filters": {
     "aspect": "比例",
@@ -758,10 +778,48 @@
   "parent_tags": "母标签",
   "part_of": "{parent} 的部分",
   "path": "路径",
+  "perceptual_similarity": "感知的类似程度（感知码）",
   "performer": "演员",
   "performerTags": "演员标签",
+  "performer_age": "演员年龄",
   "performer_count": "演员数量",
+  "performer_favorite": "演员已收藏",
   "performer_image": "演员图片",
+  "performer_tagger": {
+    "add_new_performers": "添加演员",
+    "any_names_entered_will_be_queried": "任何输入的名字将会从远程的Stash-Box端点查询并且加入（如果找到）。只有完全符合的名字才会视为匹配。",
+    "batch_add_performers": "批量添加演员",
+    "batch_update_performers": "批量更新演员",
+    "config": {
+      "active_stash-box_instance": "当前使用的stash-box：",
+      "edit_excluded_fields": "编辑不包括的域名",
+      "excluded_fields": "不包括的域名：",
+      "no_fields_are_excluded": "没有不包括的域名",
+      "no_instances_found": "没有找到端点",
+      "these_fields_will_not_be_changed_when_updating_performers": "以下的域名在演员资料更新时不会被改变。"
+    },
+    "current_page": "当前页面",
+    "failed_to_save_performer": "保存演员 \"{performer}\" 失败",
+    "name_already_exists": "演员名字已存在",
+    "network_error": "网路出错",
+    "no_results_found": "没有找到资料。",
+    "number_of_performers_will_be_processed": "有 {performer_count} 个演员将会被处理",
+    "performer_already_tagged": "演员已标签",
+    "performer_names_separated_by_comma": "演员名（逗号分隔）",
+    "performer_selection": "选择演员",
+    "performer_successfully_tagged": "演员成功标签：",
+    "query_all_performers_in_the_database": "查找所有在数据库的演员",
+    "refresh_tagged_performers": "更新已标签的演员",
+    "refreshing_will_update_the_data": "重新载入会更新所有已从stash-box端点标签的演员的数据。",
+    "status_tagging_job_queued": "状态：标签工作入列",
+    "status_tagging_performers": "状态：标签演员当中",
+    "tag_status": "标签状态",
+    "to_use_the_performer_tagger": "使用演员标签的功能前，必须先设定好一个stash-box的端点。",
+    "untagged_performers": "未标签的演员",
+    "update_performer": "更新演员资料",
+    "update_performers": "更新演员们资料",
+    "updating_untagged_performers_description": "更新尚未标记的演员，会尝试搜寻没有stashid的演员并更新其元数据。"
+  },
   "performers": "演员",
   "piercings": "穿洞",
   "queue": "序列",
@@ -802,6 +860,10 @@
       "something_went_wrong": "天啊！出错啦！",
       "something_went_wrong_description": "如果看上去是你输入的问题，请点击“回去”以修正。又或者，在{githubLink}提出这个毛病，或者在{discordLink}寻求帮助。",
       "something_went_wrong_while_setting_up_your_system": "在设立你的系统时出错。以下是错误信息：{error}"
+    },
+    "folder": {
+      "file_path": "文件路径",
+      "up_dir": "上级目录"
     },
     "github_repository": "Github 代码仓库",
     "migrate": {
@@ -860,6 +922,12 @@
   },
   "stash_id": "Stash 号",
   "stash_ids": "Stash号",
+  "stashbox": {
+    "go_review_draft": "去 {endpoint_name} 检阅草稿。",
+    "selected_stash_box": "选择的 Stash-Box 终端",
+    "submission_failed": "提交失败",
+    "submission_successful": "成功提交"
+  },
   "stats": {
     "image_size": "图片大小",
     "scenes_duration": "短片长度",
@@ -898,7 +966,6 @@
   "total": "总共",
   "true": "真",
   "twitter": "推特",
-  "up-dir": "上级目录",
   "updated_at": "更新时间",
   "url": "链接",
   "videos": "视频",

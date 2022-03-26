@@ -12,8 +12,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestMovieFindByName(t *testing.T) {
@@ -222,7 +222,7 @@ func TestMovieUpdateMovieImages(t *testing.T) {
 		const name = "TestMovieUpdateMovieImages"
 		movie := models.Movie{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 		}
 		created, err := mqb.Create(movie)
 		if err != nil {
@@ -289,7 +289,7 @@ func TestMovieDestroyMovieImages(t *testing.T) {
 		const name = "TestMovieDestroyMovieImages"
 		movie := models.Movie{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 		}
 		created, err := mqb.Create(movie)
 		if err != nil {

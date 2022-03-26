@@ -220,8 +220,6 @@
         "password": "Mot de passe",
         "password_desc": "Mot de passe pour accéder à Stash. Laissez vide pour désactiver l'authentification.",
         "stash-box_integration": "Integration de stash-box",
-        "trusted_proxies": "Proxys de confiance",
-        "trusted_proxies_desc": "Liste des proxys autorisés à transférer le trafic vers Stash. Laissez vide pour autoriser à partir du réseau privé.",
         "username": "Nom d'utilisateur",
         "username_desc": "Nom d'utilisateur pour accéder à Stash. Laissez vide pour désactiver l'authentification."
       },
@@ -853,7 +851,10 @@
       "next_step": "Lorsque vous êtes prêt à procéder à la configuration d'un nouveau système, cliquez sur Suivant.",
       "unable_to_locate_specified_config": "Si vous lisez ceci, alors Stash n'a pas pu trouver le fichier de configuration spécifié sur la ligne de commande ou l'environnement. Cet assistant vous guidera tout au long du processus de configuration d'une nouvelle configuration."
     },
-    "welcome_to_stash": "Bienvenue sur Stash"
+    "welcome_to_stash": "Bienvenue sur Stash",
+    "folder": {
+      "up_dir": "Remonter d'un répertoire"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -895,7 +896,6 @@
   "total": "Total",
   "true": "Vrai",
   "twitter": "Twitter",
-  "up-dir": "Remonter d'un répertoire",
   "updated_at": "Date de modification",
   "url": "URL",
   "videos": "Vidéos",

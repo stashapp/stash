@@ -22,7 +22,7 @@ type autotagScraper struct {
 }
 
 func autotagMatchPerformers(path string, performerReader models.PerformerReader) ([]*models.ScrapedPerformer, error) {
-	p, err := match.PathToPerformers(path, performerReader)
+	p, err := match.PathToPerformers(path, performerReader, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error matching performers: %w", err)
 	}
@@ -46,7 +46,7 @@ func autotagMatchPerformers(path string, performerReader models.PerformerReader)
 }
 
 func autotagMatchStudio(path string, studioReader models.StudioReader) (*models.ScrapedStudio, error) {
-	studio, err := match.PathToStudio(path, studioReader)
+	studio, err := match.PathToStudio(path, studioReader, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error matching studios: %w", err)
 	}
@@ -63,7 +63,7 @@ func autotagMatchStudio(path string, studioReader models.StudioReader) (*models.
 }
 
 func autotagMatchTags(path string, tagReader models.TagReader) ([]*models.ScrapedTag, error) {
-	t, err := match.PathToTags(path, tagReader)
+	t, err := match.PathToTags(path, tagReader, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error matching tags: %w", err)
 	}

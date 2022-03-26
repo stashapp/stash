@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,9 +9,10 @@ import (
 	"os/exec"
 	"sync"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common"
+	"github.com/stashapp/stash/pkg/python"
 )
 
 type rawTaskBuilder struct{}
@@ -30,19 +32,6 @@ type rawPluginTask struct {
 	done      chan bool
 }
 
-func FindPythonExecutable() (string, error) {
-	_, err := exec.LookPath("python3")
-
-	if err != nil {
-		_, err = exec.LookPath("python")
-		if err != nil {
-			return "", err
-		}
-		return "python", nil
-	}
-	return "python3", nil
-}
-
 func (t *rawPluginTask) Start() error {
 	if t.started {
 		return errors.New("task already started")
@@ -53,14 +42,26 @@ func (t *rawPluginTask) Start() error {
 		return fmt.Errorf("empty exec value in operation %s", t.operation.Name)
 	}
 
-	if command[0] == "python" || command[0] == "python3" {
-		executable, err := FindPythonExecutable()
-		if err == nil {
-			command[0] = executable
+	var cmd *exec.Cmd
+	if python.IsPythonCommand(command[0]) {
+		pythonPath := t.serverConfig.GetPythonPath()
+		var p *python.Python
+		if pythonPath != "" {
+			p = python.New(pythonPath)
+		} else {
+			p, _ = python.Resolve()
 		}
+
+		if p != nil {
+			cmd = p.Command(context.TODO(), command[1:])
+		}
+
+		// if could not find python, just use the command args as-is
 	}
 
-	cmd := exec.Command(command[0], command[1:]...)
+	if cmd == nil {
+		cmd = stashExec.Command(command[0], command[1:]...)
+	}
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -88,7 +89,6 @@ func (t *rawPluginTask) Start() error {
 
 	t.waitGroup.Add(1)
 	t.done = make(chan bool, 1)
-	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		return fmt.Errorf("error running plugin: %v", err)
 	}

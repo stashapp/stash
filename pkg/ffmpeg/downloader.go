@@ -13,9 +13,9 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	stashExec "github.com/stashapp/stash/pkg/exec"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func GetPaths(paths []string) (string, string) {
@@ -29,10 +29,10 @@ func GetPaths(paths []string) (string, string) {
 
 	// Check if ffmpeg exists in the config directory
 	if ffmpegPath == "" {
-		ffmpegPath = utils.FindInPaths(paths, getFFMPEGFilename())
+		ffmpegPath = fsutil.FindInPaths(paths, getFFMPEGFilename())
 	}
 	if ffprobePath == "" {
-		ffprobePath = utils.FindInPaths(paths, getFFProbeFilename())
+		ffprobePath = fsutil.FindInPaths(paths, getFFProbeFilename())
 	}
 
 	return ffmpegPath, ffprobePath
@@ -40,7 +40,7 @@ func GetPaths(paths []string) (string, string) {
 
 func Download(ctx context.Context, configDirectory string) error {
 	for _, url := range getFFMPEGURL() {
-		err := DownloadSingle(ctx, configDirectory, url)
+		err := downloadSingle(ctx, configDirectory, url)
 		if err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func (r *progressReader) Read(p []byte) (int, error) {
 	return read, err
 }
 
-func DownloadSingle(ctx context.Context, configDirectory, url string) error {
+func downloadSingle(ctx context.Context, configDirectory, url string) error {
 	if url == "" {
 		return fmt.Errorf("no ffmpeg url for this platform")
 	}
@@ -124,10 +124,16 @@ func DownloadSingle(ctx context.Context, configDirectory, url string) error {
 	if err != nil {
 		return err
 	}
-
 	logger.Info("Downloading complete")
 
-	if resp.Header.Get("Content-Type") == "application/zip" {
+	mime := resp.Header.Get("Content-Type")
+	if mime != "application/zip" { // try detecting MIME type since some servers don't return the correct one
+		data := make([]byte, 500) // http.DetectContentType only reads up to 500 bytes
+		_, _ = out.ReadAt(data, 0)
+		mime = http.DetectContentType(data)
+	}
+
+	if mime == "application/zip" {
 		logger.Infof("Unzipping %s...", archivePath)
 		if err := unzip(archivePath, configDirectory); err != nil {
 			return err
@@ -203,8 +209,7 @@ func pathBinaryHasCorrectFlags() bool {
 	if err != nil {
 		return false
 	}
-	cmd := exec.Command(ffmpegPath)
-	desktop.HideExecShell(cmd)
+	cmd := stashExec.Command(ffmpegPath)
 	bytes, _ := cmd.CombinedOutput()
 	output := string(bytes)
 	hasOpus := strings.Contains(output, "--enable-libopus")

@@ -2,7 +2,7 @@ package image
 
 import (
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 func UpdateFileModTime(qb models.ImageWriter, id int, modTime models.NullSQLiteTimestamp) (*models.Image, error) {
@@ -19,7 +19,7 @@ func AddPerformer(qb models.ImageReaderWriter, id int, performerID int) (bool, e
 	}
 
 	oldLen := len(performerIDs)
-	performerIDs = utils.IntAppendUnique(performerIDs, performerID)
+	performerIDs = intslice.IntAppendUnique(performerIDs, performerID)
 
 	if len(performerIDs) != oldLen {
 		if err := qb.UpdatePerformers(id, performerIDs); err != nil {
@@ -39,7 +39,7 @@ func AddTag(qb models.ImageReaderWriter, id int, tagID int) (bool, error) {
 	}
 
 	oldLen := len(tagIDs)
-	tagIDs = utils.IntAppendUnique(tagIDs, tagID)
+	tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
 
 	if len(tagIDs) != oldLen {
 		if err := qb.UpdateTags(id, tagIDs); err != nil {

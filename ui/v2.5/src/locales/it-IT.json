@@ -26,11 +26,14 @@
     "delete": "Cancella",
     "delete_entity": "Cancella {entityType}",
     "delete_file": "Cancella file",
+    "delete_file_and_funscript": "Cancella file (e funscript)",
     "delete_generated_supporting_files": "Cancella file di supporto creati",
+    "delete_stashid": "Cancellare StashID",
     "disallow": "Non Acconsentire",
     "download": "Scarica",
     "download_backup": "Scarica Backup",
     "edit": "Edita",
+    "edit_entity": "Modifica {entityType}",
     "export": "Esporta…",
     "export_all": "Esporta tutto…",
     "find": "Trova",
@@ -44,15 +47,18 @@
     "generate_thumb_from_current": "Genera thumbnail dall'attuale schermata",
     "hash_migration": "migrazione hash",
     "hide": "Nascondi",
+    "hide_configuration": "Nascondi Configurazione",
     "identify": "Identifica",
     "ignore": "Ignora",
     "import": "Importa…",
     "import_from_file": "Importa dal file",
+    "logout": "Esci",
     "merge": "Unisci",
     "merge_from": "Unisci da",
     "merge_into": "Unisci in",
     "next_action": "Prossima",
     "not_running": "non in funzione",
+    "open_in_external_player": "Aprire nel lettore esterno",
     "open_random": "Apri Casuale",
     "overwrite": "Sovrascrivi",
     "play_random": "Avvia Random",
@@ -63,6 +69,7 @@
     "reload_plugins": "Ricarica plugin",
     "reload_scrapers": "Ricarica scraper",
     "remove": "Rimuovi",
+    "remove_from_gallery": "Cancellare dalla Galleria",
     "rename_gen_files": "Rinomina file creati",
     "rescan": "Riscansiona",
     "reshuffle": "Rimescola",
@@ -77,6 +84,7 @@
     "scrape_with": "Scrape con…",
     "search": "Cerca",
     "select_all": "Seleziona Tutto",
+    "select_entity": "Seleziona {entityType}",
     "select_folders": "Seleziona cartelle",
     "select_none": "Deseleziona Tutto",
     "selective_auto_tag": "Tag Automatico Selettivo",
@@ -87,8 +95,11 @@
     "set_front_image": "Immagine Frontale…",
     "set_image": "Imposta immagine…",
     "show": "Mostra",
+    "show_configuration": "Mostra Configurazione",
     "skip": "Salta",
     "stop": "Stop",
+    "submit": "Invia",
+    "submit_stash_box": "Invia a Stash-Box",
     "tasks": {
       "clean_confirm_message": "Sei sicuro di voler Pulire? Questa azione cancellerà informazioni e contenuto creato dal database per tutte le scene e gallerie che non si trovano più nel file system.",
       "dry_mode_selected": "Dry Mode selezionato. Nessuna cancellazione avverrà, solo log.",
@@ -130,8 +141,8 @@
       "set_cover_label": "Imposta la copertina della scena",
       "set_tag_desc": "Attacca tag alla scena, sovrascrivendoli o unendoli a quelli esistenti sulla scena.",
       "set_tag_label": "Imposta i tags",
-      "show_male_desc": "Attiva/Disattiva l'opzione di taggare attori.",
-      "show_male_label": "Mostra attori",
+      "show_male_desc": "Attiva/Disattiva l'opzione di taggare attori maschi.",
+      "show_male_label": "Mostra attori maschi",
       "source": "Sorgente"
     },
     "noun_query": "Query",
@@ -188,14 +199,19 @@
     "dlna": {
       "allow_temp_ip": "Acconsenti {tempIP}",
       "allowed_ip_addresses": "Indirizzi IP con Accesso",
+      "allowed_ip_temporarily": "Permettere IP temporaneamente",
       "default_ip_whitelist": "Lista Bianca degli indirizzi IP predefiniti",
       "default_ip_whitelist_desc": "Indirizzi IP predefiniti con accesso DLNA. Usare {wildcard} per consentire tutti gli inditizzi IP.",
+      "disabled_dlna_temporarily": "Disabilitare DLNA temporaneamente",
+      "disallowed_ip": "IP Non consentito",
       "enabled_by_default": "Attivo in modo predefinito",
+      "enabled_dlna_temporarily": "Abilitare DLNA temporaneamente",
       "network_interfaces": "Interfacce",
       "network_interfaces_desc": "Interfacce sulle quali esporre il server DLNA. Una lista vuota implicherà l'uso di tutte le interfacce. Richiede il riavvio del server DLNA dopo le modifiche.",
       "recent_ip_addresses": "Indirizzi IP Recenti",
       "server_display_name": "Nome del Server",
       "server_display_name_desc": "Nome visualizzato per il server DLNA. Predefinito come {server_name} se lasciato vuoto.",
+      "successfully_cancelled_temporary_behaviour": "Funzionamento temporaneo cancellato con successo",
       "until_restart": "fino al riavvio"
     },
     "general": {
@@ -220,8 +236,6 @@
         "password": "Password",
         "password_desc": "Password per accedere a Stash. Lasciare vuota per disabilitare l'autenticazione utente",
         "stash-box_integration": "Integrazione Stash-box",
-        "trusted_proxies": "Proxy fidati",
-        "trusted_proxies_desc": "Lista di Proxy con accesso per incanalare traffico verso Stash. Lasciare vuoto per acconsentire da rete privata.",
         "username": "Nome Utente",
         "username_desc": "Nome Utente per accedere a Stash. Lasciare vuoto per disabilitare l'autenticazione"
       },
@@ -303,7 +317,7 @@
     "stashbox": {
       "add_instance": "Aggiungi istanza stash-box",
       "api_key": "Chiave API",
-      "description": "Stash-box facilita il tag automatico delle scene e degli/delle attori/attrici basandosi sulle impronte e nomi file.\nL'endpoint e la chiave API possono essere trovati sul tuo account sull'istanza stash-box. I nomi sono richiesti quando più di un'istanza è aggiunta..",
+      "description": "Stash-box facilita il tag automatico delle scene e degli attori basandosi sulle impronte e nomi file.\nL'endpoint e la chiave API possono essere trovati sul tuo account sull'istanza stash-box. I nomi sono richiesti quando più di un'istanza è aggiunta..",
       "endpoint": "Endpoint",
       "graphql_endpoint": "Endpoint del GraphQL",
       "name": "Nome",
@@ -414,6 +428,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Integrazione Desktop",
+        "notifications_enabled": "Attiva Notifiche",
+        "send_desktop_notifications_for_events": "Invia notifiche desktop per gli eventi",
         "skip_opening_browser": "Salta l'Apertura del Browser",
         "skip_opening_browser_on_startup": "Salta l'apertura automatica del browser durante l'avvio"
       },
@@ -456,8 +472,8 @@
       "performers": {
         "options": {
           "image_location": {
-            "description": "Percorso personalizzato per le immagini predefinite degli/delle attori/attrici. Lasciare vuoto per usare il predefinito interno",
-            "heading": "Percorso Immagini Attori/Attrici Personalizzato"
+            "description": "Percorso personalizzato per le immagini predefinite degli attori. Lasciare vuoto per usare il predefinito interno",
+            "heading": "Percorso Immagine Attore/Attrice Personalizzato"
           }
         }
       },
@@ -487,7 +503,8 @@
           "continue_playlist_default": {
             "description": "Avvia la prossima scena in coda quando il video finisce",
             "heading": "Continua la playlist per impostazione predefinita"
-          }
+          },
+          "show_scrubber": "Mostra Scrubber"
         }
       },
       "scene_wall": {
@@ -550,7 +567,7 @@
   "developmentVersion": "Versione Sviluppo",
   "dialogs": {
     "aliases_must_be_unique": "gli alias devono essere univoci",
-    "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno eliminati permanentemente:",
+    "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
     "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
     "delete_entity_desc": "{count, plural, one {Sei sicuro di voler cancellare questo/a {singularEntity}? A meno che anche il file venga cancellato, questo/a {singularEntity} sarà riaggiunto quando la scansione verrà effettuata.} other {Sei sicuro di voler cancellare questi/e {pluralEntity}? A meno che anche i file vengano cancellati, questi/e {pluralEntity} verranno riaggiunti quando la scansione verrà effettuata.}}",
     "delete_entity_title": "{count, plural, one {Cancellazione {singularEntity}} other {Cancellazione {pluralEntity}}}",
@@ -600,6 +617,8 @@
       "marker_screenshots_tooltip": "Immagini marcatore statico JPG, richiesto solo se Immagine Statica è selezionata come Tipo Anteprima.",
       "markers": "Anteprime Marcatori",
       "markers_tooltip": "Video di 20 secondi che iniziano ad un determinato momento.",
+      "override_preview_generation_options": "Opzioni di Override della Creazione Anteprime",
+      "override_preview_generation_options_desc": "Opzioni di Override per la Creazione Anteprime per questa operazione. I prefediniti sono impostati in Sistema -> Creazione Anteprime.",
       "overwrite": "Sovrascrive gli esistenti file creati",
       "phash": "Perceptual hashes/Hash Percettivo (per i duplicati)",
       "preview_exclude_end_time_desc": "Esclude gli ultimi x secondi dall'anteprima scena. Può essere un valore in secondi, o una percentuale (es. 2%) della lunghezza totale della scena.",
@@ -651,6 +670,7 @@
     "search_accuracy_label": "Accuratezza Ricerca",
     "title": "Scene Duplicate"
   },
+  "duplicated_phash": "Duplicato (phash)",
   "duration": "Lunghezza",
   "effect_filters": {
     "aspect": "Aspetto",
@@ -758,11 +778,49 @@
   "parent_tags": "Tag Principali",
   "part_of": "Parte di {parent}",
   "path": "Percorso",
+  "perceptual_similarity": "Somiglianza percettiva (phash)",
   "performer": "Attore/Attrice",
-  "performerTags": "Tag Attori/Attrici",
+  "performerTags": "Tag Attore/Attrice",
+  "performer_age": "Età Attore/Attrice",
   "performer_count": "Numero Attori",
+  "performer_favorite": "Attore/Attrice Favorito",
   "performer_image": "Immagine Attore/Attrice",
-  "performers": "Attori/Attrici",
+  "performer_tagger": {
+    "add_new_performers": "Aggiungi Nuovi Attori",
+    "any_names_entered_will_be_queried": "Qualsiasi nome inserito sarà richiesto dall'istanza remota Stash-Box e aggiunto se trovato. Solo corrispondenze esatte saranno considerate corrispondenze.",
+    "batch_add_performers": "Aggiungi Attori in Blocco",
+    "batch_update_performers": "Aggiorna Attori in Blocco",
+    "config": {
+      "active_stash-box_instance": "Istanza stash-box attiva:",
+      "edit_excluded_fields": "Modifica Campi Esclusi",
+      "excluded_fields": "Campi esclusi:",
+      "no_fields_are_excluded": "Nessun campo escluso",
+      "no_instances_found": "Nessuna istanza trovata",
+      "these_fields_will_not_be_changed_when_updating_performers": "Questi campi non saranno modificati quando si aggiorneranno gli attori."
+    },
+    "current_page": "Pagina corrente",
+    "failed_to_save_performer": "Salvataggio attore/attrice \"{performer}\" fallito",
+    "name_already_exists": "Nome già esistente",
+    "network_error": "Errore di Rete",
+    "no_results_found": "Nessun risultato trovato.",
+    "number_of_performers_will_be_processed": "{performer_count} attori saranno processati",
+    "performer_already_tagged": "Attore/Attrice già taggato/a",
+    "performer_names_separated_by_comma": "Nome attore/attrice separato da virgola",
+    "performer_selection": "Selezione attore/attrice",
+    "performer_successfully_tagged": "Attore/Attrice taggato/a con successo:",
+    "query_all_performers_in_the_database": "Tutti gli attori nel database",
+    "refresh_tagged_performers": "Aggiorna attori taggati",
+    "refreshing_will_update_the_data": "Aggiornare aggiornerà i dati di qualsiasi attore/attrice taggato dall'istanza stash-box.",
+    "status_tagging_job_queued": "Stato: Lavoro tag in coda",
+    "status_tagging_performers": "Stato: Taggando attori",
+    "tag_status": "Stato tag",
+    "to_use_the_performer_tagger": "Per usare un tagger per attore/attrice un'istanza stash-box dev'essere configurata.",
+    "untagged_performers": "Attori non taggati",
+    "update_performer": "Aggiornare Attore/Attrice",
+    "update_performers": "Aggiorna Attori",
+    "updating_untagged_performers_description": "Aggiornare gli attori non taggati cercherà di abbinare qualsiasi attore/attrice senza stashid e aggiornerà i metadata."
+  },
+  "performers": "Attori",
   "piercings": "Piercing",
   "queue": "Coda",
   "random": "Casuale",
@@ -802,6 +860,10 @@
       "something_went_wrong": "Oh no! Qualcosa è andato storto!",
       "something_went_wrong_description": "Se questo sembra essere un problema con i dati inseriti, premete indietro per correggerli. Altrimenti, aprite un bug report su {githubLink} o cercare aiuto su {discordLink}.",
       "something_went_wrong_while_setting_up_your_system": "Qualcosa è andato storto durante la configurazione del tuo sistema. Questo è l'errore che abbiamo ricevuto: {error}"
+    },
+    "folder": {
+      "file_path": "Percorso file",
+      "up_dir": "Sali una cartella"
     },
     "github_repository": "Github repository",
     "migrate": {
@@ -860,6 +922,12 @@
   },
   "stash_id": "ID Stash",
   "stash_ids": "ID Stash",
+  "stashbox": {
+    "go_review_draft": "Vai al {endpoint_name} per revisionare la bozza.",
+    "selected_stash_box": "Endpoint Stash-Box selezionato",
+    "submission_failed": "Invio fallito",
+    "submission_successful": "Invio riuscito"
+  },
   "stats": {
     "image_size": "Dimensione immagini",
     "scenes_duration": "Lunghezza scene",
@@ -898,7 +966,6 @@
   "total": "Totale",
   "true": "Vero",
   "twitter": "Twitter",
-  "up-dir": "Sali una cartella",
   "updated_at": "Aggiornato Al",
   "url": "URL",
   "videos": "Video",

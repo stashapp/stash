@@ -713,8 +713,8 @@ func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.Hierarch
 
 func sceneMoviesCriterionHandler(qb *sceneQueryBuilder, movies *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		qb.moviesRepository().join(f, "movies_join", "scenes.id")
-		f.addLeftJoin("movies", "", "movies_join.movie_id = movies.id")
+		qb.moviesRepository().join(f, "", "scenes.id")
+		f.addLeftJoin("movies", "", "movies_scenes.movie_id = movies.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(movieTable, moviesScenesTable, "movie_id", addJoinsFunc)
 	return h.handler(movies)
@@ -760,8 +760,7 @@ func (qb *sceneQueryBuilder) getDefaultSceneSort() string {
 }
 
 func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
-	if findFilter == nil {
-		query.sortAndPagination += qb.getDefaultSceneSort()
+	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
 		return
 	}
 	sort := findFilter.GetSort("title")

@@ -220,8 +220,6 @@
         "password": "Parola",
         "password_desc": "Stash'a erişim için parola. Kullanıcı yetkilendirme yapmak istemiyorsanız boş bırakın",
         "stash-box_integration": "Stash-box entegrasyonu",
-        "trusted_proxies": "Güvenilen proxy sunucular",
-        "trusted_proxies_desc": "Stash'a veri göndermesine izin verdiğiniz proxy listesi. Özel ağdan erişime izin vermek için boş bırakın.",
         "username": "Kullanıcı adı",
         "username_desc": "Stash'a erişim için kullanıcı adı. Kullanıcı yetkilendirme yapmak istemiyorsanız boş bırakın"
       },
@@ -847,7 +845,10 @@
       "next_step": "Yeni bir sistem oluşturmak için hazır olduğunuzda Sonraki düğmesine basın.",
       "unable_to_locate_specified_config": "Eğer bunu okuyorsanız, Stash yapılandırma dosyasını bulamamış demektir. Bu sihirbaz yeni bir yapılandırma sırasında size yol gösterecektir."
     },
-    "welcome_to_stash": "Stash uygulamasına hoşgeldiniz"
+    "welcome_to_stash": "Stash uygulamasına hoşgeldiniz",
+    "folder": {
+      "up_dir": "Bir dizin üste çık"
+    }
   },
   "stash_id": "Stash Kimliği (ID)",
   "stash_ids": "Stash Kimlikleri (ID)",
@@ -889,7 +890,6 @@
   "total": "Toplam",
   "true": "Doğru",
   "twitter": "Twitter",
-  "up-dir": "Bir dizin üste çık",
   "updated_at": "Güncellenme Zamanı",
   "url": "Internet Adresi (URL)",
   "videos": "Videolar",

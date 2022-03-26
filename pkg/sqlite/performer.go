@@ -183,9 +183,6 @@ func (qb *performerQueryBuilder) QueryForAutoTag(words []string) ([]*models.Perf
 	var whereClauses []string
 	var args []interface{}
 
-	whereClauses = append(whereClauses, "name regexp ?")
-	args = append(args, "^[\\w][.\\-_ ]")
-
 	for _, w := range words {
 		whereClauses = append(whereClauses, "name like ?")
 		args = append(args, w+"%")

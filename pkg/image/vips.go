@@ -3,10 +3,9 @@ package image
 import (
 	"bytes"
 	"fmt"
-	"os/exec"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	"github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -33,7 +32,6 @@ func (e *vipsEncoder) run(args []string, stdin *bytes.Buffer) (string, error) {
 	cmd.Stderr = &stderr
 	cmd.Stdin = stdin
 
-	desktop.HideExecShell(cmd)
 	if err := cmd.Start(); err != nil {
 		return "", err
 	}

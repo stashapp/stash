@@ -26,11 +26,14 @@
     "delete": "刪除",
     "delete_entity": "刪除{entityType}",
     "delete_file": "刪除檔案",
+    "delete_file_and_funscript": "刪除檔案 (及其 Funscript)",
     "delete_generated_supporting_files": "刪除已生成的資訊檔案",
+    "delete_stashid": "刪除 StashID",
     "disallow": "不允許",
     "download": "下載",
     "download_backup": "下載備份",
     "edit": "編輯",
+    "edit_entity": "編輯{entityType}",
     "export": "匯出…",
     "export_all": "匯出所有…",
     "find": "搜尋",
@@ -44,15 +47,18 @@
     "generate_thumb_from_current": "從現在的畫面產生預覽圖",
     "hash_migration": "雜湊值遷移",
     "hide": "隱藏",
+    "hide_configuration": "隱藏設定",
     "identify": "辨認",
     "ignore": "忽略",
     "import": "匯入…",
     "import_from_file": "自檔案匯入",
+    "logout": "登出",
     "merge": "合併",
     "merge_from": "與其他項目合併",
     "merge_into": "合併至其他項目",
     "next_action": "下一步",
     "not_running": "尚未運行",
+    "open_in_external_player": "透過外部播放器開啟",
     "open_random": "隨機開啟",
     "overwrite": "覆寫",
     "play_random": "隨機播放",
@@ -63,6 +69,7 @@
     "reload_plugins": "重新整理插件",
     "reload_scrapers": "重新整理爬蟲",
     "remove": "移除",
+    "remove_from_gallery": "自圖庫中移除",
     "rename_gen_files": "重新命名已產生的檔案",
     "rescan": "重新掃描",
     "reshuffle": "重新隨機排列",
@@ -77,6 +84,7 @@
     "scrape_with": "透過爬蟲取得資訊…",
     "search": "搜尋",
     "select_all": "全選",
+    "select_entity": "選擇{entityType}",
     "select_folders": "選擇資料夾",
     "select_none": "清除選擇",
     "selective_auto_tag": "選擇性套用標籤",
@@ -87,8 +95,11 @@
     "set_front_image": "設定正面圖…",
     "set_image": "設定圖像…",
     "show": "顯示",
+    "show_configuration": "顯示設定",
     "skip": "跳過",
     "stop": "停止",
+    "submit": "提交",
+    "submit_stash_box": "提交至 Stash-Box",
     "tasks": {
       "clean_confirm_message": "您確定要進行清理嗎？這將從資料庫及產生的文件中清除已不在的短片及圖庫。",
       "dry_mode_selected": "已選擇了模擬作業模式。不會進行任何實際刪除作業，只會進行模擬記錄。",
@@ -97,9 +108,7 @@
     "temp_disable": "暫時關閉…",
     "temp_enable": "暫時啟用…",
     "use_default": "使用預設選項",
-    "view_random": "隨機開啟",
-    "submit": "提交",
-    "submit_stash_box": "提交至 Stash-Box"
+    "view_random": "隨機開啟"
   },
   "actions_name": "動作",
   "age": "年齡",
@@ -190,14 +199,19 @@
     "dlna": {
       "allow_temp_ip": "允許 {tempIP}",
       "allowed_ip_addresses": "已允許的 IP 位址",
+      "allowed_ip_temporarily": "已暫時允許 IP 位址",
       "default_ip_whitelist": "預設 IP 白名單",
       "default_ip_whitelist_desc": "預設可存取 DLNA 的 IP 位址，使用 {wildcard} 以允許所有 IP 位址。",
+      "disabled_dlna_temporarily": "已暫時關閉 DLNA 伺服器",
+      "disallowed_ip": "已禁止的 IP 位址",
       "enabled_by_default": "預設啟用",
+      "enabled_dlna_temporarily": "已暫時開啟 DLNA 伺服器",
       "network_interfaces": "網路裝置",
       "network_interfaces_desc": "選擇要在哪個網路裝置上開放 DLNA 連線。當本列表為空時，則會在所有網路裝置上聽取連線。需重啟。",
       "recent_ip_addresses": "最近的 IP 位址",
       "server_display_name": "伺服器顯示名稱",
       "server_display_name_desc": "DLNA 伺服器的顯示名稱。如果為空，則預設為 {server_name}。",
+      "successfully_cancelled_temporary_behaviour": "已關閉暫時啟用伺服器的功能",
       "until_restart": "直到重啟"
     },
     "general": {
@@ -222,8 +236,6 @@
         "password": "密碼",
         "password_desc": "使用 Stash 時所需的密碼，留空以關閉身份驗證",
         "stash-box_integration": "整合 Stash-box",
-        "trusted_proxies": "已信任代理伺服器",
-        "trusted_proxies_desc": "允許代理 stash 流量的代理伺服器列表。留空以允許內網。",
         "username": "用戶名",
         "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證"
       },
@@ -416,6 +428,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "桌面整合",
+        "notifications_enabled": "開啟通知",
+        "send_desktop_notifications_for_events": "當事件發生時，傳送瀏覽器通知",
         "skip_opening_browser": "關閉瀏覽器自動開啟",
         "skip_opening_browser_on_startup": "伺服器啟動時，不要自動開啟瀏覽器"
       },
@@ -489,7 +503,8 @@
           "continue_playlist_default": {
             "description": "當影片播放完畢時，自動跳至下一個短片",
             "heading": "持續播放播放清單"
-          }
+          },
+          "show_scrubber": "顯示預覽軸"
         }
       },
       "scene_wall": {
@@ -602,6 +617,8 @@
       "marker_screenshots_tooltip": "靜態 JPG 預覽，僅適用於設置為『靜態』的預覽類型。",
       "markers": "章節預覽",
       "markers_tooltip": "自標記的時間點算起長度20秒的短片預覽。",
+      "override_preview_generation_options": "強制使用所選的預覽產生設定",
+      "override_preview_generation_options_desc": "在本次工作排程中，強制使用所選的預覽產生設定。預設設定請見『系統』->『預覽生成設定』。",
       "overwrite": "覆蓋現有的生成檔案",
       "phash": "PHash（用於偵測重複的影片檔案及辨認短片）",
       "preview_exclude_end_time_desc": "從場景預覽中排除最後 x 秒。這可以是一個以秒為單位的值，也可以是整個場景持續時間的百分比（例如 2%）。",
@@ -653,6 +670,7 @@
     "search_accuracy_label": "搜尋準確度",
     "title": "相近的短片"
   },
+  "duplicated_phash": "重複的檔案 (PHash)",
   "duration": "長度",
   "effect_filters": {
     "aspect": "比例",
@@ -760,10 +778,48 @@
   "parent_tags": "母標籤",
   "part_of": "{parent} 的一部分",
   "path": "路徑",
+  "perceptual_similarity": "感知相似度 (PHash)",
   "performer": "演員",
   "performerTags": "演員標籤",
+  "performer_age": "演員年齡",
   "performer_count": "演員數量",
+  "performer_favorite": "已收藏的演員",
   "performer_image": "演員圖像",
+  "performer_tagger": {
+    "add_new_performers": "新增演員",
+    "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為匹配。",
+    "batch_add_performers": "大量新增演員",
+    "batch_update_performers": "大量更新演員",
+    "config": {
+      "active_stash-box_instance": "目前使用的 Stash-box：",
+      "edit_excluded_fields": "編輯排除的種類",
+      "excluded_fields": "已排除種類：",
+      "no_fields_are_excluded": "尚無排除任何種類",
+      "no_instances_found": "尚未設定端點",
+      "these_fields_will_not_be_changed_when_updating_performers": "以下種類的資訊將不會於更新演員時更動。"
+    },
+    "current_page": "目前頁面",
+    "failed_to_save_performer": "無法新增演員「{performer}」",
+    "name_already_exists": "名稱已存在",
+    "network_error": "網路錯誤",
+    "no_results_found": "找不到結果。",
+    "number_of_performers_will_be_processed": "將自動處理 {performer_count} 個演員",
+    "performer_already_tagged": "演員資料早已新增",
+    "performer_names_separated_by_comma": "演員名稱 (以逗號分隔)",
+    "performer_selection": "選取演員",
+    "performer_successfully_tagged": "成功新增演員資料：",
+    "query_all_performers_in_the_database": "查詢所有資料庫中的演員",
+    "refresh_tagged_performers": "重新整理已新增的演員資料",
+    "refreshing_will_update_the_data": "重新整理資料將會把任何現有的演員資料重新與 Stash-Box 端點上的資料同步。",
+    "status_tagging_job_queued": "狀態：已排成資料標記",
+    "status_tagging_performers": "狀態：新增演員資料中",
+    "tag_status": "標記狀態",
+    "to_use_the_performer_tagger": "在使用演員標記工具前，請先設定 Stash-Box 端點。",
+    "untagged_performers": "未標記的演員",
+    "update_performer": "更新演員資料",
+    "update_performers": "更新演員",
+    "updating_untagged_performers_description": "更新未標記的演員將試著把尚有 stashid 的演員在 Stash-Box 上找尋對應的資料，並將其資料加入至本地的 Metadata 中。"
+  },
   "performers": "演員",
   "piercings": "穿洞",
   "queue": "佇列",
@@ -804,6 +860,10 @@
       "something_went_wrong": "噢不！好像出了些問題！",
       "something_went_wrong_description": "如果您所輸入的資料看起來有問題，請點選上一步返回以更正您的資料。否則，請在 {githubLink} 上提出錯誤或在 {discordLink} 中尋求幫助。",
       "something_went_wrong_while_setting_up_your_system": "設定系統時出了些問題。以下是我們收到的錯誤：{error}"
+    },
+    "folder": {
+      "file_path": "檔案路徑",
+      "up_dir": "往上一層"
     },
     "github_repository": "GitHub 版本庫",
     "migrate": {
@@ -862,6 +922,12 @@
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
+  "stashbox": {
+    "go_review_draft": "到 {endpoint_name} 預覽草稿。",
+    "selected_stash_box": "已選擇的 Stash-Box 端點",
+    "submission_failed": "提交失敗",
+    "submission_successful": "提交成功"
+  },
   "stats": {
     "image_size": "圖片大小",
     "scenes_duration": "短片長度",
@@ -900,51 +966,9 @@
   "total": "總計",
   "true": "是",
   "twitter": "Twitter",
-  "up-dir": "往上一層",
   "updated_at": "更新於",
   "url": "連結",
   "videos": "影片",
   "weight": "體重",
-  "years_old": "歲",
-  "stashbox": {
-    "go_review_draft": "到 {endpoint_name} 預覽草稿。",
-    "submission_failed": "提交失敗",
-    "submission_successful": "提交成功",
-    "selected_stash_box": "已選擇的 Stash-Box 端點"
-  },
-  "performer_tagger": {
-    "add_new_performers": "新增演員",
-    "any_names_entered_will_be_queried": "如果輸入的名稱有在設定的 Stash-Box 端點上找到的話，則相對應的結果將會被自動新增。只有完全符合的結果才會被視為匹配。",
-    "batch_update_performers": "大量更新演員",
-    "batch_add_performers": "大量新增演員",
-    "current_page": "目前頁面",
-    "name_already_exists": "名稱已存在",
-    "failed_to_save_performer": "無法新增演員「{performer}」",
-    "no_results_found": "找不到結果。",
-    "network_error": "網路錯誤",
-    "performer_names_separated_by_comma": "演員名稱 (以逗號分隔)",
-    "performer_already_tagged": "演員資料早已新增",
-    "performer_successfully_tagged": "成功新增演員資料：",
-    "performer_selection": "選取演員",
-    "query_all_performers_in_the_database": "查詢所有資料庫中的演員",
-    "refresh_tagged_performers": "重新整理已新增的演員資料",
-    "status_tagging_job_queued": "狀態：已排成資料標記",
-    "refreshing_will_update_the_data": "重新整理資料將會把任何現有的演員資料重新與 Stash-Box 端點上的資料同步。",
-    "status_tagging_performers": "狀態：新增演員資料中",
-    "tag_status": "標記狀態",
-    "to_use_the_performer_tagger": "在使用演員標記工具前，請先設定 Stash-Box 端點。",
-    "update_performer": "更新演員資料",
-    "untagged_performers": "未標記的演員",
-    "update_performers": "更新演員",
-    "updating_untagged_performers_description": "更新未標記的演員將試著把尚有 stashid 的演員在 Stash-Box 上找尋對應的資料，並將其資料加入至本地的 Metadata 中。",
-    "number_of_performers_will_be_processed": "將自動處理 {performer_count} 個演員",
-    "config": {
-      "active_stash-box_instance": "目前使用的 Stash-box：",
-      "edit_excluded_fields": "編輯排除的種類",
-      "no_fields_are_excluded": "尚無排除任何種類",
-      "excluded_fields": "已排除種類：",
-      "these_fields_will_not_be_changed_when_updating_performers": "以下種類的資訊將不會於更新演員時更動。",
-      "no_instances_found": "尚未設定端點"
-    }
-  }
+  "years_old": "歲"
 }
