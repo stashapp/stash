@@ -36,7 +36,7 @@ type GlobalConfig interface {
 	GetScrapersPath() string
 	GetScraperCDPPath() string
 	GetScraperCertCheck() bool
-	GetScraperExcludeTagPatterns() []string
+	GetPythonPath() string
 }
 
 func isCDPPathHTTP(c GlobalConfig) bool {

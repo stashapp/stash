@@ -1,6 +1,7 @@
 import localForage from "localforage";
 import _ from "lodash";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
+import { ConfigImageLightboxInput } from "src/core/generated-graphql";
 
 interface IInterfaceQueryConfig {
   filter: string;
@@ -8,7 +9,12 @@ interface IInterfaceQueryConfig {
   currentPage: number;
 }
 
-type IInterfaceConfig = Record<string, IInterfaceQueryConfig>;
+type IQueryConfig = Record<string, IInterfaceQueryConfig>;
+
+interface IInterfaceConfig {
+  queryConfig: IQueryConfig;
+  imageLightbox: ConfigImageLightboxInput;
+}
 
 export interface IChangelogConfig {
   versions: Record<string, boolean>;

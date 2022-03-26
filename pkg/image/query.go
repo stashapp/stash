@@ -68,3 +68,26 @@ func CountByTagID(r models.ImageReader, id int) (int, error) {
 
 	return r.QueryCount(filter, nil)
 }
+
+func FindByGalleryID(r models.ImageReader, galleryID int, sortBy string, sortDir models.SortDirectionEnum) ([]*models.Image, error) {
+	perPage := -1
+
+	findFilter := models.FindFilterType{
+		PerPage: &perPage,
+	}
+
+	if sortBy != "" {
+		findFilter.Sort = &sortBy
+	}
+
+	if sortDir.IsValid() {
+		findFilter.Direction = &sortDir
+	}
+
+	return Query(r, &models.ImageFilterType{
+		Galleries: &models.MultiCriterionInput{
+			Value:    []string{strconv.Itoa(galleryID)},
+			Modifier: models.CriterionModifierIncludes,
+		},
+	}, &findFilter)
+}

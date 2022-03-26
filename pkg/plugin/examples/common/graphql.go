@@ -29,8 +29,8 @@ type TagDestroyInput struct {
 
 type FindScenesResultType struct {
 	Count           graphql.Int
-	DurationSeconds graphql.Float
-	FilesizeBytes   graphql.Int
+	DurationSeconds graphql.Float `graphql:"duration" json:"duration"`
+	FilesizeBytes   graphql.Float `graphql:"filesize" json:"filesize"`
 	Scenes          []Scene
 }
 

@@ -105,6 +105,8 @@ const (
 	// stash-box options
 	StashBoxes = "stash_boxes"
 
+	PythonPath = "python_path"
+
 	// plugin options
 	PluginsPath = "plugins_path"
 
@@ -142,8 +144,15 @@ const (
 	WallPlayback        = "wall_playback"
 	defaultWallPlayback = "video"
 
-	SlideshowDelay        = "slideshow_delay"
-	defaultSlideshowDelay = 5000
+	// Image lightbox options
+	legacyImageLightboxSlideshowDelay = "slideshow_delay"
+	ImageLightboxSlideshowDelay       = "image_lightbox.slideshow_delay"
+	ImageLightboxDisplayMode          = "image_lightbox.display_mode"
+	ImageLightboxScaleUp              = "image_lightbox.scale_up"
+	ImageLightboxResetZoomOnNav       = "image_lightbox.reset_zoom_on_nav"
+	ImageLightboxScrollMode           = "image_lightbox.scroll_mode"
+
+	defaultImageLightboxSlideshowDelay = 5000
 
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
@@ -362,6 +371,18 @@ func (i *Instance) viper(key string) *viper.Viper {
 	}
 
 	return v
+}
+
+// viper returns the viper instance that has the key set. Returns nil
+// if no instance has the key. Assumes read lock held.
+func (i *Instance) viperWith(key string) *viper.Viper {
+	v := i.viper(key)
+
+	if v.IsSet(key) {
+		return v
+	}
+
+	return nil
 }
 
 func (i *Instance) HasOverride(key string) bool {
@@ -603,6 +624,10 @@ func (i *Instance) GetDefaultPluginsPath() string {
 
 func (i *Instance) GetPluginsPath() string {
 	return i.getString(PluginsPath)
+}
+
+func (i *Instance) GetPythonPath() string {
+	return i.getString(PythonPath)
 }
 
 func (i *Instance) GetHost() string {
@@ -886,14 +911,49 @@ func (i *Instance) GetShowStudioAsText() bool {
 	return i.getBool(ShowStudioAsText)
 }
 
-func (i *Instance) GetSlideshowDelay() int {
+func (i *Instance) getSlideshowDelay() int {
+	// assume have lock
+
+	ret := defaultImageLightboxSlideshowDelay
+	v := i.viper(ImageLightboxSlideshowDelay)
+	if v.IsSet(ImageLightboxSlideshowDelay) {
+		ret = v.GetInt(ImageLightboxSlideshowDelay)
+	} else {
+		// fallback to old location
+		v := i.viper(legacyImageLightboxSlideshowDelay)
+		if v.IsSet(legacyImageLightboxSlideshowDelay) {
+			ret = v.GetInt(legacyImageLightboxSlideshowDelay)
+		}
+	}
+
+	return ret
+}
+
+func (i *Instance) GetImageLightboxOptions() models.ConfigImageLightboxResult {
 	i.RLock()
 	defer i.RUnlock()
 
-	ret := defaultSlideshowDelay
-	v := i.viper(SlideshowDelay)
-	if v.IsSet(SlideshowDelay) {
-		ret = v.GetInt(SlideshowDelay)
+	delay := i.getSlideshowDelay()
+
+	ret := models.ConfigImageLightboxResult{
+		SlideshowDelay: &delay,
+	}
+
+	if v := i.viperWith(ImageLightboxDisplayMode); v != nil {
+		mode := models.ImageLightboxDisplayMode(v.GetString(ImageLightboxDisplayMode))
+		ret.DisplayMode = &mode
+	}
+	if v := i.viperWith(ImageLightboxScaleUp); v != nil {
+		value := v.GetBool(ImageLightboxScaleUp)
+		ret.ScaleUp = &value
+	}
+	if v := i.viperWith(ImageLightboxResetZoomOnNav); v != nil {
+		value := v.GetBool(ImageLightboxResetZoomOnNav)
+		ret.ResetZoomOnNav = &value
+	}
+	if v := i.viperWith(ImageLightboxScrollMode); v != nil {
+		mode := models.ImageLightboxScrollMode(v.GetString(ImageLightboxScrollMode))
+		ret.ScrollMode = &mode
 	}
 
 	return ret

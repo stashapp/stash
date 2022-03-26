@@ -120,6 +120,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		ScraperCertCheck:             config.GetScraperCertCheck(),
 		ScraperCDPPath:               &scraperCDPPath,
 		StashBoxes:                   config.GetStashBoxes(),
+		PythonPath:                   config.GetPythonPath(),
 	}
 }
 
@@ -140,9 +141,9 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
 	language := config.GetLanguage()
-	slideshowDelay := config.GetSlideshowDelay()
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
+	imageLightboxOptions := config.GetImageLightboxOptions()
 
 	// FIXME - misnamed output field means we have redundant fields
 	disableDropdownCreate := config.GetDisableDropdownCreate()
@@ -163,7 +164,8 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		CSS:                          &css,
 		CSSEnabled:                   &cssEnabled,
 		Language:                     &language,
-		SlideshowDelay:               &slideshowDelay,
+
+		ImageLightbox: &imageLightboxOptions,
 
 		// FIXME - see above
 		DisabledDropdownCreate: disableDropdownCreate,
