@@ -4,19 +4,26 @@
 package desktop
 
 import (
+	"io/ioutil"
+	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 )
 
 // isService checks if started by init, e.g. stash is a *nix systemd service
 func isService() bool {
-	// at the moment there is no desktop integration for FreeBSD
-	return true
+	return os.Getppid() == 1
 }
 
-// there is no docker on FreeBSD
 func isServerDockerized() bool {
+	_, dockerEnvErr := os.Stat("/.dockerenv")
+	cgroups, _ := ioutil.ReadFile("/proc/self/cgroup")
+	if !os.IsNotExist(dockerEnvErr) || strings.Contains(string(cgroups), "docker") {
+		return true
+	}
+
 	return false
 }
 
