@@ -1,4 +1,4 @@
-//go:build !windows !freebsd
+//go:build !windows || !freebsd
 // +build !windows !freebsd
 
 package systray
