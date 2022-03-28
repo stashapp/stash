@@ -625,7 +625,7 @@ func getWidth(index int) sql.NullInt64 {
 	}
 }
 
-func getSceneDate(index int) models.SQLiteDate {
+func getObjectDate(index int) models.SQLiteDate {
 	dates := []string{"null", "", "0001-01-01", "2001-02-03"}
 	date := dates[index%len(dates)]
 	return models.SQLiteDate{
@@ -647,7 +647,7 @@ func createScenes(sqb models.SceneReaderWriter, n int) error {
 			Duration: getSceneDuration(i),
 			Height:   getHeight(i),
 			Width:    getWidth(i),
-			Date:     getSceneDate(i),
+			Date:     getObjectDate(i),
 		}
 
 		created, err := sqb.Create(scene)
@@ -715,6 +715,7 @@ func createGalleries(gqb models.GalleryReaderWriter, n int) error {
 			URL:      getGalleryNullStringValue(i, urlField),
 			Checksum: getGalleryStringValue(i, checksumField),
 			Rating:   getRating(i),
+			Date:     getObjectDate(i),
 		}
 
 		created, err := gqb.Create(gallery)
