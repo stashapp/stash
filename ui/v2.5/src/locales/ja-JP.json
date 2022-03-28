@@ -279,6 +279,10 @@
       "number_of_parallel_task_for_scan_generation_head": "スキャン/生成の同時実行タスク数",
       "parallel_scan_head": "同時スキャン/生成",
       "preview_generation": "プレビューの生成",
+      "python_path": {
+        "description": "Pythonが配置されており、実行可能なパスを指定してください。スクレイパーとプラグインスクリプトを実行するために使用されます。空欄の場合、環境変数からPythonのパスを取得します",
+        "heading": "Pytyonパス"
+      },
       "scraper_user_agent": "スクレイパーのユーザーエージェント",
       "scraper_user_agent_desc": "httpリクエストによるスクレイプを実行する際に使用するユーザーエージェント",
       "scrapers_path": {
@@ -447,6 +451,9 @@
       "handy_connection_key": {
         "description": "Handy connection keyは、インタラクティブなシーンで使用されます。このキーを設定すると、Stashが現在のシーン情報をhandyfeeling.comと共有することを許可します",
         "heading": "Handy Connection Key"
+      },
+      "image_lightbox": {
+        "heading": "画像のLightbox"
       },
       "images": {
         "heading": "画像",
