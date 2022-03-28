@@ -279,6 +279,10 @@
       "number_of_parallel_task_for_scan_generation_head": "掃描/生成的並行排程數量",
       "parallel_scan_head": "並行掃描/生成",
       "preview_generation": "預覽檔案生成",
+      "python_path": {
+        "description": "Python 應用程式的路徑。用於爬蟲及插件。留空時，python 則會於環境變數中的路徑取得",
+        "heading": "Python 路徑"
+      },
       "scraper_user_agent": "爬蟲用戶代理名稱 (User Agent)",
       "scraper_user_agent_desc": "抓取 HTTP 資料時所用的用戶代理字串 (User-Agent)",
       "scrapers_path": {
