@@ -2,7 +2,7 @@ $scrubberHeight: 120px;
 $menuHeight: 4rem;
 $sceneTabWidth: 450px;
 
-#jwplayer-container {
+.VideoPlayer {
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - #{$menuHeight});
@@ -12,27 +12,141 @@ $sceneTabWidth: 450px;
     height: 100vh;
   }
 
-  & video:focus {
-    outline: 0;
-  }
-
-  /* stylelint-disable */
-  .jw-video {
-    // #1764 - jwplayer sets object-fit: fit in the style. Need to override it.
-    object-fit: contain !important;
-  }
-  /* stylelint-enable */
-
-  .video-wrapper {
+  .video-js {
     height: 56.25vw;
+    width: 100%;
 
     @media (min-width: 1200px) {
       height: 100%;
     }
   }
 
-  &.portrait .video-wrapper {
+  &.portrait .video-js {
     height: 177.78vw;
+  }
+
+  .vjs-button {
+    outline: none;
+  }
+
+  .vjs-vtt-thumbnail-display {
+    // default opacity to 0, it gets set to 1 when moused-over.
+    // prevents the border from showing up when initially loaded
+    opacity: 0;
+  }
+
+  .vjs-touch-enabled {
+    margin: 0 -15px;
+    width: 100vw;
+
+    &:hover.vjs-user-active {
+      .vjs-button {
+        pointer-events: auto;
+      }
+    }
+
+    // make controls a little more compact on smaller screens
+    @media (max-width: 576px) {
+      .vjs-control-bar {
+        height: 2.5em;
+      }
+
+      .vjs-control-bar .vjs-control:not(.vjs-progress-control) {
+        width: 2.5em;
+      }
+
+      .vjs-time-control {
+        font-size: 12px;
+        line-height: 4em;
+      }
+
+      .vjs-button > .vjs-icon-placeholder::before,
+      .vjs-skip-button::before {
+        font-size: 1.5em;
+        line-height: 2;
+      }
+    }
+
+    .vjs-current-time {
+      margin-left: 1em;
+    }
+
+    .vjs-vtt-thumbnail-display {
+      bottom: 40px;
+    }
+  }
+}
+
+.video-js {
+  .vjs-control-bar {
+    background: none;
+
+    /* Scales control size */
+    font-size: 15px;
+    opacity: 0;
+    transition: opacity 0.25s cubic-bezier(0, 0, 0.2, 1);
+
+    &::before {
+      background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.4) 0%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      bottom: 0;
+      content: "";
+      height: 10rem;
+      position: absolute;
+      width: 100%;
+    }
+  }
+
+  .vjs-time-control {
+    display: block;
+    min-width: 0;
+    padding: 0 4px;
+    pointer-events: none;
+
+    .vjs-control-text {
+      display: none;
+    }
+  }
+
+  .vjs-duration {
+    margin-right: auto;
+  }
+
+  .vjs-remaining-time {
+    display: none;
+  }
+
+  &:hover,
+  &.vjs-paused {
+    .vjs-control-bar {
+      opacity: 1;
+    }
+  }
+
+  .vjs-progress-control {
+    bottom: 3rem;
+    margin-left: 1%;
+    position: absolute;
+    width: 98%;
+  }
+
+  .vjs-vtt-thumbnail-display {
+    border: 2px solid white;
+    border-radius: 2px;
+    bottom: 90px;
+    position: absolute;
+  }
+
+  .vjs-big-play-button,
+  .vjs-big-play-button:hover,
+  .vjs-big-play-button:focus,
+  &:hover .vjs-big-play-button {
+    background: none;
+    border: none;
+    font-size: 10em;
   }
 
   .jwplayer {
@@ -161,6 +275,7 @@ $sceneTabWidth: 450px;
   -webkit-overflow-scrolling: touch;
   position: relative;
   -webkit-user-select: none;
+  user-select: none;
   width: 96%;
 
   &.dragging {
@@ -253,5 +368,24 @@ $sceneTabWidth: 450px;
     align-self: flex-end;
     display: inline-block;
     width: 100%;
+  }
+}
+
+.vjs-skip-button {
+  &::before {
+    font-size: 1.8em;
+    line-height: 1.67;
+  }
+}
+
+.vjs-skip-buttons {
+  .vjs-icon-next-item,
+  .vjs-icon-previous-item {
+    display: none;
+  }
+
+  &-prev .vjs-icon-previous-item,
+  &-next .vjs-icon-next-item {
+    display: inline-block;
   }
 }
