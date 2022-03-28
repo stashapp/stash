@@ -83,9 +83,7 @@ const ScenePage: React.FC<IProps> = ({
   const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const { configuration } = useContext(ConfigurationContext);
-  const [showScrubber, setShowScrubber] = useState(
-    configuration?.interface.showScrubber ?? true
-  );
+
   const [showDraftModal, setShowDraftModal] = useState(false);
   const boxes = configuration?.general?.stashBoxes ?? [];
 
@@ -128,7 +126,6 @@ const ScenePage: React.FC<IProps> = ({
     Mousetrap.bind("p p", () => onQueuePrevious());
     Mousetrap.bind("p r", () => onQueueRandom());
     Mousetrap.bind(",", () => setCollapsed(!collapsed));
-    Mousetrap.bind(".", () => setShowScrubber(!showScrubber));
 
     return () => {
       Mousetrap.unbind("a");
@@ -141,7 +138,6 @@ const ScenePage: React.FC<IProps> = ({
       Mousetrap.unbind("p p");
       Mousetrap.unbind("p r");
       Mousetrap.unbind(",");
-      Mousetrap.unbind(".");
     };
   });
 
@@ -498,10 +494,14 @@ const SceneLoader: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const location = useLocation();
   const history = useHistory();
+  const { configuration } = useContext(ConfigurationContext);
   const { data, loading, refetch } = useFindScene(id ?? "");
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
   const [continuePlaylist, setContinuePlaylist] = useState(false);
+  const [showScrubber, setShowScrubber] = useState(
+    configuration?.interface.showScrubber ?? true
+  );
 
   const sceneQueue = useMemo(
     () => SceneQueue.fromQueryParameters(location.search),
@@ -529,6 +529,15 @@ const SceneLoader: React.FC = () => {
   const currentQueueIndex = queueScenes
     ? queueScenes.findIndex((s) => s.id === id)
     : -1;
+
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind(".", () => setShowScrubber(!showScrubber));
+
+    return () => {
+      Mousetrap.unbind(".");
+    };
+  });
 
   useEffect(() => {
     // reset timestamp after notifying player
@@ -682,7 +691,11 @@ const SceneLoader: React.FC = () => {
       ) : (
         <div className="scene-tabs" />
       )}
-      <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
+      <div
+        className={`scene-player-container ${collapsed ? "expanded" : ""} ${
+          !showScrubber ? "hide-scrubber" : ""
+        }`}
+      >
         <ScenePlayer
           key="ScenePlayer"
           className="w-100 m-sm-auto no-gutter"
