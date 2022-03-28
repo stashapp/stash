@@ -566,7 +566,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     return <LoadingIndicator />;
   }
 
-  const currentImage = images[currentIndex];
+  const currentImage: ILightboxImage | undefined = images[currentIndex];
 
   function setRating(v: number | null) {
     if (currentImage?.id) {
@@ -582,7 +582,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   async function onIncrementClick() {
-    if (currentImage.id === undefined) return;
+    if (currentImage?.id === undefined) return;
     try {
       await mutateImageIncrementO(currentImage.id);
     } catch (e) {
@@ -591,7 +591,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   async function onDecrementClick() {
-    if (currentImage.id === undefined) return;
+    if (currentImage?.id === undefined) return;
     try {
       await mutateImageDecrementO(currentImage.id);
     } catch (e) {
@@ -600,9 +600,9 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   async function onResetClick() {
-    if (currentImage.id === undefined) return;
+    if (currentImage?.id === undefined) return;
     try {
-      await mutateImageResetO(currentImage.id);
+      await mutateImageResetO(currentImage?.id);
     } catch (e) {
       Toast.error(e);
     }
@@ -766,18 +766,18 @@ export const LightboxComponent: React.FC<IProps> = ({
       )}
       <div className={CLASSNAME_FOOTER}>
         <div className={CLASSNAME_FOOTER_LEFT}>
-          {currentImage.id !== undefined && (
+          {currentImage?.id !== undefined && (
             <>
               <div>
                 <OCounterButton
                   onDecrement={onDecrementClick}
                   onIncrement={onIncrementClick}
                   onReset={onResetClick}
-                  value={currentImage.o_counter ?? 0}
+                  value={currentImage?.o_counter ?? 0}
                 />
               </div>
               <RatingStars
-                value={currentImage.rating ?? undefined}
+                value={currentImage?.rating ?? undefined}
                 onSetRating={(v) => {
                   setRating(v ?? null);
                 }}
@@ -786,7 +786,7 @@ export const LightboxComponent: React.FC<IProps> = ({
           )}
         </div>
         <div>
-          {currentImage.title && (
+          {currentImage?.title && (
             <Link to={`/images/${currentImage.id}`} onClick={() => hide()}>
               {currentImage.title ?? ""}
             </Link>
