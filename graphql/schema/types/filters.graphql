@@ -101,6 +101,8 @@ input PerformerFilterType {
   death_year: IntCriterionInput
   """Filter by studios where performer appears in scene/image/gallery"""
   studios: HierarchicalMultiCriterionInput
+  """Filter by autotag ignore value"""
+  ignore_auto_tag: Boolean
 }
 
 input SceneMarkerFilterType {
@@ -219,6 +221,8 @@ input StudioFilterType {
   url: StringCriterionInput
   """Filter by studio aliases"""
   aliases: StringCriterionInput
+  """Filter by autotag ignore value"""
+  ignore_auto_tag: Boolean
 }
 
 input GalleryFilterType {
@@ -305,6 +309,9 @@ input TagFilterType {
 
   """Filter by number f child tags the tag has"""
   child_count: IntCriterionInput
+
+  """Filter by autotag ignore value"""
+  ignore_auto_tag: Boolean
 }
 
 input ImageFilterType {

@@ -6,6 +6,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -67,6 +68,26 @@ func TestTagFindByName(t *testing.T) {
 		assert.Equal(t, tagNames[tagIdxWithScene], tag.Name)
 		//tag.Name should match with tagIdxWithDupName if the check is not case sensitive
 		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithDupName]), strings.ToLower(tag.Name))
+
+		return nil
+	})
+}
+
+func TestTagQueryIgnoreAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		ignoreAutoTag := true
+		tagFilter := models.TagFilterType{
+			IgnoreAutoTag: &ignoreAutoTag,
+		}
+
+		sqb := r.Tag()
+
+		tags := queryTags(t, sqb, &tagFilter, nil)
+
+		assert.Len(t, tags, int(math.Ceil(float64(totalTags)/5)))
+		for _, s := range tags {
+			assert.True(t, s.IgnoreAutoTag)
+		}
 
 		return nil
 	})

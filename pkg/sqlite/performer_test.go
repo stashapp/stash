@@ -6,6 +6,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -233,6 +234,26 @@ func TestPerformerIllegalQuery(t *testing.T) {
 		performerFilter.Or = &subFilter
 		_, _, err = sqb.Query(performerFilter, nil)
 		assert.NotNil(err)
+
+		return nil
+	})
+}
+
+func TestPerformerQueryIgnoreAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		ignoreAutoTag := true
+		performerFilter := models.PerformerFilterType{
+			IgnoreAutoTag: &ignoreAutoTag,
+		}
+
+		sqb := r.Performer()
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.Len(t, performers, int(math.Ceil(float64(totalPerformers)/5)))
+		for _, p := range performers {
+			assert.True(t, p.IgnoreAutoTag)
+		}
 
 		return nil
 	})

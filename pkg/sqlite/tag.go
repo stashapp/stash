@@ -295,6 +295,7 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 
 	query.handleCriterion(stringCriterionHandler(tagFilter.Name, tagTable+".name"))
 	query.handleCriterion(tagAliasCriterionHandler(qb, tagFilter.Aliases))
+	query.handleCriterion(boolCriterionHandler(tagFilter.IgnoreAutoTag, tagTable+".ignore_auto_tag"))
 
 	query.handleCriterion(tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))
 	query.handleCriterion(tagSceneCountCriterionHandler(qb, tagFilter.SceneCount))

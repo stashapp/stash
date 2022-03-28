@@ -206,6 +206,7 @@ func (qb *studioQueryBuilder) makeFilter(studioFilter *models.StudioFilterType) 
 	query.handleCriterion(stringCriterionHandler(studioFilter.Details, studioTable+".details"))
 	query.handleCriterion(stringCriterionHandler(studioFilter.URL, studioTable+".url"))
 	query.handleCriterion(intCriterionHandler(studioFilter.Rating, studioTable+".rating"))
+	query.handleCriterion(boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag"))
 
 	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
 		if studioFilter.StashID != nil {

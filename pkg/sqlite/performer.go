@@ -244,6 +244,7 @@ func (qb *performerQueryBuilder) makeFilter(filter *models.PerformerFilterType) 
 	query.handleCriterion(stringCriterionHandler(filter.Details, tableName+".details"))
 
 	query.handleCriterion(boolCriterionHandler(filter.FilterFavorites, tableName+".favorite"))
+	query.handleCriterion(boolCriterionHandler(filter.IgnoreAutoTag, tableName+".ignore_auto_tag"))
 
 	query.handleCriterion(yearFilterCriterionHandler(filter.BirthYear, tableName+".birthdate"))
 	query.handleCriterion(yearFilterCriterionHandler(filter.DeathYear, tableName+".death_date"))

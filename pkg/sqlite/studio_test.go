@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -178,6 +179,26 @@ func TestStudioIllegalQuery(t *testing.T) {
 		studioFilter.Or = &subFilter
 		_, _, err = sqb.Query(studioFilter, nil)
 		assert.NotNil(err)
+
+		return nil
+	})
+}
+
+func TestStudioQueryIgnoreAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		ignoreAutoTag := true
+		studioFilter := models.StudioFilterType{
+			IgnoreAutoTag: &ignoreAutoTag,
+		}
+
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+
+		assert.Len(t, studios, int(math.Ceil(float64(totalStudios)/5)))
+		for _, s := range studios {
+			assert.True(t, s.IgnoreAutoTag)
+		}
 
 		return nil
 	})
