@@ -2,7 +2,9 @@ package ffmpeg
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
+	"strings"
 )
 
 type ScenePreviewChunkOptions struct {
@@ -91,11 +93,19 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 	return err
 }
 
+// fixWindowsPath replaces \ with / in the given path because the \ isn't recognized as valid on windows ffmpeg
+func fixWindowsPath(str string) string {
+	if runtime.GOOS == "windows" {
+		return strings.ReplaceAll(str, `\`, "/")
+	}
+	return str
+}
+
 func (e *Encoder) ScenePreviewVideoChunkCombine(probeResult VideoFile, concatFilePath string, outputPath string) error {
 	args := []string{
 		"-v", "error",
 		"-f", "concat",
-		"-i", concatFilePath,
+		"-i", fixWindowsPath(concatFilePath),
 		"-y",
 		"-c", "copy",
 		outputPath,

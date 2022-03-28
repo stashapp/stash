@@ -2,8 +2,6 @@ package scraper
 
 import (
 	"context"
-	"regexp"
-	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
@@ -50,7 +48,7 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
-		tags, err := postProcessTags(c.globalConfig, tqb, p.Tags)
+		tags, err := postProcessTags(tqb, p.Tags)
 		if err != nil {
 			return err
 		}
@@ -93,7 +91,7 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
-		tags, err := postProcessTags(c.globalConfig, tqb, p.Tags)
+		tags, err := postProcessTags(tqb, p.Tags)
 		if err != nil {
 			return err
 		}
@@ -135,7 +133,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene) (
 			}
 		}
 
-		tags, err := postProcessTags(c.globalConfig, tqb, scene.Tags)
+		tags, err := postProcessTags(tqb, scene.Tags)
 		if err != nil {
 			return err
 		}
@@ -174,7 +172,7 @@ func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery) (
 			}
 		}
 
-		tags, err := postProcessTags(c.globalConfig, tqb, g.Tags)
+		tags, err := postProcessTags(tqb, g.Tags)
 		if err != nil {
 			return err
 		}
@@ -195,40 +193,15 @@ func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery) (
 	return g, nil
 }
 
-func postProcessTags(globalConfig GlobalConfig, tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
+func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
 	var ret []*models.ScrapedTag
 
-	excludePatterns := globalConfig.GetScraperExcludeTagPatterns()
-	var excludeRegexps []*regexp.Regexp
-
-	for _, excludePattern := range excludePatterns {
-		reg, err := regexp.Compile(strings.ToLower(excludePattern))
-		if err != nil {
-			logger.Errorf("Invalid tag exclusion pattern :%v", err)
-		} else {
-			excludeRegexps = append(excludeRegexps, reg)
-		}
-	}
-
-	var ignoredTags []string
-ScrapeTag:
 	for _, t := range scrapedTags {
-		for _, reg := range excludeRegexps {
-			if reg.MatchString(strings.ToLower(t.Name)) {
-				ignoredTags = append(ignoredTags, t.Name)
-				continue ScrapeTag
-			}
-		}
-
 		err := match.ScrapedTag(tqb, t)
 		if err != nil {
 			return nil, err
 		}
 		ret = append(ret, t)
-	}
-
-	if len(ignoredTags) > 0 {
-		logger.Infof("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
 	}
 
 	return ret, nil

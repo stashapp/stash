@@ -586,13 +586,22 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     (updatedFilter: ListFilterModel, level: PersistanceLevel) => {
       if (level === PersistanceLevel.VIEW) {
         setInterfaceState((prevState) => {
+          if (!prevState.queryConfig) {
+            prevState.queryConfig = {};
+          }
           return {
-            [persistanceKey]: {
-              ...prevState[persistanceKey],
-              filter: queryString.stringify({
-                ...queryString.parse(prevState[persistanceKey]?.filter ?? ""),
-                disp: updatedFilter.displayMode,
-              }),
+            ...prevState,
+            queryConfig: {
+              ...prevState.queryConfig,
+              [persistanceKey]: {
+                ...prevState.queryConfig[persistanceKey],
+                filter: queryString.stringify({
+                  ...queryString.parse(
+                    prevState.queryConfig[persistanceKey]?.filter ?? ""
+                  ),
+                  disp: updatedFilter.displayMode,
+                }),
+              },
             },
           };
         });
@@ -670,7 +679,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     }
 
     // set the display type if persisted
-    const storedQuery = interfaceState.data?.[persistanceKey];
+    const storedQuery = interfaceState.data?.queryConfig?.[persistanceKey];
 
     if (options.persistState === PersistanceLevel.VIEW && storedQuery) {
       const storedFilter = queryString.parse(storedQuery.filter);

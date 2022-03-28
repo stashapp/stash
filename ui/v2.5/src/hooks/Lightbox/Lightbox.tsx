@@ -15,7 +15,7 @@ import debounce from "lodash/debounce";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useInterval, usePageVisibility, useToast } from "src/hooks";
 import { FormattedMessage, useIntl } from "react-intl";
-import { DisplayMode, LightboxImage, ScrollMode } from "./LightboxImage";
+import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
@@ -27,6 +27,8 @@ import {
   mutateImageResetO,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
+import { useInterfaceLocalForage } from "../LocalForage";
+import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -89,6 +91,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [updateImage] = useImageUpdate();
 
   const [index, setIndex] = useState<number | null>(null);
+  const [movingLeft, setMovingLeft] = useState(false);
   const oldIndex = useRef<number | null>(null);
   const [instantTransition, setInstantTransition] = useState(false);
   const [isSwitchingPage, setIsSwitchingPage] = useState(true);
@@ -97,12 +100,6 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const oldImages = useRef<ILightboxImage[]>([]);
 
-  const [displayMode, setDisplayMode] = useState(DisplayMode.FIT_XY);
-  const oldDisplayMode = useRef(displayMode);
-
-  const [scaleUp, setScaleUp] = useState(false);
-  const [scrollMode, setScrollMode] = useState(ScrollMode.ZOOM);
-  const [resetZoomOnNav, setResetZoomOnNav] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [resetPosition, setResetPosition] = useState(false);
 
@@ -119,9 +116,53 @@ export const LightboxComponent: React.FC<IProps> = ({
   const Toast = useToast();
   const intl = useIntl();
   const { configuration: config } = React.useContext(ConfigurationContext);
+  const [
+    interfaceLocalForage,
+    setInterfaceLocalForage,
+  ] = useInterfaceLocalForage();
 
-  const userSelectedSlideshowDelayOrDefault =
-    config?.interface.slideshowDelay ?? DEFAULT_SLIDESHOW_DELAY;
+  const lightboxSettings = interfaceLocalForage.data?.imageLightbox;
+
+  function setLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
+    setInterfaceLocalForage((prev) => {
+      return {
+        ...prev,
+        imageLightbox: {
+          ...prev.imageLightbox,
+          ...v,
+        },
+      };
+    });
+  }
+
+  function setScaleUp(value: boolean) {
+    setLightboxSettings({ scaleUp: value });
+  }
+
+  function setResetZoomOnNav(v: boolean) {
+    setLightboxSettings({ resetZoomOnNav: v });
+  }
+
+  function setScrollMode(v: GQL.ImageLightboxScrollMode) {
+    setLightboxSettings({ scrollMode: v });
+  }
+
+  const slideshowDelay =
+    lightboxSettings?.slideshowDelay ??
+    config?.interface.imageLightbox.slideshowDelay ??
+    DEFAULT_SLIDESHOW_DELAY;
+
+  function setSlideshowDelay(v: number) {
+    setLightboxSettings({ slideshowDelay: v });
+  }
+
+  const displayMode =
+    lightboxSettings?.displayMode ?? GQL.ImageLightboxDisplayMode.FitXy;
+  const oldDisplayMode = useRef(displayMode);
+
+  function setDisplayMode(v: GQL.ImageLightboxDisplayMode) {
+    setLightboxSettings({ displayMode: v });
+  }
 
   // slideshowInterval is used for controlling the logic
   // displaySlideshowInterval is for display purposes only
@@ -130,12 +171,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [slideshowInterval, setSlideshowInterval] = useState<number | null>(
     null
   );
+
   const [
     displayedSlideshowInterval,
     setDisplayedSlideshowInterval,
-  ] = useState<string>(
-    (userSelectedSlideshowDelayOrDefault / SECONDS_TO_MS).toString()
-  );
+  ] = useState<string>(slideshowDelay.toString());
 
   useEffect(() => {
     if (images !== oldImages.current && isSwitchingPage) {
@@ -163,7 +203,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     // reset zoom status
     // setResetZoom((r) => !r);
     // setZoomed(false);
-    if (resetZoomOnNav) {
+    if (lightboxSettings?.resetZoomOnNav) {
       setZoom(1);
     }
     setResetPosition((r) => !r);
@@ -191,20 +231,20 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
 
     oldIndex.current = index;
-  }, [index, images.length, resetZoomOnNav]);
+  }, [index, images.length, lightboxSettings?.resetZoomOnNav]);
 
   useEffect(() => {
     if (displayMode !== oldDisplayMode.current) {
       // reset zoom status
       // setResetZoom((r) => !r);
       // setZoomed(false);
-      if (resetZoomOnNav) {
+      if (lightboxSettings?.resetZoomOnNav) {
         setZoom(1);
       }
       setResetPosition((r) => !r);
     }
     oldDisplayMode.current = displayMode;
-  }, [displayMode, resetZoomOnNav]);
+  }, [displayMode, lightboxSettings?.resetZoomOnNav]);
 
   const selectIndex = (e: React.MouseEvent, i: number) => {
     setIndex(i);
@@ -223,20 +263,10 @@ export const LightboxComponent: React.FC<IProps> = ({
   const toggleSlideshow = useCallback(() => {
     if (slideshowInterval) {
       setSlideshowInterval(null);
-    } else if (
-      displayedSlideshowInterval !== null &&
-      typeof displayedSlideshowInterval !== "undefined"
-    ) {
-      const intervalNumber = Number.parseInt(displayedSlideshowInterval, 10);
-      setSlideshowInterval(intervalNumber * SECONDS_TO_MS);
     } else {
-      setSlideshowInterval(userSelectedSlideshowDelayOrDefault);
+      setSlideshowInterval(slideshowDelay * SECONDS_TO_MS);
     }
-  }, [
-    slideshowInterval,
-    userSelectedSlideshowDelayOrDefault,
-    displayedSlideshowInterval,
-  ]);
+  }, [slideshowInterval, slideshowDelay]);
 
   usePageVisibility(() => {
     toggleSlideshow();
@@ -261,6 +291,8 @@ export const LightboxComponent: React.FC<IProps> = ({
     (isUserAction = true) => {
       if (isSwitchingPage || index === -1) return;
 
+      setMovingLeft(true);
+
       if (index === 0) {
         // go to next page, or loop back if no callback is set
         if (pageCallback) {
@@ -280,6 +312,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   const handleRight = useCallback(
     (isUserAction = true) => {
       if (isSwitchingPage) return;
+
+      setMovingLeft(false);
 
       if (index === images.length - 1) {
         // go to preview page, or loop back if no callback is set
@@ -347,10 +381,6 @@ export const LightboxComponent: React.FC<IProps> = ({
     else document.exitFullscreen();
   }, [isFullscreen]);
 
-  const handleSlideshowIntervalChange = (newSlideshowInterval: number) => {
-    setSlideshowInterval(newSlideshowInterval);
-  };
-
   const navItems = images.map((image, i) => (
     <img
       src={image.paths.thumbnail ?? ""}
@@ -367,19 +397,22 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const onDelayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let numberValue = Number.parseInt(e.currentTarget.value, 10);
+    setDisplayedSlideshowInterval(e.currentTarget.value);
+
     // Without this exception, the blocking of updates for invalid values is even weirder
     if (e.currentTarget.value === "-" || e.currentTarget.value === "") {
-      setDisplayedSlideshowInterval(e.currentTarget.value);
       return;
     }
 
-    setDisplayedSlideshowInterval(e.currentTarget.value);
+    numberValue =
+      numberValue >= MIN_VALID_INTERVAL_SECONDS
+        ? numberValue
+        : MIN_VALID_INTERVAL_SECONDS;
+
+    setSlideshowDelay(numberValue * SECONDS_TO_MS);
+
     if (slideshowInterval !== null) {
-      numberValue =
-        numberValue >= MIN_VALID_INTERVAL_SECONDS
-          ? numberValue
-          : MIN_VALID_INTERVAL_SECONDS;
-      handleSlideshowIntervalChange(numberValue * SECONDS_TO_MS);
+      setSlideshowInterval(numberValue * SECONDS_TO_MS);
     }
   };
 
@@ -416,25 +449,19 @@ export const LightboxComponent: React.FC<IProps> = ({
         <Col xs={8}>
           <Form.Control
             as="select"
-            onChange={(e) => setDisplayMode(e.target.value as DisplayMode)}
+            onChange={(e) =>
+              setDisplayMode(e.target.value as GQL.ImageLightboxDisplayMode)
+            }
             value={displayMode}
             className="btn-secondary mx-1 mb-1"
           >
-            <option value={DisplayMode.ORIGINAL} key={DisplayMode.ORIGINAL}>
-              {intl.formatMessage({
-                id: "dialogs.lightbox.display_mode.original",
-              })}
-            </option>
-            <option value={DisplayMode.FIT_XY} key={DisplayMode.FIT_XY}>
-              {intl.formatMessage({
-                id: "dialogs.lightbox.display_mode.fit_to_screen",
-              })}
-            </option>
-            <option value={DisplayMode.FIT_X} key={DisplayMode.FIT_X}>
-              {intl.formatMessage({
-                id: "dialogs.lightbox.display_mode.fit_horizontally",
-              })}
-            </option>
+            {Array.from(imageLightboxDisplayModeIntlMap.entries()).map((v) => (
+              <option key={v[0]} value={v[0]}>
+                {intl.formatMessage({
+                  id: v[1],
+                })}
+              </option>
+            ))}
           </Form.Control>
         </Col>
       </Form.Group>
@@ -446,8 +473,8 @@ export const LightboxComponent: React.FC<IProps> = ({
               label={intl.formatMessage({
                 id: "dialogs.lightbox.scale_up.label",
               })}
-              checked={scaleUp}
-              disabled={displayMode === DisplayMode.ORIGINAL}
+              checked={lightboxSettings?.scaleUp ?? false}
+              disabled={displayMode === GQL.ImageLightboxDisplayMode.Original}
               onChange={(v) => setScaleUp(v.currentTarget.checked)}
             />
           </Col>
@@ -466,7 +493,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               label={intl.formatMessage({
                 id: "dialogs.lightbox.reset_zoom_on_nav",
               })}
-              checked={resetZoomOnNav}
+              checked={lightboxSettings?.resetZoomOnNav ?? false}
               onChange={(v) => setResetZoomOnNav(v.currentTarget.checked)}
             />
           </Col>
@@ -482,16 +509,26 @@ export const LightboxComponent: React.FC<IProps> = ({
           <Col xs={8}>
             <Form.Control
               as="select"
-              onChange={(e) => setScrollMode(e.target.value as ScrollMode)}
-              value={scrollMode}
+              onChange={(e) =>
+                setScrollMode(e.target.value as GQL.ImageLightboxScrollMode)
+              }
+              value={
+                lightboxSettings?.scrollMode ?? GQL.ImageLightboxScrollMode.Zoom
+              }
               className="btn-secondary mx-1 mb-1"
             >
-              <option value={ScrollMode.ZOOM} key={ScrollMode.ZOOM}>
+              <option
+                value={GQL.ImageLightboxScrollMode.Zoom}
+                key={GQL.ImageLightboxScrollMode.Zoom}
+              >
                 {intl.formatMessage({
                   id: "dialogs.lightbox.scroll_mode.zoom",
                 })}
               </option>
-              <option value={ScrollMode.PAN_Y} key={ScrollMode.PAN_Y}>
+              <option
+                value={GQL.ImageLightboxScrollMode.PanY}
+                key={GQL.ImageLightboxScrollMode.PanY}
+              >
                 {intl.formatMessage({
                   id: "dialogs.lightbox.scroll_mode.pan_y",
                 })}
@@ -529,7 +566,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     return <LoadingIndicator />;
   }
 
-  const currentImage = images[currentIndex];
+  const currentImage: ILightboxImage | undefined = images[currentIndex];
 
   function setRating(v: number | null) {
     if (currentImage?.id) {
@@ -545,7 +582,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   async function onIncrementClick() {
-    if (currentImage.id === undefined) return;
+    if (currentImage?.id === undefined) return;
     try {
       await mutateImageIncrementO(currentImage.id);
     } catch (e) {
@@ -554,7 +591,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   async function onDecrementClick() {
-    if (currentImage.id === undefined) return;
+    if (currentImage?.id === undefined) return;
     try {
       await mutateImageDecrementO(currentImage.id);
     } catch (e) {
@@ -563,9 +600,9 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   async function onResetClick() {
-    if (currentImage.id === undefined) return;
+    if (currentImage?.id === undefined) return;
     try {
-      await mutateImageResetO(currentImage.id);
+      await mutateImageResetO(currentImage?.id);
     } catch (e) {
       Toast.error(e);
     }
@@ -681,10 +718,14 @@ export const LightboxComponent: React.FC<IProps> = ({
                 <LightboxImage
                   src={image.paths.image ?? ""}
                   displayMode={displayMode}
-                  scaleUp={scaleUp}
-                  scrollMode={scrollMode}
+                  scaleUp={lightboxSettings?.scaleUp ?? false}
+                  scrollMode={
+                    lightboxSettings?.scrollMode ??
+                    GQL.ImageLightboxScrollMode.Zoom
+                  }
                   onLeft={handleLeft}
                   onRight={handleRight}
+                  alignBottom={movingLeft}
                   zoom={i === currentIndex ? zoom : 1}
                   setZoom={(v) => setZoom(v)}
                   resetPosition={resetPosition}
@@ -725,18 +766,18 @@ export const LightboxComponent: React.FC<IProps> = ({
       )}
       <div className={CLASSNAME_FOOTER}>
         <div className={CLASSNAME_FOOTER_LEFT}>
-          {currentImage.id !== undefined && (
+          {currentImage?.id !== undefined && (
             <>
               <div>
                 <OCounterButton
                   onDecrement={onDecrementClick}
                   onIncrement={onIncrementClick}
                   onReset={onResetClick}
-                  value={currentImage.o_counter ?? 0}
+                  value={currentImage?.o_counter ?? 0}
                 />
               </div>
               <RatingStars
-                value={currentImage.rating ?? undefined}
+                value={currentImage?.rating ?? undefined}
                 onSetRating={(v) => {
                   setRating(v ?? null);
                 }}
@@ -745,7 +786,7 @@ export const LightboxComponent: React.FC<IProps> = ({
           )}
         </div>
         <div>
-          {currentImage.title && (
+          {currentImage?.title && (
             <Link to={`/images/${currentImage.id}`} onClick={() => hide()}>
               {currentImage.title ?? ""}
             </Link>
