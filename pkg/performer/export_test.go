@@ -107,7 +107,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 			Int64: weight,
 			Valid: true,
 		},
-		AutoTagIgnored: autoTagIgnored,
+		IgnoreAutoTag: autoTagIgnored,
 	}
 }
 
@@ -157,7 +157,7 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		StashIDs: []models.StashID{
 			stashID,
 		},
-		AutoTagIgnored: autoTagIgnored,
+		IgnoreAutoTag: autoTagIgnored,
 	}
 }
 

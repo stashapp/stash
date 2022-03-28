@@ -36,9 +36,9 @@ func TestImporterName(t *testing.T) {
 func TestImporterPreImport(t *testing.T) {
 	i := Importer{
 		Input: jsonschema.Tag{
-			Name:           tagName,
-			Image:          invalidImage,
-			AutoTagIgnored: autoTagIgnored,
+			Name:          tagName,
+			Image:         invalidImage,
+			IgnoreAutoTag: autoTagIgnored,
 		},
 	}
 

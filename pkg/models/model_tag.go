@@ -3,19 +3,19 @@ package models
 import "time"
 
 type Tag struct {
-	ID             int             `db:"id" json:"id"`
-	Name           string          `db:"name" json:"name"` // TODO make schema not null
-	AutoTagIgnored bool            `db:"auto_tag_ignored" json:"auto_tag_ignored"`
-	CreatedAt      SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt      SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ID            int             `db:"id" json:"id"`
+	Name          string          `db:"name" json:"name"` // TODO make schema not null
+	IgnoreAutoTag bool            `db:"ignore_auto_tag" json:"ignore_auto_tag"`
+	CreatedAt     SQLiteTimestamp `db:"created_at" json:"created_at"`
+	UpdatedAt     SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
 type TagPartial struct {
-	ID             int              `db:"id" json:"id"`
-	Name           *string          `db:"name" json:"name"` // TODO make schema not null
-	AutoTagIgnored *bool            `db:"auto_tag_ignored" json:"auto_tag_ignored"`
-	CreatedAt      *SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt      *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ID            int              `db:"id" json:"id"`
+	Name          *string          `db:"name" json:"name"` // TODO make schema not null
+	IgnoreAutoTag *bool            `db:"ignore_auto_tag" json:"ignore_auto_tag"`
+	CreatedAt     *SQLiteTimestamp `db:"created_at" json:"created_at"`
+	UpdatedAt     *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
 type TagPath struct {
