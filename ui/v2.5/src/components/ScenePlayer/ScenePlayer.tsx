@@ -165,6 +165,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         if (play) {
           player.play();
         }
+      } else {
+        // eslint-disable-next-line no-console
+        console.log("No more sources in playlist.");
       }
     }
 
@@ -192,6 +195,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
     if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
     else player.poster("");
+
+    // clear the offset before loading anything new.
+    // otherwise, the offset will be applied to the next file when
+    // currentTime is called.
+    (player as any).clearOffsetDuration();
     player.src(
       scene.sceneStreams.map((stream) => ({
         src: stream.url,
@@ -248,11 +256,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
         const currentFile = player.currentSrc();
         if (currentFile != null && !currentFile.includes("m3u8")) {
-          const play = !player.paused();
-          handleError(play);
+          // const play = !player.paused();
+          // handleError(play);
+          player.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
         }
       }
     });
+
+    player.load();
 
     if (auto) {
       player
