@@ -791,6 +791,11 @@ dl.details-list {
   grid-template-columns: minmax(16.67%, auto) 1fr;
 }
 
+// middle align checkboxes
+.form-group .form-check .form-check-input {
+  vertical-align: middle;
+}
+
 // Fix Safari styling on dropdowns
 select {
   -webkit-appearance: none;
