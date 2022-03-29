@@ -133,6 +133,10 @@ $sceneTabWidth: 450px;
     width: 98%;
   }
 
+  .vjs-volume-control {
+    z-index: 1;
+  }
+
   .vjs-vtt-thumbnail-display {
     border: 2px solid white;
     border-radius: 2px;
