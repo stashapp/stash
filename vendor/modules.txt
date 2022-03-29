@@ -1,8 +1,7 @@
-# github.com/99designs/gqlgen v0.12.2
-## explicit; go 1.12
+# github.com/99designs/gqlgen v0.17.2
+## explicit; go 1.16
 github.com/99designs/gqlgen
 github.com/99designs/gqlgen/api
-github.com/99designs/gqlgen/cmd
 github.com/99designs/gqlgen/codegen
 github.com/99designs/gqlgen/codegen/config
 github.com/99designs/gqlgen/codegen/templates
@@ -16,12 +15,12 @@ github.com/99designs/gqlgen/graphql/handler/lru
 github.com/99designs/gqlgen/graphql/handler/transport
 github.com/99designs/gqlgen/graphql/introspection
 github.com/99designs/gqlgen/graphql/playground
-github.com/99designs/gqlgen/handler
 github.com/99designs/gqlgen/internal/code
 github.com/99designs/gqlgen/internal/imports
 github.com/99designs/gqlgen/internal/rewrite
 github.com/99designs/gqlgen/plugin
 github.com/99designs/gqlgen/plugin/federation
+github.com/99designs/gqlgen/plugin/federation/fieldset
 github.com/99designs/gqlgen/plugin/modelgen
 github.com/99designs/gqlgen/plugin/resolvergen
 github.com/99designs/gqlgen/plugin/servergen
@@ -117,8 +116,8 @@ github.com/chromedp/sysutil
 github.com/corona10/goimagehash
 github.com/corona10/goimagehash/etcs
 github.com/corona10/goimagehash/transforms
-# github.com/cpuguy83/go-md2man/v2 v2.0.0
-## explicit; go 1.12
+# github.com/cpuguy83/go-md2man/v2 v2.0.1
+## explicit; go 1.11
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
@@ -184,12 +183,6 @@ github.com/gorilla/sessions
 # github.com/gorilla/websocket v1.4.2
 ## explicit; go 1.12
 github.com/gorilla/websocket
-# github.com/h2non/filetype v1.0.8
-## explicit
-github.com/h2non/filetype
-github.com/h2non/filetype/matchers
-github.com/h2non/filetype/matchers/isobmff
-github.com/h2non/filetype/types
 # github.com/hashicorp/errwrap v1.0.0
 ## explicit
 github.com/hashicorp/errwrap
@@ -246,9 +239,11 @@ github.com/mailru/easyjson
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/matryer/moq v0.0.0-20200106131100-75d0ddfc0007
-## explicit
+# github.com/matryer/moq v0.2.3
+## explicit; go 1.14
 github.com/matryer/moq
+github.com/matryer/moq/internal/registry
+github.com/matryer/moq/internal/template
 github.com/matryer/moq/pkg/moq
 # github.com/mattn/go-sqlite3 v1.14.6
 ## explicit; go 1.12
@@ -307,7 +302,7 @@ github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
 github.com/rs/zerolog/log
-# github.com/russross/blackfriday/v2 v2.0.1
+# github.com/russross/blackfriday/v2 v2.1.0
 ## explicit
 github.com/russross/blackfriday/v2
 # github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
@@ -315,9 +310,6 @@ github.com/russross/blackfriday/v2
 github.com/shurcooL/graphql
 github.com/shurcooL/graphql/ident
 github.com/shurcooL/graphql/internal/jsonutil
-# github.com/shurcooL/sanitized_anchor_name v1.0.0
-## explicit
-github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.8.1
 ## explicit; go 1.13
 github.com/sirupsen/logrus
@@ -364,18 +356,14 @@ github.com/tidwall/match
 # github.com/tidwall/pretty v1.2.0
 ## explicit; go 1.16
 github.com/tidwall/pretty
-# github.com/urfave/cli/v2 v2.1.1
+# github.com/urfave/cli/v2 v2.3.0
 ## explicit; go 1.11
 github.com/urfave/cli/v2
 # github.com/vearutop/statigz v1.1.6
 ## explicit; go 1.16
 github.com/vearutop/statigz
-# github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e
-## explicit
-github.com/vektah/dataloaden
-github.com/vektah/dataloaden/pkg/generator
-# github.com/vektah/gqlparser/v2 v2.0.1
-## explicit; go 1.12
+# github.com/vektah/gqlparser/v2 v2.4.1
+## explicit; go 1.16
 github.com/vektah/gqlparser/v2
 github.com/vektah/gqlparser/v2/ast
 github.com/vektah/gqlparser/v2/formatter
@@ -409,8 +397,9 @@ golang.org/x/image/tiff/lzw
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/mod v0.4.2
-## explicit; go 1.12
+# golang.org/x/mod v0.5.1
+## explicit; go 1.17
+golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
 # golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
@@ -458,7 +447,7 @@ golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.1.5
+# golang.org/x/tools v0.1.9
 ## explicit; go 1.17
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata

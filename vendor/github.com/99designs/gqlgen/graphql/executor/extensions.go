@@ -17,6 +17,7 @@ func (e *Executor) Use(extension graphql.HandlerExtension) {
 	case graphql.OperationParameterMutator,
 		graphql.OperationContextMutator,
 		graphql.OperationInterceptor,
+		graphql.RootFieldInterceptor,
 		graphql.FieldInterceptor,
 		graphql.ResponseInterceptor:
 		e.extensions = append(e.extensions, extension)
@@ -32,6 +33,11 @@ func (e *Executor) AroundFields(f graphql.FieldMiddleware) {
 	e.Use(aroundFieldFunc(f))
 }
 
+// AroundRootFields is a convenience method for creating an extension that only implements root field middleware
+func (e *Executor) AroundRootFields(f graphql.RootFieldMiddleware) {
+	e.Use(aroundRootFieldFunc(f))
+}
+
 // AroundOperations is a convenience method for creating an extension that only implements operation middleware
 func (e *Executor) AroundOperations(f graphql.OperationMiddleware) {
 	e.Use(aroundOpFunc(f))
@@ -45,6 +51,7 @@ func (e *Executor) AroundResponses(f graphql.ResponseMiddleware) {
 type extensions struct {
 	operationMiddleware        graphql.OperationMiddleware
 	responseMiddleware         graphql.ResponseMiddleware
+	rootFieldMiddleware        graphql.RootFieldMiddleware
 	fieldMiddleware            graphql.FieldMiddleware
 	operationParameterMutators []graphql.OperationParameterMutator
 	operationContextMutators   []graphql.OperationContextMutator
@@ -56,6 +63,9 @@ func processExtensions(exts []graphql.HandlerExtension) extensions {
 			return next(ctx)
 		},
 		responseMiddleware: func(ctx context.Context, next graphql.ResponseHandler) *graphql.Response {
+			return next(ctx)
+		},
+		rootFieldMiddleware: func(ctx context.Context, next graphql.RootResolver) graphql.Marshaler {
 			return next(ctx)
 		},
 		fieldMiddleware: func(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
@@ -79,6 +89,15 @@ func processExtensions(exts []graphql.HandlerExtension) extensions {
 			previous := e.responseMiddleware
 			e.responseMiddleware = func(ctx context.Context, next graphql.ResponseHandler) *graphql.Response {
 				return p.InterceptResponse(ctx, func(ctx context.Context) *graphql.Response {
+					return previous(ctx, next)
+				})
+			}
+		}
+
+		if p, ok := p.(graphql.RootFieldInterceptor); ok {
+			previous := e.rootFieldMiddleware
+			e.rootFieldMiddleware = func(ctx context.Context, next graphql.RootResolver) graphql.Marshaler {
+				return p.InterceptRootField(ctx, func(ctx context.Context) graphql.Marshaler {
 					return previous(ctx, next)
 				})
 			}
@@ -155,5 +174,22 @@ func (f aroundFieldFunc) Validate(schema graphql.ExecutableSchema) error {
 }
 
 func (f aroundFieldFunc) InterceptField(ctx context.Context, next graphql.Resolver) (res interface{}, err error) {
+	return f(ctx, next)
+}
+
+type aroundRootFieldFunc func(ctx context.Context, next graphql.RootResolver) graphql.Marshaler
+
+func (f aroundRootFieldFunc) ExtensionName() string {
+	return "InlineRootFieldFunc"
+}
+
+func (f aroundRootFieldFunc) Validate(schema graphql.ExecutableSchema) error {
+	if f == nil {
+		return fmt.Errorf("RootFieldFunc can not be nil")
+	}
+	return nil
+}
+
+func (f aroundRootFieldFunc) InterceptRootField(ctx context.Context, next graphql.RootResolver) graphql.Marshaler {
 	return f(ctx, next)
 }

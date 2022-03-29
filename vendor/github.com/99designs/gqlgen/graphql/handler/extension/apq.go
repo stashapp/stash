@@ -14,8 +14,10 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-const errPersistedQueryNotFound = "PersistedQueryNotFound"
-const errPersistedQueryNotFoundCode = "PERSISTED_QUERY_NOT_FOUND"
+const (
+	errPersistedQueryNotFound     = "PersistedQueryNotFound"
+	errPersistedQueryNotFoundCode = "PERSISTED_QUERY_NOT_FOUND"
+)
 
 // AutomaticPersistedQuery saves client upload by optimistically sending only the hashes of queries, if the server
 // does not yet know what the query is for the hash it will respond telling the client to send the query along with the

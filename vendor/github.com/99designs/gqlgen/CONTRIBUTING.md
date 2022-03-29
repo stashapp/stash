@@ -4,7 +4,7 @@ Want to contribute to gqlgen? Here are some guidelines for how we accept help.
 
 ## Getting in Touch
 
-Our [gitter](https://gitter.im/gqlgen/Lobby) channel is the best place to ask questions or get advice on using gqlgen.
+Our [discord](https://discord.gg/DYEq3EMs4U) server is the best place to ask questions or get advice on using gqlgen.
 
 ## Reporting Bugs and Issues
 

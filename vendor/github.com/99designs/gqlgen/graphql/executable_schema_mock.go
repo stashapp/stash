@@ -9,37 +9,31 @@ import (
 	"sync"
 )
 
-var (
-	lockExecutableSchemaMockComplexity sync.RWMutex
-	lockExecutableSchemaMockExec       sync.RWMutex
-	lockExecutableSchemaMockSchema     sync.RWMutex
-)
-
 // Ensure, that ExecutableSchemaMock does implement ExecutableSchema.
 // If this is not the case, regenerate this file with moq.
 var _ ExecutableSchema = &ExecutableSchemaMock{}
 
 // ExecutableSchemaMock is a mock implementation of ExecutableSchema.
 //
-//     func TestSomethingThatUsesExecutableSchema(t *testing.T) {
+// 	func TestSomethingThatUsesExecutableSchema(t *testing.T) {
 //
-//         // make and configure a mocked ExecutableSchema
-//         mockedExecutableSchema := &ExecutableSchemaMock{
-//             ComplexityFunc: func(typeName string, fieldName string, childComplexity int, args map[string]interface{}) (int, bool) {
-// 	               panic("mock out the Complexity method")
-//             },
-//             ExecFunc: func(ctx context.Context) ResponseHandler {
-// 	               panic("mock out the Exec method")
-//             },
-//             SchemaFunc: func() *ast.Schema {
-// 	               panic("mock out the Schema method")
-//             },
-//         }
+// 		// make and configure a mocked ExecutableSchema
+// 		mockedExecutableSchema := &ExecutableSchemaMock{
+// 			ComplexityFunc: func(typeName string, fieldName string, childComplexity int, args map[string]interface{}) (int, bool) {
+// 				panic("mock out the Complexity method")
+// 			},
+// 			ExecFunc: func(ctx context.Context) ResponseHandler {
+// 				panic("mock out the Exec method")
+// 			},
+// 			SchemaFunc: func() *ast.Schema {
+// 				panic("mock out the Schema method")
+// 			},
+// 		}
 //
-//         // use mockedExecutableSchema in code that requires ExecutableSchema
-//         // and then make assertions.
+// 		// use mockedExecutableSchema in code that requires ExecutableSchema
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type ExecutableSchemaMock struct {
 	// ComplexityFunc mocks the Complexity method.
 	ComplexityFunc func(typeName string, fieldName string, childComplexity int, args map[string]interface{}) (int, bool)
@@ -72,6 +66,9 @@ type ExecutableSchemaMock struct {
 		Schema []struct {
 		}
 	}
+	lockComplexity sync.RWMutex
+	lockExec       sync.RWMutex
+	lockSchema     sync.RWMutex
 }
 
 // Complexity calls ComplexityFunc.
@@ -90,9 +87,9 @@ func (mock *ExecutableSchemaMock) Complexity(typeName string, fieldName string, 
 		ChildComplexity: childComplexity,
 		Args:            args,
 	}
-	lockExecutableSchemaMockComplexity.Lock()
+	mock.lockComplexity.Lock()
 	mock.calls.Complexity = append(mock.calls.Complexity, callInfo)
-	lockExecutableSchemaMockComplexity.Unlock()
+	mock.lockComplexity.Unlock()
 	return mock.ComplexityFunc(typeName, fieldName, childComplexity, args)
 }
 
@@ -111,9 +108,9 @@ func (mock *ExecutableSchemaMock) ComplexityCalls() []struct {
 		ChildComplexity int
 		Args            map[string]interface{}
 	}
-	lockExecutableSchemaMockComplexity.RLock()
+	mock.lockComplexity.RLock()
 	calls = mock.calls.Complexity
-	lockExecutableSchemaMockComplexity.RUnlock()
+	mock.lockComplexity.RUnlock()
 	return calls
 }
 
@@ -127,9 +124,9 @@ func (mock *ExecutableSchemaMock) Exec(ctx context.Context) ResponseHandler {
 	}{
 		Ctx: ctx,
 	}
-	lockExecutableSchemaMockExec.Lock()
+	mock.lockExec.Lock()
 	mock.calls.Exec = append(mock.calls.Exec, callInfo)
-	lockExecutableSchemaMockExec.Unlock()
+	mock.lockExec.Unlock()
 	return mock.ExecFunc(ctx)
 }
 
@@ -142,9 +139,9 @@ func (mock *ExecutableSchemaMock) ExecCalls() []struct {
 	var calls []struct {
 		Ctx context.Context
 	}
-	lockExecutableSchemaMockExec.RLock()
+	mock.lockExec.RLock()
 	calls = mock.calls.Exec
-	lockExecutableSchemaMockExec.RUnlock()
+	mock.lockExec.RUnlock()
 	return calls
 }
 
@@ -155,9 +152,9 @@ func (mock *ExecutableSchemaMock) Schema() *ast.Schema {
 	}
 	callInfo := struct {
 	}{}
-	lockExecutableSchemaMockSchema.Lock()
+	mock.lockSchema.Lock()
 	mock.calls.Schema = append(mock.calls.Schema, callInfo)
-	lockExecutableSchemaMockSchema.Unlock()
+	mock.lockSchema.Unlock()
 	return mock.SchemaFunc()
 }
 
@@ -168,8 +165,8 @@ func (mock *ExecutableSchemaMock) SchemaCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockExecutableSchemaMockSchema.RLock()
+	mock.lockSchema.RLock()
 	calls = mock.calls.Schema
-	lockExecutableSchemaMockSchema.RUnlock()
+	mock.lockSchema.RUnlock()
 	return calls
 }

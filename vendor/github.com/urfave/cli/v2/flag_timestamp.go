@@ -86,7 +86,7 @@ func (f *TimestampFlag) String() string {
 
 // Names returns the names of the flag
 func (f *TimestampFlag) Names() []string {
-	return flagNames(f)
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
@@ -118,7 +118,9 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 	if f.Layout == "" {
 		return fmt.Errorf("timestamp Layout is required")
 	}
-	f.Value = &Timestamp{}
+	if f.Value == nil {
+		f.Value = &Timestamp{}
+	}
 	f.Value.SetLayout(f.Layout)
 
 	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {

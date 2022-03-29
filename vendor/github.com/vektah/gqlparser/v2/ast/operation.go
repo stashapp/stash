@@ -21,6 +21,7 @@ type VariableDefinition struct {
 	Variable     string
 	Type         *Type
 	DefaultValue *Value
+	Directives   DirectiveList
 	Position     *Position `dump:"-"`
 
 	// Requires validation

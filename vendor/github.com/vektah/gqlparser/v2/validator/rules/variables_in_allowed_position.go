@@ -12,15 +12,17 @@ func init() {
 				return
 			}
 
+			tmp := *value.ExpectedType
+
 			// todo: move me into walk
 			// If there is a default non nullable types can be null
 			if value.VariableDefinition.DefaultValue != nil && value.VariableDefinition.DefaultValue.Kind != ast.NullValue {
 				if value.ExpectedType.NonNull {
-					value.ExpectedType.NonNull = false
+					tmp.NonNull = false
 				}
 			}
 
-			if !value.VariableDefinition.Type.IsCompatible(value.ExpectedType) {
+			if !value.VariableDefinition.Type.IsCompatible(&tmp) {
 				addError(
 					Message(
 						`Variable "%s" of type "%s" used in position expecting type "%s".`,
