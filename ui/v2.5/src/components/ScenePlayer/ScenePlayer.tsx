@@ -15,6 +15,71 @@ import { Interactive } from "src/utils/interactive";
 
 export const VIDEO_PLAYER_ID = "VideoJsPlayer";
 
+function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
+  function seekPercent(percent: number) {
+    const duration = player.duration();
+    const time = duration * percent;
+    player.currentTime(time);
+  }
+
+  switch (event.which) {
+    case 32: // space
+    case 13: // enter
+      if (player.paused()) player.play();
+      else player.pause();
+      break;
+    case 77: // m
+      player.muted(!player.muted());
+      break;
+    case 70: // f
+      if (player.isFullscreen()) player.exitFullscreen();
+      else player.requestFullscreen();
+      break;
+    case 39: // right arrow
+      player.currentTime(Math.max(player.duration(), player.currentTime() + 5));
+      break;
+    case 37: // left arrow
+      player.currentTime(Math.max(0, player.currentTime() - 5));
+      break;
+    case 38: // up arrow
+      player.volume(player.volume() + 0.1);
+      break;
+    case 40: // down arrow
+      player.volume(player.volume() - 0.1);
+      break;
+    case 48: // 0
+      player.currentTime(0);
+      break;
+    case 49: // 1
+      seekPercent(0.1);
+      break;
+    case 50: // 2
+      seekPercent(0.2);
+      break;
+    case 51: // 3
+      seekPercent(0.3);
+      break;
+    case 52: // 4
+      seekPercent(0.4);
+      break;
+    case 53: // 5
+      seekPercent(0.5);
+      break;
+    case 54: // 6
+      seekPercent(0.6);
+      break;
+    case 55: // 7
+      seekPercent(0.7);
+      break;
+    case 56: // 8
+      seekPercent(0.8);
+      break;
+    case 57: // 9
+      seekPercent(0.9);
+      break;
+  }
+}
+
 interface IScenePlayerProps {
   className?: string;
   scene: GQL.SceneDataFragment | undefined | null;
@@ -77,7 +142,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       inactivityTimeout: 2000,
       preload: "none",
       userActions: {
-        hotkeys: true,
+        hotkeys: function (event) {
+          const player = this as VideoJsPlayer;
+          handleHotkeys(player, event);
+        },
       },
     };
 
