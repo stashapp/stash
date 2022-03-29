@@ -26,3 +26,11 @@ Then:
 ```bash
 GITHUB_TOKEN=xxx goreleaser --rm-dist
 ```
+
+## Testing
+
+To test and verify changes to Go Releaser config, use the following:
+
+```bash
+goreleaser --snapshot --skip-publish --rm-dist
+```

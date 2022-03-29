@@ -49,7 +49,12 @@ func varName(vr *types.Var, suffix string) string {
 	switch name {
 	case "mock", "callInfo", "break", "default", "func", "interface", "select", "case", "defer", "go", "map", "struct",
 		"chan", "else", "goto", "package", "switch", "const", "fallthrough", "if", "range", "type", "continue", "for",
-		"import", "return", "var":
+		"import", "return", "var",
+		// avoid shadowing basic types
+		"string", "bool", "byte", "rune", "uintptr",
+		"int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64",
+		"float32", "float64", "complex64", "complex128":
 		name += "MoqParam"
 	}
 

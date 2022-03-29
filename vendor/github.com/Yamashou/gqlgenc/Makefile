@@ -4,7 +4,7 @@ fmt:
 	gofumports -local github.com/Yamashou/gqlgenc -w .
 
 lint:
-	golangci-lint run
+	golangci-lint cache clean && golangci-lint run
 
 test:
 	go test -v ./...
