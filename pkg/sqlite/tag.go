@@ -245,7 +245,11 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 		args = append(args, ww)
 	}
 
-	where := strings.Join(whereClauses, " OR ")
+	whereOr := "(" + strings.Join(whereClauses, " OR ") + ")"
+	where := strings.Join([]string{
+		"tags.ignore_auto_tag = 0",
+		whereOr,
+	}, " AND ")
 	return qb.queryTags(query+" WHERE "+where, args)
 }
 

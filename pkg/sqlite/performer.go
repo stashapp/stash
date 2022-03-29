@@ -191,7 +191,11 @@ func (qb *performerQueryBuilder) QueryForAutoTag(words []string) ([]*models.Perf
 		// args = append(args, w+"%")
 	}
 
-	where := strings.Join(whereClauses, " OR ")
+	whereOr := "(" + strings.Join(whereClauses, " OR ") + ")"
+	where := strings.Join([]string{
+		"ignore_auto_tag = 0",
+		whereOr,
+	}, " AND ")
 	return qb.queryPerformers(query+" WHERE "+where, args)
 }
 

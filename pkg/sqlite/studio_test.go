@@ -208,7 +208,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Studio()
 
-		name := studioNames[studioIdxWithScene] // find a studio by name
+		name := studioNames[studioIdxWithMovie] // find a studio by name
 
 		studios, err := tqb.QueryForAutoTag([]string{name})
 
@@ -216,12 +216,11 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
 
-		assert.Len(t, studios, 2)
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[0].Name.String))
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[1].Name.String))
+		assert.Len(t, studios, 1)
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name.String))
 
 		// find by alias
-		name = getStudioStringValue(studioIdxWithScene, "Alias")
+		name = getStudioStringValue(studioIdxWithMovie, "Alias")
 		studios, err = tqb.QueryForAutoTag([]string{name})
 
 		if err != nil {
@@ -229,7 +228,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, studios, 1)
-		assert.Equal(t, studioIDs[studioIdxWithScene], studios[0].ID)
+		assert.Equal(t, studioIDs[studioIdxWithMovie], studios[0].ID)
 
 		return nil
 	})
