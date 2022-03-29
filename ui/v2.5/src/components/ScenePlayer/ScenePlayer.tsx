@@ -38,6 +38,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const config = configuration?.interface;
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<VideoJsPlayer | undefined>();
+  const sceneId = useRef<string | undefined>();
   const skipButtonsRef = useRef<any>();
 
   const [time, setTime] = useState(0);
@@ -186,7 +187,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       return false;
     }
 
-    if (!scene) return;
+    if (!scene || scene.id === sceneId.current) return;
+    sceneId.current = scene.id;
 
     const player = playerRef.current;
     if (!player) return;
