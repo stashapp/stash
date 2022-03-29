@@ -16,6 +16,7 @@ import {
   getAggregateTagIds,
 } from "src/utils/bulkUpdate";
 import { genderStrings, stringToGender } from "src/utils/gender";
+import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -44,13 +45,12 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   const [hairColor, setHairColor] = useState<string | undefined>();
   const [gender, setGender] = useState<GQL.GenderEnum | undefined>();
   const genderOptions = [""].concat(genderStrings);
+  const [ignoreAutoTag, setIgnoreAutoTag] = useState<boolean | undefined>();
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
-
-  const checkboxRef = React.createRef<HTMLInputElement>();
 
   function getPerformerInput(): GQL.BulkPerformerUpdateInput {
     // need to determine what we are actually setting on each performer
@@ -81,6 +81,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     performerInput.piercings = piercings;
     performerInput.hair_color = hairColor;
     performerInput.gender = gender;
+    performerInput.ignore_auto_tag = ignoreAutoTag;
 
     return performerInput;
   }
@@ -112,6 +113,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     let updateFavorite: boolean | undefined;
     let updateRating: number | undefined;
     let updateGender: GQL.GenderEnum | undefined;
+    let updateIgnoreAutoTag: boolean | undefined;
     let first = true;
 
     state.forEach((performer: GQL.SlimPerformerDataFragment) => {
@@ -124,12 +126,16 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         updateFavorite = performer.favorite;
         updateRating = performerRating ?? undefined;
         updateGender = performer.gender ?? undefined;
+        updateIgnoreAutoTag = performer.ignore_auto_tag ?? undefined;
       } else {
         if (!_.isEqual(performerTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
         if (performer.favorite !== updateFavorite) {
           updateFavorite = undefined;
+        }
+        if (performer.ignore_auto_tag !== updateIgnoreAutoTag) {
+          updateIgnoreAutoTag = undefined;
         }
         if (performerRating !== updateRating) {
           updateRating = undefined;
@@ -144,6 +150,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setFavorite(updateFavorite);
     setRating(updateRating);
     setGender(updateGender);
+    setIgnoreAutoTag(updateIgnoreAutoTag);
 
     // these fields are not part of SlimPerformerDataFragment
     setEthnicity(undefined);
@@ -155,22 +162,6 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     setPiercings(undefined);
     setHairColor(undefined);
   }, [props.selected, tagMode]);
-
-  useEffect(() => {
-    if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = favorite === undefined;
-    }
-  }, [favorite, checkboxRef]);
-
-  function cycleFavorite() {
-    if (favorite) {
-      setFavorite(undefined);
-    } else if (favorite === undefined) {
-      setFavorite(false);
-    } else {
-      setFavorite(true);
-    }
-  }
 
   function renderTextField(
     name: string,
@@ -227,12 +218,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         </Form.Group>
         <Form>
           <Form.Group controlId="favorite">
-            <Form.Check
-              type="checkbox"
-              label="Favorite"
+            <IndeterminateCheckbox
+              label={intl.formatMessage({ id: "favourite" })}
               checked={favorite}
-              ref={checkboxRef}
-              onChange={() => cycleFavorite()}
+              setChecked={setFavorite}
             />
           </Form.Group>
 
@@ -276,6 +265,14 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
               existingIds={existingTagIds ?? []}
               ids={tagIds ?? []}
               mode={tagMode}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="ignore-auto-tags">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({ id: "ignore_auto_tag" })}
+              checked={ignoreAutoTag}
+              setChecked={setIgnoreAutoTag}
             />
           </Form.Group>
         </Form>

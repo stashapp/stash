@@ -4,6 +4,7 @@ fragment SlimPerformerData on Performer {
   gender
   image_path
   favorite
+  ignore_auto_tag
   tags {
     id
     name
