@@ -48,11 +48,19 @@ class SourceMenuButton extends MenuButton {
         selected: source.selected || (!hasSelected && index === 0),
       });
 
+      menuButton.on("selected", function (selectedItem) {
+        if (selectedItem !== item) {
+          item.selected(false);
+        }
+      });
+
       item.on("click", function () {
         // don't do anything if re-selecting the same source
         if (source.selected || (!hasSelected && index === 0)) {
           return;
         }
+
+        menuButton.trigger("selected", item);
 
         // populate source sortIndex first if not present
         const currentSources = (player.currentSources() as ISource[]).map(
