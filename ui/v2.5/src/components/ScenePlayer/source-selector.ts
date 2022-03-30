@@ -32,6 +32,8 @@ class SourceMenuButton extends MenuButton {
 
   createItems() {
     const player = this.player();
+    const menuButton = this;
+
     // slice so that we don't alter the order of the original array
     const sources = player.currentSources().slice() as ISource[];
 
@@ -47,6 +49,11 @@ class SourceMenuButton extends MenuButton {
       });
 
       item.on("click", function () {
+        // don't do anything if re-selecting the same source
+        if (source.selected || (!hasSelected && index === 0)) {
+          return;
+        }
+
         // populate source sortIndex first if not present
         const currentSources = (player.currentSources() as ISource[]).map(
           (src, i) => {
