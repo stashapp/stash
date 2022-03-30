@@ -156,7 +156,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         enterOnRotate: true,
         exitOnRotate: true,
         alwaysInLandscapeMode: true,
-        iOS: true,
+        iOS: false,
       },
     });
 
@@ -393,6 +393,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     <div className={cx("VideoPlayer", { portrait: isPortrait })}>
       <div data-vjs-player className={cx("video-wrapper", className)}>
         <video
+          playsInline
           ref={videoRef}
           id={VIDEO_PLAYER_ID}
           className="video-js vjs-big-play-centered"
