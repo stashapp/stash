@@ -6,6 +6,7 @@ import "videojs-seek-buttons";
 import "videojs-landscape-fullscreen";
 import "./live";
 import "./PlaylistButtons";
+import "./markers";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
@@ -136,6 +137,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         volumePanel: {
           inline: false,
         },
+        chaptersButton: false,
       },
       nativeControlsForTouch: false,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
@@ -160,6 +162,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       },
     });
 
+    (player as any).markers();
     (player as any).offset();
 
     player.focus();
@@ -270,6 +273,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // otherwise, the offset will be applied to the next file when
     // currentTime is called.
     (player as any).clearOffsetDuration();
+
+    const tracks = player.remoteTextTracks();
+    if (tracks.length > 0) {
+      player.removeRemoteTextTrack(tracks[0] as any);
+    }
+
     player.src(
       scene.sceneStreams.map((stream) => ({
         src: stream.url,
@@ -277,6 +286,18 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         label: stream.label ?? undefined,
       }))
     );
+
+    if (scene.paths.chapters_vtt) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.chapters_vtt,
+          kind: "chapters",
+          default: true,
+        },
+        true
+      );
+    }
+
     player.currentTime(0);
 
     player.loop(
