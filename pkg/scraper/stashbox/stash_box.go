@@ -16,6 +16,8 @@ import (
 	"github.com/Yamashou/gqlgenc/client"
 	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/corona10/goimagehash"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -512,7 +514,8 @@ func enumToStringPtr(e fmt.Stringer, titleCase bool) *string {
 	if e != nil {
 		ret := strings.ReplaceAll(e.String(), "_", " ")
 		if titleCase {
-			ret = strings.Title(strings.ToLower(ret))
+			c := cases.Title(language.Und)
+			ret = c.String(strings.ToLower(ret))
 		}
 		return &ret
 	}
