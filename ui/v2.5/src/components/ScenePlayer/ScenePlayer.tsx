@@ -6,6 +6,7 @@ import "videojs-seek-buttons";
 import "videojs-landscape-fullscreen";
 import "./live";
 import "./PlaylistButtons";
+import "./persist-volume";
 import "./markers";
 import cx from "classnames";
 
@@ -164,6 +165,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     (player as any).markers();
     (player as any).offset();
+    (player as any).persistVolume();
 
     player.focus();
     playerRef.current = player;
