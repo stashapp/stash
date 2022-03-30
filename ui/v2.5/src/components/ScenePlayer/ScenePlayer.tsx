@@ -36,7 +36,7 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
       else player.requestFullscreen();
       break;
     case 39: // right arrow
-      player.currentTime(Math.max(player.duration(), player.currentTime() + 5));
+      player.currentTime(Math.min(player.duration(), player.currentTime() + 5));
       break;
     case 37: // left arrow
       player.currentTime(Math.max(0, player.currentTime() - 5));
