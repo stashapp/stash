@@ -19,6 +19,7 @@ type ScenePathsType {
   sprite: String # Resolver
   funscript: String # Resolver
   interactive_heatmap: String # Resolver
+  caption: String # Resolver
 }
 
 type SceneMovie {
@@ -41,6 +42,7 @@ type Scene {
   phash: String
   interactive: Boolean!
   interactive_speed: Int
+  captioned: Boolean!
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time

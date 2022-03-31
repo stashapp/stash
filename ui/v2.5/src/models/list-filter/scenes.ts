@@ -12,6 +12,7 @@ import { RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { InteractiveCriterionOption } from "./criteria/interactive";
+import { CaptionedCriterionOption } from "./criteria/captioned";
 import {
   PerformerTagsCriterionOption,
   TagsCriterionOption,
@@ -78,6 +79,7 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
   InteractiveCriterionOption,
+  CaptionedCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),
 ];
 

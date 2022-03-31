@@ -61,6 +61,8 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	path := scanned.New.Path
 	interactive := getInteractive(path)
 
+	captioned := getCaption(file.Path())
+
 	oldHash := s.GetHash(scanner.FileNamingAlgorithm)
 	changed := false
 
@@ -78,7 +80,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 		videoFileToScene(s, videoFile)
 		changed = true
-	} else if scanned.FileUpdated() || s.Interactive != interactive {
+	} else if scanned.FileUpdated() || s.Interactive != interactive || s.Captioned != captioned {
 		logger.Infof("Updated scene file %s", path)
 
 		// update fields as needed
@@ -130,6 +132,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 			}
 
 			s.Interactive = interactive
+			s.Captioned = captioned
 			s.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
 			_, err := qb.UpdateFull(*s)
@@ -201,6 +204,8 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 
 	interactive := getInteractive(file.Path())
 
+	captioned := getCaption(file.Path())
+
 	if s != nil {
 		exists, _ := fsutil.FileExists(s.Path)
 		if !scanner.CaseSensitiveFs {
@@ -219,6 +224,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 				ID:          s.ID,
 				Path:        &path,
 				Interactive: &interactive,
+				Captioned:   &captioned,
 			}
 			if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				_, err := r.Scene().Update(scenePartial)
@@ -256,6 +262,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			Interactive: interactive,
+			Captioned:   captioned,
 		}
 
 		videoFileToScene(&newScene, videoFile)
@@ -331,5 +338,10 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 
 func getInteractive(path string) bool {
 	_, err := os.Stat(GetFunscriptPath(path))
+	return err == nil
+}
+
+func getCaption(path string) bool {
+	_, err := os.Stat(GetCaptionPath(path))
 	return err == nil
 }

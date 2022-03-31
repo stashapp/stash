@@ -385,6 +385,8 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterion(boolCriterionHandler(sceneFilter.Interactive, "scenes.interactive"))
 	query.handleCriterion(intCriterionHandler(sceneFilter.InteractiveSpeed, "scenes.interactive_speed"))
 
+	query.handleCriterion(boolCriterionHandler(sceneFilter.Captioned, "scenes.captioned"))
+
 	query.handleCriterion(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
 	query.handleCriterion(scenePerformersCriterionHandler(qb, sceneFilter.Performers))

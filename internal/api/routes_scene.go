@@ -41,6 +41,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/vtt/chapter", rs.ChapterVtt)
 		r.Get("/funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
+		r.Get("/caption", rs.Caption)
 
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
@@ -289,6 +290,12 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "image/png")
 	filepath := manager.GetInstance().Paths.Scene.GetInteractiveHeatmapPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 	http.ServeFile(w, r, filepath)
+}
+
+func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	caption := scene.GetCaptionPath(s.Path)
+	serveFileNoCache(w, r, caption)
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {

@@ -98,6 +98,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
+	captionPath := builder.GetCaptionURL()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &models.ScenePathsType{
@@ -110,6 +111,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		Sprite:             &spritePath,
 		Funscript:          &funscriptPath,
 		InteractiveHeatmap: &interactiveHeatmap,
+		Caption:            &captionPath,
 	}, nil
 }
 

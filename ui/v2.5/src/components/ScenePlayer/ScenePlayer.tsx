@@ -299,6 +299,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         true
       );
     }
+    // const currentFile = player.currentSource();
+    console.log(`chapters_vtt path: ${scene.paths.chapters_vtt}`);
+    if (scene.paths.caption) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.caption,
+          kind: "captions",
+          srclang: "en",
+          label: "english",
+          default: true,
+          mode: 'showing'
+        },
+        true
+      );
+    }
+
 
     player.currentTime(0);
 
