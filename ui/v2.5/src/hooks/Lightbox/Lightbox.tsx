@@ -147,9 +147,13 @@ export const LightboxComponent: React.FC<IProps> = ({
     setLightboxSettings({ scrollMode: v });
   }
 
+  const configuredDelay = config?.interface.imageLightbox.slideshowDelay
+    ? config.interface.imageLightbox.slideshowDelay * SECONDS_TO_MS
+    : undefined;
+
   const slideshowDelay =
     lightboxSettings?.slideshowDelay ??
-    config?.interface.imageLightbox.slideshowDelay ??
+    configuredDelay ??
     DEFAULT_SLIDESHOW_DELAY;
 
   function setSlideshowDelay(v: number) {
@@ -264,7 +268,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (slideshowInterval) {
       setSlideshowInterval(null);
     } else {
-      setSlideshowInterval(slideshowDelay * SECONDS_TO_MS);
+      setSlideshowInterval(slideshowDelay);
     }
   }, [slideshowInterval, slideshowDelay]);
 
