@@ -91,32 +91,30 @@ $sceneTabWidth: 450px;
     .vjs-control-bar .vjs-seek-button {
       display: none;
     }
+  }
 
-    // make controls a little more compact on smaller screens
-    @media (max-width: 576px) {
-      .vjs-control-bar {
-        height: 2.5em;
-
-        .vjs-control:not(.vjs-progress-control) {
-          width: 2.5em;
-        }
-
-        .vjs-button > .vjs-icon-placeholder::before,
-        .vjs-skip-button::before {
-          font-size: 1.5em;
-          line-height: 2;
-        }
+  // make controls a little more compact on smaller screens
+  @media (max-width: 576px) {
+    .vjs-control-bar {
+      .vjs-control:not(.vjs-progress-control) {
+        width: 2.5em;
       }
 
-      .vjs-time-control {
-        font-size: 12px;
-        line-height: 4em;
+      .vjs-button > .vjs-icon-placeholder::before,
+      .vjs-skip-button::before {
+        font-size: 1.5em;
+        line-height: 2;
       }
+    }
 
-      .vjs-big-button-group .vjs-button {
-        font-size: 2em;
-        width: 50px;
-      }
+    .vjs-time-control {
+      font-size: 12px;
+      line-height: 4em;
+    }
+
+    .vjs-big-button-group .vjs-button {
+      font-size: 2em;
+      width: 50px;
     }
 
     .vjs-current-time {
