@@ -44,9 +44,17 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
       player.currentTime(Math.max(0, player.currentTime() - 5));
       break;
     case 38: // up arrow
-      player.volume(player.volume() + 0.1);
+      player.currentTime(Math.min(player.duration(), player.currentTime() + 60));
       break;
     case 40: // down arrow
+      player.currentTime(Math.max(0, player.currentTime() - 60));
+      break;
+    case 107: // numpad add
+    case 61: // equals; add
+      player.volume(player.volume() + 0.1);
+      break;
+    case 109: // numpad minus
+    case 173: // hyphen; underscore
       player.volume(player.volume() - 0.1);
       break;
     case 48: // 0
