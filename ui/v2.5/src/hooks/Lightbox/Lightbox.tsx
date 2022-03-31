@@ -175,7 +175,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [
     displayedSlideshowInterval,
     setDisplayedSlideshowInterval,
-  ] = useState<string>(slideshowDelay.toString());
+  ] = useState<string>((slideshowDelay / SECONDS_TO_MS).toString());
 
   useEffect(() => {
     if (images !== oldImages.current && isSwitchingPage) {
