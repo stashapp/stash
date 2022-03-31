@@ -37,21 +37,21 @@ $sceneTabWidth: 450px;
 
   .vjs-big-button-group {
     display: none;
-    height: 50px;
-    justify-content: space-between;
+    height: 80px;
+    justify-content: space-around;
     opacity: 0;
-    padding: 0 10px;
     position: absolute;
-    top: calc(50% - 25px);
+    top: calc(50% - 40px);
     width: 100%;
 
     .vjs-button {
-      font-size: 2em;
+      font-size: 4em;
       height: 100%;
-      width: 50px;
+      width: 80px;
 
       .vjs-icon-placeholder::before {
-        line-height: 1.5;
+        height: 100%;
+        line-height: 80px;
       }
     }
   }
@@ -111,6 +111,11 @@ $sceneTabWidth: 450px;
       .vjs-time-control {
         font-size: 12px;
         line-height: 4em;
+      }
+
+      .vjs-big-button-group .vjs-button {
+        font-size: 2em;
+        width: 50px;
       }
     }
 
