@@ -8,6 +8,7 @@ import "./live";
 import "./PlaylistButtons";
 import "./persist-volume";
 import "./markers";
+import "./big-buttons";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
@@ -166,6 +167,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     (player as any).markers();
     (player as any).offset();
     (player as any).persistVolume();
+    (player as any).bigButtons();
 
     player.focus();
     playerRef.current = player;
@@ -314,6 +316,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
 
     player.on("play", function (this: VideoJsPlayer) {
+      player.poster("");
       if (scene.interactive) {
         interactiveClient.play(this.currentTime());
       }
