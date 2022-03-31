@@ -40,9 +40,11 @@ export function useLocalForage<T>(
   useEffect(() => {
     async function runAsync() {
       try {
-        const serialized = await localForage.getItem<string>(key);
-        const parsed = JSON.parse(serialized ?? "null");
-        if (!Object.is(parsed, null)) {
+        let parsed = await localForage.getItem<T>(key);
+        if (typeof parsed === "string") {
+          parsed = JSON.parse(parsed ?? "null");
+        }
+        if (parsed !== null) {
           setData(parsed);
           Cache[key] = parsed;
         } else {
@@ -72,7 +74,7 @@ export function useLocalForage<T>(
         ...Cache[key],
         ...data,
       };
-      localForage.setItem(key, JSON.stringify(Cache[key]));
+      localForage.setItem(key, Cache[key]);
     }
   });
 
