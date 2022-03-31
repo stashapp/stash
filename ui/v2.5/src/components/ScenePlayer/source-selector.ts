@@ -37,10 +37,6 @@ class SourceMenuItem extends MenuItem {
 }
 
 class SourceMenuButton extends MenuButton {
-  buildCSSClass() {
-    return MenuButton.prototype.buildCSSClass.call(this) + " vjs-icon-cog";
-  }
-
   createEl() {
     return videojs.dom.createEl("div", {
       className:

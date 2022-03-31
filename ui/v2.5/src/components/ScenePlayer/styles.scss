@@ -395,8 +395,15 @@ $sceneTabWidth: 450px;
   }
 }
 
-.vjs-source-selector .vjs-menu li {
-  font-size: 12px;
+.vjs-source-selector {
+  .vjs-menu li {
+    font-size: 12px;
+  }
+
+  .vjs-button > .vjs-icon-placeholder::before {
+    content: "\f110";
+    font-family: VideoJS;
+  }
 }
 
 .vjs-marker {
