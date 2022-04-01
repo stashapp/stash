@@ -6,8 +6,10 @@ import "videojs-seek-buttons";
 import "videojs-landscape-fullscreen";
 import "./live";
 import "./PlaylistButtons";
+import "./source-selector";
 import "./persist-volume";
 import "./markers";
+import "./big-buttons";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
@@ -22,6 +24,10 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
     const duration = player.duration();
     const time = duration * percent;
     player.currentTime(time);
+  }
+
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+    return;
   }
 
   switch (event.which) {
@@ -165,7 +171,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     (player as any).markers();
     (player as any).offset();
+    (player as any).sourceSelector();
     (player as any).persistVolume();
+    (player as any).bigButtons();
 
     player.focus();
     playerRef.current = player;
@@ -406,6 +414,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
 
     player.on("play", function (this: VideoJsPlayer) {
+      player.poster("");
       if (scene.interactive) {
         interactiveClient.play(this.currentTime());
       }
