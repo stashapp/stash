@@ -452,6 +452,9 @@
         "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。設定此金鑰後，Stash 將可把當前短片中的對應資訊分享至 handyfeeling.com",
         "heading": "Handy 連線金鑰"
       },
+      "image_lightbox": {
+        "heading": "圖片燈箱"
+      },
       "images": {
         "heading": "圖片",
         "options": {
