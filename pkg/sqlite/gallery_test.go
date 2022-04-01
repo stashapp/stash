@@ -4,6 +4,7 @@
 package sqlite_test
 
 import (
+	"math"
 	"strconv"
 	"testing"
 
@@ -557,6 +558,28 @@ func TestGalleryQueryIsMissingTags(t *testing.T) {
 		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
 
 		assert.True(t, len(galleries) > 0)
+
+		return nil
+	})
+}
+
+func TestGalleryQueryIsMissingDate(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		isMissing := "date"
+		galleryFilter := models.GalleryFilterType{
+			IsMissing: &isMissing,
+		}
+
+		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+
+		// three in four scenes have no date
+		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4*3)))
+
+		// ensure date is null, empty or "0001-01-01"
+		for _, g := range galleries {
+			assert.True(t, !g.Date.Valid || g.Date.String == "" || g.Date.String == "0001-01-01")
+		}
 
 		return nil
 	})

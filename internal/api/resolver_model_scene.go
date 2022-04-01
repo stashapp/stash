@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
-	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -87,8 +87,9 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	config := manager.GetInstance().Config
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
-	builder.APIKey = config.GetInstance().GetAPIKey()
+	builder.APIKey = config.GetAPIKey()
 	screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt.Timestamp)
 	previewPath := builder.GetStreamPreviewURL()
 	streamPath := builder.GetStreamURL()
@@ -236,4 +237,13 @@ func (r *sceneResolver) UpdatedAt(ctx context.Context, obj *models.Scene) (*time
 
 func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
 	return &obj.FileModTime.Timestamp, nil
+}
+
+func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*models.SceneStreamEndpoint, error) {
+	config := manager.GetInstance().Config
+
+	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
+
+	return manager.GetSceneStreamPaths(obj, builder.GetStreamURL(), config.GetMaxStreamingTranscodeSize())
 }
