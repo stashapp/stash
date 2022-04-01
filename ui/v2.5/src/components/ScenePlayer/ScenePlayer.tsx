@@ -160,6 +160,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     const player = VideoJS(videoElement, options);
 
+    const settings = (player as any).textTrackSettings;
+    settings.setValues({
+      backgroundColor: "#000",
+      backgroundOpacity: "0.5",
+      edgeStyle: "uniform",
+    });
+    settings.updateDisplay();
+
     (player as any).landscapeFullscreen({
       fullscreen: {
         enterOnRotate: true,
