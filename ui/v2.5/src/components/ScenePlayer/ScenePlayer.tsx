@@ -44,7 +44,9 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
       player.currentTime(Math.max(0, player.currentTime() - 5));
       break;
     case 38: // up arrow
-      player.currentTime(Math.min(player.duration(), player.currentTime() + 60));
+      player.currentTime(
+        Math.min(player.duration(), player.currentTime() + 60)
+      );
       break;
     case 40: // down arrow
       player.currentTime(Math.max(0, player.currentTime() - 60));
