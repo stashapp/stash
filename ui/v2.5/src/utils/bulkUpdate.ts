@@ -173,3 +173,15 @@ export function getAggregateInputIDs(
 
   return undefined;
 }
+
+export function getAggregateState<T>(
+  currentValue: T,
+  newValue: T,
+  first: boolean
+) {
+  if (!first && !_.isEqual(currentValue, newValue)) {
+    return undefined;
+  }
+
+  return newValue;
+}
