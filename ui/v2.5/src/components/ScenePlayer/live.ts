@@ -36,10 +36,17 @@ const offset = function (this: VideoJsPlayer) {
         const srcUrl = new URL(this.src());
         srcUrl.searchParams.delete("start");
         srcUrl.searchParams.append("start", seconds.toString());
-        this.src({
-          src: srcUrl.toString(),
-          type: "video/webm",
-        });
+        const currentSrc = this.currentSource();
+        const newSources = this.currentSources().map(
+          (source: videojs.Tech.SourceObject) => {
+            return {
+              ...source,
+              src:
+                source.src === currentSrc.src ? srcUrl.toString() : source.src,
+            };
+          }
+        );
+        this.src(newSources);
         this.play();
 
         return seconds;
