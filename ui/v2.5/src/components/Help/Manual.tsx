@@ -19,6 +19,7 @@ import KeyboardShortcuts from "src/docs/en/KeyboardShortcuts.md";
 import Help from "src/docs/en/Help.md";
 import Deduplication from "src/docs/en/Deduplication.md";
 import Interactive from "src/docs/en/Interactive.md";
+import Captions from "src/docs/en/Captions.md";
 import Identify from "src/docs/en/Identify.md";
 import Browsing from "src/docs/en/Browsing.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
@@ -133,6 +134,11 @@ export const Manual: React.FC<IManualProps> = ({
       key: "Interactive.md",
       title: "Interactivity",
       content: Interactive,
+    },
+    {
+      key: "Captions.md",
+      title: "Captions",
+      content: Captions,
     },
     {
       key: "KeyboardShortcuts.md",
