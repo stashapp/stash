@@ -26,6 +26,10 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
     player.currentTime(time);
   }
 
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+    return;
+  }
+
   switch (event.which) {
     case 32: // space
     case 13: // enter
