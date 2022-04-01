@@ -299,22 +299,98 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         true
       );
     }
-    // const currentFile = player.currentSource();
-    console.log(`chapters_vtt path: ${scene.paths.chapters_vtt}`);
-    if (scene.paths.caption) {
+
+    if (scene.paths.caption_de) {
       player.addRemoteTextTrack(
         {
-          src: scene.paths.caption,
+          src: scene.paths.caption_de,
+          kind: "captions",
+          srclang: "de",
+          label: "german",
+          default: false,
+        },
+        false
+      );
+    }
+
+    if (scene.paths.caption_en) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.caption_en,
           kind: "captions",
           srclang: "en",
           label: "english",
           default: true,
           mode: 'showing'
         },
-        true
+        false
       );
     }
 
+    if (scene.paths.caption_es) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.caption_es,
+          kind: "captions",
+          srclang: "es",
+          label: "spanish",
+          default: false,
+        },
+        false
+      );
+    }
+
+    if (scene.paths.caption_fr) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.caption_fr,
+          kind: "captions",
+          srclang: "fr",
+          label: "french",
+          default: false,
+        },
+        false
+      );
+    }
+
+    if (scene.paths.caption_it) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.caption_it,
+          kind: "captions",
+          srclang: "it",
+          label: "italian",
+          default: false,
+        },
+        false
+      );
+    }
+
+    if (scene.paths.caption_nl) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.caption_nl,
+          kind: "captions",
+          srclang: "nl",
+          label: "dutch",
+          default: false,
+        },
+        false
+      );
+    }
+
+    if (scene.paths.caption_pt) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.caption_pt,
+          kind: "captions",
+          srclang: "pt",
+          label: "portuguese",
+          default: false,
+        },
+        false
+      );
+    }
 
     player.currentTime(0);
 

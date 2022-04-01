@@ -38,7 +38,13 @@ fragment SceneData on Scene {
     sprite
     funscript
     interactive_heatmap
-    caption
+    caption_de
+    caption_en
+    caption_es
+    caption_fr
+    caption_it
+    caption_nl
+    caption_pt
   }
 
   scene_markers {

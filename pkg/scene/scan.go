@@ -342,6 +342,33 @@ func getInteractive(path string) bool {
 }
 
 func getCaption(path string) bool {
-	_, err := os.Stat(GetCaptionPath(path))
-	return err == nil
+	_, err := os.Stat(GetCaptionDEPath(path))
+	if err == nil {
+		return true
+	}
+	_, err = os.Stat(GetCaptionENPath(path))
+	if err == nil {
+		return true
+	}
+	_, err = os.Stat(GetCaptionESPath(path))
+	if err == nil {
+		return true
+	}
+	_, err = os.Stat(GetCaptionFRPath(path))
+	if err == nil {
+		return true
+	}
+	_, err = os.Stat(GetCaptionITPath(path))
+	if err == nil {
+		return true
+	}
+	_, err = os.Stat(GetCaptionNLPath(path))
+	if err == nil {
+		return true
+	}
+	_, err = os.Stat(GetCaptionPTPath(path))
+	if err == nil {
+		return true
+	}
+	return false
 }

@@ -41,7 +41,13 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/vtt/chapter", rs.ChapterVtt)
 		r.Get("/funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
-		r.Get("/caption", rs.Caption)
+		r.Get("/caption_de", rs.CaptionDE)
+		r.Get("/caption_en", rs.CaptionEN)
+		r.Get("/caption_es", rs.CaptionES)
+		r.Get("/caption_fr", rs.CaptionFR)
+		r.Get("/caption_it", rs.CaptionIT)
+		r.Get("/caption_nl", rs.CaptionNL)
+		r.Get("/caption_pt", rs.CaptionPT)
 
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
@@ -292,9 +298,45 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 	http.ServeFile(w, r, filepath)
 }
 
-func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request) {
+func (rs sceneRoutes) CaptionDE(w http.ResponseWriter, r *http.Request) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
-	caption := scene.GetCaptionPath(s.Path)
+	caption := scene.GetCaptionDEPath(s.Path)
+	serveFileNoCache(w, r, caption)
+}
+
+func (rs sceneRoutes) CaptionEN(w http.ResponseWriter, r *http.Request) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	caption := scene.GetCaptionENPath(s.Path)
+	serveFileNoCache(w, r, caption)
+}
+
+func (rs sceneRoutes) CaptionES(w http.ResponseWriter, r *http.Request) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	caption := scene.GetCaptionESPath(s.Path)
+	serveFileNoCache(w, r, caption)
+}
+
+func (rs sceneRoutes) CaptionFR(w http.ResponseWriter, r *http.Request) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	caption := scene.GetCaptionFRPath(s.Path)
+	serveFileNoCache(w, r, caption)
+}
+
+func (rs sceneRoutes) CaptionIT(w http.ResponseWriter, r *http.Request) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	caption := scene.GetCaptionITPath(s.Path)
+	serveFileNoCache(w, r, caption)
+}
+
+func (rs sceneRoutes) CaptionNL(w http.ResponseWriter, r *http.Request) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	caption := scene.GetCaptionNLPath(s.Path)
+	serveFileNoCache(w, r, caption)
+}
+
+func (rs sceneRoutes) CaptionPT(w http.ResponseWriter, r *http.Request) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+	caption := scene.GetCaptionPTPath(s.Path)
 	serveFileNoCache(w, r, caption)
 }
 
