@@ -309,7 +309,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           label: "german",
           default: false,
         },
-        false
+        true
       );
     }
 
@@ -323,7 +323,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           default: true,
           mode: 'showing'
         },
-        false
+        true
       );
     }
 
@@ -336,7 +336,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           label: "spanish",
           default: false,
         },
-        false
+        true
       );
     }
 
@@ -349,7 +349,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           label: "french",
           default: false,
         },
-        false
+        true
       );
     }
 
@@ -362,7 +362,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           label: "italian",
           default: false,
         },
-        false
+        true
       );
     }
 
@@ -375,7 +375,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           label: "dutch",
           default: false,
         },
-        false
+        true
       );
     }
 
@@ -388,7 +388,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           label: "portuguese",
           default: false,
         },
-        false
+        true
       );
     }
 
