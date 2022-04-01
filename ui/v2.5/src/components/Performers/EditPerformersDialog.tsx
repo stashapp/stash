@@ -9,9 +9,8 @@ import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
 import {
-  getAggregateInputIDs,
+  getAggregateInputValue,
   getAggregateState,
-  getAggregateTagIds,
 } from "src/utils/bulkUpdate";
 import {
   genderStrings,
@@ -19,6 +18,7 @@ import {
   stringToGender,
 } from "src/utils/gender";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
+import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -30,11 +30,14 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 ) => {
   const intl = useIntl();
   const Toast = useToast();
-  const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
-    GQL.BulkUpdateIdMode.Add
-  );
-  const [tagIds, setTagIds] = useState<string[]>();
+  const [tagIds, setTagIds] = useState<GQL.BulkUpdateIds>({
+    mode: GQL.BulkUpdateIdMode.Add,
+  });
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
+  const [
+    aggregateState,
+    setAggregateState,
+  ] = useState<GQL.BulkPerformerUpdateInput>({});
   const [updateInput, setUpdateInput] = useState<GQL.BulkPerformerUpdateInput>(
     {}
   );
@@ -50,20 +53,26 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   }
 
   function getPerformerInput(): GQL.BulkPerformerUpdateInput {
-    // need to determine what we are actually setting on each performer
-    const aggregateTagIds = getAggregateTagIds(props.selected);
-
     const performerInput: GQL.BulkPerformerUpdateInput = {
       ids: props.selected.map((performer) => {
         return performer.id;
       }),
       ...updateInput,
+      tag_ids: tagIds,
     };
 
-    performerInput.tag_ids = getAggregateInputIDs(
-      tagMode,
-      tagIds,
-      aggregateTagIds
+    // we don't have unset functionality for the rating star control
+    // so need to determine if we are setting a rating or not
+    performerInput.rating = getAggregateInputValue(
+      updateInput.rating,
+      aggregateState.rating
+    );
+
+    // gender dropdown doesn't have unset functionality
+    // so need to determine what we are setting
+    performerInput.gender = getAggregateInputValue(
+      updateInput.gender,
+      aggregateState.gender
     );
 
     return performerInput;
@@ -115,6 +124,46 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         performer.gender,
         first
       );
+      updateState.career_length = getAggregateState(
+        updateState.career_length,
+        performer.career_length,
+        first
+      );
+      updateState.country = getAggregateState(
+        updateState.country,
+        performer.country,
+        first
+      );
+      updateState.ethnicity = getAggregateState(
+        updateState.ethnicity,
+        performer.ethnicity,
+        first
+      );
+      updateState.eye_color = getAggregateState(
+        updateState.eye_color,
+        performer.eye_color,
+        first
+      );
+      updateState.fake_tits = getAggregateState(
+        updateState.fake_tits,
+        performer.fake_tits,
+        first
+      );
+      updateState.hair_color = getAggregateState(
+        updateState.hair_color,
+        performer.hair_color,
+        first
+      );
+      updateState.tattoos = getAggregateState(
+        updateState.tattoos,
+        performer.tattoos,
+        first
+      );
+      updateState.piercings = getAggregateState(
+        updateState.piercings,
+        performer.piercings,
+        first
+      );
 
       updateTagIds =
         getAggregateState(updateTagIds, performerTagIDs, first) ?? [];
@@ -123,8 +172,9 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     });
 
     setExistingTagIds(updateTagIds);
+    setAggregateState(updateState);
     setUpdateInput(updateState);
-  }, [props.selected, tagMode]);
+  }, [props.selected]);
 
   function renderTextField(
     name: string,
@@ -136,12 +186,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         <Form.Label>
           <FormattedMessage id={name} />
         </Form.Label>
-        <Form.Control
-          className="input-control"
-          type="text"
-          value={value ?? ""}
-          onChange={(event) => setter(event.currentTarget.value)}
-          placeholder={intl.formatMessage({ id: name })}
+        <BulkUpdateTextInput
+          value={value ?? undefined}
+          valueChanged={(newValue) => setter(newValue)}
+          unsetDisabled={props.selected.length < 2}
         />
       </Form.Group>
     );
@@ -184,6 +232,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             <IndeterminateCheckbox
               setChecked={(checked) => setUpdateField({ favorite: checked })}
               checked={updateInput.favorite ?? undefined}
+              label={intl.formatMessage({ id: "favourite" })}
             />
           </Form.Group>
 
@@ -241,11 +290,11 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             <MultiSet
               type="tags"
               disabled={isUpdating}
-              onUpdate={(itemIDs) => setTagIds(itemIDs)}
-              onSetMode={(newMode) => setTagMode(newMode)}
+              onUpdate={(itemIDs) => setTagIds({ ...tagIds, ids: itemIDs })}
+              onSetMode={(newMode) => setTagIds({ ...tagIds, mode: newMode })}
               existingIds={existingTagIds ?? []}
-              ids={tagIds ?? []}
-              mode={tagMode}
+              ids={tagIds.ids ?? []}
+              mode={tagIds.mode}
             />
           </Form.Group>
         </Form>

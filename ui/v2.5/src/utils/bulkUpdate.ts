@@ -124,7 +124,7 @@ export function getAggregateMovieIds(state: IHasMovies[]) {
   return ret;
 }
 
-function makeBulkUpdateIds(
+export function makeBulkUpdateIds(
   ids: string[],
   mode: GQL.BulkUpdateIdMode
 ): GQL.BulkUpdateIds {
@@ -152,6 +152,7 @@ export function getAggregateInputValue<V>(
   }
 }
 
+// TODO - remove - this is incorrect
 export function getAggregateInputIDs(
   mode: GQL.BulkUpdateIdMode,
   inputIds: string[] | undefined,

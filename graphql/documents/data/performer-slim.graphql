@@ -4,6 +4,15 @@ fragment SlimPerformerData on Performer {
   gender
   image_path
   favorite
+  country
+  ethnicity
+  hair_color
+  eye_color
+  height
+  fake_tits
+  career_length
+  tattoos
+  piercings
   tags {
     id
     name
