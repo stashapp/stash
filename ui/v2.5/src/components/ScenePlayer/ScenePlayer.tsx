@@ -314,7 +314,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           src: scene.paths.caption_de,
           kind: "captions",
           srclang: "de",
-          label: "german",
+          label: "Deutsche",
           default: false,
         },
         true
@@ -327,7 +327,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           src: scene.paths.caption_en,
           kind: "captions",
           srclang: "en",
-          label: "english",
+          label: "English",
           default: true,
           mode: "showing",
         },
@@ -341,7 +341,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           src: scene.paths.caption_es,
           kind: "captions",
           srclang: "es",
-          label: "spanish",
+          label: "Español",
           default: false,
         },
         true
@@ -354,7 +354,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           src: scene.paths.caption_fr,
           kind: "captions",
           srclang: "fr",
-          label: "french",
+          label: "Français",
           default: false,
         },
         true
@@ -367,7 +367,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           src: scene.paths.caption_it,
           kind: "captions",
           srclang: "it",
-          label: "italian",
+          label: "Italiano",
           default: false,
         },
         true
@@ -380,7 +380,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           src: scene.paths.caption_nl,
           kind: "captions",
           srclang: "nl",
-          label: "dutch",
+          label: "Holandés",
           default: false,
         },
         true
@@ -393,7 +393,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           src: scene.paths.caption_pt,
           kind: "captions",
           srclang: "pt",
-          label: "portuguese",
+          label: "Português",
           default: false,
         },
         true
