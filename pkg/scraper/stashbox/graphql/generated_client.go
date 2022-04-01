@@ -31,6 +31,8 @@ type Query struct {
 	FindScenesByFingerprints     []*Scene                     "json:\"findScenesByFingerprints\" graphql:\"findScenesByFingerprints\""
 	FindScenesByFullFingerprints []*Scene                     "json:\"findScenesByFullFingerprints\" graphql:\"findScenesByFullFingerprints\""
 	QueryScenes                  QueryScenesResultType        "json:\"queryScenes\" graphql:\"queryScenes\""
+	FindSite                     *Site                        "json:\"findSite\" graphql:\"findSite\""
+	QuerySites                   QuerySitesResultType         "json:\"querySites\" graphql:\"querySites\""
 	FindEdit                     *Edit                        "json:\"findEdit\" graphql:\"findEdit\""
 	QueryEdits                   QueryEditsResultType         "json:\"queryEdits\" graphql:\"queryEdits\""
 	FindUser                     *User                        "json:\"findUser\" graphql:\"findUser\""
@@ -38,48 +40,57 @@ type Query struct {
 	Me                           *User                        "json:\"me\" graphql:\"me\""
 	SearchPerformer              []*Performer                 "json:\"searchPerformer\" graphql:\"searchPerformer\""
 	SearchScene                  []*Scene                     "json:\"searchScene\" graphql:\"searchScene\""
+	FindDraft                    *Draft                       "json:\"findDraft\" graphql:\"findDraft\""
+	FindDrafts                   []*Draft                     "json:\"findDrafts\" graphql:\"findDrafts\""
 	Version                      Version                      "json:\"version\" graphql:\"version\""
+	GetConfig                    StashBoxConfig               "json:\"getConfig\" graphql:\"getConfig\""
 }
 
 type Mutation struct {
-	SceneCreate        *Scene       "json:\"sceneCreate\" graphql:\"sceneCreate\""
-	SceneUpdate        *Scene       "json:\"sceneUpdate\" graphql:\"sceneUpdate\""
-	SceneDestroy       bool         "json:\"sceneDestroy\" graphql:\"sceneDestroy\""
-	PerformerCreate    *Performer   "json:\"performerCreate\" graphql:\"performerCreate\""
-	PerformerUpdate    *Performer   "json:\"performerUpdate\" graphql:\"performerUpdate\""
-	PerformerDestroy   bool         "json:\"performerDestroy\" graphql:\"performerDestroy\""
-	StudioCreate       *Studio      "json:\"studioCreate\" graphql:\"studioCreate\""
-	StudioUpdate       *Studio      "json:\"studioUpdate\" graphql:\"studioUpdate\""
-	StudioDestroy      bool         "json:\"studioDestroy\" graphql:\"studioDestroy\""
-	TagCreate          *Tag         "json:\"tagCreate\" graphql:\"tagCreate\""
-	TagUpdate          *Tag         "json:\"tagUpdate\" graphql:\"tagUpdate\""
-	TagDestroy         bool         "json:\"tagDestroy\" graphql:\"tagDestroy\""
-	UserCreate         *User        "json:\"userCreate\" graphql:\"userCreate\""
-	UserUpdate         *User        "json:\"userUpdate\" graphql:\"userUpdate\""
-	UserDestroy        bool         "json:\"userDestroy\" graphql:\"userDestroy\""
-	ImageCreate        *Image       "json:\"imageCreate\" graphql:\"imageCreate\""
-	ImageDestroy       bool         "json:\"imageDestroy\" graphql:\"imageDestroy\""
-	NewUser            *string      "json:\"newUser\" graphql:\"newUser\""
-	ActivateNewUser    *User        "json:\"activateNewUser\" graphql:\"activateNewUser\""
-	GenerateInviteCode string       "json:\"generateInviteCode\" graphql:\"generateInviteCode\""
-	RescindInviteCode  bool         "json:\"rescindInviteCode\" graphql:\"rescindInviteCode\""
-	GrantInvite        int          "json:\"grantInvite\" graphql:\"grantInvite\""
-	RevokeInvite       int          "json:\"revokeInvite\" graphql:\"revokeInvite\""
-	TagCategoryCreate  *TagCategory "json:\"tagCategoryCreate\" graphql:\"tagCategoryCreate\""
-	TagCategoryUpdate  *TagCategory "json:\"tagCategoryUpdate\" graphql:\"tagCategoryUpdate\""
-	TagCategoryDestroy bool         "json:\"tagCategoryDestroy\" graphql:\"tagCategoryDestroy\""
-	RegenerateAPIKey   string       "json:\"regenerateAPIKey\" graphql:\"regenerateAPIKey\""
-	ResetPassword      bool         "json:\"resetPassword\" graphql:\"resetPassword\""
-	ChangePassword     bool         "json:\"changePassword\" graphql:\"changePassword\""
-	SceneEdit          Edit         "json:\"sceneEdit\" graphql:\"sceneEdit\""
-	PerformerEdit      Edit         "json:\"performerEdit\" graphql:\"performerEdit\""
-	StudioEdit         Edit         "json:\"studioEdit\" graphql:\"studioEdit\""
-	TagEdit            Edit         "json:\"tagEdit\" graphql:\"tagEdit\""
-	EditVote           Edit         "json:\"editVote\" graphql:\"editVote\""
-	EditComment        Edit         "json:\"editComment\" graphql:\"editComment\""
-	ApplyEdit          Edit         "json:\"applyEdit\" graphql:\"applyEdit\""
-	CancelEdit         Edit         "json:\"cancelEdit\" graphql:\"cancelEdit\""
-	SubmitFingerprint  bool         "json:\"submitFingerprint\" graphql:\"submitFingerprint\""
+	SceneCreate          *Scene                "json:\"sceneCreate\" graphql:\"sceneCreate\""
+	SceneUpdate          *Scene                "json:\"sceneUpdate\" graphql:\"sceneUpdate\""
+	SceneDestroy         bool                  "json:\"sceneDestroy\" graphql:\"sceneDestroy\""
+	PerformerCreate      *Performer            "json:\"performerCreate\" graphql:\"performerCreate\""
+	PerformerUpdate      *Performer            "json:\"performerUpdate\" graphql:\"performerUpdate\""
+	PerformerDestroy     bool                  "json:\"performerDestroy\" graphql:\"performerDestroy\""
+	StudioCreate         *Studio               "json:\"studioCreate\" graphql:\"studioCreate\""
+	StudioUpdate         *Studio               "json:\"studioUpdate\" graphql:\"studioUpdate\""
+	StudioDestroy        bool                  "json:\"studioDestroy\" graphql:\"studioDestroy\""
+	TagCreate            *Tag                  "json:\"tagCreate\" graphql:\"tagCreate\""
+	TagUpdate            *Tag                  "json:\"tagUpdate\" graphql:\"tagUpdate\""
+	TagDestroy           bool                  "json:\"tagDestroy\" graphql:\"tagDestroy\""
+	UserCreate           *User                 "json:\"userCreate\" graphql:\"userCreate\""
+	UserUpdate           *User                 "json:\"userUpdate\" graphql:\"userUpdate\""
+	UserDestroy          bool                  "json:\"userDestroy\" graphql:\"userDestroy\""
+	ImageCreate          *Image                "json:\"imageCreate\" graphql:\"imageCreate\""
+	ImageDestroy         bool                  "json:\"imageDestroy\" graphql:\"imageDestroy\""
+	NewUser              *string               "json:\"newUser\" graphql:\"newUser\""
+	ActivateNewUser      *User                 "json:\"activateNewUser\" graphql:\"activateNewUser\""
+	GenerateInviteCode   *string               "json:\"generateInviteCode\" graphql:\"generateInviteCode\""
+	RescindInviteCode    bool                  "json:\"rescindInviteCode\" graphql:\"rescindInviteCode\""
+	GrantInvite          int                   "json:\"grantInvite\" graphql:\"grantInvite\""
+	RevokeInvite         int                   "json:\"revokeInvite\" graphql:\"revokeInvite\""
+	TagCategoryCreate    *TagCategory          "json:\"tagCategoryCreate\" graphql:\"tagCategoryCreate\""
+	TagCategoryUpdate    *TagCategory          "json:\"tagCategoryUpdate\" graphql:\"tagCategoryUpdate\""
+	TagCategoryDestroy   bool                  "json:\"tagCategoryDestroy\" graphql:\"tagCategoryDestroy\""
+	SiteCreate           *Site                 "json:\"siteCreate\" graphql:\"siteCreate\""
+	SiteUpdate           *Site                 "json:\"siteUpdate\" graphql:\"siteUpdate\""
+	SiteDestroy          bool                  "json:\"siteDestroy\" graphql:\"siteDestroy\""
+	RegenerateAPIKey     string                "json:\"regenerateAPIKey\" graphql:\"regenerateAPIKey\""
+	ResetPassword        bool                  "json:\"resetPassword\" graphql:\"resetPassword\""
+	ChangePassword       bool                  "json:\"changePassword\" graphql:\"changePassword\""
+	SceneEdit            Edit                  "json:\"sceneEdit\" graphql:\"sceneEdit\""
+	PerformerEdit        Edit                  "json:\"performerEdit\" graphql:\"performerEdit\""
+	StudioEdit           Edit                  "json:\"studioEdit\" graphql:\"studioEdit\""
+	TagEdit              Edit                  "json:\"tagEdit\" graphql:\"tagEdit\""
+	EditVote             Edit                  "json:\"editVote\" graphql:\"editVote\""
+	EditComment          Edit                  "json:\"editComment\" graphql:\"editComment\""
+	ApplyEdit            Edit                  "json:\"applyEdit\" graphql:\"applyEdit\""
+	CancelEdit           Edit                  "json:\"cancelEdit\" graphql:\"cancelEdit\""
+	SubmitFingerprint    bool                  "json:\"submitFingerprint\" graphql:\"submitFingerprint\""
+	SubmitSceneDraft     DraftSubmissionStatus "json:\"submitSceneDraft\" graphql:\"submitSceneDraft\""
+	SubmitPerformerDraft DraftSubmissionStatus "json:\"submitPerformerDraft\" graphql:\"submitPerformerDraft\""
+	DestroyDraft         bool                  "json:\"destroyDraft\" graphql:\"destroyDraft\""
 }
 type URLFragment struct {
 	URL  string "json:\"url\" graphql:\"url\""
@@ -180,60 +191,43 @@ type FindSceneByID struct {
 type SubmitFingerprintPayload struct {
 	SubmitFingerprint bool "json:\"submitFingerprint\" graphql:\"submitFingerprint\""
 }
+type Me struct {
+	Me *struct {
+		Name string "json:\"name\" graphql:\"name\""
+	} "json:\"me\" graphql:\"me\""
+}
+type SubmitSceneDraftPayload struct {
+	SubmitSceneDraft struct {
+		ID *string "json:\"id\" graphql:\"id\""
+	} "json:\"submitSceneDraft\" graphql:\"submitSceneDraft\""
+}
+type SubmitPerformerDraftPayload struct {
+	SubmitPerformerDraft struct {
+		ID *string "json:\"id\" graphql:\"id\""
+	} "json:\"submitPerformerDraft\" graphql:\"submitPerformerDraft\""
+}
 
 const FindSceneByFingerprintQuery = `query FindSceneByFingerprint ($fingerprint: FingerprintQueryInput!) {
 	findSceneByFingerprint(fingerprint: $fingerprint) {
 		... SceneFragment
 	}
 }
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
-fragment SceneFragment on Scene {
-	id
-	title
-	details
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
 	duration
-	date
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	studio {
-		... StudioFragment
-	}
-	tags {
-		... TagFragment
-	}
-	performers {
-		... PerformerAppearanceFragment
-	}
-	fingerprints {
-		... FingerprintFragment
-	}
 }
 fragment URLFragment on URL {
 	url
 	type
 }
-fragment StudioFragment on Studio {
+fragment TagFragment on Tag {
 	name
 	id
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
 }
 fragment PerformerFragment on Performer {
 	id
@@ -269,15 +263,9 @@ fragment PerformerFragment on Performer {
 		... BodyModificationFragment
 	}
 }
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment TagFragment on Tag {
-	name
-	id
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
 }
 fragment MeasurementsFragment on Measurements {
 	band_size
@@ -285,14 +273,52 @@ fragment MeasurementsFragment on Measurements {
 	waist
 	hip
 }
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
+fragment SceneFragment on Scene {
+	id
+	title
+	details
 	duration
+	date
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	studio {
+		... StudioFragment
+	}
+	tags {
+		... TagFragment
+	}
+	performers {
+		... PerformerAppearanceFragment
+	}
+	fingerprints {
+		... FingerprintFragment
+	}
+}
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment StudioFragment on Studio {
+	name
+	id
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+}
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
 }
 `
 
@@ -314,12 +340,6 @@ const FindScenesByFullFingerprintsQuery = `query FindScenesByFullFingerprints ($
 		... SceneFragment
 	}
 }
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
 fragment StudioFragment on Studio {
 	name
 	id
@@ -329,10 +349,6 @@ fragment StudioFragment on Studio {
 	images {
 		... ImageFragment
 	}
-}
-fragment TagFragment on Tag {
-	name
-	id
 }
 fragment PerformerFragment on Performer {
 	id
@@ -378,6 +394,35 @@ fragment MeasurementsFragment on Measurements {
 	waist
 	hip
 }
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
 fragment SceneFragment on Scene {
 	id
 	title
@@ -402,25 +447,6 @@ fragment SceneFragment on Scene {
 	fingerprints {
 		... FingerprintFragment
 	}
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
-fragment URLFragment on URL {
-	url
-	type
 }
 `
 
@@ -442,6 +468,11 @@ const SearchSceneQuery = `query SearchScene ($term: String!) {
 		... SceneFragment
 	}
 }
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
 fragment URLFragment on URL {
 	url
 	type
@@ -456,14 +487,21 @@ fragment TagFragment on Tag {
 	name
 	id
 }
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
 }
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
 fragment SceneFragment on Scene {
 	id
@@ -500,12 +538,6 @@ fragment StudioFragment on Studio {
 		... ImageFragment
 	}
 }
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
 fragment PerformerFragment on Performer {
 	id
 	name
@@ -540,15 +572,9 @@ fragment PerformerFragment on Performer {
 		... BodyModificationFragment
 	}
 }
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
 }
 `
 
@@ -570,30 +596,6 @@ const SearchPerformerQuery = `query SearchPerformer ($term: String!) {
 		... PerformerFragment
 	}
 }
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
 fragment PerformerFragment on Performer {
 	id
 	name
@@ -627,6 +629,30 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
 `
 
@@ -648,40 +674,6 @@ const FindPerformerByIDQuery = `query FindPerformerByID ($id: ID!) {
 		... PerformerFragment
 	}
 }
-fragment PerformerFragment on Performer {
-	id
-	name
-	disambiguation
-	aliases
-	gender
-	merged_ids
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	birthdate {
-		... FuzzyDateFragment
-	}
-	ethnicity
-	country
-	eye_color
-	hair_color
-	height
-	measurements {
-		... MeasurementsFragment
-	}
-	breast_type
-	career_start_year
-	career_end_year
-	tattoos {
-		... BodyModificationFragment
-	}
-	piercings {
-		... BodyModificationFragment
-	}
-}
 fragment URLFragment on URL {
 	url
 	type
@@ -706,46 +698,6 @@ fragment BodyModificationFragment on BodyModification {
 	location
 	description
 }
-`
-
-func (c *Client) FindPerformerByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindPerformerByID, error) {
-	vars := map[string]interface{}{
-		"id": id,
-	}
-
-	var res FindPerformerByID
-	if err := c.Client.Post(ctx, FindPerformerByIDQuery, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-const FindSceneByIDQuery = `query FindSceneByID ($id: ID!) {
-	findScene(id: $id) {
-		... SceneFragment
-	}
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-}
-fragment TagFragment on Tag {
-	name
-	id
-}
 fragment PerformerFragment on Performer {
 	id
 	name
@@ -779,6 +731,34 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
+}
+`
+
+func (c *Client) FindPerformerByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindPerformerByID, error) {
+	vars := map[string]interface{}{
+		"id": id,
+	}
+
+	var res FindPerformerByID
+	if err := c.Client.Post(ctx, FindPerformerByIDQuery, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const FindSceneByIDQuery = `query FindSceneByID ($id: ID!) {
+	findScene(id: $id) {
+		... SceneFragment
+	}
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
 }
 fragment MeasurementsFragment on Measurements {
 	band_size
@@ -820,9 +800,21 @@ fragment URLFragment on URL {
 	url
 	type
 }
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment StudioFragment on Studio {
+	name
+	id
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -830,9 +822,43 @@ fragment PerformerAppearanceFragment on PerformerAppearance {
 		... PerformerFragment
 	}
 }
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
+fragment PerformerFragment on Performer {
+	id
+	name
+	disambiguation
+	aliases
+	gender
+	merged_ids
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	birthdate {
+		... FuzzyDateFragment
+	}
+	ethnicity
+	country
+	eye_color
+	hair_color
+	height
+	measurements {
+		... MeasurementsFragment
+	}
+	breast_type
+	career_start_year
+	career_end_year
+	tattoos {
+		... BodyModificationFragment
+	}
+	piercings {
+		... BodyModificationFragment
+	}
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
 `
 
@@ -861,6 +887,64 @@ func (c *Client) SubmitFingerprint(ctx context.Context, input FingerprintSubmiss
 
 	var res SubmitFingerprintPayload
 	if err := c.Client.Post(ctx, SubmitFingerprintQuery, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const MeQuery = `query Me {
+	me {
+		name
+	}
+}
+`
+
+func (c *Client) Me(ctx context.Context, httpRequestOptions ...client.HTTPRequestOption) (*Me, error) {
+	vars := map[string]interface{}{}
+
+	var res Me
+	if err := c.Client.Post(ctx, MeQuery, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const SubmitSceneDraftQuery = `mutation SubmitSceneDraft ($input: SceneDraftInput!) {
+	submitSceneDraft(input: $input) {
+		id
+	}
+}
+`
+
+func (c *Client) SubmitSceneDraft(ctx context.Context, input SceneDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitSceneDraftPayload, error) {
+	vars := map[string]interface{}{
+		"input": input,
+	}
+
+	var res SubmitSceneDraftPayload
+	if err := c.Client.Post(ctx, SubmitSceneDraftQuery, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const SubmitPerformerDraftQuery = `mutation SubmitPerformerDraft ($input: PerformerDraftInput!) {
+	submitPerformerDraft(input: $input) {
+		id
+	}
+}
+`
+
+func (c *Client) SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitPerformerDraftPayload, error) {
+	vars := map[string]interface{}{
+		"input": input,
+	}
+
+	var res SubmitPerformerDraftPayload
+	if err := c.Client.Post(ctx, SubmitPerformerDraftQuery, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

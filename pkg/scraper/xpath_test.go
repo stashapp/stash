@@ -826,6 +826,14 @@ func (mockGlobalConfig) GetScraperCertCheck() bool {
 	return false
 }
 
+func (mockGlobalConfig) GetScraperExcludeTagPatterns() []string {
+	return nil
+}
+
+func (mockGlobalConfig) GetPythonPath() string {
+	return ""
+}
+
 func TestSubScrape(t *testing.T) {
 	retHTML := `
 	<div>

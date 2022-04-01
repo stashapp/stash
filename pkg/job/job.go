@@ -60,6 +60,19 @@ type Job struct {
 	cancelFunc context.CancelFunc
 }
 
+// TimeElapsed returns the total time elapsed for the job.
+// If the EndTime is set, then it uses this to calculate the elapsed time, otherwise it uses time.Now.
+func (j *Job) TimeElapsed() time.Duration {
+	var end time.Time
+	if j.EndTime != nil {
+		end = time.Now()
+	} else {
+		end = *j.EndTime
+	}
+
+	return end.Sub(*j.StartTime)
+}
+
 func (j *Job) cancel() {
 	if j.Status == StatusReady {
 		j.Status = StatusCancelled

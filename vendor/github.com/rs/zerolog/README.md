@@ -341,7 +341,7 @@ If your writer might be slow or not thread-safe and you need your log producers 
 wr := diode.NewWriter(os.Stdout, 1000, 10*time.Millisecond, func(missed int) {
 		fmt.Printf("Logger Dropped %d messages", missed)
 	})
-log := zerolog.New(w)
+log := zerolog.New(wr)
 log.Print("test")
 ```
 
@@ -435,7 +435,7 @@ c := alice.New()
 c = c.Append(hlog.NewHandler(log))
 
 // Install some provided extra handler to set some request's context fields.
-// Thanks to those handler, all our logs will come with some pre-populated fields.
+// Thanks to that handler, all our logs will come with some prepopulated fields.
 c = c.Append(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
     hlog.FromRequest(r).Info().
         Str("method", r.Method).
@@ -474,7 +474,7 @@ if err := http.ListenAndServe(":8080", nil); err != nil {
 Some settings can be changed and will by applied to all loggers:
 
 * `log.Logger`: You can set this value to customize the global logger (the one used by package level methods).
-* `zerolog.SetGlobalLevel`: Can raise the minimum level of all loggers. Set this to `zerolog.Disabled` to disable logging altogether (quiet mode).
+* `zerolog.SetGlobalLevel`: Can raise the minimum level of all loggers. Call this with `zerolog.Disabled` to disable logging altogether (quiet mode).
 * `zerolog.DisableSampling`: If argument is `true`, all sampled loggers will stop sampling and issue 100% of their log events.
 * `zerolog.TimestampFieldName`: Can be set to customize `Timestamp` field name.
 * `zerolog.LevelFieldName`: Can be set to customize level field name.
@@ -497,12 +497,16 @@ Some settings can be changed and will by applied to all loggers:
 
 ### Advanced Fields
 
-* `Err`: Takes an `error` and render it as a string using the `zerolog.ErrorFieldName` field name.
-* `Timestamp`: Insert a timestamp field with `zerolog.TimestampFieldName` field name and formatted using `zerolog.TimeFieldFormat`.
-* `Time`: Adds a field with the time formated with the `zerolog.TimeFieldFormat`.
-* `Dur`: Adds a field with a `time.Duration`.
+* `Err`: Takes an `error` and renders it as a string using the `zerolog.ErrorFieldName` field name.
+* `Timestamp`: Inserts a timestamp field with `zerolog.TimestampFieldName` field name, formatted using `zerolog.TimeFieldFormat`.
+* `Time`: Adds a field with time formatted with `zerolog.TimeFieldFormat`.
+* `Dur`: Adds a field with `time.Duration`.
 * `Dict`: Adds a sub-key/value as a field of the event.
+* `RawJSON`: Adds a field with an already encoded JSON (`[]byte`)
+* `Hex`: Adds a field with value formatted as a hexadecimal string (`[]byte`)
 * `Interface`: Uses reflection to marshal the type.
+
+Most fields are also available in the slice format (`Strs` for `[]string`, `Errs` for `[]error` etc.)
 
 ## Binary Encoding
 

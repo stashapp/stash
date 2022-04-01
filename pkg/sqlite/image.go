@@ -168,7 +168,12 @@ func (qb *imageQueryBuilder) FindByPath(path string) (*models.Image, error) {
 
 func (qb *imageQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Image, error) {
 	args := []interface{}{galleryID}
-	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(nil), args)
+	sort := "path"
+	sortDir := models.SortDirectionEnumAsc
+	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(&models.FindFilterType{
+		Sort:      &sort,
+		Direction: &sortDir,
+	}), args)
 }
 
 func (qb *imageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
@@ -248,6 +253,7 @@ func (qb *imageQueryBuilder) makeFilter(imageFilter *models.ImageFilterType) *fi
 	query.handleCriterion(imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
 	query.handleCriterion(imageStudioCriterionHandler(qb, imageFilter.Studios))
 	query.handleCriterion(imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
+	query.handleCriterion(imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
 
 	return query
 }
@@ -412,8 +418,8 @@ func imageTagCountCriterionHandler(qb *imageQueryBuilder, tagCount *models.IntCr
 
 func imageGalleriesCriterionHandler(qb *imageQueryBuilder, galleries *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		qb.galleriesRepository().join(f, "galleries_join", "images.id")
-		f.addLeftJoin(galleryTable, "", "galleries_join.gallery_id = galleries.id")
+		qb.galleriesRepository().join(f, "", "images.id")
+		f.addLeftJoin(galleryTable, "", "galleries_images.gallery_id = galleries.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(galleryTable, galleriesImagesTable, galleryIDColumn, addJoinsFunc)
 
@@ -444,6 +450,26 @@ func imagePerformerCountCriterionHandler(qb *imageQueryBuilder, performerCount *
 	}
 
 	return h.handler(performerCount)
+}
+
+func imagePerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerfavorite != nil {
+			f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
+
+			if *performerfavorite {
+				// contains at least one favorite
+				f.addLeftJoin("performers", "", "performers.id = performers_images.performer_id")
+				f.addWhere("performers.favorite = 1")
+			} else {
+				// contains zero favorites
+				f.addLeftJoin(`(SELECT performers_images.image_id as id FROM performers_images
+JOIN performers ON performers.id = performers_images.performer_id
+GROUP BY performers_images.image_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "images.id = nofaves.id")
+				f.addWhere("performers_images.image_id IS NULL OR nofaves.id IS NOT NULL")
+			}
+		}
+	}
 }
 
 func imageStudioCriterionHandler(qb *imageQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
@@ -496,8 +522,8 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 }
 
 func (qb *imageQueryBuilder) getImageSort(findFilter *models.FindFilterType) string {
-	if findFilter == nil {
-		return " ORDER BY images.path ASC "
+	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
+		return ""
 	}
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()

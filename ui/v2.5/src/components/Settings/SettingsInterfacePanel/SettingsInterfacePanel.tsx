@@ -13,6 +13,12 @@ import {
 } from "../Inputs";
 import { SettingStateContext } from "../context";
 import { DurationUtils } from "src/utils";
+import * as GQL from "src/core/generated-graphql";
+import {
+  imageLightboxDisplayModeIntlMap,
+  imageLightboxScrollModeIntlMap,
+} from "src/core/enums";
+import { useInterfaceLocalForage } from "src/hooks";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -32,6 +38,28 @@ export const SettingsInterfacePanel: React.FC = () => {
     SettingStateContext
   );
 
+  const [, setInterfaceLocalForage] = useInterfaceLocalForage();
+
+  function saveLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
+    // save in local forage as well for consistency
+    setInterfaceLocalForage((prev) => {
+      return {
+        ...prev,
+        imageLightbox: {
+          ...prev.imageLightbox,
+          ...v,
+        },
+      };
+    });
+
+    saveInterface({
+      imageLightbox: {
+        ...iface.imageLightbox,
+        ...v,
+      },
+    });
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
@@ -44,15 +72,20 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.language ?? undefined}
           onChange={(v) => saveInterface({ language: v })}
         >
-          <option value="en-US">English (United States)</option>
+          <option value="de-DE">Deutsch (Deutschland)</option>
           <option value="en-GB">English (United Kingdom)</option>
-          <option value="es-ES">Spanish (Spain)</option>
-          <option value="de-DE">German (Germany)</option>
-          <option value="pt-BR">Portuguese (Brazil)</option>
-          <option value="fr-FR">French (France)</option>
-          <option value="it-IT">Italian (Italy)</option>
-          <option value="fi-FI">Finnish (Finland)</option>
-          <option value="sv-SE">Swedish (Sweden)</option>
+          <option value="en-US">English (United States)</option>
+          <option value="es-ES">Español (España)</option>
+          <option value="fi-FI">Suomi</option>
+          <option value="fr-FR">Français (France)</option>
+          <option value="hr-HR">Hrvatski (Preview)</option>
+          <option value="it-IT">Italiano</option>
+          <option value="ja-JP">日本語 (日本)</option>
+          <option value="nl-NL">Nederlands (Nederland)</option>
+          <option value="pt-BR">Português (Brasil)</option>
+          <option value="ru-RU">Русский (Россия) (Preview)</option>
+          <option value="sv-SE">Svenska</option>
+          <option value="tr-TR">Türkçe (Türkiye)</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>
@@ -87,6 +120,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           subHeadingID="config.ui.desktop_integration.skip_opening_browser_on_startup"
           checked={iface.noBrowser ?? undefined}
           onChange={(v) => saveInterface({ noBrowser: v })}
+        />
+        <BooleanSetting
+          id="notifications-enabled"
+          headingID="config.ui.desktop_integration.notifications_enabled"
+          subHeadingID="config.ui.desktop_integration.send_desktop_notifications_for_events"
+          checked={iface.notificationsEnabled ?? undefined}
+          onChange={(v) => saveInterface({ notificationsEnabled: v })}
         />
       </SettingSection>
 
@@ -138,6 +178,12 @@ export const SettingsInterfacePanel: React.FC = () => {
 
       <SettingSection headingID="config.ui.scene_player.heading">
         <BooleanSetting
+          id="show-scrubber"
+          headingID="config.ui.scene_player.options.show_scrubber"
+          checked={iface.showScrubber ?? undefined}
+          onChange={(v) => saveInterface({ showScrubber: v })}
+        />
+        <BooleanSetting
           id="auto-start-video"
           headingID="config.ui.scene_player.options.auto_start_video"
           checked={iface.autostartVideo ?? undefined}
@@ -177,13 +223,72 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
 
-      <SettingSection headingID="config.ui.images.heading">
+      <SettingSection headingID="config.ui.image_lightbox.heading">
         <NumberSetting
           headingID="config.ui.slideshow_delay.heading"
           subHeadingID="config.ui.slideshow_delay.description"
-          value={iface.slideshowDelay ?? undefined}
-          onChange={(v) => saveInterface({ slideshowDelay: v })}
+          value={iface.imageLightbox?.slideshowDelay ?? undefined}
+          onChange={(v) => saveLightboxSettings({ slideshowDelay: v })}
         />
+
+        <SelectSetting
+          id="lightbox_display_mode"
+          headingID="dialogs.lightbox.display_mode.label"
+          value={
+            iface.imageLightbox?.displayMode ??
+            GQL.ImageLightboxDisplayMode.FitXy
+          }
+          onChange={(v) =>
+            saveLightboxSettings({
+              displayMode: v as GQL.ImageLightboxDisplayMode,
+            })
+          }
+        >
+          {Array.from(imageLightboxDisplayModeIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
+
+        <BooleanSetting
+          id="lightbox_scale_up"
+          headingID="dialogs.lightbox.scale_up.label"
+          subHeadingID="dialogs.lightbox.scale_up.description"
+          checked={iface.imageLightbox?.scaleUp ?? false}
+          onChange={(v) => saveLightboxSettings({ scaleUp: v })}
+        />
+
+        <BooleanSetting
+          id="lightbox_reset_zoom_on_nav"
+          headingID="dialogs.lightbox.reset_zoom_on_nav"
+          checked={iface.imageLightbox?.resetZoomOnNav ?? false}
+          onChange={(v) => saveLightboxSettings({ resetZoomOnNav: v })}
+        />
+
+        <SelectSetting
+          id="lightbox_scroll_mode"
+          headingID="dialogs.lightbox.scroll_mode.label"
+          subHeadingID="dialogs.lightbox.scroll_mode.description"
+          value={
+            iface.imageLightbox?.scrollMode ?? GQL.ImageLightboxScrollMode.Zoom
+          }
+          onChange={(v) =>
+            saveLightboxSettings({
+              scrollMode: v as GQL.ImageLightboxScrollMode,
+            })
+          }
+        >
+          {Array.from(imageLightboxScrollModeIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
       </SettingSection>
 
       <SettingSection headingID="config.ui.editing.heading">

@@ -1,11 +1,8 @@
 import React, { useCallback, useState } from "react";
-import * as GQL from "src/core/generated-graphql";
-import { LightboxComponent } from "./Lightbox";
-
-type Image = Pick<GQL.Image, "paths">;
+import { ILightboxImage, LightboxComponent } from "./Lightbox";
 
 export interface IState {
-  images: Image[];
+  images: ILightboxImage[];
   isVisible: boolean;
   isLoading: boolean;
   showNavigation: boolean;

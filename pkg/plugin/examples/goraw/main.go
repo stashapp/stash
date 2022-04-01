@@ -4,6 +4,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"os"
@@ -54,14 +55,14 @@ func main() {
 
 func Run(input common.PluginInput, output *common.PluginOutput) error {
 	modeArg := input.Args.String("mode")
-
+	ctx := context.TODO()
 	var err error
 	if modeArg == "" || modeArg == "add" {
 		client := util.NewClient(input.ServerConnection)
-		err = exampleCommon.AddTag(client)
+		err = exampleCommon.AddTag(ctx, client)
 	} else if modeArg == "remove" {
 		client := util.NewClient(input.ServerConnection)
-		err = exampleCommon.RemoveTag(client)
+		err = exampleCommon.RemoveTag(ctx, client)
 	} else if modeArg == "long" {
 		err = doLongTask()
 	} else if modeArg == "indef" {

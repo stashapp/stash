@@ -1,447 +1,447 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
-import ReactJWPlayer from "react-jw-player";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import "videojs-vtt-thumbnails-freetube";
+import "videojs-seek-buttons";
+import "videojs-landscape-fullscreen";
+import "./live";
+import "./PlaylistButtons";
+import "./source-selector";
+import "./persist-volume";
+import "./markers";
+import "./big-buttons";
+import cx from "classnames";
+
 import * as GQL from "src/core/generated-graphql";
-import { JWUtils, ScreenUtils } from "src/utils";
-import { ConfigurationContext } from "src/hooks/Config";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
-import { Interactive } from "../../utils/interactive";
+import { ConfigurationContext } from "src/hooks/Config";
+import { Interactive } from "src/utils/interactive";
 
-/*
-fast-forward svg derived from https://github.com/jwplayer/jwplayer/blob/master/src/assets/SVG/rewind-10.svg
-Flipped horizontally, then flipped '10' numerals horizontally.
+export const VIDEO_PLAYER_ID = "VideoJsPlayer";
 
-Creative Common License: https://github.com/jwplayer/jwplayer/blob/master/LICENSE
-*/
-const ffSVG = `
-<svg xmlns="http://www.w3.org/2000/svg" class="jw-svg-icon jw-svg-icon-rewind" viewBox="0 0 240 240" focusable="false">
-  <path d="M185,135.6c-3.7-6.3-10.4-10.3-17.7-10.6c-7.3,0.3-14,4.3-17.7,10.6c-8.6,14.2-8.6,32.1,0,46.3c3.7,6.3,10.4,10.3,17.7,10.6
-  c7.3-0.3,14-4.3,17.7-10.6C193.6,167.6,193.6,149.8,185,135.6z M167.3,182.8c-7.8,0-14.4-11-14.4-24.1s6.6-24.1,14.4-24.1
-  s14.4,11,14.4,24.1S175.2,182.8,167.3,182.8z M123.9,192.5v-51l-4.8,4.8l-6.8-6.8l13-13c1.9-1.9,4.9-1.9,6.8,0
-  c0.9,0.9,1.4,2.1,1.4,3.4v62.7L123.9,192.5z M22.7,57.4h130.1V38.1c0-5.3,3.6-7.2,8-4.3l41.8,27.9c1.2,0.6,2.1,1.5,2.7,2.7
-  c1.4,3,0.2,6.5-2.7,8l-41.8,27.9c-4.4,2.9-8,1-8-4.3V76.7H37.1v96.4h48.2v19.3H22.6c-2.6,0-4.8-2.2-4.8-4.8V62.3
-  C17.8,59.6,20,57.4,22.7,57.4z">
-  </path>
-</svg>
-`;
+function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
+  function seekPercent(percent: number) {
+    const duration = player.duration();
+    const time = duration * percent;
+    player.currentTime(time);
+  }
+
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+    return;
+  }
+
+  switch (event.which) {
+    case 32: // space
+    case 13: // enter
+      if (player.paused()) player.play();
+      else player.pause();
+      break;
+    case 77: // m
+      player.muted(!player.muted());
+      break;
+    case 70: // f
+      if (player.isFullscreen()) player.exitFullscreen();
+      else player.requestFullscreen();
+      break;
+    case 39: // right arrow
+      player.currentTime(Math.min(player.duration(), player.currentTime() + 5));
+      break;
+    case 37: // left arrow
+      player.currentTime(Math.max(0, player.currentTime() - 5));
+      break;
+    case 38: // up arrow
+      player.volume(player.volume() + 0.1);
+      break;
+    case 40: // down arrow
+      player.volume(player.volume() - 0.1);
+      break;
+    case 48: // 0
+      player.currentTime(0);
+      break;
+    case 49: // 1
+      seekPercent(0.1);
+      break;
+    case 50: // 2
+      seekPercent(0.2);
+      break;
+    case 51: // 3
+      seekPercent(0.3);
+      break;
+    case 52: // 4
+      seekPercent(0.4);
+      break;
+    case 53: // 5
+      seekPercent(0.5);
+      break;
+    case 54: // 6
+      seekPercent(0.6);
+      break;
+    case 55: // 7
+      seekPercent(0.7);
+      break;
+    case 56: // 8
+      seekPercent(0.8);
+      break;
+    case 57: // 9
+      seekPercent(0.9);
+      break;
+  }
+}
 
 interface IScenePlayerProps {
   className?: string;
-  scene: GQL.SceneDataFragment;
-  sceneStreams: GQL.SceneStreamEndpoint[];
+  scene: GQL.SceneDataFragment | undefined | null;
   timestamp: number;
   autoplay?: boolean;
-  onReady?: () => void;
-  onSeeked?: () => void;
-  onTime?: () => void;
   onComplete?: () => void;
-  config?: GQL.ConfigInterfaceDataFragment;
+  onNext?: () => void;
+  onPrevious?: () => void;
 }
-interface IScenePlayerState {
-  scrubberPosition: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config: Record<string, any>;
-  interactiveClient: Interactive;
-}
-export class ScenePlayerImpl extends React.Component<
-  IScenePlayerProps,
-  IScenePlayerState
-> {
-  private static isDirectStream(src?: string) {
-    if (!src) {
+
+export const ScenePlayer: React.FC<IScenePlayerProps> = ({
+  className,
+  autoplay,
+  scene,
+  timestamp,
+  onComplete,
+  onNext,
+  onPrevious,
+}) => {
+  const { configuration } = useContext(ConfigurationContext);
+  const config = configuration?.interface;
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const playerRef = useRef<VideoJsPlayer | undefined>();
+  const sceneId = useRef<string | undefined>();
+  const skipButtonsRef = useRef<any>();
+
+  const [time, setTime] = useState(0);
+
+  const [interactiveClient] = useState(
+    new Interactive(config?.handyKey || "", config?.funscriptOffset || 0)
+  );
+
+  const [initialTimestamp] = useState(timestamp);
+
+  const maxLoopDuration = config?.maximumLoopDuration ?? 0;
+
+  useEffect(() => {
+    if (playerRef.current && timestamp >= 0) {
+      const player = playerRef.current;
+      player.play()?.then(() => {
+        player.currentTime(timestamp);
+      });
+    }
+  }, [timestamp]);
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    const options: VideoJsPlayerOptions = {
+      controls: true,
+      controlBar: {
+        pictureInPictureToggle: false,
+        volumePanel: {
+          inline: false,
+        },
+        chaptersButton: false,
+      },
+      nativeControlsForTouch: false,
+      playbackRates: [0.75, 1, 1.5, 2, 3, 4],
+      inactivityTimeout: 2000,
+      preload: "none",
+      userActions: {
+        hotkeys: function (event) {
+          const player = this as VideoJsPlayer;
+          handleHotkeys(player, event);
+        },
+      },
+    };
+
+    const player = VideoJS(videoElement, options);
+
+    (player as any).landscapeFullscreen({
+      fullscreen: {
+        enterOnRotate: true,
+        exitOnRotate: true,
+        alwaysInLandscapeMode: true,
+        iOS: false,
+      },
+    });
+
+    (player as any).markers();
+    (player as any).offset();
+    (player as any).sourceSelector();
+    (player as any).persistVolume();
+    (player as any).bigButtons();
+
+    player.focus();
+    playerRef.current = player;
+  }, []);
+
+  useEffect(() => {
+    if (scene?.interactive) {
+      interactiveClient.uploadScript(scene.paths.funscript || "");
+    }
+  }, [interactiveClient, scene?.interactive, scene?.paths.funscript]);
+
+  useEffect(() => {
+    if (skipButtonsRef.current) {
+      skipButtonsRef.current.setForwardHandler(onNext);
+      skipButtonsRef.current.setBackwardHandler(onPrevious);
+    }
+  }, [onNext, onPrevious]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (player) {
+      player.seekButtons({
+        forward: 10,
+        back: 10,
+      });
+
+      skipButtonsRef.current = player.skipButtons() ?? undefined;
+
+      player.focus();
+    }
+
+    // Video player destructor
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.dispose();
+        playerRef.current = undefined;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleOffset(player: VideoJsPlayer) {
+      if (!scene) return;
+
+      const currentSrc = player.currentSrc();
+
+      const isDirect =
+        currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
+      if (!isDirect) {
+        (player as any).setOffsetDuration(scene.file.duration);
+      } else {
+        (player as any).clearOffsetDuration();
+      }
+    }
+
+    function handleError(play: boolean) {
+      const player = playerRef.current;
+      if (!player) return;
+
+      const currentFile = player.currentSource();
+      if (currentFile) {
+        // eslint-disable-next-line no-console
+        console.log(`Source failed: ${currentFile.src}`);
+        player.focus();
+      }
+
+      if (tryNextStream()) {
+        // eslint-disable-next-line no-console
+        console.log(`Trying next source in playlist: ${player.currentSrc()}`);
+        player.load();
+        if (play) {
+          player.play();
+        }
+      } else {
+        // eslint-disable-next-line no-console
+        console.log("No more sources in playlist.");
+      }
+    }
+
+    function tryNextStream() {
+      const player = playerRef.current;
+      if (!player) return;
+
+      const sources = player.currentSources();
+
+      if (sources.length > 1) {
+        sources.shift();
+        player.src(sources);
+        return true;
+      }
+
       return false;
     }
 
-    const url = new URL(src);
-    return url.pathname.endsWith("/stream");
-  }
+    if (!scene || scene.id === sceneId.current) return;
+    sceneId.current = scene.id;
 
-  // Typings for jwplayer are, unfortunately, very lacking
-  private player: any;
-  private playlist: any;
-  private lastTime = 0;
+    const player = playerRef.current;
+    if (!player) return;
 
-  constructor(props: IScenePlayerProps) {
-    super(props);
-    this.onReady = this.onReady.bind(this);
-    this.onSeeked = this.onSeeked.bind(this);
-    this.onTime = this.onTime.bind(this);
+    const auto =
+      autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
+    if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
+    else player.poster("");
 
-    this.onScrubberSeek = this.onScrubberSeek.bind(this);
-    this.onScrubberScrolled = this.onScrubberScrolled.bind(this);
-    this.state = {
-      scrubberPosition: 0,
-      config: this.makeJWPlayerConfig(props.scene),
-      interactiveClient: new Interactive(
-        this.props.config?.handyKey || "",
-        this.props.config?.funscriptOffset || 0
-      ),
-    };
+    // clear the offset before loading anything new.
+    // otherwise, the offset will be applied to the next file when
+    // currentTime is called.
+    (player as any).clearOffsetDuration();
 
-    // Default back to Direct Streaming
-    localStorage.removeItem("jwplayer.qualityLabel");
-  }
-  public UNSAFE_componentWillReceiveProps(props: IScenePlayerProps) {
-    if (props.scene !== this.props.scene) {
-      this.setState((state) => ({
-        ...state,
-        config: this.makeJWPlayerConfig(this.props.scene),
-      }));
+    const tracks = player.remoteTextTracks();
+    if (tracks.length > 0) {
+      player.removeRemoteTextTrack(tracks[0] as any);
     }
-  }
 
-  public componentDidUpdate(prevProps: IScenePlayerProps) {
-    if (prevProps.timestamp !== this.props.timestamp) {
-      this.player.seek(this.props.timestamp);
-    }
-  }
-
-  onIncrease() {
-    const currentPlaybackRate = this.player ? this.player.getPlaybackRate() : 1;
-    this.player.setPlaybackRate(currentPlaybackRate + 0.5);
-  }
-  onDecrease() {
-    const currentPlaybackRate = this.player ? this.player.getPlaybackRate() : 1;
-    this.player.setPlaybackRate(currentPlaybackRate - 0.5);
-  }
-
-  onReset() {
-    this.player.setPlaybackRate(1);
-  }
-  onPause() {
-    if (this.player.getState().paused) {
-      this.player.play();
-    } else {
-      this.player.pause();
-    }
-  }
-
-  private addForwardButton() {
-    // add forward button: https://github.com/jwplayer/jwplayer/issues/3894
-    const playerContainer = document.querySelector(
-      `#${JWUtils.playerID}`
-    ) as HTMLElement;
-
-    // display icon
-    const rewindContainer = playerContainer.querySelector(
-      ".jw-display-icon-rewind"
-    ) as HTMLElement;
-    const forwardContainer = rewindContainer.cloneNode(true) as HTMLElement;
-    const forwardDisplayButton = forwardContainer.querySelector(
-      ".jw-icon-rewind"
-    ) as HTMLElement;
-    forwardDisplayButton.innerHTML = ffSVG;
-    forwardDisplayButton.ariaLabel = "Forward 10 Seconds";
-    const nextContainer = playerContainer.querySelector(
-      ".jw-display-icon-next"
-    ) as HTMLElement;
-    (nextContainer.parentNode as HTMLElement).insertBefore(
-      forwardContainer,
-      nextContainer
+    player.src(
+      scene.sceneStreams.map((stream) => ({
+        src: stream.url,
+        type: stream.mime_type ?? undefined,
+        label: stream.label ?? undefined,
+      }))
     );
 
-    // control bar icon
-    const buttonContainer = playerContainer.querySelector(
-      ".jw-button-container"
-    ) as HTMLElement;
-    const rewindControlBarButton = buttonContainer.querySelector(
-      ".jw-icon-rewind"
-    ) as HTMLElement;
-    const forwardControlBarButton = rewindControlBarButton.cloneNode(
-      true
-    ) as HTMLElement;
-    forwardControlBarButton.innerHTML = ffSVG;
-    forwardControlBarButton.ariaLabel = "Forward 10 Seconds";
-    (rewindControlBarButton.parentNode as HTMLElement).insertBefore(
-      forwardControlBarButton,
-      rewindControlBarButton.nextElementSibling
+    if (scene.paths.chapters_vtt) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.chapters_vtt,
+          kind: "chapters",
+          default: true,
+        },
+        true
+      );
+    }
+
+    player.currentTime(0);
+
+    player.loop(
+      !!scene.file.duration &&
+        maxLoopDuration !== 0 &&
+        scene.file.duration < maxLoopDuration
     );
 
-    // add onclick handlers
-    [forwardDisplayButton, forwardControlBarButton].forEach((button) => {
-      button.onclick = () => {
-        this.player.seek(this.player.getPosition() + 10);
-      };
+    player.on("loadstart", function (this: VideoJsPlayer) {
+      // handle offset after loading so that we get the correct current source
+      handleOffset(this);
     });
-  }
 
-  private onReady() {
-    this.player = JWUtils.getPlayer();
-    this.addForwardButton();
-
-    this.player.on("error", (err: any) => {
-      if (err && err.code === 224003) {
-        // When jwplayer has been requested to play but the browser doesn't support the video format.
-        this.handleError(true);
+    player.on("play", function (this: VideoJsPlayer) {
+      player.poster("");
+      if (scene.interactive) {
+        interactiveClient.play(this.currentTime());
       }
     });
 
-    //
-    this.player.on("meta", (metadata: any) => {
-      if (
-        metadata.metadataType === "media" &&
-        !metadata.width &&
-        !metadata.height
-      ) {
+    player.on("pause", () => {
+      if (scene.interactive) {
+        interactiveClient.pause();
+      }
+    });
+
+    player.on("timeupdate", function (this: VideoJsPlayer) {
+      if (scene.interactive) {
+        interactiveClient.ensurePlaying(this.currentTime());
+      }
+
+      setTime(this.currentTime());
+    });
+
+    player.on("seeking", function (this: VideoJsPlayer) {
+      // backwards compatibility - may want to remove this in future
+      this.play();
+    });
+
+    player.on("error", () => {
+      handleError(true);
+    });
+
+    player.on("loadedmetadata", () => {
+      if (!player.videoWidth() && !player.videoHeight()) {
         // Occurs during preload when videos with supported audio/unsupported video are preloaded.
         // Treat this as a decoding error and try the next source without playing.
         // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
-        const currentFile = this.player.getPlaylistItem().file;
+        const currentFile = player.currentSrc();
         if (currentFile != null && !currentFile.includes("m3u8")) {
-          const state = this.player.getState();
-          const play = state === "buffering" || state === "playing";
-          this.handleError(play);
+          // const play = !player.paused();
+          // handleError(play);
+          player.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
         }
       }
     });
 
-    this.player.on("firstFrame", () => {
-      if (this.props.timestamp > 0) {
-        this.player.seek(this.props.timestamp);
-      }
+    player.load();
+
+    if (auto) {
+      player
+        .play()
+        ?.then(() => {
+          if (initialTimestamp > 0) {
+            player.currentTime(initialTimestamp);
+          }
+        })
+        .catch(() => {
+          if (scene.paths.screenshot) player.poster(scene.paths.screenshot);
+        });
+    }
+
+    if ((player as any).vttThumbnails?.src)
+      (player as any).vttThumbnails?.src(scene?.paths.vtt);
+    else
+      (player as any).vttThumbnails({
+        src: scene?.paths.vtt,
+        showTimestamp: true,
+      });
+  }, [
+    scene,
+    config?.autostartVideo,
+    maxLoopDuration,
+    initialTimestamp,
+    autoplay,
+    interactiveClient,
+  ]);
+
+  useEffect(() => {
+    // Attach handler for onComplete event
+    const player = playerRef.current;
+    if (!player) return;
+
+    player.on("ended", () => {
+      onComplete?.();
     });
 
-    this.player.on("play", () => {
-      if (this.props.scene.interactive) {
-        this.state.interactiveClient.play(this.player.getPosition());
-      }
-    });
+    return () => player.off("ended");
+  }, [onComplete]);
 
-    this.player.on("pause", () => {
-      if (this.props.scene.interactive) {
-        this.state.interactiveClient.pause();
-      }
-    });
+  const onScrubberScrolled = () => {
+    playerRef.current?.pause();
+  };
+  const onScrubberSeek = (seconds: number) => {
+    playerRef.current?.currentTime(seconds);
+  };
 
-    if (this.props.scene.interactive) {
-      this.state.interactiveClient.uploadScript(
-        this.props.scene.paths.funscript || ""
-      );
-    }
-
-    this.player.getContainer().focus();
-  }
-
-  private onSeeked() {
-    const position = this.player.getPosition();
-    this.setState({ scrubberPosition: position });
-    this.player.play();
-  }
-
-  private onTime() {
-    const position = this.player.getPosition();
-    const difference = Math.abs(position - this.lastTime);
-    if (difference > 1) {
-      this.lastTime = position;
-      this.setState({ scrubberPosition: position });
-      if (this.props.scene.interactive) {
-        this.state.interactiveClient.ensurePlaying(position);
-      }
-    }
-  }
-
-  private onComplete() {
-    if (this.props?.onComplete) {
-      this.props.onComplete();
-    }
-  }
-
-  private onScrubberSeek(seconds: number) {
-    this.player.seek(seconds);
-  }
-
-  private onScrubberScrolled() {
-    this.player.pause();
-  }
-
-  private handleError(play: boolean) {
-    const currentFile = this.player.getPlaylistItem();
-    if (currentFile) {
-      // eslint-disable-next-line no-console
-      console.log(`Source failed: ${currentFile.file}`);
-    }
-
-    if (this.tryNextStream()) {
-      // eslint-disable-next-line no-console
-      console.log(
-        `Trying next source in playlist: ${this.playlist.sources[0].file}`
-      );
-      this.player.load(this.playlist);
-      if (play) {
-        this.player.play();
-      }
-    }
-  }
-
-  private shouldRepeat(scene: GQL.SceneDataFragment) {
-    const maxLoopDuration = this.props?.config?.maximumLoopDuration ?? 0;
-    return (
-      !!scene.file.duration &&
-      !!maxLoopDuration &&
-      scene.file.duration < maxLoopDuration
-    );
-  }
-
-  private tryNextStream() {
-    if (this.playlist.sources.length > 1) {
-      this.playlist.sources.shift();
-      return true;
-    }
-
-    return false;
-  }
-
-  private makePlaylist() {
-    const { scene } = this.props;
-
-    return {
-      image: scene.paths.screenshot,
-      tracks: [
-        {
-          file: scene.paths.vtt,
-          kind: "thumbnails",
-        },
-        {
-          file: scene.paths.chapters_vtt,
-          kind: "chapters",
-        },
-      ],
-      sources: this.props.sceneStreams.map((s) => {
-        return {
-          file: s.url,
-          type: s.mime_type,
-          label: s.label,
-        };
-      }),
-    };
-  }
-
-  private makeJWPlayerConfig(scene: GQL.SceneDataFragment) {
-    if (!scene.paths.stream) {
-      return {};
-    }
-
-    const repeat = this.shouldRepeat(scene);
-    const getDurationHook = () => {
-      return this.props.scene.file.duration ?? null;
-    };
-
-    const seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
-      if (!_videoTag.src || _videoTag.src.endsWith(".m3u8")) {
-        return false;
-      }
-
-      if (ScenePlayerImpl.isDirectStream(_videoTag.src)) {
-        if (_videoTag.dataset.start) {
-          /* eslint-disable-next-line no-param-reassign */
-          _videoTag.dataset.start = "0";
-        }
-
-        // direct stream - fall back to default
-        return false;
-      }
-
-      // remove the start parameter
-      const srcUrl = new URL(_videoTag.src);
-      srcUrl.searchParams.delete("start");
-
-      /* eslint-disable no-param-reassign */
-      _videoTag.dataset.start = seekToPosition.toString();
-      srcUrl.searchParams.append("start", seekToPosition.toString());
-      _videoTag.src = srcUrl.toString();
-      /* eslint-enable no-param-reassign */
-
-      _videoTag.play();
-
-      // return true to indicate not to fall through to default
-      return true;
-    };
-
-    const getCurrentTimeHook = (_videoTag: HTMLVideoElement) => {
-      const start = Number.parseFloat(_videoTag.dataset?.start ?? "0");
-      return _videoTag.currentTime + start;
-    };
-
-    this.playlist = this.makePlaylist();
-
-    // TODO: leverage the floating.mode option after upgrading JWPlayer
-    const extras: any = {};
-
-    if (!ScreenUtils.isMobile()) {
-      extras.floating = {
-        dismissible: true,
-      };
-    }
-
-    const ret = {
-      playlist: this.playlist,
-      image: scene.paths.screenshot,
-      width: "100%",
-      height: "100%",
-      cast: {},
-      primary: "html5",
-      preload: "none",
-      autostart:
-        this.props.autoplay ||
-        (this.props.config ? this.props.config.autostartVideo : false) ||
-        this.props.timestamp > 0,
-      repeat,
-      playbackRateControls: true,
-      playbackRates: [0.75, 1, 1.5, 2, 3, 4],
-      getDurationHook,
-      seekHook,
-      getCurrentTimeHook,
-      ...extras,
-    };
-
-    return ret;
-  }
-
-  public render() {
-    let className =
-      this.props.className ?? "w-100 col-sm-9 m-sm-auto no-gutter";
-    const sceneFile = this.props.scene.file;
-
-    if (
-      sceneFile.height &&
-      sceneFile.width &&
-      sceneFile.height > sceneFile.width
-    ) {
-      className += " portrait";
-    }
-
-    return (
-      <div id="jwplayer-container" className={className}>
-        <ReactJWPlayer
-          playerId={JWUtils.playerID}
-          playerScript="jwplayer/jwplayer.js"
-          customProps={this.state.config}
-          onReady={this.onReady}
-          onSeeked={this.onSeeked}
-          onTime={this.onTime}
-          onOneHundredPercent={() => this.onComplete()}
-          className="video-wrapper"
-        />
-        <ScenePlayerScrubber
-          scene={this.props.scene}
-          position={this.state.scrubberPosition}
-          onSeek={this.onScrubberSeek}
-          onScrolled={this.onScrubberScrolled}
-        />
-      </div>
-    );
-  }
-}
-
-export const ScenePlayer: React.FC<IScenePlayerProps> = (
-  props: IScenePlayerProps
-) => {
-  const { configuration } = React.useContext(ConfigurationContext);
+  const isPortrait =
+    scene &&
+    scene.file.height &&
+    scene.file.width &&
+    scene.file.height > scene.file.width;
 
   return (
-    <ScenePlayerImpl
-      {...props}
-      config={configuration ? configuration.interface : undefined}
-    />
+    <div className={cx("VideoPlayer", { portrait: isPortrait })}>
+      <div data-vjs-player className={cx("video-wrapper", className)}>
+        <video
+          playsInline
+          ref={videoRef}
+          id={VIDEO_PLAYER_ID}
+          className="video-js vjs-big-play-centered"
+        />
+      </div>
+      {scene && (
+        <ScenePlayerScrubber
+          scene={scene}
+          position={time}
+          onSeek={onScrubberSeek}
+          onScrolled={onScrubberScrolled}
+        />
+      )}
+    </div>
   );
 };
+
+export const getPlayerPosition = () =>
+  VideoJS.getPlayer(VIDEO_PLAYER_ID).currentTime();

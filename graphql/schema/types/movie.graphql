@@ -54,6 +54,14 @@ input MovieUpdateInput {
   back_image: String
 }
 
+input BulkMovieUpdateInput {
+  clientMutationId: String
+  ids: [ID!]
+  rating: Int
+  studio_id: ID
+  director: String
+}
+
 input MovieDestroyInput {
   id: ID!
 }

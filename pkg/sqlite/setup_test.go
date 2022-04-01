@@ -15,10 +15,11 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const (
@@ -624,7 +625,7 @@ func getWidth(index int) sql.NullInt64 {
 	}
 }
 
-func getSceneDate(index int) models.SQLiteDate {
+func getObjectDate(index int) models.SQLiteDate {
 	dates := []string{"null", "", "0001-01-01", "2001-02-03"}
 	date := dates[index%len(dates)]
 	return models.SQLiteDate{
@@ -646,7 +647,7 @@ func createScenes(sqb models.SceneReaderWriter, n int) error {
 			Duration: getSceneDuration(i),
 			Height:   getHeight(i),
 			Width:    getWidth(i),
-			Date:     getSceneDate(i),
+			Date:     getObjectDate(i),
 		}
 
 		created, err := sqb.Create(scene)
@@ -714,6 +715,7 @@ func createGalleries(gqb models.GalleryReaderWriter, n int) error {
 			URL:      getGalleryNullStringValue(i, urlField),
 			Checksum: getGalleryStringValue(i, checksumField),
 			Rating:   getRating(i),
+			Date:     getObjectDate(i),
 		}
 
 		created, err := gqb.Create(gallery)
@@ -755,7 +757,7 @@ func createMovies(mqb models.MovieReaderWriter, n int, o int) error {
 		movie := models.Movie{
 			Name:     sql.NullString{String: name, Valid: true},
 			URL:      getMovieNullStringValue(index, urlField),
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 		}
 
 		created, err := mqb.Create(movie)
@@ -976,7 +978,7 @@ func getStudioNullStringValue(index int, field string) sql.NullString {
 func createStudio(sqb models.StudioReaderWriter, name string, parentID *int64) (*models.Studio, error) {
 	studio := models.Studio{
 		Name:     sql.NullString{String: name, Valid: true},
-		Checksum: utils.MD5FromString(name),
+		Checksum: md5.FromString(name),
 	}
 
 	if parentID != nil {
@@ -1014,7 +1016,7 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 		name = getStudioStringValue(index, name)
 		studio := models.Studio{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 			URL:      getStudioNullStringValue(index, urlField),
 		}
 		created, err := createStudioFromModel(sqb, studio)
@@ -1129,7 +1131,7 @@ func linkPerformerTags(qb models.PerformerReaderWriter) error {
 			return err
 		}
 
-		tagIDs = utils.IntAppendUnique(tagIDs, tagID)
+		tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
 
 		return qb.UpdateTags(performerID, tagIDs)
 	})

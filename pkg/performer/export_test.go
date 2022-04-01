@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -72,7 +72,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 	return &models.Performer{
 		ID:           id,
 		Name:         models.NullString(name),
-		Checksum:     utils.MD5FromString(name),
+		Checksum:     md5.FromString(name),
 		URL:          models.NullString(url),
 		Aliases:      models.NullString(aliases),
 		Birthdate:    birthDate,

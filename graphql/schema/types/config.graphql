@@ -76,7 +76,7 @@ input ConfigGeneralInput {
   """Maximum session cookie age"""
   maxSessionAge: Int
   """Comma separated list of proxies to allow traffic from"""
-  trustedProxies: [String!]
+  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
@@ -107,6 +107,8 @@ input ConfigGeneralInput {
   scraperCertCheck: Boolean @deprecated(reason: "use mutation ConfigureScraping(input: ConfigScrapingInput) instead")
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBoxInput!]
+  """Python path - resolved using path if unset"""
+  pythonPath: String
 }
 
 type ConfigGeneralResult {
@@ -157,7 +159,7 @@ type ConfigGeneralResult {
   """Maximum session cookie age"""
   maxSessionAge: Int!
   """Comma separated list of proxies to allow traffic from"""
-  trustedProxies: [String!]!
+  trustedProxies: [String!] @deprecated(reason: "no longer supported")
   """Name of the log file"""
   logFile: String
   """Whether to also output to stderr"""
@@ -188,12 +190,41 @@ type ConfigGeneralResult {
   scraperCertCheck: Boolean! @deprecated(reason: "use ConfigResult.scraping instead")
   """Stash-box instances used for tagging"""
   stashBoxes: [StashBox!]!
+  """Python path - resolved using path if unset"""
+  pythonPath: String!
 }
 
 input ConfigDisableDropdownCreateInput {
   performer: Boolean
   tag: Boolean
   studio: Boolean
+}
+
+enum ImageLightboxDisplayMode {
+  ORIGINAL
+  FIT_XY
+  FIT_X
+}
+
+enum ImageLightboxScrollMode {
+  ZOOM
+  PAN_Y
+}
+
+input ConfigImageLightboxInput {
+  slideshowDelay: Int
+  displayMode: ImageLightboxDisplayMode
+  scaleUp: Boolean
+  resetZoomOnNav: Boolean
+  scrollMode: ImageLightboxScrollMode
+}
+
+type ConfigImageLightboxResult {
+  slideshowDelay: Int
+  displayMode: ImageLightboxDisplayMode
+  scaleUp: Boolean
+  resetZoomOnNav: Boolean
+  scrollMode: ImageLightboxScrollMode
 }
 
 input ConfigInterfaceInput {
@@ -207,6 +238,9 @@ input ConfigInterfaceInput {
   wallShowTitle: Boolean
   """Wall playback type"""
   wallPlayback: String
+
+  """Show scene scrubber by default"""
+  showScrubber: Boolean
   
   """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
   maximumLoopDuration: Int
@@ -226,9 +260,11 @@ input ConfigInterfaceInput {
   
   """Interface language"""
   language: String
-  
+
   """Slideshow Delay"""
-  slideshowDelay: Int
+  slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
+  
+  imageLightbox: ConfigImageLightboxInput
   
   """Set to true to disable creating new objects via the dropdown menus"""
   disableDropdownCreate: ConfigDisableDropdownCreateInput
@@ -239,6 +275,8 @@ input ConfigInterfaceInput {
   funscriptOffset: Int
   """True if we should not auto-open a browser window on startup"""
   noBrowser: Boolean
+  """True if we should send notifications to the desktop"""
+  notificationsEnabled: Boolean
 }
 
 type ConfigDisableDropdownCreate {
@@ -259,10 +297,15 @@ type ConfigInterfaceResult {
   """Wall playback type"""
   wallPlayback: String
 
+  """Show scene scrubber by default"""
+  showScrubber: Boolean
+
   """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
   maximumLoopDuration: Int
-  """"True if we should not auto-open a browser window on startup"""
+  """True if we should not auto-open a browser window on startup"""
   noBrowser: Boolean
+  """True if we should send desktop notifications"""
+  notificationsEnabled: Boolean
   """If true, video will autostart on load in the scene player"""
   autostartVideo: Boolean
   """If true, video will autostart when loading from play random or play selected"""
@@ -281,7 +324,9 @@ type ConfigInterfaceResult {
   language: String
 
   """Slideshow Delay"""
-  slideshowDelay: Int
+  slideshowDelay: Int @deprecated(reason: "Use imageLightbox.slideshowDelay")
+
+  imageLightbox: ConfigImageLightboxResult!
 
   """Fields are true if creating via dropdown menus are disabled"""
   disableDropdownCreate: ConfigDisableDropdownCreate!
@@ -390,4 +435,9 @@ type StashConfig {
 
 input GenerateAPIKeyInput {
   clear: Boolean
+}
+
+type StashBoxValidationResult {
+  valid: Boolean!
+  status: String!
 }

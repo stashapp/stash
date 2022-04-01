@@ -80,6 +80,7 @@
     "select_folders": "Sélectionner des répertoires",
     "select_none": "Ne rien sélectionner",
     "selective_auto_tag": "Taggage automatique de la sélection",
+    "selective_clean": "Nettoyage sélectif",
     "selective_scan": "Scan sélectif",
     "set_as_default": "Définir comme valeur par défaut",
     "set_back_image": "Image Verso…",
@@ -219,8 +220,6 @@
         "password": "Mot de passe",
         "password_desc": "Mot de passe pour accéder à Stash. Laissez vide pour désactiver l'authentification.",
         "stash-box_integration": "Integration de stash-box",
-        "trusted_proxies": "Proxys de confiance",
-        "trusted_proxies_desc": "Liste des proxys autorisés à transférer le trafic vers Stash. Laissez vide pour autoriser à partir du réseau privé.",
         "username": "Nom d'utilisateur",
         "username_desc": "Nom d'utilisateur pour accéder à Stash. Laissez vide pour désactiver l'authentification."
       },
@@ -266,6 +265,9 @@
       "preview_generation": "Générer les aperçus",
       "scraper_user_agent": "User-Agent pour les Scraper",
       "scraper_user_agent_desc": "Chaîne User-Agent utilisée dans les requêtes http lors du Scraping.",
+      "scrapers_path": {
+        "heading": "Chemin des scrapers"
+      },
       "scraping": "Scraping",
       "sqlite_location": "Emplacement du fichier de base de données SQLite (nécéssite un redémarrage)",
       "video_ext_desc": "Liste des extensions de fichiers Vidéos.",
@@ -583,9 +585,13 @@
     },
     "overwrite_filter_confirm": "Êtes-vous sûr de vouloir écraser le filtre sauvegardé {entityName} ?",
     "scene_gen": {
+      "force_transcodes": "Forcer la génération de transcodage",
+      "force_transcodes_tooltip": "Par défaut, les transcodages ne sont générés que lorsque le fichier vidéo n'est pas pris en charge dans le navigateur. Lorsqu'il est activé, les transcodes seront générés même lorsque le fichier vidéo semble être pris en charge dans le navigateur.",
       "image_previews": "Aperçus image (Image WebP animée. Requis seulement si le type d'Aperçu est défini sur Image Animée)",
+      "image_previews_tooltip": "Aperçus animés (en WebP), requis uniquement si le type d'aperçu est défini sur Image animée.",
       "interactive_heatmap_speed": "Générer des cartes thermiques et des vitesses pour des scènes interactives",
       "marker_image_previews": "Aperçus Marqueurs (Image WebP animée. Requis seulement si le type d'aperçu est défini sur Image Animée)",
+      "marker_image_previews_tooltip": "Aperçus animé des marqueurs (en WebP), requis uniquement si le type d'aperçu est défini sur Image animée.",
       "marker_screenshots": "Capture d'écran Marqueurs (Image JPG fixe. Requis seulement si le type d'Aperçu est défini sur Image Fixe)",
       "markers": "Aperçus des Marqueurs",
       "markers_tooltip": "Vidéo de 20 secondes qui commence au timecode indiqué.",
@@ -595,6 +601,7 @@
       "preview_exclude_end_time_head": "Exclure à la fin",
       "preview_exclude_start_time_desc": "Exclure les x premières secondes de la vidéo pour la génération de l'aperçu. La valeur peut-être exprimée en secondes ou bien en pourcentage (ex : 2%) de la durée totale de la vidéo.",
       "preview_exclude_start_time_head": "Exclure au début",
+      "preview_generation_options": "Options des générations d'aperçu",
       "preview_options": "Options d'Aperçus",
       "preview_preset_desc": "Le Preset d'encodage régule la taille, la qualité et le temps d'encodage des aperçus. Les Preset plus bas que “slow” n'apportent pas de gain significatif et ne sont pas recommandés.",
       "preview_preset_head": "Preset d'encodage de l'aperçu",
@@ -680,6 +687,14 @@
   "gallery": "Galerie",
   "gallery_count": "Nombre de Galeries",
   "gender": "Genre",
+  "gender_types": {
+    "FEMALE": "Femme",
+    "INTERSEX": "Intersexe",
+    "MALE": "Homme",
+    "NON_BINARY": "Non Binaire",
+    "TRANSGENDER_FEMALE": "Femme transgenre",
+    "TRANSGENDER_MALE": "Homme transgenre"
+  },
   "hair_color": "Couleur des cheveux",
   "hasMarkers": "Possède des marqueurs",
   "height": "Taille",
@@ -836,7 +851,10 @@
       "next_step": "Lorsque vous êtes prêt à procéder à la configuration d'un nouveau système, cliquez sur Suivant.",
       "unable_to_locate_specified_config": "Si vous lisez ceci, alors Stash n'a pas pu trouver le fichier de configuration spécifié sur la ligne de commande ou l'environnement. Cet assistant vous guidera tout au long du processus de configuration d'une nouvelle configuration."
     },
-    "welcome_to_stash": "Bienvenue sur Stash"
+    "welcome_to_stash": "Bienvenue sur Stash",
+    "folder": {
+      "up_dir": "Remonter d'un répertoire"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -878,7 +896,6 @@
   "total": "Total",
   "true": "Vrai",
   "twitter": "Twitter",
-  "up-dir": "Remonter d'un répertoire",
   "updated_at": "Date de modification",
   "url": "URL",
   "videos": "Vidéos",

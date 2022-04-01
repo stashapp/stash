@@ -8,7 +8,7 @@ import { PrimaryTags } from "./PrimaryTags";
 import { SceneMarkerForm } from "./SceneMarkerForm";
 
 interface ISceneMarkersPanelProps {
-  scene: GQL.SceneDataFragment;
+  sceneId: string;
   isVisible: boolean;
   onClickMarker: (marker: GQL.SceneMarkerDataFragment) => void;
 }
@@ -16,6 +16,11 @@ interface ISceneMarkersPanelProps {
 export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
   props: ISceneMarkersPanelProps
 ) => {
+  const { data, loading } = GQL.useFindSceneMarkerTagsQuery({
+    variables: {
+      id: props.sceneId,
+    },
+  });
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
   const [
     editingMarker,
@@ -32,6 +37,8 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
       };
     }
   });
+
+  if (loading) return null;
 
   function onOpenEditor(marker?: GQL.SceneMarkerDataFragment) {
     setIsEditorOpen(true);
@@ -50,11 +57,13 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
   if (isEditorOpen)
     return (
       <SceneMarkerForm
-        sceneID={props.scene.id}
+        sceneID={props.sceneId}
         editingMarker={editingMarker}
         onClose={closeEditor}
       />
     );
+
+  const sceneMarkers = data?.sceneMarkerTags[0]?.scene_markers ?? [];
 
   return (
     <div className="scene-markers-panel">
@@ -63,13 +72,13 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
       </Button>
       <div className="container">
         <PrimaryTags
-          sceneMarkers={props.scene.scene_markers ?? []}
+          sceneMarkers={sceneMarkers}
           onClickMarker={onClickMarker}
           onEdit={onOpenEditor}
         />
       </div>
       <WallPanel
-        sceneMarkers={props.scene.scene_markers}
+        sceneMarkers={sceneMarkers}
         clickHandler={(marker) => {
           window.scrollTo(0, 0);
           onClickMarker(marker as GQL.SceneMarkerDataFragment);

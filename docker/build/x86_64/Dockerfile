@@ -23,6 +23,8 @@ COPY ./go* ./*.go Makefile gqlgen.yml .gqlgenc.yml /stash/
 COPY ./scripts /stash/scripts/
 COPY ./vendor /stash/vendor/
 COPY ./pkg /stash/pkg/
+COPY ./cmd /stash/cmd
+COPY ./internal /stash/internal
 COPY --from=frontend /stash /stash/
 RUN make generate-backend
 ARG GITHASH

@@ -47,11 +47,12 @@ export const VideoPreviewInput: React.FC<IVideoPreviewInput> = ({
         <Form.Control
           className="text-input"
           type="number"
-          value={previewSegments?.toString() ?? 0}
+          value={previewSegments?.toString() ?? 1}
+          min={1}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             set({
               previewSegments: Number.parseInt(
-                e.currentTarget.value || "0",
+                e.currentTarget.value || "1",
                 10
               ),
             })

@@ -70,4 +70,10 @@ fragment SceneData on Scene {
     endpoint
     stash_id
   }
+
+  sceneStreams {
+    url
+    mime_type
+    label
+  }
 }

@@ -4,10 +4,10 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -205,7 +205,7 @@ func (e *Encoder) GetTranscodeStream(options TranscodeStreamOptions) (*Stream, e
 
 func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) (*Stream, error) {
 	args := options.getStreamArgs()
-	cmd := exec.Command(string(*e), args...)
+	cmd := stashExec.Command(string(*e), args...)
 	logger.Debugf("Streaming via: %s", strings.Join(cmd.Args, " "))
 
 	stdout, err := cmd.StdoutPipe()

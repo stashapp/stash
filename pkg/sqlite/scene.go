@@ -392,6 +392,9 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterion(sceneStudioCriterionHandler(qb, sceneFilter.Studios))
 	query.handleCriterion(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
 	query.handleCriterion(scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
+	query.handleCriterion(scenePerformerFavoriteCriterionHandler(sceneFilter.PerformerFavorite))
+	query.handleCriterion(scenePerformerAgeCriterionHandler(sceneFilter.PerformerAge))
+	query.handleCriterion(scenePhashDuplicatedCriterionHandler(sceneFilter.Duplicated))
 
 	return query
 }
@@ -504,6 +507,21 @@ func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHa
 	}
 }
 
+func scenePhashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		// TODO: Wishlist item: Implement Distance matching
+		if duplicatedFilter != nil {
+			var v string
+			if *duplicatedFilter.Duplicated {
+				v = ">"
+			} else {
+				v = "="
+			}
+			f.addInnerJoin("(SELECT id FROM scenes JOIN (SELECT phash FROM scenes GROUP BY phash HAVING COUNT(phash) "+v+" 1) dupes on scenes.phash = dupes.phash)", "scph", "scenes.id = scph.id")
+		}
+	}
+}
+
 func durationCriterionHandler(durationFilter *models.IntCriterionInput, column string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if durationFilter != nil {
@@ -564,7 +582,7 @@ func sceneIsMissingCriterionHandler(qb *sceneQueryBuilder, isMissing *string) cr
 				qb.performersRepository().join(f, "performers_join", "scenes.id")
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
-				f.addWhere("scenes.date IS \"\" OR scenes.date IS \"0001-01-01\"")
+				f.addWhere(`scenes.date IS NULL OR scenes.date IS "" OR scenes.date IS "0001-01-01"`)
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
@@ -642,6 +660,43 @@ func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *
 	return h.handler(performerCount)
 }
 
+func scenePerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerfavorite != nil {
+			f.addLeftJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+
+			if *performerfavorite {
+				// contains at least one favorite
+				f.addLeftJoin("performers", "", "performers.id = performers_scenes.performer_id")
+				f.addWhere("performers.favorite = 1")
+			} else {
+				// contains zero favorites
+				f.addLeftJoin(`(SELECT performers_scenes.scene_id as id FROM performers_scenes
+JOIN performers ON performers.id = performers_scenes.performer_id
+GROUP BY performers_scenes.scene_id HAVING SUM(performers.favorite) = 0)`, "nofaves", "scenes.id = nofaves.id")
+				f.addWhere("performers_scenes.scene_id IS NULL OR nofaves.id IS NOT NULL")
+			}
+		}
+	}
+}
+
+func scenePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performerAge != nil {
+			f.addInnerJoin("performers_scenes", "", "scenes.id = performers_scenes.scene_id")
+			f.addInnerJoin("performers", "", "performers_scenes.performer_id = performers.id")
+
+			f.addWhere("scenes.date != '' AND performers.birthdate != ''")
+			f.addWhere("scenes.date IS NOT NULL AND performers.birthdate IS NOT NULL")
+			f.addWhere("scenes.date != '0001-01-01' AND performers.birthdate != '0001-01-01'")
+
+			ageCalc := "cast(strftime('%Y.%m%d', scenes.date) - strftime('%Y.%m%d', performers.birthdate) as int)"
+			whereClause, args := getIntWhereClause(ageCalc, performerAge.Modifier, performerAge.Value, performerAge.Value2)
+			f.addWhere(whereClause, args...)
+		}
+	}
+}
+
 func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := hierarchicalMultiCriterionHandlerBuilder{
 		tx: qb.tx,
@@ -658,8 +713,8 @@ func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.Hierarch
 
 func sceneMoviesCriterionHandler(qb *sceneQueryBuilder, movies *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		qb.moviesRepository().join(f, "movies_join", "scenes.id")
-		f.addLeftJoin("movies", "", "movies_join.movie_id = movies.id")
+		qb.moviesRepository().join(f, "", "scenes.id")
+		f.addLeftJoin("movies", "", "movies_scenes.movie_id = movies.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(movieTable, moviesScenesTable, "movie_id", addJoinsFunc)
 	return h.handler(movies)
@@ -705,8 +760,7 @@ func (qb *sceneQueryBuilder) getDefaultSceneSort() string {
 }
 
 func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
-	if findFilter == nil {
-		query.sortAndPagination += qb.getDefaultSceneSort()
+	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
 		return
 	}
 	sort := findFilter.GetSort("title")

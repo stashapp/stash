@@ -6,6 +6,7 @@ import { useHistory } from "react-router-dom";
 import {
   FindMoviesQueryResult,
   SlimMovieDataFragment,
+  MovieDataFragment,
 } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -17,6 +18,7 @@ import {
 } from "src/hooks/ListHook";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { MovieCard } from "./MovieCard";
+import { EditMoviesDialog } from "./EditMoviesDialog";
 
 interface IMovieList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -57,6 +59,17 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
     };
   };
 
+  function renderEditDialog(
+    selectedMovies: MovieDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
+    return (
+      <>
+        <EditMoviesDialog selected={selectedMovies} onClose={onClose} />
+      </>
+    );
+  }
+
   const renderDeleteDialog = (
     selectedMovies: SlimMovieDataFragment[],
     onClose: (confirmed: boolean) => void
@@ -76,6 +89,7 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
     otherOperations,
     selectable: true,
     persistState: PersistanceLevel.ALL,
+    renderEditDialog,
     renderDeleteDialog,
     filterHook,
   });

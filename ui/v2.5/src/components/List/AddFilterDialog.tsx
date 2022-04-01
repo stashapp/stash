@@ -37,6 +37,7 @@ interface IAddFilterProps {
   onCancel: () => void;
   filterOptions: ListFilterOptions;
   editingCriterion?: Criterion<CriterionValue>;
+  existingCriterions: Criterion<CriterionValue>[];
 }
 
 export const AddFilterDialog: React.FC<IAddFilterProps> = ({
@@ -44,6 +45,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
   onCancel,
   filterOptions,
   editingCriterion,
+  existingCriterions,
 }) => {
   const defaultValue = useRef<string | number | undefined>();
 
@@ -206,6 +208,10 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
 
     const thisOptions = [NoneCriterionOption]
       .concat(filterOptions.criterionOptions)
+      .filter(
+        (c) =>
+          !existingCriterions.find((ec) => ec.criterionOption.type === c.type)
+      )
       .map((c) => {
         return {
           value: c.type,

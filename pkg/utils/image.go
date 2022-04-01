@@ -24,7 +24,7 @@ const base64RE = `^data:.+\/(.+);base64,(.*)$`
 func ProcessImageInput(ctx context.Context, imageInput string) ([]byte, error) {
 	regex := regexp.MustCompile(base64RE)
 	if regex.MatchString(imageInput) {
-		_, d, err := ProcessBase64Image(imageInput)
+		d, err := ProcessBase64Image(imageInput)
 		return d, err
 	}
 
@@ -53,7 +53,7 @@ func ReadImageFromURL(ctx context.Context, url string) ([]byte, error) {
 	if req.URL.Scheme != "" {
 		req.Header.Set("Referer", req.URL.Scheme+"://"+req.Host+"/")
 	}
-	req.Header.Set("User-Agent", GetUserAgent())
+	req.Header.Set("User-Agent", getUserAgent())
 
 	resp, err := client.Do(req)
 
@@ -75,11 +75,11 @@ func ReadImageFromURL(ctx context.Context, url string) ([]byte, error) {
 	return body, nil
 }
 
-// ProcessBase64Image transforms a base64 encoded string from a form post and returns the MD5 hash of the data and the
-// image itself as a byte slice.
-func ProcessBase64Image(imageString string) (string, []byte, error) {
+// ProcessBase64Image transforms a base64 encoded string from a form post and
+// returns the image itself as a byte slice.
+func ProcessBase64Image(imageString string) ([]byte, error) {
 	if imageString == "" {
-		return "", nil, fmt.Errorf("empty image string")
+		return nil, fmt.Errorf("empty image string")
 	}
 
 	regex := regexp.MustCompile(base64RE)
@@ -92,10 +92,10 @@ func ProcessBase64Image(imageString string) (string, []byte, error) {
 	}
 	imageData, err := GetDataFromBase64String(encodedString)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 
-	return MD5FromBytes(imageData), imageData, nil
+	return imageData, nil
 }
 
 // GetDataFromBase64String returns the given base64 encoded string as a byte slice

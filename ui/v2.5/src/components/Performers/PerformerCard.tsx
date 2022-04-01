@@ -16,6 +16,7 @@ import {
   CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
+import GenderIcon from "./GenderIcon";
 
 export interface IPerformerCardExtraCriteria {
   scenes: Criterion<CriterionValue>[];
@@ -179,10 +180,29 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     );
   }
 
+  function maybeRenderFlag() {
+    if (performer.country) {
+      return (
+        <Link to={NavUtils.makePerformersCountryUrl(performer)}>
+          <CountryFlag
+            className="performer-card__country-flag"
+            country={performer.country}
+          />
+          <span className="performer-card__country-string">
+            {performer.country}
+          </span>
+        </Link>
+      );
+    }
+  }
+
   return (
     <GridCard
       className="performer-card"
       url={`/performers/${performer.id}`}
+      pretitleIcon={
+        <GenderIcon className="gender-icon" gender={performer.gender} />
+      }
       title={performer.name ?? ""}
       image={
         <>
@@ -193,14 +213,16 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
           />
           {maybeRenderFavoriteIcon()}
           {maybeRenderRatingBanner()}
+          {maybeRenderFlag()}
         </>
       }
       details={
         <>
-          {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
-          <Link to={NavUtils.makePerformersCountryUrl(performer)}>
-            <CountryFlag country={performer.country} />
-          </Link>
+          {age !== 0 ? (
+            <div className="performer-card__age">{ageString}</div>
+          ) : (
+            ""
+          )}
           {maybeRenderPopoverButtonGroup()}
         </>
       }

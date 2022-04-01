@@ -23,6 +23,7 @@ import { OptionalField } from "../IncludeButton";
 import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import PerformerResult from "./PerformerResult";
 import StudioResult from "./StudioResult";
+import { useInitialState } from "src/hooks/state";
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -214,7 +215,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const [excludedFields, setExcludedFields] = useState<Record<string, boolean>>(
     {}
   );
-  const [tagIDs, setTagIDs] = useState<string[]>(getInitialTags());
+  const [tagIDs, setTagIDs, setInitialTagIDs] = useInitialState<string[]>(
+    getInitialTags()
+  );
 
   // map of original performer to id
   const [performerIDs, setPerformerIDs] = useState<(string | undefined)[]>(
@@ -226,8 +229,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   );
 
   useEffect(() => {
-    setTagIDs(getInitialTags());
-  }, [getInitialTags]);
+    setInitialTagIDs(getInitialTags());
+  }, [getInitialTags, setInitialTagIDs]);
 
   useEffect(() => {
     setPerformerIDs(getInitialPerformers());
@@ -336,6 +339,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           stash_id: scene.remote_site_id,
         },
       ];
+    } else {
+      // #2348 - don't include stash_ids if we're not setting them
+      delete sceneCreateInput.stash_ids;
     }
 
     await saveScene(sceneCreateInput, includeStashID);
@@ -566,6 +572,13 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     </div>
   );
 
+  async function onCreateTag(t: GQL.ScrapedTag) {
+    const newTagID = await createNewTag(t);
+    if (newTagID !== undefined) {
+      setTagIDs([...tagIDs, newTagID]);
+    }
+  }
+
   const renderTagsField = () => (
     <div className="mt-2">
       <div>
@@ -592,7 +605,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             variant="secondary"
             key={t.name}
             onClick={() => {
-              createNewTag(t);
+              onCreateTag(t);
             }}
           >
             {t.name}

@@ -195,33 +195,33 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
     return (
       <>
         <ScrapedInputGroupRow
-          title="Name"
+          title={intl.formatMessage({ id: "name" })}
           result={name}
           onChange={(value) => setName(value)}
         />
         <ScrapedInputGroupRow
-          title="Aliases"
+          title={intl.formatMessage({ id: "aliases" })}
           result={aliases}
           onChange={(value) => setAliases(value)}
         />
         <ScrapedInputGroupRow
-          title="Duration"
+          title={intl.formatMessage({ id: "duration" })}
           result={duration}
           onChange={(value) => setDuration(value)}
         />
         <ScrapedInputGroupRow
-          title="Date"
+          title={intl.formatMessage({ id: "date" })}
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
         <ScrapedInputGroupRow
-          title="Director"
+          title={intl.formatMessage({ id: "director" })}
           result={director}
           onChange={(value) => setDirector(value)}
         />
         <ScrapedTextAreaRow
-          title="Synopsis"
+          title={intl.formatMessage({ id: "synopsis" })}
           result={synopsis}
           onChange={(value) => setSynopsis(value)}
         />

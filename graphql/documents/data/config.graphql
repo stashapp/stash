@@ -25,7 +25,6 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   username
   password
   maxSessionAge
-  trustedProxies
   logFile
   logOut
   logLevel
@@ -45,6 +44,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     endpoint
     api_key
   }
+  pythonPath
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
@@ -52,8 +52,10 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   soundOnPreview
   wallShowTitle
   wallPlayback
+  showScrubber
   maximumLoopDuration
   noBrowser
+  notificationsEnabled
   autostartVideo
   autostartVideoOnPlaySelected
   continuePlaylistDefault
@@ -61,7 +63,13 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   css
   cssEnabled
   language
-  slideshowDelay
+  imageLightbox {
+    slideshowDelay
+    displayMode
+    scaleUp
+    resetZoomOnNav
+    scrollMode
+  }
   disableDropdownCreate {
     performer
     tag
