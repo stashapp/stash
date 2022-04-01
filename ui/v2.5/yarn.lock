@@ -7169,9 +7169,10 @@ text-table@^0.2.0:
   resolved "https://registry.npmjs.org/text-table/-/text-table-0.2.0.tgz"
   integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
 
-"thehandy@https://github.com/chetbrinko/thehandy":
-  version "1.0.3"
-  resolved "https://github.com/chetbrinko/thehandy#3bccfdfdfea9fd5ea1596a274879ee097b91de94"
+thehandy@^0.2.7:
+  version "0.2.7"
+  resolved "https://registry.npmjs.org/thehandy/-/thehandy-0.2.7.tgz"
+  integrity sha512-Wo5sPWkoiRjAiK4EeZhOq1QRs4MVsl1Cc3tlPccrfsZLazXAUtUExkxzwA+N2MWJOavuJl5hoz/nV9ehF0yi7Q==
 
 through@^2.3.6:
   version "2.3.8"
