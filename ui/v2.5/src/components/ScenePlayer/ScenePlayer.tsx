@@ -164,7 +164,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     settings.setValues({
       backgroundColor: "#000",
       backgroundOpacity: "0.5",
-      edgeStyle: "uniform",
     });
     settings.updateDisplay();
 
