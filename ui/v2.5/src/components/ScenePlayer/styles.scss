@@ -14,6 +14,7 @@ $sceneTabWidth: 450px;
 
   .video-js {
     height: 56.25vw;
+    overflow: hidden;
     width: 100%;
 
     @media (min-width: 1200px) {
