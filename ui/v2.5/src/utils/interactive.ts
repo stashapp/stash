@@ -1,5 +1,9 @@
-import { Handy, HandyUtils } from "thehandy";
-import { HandyMode, HsspSetupResult } from "thehandy/lib/types";
+import Handy from "thehandy";
+import {
+  HandyMode,
+  HsspSetupResult,
+  CsvUploadResponse,
+} from "thehandy/lib/types";
 
 interface IFunscript {
   actions: Array<IAction>;
@@ -49,6 +53,42 @@ function convertFunscriptToCSV(funscript: IFunscript) {
   throw new Error("Not a valid funscript");
 }
 
+// copied from https://github.com/defucilis/thehandy/blob/main/src/HandyUtils.ts
+// since HandyUtils is not exported.
+// License is listed as MIT. No copyright notice is provided in original.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+async function uploadCsv(
+  csv: File,
+  filename?: string
+): Promise<CsvUploadResponse> {
+  const url = "https://www.handyfeeling.com/api/sync/upload?local=true";
+  if (!filename) filename = "script_" + new Date().valueOf() + ".csv";
+  const formData = new FormData();
+  formData.append("syncFile", csv, filename);
+  const response = await fetch(url, {
+    method: "post",
+    body: formData,
+  });
+  const newUrl = await response.json();
+  return newUrl;
+}
+
 // Interactive currently uses the Handy API, but could be expanded to use buttplug.io
 // via buttplugio/buttplug-rs-ffi's WASM module.
 export class Interactive {
@@ -82,9 +122,7 @@ export class Interactive {
       .then((json) => convertFunscriptToCSV(json));
     const fileName = `${Math.round(Math.random() * 100000000)}.csv`;
     const csvFile = new File([csv], fileName);
-    const tempURL = await HandyUtils.uploadCsv(csvFile).then(
-      (response) => response.url
-    );
+    const tempURL = await uploadCsv(csvFile).then((response) => response.url);
 
     await this._handy.setMode(HandyMode.hssp);
 
