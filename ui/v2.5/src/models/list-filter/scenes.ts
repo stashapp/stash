@@ -37,6 +37,7 @@ const sortByOptions = [
   "movie_scene_number",
   "interactive",
   "interactive_speed",
+  "captioned",
   "perceptual_similarity",
   ...MediaSortByOptions,
 ].map(ListFilterOptions.createSortBy);
