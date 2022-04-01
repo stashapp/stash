@@ -49,10 +49,6 @@ func (sp *scenePaths) GetSpriteImageFilePath(checksum string) string {
 	return filepath.Join(sp.generated.Vtt, checksum+"_sprite.jpg")
 }
 
-func (sp *scenePaths) GetCaptionPath(checksum string) string {
-	return filepath.Join(sp.generated.Vtt, checksum+".vtt")
-}
-
 func (sp *scenePaths) GetSpriteVttFilePath(checksum string) string {
 	return filepath.Join(sp.generated.Vtt, checksum+"_thumbs.vtt")
 }
