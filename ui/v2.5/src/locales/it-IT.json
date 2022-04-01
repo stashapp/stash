@@ -279,6 +279,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Numero delle attività parallele per scansione/creazione",
       "parallel_scan_head": "Scansione/Creazione Parallela",
       "preview_generation": "Creazione Anteprime",
+      "python_path": {
+        "description": "Posizione dell'eseguibile python. Usato per gli script degli scraper e plugin. Se lasciato vuoto, verrà determinato dall'ambiente",
+        "heading": "Percorso Python"
+      },
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "Stringa User-Agent usata durante le richieste http scrape",
       "scrapers_path": {
@@ -447,6 +451,9 @@
       "handy_connection_key": {
         "description": "Chiave di connessione Handy per l'uso con scene interattive. Impostare questa chiave permetterà a Stash di condividere le informazioni della scena attuale con handyfeeling.com",
         "heading": "Chiave Connessione Handy"
+      },
+      "image_lightbox": {
+        "heading": "Immagine Lightbox"
       },
       "images": {
         "heading": "Immagini",
