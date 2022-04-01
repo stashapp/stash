@@ -329,7 +329,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           srclang: "en",
           label: "english",
           default: true,
-          mode: 'showing'
+          mode: "showing",
         },
         true
       );
