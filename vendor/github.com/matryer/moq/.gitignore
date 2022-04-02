@@ -23,3 +23,7 @@ _testmain.go
 *.test
 *.prof
 .vscode
+.idea
+.playground
+
+dist/

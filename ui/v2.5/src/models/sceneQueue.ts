@@ -117,16 +117,15 @@ export class SceneQueue {
     sceneID: string,
     options?: IPlaySceneOptions
   ) {
-    history.push(this.makeLink(sceneID, options));
+    history.replace(this.makeLink(sceneID, options));
   }
 
   public makeLink(sceneID: string, options?: IPlaySceneOptions) {
-    const paramStr = this.makeQueryParameters(
-      options?.sceneIndex,
-      options?.newPage
-    );
-    const autoplayParam = options?.autoPlay ? "&autoplay=true" : "";
-    const continueParam = options?.continue ? "&continue=true" : "";
-    return `/scenes/${sceneID}?${paramStr}${autoplayParam}${continueParam}`;
+    const params = [
+      this.makeQueryParameters(options?.sceneIndex, options?.newPage),
+      options?.autoPlay ? "autoplay=true" : "",
+      options?.continue ? "continue=true" : "",
+    ].filter((param) => !!param);
+    return `/scenes/${sceneID}${params.length ? "?" + params.join("&") : ""}`;
   }
 }

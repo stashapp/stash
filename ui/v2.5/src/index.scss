@@ -17,11 +17,13 @@
 @import "src/components/Shared/styles.scss";
 @import "src/components/Tags/styles.scss";
 @import "src/components/Wall/styles.scss";
-@import "../node_modules/flag-icon-css/css/flag-icon.min.css";
 @import "src/components/Tagger/styles.scss";
 @import "src/hooks/Lightbox/lightbox.scss";
 @import "src/components/Dialogs/IdentifyDialog/styles.scss";
 @import "src/components/Dialogs/styles.scss";
+@import "../node_modules/flag-icon-css/css/flag-icon.min.css";
+@import "video.js/dist/video-js.css";
+@import "videojs-seek-buttons/dist/videojs-seek-buttons.css";
 
 /* stylelint-disable */
 #root {

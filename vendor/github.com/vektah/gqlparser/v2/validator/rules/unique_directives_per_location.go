@@ -11,9 +11,9 @@ func init() {
 			seen := map[string]bool{}
 
 			for _, dir := range directives {
-				if seen[dir.Name] {
+				if dir.Name != "repeatable" && seen[dir.Name] {
 					addError(
-						Message(`The directive "%s" can only be used once at this location.`, dir.Name),
+						Message(`The directive "@%s" can only be used once at this location.`, dir.Name),
 						At(dir.Position),
 					)
 				}

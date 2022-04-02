@@ -1,14 +1,16 @@
 /vendor
 /docs/public
-/example/chat/node_modules
+/docs/.hugo_build.lock
+/_examples/chat/node_modules
 /integration/node_modules
 /integration/schema-fetched.graphql
-/example/chat/package-lock.json
-/example/federation/package-lock.json
-/example/federation/node_modules
+/_examples/chat/package-lock.json
+/_examples/federation/package-lock.json
+/_examples/federation/node_modules
 /codegen/gen
 /gen
 
+/.vscode
 .idea/
 *.test
 *.out

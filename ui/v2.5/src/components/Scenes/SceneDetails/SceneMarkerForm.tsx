@@ -13,8 +13,8 @@ import {
   TagSelect,
   MarkerTitleSuggest,
 } from "src/components/Shared";
+import { getPlayerPosition } from "src/components/ScenePlayer";
 import { useToast } from "src/hooks";
-import { JWUtils } from "src/utils";
 
 interface IFormFields {
   title: string;
@@ -82,7 +82,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       onReset={() =>
         fieldProps.form.setFieldValue(
           "seconds",
-          Math.round(JWUtils.getPlayer()?.getPosition() ?? 0)
+          Math.round(getPlayerPosition() ?? 0)
         )
       }
       numericValue={Number.parseInt(fieldProps.field.value ?? "0", 10)}
@@ -117,8 +117,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   const values: IFormFields = {
     title: editingMarker?.title ?? "",
     seconds: (
-      editingMarker?.seconds ??
-      Math.round(JWUtils.getPlayer()?.getPosition() ?? 0)
+      editingMarker?.seconds ?? Math.round(getPlayerPosition() ?? 0)
     ).toString(),
     primaryTagId: editingMarker?.primary_tag.id ?? "",
     tagIds: editingMarker?.tags.map((tag) => tag.id) ?? [],

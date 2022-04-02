@@ -6,6 +6,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"testing"
@@ -931,7 +932,8 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 
 		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-		assert.True(t, len(scenes) > 0)
+		// three in four scenes have no date
+		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4*3)))
 
 		// ensure date is null, empty or "0001-01-01"
 		for _, scene := range scenes {

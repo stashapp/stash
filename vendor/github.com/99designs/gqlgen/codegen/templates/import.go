@@ -105,7 +105,7 @@ func (s *Imports) Lookup(path string) string {
 	for s.findByAlias(alias) != nil {
 		alias = imp.Name + strconv.Itoa(i)
 		i++
-		if i > 10 {
+		if i > 1000 {
 			panic(fmt.Errorf("too many collisions, last attempt was %s", alias))
 		}
 	}

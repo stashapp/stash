@@ -19,6 +19,9 @@ type (
 	Resolver        func(ctx context.Context) (res interface{}, err error)
 	FieldMiddleware func(ctx context.Context, next Resolver) (res interface{}, err error)
 
+	RootResolver        func(ctx context.Context) Marshaler
+	RootFieldMiddleware func(ctx context.Context, next RootResolver) Marshaler
+
 	RawParams struct {
 		Query         string                 `json:"query"`
 		OperationName string                 `json:"operationName"`
@@ -74,6 +77,10 @@ type (
 	// operation the case of subscriptions.
 	ResponseInterceptor interface {
 		InterceptResponse(ctx context.Context, next ResponseHandler) *Response
+	}
+
+	RootFieldInterceptor interface {
+		InterceptRootField(ctx context.Context, next RootResolver) Marshaler
 	}
 
 	// FieldInterceptor called around each field

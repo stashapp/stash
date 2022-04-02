@@ -2,7 +2,7 @@ $scrubberHeight: 120px;
 $menuHeight: 4rem;
 $sceneTabWidth: 450px;
 
-#jwplayer-container {
+.VideoPlayer {
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - #{$menuHeight});
@@ -12,31 +12,192 @@ $sceneTabWidth: 450px;
     height: 100vh;
   }
 
-  & video:focus {
-    outline: 0;
-  }
-
-  /* stylelint-disable */
-  .jw-video {
-    // #1764 - jwplayer sets object-fit: fit in the style. Need to override it.
-    object-fit: contain !important;
-  }
-  /* stylelint-enable */
-
-  .video-wrapper {
+  .video-js {
     height: 56.25vw;
+    overflow: hidden;
+    width: 100%;
 
     @media (min-width: 1200px) {
       height: 100%;
     }
   }
 
-  &.portrait .video-wrapper {
+  &.portrait .video-js {
     height: 177.78vw;
   }
 
-  .jwplayer {
+  .vjs-button {
     outline: none;
+  }
+
+  .vjs-vtt-thumbnail-display {
+    // default opacity to 0, it gets set to 1 when moused-over.
+    // prevents the border from showing up when initially loaded
+    opacity: 0;
+  }
+
+  .vjs-big-button-group {
+    display: none;
+    height: 80px;
+    justify-content: space-around;
+    opacity: 0;
+    position: absolute;
+    top: calc(50% - 40px);
+    width: 100%;
+
+    .vjs-button {
+      font-size: 4em;
+      height: 100%;
+      width: 80px;
+
+      .vjs-icon-placeholder::before {
+        height: 100%;
+        line-height: 80px;
+      }
+    }
+  }
+
+  .vjs-touch-enabled {
+    margin: 0 -15px;
+    width: 100vw;
+
+    &.vjs-has-started .vjs-big-button-group {
+      display: flex;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    &.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group {
+      opacity: 0;
+      pointer-events: none;
+      transition: visibility 1s, opacity 1s;
+      visibility: visible;
+    }
+
+    .vjs-big-play-pause-button .vjs-icon-placeholder::before {
+      content: "\f101";
+      font-family: VideoJS;
+    }
+
+    &.vjs-playing .vjs-big-play-pause-button .vjs-icon-placeholder::before {
+      content: "\f103";
+    }
+
+    // hide the regular play/pause button on touch screens
+    .vjs-play-control {
+      display: none;
+    }
+
+    // hide the regular seek buttons on touch screens
+    .vjs-control-bar .vjs-seek-button {
+      display: none;
+    }
+  }
+
+  // make controls a little more compact on smaller screens
+  @media (max-width: 576px) {
+    .vjs-control-bar {
+      .vjs-control:not(.vjs-progress-control) {
+        width: 2.5em;
+      }
+
+      .vjs-button > .vjs-icon-placeholder::before,
+      .vjs-skip-button::before {
+        font-size: 1.5em;
+        line-height: 2;
+      }
+    }
+
+    .vjs-time-control {
+      font-size: 12px;
+      line-height: 4em;
+    }
+
+    .vjs-big-button-group .vjs-button {
+      font-size: 2em;
+      width: 50px;
+    }
+
+    .vjs-current-time {
+      margin-left: 1em;
+    }
+
+    .vjs-vtt-thumbnail-display {
+      bottom: 40px;
+    }
+  }
+}
+
+.video-js {
+  .vjs-control-bar {
+    background: none;
+
+    /* Scales control size */
+    font-size: 15px;
+
+    &::before {
+      background: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.4) 0%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      bottom: 0;
+      content: "";
+      height: 10rem;
+      position: absolute;
+      width: 100%;
+    }
+  }
+
+  .vjs-time-control {
+    display: block;
+    min-width: 0;
+    padding: 0 4px;
+    pointer-events: none;
+
+    .vjs-control-text {
+      display: none;
+    }
+  }
+
+  .vjs-duration {
+    margin-right: auto;
+  }
+
+  .vjs-remaining-time {
+    display: none;
+  }
+
+  .vjs-progress-control {
+    bottom: 3rem;
+    margin-left: 1%;
+    position: absolute;
+    width: 98%;
+  }
+
+  .vjs-volume-control {
+    z-index: 1;
+  }
+
+  .vjs-vtt-thumbnail-display {
+    border: 2px solid white;
+    border-radius: 2px;
+    bottom: 90px;
+    position: absolute;
+  }
+
+  .vjs-big-play-button,
+  .vjs-big-play-button:hover,
+  .vjs-big-play-button:focus,
+  &:hover .vjs-big-play-button {
+    background: none;
+    border: none;
+    font-size: 10em;
+  }
+
+  .vjs-progress-control .vjs-play-progress .vjs-time-tooltip,
+  .vjs-progress-control:hover .vjs-play-progress .vjs-time-tooltip {
+    visibility: hidden;
   }
 }
 
@@ -161,6 +322,7 @@ $sceneTabWidth: 450px;
   -webkit-overflow-scrolling: touch;
   position: relative;
   -webkit-user-select: none;
+  user-select: none;
   width: 96%;
 
   &.dragging {
@@ -254,4 +416,92 @@ $sceneTabWidth: 450px;
     display: inline-block;
     width: 100%;
   }
+}
+
+.vjs-skip-button {
+  &::before {
+    font-size: 1.8em;
+    line-height: 1.67;
+  }
+}
+
+.vjs-skip-buttons {
+  .vjs-icon-next-item,
+  .vjs-icon-previous-item {
+    display: none;
+  }
+
+  &-prev .vjs-icon-previous-item,
+  &-next .vjs-icon-next-item {
+    display: inline-block;
+  }
+}
+
+.vjs-source-selector {
+  .vjs-menu li {
+    font-size: 12px;
+  }
+
+  .vjs-button > .vjs-icon-placeholder::before {
+    content: "\f110";
+    font-family: VideoJS;
+  }
+}
+
+.vjs-marker {
+  background-color: rgba(33, 33, 33, 0.8);
+  bottom: 0;
+  height: 100%;
+  left: 0;
+  opacity: 1;
+  position: absolute;
+  -webkit-transition: opacity 0.2s ease;
+  -moz-transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease;
+  width: 6px;
+  z-index: 100;
+
+  &:hover {
+    cursor: pointer;
+    -webkit-transform: scale(1.3, 1.3);
+    -moz-transform: scale(1.3, 1.3);
+    -o-transform: scale(1.3, 1.3);
+    -ms-transform: scale(1.3, 1.3);
+    transform: scale(1.3, 1.3);
+  }
+}
+
+.vjs-marker-tooltip {
+  border-radius: 0.3em;
+  color: white;
+  display: block;
+  float: right;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  height: 50px;
+  padding: 6px 8px 8px 8px;
+  pointer-events: none;
+  position: absolute;
+  right: -80px;
+  top: -5.4em;
+  width: 160px;
+  z-index: 1;
+}
+
+.VideoPlayer
+  .video-js
+  .vjs-seek-button.skip-back
+  span.vjs-icon-placeholder::before {
+  -ms-transform: none;
+  -webkit-transform: none;
+  transform: none;
+}
+
+.VideoPlayer
+  .video-js
+  .vjs-seek-button.skip-forward
+  span.vjs-icon-placeholder::before {
+  -ms-transform: scale(-1, 1);
+  -webkit-transform: scale(-1, 1);
+  transform: scale(-1, 1);
 }

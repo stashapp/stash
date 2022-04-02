@@ -85,6 +85,7 @@ var CodecVP9 = Codec{
 		"-row-mt", "1",
 		"-crf", "30",
 		"-b:v", "0",
+		"-pix_fmt", "yuv420p",
 	},
 }
 
