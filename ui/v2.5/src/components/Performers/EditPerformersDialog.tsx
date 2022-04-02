@@ -11,6 +11,7 @@ import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
 import {
   getAggregateInputValue,
   getAggregateState,
+  getAggregateStateObject,
 } from "src/utils/bulkUpdate";
 import {
   genderStrings,
@@ -24,6 +25,20 @@ interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
   onClose: (applied: boolean) => void;
 }
+
+const performerFields = [
+  "favorite",
+  "rating",
+  "gender",
+  "career_length",
+  "country",
+  "ethnicity",
+  "eye_color",
+  "fake_tits",
+  "hair_color",
+  "tattoos",
+  "piercings",
+];
 
 export const EditPerformersDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
@@ -107,63 +122,9 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     let first = true;
 
     state.forEach((performer: GQL.SlimPerformerDataFragment) => {
-      const performerTagIDs = (performer.tags ?? []).map((p) => p.id).sort();
+      getAggregateStateObject(updateState, performer, performerFields, first);
 
-      updateState.favorite = getAggregateState(
-        updateState.favorite,
-        performer.favorite,
-        first
-      );
-      updateState.rating = getAggregateState(
-        updateState.rating,
-        performer.rating,
-        first
-      );
-      updateState.gender = getAggregateState(
-        updateState.gender,
-        performer.gender,
-        first
-      );
-      updateState.career_length = getAggregateState(
-        updateState.career_length,
-        performer.career_length,
-        first
-      );
-      updateState.country = getAggregateState(
-        updateState.country,
-        performer.country,
-        first
-      );
-      updateState.ethnicity = getAggregateState(
-        updateState.ethnicity,
-        performer.ethnicity,
-        first
-      );
-      updateState.eye_color = getAggregateState(
-        updateState.eye_color,
-        performer.eye_color,
-        first
-      );
-      updateState.fake_tits = getAggregateState(
-        updateState.fake_tits,
-        performer.fake_tits,
-        first
-      );
-      updateState.hair_color = getAggregateState(
-        updateState.hair_color,
-        performer.hair_color,
-        first
-      );
-      updateState.tattoos = getAggregateState(
-        updateState.tattoos,
-        performer.tattoos,
-        first
-      );
-      updateState.piercings = getAggregateState(
-        updateState.piercings,
-        performer.piercings,
-        first
-      );
+      const performerTagIDs = (performer.tags ?? []).map((p) => p.id).sort();
 
       updateTagIds =
         getAggregateState(updateTagIds, performerTagIDs, first) ?? [];

@@ -8,9 +8,11 @@ interface IBulkUpdateTextInputProps extends FormControlProps {
   unsetDisabled?: boolean;
 }
 
-export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = (
-  props: IBulkUpdateTextInputProps
-) => {
+export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = ({
+  valueChanged,
+  unsetDisabled,
+  ...props
+}) => {
   const intl = useIntl();
 
   const unsetClassName = props.value === undefined ? "unset" : "";
@@ -27,12 +29,12 @@ export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = (
             ? `<${intl.formatMessage({ id: "existing_value" })}>`
             : undefined
         }
-        onChange={(event) => props.valueChanged(event.currentTarget.value)}
+        onChange={(event) => valueChanged(event.currentTarget.value)}
       />
-      {!props.unsetDisabled ? (
+      {!unsetDisabled ? (
         <Button
           variant="secondary"
-          onClick={() => props.valueChanged(undefined)}
+          onClick={() => valueChanged(undefined)}
           title={intl.formatMessage({ id: "actions.unset" })}
         >
           <Icon icon="ban" />
