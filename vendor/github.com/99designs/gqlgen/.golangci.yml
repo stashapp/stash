@@ -21,12 +21,12 @@ linters:
     - gosimple
     - govet
     - ineffassign
-    - interfacer
     - misspell
     - nakedret
     - prealloc
     - staticcheck
     - structcheck
+    - typecheck
     - unconvert
     - unused
     - varcheck

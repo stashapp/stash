@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"go/types"
 
-	"github.com/pkg/errors"
 	"github.com/vektah/gqlparser/v2/ast"
 
 	"github.com/99designs/gqlgen/codegen/config"
@@ -49,7 +48,7 @@ func (b *builder) buildInterface(typ *ast.Definition) (*Interface, error) {
 
 		implementorType, err := findGoNamedType(obj)
 		if err != nil {
-			return nil, errors.Wrapf(err, "can not find backing go type %s", obj.String())
+			return nil, fmt.Errorf("can not find backing go type %s: %w", obj.String(), err)
 		} else if implementorType == nil {
 			return nil, fmt.Errorf("can not find backing go type %s", obj.String())
 		}

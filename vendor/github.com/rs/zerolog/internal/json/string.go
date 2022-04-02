@@ -1,6 +1,9 @@
 package json
 
-import "unicode/utf8"
+import (
+	"fmt"
+	"unicode/utf8"
+)
 
 const hex = "0123456789abcdef"
 
@@ -60,7 +63,32 @@ func (Encoder) AppendString(dst []byte, s string) []byte {
 	return append(dst, '"')
 }
 
-// appendStringComplex is used by appendString to take over an in
+// AppendStringers encodes the provided Stringer list to json and
+// appends the encoded Stringer list to the input byte slice.
+func (e Encoder) AppendStringers(dst []byte, vals []fmt.Stringer) []byte {
+	if len(vals) == 0 {
+		return append(dst, '[', ']')
+	}
+	dst = append(dst, '[')
+	dst = e.AppendStringer(dst, vals[0])
+	if len(vals) > 1 {
+		for _, val := range vals[1:] {
+			dst = e.AppendStringer(append(dst, ','), val)
+		}
+	}
+	return append(dst, ']')
+}
+
+// AppendStringer encodes the input Stringer to json and appends the
+// encoded Stringer value to the input byte slice.
+func (e Encoder) AppendStringer(dst []byte, val fmt.Stringer) []byte {
+	if val == nil {
+		return e.AppendInterface(dst, nil)
+	}
+	return e.AppendString(dst, val.String())
+}
+
+//// appendStringComplex is used by appendString to take over an in
 // progress JSON string encoding that encountered a character that needs
 // to be encoded.
 func appendStringComplex(dst []byte, s string, i int) []byte {

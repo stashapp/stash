@@ -6,13 +6,12 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/codegen/templates"
-	"github.com/pkg/errors"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
 type DirectiveList map[string]*Directive
 
-//LocationDirectives filter directives by location
+// LocationDirectives filter directives by location
 func (dl DirectiveList) LocationDirectives(location string) DirectiveList {
 	return locationDirectives(dl, ast.DirectiveLocation(location))
 }
@@ -24,7 +23,7 @@ type Directive struct {
 	Builtin bool
 }
 
-//IsLocation check location directive
+// IsLocation check location directive
 func (d *Directive) IsLocation(location ...ast.DirectiveLocation) bool {
 	for _, l := range d.Locations {
 		for _, a := range location {
@@ -52,7 +51,7 @@ func (b *builder) buildDirectives() (map[string]*Directive, error) {
 
 	for name, dir := range b.Schema.Directives {
 		if _, ok := directives[name]; ok {
-			return nil, errors.Errorf("directive with name %s already exists", name)
+			return nil, fmt.Errorf("directive with name %s already exists", name)
 		}
 
 		var args []*FieldArgument
@@ -72,7 +71,7 @@ func (b *builder) buildDirectives() (map[string]*Directive, error) {
 				var err error
 				newArg.Default, err = arg.DefaultValue.Value(nil)
 				if err != nil {
-					return nil, errors.Errorf("default value for directive argument %s(%s) is not valid: %s", dir.Name, arg.Name, err.Error())
+					return nil, fmt.Errorf("default value for directive argument %s(%s) is not valid: %w", dir.Name, arg.Name, err)
 				}
 			}
 			args = append(args, newArg)

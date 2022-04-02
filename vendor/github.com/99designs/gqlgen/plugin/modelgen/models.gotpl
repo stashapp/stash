@@ -15,6 +15,9 @@
 {{- range $model := .Interfaces }}
 	{{ with .Description }} {{.|prefixLines "// "}} {{ end }}
 	type {{.Name|go }} interface {
+		{{- range $impl := .Implements }}
+			{{ $impl|go }}
+		{{- end }}
 		Is{{.Name|go }}()
 	}
 {{- end }}

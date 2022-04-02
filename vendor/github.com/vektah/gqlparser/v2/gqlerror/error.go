@@ -2,6 +2,7 @@ package gqlerror
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -10,6 +11,7 @@ import (
 
 // Error is the standard graphql error type described in https://facebook.github.io/graphql/draft/#sec-Errors
 type Error struct {
+	err        error                  `json:"-"`
 	Message    string                 `json:"message"`
 	Path       ast.Path               `json:"path,omitempty"`
 	Locations  []Location             `json:"locations,omitempty"`
@@ -66,6 +68,10 @@ func (err Error) pathString() string {
 	return err.Path.String()
 }
 
+func (err Error) Unwrap() error {
+	return err.err
+}
+
 func (errs List) Error() string {
 	var buf bytes.Buffer
 	for _, err := range errs {
@@ -75,8 +81,27 @@ func (errs List) Error() string {
 	return buf.String()
 }
 
+func (errs List) Is(target error) bool {
+	for _, err := range errs {
+		if errors.Is(err, target) {
+			return true
+		}
+	}
+	return false
+}
+
+func (errs List) As(target interface{}) bool {
+	for _, err := range errs {
+		if errors.As(err, target) {
+			return true
+		}
+	}
+	return false
+}
+
 func WrapPath(path ast.Path, err error) *Error {
 	return &Error{
+		err:     err,
 		Message: err.Error(),
 		Path:    path,
 	}

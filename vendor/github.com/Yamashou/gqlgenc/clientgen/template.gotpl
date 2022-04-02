@@ -1,30 +1,47 @@
-{{ reserveImport "bytes" }}
-{{ reserveImport "context" }}
-{{ reserveImport "encoding/json" }}
-{{ reserveImport "fmt" }}
-{{ reserveImport "io" }}
-{{ reserveImport "io/ioutil" }}
-{{ reserveImport "net/http" }}
-{{ reserveImport "net/url" }}
-{{ reserveImport "path" }}
-{{ reserveImport "time" }}
+{{- if .GenerateClient }}
+	{{ reserveImport "bytes" }}
+	{{ reserveImport "context" }}
+	{{ reserveImport "encoding/json" }}
+	{{ reserveImport "fmt" }}
+	{{ reserveImport "io" }}
+	{{ reserveImport "io/ioutil" }}
+	{{ reserveImport "net/http" }}
+	{{ reserveImport "net/url" }}
+	{{ reserveImport "path" }}
+	{{ reserveImport "time" }}
 
-{{ reserveImport "golang.org/x/xerrors" }}
 
-{{ reserveImport "github.com/Yamashou/gqlgenc/graphqljson" }}
-{{ reserveImport "github.com/Yamashou/gqlgenc/client" }}
+	{{ reserveImport "github.com/Yamashou/gqlgenc/graphqljson" }}
+	{{ reserveImport "github.com/Yamashou/gqlgenc/client" }}
 
-type Client struct {
-	Client *client.Client
-}
+	{{- if .ClientInterfaceName }}
+    	type {{ .ClientInterfaceName }} interface {
+    		{{- range $model := .Operation }}
+    			{{ $model.Name | go }} (ctx context.Context{{- range $arg := .Args }}, {{ $arg.Variable | goPrivate }} {{ $arg.Type | ref }} {{- end }}, httpRequestOptions ...client.HTTPRequestOption) (*{{ $model.ResponseStructName | go }}, error)
+    		{{- end }}
+    	}
+    {{- end }}
 
-func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOption) *Client {
-	return &Client{Client: client.NewClient(cli, baseURL, options...)}
-}
+	type Client struct {
+		Client *client.Client
+	}
+
+	{{- if .ClientInterfaceName }}
+	func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOption) {{ .ClientInterfaceName }} {
+		return &Client{Client: client.NewClient(cli, baseURL, options...)}
+	}
+	{{- else }}
+		func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOption) *Client {
+			return &Client{Client: client.NewClient(cli, baseURL, options...)}
+		}
+	{{- end }}
+{{- end }}
 
 type {{ .Query.Name | go }} {{ .Query.Type | ref }}
 
-type {{ .Mutation.Name | go }} {{ .Mutation.Type | ref }}
+{{- if .Mutation }}
+	type {{ .Mutation.Name | go }} {{ .Mutation.Type | ref }}
+{{- end }}
 
 {{- range $name, $element := .Fragment }}
 	type  {{ .Name | go  }} {{ .Type | ref }}
@@ -34,21 +51,25 @@ type {{ .Mutation.Name | go }} {{ .Mutation.Type | ref }}
     type  {{ .Name | go  }} {{ .Type | ref }}
 {{- end }}
 
+
+
 {{- range $model := .Operation}}
-const {{ $model.Name|go }}Query = `{{ $model.Operation }}`
+	const {{ $model.Name|go }}Document = `{{ $model.Operation }}`
 
-func (c *Client) {{ $model.Name|go }} (ctx context.Context{{- range $arg := .Args }}, {{ $arg.Variable | goPrivate }} {{ $arg.Type | ref }} {{- end }}, httpRequestOptions ...client.HTTPRequestOption) (*{{ $model.ResponseStructName | go }}, error) {
-	vars := map[string]interface{}{
-	{{- range $args := .VariableDefinitions}}
-		"{{ $args.Variable }}": {{ $args.Variable | goPrivate }},
-	{{- end }}
-	}
+	{{- if $.GenerateClient }}
+		func (c *Client) {{ $model.Name | go }} (ctx context.Context{{- range $arg := .Args }}, {{ $arg.Variable | goPrivate }} {{ $arg.Type | ref }} {{- end }}, httpRequestOptions ...client.HTTPRequestOption) (*{{ $model.ResponseStructName | go }}, error) {
+			vars := map[string]interface{}{
+			{{- range $args := .VariableDefinitions}}
+				"{{ $args.Variable }}": {{ $args.Variable | goPrivate }},
+			{{- end }}
+			}
 
-    var res {{ $model.ResponseStructName | go }}
-    if err := c.Client.Post(ctx, {{ $model.Name|go }}Query, &res, vars, httpRequestOptions...); err != nil {
-        return nil, err
-    }
+			var res {{ $model.ResponseStructName | go }}
+			if err := c.Client.Post(ctx, "{{ $model.Name }}", {{ $model.Name|go }}Document, &res, vars, httpRequestOptions...); err != nil {
+				return nil, err
+			}
 
-    return &res, nil
-}
+			return &res, nil
+		}
+	{{- end}}
 {{- end}}

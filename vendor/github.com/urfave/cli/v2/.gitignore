@@ -3,3 +3,7 @@
 node_modules/
 vendor
 .idea
+internal/*/built-example
+coverage.txt
+
+*.exe

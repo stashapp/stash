@@ -1,6 +1,8 @@
 package resolvergen
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,7 +12,6 @@ import (
 	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/99designs/gqlgen/internal/rewrite"
 	"github.com/99designs/gqlgen/plugin"
-	"github.com/pkg/errors"
 )
 
 func New() plugin.Plugin {
@@ -86,7 +87,11 @@ func (m *Plugin) generatePerSchema(data *codegen.Data) error {
 
 	files := map[string]*File{}
 
-	for _, o := range data.Objects {
+	objects := make(codegen.Objects, len(data.Objects)+len(data.Inputs))
+	copy(objects, data.Objects)
+	copy(objects[len(data.Objects):], data.Inputs)
+
+	for _, o := range objects {
 		if o.HasResolvers() {
 			fn := gqlToResolverName(data.Config.Resolver.Dir(), o.Position.Src.Name, data.Config.Resolver.FilenameTemplate)
 			if files[fn] == nil {
@@ -94,7 +99,7 @@ func (m *Plugin) generatePerSchema(data *codegen.Data) error {
 			}
 
 			rewriter.MarkStructCopied(templates.LcFirst(o.Name) + templates.UcFirst(data.Config.Resolver.Type))
-			rewriter.GetMethodBody(data.Config.Resolver.Type, o.Name)
+			rewriter.GetMethodBody(data.Config.Resolver.Type, strings.Title(o.Name))
 			files[fn].Objects = append(files[fn].Objects, o)
 		}
 		for _, f := range o.Fields {
@@ -144,7 +149,7 @@ func (m *Plugin) generatePerSchema(data *codegen.Data) error {
 		}
 	}
 
-	if _, err := os.Stat(data.Config.Resolver.Filename); os.IsNotExist(errors.Cause(err)) {
+	if _, err := os.Stat(data.Config.Resolver.Filename); errors.Is(err, fs.ErrNotExist) {
 		err := templates.Render(templates.Options{
 			PackageName: data.Config.Resolver.Package,
 			FileNotice: `
@@ -172,7 +177,7 @@ type ResolverBuild struct {
 
 type File struct {
 	// These are separated because the type definition of the resolver object may live in a different file from the
-	//resolver method implementations, for example when extending a type in a different graphql schema file
+	// resolver method implementations, for example when extending a type in a different graphql schema file
 	Objects         []*codegen.Object
 	Resolvers       []*Resolver
 	imports         []rewrite.Import
