@@ -134,10 +134,10 @@ textarea.text-input {
     display: grid;
     grid-auto-flow: column;
     height: 3rem;
-    margin: 0;
-    margin-bottom: 0rem;
-    max-height: 3rem;
     left: 0;
+    margin: 0;
+    margin-bottom: 0;
+    max-height: 3rem;
     padding-top: 0.1rem;
     position: fixed;
     right: 0;
@@ -203,7 +203,6 @@ textarea.text-input {
     padding-top: 0.5rem;
   }
 }
-
 @media (min-width: 576px) {
   .zoom-0 {
     width: 240px;
