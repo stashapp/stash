@@ -2,9 +2,13 @@ fragment SlimPerformerData on Performer {
   id
   name
   gender
+  url
+  twitter
+  instagram
   image_path
   favorite
   country
+  birthdate
   ethnicity
   hair_color
   eye_color
@@ -22,4 +26,6 @@ fragment SlimPerformerData on Performer {
     stash_id
   }
   rating
+  death_date
+  weight
 }

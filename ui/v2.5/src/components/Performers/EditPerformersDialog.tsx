@@ -28,12 +28,20 @@ interface IListOperationProps {
 
 const performerFields = [
   "favorite",
+  "url",
+  "instagram",
+  "twitter",
   "rating",
   "gender",
+  "birthdate",
+  "death_date",
   "career_length",
   "country",
   "ethnicity",
   "eye_color",
+  "height",
+  // "weight",
+  "measurements",
   "fake_tits",
   "hair_color",
   "tattoos",
@@ -53,6 +61,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     aggregateState,
     setAggregateState,
   ] = useState<GQL.BulkPerformerUpdateInput>({});
+  // weight needs conversion to/from number
+  const [weight, setWeight] = useState<string | undefined>();
   const [updateInput, setUpdateInput] = useState<GQL.BulkPerformerUpdateInput>(
     {}
   );
@@ -90,6 +100,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       aggregateState.gender
     );
 
+    if (weight !== undefined) {
+      performerInput.weight = parseFloat(weight);
+    }
+
     return performerInput;
   }
 
@@ -119,6 +133,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
     const state = props.selected;
     let updateTagIds: string[] = [];
+    let updateWeight: string | undefined | null = undefined;
     let first = true;
 
     state.forEach((performer: GQL.SlimPerformerDataFragment) => {
@@ -129,10 +144,17 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
       updateTagIds =
         getAggregateState(updateTagIds, performerTagIDs, first) ?? [];
 
+      const thisWeight =
+        performer.weight !== undefined && performer.weight !== null
+          ? performer.weight.toString()
+          : performer.weight;
+      updateWeight = getAggregateState(updateWeight, thisWeight, first);
+
       first = false;
     });
 
     setExistingTagIds(updateTagIds);
+    setWeight(updateWeight);
     setAggregateState(updateState);
     setUpdateInput(updateState);
   }, [props.selected]);
@@ -148,7 +170,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           <FormattedMessage id={name} />
         </Form.Label>
         <BulkUpdateTextInput
-          value={value ?? undefined}
+          value={value === null ? "" : value ?? undefined}
           valueChanged={(newValue) => setter(newValue)}
           unsetDisabled={props.selected.length < 2}
         />
@@ -219,6 +241,12 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             </Form.Control>
           </Form.Group>
 
+          {renderTextField("birthdate", updateInput.birthdate, (v) =>
+            setUpdateField({ birthdate: v })
+          )}
+          {renderTextField("death_date", updateInput.death_date, (v) =>
+            setUpdateField({ death_date: v })
+          )}
           {renderTextField("country", updateInput.country, (v) =>
             setUpdateField({ country: v })
           )}
@@ -231,6 +259,13 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           {renderTextField("eye_color", updateInput.eye_color, (v) =>
             setUpdateField({ eye_color: v })
           )}
+          {renderTextField("height", updateInput.height, (v) =>
+            setUpdateField({ height: v })
+          )}
+          {renderTextField("weight", weight, (v) => setWeight(v))}
+          {renderTextField("measurements", updateInput.measurements, (v) =>
+            setUpdateField({ measurements: v })
+          )}
           {renderTextField("fake_tits", updateInput.fake_tits, (v) =>
             setUpdateField({ fake_tits: v })
           )}
@@ -242,6 +277,15 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           )}
           {renderTextField("career_length", updateInput.career_length, (v) =>
             setUpdateField({ career_length: v })
+          )}
+          {renderTextField("url", updateInput.url, (v) =>
+            setUpdateField({ url: v })
+          )}
+          {renderTextField("twitter", updateInput.twitter, (v) =>
+            setUpdateField({ twitter: v })
+          )}
+          {renderTextField("instagram", updateInput.instagram, (v) =>
+            setUpdateField({ instagram: v })
           )}
 
           <Form.Group controlId="tags">
