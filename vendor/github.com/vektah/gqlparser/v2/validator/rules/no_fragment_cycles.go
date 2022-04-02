@@ -45,7 +45,7 @@ func init() {
 						cyclePath := spreadPath[cycleIndex : len(spreadPath)-1]
 						var fragmentNames []string
 						for _, fs := range cyclePath {
-							fragmentNames = append(fragmentNames, fs.Name)
+							fragmentNames = append(fragmentNames, fmt.Sprintf(`"%s"`, fs.Name))
 						}
 						var via string
 						if len(fragmentNames) != 0 {

@@ -85,9 +85,10 @@ type EnumValueDefinition struct {
 }
 
 type DirectiveDefinition struct {
-	Description string
-	Name        string
-	Arguments   ArgumentDefinitionList
-	Locations   []DirectiveLocation
-	Position    *Position `dump:"-"`
+	Description  string
+	Name         string
+	Arguments    ArgumentDefinitionList
+	Locations    []DirectiveLocation
+	IsRepeatable bool
+	Position     *Position `dump:"-"`
 }

@@ -35,6 +35,15 @@ linters:
     - interfacer
     - gomnd
     - goerr113
+    - exhaustivestruct
+    - errorlint # TODO able this lint
+    - forbidigo
+    - cyclop
+    - govet
+    - errname
+    - varnamelen
+    - nilnil
+    - structcheck
   fast: false
 
 issues:
@@ -63,3 +72,22 @@ issues:
       text: "`Introspection` is unused" # used in config/config.go
       linters:
         - varcheck
+    - path: config/config.go
+      text: "`ClientV2` is unused" # used in config/config.go
+      linters:
+        - structcheck
+    - path: graphqljson/graphql.go
+      text: "append to slice `frontier` with non-zero initialized length" # used in config/config.go
+      linters:
+        - makezero
+    - path: clientv2/client_test.go
+      text: "should not use basic type string as key in context.WithValue"
+      linters:
+        - golint
+    - path: clientv2/client_test.go
+      text: "should not use built-in type string as key for value; define your own type to avoid collisions"
+      linters:
+        - staticcheck
+    - path: clientv2/client_test.go
+      linters:
+        - revive

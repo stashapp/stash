@@ -33,6 +33,8 @@ type Schema struct {
 
 	PossibleTypes map[string][]*Definition
 	Implements    map[string][]*Definition
+
+	Description string
 }
 
 func (s *Schema) AddPossibleType(name string, def *Definition) {

@@ -1,7 +1,7 @@
 
 mockery
 =======
-[![Linux Build Status](https://travis-ci.org/vektra/mockery.svg?branch=master)](https://travis-ci.org/vektra/mockery) [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/vektra/mockery/v2?tab=overview) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/vektra/mockery) ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/vektra/mockery) [![Go Report Card](https://goreportcard.com/badge/github.com/vektra/mockery)](https://goreportcard.com/report/github.com/vektra/mockery) [![codecov](https://codecov.io/gh/vektra/mockery/branch/master/graph/badge.svg)](https://codecov.io/gh/vektra/mockery)
+[![Release](https://github.com/vektra/mockery/actions/workflows/release.yml/badge.svg)](https://github.com/vektra/mockery/actions/workflows/release.yml) [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/vektra/mockery/v2?tab=overview) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/vektra/mockery) ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/vektra/mockery) [![Go Report Card](https://goreportcard.com/badge/github.com/vektra/mockery)](https://goreportcard.com/report/github.com/vektra/mockery) [![codecov](https://codecov.io/gh/vektra/mockery/branch/master/graph/badge.svg)](https://codecov.io/gh/vektra/mockery)
 
 
 
@@ -16,7 +16,7 @@ Table of Contents
   * [Github Release](#github-release)
   * [Docker](#docker)
   * [Homebrew](#homebrew)
-  * [go get](#go-get)
+  * [go install](#go-install)
 - [Examples](#examples)
     + [Simplest case](#simplest-case)
     + [Next level case](#next-level-case)
@@ -46,18 +46,16 @@ Use the [Docker image](https://hub.docker.com/r/vektra/mockery)
 
 ### Homebrew
 
-Install through homebrew
+Install through [brew](https://brew.sh/)
 
-    brew install vektra/tap/mockery
+    brew install mockery
     brew upgrade mockery
 
-### go get
+### go install
 
-Alternatively, you can use the DEPRECATED method of:
+Alternatively, you can use the go install method:
 
-    go get github.com/vektra/mockery/v2/.../
-
-to get a development version of the software.
+    go install github.com/vektra/mockery/v2@latest
 
 Examples
 --------
@@ -222,7 +220,31 @@ Mock.On("passthrough", mock.AnythingOfType("context.Context"), mock.AnythingOfTy
 
 #### Requirements
 
-`Return` must be passed the same argument count and types as expected by the interface. If the return argument signature of `passthrough` in the above example was instead `(string, error)` in the interface, `Return` would also need a second argument to define the error value.
+`Return` must be passed the same argument count and types as expected by the interface. Then, for each of the return values of the mocked function, `Return` needs a function which takes the same arguments as the mocked function, and returns one of the return values. For example, if the return argument signature of `passthrough` in the above example was instead `(string, error)` in the interface, `Return` would also need a second function argument to define the error value:
+
+```go
+type Proxy interface {
+  passthrough(ctx context.Context, s string) (string, error)
+}
+```
+
+```go
+Mock.On("passthrough", mock.AnythingOfType("context.Context"), mock.AnythingOfType("string")).Return(
+	func(ctx context.Context, s string) string {
+		return s
+	},
+	func(ctx context.Context, s string) error {
+		return nil
+	})
+```
+
+Note that the following is incorrect (you can't return all the return values with one function):
+```go
+Mock.On("passthrough", mock.AnythingOfType("context.Context"), mock.AnythingOfType("string")).Return(
+	func(ctx context.Context, s string) (string, error) {
+		return s, nil
+	})
+```
 
 If any return argument is missing, `github.com/stretchr/testify/mock.Arguments.Get` will emit a panic.
 
@@ -250,6 +272,7 @@ The following descriptions provide additional elaboration on a few common parame
 | `--filename` | Use the `--filename` and `--structname` to override the default generated file and struct name. These options are only compatible with non-regular expressions in `--name`, where only one mock is generated. |
 | `--case` | mockery generates files using the casing of the original interface name.  This can be modified by specifying `--case underscore` to format the generated file name using underscore casing. |
 | `--print` | Use `mockery --print` to have the resulting code printed out instead of written to disk. |
+| `--exported` | Use `mockery --exported` to generate public mocks for private interfaces. |
 
 Mocking interfaces in `main`
 ----------------------------
@@ -299,6 +322,30 @@ The versioning in this project applies only to the behavior of the mockery binar
 What the version does _not_ track:
 1. The interfaces, objects, methods etc. in the vektra/mockery package.
 2. Compatibility of `go get`-ing mockery with new or old versions of Golang.
+
+Development Efforts
+-------------------
+
+> v2 is in a soft change freeze due to the complexity of the software and the fact that functionality addition generally requires messing with logic that has been thoroughly tested, but is sensitive to change.
+
+### v1
+
+v1 is the original version of the software, and is no longer supported.
+
+### v2
+
+`mockery` is currently in v2, which iterates on v1 and includes mostly cosmetic and configuration improvements. 
+
+### v3
+
+[v3](https://github.com/vektra/mockery/projects/3) will include a ground-up overhaul of the entire codebase and will completely change how mockery works internally and externally. The highlights of the project are:
+- Moving towards a package-based model instead of a file-based model. `mockery` currently iterates over every file in a project and calls `package.Load` on each one, which is time consuming. Moving towards a model where the entire package is loaded at once will dramtically reduce runtime, and will simplify logic. Additionally, supporting only a single mode of operation (package mode) will greatly increase the intuitiveness of the software.
+- Configuration-driven generation. `v3` will be entirely driven by configuration, meaning:
+  * You specify the packages you want mocked, instead of relying on it auto-discovering your package. Auto-discovery in theory sounds great, but in practice it leads to a great amount of complexity for very little benefit.
+  * Package- or interface-specific overrides can be given that change mock generation settings on a granular level. This will allow your mocks to be generated in a heterogenous manner, and will be made explicit by yaml configuration.
+ - Proper error reporting. Errors across the board will be done in accordance with modern Golang practices
+ - Variables in generated mocks will be given meaningful names. 
+ 
 
 
 Stargazers

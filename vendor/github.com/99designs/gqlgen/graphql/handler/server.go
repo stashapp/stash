@@ -74,6 +74,11 @@ func (s *Server) AroundFields(f graphql.FieldMiddleware) {
 	s.exec.AroundFields(f)
 }
 
+// AroundRootFields is a convenience method for creating an extension that only implements field middleware
+func (s *Server) AroundRootFields(f graphql.RootFieldMiddleware) {
+	s.exec.AroundRootFields(f)
+}
+
 // AroundOperations is a convenience method for creating an extension that only implements operation middleware
 func (s *Server) AroundOperations(f graphql.OperationMiddleware) {
 	s.exec.AroundOperations(f)

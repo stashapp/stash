@@ -3,6 +3,7 @@ package validator
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/vektah/gqlparser/v2/ast"
 	. "github.com/vektah/gqlparser/v2/validator"
@@ -63,11 +64,18 @@ func getSuggestedTypeNames(walker *Walker, parent *ast.Definition, name string) 
 		}
 	}
 
-	sort.SliceStable(suggestedInterfaceTypes, func(i, j int) bool {
-		return interfaceUsageCount[suggestedInterfaceTypes[i]] > interfaceUsageCount[suggestedInterfaceTypes[j]]
+	suggestedTypes := append(suggestedInterfaceTypes, suggestedObjectTypes...)
+
+	sort.SliceStable(suggestedTypes, func(i, j int) bool {
+		typeA, typeB := suggestedTypes[i], suggestedTypes[j]
+		diff := interfaceUsageCount[typeB] - interfaceUsageCount[typeA]
+		if diff != 0 {
+			return diff < 0
+		}
+		return strings.Compare(typeA, typeB) < 0
 	})
 
-	return append(suggestedInterfaceTypes, suggestedObjectTypes...)
+	return suggestedTypes
 }
 
 // For the field name provided, determine if there are any similar field names

@@ -1,0 +1,73 @@
+{{- if .GenerateClient }}
+	{{ reserveImport "bytes" }}
+	{{ reserveImport "context" }}
+	{{ reserveImport "encoding/json" }}
+	{{ reserveImport "fmt" }}
+	{{ reserveImport "io" }}
+	{{ reserveImport "io/ioutil" }}
+	{{ reserveImport "net/http" }}
+	{{ reserveImport "net/url" }}
+	{{ reserveImport "path" }}
+	{{ reserveImport "time" }}
+
+
+	{{ reserveImport "github.com/Yamashou/gqlgenc/graphqljson" }}
+	{{ reserveImport "github.com/Yamashou/gqlgenc/clientv2" }}
+
+
+	{{- if .ClientInterfaceName }}
+        type {{ .ClientInterfaceName }} interface {
+            {{- range $model := .Operation }}
+                {{ $model.Name | go }} (ctx context.Context{{- range $arg := .Args }}, {{ $arg.Variable | goPrivate }} {{ $arg.Type | ref }} {{- end }}, interceptors ...clientv2.RequestInterceptor) (*{{ $model.ResponseStructName | go }}, error)
+            {{- end }}
+        }
+    {{- end }}
+
+	type Client struct {
+	    Client *clientv2.Client
+	}
+
+    func NewClient(cli *http.Client, baseURL string, interceptors ...clientv2.RequestInterceptor) {{- if .ClientInterfaceName }} {{ .ClientInterfaceName }} {{- else }} *Client {{- end }} {
+        return &Client{Client: clientv2.NewClient(cli, baseURL, interceptors...)}
+    }
+
+{{- end }}
+
+type {{ .Query.Name | go }} {{ .Query.Type | ref }}
+
+{{- if .Mutation }}
+	type {{ .Mutation.Name | go }} {{ .Mutation.Type | ref }}
+{{- end }}
+
+{{- range $name, $element := .Fragment }}
+	type  {{ .Name | go  }} {{ .Type | ref }}
+{{- end }}
+
+{{- range $name, $element := .StructSources }}
+	type {{ .Name }} {{ .Type | ref }}
+{{- end}}
+
+{{- range $name, $element := .OperationResponse }}
+	type  {{ .Name | go  }} {{ .Type | ref }}
+{{- end }}
+
+{{- range $model := .Operation}}
+	const {{ $model.Name|go }}Document = `{{ $model.Operation }}`
+
+	{{- if $.GenerateClient }}
+		func (c *Client) {{ $model.Name|go }} (ctx context.Context{{- range $arg := .Args }}, {{ $arg.Variable | goPrivate }} {{ $arg.Type | ref }} {{- end }}, interceptors ...clientv2.RequestInterceptor) (*{{ $model.ResponseStructName | go }}, error) {
+			vars := map[string]interface{}{
+			{{- range $args := .VariableDefinitions}}
+				"{{ $args.Variable }}": {{ $args.Variable | goPrivate }},
+			{{- end }}
+			}
+
+			var res {{ $model.ResponseStructName | go }}
+			if err := c.Client.Post(ctx, "{{ $model.Name }}", {{ $model.Name|go }}Document, &res, vars, interceptors...); err != nil {
+				return nil, err
+			}
+
+			return &res, nil
+		}
+	{{- end}}
+{{- end}}
