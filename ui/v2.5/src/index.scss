@@ -44,7 +44,7 @@ body {
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
-      padding: 1rem 0 5rem;
+      padding: 0rem 0 5rem;
     }
   }
 }
@@ -125,6 +125,86 @@ textarea.text-input {
 
   &:first-child {
     border-left: none;
+  }
+}
+
+@media (max-width: 576px) and (orientation: portrait) {
+  .scene-tabs .mr-auto.nav.nav-tabs {
+    display: grid;
+    max-height: 3rem;
+    grid-auto-flow: column;
+    background-color: #202b38;
+    position: fixed;
+    height: 3rem;
+    top: calc(100vw * (9 / 16));
+    right: 0;
+    left: 0;
+    padding-top: 0.1rem;
+    text-align: center;
+    z-index: 0;
+    margin-bottom: 0rem;
+    margin: 0;
+    height: 3rem;
+  }
+
+  .btn-toolbar {
+    padding-top: 1rem;
+  }
+
+  .VideoPlayer {
+    position: fixed;
+    top: 0px;
+  }
+
+  .scene-tabs.order-xl-first.order-last {
+    height: calc(100vh - (100vw * (9 / 16) + 6.5rem));
+    top: calc((100vw * (9 / 16)) + 3rem);
+    position: fixed;
+  }
+
+  .scene-tabs {
+    max-height: 100%;
+  }
+
+  .tab-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .performer-card-image {
+    height: 19rem;
+  }
+
+  .performer-card {
+    width: 14rem;
+    height: 27.5rem;
+  }
+
+  .scene-performers .performer-card-image {
+    height: 19rem;
+  }
+
+  .scene-performers .performer-card {
+    width: 14rem;
+    height: 27.5rem;
+  }
+
+  .ml-auto.btn-group {
+    display: none;
+  }
+
+  .row.justify-content-center.scene-performers {
+    max-height: 450px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    border-top: solid 2px #2d3035;
+    border-bottom: solid 2px #2d3035;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .scene-tabs {
+    max-height: 100%;
   }
 }
 
