@@ -39,9 +39,12 @@ func (l *Logger) WithContext(ctx context.Context) context.Context {
 }
 
 // Ctx returns the Logger associated with the ctx. If no logger
-// is associated, a disabled logger is returned.
+// is associated, DefaultContextLogger is returned, unless DefaultContextLogger
+// is nil, in which case a disabled logger is returned.
 func Ctx(ctx context.Context) *Logger {
 	if l, ok := ctx.Value(ctxKey{}).(*Logger); ok {
+		return l
+	} else if l = DefaultContextLogger; l != nil {
 		return l
 	}
 	return disabledLogger

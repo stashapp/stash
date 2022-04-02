@@ -1,6 +1,8 @@
 model:
+  package: graphql
   filename: ./pkg/scraper/stashbox/graphql/generated_models.go
 client:
+  package: graphql
   filename: ./pkg/scraper/stashbox/graphql/generated_client.go
 models:
   Date:
@@ -11,3 +13,6 @@ endpoint:
   url: https://stashdb.org/graphql
 query:  
    - "./graphql/stash-box/*.graphql"
+generate:
+  clientV2: false
+  clientInterfaceName: "StashBoxGraphQLClient"
