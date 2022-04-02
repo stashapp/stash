@@ -129,6 +129,12 @@ textarea.text-input {
 }
 
 @media (max-width: 576px) and (orientation: portrait) {
+  .scene-tabs .ml-auto.btn-group {
+    position: fixed;
+    right: 1rem;
+    top: calc((100vw * (9 / 16)) + 2.7rem);
+  }
+
   .scene-tabs .mr-auto.nav.nav-tabs {
     background-color: #202b38;
     display: grid;
@@ -138,12 +144,14 @@ textarea.text-input {
     margin: 0;
     margin-bottom: 0;
     max-height: 3rem;
+    padding-bottom: 2.2rem;
     padding-top: 0.1rem;
     position: fixed;
     right: 0;
     text-align: center;
     top: calc(100vw * (9 / 16));
-    z-index: 0;
+    white-space: nowrap;
+    z-index: 1;
   }
 
   .btn-toolbar {
@@ -156,9 +164,9 @@ textarea.text-input {
   }
 
   .scene-tabs.order-xl-first.order-last {
-    height: calc(100vh - (100vw * (9 / 16) + 6.5rem));
+    height: calc(100vh - (100vw * (9 / 16) + 8.5rem));
     position: fixed;
-    top: calc((100vw * (9 / 16)) + 3rem);
+    top: calc((100vw * (9 / 16)) + 5rem);
   }
 
   .scene-tabs {
@@ -186,10 +194,6 @@ textarea.text-input {
   .scene-performers .performer-card {
     height: 27.5rem;
     width: 14rem;
-  }
-
-  .ml-auto.btn-group {
-    display: none;
   }
 
   .row.justify-content-center.scene-performers {
