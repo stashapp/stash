@@ -44,7 +44,7 @@ body {
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
-      padding: 0rem 0 5rem;
+      padding: 0 0 5rem;
     }
   }
 }
@@ -130,21 +130,20 @@ textarea.text-input {
 
 @media (max-width: 576px) and (orientation: portrait) {
   .scene-tabs .mr-auto.nav.nav-tabs {
-    display: grid;
-    max-height: 3rem;
-    grid-auto-flow: column;
     background-color: #202b38;
-    position: fixed;
+    display: grid;
+    grid-auto-flow: column;
     height: 3rem;
-    top: calc(100vw * (9 / 16));
-    right: 0;
+    margin: 0;
+    margin-bottom: 0rem;
+    max-height: 3rem;
     left: 0;
     padding-top: 0.1rem;
+    position: fixed;
+    right: 0;
     text-align: center;
+    top: calc(100vw * (9 / 16));
     z-index: 0;
-    margin-bottom: 0rem;
-    margin: 0;
-    height: 3rem;
   }
 
   .btn-toolbar {
@@ -153,13 +152,13 @@ textarea.text-input {
 
   .VideoPlayer {
     position: fixed;
-    top: 0px;
+    top: 0;
   }
 
   .scene-tabs.order-xl-first.order-last {
     height: calc(100vh - (100vw * (9 / 16) + 6.5rem));
-    top: calc((100vw * (9 / 16)) + 3rem);
     position: fixed;
+    top: calc((100vw * (9 / 16)) + 3rem);
   }
 
   .scene-tabs {
@@ -167,8 +166,8 @@ textarea.text-input {
   }
 
   .tab-content {
-    overflow-y: auto;
     overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .performer-card-image {
@@ -176,8 +175,8 @@ textarea.text-input {
   }
 
   .performer-card {
-    width: 14rem;
     height: 27.5rem;
+    width: 14rem;
   }
 
   .scene-performers .performer-card-image {
@@ -185,8 +184,8 @@ textarea.text-input {
   }
 
   .scene-performers .performer-card {
-    width: 14rem;
     height: 27.5rem;
+    width: 14rem;
   }
 
   .ml-auto.btn-group {
@@ -194,14 +193,14 @@ textarea.text-input {
   }
 
   .row.justify-content-center.scene-performers {
-    max-height: 450px;
+    border-bottom: solid 2px $dark-gray5;
+    border-top: solid 2px $dark-gray5;
     display: flex;
     flex-direction: column;
+    max-height: 450px;
     overflow: auto;
-    border-top: solid 2px #2d3035;
-    border-bottom: solid 2px #2d3035;
-    padding-top: 0.5rem;
     padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
   }
 }
 
