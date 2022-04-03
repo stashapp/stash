@@ -1,9 +1,11 @@
 package graphql
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"strconv"
 )
 
@@ -28,4 +30,18 @@ func UnmarshalFloat(v interface{}) (float64, error) {
 	default:
 		return 0, fmt.Errorf("%T is not an float", v)
 	}
+}
+
+func MarshalFloatContext(f float64) ContextMarshaler {
+	return ContextWriterFunc(func(ctx context.Context, w io.Writer) error {
+		if math.IsInf(f, 0) || math.IsNaN(f) {
+			return fmt.Errorf("cannot marshal infinite no NaN float values")
+		}
+		io.WriteString(w, fmt.Sprintf("%g", f))
+		return nil
+	})
+}
+
+func UnmarshalFloatContext(ctx context.Context, v interface{}) (float64, error) {
+	return UnmarshalFloat(v)
 }

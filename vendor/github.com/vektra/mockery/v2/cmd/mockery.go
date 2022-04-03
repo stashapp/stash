@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -25,7 +26,14 @@ import (
 
 var (
 	cfgFile = ""
-	rootCmd = &cobra.Command{
+)
+
+func init() {
+	cobra.OnInitialize(initConfig)
+}
+
+func NewRootCmd() *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "mockery",
 		Short: "Generate mock objects for your Golang interfaces",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -37,34 +45,8 @@ var (
 			return r.Run()
 		},
 	}
-)
 
-type stackTracer interface {
-	StackTrace() errors.StackTrace
-}
-
-func printStackTrace(e error) {
-	fmt.Printf("%v\n", e)
-	if err, ok := e.(stackTracer); ok {
-		for _, f := range err.StackTrace() {
-			fmt.Printf("%+s:%d\n", f, f)
-		}
-	}
-
-}
-
-// Execute executes the cobra CLI workflow
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		//printStackTrace(err)
-		os.Exit(1)
-	}
-}
-
-func init() {
-	cobra.OnInitialize(initConfig)
-
-	pFlags := rootCmd.PersistentFlags()
+	pFlags := cmd.PersistentFlags()
 	pFlags.StringVar(&cfgFile, "config", "", "config file to use")
 	pFlags.String("name", "", "name or matching regular expression of interface to generate mock for")
 	pFlags.Bool("print", false, "print the generated mock to stdout")
@@ -88,14 +70,49 @@ func init() {
 	pFlags.String("log-level", "info", "Level of logging")
 	pFlags.String("srcpkg", "", "source pkg to search for interfaces")
 	pFlags.BoolP("dry-run", "d", false, "Do a dry run, don't modify any files")
+	pFlags.Bool("disable-version-string", false, "Do not insert the version string into the generated mock file.")
+	pFlags.String("boilerplate-file", "", "File to read a boilerplate text from. Text should be a go block comment, i.e. /* ... */")
+	pFlags.Bool("unroll-variadic", true, "For functions with variadic arguments, do not unroll the arguments into the underlying testify call. Instead, pass variadic slice as-is.")
+	pFlags.Bool("exported", false, "Generates public mocks for private interfaces.")
+	pFlags.Bool("with-expecter", false, "Generate expecter utility around mock's On, Run and Return methods with explicit types. This option is NOT compatible with -unroll-variadic=false")
 
 	viper.BindPFlags(pFlags)
+
+	cmd.AddCommand(NewShowConfigCmd())
+	return cmd
+}
+
+type stackTracer interface {
+	StackTrace() errors.StackTrace
+}
+
+func printStackTrace(e error) {
+	fmt.Printf("%v\n", e)
+	if err, ok := e.(stackTracer); ok {
+		for _, f := range err.StackTrace() {
+			fmt.Printf("%+s:%d\n", f, f)
+		}
+	}
+
+}
+
+// Execute executes the cobra CLI workflow
+func Execute() {
+	if err := NewRootCmd().Execute(); err != nil {
+		//printStackTrace(err)
+		os.Exit(1)
+	}
 }
 
 func initConfig() {
+	viper.SetEnvPrefix("mockery")
+	viper.AutomaticEnv()
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
+	} else if viper.IsSet("config") {
+		viper.SetConfigFile(viper.GetString("config"))
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
@@ -108,9 +125,6 @@ func initConfig() {
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".mockery")
 	}
-
-	viper.SetEnvPrefix("mockery")
-	viper.AutomaticEnv()
 
 	// Note we purposely ignore the error. Don't care if we can't find a config file.
 	if err := viper.ReadInConfig(); err == nil {
@@ -153,7 +167,7 @@ func (r *RootApp) Run() error {
 	ctx := log.WithContext(context.Background())
 
 	if r.Config.Version {
-		fmt.Println(config.SemVer)
+		fmt.Println(config.GetSemverInfo())
 		return nil
 	} else if r.Config.Name != "" && r.Config.All {
 		log.Fatal().Msgf("Specify --name or --all, but not both")
@@ -178,9 +192,6 @@ func (r *RootApp) Run() error {
 		filter = regexp.MustCompile(".*")
 	} else {
 		log.Fatal().Msgf("Use --name to specify the name of the interface or --all for all interfaces found")
-	}
-	if r.Config.KeepTree && r.Config.InPackage {
-		log.Fatal().Msgf("--keeptree and --inpackage are mutually exclusive")
 	}
 
 	if r.Config.Profile != "" {
@@ -233,10 +244,20 @@ func (r *RootApp) Run() error {
 		baseDir = filepath.Dir(pkg.GoFiles[0])
 	}
 
+	var boilerplate string
+	if r.Config.BoilerplateFile != "" {
+		data, err := ioutil.ReadFile(r.Config.BoilerplateFile)
+		if err != nil {
+			log.Fatal().Msgf("Failed to read boilerplate file %s: %v", r.Config.BoilerplateFile, err)
+		}
+		boilerplate = string(data)
+	}
+
 	visitor := &pkg.GeneratorVisitor{
 		Config:            r.Config,
 		InPackage:         r.Config.InPackage,
 		Note:              r.Config.Note,
+		Boilerplate:       boilerplate,
 		Osp:               osp,
 		PackageName:       r.Config.Outpkg,
 		PackageNamePrefix: r.Config.Packageprefix,
@@ -283,7 +304,7 @@ func getLogger(levelStr string) (zerolog.Logger, error) {
 		Hook(timeHook{}).
 		Level(level).
 		With().
-		Str("version", config.SemVer).
+		Str("version", config.GetSemverInfo()).
 		Logger()
 
 	return log, nil

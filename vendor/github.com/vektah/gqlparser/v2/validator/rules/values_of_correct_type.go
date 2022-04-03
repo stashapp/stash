@@ -1,7 +1,9 @@
 package validator
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/vektah/gqlparser/v2/ast"
 	. "github.com/vektah/gqlparser/v2/validator"
@@ -36,7 +38,10 @@ func init() {
 			switch value.Kind {
 			case ast.NullValue:
 				if value.ExpectedType.NonNull {
-					unexpectedTypeMessage(addError, value)
+					addError(
+						Message(`Expected value of type "%s", found %s.`, value.ExpectedType.String(), value.String()),
+						At(value.Position),
+					)
 				}
 
 			case ast.ListValue:
@@ -59,8 +64,8 @@ func init() {
 				if value.Definition.Kind == ast.Enum {
 					rawValStr := fmt.Sprint(rawVal)
 					addError(
-						Message("Expected type %s, found %s.", value.ExpectedType.String(), value.String()),
-						SuggestListUnquoted("Did you mean the enum value", rawValStr, possibleEnums),
+						Message(`Enum "%s" cannot represent non-enum value: %s.`, value.ExpectedType.String(), value.String()),
+						SuggestListQuoted("Did you mean the enum value", rawValStr, possibleEnums),
 						At(value.Position),
 					)
 				} else if !value.Definition.OneOf("String", "ID") {
@@ -68,11 +73,18 @@ func init() {
 				}
 
 			case ast.EnumValue:
-				if value.Definition.Kind != ast.Enum || value.Definition.EnumValues.ForName(value.Raw) == nil {
+				if value.Definition.Kind != ast.Enum {
 					rawValStr := fmt.Sprint(rawVal)
 					addError(
-						Message("Expected type %s, found %s.", value.ExpectedType.String(), value.String()),
+						unexpectedTypeMessageOnly(value),
 						SuggestListUnquoted("Did you mean the enum value", rawValStr, possibleEnums),
+						At(value.Position),
+					)
+				} else if value.Definition.EnumValues.ForName(value.Raw) == nil {
+					rawValStr := fmt.Sprint(rawVal)
+					addError(
+						Message(`Value "%s" does not exist in "%s" enum.`, value.String(), value.ExpectedType.String()),
+						SuggestListQuoted("Did you mean the enum value", rawValStr, possibleEnums),
 						At(value.Position),
 					)
 				}
@@ -89,7 +101,7 @@ func init() {
 						fieldValue := value.Children.ForName(field.Name)
 						if fieldValue == nil && field.DefaultValue == nil {
 							addError(
-								Message("Field %s.%s of required type %s was not provided.", value.Definition.Name, field.Name, field.Type.String()),
+								Message(`Field "%s.%s" of required type "%s" was not provided.`, value.Definition.Name, field.Name, field.Type.String()),
 								At(value.Position),
 							)
 							continue
@@ -105,8 +117,8 @@ func init() {
 						}
 
 						addError(
-							Message(`Field "%s" is not defined by type %s.`, fieldValue.Name, value.Definition.Name),
-							SuggestListUnquoted("Did you mean", fieldValue.Name, suggestions),
+							Message(`Field "%s" is not defined by type "%s".`, fieldValue.Name, value.Definition.Name),
+							SuggestListQuoted("Did you mean", fieldValue.Name, suggestions),
 							At(fieldValue.Position),
 						)
 					}
@@ -124,7 +136,32 @@ func init() {
 
 func unexpectedTypeMessage(addError AddErrFunc, v *ast.Value) {
 	addError(
-		Message("Expected type %s, found %s.", v.ExpectedType.String(), v.String()),
+		unexpectedTypeMessageOnly(v),
 		At(v.Position),
 	)
+}
+
+func unexpectedTypeMessageOnly(v *ast.Value) ErrorOption {
+	switch v.ExpectedType.String() {
+	case "Int", "Int!":
+		if _, err := strconv.ParseInt(v.Raw, 10, 32); err != nil && errors.Is(err, strconv.ErrRange) {
+			return Message(`Int cannot represent non 32-bit signed integer value: %s`, v.String())
+		}
+		return Message(`Int cannot represent non-integer value: %s`, v.String())
+	case "String", "String!", "[String]":
+		return Message(`String cannot represent a non string value: %s`, v.String())
+	case "Boolean", "Boolean!":
+		return Message(`Boolean cannot represent a non boolean value: %s`, v.String())
+	case "Float", "Float!":
+		return Message(`Float cannot represent non numeric value: %s`, v.String())
+	case "ID", "ID!":
+		return Message(`ID cannot represent a non-string and non-integer value: %s`, v.String())
+	//case "Enum":
+	//		return Message(`Enum "%s" cannot represent non-enum value: %s`, v.ExpectedType.String(), v.String())
+	default:
+		if v.Definition.Kind == ast.Enum {
+			return Message(`Enum "%s" cannot represent non-enum value: %s.`, v.ExpectedType.String(), v.String())
+		}
+		return Message(`Expected value of type "%s", found %s.`, v.ExpectedType.String(), v.String())
+	}
 }

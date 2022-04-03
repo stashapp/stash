@@ -38,27 +38,23 @@ func WithResponseContext(ctx context.Context, presenterFunc ErrorPresenterFunc, 
 
 // AddErrorf writes a formatted error to the client, first passing it through the error presenter.
 func AddErrorf(ctx context.Context, format string, args ...interface{}) {
-	c := getResponseContext(ctx)
-
-	c.errorsMu.Lock()
-	defer c.errorsMu.Unlock()
-
-	c.errors = append(c.errors, c.errorPresenter(ctx, fmt.Errorf(format, args...)))
+	AddError(ctx, fmt.Errorf(format, args...))
 }
 
 // AddError sends an error to the client, first passing it through the error presenter.
 func AddError(ctx context.Context, err error) {
 	c := getResponseContext(ctx)
 
+	presentedError := c.errorPresenter(ctx, ErrorOnPath(ctx, err))
+
 	c.errorsMu.Lock()
 	defer c.errorsMu.Unlock()
-
-	c.errors = append(c.errors, c.errorPresenter(ctx, err))
+	c.errors = append(c.errors, presentedError)
 }
 
 func Recover(ctx context.Context, err interface{}) (userMessage error) {
 	c := getResponseContext(ctx)
-	return c.recover(ctx, err)
+	return ErrorOnPath(ctx, c.recover(ctx, err))
 }
 
 // HasFieldError returns true if the given field has already errored

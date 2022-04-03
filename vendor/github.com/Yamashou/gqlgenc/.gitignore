@@ -5,3 +5,5 @@
 /client.go
 /query/
 /.idea/
+
+coverage.out

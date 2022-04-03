@@ -1,5 +1,7 @@
 package cbor
 
+import "fmt"
+
 // AppendStrings encodes and adds an array of strings to the dst byte array.
 func (e Encoder) AppendStrings(dst []byte, vals []string) []byte {
 	major := majorTypeArray
@@ -28,6 +30,31 @@ func (Encoder) AppendString(dst []byte, s string) []byte {
 		dst = appendCborTypePrefix(dst, majorTypeUtf8String, uint64(l))
 	}
 	return append(dst, s...)
+}
+
+// AppendStringers encodes and adds an array of Stringer values
+// to the dst byte array.
+func (e Encoder) AppendStringers(dst []byte, vals []fmt.Stringer) []byte {
+	if len(vals) == 0 {
+		return e.AppendArrayEnd(e.AppendArrayStart(dst))
+	}
+	dst = e.AppendArrayStart(dst)
+	dst = e.AppendStringer(dst, vals[0])
+	if len(vals) > 1 {
+		for _, val := range vals[1:] {
+			dst = e.AppendStringer(dst, val)
+		}
+	}
+	return e.AppendArrayEnd(dst)
+}
+
+// AppendStringer encodes and adds the Stringer value to the dst
+// byte array.
+func (e Encoder) AppendStringer(dst []byte, val fmt.Stringer) []byte {
+	if val == nil {
+		return e.AppendNil(dst)
+	}
+	return e.AppendString(dst, val.String())
 }
 
 // AppendBytes encodes and adds an array of bytes to the dst byte array.

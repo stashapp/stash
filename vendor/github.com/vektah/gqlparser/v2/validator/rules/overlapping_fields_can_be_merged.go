@@ -414,7 +414,7 @@ func (m *overlappingFieldsCanBeMergedManager) collectConflictsBetween(conflicts 
 }
 
 func (m *overlappingFieldsCanBeMergedManager) findConflict(parentFieldsAreMutuallyExclusive bool, fieldA *ast.Field, fieldB *ast.Field) *ConflictMessage {
-	if fieldA.Definition == nil || fieldA.ObjectDefinition == nil || fieldB.Definition == nil || fieldB.ObjectDefinition == nil {
+	if fieldA.ObjectDefinition == nil || fieldB.ObjectDefinition == nil {
 		return nil
 	}
 
@@ -423,6 +423,7 @@ func (m *overlappingFieldsCanBeMergedManager) findConflict(parentFieldsAreMutual
 		tmp := fieldA.ObjectDefinition.Name != fieldB.ObjectDefinition.Name
 		tmp = tmp && fieldA.ObjectDefinition.Kind == ast.Object
 		tmp = tmp && fieldB.ObjectDefinition.Kind == ast.Object
+		tmp = tmp && fieldA.Definition != nil && fieldB.Definition != nil
 		areMutuallyExclusive = tmp
 	}
 
@@ -436,7 +437,7 @@ func (m *overlappingFieldsCanBeMergedManager) findConflict(parentFieldsAreMutual
 		if fieldA.Name != fieldB.Name {
 			return &ConflictMessage{
 				ResponseName: fieldNameA,
-				Message:      fmt.Sprintf(`%s and %s are different fields`, fieldA.Name, fieldB.Name),
+				Message:      fmt.Sprintf(`"%s" and "%s" are different fields`, fieldA.Name, fieldB.Name),
 				Position:     fieldB.Position,
 			}
 		}
@@ -451,10 +452,10 @@ func (m *overlappingFieldsCanBeMergedManager) findConflict(parentFieldsAreMutual
 		}
 	}
 
-	if doTypesConflict(m.walker, fieldA.Definition.Type, fieldB.Definition.Type) {
+	if fieldA.Definition != nil && fieldB.Definition != nil && doTypesConflict(m.walker, fieldA.Definition.Type, fieldB.Definition.Type) {
 		return &ConflictMessage{
 			ResponseName: fieldNameA,
-			Message:      fmt.Sprintf(`they return conflicting types %s and %s`, fieldA.Definition.Type.String(), fieldB.Definition.Type.String()),
+			Message:      fmt.Sprintf(`they return conflicting types "%s" and "%s"`, fieldA.Definition.Type.String(), fieldB.Definition.Type.String()),
 			Position:     fieldB.Position,
 		}
 	}
@@ -478,13 +479,15 @@ func sameArguments(args1 []*ast.Argument, args2 []*ast.Argument) bool {
 		return false
 	}
 	for _, arg1 := range args1 {
+		var matched bool
 		for _, arg2 := range args2 {
-			if arg1.Name != arg2.Name {
-				return false
+			if arg1.Name == arg2.Name && sameValue(arg1.Value, arg2.Value) {
+				matched = true
+				break
 			}
-			if !sameValue(arg1.Value, arg2.Value) {
-				return false
-			}
+		}
+		if !matched {
+			return false
 		}
 	}
 	return true

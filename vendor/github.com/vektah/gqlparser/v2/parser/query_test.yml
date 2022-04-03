@@ -41,6 +41,30 @@ variables:
       message: 'Unexpected $'
       locations: [{ line: 1, column: 37 }]
 
+  - name: can have directives
+    input: 'query ($withDirective: String @first @second, $withoutDirective: String) { f }'
+    ast: |
+      <QueryDocument>
+        Operations: [OperationDefinition]
+        - <OperationDefinition>
+            Operation: Operation("query")
+            VariableDefinitions: [VariableDefinition]
+            - <VariableDefinition>
+                Variable: "withDirective"
+                Type: String
+                Directives: [Directive]
+                - <Directive>
+                    Name: "first"
+                - <Directive>
+                    Name: "second"
+            - <VariableDefinition>
+                Variable: "withoutDirective"
+                Type: String
+            SelectionSet: [Selection]
+            - <Field>
+                Alias: "f"
+                Name: "f"
+
 fragments:
   - name: can not be named 'on'
     input: 'fragment on on on { on }'

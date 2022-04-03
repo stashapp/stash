@@ -1,13 +1,14 @@
 package servergen
 
 import (
+	"errors"
+	"io/fs"
 	"log"
 	"os"
 
 	"github.com/99designs/gqlgen/codegen"
 	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/99designs/gqlgen/plugin"
-	"github.com/pkg/errors"
 )
 
 func New(filename string) plugin.Plugin {
@@ -23,13 +24,14 @@ var _ plugin.CodeGenerator = &Plugin{}
 func (m *Plugin) Name() string {
 	return "servergen"
 }
+
 func (m *Plugin) GenerateCode(data *codegen.Data) error {
 	serverBuild := &ServerBuild{
 		ExecPackageName:     data.Config.Exec.ImportPath(),
 		ResolverPackageName: data.Config.Resolver.ImportPath(),
 	}
 
-	if _, err := os.Stat(m.filename); os.IsNotExist(errors.Cause(err)) {
+	if _, err := os.Stat(m.filename); errors.Is(err, fs.ErrNotExist) {
 		return templates.Render(templates.Options{
 			PackageName: "main",
 			Filename:    m.filename,
