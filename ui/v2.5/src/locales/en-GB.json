@@ -524,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "Slideshow is available in galleries when in wall view mode",
-        "heading": "Slideshow Delay"
+        "heading": "Slideshow Delay (seconds)"
       },
       "title": "User Interface"
     }
