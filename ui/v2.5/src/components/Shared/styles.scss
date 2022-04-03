@@ -271,3 +271,30 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
 .string-list-input .input-group {
   margin-bottom: 0.25rem;
 }
+
+.bulk-update-text-input {
+  button {
+    background-color: $secondary;
+    color: $text-muted;
+    font-size: $btn-font-size-sm;
+    margin: $btn-padding-y $btn-padding-x;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    z-index: 4;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &:not(:disabled):not(.disabled):active,
+    &:not(:disabled):not(.disabled):active:focus {
+      background-color: $secondary;
+      border-color: transparent;
+      box-shadow: none;
+    }
+  }
+
+  &.unset button {
+    visibility: hidden;
+  }
+}

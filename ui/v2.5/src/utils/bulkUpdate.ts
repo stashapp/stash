@@ -124,7 +124,7 @@ export function getAggregateMovieIds(state: IHasMovies[]) {
   return ret;
 }
 
-function makeBulkUpdateIds(
+export function makeBulkUpdateIds(
   ids: string[],
   mode: GQL.BulkUpdateIdMode
 ): GQL.BulkUpdateIds {
@@ -152,6 +152,7 @@ export function getAggregateInputValue<V>(
   }
 }
 
+// TODO - remove - this is incorrect
 export function getAggregateInputIDs(
   mode: GQL.BulkUpdateIdMode,
   inputIds: string[] | undefined,
@@ -172,4 +173,47 @@ export function getAggregateInputIDs(
   }
 
   return undefined;
+}
+
+export function getAggregateState<T>(
+  currentValue: T,
+  newValue: T,
+  first: boolean
+) {
+  if (!first && !_.isEqual(currentValue, newValue)) {
+    return undefined;
+  }
+
+  return newValue;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function setProperty<T, K extends keyof T>(obj: T, key: K, value: any) {
+  obj[key] = value;
+}
+
+function getProperty<T, K extends keyof T>(obj: T, key: K) {
+  return obj[key];
+}
+
+export function getAggregateStateObject<O, I>(
+  output: O,
+  input: I,
+  fields: string[],
+  first: boolean
+) {
+  fields.forEach((key) => {
+    const outputKey = key as keyof O;
+    const inputKey = key as keyof I;
+
+    const currentValue = getProperty(output, outputKey);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const performerValue = getProperty(input, inputKey) as any;
+
+    setProperty(
+      output,
+      outputKey,
+      getAggregateState(currentValue, performerValue, first)
+    );
+  });
 }
