@@ -107,6 +107,7 @@
     },
     "temp_disable": "暫時關閉…",
     "temp_enable": "暫時啟用…",
+    "unset": "重置",
     "use_default": "使用預設選項",
     "view_random": "隨機開啟"
   },
@@ -584,6 +585,7 @@
     "delete_object_overflow": "…以及 {count} 個其他 {count, plural, =1 {{singularEntity}} other {{pluralEntity}}}。",
     "delete_object_title": "刪除{count, plural, =1 {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "編輯{pluralEntity}",
+    "existing_value": "現有值",
     "export_include_related_objects": "匯出所有相關物件",
     "export_title": "匯出",
     "lightbox": {
@@ -701,6 +703,7 @@
     "warmth": "暖度"
   },
   "ethnicity": "人種",
+  "existing_value": "現有值",
   "eye_color": "眼睛顏色",
   "fake_tits": "假奶",
   "false": "否",
