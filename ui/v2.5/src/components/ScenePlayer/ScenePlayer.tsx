@@ -292,8 +292,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     (player as any).clearOffsetDuration();
 
     const tracks = player.remoteTextTracks();
-    if (tracks.length > 0) {
-      player.removeRemoteTextTrack(tracks[0] as any);
+    console.log(`Track Length : ${tracks.length}`);
+    for (let i = 0; i < tracks.length; i++) {
+      console.log(`Removing : ${tracks[i] as any}`);
+      player.removeRemoteTextTrack(tracks[i] as any);
     }
 
     player.src(
@@ -315,96 +317,100 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       );
     }
 
-    if (scene.paths.caption_de) {
-      player.addRemoteTextTrack(
-        {
-          src: scene.paths.caption_de,
-          kind: "captions",
-          srclang: "de",
-          label: "Deutsche",
-          default: false,
-        },
-        true
-      );
-    }
+    if (scene.captioned) {
+      if (scene.paths.caption_de) {
+        console.log(`Caption path : ${scene.paths.caption_de}`);
+        player.addRemoteTextTrack(
+          {
+            src: scene.paths.caption_de,
+            kind: "captions",
+            srclang: "de",
+            label: "Deutsche",
+            default: false,
+          },
+          true
+        );
+      }
 
-    if (scene.paths.caption_en) {
-      player.addRemoteTextTrack(
-        {
-          src: scene.paths.caption_en,
-          kind: "captions",
-          srclang: "en",
-          label: "English",
-          default: true,
-          mode: "showing",
-        },
-        true
-      );
-    }
+      if (scene.paths.caption_en) {
+        console.log(`Caption path : ${scene.paths.caption_en}`);
+        player.addRemoteTextTrack(
+          {
+            src: scene.paths.caption_en,
+            kind: "captions",
+            srclang: "en",
+            label: "English",
+            default: true,
+            mode: "showing",
+          },
+          true
+        );
+      }
 
-    if (scene.paths.caption_es) {
-      player.addRemoteTextTrack(
-        {
-          src: scene.paths.caption_es,
-          kind: "captions",
-          srclang: "es",
-          label: "Español",
-          default: false,
-        },
-        true
-      );
-    }
+      if (scene.paths.caption_es) {
+        player.addRemoteTextTrack(
+          {
+            src: scene.paths.caption_es,
+            kind: "captions",
+            srclang: "es",
+            label: "Español",
+            default: false,
+          },
+          true
+        );
+      }
 
-    if (scene.paths.caption_fr) {
-      player.addRemoteTextTrack(
-        {
-          src: scene.paths.caption_fr,
-          kind: "captions",
-          srclang: "fr",
-          label: "Français",
-          default: false,
-        },
-        true
-      );
-    }
+      if (scene.paths.caption_fr) {
+        player.addRemoteTextTrack(
+          {
+            src: scene.paths.caption_fr,
+            kind: "captions",
+            srclang: "fr",
+            label: "Français",
+            default: false,
+          },
+          true
+        );
+      }
 
-    if (scene.paths.caption_it) {
-      player.addRemoteTextTrack(
-        {
-          src: scene.paths.caption_it,
-          kind: "captions",
-          srclang: "it",
-          label: "Italiano",
-          default: false,
-        },
-        true
-      );
-    }
+      if (scene.paths.caption_it) {
+        player.addRemoteTextTrack(
+          {
+            src: scene.paths.caption_it,
+            kind: "captions",
+            srclang: "it",
+            label: "Italiano",
+            default: false,
+          },
+          true
+        );
+      }
 
-    if (scene.paths.caption_nl) {
-      player.addRemoteTextTrack(
-        {
-          src: scene.paths.caption_nl,
-          kind: "captions",
-          srclang: "nl",
-          label: "Holandés",
-          default: false,
-        },
-        true
-      );
-    }
+      if (scene.paths.caption_nl) {
+        player.addRemoteTextTrack(
+          {
+            src: scene.paths.caption_nl,
+            kind: "captions",
+            srclang: "nl",
+            label: "Holandés",
+            default: false,
+          },
+          true
+        );
+      }
 
-    if (scene.paths.caption_pt) {
-      player.addRemoteTextTrack(
-        {
-          src: scene.paths.caption_pt,
-          kind: "captions",
-          srclang: "pt",
-          label: "Português",
-          default: false,
-        },
-        true
-      );
+      if (scene.paths.caption_pt) {
+        player.addRemoteTextTrack(
+          {
+            src: scene.paths.caption_pt,
+            kind: "captions",
+            srclang: "pt",
+            label: "Português",
+            default: false,
+          },
+          true
+        );
+      }
     }
 
     player.currentTime(0);

@@ -62,6 +62,9 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	interactive := getInteractive(path)
 
 	captioned := getCaption(file.Path())
+	if captioned {
+		logger.Debugf("Found subtitle for file %s", path)
+	}
 
 	oldHash := s.GetHash(scanner.FileNamingAlgorithm)
 	changed := false
@@ -342,33 +345,15 @@ func getInteractive(path string) bool {
 }
 
 func getCaption(path string) bool {
-	_, err := os.Stat(GetCaptionDEPath(path))
-	if err == nil {
-		return true
-	}
-	_, err = os.Stat(GetCaptionENPath(path))
-	if err == nil {
-		return true
-	}
-	_, err = os.Stat(GetCaptionESPath(path))
-	if err == nil {
-		return true
-	}
-	_, err = os.Stat(GetCaptionFRPath(path))
-	if err == nil {
-		return true
-	}
-	_, err = os.Stat(GetCaptionITPath(path))
-	if err == nil {
-		return true
-	}
-	_, err = os.Stat(GetCaptionNLPath(path))
-	if err == nil {
-		return true
-	}
-	_, err = os.Stat(GetCaptionPTPath(path))
-	if err == nil {
-		return true
+	langs := []string{"de", "en", "es", "fr", "it", "nl", "pt"}
+	for _, l := range langs {
+		_, err := os.Stat(GetCaptionPath(path, l, "vtt"))
+		if err != nil {
+			_, err = os.Stat(GetCaptionPath(path, l, "srt"))
+		}
+		if err == nil {
+			return true
+		}
 	}
 	return false
 }

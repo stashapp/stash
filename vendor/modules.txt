@@ -56,6 +56,15 @@ github.com/apenwarr/fixconsole
 # github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab
 ## explicit
 github.com/apenwarr/w32
+# github.com/asticode/go-astikit v0.20.0
+## explicit; go 1.13
+github.com/asticode/go-astikit
+# github.com/asticode/go-astisub v0.20.0
+## explicit; go 1.13
+github.com/asticode/go-astisub
+# github.com/asticode/go-astits v1.8.0
+## explicit; go 1.13
+github.com/asticode/go-astits
 # github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 ## explicit; go 1.14
 github.com/chromedp/cdproto
@@ -184,12 +193,6 @@ github.com/gorilla/sessions
 # github.com/gorilla/websocket v1.4.2
 ## explicit; go 1.12
 github.com/gorilla/websocket
-# github.com/h2non/filetype v1.0.8
-## explicit
-github.com/h2non/filetype
-github.com/h2non/filetype/matchers
-github.com/h2non/filetype/matchers/isobmff
-github.com/h2non/filetype/types
 # github.com/hashicorp/errwrap v1.0.0
 ## explicit
 github.com/hashicorp/errwrap

@@ -3,46 +3,19 @@ package scene
 import (
 	"path/filepath"
 	"strings"
+
+	"github.com/asticode/go-astisub"
 )
 
-func GetCaptionDEPath(path string) string {
+// GetCaptionPath generates the path of a subtitle
+// from a given file path wanted language and subtitle sufffix
+func GetCaptionPath(path, lang, suffix string) string {
 	ext := filepath.Ext(path)
 	fn := strings.TrimSuffix(path, ext)
-	return fn + ".de.vtt"
+	return fn + "." + lang + "." + suffix
 }
 
-func GetCaptionENPath(path string) string {
-	ext := filepath.Ext(path)
-	fn := strings.TrimSuffix(path, ext)
-	return fn + ".en.vtt"
-}
-
-func GetCaptionESPath(path string) string {
-	ext := filepath.Ext(path)
-	fn := strings.TrimSuffix(path, ext)
-	return fn + ".es.vtt"
-}
-
-func GetCaptionFRPath(path string) string {
-	ext := filepath.Ext(path)
-	fn := strings.TrimSuffix(path, ext)
-	return fn + ".fr.vtt"
-}
-
-func GetCaptionITPath(path string) string {
-	ext := filepath.Ext(path)
-	fn := strings.TrimSuffix(path, ext)
-	return fn + ".it.vtt"
-}
-
-func GetCaptionNLPath(path string) string {
-	ext := filepath.Ext(path)
-	fn := strings.TrimSuffix(path, ext)
-	return fn + ".nl.vtt"
-}
-
-func GetCaptionPTPath(path string) string {
-	ext := filepath.Ext(path)
-	fn := strings.TrimSuffix(path, ext)
-	return fn + ".pt.vtt"
+// ReadSubs reads a subtitles file
+func ReadSubs(path string) (*astisub.Subtitles, error) {
+	return astisub.OpenFile(path)
 }

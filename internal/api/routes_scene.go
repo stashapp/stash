@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"net/http"
 	"strconv"
@@ -298,46 +299,55 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 	http.ServeFile(w, r, filepath)
 }
 
-func (rs sceneRoutes) CaptionDE(w http.ResponseWriter, r *http.Request) {
+func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
-	caption := scene.GetCaptionDEPath(s.Path)
-	serveFileNoCache(w, r, caption)
+	
+	caption := scene.GetCaptionPath(s.Path, lang, "vtt") // first try reading vtt
+	sub, err := scene.ReadSubs(caption)
+	if err != nil {
+		caption = scene.GetCaptionPath(s.Path, lang, "srt") // switch to srt if vtt wasnt available or invalid
+		sub, err = scene.ReadSubs(caption)
+	}
+
+	if err == nil {
+		var b bytes.Buffer
+		err = sub.WriteToWebVTT(&b)
+		if err == nil {
+			w.Header().Set("Content-Type", "text/vtt")
+			w.Header().Add("Cache-Control", "no-cache")
+			b.WriteTo(w)
+		}
+		return
+	}
+	logger.Debugf("Error while reading subs: %v", err)
+}
+
+func (rs sceneRoutes) CaptionDE(w http.ResponseWriter, r *http.Request) {
+	rs.Caption(w, r, "de")
 }
 
 func (rs sceneRoutes) CaptionEN(w http.ResponseWriter, r *http.Request) {
-	s := r.Context().Value(sceneKey).(*models.Scene)
-	caption := scene.GetCaptionENPath(s.Path)
-	serveFileNoCache(w, r, caption)
+	rs.Caption(w, r, "en")
 }
 
 func (rs sceneRoutes) CaptionES(w http.ResponseWriter, r *http.Request) {
-	s := r.Context().Value(sceneKey).(*models.Scene)
-	caption := scene.GetCaptionESPath(s.Path)
-	serveFileNoCache(w, r, caption)
+	rs.Caption(w, r, "es")
 }
 
 func (rs sceneRoutes) CaptionFR(w http.ResponseWriter, r *http.Request) {
-	s := r.Context().Value(sceneKey).(*models.Scene)
-	caption := scene.GetCaptionFRPath(s.Path)
-	serveFileNoCache(w, r, caption)
+	rs.Caption(w, r, "fr")
 }
 
 func (rs sceneRoutes) CaptionIT(w http.ResponseWriter, r *http.Request) {
-	s := r.Context().Value(sceneKey).(*models.Scene)
-	caption := scene.GetCaptionITPath(s.Path)
-	serveFileNoCache(w, r, caption)
+	rs.Caption(w, r, "it")
 }
 
 func (rs sceneRoutes) CaptionNL(w http.ResponseWriter, r *http.Request) {
-	s := r.Context().Value(sceneKey).(*models.Scene)
-	caption := scene.GetCaptionNLPath(s.Path)
-	serveFileNoCache(w, r, caption)
+	rs.Caption(w, r, "nl")
 }
 
 func (rs sceneRoutes) CaptionPT(w http.ResponseWriter, r *http.Request) {
-	s := r.Context().Value(sceneKey).(*models.Scene)
-	caption := scene.GetCaptionPTPath(s.Path)
-	serveFileNoCache(w, r, caption)
+	rs.Caption(w, r, "pt")
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
