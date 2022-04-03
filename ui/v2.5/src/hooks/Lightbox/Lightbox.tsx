@@ -793,7 +793,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         </div>
         <div>
           {currentImage?.title && (
-            <Link to={`/images/${currentImage.id}`} onClick={() => hide()}>
+            <Link to={`/images/${currentImage.id}`} onClick={() => close()}>
               {currentImage.title ?? ""}
             </Link>
           )}
