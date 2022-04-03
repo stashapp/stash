@@ -28,6 +28,7 @@ import { StudioPerformersPanel } from "./StudioPerformersPanel";
 import { StudioEditPanel } from "./StudioEditPanel";
 import { StudioDetailsPanel } from "./StudioDetailsPanel";
 import { StudioMoviesPanel } from "./StudioMoviesPanel";
+import renderNonZero from "src/utils/render";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -153,6 +154,15 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     }
   }
 
+  const defaultTab =
+    studio?.scene_count ?? 0 > 0
+      ? "scenes"
+      : studio?.gallery_count ?? 0 > 0
+      ? "galleries"
+      : studio?.image_count ?? 0 > 0
+      ? "images"
+      : "performers";
+
   const activeTabKey =
     tab === "childstudios" ||
     tab === "images" ||
@@ -160,7 +170,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     tab === "performers" ||
     tab === "movies"
       ? tab
-      : "scenes";
+      : defaultTab;
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
@@ -216,77 +226,92 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
           activeKey={activeTabKey}
           onSelect={setActiveTabKey}
         >
-          <Tab
-            eventKey="scenes"
-            title={
-              <React.Fragment>
-                {intl.formatMessage({ id: "scenes" })}
-                <Badge className="left-spacing" pill variant="secondary">
-                  {intl.formatNumber(studio.scene_count ?? 0)}
-                </Badge>
-              </React.Fragment>
-            }
-          >
-            <StudioScenesPanel studio={studio} />
-          </Tab>
-          <Tab
-            eventKey="galleries"
-            title={
-              <React.Fragment>
-                {intl.formatMessage({ id: "galleries" })}
-                <Badge className="left-spacing" pill variant="secondary">
-                  {intl.formatNumber(studio.gallery_count ?? 0)}
-                </Badge>
-              </React.Fragment>
-            }
-          >
-            <StudioGalleriesPanel studio={studio} />
-          </Tab>
-          <Tab
-            eventKey="images"
-            title={
-              <React.Fragment>
-                {intl.formatMessage({ id: "images" })}
-                <Badge className="left-spacing" pill variant="secondary">
-                  {intl.formatNumber(studio.image_count ?? 0)}
-                </Badge>
-              </React.Fragment>
-            }
-          >
-            <StudioImagesPanel studio={studio} />
-          </Tab>
+          {renderNonZero(
+            studio.scene_count,
+            <Tab
+              eventKey="scenes"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "scenes" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(studio.scene_count ?? 0)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <StudioScenesPanel studio={studio} />
+            </Tab>
+          )}
+          {renderNonZero(
+            studio.gallery_count,
+            <Tab
+              eventKey="galleries"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "galleries" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(studio.gallery_count ?? 0)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <StudioGalleriesPanel studio={studio} />
+            </Tab>
+          )}
+          {renderNonZero(
+            studio.image_count,
+            <Tab
+              eventKey="images"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "images" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(studio.image_count ?? 0)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <StudioImagesPanel studio={studio} />
+            </Tab>
+          )}
           <Tab
             eventKey="performers"
             title={intl.formatMessage({ id: "performers" })}
           >
             <StudioPerformersPanel studio={studio} />
           </Tab>
-          <Tab
-            eventKey="movies"
-            title={
-              <React.Fragment>
-                {intl.formatMessage({ id: "movies" })}
-                <Badge className="left-spacing" pill variant="secondary">
-                  {intl.formatNumber(studio.movie_count ?? 0)}
-                </Badge>
-              </React.Fragment>
-            }
-          >
-            <StudioMoviesPanel studio={studio} />
-          </Tab>
-          <Tab
-            eventKey="childstudios"
-            title={
-              <React.Fragment>
-                {intl.formatMessage({ id: "subsidiary_studios" })}
-                <Badge className="left-spacing" pill variant="secondary">
-                  {intl.formatNumber(studio.child_studios?.length)}
-                </Badge>
-              </React.Fragment>
-            }
-          >
-            <StudioChildrenPanel studio={studio} />
-          </Tab>
+          {renderNonZero(
+            studio.movie_count,
+            <Tab
+              eventKey="movies"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "movies" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(studio.movie_count ?? 0)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <StudioMoviesPanel studio={studio} />
+            </Tab>
+          )}
+          {renderNonZero(
+            studio.child_studios?.length,
+            <Tab
+              eventKey="childstudios"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "subsidiary_studios" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(studio.child_studios?.length)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <StudioChildrenPanel studio={studio} />
+            </Tab>
+          )}
         </Tabs>
       </div>
       {renderDeleteAlert()}

@@ -288,7 +288,10 @@ func (f *formatter) FormatArgumentDefinitionList(lists ast.ArgumentDefinitionLis
 }
 
 func (f *formatter) FormatArgumentDefinition(def *ast.ArgumentDefinition) {
-	f.WriteDescription(def.Description)
+	if def.Description != "" {
+		f.WriteNewline().IncrementIndent()
+		f.WriteDescription(def.Description)
+	}
 
 	f.WriteWord(def.Name).NoPadding().WriteString(":").NeedPadding()
 	f.FormatType(def.Type)
@@ -296,6 +299,11 @@ func (f *formatter) FormatArgumentDefinition(def *ast.ArgumentDefinition) {
 	if def.DefaultValue != nil {
 		f.WriteWord("=")
 		f.FormatValue(def.DefaultValue)
+	}
+
+	if def.Description != "" {
+		f.DecrementIndent()
+		f.WriteNewline()
 	}
 }
 

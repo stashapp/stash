@@ -24,6 +24,7 @@ const (
 	LocationEnumValue            DirectiveLocation = `ENUM_VALUE`
 	LocationInputObject          DirectiveLocation = `INPUT_OBJECT`
 	LocationInputFieldDefinition DirectiveLocation = `INPUT_FIELD_DEFINITION`
+	LocationVariableDefinition   DirectiveLocation = `VARIABLE_DEFINITION`
 )
 
 type Directive struct {

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"syscall"
 
 	"github.com/99designs/gqlgen/codegen"
@@ -9,7 +10,6 @@ import (
 	"github.com/99designs/gqlgen/plugin/federation"
 	"github.com/99designs/gqlgen/plugin/modelgen"
 	"github.com/99designs/gqlgen/plugin/resolvergen"
-	"github.com/pkg/errors"
 )
 
 func Generate(cfg *config.Config, option ...Option) error {
@@ -40,7 +40,7 @@ func Generate(cfg *config.Config, option ...Option) error {
 	}
 
 	if err := cfg.LoadSchema(); err != nil {
-		return errors.Wrap(err, "failed to load schema")
+		return fmt.Errorf("failed to load schema: %w", err)
 	}
 
 	for _, p := range plugins {
@@ -53,47 +53,53 @@ func Generate(cfg *config.Config, option ...Option) error {
 
 	// LoadSchema again now we have everything
 	if err := cfg.LoadSchema(); err != nil {
-		return errors.Wrap(err, "failed to load schema")
+		return fmt.Errorf("failed to load schema: %w", err)
 	}
 
 	if err := cfg.Init(); err != nil {
-		return errors.Wrap(err, "generating core failed")
+		return fmt.Errorf("generating core failed: %w", err)
 	}
 
 	for _, p := range plugins {
 		if mut, ok := p.(plugin.ConfigMutator); ok {
 			err := mut.MutateConfig(cfg)
 			if err != nil {
-				return errors.Wrap(err, p.Name())
+				return fmt.Errorf("%s: %w", p.Name(), err)
 			}
 		}
 	}
 	// Merge again now that the generated models have been injected into the typemap
 	data, err := codegen.BuildData(cfg)
 	if err != nil {
-		return errors.Wrap(err, "merging type systems failed")
+		return fmt.Errorf("merging type systems failed: %w", err)
 	}
 
 	if err = codegen.GenerateCode(data); err != nil {
-		return errors.Wrap(err, "generating core failed")
+		return fmt.Errorf("generating core failed: %w", err)
+	}
+
+	if !cfg.SkipModTidy {
+		if err = cfg.Packages.ModTidy(); err != nil {
+			return fmt.Errorf("tidy failed: %w", err)
+		}
 	}
 
 	for _, p := range plugins {
 		if mut, ok := p.(plugin.CodeGenerator); ok {
 			err := mut.GenerateCode(data)
 			if err != nil {
-				return errors.Wrap(err, p.Name())
+				return fmt.Errorf("%s: %w", p.Name(), err)
 			}
 		}
 	}
 
 	if err = codegen.GenerateCode(data); err != nil {
-		return errors.Wrap(err, "generating core failed")
+		return fmt.Errorf("generating core failed: %w", err)
 	}
 
 	if !cfg.SkipValidation {
 		if err := validate(cfg); err != nil {
-			return errors.Wrap(err, "validation failed")
+			return fmt.Errorf("validation failed: %w", err)
 		}
 	}
 

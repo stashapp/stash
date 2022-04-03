@@ -275,7 +275,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     );
 
     function resolveField<T>(field: string, stashField: T, remoteField: T) {
-      if (excludedFieldList.includes(field)) {
+      // #2452 - don't overwrite fields that are already set if the remote field is empty
+      const remoteFieldIsNull =
+        remoteField === null || remoteField === undefined;
+      if (excludedFieldList.includes(field) || remoteFieldIsNull) {
         return stashField;
       }
 

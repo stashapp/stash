@@ -8,7 +8,6 @@ import (
 	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/vektah/gqlparser/v2/ast"
-	"golang.org/x/xerrors"
 )
 
 type Argument struct {
@@ -33,7 +32,10 @@ func (rs ResponseFieldList) StructType() *types.Struct {
 	for _, filed := range rs {
 		//  クエリーのフィールドの子階層がFragmentの場合、このフィールドにそのFragmentの型を追加する
 		if filed.IsFragmentSpread {
-			typ := filed.ResponseFields.StructType().Underlying().(*types.Struct)
+			typ, ok := filed.ResponseFields.StructType().Underlying().(*types.Struct)
+			if !ok {
+				continue
+			}
 			for j := 0; j < typ.NumFields(); j++ {
 				vars = append(vars, typ.Field(j))
 				structTags = append(structTags, typ.Tag(j))
@@ -92,10 +94,35 @@ func (r *SourceGenerator) NewResponseFieldsByDefinition(definition *ast.Definiti
 		if field.Type.Name() == "__Schema" || field.Type.Name() == "__Type" {
 			continue
 		}
-		typ, err := r.binder.FindTypeFromName(r.cfg.Models[field.Type.Name()].Model[0])
-		if err != nil {
-			return nil, xerrors.Errorf("not found type: %w", err)
+
+		var typ types.Type
+		if field.Type.Name() == "Query" || field.Type.Name() == "Mutation" {
+			var baseType types.Type
+			baseType, err := r.binder.FindType(r.client.Pkg().Path(), field.Type.Name())
+			if err != nil {
+				if !strings.Contains(err.Error(), "unable to find type") {
+					return nil, fmt.Errorf("not found type: %w", err)
+				}
+
+				// create new type
+				baseType = types.NewPointer(types.NewNamed(
+					types.NewTypeName(0, r.client.Pkg(), templates.ToGo(field.Type.Name()), nil),
+					nil,
+					nil,
+				))
+			}
+
+			// for recursive struct field in go
+			typ = types.NewPointer(baseType)
+		} else {
+			baseType, err := r.binder.FindTypeFromName(r.cfg.Models[field.Type.Name()].Model[0])
+			if err != nil {
+				return nil, fmt.Errorf("not found type: %w", err)
+			}
+
+			typ = r.binder.CopyModifiersFromAst(field.Type, baseType)
 		}
+
 		tags := []string{
 			fmt.Sprintf(`json:"%s"`, field.Name),
 			fmt.Sprintf(`graphql:"%s"`, field.Name),
@@ -103,7 +130,7 @@ func (r *SourceGenerator) NewResponseFieldsByDefinition(definition *ast.Definiti
 
 		fields = append(fields, &ResponseField{
 			Name: field.Name,
-			Type: r.binder.CopyModifiersFromAst(field.Type, typ),
+			Type: typ,
 			Tags: tags,
 		})
 	}
