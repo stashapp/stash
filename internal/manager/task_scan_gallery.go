@@ -69,10 +69,10 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 
 	if g != nil {
 		if scanImages {
-			t.scanZipImages(g)
+			t.scanZipImages(ctx, g)
 		} else {
 			// in case thumbnails have been deleted, regenerate them
-			t.regenerateZipImages(g)
+			t.regenerateZipImages(ctx, g)
 		}
 	}
 }
@@ -133,7 +133,7 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 	wg.Done()
 }
 
-func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
+func (t *ScanTask) scanZipImages(ctx context.Context, zipGallery *models.Gallery) {
 	err := walkGalleryZip(zipGallery.Path.String, func(f *zip.File) error {
 		// copy this task and change the filename
 		subTask := *t
@@ -143,7 +143,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
-		subTask.Start(context.TODO())
+		subTask.Start(ctx)
 		return nil
 	})
 	if err != nil {
@@ -151,9 +151,9 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 	}
 }
 
-func (t *ScanTask) regenerateZipImages(zipGallery *models.Gallery) {
+func (t *ScanTask) regenerateZipImages(ctx context.Context, zipGallery *models.Gallery) {
 	var images []*models.Image
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		iqb := r.Image()
 
 		var err error
