@@ -11,8 +11,9 @@ import (
 // ToJSON converts a Performer object into its JSON equivalent.
 func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonschema.Performer, error) {
 	newPerformerJSON := jsonschema.Performer{
-		CreatedAt: models.JSONTime{Time: performer.CreatedAt.Timestamp},
-		UpdatedAt: models.JSONTime{Time: performer.UpdatedAt.Timestamp},
+		IgnoreAutoTag: performer.IgnoreAutoTag,
+		CreatedAt:     models.JSONTime{Time: performer.CreatedAt.Timestamp},
+		UpdatedAt:     models.JSONTime{Time: performer.UpdatedAt.Timestamp},
 	}
 
 	if performer.Name.Valid {

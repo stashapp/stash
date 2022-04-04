@@ -6,6 +6,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -72,11 +73,31 @@ func TestTagFindByName(t *testing.T) {
 	})
 }
 
+func TestTagQueryIgnoreAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		ignoreAutoTag := true
+		tagFilter := models.TagFilterType{
+			IgnoreAutoTag: &ignoreAutoTag,
+		}
+
+		sqb := r.Tag()
+
+		tags := queryTags(t, sqb, &tagFilter, nil)
+
+		assert.Len(t, tags, int(math.Ceil(float64(totalTags)/5)))
+		for _, s := range tags {
+			assert.True(t, s.IgnoreAutoTag)
+		}
+
+		return nil
+	})
+}
+
 func TestTagQueryForAutoTag(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Tag()
 
-		name := tagNames[tagIdxWithScene] // find a tag by name
+		name := tagNames[tagIdx1WithScene] // find a tag by name
 
 		tags, err := tqb.QueryForAutoTag([]string{name})
 
@@ -85,12 +106,12 @@ func TestTagQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, tags, 2)
-		lcName := tagNames[tagIdxWithScene]
+		lcName := tagNames[tagIdx1WithScene]
 		assert.Equal(t, strings.ToLower(lcName), strings.ToLower(tags[0].Name))
 		assert.Equal(t, strings.ToLower(lcName), strings.ToLower(tags[1].Name))
 
 		// find by alias
-		name = getTagStringValue(tagIdxWithScene, "Alias")
+		name = getTagStringValue(tagIdx1WithScene, "Alias")
 		tags, err = tqb.QueryForAutoTag([]string{name})
 
 		if err != nil {
@@ -98,7 +119,7 @@ func TestTagQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, tags, 1)
-		assert.Equal(t, tagIDs[tagIdxWithScene], tags[0].ID)
+		assert.Equal(t, tagIDs[tagIdx1WithScene], tags[0].ID)
 
 		return nil
 	})

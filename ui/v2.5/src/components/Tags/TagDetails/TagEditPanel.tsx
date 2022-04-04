@@ -53,6 +53,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
       }),
     parent_ids: yup.array(yup.string().required()).optional().nullable(),
     child_ids: yup.array(yup.string().required()).optional().nullable(),
+    ignore_auto_tag: yup.boolean().optional(),
   });
 
   const initialValues = {
@@ -60,6 +61,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
     aliases: tag?.aliases,
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
     child_ids: (tag?.children ?? []).map((t) => t.id),
+    ignore_auto_tag: tag?.ignore_auto_tag ?? false,
   };
 
   type InputValues = typeof initialValues;
@@ -208,6 +210,22 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
                 ...formik.values.parent_ids
               )}
               creatable={false}
+            />
+          </Col>
+        </Form.Group>
+
+        <hr />
+
+        <Form.Group controlId="ignore-auto-tag" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="ignore_auto_tag" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <Form.Check
+              {...formik.getFieldProps({
+                name: "ignore_auto_tag",
+                type: "checkbox",
+              })}
             />
           </Col>
         </Form.Group>

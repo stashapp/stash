@@ -178,10 +178,11 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	checksum := md5.FromString(performerJSON.Name)
 
 	newPerformer := models.Performer{
-		Checksum:  checksum,
-		Favorite:  sql.NullBool{Bool: performerJSON.Favorite, Valid: true},
-		CreatedAt: models.SQLiteTimestamp{Timestamp: performerJSON.CreatedAt.GetTime()},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: performerJSON.UpdatedAt.GetTime()},
+		Checksum:      checksum,
+		Favorite:      sql.NullBool{Bool: performerJSON.Favorite, Valid: true},
+		IgnoreAutoTag: performerJSON.IgnoreAutoTag,
+		CreatedAt:     models.SQLiteTimestamp{Timestamp: performerJSON.CreatedAt.GetTime()},
+		UpdatedAt:     models.SQLiteTimestamp{Timestamp: performerJSON.UpdatedAt.GetTime()},
 	}
 
 	if performerJSON.Name != "" {

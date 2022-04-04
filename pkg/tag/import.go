@@ -31,9 +31,10 @@ type Importer struct {
 
 func (i *Importer) PreImport() error {
 	i.tag = models.Tag{
-		Name:      i.Input.Name,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
+		Name:          i.Input.Name,
+		IgnoreAutoTag: i.Input.IgnoreAutoTag,
+		CreatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
+		UpdatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
 	}
 
 	var err error
