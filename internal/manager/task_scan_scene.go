@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 )
 
-func (t *ScanTask) scanScene() *models.Scene {
+func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
 	logError := func(err error) *models.Scene {
 		logger.Error(err.Error())
 		return nil
@@ -18,7 +18,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 	var retScene *models.Scene
 	var s *models.Scene
 
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		s, err = r.Scene().FindByPath(t.file.Path())
 		return err

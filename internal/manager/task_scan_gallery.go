@@ -78,9 +78,9 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 }
 
 // associates a gallery to a scene with the same basename
-func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
+func (t *ScanTask) associateGallery(ctx context.Context, wg *sizedwaitgroup.SizedWaitGroup) {
 	path := t.file.Path()
-	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 		qb := r.Gallery()
 		sqb := r.Scene()
 		g, err := qb.FindByPath(path)

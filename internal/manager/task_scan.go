@@ -135,7 +135,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				UseFileMetadata: false,
 			}
 
-			go task.associateGallery(&wg)
+			go task.associateGallery(ctx, &wg)
 			wg.Wait()
 		}
 		logger.Info("Finished gallery association")
@@ -187,7 +187,7 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, s
 				}
 
 				total++
-				if !j.doesPathExist(path) {
+				if !j.doesPathExist(ctx, path) {
 					newFiles++
 				}
 
@@ -212,14 +212,14 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, s
 	return
 }
 
-func (j *ScanJob) doesPathExist(path string) bool {
+func (j *ScanJob) doesPathExist(ctx context.Context, path string) bool {
 	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
 
 	ret := false
-	txnErr := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		switch {
 		case fsutil.MatchExtension(path, gExt):
 			g, _ := r.Gallery().FindByPath(path)
@@ -275,9 +275,9 @@ func (t *ScanTask) Start(ctx context.Context) {
 		case isGallery(path):
 			t.scanGallery(ctx)
 		case isVideo(path):
-			s = t.scanScene()
+			s = t.scanScene(ctx)
 		case isImage(path):
-			t.scanImage()
+			t.scanImage(ctx)
 		}
 	})
 

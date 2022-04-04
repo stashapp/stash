@@ -18,11 +18,11 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
-func (t *ScanTask) scanImage() {
+func (t *ScanTask) scanImage(ctx context.Context) {
 	var i *models.Image
 	path := t.file.Path()
 
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		i, err = r.Image().FindByPath(path)
 		return err
