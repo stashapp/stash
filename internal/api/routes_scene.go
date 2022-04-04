@@ -301,7 +301,7 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 
 func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
-	
+
 	caption := scene.GetCaptionPath(s.Path, lang, "vtt") // first try reading vtt
 	sub, err := scene.ReadSubs(caption)
 	if err != nil {
@@ -315,7 +315,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 		if err == nil {
 			w.Header().Set("Content-Type", "text/vtt")
 			w.Header().Add("Cache-Control", "no-cache")
-			b.WriteTo(w)
+			_, _ = b.WriteTo(w)
 		}
 		return
 	}
