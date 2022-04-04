@@ -14,6 +14,7 @@ $sceneTabWidth: 450px;
 
   .video-js {
     height: 56.25vw;
+    overflow: hidden;
     width: 100%;
 
     @media (min-width: 1200px) {
@@ -35,29 +36,69 @@ $sceneTabWidth: 450px;
     opacity: 0;
   }
 
+  .vjs-big-button-group {
+    display: none;
+    height: 80px;
+    justify-content: space-around;
+    opacity: 0;
+    position: absolute;
+    top: calc(50% - 40px);
+    width: 100%;
+
+    .vjs-button {
+      font-size: 4em;
+      height: 100%;
+      width: 80px;
+
+      .vjs-icon-placeholder::before {
+        height: 100%;
+        line-height: 80px;
+      }
+    }
+  }
+
   .vjs-touch-enabled {
     margin: 0 -15px;
     width: 100vw;
 
-    &:hover.vjs-user-active {
-      .vjs-button {
-        pointer-events: auto;
-      }
+    &.vjs-has-started .vjs-big-button-group {
+      display: flex;
+      opacity: 1;
+      visibility: visible;
     }
 
-    // make controls a little more compact on smaller screens
-    @media (max-width: 576px) {
-      .vjs-control-bar {
-        height: 2.5em;
-      }
+    &.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group {
+      opacity: 0;
+      pointer-events: none;
+      transition: visibility 1s, opacity 1s;
+      visibility: visible;
+    }
 
-      .vjs-control-bar .vjs-control:not(.vjs-progress-control) {
+    .vjs-big-play-pause-button .vjs-icon-placeholder::before {
+      content: "\f101";
+      font-family: VideoJS;
+    }
+
+    &.vjs-playing .vjs-big-play-pause-button .vjs-icon-placeholder::before {
+      content: "\f103";
+    }
+
+    // hide the regular play/pause button on touch screens
+    .vjs-play-control {
+      display: none;
+    }
+
+    // hide the regular seek buttons on touch screens
+    .vjs-control-bar .vjs-seek-button {
+      display: none;
+    }
+  }
+
+  // make controls a little more compact on smaller screens
+  @media (max-width: 576px) {
+    .vjs-control-bar {
+      .vjs-control:not(.vjs-progress-control) {
         width: 2.5em;
-      }
-
-      .vjs-time-control {
-        font-size: 12px;
-        line-height: 4em;
       }
 
       .vjs-button > .vjs-icon-placeholder::before,
@@ -65,6 +106,16 @@ $sceneTabWidth: 450px;
         font-size: 1.5em;
         line-height: 2;
       }
+    }
+
+    .vjs-time-control {
+      font-size: 12px;
+      line-height: 4em;
+    }
+
+    .vjs-big-button-group .vjs-button {
+      font-size: 2em;
+      width: 50px;
     }
 
     .vjs-current-time {
@@ -83,8 +134,6 @@ $sceneTabWidth: 450px;
 
     /* Scales control size */
     font-size: 15px;
-    opacity: 0;
-    transition: opacity 0.25s cubic-bezier(0, 0, 0.2, 1);
 
     &::before {
       background: linear-gradient(
@@ -119,18 +168,15 @@ $sceneTabWidth: 450px;
     display: none;
   }
 
-  &:hover,
-  &.vjs-paused {
-    .vjs-control-bar {
-      opacity: 1;
-    }
-  }
-
   .vjs-progress-control {
     bottom: 3rem;
     margin-left: 1%;
     position: absolute;
     width: 98%;
+  }
+
+  .vjs-volume-control {
+    z-index: 1;
   }
 
   .vjs-vtt-thumbnail-display {
@@ -149,8 +195,9 @@ $sceneTabWidth: 450px;
     font-size: 10em;
   }
 
-  .jwplayer {
-    outline: none;
+  .vjs-progress-control .vjs-play-progress .vjs-time-tooltip,
+  .vjs-progress-control:hover .vjs-play-progress .vjs-time-tooltip {
+    visibility: hidden;
   }
 }
 
@@ -388,4 +435,73 @@ $sceneTabWidth: 450px;
   &-next .vjs-icon-next-item {
     display: inline-block;
   }
+}
+
+.vjs-source-selector {
+  .vjs-menu li {
+    font-size: 12px;
+  }
+
+  .vjs-button > .vjs-icon-placeholder::before {
+    content: "\f110";
+    font-family: VideoJS;
+  }
+}
+
+.vjs-marker {
+  background-color: rgba(33, 33, 33, 0.8);
+  bottom: 0;
+  height: 100%;
+  left: 0;
+  opacity: 1;
+  position: absolute;
+  -webkit-transition: opacity 0.2s ease;
+  -moz-transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease;
+  width: 6px;
+  z-index: 100;
+
+  &:hover {
+    cursor: pointer;
+    -webkit-transform: scale(1.3, 1.3);
+    -moz-transform: scale(1.3, 1.3);
+    -o-transform: scale(1.3, 1.3);
+    -ms-transform: scale(1.3, 1.3);
+    transform: scale(1.3, 1.3);
+  }
+}
+
+.vjs-marker-tooltip {
+  border-radius: 0.3em;
+  color: white;
+  display: block;
+  float: right;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  height: 50px;
+  padding: 6px 8px 8px 8px;
+  pointer-events: none;
+  position: absolute;
+  right: -80px;
+  top: -5.4em;
+  width: 160px;
+  z-index: 1;
+}
+
+.VideoPlayer
+  .video-js
+  .vjs-seek-button.skip-back
+  span.vjs-icon-placeholder::before {
+  -ms-transform: none;
+  -webkit-transform: none;
+  transform: none;
+}
+
+.VideoPlayer
+  .video-js
+  .vjs-seek-button.skip-forward
+  span.vjs-icon-placeholder::before {
+  -ms-transform: scale(-1, 1);
+  -webkit-transform: scale(-1, 1);
+  transform: scale(-1, 1);
 }

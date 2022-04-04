@@ -74,6 +74,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
   function renderModeButton(mode: GQL.BulkUpdateIdMode) {
     return (
       <Button
+        key={mode}
         variant="primary"
         active={props.mode === mode}
         size="sm"

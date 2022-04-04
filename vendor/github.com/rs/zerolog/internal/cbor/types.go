@@ -1,7 +1,6 @@
 package cbor
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"net"
@@ -432,7 +431,7 @@ func (e Encoder) AppendFloats64(dst []byte, vals []float64) []byte {
 
 // AppendInterface takes an arbitrary object and converts it to JSON and embeds it dst.
 func (e Encoder) AppendInterface(dst []byte, i interface{}) []byte {
-	marshaled, err := json.Marshal(i)
+	marshaled, err := JSONMarshalFunc(i)
 	if err != nil {
 		return e.AppendString(dst, fmt.Sprintf("marshaling error: %v", err))
 	}

@@ -44,7 +44,7 @@ body {
 
   @include media-breakpoint-down(xs) {
     @media (orientation: portrait) {
-      padding: 1rem 0 5rem;
+      padding: 0 0 5rem;
     }
   }
 }
@@ -128,6 +128,85 @@ textarea.text-input {
   }
 }
 
+@media (max-width: 576px) and (orientation: portrait) {
+  .scene-tabs .ml-auto.btn-group {
+    position: fixed;
+    right: 1rem;
+    top: calc((100vw * (9 / 16)) + 2.7rem);
+  }
+
+  .scene-tabs .mr-auto.nav.nav-tabs {
+    background-color: #202b38;
+    display: grid;
+    grid-auto-flow: column;
+    height: 3rem;
+    left: 0;
+    margin: 0;
+    margin-bottom: 0;
+    max-height: 3rem;
+    padding-bottom: 2.2rem;
+    padding-top: 0.1rem;
+    position: fixed;
+    right: 0;
+    text-align: center;
+    top: calc(100vw * (9 / 16));
+    white-space: nowrap;
+    z-index: 20;
+  }
+
+  .btn-toolbar {
+    padding-top: 1rem;
+  }
+
+  .VideoPlayer {
+    position: fixed;
+    top: 0;
+  }
+
+  .scene-tabs.order-xl-first.order-last {
+    height: calc(100vh - (100vw * (9 / 16) + 8.5rem));
+    position: fixed;
+    top: calc((100vw * (9 / 16)) + 5rem);
+  }
+
+  .scene-tabs {
+    max-height: 100%;
+  }
+
+  .tab-content {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .performer-card-image {
+    height: 19rem;
+  }
+
+  .performer-card {
+    height: 27.5rem;
+    width: 14rem;
+  }
+
+  .scene-performers .performer-card-image {
+    height: 19rem;
+  }
+
+  .scene-performers .performer-card {
+    height: 27.5rem;
+    width: 14rem;
+  }
+
+  .row.justify-content-center.scene-performers {
+    border-bottom: solid 2px $dark-gray5;
+    border-top: solid 2px $dark-gray5;
+    display: flex;
+    flex-direction: column;
+    max-height: 450px;
+    overflow: auto;
+    padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
+  }
+}
 @media (min-width: 576px) {
   .zoom-0 {
     width: 240px;

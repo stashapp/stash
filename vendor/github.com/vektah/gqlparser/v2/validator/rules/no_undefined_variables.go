@@ -15,7 +15,7 @@ func init() {
 			if walker.CurrentOperation.Name != "" {
 				addError(
 					Message(`Variable "%s" is not defined by operation "%s".`, value, walker.CurrentOperation.Name),
-					At(walker.CurrentOperation.Position),
+					At(value.Position),
 				)
 			} else {
 				addError(

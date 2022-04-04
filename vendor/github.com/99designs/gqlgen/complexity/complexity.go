@@ -26,6 +26,11 @@ func (cw complexityWalker) selectionSetComplexity(selectionSet ast.SelectionSet)
 		switch s := selection.(type) {
 		case *ast.Field:
 			fieldDefinition := cw.schema.Types[s.Definition.Type.Name()]
+
+			if fieldDefinition.Name == "__Schema" {
+				continue
+			}
+
 			var childComplexity int
 			switch fieldDefinition.Kind {
 			case ast.Object, ast.Interface, ast.Union:

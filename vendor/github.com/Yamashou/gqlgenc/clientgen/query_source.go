@@ -23,6 +23,7 @@ SOFTWARE.
 package clientgen
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -31,7 +32,6 @@ import (
 
 	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/vektah/gqlparser/v2/ast"
-	"golang.org/x/xerrors"
 )
 
 var path2regex = strings.NewReplacer(
@@ -71,12 +71,12 @@ func LoadQuerySources(queryFileNames []string) ([]*ast.Source, error) {
 
 				return nil
 			}); err != nil {
-				return nil, xerrors.Errorf("failed to walk schema at root: %w", pathParts[0])
+				return nil, fmt.Errorf("failed to walk schema at root %s: %w", pathParts[0], err)
 			}
 		} else {
 			matches, err = filepath.Glob(f)
 			if err != nil {
-				return nil, xerrors.Errorf("failed to glob schema filename %v: %w", f, err)
+				return nil, fmt.Errorf("failed to glob schema filename %v: %w", f, err)
 			}
 		}
 
@@ -96,7 +96,7 @@ func LoadQuerySources(queryFileNames []string) ([]*ast.Source, error) {
 		var schemaRaw []byte
 		schemaRaw, err = ioutil.ReadFile(filename)
 		if err != nil {
-			return nil, xerrors.Errorf("unable to open schema: %w", err)
+			return nil, fmt.Errorf("unable to open schema: %w", err)
 		}
 
 		querySources = append(querySources, &ast.Source{Name: filename, Input: string(schemaRaw)})

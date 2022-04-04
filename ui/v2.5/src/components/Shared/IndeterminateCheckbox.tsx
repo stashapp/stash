@@ -48,7 +48,7 @@ export const IndeterminateCheckbox: React.FC<IIndeterminateCheckbox> = ({
         checked === undefined ? indeterminateClassname : ""
       }`}
       ref={ref}
-      checked={checked}
+      checked={checked ?? false}
       onChange={() => setChecked(cycleState())}
     />
   );

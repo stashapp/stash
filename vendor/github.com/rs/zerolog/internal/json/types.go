@@ -1,7 +1,6 @@
 package json
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"net"
@@ -350,7 +349,7 @@ func (Encoder) AppendFloats64(dst []byte, vals []float64) []byte {
 		return append(dst, '[', ']')
 	}
 	dst = append(dst, '[')
-	dst = appendFloat(dst, vals[0], 32)
+	dst = appendFloat(dst, vals[0], 64)
 	if len(vals) > 1 {
 		for _, val := range vals[1:] {
 			dst = appendFloat(append(dst, ','), val, 64)
@@ -363,7 +362,7 @@ func (Encoder) AppendFloats64(dst []byte, vals []float64) []byte {
 // AppendInterface marshals the input interface to a string and
 // appends the encoded string to the input byte slice.
 func (e Encoder) AppendInterface(dst []byte, i interface{}) []byte {
-	marshaled, err := json.Marshal(i)
+	marshaled, err := JSONMarshalFunc(i)
 	if err != nil {
 		return e.AppendString(dst, fmt.Sprintf("marshaling error: %v", err))
 	}

@@ -7,13 +7,10 @@ import (
 )
 
 func MarshalBoolean(b bool) Marshaler {
-	return WriterFunc(func(w io.Writer) {
-		if b {
-			w.Write(trueLit)
-		} else {
-			w.Write(falseLit)
-		}
-	})
+	if b {
+		return WriterFunc(func(w io.Writer) { w.Write(trueLit) })
+	}
+	return WriterFunc(func(w io.Writer) { w.Write(falseLit) })
 }
 
 func UnmarshalBoolean(v interface{}) (bool, error) {

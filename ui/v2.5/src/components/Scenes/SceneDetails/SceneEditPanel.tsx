@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
   Button,
@@ -107,27 +107,31 @@ export const SceneEditPanel: React.FC<IProps> = ({
     stash_ids: yup.mixed<GQL.StashIdInput>().optional().nullable(),
   });
 
-  const initialValues = {
-    title: scene.title ?? "",
-    details: scene.details ?? "",
-    url: scene.url ?? "",
-    date: scene.date ?? "",
-    rating: scene.rating ?? null,
-    gallery_ids: (scene.galleries ?? []).map((g) => g.id),
-    studio_id: scene.studio?.id,
-    performer_ids: (scene.performers ?? []).map((p) => p.id),
-    movies: (scene.movies ?? []).map((m) => {
-      return { movie_id: m.movie.id, scene_index: m.scene_index };
+  const initialValues = useMemo(
+    () => ({
+      title: scene.title ?? "",
+      details: scene.details ?? "",
+      url: scene.url ?? "",
+      date: scene.date ?? "",
+      rating: scene.rating ?? null,
+      gallery_ids: (scene.galleries ?? []).map((g) => g.id),
+      studio_id: scene.studio?.id,
+      performer_ids: (scene.performers ?? []).map((p) => p.id),
+      movies: (scene.movies ?? []).map((m) => {
+        return { movie_id: m.movie.id, scene_index: m.scene_index };
+      }),
+      tag_ids: (scene.tags ?? []).map((t) => t.id),
+      cover_image: undefined,
+      stash_ids: getStashIDs(scene.stash_ids),
     }),
-    tag_ids: (scene.tags ?? []).map((t) => t.id),
-    cover_image: undefined,
-    stash_ids: getStashIDs(scene.stash_ids),
-  };
+    [scene]
+  );
 
   type InputValues = typeof initialValues;
 
   const formik = useFormik({
     initialValues,
+    enableReinitialize: true,
     validationSchema: schema,
     onSubmit: (values) => onSave(getSceneInput(values)),
   });

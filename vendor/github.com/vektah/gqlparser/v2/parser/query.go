@@ -101,6 +101,8 @@ func (p *parser) parseVariableDefinition() *VariableDefinition {
 		def.DefaultValue = p.parseValueLiteral(true)
 	}
 
+	def.Directives = p.parseDirectives(false)
+
 	return &def
 }
 

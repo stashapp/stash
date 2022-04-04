@@ -231,3 +231,10 @@ func (a *Array) MACAddr(ha net.HardwareAddr) *Array {
 	a.buf = enc.AppendMACAddr(enc.AppendArrayDelim(a.buf), ha)
 	return a
 }
+
+// Dict adds the dict Event to the array
+func (a *Array) Dict(dict *Event) *Array {
+	dict.buf = enc.AppendEndMarker(dict.buf)
+	a.buf = append(enc.AppendArrayDelim(a.buf), dict.buf...)
+	return a
+}

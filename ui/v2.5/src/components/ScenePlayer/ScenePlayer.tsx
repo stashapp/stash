@@ -6,6 +6,10 @@ import "videojs-seek-buttons";
 import "videojs-landscape-fullscreen";
 import "./live";
 import "./PlaylistButtons";
+import "./source-selector";
+import "./persist-volume";
+import "./markers";
+import "./big-buttons";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
@@ -14,6 +18,75 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { Interactive } from "src/utils/interactive";
 
 export const VIDEO_PLAYER_ID = "VideoJsPlayer";
+
+function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
+  function seekPercent(percent: number) {
+    const duration = player.duration();
+    const time = duration * percent;
+    player.currentTime(time);
+  }
+
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+    return;
+  }
+
+  switch (event.which) {
+    case 32: // space
+    case 13: // enter
+      if (player.paused()) player.play();
+      else player.pause();
+      break;
+    case 77: // m
+      player.muted(!player.muted());
+      break;
+    case 70: // f
+      if (player.isFullscreen()) player.exitFullscreen();
+      else player.requestFullscreen();
+      break;
+    case 39: // right arrow
+      player.currentTime(Math.min(player.duration(), player.currentTime() + 5));
+      break;
+    case 37: // left arrow
+      player.currentTime(Math.max(0, player.currentTime() - 5));
+      break;
+    case 38: // up arrow
+      player.volume(player.volume() + 0.1);
+      break;
+    case 40: // down arrow
+      player.volume(player.volume() - 0.1);
+      break;
+    case 48: // 0
+      player.currentTime(0);
+      break;
+    case 49: // 1
+      seekPercent(0.1);
+      break;
+    case 50: // 2
+      seekPercent(0.2);
+      break;
+    case 51: // 3
+      seekPercent(0.3);
+      break;
+    case 52: // 4
+      seekPercent(0.4);
+      break;
+    case 53: // 5
+      seekPercent(0.5);
+      break;
+    case 54: // 6
+      seekPercent(0.6);
+      break;
+    case 55: // 7
+      seekPercent(0.7);
+      break;
+    case 56: // 8
+      seekPercent(0.8);
+      break;
+    case 57: // 9
+      seekPercent(0.9);
+      break;
+  }
+}
 
 interface IScenePlayerProps {
   className?: string;
@@ -38,6 +111,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const config = configuration?.interface;
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<VideoJsPlayer | undefined>();
+  const sceneId = useRef<string | undefined>();
   const skipButtonsRef = useRef<any>();
 
   const [time, setTime] = useState(0);
@@ -70,13 +144,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         volumePanel: {
           inline: false,
         },
+        chaptersButton: false,
       },
       nativeControlsForTouch: false,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
       inactivityTimeout: 2000,
       preload: "none",
       userActions: {
-        hotkeys: true,
+        hotkeys: function (event) {
+          const player = this as VideoJsPlayer;
+          handleHotkeys(player, event);
+        },
       },
     };
 
@@ -87,11 +165,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         enterOnRotate: true,
         exitOnRotate: true,
         alwaysInLandscapeMode: true,
-        iOS: true,
+        iOS: false,
       },
     });
 
+    (player as any).markers();
     (player as any).offset();
+    (player as any).sourceSelector();
+    (player as any).persistVolume();
+    (player as any).bigButtons();
 
     player.focus();
     playerRef.current = player;
@@ -186,7 +268,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       return false;
     }
 
-    if (!scene) return;
+    if (!scene || scene.id === sceneId.current) return;
+    sceneId.current = scene.id;
 
     const player = playerRef.current;
     if (!player) return;
@@ -200,6 +283,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // otherwise, the offset will be applied to the next file when
     // currentTime is called.
     (player as any).clearOffsetDuration();
+
+    const tracks = player.remoteTextTracks();
+    if (tracks.length > 0) {
+      player.removeRemoteTextTrack(tracks[0] as any);
+    }
+
     player.src(
       scene.sceneStreams.map((stream) => ({
         src: stream.url,
@@ -207,6 +296,18 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         label: stream.label ?? undefined,
       }))
     );
+
+    if (scene.paths.chapters_vtt) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.chapters_vtt,
+          kind: "chapters",
+          default: true,
+        },
+        true
+      );
+    }
+
     player.currentTime(0);
 
     player.loop(
@@ -221,6 +322,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
 
     player.on("play", function (this: VideoJsPlayer) {
+      player.poster("");
       if (scene.interactive) {
         interactiveClient.play(this.currentTime());
       }
@@ -323,6 +425,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     <div className={cx("VideoPlayer", { portrait: isPortrait })}>
       <div data-vjs-player className={cx("video-wrapper", className)}>
         <video
+          playsInline
           ref={videoRef}
           id={VIDEO_PLAYER_ID}
           className="video-js vjs-big-play-centered"
