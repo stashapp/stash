@@ -25,6 +25,7 @@ export const Setup: React.FC = () => {
   const [configLocation, setConfigLocation] = useState("");
   const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
   const [showStashAlert, setShowStashAlert] = useState(false);
+  const [dataLocation, setDataLocation] = useState("");
   const [generatedLocation, setGeneratedLocation] = useState("");
   const [databaseFile, setDatabaseFile] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,6 +34,7 @@ export const Setup: React.FC = () => {
   const intl = useIntl();
 
   const [showGeneratedDialog, setShowGeneratedDialog] = useState(false);
+  const [showDataDialog, setShowDataDialog] = useState(false);
 
   const { data: systemStatus, loading: statusLoading } = useSystemStatus();
 
@@ -44,7 +46,7 @@ export const Setup: React.FC = () => {
 
   useEffect(() => {
     if (configuration) {
-      const { stashes: configStashes, generatedPath } = configuration.general;
+      const { stashes: configStashes, generatedPath, dataPath } = configuration.general;
       if (configStashes.length > 0) {
         setStashes(
           configStashes.map((s) => {
@@ -55,6 +57,9 @@ export const Setup: React.FC = () => {
       }
       if (generatedPath) {
         setGeneratedLocation(generatedPath);
+      }
+      if (dataPath) {
+        setDataLocation(dataPath);
       }
     }
   }, [configuration]);
@@ -229,12 +234,20 @@ export const Setup: React.FC = () => {
     setShowGeneratedDialog(false);
   }
 
-  function maybeRenderGeneratedSelectDialog() {
-    if (!showGeneratedDialog) {
+  function onDataClosed(d?: string) {
+    if (d) {
+      setDataLocation(d);
+    }
+
+    setShowDataDialog(false);
+  }
+
+  function maybeRenderFolderSelectDialog(show: boolean, onClose: (d?: string) => void) {
+    if (!show) {
       return;
     }
 
-    return <FolderSelectDialog onClose={onGeneratedClosed} />;
+    return <FolderSelectDialog onClose={onClose} />;
   }
 
   function maybeRenderGenerated() {
@@ -268,6 +281,36 @@ export const Setup: React.FC = () => {
                 variant="secondary"
                 className="text-input"
                 onClick={() => setShowGeneratedDialog(true)}
+              >
+                <Icon icon="ellipsis-h" />
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+        </Form.Group>
+      );
+    }
+  }
+
+  function maybeRenderData() {
+    if (!configuration?.general.dataPath) {
+      return (
+        <Form.Group>
+          <InputGroup>
+            <Form.Control
+              className="text-input"
+              value={dataLocation}
+              placeholder={intl.formatMessage({
+                id: "setup.paths.path_to_data_directory_empty_for_default",
+              })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setDataLocation(e.currentTarget.value)
+              }
+            />
+            <InputGroup.Append>
+              <Button
+                variant="secondary"
+                className="text-input"
+                onClick={() => setShowDataDialog(true)}
               >
                 <Icon icon="ellipsis-h" />
               </Button>
@@ -329,6 +372,7 @@ export const Setup: React.FC = () => {
             />
           </Form.Group>
           {maybeRenderGenerated()}
+          {maybeRenderData()}
         </section>
         <section className="mt-5">
           <div className="d-flex justify-content-center">
@@ -632,7 +676,8 @@ export const Setup: React.FC = () => {
 
   return (
     <Container>
-      {maybeRenderGeneratedSelectDialog()}
+      {maybeRenderFolderSelectDialog(showGeneratedDialog, onGeneratedClosed)}
+      {maybeRenderFolderSelectDialog(showDataDialog, onDataClosed)}
       <h1 className="text-center">
         <FormattedMessage id="setup.stash_setup_wizard" />
       </h1>

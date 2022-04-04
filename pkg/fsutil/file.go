@@ -116,3 +116,30 @@ func Touch(path string) error {
 	}
 	return nil
 }
+
+// CopyFile copies src file to dst. It will overwrite if overwrite is true.
+// An error is returned if overwrite is false and the file exists.
+func CopyFile(src, dst string, overwrite bool) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	flags := os.O_CREATE | os.O_WRONLY
+	if !overwrite {
+		flags |= os.O_TRUNC
+	}
+	out, err := os.OpenFile(dst, flags, 0666)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

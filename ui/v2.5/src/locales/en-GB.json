@@ -250,6 +250,10 @@
       "chrome_cdp_path_desc": "File path to the Chrome executable, or a remote address (starting with http:// or https://, for example http://localhost:9222/json/version) to a Chrome instance.",
       "create_galleries_from_folders_desc": "If true, creates galleries from folders containing images.",
       "create_galleries_from_folders_label": "Create galleries from folders containing images",
+      "data_path": {
+        "description": "Directory location used to store binary database data. This directory must be writable by the user running the application.",
+        "heading": "Data Path"
+      },
       "db_path_head": "Database Path",
       "directory_locations_to_your_content": "Directory locations to your content",
       "excluded_image_gallery_patterns_desc": "Regexps of image and gallery files/paths to exclude from Scan and add to Clean",
@@ -852,6 +856,7 @@
     "paths": {
       "database_filename_empty_for_default": "database filename (empty for default)",
       "description": "Next up, we need to determine where to find your porn collection, where to store the stash database and generated files. These settings can be changed later if needed.",
+      "path_to_data_directory_empty_for_default": "path to data directory (empty for default)",
       "path_to_generated_directory_empty_for_default": "path to generated directory (empty for default)",
       "set_up_your_paths": "Set up your paths",
       "stash_alert": "No library paths have been selected. No media will be able to be scanned into Stash. Are you sure?",
@@ -859,6 +864,8 @@
       "where_can_stash_store_its_database_description": "Stash uses an sqlite database to store your porn metadata. By default, this will be created as <code>stash-go.sqlite</code> in the directory containing your config file. If you want to change this, please enter an absolute or relative (to the current working directory) filename.",
       "where_can_stash_store_its_generated_content": "Where can Stash store its generated content?",
       "where_can_stash_store_its_generated_content_description": "In order to provide thumbnails, previews and sprites, Stash generates images and videos. This also includes transcodes for unsupported file formats. By default, Stash will create a <code>generated</code> directory within the directory containing your config file. If you want to change where this generated media will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
+      "where_can_stash_store_data": "Where can Stash store supporting data?",
+      "where_can_stash_store_data_description": "Stash stores scene and movie covers, and performer, studio and tag images in the file system. By default, Stash will create a <code>data</code> directory within the directory containing your config file. If you want to change where this data will be stored, please enter an absolute or relative (to the current working directory) path. Stash will create this directory if it does not already exist.",
       "where_is_your_porn_located": "Where is your porn located?",
       "where_is_your_porn_located_description": "Add directories containing your porn videos and images. Stash will use these directories to find videos and images during scanning."
     },

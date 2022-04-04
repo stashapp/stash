@@ -331,6 +331,9 @@ func (s *singleton) RefreshConfig() {
 		if err := fsutil.EnsureDir(s.Paths.Generated.InteractiveHeatmap); err != nil {
 			logger.Warnf("could not create directory for Interactive Heatmaps: %v", err)
 		}
+		if err := fsutil.EnsureDir(config.GetDataPath()); err != nil {
+			logger.Warnf("could not create directory for data: %v", err)
+		}
 	}
 }
 

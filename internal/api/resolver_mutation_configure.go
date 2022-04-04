@@ -93,6 +93,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.Generated, input.GeneratedPath)
 	}
 
+	existingDataPath := c.GetDataPath()
+	if input.DataPath != nil && existingDataPath != *input.DataPath {
+		if err := validateDir(config.DataPath, *input.DataPath, false); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		c.Set(config.DataPath, input.DataPath)
+	}
+
 	refreshScraperCache := false
 	existingScrapersPath := c.GetScrapersPath()
 	if input.ScrapersPath != nil && existingScrapersPath != *input.ScrapersPath {

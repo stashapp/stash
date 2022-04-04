@@ -109,6 +109,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
 
         <StringSetting
+          id="data-path"
+          headingID="config.general.data_path.heading"
+          subHeadingID="config.general.data_path.description"
+          value={general.dataPath ?? undefined}
+          onChange={(v) => saveGeneral({ dataPath: v })}
+        />
+
+        <StringSetting
           id="generated-path"
           headingID="config.general.generated_path_head"
           subHeadingID="config.general.generated_files_location"

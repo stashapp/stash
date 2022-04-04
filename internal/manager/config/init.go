@@ -133,20 +133,23 @@ func initFlags() flagStruct {
 }
 
 func initEnvs(viper *viper.Viper) {
-	viper.SetEnvPrefix("stash")     // will be uppercased automatically
-	bindEnv(viper, "host")          // STASH_HOST
-	bindEnv(viper, "port")          // STASH_PORT
-	bindEnv(viper, "external_host") // STASH_EXTERNAL_HOST
-	bindEnv(viper, "generated")     // STASH_GENERATED
-	bindEnv(viper, "metadata")      // STASH_METADATA
-	bindEnv(viper, "cache")         // STASH_CACHE
-	bindEnv(viper, "stash")         // STASH_STASH
+	viper.SetEnvPrefix("stash")      // will be uppercased automatically
+	bindEnv(viper, "host")           // STASH_HOST
+	bindEnv(viper, "port")           // STASH_PORT
+	bindEnv(viper, "external_host")  // STASH_EXTERNAL_HOST
+	bindEnv(viper, "generated")      // STASH_GENERATED
+	bindEnv(viper, "metadata")       // STASH_METADATA
+	bindEnv(viper, "cache")          // STASH_CACHE
+	bindEnv(viper, DataPath, "data") // STASH_DATA
+	bindEnv(viper, "stash")          // STASH_STASH
 }
 
-func bindEnv(viper *viper.Viper, key string) {
-	if err := viper.BindEnv(key); err != nil {
-		panic(fmt.Sprintf("unable to set environment key (%v): %v", key, err))
-	}
+// If only a key is provided, it will use the env key matching the key, uppercased.
+// If more arguments are provided, they will represent the env variable names that
+// should bind to this key and will be taken in the specified order.
+func bindEnv(viper *viper.Viper, keys ...string) {
+	// BindEnv only returns an error if no keys are provided
+	_ = viper.BindEnv(keys...)
 }
 
 func makeOverrideConfig() *viper.Viper {
