@@ -246,7 +246,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           // console.log(`Duration: ${scene.file.duration}`);
           vtt.addOffset("VideoJsPlayer_html5_api", scene.file.duration);
         } else {
-          //vtt.removeOffset("VideoJsPlayer_html5_api", );
+          // vtt.removeOffset("VideoJsPlayer_html5_api", );
         }
       }
     }
