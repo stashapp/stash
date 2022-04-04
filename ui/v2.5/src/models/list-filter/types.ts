@@ -128,4 +128,5 @@ export type CriterionType =
   | "child_tag_count"
   | "performer_favorite"
   | "performer_age"
-  | "duplicated";
+  | "duplicated"
+  | "ignore_auto_tag";

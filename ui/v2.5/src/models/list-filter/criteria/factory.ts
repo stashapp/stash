@@ -8,6 +8,8 @@ import {
   MandatoryNumberCriterionOption,
   StringCriterionOption,
   ILabeledIdCriterion,
+  BooleanCriterion,
+  BooleanCriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";
@@ -176,5 +178,7 @@ export function makeCriteria(type: CriterionType = "none") {
           "child_count"
         )
       );
+    case "ignore_auto_tag":
+      return new BooleanCriterion(new BooleanCriterionOption(type, type));
   }
 }

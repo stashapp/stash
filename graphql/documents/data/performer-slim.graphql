@@ -7,6 +7,7 @@ fragment SlimPerformerData on Performer {
   instagram
   image_path
   favorite
+  ignore_auto_tag
   country
   birthdate
   ethnicity

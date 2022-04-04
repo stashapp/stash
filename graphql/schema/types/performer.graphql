@@ -28,6 +28,7 @@ type Performer {
   aliases: String
   favorite: Boolean!
   tags: [Tag!]!
+  ignore_auto_tag: Boolean!
 
   image_path: String # Resolver
   scene_count: Int # Resolver
@@ -73,6 +74,7 @@ input PerformerCreateInput {
   death_date: String
   hair_color: String
   weight: Int
+  ignore_auto_tag: Boolean
 }
 
 input PerformerUpdateInput {
@@ -103,6 +105,7 @@ input PerformerUpdateInput {
   death_date: String
   hair_color: String
   weight: Int
+  ignore_auto_tag: Boolean
 }
 
 input BulkPerformerUpdateInput {
@@ -130,6 +133,7 @@ input BulkPerformerUpdateInput {
   death_date: String
   hair_color: String
   weight: Int
+  ignore_auto_tag: Boolean
 }
 
 input PerformerDestroyInput {

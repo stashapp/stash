@@ -24,14 +24,16 @@ const (
 const tagName = "testTag"
 
 var (
-	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-	updateTime = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+	autoTagIgnored = true
+	createTime     = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
+	updateTime     = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 )
 
 func createTag(id int) models.Tag {
 	return models.Tag{
-		ID:   id,
-		Name: tagName,
+		ID:            id,
+		Name:          tagName,
+		IgnoreAutoTag: autoTagIgnored,
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
@@ -43,8 +45,9 @@ func createTag(id int) models.Tag {
 
 func createJSONTag(aliases []string, image string, parents []string) *jsonschema.Tag {
 	return &jsonschema.Tag{
-		Name:    tagName,
-		Aliases: aliases,
+		Name:          tagName,
+		Aliases:       aliases,
+		IgnoreAutoTag: autoTagIgnored,
 		CreatedAt: models.JSONTime{
 			Time: createTime,
 		},
