@@ -13,6 +13,7 @@ import "./big-buttons";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
+import vtt from "vtt-live-edit";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
 import { Interactive } from "src/utils/interactive";
@@ -224,15 +225,29 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   useEffect(() => {
     function handleOffset(player: VideoJsPlayer) {
       if (!scene) return;
+      console.log(`handleOffset.`);
 
       const currentSrc = player.currentSrc();
 
       const isDirect =
         currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
+
       if (!isDirect) {
         (player as any).setOffsetDuration(scene.file.duration);
       } else {
         (player as any).clearOffsetDuration();
+      }
+
+      if (scene.captioned) {
+        // console.log(`scene.captioned.`);
+        vtt.setFontColor("#FF0000"); // just a test to see if library even works. caption color never changed to red
+        if (!isDirect) {
+          // console.log(`!isDirect.`);
+          // console.log(`Duration: ${scene.file.duration}`);
+          vtt.addOffset("VideoJsPlayer_html5_api", scene.file.duration);
+        } else {
+          //vtt.removeOffset("VideoJsPlayer_html5_api", );
+        }
       }
     }
 

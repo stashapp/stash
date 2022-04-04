@@ -8108,6 +8108,11 @@ vite@^2.7.1:
   optionalDependencies:
     fsevents "~2.3.2"
 
+vtt-live-edit@^1.0.7:
+  integrity "sha512-6yp0sBhTeAWH6dF99M5eAnVhCHKkmeuFCv/AVWXGs1NF5JueBE907d8BLwqH2VzGYpRX+B2lPZSTZab77dIm4Q=="
+  resolved "https://registry.npmjs.org/vtt-live-edit/-/vtt-live-edit-1.0.7.tgz"
+  version "1.0.7"
+
 warning@^4.0.0, warning@^4.0.3:
   version "4.0.3"
   resolved "https://registry.npmjs.org/warning/-/warning-4.0.3.tgz"
