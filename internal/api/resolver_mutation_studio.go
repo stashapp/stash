@@ -66,6 +66,9 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	if input.Details != nil {
 		newStudio.Details = sql.NullString{String: *input.Details, Valid: true}
 	}
+	if input.IgnoreAutoTag != nil {
+		newStudio.IgnoreAutoTag = *input.IgnoreAutoTag
+	}
 
 	// Start the transaction and save the studio
 	var s *models.Studio
@@ -148,6 +151,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.Details = translator.nullString(input.Details, "details")
 	updatedStudio.ParentID = translator.nullInt64FromString(input.ParentID, "parent_id")
 	updatedStudio.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedStudio.IgnoreAutoTag = input.IgnoreAutoTag
 
 	// Start the transaction and save the studio
 	var s *models.Studio

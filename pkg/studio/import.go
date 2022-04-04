@@ -26,13 +26,14 @@ func (i *Importer) PreImport() error {
 	checksum := md5.FromString(i.Input.Name)
 
 	i.studio = models.Studio{
-		Checksum:  checksum,
-		Name:      sql.NullString{String: i.Input.Name, Valid: true},
-		URL:       sql.NullString{String: i.Input.URL, Valid: true},
-		Details:   sql.NullString{String: i.Input.Details, Valid: true},
-		CreatedAt: models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
-		Rating:    sql.NullInt64{Int64: int64(i.Input.Rating), Valid: true},
+		Checksum:      checksum,
+		Name:          sql.NullString{String: i.Input.Name, Valid: true},
+		URL:           sql.NullString{String: i.Input.URL, Valid: true},
+		Details:       sql.NullString{String: i.Input.Details, Valid: true},
+		IgnoreAutoTag: i.Input.IgnoreAutoTag,
+		CreatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
+		UpdatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
+		Rating:        sql.NullInt64{Int64: int64(i.Input.Rating), Valid: true},
 	}
 
 	if err := i.populateParentStudio(); err != nil {
