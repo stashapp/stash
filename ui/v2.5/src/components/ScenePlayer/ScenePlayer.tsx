@@ -225,13 +225,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     let prevCaptionOffset = 0;
 
     function addCaptionOffset(player: VideoJsPlayer, offset: number) {
-      const tracks = player.remoteTextTracks()
+      const tracks = player.remoteTextTracks();
       for (let i = 0; i < tracks.length; i++) {
         const track = tracks[i];
         const { cues } = track;
         if (cues) {
           for (let j = 0; j < cues.length; j++) {
-            const cue = cues[j]
+            const cue = cues[j];
             cue.startTime = cue.startTime + offset;
             cue.endTime = cue.endTime + offset;
           }
@@ -240,15 +240,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     function removeCaptionOffset(player: VideoJsPlayer, offset: number) {
-      const tracks = player.remoteTextTracks()
+      const tracks = player.remoteTextTracks();
       for (let i = 0; i < tracks.length; i++) {
-        const track = tracks[i]
+        const track = tracks[i];
         const { cues } = track;
         if (cues) {
           for (let j = 0; j < cues.length; j++) {
-            const cue = cues[j]
+            const cue = cues[j];
             cue.startTime = cue.startTime + prevCaptionOffset - offset;
-              cue.endTime = cue.endTime + prevCaptionOffset - offset;
+            cue.endTime = cue.endTime + prevCaptionOffset - offset;
           }
         }
       }
@@ -262,22 +262,24 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
       const isDirect =
         currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
-      
-      const curTime = player.currentTime()
-      console.log(`curTime: ${curTime}, prevCaptionOffset ${prevCaptionOffset}`);
+
+      const curTime = player.currentTime();
+      console.log(
+        `curTime: ${curTime}, prevCaptionOffset ${prevCaptionOffset}`
+      );
       if (!isDirect) {
         (player as any).setOffsetDuration(scene.file.duration);
       } else {
         (player as any).clearOffsetDuration();
       }
 
-      if(curTime != prevCaptionOffset) {
+      if (curTime != prevCaptionOffset) {
         if (!isDirect) {
           removeCaptionOffset(player, curTime);
           prevCaptionOffset = curTime;
           console.log(`updated prevCaptionOffset to ${prevCaptionOffset}`);
         } else {
-          if(prevCaptionOffset != 0) {
+          if (prevCaptionOffset != 0) {
             console.log("restoring caption offset");
             addCaptionOffset(player, prevCaptionOffset);
             prevCaptionOffset = 0;
