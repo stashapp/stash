@@ -20,7 +20,7 @@ interface IIcon {
 const Icon: React.FC<IIcon> = ({ icon, className, color, size }) => (
   <FontAwesomeIcon
     icon={icon}
-    className={`fa-icon ${className}`}
+    className={`fa-icon ${className ?? ""}`}
     color={color}
     size={size}
   />

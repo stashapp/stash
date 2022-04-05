@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"runtime/pprof"
 	"syscall"
 
 	"github.com/apenwarr/fixconsole"
 	"github.com/stashapp/stash/internal/api"
+	"github.com/stashapp/stash/internal/desktop"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/ui"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -28,18 +29,21 @@ func main() {
 	manager.Initialize()
 	api.Start()
 
+	go handleSignals()
+	desktop.Start(manager.GetInstance(), &manager.FaviconProvider{UIBox: ui.UIBox})
+
 	blockForever()
-
-	// stop any profiling at exit
-	pprof.StopCPUProfile()
-
-	manager.GetInstance().Shutdown(0)
 }
 
-func blockForever() {
+func handleSignals() {
 	// handle signals
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
 	<-signals
+	manager.GetInstance().Shutdown(0)
+}
+
+func blockForever() {
+	select {}
 }

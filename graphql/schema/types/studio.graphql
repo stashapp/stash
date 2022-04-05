@@ -6,6 +6,7 @@ type Studio {
   parent_studio: Studio
   child_studios: [Studio!]!
   aliases: [String!]!
+  ignore_auto_tag: Boolean!
 
   image_path: String # Resolver
   scene_count: Int # Resolver
@@ -30,6 +31,7 @@ input StudioCreateInput {
   rating: Int
   details: String
   aliases: [String!]
+  ignore_auto_tag: Boolean
 }
 
 input StudioUpdateInput {
@@ -43,6 +45,7 @@ input StudioUpdateInput {
   rating: Int
   details: String
   aliases: [String!]
+  ignore_auto_tag: Boolean
 }
 
 input StudioDestroyInput {
