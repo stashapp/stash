@@ -390,6 +390,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       details={
         <div className="scene-card__details">
           <span className="scene-card__date">{props.scene.date}</span>
+          <span className="file-path extra-scene-info">{props.scene.path}</span>
           <TruncatedText
             className="scene-card__description"
             text={props.scene.details}
