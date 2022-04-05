@@ -97,7 +97,7 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 }
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
-	filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	filepath := GetInstance().Paths.Scene.GetCoverPath(scene.ID)
 
 	// fall back to the scene image blob if the file isn't present
 	screenshotExists, _ := fsutil.FileExists(filepath)

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -173,7 +172,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	// only update the cover image if provided and everything else was successful
 	if coverImageData != nil {
-		err = scene.SetScreenshot(manager.GetInstance().Paths, s.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
+		err = scene.SetScreenshot(manager.GetInstance().Paths, s.ID, coverImageData)
 		if err != nil {
 			return nil, err
 		}

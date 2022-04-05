@@ -202,10 +202,9 @@ func (s *singleton) generateScreenshot(ctx context.Context, sceneId string, at *
 		}
 
 		task := GenerateScreenshotTask{
-			txnManager:          s.TxnManager,
-			Scene:               *scene,
-			ScreenshotAt:        at,
-			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
+			txnManager:   s.TxnManager,
+			Scene:        *scene,
+			ScreenshotAt: at,
 		}
 
 		task.Start(ctx)

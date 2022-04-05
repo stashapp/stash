@@ -16,10 +16,6 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 
 	scenePaths := p.Scene
 
-	oldPath = scenePaths.GetScreenshotPath(oldHash)
-	newPath = scenePaths.GetScreenshotPath(newHash)
-	migrateSceneFiles(oldPath, newPath)
-
 	oldPath = scenePaths.GetStreamPreviewPath(oldHash)
 	newPath = scenePaths.GetStreamPreviewPath(newHash)
 	migrateSceneFiles(oldPath, newPath)

@@ -1,9 +1,10 @@
 package scene
 
 import (
-	"os"
+	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
@@ -25,6 +26,10 @@ func makeScreenshot(encoder screenshotter, probeResult ffmpeg.VideoFile, outputP
 		Width:      width,
 	}
 
+	if err := fsutil.EnsureDirAll(filepath.Dir(outputPath)); err != nil {
+		logger.Warnf("[encoder] failure to generate screenshot: %v", err)
+		return
+	}
 	if err := encoder.Screenshot(probeResult, options); err != nil {
 		logger.Warnf("[encoder] failure to generate screenshot: %v", err)
 	}
@@ -35,28 +40,19 @@ type ScreenshotSetter interface {
 }
 
 type PathsScreenshotSetter struct {
-	Paths               *paths.Paths
-	FileNamingAlgorithm models.HashAlgorithm
+	Paths *paths.Paths
 }
 
 func (ss *PathsScreenshotSetter) SetScreenshot(scene *models.Scene, imageData []byte) error {
-	checksum := scene.GetHash(ss.FileNamingAlgorithm)
-	return SetScreenshot(ss.Paths, checksum, imageData)
+	return SetScreenshot(ss.Paths, scene.ID, imageData)
 }
 
 func writeImage(path string, imageData []byte) error {
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	_, err = f.Write(imageData)
-	return err
+	return fsutil.WriteFile(path, imageData)
 }
 
-func SetScreenshot(paths *paths.Paths, checksum string, imageData []byte) error {
-	normalPath := paths.Scene.GetScreenshotPath(checksum)
+func SetScreenshot(paths *paths.Paths, sceneID int, imageData []byte) error {
+	normalPath := paths.Scene.GetCoverPath(sceneID)
 
 	return writeImage(normalPath, imageData)
 }

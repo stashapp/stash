@@ -149,7 +149,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 	// We already have this item in the database
 	// check for thumbnails, screenshots
-	scanner.makeScreenshots(path, videoFile, s.GetHash(scanner.FileNamingAlgorithm))
+	scanner.makeScreenshots(path, videoFile, s.ID)
 
 	return nil
 }
@@ -193,12 +193,6 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 		return nil, err
 	}
 
-	sceneHash := oshash
-
-	if scanner.FileNamingAlgorithm == models.HashAlgorithmMd5 {
-		sceneHash = checksum
-	}
-
 	interactive := getInteractive(file.Path())
 
 	if s != nil {
@@ -227,7 +221,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 				return nil, err
 			}
 
-			scanner.makeScreenshots(path, nil, sceneHash)
+			scanner.makeScreenshots(path, nil, s.ID)
 			scanner.PluginCache.ExecutePostHooks(scanner.Ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 		}
 	} else {
@@ -273,7 +267,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 			return nil, err
 		}
 
-		scanner.makeScreenshots(path, videoFile, sceneHash)
+		scanner.makeScreenshots(path, videoFile, retScene.ID)
 		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retScene.ID, plugin.SceneCreatePost, nil, nil)
 	}
 
@@ -294,8 +288,8 @@ func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
 	s.Size = sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true}
 }
 
-func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, checksum string) {
-	normalPath := scanner.Paths.Scene.GetScreenshotPath(checksum)
+func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, sceneID int) {
+	normalPath := scanner.Paths.Scene.GetCoverPath(sceneID)
 
 	normalExists, _ := fsutil.FileExists(normalPath)
 
@@ -318,6 +312,7 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 
 	if !normalExists {
 		logger.Debugf("Creating screenshot for %s", path)
+
 		makeScreenshot(scanner.Screenshotter, *probeResult, normalPath, 2, probeResult.Width, at)
 	}
 }

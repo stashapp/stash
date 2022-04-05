@@ -136,8 +136,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 			DefaultOptions: j.input.Options,
 			Sources:        sources,
 			ScreenshotSetter: &scene.PathsScreenshotSetter{
-				Paths:               instance.Paths,
-				FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
+				Paths: instance.Paths,
 			},
 			SceneUpdatePostHookExecutor: j.postHookExecutor,
 		}

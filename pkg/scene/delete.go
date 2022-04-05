@@ -36,7 +36,7 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 
 	var files []string
 
-	normalPath := d.Paths.Scene.GetScreenshotPath(sceneHash)
+	normalPath := d.Paths.Scene.GetCoverPath(scene.ID)
 	exists, _ = fsutil.FileExists(normalPath)
 	if exists {
 		files = append(files, normalPath)

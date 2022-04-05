@@ -3,6 +3,7 @@ package fsutil
 import (
 	"fmt"
 	"io/fs"
+	"math"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -98,4 +99,28 @@ func GetIntraDir(pattern string, depth, length int) string {
 		intraDir = filepath.Join(intraDir, pattern[length*i:length*(i+1)]) //  adding each time to intradir the extra characters with a filepath join
 	}
 	return intraDir
+}
+
+// GetIntraDirID returns a string that can be added to filepath.Join to implement directory depth with
+// sequential numbers.
+// Where the pattern length is more than provided length, the maxID for length is prepended to the result, then
+// GetIntraDir is called to break the pattern into smaller chunks of the provided length.
+// eg: for an id of 1234 and a length of 3, the result is 1000/001
+// for an id of 12345678 and length 3, the result is 1000/1000000/012/345
+func GetIntraDirID(id int, length int) string {
+	ret := ""
+	thisLen := length
+	max := int(math.Pow10(thisLen))
+	for id >= max {
+		ret = filepath.Join(ret, fmt.Sprintf("%d", max))
+
+		thisLen += length
+		max = int(math.Pow10(thisLen))
+	}
+
+	// convert the id to a string, padding to the required length
+	idStr := fmt.Sprintf("%d", id)
+	idStr = strings.Repeat("0", thisLen-len(idStr)) + idStr
+
+	return filepath.Join(ret, GetIntraDir(idStr, (thisLen/length)-1, length))
 }

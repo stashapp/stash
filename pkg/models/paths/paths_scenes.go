@@ -1,6 +1,7 @@
 package paths
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -8,16 +9,19 @@ import (
 
 type scenePaths struct {
 	generated generatedPaths
+	data      dataPaths
 }
 
 func newScenePaths(p Paths) *scenePaths {
 	sp := scenePaths{}
 	sp.generated = *p.Generated
+	sp.data = *p.Data
 	return &sp
 }
 
-func (sp *scenePaths) GetScreenshotPath(checksum string) string {
-	return filepath.Join(sp.generated.Screenshots, checksum+".jpg")
+func (sp *scenePaths) GetCoverPath(id int) string {
+	fname := fmt.Sprintf("%d_cover.jpg", id)
+	return filepath.Join(sp.data.Scenes, fsutil.GetIntraDirID(id, dataDirLength), fname)
 }
 
 func (sp *scenePaths) GetTranscodePath(checksum string) string {
