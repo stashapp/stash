@@ -113,7 +113,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const playerRef = useRef<VideoJsPlayer | undefined>();
   const sceneId = useRef<string | undefined>();
   const skipButtonsRef = useRef<any>();
-  let prevCaptionOffset = 0;
 
   const [time, setTime] = useState(0);
 
@@ -223,15 +222,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
 
   useEffect(() => {
+    let prevCaptionOffset = 0;
 
     function addCaptionOffset(player: VideoJsPlayer, offset: number) {
       const tracks = player.remoteTextTracks()
       for (let i = 0; i < tracks.length; i++) {
         const track = tracks[i];
-        const cues = track.cues;
+        const { cues } = track;
         if (cues) {
-          for (let i = 0; i < cues.length; i++) {
-            const cue = cues[i]
+          for (let j = 0; j < cues.length; j++) {
+            const cue = cues[j]
             cue.startTime = cue.startTime + offset;
             cue.endTime = cue.startTime + offset;
           }
@@ -243,10 +243,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       const tracks = player.remoteTextTracks()
       for (let i = 0; i < tracks.length; i++) {
         const track = tracks[i]
-        const cues = track.cues;
+        const { cues } = track;
         if (cues) {
-          for (let i = 0; i < cues.length; i++) {
-            const cue = cues[i]
+          for (let j = 0; j < cues.length; j++) {
+            const cue = cues[j]
             cue.startTime = cue.startTime + prevCaptionOffset - offset;
               cue.endTime = cue.endTime + prevCaptionOffset - offset;
           }
@@ -325,7 +325,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       return false;
     }
 
-    function loadCaptions(player: VideoJsPlayer, scene: GQL.SceneDataFragment) {
+    function loadCaptions(player: VideoJsPlayer) {
+      if (!scene) return;
       if (scene.paths.caption_de) {
         console.log(`Caption path : ${scene.paths.caption_de}`);
         player.addRemoteTextTrack(
@@ -464,7 +465,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     if (scene.captioned) {
-      loadCaptions(player, scene);
+      loadCaptions(player);
     }
 
     player.currentTime(0);
