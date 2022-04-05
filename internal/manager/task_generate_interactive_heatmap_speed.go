@@ -47,7 +47,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 
 	var s *models.Scene
 
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		s, err = r.Scene().FindByPath(t.Scene.Path)
 		return err
@@ -56,7 +56,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 		return
 	}
 
-	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 		qb := r.Scene()
 		scenePartial := models.ScenePartial{
 			ID:               s.ID,

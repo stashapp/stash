@@ -75,7 +75,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 				if len(j.input.SceneIDs) > 0 {
 					scenes, err = qb.FindMany(sceneIDs)
 					for _, s := range scenes {
-						j.queueSceneJobs(s, queue, &totals)
+						j.queueSceneJobs(ctx, s, queue, &totals)
 					}
 				}
 
@@ -165,7 +165,7 @@ func (j *GenerateJob) queueTasks(ctx context.Context, queue chan<- Task) totalsG
 					return context.Canceled
 				}
 
-				j.queueSceneJobs(ss, queue, &totals)
+				j.queueSceneJobs(ctx, ss, queue, &totals)
 			}
 
 			if len(scenes) != batchSize {
@@ -185,7 +185,7 @@ func (j *GenerateJob) queueTasks(ctx context.Context, queue chan<- Task) totalsG
 	return totals
 }
 
-func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, totals *totalsGenerate) {
+func (j *GenerateJob) queueSceneJobs(ctx context.Context, scene *models.Scene, queue chan<- Task, totals *totalsGenerate) {
 	if utils.IsTrue(j.input.Sprites) {
 		task := &GenerateSpriteTask{
 			Scene:               *scene,
@@ -243,7 +243,7 @@ func (j *GenerateJob) queueSceneJobs(scene *models.Scene, queue chan<- Task, tot
 			Screenshot:          utils.IsTrue(j.input.MarkerScreenshots),
 		}
 
-		markers := task.markersNeeded()
+		markers := task.markersNeeded(ctx)
 		if markers > 0 {
 			totals.markers += int64(markers)
 			totals.tasks++

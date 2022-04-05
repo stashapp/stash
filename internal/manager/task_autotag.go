@@ -74,7 +74,7 @@ func (j *autoTagJob) autoTagSpecific(ctx context.Context, progress *job.Progress
 	studioCount := len(studioIds)
 	tagCount := len(tagIds)
 
-	if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		performerQuery := r.Performer()
 		studioQuery := r.Studio()
 		tagQuery := r.Tag()
@@ -124,7 +124,7 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 	for _, performerId := range performerIds {
 		var performers []*models.Performer
 
-		if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			performerQuery := r.Performer()
 
 			if performerId == "*" {
@@ -156,7 +156,7 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 					return nil
 				}
 
-				if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				if err := j.txnManager.WithTxn(ctx, func(r models.Repository) error {
 					if err := autotag.PerformerScenes(performer, paths, r.Scene(), &j.cache); err != nil {
 						return err
 					}
@@ -191,7 +191,7 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 	for _, studioId := range studioIds {
 		var studios []*models.Studio
 
-		if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			studioQuery := r.Studio()
 			if studioId == "*" {
 				var err error
@@ -223,7 +223,7 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 					return nil
 				}
 
-				if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				if err := j.txnManager.WithTxn(ctx, func(r models.Repository) error {
 					aliases, err := r.Studio().GetAliases(studio.ID)
 					if err != nil {
 						return err
@@ -262,7 +262,7 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 
 	for _, tagId := range tagIds {
 		var tags []*models.Tag
-		if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			tagQuery := r.Tag()
 			if tagId == "*" {
 				var err error
@@ -289,7 +289,7 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 					return nil
 				}
 
-				if err := j.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				if err := j.txnManager.WithTxn(ctx, func(r models.Repository) error {
 					aliases, err := r.Tag().GetAliases(tag.ID)
 					if err != nil {
 						return err

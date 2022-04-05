@@ -58,7 +58,7 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 		if i != nil {
 			if t.zipGallery != nil {
 				// associate with gallery
-				if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 					return gallery.AddImage(r.Gallery(), t.zipGallery.ID, i.ID)
 				}); err != nil {
 					logger.Error(err.Error())
@@ -69,7 +69,7 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 				logger.Infof("Associating image %s with folder gallery", i.Path)
 				var galleryID int
 				var isNewGallery bool
-				if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 					var err error
 					galleryID, isNewGallery, err = t.associateImageWithFolderGallery(i.ID, r.Gallery())
 					return err

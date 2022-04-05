@@ -121,7 +121,7 @@ func Initialize() *singleton {
 			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
-		if err = initFFMPEG(); err != nil {
+		if err = initFFMPEG(ctx); err != nil {
 			logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
 		}
 
@@ -189,9 +189,7 @@ func initProfiling(cpuProfilePath string) {
 	}
 }
 
-func initFFMPEG() error {
-	ctx := context.TODO()
-
+func initFFMPEG(ctx context.Context) error {
 	// only do this if we have a config file set
 	if instance.Config.GetConfigFile() != "" {
 		// use same directory as config path
@@ -405,7 +403,7 @@ func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
 
 	s.Config.FinalizeSetup()
 
-	if err := initFFMPEG(); err != nil {
+	if err := initFFMPEG(ctx); err != nil {
 		return fmt.Errorf("error initializing FFMPEG subsystem: %v", err)
 	}
 
