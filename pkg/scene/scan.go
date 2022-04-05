@@ -364,9 +364,9 @@ func getCaption(path string) string {
 		}
 		if err == nil {
 			if len(captions) == 0 {
-				captions = captions + l
+				captions += l
 			} else {
-				captions = captions + "|" + l
+				captions += "|" + l
 			}
 		}
 	}
