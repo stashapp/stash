@@ -113,6 +113,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const playerRef = useRef<VideoJsPlayer | undefined>();
   const sceneId = useRef<string | undefined>();
   const skipButtonsRef = useRef<any>();
+  let prevCaptionOffset = 0;
 
   const [time, setTime] = useState(0);
 
@@ -223,51 +224,31 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
 
-    // let orginalTracks;
-
-    function addCaptionOffset(player: VideoJsPlayer, originalTracks: any, offset: number) {
+    function addCaptionOffset(player: VideoJsPlayer, offset: number) {
       const tracks = player.remoteTextTracks()
-      console.log(`Remote tracks length : ${tracks.length}`);
       for (let i = 0; i < tracks.length; i++) {
-        const track = tracks[i]
-        const origTrack = originalTracks[i]
-        console.log(`track  : ${track as any}`);
-        if (track.mode == 'showing') {
-          console.log(`Is showing  : ${track.label}`);
-          const cues = track.cues;
-          const origCues = track.cues;
-          if (cues && origCues) {
-            for (let i = 0; i < cues.length; i++) {
-              const cue = cues[i]
-              const orgCue = origCues[i]
-              console.log(`cue start  : ${cue.startTime}`);
-              cue.startTime = orgCue.startTime + offset;
-              cue.endTime = orgCue.endTime + offset;
-            }
+        const track = tracks[i];
+        const cues = track.cues;
+        if (cues) {
+          for (let i = 0; i < cues.length; i++) {
+            const cue = cues[i]
+            cue.startTime = cue.startTime + offset;
+            cue.endTime = cue.startTime + offset;
           }
         }
       }
     }
 
-    function removeCaptionOffset(player: VideoJsPlayer, originalTracks: any, offset: number) {
+    function removeCaptionOffset(player: VideoJsPlayer, offset: number) {
       const tracks = player.remoteTextTracks()
-      console.log(`Remote tracks length : ${tracks.length}`);
       for (let i = 0; i < tracks.length; i++) {
         const track = tracks[i]
-        const origTrack = originalTracks[i]
-        console.log(`track  : ${track as any}`);
-        if (track.mode == 'showing') {
-          console.log(`Is showing  : ${track.label}`);
-          const cues = track.cues;
-          const origCues = track.cues;
-          if (cues && origCues) {
-            for (let i = 0; i < cues.length; i++) {
-              const cue = cues[i]
-              const orgCue = origCues[i]
-              console.log(`cue start  : ${cue.startTime}`);
-              cue.startTime = orgCue.startTime - offset;
-              cue.endTime = orgCue.endTime - offset;
-            }
+        const cues = track.cues;
+        if (cues) {
+          for (let i = 0; i < cues.length; i++) {
+            const cue = cues[i]
+            cue.startTime = cue.startTime + prevCaptionOffset - offset;
+              cue.endTime = cue.endTime + prevCaptionOffset - offset;
           }
         }
       }
@@ -283,19 +264,23 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
       
       const curTime = player.currentTime()
+      console.log(`curTime: ${curTime}, prevCaptionOffset ${prevCaptionOffset}`);
       if (!isDirect) {
         (player as any).setOffsetDuration(scene.file.duration);
       } else {
         (player as any).clearOffsetDuration();
       }
 
-      if (scene.captioned) {
-        console.log(`curTime: ${curTime}`);
-        if (curTime) {
-          if (!isDirect) {
-            removeCaptionOffset(player, originalTracks, curTime)
-          } else {
-            player.remoteTextTracks = originalTracks;
+      if(curTime != prevCaptionOffset) {
+        if (!isDirect) {
+          removeCaptionOffset(player, curTime);
+          prevCaptionOffset = curTime;
+          console.log(`updated prevCaptionOffset to ${prevCaptionOffset}`);
+        } else {
+          if(prevCaptionOffset != 0) {
+            console.log("restoring caption offset");
+            addCaptionOffset(player, prevCaptionOffset);
+            prevCaptionOffset = 0;
           }
         }
       }
@@ -340,81 +325,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       return false;
     }
 
-    function deepCopy<T>(instance : T) : T {
-      if ( instance == null){
-          return instance;
-      }
-  
-      // handle Dates
-      if (instance instanceof Date) {
-          return new Date(instance.getTime()) as any;
-      }
-  
-      // handle Array types
-      if (instance instanceof Array){
-          var cloneArr = [] as any[];
-          (instance as any[]).forEach((value)  => {cloneArr.push(value)});
-          // for nested objects
-          return cloneArr.map((value: any) => deepCopy<any>(value)) as any;
-      }
-      // handle objects
-      if (instance instanceof Object) {
-          var copyInstance = { ...(instance as { [key: string]: any }
-          ) } as { [key: string]: any };
-          for (var attr in instance) {
-              if ( (instance as Object).hasOwnProperty(attr)) 
-                  copyInstance[attr] = deepCopy<any>(instance[attr]);
-          }
-          return copyInstance as T;
-      }
-      // handling primitive data types
-      return instance;
-  }
-
-
-    if (!scene || scene.id === sceneId.current) return;
-    sceneId.current = scene.id;
-
-    const player = playerRef.current;
-    if (!player) return;
-
-    const auto =
-      autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
-    if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
-    else player.poster("");
-
-    // clear the offset before loading anything new.
-    // otherwise, the offset will be applied to the next file when
-    // currentTime is called.
-    (player as any).clearOffsetDuration();
-
-    const tracks = player.remoteTextTracks();
-    console.log(`Track Length : ${tracks.length}`);
-    for (let i = 0; i < tracks.length; i++) {
-      console.log(`Removing : ${tracks[i] as any}`);
-      player.removeRemoteTextTrack(tracks[i] as any);
-    }
-
-    player.src(
-      scene.sceneStreams.map((stream) => ({
-        src: stream.url,
-        type: stream.mime_type ?? undefined,
-        label: stream.label ?? undefined,
-      }))
-    );
-
-    if (scene.paths.chapters_vtt) {
-      player.addRemoteTextTrack(
-        {
-          src: scene.paths.chapters_vtt,
-          kind: "chapters",
-          default: true,
-        },
-        true
-      );
-    }
-
-    if (scene.captioned) {
+    function loadCaptions(player: VideoJsPlayer, scene: GQL.SceneDataFragment) {
       if (scene.paths.caption_de) {
         console.log(`Caption path : ${scene.paths.caption_de}`);
         player.addRemoteTextTrack(
@@ -510,7 +421,52 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
     }
 
-    const originalTracks = deepCopy(player.remoteTextTracks);
+    if (!scene || scene.id === sceneId.current) return;
+    sceneId.current = scene.id;
+
+    const player = playerRef.current;
+    if (!player) return;
+
+    const auto =
+      autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
+    if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
+    else player.poster("");
+
+    // clear the offset before loading anything new.
+    // otherwise, the offset will be applied to the next file when
+    // currentTime is called.
+    (player as any).clearOffsetDuration();
+
+    const tracks = player.remoteTextTracks();
+    console.log(`Track Length : ${tracks.length}`);
+    for (let i = 0; i < tracks.length; i++) {
+      console.log(`Removing : ${tracks[i] as any}`);
+      player.removeRemoteTextTrack(tracks[i] as any);
+    }
+
+    player.src(
+      scene.sceneStreams.map((stream) => ({
+        src: stream.url,
+        type: stream.mime_type ?? undefined,
+        label: stream.label ?? undefined,
+      }))
+    );
+
+    if (scene.paths.chapters_vtt) {
+      player.addRemoteTextTrack(
+        {
+          src: scene.paths.chapters_vtt,
+          kind: "chapters",
+          default: true,
+        },
+        true
+      );
+    }
+
+    if (scene.captioned) {
+      loadCaptions(player, scene);
+    }
+
     player.currentTime(0);
 
     player.loop(
@@ -541,12 +497,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       if (scene.interactive) {
         interactiveClient.ensurePlaying(this.currentTime());
       }
-
       setTime(this.currentTime());
     });
 
     player.on("seeking", function (this: VideoJsPlayer) {
-      // backwards compatibility - may want to remove this in future
       this.play();
     });
 
