@@ -77,7 +77,6 @@
     "vite": "^2.7.1",
     "vite-plugin-compression": "^0.3.5",
     "vite-tsconfig-paths": "^3.3.17",
-    "vtt-live-edit": "^1.0.7",
     "ws": "^7.4.6",
     "yup": "^0.32.9"
   },

@@ -13,7 +13,6 @@ import "./big-buttons";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
-import vtt from "vtt-live-edit";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
 import { Interactive } from "src/utils/interactive";
@@ -223,6 +222,57 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
 
   useEffect(() => {
+
+    // let orginalTracks;
+
+    function addCaptionOffset(player: VideoJsPlayer, originalTracks: any, offset: number) {
+      const tracks = player.remoteTextTracks()
+      console.log(`Remote tracks length : ${tracks.length}`);
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i]
+        const origTrack = originalTracks[i]
+        console.log(`track  : ${track as any}`);
+        if (track.mode == 'showing') {
+          console.log(`Is showing  : ${track.label}`);
+          const cues = track.cues;
+          const origCues = track.cues;
+          if (cues && origCues) {
+            for (let i = 0; i < cues.length; i++) {
+              const cue = cues[i]
+              const orgCue = origCues[i]
+              console.log(`cue start  : ${cue.startTime}`);
+              cue.startTime = orgCue.startTime + offset;
+              cue.endTime = orgCue.endTime + offset;
+            }
+          }
+        }
+      }
+    }
+
+    function removeCaptionOffset(player: VideoJsPlayer, originalTracks: any, offset: number) {
+      const tracks = player.remoteTextTracks()
+      console.log(`Remote tracks length : ${tracks.length}`);
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i]
+        const origTrack = originalTracks[i]
+        console.log(`track  : ${track as any}`);
+        if (track.mode == 'showing') {
+          console.log(`Is showing  : ${track.label}`);
+          const cues = track.cues;
+          const origCues = track.cues;
+          if (cues && origCues) {
+            for (let i = 0; i < cues.length; i++) {
+              const cue = cues[i]
+              const orgCue = origCues[i]
+              console.log(`cue start  : ${cue.startTime}`);
+              cue.startTime = orgCue.startTime - offset;
+              cue.endTime = orgCue.endTime - offset;
+            }
+          }
+        }
+      }
+    }
+
     function handleOffset(player: VideoJsPlayer) {
       if (!scene) return;
       console.log(`handleOffset.`);
@@ -231,7 +281,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
       const isDirect =
         currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
-
+      
+      const curTime = player.currentTime()
       if (!isDirect) {
         (player as any).setOffsetDuration(scene.file.duration);
       } else {
@@ -239,14 +290,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
 
       if (scene.captioned) {
-        // console.log(`scene.captioned.`);
-        vtt.setFontColor("#FF0000"); // just a test to see if library even works. caption color never changed to red
-        if (!isDirect) {
-          // console.log(`!isDirect.`);
-          // console.log(`Duration: ${scene.file.duration}`);
-          vtt.addOffset("VideoJsPlayer_html5_api", scene.file.duration);
-        } else {
-          // vtt.removeOffset("VideoJsPlayer_html5_api", );
+        console.log(`curTime: ${curTime}`);
+        if (curTime) {
+          if (!isDirect) {
+            removeCaptionOffset(player, originalTracks, curTime)
+          } else {
+            player.remoteTextTracks = originalTracks;
+          }
         }
       }
     }
@@ -289,6 +339,38 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
       return false;
     }
+
+    function deepCopy<T>(instance : T) : T {
+      if ( instance == null){
+          return instance;
+      }
+  
+      // handle Dates
+      if (instance instanceof Date) {
+          return new Date(instance.getTime()) as any;
+      }
+  
+      // handle Array types
+      if (instance instanceof Array){
+          var cloneArr = [] as any[];
+          (instance as any[]).forEach((value)  => {cloneArr.push(value)});
+          // for nested objects
+          return cloneArr.map((value: any) => deepCopy<any>(value)) as any;
+      }
+      // handle objects
+      if (instance instanceof Object) {
+          var copyInstance = { ...(instance as { [key: string]: any }
+          ) } as { [key: string]: any };
+          for (var attr in instance) {
+              if ( (instance as Object).hasOwnProperty(attr)) 
+                  copyInstance[attr] = deepCopy<any>(instance[attr]);
+          }
+          return copyInstance as T;
+      }
+      // handling primitive data types
+      return instance;
+  }
+
 
     if (!scene || scene.id === sceneId.current) return;
     sceneId.current = scene.id;
@@ -428,6 +510,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
     }
 
+    const originalTracks = deepCopy(player.remoteTextTracks);
     player.currentTime(0);
 
     player.loop(
