@@ -31,7 +31,6 @@ func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
 		Scanner:             scene.FileScanner(&file.FSHasher{}, t.fileNamingAlgorithm, t.calculateMD5),
 		StripFileExtension:  t.StripFileExtension,
 		FileNamingAlgorithm: t.fileNamingAlgorithm,
-		Ctx:                 t.ctx,
 		TxnManager:          t.TxnManager,
 		Paths:               GetInstance().Paths,
 		Screenshotter:       &instance.FFMPEG,
@@ -42,7 +41,7 @@ func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
 	}
 
 	if s != nil {
-		if err := scanner.ScanExisting(s, t.file); err != nil {
+		if err := scanner.ScanExisting(ctx, s, t.file); err != nil {
 			return logError(err)
 		}
 
@@ -50,7 +49,7 @@ func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
 	}
 
 	var err error
-	retScene, err = scanner.ScanNew(t.file)
+	retScene, err = scanner.ScanNew(ctx, t.file)
 	if err != nil {
 		return logError(err)
 	}

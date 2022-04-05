@@ -34,7 +34,6 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 	scanner := image.Scanner{
 		Scanner:            image.FileScanner(&file.FSHasher{}),
 		StripFileExtension: t.StripFileExtension,
-		Ctx:                t.ctx,
 		TxnManager:         t.TxnManager,
 		Paths:              GetInstance().Paths,
 		PluginCache:        instance.PluginCache,
@@ -43,13 +42,13 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 
 	var err error
 	if i != nil {
-		i, err = scanner.ScanExisting(i, t.file)
+		i, err = scanner.ScanExisting(ctx, i, t.file)
 		if err != nil {
 			logger.Error(err.Error())
 			return
 		}
 	} else {
-		i, err = scanner.ScanNew(t.file)
+		i, err = scanner.ScanNew(ctx, t.file)
 		if err != nil {
 			logger.Error(err.Error())
 			return
@@ -79,7 +78,7 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 				}
 
 				if isNewGallery {
-					GetInstance().PluginCache.ExecutePostHooks(t.ctx, galleryID, plugin.GalleryCreatePost, nil, nil)
+					GetInstance().PluginCache.ExecutePostHooks(ctx, galleryID, plugin.GalleryCreatePost, nil, nil)
 				}
 			}
 		}

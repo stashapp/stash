@@ -97,7 +97,6 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			GenerateThumbnails:   utils.IsTrue(input.ScanGenerateThumbnails),
 			progress:             progress,
 			CaseSensitiveFs:      f.caseSensitiveFs,
-			ctx:                  ctx,
 			mutexManager:         mutexManager,
 		}
 
@@ -248,7 +247,6 @@ func (j *ScanJob) doesPathExist(ctx context.Context, path string) bool {
 }
 
 type ScanTask struct {
-	ctx                  context.Context
 	TxnManager           models.TransactionManager
 	file                 file.SourceFile
 	UseFileMetadata      bool

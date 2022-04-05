@@ -42,7 +42,6 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 		Scanner:            gallery.FileScanner(&file.FSHasher{}),
 		ImageExtensions:    instance.Config.GetImageExtensions(),
 		StripFileExtension: t.StripFileExtension,
-		Ctx:                t.ctx,
 		CaseSensitiveFs:    t.CaseSensitiveFs,
 		TxnManager:         t.TxnManager,
 		Paths:              instance.Paths,
@@ -52,7 +51,7 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 
 	var err error
 	if g != nil {
-		g, scanImages, err = scanner.ScanExisting(g, t.file)
+		g, scanImages, err = scanner.ScanExisting(ctx, g, t.file)
 		if err != nil {
 			logger.Error(err.Error())
 			return
@@ -61,7 +60,7 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 		// scan the zip files if the gallery has no images
 		scanImages = scanImages || images == 0
 	} else {
-		g, scanImages, err = scanner.ScanNew(t.file)
+		g, scanImages, err = scanner.ScanNew(ctx, t.file)
 		if err != nil {
 			logger.Error(err.Error())
 		}
