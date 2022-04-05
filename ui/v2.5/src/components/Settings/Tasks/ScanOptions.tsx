@@ -14,6 +14,7 @@ export const ScanOptions: React.FC<IScanOptions> = ({
   const {
     useFileMetadata,
     stripFileExtension,
+    scanDetectSubtitles,
     scanGeneratePreviews,
     scanGenerateImagePreviews,
     scanGenerateSprites,
@@ -74,6 +75,12 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         checked={useFileMetadata ?? false}
         headingID="config.tasks.set_name_date_details_from_metadata_if_present"
         onChange={(v) => setOptions({ useFileMetadata: v })}
+      />
+      <BooleanSetting
+        id="scan-detect-subtitles"
+        checked={scanDetectSubtitles ?? false}
+        headingID="config.tasks.detect_subtitles_during_scan"
+        onChange={(v) => setOptions({ scanDetectSubtitles: v })}
       />
     </>
   );

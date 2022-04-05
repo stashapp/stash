@@ -30,6 +30,7 @@ type Scanner struct {
 
 	StripFileExtension  bool
 	UseFileMetadata     bool
+	DetectSubtitles     bool
 	FileNamingAlgorithm models.HashAlgorithm
 
 	Ctx              context.Context
@@ -61,9 +62,14 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	path := scanned.New.Path
 	interactive := getInteractive(path)
 
-	captioned := getCaption(file.Path())
-	if captioned {
-		logger.Debugf("Found subtitle for file %s", path)
+	captioned := s.Captioned
+	captions := s.Captions
+	if scanner.DetectSubtitles {
+		captions = getCaption(file.Path())
+		captioned = len(captions) > 0
+		if captioned {
+			logger.Debugf("Found subtitle for file %s", path)
+		}
 	}
 
 	oldHash := s.GetHash(scanner.FileNamingAlgorithm)
@@ -83,7 +89,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 		videoFileToScene(s, videoFile)
 		changed = true
-	} else if scanned.FileUpdated() || s.Interactive != interactive || s.Captioned != captioned {
+	} else if scanned.FileUpdated() || s.Interactive != interactive || s.Captioned != captioned || s.Captions != captions {
 		logger.Infof("Updated scene file %s", path)
 
 		// update fields as needed
@@ -136,6 +142,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 			s.Interactive = interactive
 			s.Captioned = captioned
+			s.Captions = captions
 			s.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
 			_, err := qb.UpdateFull(*s)
@@ -207,7 +214,8 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 
 	interactive := getInteractive(file.Path())
 
-	captioned := getCaption(file.Path())
+	captions := getCaption(file.Path())
+	captioned := len(captions) > 0
 
 	if s != nil {
 		exists, _ := fsutil.FileExists(s.Path)
@@ -228,6 +236,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 				Path:        &path,
 				Interactive: &interactive,
 				Captioned:   &captioned,
+				Captions:    &captions,
 			}
 			if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				_, err := r.Scene().Update(scenePartial)
@@ -266,6 +275,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			Interactive: interactive,
 			Captioned:   captioned,
+			Captions:    captions,
 		}
 
 		videoFileToScene(&newScene, videoFile)
@@ -344,7 +354,8 @@ func getInteractive(path string) bool {
 	return err == nil
 }
 
-func getCaption(path string) bool {
+func getCaption(path string) string {
+	captions := ""
 	langs := []string{"de", "en", "es", "fr", "it", "nl", "pt"}
 	for _, l := range langs {
 		_, err := os.Stat(GetCaptionPath(path, l, "vtt"))
@@ -352,8 +363,12 @@ func getCaption(path string) bool {
 			_, err = os.Stat(GetCaptionPath(path, l, "srt"))
 		}
 		if err == nil {
-			return true
+			if len(captions) == 0 {
+				captions = captions + l
+			} else {
+				captions = captions + "|" + l
+			}
 		}
 	}
-	return false
+	return captions
 }

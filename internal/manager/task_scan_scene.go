@@ -39,6 +39,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		PluginCache:         instance.PluginCache,
 		MutexManager:        t.mutexManager,
 		UseFileMetadata:     t.UseFileMetadata,
+		DetectSubtitles:     t.DetectSubtitles,
 	}
 
 	if s != nil {

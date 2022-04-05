@@ -37,6 +37,7 @@ type Scene struct {
 	Interactive      bool                `db:"interactive" json:"interactive"`
 	InteractiveSpeed sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
 	Captioned        bool                `db:"captioned" json:"captioned"`
+	Captions         string              `db:"captions" json:"captions"`
 }
 
 func (s *Scene) File() File {
@@ -122,6 +123,7 @@ type ScenePartial struct {
 	Interactive      *bool                `db:"interactive" json:"interactive"`
 	InteractiveSpeed *sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
 	Captioned        *bool                `db:"captioned" json:"captioned"`
+	Captions         *string              `db:"captions" json:"captions"`
 }
 
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.

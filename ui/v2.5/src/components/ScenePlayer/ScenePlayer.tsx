@@ -275,9 +275,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
       if (curTime != prevCaptionOffset) {
         if (!isDirect) {
-          removeCaptionOffset(player, curTime);
-          prevCaptionOffset = curTime;
-          console.log(`updated prevCaptionOffset to ${prevCaptionOffset}`);
+          if (prevCaptionOffset != 0) {
+            removeCaptionOffset(player, curTime);
+            prevCaptionOffset = curTime;
+            console.log(`updated prevCaptionOffset to ${prevCaptionOffset}`);
+          }
         } else {
           if (prevCaptionOffset != 0) {
             console.log("restoring caption offset");
@@ -329,7 +331,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function loadCaptions(player: VideoJsPlayer) {
       if (!scene) return;
-      if (scene.paths.caption_de) {
+
+      if (scene.captions?.includes("de") && scene.paths.caption_de) {
         console.log(`Caption path : ${scene.paths.caption_de}`);
         player.addRemoteTextTrack(
           {
@@ -343,7 +346,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         );
       }
 
-      if (scene.paths.caption_en) {
+      if (scene.captions?.includes("en") && scene.paths.caption_en) {
         console.log(`Caption path : ${scene.paths.caption_en}`);
         player.addRemoteTextTrack(
           {
@@ -358,7 +361,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         );
       }
 
-      if (scene.paths.caption_es) {
+      if (scene.captions?.includes("es") && scene.paths.caption_es) {
         player.addRemoteTextTrack(
           {
             src: scene.paths.caption_es,
@@ -371,7 +374,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         );
       }
 
-      if (scene.paths.caption_fr) {
+      if (scene.captions?.includes("fr") && scene.paths.caption_fr) {
         player.addRemoteTextTrack(
           {
             src: scene.paths.caption_fr,
@@ -384,7 +387,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         );
       }
 
-      if (scene.paths.caption_it) {
+      if (scene.captions?.includes("it") && scene.paths.caption_it) {
         player.addRemoteTextTrack(
           {
             src: scene.paths.caption_it,
@@ -397,7 +400,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         );
       }
 
-      if (scene.paths.caption_nl) {
+      if (scene.captions?.includes("nl") && scene.paths.caption_nl) {
         player.addRemoteTextTrack(
           {
             src: scene.paths.caption_nl,
@@ -410,7 +413,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         );
       }
 
-      if (scene.paths.caption_pt) {
+      if (scene.captions?.includes("pt") && scene.paths.caption_pt) {
         player.addRemoteTextTrack(
           {
             src: scene.paths.caption_pt,
