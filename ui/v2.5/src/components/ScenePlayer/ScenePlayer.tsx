@@ -233,7 +233,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           for (let j = 0; j < cues.length; j++) {
             const cue = cues[j]
             cue.startTime = cue.startTime + offset;
-            cue.endTime = cue.startTime + offset;
+            cue.endTime = cue.endTime + offset;
           }
         }
       }
