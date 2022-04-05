@@ -480,7 +480,7 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context, r models.ReaderRep
 
 			var wg sync.WaitGroup
 			wg.Add(1)
-			go tt.Start(&wg)
+			go tt.Start(ctx, &wg)
 			wg.Wait()
 
 			t.progress.Increment()
@@ -533,7 +533,7 @@ func (t *autoTagFilesTask) processImages(ctx context.Context, r models.ReaderRep
 
 			var wg sync.WaitGroup
 			wg.Add(1)
-			go tt.Start(&wg)
+			go tt.Start(ctx, &wg)
 			wg.Wait()
 
 			t.progress.Increment()
@@ -586,7 +586,7 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context, r models.Reader
 
 			var wg sync.WaitGroup
 			wg.Add(1)
-			go tt.Start(&wg)
+			go tt.Start(ctx, &wg)
 			wg.Wait()
 
 			t.progress.Increment()
@@ -653,9 +653,9 @@ type autoTagSceneTask struct {
 	cache *match.Cache
 }
 
-func (t *autoTagSceneTask) Start(wg *sync.WaitGroup) {
+func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 		if t.performers {
 			if err := autotag.ScenePerformers(t.scene, r.Scene(), r.Performer(), t.cache); err != nil {
 				return fmt.Errorf("error tagging scene performers for %s: %v", t.scene.Path, err)
@@ -689,9 +689,9 @@ type autoTagImageTask struct {
 	cache *match.Cache
 }
 
-func (t *autoTagImageTask) Start(wg *sync.WaitGroup) {
+func (t *autoTagImageTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 		if t.performers {
 			if err := autotag.ImagePerformers(t.image, r.Image(), r.Performer(), t.cache); err != nil {
 				return fmt.Errorf("error tagging image performers for %s: %v", t.image.Path, err)
@@ -725,9 +725,9 @@ type autoTagGalleryTask struct {
 	cache *match.Cache
 }
 
-func (t *autoTagGalleryTask) Start(wg *sync.WaitGroup) {
+func (t *autoTagGalleryTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 		if t.performers {
 			if err := autotag.GalleryPerformers(t.gallery, r.Gallery(), r.Performer(), t.cache); err != nil {
 				return fmt.Errorf("error tagging gallery performers for %s: %v", t.gallery.Path.String, err)

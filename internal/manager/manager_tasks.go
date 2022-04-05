@@ -108,7 +108,7 @@ func (s *singleton) Export(ctx context.Context) (int, error) {
 			full:                true,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
-		task.Start(&wg)
+		task.Start(ctx, &wg)
 	})
 
 	return s.JobManager.Add(ctx, "Exporting...", j), nil
@@ -384,7 +384,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 		for _, task := range tasks {
 			wg.Add(1)
 			progress.ExecuteTask(task.Description(), func() {
-				task.Start()
+				task.Start(ctx)
 				wg.Done()
 			})
 

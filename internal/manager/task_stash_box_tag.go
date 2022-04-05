@@ -22,8 +22,8 @@ type StashBoxPerformerTagTask struct {
 	excluded_fields []string
 }
 
-func (t *StashBoxPerformerTagTask) Start() {
-	t.stashBoxPerformerTag(context.TODO())
+func (t *StashBoxPerformerTagTask) Start(ctx context.Context) {
+	t.stashBoxPerformerTag(ctx)
 }
 
 func (t *StashBoxPerformerTagTask) Description() string {
