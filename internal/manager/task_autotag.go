@@ -55,13 +55,12 @@ func (j *autoTagJob) autoTagFiles(ctx context.Context, progress *job.Progress, p
 		performers: performers,
 		studios:    studios,
 		tags:       tags,
-		ctx:        ctx,
 		progress:   progress,
 		txnManager: j.txnManager,
 		cache:      &j.cache,
 	}
 
-	t.process()
+	t.process(ctx)
 }
 
 func (j *autoTagJob) autoTagSpecific(ctx context.Context, progress *job.Progress) {
@@ -327,7 +326,6 @@ type autoTagFilesTask struct {
 	studios    bool
 	tags       bool
 
-	ctx        context.Context
 	progress   *job.Progress
 	txnManager models.TransactionManager
 	cache      *match.Cache
@@ -449,8 +447,8 @@ func (t *autoTagFilesTask) getCount(r models.ReaderRepository) (int, error) {
 	return sceneCount + imageCount + galleryCount, nil
 }
 
-func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
-	if job.IsCancelled(t.ctx) {
+func (t *autoTagFilesTask) processScenes(ctx context.Context, r models.ReaderRepository) error {
+	if job.IsCancelled(ctx) {
 		return nil
 	}
 
@@ -467,7 +465,7 @@ func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
 		}
 
 		for _, ss := range scenes {
-			if job.IsCancelled(t.ctx) {
+			if job.IsCancelled(ctx) {
 				return nil
 			}
 
@@ -502,8 +500,8 @@ func (t *autoTagFilesTask) processScenes(r models.ReaderRepository) error {
 	return nil
 }
 
-func (t *autoTagFilesTask) processImages(r models.ReaderRepository) error {
-	if job.IsCancelled(t.ctx) {
+func (t *autoTagFilesTask) processImages(ctx context.Context, r models.ReaderRepository) error {
+	if job.IsCancelled(ctx) {
 		return nil
 	}
 
@@ -520,7 +518,7 @@ func (t *autoTagFilesTask) processImages(r models.ReaderRepository) error {
 		}
 
 		for _, ss := range images {
-			if job.IsCancelled(t.ctx) {
+			if job.IsCancelled(ctx) {
 				return nil
 			}
 
@@ -555,8 +553,8 @@ func (t *autoTagFilesTask) processImages(r models.ReaderRepository) error {
 	return nil
 }
 
-func (t *autoTagFilesTask) processGalleries(r models.ReaderRepository) error {
-	if job.IsCancelled(t.ctx) {
+func (t *autoTagFilesTask) processGalleries(ctx context.Context, r models.ReaderRepository) error {
+	if job.IsCancelled(ctx) {
 		return nil
 	}
 
@@ -573,7 +571,7 @@ func (t *autoTagFilesTask) processGalleries(r models.ReaderRepository) error {
 		}
 
 		for _, ss := range galleries {
-			if job.IsCancelled(t.ctx) {
+			if job.IsCancelled(ctx) {
 				return nil
 			}
 
@@ -608,8 +606,8 @@ func (t *autoTagFilesTask) processGalleries(r models.ReaderRepository) error {
 	return nil
 }
 
-func (t *autoTagFilesTask) process() {
-	if err := t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+func (t *autoTagFilesTask) process(ctx context.Context) {
+	if err := t.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		total, err := t.getCount(r)
 		if err != nil {
 			return err
@@ -620,21 +618,21 @@ func (t *autoTagFilesTask) process() {
 		logger.Infof("Starting autotag of %d files", total)
 
 		logger.Info("Autotagging scenes...")
-		if err := t.processScenes(r); err != nil {
+		if err := t.processScenes(ctx, r); err != nil {
 			return err
 		}
 
 		logger.Info("Autotagging images...")
-		if err := t.processImages(r); err != nil {
+		if err := t.processImages(ctx, r); err != nil {
 			return err
 		}
 
 		logger.Info("Autotagging galleries...")
-		if err := t.processGalleries(r); err != nil {
+		if err := t.processGalleries(ctx, r); err != nil {
 			return err
 		}
 
-		if job.IsCancelled(t.ctx) {
+		if job.IsCancelled(ctx) {
 			logger.Info("Stopping due to user request")
 		}
 
