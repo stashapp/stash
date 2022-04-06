@@ -8,7 +8,6 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
@@ -63,9 +62,6 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 
 	client := stashbox.NewClient(*boxes[input.StashBoxIndex])
 	client.TxnManager = r.txnManager
-	client.Performers = &performer.FileImageGetter{
-		PathGetter: manager.GetInstance().Paths.Performer,
-	}
 
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {

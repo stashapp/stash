@@ -41,7 +41,8 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 	var performer *models.ScrapedPerformer
 	var err error
 
-	client := stashbox.NewClient(*t.box, t.txnManager)
+	client := stashbox.NewClient(*t.box)
+	client.TxnManager = t.txnManager
 
 	if t.refresh {
 		var performerID string
