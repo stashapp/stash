@@ -295,13 +295,11 @@ func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
 }
 
 func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, checksum string) {
-	thumbPath := scanner.Paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := scanner.Paths.Scene.GetScreenshotPath(checksum)
 
-	thumbExists, _ := fsutil.FileExists(thumbPath)
 	normalExists, _ := fsutil.FileExists(normalPath)
 
-	if thumbExists && normalExists {
+	if normalExists {
 		return
 	}
 
@@ -317,11 +315,6 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 	}
 
 	at := float64(probeResult.Duration) * 0.2
-
-	if !thumbExists {
-		logger.Debugf("Creating thumbnail for %s", path)
-		makeScreenshot(scanner.Screenshotter, *probeResult, thumbPath, 5, 320, at)
-	}
 
 	if !normalExists {
 		logger.Debugf("Creating screenshot for %s", path)

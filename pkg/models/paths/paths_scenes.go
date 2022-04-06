@@ -20,10 +20,6 @@ func (sp *scenePaths) GetScreenshotPath(checksum string) string {
 	return filepath.Join(sp.generated.Screenshots, checksum+".jpg")
 }
 
-func (sp *scenePaths) GetThumbnailScreenshotPath(checksum string) string {
-	return filepath.Join(sp.generated.Screenshots, checksum+".thumb.jpg")
-}
-
 func (sp *scenePaths) GetTranscodePath(checksum string) string {
 	return filepath.Join(sp.generated.Transcodes, checksum+".mp4")
 }
