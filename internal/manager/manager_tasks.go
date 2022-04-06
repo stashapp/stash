@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/manager/migration"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -234,52 +235,36 @@ func (s *singleton) Clean(ctx context.Context, input models.CleanMetadataInput) 
 	return s.JobManager.Add(ctx, "Cleaning...", &j)
 }
 
-func (s *singleton) MigrateHash(ctx context.Context) int {
-	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
-		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
-		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
-
-		var scenes []*models.Scene
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			var err error
-			scenes, err = r.Scene().All()
-			return err
-		}); err != nil {
-			logger.Errorf("failed to fetch list of scenes for migration: %s", err.Error())
-			return
-		}
-
-		var wg sync.WaitGroup
-		total := len(scenes)
-		progress.SetTotal(total)
-
-		for _, scene := range scenes {
-			progress.Increment()
-			if job.IsCancelled(ctx) {
-				logger.Info("Stopping due to user request")
-				return
-			}
-
-			if scene == nil {
-				logger.Errorf("nil scene, skipping migrate")
-				continue
-			}
-
-			wg.Add(1)
-
-			task := MigrateHashTask{Scene: scene, fileNamingAlgorithm: fileNamingAlgo}
-			go func() {
-				task.Start()
-				wg.Done()
-			}()
-
-			wg.Wait()
-		}
-
-		logger.Info("Finished migrating")
+// deprecated
+func (s *singleton) MigrateHash(ctx context.Context) (int, error) {
+	return s.DataMassage(ctx, models.DataMassageInput{
+		Type: "hashNaming",
 	})
+}
 
-	return s.JobManager.Add(ctx, "Migrating scene hashes...", j)
+func (s *singleton) DataMassage(ctx context.Context, input models.DataMassageInput) (int, error) {
+	type dataMassage struct {
+		description string
+		job         job.JobExec
+	}
+
+	massages := map[string]*dataMassage{
+		"hashnaming": {
+			description: "Migrating scene hashes...",
+			job: &migration.MigrateHashJob{
+				TxnManager:          s.TxnManager,
+				Paths:               s.Paths,
+				FileNamingAlgorithm: s.Config.GetVideoFileNamingAlgorithm(),
+			},
+		},
+	}
+
+	massage, ok := massages[input.Type]
+	if !ok {
+		return 0, fmt.Errorf("unknown data massage type: %s", input.Type)
+	}
+
+	return s.JobManager.Add(ctx, massage.description, massage.job), nil
 }
 
 func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.StashBoxBatchPerformerTagInput) int {

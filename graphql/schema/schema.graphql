@@ -268,7 +268,11 @@ type Mutation {
   """Identifies scenes using scrapers. Returns the job ID"""
   metadataIdentify(input: IdentifyMetadataInput!): ID!
   """Migrate generated files for the current hash naming"""
-  migrateHashNaming: ID!
+  # deprecated in v0.15
+  migrateHashNaming: ID! @deprecated(reason: "Use dataMassage(input: { type: 'hashNaming'})")
+
+  """Performs to data massage"""
+  dataMassage(input: DataMassageInput!): ID!
 
   """Reload scrapers"""
   reloadScrapers: Boolean!

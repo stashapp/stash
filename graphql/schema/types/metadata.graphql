@@ -271,3 +271,7 @@ type SystemStatus {
 input MigrateInput {
   backupPath: String!
 }
+
+input DataMassageInput {
+  type: String!
+}

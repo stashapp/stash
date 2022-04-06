@@ -102,9 +102,15 @@ func (r *mutationResolver) MetadataClean(ctx context.Context, input models.Clean
 	return strconv.Itoa(jobID), nil
 }
 
+// Deprecated: use DataMassage(input: { type: 'hashnaming' }) instead
 func (r *mutationResolver) MigrateHashNaming(ctx context.Context) (string, error) {
-	jobID := manager.GetInstance().MigrateHash(ctx)
-	return strconv.Itoa(jobID), nil
+	jobID, err := manager.GetInstance().MigrateHash(ctx)
+	return strconv.Itoa(jobID), err
+}
+
+func (r *mutationResolver) DataMassage(ctx context.Context, input models.DataMassageInput) (string, error) {
+	jobID, err := manager.GetInstance().DataMassage(ctx, input)
+	return strconv.Itoa(jobID), err
 }
 
 func (r *mutationResolver) BackupDatabase(ctx context.Context, input models.BackupDatabaseInput) (*string, error) {
