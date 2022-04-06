@@ -12,10 +12,6 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type CoverPathGetter interface {
-	GetCoverPath(id int) string
-}
-
 type Importer struct {
 	ReaderWriter    models.SceneReaderWriter
 	StudioWriter    models.StudioReaderWriter

@@ -218,7 +218,8 @@ func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
 }
 
 func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input models.StashBoxInput) (*models.StashBoxValidationResult, error) {
-	client := stashbox.NewClient(models.StashBox{Endpoint: input.Endpoint, APIKey: input.APIKey}, r.txnManager)
+	client := stashbox.NewClient(models.StashBox{Endpoint: input.Endpoint, APIKey: input.APIKey})
+	client.TxnManager = r.txnManager
 	user, err := client.GetUser(ctx)
 
 	valid := user != nil && user.Me != nil

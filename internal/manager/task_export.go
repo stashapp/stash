@@ -384,8 +384,10 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, repo models.R
 	for s := range jobChan {
 		sceneHash := s.GetHash(t.fileNamingAlgorithm)
 
-		coverGetter := &scene.PathsCover{
-			Paths: instance.Paths,
+		coverGetter := &scene.FileCoverSetter{
+			FileCoverGetter: scene.FileCoverGetter{
+				PathGetter: instance.Paths.Scene,
+			},
 		}
 		newSceneJSON, err := scene.ToBasicJSON(sceneReader, s, coverGetter)
 		if err != nil {

@@ -29,7 +29,7 @@ type ScraperSource struct {
 
 type CoverGetterSetterFactory interface {
 	GetCoverGetter() scene.CoverGetter
-	GetCoverSetter(w scene.FileWriter) scene.CoverSetter
+	GetCoverSetter(w fsutil.Writer) scene.CoverSetter
 }
 
 type SceneIdentifier struct {

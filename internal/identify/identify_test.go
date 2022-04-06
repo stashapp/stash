@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/scene"
@@ -70,7 +71,7 @@ func (f *mockCoverGetterSetterFactory) GetCoverGetter() scene.CoverGetter {
 	return f.getter
 }
 
-func (f *mockCoverGetterSetterFactory) GetCoverSetter(w scene.FileWriter) scene.CoverSetter {
+func (f *mockCoverGetterSetterFactory) GetCoverSetter(w fsutil.Writer) scene.CoverSetter {
 	return f.setter
 }
 

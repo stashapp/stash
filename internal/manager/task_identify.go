@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/internal/identify"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -128,14 +129,16 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepo
 type coverGetterSetterFactory struct{}
 
 func (f *coverGetterSetterFactory) GetCoverGetter() scene.CoverGetter {
-	return &scene.PathsCover{
-		Paths: instance.Paths,
+	return &scene.FileCoverGetter{
+		PathGetter: instance.Paths.Scene,
 	}
 }
 
-func (f *coverGetterSetterFactory) GetCoverSetter(w scene.FileWriter) scene.CoverSetter {
-	return &scene.PathsCover{
-		Paths:      instance.Paths,
+func (f *coverGetterSetterFactory) GetCoverSetter(w fsutil.Writer) scene.CoverSetter {
+	return &scene.FileCoverSetter{
+		FileCoverGetter: scene.FileCoverGetter{
+			PathGetter: instance.Paths.Scene,
+		},
 		FileWriter: w,
 	}
 }
@@ -175,10 +178,12 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 
 		var src identify.ScraperSource
 		if stashBox != nil {
+			stashBoxClient := stashbox.NewClient(*stashBox)
+			stashBoxClient.TxnManager = j.txnManager
 			src = identify.ScraperSource{
 				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
-					stashbox.NewClient(*stashBox, j.txnManager),
+					stashBoxClient,
 					stashBox.Endpoint,
 				},
 				RemoteSite: stashBox.Endpoint,

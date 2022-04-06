@@ -15,6 +15,19 @@ const (
 	changedFileSuffix = ".orig"
 )
 
+type Writer interface {
+	WriteFile(path string, file []byte) error
+}
+
+type Deleter interface {
+	DeleteFiles(paths []string) error
+}
+
+type WriterDeleter interface {
+	Writer
+	Deleter
+}
+
 // TxnFS provides access to the filesystem operations that are used by the FSTransaction object.
 type TxnFS interface {
 	Stat(name string) (fs.FileInfo, error)

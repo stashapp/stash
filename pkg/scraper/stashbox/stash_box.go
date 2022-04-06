@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
@@ -19,10 +18,10 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -31,13 +30,15 @@ import (
 
 // Client represents the client interface to a stash-box server instance.
 type Client struct {
-	client     *graphql.Client
-	txnManager models.TransactionManager
-	box        models.StashBox
+	TxnManager models.TransactionManager
+	Scenes     scene.CoverGetter
+
+	client *graphql.Client
+	box    models.StashBox
 }
 
 // NewClient returns a new instance of a stash-box client.
-func NewClient(box models.StashBox, txnManager models.TransactionManager) *Client {
+func NewClient(box models.StashBox) *Client {
 	authHeader := func(req *http.Request) {
 		req.Header.Set("ApiKey", box.APIKey)
 	}
@@ -47,9 +48,8 @@ func NewClient(box models.StashBox, txnManager models.TransactionManager) *Clien
 	}
 
 	return &Client{
-		client:     client,
-		txnManager: txnManager,
-		box:        box,
+		client: client,
+		box:    box,
 	}
 }
 
@@ -104,7 +104,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs [
 	fpToScene := make(map[string][]int)
 	phashToScene := make(map[int64][]int)
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := c.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Scene()
 
 		for index, sceneID := range ids {
@@ -200,7 +200,7 @@ func (c Client) FindStashBoxScenesByFingerprintsFlat(ctx context.Context, sceneI
 
 	var fingerprints []*graphql.FingerprintQueryInput
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := c.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Scene()
 
 		for _, sceneID := range ids {
@@ -278,7 +278,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 
 	var fingerprints []graphql.FingerprintSubmission
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := c.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Scene()
 
 		for _, sceneID := range ids {
@@ -408,7 +408,7 @@ func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs 
 
 	var performers []*models.Performer
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := c.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Performer()
 
 		for _, performerID := range ids {
@@ -442,7 +442,7 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 
 	var performers []*models.Performer
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := c.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Performer()
 
 		for _, performerID := range ids {
@@ -723,7 +723,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
 	}
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := c.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		tqb := r.Tag()
 
@@ -803,10 +803,10 @@ func (c Client) GetUser(ctx context.Context) (*graphql.Me, error) {
 	return c.client.Me(ctx)
 }
 
-func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint string, imagePath string) (*string, error) {
+func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint string) (*string, error) {
 	draft := graphql.SceneDraftInput{}
-	var image *os.File
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	var image io.Reader
+	if err := c.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Scene()
 		pqb := r.Performer()
 		sqb := r.Studio()
@@ -918,12 +918,9 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		}
 		draft.Tags = tags
 
-		exists, _ := fsutil.FileExists(imagePath)
-		if exists {
-			file, err := os.Open(imagePath)
-			if err == nil {
-				image = file
-			}
+		img, _ := c.Scenes.GetCover(scene.ID)
+		if img != nil {
+			image = bytes.NewReader(img)
 		}
 
 		return nil
@@ -942,7 +939,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, endpoint string) (*string, error) {
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := c.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		img, _ := pqb.GetImage(performer.ID)
 		if img != nil {

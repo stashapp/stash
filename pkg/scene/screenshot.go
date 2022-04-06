@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models/paths"
 
 	// needed to decode other image formats
 	_ "image/gif"
@@ -48,17 +47,15 @@ type CoverGetterSetter interface {
 	CoverSetter
 }
 
-type FileWriter interface {
-	WriteFile(path string, file []byte) error
+type CoverPathGetter interface {
+	GetCoverPath(id int) string
+}
+type FileCoverGetter struct {
+	PathGetter CoverPathGetter
 }
 
-type PathsCover struct {
-	Paths      *paths.Paths
-	FileWriter FileWriter
-}
-
-func (ss *PathsCover) GetCover(sceneID int) ([]byte, error) {
-	normalPath := ss.Paths.Scene.GetCoverPath(sceneID)
+func (ss *FileCoverGetter) GetCover(sceneID int) ([]byte, error) {
+	normalPath := ss.PathGetter.GetCoverPath(sceneID)
 	// if the file doesn't exist, return nil
 	if exists, _ := fsutil.FileExists(normalPath); !exists {
 		return nil, nil
@@ -66,8 +63,13 @@ func (ss *PathsCover) GetCover(sceneID int) ([]byte, error) {
 	return ioutil.ReadFile(normalPath)
 }
 
-func (ss *PathsCover) SetCover(sceneID int, imageData []byte) error {
-	normalPath := ss.Paths.Scene.GetCoverPath(sceneID)
+type FileCoverSetter struct {
+	FileCoverGetter
+	FileWriter fsutil.Writer
+}
+
+func (ss *FileCoverSetter) SetCover(sceneID int, imageData []byte) error {
+	normalPath := ss.PathGetter.GetCoverPath(sceneID)
 	if err := ss.FileWriter.WriteFile(normalPath, imageData); err != nil {
 		return err
 	}

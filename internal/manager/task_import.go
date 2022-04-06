@@ -529,8 +529,10 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				ReaderWriter: readerWriter,
 				Input:        *sceneJSON,
 				Path:         mappingJSON.Path,
-				CoverSetter: &scene.PathsCover{
-					Paths:      instance.Paths,
+				CoverSetter: &scene.FileCoverSetter{
+					FileCoverGetter: scene.FileCoverGetter{
+						PathGetter: instance.Paths.Scene,
+					},
 					FileWriter: fsTxn,
 				},
 
