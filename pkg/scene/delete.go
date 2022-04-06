@@ -3,15 +3,14 @@ package scene
 import (
 	"path/filepath"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 )
 
-// FileDeleter is an extension of file.Deleter that handles deletion of scene files.
+// FileDeleter is an extension of fsutil.Deleter that handles deletion of scene files.
 type FileDeleter struct {
-	file.Deleter
+	fsutil.Deleter
 
 	FileNamingAlgo models.HashAlgorithm
 	Paths          *paths.Paths

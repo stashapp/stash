@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
@@ -403,7 +403,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	var galleries []*models.Gallery
 	var imgsDestroyed []*models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *file.NewDeleter(),
+		Deleter: *fsutil.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
 

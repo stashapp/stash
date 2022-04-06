@@ -11,9 +11,9 @@ type Destroyer interface {
 	Destroy(id int) error
 }
 
-// FileDeleter is an extension of file.Deleter that handles deletion of image files.
+// FileDeleter is an extension of fsutil.Deleter that handles deletion of image files.
 type FileDeleter struct {
-	file.Deleter
+	fsutil.Deleter
 
 	Paths *paths.Paths
 }

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -286,7 +286,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 
 	var i *models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *file.NewDeleter(),
+		Deleter: *fsutil.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
@@ -328,7 +328,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 	var images []*models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *file.NewDeleter(),
+		Deleter: *fsutil.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
 	if err := r.withTxn(ctx, func(repo models.Repository) error {

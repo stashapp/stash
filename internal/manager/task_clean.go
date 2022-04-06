@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -396,7 +395,7 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 	fileNamingAlgo := GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *file.NewDeleter(),
+		Deleter:        *fsutil.NewDeleter(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          GetInstance().Paths,
 	}
@@ -454,7 +453,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
 
 func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 	fileDeleter := &image.FileDeleter{
-		Deleter: *file.NewDeleter(),
+		Deleter: *fsutil.NewDeleter(),
 		Paths:   GetInstance().Paths,
 	}
 
