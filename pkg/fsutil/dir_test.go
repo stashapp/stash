@@ -159,7 +159,7 @@ func TestGetIntraDirID(t *testing.T) {
 				1234567890,
 				3,
 			},
-			want: filepath.Join("1000", "1000000", "1000000000", "001", "234", "567"),
+			want: filepath.Join("1000000000", "001", "234", "567"),
 		},
 		{
 			name: "length 1 - 4567",
@@ -167,7 +167,7 @@ func TestGetIntraDirID(t *testing.T) {
 				4567,
 				1,
 			},
-			want: filepath.Join("10", "100", "1000", "4", "5", "6"),
+			want: filepath.Join("1000", "4", "5", "6"),
 		},
 	}
 	for _, tt := range tests {
