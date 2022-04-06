@@ -277,10 +277,6 @@ func (s *singleton) PostInit(ctx context.Context) error {
 		return err
 	}
 
-	if database.Ready() == nil {
-		s.PostMigrate(ctx)
-	}
-
 	return nil
 }
 
@@ -433,6 +429,8 @@ func (s *singleton) Migrate(ctx context.Context, input models.MigrateInput) erro
 		return fmt.Errorf("error backing up database: %s", err)
 	}
 
+	preVersion := database.Version()
+
 	if err := database.RunMigrations(); err != nil {
 		errStr := fmt.Sprintf("error performing migration: %s", err)
 
@@ -447,8 +445,10 @@ func (s *singleton) Migrate(ctx context.Context, input models.MigrateInput) erro
 		return errors.New(errStr)
 	}
 
+	postVersion := database.Version()
+
 	// perform post-migration operations
-	s.PostMigrate(ctx)
+	s.PostMigrate(ctx, preVersion, postVersion)
 
 	// if no backup path was provided, then delete the created backup
 	if input.BackupPath == "" {

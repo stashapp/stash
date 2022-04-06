@@ -29,9 +29,10 @@ func setInitialMD5Config(ctx context.Context, txnManager models.TransactionManag
 		defaultAlgorithm = models.HashAlgorithmMd5
 	}
 
-	config := config.GetInstance()
-	config.SetChecksumDefaultValues(defaultAlgorithm, usingMD5)
-	if err := config.Write(); err != nil {
+	c := config.GetInstance()
+	c.Set(config.VideoFileNamingAlgorithm, defaultAlgorithm)
+	c.Set(config.CalculateMD5, usingMD5)
+	if err := c.Write(); err != nil {
 		logger.Errorf("Error while writing configuration file: %s", err.Error())
 	}
 }

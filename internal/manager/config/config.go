@@ -53,11 +53,13 @@ const (
 
 	// CalculateMD5 is the config key used to determine if MD5 should be calculated
 	// for video files.
-	CalculateMD5 = "calculate_md5"
+	CalculateMD5        = "calculate_md5"
+	defaultCalculateMD5 = false
 
 	// VideoFileNamingAlgorithm is the config key used to determine what hash
 	// should be used when generating and using generated files for scenes.
 	VideoFileNamingAlgorithm = "video_file_naming_algorithm"
+	defaultVideoFileNaming   = models.HashAlgorithmOshash
 
 	MaxTranscodeSize          = "max_transcode_size"
 	MaxStreamingTranscodeSize = "max_streaming_transcode_size"
@@ -1229,13 +1231,6 @@ func (i *Instance) Validate() error {
 	return nil
 }
 
-func (i *Instance) SetChecksumDefaultValues(defaultAlgorithm models.HashAlgorithm, usingMD5 bool) {
-	i.Lock()
-	defer i.Unlock()
-	i.main.SetDefault(VideoFileNamingAlgorithm, defaultAlgorithm)
-	i.main.SetDefault(CalculateMD5, usingMD5)
-}
-
 func (i *Instance) setDefaultValues(write bool) error {
 	// read data before write lock scope
 	defaultDatabaseFilePath := i.GetDefaultDatabaseFilePath()
@@ -1250,6 +1245,9 @@ func (i *Instance) setDefaultValues(write bool) error {
 	// file
 	i.main.SetDefault(Host, hostDefault)
 	i.main.SetDefault(Port, portDefault)
+
+	i.main.SetDefault(VideoFileNamingAlgorithm, defaultVideoFileNaming)
+	i.main.SetDefault(CalculateMD5, defaultCalculateMD5)
 
 	i.main.SetDefault(ParallelTasks, parallelTasksDefault)
 	i.main.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
