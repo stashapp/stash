@@ -39,6 +39,8 @@ input ConfigGeneralInput {
   databasePath: String
   """Path to generated files"""
   generatedPath: String
+  """Path to data files"""
+  dataPath: String
   """Path to import/export files"""
   metadataPath: String
   """Path to scrapers"""
@@ -120,6 +122,8 @@ type ConfigGeneralResult {
   generatedPath: String!
   """Path to import/export files"""
   metadataPath: String!
+  """Path to data files"""
+  dataPath: String!
   """Path to the config file used"""
   configFilePath: String!
   """Path to scrapers"""

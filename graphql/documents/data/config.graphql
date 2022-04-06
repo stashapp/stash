@@ -6,6 +6,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   }
   databasePath
   generatedPath
+  dataPath
   metadataPath
   scrapersPath
   cachePath

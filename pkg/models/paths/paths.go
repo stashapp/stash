@@ -6,16 +6,23 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 )
 
+type Config interface {
+	GetGeneratedPath() string
+	GetDataPath() string
+}
+
 type Paths struct {
 	Generated *generatedPaths
+	Data      *dataPaths
 
 	Scene        *scenePaths
 	SceneMarkers *sceneMarkerPaths
 }
 
-func NewPaths(generatedPath string) *Paths {
+func NewPaths(config Config) *Paths {
 	p := Paths{}
-	p.Generated = newGeneratedPaths(generatedPath)
+	p.Generated = newGeneratedPaths(config.GetGeneratedPath())
+	p.Data = newDataPaths(config.GetDataPath())
 
 	p.Scene = newScenePaths(p)
 	p.SceneMarkers = newSceneMarkerPaths(p)

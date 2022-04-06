@@ -58,7 +58,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	}
 
 	validateDir := func(key string, value string, optional bool) error {
-		if err := checkConfigOverride(config.Metadata); err != nil {
+		if err := checkConfigOverride(key); err != nil {
 			return err
 		}
 

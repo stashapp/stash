@@ -33,6 +33,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(Cache, i.GetCachePath())
 				i.Set(Generated, i.GetGeneratedPath())
 				i.Set(Metadata, i.GetMetadataPath())
+				i.Set(DataPath, i.GetDataPath())
 				i.Set(Database, i.GetDatabasePath())
 				i.Set(JWTSignKey, i.GetJWTSignKey())
 				i.Set(SessionStoreKey, i.GetSessionStoreKey())

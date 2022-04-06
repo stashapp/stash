@@ -244,7 +244,7 @@ func (s *singleton) PostInit(ctx context.Context) error {
 		logger.Warnf("could not set initial configuration: %v", err)
 	}
 
-	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	s.Paths = paths.NewPaths(s.Config)
 	s.RefreshConfig()
 	s.SessionStore = session.NewStore(s.Config)
 	s.PluginCache.RegisterSessionStore(s.SessionStore)
@@ -310,7 +310,7 @@ func (s *singleton) initScraperCache() *scraper.Cache {
 }
 
 func (s *singleton) RefreshConfig() {
-	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	s.Paths = paths.NewPaths(s.Config)
 	config := s.Config
 	if config.Validate() == nil {
 		if err := fsutil.EnsureDir(s.Paths.Generated.Screenshots); err != nil {

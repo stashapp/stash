@@ -25,11 +25,15 @@ import (
 var officialBuild string
 
 const (
-	Stash         = "stash"
-	Cache         = "cache"
-	Generated     = "generated"
-	Metadata      = "metadata"
-	Downloads     = "downloads"
+	Stash     = "stash"
+	Cache     = "cache"
+	Generated = "generated"
+	Metadata  = "metadata"
+	Downloads = "downloads"
+
+	// paths
+	DataPath = "paths.data"
+
 	ApiKey        = "api_key"
 	Username      = "username"
 	Password      = "password"
@@ -497,6 +501,10 @@ func (i *Instance) GetMetadataPath() string {
 	return i.getString(Metadata)
 }
 
+func (i *Instance) GetDataPath() string {
+	return i.getString(DataPath)
+}
+
 func (i *Instance) GetDatabasePath() string {
 	return i.getString(Database)
 }
@@ -618,6 +626,13 @@ func (i *Instance) GetStashBoxes() models.StashBoxes {
 func (i *Instance) GetDefaultPluginsPath() string {
 	// default to the same directory as the config file
 	fn := filepath.Join(i.GetConfigPath(), "plugins")
+
+	return fn
+}
+
+func (i *Instance) GetDefaultDataPath() string {
+	// default to the same directory as the config file
+	fn := filepath.Join(i.GetConfigPath(), "data")
 
 	return fn
 }
@@ -1226,6 +1241,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	defaultDatabaseFilePath := i.GetDefaultDatabaseFilePath()
 	defaultScrapersPath := i.GetDefaultScrapersPath()
 	defaultPluginsPath := i.GetDefaultPluginsPath()
+	defaultDataPath := i.GetDefaultDataPath()
 
 	i.Lock()
 	defer i.Unlock()
@@ -1254,6 +1270,9 @@ func (i *Instance) setDefaultValues(write bool) error {
 
 	// Set generated to the metadata path for backwards compat
 	i.main.SetDefault(Generated, i.main.GetString(Metadata))
+
+	// Set the default value for data path
+	i.main.SetDefault(DataPath, defaultDataPath)
 
 	i.main.SetDefault(NoBrowser, NoBrowserDefault)
 	i.main.SetDefault(NotificationsEnabled, NotificationsEnabledDefault)
