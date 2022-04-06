@@ -30,7 +30,6 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
-import renderNonZero from "src/utils/render";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -185,70 +184,58 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         <Tab eventKey="details" title={intl.formatMessage({ id: "details" })}>
           <PerformerDetailsPanel performer={performer} />
         </Tab>
-        {renderNonZero(
-          performer.scene_count,
-          <Tab
-            eventKey="scenes"
-            title={
-              <React.Fragment>
-                {intl.formatMessage({ id: "scenes" })}
-                <Badge className="left-spacing" pill variant="secondary">
-                  {intl.formatNumber(performer.scene_count ?? 0)}
-                </Badge>
-              </React.Fragment>
-            }
-          >
-            <PerformerScenesPanel performer={performer} />
-          </Tab>
-        )}
-        {renderNonZero(
-          performer.gallery_count,
-          <Tab
-            eventKey="galleries"
-            title={
-              <React.Fragment>
-                {intl.formatMessage({ id: "galleries" })}
-                <Badge className="left-spacing" pill variant="secondary">
-                  {intl.formatNumber(performer.gallery_count ?? 0)}
-                </Badge>
-              </React.Fragment>
-            }
-          >
-            <PerformerGalleriesPanel performer={performer} />
-          </Tab>
-        )}
-        {renderNonZero(
-          performer.image_count,
-          <Tab
-            eventKey="images"
-            title={
-              <React.Fragment>
-                {intl.formatMessage({ id: "images" })}
-                <Badge className="left-spacing" pill variant="secondary">
-                  {intl.formatNumber(performer.image_count ?? 0)}
-                </Badge>
-              </React.Fragment>
-            }
-          >
-            <PerformerImagesPanel performer={performer} />
-          </Tab>
-        )}
-        {renderNonZero(
-          performer.movie_count,
-          <Tab
-            eventKey="movies"
-            title={
-              <React.Fragment>
-                {intl.formatMessage({ id: "movies" })}
-                <Badge className="left-spacing" pill variant="secondary">
-                  {intl.formatNumber(performer.movie_count ?? 0)}
-                </Badge>
-              </React.Fragment>
-            }
-          >
-            <PerformerMoviesPanel performer={performer} />
-          </Tab>
-        )}
+        <Tab
+          eventKey="scenes"
+          title={
+            <React.Fragment>
+              {intl.formatMessage({ id: "scenes" })}
+              <Badge className="left-spacing" pill variant="secondary">
+                {intl.formatNumber(performer.scene_count ?? 0)}
+              </Badge>
+            </React.Fragment>
+          }
+        >
+          <PerformerScenesPanel performer={performer} />
+        </Tab>
+        <Tab
+          eventKey="galleries"
+          title={
+            <React.Fragment>
+              {intl.formatMessage({ id: "galleries" })}
+              <Badge className="left-spacing" pill variant="secondary">
+                {intl.formatNumber(performer.gallery_count ?? 0)}
+              </Badge>
+            </React.Fragment>
+          }
+        >
+          <PerformerGalleriesPanel performer={performer} />
+        </Tab>
+        <Tab
+          eventKey="images"
+          title={
+            <React.Fragment>
+              {intl.formatMessage({ id: "images" })}
+              <Badge className="left-spacing" pill variant="secondary">
+                {intl.formatNumber(performer.image_count ?? 0)}
+              </Badge>
+            </React.Fragment>
+          }
+        >
+          <PerformerImagesPanel performer={performer} />
+        </Tab>
+        <Tab
+          eventKey="movies"
+          title={
+            <React.Fragment>
+              {intl.formatMessage({ id: "movies" })}
+              <Badge className="left-spacing" pill variant="secondary">
+                {intl.formatNumber(performer.movie_count ?? 0)}
+              </Badge>
+            </React.Fragment>
+          }
+        >
+          <PerformerMoviesPanel performer={performer} />
+        </Tab>
       </Tabs>
     </React.Fragment>
   );

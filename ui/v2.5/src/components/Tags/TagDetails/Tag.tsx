@@ -30,7 +30,6 @@ import { TagGalleriesPanel } from "./TagGalleriesPanel";
 import { TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
 import { TagMergeModal } from "./TagMergeDialog";
-import renderNonZero from "src/utils/render";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -57,24 +56,13 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const [updateTag] = useTagUpdate();
   const [deleteTag] = useTagDestroy({ id: tag.id });
 
-  const defaultTab =
-    tag?.scene_count ?? 0 > 0
-      ? "scenes"
-      : tag?.image_count ?? 0 > 0
-      ? "images"
-      : tag?.gallery_count ?? 0 > 0
-      ? "galleries"
-      : tag?.scene_marker_count ?? 0 > 0
-      ? "markers"
-      : "performers";
-
   const activeTabKey =
     tab === "markers" ||
     tab === "images" ||
     tab === "performers" ||
     tab === "galleries"
       ? tab
-      : defaultTab;
+      : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
@@ -310,86 +298,71 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             activeKey={activeTabKey}
             onSelect={setActiveTabKey}
           >
-            {renderNonZero(
-              tag.scene_count,
-              <Tab
-                eventKey="scenes"
-                title={
-                  <React.Fragment>
-                    {intl.formatMessage({ id: "scenes" })}
-                    <Badge className="left-spacing" pill variant="secondary">
-                      {intl.formatNumber(tag.scene_count ?? 0)}
-                    </Badge>
-                  </React.Fragment>
-                }
-              >
-                <TagScenesPanel tag={tag} />
-              </Tab>
-            )}
-            {renderNonZero(
-              tag.image_count,
-              <Tab
-                eventKey="images"
-                title={
-                  <React.Fragment>
-                    {intl.formatMessage({ id: "images" })}
-                    <Badge className="left-spacing" pill variant="secondary">
-                      {intl.formatNumber(tag.image_count ?? 0)}
-                    </Badge>
-                  </React.Fragment>
-                }
-              >
-                <TagImagesPanel tag={tag} />
-              </Tab>
-            )}
-            {renderNonZero(
-              tag.gallery_count,
-              <Tab
-                eventKey="galleries"
-                title={
-                  <React.Fragment>
-                    {intl.formatMessage({ id: "galleries" })}
-                    <Badge className="left-spacing" pill variant="secondary">
-                      {intl.formatNumber(tag.gallery_count ?? 0)}
-                    </Badge>
-                  </React.Fragment>
-                }
-              >
-                <TagGalleriesPanel tag={tag} />
-              </Tab>
-            )}
-            {renderNonZero(
-              tag.scene_marker_count,
-              <Tab
-                eventKey="markers"
-                title={
-                  <React.Fragment>
-                    {intl.formatMessage({ id: "markers" })}
-                    <Badge className="left-spacing" pill variant="secondary">
-                      {intl.formatNumber(tag.scene_marker_count ?? 0)}
-                    </Badge>
-                  </React.Fragment>
-                }
-              >
-                <TagMarkersPanel tag={tag} />
-              </Tab>
-            )}
-            {renderNonZero(
-              tag.performer_count,
-              <Tab
-                eventKey="performers"
-                title={
-                  <React.Fragment>
-                    {intl.formatMessage({ id: "performers" })}
-                    <Badge className="left-spacing" pill variant="secondary">
-                      {intl.formatNumber(tag.performer_count ?? 0)}
-                    </Badge>
-                  </React.Fragment>
-                }
-              >
-                <TagPerformersPanel tag={tag} />
-              </Tab>
-            )}
+            <Tab
+              eventKey="scenes"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "scenes" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(tag.scene_count ?? 0)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <TagScenesPanel tag={tag} />
+            </Tab>
+            <Tab
+              eventKey="images"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "images" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(tag.image_count ?? 0)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <TagImagesPanel tag={tag} />
+            </Tab>
+            <Tab
+              eventKey="galleries"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "galleries" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(tag.gallery_count ?? 0)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <TagGalleriesPanel tag={tag} />
+            </Tab>
+            <Tab
+              eventKey="markers"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "markers" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(tag.scene_marker_count ?? 0)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <TagMarkersPanel tag={tag} />
+            </Tab>
+            <Tab
+              eventKey="performers"
+              title={
+                <React.Fragment>
+                  {intl.formatMessage({ id: "performers" })}
+                  <Badge className="left-spacing" pill variant="secondary">
+                    {intl.formatNumber(tag.performer_count ?? 0)}
+                  </Badge>
+                </React.Fragment>
+              }
+            >
+              <TagPerformersPanel tag={tag} />
+            </Tab>
           </Tabs>
         </div>
         {renderDeleteAlert()}
