@@ -494,16 +494,18 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 
 func TestImporterPostImport(t *testing.T) {
 	readerWriter := &mocks.SceneReaderWriter{}
+	coverSetter := &mockCoverSetter{}
 
 	i := Importer{
 		ReaderWriter:   readerWriter,
+		CoverSetter:    coverSetter,
 		coverImageData: imageBytes,
 	}
 
 	updateSceneImageErr := errors.New("UpdateCover error")
 
-	readerWriter.On("UpdateCover", sceneID, imageBytes).Return(nil).Once()
-	readerWriter.On("UpdateCover", errImageID, imageBytes).Return(updateSceneImageErr).Once()
+	coverSetter.On("SetCover", sceneID, imageBytes).Return(nil).Once()
+	coverSetter.On("SetCover", errImageID, imageBytes).Return(updateSceneImageErr).Once()
 
 	err := i.PostImport(sceneID)
 	assert.Nil(t, err)

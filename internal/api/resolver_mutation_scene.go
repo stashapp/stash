@@ -126,7 +126,8 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 			return nil, err
 		}
 
-		err = scene.SetScreenshot(manager.GetInstance().Paths, sceneID, fsTxn, coverImageData)
+		normalPath := manager.GetInstance().Paths.Scene.GetCoverPath(sceneID)
+		err = fsTxn.WriteFile(normalPath, coverImageData)
 		if err != nil {
 			return nil, err
 		}

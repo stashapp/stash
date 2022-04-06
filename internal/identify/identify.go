@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
@@ -26,10 +27,15 @@ type ScraperSource struct {
 	RemoteSite string
 }
 
+type CoverGetterSetterFactory interface {
+	GetCoverGetter() scene.CoverGetter
+	GetCoverSetter(w scene.FileWriter) scene.CoverSetter
+}
+
 type SceneIdentifier struct {
 	DefaultOptions              *models.IdentifyMetadataOptionsInput
 	Sources                     []ScraperSource
-	ScreenshotSetter            scene.ScreenshotSetter
+	CoverGetterSetterFactory    CoverGetterSetterFactory
 	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
 }
 
@@ -105,10 +111,11 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	scraped := result.result
 
 	rel := sceneRelationships{
-		repo:         repo,
-		scene:        s,
-		result:       result,
-		fieldOptions: fieldOptions,
+		repo:             repo,
+		screenshotGetter: t.CoverGetterSetterFactory.GetCoverGetter(),
+		scene:            s,
+		result:           result,
+		fieldOptions:     fieldOptions,
 	}
 
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
@@ -168,6 +175,10 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 
 func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.TransactionManager, s *models.Scene, result *scrapeResult) error {
 	var updater *scene.UpdateSet
+
+	fsTxn := fsutil.NewFSTransaction()
+	coverSetter := t.CoverGetterSetterFactory.GetCoverSetter(fsTxn)
+
 	if err := txnManager.WithTxn(ctx, func(repo models.Repository) error {
 		var err error
 		updater, err = t.getSceneUpdater(ctx, s, result, repo)
@@ -181,7 +192,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.Tra
 			return nil
 		}
 
-		_, err = updater.Update(repo.Scene(), t.ScreenshotSetter)
+		_, err = updater.Update(repo.Scene(), coverSetter)
 		if err != nil {
 			return fmt.Errorf("error updating scene: %w", err)
 		}
@@ -195,8 +206,11 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.Tra
 
 		return nil
 	}); err != nil {
+		fsTxn.Rollback()
 		return err
 	}
+
+	fsTxn.Commit()
 
 	// fire post-update hooks
 	if !updater.IsEmpty() {

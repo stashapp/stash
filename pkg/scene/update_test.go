@@ -86,10 +86,21 @@ func TestUpdater_IsEmpty(t *testing.T) {
 	}
 }
 
-type mockScreenshotSetter struct{}
+type mockCoverSetter struct {
+	mock.Mock
+}
 
-func (s *mockScreenshotSetter) SetScreenshot(scene *models.Scene, imageData []byte) error {
-	return nil
+func (_m *mockCoverSetter) SetCover(sceneID int, imageData []byte) error {
+	ret := _m.Called(sceneID, imageData)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []byte) error); ok {
+		r0 = rf(sceneID, imageData)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 func TestUpdater_Update(t *testing.T) {
@@ -133,12 +144,14 @@ func TestUpdater_Update(t *testing.T) {
 	qb.On("UpdatePerformers", sceneID, performerIDs).Return(nil).Once()
 	qb.On("UpdateTags", sceneID, tagIDs).Return(nil).Once()
 	qb.On("UpdateStashIDs", sceneID, stashIDs).Return(nil).Once()
-	qb.On("UpdateCover", sceneID, cover).Return(nil).Once()
 
 	qb.On("UpdatePerformers", badPerformersID, performerIDs).Return(updateErr).Once()
 	qb.On("UpdateTags", badTagsID, tagIDs).Return(updateErr).Once()
 	qb.On("UpdateStashIDs", badStashIDsID, stashIDs).Return(updateErr).Once()
-	qb.On("UpdateCover", badCoverID, cover).Return(updateErr).Once()
+
+	coverSetter := &mockCoverSetter{}
+	coverSetter.On("SetCover", sceneID, cover).Return(nil).Once()
+	coverSetter.On("SetCover", badCoverID, cover).Return(updateErr).Once()
 
 	tests := []struct {
 		name    string
@@ -232,7 +245,7 @@ func TestUpdater_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.u.Update(&qb, &mockScreenshotSetter{})
+			got, err := tt.u.Update(&qb, coverSetter)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Updater.Update() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -6,10 +6,8 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 var (
@@ -83,9 +81,7 @@ func killRunningStreams(path string) {
 	}
 }
 
-type SceneServer struct {
-	TXNManager models.TransactionManager
-}
+type SceneServer struct{}
 
 func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
 	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
@@ -98,23 +94,5 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
 	filepath := GetInstance().Paths.Scene.GetCoverPath(scene.ID)
-
-	// fall back to the scene image blob if the file isn't present
-	screenshotExists, _ := fsutil.FileExists(filepath)
-	if screenshotExists {
-		http.ServeFile(w, r, filepath)
-	} else {
-		var cover []byte
-		err := s.TXNManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
-			cover, _ = repo.Scene().GetCover(scene.ID)
-			return nil
-		})
-		if err != nil {
-			logger.Warnf("read transaction failed while serving screenshot: %v", err)
-		}
-
-		if err = utils.ServeImage(cover, w, r); err != nil {
-			logger.Warnf("unable to serve screenshot image: %v", err)
-		}
-	}
+	http.ServeFile(w, r, filepath)
 }

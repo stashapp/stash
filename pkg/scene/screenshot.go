@@ -1,12 +1,12 @@
 package scene
 
 import (
+	"io/ioutil"
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 
 	// needed to decode other image formats
@@ -35,26 +35,41 @@ func makeScreenshot(encoder screenshotter, probeResult ffmpeg.VideoFile, outputP
 	}
 }
 
-type ScreenshotSetter interface {
-	SetScreenshot(scene *models.Scene, imageData []byte) error
+type CoverGetter interface {
+	GetCover(sceneID int) ([]byte, error)
 }
 
-type PathsScreenshotSetter struct {
-	Paths *paths.Paths
+type CoverSetter interface {
+	SetCover(sceneID int, imageData []byte) error
 }
 
-func (ss *PathsScreenshotSetter) SetScreenshot(scene *models.Scene, imageData []byte) error {
-	fsTxn := fsutil.NewFSTransaction()
-	if err := SetScreenshot(ss.Paths, scene.ID, fsTxn, imageData); err != nil {
-		fsTxn.Rollback()
+type CoverGetterSetter interface {
+	CoverGetter
+	CoverSetter
+}
+
+type FileWriter interface {
+	WriteFile(path string, file []byte) error
+}
+
+type PathsCover struct {
+	Paths      *paths.Paths
+	FileWriter FileWriter
+}
+
+func (ss *PathsCover) GetCover(sceneID int) ([]byte, error) {
+	normalPath := ss.Paths.Scene.GetCoverPath(sceneID)
+	// if the file doesn't exist, return nil
+	if exists, _ := fsutil.FileExists(normalPath); !exists {
+		return nil, nil
+	}
+	return ioutil.ReadFile(normalPath)
+}
+
+func (ss *PathsCover) SetCover(sceneID int, imageData []byte) error {
+	normalPath := ss.Paths.Scene.GetCoverPath(sceneID)
+	if err := ss.FileWriter.WriteFile(normalPath, imageData); err != nil {
 		return err
 	}
-	fsTxn.Commit()
 	return nil
-}
-
-func SetScreenshot(paths *paths.Paths, sceneID int, fsTxn *fsutil.FSTransaction, imageData []byte) error {
-	normalPath := paths.Scene.GetCoverPath(sceneID)
-
-	return fsTxn.WriteFile(normalPath, imageData)
 }

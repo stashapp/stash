@@ -89,9 +89,7 @@ func Initialize() *singleton {
 
 		instance.JobManager = initJobManager()
 
-		sceneServer := SceneServer{
-			TXNManager: instance.TxnManager,
-		}
+		sceneServer := SceneServer{}
 		instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
 
 		if !cfg.IsNewSystem() {

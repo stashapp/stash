@@ -514,6 +514,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 		sceneHash := mappingJSON.Checksum
 
+		fsTxn := fsutil.NewFSTransaction()
+
 		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 			readerWriter := r.Scene()
 			tagWriter := r.Tag()
@@ -527,6 +529,10 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				ReaderWriter: readerWriter,
 				Input:        *sceneJSON,
 				Path:         mappingJSON.Path,
+				CoverSetter: &scene.PathsCover{
+					Paths:      instance.Paths,
+					FileWriter: fsTxn,
+				},
 
 				FileNamingAlgorithm: t.fileNamingAlgorithm,
 				MissingRefBehaviour: t.MissingRefBehaviour,
@@ -559,8 +565,11 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 			return nil
 		}); err != nil {
+			fsTxn.Rollback()
 			logger.Errorf("[scenes] <%s> import failed: %s", sceneHash, err.Error())
 		}
+
+		fsTxn.Commit()
 	}
 
 	logger.Info("[scenes] import complete")

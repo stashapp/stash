@@ -125,6 +125,21 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepo
 	})
 }
 
+type coverGetterSetterFactory struct{}
+
+func (f *coverGetterSetterFactory) GetCoverGetter() scene.CoverGetter {
+	return &scene.PathsCover{
+		Paths: instance.Paths,
+	}
+}
+
+func (f *coverGetterSetterFactory) GetCoverSetter(w scene.FileWriter) scene.CoverSetter {
+	return &scene.PathsCover{
+		Paths:      instance.Paths,
+		FileWriter: w,
+	}
+}
+
 func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, sources []identify.ScraperSource) {
 	if job.IsCancelled(ctx) {
 		return
@@ -133,11 +148,9 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 	var taskError error
 	j.progress.ExecuteTask("Identifying "+s.Path, func() {
 		task := identify.SceneIdentifier{
-			DefaultOptions: j.input.Options,
-			Sources:        sources,
-			ScreenshotSetter: &scene.PathsScreenshotSetter{
-				Paths: instance.Paths,
-			},
+			DefaultOptions:              j.input.Options,
+			Sources:                     sources,
+			CoverGetterSetterFactory:    &coverGetterSetterFactory{},
 			SceneUpdatePostHookExecutor: j.postHookExecutor,
 		}
 

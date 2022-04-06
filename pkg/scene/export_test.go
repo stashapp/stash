@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"testing"
 	"time"
@@ -224,21 +225,46 @@ var scenarios = []basicTestScenario{
 	},
 }
 
+type mockCoverGetter struct {
+	mock.Mock
+}
+
+func (_m *mockCoverGetter) GetCover(sceneID int) ([]byte, error) {
+	ret := _m.Called(sceneID)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(int) []byte); ok {
+		r0 = rf(sceneID)
+	} else if ret.Get(0) != nil {
+		r0 = ret.Get(0).([]byte)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(sceneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 func TestToJSON(t *testing.T) {
 	mockSceneReader := &mocks.SceneReaderWriter{}
+	coverGetter := &mockCoverGetter{}
 
 	imageErr := errors.New("error getting image")
 
-	mockSceneReader.On("GetCover", sceneID).Return(imageBytes, nil).Once()
-	mockSceneReader.On("GetCover", noImageID).Return(nil, nil).Once()
-	mockSceneReader.On("GetCover", errImageID).Return(nil, imageErr).Once()
+	coverGetter.On("GetCover", sceneID).Return(imageBytes, nil).Once()
+	coverGetter.On("GetCover", noImageID).Return(nil, nil).Once()
+	coverGetter.On("GetCover", errImageID).Return(nil, imageErr).Once()
 
 	mockSceneReader.On("GetStashIDs", sceneID).Return(stashIDs, nil).Once()
 	mockSceneReader.On("GetStashIDs", noImageID).Return(nil, nil).Once()
 
 	for i, s := range scenarios {
 		scene := s.input
-		json, err := ToBasicJSON(mockSceneReader, &scene)
+		json, err := ToBasicJSON(mockSceneReader, &scene, coverGetter)
 
 		switch {
 		case !s.err && err != nil:

@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stretchr/testify/mock"
 )
@@ -28,6 +29,49 @@ type mockHookExecutor struct {
 }
 
 func (s mockHookExecutor) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string) {
+}
+
+type mockCoverGetter struct {
+	mock.Mock
+}
+
+func (_m *mockCoverGetter) GetCover(sceneID int) ([]byte, error) {
+	ret := _m.Called(sceneID)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(int) []byte); ok {
+		r0 = rf(sceneID)
+	} else if ret.Get(0) != nil {
+		r0 = ret.Get(0).([]byte)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(sceneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+type mockCoverSetter struct{}
+
+func (s *mockCoverSetter) SetCover(sceneID int, imageData []byte) error {
+	return nil
+}
+
+type mockCoverGetterSetterFactory struct {
+	getter *mockCoverGetter
+	setter *mockCoverSetter
+}
+
+func (f *mockCoverGetterSetterFactory) GetCoverGetter() scene.CoverGetter {
+	return f.getter
+}
+
+func (f *mockCoverGetterSetterFactory) GetCoverSetter(w scene.FileWriter) scene.CoverSetter {
+	return f.setter
 }
 
 func TestSceneIdentifier_Identify(t *testing.T) {
@@ -77,6 +121,11 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		return partial.ID == errUpdateID
 	})).Return(nil, errors.New("update error"))
 
+	factory := &mockCoverGetterSetterFactory{
+		getter: &mockCoverGetter{},
+		setter: &mockCoverSetter{},
+	}
+
 	tests := []struct {
 		name    string
 		sceneID int
@@ -118,6 +167,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		DefaultOptions:              defaultOptions,
 		Sources:                     sources,
 		SceneUpdatePostHookExecutor: mockHookExecutor{},
+		CoverGetterSetterFactory:    factory,
 	}
 
 	for _, tt := range tests {
@@ -134,7 +184,14 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 
 func TestSceneIdentifier_modifyScene(t *testing.T) {
 	repo := mocks.NewTransactionManager()
-	tr := &SceneIdentifier{}
+	factory := &mockCoverGetterSetterFactory{
+		getter: &mockCoverGetter{},
+		setter: &mockCoverSetter{},
+	}
+
+	tr := &SceneIdentifier{
+		CoverGetterSetterFactory: factory,
+	}
 
 	type args struct {
 		scene  *models.Scene

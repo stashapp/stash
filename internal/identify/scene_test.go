@@ -707,12 +707,14 @@ func Test_sceneRelationships_cover(t *testing.T) {
 	invalidData := newDataEncoded + "!!!"
 
 	repo := mocks.NewTransactionManager()
-	repo.SceneMock().On("GetCover", sceneID).Return(existingData, nil)
-	repo.SceneMock().On("GetCover", errSceneID).Return(nil, errors.New("error getting cover"))
+	getter := &mockCoverGetter{}
+	getter.On("GetCover", sceneID).Return(existingData, nil)
+	getter.On("GetCover", errSceneID).Return(nil, errors.New("error getting cover"))
 
 	tr := sceneRelationships{
-		repo:         repo,
-		fieldOptions: make(map[string]*models.IdentifyFieldOptionsInput),
+		repo:             repo,
+		fieldOptions:     make(map[string]*models.IdentifyFieldOptionsInput),
+		screenshotGetter: getter,
 	}
 
 	tests := []struct {

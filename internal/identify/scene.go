@@ -9,16 +9,18 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type sceneRelationships struct {
-	repo         models.Repository
-	scene        *models.Scene
-	result       *scrapeResult
-	fieldOptions map[string]*models.IdentifyFieldOptionsInput
+	repo             models.Repository
+	screenshotGetter scene.CoverGetter
+	scene            *models.Scene
+	result           *scrapeResult
+	fieldOptions     map[string]*models.IdentifyFieldOptionsInput
 }
 
 func (g sceneRelationships) studio() (*int64, error) {
@@ -227,14 +229,12 @@ func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
 
 func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
 	scraped := g.result.result.Image
-	r := g.repo
-
 	if scraped == nil {
 		return nil, nil
 	}
 
 	// always overwrite if present
-	existingCover, err := r.Scene().GetCover(g.scene.ID)
+	existingCover, err := g.screenshotGetter.GetCover(g.scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene cover: %w", err)
 	}

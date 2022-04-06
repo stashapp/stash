@@ -14,7 +14,7 @@ import (
 // ToBasicJSON converts a scene object into its JSON object equivalent. It
 // does not convert the relationships to other objects, with the exception
 // of cover image.
-func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Scene, error) {
+func ToBasicJSON(reader models.SceneReader, scene *models.Scene, coverGetter CoverGetter) (*jsonschema.Scene, error) {
 	newSceneJSON := jsonschema.Scene{
 		CreatedAt: models.JSONTime{Time: scene.CreatedAt.Timestamp},
 		UpdatedAt: models.JSONTime{Time: scene.UpdatedAt.Timestamp},
@@ -57,14 +57,11 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 
 	newSceneJSON.File = getSceneFileJSON(scene)
 
-	cover, err := reader.GetCover(scene.ID)
+	coverData, err := coverGetter.GetCover(scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene cover: %v", err)
 	}
-
-	if len(cover) > 0 {
-		newSceneJSON.Cover = utils.GetBase64StringFromData(cover)
-	}
+	newSceneJSON.Cover = utils.GetBase64StringFromData(coverData)
 
 	stashIDs, _ := reader.GetStashIDs(scene.ID)
 	var ret []models.StashID

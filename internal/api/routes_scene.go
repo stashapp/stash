@@ -76,9 +76,7 @@ func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	ss := manager.SceneServer{
-		TXNManager: rs.txnManager,
-	}
+	ss := manager.SceneServer{}
 	ss.StreamSceneDirect(scene, w, r)
 }
 
@@ -194,9 +192,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	ss := manager.SceneServer{
-		TXNManager: rs.txnManager,
-	}
+	ss := manager.SceneServer{}
 	ss.ServeScreenshot(scene, w, r)
 }
 

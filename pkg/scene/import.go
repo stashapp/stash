@@ -12,15 +12,23 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type CoverPathGetter interface {
+	GetCoverPath(id int) string
+}
+
 type Importer struct {
-	ReaderWriter        models.SceneReaderWriter
-	StudioWriter        models.StudioReaderWriter
-	GalleryWriter       models.GalleryReaderWriter
-	PerformerWriter     models.PerformerReaderWriter
-	MovieWriter         models.MovieReaderWriter
-	TagWriter           models.TagReaderWriter
-	Input               jsonschema.Scene
-	Path                string
+	ReaderWriter    models.SceneReaderWriter
+	StudioWriter    models.StudioReaderWriter
+	GalleryWriter   models.GalleryReaderWriter
+	PerformerWriter models.PerformerReaderWriter
+	MovieWriter     models.MovieReaderWriter
+	TagWriter       models.TagReaderWriter
+
+	CoverSetter CoverSetter
+
+	Input jsonschema.Scene
+	Path  string
+
 	MissingRefBehaviour models.ImportMissingRefEnum
 	FileNamingAlgorithm models.HashAlgorithm
 
@@ -341,7 +349,7 @@ func (i *Importer) populateTags() error {
 
 func (i *Importer) PostImport(id int) error {
 	if len(i.coverImageData) > 0 {
-		if err := i.ReaderWriter.UpdateCover(id, i.coverImageData); err != nil {
+		if err := i.CoverSetter.SetCover(id, i.coverImageData); err != nil {
 			return fmt.Errorf("error setting scene images: %v", err)
 		}
 	}
