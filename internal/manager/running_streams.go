@@ -1,11 +1,15 @@
 package manager
 
 import (
+	"bytes"
+	"io/ioutil"
 	"net/http"
 	"sync"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -93,6 +97,19 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 }
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
+	const defaultSceneImage = "scene/scene.png"
+
 	filepath := GetInstance().Paths.Scene.GetCoverPath(scene.ID)
-	http.ServeFile(w, r, filepath)
+
+	if exists, _ := fsutil.FileExists(filepath); exists {
+		http.ServeFile(w, r, filepath)
+	} else {
+		// fallback to default cover if none found
+		// should always be there
+		f, _ := static.Scene.Open(defaultSceneImage)
+		defer f.Close()
+		stat, _ := f.Stat()
+		data, _ := ioutil.ReadAll(f)
+		http.ServeContent(w, r, "", stat.ModTime(), bytes.NewReader(data))
+	}
 }
