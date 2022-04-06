@@ -11,9 +11,9 @@ type Destroyer interface {
 	Destroy(id int) error
 }
 
-// FileDeleter is an extension of fsutil.Deleter that handles deletion of image files.
+// FileDeleter is an extension of fsutil.FSTransaction that handles deletion of image files.
 type FileDeleter struct {
-	fsutil.Deleter
+	fsutil.FSTransaction
 
 	Paths *paths.Paths
 }
@@ -23,7 +23,7 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 	thumbPath := d.Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
 	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
-		return d.Files([]string{thumbPath})
+		return d.DeleteFiles([]string{thumbPath})
 	}
 
 	return nil
@@ -33,7 +33,7 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 func Destroy(i *models.Image, destroyer Destroyer, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
 	// don't try to delete if the image is in a zip file
 	if deleteFile && !file.IsZipPath(i.Path) {
-		if err := fileDeleter.Files([]string{i.Path}); err != nil {
+		if err := fileDeleter.DeleteFiles([]string{i.Path}); err != nil {
 			return err
 		}
 	}

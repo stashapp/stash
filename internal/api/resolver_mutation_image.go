@@ -286,8 +286,8 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 
 	var i *models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *fsutil.NewDeleter(),
-		Paths:   manager.GetInstance().Paths,
+		FSTransaction: *fsutil.NewFSTransaction(),
+		Paths:         manager.GetInstance().Paths,
 	}
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Image()
@@ -328,8 +328,8 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 	var images []*models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *fsutil.NewDeleter(),
-		Paths:   manager.GetInstance().Paths,
+		FSTransaction: *fsutil.NewFSTransaction(),
+		Paths:         manager.GetInstance().Paths,
 	}
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Image()

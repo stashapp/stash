@@ -44,15 +44,17 @@ type PathsScreenshotSetter struct {
 }
 
 func (ss *PathsScreenshotSetter) SetScreenshot(scene *models.Scene, imageData []byte) error {
-	return SetScreenshot(ss.Paths, scene.ID, imageData)
+	fsTxn := fsutil.NewFSTransaction()
+	if err := SetScreenshot(ss.Paths, scene.ID, fsTxn, imageData); err != nil {
+		fsTxn.Rollback()
+		return err
+	}
+	fsTxn.Commit()
+	return nil
 }
 
-func writeImage(path string, imageData []byte) error {
-	return fsutil.WriteFile(path, imageData)
-}
-
-func SetScreenshot(paths *paths.Paths, sceneID int, imageData []byte) error {
+func SetScreenshot(paths *paths.Paths, sceneID int, fsTxn *fsutil.FSTransaction, imageData []byte) error {
 	normalPath := paths.Scene.GetCoverPath(sceneID)
 
-	return writeImage(normalPath, imageData)
+	return fsTxn.WriteFile(normalPath, imageData)
 }

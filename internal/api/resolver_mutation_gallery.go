@@ -403,8 +403,8 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	var galleries []*models.Gallery
 	var imgsDestroyed []*models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *fsutil.NewDeleter(),
-		Paths:   manager.GetInstance().Paths,
+		FSTransaction: *fsutil.NewFSTransaction(),
+		Paths:         manager.GetInstance().Paths,
 	}
 
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
@@ -442,7 +442,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				}
 
 				if deleteFile {
-					if err := fileDeleter.Files([]string{gallery.Path.String}); err != nil {
+					if err := fileDeleter.DeleteFiles([]string{gallery.Path.String}); err != nil {
 						return err
 					}
 				}

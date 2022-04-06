@@ -395,7 +395,7 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 	fileNamingAlgo := GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *fsutil.NewDeleter(),
+		FSTransaction:  *fsutil.NewFSTransaction(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          GetInstance().Paths,
 	}
@@ -453,8 +453,8 @@ func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
 
 func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 	fileDeleter := &image.FileDeleter{
-		Deleter: *fsutil.NewDeleter(),
-		Paths:   GetInstance().Paths,
+		FSTransaction: *fsutil.NewFSTransaction(),
+		Paths:         GetInstance().Paths,
 	}
 
 	var i *models.Image

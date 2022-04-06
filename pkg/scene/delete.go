@@ -8,9 +8,9 @@ import (
 	"github.com/stashapp/stash/pkg/models/paths"
 )
 
-// FileDeleter is an extension of fsutil.Deleter that handles deletion of scene files.
+// FileDeleter is an extension of fsutil.FSTransaction that handles deletion of scene files.
 type FileDeleter struct {
-	fsutil.Deleter
+	fsutil.FSTransaction
 
 	FileNamingAlgo models.HashAlgorithm
 	Paths          *paths.Paths
@@ -28,7 +28,7 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 
 	exists, _ := fsutil.FileExists(markersFolder)
 	if exists {
-		if err := d.Dirs([]string{markersFolder}); err != nil {
+		if err := d.DeleteDirs([]string{markersFolder}); err != nil {
 			return err
 		}
 	}
@@ -77,7 +77,7 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 		files = append(files, heatmapPath)
 	}
 
-	return d.Files(files)
+	return d.DeleteFiles(files)
 }
 
 // MarkMarkerFiles deletes generated files for a scene marker with the
@@ -104,7 +104,7 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 		files = append(files, screenshotPath)
 	}
 
-	return d.Files(files)
+	return d.DeleteFiles(files)
 }
 
 // Destroy deletes a scene and its associated relationships from the
@@ -125,14 +125,14 @@ func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDelet
 	}
 
 	if deleteFile {
-		if err := fileDeleter.Files([]string{scene.Path}); err != nil {
+		if err := fileDeleter.DeleteFiles([]string{scene.Path}); err != nil {
 			return err
 		}
 
 		funscriptPath := GetFunscriptPath(scene.Path)
 		funscriptExists, _ := fsutil.FileExists(funscriptPath)
 		if funscriptExists {
-			if err := fileDeleter.Files([]string{funscriptPath}); err != nil {
+			if err := fileDeleter.DeleteFiles([]string{funscriptPath}); err != nil {
 				return err
 			}
 		}

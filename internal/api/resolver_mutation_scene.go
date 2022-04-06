@@ -34,12 +34,16 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	// Start the transaction and save the scene
+	fsTxn := fsutil.NewFSTransaction()
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		ret, err = r.sceneUpdate(ctx, input, translator, repo)
+		ret, err = r.sceneUpdate(ctx, input, translator, repo, fsTxn)
 		return err
 	}); err != nil {
+		fsTxn.Rollback()
 		return nil, err
 	}
+
+	fsTxn.Commit()
 
 	r.hookExecutor.ExecutePostHooks(ctx, ret.ID, plugin.SceneUpdatePost, input, translator.getFields())
 	return r.getScene(ctx, ret.ID)
@@ -49,13 +53,14 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 	inputMaps := getUpdateInputMaps(ctx)
 
 	// Start the transaction and save the scene
+	fsTxn := fsutil.NewFSTransaction()
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		for i, scene := range input {
 			translator := changesetTranslator{
 				inputMap: inputMaps[i],
 			}
 
-			thisScene, err := r.sceneUpdate(ctx, *scene, translator, repo)
+			thisScene, err := r.sceneUpdate(ctx, *scene, translator, repo, fsTxn)
 			ret = append(ret, thisScene)
 
 			if err != nil {
@@ -65,8 +70,11 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 
 		return nil
 	}); err != nil {
+		fsTxn.Rollback()
 		return nil, err
 	}
+
+	fsTxn.Commit()
 
 	// execute post hooks outside of txn
 	var newRet []*models.Scene
@@ -88,7 +96,7 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 	return newRet, nil
 }
 
-func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Scene, error) {
+func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator, repo models.Repository, fsTxn *fsutil.FSTransaction) (*models.Scene, error) {
 	// Populate scene from the input
 	sceneID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -118,20 +126,16 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 			return nil, err
 		}
 
-		// update the cover after updating the scene
+		err = scene.SetScreenshot(manager.GetInstance().Paths, sceneID, fsTxn, coverImageData)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	qb := repo.Scene()
 	s, err := qb.Update(updatedScene)
 	if err != nil {
 		return nil, err
-	}
-
-	// update cover table
-	if len(coverImageData) > 0 {
-		if err := qb.UpdateCover(sceneID, coverImageData); err != nil {
-			return nil, err
-		}
 	}
 
 	// Save the performers
@@ -166,14 +170,6 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	if translator.hasField("stash_ids") {
 		stashIDJoins := models.StashIDsFromInput(input.StashIds)
 		if err := qb.UpdateStashIDs(sceneID, stashIDJoins); err != nil {
-			return nil, err
-		}
-	}
-
-	// only update the cover image if provided and everything else was successful
-	if coverImageData != nil {
-		err = scene.SetScreenshot(manager.GetInstance().Paths, s.ID, coverImageData)
-		if err != nil {
 			return nil, err
 		}
 	}
@@ -462,7 +458,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 
 	var s *models.Scene
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *fsutil.NewDeleter(),
+		FSTransaction:  *fsutil.NewFSTransaction(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
@@ -510,7 +506,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *fsutil.NewDeleter(),
+		FSTransaction:  *fsutil.NewFSTransaction(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
@@ -660,7 +656,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *fsutil.NewDeleter(),
+		FSTransaction:  *fsutil.NewFSTransaction(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
@@ -706,7 +702,7 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *fsutil.NewDeleter(),
+		FSTransaction:  *fsutil.NewFSTransaction(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
