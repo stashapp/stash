@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/manager/migration"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -448,7 +449,11 @@ func (s *singleton) Migrate(ctx context.Context, input models.MigrateInput) erro
 	postVersion := database.Version()
 
 	// perform post-migration operations
-	s.PostMigrate(ctx, preVersion, postVersion)
+	m := migration.PostMigrator{
+		TxnManager: s.TxnManager,
+		Config:     s.Config,
+	}
+	m.PostMigrate(ctx, preVersion, postVersion)
 
 	// if no backup path was provided, then delete the created backup
 	if input.BackupPath == "" {
