@@ -799,23 +799,16 @@ func (qb *sceneQueryBuilder) imageRepository() *imageRepository {
 	return &imageRepository{
 		repository: repository{
 			tx:        qb.tx,
-			tableName: "scenes_cover",
+			tableName: "_scenes_cover_deprecated",
 			idColumn:  sceneIDColumn,
 		},
 		imageColumn: "cover",
 	}
 }
 
+// Deprecated: for migration purposes only
 func (qb *sceneQueryBuilder) GetCover(sceneID int) ([]byte, error) {
 	return qb.imageRepository().get(sceneID)
-}
-
-func (qb *sceneQueryBuilder) UpdateCover(sceneID int, image []byte) error {
-	return qb.imageRepository().replace(sceneID, image)
-}
-
-func (qb *sceneQueryBuilder) DestroyCover(sceneID int) error {
-	return qb.imageRepository().destroy([]int{sceneID})
 }
 
 func (qb *sceneQueryBuilder) moviesRepository() *repository {

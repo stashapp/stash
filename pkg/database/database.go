@@ -23,7 +23,7 @@ import (
 var DB *sqlx.DB
 var WriteMu sync.Mutex
 var dbPath string
-var appSchemaVersion uint = 30
+var appSchemaVersion uint = 31
 var databaseSchemaVersion uint
 
 //go:embed migrations/*.sql
@@ -68,7 +68,7 @@ func Initialize(databasePath string) error {
 
 	if databaseSchemaVersion == 0 {
 		// new database, just run the migrations
-		if err := RunMigrations(); err != nil {
+		if err := RunMigrations(true); err != nil {
 			return fmt.Errorf("error running initial schema migrations: %v", err)
 		}
 		// RunMigrations calls Initialise. Just return
@@ -240,7 +240,7 @@ func getDatabaseSchemaVersion() error {
 }
 
 // Migrate the database
-func RunMigrations() error {
+func RunMigrations(isNew bool) error {
 	m, err := getMigrate()
 	if err != nil {
 		panic(err.Error())
@@ -263,6 +263,12 @@ func RunMigrations() error {
 		logger.Warnf("Error re-initializing the database: %v", err)
 	}
 
+	if isNew {
+		// drop any deprecated tables
+		// we shouldn't need them for a new system
+		dropDeprecatedTables()
+	}
+
 	// run a vacuum on the database
 	logger.Info("Performing vacuum on database")
 	_, err = DB.Exec("VACUUM")
@@ -271,6 +277,19 @@ func RunMigrations() error {
 	}
 
 	return nil
+}
+
+func dropDeprecatedTables() {
+	var deprecatedTables = []string{
+		"_scenes_cover_deprecated",
+	}
+
+	logger.Info("Dropping deprecated tables")
+	for _, table := range deprecatedTables {
+		if _, err := DB.Exec(fmt.Sprintf("DROP TABLE %s", table)); err != nil {
+			logger.Errorf("error dropping table %s: %v", table, err)
+		}
+	}
 }
 
 func registerCustomDriver() {

@@ -63,9 +63,6 @@ type SceneReader interface {
 	All() ([]*Scene, error)
 	Query(options SceneQueryOptions) (*SceneQueryResult, error)
 
-	// deprecated - for migration purposes only
-	// GetCover(sceneID int) ([]byte, error)
-
 	GetMovies(sceneID int) ([]MoviesScenes, error)
 	GetTagIDs(sceneID int) ([]int, error)
 	GetGalleryIDs(sceneID int) ([]int, error)
@@ -82,9 +79,6 @@ type SceneWriter interface {
 	ResetOCounter(id int) (int, error)
 	UpdateFileModTime(id int, modTime NullSQLiteTimestamp) error
 	Destroy(id int) error
-
-	// deprecated- for migration purposes only
-	// DestroyCover(sceneID int) error
 
 	UpdatePerformers(sceneID int, performerIDs []int) error
 	UpdateTags(sceneID int, tagIDs []int) error
