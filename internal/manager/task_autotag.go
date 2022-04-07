@@ -126,10 +126,16 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 
 		if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			performerQuery := r.Performer()
+			ignoreAutoTag := false
+			perPage := -1
 
 			if performerId == "*" {
 				var err error
-				performers, err = performerQuery.All()
+				performers, _, err = performerQuery.Query(&models.PerformerFilterType{
+					IgnoreAutoTag: &ignoreAutoTag,
+				}, &models.FindFilterType{
+					PerPage: &perPage,
+				})
 				if err != nil {
 					return fmt.Errorf("error querying performers: %v", err)
 				}
@@ -193,9 +199,15 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 
 		if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			studioQuery := r.Studio()
+			ignoreAutoTag := false
+			perPage := -1
 			if studioId == "*" {
 				var err error
-				studios, err = studioQuery.All()
+				studios, _, err = studioQuery.Query(&models.StudioFilterType{
+					IgnoreAutoTag: &ignoreAutoTag,
+				}, &models.FindFilterType{
+					PerPage: &perPage,
+				})
 				if err != nil {
 					return fmt.Errorf("error querying studios: %v", err)
 				}
@@ -264,9 +276,15 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 		var tags []*models.Tag
 		if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			tagQuery := r.Tag()
+			ignoreAutoTag := false
+			perPage := -1
 			if tagId == "*" {
 				var err error
-				tags, err = tagQuery.All()
+				tags, _, err = tagQuery.Query(&models.TagFilterType{
+					IgnoreAutoTag: &ignoreAutoTag,
+				}, &models.FindFilterType{
+					PerPage: &perPage,
+				})
 				if err != nil {
 					return fmt.Errorf("error querying tags: %v", err)
 				}

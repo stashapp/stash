@@ -117,6 +117,9 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		weight := int64(*input.Weight)
 		newPerformer.Weight = sql.NullInt64{Int64: weight, Valid: true}
 	}
+	if input.IgnoreAutoTag != nil {
+		newPerformer.IgnoreAutoTag = *input.IgnoreAutoTag
+	}
 
 	if err := performer.ValidateDeathDate(nil, input.Birthdate, input.DeathDate); err != nil {
 		if err != nil {
@@ -223,6 +226,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.nullInt64(input.Weight, "weight")
+	updatedPerformer.IgnoreAutoTag = input.IgnoreAutoTag
 
 	// Start the transaction and save the p
 	var p *models.Performer
@@ -331,6 +335,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.nullInt64(input.Weight, "weight")
+	updatedPerformer.IgnoreAutoTag = input.IgnoreAutoTag
 
 	if translator.hasField("gender") {
 		if input.Gender != nil {

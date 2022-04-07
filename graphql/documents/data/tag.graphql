@@ -2,6 +2,7 @@ fragment TagData on Tag {
   id
   name
   aliases
+  ignore_auto_tag
   image_path
   scene_count
   scene_marker_count

@@ -524,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "Slideshow is available in galleries when in wall view mode",
-        "heading": "Slideshow Delay"
+        "heading": "Slideshow Delay (seconds)"
       },
       "title": "User Interface"
     }
@@ -585,7 +585,6 @@
     "delete_object_overflow": "…and {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "existing_value": "existing value",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
     "lightbox": {
@@ -734,6 +733,7 @@
   "hasMarkers": "Has Markers",
   "height": "Height",
   "help": "Help",
+  "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
   "image_count": "Image Count",
   "images": "Images",

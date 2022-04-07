@@ -99,6 +99,8 @@ const (
 
 	performersNameCase   = performerIdx1WithDupName
 	performersNameNoCase = 2
+
+	totalPerformers = performersNameCase + performersNameNoCase
 )
 
 const (
@@ -166,6 +168,8 @@ const (
 
 	tagsNameNoCase = 2
 	tagsNameCase   = tagIdx1WithDupName
+
+	totalTags = tagsNameCase + tagsNameNoCase
 )
 
 const (
@@ -190,6 +194,8 @@ const (
 
 	studiosNameCase   = studioIdxWithDupName
 	studiosNameNoCase = 1
+
+	totalStudios = studiosNameCase + studiosNameNoCase
 )
 
 const (
@@ -422,7 +428,9 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	database.Initialize(databaseFile)
+	if err := database.Initialize(databaseFile); err != nil {
+		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+	}
 
 	// defer close and delete the database
 	defer testTeardown(databaseFile)
@@ -815,6 +823,10 @@ func getPerformerCareerLength(index int) *string {
 	return &ret
 }
 
+func getIgnoreAutoTag(index int) bool {
+	return index%5 == 0
+}
+
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 	const namePlain = "Name"
@@ -840,10 +852,11 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 				String: getPerformerBirthdate(i),
 				Valid:  true,
 			},
-			DeathDate: getPerformerDeathDate(i),
-			Details:   sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
-			Ethnicity: sql.NullString{String: getPerformerStringValue(i, "Ethnicity"), Valid: true},
-			Rating:    getRating(i),
+			DeathDate:     getPerformerDeathDate(i),
+			Details:       sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
+			Ethnicity:     sql.NullString{String: getPerformerStringValue(i, "Ethnicity"), Valid: true},
+			Rating:        getRating(i),
+			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 
 		careerLength := getPerformerCareerLength(i)
@@ -945,7 +958,8 @@ func createTags(tqb models.TagReaderWriter, n int, o int) error {
 		// tags [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		tag := models.Tag{
-			Name: getTagStringValue(index, name),
+			Name:          getTagStringValue(index, name),
+			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 
 		created, err := tqb.Create(tag)
@@ -1015,9 +1029,10 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 
 		name = getStudioStringValue(index, name)
 		studio := models.Studio{
-			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: md5.FromString(name),
-			URL:      getStudioNullStringValue(index, urlField),
+			Name:          sql.NullString{String: name, Valid: true},
+			Checksum:      md5.FromString(name),
+			URL:           getStudioNullStringValue(index, urlField),
+			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 		created, err := createStudioFromModel(sqb, studio)
 

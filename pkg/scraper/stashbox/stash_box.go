@@ -14,11 +14,11 @@ import (
 	"strings"
 
 	"github.com/Yamashou/gqlgenc/client"
-	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/corona10/goimagehash"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
+	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
@@ -937,6 +937,14 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 	id = ret.SubmitSceneDraft.ID
 
 	return id, err
+
+	// ret, err := c.client.SubmitSceneDraft(ctx, draft, uploadImage(image))
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// id := ret.SubmitSceneDraft.ID
+	// return id, nil
 }
 
 func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, endpoint string) (*string, error) {
@@ -1014,7 +1022,53 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	id = ret.SubmitPerformerDraft.ID
 
 	return id, err
+
+	// ret, err := c.client.SubmitPerformerDraft(ctx, draft, uploadImage(image))
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// id := ret.SubmitPerformerDraft.ID
+	// return id, nil
 }
+
+// we can't currently use this due to https://github.com/Yamashou/gqlgenc/issues/109
+// func uploadImage(image io.Reader) client.HTTPRequestOption {
+// 	return func(req *http.Request) {
+// 		if image == nil {
+// 			// return without changing anything
+// 			return
+// 		}
+
+// 		// we can't handle errors in here, so if one happens, just return
+// 		// without changing anything.
+
+// 		// repackage the request to include the image
+// 		bodyBytes, err := ioutil.ReadAll(req.Body)
+// 		if err != nil {
+// 			return
+// 		}
+
+// 		newBody := &bytes.Buffer{}
+// 		writer := multipart.NewWriter(newBody)
+// 		_ = writer.WriteField("operations", string(bodyBytes))
+
+// 		if err := writer.WriteField("map", "{ \"0\": [\"variables.input.image\"] }"); err != nil {
+// 			return
+// 		}
+// 		part, _ := writer.CreateFormFile("0", "draft")
+// 		if _, err := io.Copy(part, image); err != nil {
+// 			return
+// 		}
+
+// 		writer.Close()
+
+// 		// now set the request body to this new body
+// 		req.Body = io.NopCloser(newBody)
+// 		req.ContentLength = int64(newBody.Len())
+// 		req.Header.Set("Content-Type", writer.FormDataContentType())
+// 	}
+// }
 
 func (c *Client) submitDraft(ctx context.Context, query string, input interface{}, image io.Reader, ret interface{}) error {
 	vars := map[string]interface{}{
@@ -1056,8 +1110,8 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	req.Header.Set("ApiKey", c.box.APIKey)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	httpClient := c.client.Client.Client
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -1068,7 +1122,28 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 		return err
 	}
 
-	if err := graphqljson.UnmarshalData(responseBytes, ret); err != nil {
+	type response struct {
+		Data   json.RawMessage `json:"data"`
+		Errors json.RawMessage `json:"errors"`
+	}
+
+	var respGQL response
+
+	if err := json.Unmarshal(responseBytes, &respGQL); err != nil {
+		return fmt.Errorf("failed to decode data %s: %w", string(responseBytes), err)
+	}
+
+	if respGQL.Errors != nil && len(respGQL.Errors) > 0 {
+		// try to parse standard graphql error
+		errors := &client.GqlErrorList{}
+		if e := json.Unmarshal(responseBytes, errors); e != nil {
+			return fmt.Errorf("failed to parse graphql errors. Response content %s - %w ", string(responseBytes), e)
+		}
+
+		return errors
+	}
+
+	if err := graphqljson.UnmarshalData(respGQL.Data, ret); err != nil {
 		return err
 	}
 

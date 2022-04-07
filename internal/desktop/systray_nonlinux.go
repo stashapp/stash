@@ -1,5 +1,5 @@
-//go:build windows || darwin || !linux
-// +build windows darwin !linux
+//go:build windows || darwin
+// +build windows darwin
 
 package desktop
 
