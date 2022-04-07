@@ -3,7 +3,6 @@ package migration
 import (
 	"context"
 
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -20,8 +19,7 @@ type MigrateHashJob struct {
 }
 
 func (j *MigrateHashJob) Execute(ctx context.Context, progress *job.Progress) {
-	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
-	logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
+	logger.Infof("Migrating generated files for %s naming hash", j.FileNamingAlgorithm.String())
 
 	var scenes []*models.Scene
 	if err := j.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {

@@ -257,6 +257,18 @@ func (s *singleton) DataMassage(ctx context.Context, input models.DataMassageInp
 				FileNamingAlgorithm: s.Config.GetVideoFileNamingAlgorithm(),
 			},
 		},
+		"scene_covers": {
+			description: "Migrating scene covers...",
+			job: &migration.MigrateCoversJob{
+				TxnManager:          s.TxnManager,
+				Paths:               s.Paths,
+				FileNamingAlgorithm: s.Config.GetVideoFileNamingAlgorithm(),
+			},
+		},
+		"drop_scene_covers": {
+			description: "Dropping scene covers table...",
+			job:         &migration.MigrateDropCoversJob{},
+		},
 	}
 
 	massage, ok := massages[input.Type]
