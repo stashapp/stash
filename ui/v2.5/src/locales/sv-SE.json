@@ -107,6 +107,7 @@
     },
     "temp_disable": "Inaktivera tillfälligt…",
     "temp_enable": "Aktivera tillfälligt…",
+    "unset": "Oinställ",
     "use_default": "Använd standard",
     "view_random": "Visa slumpad"
   },
@@ -279,6 +280,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Antal parallella jobb för skanning/generering",
       "parallel_scan_head": "Parallell Skan/Generering",
       "preview_generation": "Generera förhandsvisningar",
+      "python_path": {
+        "description": "Lokation till python. Används för skriptade skrapare och plugins. Om blank, kommer python att hanteras från den interna miljön",
+        "heading": "Python Sökväg"
+      },
       "scraper_user_agent": "Användaragent för skrapning",
       "scraper_user_agent_desc": "Användaragent-sträng som används under http-förfrågningar under skrapning",
       "scrapers_path": {
@@ -448,6 +453,9 @@
         "description": "Handy anslutningsnyckel för interaktiva scener. Denna nyckel kommer låta Stash dela din nuvarande sceninformation med handyfeeling.com",
         "heading": "Handy Uppkopplingsnyckel"
       },
+      "image_lightbox": {
+        "heading": "Bild Ljuslåda"
+      },
       "images": {
         "heading": "Bilder",
         "options": {
@@ -577,6 +585,7 @@
     "delete_object_overflow": "…och {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Radera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "Redigera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "existing_value": "existerande värde",
     "export_include_related_objects": "Inkludera relaterade objekt i exporten",
     "export_title": "Exportera",
     "lightbox": {
@@ -694,6 +703,7 @@
     "warmth": "Värme"
   },
   "ethnicity": "Etnicitet",
+  "existing_value": "existerande värde",
   "eye_color": "Ögonfärg",
   "fake_tits": "Fejkbröst",
   "false": "Falsk",
