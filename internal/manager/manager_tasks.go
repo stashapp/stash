@@ -238,7 +238,7 @@ func (s *singleton) Clean(ctx context.Context, input models.CleanMetadataInput) 
 // deprecated
 func (s *singleton) MigrateHash(ctx context.Context) (int, error) {
 	return s.DataMassage(ctx, models.DataMassageInput{
-		Type: "hashNaming",
+		Type: "hash_naming",
 	})
 }
 
@@ -249,7 +249,7 @@ func (s *singleton) DataMassage(ctx context.Context, input models.DataMassageInp
 	}
 
 	massages := map[string]*dataMassage{
-		"hashnaming": {
+		"hash_naming": {
 			description: "Migrating scene hashes...",
 			job: &migration.MigrateHashJob{
 				TxnManager:          s.TxnManager,

@@ -38,6 +38,10 @@ mutation MigrateHashNaming {
   migrateHashNaming
 }
 
+mutation DataMassage($input: DataMassageInput!) {
+  dataMassage(input: $input)
+}
+
 mutation BackupDatabase($input: BackupDatabaseInput!) {
   backupDatabase(input: $input)
 }

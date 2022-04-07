@@ -7,6 +7,8 @@ import {
   mutateBackupDatabase,
   mutateMetadataImport,
   mutateMetadataClean,
+  mutateMigrateSceneCovers,
+  mutateDropSceneCovers,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { downloadFile } from "src/utils";
@@ -155,6 +157,8 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     import: false,
     clean: false,
     cleanAlert: false,
+    migrateCover: false,
+    dropCover: false,
   });
 
   const [cleanOptions, setCleanOptions] = useState<GQL.CleanMetadataInput>({
@@ -247,6 +251,88 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     }
   }
 
+  function renderSceneCoverAlert() {
+    return (
+      <Modal
+        show={dialogOpen.migrateCover}
+        icon="trash-alt"
+        accept={{
+          text: intl.formatMessage({
+            id: "config.tasks.migrate_scene_covers.heading",
+          }),
+          variant: "danger",
+          onClick: onMigrateSceneCovers,
+        }}
+        cancel={{ onClick: () => setDialogOpen({ migrateCover: false }) }}
+      >
+        <p>
+          {intl.formatMessage({
+            id: "config.tasks.migrate_scene_covers.warning",
+          })}
+        </p>
+      </Modal>
+    );
+  }
+
+  async function onMigrateSceneCovers() {
+    try {
+      setDialogOpen({ migrateCover: false });
+      await mutateMigrateSceneCovers();
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "config.tasks.migrate_scene_covers.heading",
+            }),
+          }
+        ),
+      });
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
+  function renderDropSceneCoverAlert() {
+    return (
+      <Modal
+        show={dialogOpen.dropCover}
+        icon="trash-alt"
+        accept={{
+          text: intl.formatMessage({
+            id: "config.tasks.drop_scene_covers.heading",
+          }),
+          variant: "danger",
+          onClick: onDropSceneCovers,
+        }}
+        cancel={{ onClick: () => setDialogOpen({ dropCover: false }) }}
+      >
+        <p>
+          {intl.formatMessage({ id: "config.tasks.drop_scene_covers.warning" })}
+        </p>
+      </Modal>
+    );
+  }
+
+  async function onDropSceneCovers() {
+    try {
+      setDialogOpen({ dropCover: false });
+      await mutateDropSceneCovers();
+      Toast.success({
+        content: intl.formatMessage(
+          { id: "config.tasks.added_job_to_queue" },
+          {
+            operation_name: intl.formatMessage({
+              id: "config.tasks.drop_scene_covers.heading",
+            }),
+          }
+        ),
+      });
+    } catch (err) {
+      Toast.error(err);
+    }
+  }
+
   async function onExport() {
     try {
       await mutateMetadataExport();
@@ -284,6 +370,8 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     <Form.Group>
       {renderImportAlert()}
       {renderImportDialog()}
+      {renderSceneCoverAlert()}
+      {renderDropSceneCoverAlert()}
       {dialogOpen.cleanAlert || dialogOpen.clean ? (
         <CleanDialog
           dryRun={cleanOptions.dryRun}
@@ -438,6 +526,30 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
             onClick={() => onMigrateHashNaming()}
           >
             <FormattedMessage id="actions.rename_gen_files" />
+          </Button>
+        </Setting>
+        <Setting
+          headingID="config.tasks.migrate_scene_covers.heading"
+          subHeadingID="config.tasks.migrate_scene_covers.description"
+        >
+          <Button
+            id="migrateSceneCovers"
+            variant="danger"
+            onClick={() => setDialogOpen({ migrateCover: true })}
+          >
+            <FormattedMessage id="config.tasks.migrate_scene_covers.heading" />
+          </Button>
+        </Setting>
+        <Setting
+          headingID="config.tasks.drop_scene_covers.heading"
+          subHeadingID="config.tasks.drop_scene_covers.description"
+        >
+          <Button
+            id="dropSceneCovers"
+            variant="danger"
+            onClick={() => setDialogOpen({ dropCover: true })}
+          >
+            <FormattedMessage id="config.tasks.drop_scene_covers.heading" />
           </Button>
         </Setting>
       </SettingSection>

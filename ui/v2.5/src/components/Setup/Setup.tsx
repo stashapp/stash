@@ -46,7 +46,11 @@ export const Setup: React.FC = () => {
 
   useEffect(() => {
     if (configuration) {
-      const { stashes: configStashes, generatedPath, dataPath } = configuration.general;
+      const {
+        stashes: configStashes,
+        generatedPath,
+        dataPath,
+      } = configuration.general;
       if (configStashes.length > 0) {
         setStashes(
           configStashes.map((s) => {
@@ -242,7 +246,10 @@ export const Setup: React.FC = () => {
     setShowDataDialog(false);
   }
 
-  function maybeRenderFolderSelectDialog(show: boolean, onClose: (d?: string) => void) {
+  function maybeRenderFolderSelectDialog(
+    show: boolean,
+    onClose: (d?: string) => void
+  ) {
     if (!show) {
       return;
     }

@@ -350,6 +350,11 @@
       "data_management": "Data management",
       "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",
       "dont_include_file_extension_as_part_of_the_title": "Don't include file extension as part of the title",
+      "drop_scene_covers": {
+        "description": "Drop the deprecated scenes cover image table from the database. This should only be run after migrating scene covers to the data directory.",
+        "heading": "Drop scenes cover table",
+        "warning": "This migration drops the scenes cover table from the database. Any cover images in the database not migrated to the data directory will be lost. This operation is not reversible."
+      },
       "empty_queue": "No tasks are currently running.",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",
       "generate": {
@@ -391,6 +396,11 @@
       "job_queue": "Task Queue",
       "maintenance": "Maintenance",
       "migrate_hash_files": "Used after changing the Generated file naming hash to rename existing generated files to the new hash format.",
+      "migrate_scene_covers": {
+        "description": "Migrate scene cover images from the old screenshots location and database to new data location. This migration is required when migrating existing systems prior to v0.15. This migration is not reversible.",
+        "heading": "Migrate scene cover images",
+        "warning": "This migration will move existing cover image files from the old generated screenshots location. It is not reversible."
+      },
       "migrations": "Migrations",
       "only_dry_run": "Only perform a dry run. Don't remove anything",
       "plugin_tasks": "Plugin Tasks",

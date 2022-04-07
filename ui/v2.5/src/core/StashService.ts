@@ -1053,8 +1053,27 @@ export const mutateMetadataIdentify = (input: GQL.IdentifyMetadataInput) =>
   });
 
 export const mutateMigrateHashNaming = () =>
-  client.mutate<GQL.MigrateHashNamingMutation>({
-    mutation: GQL.MigrateHashNamingDocument,
+  client.mutate<GQL.DataMassageMutation>({
+    mutation: GQL.DataMassageDocument,
+    variables: {
+      input: { type: "hash_naming" },
+    },
+  });
+
+export const mutateMigrateSceneCovers = () =>
+  client.mutate<GQL.DataMassageMutation>({
+    mutation: GQL.DataMassageDocument,
+    variables: {
+      input: { type: "scene_covers" },
+    },
+  });
+
+export const mutateDropSceneCovers = () =>
+  client.mutate<GQL.DataMassageMutation>({
+    mutation: GQL.DataMassageDocument,
+    variables: {
+      input: { type: "drop_scene_covers" },
+    },
   });
 
 export const mutateMetadataExport = () =>

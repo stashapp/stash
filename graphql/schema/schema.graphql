@@ -269,7 +269,7 @@ type Mutation {
   metadataIdentify(input: IdentifyMetadataInput!): ID!
   """Migrate generated files for the current hash naming"""
   # deprecated in v0.15
-  migrateHashNaming: ID! @deprecated(reason: "Use dataMassage(input: { type: 'hashNaming'})")
+  migrateHashNaming: ID! @deprecated(reason: "Use dataMassage(input: { type: 'hash_naming'})")
 
   """Performs to data massage"""
   dataMassage(input: DataMassageInput!): ID!
