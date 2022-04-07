@@ -585,7 +585,6 @@
     "delete_object_overflow": "…以及 {count} 個其他 {count, plural, =1 {{singularEntity}} other {{pluralEntity}}}。",
     "delete_object_title": "刪除{count, plural, =1 {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "編輯{pluralEntity}",
-    "existing_value": "現有值",
     "export_include_related_objects": "匯出所有相關物件",
     "export_title": "匯出",
     "lightbox": {

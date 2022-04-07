@@ -585,7 +585,6 @@
     "delete_object_overflow": "…och {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Radera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "Redigera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
-    "existing_value": "existerande värde",
     "export_include_related_objects": "Inkludera relaterade objekt i exporten",
     "export_title": "Exportera",
     "lightbox": {
