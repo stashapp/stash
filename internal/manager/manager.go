@@ -432,7 +432,7 @@ func (s *singleton) Migrate(ctx context.Context, input models.MigrateInput) erro
 
 	preVersion := database.Version()
 
-	if err := database.RunMigrations(); err != nil {
+	if err := database.RunMigrations(false); err != nil {
 		errStr := fmt.Sprintf("error performing migration: %s", err)
 
 		// roll back to the backed up version
