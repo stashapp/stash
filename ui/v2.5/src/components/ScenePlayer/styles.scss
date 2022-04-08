@@ -488,10 +488,8 @@ $sceneTabWidth: 450px;
   z-index: 1;
 }
 
-.vjs-track-setting > select,
-.vjs-text-track-settings fieldset span > select {
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
+.vjs-text-track-settings select {
+  background: #fff;
 }
 
 .VideoPlayer

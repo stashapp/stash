@@ -124,18 +124,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const maxLoopDuration = config?.maximumLoopDuration ?? 0;
 
-  const languageMap = new Map<string, string>([
-    ["de", "Deutsche"],
-    ["en", "English"],
-    ["es", "Español"],
-    ["fr", "Français"],
-    ["it", "Italiano"],
-    ["ja", "日本"],
-    ["ko", "한국인"],
-    ["nl", "Holandés"],
-    ["pt", "Português"],
-  ]);
-
   useEffect(() => {
     if (playerRef.current && timestamp >= 0) {
       const player = playerRef.current;
@@ -235,6 +223,18 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
     let prevCaptionOffset = 0;
+
+    const languageMap = new Map<string, string>([
+      ["de", "Deutsche"],
+      ["en", "English"],
+      ["es", "Español"],
+      ["fr", "Français"],
+      ["it", "Italiano"],
+      ["ja", "日本"],
+      ["ko", "한국인"],
+      ["nl", "Holandés"],
+      ["pt", "Português"],
+    ]);
 
     function addCaptionOffset(player: VideoJsPlayer, offset: number) {
       const tracks = player.remoteTextTracks();
