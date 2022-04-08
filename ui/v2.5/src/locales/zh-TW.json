@@ -524,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "幻燈片功能僅適用於「圖庫」種類下的預覽牆模式",
-        "heading": "幻燈片延遲"
+        "heading": "幻燈片延遲 (秒)"
       },
       "title": "使用者介面"
     }
@@ -733,6 +733,7 @@
   "hasMarkers": "含有章節標記",
   "height": "身高",
   "help": "說明",
+  "ignore_auto_tag": "忽略自動標籤",
   "image": "圖片",
   "image_count": "圖片數量",
   "images": "圖片",
