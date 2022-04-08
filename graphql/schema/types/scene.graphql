@@ -19,13 +19,7 @@ type ScenePathsType {
   sprite: String # Resolver
   funscript: String # Resolver
   interactive_heatmap: String # Resolver
-  caption_de: String # Resolver
-  caption_en: String # Resolver
-  caption_es: String # Resolver
-  caption_fr: String # Resolver
-  caption_it: String # Resolver
-  caption_nl: String # Resolver
-  caption_pt: String # Resolver
+  caption: String # Resolver
 }
 
 type SceneMovie {

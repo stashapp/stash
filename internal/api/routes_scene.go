@@ -42,13 +42,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/vtt/chapter", rs.ChapterVtt)
 		r.Get("/funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
-		r.Get("/caption_de", rs.CaptionDE)
-		r.Get("/caption_en", rs.CaptionEN)
-		r.Get("/caption_es", rs.CaptionES)
-		r.Get("/caption_fr", rs.CaptionFR)
-		r.Get("/caption_it", rs.CaptionIT)
-		r.Get("/caption_nl", rs.CaptionNL)
-		r.Get("/caption_pt", rs.CaptionPT)
+		r.Get("/caption", rs.CaptionLang)
 
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
@@ -322,32 +316,14 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 	logger.Debugf("Error while reading subs: %v", err)
 }
 
-func (rs sceneRoutes) CaptionDE(w http.ResponseWriter, r *http.Request) {
-	rs.Caption(w, r, "de")
-}
+func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {
+	// serve caption based on lang query param, if provided
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[caption] error parsing query form: %v", err)
+	}
 
-func (rs sceneRoutes) CaptionEN(w http.ResponseWriter, r *http.Request) {
-	rs.Caption(w, r, "en")
-}
-
-func (rs sceneRoutes) CaptionES(w http.ResponseWriter, r *http.Request) {
-	rs.Caption(w, r, "es")
-}
-
-func (rs sceneRoutes) CaptionFR(w http.ResponseWriter, r *http.Request) {
-	rs.Caption(w, r, "fr")
-}
-
-func (rs sceneRoutes) CaptionIT(w http.ResponseWriter, r *http.Request) {
-	rs.Caption(w, r, "it")
-}
-
-func (rs sceneRoutes) CaptionNL(w http.ResponseWriter, r *http.Request) {
-	rs.Caption(w, r, "nl")
-}
-
-func (rs sceneRoutes) CaptionPT(w http.ResponseWriter, r *http.Request) {
-	rs.Caption(w, r, "pt")
+	l := r.Form.Get("lang")
+	rs.Caption(w, r, l)
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {

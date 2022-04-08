@@ -98,13 +98,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
-	captionDEPath := builder.GetCaptionDEURL()
-	captionENPath := builder.GetCaptionENURL()
-	captionESPath := builder.GetCaptionESURL()
-	captionFRPath := builder.GetCaptionFRURL()
-	captionITPath := builder.GetCaptionITURL()
-	captionNLPath := builder.GetCaptionNLURL()
-	captionPTPath := builder.GetCaptionPTURL()
+	captionBasePath := builder.GetCaptionURL("")
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &models.ScenePathsType{
@@ -117,13 +111,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		Sprite:             &spritePath,
 		Funscript:          &funscriptPath,
 		InteractiveHeatmap: &interactiveHeatmap,
-		CaptionDe:          &captionDEPath,
-		CaptionEn:          &captionENPath,
-		CaptionEs:          &captionESPath,
-		CaptionFr:          &captionFRPath,
-		CaptionIt:          &captionITPath,
-		CaptionNl:          &captionNLPath,
-		CaptionPt:          &captionPTPath,
+		Caption:            &captionBasePath,
 	}, nil
 }
 

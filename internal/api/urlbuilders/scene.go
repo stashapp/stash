@@ -67,32 +67,8 @@ func (b SceneURLBuilder) GetFunscriptURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/funscript"
 }
 
-func (b SceneURLBuilder) GetCaptionDEURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/caption_de"
-}
-
-func (b SceneURLBuilder) GetCaptionENURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/caption_en"
-}
-
-func (b SceneURLBuilder) GetCaptionESURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/caption_es"
-}
-
-func (b SceneURLBuilder) GetCaptionFRURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/caption_fr"
-}
-
-func (b SceneURLBuilder) GetCaptionITURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/caption_it"
-}
-
-func (b SceneURLBuilder) GetCaptionNLURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/caption_nl"
-}
-
-func (b SceneURLBuilder) GetCaptionPTURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/caption_pt"
+func (b SceneURLBuilder) GetCaptionURL(lang string) string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/caption?lang=" + lang
 }
 
 func (b SceneURLBuilder) GetInteractiveHeatmapURL() string {
