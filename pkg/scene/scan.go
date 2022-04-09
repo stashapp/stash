@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -21,6 +23,8 @@ import (
 
 const mutexType = "scene"
 
+var previousDir = ""
+
 type videoFileCreator interface {
 	NewVideoFile(path string, stripFileExtension bool) (*ffmpeg.VideoFile, error)
 }
@@ -30,7 +34,7 @@ type Scanner struct {
 
 	StripFileExtension  bool
 	UseFileMetadata     bool
-	DetectSubtitles     bool
+	DetectCaptions      bool
 	FileNamingAlgorithm models.HashAlgorithm
 
 	Ctx              context.Context
@@ -64,11 +68,11 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 	captioned := s.Captioned
 	captions := s.Captions
-	if scanner.DetectSubtitles {
+	if scanner.DetectCaptions {
 		captions = getCaption(file.Path())
 		captioned = len(captions) > 0
 		if captioned {
-			logger.Debugf("Found subtitle for file %s", path)
+			logger.Debugf("Found captions for file %s", path)
 		}
 	}
 
@@ -356,19 +360,45 @@ func getInteractive(path string) bool {
 
 func getCaption(path string) string {
 	captions := ""
-	langs := []string{"de", "en", "es", "fr", "it", "nl", "pt"}
-	for _, l := range langs {
-		_, err := os.Stat(GetCaptionPath(path, l, "vtt"))
+	parent := filepath.Dir(path)
+	baseName := filepath.Base(path)
+
+	// only proceed if we haven't looked at this directory before
+	if previousDir != parent {
+		files, err := ioutil.ReadDir(parent)
 		if err != nil {
-			_, err = os.Stat(GetCaptionPath(path, l, "srt"))
+			return captions
 		}
-		if err == nil {
-			if len(captions) == 0 {
-				captions += l
-			} else {
-				captions += "|" + l
+		//if directory is greater than specified value assume no organization
+		if len(files) < 20 {
+			videoExt := filepath.Ext(path)
+			videoName := strings.TrimSuffix(baseName, videoExt)
+			for _, file := range files {
+				filename := file.Name()
+				fileExt := filepath.Ext(filename)
+				if fileExt == ".vtt" || fileExt == ".srt" {
+					vttName := strings.TrimSuffix(filename, fileExt)
+					languageCode := filepath.Ext(vttName)
+					if vttName == videoName {
+						languageCode = "?"
+					} else {
+						vttName = strings.TrimSuffix(vttName, languageCode)
+						languageCode = strings.Split(languageCode, ".")[1]
+					}
+
+					//ensure caption belongs to scene
+					if vttName == videoName {
+						if len(captions) == 0 {
+							captions += languageCode
+						} else {
+							captions += "|" + languageCode
+						}
+					}
+				}
 			}
 		}
 	}
+	previousDir = parent
+
 	return captions
 }

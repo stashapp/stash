@@ -7,15 +7,21 @@ import (
 	"github.com/asticode/go-astisub"
 )
 
-// GetCaptionPath generates the path of a subtitle
-// from a given file path wanted language and subtitle sufffix
+// GetCaptionPath generates the path of a caption
+// from a given file path wanted language and caption sufffix
 func GetCaptionPath(path, lang, suffix string) string {
 	ext := filepath.Ext(path)
 	fn := strings.TrimSuffix(path, ext)
-	return fn + "." + lang + "." + suffix
+	captionExt := ""
+	if len(lang) == 0 {
+		captionExt = suffix
+	} else {
+		captionExt = "." + suffix
+	}
+	return fn + "." + lang + captionExt
 }
 
-// ReadSubs reads a subtitles file
+// ReadSubs reads a captions file
 func ReadSubs(path string) (*astisub.Subtitles, error) {
 	return astisub.OpenFile(path)
 }

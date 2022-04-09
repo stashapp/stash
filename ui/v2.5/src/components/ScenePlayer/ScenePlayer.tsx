@@ -234,6 +234,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       ["ko", "한국인"],
       ["nl", "Holandés"],
       ["pt", "Português"],
+      ["?", "Unknown"],
     ]);
 
     function addCaptionOffset(player: VideoJsPlayer, offset: number) {
@@ -366,6 +367,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           var label = lang;
           if (languageMap.has(lang)) {
             label = languageMap.get(lang)!;
+          }
+          if (lang == "?") {
+            lang = "";
           }
           var setAsDefault = languageCode == lang;
           player.addRemoteTextTrack(

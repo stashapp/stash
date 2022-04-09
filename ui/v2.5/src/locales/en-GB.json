@@ -345,7 +345,7 @@
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
       "data_management": "Data management",
       "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",
-      "detect_subtitles_during_scan": "Search for subtitle files",
+      "detect_captions_during_scan": "Search for caption files",
       "dont_include_file_extension_as_part_of_the_title": "Don't include file extension as part of the title",
       "empty_queue": "No tasks are currently running.",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",

@@ -88,7 +88,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			file:                 file.FSFile(f.path, f.info),
 			UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
 			StripFileExtension:   utils.IsTrue(input.StripFileExtension),
-			DetectSubtitles:      utils.IsTrue(input.ScanDetectSubtitles),
+			DetectCaptions:       utils.IsTrue(input.ScanDetectCaptions),
 			fileNamingAlgorithm:  fileNamingAlgo,
 			calculateMD5:         calculateMD5,
 			GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
@@ -254,7 +254,7 @@ type ScanTask struct {
 	file                 file.SourceFile
 	UseFileMetadata      bool
 	StripFileExtension   bool
-	DetectSubtitles      bool
+	DetectCaptions       bool
 	calculateMD5         bool
 	fileNamingAlgorithm  models.HashAlgorithm
 	GenerateSprite       bool
