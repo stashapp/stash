@@ -363,13 +363,13 @@ func getCaption(path string) string {
 	parent := filepath.Dir(path)
 	baseName := filepath.Base(path)
 
-	// only proceed if we haven't looked at this directory before
+	// only proceed if we haven't already looked at this directory
 	if previousDir != parent {
 		files, err := ioutil.ReadDir(parent)
 		if err != nil {
 			return captions
 		}
-		//if directory is greater than specified value assume no organization
+		// if directory contains more file than specified value assume no organization
 		if len(files) < 20 {
 			videoExt := filepath.Ext(path)
 			videoName := strings.TrimSuffix(baseName, videoExt)
@@ -386,7 +386,7 @@ func getCaption(path string) string {
 						languageCode = strings.Split(languageCode, ".")[1]
 					}
 
-					//ensure caption belongs to scene
+					// ensure caption belongs to scene
 					if vttName == videoName {
 						if len(captions) == 0 {
 							captions += languageCode
