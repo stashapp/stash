@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -57,4 +58,40 @@ func (t *ScanTask) scanScene() *models.Scene {
 	}
 
 	return retScene
+}
+
+// associates captions to scene/s with the same basename
+func (t *ScanTask) associateCaptions(ctx context.Context) {
+	vExt := config.GetInstance().GetVideoExtensions()
+	captionPath := t.file.Path()
+	captionLang := scene.GetCaptionsLangFromPath(captionPath)
+
+	relatedFiles := scene.GenerateCaptionCandidates(captionPath, vExt)
+	if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
+		var err error
+		sqb := r.Scene()
+
+		for _, scenePath := range relatedFiles {
+			s, er := sqb.FindByPath(scenePath)
+
+			if er != nil {
+				logger.Errorf("Error searching for scene %s: %v", scenePath, er)
+				continue
+			}
+			if s != nil { // found related Scene
+				logger.Debugf("Matched captions to scene %s", s.Path)
+
+				if !scene.IsLangInCaptions(captionLang, s.Captions) { // only update captions if language code is not present
+					newCaptions := scene.AddLangToCaptions(captionLang, s.Captions)
+					er = sqb.UpdateCaptions(s.ID, newCaptions)
+					if er == nil {
+						logger.Debugf("Updated captions for scene %s. Added %s", s.Path, captionLang)
+					}
+				}
+			}
+		}
+		return err
+	}); err != nil {
+		logger.Error(err.Error())
+	}
 }

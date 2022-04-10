@@ -4,9 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -22,8 +20,6 @@ import (
 )
 
 const mutexType = "scene"
-
-var previousDir = ""
 
 type videoFileCreator interface {
 	NewVideoFile(path string, stripFileExtension bool) (*ffmpeg.VideoFile, error)
@@ -66,16 +62,6 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	path := scanned.New.Path
 	interactive := getInteractive(path)
 
-	captioned := s.Captioned
-	captions := s.Captions
-	if scanner.DetectCaptions {
-		captions = getCaption(file.Path())
-		captioned = len(captions) > 0
-		if captioned {
-			logger.Debugf("Found captions for file %s", path)
-		}
-	}
-
 	oldHash := s.GetHash(scanner.FileNamingAlgorithm)
 	changed := false
 
@@ -93,7 +79,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 
 		videoFileToScene(s, videoFile)
 		changed = true
-	} else if scanned.FileUpdated() || s.Interactive != interactive || s.Captioned != captioned || s.Captions != captions {
+	} else if scanned.FileUpdated() || s.Interactive != interactive {
 		logger.Infof("Updated scene file %s", path)
 
 		// update fields as needed
@@ -113,6 +99,15 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		logger.Infof("Adding container %s to file %s", container, path)
 		s.Format = models.NullString(string(container))
 		changed = true
+	}
+
+	if s.Captions != "" && scanner.DetectCaptions { // remove deleted captions
+		clean, altered := CleanCaptions(path, s.Captions)
+		if altered {
+			logger.Debugf("Captions for %s cleaned: %s -> %s", path, s.Captions, clean)
+			s.Captions = clean
+			changed = true
+		}
 	}
 
 	if changed {
@@ -145,8 +140,6 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 			}
 
 			s.Interactive = interactive
-			s.Captioned = captioned
-			s.Captions = captions
 			s.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
 			_, err := qb.UpdateFull(*s)
@@ -218,9 +211,6 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 
 	interactive := getInteractive(file.Path())
 
-	captions := getCaption(file.Path())
-	captioned := len(captions) > 0
-
 	if s != nil {
 		exists, _ := fsutil.FileExists(s.Path)
 		if !scanner.CaseSensitiveFs {
@@ -239,8 +229,6 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 				ID:          s.ID,
 				Path:        &path,
 				Interactive: &interactive,
-				Captioned:   &captioned,
-				Captions:    &captions,
 			}
 			if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 				_, err := r.Scene().Update(scenePartial)
@@ -278,8 +266,6 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			Interactive: interactive,
-			Captioned:   captioned,
-			Captions:    captions,
 		}
 
 		videoFileToScene(&newScene, videoFile)
@@ -356,49 +342,4 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 func getInteractive(path string) bool {
 	_, err := os.Stat(GetFunscriptPath(path))
 	return err == nil
-}
-
-func getCaption(path string) string {
-	captions := ""
-	parent := filepath.Dir(path)
-	baseName := filepath.Base(path)
-
-	// only proceed if we haven't already looked at this directory
-	if previousDir != parent {
-		files, err := ioutil.ReadDir(parent)
-		if err != nil {
-			return captions
-		}
-		// if directory contains more file than specified value assume no organization
-		if len(files) < 20 {
-			videoExt := filepath.Ext(path)
-			videoName := strings.TrimSuffix(baseName, videoExt)
-			for _, file := range files {
-				filename := file.Name()
-				fileExt := filepath.Ext(filename)
-				if fileExt == ".vtt" || fileExt == ".srt" {
-					vttName := strings.TrimSuffix(filename, fileExt)
-					languageCode := filepath.Ext(vttName)
-					if vttName == videoName {
-						languageCode = "?"
-					} else {
-						vttName = strings.TrimSuffix(vttName, languageCode)
-						languageCode = strings.Split(languageCode, ".")[1]
-					}
-
-					// ensure caption belongs to scene
-					if vttName == videoName {
-						if len(captions) == 0 {
-							captions += languageCode
-						} else {
-							captions += "|" + languageCode
-						}
-					}
-				}
-			}
-		}
-	}
-	previousDir = parent
-
-	return captions
 }

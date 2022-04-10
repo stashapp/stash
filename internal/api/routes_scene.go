@@ -296,24 +296,21 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
 
-	caption := scene.GetCaptionPath(s.Path, lang, "vtt") // first try reading vtt
-	sub, err := scene.ReadSubs(caption)
-	if err != nil {
-		caption = scene.GetCaptionPath(s.Path, lang, "srt") // switch to srt if vtt wasnt available or invalid
-		sub, err = scene.ReadSubs(caption)
-	}
-
-	if err == nil {
-		var b bytes.Buffer
-		err = sub.WriteToWebVTT(&b)
+	for _, ext := range scene.CaptionExts {
+		caption := scene.GetCaptionPath(s.Path, lang, ext)
+		sub, err := scene.ReadSubs(caption)
 		if err == nil {
-			w.Header().Set("Content-Type", "text/vtt")
-			w.Header().Add("Cache-Control", "no-cache")
-			_, _ = b.WriteTo(w)
+			var b bytes.Buffer
+			err = sub.WriteToWebVTT(&b)
+			if err == nil {
+				w.Header().Set("Content-Type", "text/vtt")
+				w.Header().Add("Cache-Control", "no-cache")
+				_, _ = b.WriteTo(w)
+			}
+			return
 		}
-		return
+		logger.Debugf("Error while reading subs: %v", err)
 	}
-	logger.Debugf("Error while reading subs: %v", err)
 }
 
 func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {

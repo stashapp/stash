@@ -234,7 +234,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       ["ko", "한국인"],
       ["nl", "Holandés"],
       ["pt", "Português"],
-      ["?", "Unknown"],
+      ["00", "Unknown"], // stash reserved language code
     ]);
 
     function addCaptionOffset(player: VideoJsPlayer, offset: number) {
@@ -269,7 +269,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function handleOffset(player: VideoJsPlayer) {
       if (!scene) return;
-      console.log(`handleOffset.`);
 
       const currentSrc = player.currentSrc();
 
@@ -277,9 +276,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
 
       const curTime = player.currentTime();
-      console.log(
-        `curTime: ${curTime}, prevCaptionOffset ${prevCaptionOffset}`
-      );
       if (!isDirect) {
         (player as any).setOffsetDuration(scene.file.duration);
       } else {
@@ -290,10 +286,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         if (!isDirect) {
           removeCaptionOffset(player, curTime);
           prevCaptionOffset = curTime;
-          console.log(`updated prevCaptionOffset to ${prevCaptionOffset}`);
         } else {
           if (prevCaptionOffset != 0) {
-            console.log("restoring caption offset");
             addCaptionOffset(player, prevCaptionOffset);
             prevCaptionOffset = 0;
           }
@@ -360,16 +354,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       if (scene.captions) {
         var languages = scene.captions.split("|");
         var languageCode = getDefaultLanguageCode();
-        console.log(`userLang : ${languageCode}`);
 
         for (let lang of languages) {
-          console.log(`Caption language : ${lang}`);
           var label = lang;
           if (languageMap.has(lang)) {
             label = languageMap.get(lang)!;
-          }
-          if (lang == "?") {
-            lang = "";
           }
           var setAsDefault = languageCode == lang;
           player.addRemoteTextTrack(
@@ -403,9 +392,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     (player as any).clearOffsetDuration();
 
     const tracks = player.remoteTextTracks();
-    console.log(`Track Length : ${tracks.length}`);
     for (let i = 0; i < tracks.length; i++) {
-      console.log(`Removing : ${tracks[i] as any}`);
       player.removeRemoteTextTrack(tracks[i] as any);
     }
 

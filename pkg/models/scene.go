@@ -79,6 +79,7 @@ type SceneWriter interface {
 	ResetOCounter(id int) (int, error)
 	UpdateFileModTime(id int, modTime NullSQLiteTimestamp) error
 	Destroy(id int) error
+	UpdateCaptions(id int, newCaptions string) error
 	UpdateCover(sceneID int, cover []byte) error
 	DestroyCover(sceneID int) error
 	UpdatePerformers(sceneID int, performerIDs []int) error

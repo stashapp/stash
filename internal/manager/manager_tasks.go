@@ -12,11 +12,16 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 func isGallery(pathname string) bool {
 	gExt := config.GetInstance().GetGalleryExtensions()
 	return fsutil.MatchExtension(pathname, gExt)
+}
+
+func isCaptions(pathname string) bool {
+	return fsutil.MatchExtension(pathname, scene.CaptionExts)
 }
 
 func isVideo(pathname string) bool {

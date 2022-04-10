@@ -127,6 +127,17 @@ func (qb *sceneQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLite
 	})
 }
 
+func (qb *sceneQueryBuilder) UpdateCaptions(id int, newCaptions string) error {
+	_, err := qb.tx.Exec(
+		`UPDATE scenes SET captions = ? WHERE scenes.id = ?`,
+		newCaptions, id,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (qb *sceneQueryBuilder) IncrementOCounter(id int) (int, error) {
 	_, err := qb.tx.Exec(
 		`UPDATE scenes SET o_counter = o_counter + 1 WHERE scenes.id = ?`,
