@@ -107,6 +107,7 @@
     },
     "temp_disable": "暫時關閉…",
     "temp_enable": "暫時啟用…",
+    "unset": "重置",
     "use_default": "使用預設選項",
     "view_random": "隨機開啟"
   },
@@ -279,6 +280,10 @@
       "number_of_parallel_task_for_scan_generation_head": "掃描/生成的並行排程數量",
       "parallel_scan_head": "並行掃描/生成",
       "preview_generation": "預覽檔案生成",
+      "python_path": {
+        "description": "Python 應用程式的路徑。用於爬蟲及插件。留空時，python 則會於環境變數中的路徑取得",
+        "heading": "Python 路徑"
+      },
       "scraper_user_agent": "爬蟲用戶代理名稱 (User Agent)",
       "scraper_user_agent_desc": "抓取 HTTP 資料時所用的用戶代理字串 (User-Agent)",
       "scrapers_path": {
@@ -448,6 +453,9 @@
         "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。設定此金鑰後，Stash 將可把當前短片中的對應資訊分享至 handyfeeling.com",
         "heading": "Handy 連線金鑰"
       },
+      "image_lightbox": {
+        "heading": "圖片燈箱"
+      },
       "images": {
         "heading": "圖片",
         "options": {
@@ -516,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "幻燈片功能僅適用於「圖庫」種類下的預覽牆模式",
-        "heading": "幻燈片延遲"
+        "heading": "幻燈片延遲 (秒)"
       },
       "title": "使用者介面"
     }
@@ -694,6 +702,7 @@
     "warmth": "暖度"
   },
   "ethnicity": "人種",
+  "existing_value": "現有值",
   "eye_color": "眼睛顏色",
   "fake_tits": "假奶",
   "false": "否",
@@ -724,6 +733,7 @@
   "hasMarkers": "含有章節標記",
   "height": "身高",
   "help": "說明",
+  "ignore_auto_tag": "忽略自動標籤",
   "image": "圖片",
   "image_count": "圖片數量",
   "images": "圖片",
