@@ -174,8 +174,8 @@ input SceneFilterType {
   interactive: Boolean
   """Filter by InteractiveSpeed"""
   interactive_speed: IntCriterionInput
-  """Filter by captioned"""
-  captioned: Boolean
+  """Filter by captions"""
+  captions: StringCriterionInput
 }
 
 input MovieFilterType {

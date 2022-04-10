@@ -13,7 +13,6 @@ fragment SlimSceneData on Scene {
   phash
   interactive
   interactive_speed
-  captioned
   captions
 
   file {

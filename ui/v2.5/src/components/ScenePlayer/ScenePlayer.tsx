@@ -415,7 +415,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       );
     }
 
-    if (scene.captioned) {
+    if (scene.captions?.length! > 0) {
       loadCaptions(player);
     }
 

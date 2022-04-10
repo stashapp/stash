@@ -36,7 +36,6 @@ type Scene struct {
 	UpdatedAt        SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 	Interactive      bool                `db:"interactive" json:"interactive"`
 	InteractiveSpeed sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
-	Captioned        bool                `db:"captioned" json:"captioned"`
 	Captions         string              `db:"captions" json:"captions"`
 }
 
@@ -122,7 +121,6 @@ type ScenePartial struct {
 	UpdatedAt        *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 	Interactive      *bool                `db:"interactive" json:"interactive"`
 	InteractiveSpeed *sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
-	Captioned        *bool                `db:"captioned" json:"captioned"`
 	Captions         *string              `db:"captions" json:"captions"`
 }
 

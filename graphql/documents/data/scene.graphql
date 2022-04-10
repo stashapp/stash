@@ -13,7 +13,6 @@ fragment SceneData on Scene {
   phash
   interactive
   interactive_speed
-  captioned
   captions
   created_at
   updated_at

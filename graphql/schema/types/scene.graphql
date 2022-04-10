@@ -42,7 +42,6 @@ type Scene {
   phash: String
   interactive: Boolean!
   interactive_speed: Int
-  captioned: Boolean!
   captions: String
   created_at: Time!
   updated_at: Time!

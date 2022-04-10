@@ -41,7 +41,7 @@ import { MoviesCriterionOption } from "./movies";
 import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
-import { CaptionedCriterion } from "./captioned";
+import { CaptionsCriterion } from "./captions";
 import { RatingCriterionOption } from "./rating";
 import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 
@@ -160,8 +160,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new StringCriterion(new StringCriterionOption(type, type));
     case "interactive":
       return new InteractiveCriterion();
-    case "captioned":
-      return new CaptionedCriterion();
+    case "captions":
+      return new CaptionsCriterion();
     case "parent_tag_count":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(
