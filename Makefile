@@ -110,6 +110,11 @@ cross-compile-macos:
 	cd dist && zip -r Stash-macos.zip Stash.app && cd ..
 	rm -rf dist/Stash.app
 
+cross-compile-freebsd: export GOOS := freebsd
+cross-compile-freebsd: export GOARCH := amd64
+cross-compile-freebsd: OUTPUT := -o dist/stash-freebsd
+cross-compile-freebsd: build-release-static
+
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
 cross-compile-linux: OUTPUT := -o dist/stash-linux

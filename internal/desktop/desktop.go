@@ -26,6 +26,7 @@ type FaviconProvider interface {
 }
 
 // Start starts the desktop icon process. It blocks until the process exits.
+// MUST be run on the main goroutine or will have no effect on macOS
 func Start(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
 	if IsDesktop() {
 		c := config.GetInstance()

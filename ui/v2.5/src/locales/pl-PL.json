@@ -279,6 +279,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Liczba zadań równoległych dla skanowania/generowania",
       "parallel_scan_head": "Skanowanie/generowanie równoległe",
       "preview_generation": "Generacja podglądu",
+      "python_path": {
+        "description": "Lokalizacja pliku wykonywalnego Pythona. Używane dla skryptów i wtyczek. Jeśli jest puste, python zostanie pobrany ze środowiska",
+        "heading": "Ścieżka Pythona"
+      },
       "scraper_user_agent": "User Agent scrapera",
       "scraper_user_agent_desc": "Ciąg User-Agent używany podczas scrapowania zapytań http",
       "scrapers_path": {
@@ -516,7 +520,7 @@
       },
       "slideshow_delay": {
         "description": "Pokaz slajdów jest dostępny w galeriach w trybie widoku ściany",
-        "heading": "Opóźnienie pokazu slajdów"
+        "heading": "Opóźnienie pokazu slajdów (sekundy)"
       },
       "title": "Interfejs użytkownika"
     }
@@ -694,6 +698,7 @@
     "warmth": "Ciepło"
   },
   "ethnicity": "Pochodzenie etniczne",
+  "existing_value": "istniejąca wartość",
   "eye_color": "Kolor oczu",
   "fake_tits": "Sztuczne cycki",
   "false": "Nie",
@@ -724,6 +729,7 @@
   "hasMarkers": "Ma znaczniki",
   "height": "Wzrost",
   "help": "Help",
+  "ignore_auto_tag": "Ignoruj automatyczne tagowanie",
   "image": "Obraz",
   "image_count": "Liczba obrazów",
   "images": "Zdjęcia",

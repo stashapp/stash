@@ -310,10 +310,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       title: resolveField("title", stashScene.title, scene.title),
       details: resolveField("details", stashScene.details, scene.details),
       date: resolveField("date", stashScene.date, scene.date),
-      performer_ids:
-        filteredPerformerIDs.length === 0
-          ? stashScene.performers.map((p) => p.id)
-          : filteredPerformerIDs,
+      performer_ids: uniq(
+        stashScene.performers.map((p) => p.id).concat(filteredPerformerIDs)
+      ),
       studio_id: studioID,
       cover_image: resolveField("cover_image", undefined, imgData),
       url: resolveField("url", stashScene.url, scene.url),
