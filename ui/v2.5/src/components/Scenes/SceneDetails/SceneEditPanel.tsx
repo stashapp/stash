@@ -730,7 +730,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "studios" }),
+                title: intl.formatMessage({ id: "studio" }),
                 labelProps: {
                   column: true,
                   sm: 3,
