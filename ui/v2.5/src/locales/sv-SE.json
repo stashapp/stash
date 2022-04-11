@@ -524,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "Bildspel är tillgängligt för gallerier i väggvisningsläge",
-        "heading": "Bildspelsfördröjning"
+        "heading": "Bildspelsfördröjning (sekunder)"
       },
       "title": "Användargränssnitt"
     }
@@ -733,6 +733,7 @@
   "hasMarkers": "Har markörer",
   "height": "Längd",
   "help": "Hjälp",
+  "ignore_auto_tag": "Ignorera Autotagg",
   "image": "Bild",
   "image_count": "Antal bilder",
   "images": "Bilder",
