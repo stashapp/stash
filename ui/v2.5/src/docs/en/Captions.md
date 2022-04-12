@@ -2,6 +2,15 @@
 
 Stash supports captioning with SRT and VTT files.
 
-In order for Stash to find these files they must exist in the same directory as the matching video file and must have the same base name. For example, a EN file for `video.mp4` must be named `video.en.vtt`. A scan must be run to update scenes with matching captions.
+These files need to be named as follows:
+
+## Scene
+
+- {scene_name}.{language_code}.ext
+- {scene_name}.ext
+
+Where `{language_code}` is defined by the [ISO-6399-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) (2 letters) standard and `ext` is the file extension. Captions files without a language code will be labeled as Unknown in the video player but will work fine.
+
+To enable detection of these files during a scan, make sure to toggle the `Search for caption files` scan option on.
 
 Scenes with captions can be filtered with the `captions` criterion.
