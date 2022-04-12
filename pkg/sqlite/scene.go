@@ -239,7 +239,7 @@ func (qb *sceneQueryBuilder) FindMany(ids []int) ([]*models.Scene, error) {
 
 func (qb *sceneQueryBuilder) find(id int) (*models.Scene, error) {
 	var ret models.Scene
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

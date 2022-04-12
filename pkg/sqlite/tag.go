@@ -86,7 +86,7 @@ func (qb *tagQueryBuilder) Destroy(id int) error {
 
 func (qb *tagQueryBuilder) Find(id int) (*models.Tag, error) {
 	var ret models.Tag
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

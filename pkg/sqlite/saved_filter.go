@@ -41,7 +41,7 @@ func (qb *savedFilterQueryBuilder) Update(updatedObject models.SavedFilter) (*mo
 	}
 
 	var ret models.SavedFilter
-	if err := qb.get(updatedObject.ID, &ret); err != nil {
+	if err := qb.getByID(updatedObject.ID, &ret); err != nil {
 		return nil, err
 	}
 
@@ -72,7 +72,7 @@ func (qb *savedFilterQueryBuilder) Destroy(id int) error {
 
 func (qb *savedFilterQueryBuilder) Find(id int) (*models.SavedFilter, error) {
 	var ret models.SavedFilter
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

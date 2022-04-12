@@ -48,7 +48,7 @@ func (qb *sceneMarkerQueryBuilder) Update(updatedObject models.SceneMarker) (*mo
 	}
 
 	var ret models.SceneMarker
-	if err := qb.get(updatedObject.ID, &ret); err != nil {
+	if err := qb.getByID(updatedObject.ID, &ret); err != nil {
 		return nil, err
 	}
 

@@ -145,7 +145,7 @@ func (qb *imageQueryBuilder) FindMany(ids []int) ([]*models.Image, error) {
 
 func (qb *imageQueryBuilder) find(id int) (*models.Image, error) {
 	var ret models.Image
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

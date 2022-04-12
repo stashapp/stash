@@ -68,7 +68,7 @@ func (qb *studioQueryBuilder) Destroy(id int) error {
 
 func (qb *studioQueryBuilder) Find(id int) (*models.Studio, error) {
 	var ret models.Studio
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

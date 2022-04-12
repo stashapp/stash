@@ -47,7 +47,7 @@ func (qb *scrapedItemQueryBuilder) Find(id int) (*models.ScrapedItem, error) {
 
 func (qb *scrapedItemQueryBuilder) find(id int) (*models.ScrapedItem, error) {
 	var ret models.ScrapedItem
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

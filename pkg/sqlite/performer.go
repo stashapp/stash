@@ -51,7 +51,7 @@ func (qb *performerQueryBuilder) Update(updatedObject models.PerformerPartial) (
 	}
 
 	var ret models.Performer
-	if err := qb.get(updatedObject.ID, &ret); err != nil {
+	if err := qb.getByID(updatedObject.ID, &ret); err != nil {
 		return nil, err
 	}
 
@@ -65,7 +65,7 @@ func (qb *performerQueryBuilder) UpdateFull(updatedObject models.Performer) (*mo
 	}
 
 	var ret models.Performer
-	if err := qb.get(updatedObject.ID, &ret); err != nil {
+	if err := qb.getByID(updatedObject.ID, &ret); err != nil {
 		return nil, err
 	}
 
@@ -84,7 +84,7 @@ func (qb *performerQueryBuilder) Destroy(id int) error {
 
 func (qb *performerQueryBuilder) Find(id int) (*models.Performer, error) {
 	var ret models.Performer
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

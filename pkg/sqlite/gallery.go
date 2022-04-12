@@ -75,7 +75,7 @@ func (qb *galleryQueryBuilder) Destroy(id int) error {
 
 func (qb *galleryQueryBuilder) Find(id int) (*models.Gallery, error) {
 	var ret models.Gallery
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}

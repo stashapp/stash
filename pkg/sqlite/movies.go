@@ -58,7 +58,7 @@ func (qb *movieQueryBuilder) Destroy(id int) error {
 
 func (qb *movieQueryBuilder) Find(id int) (*models.Movie, error) {
 	var ret models.Movie
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
