@@ -28,10 +28,12 @@
     "delete_file": "刪除檔案",
     "delete_file_and_funscript": "刪除檔案 (及其 Funscript)",
     "delete_generated_supporting_files": "刪除已生成的資訊檔案",
+    "delete_stashid": "刪除 StashID",
     "disallow": "不允許",
     "download": "下載",
     "download_backup": "下載備份",
     "edit": "編輯",
+    "edit_entity": "編輯{entityType}",
     "export": "匯出…",
     "export_all": "匯出所有…",
     "find": "搜尋",
@@ -50,11 +52,13 @@
     "ignore": "忽略",
     "import": "匯入…",
     "import_from_file": "自檔案匯入",
+    "logout": "登出",
     "merge": "合併",
     "merge_from": "與其他項目合併",
     "merge_into": "合併至其他項目",
     "next_action": "下一步",
     "not_running": "尚未運行",
+    "open_in_external_player": "透過外部播放器開啟",
     "open_random": "隨機開啟",
     "overwrite": "覆寫",
     "play_random": "隨機播放",
@@ -65,6 +69,7 @@
     "reload_plugins": "重新整理插件",
     "reload_scrapers": "重新整理爬蟲",
     "remove": "移除",
+    "remove_from_gallery": "自圖庫中移除",
     "rename_gen_files": "重新命名已產生的檔案",
     "rescan": "重新掃描",
     "reshuffle": "重新隨機排列",
@@ -79,6 +84,7 @@
     "scrape_with": "透過爬蟲取得資訊…",
     "search": "搜尋",
     "select_all": "全選",
+    "select_entity": "選擇{entityType}",
     "select_folders": "選擇資料夾",
     "select_none": "清除選擇",
     "selective_auto_tag": "選擇性套用標籤",
@@ -101,6 +107,7 @@
     },
     "temp_disable": "暫時關閉…",
     "temp_enable": "暫時啟用…",
+    "unset": "重置",
     "use_default": "使用預設選項",
     "view_random": "隨機開啟"
   },
@@ -193,14 +200,19 @@
     "dlna": {
       "allow_temp_ip": "允許 {tempIP}",
       "allowed_ip_addresses": "已允許的 IP 位址",
+      "allowed_ip_temporarily": "已暫時允許 IP 位址",
       "default_ip_whitelist": "預設 IP 白名單",
       "default_ip_whitelist_desc": "預設可存取 DLNA 的 IP 位址，使用 {wildcard} 以允許所有 IP 位址。",
+      "disabled_dlna_temporarily": "已暫時關閉 DLNA 伺服器",
+      "disallowed_ip": "已禁止的 IP 位址",
       "enabled_by_default": "預設啟用",
+      "enabled_dlna_temporarily": "已暫時開啟 DLNA 伺服器",
       "network_interfaces": "網路裝置",
       "network_interfaces_desc": "選擇要在哪個網路裝置上開放 DLNA 連線。當本列表為空時，則會在所有網路裝置上聽取連線。需重啟。",
       "recent_ip_addresses": "最近的 IP 位址",
       "server_display_name": "伺服器顯示名稱",
       "server_display_name_desc": "DLNA 伺服器的顯示名稱。如果為空，則預設為 {server_name}。",
+      "successfully_cancelled_temporary_behaviour": "已關閉暫時啟用伺服器的功能",
       "until_restart": "直到重啟"
     },
     "general": {
@@ -268,6 +280,10 @@
       "number_of_parallel_task_for_scan_generation_head": "掃描/生成的並行排程數量",
       "parallel_scan_head": "並行掃描/生成",
       "preview_generation": "預覽檔案生成",
+      "python_path": {
+        "description": "Python 應用程式的路徑。用於爬蟲及插件。留空時，python 則會於環境變數中的路徑取得",
+        "heading": "Python 路徑"
+      },
       "scraper_user_agent": "爬蟲用戶代理名稱 (User Agent)",
       "scraper_user_agent_desc": "抓取 HTTP 資料時所用的用戶代理字串 (User-Agent)",
       "scrapers_path": {
@@ -437,6 +453,9 @@
         "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。設定此金鑰後，Stash 將可把當前短片中的對應資訊分享至 handyfeeling.com",
         "heading": "Handy 連線金鑰"
       },
+      "image_lightbox": {
+        "heading": "圖片燈箱"
+      },
       "images": {
         "heading": "圖片",
         "options": {
@@ -505,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "幻燈片功能僅適用於「圖庫」種類下的預覽牆模式",
-        "heading": "幻燈片延遲"
+        "heading": "幻燈片延遲 (秒)"
       },
       "title": "使用者介面"
     }
@@ -606,6 +625,8 @@
       "marker_screenshots_tooltip": "靜態 JPG 預覽，僅適用於設置為『靜態』的預覽類型。",
       "markers": "章節預覽",
       "markers_tooltip": "自標記的時間點算起長度20秒的短片預覽。",
+      "override_preview_generation_options": "強制使用所選的預覽產生設定",
+      "override_preview_generation_options_desc": "在本次工作排程中，強制使用所選的預覽產生設定。預設設定請見『系統』->『預覽生成設定』。",
       "overwrite": "覆蓋現有的生成檔案",
       "phash": "PHash（用於偵測重複的影片檔案及辨認短片）",
       "preview_exclude_end_time_desc": "從場景預覽中排除最後 x 秒。這可以是一個以秒為單位的值，也可以是整個場景持續時間的百分比（例如 2%）。",
@@ -681,6 +702,7 @@
     "warmth": "暖度"
   },
   "ethnicity": "人種",
+  "existing_value": "現有值",
   "eye_color": "眼睛顏色",
   "fake_tits": "假奶",
   "false": "否",
@@ -711,6 +733,7 @@
   "hasMarkers": "含有章節標記",
   "height": "身高",
   "help": "說明",
+  "ignore_auto_tag": "忽略自動標籤",
   "image": "圖片",
   "image_count": "圖片數量",
   "images": "圖片",
@@ -848,6 +871,10 @@
       "something_went_wrong_description": "如果您所輸入的資料看起來有問題，請點選上一步返回以更正您的資料。否則，請在 {githubLink} 上提出錯誤或在 {discordLink} 中尋求幫助。",
       "something_went_wrong_while_setting_up_your_system": "設定系統時出了些問題。以下是我們收到的錯誤：{error}"
     },
+    "folder": {
+      "file_path": "檔案路徑",
+      "up_dir": "往上一層"
+    },
     "github_repository": "GitHub 版本庫",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "備份資料庫路徑（留空以關閉備份）：",
@@ -949,7 +976,6 @@
   "total": "總計",
   "true": "是",
   "twitter": "Twitter",
-  "up-dir": "往上一層",
   "updated_at": "更新於",
   "url": "連結",
   "videos": "影片",

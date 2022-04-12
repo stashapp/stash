@@ -147,6 +147,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.customPerformerImageLocation ?? undefined}
           onChange={(v) => saveGeneral({ customPerformerImageLocation: v })}
         />
+
+        <StringSetting
+          id="python-path"
+          headingID="config.general.python_path.heading"
+          subHeadingID="config.general.python_path.description"
+          value={general.pythonPath ?? undefined}
+          onChange={(v) => saveGeneral({ pythonPath: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.hashing">

@@ -6,6 +6,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -13,8 +14,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestPerformerFindBySceneID(t *testing.T) {
@@ -238,11 +239,31 @@ func TestPerformerIllegalQuery(t *testing.T) {
 	})
 }
 
+func TestPerformerQueryIgnoreAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		ignoreAutoTag := true
+		performerFilter := models.PerformerFilterType{
+			IgnoreAutoTag: &ignoreAutoTag,
+		}
+
+		sqb := r.Performer()
+
+		performers := queryPerformers(t, sqb, &performerFilter, nil)
+
+		assert.Len(t, performers, int(math.Ceil(float64(totalPerformers)/5)))
+		for _, p := range performers {
+			assert.True(t, p.IgnoreAutoTag)
+		}
+
+		return nil
+	})
+}
+
 func TestPerformerQueryForAutoTag(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Performer()
 
-		name := performerNames[performerIdxWithScene] // find a performer by name
+		name := performerNames[performerIdx1WithScene] // find a performer by name
 
 		performers, err := tqb.QueryForAutoTag([]string{name})
 
@@ -251,8 +272,8 @@ func TestPerformerQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, performers, 2)
-		assert.Equal(t, strings.ToLower(performerNames[performerIdxWithScene]), strings.ToLower(performers[0].Name.String))
-		assert.Equal(t, strings.ToLower(performerNames[performerIdxWithScene]), strings.ToLower(performers[1].Name.String))
+		assert.Equal(t, strings.ToLower(performerNames[performerIdx1WithScene]), strings.ToLower(performers[0].Name.String))
+		assert.Equal(t, strings.ToLower(performerNames[performerIdx1WithScene]), strings.ToLower(performers[1].Name.String))
 
 		return nil
 	})
@@ -266,7 +287,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 		const name = "TestPerformerUpdatePerformerImage"
 		performer := models.Performer{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 			Favorite: sql.NullBool{Bool: false, Valid: true},
 		}
 		created, err := qb.Create(performer)
@@ -307,7 +328,7 @@ func TestPerformerDestroyPerformerImage(t *testing.T) {
 		const name = "TestPerformerDestroyPerformerImage"
 		performer := models.Performer{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 			Favorite: sql.NullBool{Bool: false, Valid: true},
 		}
 		created, err := qb.Create(performer)
@@ -827,7 +848,7 @@ func TestPerformerStashIDs(t *testing.T) {
 		const name = "TestStashIDs"
 		performer := models.Performer{
 			Name:     sql.NullString{String: name, Valid: true},
-			Checksum: utils.MD5FromString(name),
+			Checksum: md5.FromString(name),
 			Favorite: sql.NullBool{Bool: false, Valid: true},
 		}
 		created, err := qb.Create(performer)

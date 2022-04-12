@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -36,8 +36,9 @@ func TestImporterName(t *testing.T) {
 func TestImporterPreImport(t *testing.T) {
 	i := Importer{
 		Input: jsonschema.Tag{
-			Name:  tagName,
-			Image: invalidImage,
+			Name:          tagName,
+			Image:         invalidImage,
+			IgnoreAutoTag: autoTagIgnored,
 		},
 	}
 

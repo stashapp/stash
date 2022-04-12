@@ -13,9 +13,10 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 	_ "golang.org/x/image/webp"
 )
 
@@ -53,7 +54,7 @@ func CalculateMD5(path string) (string, error) {
 	}
 	defer f.Close()
 
-	return utils.MD5FromReader(f)
+	return md5.FromReader(f)
 }
 
 func FileExists(path string) bool {
@@ -245,5 +246,5 @@ func GetTitle(s *models.Image) string {
 // If stripExt is set the file extension is omitted from the name
 func GetFilename(s *models.Image, stripExt bool) string {
 	_, fn := file.ZipFilePath(s.Path)
-	return utils.GetNameFromPath(fn, stripExt)
+	return fsutil.GetNameFromPath(fn, stripExt)
 }

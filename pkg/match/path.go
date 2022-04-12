@@ -11,15 +11,18 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 const (
-	separatorChars = `.\-_ `
+	separatorChars   = `.\-_ `
+	separatorPattern = `(?:_|[^\p{L}\w\d])+`
 
 	reNotLetterWordUnicode = `[^\p{L}\w\d]`
 	reNotLetterWord        = `[^\w\d]`
 )
+
+var separatorRE = regexp.MustCompile(separatorPattern)
 
 func getPathQueryRegex(name string) string {
 	// escape specific regex characters
@@ -30,13 +33,7 @@ func getPathQueryRegex(name string) string {
 
 	ret := strings.ReplaceAll(name, " ", separator+"*")
 
-	// \p{L} is specifically omitted here because of the performance hit when
-	// including it. It does mean that paths where the name is bounded by
-	// unicode letters will be returned. However, the results should be tested
-	// by nameMatchesPath which does include \p{L}. The improvement in query
-	// performance should be outweigh the performance hit of testing any extra
-	// results.
-	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
+	ret = `(?:^|_|[^\p{L}\d])` + ret + `(?:$|_|[^\p{L}\d])`
 	return ret
 }
 
@@ -50,9 +47,7 @@ func getPathWords(path string) []string {
 	}
 
 	// handle path separators
-	const separator = `(?:_|[^\p{L}\w\d])+`
-	re := regexp.MustCompile(separator)
-	retStr = re.ReplaceAllString(retStr, " ")
+	retStr = separatorRE.ReplaceAllString(retStr, " ")
 
 	words := strings.Split(retStr, " ")
 
@@ -68,7 +63,7 @@ func getPathWords(path string) []string {
 			// just use the first two characters
 			// #2293 - need to convert to unicode runes for the substring, otherwise
 			// the resulting string is corrupted.
-			ret = utils.StrAppendUnique(ret, string([]rune(w)[0:2]))
+			ret = stringslice.StrAppendUnique(ret, string([]rune(w)[0:2]))
 		}
 	}
 
@@ -127,10 +122,24 @@ func regexpMatchesPath(r *regexp.Regexp, path string) int {
 	return found[len(found)-1][0]
 }
 
-func PathToPerformers(path string, performerReader models.PerformerReader) ([]*models.Performer, error) {
-	words := getPathWords(path)
+func getPerformers(words []string, performerReader models.PerformerReader, cache *Cache) ([]*models.Performer, error) {
 	performers, err := performerReader.QueryForAutoTag(words)
+	if err != nil {
+		return nil, err
+	}
 
+	swPerformers, err := getSingleLetterPerformers(cache, performerReader)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(performers, swPerformers...), nil
+}
+
+func PathToPerformers(path string, reader models.PerformerReader, cache *Cache) ([]*models.Performer, error) {
+	words := getPathWords(path)
+
+	performers, err := getPerformers(words, reader, cache)
 	if err != nil {
 		return nil, err
 	}
@@ -146,12 +155,26 @@ func PathToPerformers(path string, performerReader models.PerformerReader) ([]*m
 	return ret, nil
 }
 
+func getStudios(words []string, reader models.StudioReader, cache *Cache) ([]*models.Studio, error) {
+	studios, err := reader.QueryForAutoTag(words)
+	if err != nil {
+		return nil, err
+	}
+
+	swStudios, err := getSingleLetterStudios(cache, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(studios, swStudios...), nil
+}
+
 // PathToStudio returns the Studio that matches the given path.
 // Where multiple matching studios are found, the one that matches the latest
 // position in the path is returned.
-func PathToStudio(path string, reader models.StudioReader) (*models.Studio, error) {
+func PathToStudio(path string, reader models.StudioReader, cache *Cache) (*models.Studio, error) {
 	words := getPathWords(path)
-	candidates, err := reader.QueryForAutoTag(words)
+	candidates, err := getStudios(words, reader, cache)
 
 	if err != nil {
 		return nil, err
@@ -183,9 +206,23 @@ func PathToStudio(path string, reader models.StudioReader) (*models.Studio, erro
 	return ret, nil
 }
 
-func PathToTags(path string, tagReader models.TagReader) ([]*models.Tag, error) {
+func getTags(words []string, reader models.TagReader, cache *Cache) ([]*models.Tag, error) {
+	tags, err := reader.QueryForAutoTag(words)
+	if err != nil {
+		return nil, err
+	}
+
+	swTags, err := getSingleLetterTags(cache, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(tags, swTags...), nil
+}
+
+func PathToTags(path string, reader models.TagReader, cache *Cache) ([]*models.Tag, error) {
 	words := getPathWords(path)
-	tags, err := tagReader.QueryForAutoTag(words)
+	tags, err := getTags(words, reader, cache)
 
 	if err != nil {
 		return nil, err
@@ -199,7 +236,7 @@ func PathToTags(path string, tagReader models.TagReader) ([]*models.Tag, error) 
 		}
 
 		if !matches {
-			aliases, err := tagReader.GetAliases(t.ID)
+			aliases, err := reader.GetAliases(t.ID)
 			if err != nil {
 				return nil, err
 			}

@@ -55,6 +55,9 @@ type Scene {
   tags: [Tag!]!
   performers: [Performer!]!
   stash_ids: [StashID!]!
+
+  """Return valid stream paths"""
+  sceneStreams: [SceneStreamEndpoint!]!
 }
 
 input SceneMovieInput {

@@ -4,11 +4,10 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -86,6 +85,7 @@ var CodecVP9 = Codec{
 		"-row-mt", "1",
 		"-crf", "30",
 		"-b:v", "0",
+		"-pix_fmt", "yuv420p",
 	},
 }
 
@@ -206,7 +206,7 @@ func (e *Encoder) GetTranscodeStream(options TranscodeStreamOptions) (*Stream, e
 
 func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) (*Stream, error) {
 	args := options.getStreamArgs()
-	cmd := exec.Command(string(*e), args...)
+	cmd := stashExec.Command(string(*e), args...)
 	logger.Debugf("Streaming via: %s", strings.Join(cmd.Args, " "))
 
 	stdout, err := cmd.StdoutPipe()
@@ -221,7 +221,6 @@ func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) 
 		return nil, err
 	}
 
-	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		return nil, err
 	}

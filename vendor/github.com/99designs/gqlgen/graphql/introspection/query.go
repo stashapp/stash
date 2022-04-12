@@ -4,6 +4,7 @@ package introspection
 const Query = `
 query IntrospectionQuery {
   __schema {
+    description
     queryType {
       name
     }
@@ -31,6 +32,7 @@ fragment FullType on __Type {
   kind
   name
   description
+  specifiedByURL
   fields(includeDeprecated: true) {
     name
     description

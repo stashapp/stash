@@ -3,8 +3,8 @@ package tag
 import (
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -31,14 +31,15 @@ type Importer struct {
 
 func (i *Importer) PreImport() error {
 	i.tag = models.Tag{
-		Name:      i.Input.Name,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
+		Name:          i.Input.Name,
+		IgnoreAutoTag: i.Input.IgnoreAutoTag,
+		CreatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
+		UpdatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
 	}
 
 	var err error
 	if len(i.Input.Image) > 0 {
-		_, i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
+		i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
 		if err != nil {
 			return fmt.Errorf("invalid image: %v", err)
 		}

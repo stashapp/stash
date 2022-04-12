@@ -16,14 +16,14 @@ import (
 	"github.com/jmoiron/sqlx"
 	sqlite3 "github.com/mattn/go-sqlite3"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 var DB *sqlx.DB
 var WriteMu sync.Mutex
 var dbPath string
-var appSchemaVersion uint = 29
+var appSchemaVersion uint = 30
 var databaseSchemaVersion uint
 
 //go:embed migrations/*.sql
@@ -143,7 +143,7 @@ func Reset(databasePath string) error {
 	// remove the -shm, -wal files ( if they exist )
 	walFiles := []string{databasePath + "-shm", databasePath + "-wal"}
 	for _, wf := range walFiles {
-		if exists, _ := utils.FileExists(wf); exists {
+		if exists, _ := fsutil.FileExists(wf); exists {
 			err = os.Remove(wf)
 			if err != nil {
 				return errors.New("Error removing database: " + err.Error())

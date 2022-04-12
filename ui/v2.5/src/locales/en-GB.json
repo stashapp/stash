@@ -31,6 +31,7 @@
     "download": "Download",
     "download_backup": "Download Backup",
     "edit": "Edit",
+    "edit_entity": "Edit {entityType}",
     "export": "Export…",
     "export_all": "Export all…",
     "find": "Find",
@@ -83,6 +84,7 @@
     "selective_auto_tag": "Selective Auto Tag",
     "selective_clean": "Selective Clean",
     "selective_scan": "Selective Scan",
+    "select_entity": "Select {entityType}",
     "set_as_default": "Set as default",
     "set_back_image": "Back image…",
     "set_front_image": "Front image…",
@@ -99,10 +101,15 @@
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
+    "unset": "Unset",
     "use_default": "Use default",
     "view_random": "View Random",
     "continue": "Continue",
-    "submit": "Submit"
+    "submit": "Submit",
+    "logout": "Log out",
+    "remove_from_gallery": "Remove from Gallery",
+    "delete_stashid": "Delete StashID",
+    "open_in_external_player": "Open in external player"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -201,7 +208,12 @@
       "recent_ip_addresses": "Recent IP addresses",
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
-      "until_restart": "until restart"
+      "until_restart": "until restart",
+      "allowed_ip_temporarily": "Allowed IP temporarily",
+      "disabled_dlna_temporarily": "Disabled DLNA temporarily",
+      "disallowed_ip": "Disallowed IP",
+      "enabled_dlna_temporarily": "Enabled DLNA temporarily",
+      "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour"
     },
     "general": {
       "auth": {
@@ -268,6 +280,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Number of parallel task for scan/generation",
       "parallel_scan_head": "Parallel Scan/Generation",
       "preview_generation": "Preview Generation",
+      "python_path": {
+        "description": "Location of python executable. Used for script scrapers and plugins. If blank, python will be resolved from the environment",
+        "heading": "Python Path"
+      },
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string used during scrape http requests",
       "scrapers_path": {
@@ -446,6 +462,9 @@
           }
         }
       },
+      "image_lightbox": {
+        "heading": "Image Lightbox"
+      },
       "interactive_options": "Interactive Options",
       "language": {
         "heading": "Language"
@@ -505,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "Slideshow is available in galleries when in wall view mode",
-        "heading": "Slideshow Delay"
+        "heading": "Slideshow Delay (seconds)"
       },
       "title": "User Interface"
     }
@@ -683,6 +702,7 @@
     "warmth": "Warmth"
   },
   "ethnicity": "Ethnicity",
+  "existing_value": "existing value",
   "eye_color": "Eye Colour",
   "fake_tits": "Fake Tits",
   "false": "False",
@@ -713,6 +733,7 @@
   "hasMarkers": "Has Markers",
   "height": "Height",
   "help": "Help",
+  "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
   "image_count": "Image Count",
   "images": "Images",
@@ -868,7 +889,11 @@
       "next_step": "When you're ready to proceed with setting up a new system, click Next.",
       "unable_to_locate_specified_config": "If you're reading this, then Stash couldn't find the configuration file specified at the command line or the environment. This wizard will guide you through the process of setting up a new configuration."
     },
-    "welcome_to_stash": "Welcome to Stash"
+    "welcome_to_stash": "Welcome to Stash",
+    "folder": {
+      "file_path": "File path",
+      "up_dir": "Up a directory"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -910,7 +935,6 @@
   "total": "Total",
   "true": "True",
   "twitter": "Twitter",
-  "up-dir": "Up a directory",
   "updated_at": "Updated At",
   "url": "URL",
   "videos": "Videos",

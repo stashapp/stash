@@ -28,10 +28,12 @@
     "delete_file": "ファイルを削除",
     "delete_file_and_funscript": "ファイルを削除 (ファンスクリプトを含む)",
     "delete_generated_supporting_files": "生成済みのサポートファイルを削除",
+    "delete_stashid": "StashIDを削除",
     "disallow": "拒否",
     "download": "ダウンロード",
     "download_backup": "バックアップをダウンロード",
     "edit": "編集",
+    "edit_entity": "{entityType}を編集",
     "export": "エクスポート…",
     "export_all": "全てエクスポート…",
     "find": "探す",
@@ -50,11 +52,13 @@
     "ignore": "無視",
     "import": "インポート…",
     "import_from_file": "ファイルからインポート",
+    "logout": "ログアウト",
     "merge": "マージ",
     "merge_from": "次からマージ：",
     "merge_into": "次へマージ：",
     "next_action": "次へ",
     "not_running": "未実行",
+    "open_in_external_player": "外部プレーヤーで開く",
     "open_random": "ランダムで開く",
     "overwrite": "上書き",
     "play_random": "ランダム再生",
@@ -65,6 +69,7 @@
     "reload_plugins": "プラグインを再読み込み",
     "reload_scrapers": "スクレイパーを再読み込み",
     "remove": "削除",
+    "remove_from_gallery": "ギャラリーから削除",
     "rename_gen_files": "生成済みのファイルの名前を変更",
     "rescan": "再スキャン",
     "reshuffle": "再シャッフル",
@@ -79,6 +84,7 @@
     "scrape_with": "次でスクレイプ…",
     "search": "検索",
     "select_all": "全て選択",
+    "select_entity": "{entityType}を選択",
     "select_folders": "フォルダーを選択",
     "select_none": "選択なし",
     "selective_auto_tag": "選択して自動タグ付け",
@@ -193,14 +199,19 @@
     "dlna": {
       "allow_temp_ip": "{tempIP}を許可",
       "allowed_ip_addresses": "許可済みのIPアドレス",
+      "allowed_ip_temporarily": "一時的に許可するIPアドレス",
       "default_ip_whitelist": "デフォルトIPアドレスのホワイトリスト",
       "default_ip_whitelist_desc": "デフォルトIPアドレスからのDLNAへのアクセスを許可します。すべてのIPアドレスを許可するには、{wildcard}を使用してください。",
+      "disabled_dlna_temporarily": "一時的にDLNAを無効にする",
+      "disallowed_ip": "無効なIPアドレス",
       "enabled_by_default": "デフォルトで有効",
+      "enabled_dlna_temporarily": "一時的にDLNAを有効にする",
       "network_interfaces": "インターフェース",
       "network_interfaces_desc": "DLNAサーバーを公開するためのネットワークインターフェースです。リストが空の場合は、すべてのインターフェースで実行されます。 変更後にDLNAを再起動する必要があります。",
       "recent_ip_addresses": "最近のIPアドレス",
       "server_display_name": "サーバー表示名",
       "server_display_name_desc": "DLNAサーバーの表示名を設定できます。空欄の場合は、デフォルトの{server_name}が設定されます。",
+      "successfully_cancelled_temporary_behaviour": "一時的な挙動のキャンセルに成功しました",
       "until_restart": "再起動まで"
     },
     "general": {
@@ -268,6 +279,10 @@
       "number_of_parallel_task_for_scan_generation_head": "スキャン/生成の同時実行タスク数",
       "parallel_scan_head": "同時スキャン/生成",
       "preview_generation": "プレビューの生成",
+      "python_path": {
+        "description": "Pythonが配置されており、実行可能なパスを指定してください。スクレイパーとプラグインスクリプトを実行するために使用されます。空欄の場合、環境変数からPythonのパスを取得します",
+        "heading": "Pytyonパス"
+      },
       "scraper_user_agent": "スクレイパーのユーザーエージェント",
       "scraper_user_agent_desc": "httpリクエストによるスクレイプを実行する際に使用するユーザーエージェント",
       "scrapers_path": {
@@ -436,6 +451,9 @@
       "handy_connection_key": {
         "description": "Handy connection keyは、インタラクティブなシーンで使用されます。このキーを設定すると、Stashが現在のシーン情報をhandyfeeling.comと共有することを許可します",
         "heading": "Handy Connection Key"
+      },
+      "image_lightbox": {
+        "heading": "画像のLightbox"
       },
       "images": {
         "heading": "画像",
@@ -606,6 +624,8 @@
       "marker_screenshots_tooltip": "マーカーのJPG画像は、プレビュータイプが静止画に設定されている場合のみ必要です。",
       "markers": "マーカーのプレビュー",
       "markers_tooltip": "マーカーに設定されたタイムコードから２０秒間の動画を生成します。",
+      "override_preview_generation_options": "プレビュー生成の設定を上書きする",
+      "override_preview_generation_options_desc": "この操作に限り、プレビュー生成の設定を上書きします。デフォルト設定は、システム -> プレビュー生成から変更できます。",
       "overwrite": "既に生成済みの生成ファイルを上書きする",
       "phash": "視覚的ハッシュ (重複排除用)",
       "preview_exclude_end_time_desc": "シーンプレビューから最後のX秒を除外します。値は、秒またはシーンの再生時間の割合(2%など)で指定できます。",
@@ -727,7 +747,7 @@
   },
   "marker_count": "マーカー数",
   "markers": "マーカー",
-  "measurements": "測定",
+  "measurements": "スリーサイズ",
   "media_info": {
     "audio_codec": "音声コーデック",
     "checksum": "チェックサム",
@@ -848,6 +868,10 @@
       "something_went_wrong_description": "原因が間違った設定による場合、「戻る」をクリックして修正してください。それ以外の場合は、{githubLink}にバグを報告するか、{discordLink}で質問してみてください。",
       "something_went_wrong_while_setting_up_your_system": "システムを設定中に問題が発生しました。次のエラーを受け取りました: {error}"
     },
+    "folder": {
+      "file_path": "ファイルパス",
+      "up_dir": "上の階層へ"
+    },
     "github_repository": "Githubのリポジトリ",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "データベースのバックアップパス (バックアップを無効にする場合は空白):",
@@ -949,10 +973,9 @@
   "total": "合計",
   "true": "有効",
   "twitter": "Twitter",
-  "up-dir": "上の階層へ",
   "updated_at": "更新日:",
   "url": "URL",
   "videos": "動画",
   "weight": "幅",
-  "years_old": "年前"
+  "years_old": "歳"
 }

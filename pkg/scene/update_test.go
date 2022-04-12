@@ -7,7 +7,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -261,9 +261,9 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 	sceneIDStr := strconv.Itoa(sceneID)
 
 	performerIDs := []int{performerID}
-	performerIDStrs := utils.IntSliceToStringSlice(performerIDs)
+	performerIDStrs := intslice.IntSliceToStringSlice(performerIDs)
 	tagIDs := []int{tagID}
-	tagIDStrs := utils.IntSliceToStringSlice(tagIDs)
+	tagIDStrs := intslice.IntSliceToStringSlice(tagIDs)
 	stashID := "stashID"
 	endpoint := "endpoint"
 	stashIDs := []models.StashID{

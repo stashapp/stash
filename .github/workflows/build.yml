@@ -73,13 +73,8 @@ jobs:
 
     # Static validation happens in the linter workflow in parallel to this workflow
     # Run Dynamic validation here, to make sure we pass all the projects integration tests
-    #
-    # create UI file so that the embed doesn't fail
     - name: Test Backend
-      run: |
-        mkdir -p ui/v2.5/build
-        touch ui/v2.5/build/index.html
-        docker exec -t build /bin/bash -c "make it"
+      run: docker exec -t build /bin/bash -c "make it"
 
     - name: Build UI
       # skip UI build for pull requests if UI is unchanged (UI was cached)

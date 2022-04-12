@@ -3,17 +3,18 @@ package tag
 import (
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 // ToJSON converts a Tag object into its JSON equivalent.
 func ToJSON(reader models.TagReader, tag *models.Tag) (*jsonschema.Tag, error) {
 	newTagJSON := jsonschema.Tag{
-		Name:      tag.Name,
-		CreatedAt: models.JSONTime{Time: tag.CreatedAt.Timestamp},
-		UpdatedAt: models.JSONTime{Time: tag.UpdatedAt.Timestamp},
+		Name:          tag.Name,
+		IgnoreAutoTag: tag.IgnoreAutoTag,
+		CreatedAt:     models.JSONTime{Time: tag.CreatedAt.Timestamp},
+		UpdatedAt:     models.JSONTime{Time: tag.UpdatedAt.Timestamp},
 	}
 
 	aliases, err := reader.GetAliases(tag.ID)

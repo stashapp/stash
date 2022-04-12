@@ -1,13 +1,13 @@
 package codegen
 
 import (
+	"fmt"
 	"go/types"
 	"strconv"
 	"strings"
 	"unicode"
 
 	"github.com/99designs/gqlgen/codegen/config"
-	"github.com/pkg/errors"
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
@@ -36,7 +36,7 @@ type Object struct {
 func (b *builder) buildObject(typ *ast.Definition) (*Object, error) {
 	dirs, err := b.getDirectives(typ.Directives)
 	if err != nil {
-		return nil, errors.Wrap(err, typ.Name)
+		return nil, fmt.Errorf("%s: %w", typ.Name, err)
 	}
 
 	obj := &Object{
@@ -46,7 +46,7 @@ func (b *builder) buildObject(typ *ast.Definition) (*Object, error) {
 		Stream:             typ == b.Schema.Subscription,
 		Directives:         dirs,
 		ResolverInterface: types.NewNamed(
-			types.NewTypeName(0, b.Config.Exec.Pkg(), typ.Name+"Resolver", nil),
+			types.NewTypeName(0, b.Config.Exec.Pkg(), strings.Title(typ.Name)+"Resolver", nil),
 			nil,
 			nil,
 		),

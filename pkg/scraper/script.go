@@ -10,9 +10,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	stashExec "github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/python"
 )
 
 var ErrScraperScript = errors.New("scraper script error")
@@ -34,14 +35,27 @@ func newScriptScraper(scraper scraperTypeConfig, config config, globalConfig Glo
 func (s *scriptScraper) runScraperScript(inString string, out interface{}) error {
 	command := s.scraper.Script
 
-	if command[0] == "python" || command[0] == "python3" {
-		executable, err := findPythonExecutable()
-		if err == nil {
-			command[0] = executable
+	var cmd *exec.Cmd
+	if python.IsPythonCommand(command[0]) {
+		pythonPath := s.globalConfig.GetPythonPath()
+		var p *python.Python
+		if pythonPath != "" {
+			p = python.New(pythonPath)
+		} else {
+			p, _ = python.Resolve()
 		}
+
+		if p != nil {
+			cmd = p.Command(context.TODO(), command[1:])
+		}
+
+		// if could not find python, just use the command args as-is
 	}
 
-	cmd := exec.Command(command[0], command[1:]...)
+	if cmd == nil {
+		cmd = stashExec.Command(command[0], command[1:]...)
+	}
+
 	cmd.Dir = filepath.Dir(s.config.path)
 
 	stdin, err := cmd.StdinPipe()
@@ -67,7 +81,6 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		logger.Error("Scraper stdout not available: " + err.Error())
 	}
 
-	desktop.HideExecShell(cmd)
 	if err = cmd.Start(); err != nil {
 		logger.Error("Error running scraper script: " + err.Error())
 		return errors.New("error running scraper script")
@@ -173,21 +186,21 @@ func (s *scriptScraper) scrapeByURL(ctx context.Context, url string, ty models.S
 func (s *scriptScraper) scrape(ctx context.Context, input string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
 	switch ty {
 	case models.ScrapeContentTypePerformer:
-		var performer models.ScrapedPerformer
+		var performer *models.ScrapedPerformer
 		err := s.runScraperScript(input, &performer)
-		return &performer, err
+		return performer, err
 	case models.ScrapeContentTypeGallery:
-		var gallery models.ScrapedGallery
+		var gallery *models.ScrapedGallery
 		err := s.runScraperScript(input, &gallery)
-		return &gallery, err
+		return gallery, err
 	case models.ScrapeContentTypeScene:
-		var scene models.ScrapedScene
+		var scene *models.ScrapedScene
 		err := s.runScraperScript(input, &scene)
-		return &scene, err
+		return scene, err
 	case models.ScrapeContentTypeMovie:
-		var movie models.ScrapedMovie
+		var movie *models.ScrapedMovie
 		err := s.runScraperScript(input, &movie)
-		return &movie, err
+		return movie, err
 	}
 
 	return nil, ErrNotSupported
@@ -200,11 +213,11 @@ func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sc
 		return nil, err
 	}
 
-	var ret models.ScrapedScene
+	var ret *models.ScrapedScene
 
 	err = s.runScraperScript(string(inString), &ret)
 
-	return &ret, err
+	return ret, err
 }
 
 func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
@@ -214,35 +227,20 @@ func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mod
 		return nil, err
 	}
 
-	var ret models.ScrapedGallery
+	var ret *models.ScrapedGallery
 
 	err = s.runScraperScript(string(inString), &ret)
 
-	return &ret, err
-}
-
-func findPythonExecutable() (string, error) {
-	_, err := exec.LookPath("python3")
-
-	if err != nil {
-		_, err = exec.LookPath("python")
-
-		if err != nil {
-			return "", err
-		}
-
-		return "python", nil
-	}
-
-	return "python3", nil
+	return ret, err
 }
 
 func handleScraperStderr(name string, scraperOutputReader io.ReadCloser) {
 	const scraperPrefix = "[Scrape / %s] "
 
 	lgr := logger.PluginLogger{
+		Logger:          logger.Logger,
 		Prefix:          fmt.Sprintf(scraperPrefix, name),
 		DefaultLogLevel: &logger.ErrorLevel,
 	}
-	lgr.HandlePluginStdErr(scraperOutputReader)
+	lgr.ReadLogMessages(scraperOutputReader)
 }

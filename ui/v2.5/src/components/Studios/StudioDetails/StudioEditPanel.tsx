@@ -55,6 +55,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
         },
         message: "aliases must be unique",
       }),
+    ignore_auto_tag: yup.boolean().optional(),
   });
 
   const initialValues = {
@@ -66,6 +67,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     parent_id: studio.parent_studio?.id,
     stash_ids: studio.stash_ids ?? undefined,
     aliases: studio.aliases,
+    ignore_auto_tag: studio.ignore_auto_tag ?? false,
   };
 
   type InputValues = typeof initialValues;
@@ -316,6 +318,22 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
           </Col>
         </Form.Group>
       </Form>
+
+      <hr />
+
+      <Form.Group controlId="ignore-auto-tag" as={Row}>
+        <Form.Label column xs={3}>
+          <FormattedMessage id="ignore_auto_tag" />
+        </Form.Label>
+        <Col xs={9}>
+          <Form.Check
+            {...formik.getFieldProps({
+              name: "ignore_auto_tag",
+              type: "checkbox",
+            })}
+          />
+        </Col>
+      </Form.Group>
 
       <DetailsEditNavbar
         objectName={studio?.name ?? intl.formatMessage({ id: "studio" })}

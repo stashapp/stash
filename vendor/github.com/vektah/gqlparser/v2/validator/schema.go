@@ -3,6 +3,7 @@
 package validator
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -40,8 +41,8 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 		def := schema.Types[ext.Name]
 		if def == nil {
 			schema.Types[ext.Name] = &Definition{
-				Kind:        ext.Kind,
-				Name:        ext.Name,
+				Kind:     ext.Kind,
+				Name:     ext.Name,
 				Position: ext.Position,
 			}
 			def = schema.Types[ext.Name]
@@ -72,6 +73,11 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 				schema.AddImplements(def.Name, schema.Types[intf])
 			}
 			schema.AddPossibleType(def.Name, def)
+		case Interface:
+			for _, intf := range def.Interfaces {
+				schema.AddPossibleType(intf, def)
+				schema.AddImplements(def.Name, schema.Types[intf])
+			}
 		}
 	}
 
@@ -87,6 +93,7 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 	}
 
 	if len(ast.Schema) == 1 {
+		schema.Description = ast.Schema[0].Description
 		for _, entrypoint := range ast.Schema[0].OperationTypes {
 			def := schema.Types[entrypoint.Type]
 			if def == nil {
@@ -120,30 +127,29 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 		}
 	}
 
-	for _, typ := range schema.Types {
-		err := validateDefinition(&schema, typ)
-		if err != nil {
-			return nil, err
+	if err := validateTypeDefinitions(&schema); err != nil {
+		return nil, err
+	}
+
+	if err := validateDirectiveDefinitions(&schema); err != nil {
+		return nil, err
+	}
+
+	// Inferred root operation type names should be performed only when a `schema` directive is
+	// **not** provided, when it is, `Mutation` and `Subscription` becomes valid types and are not
+	// assigned as a root operation on the schema.
+	if len(ast.Schema) == 0 {
+		if schema.Query == nil && schema.Types["Query"] != nil {
+			schema.Query = schema.Types["Query"]
 		}
-	}
 
-	for _, dir := range schema.Directives {
-		err := validateDirective(&schema, dir)
-		if err != nil {
-			return nil, err
+		if schema.Mutation == nil && schema.Types["Mutation"] != nil {
+			schema.Mutation = schema.Types["Mutation"]
 		}
-	}
 
-	if schema.Query == nil && schema.Types["Query"] != nil {
-		schema.Query = schema.Types["Query"]
-	}
-
-	if schema.Mutation == nil && schema.Types["Mutation"] != nil {
-		schema.Mutation = schema.Types["Mutation"]
-	}
-
-	if schema.Subscription == nil && schema.Types["Subscription"] != nil {
-		schema.Subscription = schema.Types["Subscription"]
+		if schema.Subscription == nil && schema.Types["Subscription"] != nil {
+			schema.Subscription = schema.Types["Subscription"]
+		}
 	}
 
 	if schema.Query != nil {
@@ -164,6 +170,36 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 	}
 
 	return &schema, nil
+}
+
+func validateTypeDefinitions(schema *Schema) *gqlerror.Error {
+	types := make([]string, 0, len(schema.Types))
+	for typ := range schema.Types {
+		types = append(types, typ)
+	}
+	sort.Strings(types)
+	for _, typ := range types {
+		err := validateDefinition(schema, schema.Types[typ])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateDirectiveDefinitions(schema *Schema) *gqlerror.Error {
+	directives := make([]string, 0, len(schema.Directives))
+	for directive := range schema.Directives {
+		directives = append(directives, directive)
+	}
+	sort.Strings(directives)
+	for _, directive := range directives {
+		err := validateDirective(schema, schema.Directives[directive])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func validateDirective(schema *Schema, def *DirectiveDefinition) *gqlerror.Error {
@@ -187,7 +223,11 @@ func validateDefinition(schema *Schema, def *Definition) *gqlerror.Error {
 		if err := validateArgs(schema, field.Arguments, nil); err != nil {
 			return err
 		}
-		if err := validateDirectives(schema, field.Directives, nil); err != nil {
+		wantDirLocation := LocationFieldDefinition
+		if def.Kind == InputObject {
+			wantDirLocation = LocationInputFieldDefinition
+		}
+		if err := validateDirectives(schema, field.Directives, wantDirLocation, nil); err != nil {
 			return err
 		}
 	}
@@ -253,7 +293,7 @@ func validateDefinition(schema *Schema, def *Definition) *gqlerror.Error {
 		}
 	}
 
-	return validateDirectives(schema, def.Directives, nil)
+	return validateDirectives(schema, def.Directives, DirectiveLocation(def.Kind), nil)
 }
 
 func validateTypeRef(schema *Schema, typ *Type) *gqlerror.Error {
@@ -282,14 +322,14 @@ func validateArgs(schema *Schema, args ArgumentDefinitionList, currentDirective 
 				def.Kind,
 			)
 		}
-		if err := validateDirectives(schema, arg.Directives, currentDirective); err != nil {
+		if err := validateDirectives(schema, arg.Directives, LocationArgumentDefinition, currentDirective); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func validateDirectives(schema *Schema, dirs DirectiveList, currentDirective *DirectiveDefinition) *gqlerror.Error {
+func validateDirectives(schema *Schema, dirs DirectiveList, location DirectiveLocation, currentDirective *DirectiveDefinition) *gqlerror.Error {
 	for _, dir := range dirs {
 		if err := validateName(dir.Position, dir.Name); err != nil {
 			// now, GraphQL spec doesn't have reserved directive name
@@ -301,6 +341,16 @@ func validateDirectives(schema *Schema, dirs DirectiveList, currentDirective *Di
 		if schema.Directives[dir.Name] == nil {
 			return gqlerror.ErrorPosf(dir.Position, "Undefined directive %s.", dir.Name)
 		}
+		validKind := false
+		for _, dirLocation := range schema.Directives[dir.Name].Locations {
+			if dirLocation == location {
+				validKind = true
+				break
+			}
+		}
+		if !validKind {
+			return gqlerror.ErrorPosf(dir.Position, "Directive %s is not applicable on %s.", dir.Name, location)
+		}
 		dir.Definition = schema.Directives[dir.Name]
 	}
 	return nil
@@ -308,7 +358,7 @@ func validateDirectives(schema *Schema, dirs DirectiveList, currentDirective *Di
 
 func validateImplements(schema *Schema, def *Definition, intfName string) *gqlerror.Error {
 	// see validation rules at the bottom of
-	// https://facebook.github.io/graphql/June2018/#sec-Objects
+	// https://facebook.github.io/graphql/October2021/#sec-Objects
 	intf := schema.Types[intfName]
 	if intf == nil {
 		return gqlerror.ErrorPosf(def.Position, "Undefined type %s.", strconv.Quote(intfName))
@@ -357,7 +407,40 @@ func validateImplements(schema *Schema, def *Definition, intfName string) *gqler
 			}
 		}
 	}
+	return validateTypeImplementsAncestors(schema, def, intfName)
+}
+
+// validateTypeImplementsAncestors
+// https://github.com/graphql/graphql-js/blob/47bd8c8897c72d3efc17ecb1599a95cee6bac5e8/src/type/validate.ts#L428
+func validateTypeImplementsAncestors(schema *Schema, def *Definition, intfName string) *gqlerror.Error {
+	intf := schema.Types[intfName]
+	if intf == nil {
+		return gqlerror.ErrorPosf(def.Position, "Undefined type %s.", strconv.Quote(intfName))
+	}
+	for _, transitive := range intf.Interfaces {
+		if !containsString(def.Interfaces, transitive) {
+			if transitive == def.Name {
+				return gqlerror.ErrorPosf(def.Position,
+					`Type %s cannot implement %s because it would create a circular reference.`,
+					def.Name, intfName,
+				)
+			}
+			return gqlerror.ErrorPosf(def.Position,
+				`Type %s must implement %s because it is implemented by %s.`,
+				def.Name, transitive, intfName,
+			)
+		}
+	}
 	return nil
+}
+
+func containsString(slice []string, want string) bool {
+	for _, str := range slice {
+		if want == str {
+			return true
+		}
+	}
+	return false
 }
 
 func isCovariant(schema *Schema, required *Type, actual *Type) bool {

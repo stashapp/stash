@@ -144,10 +144,6 @@ func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio,
 	var whereClauses []string
 	var args []interface{}
 
-	// always include names that begin with a single character
-	whereClauses = append(whereClauses, "studios.name regexp ? OR COALESCE(studio_aliases.alias, '') regexp ?")
-	args = append(args, singleFirstCharacterRegex, singleFirstCharacterRegex)
-
 	for _, w := range words {
 		ww := w + "%"
 		whereClauses = append(whereClauses, "studios.name like ?")
@@ -158,7 +154,11 @@ func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio,
 		args = append(args, ww)
 	}
 
-	where := strings.Join(whereClauses, " OR ")
+	whereOr := "(" + strings.Join(whereClauses, " OR ") + ")"
+	where := strings.Join([]string{
+		"studios.ignore_auto_tag = 0",
+		whereOr,
+	}, " AND ")
 	return qb.queryStudios(query+" WHERE "+where, args)
 }
 
@@ -210,6 +210,7 @@ func (qb *studioQueryBuilder) makeFilter(studioFilter *models.StudioFilterType) 
 	query.handleCriterion(stringCriterionHandler(studioFilter.Details, studioTable+".details"))
 	query.handleCriterion(stringCriterionHandler(studioFilter.URL, studioTable+".url"))
 	query.handleCriterion(intCriterionHandler(studioFilter.Rating, studioTable+".rating"))
+	query.handleCriterion(boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag"))
 
 	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
 		if studioFilter.StashID != nil {

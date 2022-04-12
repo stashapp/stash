@@ -13,6 +13,12 @@ import {
 } from "../Inputs";
 import { SettingStateContext } from "../context";
 import { DurationUtils } from "src/utils";
+import * as GQL from "src/core/generated-graphql";
+import {
+  imageLightboxDisplayModeIntlMap,
+  imageLightboxScrollModeIntlMap,
+} from "src/core/enums";
+import { useInterfaceLocalForage } from "src/hooks";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -31,6 +37,28 @@ export const SettingsInterfacePanel: React.FC = () => {
   const { interface: iface, saveInterface, loading, error } = React.useContext(
     SettingStateContext
   );
+
+  const [, setInterfaceLocalForage] = useInterfaceLocalForage();
+
+  function saveLightboxSettings(v: Partial<GQL.ConfigImageLightboxInput>) {
+    // save in local forage as well for consistency
+    setInterfaceLocalForage((prev) => {
+      return {
+        ...prev,
+        imageLightbox: {
+          ...prev.imageLightbox,
+          ...v,
+        },
+      };
+    });
+
+    saveInterface({
+      imageLightbox: {
+        ...iface.imageLightbox,
+        ...v,
+      },
+    });
+  }
 
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
@@ -195,13 +223,72 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
 
-      <SettingSection headingID="config.ui.images.heading">
+      <SettingSection headingID="config.ui.image_lightbox.heading">
         <NumberSetting
           headingID="config.ui.slideshow_delay.heading"
           subHeadingID="config.ui.slideshow_delay.description"
-          value={iface.slideshowDelay ?? undefined}
-          onChange={(v) => saveInterface({ slideshowDelay: v })}
+          value={iface.imageLightbox?.slideshowDelay ?? undefined}
+          onChange={(v) => saveLightboxSettings({ slideshowDelay: v })}
         />
+
+        <SelectSetting
+          id="lightbox_display_mode"
+          headingID="dialogs.lightbox.display_mode.label"
+          value={
+            iface.imageLightbox?.displayMode ??
+            GQL.ImageLightboxDisplayMode.FitXy
+          }
+          onChange={(v) =>
+            saveLightboxSettings({
+              displayMode: v as GQL.ImageLightboxDisplayMode,
+            })
+          }
+        >
+          {Array.from(imageLightboxDisplayModeIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
+
+        <BooleanSetting
+          id="lightbox_scale_up"
+          headingID="dialogs.lightbox.scale_up.label"
+          subHeadingID="dialogs.lightbox.scale_up.description"
+          checked={iface.imageLightbox?.scaleUp ?? false}
+          onChange={(v) => saveLightboxSettings({ scaleUp: v })}
+        />
+
+        <BooleanSetting
+          id="lightbox_reset_zoom_on_nav"
+          headingID="dialogs.lightbox.reset_zoom_on_nav"
+          checked={iface.imageLightbox?.resetZoomOnNav ?? false}
+          onChange={(v) => saveLightboxSettings({ resetZoomOnNav: v })}
+        />
+
+        <SelectSetting
+          id="lightbox_scroll_mode"
+          headingID="dialogs.lightbox.scroll_mode.label"
+          subHeadingID="dialogs.lightbox.scroll_mode.description"
+          value={
+            iface.imageLightbox?.scrollMode ?? GQL.ImageLightboxScrollMode.Zoom
+          }
+          onChange={(v) =>
+            saveLightboxSettings({
+              scrollMode: v as GQL.ImageLightboxScrollMode,
+            })
+          }
+        >
+          {Array.from(imageLightboxScrollModeIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
       </SettingSection>
 
       <SettingSection headingID="config.ui.editing.heading">

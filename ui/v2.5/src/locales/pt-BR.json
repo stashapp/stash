@@ -901,7 +901,10 @@
       "next_step": "Quando estiver pronto para prosseguir com a criação do novo sistema, clique Próximo.",
       "unable_to_locate_specified_config": "Se está lendo isto, então o Stash não pôde encontrar o arquivo de configuração especificado na linha de comando ou no ambiente. Este assistente irá te guiar durante o processo de criação de uma nova configuração."
     },
-    "welcome_to_stash": "Bem-vindo ao Stash"
+    "welcome_to_stash": "Bem-vindo ao Stash",
+    "folder": {
+      "up_dir": "Subir um diretório"
+    }
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -949,7 +952,6 @@
   "total": "Total",
   "true": "Verdadeiro",
   "twitter": "Twitter",
-  "up-dir": "Subir um diretório",
   "updated_at": "Atualizado em",
   "url": "URL",
   "videos": "Vídeos",

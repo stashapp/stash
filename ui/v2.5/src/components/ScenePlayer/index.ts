@@ -1,1 +1,1 @@
-export { ScenePlayer } from "./ScenePlayer";
+export * from "./ScenePlayer";

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/types"
 	"sort"
+	"strings"
 
 	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/99designs/gqlgen/codegen/templates"
@@ -12,6 +13,13 @@ import (
 )
 
 type BuildMutateHook = func(b *ModelBuild) *ModelBuild
+
+type FieldMutateHook = func(td *ast.Definition, fd *ast.FieldDefinition, f *Field) (*Field, error)
+
+// defaultFieldMutateHook is the default hook for the Plugin which applies the GoTagFieldHook.
+func defaultFieldMutateHook(td *ast.Definition, fd *ast.FieldDefinition, f *Field) (*Field, error) {
+	return GoTagFieldHook(td, fd, f)
+}
 
 func defaultBuildMutateHook(b *ModelBuild) *ModelBuild {
 	return b
@@ -28,6 +36,7 @@ type ModelBuild struct {
 type Interface struct {
 	Description string
 	Name        string
+	Implements  []string
 }
 
 type Object struct {
@@ -58,11 +67,13 @@ type EnumValue struct {
 func New() plugin.Plugin {
 	return &Plugin{
 		MutateHook: defaultBuildMutateHook,
+		FieldHook:  defaultFieldMutateHook,
 	}
 }
 
 type Plugin struct {
 	MutateHook BuildMutateHook
+	FieldHook  FieldMutateHook
 }
 
 var _ plugin.ConfigMutator = &Plugin{}
@@ -87,6 +98,7 @@ func (m *Plugin) MutateConfig(cfg *config.Config) error {
 			it := &Interface{
 				Description: schemaType.Description,
 				Name:        schemaType.Name,
+				Implements:  schemaType.Interfaces,
 			}
 
 			b.Interfaces = append(b.Interfaces, it)
@@ -98,8 +110,23 @@ func (m *Plugin) MutateConfig(cfg *config.Config) error {
 				Description: schemaType.Description,
 				Name:        schemaType.Name,
 			}
+
+			// If Interface A implements interface B, and Interface C also implements interface B
+			// then both A and C have methods of B.
+			// The reason for checking unique is to prevent the same method B from being generated twice.
+			uniqueMap := map[string]bool{}
 			for _, implementor := range cfg.Schema.GetImplements(schemaType) {
-				it.Implements = append(it.Implements, implementor.Name)
+				if !uniqueMap[implementor.Name] {
+					it.Implements = append(it.Implements, implementor.Name)
+					uniqueMap[implementor.Name] = true
+				}
+				// for interface implements
+				for _, iface := range implementor.Interfaces {
+					if !uniqueMap[iface] {
+						it.Implements = append(it.Implements, iface)
+						uniqueMap[iface] = true
+					}
+				}
 			}
 
 			for _, field := range schemaType.Fields {
@@ -162,12 +189,22 @@ func (m *Plugin) MutateConfig(cfg *config.Config) error {
 					typ = types.NewPointer(typ)
 				}
 
-				it.Fields = append(it.Fields, &Field{
+				f := &Field{
 					Name:        name,
 					Type:        typ,
 					Description: field.Description,
 					Tag:         `json:"` + field.Name + `"`,
-				})
+				}
+
+				if m.FieldHook != nil {
+					mf, err := m.FieldHook(schemaType, field, f)
+					if err != nil {
+						return fmt.Errorf("generror: field %v.%v: %w", it.Name, field.Name, err)
+					}
+					f = mf
+				}
+
+				it.Fields = append(it.Fields, f)
 			}
 
 			b.Models = append(b.Models, it)
@@ -214,13 +251,52 @@ func (m *Plugin) MutateConfig(cfg *config.Config) error {
 		b = m.MutateHook(b)
 	}
 
-	return templates.Render(templates.Options{
+	err := templates.Render(templates.Options{
 		PackageName:     cfg.Model.Package,
 		Filename:        cfg.Model.Filename,
 		Data:            b,
 		GeneratedHeader: true,
 		Packages:        cfg.Packages,
 	})
+	if err != nil {
+		return err
+	}
+
+	// We may have generated code in a package we already loaded, so we reload all packages
+	// to allow packages to be compared correctly
+	cfg.ReloadAllPackages()
+
+	return nil
+}
+
+// GoTagFieldHook applies the goTag directive to the generated Field f. When applying the Tag to the field, the field
+// name is used when no value argument is present.
+func GoTagFieldHook(td *ast.Definition, fd *ast.FieldDefinition, f *Field) (*Field, error) {
+	args := make([]string, 0)
+	for _, goTag := range fd.Directives.ForNames("goTag") {
+		key := ""
+		value := fd.Name
+
+		if arg := goTag.Arguments.ForName("key"); arg != nil {
+			if k, err := arg.Value.Value(nil); err == nil {
+				key = k.(string)
+			}
+		}
+
+		if arg := goTag.Arguments.ForName("value"); arg != nil {
+			if v, err := arg.Value.Value(nil); err == nil {
+				value = v.(string)
+			}
+		}
+
+		args = append(args, key+":\""+value+"\"")
+	}
+
+	if len(args) > 0 {
+		f.Tag = f.Tag + " " + strings.Join(args, " ")
+	}
+
+	return f, nil
 }
 
 func isStruct(t types.Type) bool {

@@ -28,10 +28,12 @@
     "delete_file": "Cancella file",
     "delete_file_and_funscript": "Cancella file (e funscript)",
     "delete_generated_supporting_files": "Cancella file di supporto creati",
+    "delete_stashid": "Cancellare StashID",
     "disallow": "Non Acconsentire",
     "download": "Scarica",
     "download_backup": "Scarica Backup",
     "edit": "Edita",
+    "edit_entity": "Modifica {entityType}",
     "export": "Esporta…",
     "export_all": "Esporta tutto…",
     "find": "Trova",
@@ -50,11 +52,13 @@
     "ignore": "Ignora",
     "import": "Importa…",
     "import_from_file": "Importa dal file",
+    "logout": "Esci",
     "merge": "Unisci",
     "merge_from": "Unisci da",
     "merge_into": "Unisci in",
     "next_action": "Prossima",
     "not_running": "non in funzione",
+    "open_in_external_player": "Aprire nel lettore esterno",
     "open_random": "Apri Casuale",
     "overwrite": "Sovrascrivi",
     "play_random": "Avvia Random",
@@ -65,6 +69,7 @@
     "reload_plugins": "Ricarica plugin",
     "reload_scrapers": "Ricarica scraper",
     "remove": "Rimuovi",
+    "remove_from_gallery": "Cancellare dalla Galleria",
     "rename_gen_files": "Rinomina file creati",
     "rescan": "Riscansiona",
     "reshuffle": "Rimescola",
@@ -79,6 +84,7 @@
     "scrape_with": "Scrape con…",
     "search": "Cerca",
     "select_all": "Seleziona Tutto",
+    "select_entity": "Seleziona {entityType}",
     "select_folders": "Seleziona cartelle",
     "select_none": "Deseleziona Tutto",
     "selective_auto_tag": "Tag Automatico Selettivo",
@@ -193,14 +199,19 @@
     "dlna": {
       "allow_temp_ip": "Acconsenti {tempIP}",
       "allowed_ip_addresses": "Indirizzi IP con Accesso",
+      "allowed_ip_temporarily": "Permettere IP temporaneamente",
       "default_ip_whitelist": "Lista Bianca degli indirizzi IP predefiniti",
       "default_ip_whitelist_desc": "Indirizzi IP predefiniti con accesso DLNA. Usare {wildcard} per consentire tutti gli inditizzi IP.",
+      "disabled_dlna_temporarily": "Disabilitare DLNA temporaneamente",
+      "disallowed_ip": "IP Non consentito",
       "enabled_by_default": "Attivo in modo predefinito",
+      "enabled_dlna_temporarily": "Abilitare DLNA temporaneamente",
       "network_interfaces": "Interfacce",
       "network_interfaces_desc": "Interfacce sulle quali esporre il server DLNA. Una lista vuota implicherà l'uso di tutte le interfacce. Richiede il riavvio del server DLNA dopo le modifiche.",
       "recent_ip_addresses": "Indirizzi IP Recenti",
       "server_display_name": "Nome del Server",
       "server_display_name_desc": "Nome visualizzato per il server DLNA. Predefinito come {server_name} se lasciato vuoto.",
+      "successfully_cancelled_temporary_behaviour": "Funzionamento temporaneo cancellato con successo",
       "until_restart": "fino al riavvio"
     },
     "general": {
@@ -268,6 +279,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Numero delle attività parallele per scansione/creazione",
       "parallel_scan_head": "Scansione/Creazione Parallela",
       "preview_generation": "Creazione Anteprime",
+      "python_path": {
+        "description": "Posizione dell'eseguibile python. Usato per gli script degli scraper e plugin. Se lasciato vuoto, verrà determinato dall'ambiente",
+        "heading": "Percorso Python"
+      },
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "Stringa User-Agent usata durante le richieste http scrape",
       "scrapers_path": {
@@ -436,6 +451,9 @@
       "handy_connection_key": {
         "description": "Chiave di connessione Handy per l'uso con scene interattive. Impostare questa chiave permetterà a Stash di condividere le informazioni della scena attuale con handyfeeling.com",
         "heading": "Chiave Connessione Handy"
+      },
+      "image_lightbox": {
+        "heading": "Immagine Lightbox"
       },
       "images": {
         "heading": "Immagini",
@@ -606,6 +624,8 @@
       "marker_screenshots_tooltip": "Immagini marcatore statico JPG, richiesto solo se Immagine Statica è selezionata come Tipo Anteprima.",
       "markers": "Anteprime Marcatori",
       "markers_tooltip": "Video di 20 secondi che iniziano ad un determinato momento.",
+      "override_preview_generation_options": "Opzioni di Override della Creazione Anteprime",
+      "override_preview_generation_options_desc": "Opzioni di Override per la Creazione Anteprime per questa operazione. I prefediniti sono impostati in Sistema -> Creazione Anteprime.",
       "overwrite": "Sovrascrive gli esistenti file creati",
       "phash": "Perceptual hashes/Hash Percettivo (per i duplicati)",
       "preview_exclude_end_time_desc": "Esclude gli ultimi x secondi dall'anteprima scena. Può essere un valore in secondi, o una percentuale (es. 2%) della lunghezza totale della scena.",
@@ -848,6 +868,10 @@
       "something_went_wrong_description": "Se questo sembra essere un problema con i dati inseriti, premete indietro per correggerli. Altrimenti, aprite un bug report su {githubLink} o cercare aiuto su {discordLink}.",
       "something_went_wrong_while_setting_up_your_system": "Qualcosa è andato storto durante la configurazione del tuo sistema. Questo è l'errore che abbiamo ricevuto: {error}"
     },
+    "folder": {
+      "file_path": "Percorso file",
+      "up_dir": "Sali una cartella"
+    },
     "github_repository": "Github repository",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "Percorsa per il file di backup del database (lasciare vuoto per disabilitare il backup):",
@@ -949,7 +973,6 @@
   "total": "Totale",
   "true": "Vero",
   "twitter": "Twitter",
-  "up-dir": "Sali una cartella",
   "updated_at": "Aggiornato Al",
   "url": "URL",
   "videos": "Video",

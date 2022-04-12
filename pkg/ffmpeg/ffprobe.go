@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/desktop"
+	"github.com/stashapp/stash/pkg/exec"
 	"github.com/stashapp/stash/pkg/logger"
 )
 
@@ -100,7 +99,7 @@ func MatchContainer(format string, filePath string) Container { // match ffprobe
 
 	container := FfprobeToContainer[format]
 	if container == Matroska {
-		container = MagicContainer(filePath) // use magic number instead of ffprobe for matroska,webm
+		container = magicContainer(filePath) // use magic number instead of ffprobe for matroska,webm
 	}
 	if container == "" { // if format is not in our Container list leave it as ffprobes reported format_name
 		container = Container(format)
@@ -108,7 +107,7 @@ func MatchContainer(format string, filePath string) Container { // match ffprobe
 	return container
 }
 
-func IsValidCodec(codecName string, supportedCodecs []string) bool {
+func isValidCodec(codecName string, supportedCodecs []string) bool {
 	for _, c := range supportedCodecs {
 		if c == codecName {
 			return true
@@ -117,8 +116,7 @@ func IsValidCodec(codecName string, supportedCodecs []string) bool {
 	return false
 }
 
-func IsValidAudio(audio AudioCodec, validCodecs []AudioCodec) bool {
-
+func isValidAudio(audio AudioCodec, validCodecs []AudioCodec) bool {
 	// if audio codec is missing or unsupported by ffmpeg we can't do anything about it
 	// report it as valid so that the file can at least be streamed directly if the video codec is supported
 	if audio == MissingUnsupported {
@@ -137,17 +135,17 @@ func IsValidAudio(audio AudioCodec, validCodecs []AudioCodec) bool {
 func IsValidAudioForContainer(audio AudioCodec, format Container) bool {
 	switch format {
 	case Matroska:
-		return IsValidAudio(audio, validAudioForMkv)
+		return isValidAudio(audio, validAudioForMkv)
 	case Webm:
-		return IsValidAudio(audio, validAudioForWebm)
+		return isValidAudio(audio, validAudioForWebm)
 	case Mp4:
-		return IsValidAudio(audio, validAudioForMp4)
+		return isValidAudio(audio, validAudioForMp4)
 	}
 	return false
 
 }
 
-func IsValidForContainer(format Container, validContainers []Container) bool {
+func isValidForContainer(format Container, validContainers []Container) bool {
 	for _, fmt := range validContainers {
 		if fmt == format {
 			return true
@@ -156,36 +154,36 @@ func IsValidForContainer(format Container, validContainers []Container) bool {
 	return false
 }
 
-// IsValidCombo checks if a codec/container combination is valid.
+// isValidCombo checks if a codec/container combination is valid.
 // Returns true on validity, false otherwise
-func IsValidCombo(codecName string, format Container, supportedVideoCodecs []string) bool {
-	supportMKV := IsValidCodec(Mkv, supportedVideoCodecs)
-	supportHEVC := IsValidCodec(Hevc, supportedVideoCodecs)
+func isValidCombo(codecName string, format Container, supportedVideoCodecs []string) bool {
+	supportMKV := isValidCodec(Mkv, supportedVideoCodecs)
+	supportHEVC := isValidCodec(Hevc, supportedVideoCodecs)
 
 	switch codecName {
 	case H264:
 		if supportMKV {
-			return IsValidForContainer(format, validForH264Mkv)
+			return isValidForContainer(format, validForH264Mkv)
 		}
-		return IsValidForContainer(format, validForH264)
+		return isValidForContainer(format, validForH264)
 	case H265:
 		if supportMKV {
-			return IsValidForContainer(format, validForH265Mkv)
+			return isValidForContainer(format, validForH265Mkv)
 		}
-		return IsValidForContainer(format, validForH265)
+		return isValidForContainer(format, validForH265)
 	case Vp8:
-		return IsValidForContainer(format, validForVp8)
+		return isValidForContainer(format, validForVp8)
 	case Vp9:
 		if supportMKV {
-			return IsValidForContainer(format, validForVp9Mkv)
+			return isValidForContainer(format, validForVp9Mkv)
 		}
-		return IsValidForContainer(format, validForVp9)
+		return isValidForContainer(format, validForVp9)
 	case Hevc:
 		if supportHEVC {
 			if supportMKV {
-				return IsValidForContainer(format, validForHevcMkv)
+				return isValidForContainer(format, validForHevcMkv)
 			}
-			return IsValidForContainer(format, validForHevc)
+			return isValidForContainer(format, validForHevc)
 		}
 	}
 	return false
@@ -195,7 +193,7 @@ func IsStreamable(videoCodec string, audioCodec AudioCodec, container Container)
 	supportedVideoCodecs := DefaultSupportedCodecs
 
 	// check if the video codec matches the supported codecs
-	return IsValidCodec(videoCodec, supportedVideoCodecs) && IsValidCombo(videoCodec, container, supportedVideoCodecs) && IsValidAudioForContainer(audioCodec, container)
+	return isValidCodec(videoCodec, supportedVideoCodecs) && isValidCombo(videoCodec, container, supportedVideoCodecs) && IsValidAudioForContainer(audioCodec, container)
 }
 
 type VideoFile struct {
@@ -231,7 +229,6 @@ type FFProbe string
 func (f *FFProbe) NewVideoFile(videoPath string, stripExt bool) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
 	cmd := exec.Command(string(*f), args...)
-	desktop.HideExecShell(cmd)
 	out, err := cmd.Output()
 
 	if err != nil {
@@ -300,13 +297,13 @@ func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, 
 	result.StartTime, _ = strconv.ParseFloat(probeJSON.Format.StartTime, 64)
 	result.CreationTime = probeJSON.Format.Tags.CreationTime.Time
 
-	audioStream := result.GetAudioStream()
+	audioStream := result.getAudioStream()
 	if audioStream != nil {
 		result.AudioCodec = audioStream.CodecName
 		result.AudioStream = audioStream
 	}
 
-	videoStream := result.GetVideoStream()
+	videoStream := result.getVideoStream()
 	if videoStream != nil {
 		result.VideoStream = videoStream
 		result.VideoCodec = videoStream.CodecName
@@ -342,7 +339,7 @@ func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, 
 	return result, nil
 }
 
-func (v *VideoFile) GetAudioStream() *FFProbeStream {
+func (v *VideoFile) getAudioStream() *FFProbeStream {
 	index := v.getStreamIndex("audio", v.JSON)
 	if index != -1 {
 		return &v.JSON.Streams[index]
@@ -350,7 +347,7 @@ func (v *VideoFile) GetAudioStream() *FFProbeStream {
 	return nil
 }
 
-func (v *VideoFile) GetVideoStream() *FFProbeStream {
+func (v *VideoFile) getVideoStream() *FFProbeStream {
 	index := v.getStreamIndex("video", v.JSON)
 	if index != -1 {
 		return &v.JSON.Streams[index]
@@ -374,5 +371,4 @@ func (v *VideoFile) SetTitleFromPath(stripExtension bool) {
 		ext := filepath.Ext(v.Title)
 		v.Title = strings.TrimSuffix(v.Title, ext)
 	}
-
 }

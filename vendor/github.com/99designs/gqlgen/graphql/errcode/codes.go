@@ -4,8 +4,10 @@ import (
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
-const ValidationFailed = "GRAPHQL_VALIDATION_FAILED"
-const ParseFailed = "GRAPHQL_PARSE_FAILED"
+const (
+	ValidationFailed = "GRAPHQL_VALIDATION_FAILED"
+	ParseFailed      = "GRAPHQL_PARSE_FAILED"
+)
 
 type ErrorKind int
 

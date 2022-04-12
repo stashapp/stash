@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -13,13 +14,18 @@ import (
 	"strings"
 
 	"github.com/Yamashou/gqlgenc/client"
-	"github.com/Yamashou/gqlgenc/graphqljson"
 	"github.com/corona10/goimagehash"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
+	"github.com/Yamashou/gqlgenc/graphqljson"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -88,7 +94,7 @@ func phashMatches(hash, other int64) bool {
 // scene's MD5/OSHASH checksum, or PHash, and returns results in the same order
 // as the input slice.
 func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs []string) ([][]*models.ScrapedScene, error) {
-	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +161,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs [
 
 		addScene := func(sceneIndexes []int) {
 			for _, index := range sceneIndexes {
-				if !utils.IntInclude(addedTo, index) {
+				if !intslice.IntInclude(addedTo, index) {
 					addedTo = append(addedTo, index)
 					ret[index] = append(ret[index], s)
 				}
@@ -187,7 +193,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs [
 // FindStashBoxScenesByFingerprintsFlat queries stash-box for scenes using every
 // scene's MD5/OSHASH checksum, or PHash, and returns results a flat slice.
 func (c Client) FindStashBoxScenesByFingerprintsFlat(ctx context.Context, sceneIDs []string) ([]*models.ScrapedScene, error) {
-	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +271,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, fingerprin
 }
 
 func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []string, endpoint string) (bool, error) {
-	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return false, err
 	}
@@ -395,7 +401,7 @@ func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 
 // FindStashBoxPerformersByNames queries stash-box for performers by name
 func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs []string) ([]*models.StashBoxPerformerQueryResult, error) {
-	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -429,7 +435,7 @@ func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs 
 }
 
 func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, performerIDs []string) ([][]*models.ScrapedPerformer, error) {
-	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -508,7 +514,8 @@ func enumToStringPtr(e fmt.Stringer, titleCase bool) *string {
 	if e != nil {
 		ret := strings.ReplaceAll(e.String(), "_", " ")
 		if titleCase {
-			ret = strings.Title(strings.ToLower(ret))
+			c := cases.Title(language.Und)
+			ret = c.String(strings.ToLower(ret))
 		}
 		return &ret
 	}
@@ -911,7 +918,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		}
 		draft.Tags = tags
 
-		exists, _ := utils.FileExists(imagePath)
+		exists, _ := fsutil.FileExists(imagePath)
 		if exists {
 			file, err := os.Open(imagePath)
 			if err == nil {
@@ -925,11 +932,19 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 	}
 
 	var id *string
-	var ret graphql.SubmitSceneDraftPayload
-	err := c.submitDraft(ctx, graphql.SubmitSceneDraftQuery, draft, image, &ret)
+	var ret graphql.SubmitSceneDraft
+	err := c.submitDraft(ctx, graphql.SubmitSceneDraftDocument, draft, image, &ret)
 	id = ret.SubmitSceneDraft.ID
 
 	return id, err
+
+	// ret, err := c.client.SubmitSceneDraft(ctx, draft, uploadImage(image))
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// id := ret.SubmitSceneDraft.ID
+	// return id, nil
 }
 
 func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, endpoint string) (*string, error) {
@@ -1002,12 +1017,58 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	}
 
 	var id *string
-	var ret graphql.SubmitPerformerDraftPayload
-	err := c.submitDraft(ctx, graphql.SubmitPerformerDraftQuery, draft, image, &ret)
+	var ret graphql.SubmitPerformerDraft
+	err := c.submitDraft(ctx, graphql.SubmitPerformerDraftDocument, draft, image, &ret)
 	id = ret.SubmitPerformerDraft.ID
 
 	return id, err
+
+	// ret, err := c.client.SubmitPerformerDraft(ctx, draft, uploadImage(image))
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// id := ret.SubmitPerformerDraft.ID
+	// return id, nil
 }
+
+// we can't currently use this due to https://github.com/Yamashou/gqlgenc/issues/109
+// func uploadImage(image io.Reader) client.HTTPRequestOption {
+// 	return func(req *http.Request) {
+// 		if image == nil {
+// 			// return without changing anything
+// 			return
+// 		}
+
+// 		// we can't handle errors in here, so if one happens, just return
+// 		// without changing anything.
+
+// 		// repackage the request to include the image
+// 		bodyBytes, err := ioutil.ReadAll(req.Body)
+// 		if err != nil {
+// 			return
+// 		}
+
+// 		newBody := &bytes.Buffer{}
+// 		writer := multipart.NewWriter(newBody)
+// 		_ = writer.WriteField("operations", string(bodyBytes))
+
+// 		if err := writer.WriteField("map", "{ \"0\": [\"variables.input.image\"] }"); err != nil {
+// 			return
+// 		}
+// 		part, _ := writer.CreateFormFile("0", "draft")
+// 		if _, err := io.Copy(part, image); err != nil {
+// 			return
+// 		}
+
+// 		writer.Close()
+
+// 		// now set the request body to this new body
+// 		req.Body = io.NopCloser(newBody)
+// 		req.ContentLength = int64(newBody.Len())
+// 		req.Header.Set("Content-Type", writer.FormDataContentType())
+// 	}
+// }
 
 func (c *Client) submitDraft(ctx context.Context, query string, input interface{}, image io.Reader, ret interface{}) error {
 	vars := map[string]interface{}{
@@ -1049,14 +1110,40 @@ func (c *Client) submitDraft(ctx context.Context, query string, input interface{
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	req.Header.Set("ApiKey", c.box.APIKey)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	httpClient := c.client.Client.Client
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	if err := graphqljson.Unmarshal(resp.Body, ret); err != nil {
+	responseBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	type response struct {
+		Data   json.RawMessage `json:"data"`
+		Errors json.RawMessage `json:"errors"`
+	}
+
+	var respGQL response
+
+	if err := json.Unmarshal(responseBytes, &respGQL); err != nil {
+		return fmt.Errorf("failed to decode data %s: %w", string(responseBytes), err)
+	}
+
+	if respGQL.Errors != nil && len(respGQL.Errors) > 0 {
+		// try to parse standard graphql error
+		errors := &client.GqlErrorList{}
+		if e := json.Unmarshal(responseBytes, errors); e != nil {
+			return fmt.Errorf("failed to parse graphql errors. Response content %s - %w ", string(responseBytes), e)
+		}
+
+		return errors
+	}
+
+	if err := graphqljson.UnmarshalData(respGQL.Data, ret); err != nil {
 		return err
 	}
 

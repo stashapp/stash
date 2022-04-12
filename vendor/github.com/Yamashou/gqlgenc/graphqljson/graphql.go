@@ -22,75 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Package jsonutil provides a function for decoding JSON
+// Package graphqljson provides a function for decoding JSON
 // into a GraphQL query data structure.
 package graphqljson
 
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
 	"strings"
-
-	"golang.org/x/xerrors"
 )
 
 // Reference: https://blog.gopheracademy.com/advent-2017/custom-json-unmarshaler-for-graphql-client/
 
-// RawJSONError is a json formatted error from a GraphQL server.
-type RawJSONError struct {
-	Response
-}
-
-func (r RawJSONError) Error() string {
-	return fmt.Sprintf("data: %s, error: %s, extensions: %v", r.Data, r.Errors, r.Extensions)
-}
-
-// Response is a GraphQL layer response from a handler.
-type Response struct {
-	Data       json.RawMessage
-	Errors     Errors
-	Extensions map[string]interface{}
-}
-
-func Unmarshal(r io.Reader, data interface{}) error {
-	resp := Response{}
-	decoder := json.NewDecoder(r)
-	if err := decoder.Decode(&resp); err != nil {
-		var buf bytes.Buffer
-		if _, e := io.Copy(&buf, decoder.Buffered()); e != nil {
-			return xerrors.Errorf(": %w", err)
-		}
-
-		return xerrors.Errorf("%s", buf.String())
-	}
-
-	if len(resp.Errors) > 0 {
-		return xerrors.Errorf("response error: %w", resp.Errors)
-	}
-
-	if err := UnmarshalData(resp.Data, data); err != nil {
-		return xerrors.Errorf("response mapping failed: %w", err)
-	}
-
-	if resp.Errors != nil {
-		return RawJSONError{resp}
-	}
-
-	return nil
-}
-
-// UnmarshalGraphQL parses the JSON-encoded GraphQL response data and stores
+// UnmarshalData parses the JSON-encoded GraphQL response data and stores
 // the result in the GraphQL query data structure pointed to by v.
 //
 // The implementation is created on top of the JSON tokenizer available
 // in "encoding/json".Decoder.
 func UnmarshalData(data json.RawMessage, v interface{}) error {
-	d := NewDecoder(bytes.NewBuffer(data))
+	d := newDecoder(bytes.NewBuffer(data))
 	if err := d.Decode(v); err != nil {
-		return xerrors.Errorf(": %w", err)
+		return fmt.Errorf(": %w", err)
 	}
 
 	// TODO: この処理が本当に必要かは今後検討
@@ -101,13 +57,13 @@ func UnmarshalData(data json.RawMessage, v interface{}) error {
 		// tokens left after we've decoded v successfully.
 		return nil
 	case nil:
-		return xerrors.Errorf("invalid token '%v' after top-level value", tok)
+		return fmt.Errorf("invalid token '%v' after top-level value", tok)
 	}
 
-	return xerrors.Errorf("invalid token '%v' after top-level value", tok)
+	return fmt.Errorf("invalid token '%v' after top-level value", tok)
 }
 
-// decoder is a JSON decoder that performs custom unmarshaling behavior
+// Decoder is a JSON Decoder that performs custom unmarshaling behavior
 // for GraphQL query data structures. It's implemented on top of a JSON tokenizer.
 type Decoder struct {
 	jsonDecoder *json.Decoder
@@ -124,7 +80,7 @@ type Decoder struct {
 	vs [][]reflect.Value
 }
 
-func NewDecoder(r io.Reader) *Decoder {
+func newDecoder(r io.Reader) *Decoder {
 	jsonDecoder := json.NewDecoder(r)
 	jsonDecoder.UseNumber()
 
@@ -137,12 +93,12 @@ func NewDecoder(r io.Reader) *Decoder {
 func (d *Decoder) Decode(v interface{}) error {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Ptr {
-		return xerrors.Errorf("cannot decode into non-pointer %T", v)
+		return fmt.Errorf("cannot decode into non-pointer %T", v)
 	}
 
 	d.vs = [][]reflect.Value{{rv.Elem()}}
 	if err := d.decode(); err != nil {
-		return xerrors.Errorf(": %w", err)
+		return fmt.Errorf(": %w", err)
 	}
 
 	return nil
@@ -155,9 +111,9 @@ func (d *Decoder) decode() error {
 	for len(d.vs) > 0 {
 		tok, err := d.jsonDecoder.Token()
 		if err == io.EOF {
-			return xerrors.New("unexpected end of JSON input")
+			return errors.New("unexpected end of JSON input")
 		} else if err != nil {
-			return xerrors.Errorf(": %w", err)
+			return fmt.Errorf(": %w", err)
 		}
 
 		switch {
@@ -165,10 +121,11 @@ func (d *Decoder) decode() error {
 		case d.state() == '{' && tok != json.Delim('}'):
 			key, ok := tok.(string)
 			if !ok {
-				return xerrors.New("unexpected non-key in JSON input")
+				return errors.New("unexpected non-key in JSON input")
 			}
 
-			someFieldExist := false
+			// The last matching one is the one considered
+			var matchingFieldValue *reflect.Value
 			for i := range d.vs {
 				v := d.vs[i][len(d.vs[i])-1]
 				if v.Kind() == reflect.Ptr {
@@ -178,22 +135,30 @@ func (d *Decoder) decode() error {
 				if v.Kind() == reflect.Struct {
 					f = fieldByGraphQLName(v, key)
 					if f.IsValid() {
-						someFieldExist = true
+						matchingFieldValue = &f
 					}
 				}
 				d.vs[i] = append(d.vs[i], f)
 			}
-			if !someFieldExist {
-				return xerrors.Errorf("struct field for %q doesn't exist in any of %v places to unmarshal", key, len(d.vs))
+			if matchingFieldValue == nil {
+				return fmt.Errorf("struct field for %q doesn't exist in any of %v places to unmarshal", key, len(d.vs))
 			}
 
 			// We've just consumed the current token, which was the key.
-			// Read the next token, which should be the value, and let the rest of code process it.
-			tok, err = d.jsonDecoder.Token()
+			// Read the next token, which should be the value.
+			// If it's of json.RawMessage type, decode the value.
+			if matchingFieldValue.Type() == reflect.TypeOf(json.RawMessage{}) {
+				var data json.RawMessage
+				err = d.jsonDecoder.Decode(&data)
+				tok = data
+			} else {
+				tok, err = d.jsonDecoder.Token()
+			}
+
 			if err == io.EOF {
-				return xerrors.New("unexpected end of JSON input")
+				return errors.New("unexpected end of JSON input")
 			} else if err != nil {
-				return xerrors.Errorf(": %w", err)
+				return fmt.Errorf(": %w", err)
 			}
 
 		// Are we inside an array and seeing next value (rather than end of array)?
@@ -213,12 +178,12 @@ func (d *Decoder) decode() error {
 				d.vs[i] = append(d.vs[i], f)
 			}
 			if !someSliceExist {
-				return xerrors.Errorf("slice doesn't exist in any of %v places to unmarshal", len(d.vs))
+				return fmt.Errorf("slice doesn't exist in any of %v places to unmarshal", len(d.vs))
 			}
 		}
 
 		switch tok := tok.(type) {
-		case string, json.Number, bool, nil:
+		case string, json.Number, bool, nil, json.RawMessage:
 			// Value.
 
 			for i := range d.vs {
@@ -228,7 +193,7 @@ func (d *Decoder) decode() error {
 				}
 				err := unmarshalValue(tok, v)
 				if err != nil {
-					return xerrors.Errorf(": %w", err)
+					return fmt.Errorf(": %w", err)
 				}
 			}
 			d.popAllVs()
@@ -294,10 +259,10 @@ func (d *Decoder) decode() error {
 				d.popAllVs()
 				d.popState()
 			default:
-				return xerrors.New("unexpected delimiter in JSON input")
+				return errors.New("unexpected delimiter in JSON input")
 			}
 		default:
-			return xerrors.New("unexpected token in JSON input")
+			return errors.New("unexpected token in JSON input")
 		}
 	}
 
@@ -392,25 +357,13 @@ func isGraphQLFragment(f reflect.StructField) bool {
 func unmarshalValue(value json.Token, v reflect.Value) error {
 	b, err := json.Marshal(value) // TODO: Short-circuit (if profiling says it's worth it).
 	if err != nil {
-		return xerrors.Errorf(": %w", err)
+		return fmt.Errorf(": %w", err)
 	}
 
-	return json.Unmarshal(b, v.Addr().Interface())
-}
-
-// Errors represents the "Errors" array in a response from a GraphQL server.
-// If returned via error interface, the slice is expected to contain at least 1 element.
-//
-// Specification: https://facebook.github.io/graphql/#sec-Errors.
-type Errors []struct {
-	Message   string
-	Locations []struct {
-		Line   int
-		Column int
+	err = json.Unmarshal(b, v.Addr().Interface())
+	if err != nil {
+		return fmt.Errorf(": %w", err)
 	}
-}
 
-// Error implements error interface.
-func (e Errors) Error() string {
-	return e[0].Message
+	return nil
 }
