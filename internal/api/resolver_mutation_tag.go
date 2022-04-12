@@ -25,7 +25,7 @@ func (r *mutationResolver) getTag(ctx context.Context, id int) (ret *models.Tag,
 	return ret, nil
 }
 
-func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreateInput) (*models.Tag, error) {
+func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) (*models.Tag, error) {
 	// Populate a new tag from the input
 	currentTime := time.Now()
 	newTag := models.Tag{
@@ -127,7 +127,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	return r.getTag(ctx, t.ID)
 }
 
-func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdateInput) (*models.Tag, error) {
+func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) (*models.Tag, error) {
 	// Populate tag from the input
 	tagID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -252,7 +252,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	return r.getTag(ctx, t.ID)
 }
 
-func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestroyInput) (bool, error) {
+func (r *mutationResolver) TagDestroy(ctx context.Context, input TagDestroyInput) (bool, error) {
 	tagID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return false, err
@@ -295,7 +295,7 @@ func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bo
 	return true, nil
 }
 
-func (r *mutationResolver) TagsMerge(ctx context.Context, input models.TagsMergeInput) (*models.Tag, error) {
+func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) (*models.Tag, error) {
 	source, err := stringslice.StringSliceToIntSlice(input.Source)
 	if err != nil {
 		return nil, err

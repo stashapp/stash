@@ -890,7 +890,7 @@ xPathScrapers:
 	if !ok {
 		t.Error("couldn't convert scraper into url scraper")
 	}
-	content, err := us.viaURL(ctx, client, ts.URL, models.ScrapeContentTypePerformer)
+	content, err := us.viaURL(ctx, client, ts.URL, ScrapeContentTypePerformer)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())

@@ -56,7 +56,7 @@ func (s *xpathScraper) scrapeURL(ctx context.Context, url string) (*html.Node, *
 	return doc, scraper, nil
 }
 
-func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for performer by URL queries
 	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
@@ -65,20 +65,20 @@ func (s *xpathScraper) scrapeByURL(ctx context.Context, url string, ty models.Sc
 
 	q := s.getXPathQuery(doc)
 	switch ty {
-	case models.ScrapeContentTypePerformer:
+	case ScrapeContentTypePerformer:
 		return scraper.scrapePerformer(ctx, q)
-	case models.ScrapeContentTypeScene:
+	case ScrapeContentTypeScene:
 		return scraper.scrapeScene(ctx, q)
-	case models.ScrapeContentTypeGallery:
+	case ScrapeContentTypeGallery:
 		return scraper.scrapeGallery(ctx, q)
-	case models.ScrapeContentTypeMovie:
+	case ScrapeContentTypeMovie:
 		return scraper.scrapeMovie(ctx, q)
 	}
 
 	return nil, ErrNotSupported
 }
 
-func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	scraper := s.getXpathScraper()
 
 	if scraper == nil {
@@ -102,9 +102,9 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.
 	q := s.getXPathQuery(doc)
 	q.setType(SearchQuery)
 
-	var content []models.ScrapedContent
+	var content []ScrapedContent
 	switch ty {
-	case models.ScrapeContentTypePerformer:
+	case ScrapeContentTypePerformer:
 		performers, err := scraper.scrapePerformers(ctx, q)
 		if err != nil {
 			return nil, err
@@ -114,7 +114,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.
 		}
 
 		return content, nil
-	case models.ScrapeContentTypeScene:
+	case ScrapeContentTypeScene:
 		scenes, err := scraper.scrapeScenes(ctx, q)
 		if err != nil {
 			return nil, err
@@ -129,7 +129,7 @@ func (s *xpathScraper) scrapeByName(ctx context.Context, name string, ty models.
 	return nil, ErrNotSupported
 }
 
-func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
@@ -153,7 +153,7 @@ func (s *xpathScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
+func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
 	switch {
 	case input.Gallery != nil:
 		return nil, fmt.Errorf("%w: cannot use an xpath scraper as a gallery fragment scraper", ErrNotSupported)
@@ -188,7 +188,7 @@ func (s *xpathScraper) scrapeByFragment(ctx context.Context, input Input) (model
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *xpathScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {

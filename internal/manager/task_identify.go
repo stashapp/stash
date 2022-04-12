@@ -21,13 +21,13 @@ var ErrInput = errors.New("invalid request input")
 type IdentifyJob struct {
 	txnManager       models.TransactionManager
 	postHookExecutor identify.SceneUpdatePostHookExecutor
-	input            models.IdentifyMetadataInput
+	input            identify.IdentifyMetadataInput
 
 	stashBoxes models.StashBoxes
 	progress   *job.Progress
 }
 
-func CreateIdentifyJob(input models.IdentifyMetadataInput) *IdentifyJob {
+func CreateIdentifyJob(input identify.IdentifyMetadataInput) *IdentifyJob {
 	return &IdentifyJob{
 		txnManager:       instance.TxnManager,
 		postHookExecutor: instance.PluginCache,
@@ -211,7 +211,7 @@ type stashboxSource struct {
 	endpoint string
 }
 
-func (s stashboxSource) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
+func (s stashboxSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
 	results, err := s.FindStashBoxScenesByFingerprintsFlat(ctx, []string{strconv.Itoa(sceneID)})
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
@@ -233,8 +233,8 @@ type scraperSource struct {
 	scraperID string
 }
 
-func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
-	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, models.ScrapeContentTypeScene)
+func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
+	content, err := s.cache.ScrapeID(ctx, s.scraperID, sceneID, scraper.ScrapeContentTypeScene)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func (s scraperSource) ScrapeScene(ctx context.Context, sceneID int) (*models.Sc
 		return nil, nil
 	}
 
-	if scene, ok := content.(models.ScrapedScene); ok {
+	if scene, ok := content.(scraper.ScrapedScene); ok {
 		return &scene, nil
 	}
 

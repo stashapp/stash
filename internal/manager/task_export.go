@@ -54,12 +54,28 @@ type ExportTask struct {
 	DownloadHash string
 }
 
+type ExportObjectTypeInput struct {
+	Ids []string `json:"ids"`
+	All *bool    `json:"all"`
+}
+
+type ExportObjectsInput struct {
+	Scenes              *ExportObjectTypeInput `json:"scenes"`
+	Images              *ExportObjectTypeInput `json:"images"`
+	Studios             *ExportObjectTypeInput `json:"studios"`
+	Performers          *ExportObjectTypeInput `json:"performers"`
+	Tags                *ExportObjectTypeInput `json:"tags"`
+	Movies              *ExportObjectTypeInput `json:"movies"`
+	Galleries           *ExportObjectTypeInput `json:"galleries"`
+	IncludeDependencies *bool                  `json:"includeDependencies"`
+}
+
 type exportSpec struct {
 	IDs []int
 	all bool
 }
 
-func newExportSpec(input *models.ExportObjectTypeInput) *exportSpec {
+func newExportSpec(input *ExportObjectTypeInput) *exportSpec {
 	if input == nil {
 		return &exportSpec{}
 	}
@@ -77,7 +93,7 @@ func newExportSpec(input *models.ExportObjectTypeInput) *exportSpec {
 	return ret
 }
 
-func CreateExportTask(a models.HashAlgorithm, input models.ExportObjectsInput) *ExportTask {
+func CreateExportTask(a models.HashAlgorithm, input ExportObjectsInput) *ExportTask {
 	includeDeps := false
 	if input.IncludeDependencies != nil {
 		includeDeps = *input.IncludeDependencies

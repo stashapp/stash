@@ -27,7 +27,7 @@ func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.S
 	return ret, nil
 }
 
-func (r *mutationResolver) StudioCreate(ctx context.Context, input models.StudioCreateInput) (*models.Studio, error) {
+func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateInput) (*models.Studio, error) {
 	// generate checksum from studio name rather than image
 	checksum := md5.FromString(input.Name)
 
@@ -115,7 +115,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	return r.getStudio(ctx, s.ID)
 }
 
-func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
+func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateInput) (*models.Studio, error) {
 	// Populate studio from the input
 	studioID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -207,7 +207,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	return r.getStudio(ctx, s.ID)
 }
 
-func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
+func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return false, err

@@ -1,5 +1,23 @@
 package models
 
+type MovieFilterType struct {
+	Name     *StringCriterionInput `json:"name"`
+	Director *StringCriterionInput `json:"director"`
+	Synopsis *StringCriterionInput `json:"synopsis"`
+	// Filter by duration (in seconds)
+	Duration *IntCriterionInput `json:"duration"`
+	// Filter by rating
+	Rating *IntCriterionInput `json:"rating"`
+	// Filter to only include movies with this studio
+	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter to only include movies missing this property
+	IsMissing *string `json:"is_missing"`
+	// Filter by url
+	URL *StringCriterionInput `json:"url"`
+	// Filter to only include movies where performer appears in a scene
+	Performers *MultiCriterionInput `json:"performers"`
+}
+
 type MovieReader interface {
 	Find(id int) (*Movie, error)
 	FindMany(ids []int) ([]*Movie, error)
