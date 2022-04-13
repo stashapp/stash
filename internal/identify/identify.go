@@ -34,7 +34,7 @@ type SceneIdentifier struct {
 	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
 }
 
-func (t *SceneIdentifier) Identify(ctx context.Context, txnManager models.TransactionManager, scene *models.Scene) error {
+func (t *SceneIdentifier) Identify(ctx context.Context, txnManager models.Repository, scene *models.Scene) error {
 	result, err := t.scrapeScene(ctx, scene)
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
-	studioID, err := rel.studio()
+	studioID, err := rel.studio(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error getting studio: %w", err)
 	}
@@ -134,17 +134,17 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	ret.PerformerIDs, err = rel.performers(ignoreMale)
+	ret.PerformerIDs, err = rel.performers(ctx, ignoreMale)
 	if err != nil {
 		return nil, err
 	}
 
-	ret.TagIDs, err = rel.tags()
+	ret.TagIDs, err = rel.tags(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ret.StashIDs, err = rel.stashIDs()
+	ret.StashIDs, err = rel.stashIDs(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -167,11 +167,11 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	return ret, nil
 }
 
-func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.TransactionManager, s *models.Scene, result *scrapeResult) error {
+func (t *SceneIdentifier) modifyScene(ctx context.Context, r models.Repository, s *models.Scene, result *scrapeResult) error {
 	var updater *scene.UpdateSet
-	if err := txnManager.WithTxn(ctx, func(repo models.Repository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		updater, err = t.getSceneUpdater(ctx, s, result, repo)
+		updater, err = t.getSceneUpdater(ctx, s, result, r)
 		if err != nil {
 			return err
 		}
@@ -182,7 +182,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.Tra
 			return nil
 		}
 
-		_, err = updater.Update(repo.Scene(), t.ScreenshotSetter)
+		_, err = updater.Update(ctx, r.Scene, t.ScreenshotSetter)
 		if err != nil {
 			return fmt.Errorf("error updating scene: %w", err)
 		}

@@ -154,15 +154,15 @@ func TestGetStudioName(t *testing.T) {
 
 	studioErr := errors.New("error getting image")
 
-	mockStudioReader.On("Find", studioID).Return(&models.Studio{
+	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
 		Name: models.NullString(studioName),
 	}, nil).Once()
-	mockStudioReader.On("Find", missingStudioID).Return(nil, nil).Once()
-	mockStudioReader.On("Find", errStudioID).Return(nil, studioErr).Once()
+	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
+	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
 
 	for i, s := range getStudioScenarios {
 		gallery := s.input
-		json, err := GetStudioName(mockStudioReader, &gallery)
+		json, err := GetStudioName(testCtx, mockStudioReader, &gallery)
 
 		switch {
 		case !s.err && err != nil:

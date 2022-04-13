@@ -208,16 +208,16 @@ func TestToJSON(t *testing.T) {
 
 	imageErr := errors.New("error getting image")
 
-	mockPerformerReader.On("GetImage", performerID).Return(imageBytes, nil).Once()
-	mockPerformerReader.On("GetImage", noImageID).Return(nil, nil).Once()
-	mockPerformerReader.On("GetImage", errImageID).Return(nil, imageErr).Once()
+	mockPerformerReader.On("GetImage", testCtx, performerID).Return(imageBytes, nil).Once()
+	mockPerformerReader.On("GetImage", testCtx, noImageID).Return(nil, nil).Once()
+	mockPerformerReader.On("GetImage", testCtx, errImageID).Return(nil, imageErr).Once()
 
-	mockPerformerReader.On("GetStashIDs", performerID).Return(stashIDs, nil).Once()
-	mockPerformerReader.On("GetStashIDs", noImageID).Return(nil, nil).Once()
+	mockPerformerReader.On("GetStashIDs", testCtx, performerID).Return(stashIDs, nil).Once()
+	mockPerformerReader.On("GetStashIDs", testCtx, noImageID).Return(nil, nil).Once()
 
 	for i, s := range scenarios {
 		tag := s.input
-		json, err := ToJSON(mockPerformerReader, &tag)
+		json, err := ToJSON(testCtx, mockPerformerReader, &tag)
 
 		switch {
 		case !s.err && err != nil:

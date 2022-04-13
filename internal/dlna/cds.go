@@ -56,7 +56,7 @@ type browse struct {
 type contentDirectoryService struct {
 	*Server
 	upnp.Eventing
-	txnManager models.TransactionManager
+	txnManager models.Repository
 }
 
 func formatDurationSexagesimal(d time.Duration) string {
@@ -352,8 +352,8 @@ func (me *contentDirectoryService) handleBrowseMetadata(obj object, host string)
 	} else {
 		var scene *models.Scene
 
-		if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			scene, err = r.Scene().Find(sceneID)
+		if err := me.txnManager.WithTxn(context.TODO(), func(ctx context.Context) error {
+			scene, err = me.txnManager.Scene.Find(ctx, sceneID)
 			if err != nil {
 				return err
 			}
@@ -431,14 +431,14 @@ func getRootObjects() []interface{} {
 func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType, parentID string, host string) []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := me.txnManager.WithTxn(context.TODO(), func(ctx context.Context) error {
 		sort := "title"
 		findFilter := &models.FindFilterType{
 			PerPage: &pageSize,
 			Sort:    &sort,
 		}
 
-		scenes, total, err := scene.QueryWithCount(r.Scene(), sceneFilter, findFilter)
+		scenes, total, err := scene.QueryWithCount(ctx, me.txnManager.Scene, sceneFilter, findFilter)
 		if err != nil {
 			return err
 		}
@@ -449,7 +449,7 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 				parentID:    parentID,
 			}
 
-			objs, err = pager.getPages(r, total)
+			objs, err = pager.getPages(ctx, me.txnManager.Scene, total)
 			if err != nil {
 				return err
 			}
@@ -470,14 +470,14 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 func (me *contentDirectoryService) getPageVideos(sceneFilter *models.SceneFilterType, parentID string, page int, host string) []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := me.txnManager.WithTxn(context.TODO(), func(ctx context.Context) error {
 		pager := scenePager{
 			sceneFilter: sceneFilter,
 			parentID:    parentID,
 		}
 
 		var err error
-		objs, err = pager.getPageVideos(r, page, host)
+		objs, err = pager.getPageVideos(ctx, me.txnManager.Scene, page, host)
 		if err != nil {
 			return err
 		}
@@ -511,8 +511,8 @@ func (me *contentDirectoryService) getAllScenes(host string) []interface{} {
 func (me *contentDirectoryService) getStudios() []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		studios, err := r.Studio().All()
+	if err := me.txnManager.WithTxn(context.TODO(), func(ctx context.Context) error {
+		studios, err := me.txnManager.Studio.All(ctx)
 		if err != nil {
 			return err
 		}
@@ -550,8 +550,8 @@ func (me *contentDirectoryService) getStudioScenes(paths []string, host string) 
 func (me *contentDirectoryService) getTags() []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		tags, err := r.Tag().All()
+	if err := me.txnManager.WithTxn(context.TODO(), func(ctx context.Context) error {
+		tags, err := me.txnManager.Tag.All(ctx)
 		if err != nil {
 			return err
 		}
@@ -589,8 +589,8 @@ func (me *contentDirectoryService) getTagScenes(paths []string, host string) []i
 func (me *contentDirectoryService) getPerformers() []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		performers, err := r.Performer().All()
+	if err := me.txnManager.WithTxn(context.TODO(), func(ctx context.Context) error {
+		performers, err := me.txnManager.Performer.All(ctx)
 		if err != nil {
 			return err
 		}
@@ -628,8 +628,8 @@ func (me *contentDirectoryService) getPerformerScenes(paths []string, host strin
 func (me *contentDirectoryService) getMovies() []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		movies, err := r.Movie().All()
+	if err := me.txnManager.WithTxn(context.TODO(), func(ctx context.Context) error {
+		movies, err := me.txnManager.Movie.All(ctx)
 		if err != nil {
 			return err
 		}

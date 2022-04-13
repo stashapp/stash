@@ -21,7 +21,7 @@ type sceneRelationships struct {
 	fieldOptions map[string]*FieldOptions
 }
 
-func (g sceneRelationships) studio() (*int64, error) {
+func (g sceneRelationships) studio(ctx context.Context) (*int64, error) {
 	existingID := g.scene.StudioID
 	fieldStrategy := g.fieldOptions["studio"]
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
@@ -45,13 +45,13 @@ func (g sceneRelationships) studio() (*int64, error) {
 			return &studioID, nil
 		}
 	} else if createMissing {
-		return createMissingStudio(endpoint, g.repo, scraped)
+		return createMissingStudio(ctx, endpoint, g.repo.Studio, scraped)
 	}
 
 	return nil, nil
 }
 
-func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
+func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]int, error) {
 	fieldStrategy := g.fieldOptions["performers"]
 	scraped := g.result.result.Performers
 
@@ -70,7 +70,7 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 	endpoint := g.result.source.RemoteSite
 
 	var performerIDs []int
-	originalPerformerIDs, err := repo.Scene().GetPerformerIDs(g.scene.ID)
+	originalPerformerIDs, err := repo.Scene.GetPerformerIDs(ctx, g.scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene performers: %w", err)
 	}
@@ -85,7 +85,7 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 			continue
 		}
 
-		performerID, err := getPerformerID(endpoint, repo, p, createMissing)
+		performerID, err := getPerformerID(ctx, endpoint, repo.Performer, p, createMissing)
 		if err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 	return performerIDs, nil
 }
 
-func (g sceneRelationships) tags() ([]int, error) {
+func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	fieldStrategy := g.fieldOptions["tags"]
 	scraped := g.result.result.Tags
 	target := g.scene
@@ -121,7 +121,7 @@ func (g sceneRelationships) tags() ([]int, error) {
 	}
 
 	var tagIDs []int
-	originalTagIDs, err := r.Scene().GetTagIDs(target.ID)
+	originalTagIDs, err := r.Scene.GetTagIDs(ctx, target.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene tags: %w", err)
 	}
@@ -142,7 +142,7 @@ func (g sceneRelationships) tags() ([]int, error) {
 			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
 			now := time.Now()
-			created, err := r.Tag().Create(models.Tag{
+			created, err := r.Tag.Create(ctx, models.Tag{
 				Name:      t.Name,
 				CreatedAt: models.SQLiteTimestamp{Timestamp: now},
 				UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
@@ -163,7 +163,7 @@ func (g sceneRelationships) tags() ([]int, error) {
 	return tagIDs, nil
 }
 
-func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
+func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, error) {
 	remoteSiteID := g.result.result.RemoteSiteID
 	fieldStrategy := g.fieldOptions["stash_ids"]
 	target := g.scene
@@ -183,7 +183,7 @@ func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
 
 	var originalStashIDs []models.StashID
 	var stashIDs []models.StashID
-	stashIDPtrs, err := r.Scene().GetStashIDs(target.ID)
+	stashIDPtrs, err := r.Scene.GetStashIDs(ctx, target.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene tag: %w", err)
 	}
@@ -234,7 +234,7 @@ func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
 	}
 
 	// always overwrite if present
-	existingCover, err := r.Scene().GetCover(g.scene.ID)
+	existingCover, err := r.Scene.GetCover(ctx, g.scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene cover: %w", err)
 	}

@@ -1,6 +1,8 @@
 package autotag
 
 import (
+	"context"
+
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
@@ -29,12 +31,12 @@ func getTagTaggers(p *models.Tag, aliases []string, cache *match.Cache) []tagger
 }
 
 // TagScenes searches for scenes whose path matches the provided tag name and tags the scene with the tag.
-func TagScenes(p *models.Tag, paths []string, aliases []string, rw models.SceneReaderWriter, cache *match.Cache) error {
+func TagScenes(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw models.SceneReaderWriter, cache *match.Cache) error {
 	t := getTagTaggers(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagScenes(paths, rw, func(subjectID, otherID int) (bool, error) {
-			return scene.AddTag(rw, otherID, subjectID)
+		if err := tt.tagScenes(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
+			return scene.AddTag(ctx, rw, otherID, subjectID)
 		}); err != nil {
 			return err
 		}
@@ -43,12 +45,12 @@ func TagScenes(p *models.Tag, paths []string, aliases []string, rw models.SceneR
 }
 
 // TagImages searches for images whose path matches the provided tag name and tags the image with the tag.
-func TagImages(p *models.Tag, paths []string, aliases []string, rw models.ImageReaderWriter, cache *match.Cache) error {
+func TagImages(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw models.ImageReaderWriter, cache *match.Cache) error {
 	t := getTagTaggers(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagImages(paths, rw, func(subjectID, otherID int) (bool, error) {
-			return image.AddTag(rw, otherID, subjectID)
+		if err := tt.tagImages(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
+			return image.AddTag(ctx, rw, otherID, subjectID)
 		}); err != nil {
 			return err
 		}
@@ -57,12 +59,12 @@ func TagImages(p *models.Tag, paths []string, aliases []string, rw models.ImageR
 }
 
 // TagGalleries searches for galleries whose path matches the provided tag name and tags the gallery with the tag.
-func TagGalleries(p *models.Tag, paths []string, aliases []string, rw models.GalleryReaderWriter, cache *match.Cache) error {
+func TagGalleries(ctx context.Context, p *models.Tag, paths []string, aliases []string, rw models.GalleryReaderWriter, cache *match.Cache) error {
 	t := getTagTaggers(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagGalleries(paths, rw, func(subjectID, otherID int) (bool, error) {
-			return gallery.AddTag(rw, otherID, subjectID)
+		if err := tt.tagGalleries(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
+			return gallery.AddTag(ctx, rw, otherID, subjectID)
 		}); err != nil {
 			return err
 		}

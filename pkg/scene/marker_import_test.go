@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -30,6 +31,7 @@ func TestMarkerImporterName(t *testing.T) {
 
 func TestMarkerImporterPreImportWithTag(t *testing.T) {
 	tagReaderWriter := &mocks.TagReaderWriter{}
+	ctx := context.Background()
 
 	i := MarkerImporter{
 		TagWriter:           tagReaderWriter,
@@ -39,32 +41,32 @@ func TestMarkerImporterPreImportWithTag(t *testing.T) {
 		},
 	}
 
-	tagReaderWriter.On("FindByNames", []string{existingTagName}, false).Return([]*models.Tag{
+	tagReaderWriter.On("FindByNames", ctx, []string{existingTagName}, false).Return([]*models.Tag{
 		{
 			ID:   existingTagID,
 			Name: existingTagName,
 		},
 	}, nil).Times(4)
-	tagReaderWriter.On("FindByNames", []string{existingTagErr}, false).Return(nil, errors.New("FindByNames error")).Times(2)
+	tagReaderWriter.On("FindByNames", ctx, []string{existingTagErr}, false).Return(nil, errors.New("FindByNames error")).Times(2)
 
-	err := i.PreImport()
+	err := i.PreImport(ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, existingTagID, i.marker.PrimaryTagID)
 
 	i.Input.PrimaryTag = existingTagErr
-	err = i.PreImport()
+	err = i.PreImport(ctx)
 	assert.NotNil(t, err)
 
 	i.Input.PrimaryTag = existingTagName
 	i.Input.Tags = []string{
 		existingTagName,
 	}
-	err = i.PreImport()
+	err = i.PreImport(ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, existingTagID, i.tags[0].ID)
 
 	i.Input.Tags[0] = existingTagErr
-	err = i.PreImport()
+	err = i.PreImport(ctx)
 	assert.NotNil(t, err)
 
 	tagReaderWriter.AssertExpectations(t)
@@ -72,6 +74,7 @@ func TestMarkerImporterPreImportWithTag(t *testing.T) {
 
 func TestMarkerImporterPostImportUpdateTags(t *testing.T) {
 	sceneMarkerReaderWriter := &mocks.SceneMarkerReaderWriter{}
+	ctx := context.Background()
 
 	i := MarkerImporter{
 		ReaderWriter: sceneMarkerReaderWriter,
@@ -84,13 +87,13 @@ func TestMarkerImporterPostImportUpdateTags(t *testing.T) {
 
 	updateErr := errors.New("UpdateTags error")
 
-	sceneMarkerReaderWriter.On("UpdateTags", sceneID, []int{existingTagID}).Return(nil).Once()
-	sceneMarkerReaderWriter.On("UpdateTags", errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
+	sceneMarkerReaderWriter.On("UpdateTags", ctx, sceneID, []int{existingTagID}).Return(nil).Once()
+	sceneMarkerReaderWriter.On("UpdateTags", ctx, errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
-	err := i.PostImport(sceneID)
+	err := i.PostImport(ctx, sceneID)
 	assert.Nil(t, err)
 
-	err = i.PostImport(errTagsID)
+	err = i.PostImport(ctx, errTagsID)
 	assert.NotNil(t, err)
 
 	sceneMarkerReaderWriter.AssertExpectations(t)
@@ -98,6 +101,7 @@ func TestMarkerImporterPostImportUpdateTags(t *testing.T) {
 
 func TestMarkerImporterFindExistingID(t *testing.T) {
 	readerWriter := &mocks.SceneMarkerReaderWriter{}
+	ctx := context.Background()
 
 	i := MarkerImporter{
 		ReaderWriter: readerWriter,
@@ -108,25 +112,25 @@ func TestMarkerImporterFindExistingID(t *testing.T) {
 	}
 
 	expectedErr := errors.New("FindBy* error")
-	readerWriter.On("FindBySceneID", sceneID).Return([]*models.SceneMarker{
+	readerWriter.On("FindBySceneID", ctx, sceneID).Return([]*models.SceneMarker{
 		{
 			ID:      existingSceneID,
 			Seconds: secondsFloat,
 		},
 	}, nil).Times(2)
-	readerWriter.On("FindBySceneID", errSceneID).Return(nil, expectedErr).Once()
+	readerWriter.On("FindBySceneID", ctx, errSceneID).Return(nil, expectedErr).Once()
 
-	id, err := i.FindExistingID()
+	id, err := i.FindExistingID(ctx)
 	assert.Equal(t, existingSceneID, *id)
 	assert.Nil(t, err)
 
 	i.marker.Seconds++
-	id, err = i.FindExistingID()
+	id, err = i.FindExistingID(ctx)
 	assert.Nil(t, id)
 	assert.Nil(t, err)
 
 	i.SceneID = errSceneID
-	id, err = i.FindExistingID()
+	id, err = i.FindExistingID(ctx)
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
@@ -135,6 +139,7 @@ func TestMarkerImporterFindExistingID(t *testing.T) {
 
 func TestMarkerImporterCreate(t *testing.T) {
 	readerWriter := &mocks.SceneMarkerReaderWriter{}
+	ctx := context.Background()
 
 	scene := models.SceneMarker{
 		Title: title,
@@ -150,17 +155,17 @@ func TestMarkerImporterCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", scene).Return(&models.SceneMarker{
+	readerWriter.On("Create", ctx, scene).Return(&models.SceneMarker{
 		ID: sceneID,
 	}, nil).Once()
-	readerWriter.On("Create", sceneErr).Return(nil, errCreate).Once()
+	readerWriter.On("Create", ctx, sceneErr).Return(nil, errCreate).Once()
 
-	id, err := i.Create()
+	id, err := i.Create(ctx)
 	assert.Equal(t, sceneID, *id)
 	assert.Nil(t, err)
 
 	i.marker = sceneErr
-	id, err = i.Create()
+	id, err = i.Create(ctx)
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
@@ -169,6 +174,7 @@ func TestMarkerImporterCreate(t *testing.T) {
 
 func TestMarkerImporterUpdate(t *testing.T) {
 	readerWriter := &mocks.SceneMarkerReaderWriter{}
+	ctx := context.Background()
 
 	scene := models.SceneMarker{
 		Title: title,
@@ -187,18 +193,18 @@ func TestMarkerImporterUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	scene.ID = sceneID
-	readerWriter.On("Update", scene).Return(nil, nil).Once()
+	readerWriter.On("Update", ctx, scene).Return(nil, nil).Once()
 
-	err := i.Update(sceneID)
+	err := i.Update(ctx, sceneID)
 	assert.Nil(t, err)
 
 	i.marker = sceneErr
 
 	// need to set id separately
 	sceneErr.ID = errImageID
-	readerWriter.On("Update", sceneErr).Return(nil, errUpdate).Once()
+	readerWriter.On("Update", ctx, sceneErr).Return(nil, errUpdate).Once()
 
-	err = i.Update(errImageID)
+	err = i.Update(ctx, errImageID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)

@@ -48,7 +48,7 @@ type Config interface {
 }
 
 type Service struct {
-	txnManager     models.TransactionManager
+	txnManager     models.Repository
 	config         Config
 	sceneServer    sceneServer
 	ipWhitelistMgr *ipWhitelistManager
@@ -181,7 +181,7 @@ func (s *Service) init() error {
 // }
 
 // NewService initialises and returns a new DLNA service.
-func NewService(txnManager models.TransactionManager, cfg Config, sceneServer sceneServer) *Service {
+func NewService(txnManager models.Repository, cfg Config, sceneServer sceneServer) *Service {
 	ret := &Service{
 		txnManager:  txnManager,
 		sceneServer: sceneServer,
