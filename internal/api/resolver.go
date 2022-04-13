@@ -85,16 +85,16 @@ type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
 
-func (r *Resolver) withTxn(ctx context.Context, fn func(r models.Repository) error) error {
+func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
 	return r.txnManager.WithTxn(ctx, fn)
 }
 
-func (r *Resolver) withReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
-	return r.txnManager.WithReadTxn(ctx, fn)
+func (r *Resolver) WithTxn(ctx context.Context, fn func(ctx context.Context) error) error {
+	return r.txnManager.WithTxn(ctx, fn)
 }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*models.SceneMarker, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.SceneMarker().Wall(q)
 		return err
 	}); err != nil {
@@ -104,7 +104,7 @@ func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*model
 }
 
 func (r *queryResolver) SceneWall(ctx context.Context, q *string) (ret []*models.Scene, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Scene().Wall(q)
 		return err
 	}); err != nil {
@@ -115,7 +115,7 @@ func (r *queryResolver) SceneWall(ctx context.Context, q *string) (ret []*models
 }
 
 func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *string) (ret []*models.MarkerStringsResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.SceneMarker().GetMarkerStrings(q, sort)
 		return err
 	}); err != nil {
@@ -127,7 +127,7 @@ func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *stri
 
 func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 	var ret StatsResultType
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		scenesQB := repo.Scene()
 		imageQB := repo.Image()
 		galleryQB := repo.Gallery()
@@ -202,7 +202,7 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 	var keys []int
 	tags := make(map[int]*SceneMarkerTag)
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		sceneMarkers, err := repo.SceneMarker().FindBySceneID(sceneID)
 		if err != nil {
 			return err

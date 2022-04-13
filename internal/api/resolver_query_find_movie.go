@@ -13,7 +13,7 @@ func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.M
 		return nil, err
 	}
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Movie().Find(idInt)
 		return err
 	}); err != nil {
@@ -24,7 +24,7 @@ func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.M
 }
 
 func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.MovieFilterType, filter *models.FindFilterType) (ret *FindMoviesResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		movies, total, err := repo.Movie().Query(movieFilter, filter)
 		if err != nil {
 			return err
@@ -44,7 +44,7 @@ func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.Movi
 }
 
 func (r *queryResolver) AllMovies(ctx context.Context) (ret []*models.Movie, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Movie().All()
 		return err
 	}); err != nil {

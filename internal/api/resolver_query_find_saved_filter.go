@@ -7,7 +7,7 @@ import (
 )
 
 func (r *queryResolver) FindSavedFilters(ctx context.Context, mode models.FilterMode) (ret []*models.SavedFilter, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.SavedFilter().FindByMode(mode)
 		return err
 	}); err != nil {
@@ -17,7 +17,7 @@ func (r *queryResolver) FindSavedFilters(ctx context.Context, mode models.Filter
 }
 
 func (r *queryResolver) FindDefaultFilter(ctx context.Context, mode models.FilterMode) (ret *models.SavedFilter, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.SavedFilter().FindDefault(mode)
 		return err
 	}); err != nil {

@@ -7,7 +7,7 @@ import (
 )
 
 func (r *queryResolver) FindSceneMarkers(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, filter *models.FindFilterType) (ret *FindSceneMarkersResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		sceneMarkers, total, err := repo.SceneMarker().Query(sceneMarkerFilter, filter)
 		if err != nil {
 			return err

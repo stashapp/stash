@@ -34,9 +34,9 @@ func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
 	var retScene *models.Scene
 	var s *models.Scene
 
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		s, err = r.Scene().FindByPath(t.file.Path())
+		s, err = t.TxnManager.Scene.FindByPath(ctx, t.file.Path())
 		return err
 	}); err != nil {
 		logger.Error(err.Error())

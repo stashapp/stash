@@ -15,7 +15,7 @@ import (
 )
 
 func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Movie, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Movie().Find(id)
 		return err
 	}); err != nil {
@@ -100,7 +100,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 
 	// Start the transaction and save the movie
 	var movie *models.Movie
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Movie()
 		movie, err = qb.Create(newMovie)
 		if err != nil {
@@ -174,7 +174,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 
 	// Start the transaction and save the movie
 	var movie *models.Movie
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Movie()
 		movie, err = qb.Update(updatedMovie)
 		if err != nil {
@@ -245,7 +245,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 
 	ret := []*models.Movie{}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Movie()
 
 		for _, movieID := range movieIDs {
@@ -294,7 +294,7 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyI
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		return repo.Movie().Destroy(id)
 	}); err != nil {
 		return false, err
@@ -311,7 +311,7 @@ func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string)
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Movie()
 		for _, id := range ids {
 			if err := qb.Destroy(id); err != nil {

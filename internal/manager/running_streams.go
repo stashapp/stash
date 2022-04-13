@@ -50,7 +50,7 @@ func KillRunningStreams(scene *models.Scene, fileNamingAlgo models.HashAlgorithm
 }
 
 type SceneServer struct {
-	TXNManager models.TransactionManager
+	TXNManager models.Repository
 }
 
 func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
@@ -72,8 +72,8 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 		http.ServeFile(w, r, filepath)
 	} else {
 		var cover []byte
-		err := s.TXNManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
-			cover, _ = repo.Scene().GetCover(scene.ID)
+		err := s.TXNManager.WithTxn(r.Context(), func(ctx context.Context) error {
+			cover, _ = s.TXNManager.Scene.GetCover(ctx, scene.ID)
 			return nil
 		})
 		if err != nil {

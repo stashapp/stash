@@ -185,9 +185,9 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 		}
 
 		var scene *models.Scene
-		if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 			var err error
-			scene, err = r.Scene().Find(sceneIdInt)
+			scene, err = s.TxnManager.Scene.Find(ctx, sceneIdInt)
 			return err
 		}); err != nil || scene == nil {
 			logger.Errorf("failed to get scene for generate: %s", err.Error())
@@ -251,9 +251,9 @@ func (s *Manager) MigrateHash(ctx context.Context) int {
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
 		var scenes []*models.Scene
-		if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 			var err error
-			scenes, err = r.Scene().All()
+			scenes, err = s.TxnManager.Scene.All(ctx)
 			return err
 		}); err != nil {
 			logger.Errorf("failed to fetch list of scenes for migration: %s", err.Error())
@@ -327,12 +327,12 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 		// This is why we mark this section nolint. In principle, we should look to
 		// rewrite the section at some point, to avoid the linter warning.
 		if len(input.PerformerIds) > 0 { //nolint:gocritic
-			if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-				performerQuery := r.Performer()
+			if err := s.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+				performerQuery := s.TxnManager.Performer
 
 				for _, performerID := range input.PerformerIds {
 					if id, err := strconv.Atoi(performerID); err == nil {
-						performer, err := performerQuery.Find(id)
+						performer, err := performerQuery.Find(ctx, id)
 						if err == nil {
 							tasks = append(tasks, StashBoxPerformerTagTask{
 								txnManager:      s.TxnManager,
@@ -367,14 +367,14 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 			// However, this doesn't really help with readability of the current section. Mark it
 			// as nolint for now. In the future we'd like to rewrite this code by factoring some of
 			// this into separate functions.
-			if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-				performerQuery := r.Performer()
+			if err := s.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+				performerQuery := s.TxnManager.Performer
 				var performers []*models.Performer
 				var err error
 				if input.Refresh {
-					performers, err = performerQuery.FindByStashIDStatus(true, box.Endpoint)
+					performers, err = performerQuery.FindByStashIDStatus(ctx, true, box.Endpoint)
 				} else {
-					performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
+					performers, err = performerQuery.FindByStashIDStatus(ctx, false, box.Endpoint)
 				}
 				if err != nil {
 					return fmt.Errorf("error querying performers: %v", err)

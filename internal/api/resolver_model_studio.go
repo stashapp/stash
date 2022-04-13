@@ -29,7 +29,7 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 	imagePath := urlbuilders.NewStudioURLBuilder(baseURL, obj).GetStudioImageURL()
 
 	var hasImage bool
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
 		hasImage, err = repo.Studio().HasImage(obj.ID)
 		return err
@@ -46,7 +46,7 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 }
 
 func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) (ret []string, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Studio().GetAliases(obj.ID)
 		return err
 	}); err != nil {
@@ -58,7 +58,7 @@ func (r *studioResolver) Aliases(ctx context.Context, obj *models.Studio) (ret [
 
 func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
 	var res int
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		res, err = repo.Scene().CountByStudioID(obj.ID)
 		return err
 	}); err != nil {
@@ -70,7 +70,7 @@ func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (re
 
 func (r *studioResolver) ImageCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
 	var res int
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		res, err = image.CountByStudioID(repo.Image(), obj.ID)
 		return err
 	}); err != nil {
@@ -82,7 +82,7 @@ func (r *studioResolver) ImageCount(ctx context.Context, obj *models.Studio) (re
 
 func (r *studioResolver) GalleryCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
 	var res int
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		res, err = gallery.CountByStudioID(repo.Gallery(), obj.ID)
 		return err
 	}); err != nil {
@@ -97,7 +97,7 @@ func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (
 		return nil, nil
 	}
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Studio().Find(int(obj.ParentID.Int64))
 		return err
 	}); err != nil {
@@ -108,7 +108,7 @@ func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (ret []*models.Studio, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Studio().FindChildren(obj.ID)
 		return err
 	}); err != nil {
@@ -119,7 +119,7 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 }
 
 func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) (ret []*models.StashID, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Studio().GetStashIDs(obj.ID)
 		return err
 	}); err != nil {
@@ -153,7 +153,7 @@ func (r *studioResolver) UpdatedAt(ctx context.Context, obj *models.Studio) (*ti
 }
 
 func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []*models.Movie, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Movie().FindByStudioID(obj.ID)
 		return err
 	}); err != nil {
@@ -165,7 +165,7 @@ func (r *studioResolver) Movies(ctx context.Context, obj *models.Studio) (ret []
 
 func (r *studioResolver) MovieCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
 	var res int
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		res, err = repo.Movie().CountByStudioID(obj.ID)
 		return err
 	}); err != nil {

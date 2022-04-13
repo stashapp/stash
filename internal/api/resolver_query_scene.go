@@ -14,7 +14,7 @@ import (
 func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manager.SceneStreamEndpoint, error) {
 	// find the scene
 	var scene *models.Scene
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		idInt, _ := strconv.Atoi(*id)
 		var err error
 		scene, err = repo.Scene().Find(idInt)

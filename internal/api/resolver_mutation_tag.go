@@ -15,7 +15,7 @@ import (
 )
 
 func (r *mutationResolver) getTag(ctx context.Context, id int) (ret *models.Tag, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Tag().Find(id)
 		return err
 	}); err != nil {
@@ -68,7 +68,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 
 	// Start the transaction and save the tag
 	var t *models.Tag
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Tag()
 
 		// ensure name is unique
@@ -168,7 +168,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 
 	// Start the transaction and save the tag
 	var t *models.Tag
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Tag()
 
 		// ensure name is unique
@@ -258,7 +258,7 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input TagDestroyInput
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		return repo.Tag().Destroy(tagID)
 	}); err != nil {
 		return false, err
@@ -275,7 +275,7 @@ func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bo
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Tag()
 		for _, id := range ids {
 			if err := qb.Destroy(id); err != nil {
@@ -311,7 +311,7 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) 
 	}
 
 	var t *models.Tag
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Tag()
 
 		var err error

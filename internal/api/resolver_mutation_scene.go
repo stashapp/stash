@@ -19,7 +19,7 @@ import (
 )
 
 func (r *mutationResolver) getScene(ctx context.Context, id int) (ret *models.Scene, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Scene().Find(id)
 		return err
 	}); err != nil {
@@ -35,7 +35,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	// Start the transaction and save the scene
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.sceneUpdate(ctx, input, translator, repo)
 		return err
 	}); err != nil {
@@ -50,7 +50,7 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 	inputMaps := getUpdateInputMaps(ctx)
 
 	// Start the transaction and save the scene
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		for i, scene := range input {
 			translator := changesetTranslator{
 				inputMap: inputMaps[i],
@@ -260,7 +260,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	ret := []*models.Scene{}
 
 	// Start the transaction and save the scene marker
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Scene()
 
 		for _, sceneID := range sceneIDs {
@@ -471,7 +471,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Scene()
 		var err error
 		s, err = qb.Find(sceneID)
@@ -519,7 +519,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Scene()
 
 		for _, id := range input.Ids {
@@ -564,7 +564,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 }
 
 func (r *mutationResolver) getSceneMarker(ctx context.Context, id int) (ret *models.SceneMarker, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.SceneMarker().Find(id)
 		return err
 	}); err != nil {
@@ -666,7 +666,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 		Paths:          manager.GetInstance().Paths,
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.SceneMarker()
 		sqb := repo.Scene()
 
@@ -713,7 +713,7 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 	}
 
 	// Start the transaction and save the scene marker
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.SceneMarker()
 		sqb := repo.Scene()
 
@@ -766,7 +766,7 @@ func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret 
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Scene()
 
 		ret, err = qb.IncrementOCounter(sceneID)
@@ -784,7 +784,7 @@ func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret 
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Scene()
 
 		ret, err = qb.DecrementOCounter(sceneID)
@@ -802,7 +802,7 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int,
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Scene()
 
 		ret, err = qb.ResetOCounter(sceneID)

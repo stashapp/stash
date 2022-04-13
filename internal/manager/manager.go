@@ -116,7 +116,7 @@ type Manager struct {
 
 	DLNAService *dlna.Service
 
-	TxnManager models.TransactionManager
+	TxnManager models.Repository
 
 	scanSubs *subscriptionManager
 }
@@ -158,7 +158,21 @@ func initialize() error {
 		DownloadStore:   NewDownloadStore(),
 		PluginCache:     plugin.NewCache(cfg),
 
-		TxnManager: sqlite.NewTransactionManager(),
+		TxnManager: models.Repository{
+			Manager: &sqlite.Database{
+				DB: database.DB,
+			},
+			Gallery:     sqlite.GalleryReaderWriter,
+			Image:       sqlite.ImageReaderWriter,
+			Movie:       sqlite.MovieReaderWriter,
+			Performer:   sqlite.PerformerReaderWriter,
+			Scene:       sqlite.SceneReaderWriter,
+			SceneMarker: sqlite.SceneMarkerReaderWriter,
+			ScrapedItem: sqlite.ScrapedItemReaderWriter,
+			Studio:      sqlite.StudioReaderWriter,
+			Tag:         sqlite.TagReaderWriter,
+			SavedFilter: sqlite.SavedFilterReaderWriter,
+		},
 
 		scanSubs: &subscriptionManager{},
 	}

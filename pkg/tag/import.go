@@ -30,7 +30,7 @@ type Importer struct {
 	imageData []byte
 }
 
-func (i *Importer) PreImport() error {
+func (i *Importer) PreImport(ctx context.Context) error {
 	i.tag = models.Tag{
 		Name:          i.Input.Name,
 		IgnoreAutoTag: i.Input.IgnoreAutoTag,

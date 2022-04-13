@@ -33,7 +33,7 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		err := rs.txnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 			image, _ = repo.Movie().GetFrontImage(movie.ID)
 			return nil
 		})
@@ -56,7 +56,7 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		err := rs.txnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 			image, _ = repo.Movie().GetBackImage(movie.ID)
 			return nil
 		})
@@ -83,7 +83,7 @@ func MovieCtx(next http.Handler) http.Handler {
 		}
 
 		var movie *models.Movie
-		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		if err := manager.GetInstance().TxnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 			var err error
 			movie, err = repo.Movie().Find(movieID)
 			return err

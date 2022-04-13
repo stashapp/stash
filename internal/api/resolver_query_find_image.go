@@ -12,7 +12,7 @@ import (
 func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *string) (*models.Image, error) {
 	var image *models.Image
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Image()
 		var err error
 
@@ -39,7 +39,7 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 }
 
 func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.ImageFilterType, imageIds []int, filter *models.FindFilterType) (ret *FindImagesResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Image()
 
 		fields := graphql.CollectAllFields(ctx)

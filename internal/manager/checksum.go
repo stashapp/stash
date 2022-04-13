@@ -9,14 +9,14 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func setInitialMD5Config(ctx context.Context, txnManager models.TransactionManager) {
+func setInitialMD5Config(ctx context.Context, r models.Repository) {
 	// if there are no scene files in the database, then default the
 	// VideoFileNamingAlgorithm config setting to oshash and calculateMD5 to
 	// false, otherwise set them to true for backwards compatibility purposes
 	var count int
-	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		count, err = r.Scene().Count()
+		count, err = r.Scene.Count(ctx)
 		return err
 	}); err != nil {
 		logger.Errorf("Error while counting scenes: %s", err.Error())
@@ -44,12 +44,12 @@ func setInitialMD5Config(ctx context.Context, txnManager models.TransactionManag
 //
 // Likewise, if VideoFileNamingAlgorithm is set to oshash, then this function
 // will ensure that all oshash values are set on all scenes.
-func ValidateVideoFileNamingAlgorithm(txnManager models.TransactionManager, newValue models.HashAlgorithm) error {
+func ValidateVideoFileNamingAlgorithm(r models.Repository, newValue models.HashAlgorithm) error {
 	// if algorithm is being set to MD5, then all checksums must be present
-	return txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		qb := r.Scene()
+	return r.WithTxn(context.TODO(), func(ctx context.Context) error {
+		qb := r.Scene
 		if newValue == models.HashAlgorithmMd5 {
-			missingMD5, err := qb.CountMissingChecksum()
+			missingMD5, err := qb.CountMissingChecksum(ctx)
 			if err != nil {
 				return err
 			}
@@ -58,7 +58,7 @@ func ValidateVideoFileNamingAlgorithm(txnManager models.TransactionManager, newV
 				return errors.New("some checksums are missing on scenes. Run Scan with calculateMD5 set to true")
 			}
 		} else if newValue == models.HashAlgorithmOshash {
-			missingOSHash, err := qb.CountMissingOSHash()
+			missingOSHash, err := qb.CountMissingOSHash(ctx)
 			if err != nil {
 				return err
 			}

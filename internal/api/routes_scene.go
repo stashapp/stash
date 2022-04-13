@@ -221,7 +221,7 @@ func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.Sce
 	}
 
 	var ret string
-	if err := rs.txnManager.WithReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := rs.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Tag()
 		primaryTag, err := qb.Find(marker.PrimaryTagID)
 		if err != nil {
@@ -250,7 +250,7 @@ func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.Sce
 func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	var sceneMarkers []*models.SceneMarker
-	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+	if err := rs.txnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 		var err error
 		sceneMarkers, err = repo.SceneMarker().FindBySceneID(scene.ID)
 		return err
@@ -344,7 +344,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+	if err := rs.txnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
 		return err
@@ -367,7 +367,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+	if err := rs.txnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
 		return err
@@ -400,7 +400,7 @@ func (rs sceneRoutes) SceneMarkerScreenshot(w http.ResponseWriter, r *http.Reque
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+	if err := rs.txnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 		var err error
 		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
 		return err
@@ -437,7 +437,7 @@ func SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		readTxnErr := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		readTxnErr := manager.GetInstance().TxnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 			qb := repo.Scene()
 			if sceneID == 0 {
 				// determine checksum/os by the length of the query param

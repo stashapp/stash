@@ -17,7 +17,7 @@ import (
 )
 
 func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.Studio, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Studio().Find(id)
 		return err
 	}); err != nil {
@@ -72,7 +72,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 
 	// Start the transaction and save the studio
 	var s *models.Studio
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Studio()
 
 		var err error
@@ -155,7 +155,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 
 	// Start the transaction and save the studio
 	var s *models.Studio
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Studio()
 
 		if err := manager.ValidateModifyStudio(updatedStudio, qb); err != nil {
@@ -213,7 +213,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestro
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		return repo.Studio().Destroy(id)
 	}); err != nil {
 		return false, err
@@ -230,7 +230,7 @@ func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []strin
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Studio()
 		for _, id := range ids {
 			if err := qb.Destroy(id); err != nil {

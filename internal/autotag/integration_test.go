@@ -71,7 +71,7 @@ func TestMain(m *testing.M) {
 	os.Exit(ret)
 }
 
-func createPerformer(pqb models.PerformerWriter) error {
+func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 	// create the performer
 	performer := models.Performer{
 		Checksum: testName,
@@ -79,7 +79,7 @@ func createPerformer(pqb models.PerformerWriter) error {
 		Favorite: sql.NullBool{Valid: true, Bool: false},
 	}
 
-	_, err := pqb.Create(performer)
+	_, err := pqb.Create(ctx, performer)
 	if err != nil {
 		return err
 	}
@@ -87,23 +87,23 @@ func createPerformer(pqb models.PerformerWriter) error {
 	return nil
 }
 
-func createStudio(qb models.StudioWriter, name string) (*models.Studio, error) {
+func createStudio(ctx context.Context, qb models.StudioWriter, name string) (*models.Studio, error) {
 	// create the studio
 	studio := models.Studio{
 		Checksum: name,
 		Name:     sql.NullString{Valid: true, String: name},
 	}
 
-	return qb.Create(studio)
+	return qb.Create(ctx, studio)
 }
 
-func createTag(qb models.TagWriter) error {
+func createTag(ctx context.Context, qb models.TagWriter) error {
 	// create the studio
 	tag := models.Tag{
 		Name: testName,
 	}
 
-	_, err := qb.Create(tag)
+	_, err := qb.Create(ctx, tag)
 	if err != nil {
 		return err
 	}
@@ -297,13 +297,13 @@ func createGallery(sqb models.GalleryWriter, gallery *models.Gallery) error {
 	return nil
 }
 
-func withTxn(f func(r models.Repository) error) error {
+func withTxn(f func(ctx context.Context) error) error {
 	t := sqlite.NewTransactionManager()
 	return t.WithTxn(context.TODO(), f)
 }
 
 func populateDB() error {
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		err := createPerformer(r.Performer())
 		if err != nil {
 			return err
@@ -352,7 +352,7 @@ func populateDB() error {
 
 func TestParsePerformerScenes(t *testing.T) {
 	var performers []*models.Performer
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		var err error
 		performers, err = r.Performer().All()
 		return err
@@ -362,7 +362,7 @@ func TestParsePerformerScenes(t *testing.T) {
 	}
 
 	for _, p := range performers {
-		if err := withTxn(func(r models.Repository) error {
+		if err := withTxn(func(ctx context.Context) error {
 			return PerformerScenes(p, nil, r.Scene(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
@@ -370,7 +370,7 @@ func TestParsePerformerScenes(t *testing.T) {
 	}
 
 	// verify that scenes were tagged correctly
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		pqb := r.Performer()
 
 		scenes, err := r.Scene().All()
@@ -399,7 +399,7 @@ func TestParsePerformerScenes(t *testing.T) {
 
 func TestParseStudioScenes(t *testing.T) {
 	var studios []*models.Studio
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		var err error
 		studios, err = r.Studio().All()
 		return err
@@ -409,7 +409,7 @@ func TestParseStudioScenes(t *testing.T) {
 	}
 
 	for _, s := range studios {
-		if err := withTxn(func(r models.Repository) error {
+		if err := withTxn(func(ctx context.Context) error {
 			aliases, err := r.Studio().GetAliases(s.ID)
 			if err != nil {
 				return err
@@ -422,7 +422,7 @@ func TestParseStudioScenes(t *testing.T) {
 	}
 
 	// verify that scenes were tagged correctly
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		scenes, err := r.Scene().All()
 		if err != nil {
 			t.Error(err.Error())
@@ -455,7 +455,7 @@ func TestParseStudioScenes(t *testing.T) {
 
 func TestParseTagScenes(t *testing.T) {
 	var tags []*models.Tag
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		var err error
 		tags, err = r.Tag().All()
 		return err
@@ -465,7 +465,7 @@ func TestParseTagScenes(t *testing.T) {
 	}
 
 	for _, s := range tags {
-		if err := withTxn(func(r models.Repository) error {
+		if err := withTxn(func(ctx context.Context) error {
 			aliases, err := r.Tag().GetAliases(s.ID)
 			if err != nil {
 				return err
@@ -478,7 +478,7 @@ func TestParseTagScenes(t *testing.T) {
 	}
 
 	// verify that scenes were tagged correctly
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		scenes, err := r.Scene().All()
 		if err != nil {
 			t.Error(err.Error())
@@ -507,7 +507,7 @@ func TestParseTagScenes(t *testing.T) {
 
 func TestParsePerformerImages(t *testing.T) {
 	var performers []*models.Performer
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		var err error
 		performers, err = r.Performer().All()
 		return err
@@ -517,7 +517,7 @@ func TestParsePerformerImages(t *testing.T) {
 	}
 
 	for _, p := range performers {
-		if err := withTxn(func(r models.Repository) error {
+		if err := withTxn(func(ctx context.Context) error {
 			return PerformerImages(p, nil, r.Image(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
@@ -525,7 +525,7 @@ func TestParsePerformerImages(t *testing.T) {
 	}
 
 	// verify that images were tagged correctly
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		pqb := r.Performer()
 
 		images, err := r.Image().All()
@@ -554,7 +554,7 @@ func TestParsePerformerImages(t *testing.T) {
 
 func TestParseStudioImages(t *testing.T) {
 	var studios []*models.Studio
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		var err error
 		studios, err = r.Studio().All()
 		return err
@@ -564,7 +564,7 @@ func TestParseStudioImages(t *testing.T) {
 	}
 
 	for _, s := range studios {
-		if err := withTxn(func(r models.Repository) error {
+		if err := withTxn(func(ctx context.Context) error {
 			aliases, err := r.Studio().GetAliases(s.ID)
 			if err != nil {
 				return err
@@ -577,7 +577,7 @@ func TestParseStudioImages(t *testing.T) {
 	}
 
 	// verify that images were tagged correctly
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		images, err := r.Image().All()
 		if err != nil {
 			t.Error(err.Error())
@@ -610,7 +610,7 @@ func TestParseStudioImages(t *testing.T) {
 
 func TestParseTagImages(t *testing.T) {
 	var tags []*models.Tag
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		var err error
 		tags, err = r.Tag().All()
 		return err
@@ -620,7 +620,7 @@ func TestParseTagImages(t *testing.T) {
 	}
 
 	for _, s := range tags {
-		if err := withTxn(func(r models.Repository) error {
+		if err := withTxn(func(ctx context.Context) error {
 			aliases, err := r.Tag().GetAliases(s.ID)
 			if err != nil {
 				return err
@@ -633,7 +633,7 @@ func TestParseTagImages(t *testing.T) {
 	}
 
 	// verify that images were tagged correctly
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		images, err := r.Image().All()
 		if err != nil {
 			t.Error(err.Error())
@@ -662,7 +662,7 @@ func TestParseTagImages(t *testing.T) {
 
 func TestParsePerformerGalleries(t *testing.T) {
 	var performers []*models.Performer
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		var err error
 		performers, err = r.Performer().All()
 		return err
@@ -672,7 +672,7 @@ func TestParsePerformerGalleries(t *testing.T) {
 	}
 
 	for _, p := range performers {
-		if err := withTxn(func(r models.Repository) error {
+		if err := withTxn(func(ctx context.Context) error {
 			return PerformerGalleries(p, nil, r.Gallery(), nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
@@ -680,7 +680,7 @@ func TestParsePerformerGalleries(t *testing.T) {
 	}
 
 	// verify that galleries were tagged correctly
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		pqb := r.Performer()
 
 		galleries, err := r.Gallery().All()
@@ -709,7 +709,7 @@ func TestParsePerformerGalleries(t *testing.T) {
 
 func TestParseStudioGalleries(t *testing.T) {
 	var studios []*models.Studio
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		var err error
 		studios, err = r.Studio().All()
 		return err
@@ -719,7 +719,7 @@ func TestParseStudioGalleries(t *testing.T) {
 	}
 
 	for _, s := range studios {
-		if err := withTxn(func(r models.Repository) error {
+		if err := withTxn(func(ctx context.Context) error {
 			aliases, err := r.Studio().GetAliases(s.ID)
 			if err != nil {
 				return err
@@ -732,7 +732,7 @@ func TestParseStudioGalleries(t *testing.T) {
 	}
 
 	// verify that galleries were tagged correctly
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		galleries, err := r.Gallery().All()
 		if err != nil {
 			t.Error(err.Error())
@@ -765,7 +765,7 @@ func TestParseStudioGalleries(t *testing.T) {
 
 func TestParseTagGalleries(t *testing.T) {
 	var tags []*models.Tag
-	if err := withTxn(func(r models.Repository) error {
+	if err := withTxn(func(ctx context.Context) error {
 		var err error
 		tags, err = r.Tag().All()
 		return err
@@ -775,7 +775,7 @@ func TestParseTagGalleries(t *testing.T) {
 	}
 
 	for _, s := range tags {
-		if err := withTxn(func(r models.Repository) error {
+		if err := withTxn(func(ctx context.Context) error {
 			aliases, err := r.Tag().GetAliases(s.ID)
 			if err != nil {
 				return err
@@ -788,7 +788,7 @@ func TestParseTagGalleries(t *testing.T) {
 	}
 
 	// verify that galleries were tagged correctly
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		galleries, err := r.Gallery().All()
 		if err != nil {
 			t.Error(err.Error())

@@ -33,7 +33,7 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		err := rs.txnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 			image, _ = repo.Tag().GetImage(tag.ID)
 			return nil
 		})
@@ -60,7 +60,7 @@ func TagCtx(next http.Handler) http.Handler {
 		}
 
 		var tag *models.Tag
-		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		if err := manager.GetInstance().TxnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 			var err error
 			tag, err = repo.Tag().Find(tagID)
 			return err

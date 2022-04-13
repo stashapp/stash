@@ -16,7 +16,7 @@ import (
 )
 
 func (r *mutationResolver) getImage(ctx context.Context, id int) (ret *models.Image, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Image().Find(id)
 		return err
 	}); err != nil {
@@ -32,7 +32,7 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input ImageUpdateInp
 	}
 
 	// Start the transaction and save the image
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.imageUpdate(input, translator, repo)
 		return err
 	}); err != nil {
@@ -48,7 +48,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdat
 	inputMaps := getUpdateInputMaps(ctx)
 
 	// Start the transaction and save the image
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		for i, image := range input {
 			translator := changesetTranslator{
 				inputMap: inputMaps[i],
@@ -180,7 +180,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedImage.Organized = input.Organized
 
 	// Start the transaction and save the image marker
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Image()
 
 		for _, imageID := range imageIDs {
@@ -289,7 +289,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 		Deleter: *file.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Image()
 
 		i, err = qb.Find(imageID)
@@ -331,7 +331,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 		Deleter: *file.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Image()
 
 		for _, imageID := range imageIDs {
@@ -379,7 +379,7 @@ func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (ret 
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Image()
 
 		ret, err = qb.IncrementOCounter(imageID)
@@ -397,7 +397,7 @@ func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (ret 
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Image()
 
 		ret, err = qb.DecrementOCounter(imageID)
@@ -415,7 +415,7 @@ func (r *mutationResolver) ImageResetO(ctx context.Context, id string) (ret int,
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Image()
 
 		ret, err = qb.ResetOCounter(imageID)

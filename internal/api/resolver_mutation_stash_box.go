@@ -7,7 +7,6 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
@@ -43,7 +42,7 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 	}
 
 	var res *string
-	err = r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	err = r.WithTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Scene()
 		scene, err := qb.Find(id)
 		if err != nil {
@@ -73,7 +72,7 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 	}
 
 	var res *string
-	err = r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	err = r.WithTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Performer()
 		performer, err := qb.Find(id)
 		if err != nil {

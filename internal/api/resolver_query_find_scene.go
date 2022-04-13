@@ -12,7 +12,7 @@ import (
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
 	var scene *models.Scene
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Scene()
 		var err error
 		if id != nil {
@@ -39,7 +39,7 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInput) (*models.Scene, error) {
 	var scene *models.Scene
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Scene()
 		var err error
 		if input.Checksum != nil {
@@ -65,7 +65,7 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInpu
 }
 
 func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIDs []int, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		var scenes []*models.Scene
 		var err error
 
@@ -117,7 +117,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 }
 
 func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 
 		sceneFilter := &models.SceneFilterType{}
 
@@ -174,7 +174,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config manager.SceneParserInput) (ret *SceneParserResultType, err error) {
 	parser := manager.NewSceneFilenameParser(filter, config)
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		result, count, err := parser.Parse(repo)
 
 		if err != nil {
@@ -199,7 +199,7 @@ func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int) 
 	if distance != nil {
 		dist = *distance
 	}
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Scene().FindDuplicates(dist)
 		return err
 	}); err != nil {

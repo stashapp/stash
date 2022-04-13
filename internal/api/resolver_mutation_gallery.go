@@ -21,7 +21,7 @@ import (
 )
 
 func (r *mutationResolver) getGallery(ctx context.Context, id int) (ret *models.Gallery, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Gallery().Find(id)
 		return err
 	}); err != nil {
@@ -80,7 +80,7 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 
 	// Start the transaction and save the gallery
 	var gallery *models.Gallery
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Gallery()
 		var err error
 		gallery, err = qb.Create(newGallery)
@@ -142,7 +142,7 @@ func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.Galle
 	}
 
 	// Start the transaction and save the gallery
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.galleryUpdate(input, translator, repo)
 		return err
 	}); err != nil {
@@ -158,7 +158,7 @@ func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.
 	inputMaps := getUpdateInputMaps(ctx)
 
 	// Start the transaction and save the gallery
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		for i, gallery := range input {
 			translator := changesetTranslator{
 				inputMap: inputMaps[i],
@@ -295,7 +295,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	ret := []*models.Gallery{}
 
 	// Start the transaction and save the galleries
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Gallery()
 
 		for _, galleryIDStr := range input.Ids {
@@ -410,7 +410,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
 	deleteFile := utils.IsTrue(input.DeleteFile)
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Gallery()
 		iqb := repo.Image()
 
@@ -537,7 +537,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Gallery()
 		gallery, err := qb.Find(galleryID)
 		if err != nil {
@@ -577,7 +577,7 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Gallery()
 		gallery, err := qb.Find(galleryID)
 		if err != nil {

@@ -13,7 +13,7 @@ func (r *queryResolver) FindStudio(ctx context.Context, id string) (ret *models.
 		return nil, err
 	}
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
 		ret, err = repo.Studio().Find(idInt)
 		return err
@@ -25,7 +25,7 @@ func (r *queryResolver) FindStudio(ctx context.Context, id string) (ret *models.
 }
 
 func (r *queryResolver) FindStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.FindFilterType) (ret *FindStudiosResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		studios, total, err := repo.Studio().Query(studioFilter, filter)
 		if err != nil {
 			return err
@@ -45,7 +45,7 @@ func (r *queryResolver) FindStudios(ctx context.Context, studioFilter *models.St
 }
 
 func (r *queryResolver) AllStudios(ctx context.Context) (ret []*models.Studio, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Studio().All()
 		return err
 	}); err != nil {

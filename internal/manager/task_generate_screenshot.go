@@ -17,7 +17,7 @@ type GenerateScreenshotTask struct {
 	Scene               models.Scene
 	ScreenshotAt        *float64
 	fileNamingAlgorithm models.HashAlgorithm
-	txnManager          models.TransactionManager
+	txnManager          models.Repository
 }
 
 func (t *GenerateScreenshotTask) Start(ctx context.Context) {
@@ -74,8 +74,8 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		return
 	}
 
-	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
-		qb := r.Scene()
+	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		qb := t.txnManager.Scene
 		updatedTime := time.Now()
 		updatedScene := models.ScenePartial{
 			ID:        t.Scene.ID,
@@ -87,12 +87,12 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		}
 
 		// update the scene cover table
-		if err := qb.UpdateCover(t.Scene.ID, coverImageData); err != nil {
+		if err := qb.UpdateCover(ctx, t.Scene.ID, coverImageData); err != nil {
 			return fmt.Errorf("error setting screenshot: %v", err)
 		}
 
 		// update the scene with the update date
-		_, err = qb.Update(updatedScene)
+		_, err = qb.Update(ctx, updatedScene)
 		if err != nil {
 			return fmt.Errorf("error updating scene: %v", err)
 		}

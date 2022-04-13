@@ -34,7 +34,7 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		readTxnErr := rs.txnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 			image, _ = repo.Performer().GetImage(performer.ID)
 			return nil
 		})
@@ -61,7 +61,7 @@ func PerformerCtx(next http.Handler) http.Handler {
 		}
 
 		var performer *models.Performer
-		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		if err := manager.GetInstance().TxnManager.WithTxn(r.Context(), func(ctx context.Context) error {
 			var err error
 			performer, err = repo.Performer().Find(performerID)
 			return err

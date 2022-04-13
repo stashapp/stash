@@ -16,7 +16,7 @@ import (
 )
 
 func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *models.Performer, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		ret, err = repo.Performer().Find(id)
 		return err
 	}); err != nil {
@@ -129,7 +129,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 
 	// Start the transaction and save the performer
 	var performer *models.Performer
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Performer()
 
 		performer, err = qb.Create(newPerformer)
@@ -230,7 +230,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 
 	// Start the transaction and save the p
 	var p *models.Performer
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Performer()
 
 		// need to get existing performer
@@ -348,7 +348,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	ret := []*models.Performer{}
 
 	// Start the transaction and save the scene marker
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Performer()
 
 		for _, performerID := range performerIDs {
@@ -415,7 +415,7 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input Performer
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		return repo.Performer().Destroy(id)
 	}); err != nil {
 		return false, err
@@ -432,7 +432,7 @@ func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs [
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := repo.Performer()
 		for _, id := range ids {
 			if err := qb.Destroy(id); err != nil {
