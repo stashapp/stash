@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type key int
@@ -52,4 +53,20 @@ func getTx(ctx context.Context) (*sqlx.Tx, error) {
 		return nil, fmt.Errorf("not in transaction")
 	}
 	return tx, nil
+}
+
+func (db *Database) TxnRepository() models.Repository {
+	return models.Repository{
+		Manager:     db,
+		Gallery:     GalleryReaderWriter,
+		Image:       ImageReaderWriter,
+		Movie:       MovieReaderWriter,
+		Performer:   PerformerReaderWriter,
+		Scene:       SceneReaderWriter,
+		SceneMarker: SceneMarkerReaderWriter,
+		ScrapedItem: ScrapedItemReaderWriter,
+		Studio:      StudioReaderWriter,
+		Tag:         TagReaderWriter,
+		SavedFilter: SavedFilterReaderWriter,
+	}
 }

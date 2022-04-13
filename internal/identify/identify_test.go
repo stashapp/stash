@@ -13,6 +13,8 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+var testCtx = context.Background()
+
 type mockSceneScraper struct {
 	errIDs  []int
 	results map[int]*scraper.ScrapedScene
@@ -70,11 +72,16 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		},
 	}
 
-	repo := mocks.NewTransactionManager()
-	repo.Scene().(*mocks.SceneReaderWriter).On("Update", mock.MatchedBy(func(partial models.ScenePartial) bool {
+	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+
+	repo := models.Repository{
+		Manager: &mocks.TxnManager{},
+		Scene:   mockSceneReaderWriter,
+	}
+	mockSceneReaderWriter.On("Update", testCtx, mock.MatchedBy(func(partial models.ScenePartial) bool {
 		return partial.ID != errUpdateID
 	})).Return(nil, nil)
-	repo.Scene().(*mocks.SceneReaderWriter).On("Update", mock.MatchedBy(func(partial models.ScenePartial) bool {
+	mockSceneReaderWriter.On("Update", testCtx, mock.MatchedBy(func(partial models.ScenePartial) bool {
 		return partial.ID == errUpdateID
 	})).Return(nil, errors.New("update error"))
 
@@ -126,7 +133,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 			scene := &models.Scene{
 				ID: tt.sceneID,
 			}
-			if err := identifier.Identify(context.TODO(), repo, scene); (err != nil) != tt.wantErr {
+			if err := identifier.Identify(testCtx, repo, scene); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.Identify() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -134,7 +141,9 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 }
 
 func TestSceneIdentifier_modifyScene(t *testing.T) {
-	repo := mocks.NewTransactionManager()
+	repo := models.Repository{
+		Manager: &mocks.TxnManager{},
+	}
 	tr := &SceneIdentifier{}
 
 	type args struct {
@@ -159,7 +168,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tr.modifyScene(context.TODO(), repo, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
+			if err := tr.modifyScene(testCtx, repo, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.modifyScene() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

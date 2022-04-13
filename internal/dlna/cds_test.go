@@ -60,7 +60,7 @@ func TestRootParentObjectID(t *testing.T) {
 func testHandleBrowse(argsXML string) (map[string]string, error) {
 	cds := contentDirectoryService{
 		Server:     &Server{},
-		txnManager: mocks.NewTransactionManager(),
+		txnManager: mocks.NewTxnRepository(),
 	}
 
 	r := &http.Request{}
