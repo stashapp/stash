@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -26,13 +27,13 @@ func makeClause(sql string, args ...interface{}) sqlClause {
 }
 
 type criterionHandler interface {
-	handle(f *filterBuilder)
+	handle(ctx context.Context, f *filterBuilder)
 }
 
-type criterionHandlerFunc func(f *filterBuilder)
+type criterionHandlerFunc func(ctx context.Context, f *filterBuilder)
 
-func (h criterionHandlerFunc) handle(f *filterBuilder) {
-	h(f)
+func (h criterionHandlerFunc) handle(ctx context.Context, f *filterBuilder) {
+	h(ctx, f)
 }
 
 type join struct {
@@ -330,8 +331,8 @@ func (f *filterBuilder) getError() error {
 
 // handleCriterion calls the handle function on the provided criterionHandler,
 // providing itself.
-func (f *filterBuilder) handleCriterion(handler criterionHandler) {
-	handler.handle(f)
+func (f *filterBuilder) handleCriterion(ctx context.Context, handler criterionHandler) {
+	handler.handle(ctx, f)
 }
 
 func (f *filterBuilder) setError(e error) {
@@ -360,7 +361,7 @@ func (f *filterBuilder) andClauses(input []sqlClause) (string, []interface{}) {
 }
 
 func stringCriterionHandler(c *models.StringCriterionInput, column string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
 			if modifier := c.Modifier; c.Modifier.IsValid() {
 				switch modifier {
@@ -399,7 +400,7 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 }
 
 func intCriterionHandler(c *models.IntCriterionInput, column string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
 			clause, args := getIntCriterionWhereClause(column, *c)
 			f.addWhere(clause, args...)
@@ -408,7 +409,7 @@ func intCriterionHandler(c *models.IntCriterionInput, column string) criterionHa
 }
 
 func boolCriterionHandler(c *bool, column string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
 			var v string
 			if *c {
@@ -440,7 +441,7 @@ type joinedMultiCriterionHandlerBuilder struct {
 }
 
 func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			joinAlias := m.joinAs
 			if joinAlias == "" {
@@ -510,7 +511,7 @@ type multiCriterionHandlerBuilder struct {
 }
 
 func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
@@ -555,7 +556,7 @@ type countCriterionHandlerBuilder struct {
 }
 
 func (m *countCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			clause, args := getCountCriterionClause(m.primaryTable, m.joinTable, m.primaryFK, *criterion)
 
@@ -575,11 +576,11 @@ type stringListCriterionHandlerBuilder struct {
 }
 
 func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil && len(criterion.Value) > 0 {
 			m.addJoinTable(f)
 
-			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(f)
+			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(ctx, f)
 		}
 	}
 }
@@ -596,7 +597,7 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	relationsTable string
 }
 
-func getHierarchicalValues(tx dbi, values []string, table, relationsTable, parentFK string, depth *int) string {
+func getHierarchicalValues(ctx context.Context, tx dbi, values []string, table, relationsTable, parentFK string, depth *int) string {
 	var args []interface{}
 
 	depthVal := 0
@@ -669,7 +670,7 @@ WHERE id in {inBinding}
 	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || GROUP_CONCAT('(' || root_id || ', ' || item_id || ')') AS val FROM items", withClause)
 
 	var valuesClause string
-	err := tx.Get(&valuesClause, query, args...)
+	err := tx.Get(ctx, &valuesClause, query, args...)
 	if err != nil {
 		logger.Error(err)
 		// return record which never matches so we don't have to handle error here
@@ -692,7 +693,7 @@ func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.Hierarc
 }
 
 func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
@@ -712,7 +713,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 				return
 			}
 
-			valuesClause := getHierarchicalValues(m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+			valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
 			f.addLeftJoin("(SELECT column1 AS root_id, column2 AS item_id FROM ("+valuesClause+"))", m.derivedTable, fmt.Sprintf("%s.item_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
 
@@ -737,7 +738,7 @@ type joinedHierarchicalMultiCriterionHandlerBuilder struct {
 }
 
 func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			joinAlias := m.joinAs
 
@@ -761,7 +762,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 				return
 			}
 
-			valuesClause := getHierarchicalValues(m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+			valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
 			joinTable := utils.StrFormat(`(
 	SELECT j.*, d.column1 AS root_id, d.column2 AS item_id FROM {joinTable} AS j

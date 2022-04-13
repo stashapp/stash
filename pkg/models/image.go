@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type ImageFilterType struct {
 	And   *ImageFilterType      `json:"AND"`
 	Or    *ImageFilterType      `json:"OR"`
@@ -73,17 +75,17 @@ func NewImageQueryResult(finder ImageFinder) *ImageQueryResult {
 	}
 }
 
-func (r *ImageQueryResult) Resolve() ([]*Image, error) {
+func (r *ImageQueryResult) Resolve(ctx context.Context) ([]*Image, error) {
 	// cache results
 	if r.images == nil && r.resolveErr == nil {
-		r.images, r.resolveErr = r.finder.FindMany(r.IDs)
+		r.images, r.resolveErr = r.finder.FindMany(ctx, r.IDs)
 	}
 	return r.images, r.resolveErr
 }
 
 type ImageFinder interface {
 	// TODO - rename to Find and remove existing method
-	FindMany(ids []int) ([]*Image, error)
+	FindMany(ctx context.Context, ids []int) ([]*Image, error)
 }
 
 type ImageReader interface {

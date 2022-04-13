@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 
@@ -23,31 +24,31 @@ func NewScrapedItemReaderWriter(tx dbi) *scrapedItemQueryBuilder {
 	}
 }
 
-func (qb *scrapedItemQueryBuilder) Create(newObject models.ScrapedItem) (*models.ScrapedItem, error) {
+func (qb *scrapedItemQueryBuilder) Create(ctx context.Context, newObject models.ScrapedItem) (*models.ScrapedItem, error) {
 	var ret models.ScrapedItem
-	if err := qb.insertObject(newObject, &ret); err != nil {
+	if err := qb.insertObject(ctx, newObject, &ret); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
 }
 
-func (qb *scrapedItemQueryBuilder) Update(updatedObject models.ScrapedItem) (*models.ScrapedItem, error) {
+func (qb *scrapedItemQueryBuilder) Update(ctx context.Context, updatedObject models.ScrapedItem) (*models.ScrapedItem, error) {
 	const partial = false
-	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.find(updatedObject.ID)
+	return qb.find(ctx, updatedObject.ID)
 }
 
-func (qb *scrapedItemQueryBuilder) Find(id int) (*models.ScrapedItem, error) {
-	return qb.find(id)
+func (qb *scrapedItemQueryBuilder) Find(ctx context.Context, id int) (*models.ScrapedItem, error) {
+	return qb.find(ctx, id)
 }
 
-func (qb *scrapedItemQueryBuilder) find(id int) (*models.ScrapedItem, error) {
+func (qb *scrapedItemQueryBuilder) find(ctx context.Context, id int) (*models.ScrapedItem, error) {
 	var ret models.ScrapedItem
-	if err := qb.getByID(id, &ret); err != nil {
+	if err := qb.getByID(ctx, id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -56,8 +57,8 @@ func (qb *scrapedItemQueryBuilder) find(id int) (*models.ScrapedItem, error) {
 	return &ret, nil
 }
 
-func (qb *scrapedItemQueryBuilder) All() ([]*models.ScrapedItem, error) {
-	return qb.queryScrapedItems(selectAll("scraped_items")+qb.getScrapedItemsSort(nil), nil)
+func (qb *scrapedItemQueryBuilder) All(ctx context.Context) ([]*models.ScrapedItem, error) {
+	return qb.queryScrapedItems(ctx, selectAll("scraped_items")+qb.getScrapedItemsSort(nil), nil)
 }
 
 func (qb *scrapedItemQueryBuilder) getScrapedItemsSort(findFilter *models.FindFilterType) string {
@@ -73,9 +74,9 @@ func (qb *scrapedItemQueryBuilder) getScrapedItemsSort(findFilter *models.FindFi
 	return getSort(sort, direction, "scraped_items")
 }
 
-func (qb *scrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}) ([]*models.ScrapedItem, error) {
+func (qb *scrapedItemQueryBuilder) queryScrapedItems(ctx context.Context, query string, args []interface{}) ([]*models.ScrapedItem, error) {
 	var ret models.ScrapedItems
-	if err := qb.query(query, args, &ret); err != nil {
+	if err := qb.query(ctx, query, args, &ret); err != nil {
 		return nil, err
 	}
 

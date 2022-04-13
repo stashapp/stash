@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type PHashDuplicationCriterionInput struct {
 	Duplicated *bool `json:"duplicated"`
 	// Currently unimplemented
@@ -102,17 +104,17 @@ func NewSceneQueryResult(finder SceneFinder) *SceneQueryResult {
 	}
 }
 
-func (r *SceneQueryResult) Resolve() ([]*Scene, error) {
+func (r *SceneQueryResult) Resolve(ctx context.Context) ([]*Scene, error) {
 	// cache results
 	if r.scenes == nil && r.resolveErr == nil {
-		r.scenes, r.resolveErr = r.finder.FindMany(r.IDs)
+		r.scenes, r.resolveErr = r.finder.FindMany(ctx, r.IDs)
 	}
 	return r.scenes, r.resolveErr
 }
 
 type SceneFinder interface {
 	// TODO - rename this to Find and remove existing method
-	FindMany(ids []int) ([]*Scene, error)
+	FindMany(ctx context.Context, ids []int) ([]*Scene, error)
 }
 
 type SceneReader interface {
