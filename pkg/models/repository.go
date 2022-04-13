@@ -1,27 +1,26 @@
 package models
 
-type Repository interface {
-	Gallery() GalleryReaderWriter
-	Image() ImageReaderWriter
-	Movie() MovieReaderWriter
-	Performer() PerformerReaderWriter
-	Scene() SceneReaderWriter
-	SceneMarker() SceneMarkerReaderWriter
-	ScrapedItem() ScrapedItemReaderWriter
-	Studio() StudioReaderWriter
-	Tag() TagReaderWriter
-	SavedFilter() SavedFilterReaderWriter
+import (
+	"context"
+
+	"github.com/stashapp/stash/pkg/txn"
+)
+
+type Repository struct {
+	txn.Manager
+
+	Gallery     GalleryReaderWriter
+	Image       ImageReaderWriter
+	Movie       MovieReaderWriter
+	Performer   PerformerReaderWriter
+	Scene       SceneReaderWriter
+	SceneMarker SceneMarkerReaderWriter
+	ScrapedItem ScrapedItemReaderWriter
+	Studio      StudioReaderWriter
+	Tag         TagReaderWriter
+	SavedFilter SavedFilterReaderWriter
 }
 
-type ReaderRepository interface {
-	Gallery() GalleryReader
-	Image() ImageReader
-	Movie() MovieReader
-	Performer() PerformerReader
-	Scene() SceneReader
-	SceneMarker() SceneMarkerReader
-	ScrapedItem() ScrapedItemReader
-	Studio() StudioReader
-	Tag() TagReader
-	SavedFilter() SavedFilterReader
+func (r *Repository) WithTxn(ctx context.Context, fn txn.TxnFunc) error {
+	return txn.WithTxn(ctx, r, fn)
 }

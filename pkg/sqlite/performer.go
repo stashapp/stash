@@ -26,14 +26,11 @@ type performerQueryBuilder struct {
 	repository
 }
 
-func NewPerformerReaderWriter(tx dbi) *performerQueryBuilder {
-	return &performerQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: performerTable,
-			idColumn:  idColumn,
-		},
-	}
+var PerformerReaderWriter = &performerQueryBuilder{
+	repository{
+		tableName: performerTable,
+		idColumn:  idColumn,
+	},
 }
 
 func (qb *performerQueryBuilder) Create(ctx context.Context, newObject models.Performer) (*models.Performer, error) {

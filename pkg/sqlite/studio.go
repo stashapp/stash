@@ -19,14 +19,11 @@ type studioQueryBuilder struct {
 	repository
 }
 
-func NewStudioReaderWriter(tx dbi) *studioQueryBuilder {
-	return &studioQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: studioTable,
-			idColumn:  idColumn,
-		},
-	}
+var StudioReaderWriter = &studioQueryBuilder{
+	repository{
+		tableName: studioTable,
+		idColumn:  idColumn,
+	},
 }
 
 func (qb *studioQueryBuilder) Create(ctx context.Context, newObject models.Studio) (*models.Studio, error) {

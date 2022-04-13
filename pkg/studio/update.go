@@ -1,6 +1,7 @@
 package studio
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -25,9 +26,9 @@ func (e *NameUsedByAliasError) Error() string {
 
 // EnsureStudioNameUnique returns an error if the studio name provided
 // is used as a name or alias of another existing tag.
-func EnsureStudioNameUnique(id int, name string, qb models.StudioReader) error {
+func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb models.StudioReader) error {
 	// ensure name is unique
-	sameNameStudio, err := ByName(qb, name)
+	sameNameStudio, err := ByName(ctx, qb, name)
 	if err != nil {
 		return err
 	}
@@ -39,7 +40,7 @@ func EnsureStudioNameUnique(id int, name string, qb models.StudioReader) error {
 	}
 
 	// query by alias
-	sameNameStudio, err = ByAlias(qb, name)
+	sameNameStudio, err = ByAlias(ctx, qb, name)
 	if err != nil {
 		return err
 	}
@@ -54,9 +55,9 @@ func EnsureStudioNameUnique(id int, name string, qb models.StudioReader) error {
 	return nil
 }
 
-func EnsureAliasesUnique(id int, aliases []string, qb models.StudioReader) error {
+func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.StudioReader) error {
 	for _, a := range aliases {
-		if err := EnsureStudioNameUnique(id, a, qb); err != nil {
+		if err := EnsureStudioNameUnique(ctx, id, a, qb); err != nil {
 			return err
 		}
 	}

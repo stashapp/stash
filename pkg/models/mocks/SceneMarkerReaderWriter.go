@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	models "github.com/stashapp/stash/pkg/models"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -12,20 +14,20 @@ type SceneMarkerReaderWriter struct {
 	mock.Mock
 }
 
-// CountByTagID provides a mock function with given fields: tagID
-func (_m *SceneMarkerReaderWriter) CountByTagID(tagID int) (int, error) {
-	ret := _m.Called(tagID)
+// CountByTagID provides a mock function with given fields: ctx, tagID
+func (_m *SceneMarkerReaderWriter) CountByTagID(ctx context.Context, tagID int) (int, error) {
+	ret := _m.Called(ctx, tagID)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(int) int); ok {
-		r0 = rf(tagID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, tagID)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(tagID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, tagID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -33,13 +35,13 @@ func (_m *SceneMarkerReaderWriter) CountByTagID(tagID int) (int, error) {
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: newSceneMarker
-func (_m *SceneMarkerReaderWriter) Create(newSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
-	ret := _m.Called(newSceneMarker)
+// Create provides a mock function with given fields: ctx, newSceneMarker
+func (_m *SceneMarkerReaderWriter) Create(ctx context.Context, newSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
+	ret := _m.Called(ctx, newSceneMarker)
 
 	var r0 *models.SceneMarker
-	if rf, ok := ret.Get(0).(func(models.SceneMarker) *models.SceneMarker); ok {
-		r0 = rf(newSceneMarker)
+	if rf, ok := ret.Get(0).(func(context.Context, models.SceneMarker) *models.SceneMarker); ok {
+		r0 = rf(ctx, newSceneMarker)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.SceneMarker)
@@ -47,8 +49,8 @@ func (_m *SceneMarkerReaderWriter) Create(newSceneMarker models.SceneMarker) (*m
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.SceneMarker) error); ok {
-		r1 = rf(newSceneMarker)
+	if rf, ok := ret.Get(1).(func(context.Context, models.SceneMarker) error); ok {
+		r1 = rf(ctx, newSceneMarker)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,13 +58,13 @@ func (_m *SceneMarkerReaderWriter) Create(newSceneMarker models.SceneMarker) (*m
 	return r0, r1
 }
 
-// Destroy provides a mock function with given fields: id
-func (_m *SceneMarkerReaderWriter) Destroy(id int) error {
-	ret := _m.Called(id)
+// Destroy provides a mock function with given fields: ctx, id
+func (_m *SceneMarkerReaderWriter) Destroy(ctx context.Context, id int) error {
+	ret := _m.Called(ctx, id)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -70,13 +72,13 @@ func (_m *SceneMarkerReaderWriter) Destroy(id int) error {
 	return r0
 }
 
-// Find provides a mock function with given fields: id
-func (_m *SceneMarkerReaderWriter) Find(id int) (*models.SceneMarker, error) {
-	ret := _m.Called(id)
+// Find provides a mock function with given fields: ctx, id
+func (_m *SceneMarkerReaderWriter) Find(ctx context.Context, id int) (*models.SceneMarker, error) {
+	ret := _m.Called(ctx, id)
 
 	var r0 *models.SceneMarker
-	if rf, ok := ret.Get(0).(func(int) *models.SceneMarker); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) *models.SceneMarker); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.SceneMarker)
@@ -84,8 +86,8 @@ func (_m *SceneMarkerReaderWriter) Find(id int) (*models.SceneMarker, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -93,13 +95,13 @@ func (_m *SceneMarkerReaderWriter) Find(id int) (*models.SceneMarker, error) {
 	return r0, r1
 }
 
-// FindBySceneID provides a mock function with given fields: sceneID
-func (_m *SceneMarkerReaderWriter) FindBySceneID(sceneID int) ([]*models.SceneMarker, error) {
-	ret := _m.Called(sceneID)
+// FindBySceneID provides a mock function with given fields: ctx, sceneID
+func (_m *SceneMarkerReaderWriter) FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error) {
+	ret := _m.Called(ctx, sceneID)
 
 	var r0 []*models.SceneMarker
-	if rf, ok := ret.Get(0).(func(int) []*models.SceneMarker); ok {
-		r0 = rf(sceneID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.SceneMarker); ok {
+		r0 = rf(ctx, sceneID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.SceneMarker)
@@ -107,8 +109,8 @@ func (_m *SceneMarkerReaderWriter) FindBySceneID(sceneID int) ([]*models.SceneMa
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(sceneID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, sceneID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -116,13 +118,13 @@ func (_m *SceneMarkerReaderWriter) FindBySceneID(sceneID int) ([]*models.SceneMa
 	return r0, r1
 }
 
-// FindMany provides a mock function with given fields: ids
-func (_m *SceneMarkerReaderWriter) FindMany(ids []int) ([]*models.SceneMarker, error) {
-	ret := _m.Called(ids)
+// FindMany provides a mock function with given fields: ctx, ids
+func (_m *SceneMarkerReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.SceneMarker, error) {
+	ret := _m.Called(ctx, ids)
 
 	var r0 []*models.SceneMarker
-	if rf, ok := ret.Get(0).(func([]int) []*models.SceneMarker); ok {
-		r0 = rf(ids)
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []*models.SceneMarker); ok {
+		r0 = rf(ctx, ids)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.SceneMarker)
@@ -130,8 +132,8 @@ func (_m *SceneMarkerReaderWriter) FindMany(ids []int) ([]*models.SceneMarker, e
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]int) error); ok {
-		r1 = rf(ids)
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -139,13 +141,13 @@ func (_m *SceneMarkerReaderWriter) FindMany(ids []int) ([]*models.SceneMarker, e
 	return r0, r1
 }
 
-// GetMarkerStrings provides a mock function with given fields: q, sort
-func (_m *SceneMarkerReaderWriter) GetMarkerStrings(q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
-	ret := _m.Called(q, sort)
+// GetMarkerStrings provides a mock function with given fields: ctx, q, sort
+func (_m *SceneMarkerReaderWriter) GetMarkerStrings(ctx context.Context, q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
+	ret := _m.Called(ctx, q, sort)
 
 	var r0 []*models.MarkerStringsResultType
-	if rf, ok := ret.Get(0).(func(*string, *string) []*models.MarkerStringsResultType); ok {
-		r0 = rf(q, sort)
+	if rf, ok := ret.Get(0).(func(context.Context, *string, *string) []*models.MarkerStringsResultType); ok {
+		r0 = rf(ctx, q, sort)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.MarkerStringsResultType)
@@ -153,8 +155,8 @@ func (_m *SceneMarkerReaderWriter) GetMarkerStrings(q *string, sort *string) ([]
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*string, *string) error); ok {
-		r1 = rf(q, sort)
+	if rf, ok := ret.Get(1).(func(context.Context, *string, *string) error); ok {
+		r1 = rf(ctx, q, sort)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -162,13 +164,13 @@ func (_m *SceneMarkerReaderWriter) GetMarkerStrings(q *string, sort *string) ([]
 	return r0, r1
 }
 
-// GetTagIDs provides a mock function with given fields: imageID
-func (_m *SceneMarkerReaderWriter) GetTagIDs(imageID int) ([]int, error) {
-	ret := _m.Called(imageID)
+// GetTagIDs provides a mock function with given fields: ctx, imageID
+func (_m *SceneMarkerReaderWriter) GetTagIDs(ctx context.Context, imageID int) ([]int, error) {
+	ret := _m.Called(ctx, imageID)
 
 	var r0 []int
-	if rf, ok := ret.Get(0).(func(int) []int); ok {
-		r0 = rf(imageID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
+		r0 = rf(ctx, imageID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]int)
@@ -176,8 +178,8 @@ func (_m *SceneMarkerReaderWriter) GetTagIDs(imageID int) ([]int, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(imageID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, imageID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -185,13 +187,13 @@ func (_m *SceneMarkerReaderWriter) GetTagIDs(imageID int) ([]int, error) {
 	return r0, r1
 }
 
-// Query provides a mock function with given fields: sceneMarkerFilter, findFilter
-func (_m *SceneMarkerReaderWriter) Query(sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) ([]*models.SceneMarker, int, error) {
-	ret := _m.Called(sceneMarkerFilter, findFilter)
+// Query provides a mock function with given fields: ctx, sceneMarkerFilter, findFilter
+func (_m *SceneMarkerReaderWriter) Query(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) ([]*models.SceneMarker, int, error) {
+	ret := _m.Called(ctx, sceneMarkerFilter, findFilter)
 
 	var r0 []*models.SceneMarker
-	if rf, ok := ret.Get(0).(func(*models.SceneMarkerFilterType, *models.FindFilterType) []*models.SceneMarker); ok {
-		r0 = rf(sceneMarkerFilter, findFilter)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.SceneMarkerFilterType, *models.FindFilterType) []*models.SceneMarker); ok {
+		r0 = rf(ctx, sceneMarkerFilter, findFilter)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.SceneMarker)
@@ -199,15 +201,15 @@ func (_m *SceneMarkerReaderWriter) Query(sceneMarkerFilter *models.SceneMarkerFi
 	}
 
 	var r1 int
-	if rf, ok := ret.Get(1).(func(*models.SceneMarkerFilterType, *models.FindFilterType) int); ok {
-		r1 = rf(sceneMarkerFilter, findFilter)
+	if rf, ok := ret.Get(1).(func(context.Context, *models.SceneMarkerFilterType, *models.FindFilterType) int); ok {
+		r1 = rf(ctx, sceneMarkerFilter, findFilter)
 	} else {
 		r1 = ret.Get(1).(int)
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(*models.SceneMarkerFilterType, *models.FindFilterType) error); ok {
-		r2 = rf(sceneMarkerFilter, findFilter)
+	if rf, ok := ret.Get(2).(func(context.Context, *models.SceneMarkerFilterType, *models.FindFilterType) error); ok {
+		r2 = rf(ctx, sceneMarkerFilter, findFilter)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -215,13 +217,13 @@ func (_m *SceneMarkerReaderWriter) Query(sceneMarkerFilter *models.SceneMarkerFi
 	return r0, r1, r2
 }
 
-// Update provides a mock function with given fields: updatedSceneMarker
-func (_m *SceneMarkerReaderWriter) Update(updatedSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
-	ret := _m.Called(updatedSceneMarker)
+// Update provides a mock function with given fields: ctx, updatedSceneMarker
+func (_m *SceneMarkerReaderWriter) Update(ctx context.Context, updatedSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
+	ret := _m.Called(ctx, updatedSceneMarker)
 
 	var r0 *models.SceneMarker
-	if rf, ok := ret.Get(0).(func(models.SceneMarker) *models.SceneMarker); ok {
-		r0 = rf(updatedSceneMarker)
+	if rf, ok := ret.Get(0).(func(context.Context, models.SceneMarker) *models.SceneMarker); ok {
+		r0 = rf(ctx, updatedSceneMarker)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.SceneMarker)
@@ -229,8 +231,8 @@ func (_m *SceneMarkerReaderWriter) Update(updatedSceneMarker models.SceneMarker)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.SceneMarker) error); ok {
-		r1 = rf(updatedSceneMarker)
+	if rf, ok := ret.Get(1).(func(context.Context, models.SceneMarker) error); ok {
+		r1 = rf(ctx, updatedSceneMarker)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -238,13 +240,13 @@ func (_m *SceneMarkerReaderWriter) Update(updatedSceneMarker models.SceneMarker)
 	return r0, r1
 }
 
-// UpdateTags provides a mock function with given fields: markerID, tagIDs
-func (_m *SceneMarkerReaderWriter) UpdateTags(markerID int, tagIDs []int) error {
-	ret := _m.Called(markerID, tagIDs)
+// UpdateTags provides a mock function with given fields: ctx, markerID, tagIDs
+func (_m *SceneMarkerReaderWriter) UpdateTags(ctx context.Context, markerID int, tagIDs []int) error {
+	ret := _m.Called(ctx, markerID, tagIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
-		r0 = rf(markerID, tagIDs)
+	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
+		r0 = rf(ctx, markerID, tagIDs)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -252,13 +254,13 @@ func (_m *SceneMarkerReaderWriter) UpdateTags(markerID int, tagIDs []int) error 
 	return r0
 }
 
-// Wall provides a mock function with given fields: q
-func (_m *SceneMarkerReaderWriter) Wall(q *string) ([]*models.SceneMarker, error) {
-	ret := _m.Called(q)
+// Wall provides a mock function with given fields: ctx, q
+func (_m *SceneMarkerReaderWriter) Wall(ctx context.Context, q *string) ([]*models.SceneMarker, error) {
+	ret := _m.Called(ctx, q)
 
 	var r0 []*models.SceneMarker
-	if rf, ok := ret.Get(0).(func(*string) []*models.SceneMarker); ok {
-		r0 = rf(q)
+	if rf, ok := ret.Get(0).(func(context.Context, *string) []*models.SceneMarker); ok {
+		r0 = rf(ctx, q)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.SceneMarker)
@@ -266,8 +268,8 @@ func (_m *SceneMarkerReaderWriter) Wall(q *string) ([]*models.SceneMarker, error
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*string) error); ok {
-		r1 = rf(q)
+	if rf, ok := ret.Get(1).(func(context.Context, *string) error); ok {
+		r1 = rf(ctx, q)
 	} else {
 		r1 = ret.Error(1)
 	}

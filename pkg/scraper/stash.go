@@ -18,10 +18,10 @@ type stashScraper struct {
 	config       config
 	globalConfig GlobalConfig
 	client       *http.Client
-	txnManager   models.TransactionManager
+	txnManager   models.Repository
 }
 
-func newStashScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *stashScraper {
+func newStashScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.Repository, config config, globalConfig GlobalConfig) *stashScraper {
 	return &stashScraper{
 		scraper:      scraper,
 		config:       config,
@@ -308,11 +308,11 @@ func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ ScrapeContentT
 	return nil, ErrNotSupported
 }
 
-func getScene(ctx context.Context, sceneID int, txnManager models.TransactionManager) (*models.Scene, error) {
+func getScene(ctx context.Context, sceneID int, r models.Repository) (*models.Scene, error) {
 	var ret *models.Scene
-	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.Scene().Find(sceneID)
+		ret, err = r.Scene.Find(ctx, sceneID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -346,11 +346,11 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 	}
 }
 
-func getGallery(ctx context.Context, galleryID int, txnManager models.TransactionManager) (*models.Gallery, error) {
+func getGallery(ctx context.Context, galleryID int, r models.Repository) (*models.Gallery, error) {
 	var ret *models.Gallery
-	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.Gallery().Find(galleryID)
+		ret, err = r.Gallery.Find(ctx, galleryID)
 		return err
 	}); err != nil {
 		return nil, err

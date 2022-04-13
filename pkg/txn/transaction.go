@@ -8,7 +8,9 @@ type Manager interface {
 	Rollback(ctx context.Context) error
 }
 
-func WithTxn(ctx context.Context, m Manager, fn func(ctx context.Context) error) error {
+type TxnFunc func(ctx context.Context) error
+
+func WithTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 	var err error
 	ctx, err = m.Begin(ctx)
 

@@ -1,8 +1,12 @@
 package tag
 
-import "github.com/stashapp/stash/pkg/models"
+import (
+	"context"
 
-func ByName(qb models.TagReader, name string) (*models.Tag, error) {
+	"github.com/stashapp/stash/pkg/models"
+)
+
+func ByName(ctx context.Context, qb models.TagReader, name string) (*models.Tag, error) {
 	f := &models.TagFilterType{
 		Name: &models.StringCriterionInput{
 			Value:    name,
@@ -11,7 +15,7 @@ func ByName(qb models.TagReader, name string) (*models.Tag, error) {
 	}
 
 	pp := 1
-	ret, count, err := qb.Query(f, &models.FindFilterType{
+	ret, count, err := qb.Query(ctx, f, &models.FindFilterType{
 		PerPage: &pp,
 	})
 
@@ -26,7 +30,7 @@ func ByName(qb models.TagReader, name string) (*models.Tag, error) {
 	return nil, nil
 }
 
-func ByAlias(qb models.TagReader, alias string) (*models.Tag, error) {
+func ByAlias(ctx context.Context, qb models.TagReader, alias string) (*models.Tag, error) {
 	f := &models.TagFilterType{
 		Aliases: &models.StringCriterionInput{
 			Value:    alias,
@@ -35,7 +39,7 @@ func ByAlias(qb models.TagReader, alias string) (*models.Tag, error) {
 	}
 
 	pp := 1
-	ret, count, err := qb.Query(f, &models.FindFilterType{
+	ret, count, err := qb.Query(ctx, f, &models.FindFilterType{
 		PerPage: &pp,
 	})
 

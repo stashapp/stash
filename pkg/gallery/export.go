@@ -1,6 +1,8 @@
 package gallery
 
 import (
+	"context"
+
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -52,9 +54,9 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 
 // GetStudioName returns the name of the provided gallery's studio. It returns an
 // empty string if there is no studio assigned to the gallery.
-func GetStudioName(reader models.StudioReader, gallery *models.Gallery) (string, error) {
+func GetStudioName(ctx context.Context, reader models.StudioReader, gallery *models.Gallery) (string, error) {
 	if gallery.StudioID.Valid {
-		studio, err := reader.Find(int(gallery.StudioID.Int64))
+		studio, err := reader.Find(ctx, int(gallery.StudioID.Int64))
 		if err != nil {
 			return "", err
 		}

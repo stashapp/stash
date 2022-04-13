@@ -1,29 +1,31 @@
 package gallery
 
 import (
+	"context"
+
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
-func UpdateFileModTime(qb models.GalleryWriter, id int, modTime models.NullSQLiteTimestamp) (*models.Gallery, error) {
-	return qb.UpdatePartial(models.GalleryPartial{
+func UpdateFileModTime(ctx context.Context, qb models.GalleryWriter, id int, modTime models.NullSQLiteTimestamp) (*models.Gallery, error) {
+	return qb.UpdatePartial(ctx, models.GalleryPartial{
 		ID:          id,
 		FileModTime: &modTime,
 	})
 }
 
-func AddImage(qb models.GalleryReaderWriter, galleryID int, imageID int) error {
-	imageIDs, err := qb.GetImageIDs(galleryID)
+func AddImage(ctx context.Context, qb models.GalleryReaderWriter, galleryID int, imageID int) error {
+	imageIDs, err := qb.GetImageIDs(ctx, galleryID)
 	if err != nil {
 		return err
 	}
 
 	imageIDs = intslice.IntAppendUnique(imageIDs, imageID)
-	return qb.UpdateImages(galleryID, imageIDs)
+	return qb.UpdateImages(ctx, galleryID, imageIDs)
 }
 
-func AddPerformer(qb models.GalleryReaderWriter, id int, performerID int) (bool, error) {
-	performerIDs, err := qb.GetPerformerIDs(id)
+func AddPerformer(ctx context.Context, qb models.GalleryReaderWriter, id int, performerID int) (bool, error) {
+	performerIDs, err := qb.GetPerformerIDs(ctx, id)
 	if err != nil {
 		return false, err
 	}
@@ -32,7 +34,7 @@ func AddPerformer(qb models.GalleryReaderWriter, id int, performerID int) (bool,
 	performerIDs = intslice.IntAppendUnique(performerIDs, performerID)
 
 	if len(performerIDs) != oldLen {
-		if err := qb.UpdatePerformers(id, performerIDs); err != nil {
+		if err := qb.UpdatePerformers(ctx, id, performerIDs); err != nil {
 			return false, err
 		}
 
@@ -42,8 +44,8 @@ func AddPerformer(qb models.GalleryReaderWriter, id int, performerID int) (bool,
 	return false, nil
 }
 
-func AddTag(qb models.GalleryReaderWriter, id int, tagID int) (bool, error) {
-	tagIDs, err := qb.GetTagIDs(id)
+func AddTag(ctx context.Context, qb models.GalleryReaderWriter, id int, tagID int) (bool, error) {
+	tagIDs, err := qb.GetTagIDs(ctx, id)
 	if err != nil {
 		return false, err
 	}
@@ -52,7 +54,7 @@ func AddTag(qb models.GalleryReaderWriter, id int, tagID int) (bool, error) {
 	tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
 
 	if len(tagIDs) != oldLen {
-		if err := qb.UpdateTags(id, tagIDs); err != nil {
+		if err := qb.UpdateTags(ctx, id, tagIDs); err != nil {
 			return false, err
 		}
 

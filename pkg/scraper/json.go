@@ -19,10 +19,10 @@ type jsonScraper struct {
 	config       config
 	globalConfig GlobalConfig
 	client       *http.Client
-	txnManager   models.TransactionManager
+	txnManager   models.Repository
 }
 
-func newJsonScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *jsonScraper {
+func newJsonScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.Repository, config config, globalConfig GlobalConfig) *jsonScraper {
 	return &jsonScraper{
 		scraper:      scraper,
 		config:       config,

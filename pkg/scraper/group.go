@@ -11,11 +11,11 @@ import (
 type group struct {
 	config config
 
-	txnManager models.TransactionManager
+	txnManager models.Repository
 	globalConf GlobalConfig
 }
 
-func newGroupScraper(c config, txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
+func newGroupScraper(c config, txnManager models.Repository, globalConfig GlobalConfig) scraper {
 	return group{
 		config:     c,
 		txnManager: txnManager,

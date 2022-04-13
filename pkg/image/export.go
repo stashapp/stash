@@ -1,6 +1,8 @@
 package image
 
 import (
+	"context"
+
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -56,9 +58,9 @@ func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
 
 // GetStudioName returns the name of the provided image's studio. It returns an
 // empty string if there is no studio assigned to the image.
-func GetStudioName(reader models.StudioReader, image *models.Image) (string, error) {
+func GetStudioName(ctx context.Context, reader models.StudioReader, image *models.Image) (string, error) {
 	if image.StudioID.Valid {
-		studio, err := reader.Find(int(image.StudioID.Int64))
+		studio, err := reader.Find(ctx, int(image.StudioID.Int64))
 		if err != nil {
 			return "", err
 		}

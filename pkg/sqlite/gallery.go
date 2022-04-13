@@ -21,14 +21,11 @@ type galleryQueryBuilder struct {
 	repository
 }
 
-func NewGalleryReaderWriter(tx dbi) *galleryQueryBuilder {
-	return &galleryQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: galleryTable,
-			idColumn:  idColumn,
-		},
-	}
+var GalleryReaderWriter = &galleryQueryBuilder{
+	repository{
+		tableName: galleryTable,
+		idColumn:  idColumn,
+	},
 }
 
 func (qb *galleryQueryBuilder) Create(ctx context.Context, newObject models.Gallery) (*models.Gallery, error) {

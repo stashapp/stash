@@ -16,14 +16,11 @@ type movieQueryBuilder struct {
 	repository
 }
 
-func NewMovieReaderWriter(tx dbi) *movieQueryBuilder {
-	return &movieQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: movieTable,
-			idColumn:  idColumn,
-		},
-	}
+var MovieReaderWriter = &movieQueryBuilder{
+	repository{
+		tableName: movieTable,
+		idColumn:  idColumn,
+	},
 }
 
 func (qb *movieQueryBuilder) Create(ctx context.Context, newObject models.Movie) (*models.Movie, error) {

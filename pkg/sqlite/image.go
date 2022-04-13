@@ -30,14 +30,11 @@ type imageQueryBuilder struct {
 	repository
 }
 
-func NewImageReaderWriter(tx dbi) *imageQueryBuilder {
-	return &imageQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: imageTable,
-			idColumn:  idColumn,
-		},
-	}
+var ImageReaderWriter = &imageQueryBuilder{
+	repository{
+		tableName: imageTable,
+		idColumn:  idColumn,
+	},
 }
 
 func (qb *imageQueryBuilder) Create(ctx context.Context, newObject models.Image) (*models.Image, error) {

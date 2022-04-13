@@ -52,7 +52,7 @@ type Cache struct {
 	client       *http.Client
 	scrapers     map[string]scraper // Scraper ID -> Scraper
 	globalConfig GlobalConfig
-	txnManager   models.TransactionManager
+	txnManager   models.Repository
 }
 
 // newClient creates a scraper-local http client we use throughout the scraper subsystem.
@@ -81,7 +81,7 @@ func newClient(gc GlobalConfig) *http.Client {
 //
 // Scraper configurations are loaded from yml files in the provided scrapers
 // directory and any subdirectories.
-func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (*Cache, error) {
+func NewCache(globalConfig GlobalConfig, txnManager models.Repository) (*Cache, error) {
 	// HTTP Client setup
 	client := newClient(globalConfig)
 
@@ -98,7 +98,7 @@ func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (
 	}, nil
 }
 
-func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManager) (map[string]scraper, error) {
+func loadScrapers(globalConfig GlobalConfig, txnManager models.Repository) (map[string]scraper, error) {
 	path := globalConfig.GetScrapersPath()
 	scrapers := make(map[string]scraper)
 

@@ -34,7 +34,7 @@ type Scanner struct {
 	FileNamingAlgorithm models.HashAlgorithm
 
 	CaseSensitiveFs  bool
-	TxnManager       models.TransactionManager
+	TxnManager       models.Repository
 	Paths            *paths.Paths
 	Screenshotter    screenshotter
 	VideoFileCreator videoFileCreator
@@ -136,20 +136,20 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 			scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
 		}
 
-		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
+		if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 			defer close(done)
-			qb := r.Scene()
+			qb := scanner.TxnManager.Scene
 
 			// ensure no clashes of hashes
 			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
-				dupe, _ := qb.FindByChecksum(s.Checksum.String)
+				dupe, _ := qb.FindByChecksum(ctx, s.Checksum.String)
 				if dupe != nil {
 					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, dupe.Path)
 				}
 			}
 
 			if scanned.New.OSHash != "" && scanned.Old.OSHash != scanned.New.OSHash {
-				dupe, _ := qb.FindByOSHash(scanned.New.OSHash)
+				dupe, _ := qb.FindByOSHash(ctx, scanned.New.OSHash)
 				if dupe != nil {
 					return fmt.Errorf("OSHash for file %s is the same as that of %s", path, dupe.Path)
 				}
@@ -158,7 +158,7 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 			s.Interactive = interactive
 			s.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
 
-			_, err := qb.UpdateFull(*s)
+			_, err := qb.UpdateFull(ctx, *s)
 			return err
 		}); err != nil {
 			return err
@@ -204,14 +204,14 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
 	var s *models.Scene
-	if err := scanner.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		qb := r.Scene()
+	if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		qb := scanner.TxnManager.Scene
 		if checksum != "" {
-			s, _ = qb.FindByChecksum(checksum)
+			s, _ = qb.FindByChecksum(ctx, checksum)
 		}
 
 		if s == nil {
-			s, _ = qb.FindByOSHash(oshash)
+			s, _ = qb.FindByOSHash(ctx, oshash)
 		}
 
 		return nil
@@ -246,8 +246,8 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 				Path:        &path,
 				Interactive: &interactive,
 			}
-			if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-				_, err := r.Scene().Update(scenePartial)
+			if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+				_, err := scanner.TxnManager.Scene.Update(ctx, scenePartial)
 				return err
 			}); err != nil {
 				return nil, err
@@ -297,9 +297,9 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 			_ = newScene.Date.Scan(videoFile.CreationTime)
 		}
 
-		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
+		if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 			var err error
-			retScene, err = r.Scene().Create(newScene)
+			retScene, err = scanner.TxnManager.Scene.Create(ctx, newScene)
 			return err
 		}); err != nil {
 			return nil, err

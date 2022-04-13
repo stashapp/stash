@@ -33,7 +33,7 @@ type scraperActionImpl interface {
 	scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error)
 }
 
-func (c config) getScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, globalConfig GlobalConfig) scraperActionImpl {
+func (c config) getScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.Repository, globalConfig GlobalConfig) scraperActionImpl {
 	switch scraper.Action {
 	case scraperActionScript:
 		return newScriptScraper(scraper, c, globalConfig)

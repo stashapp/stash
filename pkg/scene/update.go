@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -47,7 +48,7 @@ func (u *UpdateSet) IsEmpty() bool {
 // Update updates a scene by updating the fields in the Partial field, then
 // updates non-nil relationships. Returns an error if there is no work to
 // be done.
-func (u *UpdateSet) Update(qb models.SceneWriter, screenshotSetter ScreenshotSetter) (*models.Scene, error) {
+func (u *UpdateSet) Update(ctx context.Context, qb models.SceneWriter, screenshotSetter ScreenshotSetter) (*models.Scene, error) {
 	if u.IsEmpty() {
 		return nil, ErrEmptyUpdater
 	}
@@ -58,31 +59,31 @@ func (u *UpdateSet) Update(qb models.SceneWriter, screenshotSetter ScreenshotSet
 		Timestamp: time.Now(),
 	}
 
-	ret, err := qb.Update(partial)
+	ret, err := qb.Update(ctx, partial)
 	if err != nil {
 		return nil, fmt.Errorf("error updating scene: %w", err)
 	}
 
 	if u.PerformerIDs != nil {
-		if err := qb.UpdatePerformers(u.ID, u.PerformerIDs); err != nil {
+		if err := qb.UpdatePerformers(ctx, u.ID, u.PerformerIDs); err != nil {
 			return nil, fmt.Errorf("error updating scene performers: %w", err)
 		}
 	}
 
 	if u.TagIDs != nil {
-		if err := qb.UpdateTags(u.ID, u.TagIDs); err != nil {
+		if err := qb.UpdateTags(ctx, u.ID, u.TagIDs); err != nil {
 			return nil, fmt.Errorf("error updating scene tags: %w", err)
 		}
 	}
 
 	if u.StashIDs != nil {
-		if err := qb.UpdateStashIDs(u.ID, u.StashIDs); err != nil {
+		if err := qb.UpdateStashIDs(ctx, u.ID, u.StashIDs); err != nil {
 			return nil, fmt.Errorf("error updating scene stash_ids: %w", err)
 		}
 	}
 
 	if u.CoverImage != nil {
-		if err := qb.UpdateCover(u.ID, u.CoverImage); err != nil {
+		if err := qb.UpdateCover(ctx, u.ID, u.CoverImage); err != nil {
 			return nil, fmt.Errorf("error updating scene cover: %w", err)
 		}
 
@@ -124,8 +125,8 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	return ret
 }
 
-func UpdateFormat(qb models.SceneWriter, id int, format string) (*models.Scene, error) {
-	return qb.Update(models.ScenePartial{
+func UpdateFormat(ctx context.Context, qb models.SceneWriter, id int, format string) (*models.Scene, error) {
+	return qb.Update(ctx, models.ScenePartial{
 		ID: id,
 		Format: &sql.NullString{
 			String: format,
@@ -134,8 +135,8 @@ func UpdateFormat(qb models.SceneWriter, id int, format string) (*models.Scene, 
 	})
 }
 
-func UpdateOSHash(qb models.SceneWriter, id int, oshash string) (*models.Scene, error) {
-	return qb.Update(models.ScenePartial{
+func UpdateOSHash(ctx context.Context, qb models.SceneWriter, id int, oshash string) (*models.Scene, error) {
+	return qb.Update(ctx, models.ScenePartial{
 		ID: id,
 		OSHash: &sql.NullString{
 			String: oshash,
@@ -144,8 +145,8 @@ func UpdateOSHash(qb models.SceneWriter, id int, oshash string) (*models.Scene, 
 	})
 }
 
-func UpdateChecksum(qb models.SceneWriter, id int, checksum string) (*models.Scene, error) {
-	return qb.Update(models.ScenePartial{
+func UpdateChecksum(ctx context.Context, qb models.SceneWriter, id int, checksum string) (*models.Scene, error) {
+	return qb.Update(ctx, models.ScenePartial{
 		ID: id,
 		Checksum: &sql.NullString{
 			String: checksum,
@@ -154,15 +155,15 @@ func UpdateChecksum(qb models.SceneWriter, id int, checksum string) (*models.Sce
 	})
 }
 
-func UpdateFileModTime(qb models.SceneWriter, id int, modTime models.NullSQLiteTimestamp) (*models.Scene, error) {
-	return qb.Update(models.ScenePartial{
+func UpdateFileModTime(ctx context.Context, qb models.SceneWriter, id int, modTime models.NullSQLiteTimestamp) (*models.Scene, error) {
+	return qb.Update(ctx, models.ScenePartial{
 		ID:          id,
 		FileModTime: &modTime,
 	})
 }
 
-func AddPerformer(qb models.SceneReaderWriter, id int, performerID int) (bool, error) {
-	performerIDs, err := qb.GetPerformerIDs(id)
+func AddPerformer(ctx context.Context, qb models.SceneReaderWriter, id int, performerID int) (bool, error) {
+	performerIDs, err := qb.GetPerformerIDs(ctx, id)
 	if err != nil {
 		return false, err
 	}
@@ -171,7 +172,7 @@ func AddPerformer(qb models.SceneReaderWriter, id int, performerID int) (bool, e
 	performerIDs = intslice.IntAppendUnique(performerIDs, performerID)
 
 	if len(performerIDs) != oldLen {
-		if err := qb.UpdatePerformers(id, performerIDs); err != nil {
+		if err := qb.UpdatePerformers(ctx, id, performerIDs); err != nil {
 			return false, err
 		}
 
@@ -181,8 +182,8 @@ func AddPerformer(qb models.SceneReaderWriter, id int, performerID int) (bool, e
 	return false, nil
 }
 
-func AddTag(qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
-	tagIDs, err := qb.GetTagIDs(id)
+func AddTag(ctx context.Context, qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
+	tagIDs, err := qb.GetTagIDs(ctx, id)
 	if err != nil {
 		return false, err
 	}
@@ -191,7 +192,7 @@ func AddTag(qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
 	tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
 
 	if len(tagIDs) != oldLen {
-		if err := qb.UpdateTags(id, tagIDs); err != nil {
+		if err := qb.UpdateTags(ctx, id, tagIDs); err != nil {
 			return false, err
 		}
 
@@ -201,8 +202,8 @@ func AddTag(qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
 	return false, nil
 }
 
-func AddGallery(qb models.SceneReaderWriter, id int, galleryID int) (bool, error) {
-	galleryIDs, err := qb.GetGalleryIDs(id)
+func AddGallery(ctx context.Context, qb models.SceneReaderWriter, id int, galleryID int) (bool, error) {
+	galleryIDs, err := qb.GetGalleryIDs(ctx, id)
 	if err != nil {
 		return false, err
 	}
@@ -211,7 +212,7 @@ func AddGallery(qb models.SceneReaderWriter, id int, galleryID int) (bool, error
 	galleryIDs = intslice.IntAppendUnique(galleryIDs, galleryID)
 
 	if len(galleryIDs) != oldLen {
-		if err := qb.UpdateGalleries(id, galleryIDs); err != nil {
+		if err := qb.UpdateGalleries(ctx, id, galleryIDs); err != nil {
 			return false, err
 		}
 

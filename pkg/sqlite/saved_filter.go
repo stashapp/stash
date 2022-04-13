@@ -16,14 +16,11 @@ type savedFilterQueryBuilder struct {
 	repository
 }
 
-func NewSavedFilterReaderWriter(tx dbi) *savedFilterQueryBuilder {
-	return &savedFilterQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: savedFilterTable,
-			idColumn:  idColumn,
-		},
-	}
+var SavedFilterReaderWriter = &savedFilterQueryBuilder{
+	repository{
+		tableName: savedFilterTable,
+		idColumn:  idColumn,
+	},
 }
 
 func (qb *savedFilterQueryBuilder) Create(ctx context.Context, newObject models.SavedFilter) (*models.SavedFilter, error) {

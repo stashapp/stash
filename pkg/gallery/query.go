@@ -1,12 +1,13 @@
 package gallery
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func CountByPerformerID(r models.GalleryReader, id int) (int, error) {
+func CountByPerformerID(ctx context.Context, r models.GalleryReader, id int) (int, error) {
 	filter := &models.GalleryFilterType{
 		Performers: &models.MultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -14,10 +15,10 @@ func CountByPerformerID(r models.GalleryReader, id int) (int, error) {
 		},
 	}
 
-	return r.QueryCount(filter, nil)
+	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByStudioID(r models.GalleryReader, id int) (int, error) {
+func CountByStudioID(ctx context.Context, r models.GalleryReader, id int) (int, error) {
 	filter := &models.GalleryFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -25,10 +26,10 @@ func CountByStudioID(r models.GalleryReader, id int) (int, error) {
 		},
 	}
 
-	return r.QueryCount(filter, nil)
+	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByTagID(r models.GalleryReader, id int) (int, error) {
+func CountByTagID(ctx context.Context, r models.GalleryReader, id int) (int, error) {
 	filter := &models.GalleryFilterType{
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -36,5 +37,5 @@ func CountByTagID(r models.GalleryReader, id int) (int, error) {
 		},
 	}
 
-	return r.QueryCount(filter, nil)
+	return r.QueryCount(ctx, filter, nil)
 }

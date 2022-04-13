@@ -19,14 +19,11 @@ type tagQueryBuilder struct {
 	repository
 }
 
-func NewTagReaderWriter(tx dbi) *tagQueryBuilder {
-	return &tagQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: tagTable,
-			idColumn:  idColumn,
-		},
-	}
+var TagReaderWriter = &tagQueryBuilder{
+	repository{
+		tableName: tagTable,
+		idColumn:  idColumn,
+	},
 }
 
 func (qb *tagQueryBuilder) Create(ctx context.Context, newObject models.Tag) (*models.Tag, error) {

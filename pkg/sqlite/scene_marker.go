@@ -23,14 +23,11 @@ type sceneMarkerQueryBuilder struct {
 	repository
 }
 
-func NewSceneMarkerReaderWriter(tx dbi) *sceneMarkerQueryBuilder {
-	return &sceneMarkerQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: sceneMarkerTable,
-			idColumn:  idColumn,
-		},
-	}
+var SceneMarkerReaderWriter = &sceneMarkerQueryBuilder{
+	repository{
+		tableName: sceneMarkerTable,
+		idColumn:  idColumn,
+	},
 }
 
 func (qb *sceneMarkerQueryBuilder) Create(ctx context.Context, newObject models.SceneMarker) (*models.SceneMarker, error) {

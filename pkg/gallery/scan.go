@@ -25,7 +25,7 @@ type Scanner struct {
 	ImageExtensions    []string
 	StripFileExtension bool
 	CaseSensitiveFs    bool
-	TxnManager         models.TransactionManager
+	TxnManager         models.Repository
 	Paths              *paths.Paths
 	PluginCache        *plugin.Cache
 	MutexManager       *utils.MutexManager
@@ -75,19 +75,19 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 		done := make(chan struct{})
 		scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
 
-		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
+		if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 			// free the mutex once transaction is complete
 			defer close(done)
 
 			// ensure no clashes of hashes
 			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
-				dupe, _ := r.Gallery().FindByChecksum(retGallery.Checksum)
+				dupe, _ := scanner.TxnManager.Gallery.FindByChecksum(ctx, retGallery.Checksum)
 				if dupe != nil {
 					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, dupe.Path.String)
 				}
 			}
 
-			retGallery, err = r.Gallery().Update(*retGallery)
+			retGallery, err = scanner.TxnManager.Gallery.Update(ctx, *retGallery)
 			return err
 		}); err != nil {
 			return nil, false, err
@@ -116,10 +116,10 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retG
 	scanner.MutexManager.Claim(mutexType, checksum, done)
 	defer close(done)
 
-	if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-		qb := r.Gallery()
+	if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		qb := scanner.TxnManager.Gallery
 
-		g, _ = qb.FindByChecksum(checksum)
+		g, _ = qb.FindByChecksum(ctx, checksum)
 		if g != nil {
 			exists, _ := fsutil.FileExists(g.Path.String)
 			if !scanner.CaseSensitiveFs {
@@ -138,7 +138,7 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retG
 					String: path,
 					Valid:  true,
 				}
-				g, err = qb.Update(*g)
+				g, err = qb.Update(ctx, *g)
 				if err != nil {
 					return err
 				}
@@ -167,7 +167,7 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retG
 			}
 
 			logger.Infof("%s doesn't exist.  Creating new item...", path)
-			g, err = qb.Create(*g)
+			g, err = qb.Create(ctx, *g)
 			if err != nil {
 				return err
 			}

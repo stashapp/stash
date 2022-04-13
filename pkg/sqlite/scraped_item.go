@@ -14,14 +14,11 @@ type scrapedItemQueryBuilder struct {
 	repository
 }
 
-func NewScrapedItemReaderWriter(tx dbi) *scrapedItemQueryBuilder {
-	return &scrapedItemQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: scrapedItemTable,
-			idColumn:  idColumn,
-		},
-	}
+var ScrapedItemReaderWriter = &scrapedItemQueryBuilder{
+	repository{
+		tableName: scrapedItemTable,
+		idColumn:  idColumn,
+	},
 }
 
 func (qb *scrapedItemQueryBuilder) Create(ctx context.Context, newObject models.ScrapedItem) (*models.ScrapedItem, error) {

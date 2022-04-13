@@ -4,6 +4,7 @@
 package sqlite_test
 
 import (
+	"context"
 	"math"
 	"strconv"
 	"testing"
@@ -11,14 +12,15 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func TestGalleryFind(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		gqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		gqb := sqlite.GalleryReaderWriter
 
 		const galleryIdx = 0
-		gallery, err := gqb.Find(galleryIDs[galleryIdx])
+		gallery, err := gqb.Find(ctx, galleryIDs[galleryIdx])
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
@@ -26,7 +28,7 @@ func TestGalleryFind(t *testing.T) {
 
 		assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path.String)
 
-		gallery, err = gqb.Find(0)
+		gallery, err = gqb.Find(ctx, 0)
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
@@ -39,12 +41,12 @@ func TestGalleryFind(t *testing.T) {
 }
 
 func TestGalleryFindByChecksum(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		gqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		gqb := sqlite.GalleryReaderWriter
 
 		const galleryIdx = 0
 		galleryChecksum := getGalleryStringValue(galleryIdx, "Checksum")
-		gallery, err := gqb.FindByChecksum(galleryChecksum)
+		gallery, err := gqb.FindByChecksum(ctx, galleryChecksum)
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
@@ -53,7 +55,7 @@ func TestGalleryFindByChecksum(t *testing.T) {
 		assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path.String)
 
 		galleryChecksum = "not exist"
-		gallery, err = gqb.FindByChecksum(galleryChecksum)
+		gallery, err = gqb.FindByChecksum(ctx, galleryChecksum)
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
@@ -66,12 +68,12 @@ func TestGalleryFindByChecksum(t *testing.T) {
 }
 
 func TestGalleryFindByPath(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		gqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		gqb := sqlite.GalleryReaderWriter
 
 		const galleryIdx = 0
 		galleryPath := getGalleryStringValue(galleryIdx, "Path")
-		gallery, err := gqb.FindByPath(galleryPath)
+		gallery, err := gqb.FindByPath(ctx, galleryPath)
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
@@ -80,7 +82,7 @@ func TestGalleryFindByPath(t *testing.T) {
 		assert.Equal(t, galleryPath, gallery.Path.String)
 
 		galleryPath = "not exist"
-		gallery, err = gqb.FindByPath(galleryPath)
+		gallery, err = gqb.FindByPath(ctx, galleryPath)
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
@@ -93,11 +95,11 @@ func TestGalleryFindByPath(t *testing.T) {
 }
 
 func TestGalleryFindBySceneID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		gqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		gqb := sqlite.GalleryReaderWriter
 
 		sceneID := sceneIDs[sceneIdxWithGallery]
-		galleries, err := gqb.FindBySceneID(sceneID)
+		galleries, err := gqb.FindBySceneID(ctx, sceneID)
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
@@ -105,7 +107,7 @@ func TestGalleryFindBySceneID(t *testing.T) {
 
 		assert.Equal(t, getGalleryStringValue(galleryIdxWithScene, "Path"), galleries[0].Path.String)
 
-		galleries, err = gqb.FindBySceneID(0)
+		galleries, err = gqb.FindBySceneID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
@@ -118,24 +120,24 @@ func TestGalleryFindBySceneID(t *testing.T) {
 }
 
 func TestGalleryQueryQ(t *testing.T) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		const galleryIdx = 0
 
 		q := getGalleryStringValue(galleryIdx, pathField)
 
-		sqb := r.Gallery()
+		sqb := sqlite.GalleryReaderWriter
 
-		galleryQueryQ(t, sqb, q, galleryIdx)
+		galleryQueryQ(ctx, t, sqb, q, galleryIdx)
 
 		return nil
 	})
 }
 
-func galleryQueryQ(t *testing.T, qb models.GalleryReader, q string, expectedGalleryIdx int) {
+func galleryQueryQ(ctx context.Context, t *testing.T, qb models.GalleryReader, q string, expectedGalleryIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,
 	}
-	galleries, _, err := qb.Query(nil, &filter)
+	galleries, _, err := qb.Query(ctx, nil, &filter)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
 	}
@@ -146,7 +148,7 @@ func galleryQueryQ(t *testing.T, qb models.GalleryReader, q string, expectedGall
 
 	// no Q should return all results
 	filter.Q = nil
-	galleries, _, err = qb.Query(nil, &filter)
+	galleries, _, err = qb.Query(ctx, nil, &filter)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
 	}
@@ -155,7 +157,7 @@ func galleryQueryQ(t *testing.T, qb models.GalleryReader, q string, expectedGall
 }
 
 func TestGalleryQueryPath(t *testing.T) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		const galleryIdx = 1
 		galleryPath := getGalleryStringValue(galleryIdx, "Path")
 
@@ -164,28 +166,28 @@ func TestGalleryQueryPath(t *testing.T) {
 			Modifier: models.CriterionModifierEquals,
 		}
 
-		verifyGalleriesPath(t, r.Gallery(), pathCriterion)
+		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
 
 		pathCriterion.Modifier = models.CriterionModifierNotEquals
-		verifyGalleriesPath(t, r.Gallery(), pathCriterion)
+		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
 
 		pathCriterion.Modifier = models.CriterionModifierMatchesRegex
 		pathCriterion.Value = "gallery.*1_Path"
-		verifyGalleriesPath(t, r.Gallery(), pathCriterion)
+		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
 
 		pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
-		verifyGalleriesPath(t, r.Gallery(), pathCriterion)
+		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
 
 		return nil
 	})
 }
 
-func verifyGalleriesPath(t *testing.T, sqb models.GalleryReader, pathCriterion models.StringCriterionInput) {
+func verifyGalleriesPath(ctx context.Context, t *testing.T, sqb models.GalleryReader, pathCriterion models.StringCriterionInput) {
 	galleryFilter := models.GalleryFilterType{
 		Path: &pathCriterion,
 	}
 
-	galleries, _, err := sqb.Query(&galleryFilter, nil)
+	galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
 	}
@@ -215,10 +217,10 @@ func TestGalleryQueryPathOr(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 2)
 		assert.Equal(t, gallery1Path, galleries[0].Path.String)
@@ -246,10 +248,10 @@ func TestGalleryQueryPathAndRating(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryPath, galleries[0].Path.String)
@@ -281,10 +283,10 @@ func TestGalleryQueryPathNotRating(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		for _, gallery := range galleries {
 			verifyNullString(t, gallery.Path, pathCriterion)
@@ -312,20 +314,20 @@ func TestGalleryIllegalQuery(t *testing.T) {
 		Or:  &subFilter,
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 
-		_, _, err := sqb.Query(galleryFilter, nil)
+		_, _, err := sqb.Query(ctx, galleryFilter, nil)
 		assert.NotNil(err)
 
 		galleryFilter.Or = nil
 		galleryFilter.Not = &subFilter
-		_, _, err = sqb.Query(galleryFilter, nil)
+		_, _, err = sqb.Query(ctx, galleryFilter, nil)
 		assert.NotNil(err)
 
 		galleryFilter.And = nil
 		galleryFilter.Or = &subFilter
-		_, _, err = sqb.Query(galleryFilter, nil)
+		_, _, err = sqb.Query(ctx, galleryFilter, nil)
 		assert.NotNil(err)
 
 		return nil
@@ -371,11 +373,11 @@ func TestGalleryQueryURL(t *testing.T) {
 }
 
 func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn func(s *models.Gallery)) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := r.Gallery()
+		sqb := sqlite.GalleryReaderWriter
 
-		galleries := queryGallery(t, sqb, &filter, nil)
+		galleries := queryGallery(ctx, t, sqb, &filter, nil)
 
 		// assume it should find at least one
 		assert.Greater(t, len(galleries), 0)
@@ -414,13 +416,13 @@ func TestGalleryQueryRating(t *testing.T) {
 }
 
 func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		galleryFilter := models.GalleryFilterType{
 			Rating: &ratingCriterion,
 		}
 
-		galleries, _, err := sqb.Query(&galleryFilter, nil)
+		galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
 		if err != nil {
 			t.Errorf("Error querying gallery: %s", err.Error())
 		}
@@ -434,8 +436,8 @@ func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInpu
 }
 
 func TestGalleryQueryIsMissingScene(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.GalleryReaderWriter
 		isMissing := "scenes"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -446,7 +448,7 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries, _, err := qb.Query(&galleryFilter, &findFilter)
+		galleries, _, err := qb.Query(ctx, &galleryFilter, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying gallery: %s", err.Error())
 		}
@@ -454,7 +456,7 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 		assert.Len(t, galleries, 0)
 
 		findFilter.Q = nil
-		galleries, _, err = qb.Query(&galleryFilter, &findFilter)
+		galleries, _, err = qb.Query(ctx, &galleryFilter, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying gallery: %s", err.Error())
 		}
@@ -468,8 +470,8 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 	})
 }
 
-func queryGallery(t *testing.T, sqb models.GalleryReader, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) []*models.Gallery {
-	galleries, _, err := sqb.Query(galleryFilter, findFilter)
+func queryGallery(ctx context.Context, t *testing.T, sqb models.GalleryReader, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) []*models.Gallery {
+	galleries, _, err := sqb.Query(ctx, galleryFilter, findFilter)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
 	}
@@ -478,8 +480,8 @@ func queryGallery(t *testing.T, sqb models.GalleryReader, galleryFilter *models.
 }
 
 func TestGalleryQueryIsMissingStudio(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		isMissing := "studio"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -490,12 +492,12 @@ func TestGalleryQueryIsMissingStudio(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		assert.Len(t, galleries, 0)
 
 		findFilter.Q = nil
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		// ensure non of the ids equal the one with studio
 		for _, gallery := range galleries {
@@ -507,8 +509,8 @@ func TestGalleryQueryIsMissingStudio(t *testing.T) {
 }
 
 func TestGalleryQueryIsMissingPerformers(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		isMissing := "performers"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -519,12 +521,12 @@ func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		assert.Len(t, galleries, 0)
 
 		findFilter.Q = nil
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		assert.True(t, len(galleries) > 0)
 
@@ -538,8 +540,8 @@ func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 }
 
 func TestGalleryQueryIsMissingTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		isMissing := "tags"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -550,12 +552,12 @@ func TestGalleryQueryIsMissingTags(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		assert.Len(t, galleries, 0)
 
 		findFilter.Q = nil
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 
 		assert.True(t, len(galleries) > 0)
 
@@ -564,14 +566,14 @@ func TestGalleryQueryIsMissingTags(t *testing.T) {
 }
 
 func TestGalleryQueryIsMissingDate(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		isMissing := "date"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		// three in four scenes have no date
 		assert.Len(t, galleries, int(math.Ceil(float64(totalGalleries)/4*3)))
@@ -586,8 +588,8 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 }
 
 func TestGalleryQueryPerformers(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		performerCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(performerIDs[performerIdxWithGallery]),
@@ -600,7 +602,7 @@ func TestGalleryQueryPerformers(t *testing.T) {
 			Performers: &performerCriterion,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 2)
 
@@ -617,7 +619,7 @@ func TestGalleryQueryPerformers(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdxWithTwoPerformers], galleries[0].ID)
@@ -634,7 +636,7 @@ func TestGalleryQueryPerformers(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
 		return nil
@@ -642,8 +644,8 @@ func TestGalleryQueryPerformers(t *testing.T) {
 }
 
 func TestGalleryQueryTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithGallery]),
@@ -656,7 +658,7 @@ func TestGalleryQueryTags(t *testing.T) {
 			Tags: &tagCriterion,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 		assert.Len(t, galleries, 2)
 
 		// ensure ids are correct
@@ -672,7 +674,7 @@ func TestGalleryQueryTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdxWithTwoTags], galleries[0].ID)
@@ -689,7 +691,7 @@ func TestGalleryQueryTags(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
 		return nil
@@ -697,8 +699,8 @@ func TestGalleryQueryTags(t *testing.T) {
 }
 
 func TestGalleryQueryStudio(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGallery]),
@@ -710,7 +712,7 @@ func TestGalleryQueryStudio(t *testing.T) {
 			Studios: &studioCriterion,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 1)
 
@@ -729,7 +731,7 @@ func TestGalleryQueryStudio(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
 		return nil
@@ -737,8 +739,8 @@ func TestGalleryQueryStudio(t *testing.T) {
 }
 
 func TestGalleryQueryStudioDepth(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -752,16 +754,16 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 			Studios: &studioCriterion,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 		assert.Len(t, galleries, 1)
 
 		depth = 1
 
-		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, nil)
 		assert.Len(t, galleries, 0)
 
 		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
-		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, nil)
 		assert.Len(t, galleries, 1)
 
 		// ensure id is correct
@@ -782,15 +784,15 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
 		depth = 1
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 1)
 
 		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
 		return nil
@@ -798,8 +800,8 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 }
 
 func TestGalleryQueryPerformerTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
@@ -812,7 +814,7 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			PerformerTags: &tagCriterion,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 		assert.Len(t, galleries, 2)
 
 		// ensure ids are correct
@@ -828,7 +830,7 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		galleries = queryGallery(t, sqb, &galleryFilter, nil)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTwoTags], galleries[0].ID)
@@ -845,7 +847,7 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 			Q: &q,
 		}
 
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
 		tagCriterion = models.HierarchicalMultiCriterionInput{
@@ -853,22 +855,22 @@ func TestGalleryQueryPerformerTags(t *testing.T) {
 		}
 		q = getGalleryStringValue(galleryIdx1WithImage, titleField)
 
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdx1WithImage], galleries[0].ID)
 
 		q = getGalleryStringValue(galleryIdxWithPerformerTag, titleField)
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
 		tagCriterion.Modifier = models.CriterionModifierNotNull
 
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 1)
 		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTag], galleries[0].ID)
 
 		q = getGalleryStringValue(galleryIdx1WithImage, titleField)
-		galleries = queryGallery(t, sqb, &galleryFilter, &findFilter)
+		galleries = queryGallery(ctx, t, sqb, &galleryFilter, &findFilter)
 		assert.Len(t, galleries, 0)
 
 		return nil
@@ -895,17 +897,17 @@ func TestGalleryQueryTagCount(t *testing.T) {
 }
 
 func verifyGalleriesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		galleryFilter := models.GalleryFilterType{
 			TagCount: &tagCountCriterion,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 		assert.Greater(t, len(galleries), 0)
 
 		for _, gallery := range galleries {
-			ids, err := sqb.GetTagIDs(gallery.ID)
+			ids, err := sqb.GetTagIDs(ctx, gallery.ID)
 			if err != nil {
 				return err
 			}
@@ -936,17 +938,17 @@ func TestGalleryQueryPerformerCount(t *testing.T) {
 }
 
 func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		galleryFilter := models.GalleryFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 		assert.Greater(t, len(galleries), 0)
 
 		for _, gallery := range galleries {
-			ids, err := sqb.GetPerformerIDs(gallery.ID)
+			ids, err := sqb.GetPerformerIDs(ctx, gallery.ID)
 			if err != nil {
 				return err
 			}
@@ -958,8 +960,8 @@ func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.
 }
 
 func TestGalleryQueryAverageResolution(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.GalleryReaderWriter
 		resolution := models.ResolutionEnumLow
 		galleryFilter := models.GalleryFilterType{
 			AverageResolution: &models.ResolutionCriterionInput{
@@ -969,7 +971,7 @@ func TestGalleryQueryAverageResolution(t *testing.T) {
 		}
 
 		// not verifying average - just ensure we get at least one
-		galleries := queryGallery(t, qb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, qb, &galleryFilter, nil)
 		assert.Greater(t, len(galleries), 0)
 
 		return nil
@@ -996,19 +998,19 @@ func TestGalleryQueryImageCount(t *testing.T) {
 }
 
 func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Gallery()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.GalleryReaderWriter
 		galleryFilter := models.GalleryFilterType{
 			ImageCount: &imageCountCriterion,
 		}
 
-		galleries := queryGallery(t, sqb, &galleryFilter, nil)
+		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 		assert.Greater(t, len(galleries), -1)
 
 		for _, gallery := range galleries {
 			pp := 0
 
-			result, err := r.Image().Query(models.ImageQueryOptions{
+			result, err := sqlite.ImageReaderWriter.Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: &models.FindFilterType{
 						PerPage: &pp,
