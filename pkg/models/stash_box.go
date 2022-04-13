@@ -19,7 +19,7 @@ type StashBox struct {
 
 type StashBoxes []*StashBox
 
-func (sb StashBoxes) ResolveStashBox(source ScraperSourceInput) (*StashBox, error) {
+func (sb StashBoxes) ResolveStashBox(source ScraperSource) (*StashBox, error) {
 	if source.StashBoxIndex != nil {
 		index := source.StashBoxIndex
 		if *index < 0 || *index >= len(sb) {

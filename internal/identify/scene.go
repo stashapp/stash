@@ -18,7 +18,7 @@ type sceneRelationships struct {
 	repo         models.Repository
 	scene        *models.Scene
 	result       *scrapeResult
-	fieldOptions map[string]*IdentifyFieldOptionsInput
+	fieldOptions map[string]*FieldOptions
 }
 
 func (g sceneRelationships) studio() (*int64, error) {

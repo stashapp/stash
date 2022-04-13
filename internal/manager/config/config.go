@@ -1049,13 +1049,13 @@ func (i *Instance) GetDeleteGeneratedDefault() bool {
 // GetDefaultIdentifySettings returns the default Identify task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (i *Instance) GetDefaultIdentifySettings() *identify.IdentifyMetadataTaskOptions {
+func (i *Instance) GetDefaultIdentifySettings() *identify.TaskOptions {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(DefaultIdentifySettings)
 
 	if v.IsSet(DefaultIdentifySettings) {
-		var ret identify.IdentifyMetadataTaskOptions
+		var ret identify.TaskOptions
 		if err := v.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
 			return nil
 		}

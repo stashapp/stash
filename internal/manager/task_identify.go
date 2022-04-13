@@ -21,13 +21,13 @@ var ErrInput = errors.New("invalid request input")
 type IdentifyJob struct {
 	txnManager       models.TransactionManager
 	postHookExecutor identify.SceneUpdatePostHookExecutor
-	input            identify.IdentifyMetadataInput
+	input            identify.TaskOptions
 
 	stashBoxes models.StashBoxes
 	progress   *job.Progress
 }
 
-func CreateIdentifyJob(input identify.IdentifyMetadataInput) *IdentifyJob {
+func CreateIdentifyJob(input identify.TaskOptions) *IdentifyJob {
 	return &IdentifyJob{
 		txnManager:       instance.TxnManager,
 		postHookExecutor: instance.PluginCache,
@@ -193,7 +193,7 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 	return ret, nil
 }
 
-func (j *IdentifyJob) getStashBox(src *models.ScraperSourceInput) (*models.StashBox, error) {
+func (j *IdentifyJob) getStashBox(src *models.ScraperSource) (*models.StashBox, error) {
 	if src.ScraperID != nil {
 		return nil, nil
 	}

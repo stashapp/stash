@@ -43,7 +43,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 
 	var scrapedTitle = "scrapedTitle"
 
-	defaultOptions := &IdentifyMetadataOptionsInput{}
+	defaultOptions := &MetadataOptions{}
 	sources := []ScraperSource{
 		{
 			Scraper: mockSceneScraper{
@@ -174,19 +174,19 @@ func Test_getFieldOptions(t *testing.T) {
 	)
 
 	type args struct {
-		options []IdentifyMetadataOptionsInput
+		options []MetadataOptions
 	}
 	tests := []struct {
 		name string
 		args args
-		want map[string]*IdentifyFieldOptionsInput
+		want map[string]*FieldOptions
 	}{
 		{
 			"simple",
 			args{
-				[]IdentifyMetadataOptionsInput{
+				[]MetadataOptions{
 					{
-						FieldOptions: []*IdentifyFieldOptionsInput{
+						FieldOptions: []*FieldOptions{
 							{
 								Field:    inFirst,
 								Strategy: IdentifyFieldStrategyIgnore,
@@ -198,7 +198,7 @@ func Test_getFieldOptions(t *testing.T) {
 						},
 					},
 					{
-						FieldOptions: []*IdentifyFieldOptionsInput{
+						FieldOptions: []*FieldOptions{
 							{
 								Field:    inSecond,
 								Strategy: IdentifyFieldStrategyMerge,
@@ -211,7 +211,7 @@ func Test_getFieldOptions(t *testing.T) {
 					},
 				},
 			},
-			map[string]*IdentifyFieldOptionsInput{
+			map[string]*FieldOptions{
 				inFirst: {
 					Field:    inFirst,
 					Strategy: IdentifyFieldStrategyIgnore,
@@ -290,8 +290,8 @@ func Test_getScenePartial(t *testing.T) {
 		URL:     &originalURL,
 	}
 
-	makeFieldOptions := func(input *IdentifyFieldOptionsInput) map[string]*IdentifyFieldOptionsInput {
-		return map[string]*IdentifyFieldOptionsInput{
+	makeFieldOptions := func(input *FieldOptions) map[string]*FieldOptions {
+		return map[string]*FieldOptions{
 			"title":   input,
 			"date":    input,
 			"details": input,
@@ -299,13 +299,13 @@ func Test_getScenePartial(t *testing.T) {
 		}
 	}
 
-	overwriteAll := makeFieldOptions(&IdentifyFieldOptionsInput{
+	overwriteAll := makeFieldOptions(&FieldOptions{
 		Strategy: IdentifyFieldStrategyOverwrite,
 	})
-	ignoreAll := makeFieldOptions(&IdentifyFieldOptionsInput{
+	ignoreAll := makeFieldOptions(&FieldOptions{
 		Strategy: IdentifyFieldStrategyIgnore,
 	})
-	mergeAll := makeFieldOptions(&IdentifyFieldOptionsInput{
+	mergeAll := makeFieldOptions(&FieldOptions{
 		Strategy: IdentifyFieldStrategyMerge,
 	})
 
@@ -314,7 +314,7 @@ func Test_getScenePartial(t *testing.T) {
 	type args struct {
 		scene        *models.Scene
 		scraped      *scraper.ScrapedScene
-		fieldOptions map[string]*IdentifyFieldOptionsInput
+		fieldOptions map[string]*FieldOptions
 		setOrganized bool
 	}
 	tests := []struct {
@@ -408,7 +408,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 	const invalid = "invalid"
 
 	type args struct {
-		strategy         *IdentifyFieldOptionsInput
+		strategy         *FieldOptions
 		hasExistingValue bool
 	}
 	tests := []struct {
@@ -419,7 +419,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"ignore",
 			args{
-				&IdentifyFieldOptionsInput{
+				&FieldOptions{
 					Strategy: IdentifyFieldStrategyIgnore,
 				},
 				false,
@@ -429,7 +429,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"merge existing",
 			args{
-				&IdentifyFieldOptionsInput{
+				&FieldOptions{
 					Strategy: IdentifyFieldStrategyMerge,
 				},
 				true,
@@ -439,7 +439,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"merge absent",
 			args{
-				&IdentifyFieldOptionsInput{
+				&FieldOptions{
 					Strategy: IdentifyFieldStrategyMerge,
 				},
 				false,
@@ -449,7 +449,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"overwrite",
 			args{
-				&IdentifyFieldOptionsInput{
+				&FieldOptions{
 					Strategy: IdentifyFieldStrategyOverwrite,
 				},
 				true,
@@ -459,7 +459,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"nil (merge) existing",
 			args{
-				&IdentifyFieldOptionsInput{},
+				&FieldOptions{},
 				true,
 			},
 			false,
@@ -467,7 +467,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"nil (merge) absent",
 			args{
-				&IdentifyFieldOptionsInput{},
+				&FieldOptions{},
 				false,
 			},
 			true,
@@ -475,7 +475,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"invalid (merge) existing",
 			args{
-				&IdentifyFieldOptionsInput{
+				&FieldOptions{
 					Strategy: invalid,
 				},
 				true,
@@ -485,7 +485,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"invalid (merge) absent",
 			args{
-				&IdentifyFieldOptionsInput{
+				&FieldOptions{
 					Strategy: invalid,
 				},
 				false,

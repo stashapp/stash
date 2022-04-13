@@ -22,13 +22,13 @@ type SceneUpdatePostHookExecutor interface {
 
 type ScraperSource struct {
 	Name       string
-	Options    *IdentifyMetadataOptionsInput
+	Options    *MetadataOptions
 	Scraper    SceneScraper
 	RemoteSite string
 }
 
 type SceneIdentifier struct {
-	DefaultOptions              *IdentifyMetadataOptionsInput
+	DefaultOptions              *MetadataOptions
 	Sources                     []ScraperSource
 	ScreenshotSetter            scene.ScreenshotSetter
 	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
@@ -85,7 +85,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		ID: s.ID,
 	}
 
-	options := []IdentifyMetadataOptionsInput{}
+	options := []MetadataOptions{}
 	if result.source.Options != nil {
 		options = append(options, *result.source.Options)
 	}
@@ -209,9 +209,9 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.Tra
 	return nil
 }
 
-func getFieldOptions(options []IdentifyMetadataOptionsInput) map[string]*IdentifyFieldOptionsInput {
+func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 	// prefer source-specific field strategies, then the defaults
-	ret := make(map[string]*IdentifyFieldOptionsInput)
+	ret := make(map[string]*FieldOptions)
 	for _, oo := range options {
 		for _, f := range oo.FieldOptions {
 			if _, found := ret[f.Field]; !found {
@@ -223,7 +223,7 @@ func getFieldOptions(options []IdentifyMetadataOptionsInput) map[string]*Identif
 	return ret
 }
 
-func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*IdentifyFieldOptionsInput, setOrganized bool) models.ScenePartial {
+func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
 	partial := models.ScenePartial{
 		ID: scene.ID,
 	}
@@ -260,7 +260,7 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 	return partial
 }
 
-func shouldSetSingleValueField(strategy *IdentifyFieldOptionsInput, hasExistingValue bool) bool {
+func shouldSetSingleValueField(strategy *FieldOptions, hasExistingValue bool) bool {
 	// if unset then default to MERGE
 	fs := IdentifyFieldStrategyMerge
 

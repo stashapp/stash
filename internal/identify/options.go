@@ -8,39 +8,26 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type IdentifyMetadataTaskOptions struct {
-	// An ordered list of sources to identify items with. Only the first source that finds a match is used.
-	Sources []*IdentifySource `json:"sources"`
-	// Options defined here override the configured defaults
-	Options *IdentifyMetadataOptions `json:"options"`
-}
-
-type IdentifySource struct {
+type Source struct {
 	Source *models.ScraperSource `json:"source"`
 	// Options defined for a source override the defaults
-	Options *IdentifyMetadataOptions `json:"options"`
+	Options *MetadataOptions `json:"options"`
 }
 
-type IdentifySourceInput struct {
-	Source *models.ScraperSourceInput `json:"source"`
-	// Options defined for a source override the defaults
-	Options *IdentifyMetadataOptionsInput `json:"options"`
-}
-
-type IdentifyMetadataInput struct {
+type TaskOptions struct {
 	// An ordered list of sources to identify items with. Only the first source that finds a match is used.
-	Sources []*IdentifySourceInput `json:"sources"`
+	Sources []*Source `json:"sources"`
 	// Options defined here override the configured defaults
-	Options *IdentifyMetadataOptionsInput `json:"options"`
+	Options *MetadataOptions `json:"options"`
 	// scene ids to identify
 	SceneIDs []string `json:"sceneIDs"`
 	// paths of scenes to identify - ignored if scene ids are set
 	Paths []string `json:"paths"`
 }
 
-type IdentifyMetadataOptions struct {
+type MetadataOptions struct {
 	// any fields missing from here are defaulted to MERGE and createMissing false
-	FieldOptions []*IdentifyFieldOptions `json:"fieldOptions"`
+	FieldOptions []*FieldOptions `json:"fieldOptions"`
 	// defaults to true if not provided
 	SetCoverImage *bool `json:"setCoverImage"`
 	SetOrganized  *bool `json:"setOrganized"`
@@ -48,51 +35,34 @@ type IdentifyMetadataOptions struct {
 	IncludeMalePerformers *bool `json:"includeMalePerformers"`
 }
 
-type IdentifyMetadataOptionsInput struct {
-	// any fields missing from here are defaulted to MERGE and createMissing false
-	FieldOptions []*IdentifyFieldOptionsInput `json:"fieldOptions"`
-	// defaults to true if not provided
-	SetCoverImage *bool `json:"setCoverImage"`
-	SetOrganized  *bool `json:"setOrganized"`
-	// defaults to true if not provided
-	IncludeMalePerformers *bool `json:"includeMalePerformers"`
-}
-
-type IdentifyFieldOptions struct {
-	Field    string                `json:"field"`
-	Strategy IdentifyFieldStrategy `json:"strategy"`
+type FieldOptions struct {
+	Field    string        `json:"field"`
+	Strategy FieldStrategy `json:"strategy"`
 	// creates missing objects if needed - only applicable for performers, tags and studios
 	CreateMissing *bool `json:"createMissing"`
 }
 
-type IdentifyFieldOptionsInput struct {
-	Field    string                `json:"field"`
-	Strategy IdentifyFieldStrategy `json:"strategy"`
-	// creates missing objects if needed - only applicable for performers, tags and studios
-	CreateMissing *bool `json:"createMissing"`
-}
-
-type IdentifyFieldStrategy string
+type FieldStrategy string
 
 const (
 	// Never sets the field value
-	IdentifyFieldStrategyIgnore IdentifyFieldStrategy = "IGNORE"
+	IdentifyFieldStrategyIgnore FieldStrategy = "IGNORE"
 	// For multi-value fields, merge with existing.
 	// For single-value fields, ignore if already set
-	IdentifyFieldStrategyMerge IdentifyFieldStrategy = "MERGE"
+	IdentifyFieldStrategyMerge FieldStrategy = "MERGE"
 	// Always replaces the value if a value is found.
 	//   For multi-value fields, any existing values are removed and replaced with the
 	//   scraped values.
-	IdentifyFieldStrategyOverwrite IdentifyFieldStrategy = "OVERWRITE"
+	IdentifyFieldStrategyOverwrite FieldStrategy = "OVERWRITE"
 )
 
-var AllIdentifyFieldStrategy = []IdentifyFieldStrategy{
+var AllFieldStrategy = []FieldStrategy{
 	IdentifyFieldStrategyIgnore,
 	IdentifyFieldStrategyMerge,
 	IdentifyFieldStrategyOverwrite,
 }
 
-func (e IdentifyFieldStrategy) IsValid() bool {
+func (e FieldStrategy) IsValid() bool {
 	switch e {
 	case IdentifyFieldStrategyIgnore, IdentifyFieldStrategyMerge, IdentifyFieldStrategyOverwrite:
 		return true
@@ -100,23 +70,23 @@ func (e IdentifyFieldStrategy) IsValid() bool {
 	return false
 }
 
-func (e IdentifyFieldStrategy) String() string {
+func (e FieldStrategy) String() string {
 	return string(e)
 }
 
-func (e *IdentifyFieldStrategy) UnmarshalGQL(v interface{}) error {
+func (e *FieldStrategy) UnmarshalGQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = IdentifyFieldStrategy(str)
+	*e = FieldStrategy(str)
 	if !e.IsValid() {
 		return fmt.Errorf("%s is not a valid IdentifyFieldStrategy", str)
 	}
 	return nil
 }
 
-func (e IdentifyFieldStrategy) MarshalGQL(w io.Writer) {
+func (e FieldStrategy) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
