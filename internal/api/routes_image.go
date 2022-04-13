@@ -91,8 +91,8 @@ func ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		readTxnErr := manager.GetInstance().TxnManager.WithTxn(r.Context(), func(ctx context.Context) error {
-			qb := repo.Image()
+		readTxnErr := manager.GetInstance().TxnManager.withTxn(r.Context(), func(ctx context.Context) error {
+			qb := r.image
 			if imageID == 0 {
 				image, _ = qb.FindByChecksum(imageIdentifierQueryParam)
 			} else {

@@ -117,10 +117,7 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 
 // Destroy deletes a scene and its associated relationships from the
 // database.
-func Destroy(ctx context.Context, scene *models.Scene, repo models.Repository, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
-	qb := repo.Scene
-	mqb := repo.SceneMarker
-
+func Destroy(ctx context.Context, scene *models.Scene, qb models.SceneWriter, mqb models.SceneMarkerReaderWriter, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
 	markers, err := mqb.FindBySceneID(ctx, scene.ID)
 	if err != nil {
 		return err

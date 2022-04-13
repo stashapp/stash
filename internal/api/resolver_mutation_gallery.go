@@ -21,8 +21,8 @@ import (
 )
 
 func (r *mutationResolver) getGallery(ctx context.Context, id int) (ret *models.Gallery, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Gallery().Find(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.gallery.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -81,25 +81,25 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	// Start the transaction and save the gallery
 	var gallery *models.Gallery
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Gallery()
+		qb := r.gallery
 		var err error
-		gallery, err = qb.Create(newGallery)
+		gallery, err = qb.Create(ctx, newGallery)
 		if err != nil {
 			return err
 		}
 
 		// Save the performers
-		if err := r.updateGalleryPerformers(qb, gallery.ID, input.PerformerIds); err != nil {
+		if err := r.updateGalleryPerformers(ctx, qb, gallery.ID, input.PerformerIds); err != nil {
 			return err
 		}
 
 		// Save the tags
-		if err := r.updateGalleryTags(qb, gallery.ID, input.TagIds); err != nil {
+		if err := r.updateGalleryTags(ctx, qb, gallery.ID, input.TagIds); err != nil {
 			return err
 		}
 
 		// Save the scenes
-		if err := r.updateGalleryScenes(qb, gallery.ID, input.SceneIds); err != nil {
+		if err := r.updateGalleryScenes(ctx, qb, gallery.ID, input.SceneIds); err != nil {
 			return err
 		}
 
@@ -112,28 +112,28 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	return r.getGallery(ctx, gallery.ID)
 }
 
-func (r *mutationResolver) updateGalleryPerformers(qb models.GalleryReaderWriter, galleryID int, performerIDs []string) error {
+func (r *mutationResolver) updateGalleryPerformers(ctx context.Context, qb models.GalleryReaderWriter, galleryID int, performerIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return err
 	}
-	return qb.UpdatePerformers(galleryID, ids)
+	return qb.UpdatePerformers(ctx, galleryID, ids)
 }
 
-func (r *mutationResolver) updateGalleryTags(qb models.GalleryReaderWriter, galleryID int, tagIDs []string) error {
+func (r *mutationResolver) updateGalleryTags(ctx context.Context, qb models.GalleryReaderWriter, galleryID int, tagIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(tagIDs)
 	if err != nil {
 		return err
 	}
-	return qb.UpdateTags(galleryID, ids)
+	return qb.UpdateTags(ctx, galleryID, ids)
 }
 
-func (r *mutationResolver) updateGalleryScenes(qb models.GalleryReaderWriter, galleryID int, sceneIDs []string) error {
+func (r *mutationResolver) updateGalleryScenes(ctx context.Context, qb models.GalleryReaderWriter, galleryID int, sceneIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return err
 	}
-	return qb.UpdateScenes(galleryID, ids)
+	return qb.UpdateScenes(ctx, galleryID, ids)
 }
 
 func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.GalleryUpdateInput) (ret *models.Gallery, err error) {
@@ -143,7 +143,7 @@ func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.Galle
 
 	// Start the transaction and save the gallery
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.galleryUpdate(input, translator, repo)
+		ret, err = r.galleryUpdate(ctx, input, translator)
 		return err
 	}); err != nil {
 		return nil, err
@@ -164,7 +164,7 @@ func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.
 				inputMap: inputMaps[i],
 			}
 
-			thisGallery, err := r.galleryUpdate(*gallery, translator, repo)
+			thisGallery, err := r.galleryUpdate(ctx, *gallery, translator)
 			if err != nil {
 				return err
 			}
@@ -196,8 +196,8 @@ func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.
 	return newRet, nil
 }
 
-func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Gallery, error) {
-	qb := repo.Gallery()
+func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.GalleryUpdateInput, translator changesetTranslator) (*models.Gallery, error) {
+	qb := r.gallery
 
 	// Populate gallery from the input
 	galleryID, err := strconv.Atoi(input.ID)
@@ -205,7 +205,7 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, transl
 		return nil, err
 	}
 
-	originalGallery, err := qb.Find(galleryID)
+	originalGallery, err := qb.Find(ctx, galleryID)
 	if err != nil {
 		return nil, err
 	}
@@ -244,28 +244,28 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, transl
 
 	// gallery scene is set from the scene only
 
-	gallery, err := qb.UpdatePartial(updatedGallery)
+	gallery, err := qb.UpdatePartial(ctx, updatedGallery)
 	if err != nil {
 		return nil, err
 	}
 
 	// Save the performers
 	if translator.hasField("performer_ids") {
-		if err := r.updateGalleryPerformers(qb, galleryID, input.PerformerIds); err != nil {
+		if err := r.updateGalleryPerformers(ctx, qb, galleryID, input.PerformerIds); err != nil {
 			return nil, err
 		}
 	}
 
 	// Save the tags
 	if translator.hasField("tag_ids") {
-		if err := r.updateGalleryTags(qb, galleryID, input.TagIds); err != nil {
+		if err := r.updateGalleryTags(ctx, qb, galleryID, input.TagIds); err != nil {
 			return nil, err
 		}
 	}
 
 	// Save the scenes
 	if translator.hasField("scene_ids") {
-		if err := r.updateGalleryScenes(qb, galleryID, input.SceneIds); err != nil {
+		if err := r.updateGalleryScenes(ctx, qb, galleryID, input.SceneIds); err != nil {
 			return nil, err
 		}
 	}
@@ -296,13 +296,13 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 
 	// Start the transaction and save the galleries
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Gallery()
+		qb := r.gallery
 
 		for _, galleryIDStr := range input.Ids {
 			galleryID, _ := strconv.Atoi(galleryIDStr)
 			updatedGallery.ID = galleryID
 
-			gallery, err := qb.UpdatePartial(updatedGallery)
+			gallery, err := qb.UpdatePartial(ctx, updatedGallery)
 			if err != nil {
 				return err
 			}
@@ -311,36 +311,36 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 
 			// Save the performers
 			if translator.hasField("performer_ids") {
-				performerIDs, err := adjustGalleryPerformerIDs(qb, galleryID, *input.PerformerIds)
+				performerIDs, err := adjustGalleryPerformerIDs(ctx, qb, galleryID, *input.PerformerIds)
 				if err != nil {
 					return err
 				}
 
-				if err := qb.UpdatePerformers(galleryID, performerIDs); err != nil {
+				if err := qb.UpdatePerformers(ctx, galleryID, performerIDs); err != nil {
 					return err
 				}
 			}
 
 			// Save the tags
 			if translator.hasField("tag_ids") {
-				tagIDs, err := adjustGalleryTagIDs(qb, galleryID, *input.TagIds)
+				tagIDs, err := adjustGalleryTagIDs(ctx, qb, galleryID, *input.TagIds)
 				if err != nil {
 					return err
 				}
 
-				if err := qb.UpdateTags(galleryID, tagIDs); err != nil {
+				if err := qb.UpdateTags(ctx, galleryID, tagIDs); err != nil {
 					return err
 				}
 			}
 
 			// Save the scenes
 			if translator.hasField("scene_ids") {
-				sceneIDs, err := adjustGallerySceneIDs(qb, galleryID, *input.SceneIds)
+				sceneIDs, err := adjustGallerySceneIDs(ctx, qb, galleryID, *input.SceneIds)
 				if err != nil {
 					return err
 				}
 
-				if err := qb.UpdateScenes(galleryID, sceneIDs); err != nil {
+				if err := qb.UpdateScenes(ctx, galleryID, sceneIDs); err != nil {
 					return err
 				}
 			}
@@ -367,8 +367,8 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	return newRet, nil
 }
 
-func adjustGalleryPerformerIDs(qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetPerformerIDs(galleryID)
+func adjustGalleryPerformerIDs(ctx context.Context, qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetPerformerIDs(ctx, galleryID)
 	if err != nil {
 		return nil, err
 	}
@@ -376,8 +376,8 @@ func adjustGalleryPerformerIDs(qb models.GalleryReader, galleryID int, ids BulkU
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustGalleryTagIDs(qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetTagIDs(galleryID)
+func adjustGalleryTagIDs(ctx context.Context, qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetTagIDs(ctx, galleryID)
 	if err != nil {
 		return nil, err
 	}
@@ -385,8 +385,8 @@ func adjustGalleryTagIDs(qb models.GalleryReader, galleryID int, ids BulkUpdateI
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustGallerySceneIDs(qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetSceneIDs(galleryID)
+func adjustGallerySceneIDs(ctx context.Context, qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetSceneIDs(ctx, galleryID)
 	if err != nil {
 		return nil, err
 	}
@@ -411,11 +411,11 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	deleteFile := utils.IsTrue(input.DeleteFile)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Gallery()
-		iqb := repo.Image()
+		qb := r.gallery
+		iqb := r.image
 
 		for _, id := range galleryIDs {
-			gallery, err := qb.Find(id)
+			gallery, err := qb.Find(ctx, id)
 			if err != nil {
 				return err
 			}
@@ -428,13 +428,13 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 			// if this is a zip-based gallery, delete the images as well first
 			if gallery.Zip {
-				imgs, err := iqb.FindByGalleryID(id)
+				imgs, err := iqb.FindByGalleryID(ctx, id)
 				if err != nil {
 					return err
 				}
 
 				for _, img := range imgs {
-					if err := image.Destroy(img, iqb, fileDeleter, deleteGenerated, false); err != nil {
+					if err := image.Destroy(ctx, img, iqb, fileDeleter, deleteGenerated, false); err != nil {
 						return err
 					}
 
@@ -448,19 +448,19 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				}
 			} else if deleteFile {
 				// Delete image if it is only attached to this gallery
-				imgs, err := iqb.FindByGalleryID(id)
+				imgs, err := iqb.FindByGalleryID(ctx, id)
 				if err != nil {
 					return err
 				}
 
 				for _, img := range imgs {
-					imgGalleries, err := qb.FindByImageID(img.ID)
+					imgGalleries, err := qb.FindByImageID(ctx, img.ID)
 					if err != nil {
 						return err
 					}
 
 					if len(imgGalleries) == 1 {
-						if err := image.Destroy(img, iqb, fileDeleter, deleteGenerated, deleteFile); err != nil {
+						if err := image.Destroy(ctx, img, iqb, fileDeleter, deleteGenerated, deleteFile); err != nil {
 							return err
 						}
 
@@ -472,7 +472,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				// don't do this with the file deleter
 			}
 
-			if err := qb.Destroy(id); err != nil {
+			if err := qb.Destroy(ctx, id); err != nil {
 				return err
 			}
 		}
@@ -538,8 +538,8 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Gallery()
-		gallery, err := qb.Find(galleryID)
+		qb := r.gallery
+		gallery, err := qb.Find(ctx, galleryID)
 		if err != nil {
 			return err
 		}
@@ -552,13 +552,13 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 			return errors.New("cannot modify zip gallery images")
 		}
 
-		newIDs, err := qb.GetImageIDs(galleryID)
+		newIDs, err := qb.GetImageIDs(ctx, galleryID)
 		if err != nil {
 			return err
 		}
 
 		newIDs = intslice.IntAppendUniques(newIDs, imageIDs)
-		return qb.UpdateImages(galleryID, newIDs)
+		return qb.UpdateImages(ctx, galleryID, newIDs)
 	}); err != nil {
 		return false, err
 	}
@@ -578,8 +578,8 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Gallery()
-		gallery, err := qb.Find(galleryID)
+		qb := r.gallery
+		gallery, err := qb.Find(ctx, galleryID)
 		if err != nil {
 			return err
 		}
@@ -592,13 +592,13 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 			return errors.New("cannot modify zip gallery images")
 		}
 
-		newIDs, err := qb.GetImageIDs(galleryID)
+		newIDs, err := qb.GetImageIDs(ctx, galleryID)
 		if err != nil {
 			return err
 		}
 
 		newIDs = intslice.IntExclude(newIDs, imageIDs)
-		return qb.UpdateImages(galleryID, newIDs)
+		return qb.UpdateImages(ctx, galleryID, newIDs)
 	}); err != nil {
 		return false, err
 	}

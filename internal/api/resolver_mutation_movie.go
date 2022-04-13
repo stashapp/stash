@@ -15,8 +15,8 @@ import (
 )
 
 func (r *mutationResolver) getMovie(ctx context.Context, id int) (ret *models.Movie, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Movie().Find(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.movie.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -101,15 +101,15 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 	// Start the transaction and save the movie
 	var movie *models.Movie
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Movie()
-		movie, err = qb.Create(newMovie)
+		qb := r.movie
+		movie, err = qb.Create(ctx, newMovie)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(frontimageData) > 0 {
-			if err := qb.UpdateImages(movie.ID, frontimageData, backimageData); err != nil {
+			if err := qb.UpdateImages(ctx, movie.ID, frontimageData, backimageData); err != nil {
 				return err
 			}
 		}
@@ -175,8 +175,8 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	// Start the transaction and save the movie
 	var movie *models.Movie
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Movie()
-		movie, err = qb.Update(updatedMovie)
+		qb := r.movie
+		movie, err = qb.Update(ctx, updatedMovie)
 		if err != nil {
 			return err
 		}
@@ -184,13 +184,13 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 		// update image table
 		if frontImageIncluded || backImageIncluded {
 			if !frontImageIncluded {
-				frontimageData, err = qb.GetFrontImage(updatedMovie.ID)
+				frontimageData, err = qb.GetFrontImage(ctx, updatedMovie.ID)
 				if err != nil {
 					return err
 				}
 			}
 			if !backImageIncluded {
-				backimageData, err = qb.GetBackImage(updatedMovie.ID)
+				backimageData, err = qb.GetBackImage(ctx, updatedMovie.ID)
 				if err != nil {
 					return err
 				}
@@ -198,7 +198,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 
 			if len(frontimageData) == 0 && len(backimageData) == 0 {
 				// both images are being nulled. Destroy them.
-				if err := qb.DestroyImages(movie.ID); err != nil {
+				if err := qb.DestroyImages(ctx, movie.ID); err != nil {
 					return err
 				}
 			} else {
@@ -208,7 +208,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 					frontimageData, _ = utils.ProcessImageInput(ctx, models.DefaultMovieImage)
 				}
 
-				if err := qb.UpdateImages(movie.ID, frontimageData, backimageData); err != nil {
+				if err := qb.UpdateImages(ctx, movie.ID, frontimageData, backimageData); err != nil {
 					return err
 				}
 			}
@@ -246,12 +246,12 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 	ret := []*models.Movie{}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Movie()
+		qb := r.movie
 
 		for _, movieID := range movieIDs {
 			updatedMovie.ID = movieID
 
-			existing, err := qb.Find(movieID)
+			existing, err := qb.Find(ctx, movieID)
 			if err != nil {
 				return err
 			}
@@ -260,7 +260,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 				return fmt.Errorf("movie with id %d not found", movieID)
 			}
 
-			movie, err := qb.Update(updatedMovie)
+			movie, err := qb.Update(ctx, updatedMovie)
 			if err != nil {
 				return err
 			}
@@ -295,7 +295,7 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input MovieDestroyI
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return repo.Movie().Destroy(id)
+		return r.movie.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -312,9 +312,9 @@ func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string)
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Movie()
+		qb := r.movie
 		for _, id := range ids {
-			if err := qb.Destroy(id); err != nil {
+			if err := qb.Destroy(ctx, id); err != nil {
 				return err
 			}
 		}

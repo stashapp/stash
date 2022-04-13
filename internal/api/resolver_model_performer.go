@@ -142,8 +142,8 @@ func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer
 }
 
 func (r *performerResolver) Tags(ctx context.Context, obj *models.Performer) (ret []*models.Tag, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Tag().FindByPerformerID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.tag.FindByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -154,8 +154,8 @@ func (r *performerResolver) Tags(ctx context.Context, obj *models.Performer) (re
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
 	var res int
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		res, err = repo.Scene().CountByPerformerID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		res, err = r.scene.CountByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -166,8 +166,8 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 
 func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
 	var res int
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		res, err = image.CountByPerformerID(repo.Image(), obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		res, err = image.CountByPerformerID(ctx, r.image, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -178,8 +178,8 @@ func (r *performerResolver) ImageCount(ctx context.Context, obj *models.Performe
 
 func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
 	var res int
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		res, err = gallery.CountByPerformerID(repo.Gallery(), obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		res, err = gallery.CountByPerformerID(ctx, r.gallery, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -189,8 +189,8 @@ func (r *performerResolver) GalleryCount(ctx context.Context, obj *models.Perfor
 }
 
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (ret []*models.Scene, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Scene().FindByPerformerID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.scene.FindByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -200,8 +200,8 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (
 }
 
 func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer) (ret []*models.StashID, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Performer().GetStashIDs(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.performer.GetStashIDs(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -256,8 +256,8 @@ func (r *performerResolver) UpdatedAt(ctx context.Context, obj *models.Performer
 }
 
 func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (ret []*models.Movie, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Movie().FindByPerformerID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.movie.FindByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -268,8 +268,8 @@ func (r *performerResolver) Movies(ctx context.Context, obj *models.Performer) (
 
 func (r *performerResolver) MovieCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
 	var res int
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		res, err = repo.Movie().CountByPerformerID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		res, err = r.movie.CountByPerformerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

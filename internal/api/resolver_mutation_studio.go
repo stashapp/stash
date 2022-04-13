@@ -17,8 +17,8 @@ import (
 )
 
 func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.Studio, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Studio().Find(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.studio.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -73,17 +73,17 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 	// Start the transaction and save the studio
 	var s *models.Studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Studio()
+		qb := r.studio
 
 		var err error
-		s, err = qb.Create(newStudio)
+		s, err = qb.Create(ctx, newStudio)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(s.ID, imageData); err != nil {
+			if err := qb.UpdateImage(ctx, s.ID, imageData); err != nil {
 				return err
 			}
 		}
@@ -91,17 +91,17 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 		// Save the stash_ids
 		if input.StashIds != nil {
 			stashIDJoins := models.StashIDsFromInput(input.StashIds)
-			if err := qb.UpdateStashIDs(s.ID, stashIDJoins); err != nil {
+			if err := qb.UpdateStashIDs(ctx, s.ID, stashIDJoins); err != nil {
 				return err
 			}
 		}
 
 		if len(input.Aliases) > 0 {
-			if err := studio.EnsureAliasesUnique(s.ID, input.Aliases, qb); err != nil {
+			if err := studio.EnsureAliasesUnique(ctx, s.ID, input.Aliases, qb); err != nil {
 				return err
 			}
 
-			if err := qb.UpdateAliases(s.ID, input.Aliases); err != nil {
+			if err := qb.UpdateAliases(ctx, s.ID, input.Aliases); err != nil {
 				return err
 			}
 		}
@@ -156,26 +156,26 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 	// Start the transaction and save the studio
 	var s *models.Studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Studio()
+		qb := r.studio
 
-		if err := manager.ValidateModifyStudio(updatedStudio, qb); err != nil {
+		if err := manager.ValidateModifyStudio(ctx, updatedStudio, qb); err != nil {
 			return err
 		}
 
 		var err error
-		s, err = qb.Update(updatedStudio)
+		s, err = qb.Update(ctx, updatedStudio)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(s.ID, imageData); err != nil {
+			if err := qb.UpdateImage(ctx, s.ID, imageData); err != nil {
 				return err
 			}
 		} else if imageIncluded {
 			// must be unsetting
-			if err := qb.DestroyImage(s.ID); err != nil {
+			if err := qb.DestroyImage(ctx, s.ID); err != nil {
 				return err
 			}
 		}
@@ -183,17 +183,17 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 		// Save the stash_ids
 		if translator.hasField("stash_ids") {
 			stashIDJoins := models.StashIDsFromInput(input.StashIds)
-			if err := qb.UpdateStashIDs(studioID, stashIDJoins); err != nil {
+			if err := qb.UpdateStashIDs(ctx, studioID, stashIDJoins); err != nil {
 				return err
 			}
 		}
 
 		if translator.hasField("aliases") {
-			if err := studio.EnsureAliasesUnique(studioID, input.Aliases, qb); err != nil {
+			if err := studio.EnsureAliasesUnique(ctx, studioID, input.Aliases, qb); err != nil {
 				return err
 			}
 
-			if err := qb.UpdateAliases(studioID, input.Aliases); err != nil {
+			if err := qb.UpdateAliases(ctx, studioID, input.Aliases); err != nil {
 				return err
 			}
 		}
@@ -214,7 +214,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestro
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return repo.Studio().Destroy(id)
+		return r.studio.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -231,9 +231,9 @@ func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []strin
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Studio()
+		qb := r.studio
 		for _, id := range ids {
-			if err := qb.Destroy(id); err != nil {
+			if err := qb.Destroy(ctx, id); err != nil {
 				return err
 			}
 		}

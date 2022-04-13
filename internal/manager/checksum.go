@@ -44,30 +44,27 @@ func setInitialMD5Config(ctx context.Context, r models.Repository) {
 //
 // Likewise, if VideoFileNamingAlgorithm is set to oshash, then this function
 // will ensure that all oshash values are set on all scenes.
-func ValidateVideoFileNamingAlgorithm(r models.Repository, newValue models.HashAlgorithm) error {
+func ValidateVideoFileNamingAlgorithm(ctx context.Context, qb models.SceneReader, newValue models.HashAlgorithm) error {
 	// if algorithm is being set to MD5, then all checksums must be present
-	return r.WithTxn(context.TODO(), func(ctx context.Context) error {
-		qb := r.Scene
-		if newValue == models.HashAlgorithmMd5 {
-			missingMD5, err := qb.CountMissingChecksum(ctx)
-			if err != nil {
-				return err
-			}
-
-			if missingMD5 > 0 {
-				return errors.New("some checksums are missing on scenes. Run Scan with calculateMD5 set to true")
-			}
-		} else if newValue == models.HashAlgorithmOshash {
-			missingOSHash, err := qb.CountMissingOSHash(ctx)
-			if err != nil {
-				return err
-			}
-
-			if missingOSHash > 0 {
-				return errors.New("some oshash values are missing on scenes. Run Scan to populate")
-			}
+	if newValue == models.HashAlgorithmMd5 {
+		missingMD5, err := qb.CountMissingChecksum(ctx)
+		if err != nil {
+			return err
 		}
 
-		return nil
-	})
+		if missingMD5 > 0 {
+			return errors.New("some checksums are missing on scenes. Run Scan with calculateMD5 set to true")
+		}
+	} else if newValue == models.HashAlgorithmOshash {
+		missingOSHash, err := qb.CountMissingOSHash(ctx)
+		if err != nil {
+			return err
+		}
+
+		if missingOSHash > 0 {
+			return errors.New("some oshash values are missing on scenes. Run Scan to populate")
+		}
+	}
+
+	return nil
 }

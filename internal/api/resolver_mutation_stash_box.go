@@ -42,9 +42,9 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 	}
 
 	var res *string
-	err = r.WithTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Scene()
-		scene, err := qb.Find(id)
+	err = r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.scene
+		scene, err := qb.Find(ctx, id)
 		if err != nil {
 			return err
 		}
@@ -72,9 +72,9 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 	}
 
 	var res *string
-	err = r.WithTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Performer()
-		performer, err := qb.Find(id)
+	err = r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.performer
+		performer, err := qb.Find(ctx, id)
 		if err != nil {
 			return err
 		}

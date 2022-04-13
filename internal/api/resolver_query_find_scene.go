@@ -12,20 +12,20 @@ import (
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
 	var scene *models.Scene
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Scene()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.scene
 		var err error
 		if id != nil {
 			idInt, err := strconv.Atoi(*id)
 			if err != nil {
 				return err
 			}
-			scene, err = qb.Find(idInt)
+			scene, err = qb.Find(ctx, idInt)
 			if err != nil {
 				return err
 			}
 		} else if checksum != nil {
-			scene, err = qb.FindByChecksum(*checksum)
+			scene, err = qb.FindByChecksum(ctx, *checksum)
 		}
 
 		return err
@@ -39,18 +39,18 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInput) (*models.Scene, error) {
 	var scene *models.Scene
 
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		qb := repo.Scene()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.scene
 		var err error
 		if input.Checksum != nil {
-			scene, err = qb.FindByChecksum(*input.Checksum)
+			scene, err = qb.FindByChecksum(ctx, *input.Checksum)
 			if err != nil {
 				return err
 			}
 		}
 
 		if scene == nil && input.Oshash != nil {
-			scene, err = qb.FindByOSHash(*input.Oshash)
+			scene, err = qb.FindByOSHash(ctx, *input.Oshash)
 			if err != nil {
 				return err
 			}
@@ -65,7 +65,7 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInpu
 }
 
 func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIDs []int, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var scenes []*models.Scene
 		var err error
 
@@ -73,7 +73,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 		result := &models.SceneQueryResult{}
 
 		if len(sceneIDs) > 0 {
-			scenes, err = repo.Scene().FindMany(sceneIDs)
+			scenes, err = r.scene.FindMany(ctx, sceneIDs)
 			if err == nil {
 				result.Count = len(scenes)
 				for _, s := range scenes {
@@ -83,7 +83,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 				}
 			}
 		} else {
-			result, err = repo.Scene().Query(models.SceneQueryOptions{
+			result, err = r.scene.Query(ctx, models.SceneQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: filter,
 					Count:      stringslice.StrInclude(fields, "count"),
@@ -93,7 +93,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 				TotalSize:     stringslice.StrInclude(fields, "filesize"),
 			})
 			if err == nil {
-				scenes, err = result.Resolve()
+				scenes, err = result.Resolve(ctx)
 			}
 		}
 
@@ -117,7 +117,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 }
 
 func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 
 		sceneFilter := &models.SceneFilterType{}
 
@@ -138,7 +138,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 
 		fields := graphql.CollectAllFields(ctx)
 
-		result, err := repo.Scene().Query(models.SceneQueryOptions{
+		result, err := r.scene.Query(ctx, models.SceneQueryOptions{
 			QueryOptions: models.QueryOptions{
 				FindFilter: queryFilter,
 				Count:      stringslice.StrInclude(fields, "count"),
@@ -151,7 +151,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 			return err
 		}
 
-		scenes, err := result.Resolve()
+		scenes, err := result.Resolve(ctx)
 		if err != nil {
 			return err
 		}
@@ -174,8 +174,8 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config manager.SceneParserInput) (ret *SceneParserResultType, err error) {
 	parser := manager.NewSceneFilenameParser(filter, config)
 
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		result, count, err := parser.Parse(repo)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		result, count, err := parser.Parse(ctx, repo)
 
 		if err != nil {
 			return err
@@ -199,8 +199,8 @@ func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int) 
 	if distance != nil {
 		dist = *distance
 	}
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Scene().FindDuplicates(dist)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.scene.FindDuplicates(ctx, dist)
 		return err
 	}); err != nil {
 		return nil, err

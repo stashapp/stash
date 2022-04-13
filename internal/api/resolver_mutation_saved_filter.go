@@ -30,10 +30,10 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 			Filter: input.Filter,
 		}
 		if id == nil {
-			ret, err = repo.SavedFilter().Create(f)
+			ret, err = r.savedFilter.Create(ctx, f)
 		} else {
 			f.ID = *id
-			ret, err = repo.SavedFilter().Update(f)
+			ret, err = r.savedFilter.Update(ctx, f)
 		}
 		return err
 	}); err != nil {
@@ -49,7 +49,7 @@ func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input Destroy
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return repo.SavedFilter().Destroy(id)
+		return r.savedFilter.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -59,23 +59,23 @@ func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input Destroy
 
 func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input SetDefaultFilterInput) (bool, error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := repo.SavedFilter()
+		qb := r.savedFilter
 
 		if input.Filter == nil {
 			// clearing
-			def, err := qb.FindDefault(input.Mode)
+			def, err := qb.FindDefault(ctx, input.Mode)
 			if err != nil {
 				return err
 			}
 
 			if def != nil {
-				return qb.Destroy(def.ID)
+				return qb.Destroy(ctx, def.ID)
 			}
 
 			return nil
 		}
 
-		_, err := qb.SetDefault(models.SavedFilter{
+		_, err := qb.SetDefault(ctx, models.SavedFilter{
 			Mode:   input.Mode,
 			Filter: *input.Filter,
 		})

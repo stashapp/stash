@@ -13,8 +13,8 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (ret *mode
 		return nil, err
 	}
 
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Performer().Find(idInt)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.performer.Find(ctx, idInt)
 		return err
 	}); err != nil {
 		return nil, err
@@ -24,8 +24,8 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (ret *mode
 }
 
 func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType) (ret *FindPerformersResultType, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		performers, total, err := repo.Performer().Query(performerFilter, filter)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		performers, total, err := r.performer.Query(ctx, performerFilter, filter)
 		if err != nil {
 			return err
 		}
@@ -43,8 +43,8 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 }
 
 func (r *queryResolver) AllPerformers(ctx context.Context) (ret []*models.Performer, err error) {
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
-		ret, err = repo.Performer().All()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.performer.All(ctx)
 		return err
 	}); err != nil {
 		return nil, err
