@@ -135,7 +135,7 @@ func (qb *galleryQueryBuilder) FindBySceneID(sceneID int) ([]*models.Gallery, er
 
 func (qb *galleryQueryBuilder) FindByImageID(imageID int) ([]*models.Gallery, error) {
 	query := selectAll(galleryTable) + `
-	LEFT JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
+	INNER JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
 	WHERE images_join.image_id = ?
 	GROUP BY galleries.id
 	`
@@ -300,7 +300,7 @@ func galleryIsMissingCriterionHandler(qb *galleryQueryBuilder, isMissing *string
 				qb.performersRepository().join(f, "performers_join", "galleries.id")
 				f.addWhere("performers_join.gallery_id IS NULL")
 			case "date":
-				f.addWhere("galleries.date IS \"\" OR galleries.date IS \"0001-01-01\"")
+				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\" OR galleries.date IS \"0001-01-01\"")
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")

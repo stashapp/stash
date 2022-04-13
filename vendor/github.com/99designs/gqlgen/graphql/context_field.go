@@ -28,6 +28,8 @@ type FieldContext struct {
 	Result interface{}
 	// IsMethod indicates if the resolver is a method
 	IsMethod bool
+	// IsResolver indicates if the field has a user-specified resolver
+	IsResolver bool
 }
 
 type FieldStats struct {

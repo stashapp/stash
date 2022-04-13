@@ -18,7 +18,6 @@ import (
 	"github.com/99designs/gqlgen/internal/code"
 
 	"github.com/99designs/gqlgen/internal/imports"
-	"github.com/pkg/errors"
 )
 
 // CurrentImports keeps track of all the import declarations that are needed during the execution of a plugin.
@@ -79,7 +78,7 @@ func Render(cfg Options) error {
 		var err error
 		t, err = t.New("template.gotpl").Parse(cfg.Template)
 		if err != nil {
-			return errors.Wrap(err, "error with provided template")
+			return fmt.Errorf("error with provided template: %w", err)
 		}
 		roots = append(roots, "template.gotpl")
 	} else {
@@ -92,6 +91,10 @@ func Render(cfg Options) error {
 			if !strings.HasSuffix(info.Name(), ".gotpl") {
 				return nil
 			}
+			// omit any templates with "_" at the end of their name, which are meant for specific contexts only
+			if strings.HasSuffix(info.Name(), "_.gotpl") {
+				return nil
+			}
 			b, err := ioutil.ReadFile(path)
 			if err != nil {
 				return err
@@ -99,7 +102,7 @@ func Render(cfg Options) error {
 
 			t, err = t.New(name).Parse(string(b))
 			if err != nil {
-				return errors.Wrap(err, cfg.Filename)
+				return fmt.Errorf("%s: %w", cfg.Filename, err)
 			}
 
 			roots = append(roots, name)
@@ -107,7 +110,7 @@ func Render(cfg Options) error {
 			return nil
 		})
 		if err != nil {
-			return errors.Wrap(err, "locating templates")
+			return fmt.Errorf("locating templates: %w", err)
 		}
 	}
 
@@ -129,7 +132,7 @@ func Render(cfg Options) error {
 		}
 		err := t.Lookup(root).Execute(&buf, cfg.Data)
 		if err != nil {
-			return errors.Wrap(err, root)
+			return fmt.Errorf("%s: %w", root, err)
 		}
 		if cfg.RegionTags {
 			buf.WriteString("\n// endregion " + center(70, "*", " "+root+" ") + "\n")
@@ -450,18 +453,23 @@ var commonInitialisms = map[string]bool{
 	"ASCII": true,
 	"CPU":   true,
 	"CSS":   true,
+	"CSV":   true,
 	"DNS":   true,
 	"EOF":   true,
 	"GUID":  true,
 	"HTML":  true,
 	"HTTP":  true,
 	"HTTPS": true,
+	"ICMP":  true,
 	"ID":    true,
 	"IP":    true,
 	"JSON":  true,
+	"KVK":   true,
 	"LHS":   true,
+	"PDF":   true,
 	"PGP":   true,
 	"QPS":   true,
+	"QR":    true,
 	"RAM":   true,
 	"RHS":   true,
 	"RPC":   true,
@@ -469,16 +477,17 @@ var commonInitialisms = map[string]bool{
 	"SMTP":  true,
 	"SQL":   true,
 	"SSH":   true,
+	"SVG":   true,
 	"TCP":   true,
 	"TLS":   true,
 	"TTL":   true,
 	"UDP":   true,
 	"UI":    true,
 	"UID":   true,
-	"UUID":  true,
 	"URI":   true,
 	"URL":   true,
 	"UTF8":  true,
+	"UUID":  true,
 	"VM":    true,
 	"XML":   true,
 	"XMPP":  true,
@@ -487,7 +496,7 @@ var commonInitialisms = map[string]bool{
 }
 
 func rawQuote(s string) string {
-	return "`" + strings.Replace(s, "`", "`+\"`\"+`", -1) + "`"
+	return "`" + strings.ReplaceAll(s, "`", "`+\"`\"+`") + "`"
 }
 
 func notNil(field string, data interface{}) bool {
@@ -549,7 +558,7 @@ func Dump(val interface{}) string {
 }
 
 func prefixLines(prefix, s string) string {
-	return prefix + strings.Replace(s, "\n", "\n"+prefix, -1)
+	return prefix + strings.ReplaceAll(s, "\n", "\n"+prefix)
 }
 
 func resolveName(name string, skip int) string {
@@ -582,9 +591,9 @@ func render(filename string, tpldata interface{}) (*bytes.Buffer, error) {
 }
 
 func write(filename string, b []byte, packages *code.Packages) error {
-	err := os.MkdirAll(filepath.Dir(filename), 0755)
+	err := os.MkdirAll(filepath.Dir(filename), 0o755)
 	if err != nil {
-		return errors.Wrap(err, "failed to create directory")
+		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
 	formatted, err := imports.Prune(filename, b, packages)
@@ -593,9 +602,9 @@ func write(filename string, b []byte, packages *code.Packages) error {
 		formatted = b
 	}
 
-	err = ioutil.WriteFile(filename, formatted, 0644)
+	err = ioutil.WriteFile(filename, formatted, 0o644)
 	if err != nil {
-		return errors.Wrapf(err, "failed to write %s", filename)
+		return fmt.Errorf("failed to write %s: %w", filename, err)
 	}
 
 	return nil

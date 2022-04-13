@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import _ from "lodash";
 import { useBulkPerformerUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
@@ -10,39 +9,64 @@ import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
 import {
-  getAggregateInputIDs,
   getAggregateInputValue,
-  getAggregateRating,
-  getAggregateTagIds,
+  getAggregateState,
+  getAggregateStateObject,
 } from "src/utils/bulkUpdate";
-import { genderStrings, stringToGender } from "src/utils/gender";
+import {
+  genderStrings,
+  genderToString,
+  stringToGender,
+} from "src/utils/gender";
+import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
+import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
   onClose: (applied: boolean) => void;
 }
 
+const performerFields = [
+  "favorite",
+  "url",
+  "instagram",
+  "twitter",
+  "rating",
+  "gender",
+  "birthdate",
+  "death_date",
+  "career_length",
+  "country",
+  "ethnicity",
+  "eye_color",
+  "height",
+  // "weight",
+  "measurements",
+  "fake_tits",
+  "hair_color",
+  "tattoos",
+  "piercings",
+  "ignore_auto_tag",
+];
+
 export const EditPerformersDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const intl = useIntl();
   const Toast = useToast();
-  const [rating, setRating] = useState<number>();
-  const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
-    GQL.BulkUpdateIdMode.Add
-  );
-  const [tagIds, setTagIds] = useState<string[]>();
+  const [tagIds, setTagIds] = useState<GQL.BulkUpdateIds>({
+    mode: GQL.BulkUpdateIdMode.Add,
+  });
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
-  const [favorite, setFavorite] = useState<boolean | undefined>();
-  const [ethnicity, setEthnicity] = useState<string | undefined>();
-  const [country, setCountry] = useState<string | undefined>();
-  const [eyeColor, setEyeColor] = useState<string | undefined>();
-  const [fakeTits, setFakeTits] = useState<string | undefined>();
-  const [careerLength, setCareerLength] = useState<string | undefined>();
-  const [tattoos, setTattoos] = useState<string | undefined>();
-  const [piercings, setPiercings] = useState<string | undefined>();
-  const [hairColor, setHairColor] = useState<string | undefined>();
-  const [gender, setGender] = useState<GQL.GenderEnum | undefined>();
+  const [
+    aggregateState,
+    setAggregateState,
+  ] = useState<GQL.BulkPerformerUpdateInput>({});
+  // weight needs conversion to/from number
+  const [weight, setWeight] = useState<string | undefined>();
+  const [updateInput, setUpdateInput] = useState<GQL.BulkPerformerUpdateInput>(
+    {}
+  );
   const genderOptions = [""].concat(genderStrings);
 
   const [updatePerformers] = useBulkPerformerUpdate(getPerformerInput());
@@ -50,37 +74,36 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const checkboxRef = React.createRef<HTMLInputElement>();
+  function setUpdateField(input: Partial<GQL.BulkPerformerUpdateInput>) {
+    setUpdateInput({ ...updateInput, ...input });
+  }
 
   function getPerformerInput(): GQL.BulkPerformerUpdateInput {
-    // need to determine what we are actually setting on each performer
-    const aggregateTagIds = getAggregateTagIds(props.selected);
-    const aggregateRating = getAggregateRating(props.selected);
-
     const performerInput: GQL.BulkPerformerUpdateInput = {
       ids: props.selected.map((performer) => {
         return performer.id;
       }),
+      ...updateInput,
+      tag_ids: tagIds,
     };
 
-    performerInput.rating = getAggregateInputValue(rating, aggregateRating);
-
-    performerInput.tag_ids = getAggregateInputIDs(
-      tagMode,
-      tagIds,
-      aggregateTagIds
+    // we don't have unset functionality for the rating star control
+    // so need to determine if we are setting a rating or not
+    performerInput.rating = getAggregateInputValue(
+      updateInput.rating,
+      aggregateState.rating
     );
 
-    performerInput.favorite = favorite;
-    performerInput.ethnicity = ethnicity;
-    performerInput.country = country;
-    performerInput.eye_color = eyeColor;
-    performerInput.fake_tits = fakeTits;
-    performerInput.career_length = careerLength;
-    performerInput.tattoos = tattoos;
-    performerInput.piercings = piercings;
-    performerInput.hair_color = hairColor;
-    performerInput.gender = gender;
+    // gender dropdown doesn't have unset functionality
+    // so need to determine what we are setting
+    performerInput.gender = getAggregateInputValue(
+      updateInput.gender,
+      aggregateState.gender
+    );
+
+    if (weight !== undefined) {
+      performerInput.weight = parseFloat(weight);
+    }
 
     return performerInput;
   }
@@ -107,74 +130,39 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
   }
 
   useEffect(() => {
+    const updateState: GQL.BulkPerformerUpdateInput = {};
+
     const state = props.selected;
     let updateTagIds: string[] = [];
-    let updateFavorite: boolean | undefined;
-    let updateRating: number | undefined;
-    let updateGender: GQL.GenderEnum | undefined;
+    let updateWeight: string | undefined | null = undefined;
     let first = true;
 
     state.forEach((performer: GQL.SlimPerformerDataFragment) => {
-      const performerTagIDs = (performer.tags ?? []).map((p) => p.id).sort();
-      const performerRating = performer.rating;
+      getAggregateStateObject(updateState, performer, performerFields, first);
 
-      if (first) {
-        updateTagIds = performerTagIDs;
-        first = false;
-        updateFavorite = performer.favorite;
-        updateRating = performerRating ?? undefined;
-        updateGender = performer.gender ?? undefined;
-      } else {
-        if (!_.isEqual(performerTagIDs, updateTagIds)) {
-          updateTagIds = [];
-        }
-        if (performer.favorite !== updateFavorite) {
-          updateFavorite = undefined;
-        }
-        if (performerRating !== updateRating) {
-          updateRating = undefined;
-        }
-        if (performer.gender !== updateGender) {
-          updateGender = undefined;
-        }
-      }
+      const performerTagIDs = (performer.tags ?? []).map((p) => p.id).sort();
+
+      updateTagIds =
+        getAggregateState(updateTagIds, performerTagIDs, first) ?? [];
+
+      const thisWeight =
+        performer.weight !== undefined && performer.weight !== null
+          ? performer.weight.toString()
+          : performer.weight;
+      updateWeight = getAggregateState(updateWeight, thisWeight, first);
+
+      first = false;
     });
 
     setExistingTagIds(updateTagIds);
-    setFavorite(updateFavorite);
-    setRating(updateRating);
-    setGender(updateGender);
-
-    // these fields are not part of SlimPerformerDataFragment
-    setEthnicity(undefined);
-    setCountry(undefined);
-    setEyeColor(undefined);
-    setFakeTits(undefined);
-    setCareerLength(undefined);
-    setTattoos(undefined);
-    setPiercings(undefined);
-    setHairColor(undefined);
-  }, [props.selected, tagMode]);
-
-  useEffect(() => {
-    if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = favorite === undefined;
-    }
-  }, [favorite, checkboxRef]);
-
-  function cycleFavorite() {
-    if (favorite) {
-      setFavorite(undefined);
-    } else if (favorite === undefined) {
-      setFavorite(false);
-    } else {
-      setFavorite(true);
-    }
-  }
+    setWeight(updateWeight);
+    setAggregateState(updateState);
+    setUpdateInput(updateState);
+  }, [props.selected]);
 
   function renderTextField(
     name: string,
-    value: string | undefined,
+    value: string | undefined | null,
     setter: (newValue: string | undefined) => void
   ) {
     return (
@@ -182,12 +170,10 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         <Form.Label>
           <FormattedMessage id={name} />
         </Form.Label>
-        <Form.Control
-          className="input-control"
-          type="text"
-          value={value}
-          onChange={(event) => setter(event.currentTarget.value)}
-          placeholder={intl.formatMessage({ id: name })}
+        <BulkUpdateTextInput
+          value={value === null ? "" : value ?? undefined}
+          valueChanged={(newValue) => setter(newValue)}
+          unsetDisabled={props.selected.length < 2}
         />
       </Form.Group>
     );
@@ -219,20 +205,18 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
           })}
           <Col xs={9}>
             <RatingStars
-              value={rating}
-              onSetRating={(value) => setRating(value)}
+              value={updateInput.rating ?? undefined}
+              onSetRating={(value) => setUpdateField({ rating: value })}
               disabled={isUpdating}
             />
           </Col>
         </Form.Group>
         <Form>
           <Form.Group controlId="favorite">
-            <Form.Check
-              type="checkbox"
-              label="Favorite"
-              checked={favorite}
-              ref={checkboxRef}
-              onChange={() => cycleFavorite()}
+            <IndeterminateCheckbox
+              setChecked={(checked) => setUpdateField({ favorite: checked })}
+              checked={updateInput.favorite ?? undefined}
+              label={intl.formatMessage({ id: "favourite" })}
             />
           </Form.Group>
 
@@ -243,8 +227,11 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             <Form.Control
               as="select"
               className="input-control"
+              value={genderToString(updateInput.gender ?? undefined)}
               onChange={(event) =>
-                setGender(stringToGender(event.currentTarget.value))
+                setUpdateField({
+                  gender: stringToGender(event.currentTarget.value),
+                })
               }
             >
               {genderOptions.map((opt) => (
@@ -255,14 +242,52 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             </Form.Control>
           </Form.Group>
 
-          {renderTextField("country", country, setCountry)}
-          {renderTextField("ethnicity", ethnicity, setEthnicity)}
-          {renderTextField("hair_color", hairColor, setHairColor)}
-          {renderTextField("eye_color", eyeColor, setEyeColor)}
-          {renderTextField("fake_tits", fakeTits, setFakeTits)}
-          {renderTextField("tattoos", tattoos, setTattoos)}
-          {renderTextField("piercings", piercings, setPiercings)}
-          {renderTextField("career_length", careerLength, setCareerLength)}
+          {renderTextField("birthdate", updateInput.birthdate, (v) =>
+            setUpdateField({ birthdate: v })
+          )}
+          {renderTextField("death_date", updateInput.death_date, (v) =>
+            setUpdateField({ death_date: v })
+          )}
+          {renderTextField("country", updateInput.country, (v) =>
+            setUpdateField({ country: v })
+          )}
+          {renderTextField("ethnicity", updateInput.ethnicity, (v) =>
+            setUpdateField({ ethnicity: v })
+          )}
+          {renderTextField("hair_color", updateInput.hair_color, (v) =>
+            setUpdateField({ hair_color: v })
+          )}
+          {renderTextField("eye_color", updateInput.eye_color, (v) =>
+            setUpdateField({ eye_color: v })
+          )}
+          {renderTextField("height", updateInput.height, (v) =>
+            setUpdateField({ height: v })
+          )}
+          {renderTextField("weight", weight, (v) => setWeight(v))}
+          {renderTextField("measurements", updateInput.measurements, (v) =>
+            setUpdateField({ measurements: v })
+          )}
+          {renderTextField("fake_tits", updateInput.fake_tits, (v) =>
+            setUpdateField({ fake_tits: v })
+          )}
+          {renderTextField("tattoos", updateInput.tattoos, (v) =>
+            setUpdateField({ tattoos: v })
+          )}
+          {renderTextField("piercings", updateInput.piercings, (v) =>
+            setUpdateField({ piercings: v })
+          )}
+          {renderTextField("career_length", updateInput.career_length, (v) =>
+            setUpdateField({ career_length: v })
+          )}
+          {renderTextField("url", updateInput.url, (v) =>
+            setUpdateField({ url: v })
+          )}
+          {renderTextField("twitter", updateInput.twitter, (v) =>
+            setUpdateField({ twitter: v })
+          )}
+          {renderTextField("instagram", updateInput.instagram, (v) =>
+            setUpdateField({ instagram: v })
+          )}
 
           <Form.Group controlId="tags">
             <Form.Label>
@@ -271,11 +296,21 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
             <MultiSet
               type="tags"
               disabled={isUpdating}
-              onUpdate={(itemIDs) => setTagIds(itemIDs)}
-              onSetMode={(newMode) => setTagMode(newMode)}
+              onUpdate={(itemIDs) => setTagIds({ ...tagIds, ids: itemIDs })}
+              onSetMode={(newMode) => setTagIds({ ...tagIds, mode: newMode })}
               existingIds={existingTagIds ?? []}
-              ids={tagIds ?? []}
-              mode={tagMode}
+              ids={tagIds.ids ?? []}
+              mode={tagIds.mode}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="ignore-auto-tags">
+            <IndeterminateCheckbox
+              label={intl.formatMessage({ id: "ignore_auto_tag" })}
+              setChecked={(checked) =>
+                setUpdateField({ ignore_auto_tag: checked })
+              }
+              checked={updateInput.ignore_auto_tag ?? undefined}
             />
           </Form.Group>
         </Form>

@@ -12,8 +12,9 @@ import (
 // ToJSON converts a Studio object into its JSON equivalent.
 func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Studio, error) {
 	newStudioJSON := jsonschema.Studio{
-		CreatedAt: json.JSONTime{Time: studio.CreatedAt.Timestamp},
-		UpdatedAt: json.JSONTime{Time: studio.UpdatedAt.Timestamp},
+		IgnoreAutoTag: studio.IgnoreAutoTag,
+		CreatedAt:     json.JSONTime{Time: studio.CreatedAt.Timestamp},
+		UpdatedAt:     json.JSONTime{Time: studio.UpdatedAt.Timestamp},
 	}
 
 	if studio.Name.Valid {

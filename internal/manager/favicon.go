@@ -8,13 +8,13 @@ import (
 const faviconDir = "v2.5/build/"
 
 type FaviconProvider struct {
-	uiBox embed.FS
+	UIBox embed.FS
 }
 
 func (p *FaviconProvider) GetFavicon() []byte {
 	if runtime.GOOS == "windows" {
 		faviconPath := faviconDir + "favicon.ico"
-		ret, _ := p.uiBox.ReadFile(faviconPath)
+		ret, _ := p.UIBox.ReadFile(faviconPath)
 		return ret
 	}
 
@@ -23,6 +23,6 @@ func (p *FaviconProvider) GetFavicon() []byte {
 
 func (p *FaviconProvider) GetFaviconPng() []byte {
 	faviconPath := faviconDir + "favicon.png"
-	ret, _ := p.uiBox.ReadFile(faviconPath)
+	ret, _ := p.UIBox.ReadFile(faviconPath)
 	return ret
 }

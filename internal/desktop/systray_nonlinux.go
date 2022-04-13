@@ -1,5 +1,5 @@
-//go:build windows || darwin || !linux
-// +build windows darwin !linux
+//go:build windows || darwin
+// +build windows darwin
 
 package desktop
 
@@ -63,9 +63,7 @@ func systrayInitialize(shutdownHandler ShutdownHandler, faviconProvider FaviconP
 					if item == "markers" {
 						item = "scenes/markers"
 					}
-					if c.GetNoBrowser() {
-						openURLInBrowser(item)
-					}
+					openURLInBrowser(item)
 				}
 			}(item)
 		}
@@ -83,9 +81,7 @@ func systrayInitialize(shutdownHandler ShutdownHandler, faviconProvider FaviconP
 		for {
 			select {
 			case <-openStashButton.ClickedCh:
-				if !c.GetNoBrowser() {
-					openURLInBrowser("")
-				}
+				openURLInBrowser("")
 			case <-quitStashButton.ClickedCh:
 				systray.Quit()
 				shutdownHandler.Shutdown(0)

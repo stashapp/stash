@@ -30,10 +30,11 @@ type taskBuilder interface {
 }
 
 type pluginTask struct {
-	plugin     *Config
-	operation  *OperationConfig
-	input      common.PluginInput
-	gqlHandler http.Handler
+	plugin       *Config
+	operation    *OperationConfig
+	input        common.PluginInput
+	gqlHandler   http.Handler
+	serverConfig ServerConfig
 
 	progress chan float64
 	result   *common.PluginOutput

@@ -258,7 +258,6 @@ func (s *singleton) PostInit(ctx context.Context) error {
 
 	s.ScraperCache = instance.initScraperCache()
 	writeStashIcon()
-	go desktop.Start(instance, &FaviconProvider{uiBox: ui.UIBox})
 
 	// clear the downloads and tmp directories
 	// #1021 - only clear these directories if the generated folder is non-empty
@@ -292,7 +291,7 @@ func (s *singleton) PostInit(ctx context.Context) error {
 
 func writeStashIcon() {
 	p := FaviconProvider{
-		uiBox: ui.UIBox,
+		UIBox: ui.UIBox,
 	}
 
 	iconPath := filepath.Join(instance.Config.GetConfigPath(), "icon.png")
@@ -487,6 +486,9 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 
 // Shutdown gracefully stops the manager
 func (s *singleton) Shutdown(code int) {
+	// stop any profiling at exit
+	pprof.StopCPUProfile()
+
 	// TODO: Each part of the manager needs to gracefully stop at some point
 	// for now, we just close the database.
 	err := database.Close()
@@ -496,5 +498,6 @@ func (s *singleton) Shutdown(code int) {
 			os.Exit(1)
 		}
 	}
+
 	os.Exit(code)
 }

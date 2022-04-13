@@ -1,10 +1,9 @@
 package codegen
 
 import (
+	"fmt"
 	"go/types"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 func findGoNamedType(def types.Type) (*types.Named, error) {
@@ -14,7 +13,7 @@ func findGoNamedType(def types.Type) (*types.Named, error) {
 
 	namedType, ok := def.(*types.Named)
 	if !ok {
-		return nil, errors.Errorf("expected %s to be a named type, instead found %T\n", def.String(), def)
+		return nil, fmt.Errorf("expected %s to be a named type, instead found %T\n", def.String(), def)
 	}
 
 	return namedType, nil
@@ -34,14 +33,14 @@ func findGoInterface(def types.Type) (*types.Interface, error) {
 
 	underlying, ok := namedType.Underlying().(*types.Interface)
 	if !ok {
-		return nil, errors.Errorf("expected %s to be a named interface, instead found %s", def.String(), namedType.String())
+		return nil, fmt.Errorf("expected %s to be a named interface, instead found %s", def.String(), namedType.String())
 	}
 
 	return underlying, nil
 }
 
 func equalFieldName(source, target string) bool {
-	source = strings.Replace(source, "_", "", -1)
-	target = strings.Replace(target, "_", "", -1)
+	source = strings.ReplaceAll(source, "_", "")
+	target = strings.ReplaceAll(target, "_", "")
 	return strings.EqualFold(source, target)
 }

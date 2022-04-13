@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"math"
 	"sort"
 	"strings"
 
@@ -15,7 +16,7 @@ func SuggestionList(input string, options []string) []string {
 
 	for _, option := range options {
 		distance := lexicalDistance(input, option)
-		threshold := calcThreshold(input, option)
+		threshold := calcThreshold(input)
 		if distance <= threshold {
 			results = append(results, option)
 			optionsByDistance[option] = distance
@@ -28,12 +29,11 @@ func SuggestionList(input string, options []string) []string {
 	return results
 }
 
-func calcThreshold(a, b string) (threshold int) {
-	if len(a) >= len(b) {
-		threshold = len(a) / 2
-	} else {
-		threshold = len(b) / 2
-	}
+func calcThreshold(a string) (threshold int) {
+	// the logic is copied from here
+	// https://github.com/graphql/graphql-js/blob/47bd8c8897c72d3efc17ecb1599a95cee6bac5e8/src/jsutils/suggestionList.ts#L14
+	threshold = int(math.Floor(float64(len(a))*0.4) + 1)
+
 	if threshold < 1 {
 		threshold = 1
 	}

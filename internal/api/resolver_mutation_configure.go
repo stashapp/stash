@@ -265,6 +265,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		c.Set(config.StashBoxes, input.StashBoxes)
 	}
 
+	if input.PythonPath != nil {
+		c.Set(config.PythonPath, input.PythonPath)
+	}
+
 	if err := c.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
@@ -281,6 +285,12 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 	c := config.GetInstance()
 
 	setBool := func(key string, v *bool) {
+		if v != nil {
+			c.Set(key, *v)
+		}
+	}
+
+	setString := func(key string, v *string) {
 		if v != nil {
 			c.Set(key, *v)
 		}
@@ -316,8 +326,22 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		c.Set(config.Language, *input.Language)
 	}
 
+	// deprecated field
 	if input.SlideshowDelay != nil {
-		c.Set(config.SlideshowDelay, *input.SlideshowDelay)
+		c.Set(config.ImageLightboxSlideshowDelay, *input.SlideshowDelay)
+	}
+
+	if input.ImageLightbox != nil {
+		options := input.ImageLightbox
+
+		if options.SlideshowDelay != nil {
+			c.Set(config.ImageLightboxSlideshowDelay, *options.SlideshowDelay)
+		}
+
+		setString(config.ImageLightboxDisplayMode, (*string)(options.DisplayMode))
+		setBool(config.ImageLightboxScaleUp, options.ScaleUp)
+		setBool(config.ImageLightboxResetZoomOnNav, options.ResetZoomOnNav)
+		setString(config.ImageLightboxScrollMode, (*string)(options.ScrollMode))
 	}
 
 	if input.CSS != nil {

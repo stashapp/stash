@@ -110,6 +110,11 @@ cross-compile-macos:
 	cd dist && zip -r Stash-macos.zip Stash.app && cd ..
 	rm -rf dist/Stash.app
 
+cross-compile-freebsd: export GOOS := freebsd
+cross-compile-freebsd: export GOARCH := amd64
+cross-compile-freebsd: OUTPUT := -o dist/stash-freebsd
+cross-compile-freebsd: build-release-static
+
 cross-compile-linux: export GOOS := linux
 cross-compile-linux: export GOARCH := amd64
 cross-compile-linux: OUTPUT := -o dist/stash-linux
@@ -143,11 +148,15 @@ cross-compile-all:
 	make cross-compile-linux-arm32v7
 	make cross-compile-linux-arm32v6
 
-# ensures a file is present in ui/v2.5/build since this is required
-# for the embedded ui library
+.PHONY: touch-ui
 touch-ui:
+ifndef IS_WIN_SHELL
 	@mkdir -p ui/v2.5/build
 	@touch ui/v2.5/build/index.html
+else
+	@if not exist "ui\\v2.5\\build" mkdir ui\\v2.5\\build
+	@type nul >> ui/v2.5/build/index.html
+endif
 
 # Regenerates GraphQL files
 generate: generate-backend generate-frontend

@@ -32,6 +32,7 @@ const (
 	details          = "details"
 	rating           = 5
 	parentStudioName = "parentStudio"
+	autoTagIgnored   = true
 )
 
 var parentStudio models.Studio = models.Studio{
@@ -67,7 +68,8 @@ func createFullStudio(id int, parentID int) models.Studio {
 		UpdatedAt: models.SQLiteTimestamp{
 			Timestamp: updateTime,
 		},
-		Rating: models.NullInt64(rating),
+		Rating:        models.NullInt64(rating),
+		IgnoreAutoTag: autoTagIgnored,
 	}
 
 	if parentID != 0 {
@@ -107,6 +109,7 @@ func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonsch
 		StashIDs: []models.StashID{
 			stashID,
 		},
+		IgnoreAutoTag: autoTagIgnored,
 	}
 }
 

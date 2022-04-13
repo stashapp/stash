@@ -5,8 +5,9 @@ before:
       - go mod download
 builds:
   - main: ./main.go
+    binary: mockery
     ldflags:
-      - -s -w -X github.com/vektra/mockery/v2/pkg/config.SemVer={{.Version}}
+      - -s -w -X github.com/vektra/mockery/v2/pkg/config.SemVer=v{{.Version}}
     env:
       - CGO_ENABLED=0
     goos:
@@ -15,6 +16,7 @@ builds:
       - windows
     goarch:
       - amd64
+      - arm64
 archives:
   - replacements:
       darwin: Darwin
@@ -34,8 +36,6 @@ changelog:
 dockers:
   - goos: linux
     goarch: amd64
-    binaries:
-      - mockery
     image_templates:
       - 'vektra/mockery:{{ .Tag }}'
       - 'vektra/mockery:v{{ .Major }}'
@@ -51,9 +51,10 @@ dockers:
 brews:
   - homepage: https://github.com/vektra/mockery
     description: "A mock code autogenerator for Go"
-    github:
+    tap:
         owner: vektra
         name: homebrew-tap
+        token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     folder: Formula
     test: |
         system "#{bin}mockery --version"

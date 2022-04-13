@@ -26,7 +26,14 @@ func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*stri
 func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret []*models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
+
+		// #2376 - sort images by path
+		// doing this via Query is really slow, so stick with FindByGalleryID
 		ret, err = repo.Image().FindByGalleryID(obj.ID)
+		if err != nil {
+			return err
+		}
+
 		return err
 	}); err != nil {
 		return nil, err
@@ -37,6 +44,7 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		// doing this via Query is really slow, so stick with FindByGalleryID
 		imgs, err := repo.Image().FindByGalleryID(obj.ID)
 		if err != nil {
 			return err

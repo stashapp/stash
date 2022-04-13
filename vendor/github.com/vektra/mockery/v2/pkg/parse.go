@@ -22,11 +22,17 @@ type parserEntry struct {
 	interfaces []string
 }
 
+type packageLoadEntry struct {
+	pkgs []*packages.Package
+	err  error
+}
+
 type Parser struct {
 	entries           []*parserEntry
 	entriesByFileName map[string]*parserEntry
 	parserPackages    []*types.Package
 	conf              packages.Config
+	packageLoadCache  map[string]packageLoadEntry
 }
 
 func NewParser(buildTags []string) *Parser {
@@ -39,7 +45,17 @@ func NewParser(buildTags []string) *Parser {
 		parserPackages:    make([]*types.Package, 0),
 		entriesByFileName: map[string]*parserEntry{},
 		conf:              conf,
+		packageLoadCache:  map[string]packageLoadEntry{},
 	}
+}
+
+func (p *Parser) loadPackages(fpath string) ([]*packages.Package, error) {
+	if result, ok := p.packageLoadCache[fpath]; ok {
+		return result.pkgs, result.err
+	}
+	pkgs, err := packages.Load(&p.conf, "file="+fpath)
+	p.packageLoadCache[fpath] = packageLoadEntry{pkgs, err}
+	return pkgs, err
 }
 
 func (p *Parser) Parse(ctx context.Context, path string) error {
@@ -69,7 +85,7 @@ func (p *Parser) Parse(ctx context.Context, path string) error {
 			Logger()
 		ctx = log.WithContext(ctx)
 
-		if filepath.Ext(fi.Name()) != ".go" || strings.HasSuffix(fi.Name(), "_test.go") {
+		if filepath.Ext(fi.Name()) != ".go" || strings.HasSuffix(fi.Name(), "_test.go") || strings.HasPrefix(fi.Name(), "mock_") {
 			continue
 		}
 
@@ -81,7 +97,7 @@ func (p *Parser) Parse(ctx context.Context, path string) error {
 			continue
 		}
 
-		pkgs, err := packages.Load(&p.conf, "file="+fpath)
+		pkgs, err := p.loadPackages(fpath)
 		if err != nil {
 			return err
 		}
@@ -131,8 +147,8 @@ func NewNodeVisitor() *NodeVisitor {
 	}
 }
 
-func (n *NodeVisitor) DeclaredInterfaces() []string {
-	return n.declaredInterfaces
+func (nv *NodeVisitor) DeclaredInterfaces() []string {
+	return nv.declaredInterfaces
 }
 
 func (nv *NodeVisitor) Visit(node ast.Node) ast.Visitor {

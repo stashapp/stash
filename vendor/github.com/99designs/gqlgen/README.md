@@ -1,24 +1,42 @@
-# gqlgen [![Continuous Integration](https://github.com/99designs/gqlgen/workflows/Continuous%20Integration/badge.svg)](https://github.com/99designs/gqlgen/actions) [![Read the Docs](https://badgen.net/badge/docs/available/green)](http://gqlgen.com/) [![GoDoc](https://godoc.org/github.com/99designs/gqlgen?status.svg)](https://godoc.org/github.com/99designs/gqlgen)
+![gqlgen](https://user-images.githubusercontent.com/980499/133180111-d064b38c-6eb9-444b-a60f-7005a6e68222.png)
 
-![gqlgen](https://user-images.githubusercontent.com/46195831/89802919-0bb8ef00-db2a-11ea-8ba4-88e7a58b2fd2.png)
+
+# gqlgen [![Integration](https://github.com/99designs/gqlgen/actions/workflows/integration.yml/badge.svg)](https://github.com/99designs/gqlgen/actions) [![Coverage Status](https://coveralls.io/repos/github/99designs/gqlgen/badge.svg?branch=master)](https://coveralls.io/github/99designs/gqlgen?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/99designs/gqlgen)](https://goreportcard.com/report/github.com/99designs/gqlgen) [![Go Reference](https://pkg.go.dev/badge/github.com/99designs/gqlgen.svg)](https://pkg.go.dev/github.com/99designs/gqlgen) [![Read the Docs](https://badgen.net/badge/docs/available/green)](http://gqlgen.com/)
 
 ## What is gqlgen?
 
-[gqlgen](https://github.com/99designs/gqlgen) is a Go library for building GraphQL servers without any fuss.<br/> 
+[gqlgen](https://github.com/99designs/gqlgen) is a Go library for building GraphQL servers without any fuss.<br/>
 
 - **gqlgen is based on a Schema first approach** — You get to Define your API using the GraphQL [Schema Definition Language](http://graphql.org/learn/schema/).
-- **gqlgen priortizes Type safety** — You should never see `map[string]interface{}` here.
+- **gqlgen prioritizes Type safety** — You should never see `map[string]interface{}` here.
 - **gqlgen enables Codegen** — We generate the boring bits, so you can focus on building your app quickly.
 
 Still not convinced enough to use **gqlgen**? Compare **gqlgen** with other Go graphql [implementations](https://gqlgen.com/feature-comparison/)
 
-## Getting Started
-- To install gqlgen run the comand `go get github.com/99designs/gqlgen` in your project directory.<br/> 
-- You could initialize a new project using the recommended folder structure by running this command `go run github.com/99designs/gqlgen init`.
+## Quick start
+1. [Initialise a new go module](https://golang.org/doc/tutorial/create-module)
 
-You could find a more comprehensive guide to help you get started [here](https://gqlgen.com/getting-started/).<br/>
-We also have a couple of real-world [examples](https://github.com/99designs/gqlgen/tree/master/example) that show how to GraphQL applicatons with **gqlgen** seamlessly,
-You can see these [examples](https://github.com/99designs/gqlgen/tree/master/example) here or visit [godoc](https://godoc.org/github.com/99designs/gqlgen).
+       mkdir example
+       cd example
+       go mod init example
+
+2. Add `github.com/99designs/gqlgen` to your [project's tools.go](https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module)
+
+       printf '// +build tools\npackage tools\nimport _ "github.com/99designs/gqlgen"' | gofmt > tools.go
+       go mod tidy
+
+3. Initialise gqlgen config and generate models
+
+       go run github.com/99designs/gqlgen init
+
+4. Start the graphql server
+
+       go run server.go
+
+More help to get started:
+ - [Getting started tutorial](https://gqlgen.com/getting-started/) - a comprehensive guide to help you get started
+ - [Real-world examples](https://github.com/99designs/gqlgen/tree/master/_examples) show how to create GraphQL applications
+ - [Reference docs](https://pkg.go.dev/github.com/99designs/gqlgen) for the APIs
 
 ## Reporting Issues
 
@@ -85,6 +103,25 @@ func (r *userResolver) Friends(ctx context.Context, obj *User) ([]*User, error) 
 }
 ```
 
+You can also use inline config with directives to achieve the same result
+
+```graphql
+directive @goModel(model: String, models: [String!]) on OBJECT
+    | INPUT_OBJECT
+    | SCALAR
+    | ENUM
+    | INTERFACE
+    | UNION
+
+directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
+    | FIELD_DEFINITION
+
+type User @goModel(model: "github.com/you/pkg/model.User") {
+    id: ID!         @goField(name: "todoId")
+    friends: [User!]!   @goField(forceResolver: true)
+}
+```
+
 ### Can I change the type of the ID from type String to Type Int?
 
 Yes! You can by remapping it in config as seen below:
@@ -93,7 +130,7 @@ Yes! You can by remapping it in config as seen below:
 models:
   ID: # The GraphQL type ID is backed by
     model:
-      - github.com/99designs/gqlgen/graphql.IntID # An go integer
+      - github.com/99designs/gqlgen/graphql.IntID # a go integer
       - github.com/99designs/gqlgen/graphql.ID # or a go string
 ```
 
@@ -103,7 +140,7 @@ first model in this list is used as the default type and it will always be used 
 - Generating models based on schema
 - As arguments in resolvers
 
-There isnt any way around this, gqlgen has no way to know what you want in a given context.
+There isn't any way around this, gqlgen has no way to know what you want in a given context.
 
 ## Other Resources
 

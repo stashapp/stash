@@ -1,7 +1,12 @@
 package zerolog
 
 import (
+	"bytes"
 	"io"
+	"path"
+	"runtime"
+	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -26,11 +31,9 @@ type syncWriter struct {
 }
 
 // SyncWriter wraps w so that each call to Write is synchronized with a mutex.
-// This syncer can be the call to writer's Write method is not thread safe.
-// Note that os.File Write operation is using write() syscall which is supposed
-// to be thread-safe on POSIX systems. So there is no need to use this with
-// os.File on such systems as zerolog guarantees to issue a single Write call
-// per log event.
+// This syncer can be used to wrap the call to writer's Write method if it is
+// not thread safe. Note that you do not need this wrapper for os.File Write
+// operations on POSIX and Windows systems as they are already thread-safe.
 func SyncWriter(w io.Writer) io.Writer {
 	if lw, ok := w.(LevelWriter); ok {
 		return &syncWriter{lw: lw}
@@ -58,30 +61,30 @@ type multiLevelWriter struct {
 
 func (t multiLevelWriter) Write(p []byte) (n int, err error) {
 	for _, w := range t.writers {
-		n, err = w.Write(p)
-		if err != nil {
-			return
-		}
-		if n != len(p) {
-			err = io.ErrShortWrite
-			return
+		if _n, _err := w.Write(p); err == nil {
+			n = _n
+			if _err != nil {
+				err = _err
+			} else if _n != len(p) {
+				err = io.ErrShortWrite
+			}
 		}
 	}
-	return len(p), nil
+	return n, err
 }
 
 func (t multiLevelWriter) WriteLevel(l Level, p []byte) (n int, err error) {
 	for _, w := range t.writers {
-		n, err = w.WriteLevel(l, p)
-		if err != nil {
-			return
-		}
-		if n != len(p) {
-			err = io.ErrShortWrite
-			return
+		if _n, _err := w.WriteLevel(l, p); err == nil {
+			n = _n
+			if _err != nil {
+				err = _err
+			} else if _n != len(p) {
+				err = io.ErrShortWrite
+			}
 		}
 	}
-	return len(p), nil
+	return n, err
 }
 
 // MultiLevelWriter creates a writer that duplicates its writes to all the
@@ -97,4 +100,55 @@ func MultiLevelWriter(writers ...io.Writer) LevelWriter {
 		}
 	}
 	return multiLevelWriter{lwriters}
+}
+
+// TestingLog is the logging interface of testing.TB.
+type TestingLog interface {
+	Log(args ...interface{})
+	Logf(format string, args ...interface{})
+	Helper()
+}
+
+// TestWriter is a writer that writes to testing.TB.
+type TestWriter struct {
+	T TestingLog
+
+	// Frame skips caller frames to capture the original file and line numbers.
+	Frame int
+}
+
+// NewTestWriter creates a writer that logs to the testing.TB.
+func NewTestWriter(t TestingLog) TestWriter {
+	return TestWriter{T: t}
+}
+
+// Write to testing.TB.
+func (t TestWriter) Write(p []byte) (n int, err error) {
+	t.T.Helper()
+
+	n = len(p)
+
+	// Strip trailing newline because t.Log always adds one.
+	p = bytes.TrimRight(p, "\n")
+
+	// Try to correct the log file and line number to the caller.
+	if t.Frame > 0 {
+		_, origFile, origLine, _ := runtime.Caller(1)
+		_, frameFile, frameLine, ok := runtime.Caller(1 + t.Frame)
+		if ok {
+			erase := strings.Repeat("\b", len(path.Base(origFile))+len(strconv.Itoa(origLine))+3)
+			t.T.Logf("%s%s:%d: %s", erase, path.Base(frameFile), frameLine, p)
+			return n, err
+		}
+	}
+	t.T.Log(string(p))
+
+	return n, err
+}
+
+// ConsoleTestWriter creates an option that correctly sets the file frame depth for testing.TB log.
+func ConsoleTestWriter(t TestingLog) func(w *ConsoleWriter) {
+	return func(w *ConsoleWriter) {
+		w.Out = TestWriter{T: t, Frame: 6}
+	}
 }

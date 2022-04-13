@@ -168,7 +168,12 @@ func (qb *imageQueryBuilder) FindByPath(path string) (*models.Image, error) {
 
 func (qb *imageQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Image, error) {
 	args := []interface{}{galleryID}
-	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(nil), args)
+	sort := "path"
+	sortDir := models.SortDirectionEnumAsc
+	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(&models.FindFilterType{
+		Sort:      &sort,
+		Direction: &sortDir,
+	}), args)
 }
 
 func (qb *imageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
@@ -413,8 +418,8 @@ func imageTagCountCriterionHandler(qb *imageQueryBuilder, tagCount *models.IntCr
 
 func imageGalleriesCriterionHandler(qb *imageQueryBuilder, galleries *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		qb.galleriesRepository().join(f, "galleries_join", "images.id")
-		f.addLeftJoin(galleryTable, "", "galleries_join.gallery_id = galleries.id")
+		qb.galleriesRepository().join(f, "", "images.id")
+		f.addLeftJoin(galleryTable, "", "galleries_images.gallery_id = galleries.id")
 	}
 	h := qb.getMultiCriterionHandlerBuilder(galleryTable, galleriesImagesTable, galleryIDColumn, addJoinsFunc)
 

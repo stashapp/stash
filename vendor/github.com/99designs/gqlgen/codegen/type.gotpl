@@ -1,63 +1,84 @@
 {{- range $type := .ReferencedTypes }}
 	{{ with $type.UnmarshalFunc }}
 		func (ec *executionContext) {{ . }}(ctx context.Context, v interface{}) ({{ $type.GO | ref }}, error) {
-			{{- if and $type.IsNilable (not $type.GQL.NonNull) }}
+			{{- if and $type.IsNilable (not $type.GQL.NonNull) (not $type.IsPtrToPtr) }}
 				if v == nil { return nil, nil }
 			{{- end }}
-			{{- if $type.IsSlice }}
+			{{- if $type.IsPtrToSlice }}
+				res, err := ec.{{ $type.Elem.UnmarshalFunc }}(ctx, v)
+				return &res, graphql.ErrorOnPath(ctx, err)
+			{{- else if $type.IsSlice }}
 				var vSlice []interface{}
 				if v != nil {
-					if tmp1, ok := v.([]interface{}); ok {
-						vSlice = tmp1
-					} else {
-						vSlice = []interface{}{ v }
-					}
+					vSlice = graphql.CoerceList(v)
 				}
 				var err error
 				res := make([]{{$type.GO.Elem | ref}}, len(vSlice))
 				for i := range vSlice {
-					ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithIndex(i))
+					ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
 					res[i], err = ec.{{ $type.Elem.UnmarshalFunc }}(ctx, vSlice[i])
 					if err != nil {
-						return nil, graphql.WrapErrorWithInputPath(ctx, err)
+						return nil, err
 					}
 				}
 				return res, nil
+			{{- else if and $type.IsPtrToPtr (not $type.Unmarshaler) (not $type.IsMarshaler) }}
+				var pres {{ $type.Elem.GO | ref }}
+				if v != nil {
+					res, err := ec.{{ $type.Elem.UnmarshalFunc }}(ctx, v)
+					if err != nil {
+						return nil, graphql.ErrorOnPath(ctx, err)
+					}
+					pres = res
+				}
+				return &pres, nil
 			{{- else }}
 				{{- if $type.Unmarshaler }}
 					{{- if $type.CastType }}
-						tmp, err := {{ $type.Unmarshaler | call }}(v)
-						{{- if $type.IsNilable }}
+						{{- if $type.IsContext }}
+							tmp, err := {{ $type.Unmarshaler | call }}(ctx, v)
+						{{- else }}
+							tmp, err := {{ $type.Unmarshaler | call }}(v)
+						{{- end }}
+						{{- if and $type.IsNilable $type.Elem }}
 							res := {{ $type.Elem.GO | ref }}(tmp)
 						{{- else}}
 							res := {{ $type.GO | ref }}(tmp)
 						{{- end }}
 					{{- else}}
-						res, err := {{ $type.Unmarshaler | call }}(v)
+						{{- if $type.IsContext }}
+							res, err := {{ $type.Unmarshaler | call }}(ctx, v)
+						{{- else }}
+							res, err := {{ $type.Unmarshaler | call }}(v)
+						{{- end }}
 					{{- end }}
 					{{- if and $type.IsTargetNilable (not $type.IsNilable) }}
-						return *res, graphql.WrapErrorWithInputPath(ctx, err)
+						return *res, graphql.ErrorOnPath(ctx, err)
 					{{- else if and (not $type.IsTargetNilable) $type.IsNilable }}
-						return &res, graphql.WrapErrorWithInputPath(ctx, err)
+						return &res, graphql.ErrorOnPath(ctx, err)
 					{{- else}}
-						return res, graphql.WrapErrorWithInputPath(ctx, err)
+						return res, graphql.ErrorOnPath(ctx, err)
 					{{- end }}
 				{{- else if eq ($type.GO | ref) "map[string]interface{}" }}
 					return v.(map[string]interface{}), nil
 				{{- else if $type.IsMarshaler }}
-					{{- if $type.IsNilable }}
+					{{- if and $type.IsNilable $type.Elem }}
 						var res = new({{ $type.Elem.GO | ref }})
 					{{- else}}
 						var res {{ $type.GO | ref }}
 					{{- end }}
-					err := res.UnmarshalGQL(v)
-					return res, graphql.WrapErrorWithInputPath(ctx, err)
+					{{- if $type.IsContext }}
+						err := res.UnmarshalGQLContext(ctx, v)
+					{{- else }}
+						err := res.UnmarshalGQL(v)
+					{{- end }}
+					return res, graphql.ErrorOnPath(ctx, err)
 				{{- else }}
 					res, err := ec.unmarshalInput{{ $type.GQL.Name }}(ctx, v)
 					{{- if $type.IsNilable }}
-						return &res, graphql.WrapErrorWithInputPath(ctx, err)
+						return &res, graphql.ErrorOnPath(ctx, err)
 					{{- else}}
-						return res, graphql.WrapErrorWithInputPath(ctx, err)
+						return res, graphql.ErrorOnPath(ctx, err)
 					{{- end }}
 				{{- end }}
 			{{- end }}
@@ -66,7 +87,9 @@
 
 	{{ with $type.MarshalFunc }}
 		func (ec *executionContext) {{ . }}(ctx context.Context, sel ast.SelectionSet, v {{ $type.GO | ref }}) graphql.Marshaler {
-			{{- if $type.IsSlice }}
+			{{- if $type.IsPtrToSlice }}
+				return ec.{{ $type.Elem.MarshalFunc }}(ctx, sel, *v)
+			{{- else if $type.IsSlice }}
 				{{- if not $type.GQL.NonNull }}
 					if v == nil {
 						return graphql.Null
@@ -90,11 +113,11 @@
 						ctx := graphql.WithFieldContext(ctx, fc)
 						f := func(i int) {
 							defer func() {
-                        		if r := recover(); r != nil {
-                        			ec.Error(ctx, ec.Recover(ctx, r))
-                        			ret = nil
-                        		}
-                        	}()
+								if r := recover(); r != nil {
+									ec.Error(ctx, ec.Recover(ctx, r))
+									ret = nil
+								}
+							}()
 							if !isLen1 {
 								defer wg.Done()
 							}
@@ -107,10 +130,22 @@
 						}
 					{{ else }}
 						ret[i] = ec.{{ $type.Elem.MarshalFunc }}(ctx, sel, v[i])
-					{{- end}}
+					{{- end }}
 				}
 				{{ if not $type.IsScalar }} wg.Wait() {{ end }}
+				{{ if $type.Elem.GQL.NonNull }}
+					for _, e := range ret {
+						if e == graphql.Null {
+							return graphql.Null
+						}
+					}
+				{{ end }}
 				return ret
+			{{- else if and $type.IsPtrToPtr (not $type.Unmarshaler) (not $type.IsMarshaler) }}
+				if v == nil {
+					return graphql.Null
+				}
+				return ec.{{ $type.Elem.MarshalFunc }}(ctx, sel, *v)
 			{{- else }}
 				{{- if $type.IsNilable }}
 					if v == nil {
@@ -123,7 +158,11 @@
 					}
 				{{- end }}
 				{{- if $type.IsMarshaler }}
-					return v
+					{{- if $type.IsContext }}
+						return graphql.WrapContextMarshaler(ctx, v)
+					{{- else }}
+						return v
+					{{- end }}
 				{{- else if $type.Marshaler }}
 					{{- $v := "v" }}
 					{{- if and $type.IsTargetNilable (not $type.IsNilable) }}
@@ -131,16 +170,18 @@
 					{{- else if and (not $type.IsTargetNilable) $type.IsNilable }}
 						{{- $v = "*v" }}
 					{{- end }}
+					res := {{ $type.Marshaler | call }}({{- if $type.CastType }}{{ $type.CastType | ref }}({{ $v }}){{else}}{{ $v }}{{- end }})
 					{{- if $type.GQL.NonNull }}
-							res := {{ $type.Marshaler | call }}({{- if $type.CastType }}{{ $type.CastType | ref }}({{ $v }}){{else}}{{ $v }}{{- end }})
-							if res == graphql.Null {
-								if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-									ec.Errorf(ctx, "must not be null")
-								}
+						if res == graphql.Null {
+							if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+								ec.Errorf(ctx, "must not be null")
 							}
-							return res
+						}
+					{{- end }}
+					{{- if $type.IsContext }}
+						return graphql.WrapContextMarshaler(ctx, res)
 					{{- else }}
-						return {{ $type.Marshaler | call }}({{- if $type.CastType }}{{ $type.CastType | ref }}({{ $v }}){{else}}{{ $v }}{{- end }})
+						return res
 					{{- end }}
 				{{- else }}
 					return ec._{{$type.Definition.Name}}(ctx, sel, {{ if not $type.IsNilable}}&{{end}} v)

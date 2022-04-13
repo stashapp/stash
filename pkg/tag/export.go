@@ -12,9 +12,10 @@ import (
 // ToJSON converts a Tag object into its JSON equivalent.
 func ToJSON(reader models.TagReader, tag *models.Tag) (*jsonschema.Tag, error) {
 	newTagJSON := jsonschema.Tag{
-		Name:      tag.Name,
-		CreatedAt: json.JSONTime{Time: tag.CreatedAt.Timestamp},
-		UpdatedAt: json.JSONTime{Time: tag.UpdatedAt.Timestamp},
+		Name:          tag.Name,
+		IgnoreAutoTag: tag.IgnoreAutoTag,
+		CreatedAt:     json.JSONTime{Time: tag.CreatedAt.Timestamp},
+		UpdatedAt:     json.JSONTime{Time: tag.UpdatedAt.Timestamp},
 	}
 
 	aliases, err := reader.GetAliases(tag.ID)

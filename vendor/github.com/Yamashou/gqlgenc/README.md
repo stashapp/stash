@@ -25,11 +25,12 @@ go get -u github.com/Yamashou/gqlgenc
 
 ### Client Codes Only
 
-gqlgenc base is gqlgen with [plugins](https://gqlgen.com/reference/plugins/). So the setting is yaml in each format.
-gqlgenc can be configured using a .gqlgenc.yml file, 
+gqlgenc base is gqlgen with [plugins](https://gqlgen.com/reference/plugins/). So the setting is yaml in each format.  
+gqlgenc can be configured using a `.gqlgenc.yml` file
+
+Load a schema from a remote server:
 
 ```yaml
-
 model:
   package: generated
   filename: ./models_gen.go # https://github.com/99designs/gqlgen/tree/master/plugin/modelgen
@@ -43,13 +44,33 @@ models:
     model: github.com/99designs/gqlgen/graphql.Time
 endpoint:
   url: https://api.annict.com/graphql # Where do you want to send your request?
-  headers:　# If you need header for getting introspection query, set it 
+  headers:　# If you need header for getting introspection query, set it
     Authorization: "Bearer ${ANNICT_KEY}" # support environment variables
 query:
-  - "./query/*.graphql" # Where are all the query files located? 
+  - "./query/*.graphql" # Where are all the query files located?
 ```
 
-Execute the following command on same directory for .gqlgenc.yaml
+Load a schema from a local file:
+
+```yaml
+model:
+  package: generated
+  filename: ./models_gen.go # https://github.com/99designs/gqlgen/tree/master/plugin/modelgen
+client:
+  package: generated
+  filename: ./client.go # Where should any generated client go?
+models:
+  Int:
+    model: github.com/99designs/gqlgen/graphql.Int64
+  Date:
+    model: github.com/99designs/gqlgen/graphql.Time
+schema:
+  - "schema/**/*.graphql" # Where are all the schema files located?
+query:
+  - "./query/*.graphql" # Where are all the query files located?
+```
+
+Execute the following command on same directory for .gqlgenc.yml
 
 ```shell script
 gqlgenc

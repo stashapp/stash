@@ -1,6 +1,11 @@
 package transcoder
 
-import "github.com/stashapp/stash/pkg/ffmpeg"
+import (
+	"runtime"
+	"strings"
+
+	"github.com/stashapp/stash/pkg/ffmpeg"
+)
 
 type SpliceOptions struct {
 	OutputPath string
@@ -22,13 +27,21 @@ func (o *SpliceOptions) setDefaults() {
 	}
 }
 
+// fixWindowsPath replaces \ with / in the given path because the \ isn't recognized as valid on windows ffmpeg
+func fixWindowsPath(str string) string {
+	if runtime.GOOS == "windows" {
+		return strings.ReplaceAll(str, `\`, "/")
+	}
+	return str
+}
+
 func Splice(concatFile string, options SpliceOptions) ffmpeg.Args {
 	options.setDefaults()
 
 	var args ffmpeg.Args
 	args = args.LogLevel(options.Verbosity)
 	args = args.Format(ffmpeg.FormatConcat)
-	args = args.Input(concatFile)
+	args = args.Input(fixWindowsPath(concatFile))
 	args = args.Overwrite()
 
 	// if video codec is not provided, then use copy

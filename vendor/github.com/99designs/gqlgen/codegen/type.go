@@ -26,7 +26,7 @@ func processType(ret map[string]*config.TypeReference, ref *config.TypeReference
 	}
 	ret[key] = ref
 
-	if ref.IsSlice() {
+	if ref.IsSlice() || ref.IsPtrToSlice() || ref.IsPtrToPtr() {
 		processType(ret, ref.Elem())
 	}
 }

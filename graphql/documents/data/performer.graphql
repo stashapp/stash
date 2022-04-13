@@ -18,6 +18,7 @@ fragment PerformerData on Performer {
   piercings
   aliases
   favorite
+  ignore_auto_tag
   image_path
   scene_count
   image_count

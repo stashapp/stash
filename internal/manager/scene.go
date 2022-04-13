@@ -100,13 +100,6 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 		})
 	}
 
-	hls := models.SceneStreamEndpoint{
-		URL:      directStreamURL + ".m3u8",
-		MimeType: &mimeHLS,
-		Label:    &labelHLS,
-	}
-	ret = append(ret, &hls)
-
 	// WEBM quality transcoding options
 	// Note: These have the wrong mime type intentionally to allow jwplayer to selection between mp4/webm
 	webmLabelFourK := "WEBM 4K (2160p)"         // "FOUR_K"
@@ -165,6 +158,13 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	}
 
 	ret = append(ret, defaultStreams...)
+
+	hls := models.SceneStreamEndpoint{
+		URL:      directStreamURL + ".m3u8",
+		MimeType: &mimeHLS,
+		Label:    &labelHLS,
+	}
+	ret = append(ret, &hls)
 
 	return ret, nil
 }

@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -94,27 +95,36 @@ func (log *Logger) SetLogLevel(level string) {
 func logLevelFromString(level string) logrus.Level {
 	ret := logrus.InfoLevel
 
-	switch level {
-	case "Debug":
+	switch strings.ToLower(level) {
+	case "debug":
 		ret = logrus.DebugLevel
-	case "Warning":
+	case "warning":
 		ret = logrus.WarnLevel
-	case "Error":
+	case "error":
 		ret = logrus.ErrorLevel
-	case "Trace":
+	case "trace":
 		ret = logrus.TraceLevel
 	}
 
 	return ret
 }
 
+func (log *Logger) addToCache(l *LogItem) {
+	// assumes mutex held
+	// only add to cache if meets minimum log level
+	level := logLevelFromString(l.Type)
+	if level <= log.logger.Level {
+		log.logCache = append([]LogItem{*l}, log.logCache...)
+		if len(log.logCache) > 30 {
+			log.logCache = log.logCache[:len(log.logCache)-1]
+		}
+	}
+}
+
 func (log *Logger) addLogItem(l *LogItem) {
 	log.mutex.Lock()
 	l.Time = time.Now()
-	log.logCache = append([]LogItem{*l}, log.logCache...)
-	if len(log.logCache) > 30 {
-		log.logCache = log.logCache[:len(log.logCache)-1]
-	}
+	log.addToCache(l)
 	log.mutex.Unlock()
 	go log.broadcastLogItem(l)
 }

@@ -22,25 +22,26 @@ const (
 )
 
 const (
-	performerName = "testPerformer"
-	url           = "url"
-	aliases       = "aliases"
-	careerLength  = "careerLength"
-	country       = "country"
-	ethnicity     = "ethnicity"
-	eyeColor      = "eyeColor"
-	fakeTits      = "fakeTits"
-	gender        = "gender"
-	height        = "height"
-	instagram     = "instagram"
-	measurements  = "measurements"
-	piercings     = "piercings"
-	tattoos       = "tattoos"
-	twitter       = "twitter"
-	rating        = 5
-	details       = "details"
-	hairColor     = "hairColor"
-	weight        = 60
+	performerName  = "testPerformer"
+	url            = "url"
+	aliases        = "aliases"
+	careerLength   = "careerLength"
+	country        = "country"
+	ethnicity      = "ethnicity"
+	eyeColor       = "eyeColor"
+	fakeTits       = "fakeTits"
+	gender         = "gender"
+	height         = "height"
+	instagram      = "instagram"
+	measurements   = "measurements"
+	piercings      = "piercings"
+	tattoos        = "tattoos"
+	twitter        = "twitter"
+	rating         = 5
+	details        = "details"
+	hairColor      = "hairColor"
+	weight         = 60
+	autoTagIgnored = true
 )
 
 var imageBytes = []byte("imageBytes")
@@ -107,6 +108,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 			Int64: weight,
 			Valid: true,
 		},
+		IgnoreAutoTag: autoTagIgnored,
 	}
 }
 
@@ -156,6 +158,7 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		StashIDs: []models.StashID{
 			stashID,
 		},
+		IgnoreAutoTag: autoTagIgnored,
 	}
 }
 

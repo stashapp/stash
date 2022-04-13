@@ -9,11 +9,24 @@ import (
 	"github.com/Yamashou/gqlgenc/client"
 )
 
+type StashBoxGraphQLClient interface {
+	FindSceneByFingerprint(ctx context.Context, fingerprint FingerprintQueryInput, httpRequestOptions ...client.HTTPRequestOption) (*FindSceneByFingerprint, error)
+	FindScenesByFullFingerprints(ctx context.Context, fingerprints []*FingerprintQueryInput, httpRequestOptions ...client.HTTPRequestOption) (*FindScenesByFullFingerprints, error)
+	SearchScene(ctx context.Context, term string, httpRequestOptions ...client.HTTPRequestOption) (*SearchScene, error)
+	SearchPerformer(ctx context.Context, term string, httpRequestOptions ...client.HTTPRequestOption) (*SearchPerformer, error)
+	FindPerformerByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindPerformerByID, error)
+	FindSceneByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindSceneByID, error)
+	SubmitFingerprint(ctx context.Context, input FingerprintSubmission, httpRequestOptions ...client.HTTPRequestOption) (*SubmitFingerprint, error)
+	Me(ctx context.Context, httpRequestOptions ...client.HTTPRequestOption) (*Me, error)
+	SubmitSceneDraft(ctx context.Context, input SceneDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitSceneDraft, error)
+	SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitPerformerDraft, error)
+}
+
 type Client struct {
 	Client *client.Client
 }
 
-func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOption) *Client {
+func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOption) StashBoxGraphQLClient {
 	return &Client{Client: client.NewClient(cli, baseURL, options...)}
 }
 
@@ -45,7 +58,6 @@ type Query struct {
 	Version                      Version                      "json:\"version\" graphql:\"version\""
 	GetConfig                    StashBoxConfig               "json:\"getConfig\" graphql:\"getConfig\""
 }
-
 type Mutation struct {
 	SceneCreate          *Scene                "json:\"sceneCreate\" graphql:\"sceneCreate\""
 	SceneUpdate          *Scene                "json:\"sceneUpdate\" graphql:\"sceneUpdate\""
@@ -91,6 +103,8 @@ type Mutation struct {
 	SubmitSceneDraft     DraftSubmissionStatus "json:\"submitSceneDraft\" graphql:\"submitSceneDraft\""
 	SubmitPerformerDraft DraftSubmissionStatus "json:\"submitPerformerDraft\" graphql:\"submitPerformerDraft\""
 	DestroyDraft         bool                  "json:\"destroyDraft\" graphql:\"destroyDraft\""
+	FavoritePerformer    bool                  "json:\"favoritePerformer\" graphql:\"favoritePerformer\""
+	FavoriteStudio       bool                  "json:\"favoriteStudio\" graphql:\"favoriteStudio\""
 }
 type URLFragment struct {
 	URL  string "json:\"url\" graphql:\"url\""
@@ -188,7 +202,7 @@ type FindPerformerByID struct {
 type FindSceneByID struct {
 	FindScene *SceneFragment "json:\"findScene\" graphql:\"findScene\""
 }
-type SubmitFingerprintPayload struct {
+type SubmitFingerprint struct {
 	SubmitFingerprint bool "json:\"submitFingerprint\" graphql:\"submitFingerprint\""
 }
 type Me struct {
@@ -196,38 +210,21 @@ type Me struct {
 		Name string "json:\"name\" graphql:\"name\""
 	} "json:\"me\" graphql:\"me\""
 }
-type SubmitSceneDraftPayload struct {
+type SubmitSceneDraft struct {
 	SubmitSceneDraft struct {
 		ID *string "json:\"id\" graphql:\"id\""
 	} "json:\"submitSceneDraft\" graphql:\"submitSceneDraft\""
 }
-type SubmitPerformerDraftPayload struct {
+type SubmitPerformerDraft struct {
 	SubmitPerformerDraft struct {
 		ID *string "json:\"id\" graphql:\"id\""
 	} "json:\"submitPerformerDraft\" graphql:\"submitPerformerDraft\""
 }
 
-const FindSceneByFingerprintQuery = `query FindSceneByFingerprint ($fingerprint: FingerprintQueryInput!) {
+const FindSceneByFingerprintDocument = `query FindSceneByFingerprint ($fingerprint: FingerprintQueryInput!) {
 	findSceneByFingerprint(fingerprint: $fingerprint) {
 		... SceneFragment
 	}
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment TagFragment on Tag {
-	name
-	id
 }
 fragment PerformerFragment on Performer {
 	id
@@ -263,15 +260,42 @@ fragment PerformerFragment on Performer {
 		... BodyModificationFragment
 	}
 }
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
 fragment MeasurementsFragment on Measurements {
 	band_size
 	cup_size
 	waist
 	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment StudioFragment on Studio {
+	name
+	id
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
 }
 fragment SceneFragment on Scene {
 	id
@@ -303,16 +327,6 @@ fragment ImageFragment on Image {
 	url
 	width
 	height
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -328,26 +342,51 @@ func (c *Client) FindSceneByFingerprint(ctx context.Context, fingerprint Fingerp
 	}
 
 	var res FindSceneByFingerprint
-	if err := c.Client.Post(ctx, FindSceneByFingerprintQuery, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "FindSceneByFingerprint", FindSceneByFingerprintDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
 	return &res, nil
 }
 
-const FindScenesByFullFingerprintsQuery = `query FindScenesByFullFingerprints ($fingerprints: [FingerprintQueryInput!]!) {
+const FindScenesByFullFingerprintsDocument = `query FindScenesByFullFingerprints ($fingerprints: [FingerprintQueryInput!]!) {
 	findScenesByFullFingerprints(fingerprints: $fingerprints) {
 		... SceneFragment
 	}
 }
-fragment StudioFragment on Studio {
-	name
+fragment SceneFragment on Scene {
 	id
+	title
+	details
+	duration
+	date
 	urls {
 		... URLFragment
 	}
 	images {
 		... ImageFragment
+	}
+	studio {
+		... StudioFragment
+	}
+	tags {
+		... TagFragment
+	}
+	performers {
+		... PerformerAppearanceFragment
+	}
+	fingerprints {
+		... FingerprintFragment
+	}
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
 	}
 }
 fragment PerformerFragment on Performer {
@@ -398,55 +437,30 @@ fragment BodyModificationFragment on BodyModification {
 	location
 	description
 }
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
 fragment ImageFragment on Image {
 	id
 	url
 	width
 	height
 }
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment TagFragment on Tag {
+fragment StudioFragment on Studio {
 	name
 	id
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
-fragment SceneFragment on Scene {
-	id
-	title
-	details
-	duration
-	date
 	urls {
 		... URLFragment
 	}
 	images {
 		... ImageFragment
 	}
-	studio {
-		... StudioFragment
-	}
-	tags {
-		... TagFragment
-	}
-	performers {
-		... PerformerAppearanceFragment
-	}
-	fingerprints {
-		... FingerprintFragment
-	}
+}
+fragment TagFragment on Tag {
+	name
+	id
 }
 `
 
@@ -456,22 +470,17 @@ func (c *Client) FindScenesByFullFingerprints(ctx context.Context, fingerprints 
 	}
 
 	var res FindScenesByFullFingerprints
-	if err := c.Client.Post(ctx, FindScenesByFullFingerprintsQuery, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "FindScenesByFullFingerprints", FindScenesByFullFingerprintsDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
 	return &res, nil
 }
 
-const SearchSceneQuery = `query SearchScene ($term: String!) {
+const SearchSceneDocument = `query SearchScene ($term: String!) {
 	searchScene(term: $term) {
 		... SceneFragment
 	}
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
 }
 fragment URLFragment on URL {
 	url
@@ -491,51 +500,6 @@ fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
 	performer {
 		... PerformerFragment
-	}
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
-fragment SceneFragment on Scene {
-	id
-	title
-	details
-	duration
-	date
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	studio {
-		... StudioFragment
-	}
-	tags {
-		... TagFragment
-	}
-	performers {
-		... PerformerAppearanceFragment
-	}
-	fingerprints {
-		... FingerprintFragment
-	}
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
 	}
 }
 fragment PerformerFragment on Performer {
@@ -575,6 +539,56 @@ fragment PerformerFragment on Performer {
 fragment FuzzyDateFragment on FuzzyDate {
 	date
 	accuracy
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
+fragment SceneFragment on Scene {
+	id
+	title
+	details
+	duration
+	date
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	studio {
+		... StudioFragment
+	}
+	tags {
+		... TagFragment
+	}
+	performers {
+		... PerformerAppearanceFragment
+	}
+	fingerprints {
+		... FingerprintFragment
+	}
+}
+fragment StudioFragment on Studio {
+	name
+	id
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
 `
 
@@ -584,17 +598,41 @@ func (c *Client) SearchScene(ctx context.Context, term string, httpRequestOption
 	}
 
 	var res SearchScene
-	if err := c.Client.Post(ctx, SearchSceneQuery, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "SearchScene", SearchSceneDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
 	return &res, nil
 }
 
-const SearchPerformerQuery = `query SearchPerformer ($term: String!) {
+const SearchPerformerDocument = `query SearchPerformer ($term: String!) {
 	searchPerformer(term: $term) {
 		... PerformerFragment
 	}
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
 fragment PerformerFragment on Performer {
 	id
@@ -629,30 +667,6 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
-}
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
 }
 `
 
@@ -662,41 +676,17 @@ func (c *Client) SearchPerformer(ctx context.Context, term string, httpRequestOp
 	}
 
 	var res SearchPerformer
-	if err := c.Client.Post(ctx, SearchPerformerQuery, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "SearchPerformer", SearchPerformerDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
 	return &res, nil
 }
 
-const FindPerformerByIDQuery = `query FindPerformerByID ($id: ID!) {
+const FindPerformerByIDDocument = `query FindPerformerByID ($id: ID!) {
 	findPerformer(id: $id) {
 		... PerformerFragment
 	}
-}
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
 }
 fragment PerformerFragment on Performer {
 	id
@@ -732,29 +722,15 @@ fragment PerformerFragment on Performer {
 		... BodyModificationFragment
 	}
 }
-`
-
-func (c *Client) FindPerformerByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindPerformerByID, error) {
-	vars := map[string]interface{}{
-		"id": id,
-	}
-
-	var res FindPerformerByID
-	if err := c.Client.Post(ctx, FindPerformerByIDQuery, &res, vars, httpRequestOptions...); err != nil {
-		return nil, err
-	}
-
-	return &res, nil
+fragment URLFragment on URL {
+	url
+	type
 }
-
-const FindSceneByIDQuery = `query FindSceneByID ($id: ID!) {
-	findScene(id: $id) {
-		... SceneFragment
-	}
-}
-fragment TagFragment on Tag {
-	name
+fragment ImageFragment on Image {
 	id
+	url
+	width
+	height
 }
 fragment FuzzyDateFragment on FuzzyDate {
 	date
@@ -766,55 +742,35 @@ fragment MeasurementsFragment on Measurements {
 	waist
 	hip
 }
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
-fragment SceneFragment on Scene {
-	id
-	title
-	details
-	duration
-	date
-	urls {
-		... URLFragment
+`
+
+func (c *Client) FindPerformerByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindPerformerByID, error) {
+	vars := map[string]interface{}{
+		"id": id,
 	}
-	images {
-		... ImageFragment
+
+	var res FindPerformerByID
+	if err := c.Client.Post(ctx, "FindPerformerByID", FindPerformerByIDDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
 	}
-	studio {
-		... StudioFragment
-	}
-	tags {
-		... TagFragment
-	}
-	performers {
-		... PerformerAppearanceFragment
-	}
-	fingerprints {
-		... FingerprintFragment
-	}
+
+	return &res, nil
 }
-fragment URLFragment on URL {
-	url
-	type
+
+const FindSceneByIDDocument = `query FindSceneByID ($id: ID!) {
+	findScene(id: $id) {
+		... SceneFragment
+	}
 }
 fragment ImageFragment on Image {
 	id
 	url
 	width
 	height
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -856,9 +812,67 @@ fragment PerformerFragment on Performer {
 		... BodyModificationFragment
 	}
 }
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
+}
 fragment BodyModificationFragment on BodyModification {
 	location
 	description
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
+fragment SceneFragment on Scene {
+	id
+	title
+	details
+	duration
+	date
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	studio {
+		... StudioFragment
+	}
+	tags {
+		... TagFragment
+	}
+	performers {
+		... PerformerAppearanceFragment
+	}
+	fingerprints {
+		... FingerprintFragment
+	}
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment StudioFragment on Studio {
+	name
+	id
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
 }
 `
 
@@ -868,32 +882,32 @@ func (c *Client) FindSceneByID(ctx context.Context, id string, httpRequestOption
 	}
 
 	var res FindSceneByID
-	if err := c.Client.Post(ctx, FindSceneByIDQuery, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "FindSceneByID", FindSceneByIDDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
 	return &res, nil
 }
 
-const SubmitFingerprintQuery = `mutation SubmitFingerprint ($input: FingerprintSubmission!) {
+const SubmitFingerprintDocument = `mutation SubmitFingerprint ($input: FingerprintSubmission!) {
 	submitFingerprint(input: $input)
 }
 `
 
-func (c *Client) SubmitFingerprint(ctx context.Context, input FingerprintSubmission, httpRequestOptions ...client.HTTPRequestOption) (*SubmitFingerprintPayload, error) {
+func (c *Client) SubmitFingerprint(ctx context.Context, input FingerprintSubmission, httpRequestOptions ...client.HTTPRequestOption) (*SubmitFingerprint, error) {
 	vars := map[string]interface{}{
 		"input": input,
 	}
 
-	var res SubmitFingerprintPayload
-	if err := c.Client.Post(ctx, SubmitFingerprintQuery, &res, vars, httpRequestOptions...); err != nil {
+	var res SubmitFingerprint
+	if err := c.Client.Post(ctx, "SubmitFingerprint", SubmitFingerprintDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
 	return &res, nil
 }
 
-const MeQuery = `query Me {
+const MeDocument = `query Me {
 	me {
 		name
 	}
@@ -904,47 +918,47 @@ func (c *Client) Me(ctx context.Context, httpRequestOptions ...client.HTTPReques
 	vars := map[string]interface{}{}
 
 	var res Me
-	if err := c.Client.Post(ctx, MeQuery, &res, vars, httpRequestOptions...); err != nil {
+	if err := c.Client.Post(ctx, "Me", MeDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
 	return &res, nil
 }
 
-const SubmitSceneDraftQuery = `mutation SubmitSceneDraft ($input: SceneDraftInput!) {
+const SubmitSceneDraftDocument = `mutation SubmitSceneDraft ($input: SceneDraftInput!) {
 	submitSceneDraft(input: $input) {
 		id
 	}
 }
 `
 
-func (c *Client) SubmitSceneDraft(ctx context.Context, input SceneDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitSceneDraftPayload, error) {
+func (c *Client) SubmitSceneDraft(ctx context.Context, input SceneDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitSceneDraft, error) {
 	vars := map[string]interface{}{
 		"input": input,
 	}
 
-	var res SubmitSceneDraftPayload
-	if err := c.Client.Post(ctx, SubmitSceneDraftQuery, &res, vars, httpRequestOptions...); err != nil {
+	var res SubmitSceneDraft
+	if err := c.Client.Post(ctx, "SubmitSceneDraft", SubmitSceneDraftDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
 	return &res, nil
 }
 
-const SubmitPerformerDraftQuery = `mutation SubmitPerformerDraft ($input: PerformerDraftInput!) {
+const SubmitPerformerDraftDocument = `mutation SubmitPerformerDraft ($input: PerformerDraftInput!) {
 	submitPerformerDraft(input: $input) {
 		id
 	}
 }
 `
 
-func (c *Client) SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitPerformerDraftPayload, error) {
+func (c *Client) SubmitPerformerDraft(ctx context.Context, input PerformerDraftInput, httpRequestOptions ...client.HTTPRequestOption) (*SubmitPerformerDraft, error) {
 	vars := map[string]interface{}{
 		"input": input,
 	}
 
-	var res SubmitPerformerDraftPayload
-	if err := c.Client.Post(ctx, SubmitPerformerDraftQuery, &res, vars, httpRequestOptions...); err != nil {
+	var res SubmitPerformerDraft
+	if err := c.Client.Post(ctx, "SubmitPerformerDraft", SubmitPerformerDraftDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

@@ -34,6 +34,10 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
+	if input.IgnoreAutoTag != nil {
+		newTag.IgnoreAutoTag = *input.IgnoreAutoTag
+	}
+
 	var imageData []byte
 	var err error
 
@@ -178,8 +182,9 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		}
 
 		updatedTag := models.TagPartial{
-			ID:        tagID,
-			UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
+			ID:            tagID,
+			IgnoreAutoTag: input.IgnoreAutoTag,
+			UpdatedAt:     &models.SQLiteTimestamp{Timestamp: time.Now()},
 		}
 
 		if input.Name != nil && t.Name != *input.Name {
