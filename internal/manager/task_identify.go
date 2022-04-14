@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/job"
@@ -23,7 +24,7 @@ type IdentifyJob struct {
 	postHookExecutor identify.SceneUpdatePostHookExecutor
 	input            identify.TaskOptions
 
-	stashBoxes models.StashBoxes
+	stashBoxes []*models.StashBox
 	progress   *job.Progress
 }
 
@@ -203,7 +204,38 @@ func (j *IdentifyJob) getStashBox(src *models.ScraperSource) (*models.StashBox, 
 		return nil, fmt.Errorf("%w: stash_box_index or stash_box_endpoint or scraper_id must be set", ErrInput)
 	}
 
-	return j.stashBoxes.ResolveStashBox(*src)
+	return resolveStashBox(j.stashBoxes, *src)
+}
+
+func resolveStashBox(sb []*models.StashBox, source models.ScraperSource) (*models.StashBox, error) {
+	if source.StashBoxIndex != nil {
+		index := source.StashBoxIndex
+		if *index < 0 || *index >= len(sb) {
+			return nil, fmt.Errorf("%w: invalid stash_box_index: %d", models.ErrScraperSource, index)
+		}
+
+		return sb[*index], nil
+	}
+
+	if source.StashBoxEndpoint != nil {
+		var ret *models.StashBox
+		endpoint := *source.StashBoxEndpoint
+		for _, b := range sb {
+			if strings.EqualFold(endpoint, b.Endpoint) {
+				ret = b
+			}
+		}
+
+		if ret == nil {
+			return nil, fmt.Errorf(`%w: stash-box with endpoint "%s"`, models.ErrNotFound, endpoint)
+		}
+
+		return ret, nil
+	}
+
+	// neither stash-box inputs were provided, so assume it is a scraper
+
+	return nil, nil
 }
 
 type stashboxSource struct {

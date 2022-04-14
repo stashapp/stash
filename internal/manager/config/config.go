@@ -620,8 +620,8 @@ func (i *Instance) GetScraperExcludeTagPatterns() []string {
 	return i.getStringSlice(ScraperExcludeTagPatterns)
 }
 
-func (i *Instance) GetStashBoxes() models.StashBoxes {
-	var boxes models.StashBoxes
+func (i *Instance) GetStashBoxes() []*models.StashBox {
+	var boxes []*models.StashBox
 	if err := i.unmarshalKey(StashBoxes, &boxes); err != nil {
 		logger.Warnf("error in unmarshalkey: %v", err)
 	}
