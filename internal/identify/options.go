@@ -46,25 +46,25 @@ type FieldStrategy string
 
 const (
 	// Never sets the field value
-	IdentifyFieldStrategyIgnore FieldStrategy = "IGNORE"
+	FieldStrategyIgnore FieldStrategy = "IGNORE"
 	// For multi-value fields, merge with existing.
 	// For single-value fields, ignore if already set
-	IdentifyFieldStrategyMerge FieldStrategy = "MERGE"
+	FieldStrategyMerge FieldStrategy = "MERGE"
 	// Always replaces the value if a value is found.
 	//   For multi-value fields, any existing values are removed and replaced with the
 	//   scraped values.
-	IdentifyFieldStrategyOverwrite FieldStrategy = "OVERWRITE"
+	FieldStrategyOverwrite FieldStrategy = "OVERWRITE"
 )
 
 var AllFieldStrategy = []FieldStrategy{
-	IdentifyFieldStrategyIgnore,
-	IdentifyFieldStrategyMerge,
-	IdentifyFieldStrategyOverwrite,
+	FieldStrategyIgnore,
+	FieldStrategyMerge,
+	FieldStrategyOverwrite,
 }
 
 func (e FieldStrategy) IsValid() bool {
 	switch e {
-	case IdentifyFieldStrategyIgnore, IdentifyFieldStrategyMerge, IdentifyFieldStrategyOverwrite:
+	case FieldStrategyIgnore, FieldStrategyMerge, FieldStrategyOverwrite:
 		return true
 	}
 	return false

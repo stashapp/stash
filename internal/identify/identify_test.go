@@ -189,11 +189,11 @@ func Test_getFieldOptions(t *testing.T) {
 						FieldOptions: []*FieldOptions{
 							{
 								Field:    inFirst,
-								Strategy: IdentifyFieldStrategyIgnore,
+								Strategy: FieldStrategyIgnore,
 							},
 							{
 								Field:    inBoth,
-								Strategy: IdentifyFieldStrategyIgnore,
+								Strategy: FieldStrategyIgnore,
 							},
 						},
 					},
@@ -201,11 +201,11 @@ func Test_getFieldOptions(t *testing.T) {
 						FieldOptions: []*FieldOptions{
 							{
 								Field:    inSecond,
-								Strategy: IdentifyFieldStrategyMerge,
+								Strategy: FieldStrategyMerge,
 							},
 							{
 								Field:    inBoth,
-								Strategy: IdentifyFieldStrategyMerge,
+								Strategy: FieldStrategyMerge,
 							},
 						},
 					},
@@ -214,15 +214,15 @@ func Test_getFieldOptions(t *testing.T) {
 			map[string]*FieldOptions{
 				inFirst: {
 					Field:    inFirst,
-					Strategy: IdentifyFieldStrategyIgnore,
+					Strategy: FieldStrategyIgnore,
 				},
 				inSecond: {
 					Field:    inSecond,
-					Strategy: IdentifyFieldStrategyMerge,
+					Strategy: FieldStrategyMerge,
 				},
 				inBoth: {
 					Field:    inBoth,
-					Strategy: IdentifyFieldStrategyIgnore,
+					Strategy: FieldStrategyIgnore,
 				},
 			},
 		},
@@ -300,13 +300,13 @@ func Test_getScenePartial(t *testing.T) {
 	}
 
 	overwriteAll := makeFieldOptions(&FieldOptions{
-		Strategy: IdentifyFieldStrategyOverwrite,
+		Strategy: FieldStrategyOverwrite,
 	})
 	ignoreAll := makeFieldOptions(&FieldOptions{
-		Strategy: IdentifyFieldStrategyIgnore,
+		Strategy: FieldStrategyIgnore,
 	})
 	mergeAll := makeFieldOptions(&FieldOptions{
-		Strategy: IdentifyFieldStrategyMerge,
+		Strategy: FieldStrategyMerge,
 	})
 
 	setOrganised := true
@@ -420,7 +420,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 			"ignore",
 			args{
 				&FieldOptions{
-					Strategy: IdentifyFieldStrategyIgnore,
+					Strategy: FieldStrategyIgnore,
 				},
 				false,
 			},
@@ -430,7 +430,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 			"merge existing",
 			args{
 				&FieldOptions{
-					Strategy: IdentifyFieldStrategyMerge,
+					Strategy: FieldStrategyMerge,
 				},
 				true,
 			},
@@ -440,7 +440,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 			"merge absent",
 			args{
 				&FieldOptions{
-					Strategy: IdentifyFieldStrategyMerge,
+					Strategy: FieldStrategyMerge,
 				},
 				false,
 			},
@@ -450,7 +450,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 			"overwrite",
 			args{
 				&FieldOptions{
-					Strategy: IdentifyFieldStrategyOverwrite,
+					Strategy: FieldStrategyOverwrite,
 				},
 				true,
 			},

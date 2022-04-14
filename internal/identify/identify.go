@@ -262,15 +262,15 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 
 func shouldSetSingleValueField(strategy *FieldOptions, hasExistingValue bool) bool {
 	// if unset then default to MERGE
-	fs := IdentifyFieldStrategyMerge
+	fs := FieldStrategyMerge
 
 	if strategy != nil && strategy.Strategy.IsValid() {
 		fs = strategy.Strategy
 	}
 
-	if fs == IdentifyFieldStrategyIgnore {
+	if fs == FieldStrategyIgnore {
 		return false
 	}
 
-	return !hasExistingValue || fs == IdentifyFieldStrategyOverwrite
+	return !hasExistingValue || fs == FieldStrategyOverwrite
 }

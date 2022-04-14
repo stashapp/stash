@@ -61,7 +61,7 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 	}
 
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
-	strategy := IdentifyFieldStrategyMerge
+	strategy := FieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
 	}
@@ -75,7 +75,7 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 		return nil, fmt.Errorf("error getting scene performers: %w", err)
 	}
 
-	if strategy == IdentifyFieldStrategyMerge {
+	if strategy == FieldStrategyMerge {
 		// add to existing
 		performerIDs = originalPerformerIDs
 	}
@@ -115,7 +115,7 @@ func (g sceneRelationships) tags() ([]int, error) {
 	}
 
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
-	strategy := IdentifyFieldStrategyMerge
+	strategy := FieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
 	}
@@ -126,7 +126,7 @@ func (g sceneRelationships) tags() ([]int, error) {
 		return nil, fmt.Errorf("error getting scene tags: %w", err)
 	}
 
-	if strategy == IdentifyFieldStrategyMerge {
+	if strategy == FieldStrategyMerge {
 		// add to existing
 		tagIDs = originalTagIDs
 	}
@@ -176,7 +176,7 @@ func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
 		return nil, nil
 	}
 
-	strategy := IdentifyFieldStrategyMerge
+	strategy := FieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
 	}
@@ -193,7 +193,7 @@ func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
 		originalStashIDs = append(originalStashIDs, *stashID)
 	}
 
-	if strategy == IdentifyFieldStrategyMerge {
+	if strategy == FieldStrategyMerge {
 		// add to existing
 		stashIDs = originalStashIDs
 	}
