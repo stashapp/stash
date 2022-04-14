@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
-func addSceneStudio(ctx context.Context, sceneWriter models.SceneReaderWriter, sceneID, studioID int) (bool, error) {
+func addSceneStudio(ctx context.Context, sceneWriter SceneFinderUpdater, sceneID, studioID int) (bool, error) {
 	// don't set if already set
 	scene, err := sceneWriter.Find(ctx, sceneID)
 	if err != nil {
@@ -32,7 +34,7 @@ func addSceneStudio(ctx context.Context, sceneWriter models.SceneReaderWriter, s
 	return true, nil
 }
 
-func addImageStudio(ctx context.Context, imageWriter models.ImageReaderWriter, imageID, studioID int) (bool, error) {
+func addImageStudio(ctx context.Context, imageWriter ImageFinderUpdater, imageID, studioID int) (bool, error) {
 	// don't set if already set
 	image, err := imageWriter.Find(ctx, imageID)
 	if err != nil {
@@ -56,7 +58,7 @@ func addImageStudio(ctx context.Context, imageWriter models.ImageReaderWriter, i
 	return true, nil
 }
 
-func addGalleryStudio(ctx context.Context, galleryWriter models.GalleryReaderWriter, galleryID, studioID int) (bool, error) {
+func addGalleryStudio(ctx context.Context, galleryWriter GalleryFinderUpdater, galleryID, studioID int) (bool, error) {
 	// don't set if already set
 	gallery, err := galleryWriter.Find(ctx, galleryID)
 	if err != nil {
@@ -99,8 +101,14 @@ func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache) []t
 	return ret
 }
 
+type SceneFinderUpdater interface {
+	scene.Queryer
+	Find(ctx context.Context, id int) (*models.Scene, error)
+	Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error)
+}
+
 // StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.
-func StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw models.SceneReaderWriter, cache *match.Cache) error {
+func StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw SceneFinderUpdater, cache *match.Cache) error {
 	t := getStudioTagger(p, aliases, cache)
 
 	for _, tt := range t {
@@ -114,8 +122,14 @@ func StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases
 	return nil
 }
 
+type ImageFinderUpdater interface {
+	image.Queryer
+	Find(ctx context.Context, id int) (*models.Image, error)
+	Update(ctx context.Context, updatedImage models.ImagePartial) (*models.Image, error)
+}
+
 // StudioImages searches for images whose path matches the provided studio name and tags the image with the studio, if studio is not already set on the image.
-func StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw models.ImageReaderWriter, cache *match.Cache) error {
+func StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw ImageFinderUpdater, cache *match.Cache) error {
 	t := getStudioTagger(p, aliases, cache)
 
 	for _, tt := range t {
@@ -129,8 +143,14 @@ func StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases
 	return nil
 }
 
+type GalleryFinderUpdater interface {
+	match.GalleryQueryer
+	Find(ctx context.Context, id int) (*models.Gallery, error)
+	UpdatePartial(ctx context.Context, updatedGallery models.GalleryPartial) (*models.Gallery, error)
+}
+
 // StudioGalleries searches for galleries whose path matches the provided studio name and tags the gallery with the studio, if studio is not already set on the gallery.
-func StudioGalleries(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw models.GalleryReaderWriter, cache *match.Cache) error {
+func StudioGalleries(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw GalleryFinderUpdater, cache *match.Cache) error {
 	t := getStudioTagger(p, aliases, cache)
 
 	for _, tt := range t {

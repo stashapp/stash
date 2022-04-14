@@ -10,6 +10,21 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 )
 
+type SceneQueryPerformerUpdater interface {
+	scene.Queryer
+	scene.PerformerUpdater
+}
+
+type ImageQueryPerformerUpdater interface {
+	image.Queryer
+	image.PerformerUpdater
+}
+
+type GalleryQueryPerformerUpdater interface {
+	match.GalleryQueryer
+	gallery.PerformerUpdater
+}
+
 func getPerformerTagger(p *models.Performer, cache *match.Cache) tagger {
 	return tagger{
 		ID:    p.ID,
@@ -20,7 +35,7 @@ func getPerformerTagger(p *models.Performer, cache *match.Cache) tagger {
 }
 
 // PerformerScenes searches for scenes whose path matches the provided performer name and tags the scene with the performer.
-func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, rw models.SceneReaderWriter, cache *match.Cache) error {
+func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, rw SceneQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
 	return t.tagScenes(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
@@ -29,7 +44,7 @@ func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, r
 }
 
 // PerformerImages searches for images whose path matches the provided performer name and tags the image with the performer.
-func PerformerImages(ctx context.Context, p *models.Performer, paths []string, rw models.ImageReaderWriter, cache *match.Cache) error {
+func PerformerImages(ctx context.Context, p *models.Performer, paths []string, rw ImageQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
 	return t.tagImages(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
@@ -38,7 +53,7 @@ func PerformerImages(ctx context.Context, p *models.Performer, paths []string, r
 }
 
 // PerformerGalleries searches for galleries whose path matches the provided performer name and tags the gallery with the performer.
-func PerformerGalleries(ctx context.Context, p *models.Performer, paths []string, rw models.GalleryReaderWriter, cache *match.Cache) error {
+func PerformerGalleries(ctx context.Context, p *models.Performer, paths []string, rw GalleryQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
 	return t.tagGalleries(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {

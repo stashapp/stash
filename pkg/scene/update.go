@@ -13,11 +13,30 @@ import (
 )
 
 type Updater interface {
-	Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error)
+	PartialUpdater
 	UpdatePerformers(ctx context.Context, sceneID int, performerIDs []int) error
 	UpdateTags(ctx context.Context, sceneID int, tagIDs []int) error
 	UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []models.StashID) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
+}
+
+type PartialUpdater interface {
+	Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error)
+}
+
+type PerformerUpdater interface {
+	GetPerformerIDs(ctx context.Context, sceneID int) ([]int, error)
+	UpdatePerformers(ctx context.Context, sceneID int, performerIDs []int) error
+}
+
+type TagUpdater interface {
+	GetTagIDs(ctx context.Context, sceneID int) ([]int, error)
+	UpdateTags(ctx context.Context, sceneID int, tagIDs []int) error
+}
+
+type GalleryUpdater interface {
+	GetGalleryIDs(ctx context.Context, sceneID int) ([]int, error)
+	UpdateGalleries(ctx context.Context, sceneID int, galleryIDs []int) error
 }
 
 var ErrEmptyUpdater = errors.New("no fields have been set")
@@ -133,7 +152,7 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	return ret
 }
 
-func UpdateFormat(ctx context.Context, qb Updater, id int, format string) (*models.Scene, error) {
+func UpdateFormat(ctx context.Context, qb PartialUpdater, id int, format string) (*models.Scene, error) {
 	return qb.Update(ctx, models.ScenePartial{
 		ID: id,
 		Format: &sql.NullString{
@@ -143,7 +162,7 @@ func UpdateFormat(ctx context.Context, qb Updater, id int, format string) (*mode
 	})
 }
 
-func UpdateOSHash(ctx context.Context, qb Updater, id int, oshash string) (*models.Scene, error) {
+func UpdateOSHash(ctx context.Context, qb PartialUpdater, id int, oshash string) (*models.Scene, error) {
 	return qb.Update(ctx, models.ScenePartial{
 		ID: id,
 		OSHash: &sql.NullString{
@@ -153,7 +172,7 @@ func UpdateOSHash(ctx context.Context, qb Updater, id int, oshash string) (*mode
 	})
 }
 
-func UpdateChecksum(ctx context.Context, qb Updater, id int, checksum string) (*models.Scene, error) {
+func UpdateChecksum(ctx context.Context, qb PartialUpdater, id int, checksum string) (*models.Scene, error) {
 	return qb.Update(ctx, models.ScenePartial{
 		ID: id,
 		Checksum: &sql.NullString{
@@ -163,14 +182,14 @@ func UpdateChecksum(ctx context.Context, qb Updater, id int, checksum string) (*
 	})
 }
 
-func UpdateFileModTime(ctx context.Context, qb Updater, id int, modTime models.NullSQLiteTimestamp) (*models.Scene, error) {
+func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime models.NullSQLiteTimestamp) (*models.Scene, error) {
 	return qb.Update(ctx, models.ScenePartial{
 		ID:          id,
 		FileModTime: &modTime,
 	})
 }
 
-func AddPerformer(ctx context.Context, qb models.SceneReaderWriter, id int, performerID int) (bool, error) {
+func AddPerformer(ctx context.Context, qb PerformerUpdater, id int, performerID int) (bool, error) {
 	performerIDs, err := qb.GetPerformerIDs(ctx, id)
 	if err != nil {
 		return false, err
@@ -190,7 +209,7 @@ func AddPerformer(ctx context.Context, qb models.SceneReaderWriter, id int, perf
 	return false, nil
 }
 
-func AddTag(ctx context.Context, qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
+func AddTag(ctx context.Context, qb TagUpdater, id int, tagID int) (bool, error) {
 	tagIDs, err := qb.GetTagIDs(ctx, id)
 	if err != nil {
 		return false, err
@@ -210,7 +229,7 @@ func AddTag(ctx context.Context, qb models.SceneReaderWriter, id int, tagID int)
 	return false, nil
 }
 
-func AddGallery(ctx context.Context, qb models.SceneReaderWriter, id int, galleryID int) (bool, error) {
+func AddGallery(ctx context.Context, qb GalleryUpdater, id int, galleryID int) (bool, error) {
 	galleryIDs, err := qb.GetGalleryIDs(ctx, id)
 	if err != nil {
 		return false, err
