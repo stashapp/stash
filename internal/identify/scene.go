@@ -9,16 +9,32 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type SceneReaderUpdater interface {
+	GetPerformerIDs(ctx context.Context, sceneID int) ([]int, error)
+	GetTagIDs(ctx context.Context, sceneID int) ([]int, error)
+	GetStashIDs(ctx context.Context, sceneID int) ([]*models.StashID, error)
+	GetCover(ctx context.Context, sceneID int) ([]byte, error)
+	scene.Updater
+}
+
+type TagCreator interface {
+	Create(ctx context.Context, newTag models.Tag) (*models.Tag, error)
+}
+
 type sceneRelationships struct {
-	repo         models.Repository
-	scene        *models.Scene
-	result       *scrapeResult
-	fieldOptions map[string]*FieldOptions
+	sceneReader      SceneReaderUpdater
+	studioCreator    StudioCreator
+	performerCreator PerformerCreator
+	tagCreator       TagCreator
+	scene            *models.Scene
+	result           *scrapeResult
+	fieldOptions     map[string]*FieldOptions
 }
 
 func (g sceneRelationships) studio(ctx context.Context) (*int64, error) {
@@ -45,7 +61,7 @@ func (g sceneRelationships) studio(ctx context.Context) (*int64, error) {
 			return &studioID, nil
 		}
 	} else if createMissing {
-		return createMissingStudio(ctx, endpoint, g.repo.Studio, scraped)
+		return createMissingStudio(ctx, endpoint, g.studioCreator, scraped)
 	}
 
 	return nil, nil
@@ -66,11 +82,10 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 		strategy = fieldStrategy.Strategy
 	}
 
-	repo := g.repo
 	endpoint := g.result.source.RemoteSite
 
 	var performerIDs []int
-	originalPerformerIDs, err := repo.Scene.GetPerformerIDs(ctx, g.scene.ID)
+	originalPerformerIDs, err := g.sceneReader.GetPerformerIDs(ctx, g.scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene performers: %w", err)
 	}
@@ -85,7 +100,7 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 			continue
 		}
 
-		performerID, err := getPerformerID(ctx, endpoint, repo.Performer, p, createMissing)
+		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing)
 		if err != nil {
 			return nil, err
 		}
@@ -107,7 +122,6 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	fieldStrategy := g.fieldOptions["tags"]
 	scraped := g.result.result.Tags
 	target := g.scene
-	r := g.repo
 
 	// just check if ignored
 	if len(scraped) == 0 || !shouldSetSingleValueField(fieldStrategy, false) {
@@ -121,7 +135,7 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	}
 
 	var tagIDs []int
-	originalTagIDs, err := r.Scene.GetTagIDs(ctx, target.ID)
+	originalTagIDs, err := g.sceneReader.GetTagIDs(ctx, target.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene tags: %w", err)
 	}
@@ -142,7 +156,7 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
 			now := time.Now()
-			created, err := r.Tag.Create(ctx, models.Tag{
+			created, err := g.tagCreator.Create(ctx, models.Tag{
 				Name:      t.Name,
 				CreatedAt: models.SQLiteTimestamp{Timestamp: now},
 				UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
@@ -167,7 +181,6 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 	remoteSiteID := g.result.result.RemoteSiteID
 	fieldStrategy := g.fieldOptions["stash_ids"]
 	target := g.scene
-	r := g.repo
 
 	endpoint := g.result.source.RemoteSite
 
@@ -183,7 +196,7 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 
 	var originalStashIDs []models.StashID
 	var stashIDs []models.StashID
-	stashIDPtrs, err := r.Scene.GetStashIDs(ctx, target.ID)
+	stashIDPtrs, err := g.sceneReader.GetStashIDs(ctx, target.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene tag: %w", err)
 	}
@@ -227,14 +240,13 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 
 func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
 	scraped := g.result.result.Image
-	r := g.repo
 
 	if scraped == nil {
 		return nil, nil
 	}
 
 	// always overwrite if present
-	existingCover, err := r.Scene.GetCover(ctx, g.scene.ID)
+	existingCover, err := g.sceneReader.GetCover(ctx, g.scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene cover: %w", err)
 	}

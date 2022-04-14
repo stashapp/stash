@@ -177,6 +177,12 @@ func initialize() error {
 		scanSubs: &subscriptionManager{},
 	}
 
+	sceneServer := SceneServer{
+		TxnManager:       instance.TxnManager,
+		SceneCoverGetter: instance.TxnManager.Scene,
+	}
+	instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
+
 	instance.JobManager = initJobManager()
 
 	sceneServer := SceneServer{

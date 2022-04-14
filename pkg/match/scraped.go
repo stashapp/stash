@@ -9,9 +9,14 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
+type PerformerFinder interface {
+	FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Performer, error)
+	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Performer, error)
+}
+
 // ScrapedPerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
-func ScrapedPerformer(ctx context.Context, qb models.PerformerReader, p *models.ScrapedPerformer, stashBoxEndpoint *string) error {
+func ScrapedPerformer(ctx context.Context, qb PerformerFinder, p *models.ScrapedPerformer, stashBoxEndpoint *string) error {
 	if p.StoredID != nil || p.Name == nil {
 		return nil
 	}
@@ -48,9 +53,14 @@ func ScrapedPerformer(ctx context.Context, qb models.PerformerReader, p *models.
 	return nil
 }
 
+type StudioFinder interface {
+	studio.Queryer
+	FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Studio, error)
+}
+
 // ScrapedStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
-func ScrapedStudio(ctx context.Context, qb models.StudioReader, s *models.ScrapedStudio, stashBoxEndpoint *string) error {
+func ScrapedStudio(ctx context.Context, qb StudioFinder, s *models.ScrapedStudio, stashBoxEndpoint *string) error {
 	if s.StoredID != nil {
 		return nil
 	}
@@ -120,7 +130,7 @@ func ScrapedMovie(ctx context.Context, qb models.MovieReader, m *models.ScrapedM
 
 // ScrapedTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
-func ScrapedTag(ctx context.Context, qb models.TagReader, s *models.ScrapedTag) error {
+func ScrapedTag(ctx context.Context, qb tag.Queryer, s *models.ScrapedTag) error {
 	if s.StoredID != nil {
 		return nil
 	}

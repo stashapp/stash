@@ -12,6 +12,14 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type Updater interface {
+	Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error)
+	UpdatePerformers(ctx context.Context, sceneID int, performerIDs []int) error
+	UpdateTags(ctx context.Context, sceneID int, tagIDs []int) error
+	UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []models.StashID) error
+	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
+}
+
 var ErrEmptyUpdater = errors.New("no fields have been set")
 
 // UpdateSet is used to update a scene and its relationships.
@@ -48,7 +56,7 @@ func (u *UpdateSet) IsEmpty() bool {
 // Update updates a scene by updating the fields in the Partial field, then
 // updates non-nil relationships. Returns an error if there is no work to
 // be done.
-func (u *UpdateSet) Update(ctx context.Context, qb models.SceneWriter, screenshotSetter ScreenshotSetter) (*models.Scene, error) {
+func (u *UpdateSet) Update(ctx context.Context, qb Updater, screenshotSetter ScreenshotSetter) (*models.Scene, error) {
 	if u.IsEmpty() {
 		return nil, ErrEmptyUpdater
 	}
@@ -125,7 +133,7 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	return ret
 }
 
-func UpdateFormat(ctx context.Context, qb models.SceneWriter, id int, format string) (*models.Scene, error) {
+func UpdateFormat(ctx context.Context, qb Updater, id int, format string) (*models.Scene, error) {
 	return qb.Update(ctx, models.ScenePartial{
 		ID: id,
 		Format: &sql.NullString{
@@ -135,7 +143,7 @@ func UpdateFormat(ctx context.Context, qb models.SceneWriter, id int, format str
 	})
 }
 
-func UpdateOSHash(ctx context.Context, qb models.SceneWriter, id int, oshash string) (*models.Scene, error) {
+func UpdateOSHash(ctx context.Context, qb Updater, id int, oshash string) (*models.Scene, error) {
 	return qb.Update(ctx, models.ScenePartial{
 		ID: id,
 		OSHash: &sql.NullString{
@@ -145,7 +153,7 @@ func UpdateOSHash(ctx context.Context, qb models.SceneWriter, id int, oshash str
 	})
 }
 
-func UpdateChecksum(ctx context.Context, qb models.SceneWriter, id int, checksum string) (*models.Scene, error) {
+func UpdateChecksum(ctx context.Context, qb Updater, id int, checksum string) (*models.Scene, error) {
 	return qb.Update(ctx, models.ScenePartial{
 		ID: id,
 		Checksum: &sql.NullString{
@@ -155,7 +163,7 @@ func UpdateChecksum(ctx context.Context, qb models.SceneWriter, id int, checksum
 	})
 }
 
-func UpdateFileModTime(ctx context.Context, qb models.SceneWriter, id int, modTime models.NullSQLiteTimestamp) (*models.Scene, error) {
+func UpdateFileModTime(ctx context.Context, qb Updater, id int, modTime models.NullSQLiteTimestamp) (*models.Scene, error) {
 	return qb.Update(ctx, models.ScenePartial{
 		ID:          id,
 		FileModTime: &modTime,

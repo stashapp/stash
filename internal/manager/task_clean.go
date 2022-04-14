@@ -413,7 +413,7 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 			return err
 		}
 
-		return scene.Destroy(ctx, s, repo, fileDeleter, true, false)
+		return scene.Destroy(ctx, s, repo.Scene, repo.SceneMarker, fileDeleter, true, false)
 	}); err != nil {
 		fileDeleter.Rollback()
 

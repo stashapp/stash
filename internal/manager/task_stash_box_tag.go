@@ -10,11 +10,11 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type StashBoxPerformerTagTask struct {
-	txnManager      models.Repository
 	box             *models.StashBox
 	name            *string
 	performer       *models.Performer
@@ -41,12 +41,17 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 	var performer *models.ScrapedPerformer
 	var err error
 
-	client := stashbox.NewClient(*t.box, t.txnManager)
+	client := stashbox.NewClient(*t.box, instance.TxnManager, stashbox.Repository{
+		Scene:     instance.TxnManager.Scene,
+		Performer: instance.TxnManager.Performer,
+		Tag:       instance.TxnManager.Tag,
+		Studio:    instance.TxnManager.Studio,
+	})
 
 	if t.refresh {
 		var performerID string
-		txnErr := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-			stashids, _ := t.txnManager.Performer.GetStashIDs(ctx, t.performer.ID)
+		txnErr := txn.WithTxn(ctx, instance.TxnManager, func(ctx context.Context) error {
+			stashids, _ := instance.TxnManager.Performer.GetStashIDs(ctx, t.performer.ID)
 			for _, id := range stashids {
 				if id.Endpoint == t.box.Endpoint {
 					performerID = id.StashID
@@ -156,8 +161,8 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				partial.URL = &value
 			}
 
-			txnErr := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-				r := t.txnManager
+			txnErr := txn.WithTxn(ctx, instance.TxnManager, func(ctx context.Context) error {
+				r := instance.TxnManager
 				_, err := r.Performer.Update(ctx, partial)
 
 				if !t.refresh {
@@ -219,8 +224,8 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				URL:          getNullString(performer.URL),
 				UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 			}
-			err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-				r := t.txnManager
+			err := txn.WithTxn(ctx, instance.TxnManager, func(ctx context.Context) error {
+				r := instance.TxnManager
 				createdPerformer, err := r.Performer.Create(ctx, newPerformer)
 				if err != nil {
 					return err

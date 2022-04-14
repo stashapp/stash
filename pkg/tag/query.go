@@ -6,7 +6,11 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func ByName(ctx context.Context, qb models.TagReader, name string) (*models.Tag, error) {
+type Queryer interface {
+	Query(ctx context.Context, tagFilter *models.TagFilterType, findFilter *models.FindFilterType) ([]*models.Tag, int, error)
+}
+
+func ByName(ctx context.Context, qb Queryer, name string) (*models.Tag, error) {
 	f := &models.TagFilterType{
 		Name: &models.StringCriterionInput{
 			Value:    name,
@@ -30,7 +34,7 @@ func ByName(ctx context.Context, qb models.TagReader, name string) (*models.Tag,
 	return nil, nil
 }
 
-func ByAlias(ctx context.Context, qb models.TagReader, alias string) (*models.Tag, error) {
+func ByAlias(ctx context.Context, qb Queryer, alias string) (*models.Tag, error) {
 	f := &models.TagFilterType{
 		Aliases: &models.StringCriterionInput{
 			Value:    alias,

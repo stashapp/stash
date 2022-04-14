@@ -234,7 +234,7 @@ func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input StashBoxSc
 		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, input.StashBoxIndex)
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager, r.stashboxRepository())
 
 	if len(input.SceneIds) > 0 {
 		return client.FindStashBoxScenesByFingerprintsFlat(ctx, input.SceneIds)
@@ -254,7 +254,7 @@ func (r *queryResolver) QueryStashBoxPerformer(ctx context.Context, input StashB
 		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, input.StashBoxIndex)
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager, r.stashboxRepository())
 
 	if len(input.PerformerIds) > 0 {
 		return client.FindStashBoxPerformersByNames(ctx, input.PerformerIds)
@@ -274,7 +274,7 @@ func (r *queryResolver) getStashBoxClient(index int) (*stashbox.Client, error) {
 		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, index)
 	}
 
-	return stashbox.NewClient(*boxes[index], r.txnManager), nil
+	return stashbox.NewClient(*boxes[index], r.txnManager, r.stashboxRepository()), nil
 }
 
 func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.Source, input ScrapeSingleSceneInput) ([]*scraper.ScrapedScene, error) {

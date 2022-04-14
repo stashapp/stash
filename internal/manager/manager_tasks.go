@@ -335,7 +335,6 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 						performer, err := performerQuery.Find(ctx, id)
 						if err == nil {
 							tasks = append(tasks, StashBoxPerformerTagTask{
-								txnManager:      s.TxnManager,
 								performer:       performer,
 								refresh:         input.Refresh,
 								box:             box,
@@ -354,7 +353,6 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 			for i := range input.PerformerNames {
 				if len(input.PerformerNames[i]) > 0 {
 					tasks = append(tasks, StashBoxPerformerTagTask{
-						txnManager:      s.TxnManager,
 						name:            &input.PerformerNames[i],
 						refresh:         input.Refresh,
 						box:             box,
@@ -382,7 +380,6 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 
 				for _, performer := range performers {
 					tasks = append(tasks, StashBoxPerformerTagTask{
-						txnManager:      s.TxnManager,
 						performer:       performer,
 						refresh:         input.Refresh,
 						box:             box,

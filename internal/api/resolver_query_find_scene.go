@@ -175,7 +175,13 @@ func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.
 	parser := manager.NewSceneFilenameParser(filter, config)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		result, count, err := parser.Parse(ctx, repo)
+		result, count, err := parser.Parse(ctx, manager.SceneFilenameParserRepository{
+			Scene:     r.repository.Scene,
+			Performer: r.repository.Performer,
+			Studio:    r.repository.Studio,
+			Movie:     r.repository.Movie,
+			Tag:       r.repository.Tag,
+		})
 
 		if err != nil {
 			return err

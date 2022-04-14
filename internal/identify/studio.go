@@ -10,7 +10,12 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func createMissingStudio(ctx context.Context, endpoint string, w models.StudioWriter, studio *models.ScrapedStudio) (*int64, error) {
+type StudioCreator interface {
+	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
+	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error
+}
+
+func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, studio *models.ScrapedStudio) (*int64, error) {
 	created, err := w.Create(ctx, scrapedToStudioInput(studio))
 	if err != nil {
 		return nil, fmt.Errorf("error creating studio: %w", err)

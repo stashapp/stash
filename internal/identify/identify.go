@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -28,13 +29,18 @@ type ScraperSource struct {
 }
 
 type SceneIdentifier struct {
+	SceneReaderUpdater SceneReaderUpdater
+	StudioCreator      StudioCreator
+	PerformerCreator   PerformerCreator
+	TagCreator         TagCreator
+
 	DefaultOptions              *MetadataOptions
 	Sources                     []ScraperSource
 	ScreenshotSetter            scene.ScreenshotSetter
 	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
 }
 
-func (t *SceneIdentifier) Identify(ctx context.Context, txnManager models.Repository, scene *models.Scene) error {
+func (t *SceneIdentifier) Identify(ctx context.Context, txnManager txn.Manager, scene *models.Scene) error {
 	result, err := t.scrapeScene(ctx, scene)
 	if err != nil {
 		return err
@@ -80,7 +86,7 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) 
 	return nil, nil
 }
 
-func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult, repo models.Repository) (*scene.UpdateSet, error) {
+func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult) (*scene.UpdateSet, error) {
 	ret := &scene.UpdateSet{
 		ID: s.ID,
 	}
@@ -106,10 +112,13 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	scraped := result.result
 
 	rel := sceneRelationships{
-		repo:         repo,
-		scene:        s,
-		result:       result,
-		fieldOptions: fieldOptions,
+		sceneReader:      t.SceneReaderUpdater,
+		studioCreator:    t.StudioCreator,
+		performerCreator: t.PerformerCreator,
+		tagCreator:       t.TagCreator,
+		scene:            s,
+		result:           result,
+		fieldOptions:     fieldOptions,
 	}
 
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
@@ -167,11 +176,11 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	return ret, nil
 }
 
-func (t *SceneIdentifier) modifyScene(ctx context.Context, r models.Repository, s *models.Scene, result *scrapeResult) error {
+func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manager, s *models.Scene, result *scrapeResult) error {
 	var updater *scene.UpdateSet
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
 		var err error
-		updater, err = t.getSceneUpdater(ctx, s, result, r)
+		updater, err = t.getSceneUpdater(ctx, s, result)
 		if err != nil {
 			return err
 		}
@@ -182,7 +191,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, r models.Repository, 
 			return nil
 		}
 
-		_, err = updater.Update(ctx, r.Scene, t.ScreenshotSetter)
+		_, err = updater.Update(ctx, t.SceneReaderUpdater, t.ScreenshotSetter)
 		if err != nil {
 			return fmt.Errorf("error updating scene: %w", err)
 		}
