@@ -14,10 +14,17 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 const mutexType = "gallery"
+
+type FinderCreatorUpdater interface {
+	FindByChecksum(ctx context.Context, checksum string) (*models.Gallery, error)
+	Create(ctx context.Context, newGallery models.Gallery) (*models.Gallery, error)
+	Update(ctx context.Context, updatedGallery models.Gallery) (*models.Gallery, error)
+}
 
 type Scanner struct {
 	file.Scanner
@@ -25,7 +32,8 @@ type Scanner struct {
 	ImageExtensions    []string
 	StripFileExtension bool
 	CaseSensitiveFs    bool
-	TxnManager         models.Repository
+	TxnManager         txn.Manager
+	CreatorUpdater     FinderCreatorUpdater
 	Paths              *paths.Paths
 	PluginCache        *plugin.Cache
 	MutexManager       *utils.MutexManager
@@ -75,19 +83,19 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 		done := make(chan struct{})
 		scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
 
-		if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
 			// free the mutex once transaction is complete
 			defer close(done)
 
 			// ensure no clashes of hashes
 			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
-				dupe, _ := scanner.TxnManager.Gallery.FindByChecksum(ctx, retGallery.Checksum)
+				dupe, _ := scanner.CreatorUpdater.FindByChecksum(ctx, retGallery.Checksum)
 				if dupe != nil {
 					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, dupe.Path.String)
 				}
 			}
 
-			retGallery, err = scanner.TxnManager.Gallery.Update(ctx, *retGallery)
+			retGallery, err = scanner.CreatorUpdater.Update(ctx, *retGallery)
 			return err
 		}); err != nil {
 			return nil, false, err
@@ -116,8 +124,8 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retG
 	scanner.MutexManager.Claim(mutexType, checksum, done)
 	defer close(done)
 
-	if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
-		qb := scanner.TxnManager.Gallery
+	if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
+		qb := scanner.CreatorUpdater
 
 		g, _ = qb.FindByChecksum(ctx, checksum)
 		if g != nil {

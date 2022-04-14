@@ -36,6 +36,8 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 		Scanner:            image.FileScanner(&file.FSHasher{}),
 		StripFileExtension: t.StripFileExtension,
 		TxnManager:         t.TxnManager,
+		CreatorUpdater:     t.TxnManager.Image,
+		CaseSensitiveFs:    t.CaseSensitiveFs,
 		Paths:              GetInstance().Paths,
 		PluginCache:        instance.PluginCache,
 		MutexManager:       t.mutexManager,

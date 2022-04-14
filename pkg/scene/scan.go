@@ -17,10 +17,19 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 const mutexType = "scene"
+
+type CreatorUpdater interface {
+	FindByChecksum(ctx context.Context, checksum string) (*models.Scene, error)
+	FindByOSHash(ctx context.Context, oshash string) (*models.Scene, error)
+	Create(ctx context.Context, newScene models.Scene) (*models.Scene, error)
+	UpdateFull(ctx context.Context, updatedScene models.Scene) (*models.Scene, error)
+	Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error)
+}
 
 type videoFileCreator interface {
 	NewVideoFile(path string) (*ffmpeg.VideoFile, error)
@@ -34,7 +43,8 @@ type Scanner struct {
 	FileNamingAlgorithm models.HashAlgorithm
 
 	CaseSensitiveFs  bool
-	TxnManager       models.Repository
+	TxnManager       txn.Manager
+	CreatorUpdater   CreatorUpdater
 	Paths            *paths.Paths
 	Screenshotter    screenshotter
 	VideoFileCreator videoFileCreator
@@ -136,9 +146,9 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 			scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
 		}
 
-		if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
 			defer close(done)
-			qb := scanner.TxnManager.Scene
+			qb := scanner.CreatorUpdater
 
 			// ensure no clashes of hashes
 			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
@@ -204,8 +214,8 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
 	var s *models.Scene
-	if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
-		qb := scanner.TxnManager.Scene
+	if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
+		qb := scanner.CreatorUpdater
 		if checksum != "" {
 			s, _ = qb.FindByChecksum(ctx, checksum)
 		}
@@ -246,8 +256,8 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 				Path:        &path,
 				Interactive: &interactive,
 			}
-			if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
-				_, err := scanner.TxnManager.Scene.Update(ctx, scenePartial)
+			if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
+				_, err := scanner.CreatorUpdater.Update(ctx, scenePartial)
 				return err
 			}); err != nil {
 				return nil, err
@@ -297,9 +307,9 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 			_ = newScene.Date.Scan(videoFile.CreationTime)
 		}
 
-		if err := scanner.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
 			var err error
-			retScene, err = scanner.TxnManager.Scene.Create(ctx, newScene)
+			retScene, err = scanner.CreatorUpdater.Create(ctx, newScene)
 			return err
 		}); err != nil {
 			return nil, err

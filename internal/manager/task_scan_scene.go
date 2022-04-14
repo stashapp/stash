@@ -54,7 +54,9 @@ func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
 		StripFileExtension:  t.StripFileExtension,
 		FileNamingAlgorithm: t.fileNamingAlgorithm,
 		TxnManager:          t.TxnManager,
+		CreatorUpdater:      t.TxnManager.Scene,
 		Paths:               GetInstance().Paths,
+		CaseSensitiveFs:     t.CaseSensitiveFs,
 		Screenshotter: &sceneScreenshotter{
 			g: g,
 		},

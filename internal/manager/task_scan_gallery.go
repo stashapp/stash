@@ -43,7 +43,7 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 		ImageExtensions:    instance.Config.GetImageExtensions(),
 		StripFileExtension: t.StripFileExtension,
 		CaseSensitiveFs:    t.CaseSensitiveFs,
-		TxnManager:         t.TxnManager,
+		CreatorUpdater:     t.TxnManager.Gallery,
 		Paths:              instance.Paths,
 		PluginCache:        instance.PluginCache,
 		MutexManager:       t.mutexManager,
