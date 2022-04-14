@@ -76,15 +76,6 @@ type ScrapedMovie struct {
 
 func (ScrapedMovie) IsScrapedContent() {}
 
-type ScraperSource struct {
-	// Index of the configured stash-box instance to use. Should be unset if scraper_id is set
-	StashBoxIndex *int `json:"stash_box_index"`
-	// Stash-box endpoint
-	StashBoxEndpoint *string `json:"stash_box_endpoint"`
-	// Scraper ID to scrape with. Should be unset if stash_box_index is set
-	ScraperID *string `json:"scraper_id"`
-}
-
 type ScrapedItem struct {
 	ID              int             `db:"id" json:"id"`
 	Title           sql.NullString  `db:"title" json:"title"`

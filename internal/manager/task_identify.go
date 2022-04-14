@@ -194,7 +194,7 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 	return ret, nil
 }
 
-func (j *IdentifyJob) getStashBox(src *models.ScraperSource) (*models.StashBox, error) {
+func (j *IdentifyJob) getStashBox(src *scraper.Source) (*models.StashBox, error) {
 	if src.ScraperID != nil {
 		return nil, nil
 	}
@@ -207,7 +207,7 @@ func (j *IdentifyJob) getStashBox(src *models.ScraperSource) (*models.StashBox, 
 	return resolveStashBox(j.stashBoxes, *src)
 }
 
-func resolveStashBox(sb []*models.StashBox, source models.ScraperSource) (*models.StashBox, error) {
+func resolveStashBox(sb []*models.StashBox, source scraper.Source) (*models.StashBox, error) {
 	if source.StashBoxIndex != nil {
 		index := source.StashBoxIndex
 		if *index < 0 || *index >= len(sb) {

@@ -5,11 +5,11 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scraper"
 )
 
 type Source struct {
-	Source *models.ScraperSource `json:"source"`
+	Source *scraper.Source `json:"source"`
 	// Options defined for a source override the defaults
 	Options *MetadataOptions `json:"options"`
 }
