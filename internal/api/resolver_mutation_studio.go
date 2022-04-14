@@ -18,7 +18,7 @@ import (
 
 func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.Studio, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.studio.Find(ctx, id)
+		ret, err = r.repository.Studio.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 	// Start the transaction and save the studio
 	var s *models.Studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.studio
+		qb := r.repository.Studio
 
 		var err error
 		s, err = qb.Create(ctx, newStudio)
@@ -156,7 +156,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 	// Start the transaction and save the studio
 	var s *models.Studio
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.studio
+		qb := r.repository.Studio
 
 		if err := manager.ValidateModifyStudio(ctx, updatedStudio, qb); err != nil {
 			return err
@@ -214,7 +214,7 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestro
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return r.studio.Destroy(ctx, id)
+		return r.repository.Studio.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -231,7 +231,7 @@ func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []strin
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.studio
+		qb := r.repository.Studio
 		for _, id := range ids {
 			if err := qb.Destroy(ctx, id); err != nil {
 				return err

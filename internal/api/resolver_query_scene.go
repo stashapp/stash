@@ -17,7 +17,7 @@ func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manage
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		idInt, _ := strconv.Atoi(*id)
 		var err error
-		scene, err = r.scene.Find(ctx, idInt)
+		scene, err = r.repository.Scene.Find(ctx, idInt)
 		return err
 	}); err != nil {
 		return nil, err

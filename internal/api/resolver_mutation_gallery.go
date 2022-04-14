@@ -22,7 +22,7 @@ import (
 
 func (r *mutationResolver) getGallery(ctx context.Context, id int) (ret *models.Gallery, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.gallery.Find(ctx, id)
+		ret, err = r.repository.Gallery.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	// Start the transaction and save the gallery
 	var gallery *models.Gallery
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.gallery
+		qb := r.repository.Gallery
 		var err error
 		gallery, err = qb.Create(ctx, newGallery)
 		if err != nil {
@@ -197,7 +197,7 @@ func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.
 }
 
 func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.GalleryUpdateInput, translator changesetTranslator) (*models.Gallery, error) {
-	qb := r.gallery
+	qb := r.repository.Gallery
 
 	// Populate gallery from the input
 	galleryID, err := strconv.Atoi(input.ID)
@@ -296,7 +296,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 
 	// Start the transaction and save the galleries
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.gallery
+		qb := r.repository.Gallery
 
 		for _, galleryIDStr := range input.Ids {
 			galleryID, _ := strconv.Atoi(galleryIDStr)
@@ -411,8 +411,8 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	deleteFile := utils.IsTrue(input.DeleteFile)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.gallery
-		iqb := r.image
+		qb := r.repository.Gallery
+		iqb := r.repository.Image
 
 		for _, id := range galleryIDs {
 			gallery, err := qb.Find(ctx, id)
@@ -538,7 +538,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.gallery
+		qb := r.repository.Gallery
 		gallery, err := qb.Find(ctx, galleryID)
 		if err != nil {
 			return err
@@ -578,7 +578,7 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.gallery
+		qb := r.repository.Gallery
 		gallery, err := qb.Find(ctx, galleryID)
 		if err != nil {
 			return err

@@ -30,10 +30,10 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 			Filter: input.Filter,
 		}
 		if id == nil {
-			ret, err = r.savedFilter.Create(ctx, f)
+			ret, err = r.repository.SavedFilter.Create(ctx, f)
 		} else {
 			f.ID = *id
-			ret, err = r.savedFilter.Update(ctx, f)
+			ret, err = r.repository.SavedFilter.Update(ctx, f)
 		}
 		return err
 	}); err != nil {
@@ -49,7 +49,7 @@ func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input Destroy
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return r.savedFilter.Destroy(ctx, id)
+		return r.repository.SavedFilter.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -59,7 +59,7 @@ func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input Destroy
 
 func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input SetDefaultFilterInput) (bool, error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.savedFilter
+		qb := r.repository.SavedFilter
 
 		if input.Filter == nil {
 			// clearing

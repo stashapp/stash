@@ -13,7 +13,7 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 	var image *models.Image
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.image
+		qb := r.repository.Image
 		var err error
 
 		if id != nil {
@@ -40,7 +40,7 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 
 func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.ImageFilterType, imageIds []int, filter *models.FindFilterType) (ret *FindImagesResultType, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.image
+		qb := r.repository.Image
 
 		fields := graphql.CollectAllFields(ctx)
 

@@ -17,7 +17,7 @@ import (
 
 func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *models.Performer, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.performer.Find(ctx, id)
+		ret, err = r.repository.Performer.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -130,7 +130,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 	// Start the transaction and save the performer
 	var performer *models.Performer
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.performer
+		qb := r.repository.Performer
 
 		performer, err = qb.Create(ctx, newPerformer)
 		if err != nil {
@@ -231,7 +231,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	// Start the transaction and save the p
 	var p *models.Performer
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.performer
+		qb := r.repository.Performer
 
 		// need to get existing performer
 		existing, err := qb.Find(ctx, updatedPerformer.ID)
@@ -295,7 +295,7 @@ func (r *mutationResolver) updatePerformerTags(ctx context.Context, performerID 
 	if err != nil {
 		return err
 	}
-	return r.performer.UpdateTags(ctx, performerID, ids)
+	return r.repository.Performer.UpdateTags(ctx, performerID, ids)
 }
 
 func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPerformerUpdateInput) ([]*models.Performer, error) {
@@ -349,7 +349,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 	// Start the transaction and save the scene marker
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.performer
+		qb := r.repository.Performer
 
 		for _, performerID := range performerIDs {
 			updatedPerformer.ID = performerID
@@ -416,7 +416,7 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input Performer
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		return r.performer.Destroy(ctx, id)
+		return r.repository.Performer.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -433,7 +433,7 @@ func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs [
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.performer
+		qb := r.repository.Performer
 		for _, id := range ids {
 			if err := qb.Destroy(ctx, id); err != nil {
 				return err

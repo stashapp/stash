@@ -29,7 +29,7 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 
 		// #2376 - sort images by path
 		// doing this via Query is really slow, so stick with FindByGalleryID
-		ret, err = r.image.FindByGalleryID(ctx, obj.ID)
+		ret, err = r.repository.Image.FindByGalleryID(ctx, obj.ID)
 		if err != nil {
 			return err
 		}
@@ -45,7 +45,7 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		// doing this via Query is really slow, so stick with FindByGalleryID
-		imgs, err := r.image.FindByGalleryID(ctx, obj.ID)
+		imgs, err := r.repository.Image.FindByGalleryID(ctx, obj.ID)
 		if err != nil {
 			return err
 		}
@@ -102,7 +102,7 @@ func (r *galleryResolver) Rating(ctx context.Context, obj *models.Gallery) (*int
 func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret []*models.Scene, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.scene.FindByGalleryID(ctx, obj.ID)
+		ret, err = r.repository.Scene.FindByGalleryID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret 
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.studio.Find(ctx, int(obj.StudioID.Int64))
+		ret, err = r.repository.Studio.Find(ctx, int(obj.StudioID.Int64))
 		return err
 	}); err != nil {
 		return nil, err
@@ -130,7 +130,7 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret 
 func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []*models.Tag, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.tag.FindByGalleryID(ctx, obj.ID)
+		ret, err = r.repository.Tag.FindByGalleryID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []
 func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (ret []*models.Performer, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.performer.FindByGalleryID(ctx, obj.ID)
+		ret, err = r.repository.Performer.FindByGalleryID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (
 func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (ret int, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.image.CountByGalleryID(ctx, obj.ID)
+		ret, err = r.repository.Image.CountByGalleryID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return 0, err

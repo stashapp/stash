@@ -14,7 +14,7 @@ func (r *queryResolver) FindTag(ctx context.Context, id string) (ret *models.Tag
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.tag.Find(ctx, idInt)
+		ret, err = r.repository.Tag.Find(ctx, idInt)
 		return err
 	}); err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func (r *queryResolver) FindTag(ctx context.Context, id string) (ret *models.Tag
 
 func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.FindFilterType) (ret *FindTagsResultType, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		tags, total, err := r.tag.Query(ctx, tagFilter, filter)
+		tags, total, err := r.repository.Tag.Query(ctx, tagFilter, filter)
 		if err != nil {
 			return err
 		}
@@ -45,7 +45,7 @@ func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilte
 
 func (r *queryResolver) AllTags(ctx context.Context) (ret []*models.Tag, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.tag.All(ctx)
+		ret, err = r.repository.Tag.All(ctx)
 		return err
 	}); err != nil {
 		return nil, err

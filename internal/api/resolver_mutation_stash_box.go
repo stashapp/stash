@@ -43,7 +43,7 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 
 	var res *string
 	err = r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.scene
+		qb := r.repository.Scene
 		scene, err := qb.Find(ctx, id)
 		if err != nil {
 			return err
@@ -73,7 +73,7 @@ func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, inp
 
 	var res *string
 	err = r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.performer
+		qb := r.repository.Performer
 		performer, err := qb.Find(ctx, id)
 		if err != nil {
 			return err

@@ -15,7 +15,7 @@ func (r *sceneMarkerResolver) Scene(ctx context.Context, obj *models.SceneMarker
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		sceneID := int(obj.SceneID.Int64)
-		ret, err = r.scene.Find(ctx, sceneID)
+		ret, err = r.repository.Scene.Find(ctx, sceneID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func (r *sceneMarkerResolver) Scene(ctx context.Context, obj *models.SceneMarker
 
 func (r *sceneMarkerResolver) PrimaryTag(ctx context.Context, obj *models.SceneMarker) (ret *models.Tag, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.tag.Find(ctx, obj.PrimaryTagID)
+		ret, err = r.repository.Tag.Find(ctx, obj.PrimaryTagID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (r *sceneMarkerResolver) PrimaryTag(ctx context.Context, obj *models.SceneM
 
 func (r *sceneMarkerResolver) Tags(ctx context.Context, obj *models.SceneMarker) (ret []*models.Tag, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.tag.FindBySceneMarkerID(ctx, obj.ID)
+		ret, err = r.repository.Tag.FindBySceneMarkerID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

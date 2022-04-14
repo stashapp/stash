@@ -13,7 +13,7 @@ import (
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
 	var scene *models.Scene
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.scene
+		qb := r.repository.Scene
 		var err error
 		if id != nil {
 			idInt, err := strconv.Atoi(*id)
@@ -40,7 +40,7 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInpu
 	var scene *models.Scene
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.scene
+		qb := r.repository.Scene
 		var err error
 		if input.Checksum != nil {
 			scene, err = qb.FindByChecksum(ctx, *input.Checksum)
@@ -73,7 +73,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 		result := &models.SceneQueryResult{}
 
 		if len(sceneIDs) > 0 {
-			scenes, err = r.scene.FindMany(ctx, sceneIDs)
+			scenes, err = r.repository.Scene.FindMany(ctx, sceneIDs)
 			if err == nil {
 				result.Count = len(scenes)
 				for _, s := range scenes {
@@ -83,7 +83,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 				}
 			}
 		} else {
-			result, err = r.scene.Query(ctx, models.SceneQueryOptions{
+			result, err = r.repository.Scene.Query(ctx, models.SceneQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: filter,
 					Count:      stringslice.StrInclude(fields, "count"),
@@ -138,7 +138,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 
 		fields := graphql.CollectAllFields(ctx)
 
-		result, err := r.scene.Query(ctx, models.SceneQueryOptions{
+		result, err := r.repository.Scene.Query(ctx, models.SceneQueryOptions{
 			QueryOptions: models.QueryOptions{
 				FindFilter: queryFilter,
 				Count:      stringslice.StrInclude(fields, "count"),
@@ -200,7 +200,7 @@ func (r *queryResolver) FindDuplicateScenes(ctx context.Context, distance *int) 
 		dist = *distance
 	}
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.scene.FindDuplicates(ctx, dist)
+		ret, err = r.repository.Scene.FindDuplicates(ctx, dist)
 		return err
 	}); err != nil {
 		return nil, err

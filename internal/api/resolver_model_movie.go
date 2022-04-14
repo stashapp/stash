@@ -57,7 +57,7 @@ func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, er
 func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (ret *models.Studio, err error) {
 	if obj.StudioID.Valid {
 		if err := r.withTxn(ctx, func(ctx context.Context) error {
-			ret, err = r.studio.Find(ctx, int(obj.StudioID.Int64))
+			ret, err = r.repository.Studio.Find(ctx, int(obj.StudioID.Int64))
 			return err
 		}); err != nil {
 			return nil, err
@@ -94,7 +94,7 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*
 	var img []byte
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		img, err = r.movie.GetBackImage(ctx, obj.ID)
+		img, err = r.repository.Movie.GetBackImage(ctx, obj.ID)
 		if err != nil {
 			return err
 		}
@@ -116,7 +116,7 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*
 func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (ret *int, err error) {
 	var res int
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		res, err = r.scene.CountByMovieID(ctx, obj.ID)
+		res, err = r.repository.Scene.CountByMovieID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (ret 
 func (r *movieResolver) Scenes(ctx context.Context, obj *models.Movie) (ret []*models.Scene, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.scene.FindByMovieID(ctx, obj.ID)
+		ret, err = r.repository.Scene.FindByMovieID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
