@@ -27,6 +27,7 @@ import (
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
@@ -47,7 +48,7 @@ type PerformerReader interface {
 
 type StudioReader interface {
 	match.StudioFinder
-	Find(ctx context.Context, id int) (*models.Studio, error)
+	studio.Finder
 	GetStashIDs(ctx context.Context, studioID int) ([]*models.StashID, error)
 }
 type TagFinder interface {

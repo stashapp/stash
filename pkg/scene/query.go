@@ -61,7 +61,7 @@ func Query(ctx context.Context, qb Queryer, sceneFilter *models.SceneFilterType,
 	return scenes, nil
 }
 
-func BatchProcess(ctx context.Context, reader models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType, fn func(scene *models.Scene) error) error {
+func BatchProcess(ctx context.Context, reader Queryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType, fn func(scene *models.Scene) error) error {
 	const batchSize = 1000
 
 	if findFilter == nil {

@@ -11,6 +11,7 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
@@ -112,7 +113,7 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	return r.getGallery(ctx, gallery.ID)
 }
 
-func (r *mutationResolver) updateGalleryPerformers(ctx context.Context, qb models.GalleryReaderWriter, galleryID int, performerIDs []string) error {
+func (r *mutationResolver) updateGalleryPerformers(ctx context.Context, qb gallery.PerformerUpdater, galleryID int, performerIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return err
@@ -120,7 +121,7 @@ func (r *mutationResolver) updateGalleryPerformers(ctx context.Context, qb model
 	return qb.UpdatePerformers(ctx, galleryID, ids)
 }
 
-func (r *mutationResolver) updateGalleryTags(ctx context.Context, qb models.GalleryReaderWriter, galleryID int, tagIDs []string) error {
+func (r *mutationResolver) updateGalleryTags(ctx context.Context, qb gallery.TagUpdater, galleryID int, tagIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(tagIDs)
 	if err != nil {
 		return err
@@ -128,7 +129,11 @@ func (r *mutationResolver) updateGalleryTags(ctx context.Context, qb models.Gall
 	return qb.UpdateTags(ctx, galleryID, ids)
 }
 
-func (r *mutationResolver) updateGalleryScenes(ctx context.Context, qb models.GalleryReaderWriter, galleryID int, sceneIDs []string) error {
+type GallerySceneUpdater interface {
+	UpdateScenes(ctx context.Context, galleryID int, sceneIDs []int) error
+}
+
+func (r *mutationResolver) updateGalleryScenes(ctx context.Context, qb GallerySceneUpdater, galleryID int, sceneIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
 	if err != nil {
 		return err
@@ -367,7 +372,19 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	return newRet, nil
 }
 
-func adjustGalleryPerformerIDs(ctx context.Context, qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
+type GalleryPerformerGetter interface {
+	GetPerformerIDs(ctx context.Context, galleryID int) ([]int, error)
+}
+
+type GalleryTagGetter interface {
+	GetTagIDs(ctx context.Context, galleryID int) ([]int, error)
+}
+
+type GallerySceneGetter interface {
+	GetSceneIDs(ctx context.Context, galleryID int) ([]int, error)
+}
+
+func adjustGalleryPerformerIDs(ctx context.Context, qb GalleryPerformerGetter, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetPerformerIDs(ctx, galleryID)
 	if err != nil {
 		return nil, err
@@ -376,7 +393,7 @@ func adjustGalleryPerformerIDs(ctx context.Context, qb models.GalleryReader, gal
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustGalleryTagIDs(ctx context.Context, qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
+func adjustGalleryTagIDs(ctx context.Context, qb GalleryTagGetter, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetTagIDs(ctx, galleryID)
 	if err != nil {
 		return nil, err
@@ -385,7 +402,7 @@ func adjustGalleryTagIDs(ctx context.Context, qb models.GalleryReader, galleryID
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustGallerySceneIDs(ctx context.Context, qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
+func adjustGallerySceneIDs(ctx context.Context, qb GallerySceneGetter, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetSceneIDs(ctx, galleryID)
 	if err != nil {
 		return nil, err

@@ -6,17 +6,28 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/tag"
 )
 
+type FullCreatorUpdater interface {
+	FinderCreatorUpdater
+	UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error
+	UpdateTags(ctx context.Context, imageID int, tagIDs []int) error
+	UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error
+}
+
 type Importer struct {
-	ReaderWriter        models.ImageReaderWriter
-	StudioWriter        models.StudioReaderWriter
-	GalleryWriter       models.GalleryReaderWriter
-	PerformerWriter     models.PerformerReaderWriter
-	TagWriter           models.TagReaderWriter
+	ReaderWriter        FullCreatorUpdater
+	StudioWriter        studio.NameFinderCreator
+	GalleryWriter       gallery.ChecksumsFinder
+	PerformerWriter     performer.NameFinderCreator
+	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Image
 	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
@@ -130,12 +141,12 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 
 func (i *Importer) populateGalleries(ctx context.Context) error {
 	for _, checksum := range i.Input.Galleries {
-		gallery, err := i.GalleryWriter.FindByChecksum(ctx, checksum)
+		gallery, err := i.GalleryWriter.FindByChecksums(ctx, []string{checksum})
 		if err != nil {
 			return fmt.Errorf("error finding gallery: %v", err)
 		}
 
-		if gallery == nil {
+		if len(gallery) == 0 {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
 				return fmt.Errorf("image gallery '%s' not found", i.Input.Studio)
 			}
@@ -145,7 +156,7 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 				continue
 			}
 		} else {
-			i.galleries = append(i.galleries, gallery)
+			i.galleries = append(i.galleries, gallery[0])
 		}
 	}
 
@@ -305,7 +316,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	return nil
 }
 
-func importTags(ctx context.Context, tagWriter models.TagReaderWriter, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
 	tags, err := tagWriter.FindByNames(ctx, names, false)
 	if err != nil {
 		return nil, err
@@ -340,7 +351,7 @@ func importTags(ctx context.Context, tagWriter models.TagReaderWriter, names []s
 	return tags, nil
 }
 
-func createTags(ctx context.Context, tagWriter models.TagWriter, names []string) ([]*models.Tag, error) {
+func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
 		newTag := *models.NewTag(name)

@@ -8,14 +8,23 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/tag"
 )
 
+type FullCreatorUpdater interface {
+	FinderCreatorUpdater
+	UpdatePerformers(ctx context.Context, galleryID int, performerIDs []int) error
+	UpdateTags(ctx context.Context, galleryID int, tagIDs []int) error
+}
+
 type Importer struct {
-	ReaderWriter        models.GalleryReaderWriter
-	StudioWriter        models.StudioReaderWriter
-	PerformerWriter     models.PerformerReaderWriter
-	TagWriter           models.TagReaderWriter
+	ReaderWriter        FullCreatorUpdater
+	StudioWriter        studio.NameFinderCreator
+	PerformerWriter     performer.NameFinderCreator
+	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 

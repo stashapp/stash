@@ -44,10 +44,6 @@ type TagAutoTagQueryer interface {
 	GetAliases(ctx context.Context, tagID int) ([]string, error)
 }
 
-type GalleryQueryer interface {
-	Query(ctx context.Context, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int, error)
-}
-
 func getPathQueryRegex(name string) string {
 	// escape specific regex characters
 	name = regexp.QuoteMeta(name)
@@ -354,7 +350,7 @@ func PathToImages(ctx context.Context, name string, paths []string, imageReader 
 	return ret, nil
 }
 
-func PathToGalleries(ctx context.Context, name string, paths []string, galleryReader GalleryQueryer) ([]*models.Gallery, error) {
+func PathToGalleries(ctx context.Context, name string, paths []string, galleryReader gallery.Queryer) ([]*models.Gallery, error) {
 	regex := getPathQueryRegex(name)
 	organized := false
 	filter := models.GalleryFilterType{

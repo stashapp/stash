@@ -6,6 +6,10 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+type Finder interface {
+	Find(ctx context.Context, id int) (*models.Studio, error)
+}
+
 type Queryer interface {
 	Query(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error)
 }

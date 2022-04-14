@@ -21,7 +21,7 @@ type ImageQueryTagUpdater interface {
 }
 
 type GalleryQueryTagUpdater interface {
-	match.GalleryQueryer
+	gallery.Queryer
 	gallery.TagUpdater
 }
 

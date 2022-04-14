@@ -8,12 +8,13 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type TagFinder interface {
-	Find(ctx context.Context, id int) (*models.Tag, error)
+	tag.Finder
 	GetImage(ctx context.Context, tagID int) ([]byte, error)
 }
 

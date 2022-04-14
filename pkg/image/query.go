@@ -11,6 +11,10 @@ type Queryer interface {
 	Query(ctx context.Context, options models.ImageQueryOptions) (*models.ImageQueryResult, error)
 }
 
+type CountQueryer interface {
+	QueryCount(ctx context.Context, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error)
+}
+
 // QueryOptions returns a ImageQueryResult populated with the provided filters.
 func QueryOptions(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType, count bool) models.ImageQueryOptions {
 	return models.ImageQueryOptions{
@@ -37,7 +41,7 @@ func Query(ctx context.Context, qb Queryer, imageFilter *models.ImageFilterType,
 	return images, nil
 }
 
-func CountByPerformerID(ctx context.Context, r models.ImageReader, id int) (int, error) {
+func CountByPerformerID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.ImageFilterType{
 		Performers: &models.MultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -48,7 +52,7 @@ func CountByPerformerID(ctx context.Context, r models.ImageReader, id int) (int,
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByStudioID(ctx context.Context, r models.ImageReader, id int) (int, error) {
+func CountByStudioID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.ImageFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -59,7 +63,7 @@ func CountByStudioID(ctx context.Context, r models.ImageReader, id int) (int, er
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByTagID(ctx context.Context, r models.ImageReader, id int) (int, error) {
+func CountByTagID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.ImageFilterType{
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -70,7 +74,7 @@ func CountByTagID(ctx context.Context, r models.ImageReader, id int) (int, error
 	return r.QueryCount(ctx, filter, nil)
 }
 
-func FindByGalleryID(ctx context.Context, r models.ImageReader, galleryID int, sortBy string, sortDir models.SortDirectionEnum) ([]*models.Image, error) {
+func FindByGalleryID(ctx context.Context, r Queryer, galleryID int, sortBy string, sortDir models.SortDirectionEnum) ([]*models.Image, error) {
 	perPage := -1
 
 	findFilter := models.FindFilterType{

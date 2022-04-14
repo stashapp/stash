@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -144,7 +145,7 @@ func StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases
 }
 
 type GalleryFinderUpdater interface {
-	match.GalleryQueryer
+	gallery.Queryer
 	Find(ctx context.Context, id int) (*models.Gallery, error)
 	UpdatePartial(ctx context.Context, updatedGallery models.GalleryPartial) (*models.Gallery, error)
 }

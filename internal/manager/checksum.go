@@ -41,6 +41,11 @@ func setInitialMD5Config(ctx context.Context, txnManager txn.Manager, counter Sc
 	}
 }
 
+type SceneMissingHashCounter interface {
+	CountMissingChecksum(ctx context.Context) (int, error)
+	CountMissingOSHash(ctx context.Context) (int, error)
+}
+
 // ValidateVideoFileNamingAlgorithm validates changing the
 // VideoFileNamingAlgorithm configuration flag.
 //
@@ -49,7 +54,7 @@ func setInitialMD5Config(ctx context.Context, txnManager txn.Manager, counter Sc
 //
 // Likewise, if VideoFileNamingAlgorithm is set to oshash, then this function
 // will ensure that all oshash values are set on all scenes.
-func ValidateVideoFileNamingAlgorithm(ctx context.Context, qb models.SceneReader, newValue models.HashAlgorithm) error {
+func ValidateVideoFileNamingAlgorithm(ctx context.Context, qb SceneMissingHashCounter, newValue models.HashAlgorithm) error {
 	// if algorithm is being set to MD5, then all checksums must be present
 	if newValue == models.HashAlgorithmMd5 {
 		missingMD5, err := qb.CountMissingChecksum(ctx)

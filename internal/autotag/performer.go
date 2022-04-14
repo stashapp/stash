@@ -21,7 +21,7 @@ type ImageQueryPerformerUpdater interface {
 }
 
 type GalleryQueryPerformerUpdater interface {
-	match.GalleryQueryer
+	gallery.Queryer
 	gallery.PerformerUpdater
 }
 

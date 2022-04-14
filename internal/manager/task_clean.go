@@ -93,7 +93,7 @@ func (j *cleanJob) getCount(ctx context.Context, r models.Repository) (int, erro
 	return sceneResult.Count + imageCount + galleryCount, nil
 }
 
-func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb models.SceneReader) error {
+func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb scene.Queryer) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
@@ -156,7 +156,7 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 	return nil
 }
 
-func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress, qb models.GalleryReader, iqb models.ImageReader) error {
+func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress, qb gallery.Queryer, iqb models.ImageReader) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
@@ -217,7 +217,7 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 	return nil
 }
 
-func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb models.ImageReader) error {
+func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb image.Queryer) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)

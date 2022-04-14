@@ -115,9 +115,18 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 	return d.Files(files)
 }
 
+type Destroyer interface {
+	Destroy(ctx context.Context, id int) error
+}
+
+type MarkerDestroyer interface {
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
+	Destroy(ctx context.Context, id int) error
+}
+
 // Destroy deletes a scene and its associated relationships from the
 // database.
-func Destroy(ctx context.Context, scene *models.Scene, qb models.SceneWriter, mqb models.SceneMarkerReaderWriter, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+func Destroy(ctx context.Context, scene *models.Scene, qb Destroyer, mqb MarkerDestroyer, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
 	markers, err := mqb.FindBySceneID(ctx, scene.ID)
 	if err != nil {
 		return err
@@ -159,7 +168,7 @@ func Destroy(ctx context.Context, scene *models.Scene, qb models.SceneWriter, mq
 // DestroyMarker deletes the scene marker from the database and returns a
 // function that removes the generated files, to be executed after the
 // transaction is successfully committed.
-func DestroyMarker(ctx context.Context, scene *models.Scene, sceneMarker *models.SceneMarker, qb models.SceneMarkerWriter, fileDeleter *FileDeleter) error {
+func DestroyMarker(ctx context.Context, scene *models.Scene, sceneMarker *models.SceneMarker, qb MarkerDestroyer, fileDeleter *FileDeleter) error {
 	if err := qb.Destroy(ctx, sceneMarker.ID); err != nil {
 		return err
 	}

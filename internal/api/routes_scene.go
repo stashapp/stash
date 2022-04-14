@@ -32,16 +32,11 @@ type SceneMarkerFinder interface {
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
 }
 
-type MarkerTagFinder interface {
-	Find(ctx context.Context, id int) (*models.Tag, error)
-	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error)
-}
-
 type sceneRoutes struct {
 	txnManager        txn.Manager
 	sceneFinder       SceneFinder
 	sceneMarkerFinder SceneMarkerFinder
-	tagFinder         MarkerTagFinder
+	tagFinder         scene.MarkerTagFinder
 }
 
 func (rs sceneRoutes) Routes() chi.Router {

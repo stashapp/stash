@@ -7,19 +7,31 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/movie"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type FullCreatorUpdater interface {
+	CreatorUpdater
+	Updater
+	UpdateGalleries(ctx context.Context, sceneID int, galleryIDs []int) error
+	UpdateMovies(ctx context.Context, sceneID int, movies []models.MoviesScenes) error
+}
+
 type Importer struct {
-	ReaderWriter        models.SceneReaderWriter
-	StudioWriter        models.StudioReaderWriter
-	GalleryWriter       models.GalleryReaderWriter
-	PerformerWriter     models.PerformerReaderWriter
-	MovieWriter         models.MovieReaderWriter
-	TagWriter           models.TagReaderWriter
+	ReaderWriter        FullCreatorUpdater
+	StudioWriter        studio.NameFinderCreator
+	GalleryWriter       gallery.ChecksumsFinder
+	PerformerWriter     performer.NameFinderCreator
+	MovieWriter         movie.NameFinderCreator
+	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Scene
 	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
@@ -449,7 +461,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	return nil
 }
 
-func importTags(ctx context.Context, tagWriter models.TagReaderWriter, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
 	tags, err := tagWriter.FindByNames(ctx, names, false)
 	if err != nil {
 		return nil, err
@@ -484,7 +496,7 @@ func importTags(ctx context.Context, tagWriter models.TagReaderWriter, names []s
 	return tags, nil
 }
 
-func createTags(ctx context.Context, tagWriter models.TagWriter, names []string) ([]*models.Tag, error) {
+func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
 		newTag := *models.NewTag(name)

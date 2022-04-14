@@ -10,13 +10,38 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+type CoverStashIDGetter interface {
+	GetCover(ctx context.Context, sceneID int) ([]byte, error)
+	GetStashIDs(ctx context.Context, sceneID int) ([]*models.StashID, error)
+}
+
+type MovieGetter interface {
+	GetMovies(ctx context.Context, sceneID int) ([]models.MoviesScenes, error)
+}
+
+type MarkerTagFinder interface {
+	tag.Finder
+	TagFinder
+	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*models.Tag, error)
+}
+
+type MarkerFinder interface {
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
+}
+
+type TagFinder interface {
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Tag, error)
+}
 
 // ToBasicJSON converts a scene object into its JSON object equivalent. It
 // does not convert the relationships to other objects, with the exception
 // of cover image.
-func ToBasicJSON(ctx context.Context, reader models.SceneReader, scene *models.Scene) (*jsonschema.Scene, error) {
+func ToBasicJSON(ctx context.Context, reader CoverStashIDGetter, scene *models.Scene) (*jsonschema.Scene, error) {
 	newSceneJSON := jsonschema.Scene{
 		CreatedAt: json.JSONTime{Time: scene.CreatedAt.Timestamp},
 		UpdatedAt: json.JSONTime{Time: scene.UpdatedAt.Timestamp},
@@ -131,7 +156,7 @@ func getSceneFileJSON(scene *models.Scene) *jsonschema.SceneFile {
 
 // GetStudioName returns the name of the provided scene's studio. It returns an
 // empty string if there is no studio assigned to the scene.
-func GetStudioName(ctx context.Context, reader models.StudioReader, scene *models.Scene) (string, error) {
+func GetStudioName(ctx context.Context, reader studio.Finder, scene *models.Scene) (string, error) {
 	if scene.StudioID.Valid {
 		studio, err := reader.Find(ctx, int(scene.StudioID.Int64))
 		if err != nil {
@@ -148,7 +173,7 @@ func GetStudioName(ctx context.Context, reader models.StudioReader, scene *model
 
 // GetTagNames returns a slice of tag names corresponding to the provided
 // scene's tags.
-func GetTagNames(ctx context.Context, reader models.TagReader, scene *models.Scene) ([]string, error) {
+func GetTagNames(ctx context.Context, reader TagFinder, scene *models.Scene) ([]string, error) {
 	tags, err := reader.FindBySceneID(ctx, scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene tags: %v", err)
@@ -169,7 +194,7 @@ func getTagNames(tags []*models.Tag) []string {
 }
 
 // GetDependentTagIDs returns a slice of unique tag IDs that this scene references.
-func GetDependentTagIDs(ctx context.Context, tags models.TagReader, markerReader models.SceneMarkerReader, scene *models.Scene) ([]int, error) {
+func GetDependentTagIDs(ctx context.Context, tags MarkerTagFinder, markerReader MarkerFinder, scene *models.Scene) ([]int, error) {
 	var ret []int
 
 	t, err := tags.FindBySceneID(ctx, scene.ID)
@@ -201,9 +226,13 @@ func GetDependentTagIDs(ctx context.Context, tags models.TagReader, markerReader
 	return ret, nil
 }
 
+type MovieFinder interface {
+	Find(ctx context.Context, id int) (*models.Movie, error)
+}
+
 // GetSceneMoviesJSON returns a slice of SceneMovie JSON representation objects
 // corresponding to the provided scene's scene movie relationships.
-func GetSceneMoviesJSON(ctx context.Context, movieReader models.MovieReader, sceneReader models.SceneReader, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
+func GetSceneMoviesJSON(ctx context.Context, movieReader MovieFinder, sceneReader MovieGetter, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
 	sceneMovies, err := sceneReader.GetMovies(ctx, scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene movies: %v", err)
@@ -229,7 +258,7 @@ func GetSceneMoviesJSON(ctx context.Context, movieReader models.MovieReader, sce
 }
 
 // GetDependentMovieIDs returns a slice of movie IDs that this scene references.
-func GetDependentMovieIDs(ctx context.Context, sceneReader models.SceneReader, scene *models.Scene) ([]int, error) {
+func GetDependentMovieIDs(ctx context.Context, sceneReader MovieGetter, scene *models.Scene) ([]int, error) {
 	var ret []int
 
 	m, err := sceneReader.GetMovies(ctx, scene.ID)
@@ -246,7 +275,7 @@ func GetDependentMovieIDs(ctx context.Context, sceneReader models.SceneReader, s
 
 // GetSceneMarkersJSON returns a slice of SceneMarker JSON representation
 // objects corresponding to the provided scene's markers.
-func GetSceneMarkersJSON(ctx context.Context, markerReader models.SceneMarkerReader, tagReader models.TagReader, scene *models.Scene) ([]jsonschema.SceneMarker, error) {
+func GetSceneMarkersJSON(ctx context.Context, markerReader MarkerFinder, tagReader MarkerTagFinder, scene *models.Scene) ([]jsonschema.SceneMarker, error) {
 	sceneMarkers, err := markerReader.FindBySceneID(ctx, scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene markers: %v", err)

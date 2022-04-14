@@ -10,8 +10,14 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type FinderAliasImageGetter interface {
+	GetAliases(ctx context.Context, studioID int) ([]string, error)
+	GetImage(ctx context.Context, tagID int) ([]byte, error)
+	FindByChildTagID(ctx context.Context, childID int) ([]*models.Tag, error)
+}
+
 // ToJSON converts a Tag object into its JSON equivalent.
-func ToJSON(ctx context.Context, reader models.TagReader, tag *models.Tag) (*jsonschema.Tag, error) {
+func ToJSON(ctx context.Context, reader FinderAliasImageGetter, tag *models.Tag) (*jsonschema.Tag, error) {
 	newTagJSON := jsonschema.Tag{
 		Name:          tag.Name,
 		IgnoreAutoTag: tag.IgnoreAutoTag,

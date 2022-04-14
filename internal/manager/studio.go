@@ -6,9 +6,10 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/studio"
 )
 
-func ValidateModifyStudio(ctx context.Context, studio models.StudioPartial, qb models.StudioReader) error {
+func ValidateModifyStudio(ctx context.Context, studio models.StudioPartial, qb studio.Finder) error {
 	if studio.ParentID == nil || !studio.ParentID.Valid {
 		return nil
 	}

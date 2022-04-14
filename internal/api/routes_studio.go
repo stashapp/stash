@@ -10,12 +10,13 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type StudioFinder interface {
-	Find(ctx context.Context, id int) (*models.Studio, error)
+	studio.Finder
 	GetImage(ctx context.Context, studioID int) ([]byte, error)
 }
 

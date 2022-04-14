@@ -7,6 +7,11 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+type NameFinderCreator interface {
+	FindByName(ctx context.Context, name string, nocase bool) (*models.Studio, error)
+	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
+}
+
 type NameExistsError struct {
 	Name string
 }
@@ -26,7 +31,7 @@ func (e *NameUsedByAliasError) Error() string {
 
 // EnsureStudioNameUnique returns an error if the studio name provided
 // is used as a name or alias of another existing tag.
-func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb models.StudioReader) error {
+func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb Queryer) error {
 	// ensure name is unique
 	sameNameStudio, err := ByName(ctx, qb, name)
 	if err != nil {
@@ -55,7 +60,7 @@ func EnsureStudioNameUnique(ctx context.Context, id int, name string, qb models.
 	return nil
 }
 
-func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb models.StudioReader) error {
+func EnsureAliasesUnique(ctx context.Context, id int, aliases []string, qb Queryer) error {
 	for _, a := range aliases {
 		if err := EnsureStudioNameUnique(ctx, id, a, qb); err != nil {
 			return err

@@ -55,7 +55,7 @@ var (
 	backImageBytes  = []byte("backImageBytes")
 )
 
-var studio models.Studio = models.Studio{
+var movieStudio models.Studio = models.Studio{
 	Name: models.NullString(studioName),
 }
 
@@ -206,7 +206,7 @@ func TestToJSON(t *testing.T) {
 
 	studioErr := errors.New("error getting studio")
 
-	mockStudioReader.On("Find", testCtx, studioID).Return(&studio, nil)
+	mockStudioReader.On("Find", testCtx, studioID).Return(&movieStudio, nil)
 	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil)
 	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr)
 
