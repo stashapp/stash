@@ -88,8 +88,8 @@ type DraftEntity struct {
 	ID   *string `json:"id,omitempty"`
 }
 
-func (DraftEntity) IsSceneDraftStudio()    {}
 func (DraftEntity) IsSceneDraftPerformer() {}
+func (DraftEntity) IsSceneDraftStudio()    {}
 func (DraftEntity) IsSceneDraftTag()       {}
 
 type DraftEntityInput struct {
@@ -206,15 +206,13 @@ type Fingerprint struct {
 }
 
 type FingerprintEditInput struct {
-	UserIds   []string             `json:"user_ids,omitempty"`
-	Hash      string               `json:"hash"`
-	Algorithm FingerprintAlgorithm `json:"algorithm"`
-	Duration  int                  `json:"duration"`
-	Created   time.Time            `json:"created"`
-	// @deprecated(reason: "unused")
-	Submissions *int `json:"submissions,omitempty"`
-	// @deprecated(reason: "unused")
-	Updated *time.Time `json:"updated,omitempty"`
+	UserIds     []string             `json:"user_ids,omitempty"`
+	Hash        string               `json:"hash"`
+	Algorithm   FingerprintAlgorithm `json:"algorithm"`
+	Duration    int                  `json:"duration"`
+	Created     time.Time            `json:"created"`
+	Submissions *int                 `json:"submissions,omitempty"`
+	Updated     *time.Time           `json:"updated,omitempty"`
 }
 
 type FingerprintInput struct {
@@ -348,8 +346,8 @@ type Performer struct {
 	Updated         time.Time           `json:"updated"`
 }
 
-func (Performer) IsEditTarget()          {}
 func (Performer) IsSceneDraftPerformer() {}
+func (Performer) IsEditTarget()          {}
 
 type PerformerAppearance struct {
 	Performer *Performer `json:"performer,omitempty"`
@@ -845,8 +843,8 @@ type Studio struct {
 	Updated      time.Time `json:"updated"`
 }
 
-func (Studio) IsEditTarget()       {}
 func (Studio) IsSceneDraftStudio() {}
+func (Studio) IsEditTarget()       {}
 
 type StudioCreateInput struct {
 	Name     string      `json:"name"`

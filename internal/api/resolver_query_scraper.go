@@ -227,46 +227,6 @@ func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models
 	return marshalScrapedMovie(content)
 }
 
-func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.StashBoxSceneQueryInput) ([]*models.ScrapedScene, error) {
-	boxes := config.GetInstance().GetStashBoxes()
-
-	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, input.StashBoxIndex)
-	}
-
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
-
-	if len(input.SceneIds) > 0 {
-		return client.FindStashBoxScenesByFingerprintsFlat(ctx, input.SceneIds)
-	}
-
-	if input.Q != nil {
-		return client.QueryStashBoxScene(ctx, *input.Q)
-	}
-
-	return nil, nil
-}
-
-func (r *queryResolver) QueryStashBoxPerformer(ctx context.Context, input models.StashBoxPerformerQueryInput) ([]*models.StashBoxPerformerQueryResult, error) {
-	boxes := config.GetInstance().GetStashBoxes()
-
-	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
-		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, input.StashBoxIndex)
-	}
-
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
-
-	if len(input.PerformerIds) > 0 {
-		return client.FindStashBoxPerformersByNames(ctx, input.PerformerIds)
-	}
-
-	if input.Q != nil {
-		return client.QueryStashBoxPerformer(ctx, *input.Q)
-	}
-
-	return nil, nil
-}
-
 func (r *queryResolver) getStashBoxClient(index int) (*stashbox.Client, error) {
 	boxes := config.GetInstance().GetStashBoxes()
 
@@ -288,12 +248,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 
 		switch {
 		case input.SceneID != nil:
-			var sceneID int
-			sceneID, err = strconv.Atoi(*input.SceneID)
-			if err != nil {
-				return nil, fmt.Errorf("%w: sceneID is not an integer: '%s'", ErrInput, *input.SceneID)
-			}
-			c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, sceneID, models.ScrapeContentTypeScene)
+			c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, *input.SceneID, models.ScrapeContentTypeScene)
 			if c != nil {
 				content = []models.ScrapedContent{c}
 			}
@@ -324,7 +279,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 
 		switch {
 		case input.SceneID != nil:
-			ret, err = client.FindStashBoxScenesByFingerprintsFlat(ctx, []string{*input.SceneID})
+			ret, err = client.FindStashBoxSceneByFingerprints(ctx, *input.SceneID)
 		case input.Query != nil:
 			ret, err = client.QueryStashBoxScene(ctx, *input.Query)
 		default:
