@@ -77,6 +77,7 @@ func Start() error {
 	pluginCache := manager.GetInstance().PluginCache
 	resolver := &Resolver{
 		txnManager:   txnManager,
+		repository:   txnManager,
 		hookExecutor: pluginCache,
 	}
 

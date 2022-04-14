@@ -74,10 +74,6 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 
 	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
 
-	repo := models.Repository{
-		Manager: &mocks.TxnManager{},
-		Scene:   mockSceneReaderWriter,
-	}
 	mockSceneReaderWriter.On("Update", testCtx, mock.MatchedBy(func(partial models.ScenePartial) bool {
 		return partial.ID != errUpdateID
 	})).Return(nil, nil)
@@ -123,6 +119,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	}
 
 	identifier := SceneIdentifier{
+		SceneReaderUpdater:          mockSceneReaderWriter,
 		DefaultOptions:              defaultOptions,
 		Sources:                     sources,
 		SceneUpdatePostHookExecutor: mockHookExecutor{},
@@ -133,7 +130,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 			scene := &models.Scene{
 				ID: tt.sceneID,
 			}
-			if err := identifier.Identify(testCtx, repo, scene); (err != nil) != tt.wantErr {
+			if err := identifier.Identify(testCtx, &mocks.TxnManager{}, scene); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.Identify() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

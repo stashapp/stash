@@ -25,17 +25,13 @@ func Test_sceneRelationships_studio(t *testing.T) {
 	}
 
 	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
-	repo := models.Repository{
-		Manager: &mocks.TxnManager{},
-		Studio:  mockStudioReaderWriter,
-	}
 	mockStudioReaderWriter.On("Create", testCtx, mock.Anything).Return(&models.Studio{
 		ID: int(validStoredIDInt),
 	}, nil)
 
 	tr := sceneRelationships{
-		repo:         repo,
-		fieldOptions: make(map[string]*FieldOptions),
+		studioCreator: mockStudioReaderWriter,
+		fieldOptions:  make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
@@ -160,14 +156,13 @@ func Test_sceneRelationships_performers(t *testing.T) {
 		Strategy: FieldStrategyMerge,
 	}
 
-	repo := mocks.NewTxnRepository()
-	mockSceneReaderWriter := repo.Scene.(*mocks.SceneReaderWriter)
+	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
 	mockSceneReaderWriter.On("GetPerformerIDs", testCtx, sceneID).Return(nil, nil)
 	mockSceneReaderWriter.On("GetPerformerIDs", testCtx, sceneWithPerformerID).Return([]int{existingPerformerID}, nil)
 	mockSceneReaderWriter.On("GetPerformerIDs", testCtx, errSceneID).Return(nil, errors.New("error getting IDs"))
 
 	tr := sceneRelationships{
-		repo:         repo,
+		sceneReader:  mockSceneReaderWriter,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -354,11 +349,6 @@ func Test_sceneRelationships_tags(t *testing.T) {
 
 	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
 	mockTagReaderWriter := &mocks.TagReaderWriter{}
-	repo := models.Repository{
-		Manager: &mocks.TxnManager{},
-		Scene:   mockSceneReaderWriter,
-		Tag:     mockTagReaderWriter,
-	}
 	mockSceneReaderWriter.On("GetTagIDs", testCtx, sceneID).Return(nil, nil)
 	mockSceneReaderWriter.On("GetTagIDs", testCtx, sceneWithTagID).Return([]int{existingID}, nil)
 	mockSceneReaderWriter.On("GetTagIDs", testCtx, errSceneID).Return(nil, errors.New("error getting IDs"))
@@ -373,7 +363,8 @@ func Test_sceneRelationships_tags(t *testing.T) {
 	})).Return(nil, errors.New("error creating tag"))
 
 	tr := sceneRelationships{
-		repo:         repo,
+		sceneReader:  mockSceneReaderWriter,
+		tagCreator:   mockTagReaderWriter,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -545,8 +536,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		Strategy: FieldStrategyMerge,
 	}
 
-	repo := mocks.NewTxnRepository()
-	mockSceneReaderWriter := repo.Scene.(*mocks.SceneReaderWriter)
+	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
 	mockSceneReaderWriter.On("GetStashIDs", testCtx, sceneID).Return(nil, nil)
 	mockSceneReaderWriter.On("GetStashIDs", testCtx, sceneWithStashID).Return([]*models.StashID{
 		{
@@ -557,7 +547,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 	mockSceneReaderWriter.On("GetStashIDs", testCtx, errSceneID).Return(nil, errors.New("error getting IDs"))
 
 	tr := sceneRelationships{
-		repo:         repo,
+		sceneReader:  mockSceneReaderWriter,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -719,13 +709,12 @@ func Test_sceneRelationships_cover(t *testing.T) {
 	newDataEncoded := base64Prefix + utils.GetBase64StringFromData(newData)
 	invalidData := newDataEncoded + "!!!"
 
-	repo := mocks.NewTxnRepository()
-	mockSceneReaderWriter := repo.Scene.(*mocks.SceneReaderWriter)
+	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
 	mockSceneReaderWriter.On("GetCover", testCtx, sceneID).Return(existingData, nil)
 	mockSceneReaderWriter.On("GetCover", testCtx, errSceneID).Return(nil, errors.New("error getting cover"))
 
 	tr := sceneRelationships{
-		repo:         repo,
+		sceneReader:  mockSceneReaderWriter,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
