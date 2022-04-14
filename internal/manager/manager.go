@@ -186,9 +186,16 @@ func initialize() error {
 	instance.JobManager = initJobManager()
 
 	sceneServer := SceneServer{
-		TXNManager: instance.TxnManager,
+		TxnManager:       instance.TxnManager,
+		SceneCoverGetter: instance.TxnManager.Scene,
 	}
-	instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
+	instance.DLNAService = dlna.NewService(instance.TxnManager, dlna.Repository{
+		SceneFinder:     instance.TxnManager.Scene,
+		StudioFinder:    instance.TxnManager.Studio,
+		TagFinder:       instance.TxnManager.Tag,
+		PerformerFinder: instance.TxnManager.Performer,
+		MovieFinder:     instance.TxnManager.Movie,
+	}, instance.Config, &sceneServer)
 
 	if !cfg.IsNewSystem() {
 		logger.Infof("using config file: %s", cfg.GetConfigFile())
