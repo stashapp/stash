@@ -405,7 +405,14 @@ func writeStashIcon() {
 
 // initScraperCache initializes a new scraper cache and returns it.
 func (s *Manager) initScraperCache() *scraper.Cache {
-	ret, err := scraper.NewCache(config.GetInstance(), s.TxnManager)
+	ret, err := scraper.NewCache(config.GetInstance(), s.TxnManager, scraper.Repository{
+		SceneFinder:     s.TxnManager.Scene,
+		GalleryFinder:   s.TxnManager.Gallery,
+		TagFinder:       s.TxnManager.Tag,
+		PerformerFinder: s.TxnManager.Performer,
+		MovieFinder:     s.TxnManager.Movie,
+		StudioFinder:    s.TxnManager.Studio,
+	})
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())

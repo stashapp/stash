@@ -22,7 +22,7 @@ import (
 type SceneFinder interface {
 	manager.SceneCoverGetter
 
-	Find(ctx context.Context, id int) (*models.Scene, error)
+	scene.IDFinder
 	FindByChecksum(ctx context.Context, checksum string) (*models.Scene, error)
 	FindByOSHash(ctx context.Context, oshash string) (*models.Scene, error)
 }

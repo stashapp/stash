@@ -14,6 +14,10 @@ type Queryer interface {
 	Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error)
 }
 
+type IDFinder interface {
+	Find(ctx context.Context, id int) (*models.Scene, error)
+}
+
 // QueryOptions returns a SceneQueryOptions populated with the provided filters.
 func QueryOptions(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType, count bool) models.SceneQueryOptions {
 	return models.SceneQueryOptions{

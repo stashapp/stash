@@ -54,7 +54,7 @@ import (
 
 type SceneFinder interface {
 	scene.Queryer
-	Find(ctx context.Context, id int) (*models.Scene, error)
+	scene.IDFinder
 }
 
 type StudioFinder interface {
