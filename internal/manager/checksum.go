@@ -7,16 +7,21 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
-func setInitialMD5Config(ctx context.Context, r models.Repository) {
+type SceneCounter interface {
+	Count(ctx context.Context) (int, error)
+}
+
+func setInitialMD5Config(ctx context.Context, txnManager txn.Manager, counter SceneCounter) {
 	// if there are no scene files in the database, then default the
 	// VideoFileNamingAlgorithm config setting to oshash and calculateMD5 to
 	// false, otherwise set them to true for backwards compatibility purposes
 	var count int
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
 		var err error
-		count, err = r.Scene.Count(ctx)
+		count, err = counter.Count(ctx)
 		return err
 	}); err != nil {
 		logger.Errorf("Error while counting scenes: %s", err.Error())

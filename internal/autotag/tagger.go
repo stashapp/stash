@@ -17,9 +17,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type tagger struct {
@@ -41,7 +42,7 @@ func (t *tagger) addLog(otherType, otherName string) {
 	logger.Infof("Added %s '%s' to %s '%s'", otherType, otherName, t.Type, t.Name)
 }
 
-func (t *tagger) tagPerformers(ctx context.Context, performerReader models.PerformerReader, addFunc addLinkFunc) error {
+func (t *tagger) tagPerformers(ctx context.Context, performerReader match.PerformerAutoTagQueryer, addFunc addLinkFunc) error {
 	others, err := match.PathToPerformers(ctx, t.Path, performerReader, t.cache)
 	if err != nil {
 		return err
@@ -62,7 +63,7 @@ func (t *tagger) tagPerformers(ctx context.Context, performerReader models.Perfo
 	return nil
 }
 
-func (t *tagger) tagStudios(ctx context.Context, studioReader models.StudioReader, addFunc addLinkFunc) error {
+func (t *tagger) tagStudios(ctx context.Context, studioReader match.StudioAutoTagQueryer, addFunc addLinkFunc) error {
 	studio, err := match.PathToStudio(ctx, t.Path, studioReader, t.cache)
 	if err != nil {
 		return err
@@ -83,7 +84,7 @@ func (t *tagger) tagStudios(ctx context.Context, studioReader models.StudioReade
 	return nil
 }
 
-func (t *tagger) tagTags(ctx context.Context, tagReader models.TagReader, addFunc addLinkFunc) error {
+func (t *tagger) tagTags(ctx context.Context, tagReader match.TagAutoTagQueryer, addFunc addLinkFunc) error {
 	others, err := match.PathToTags(ctx, t.Path, tagReader, t.cache)
 	if err != nil {
 		return err
@@ -104,7 +105,7 @@ func (t *tagger) tagTags(ctx context.Context, tagReader models.TagReader, addFun
 	return nil
 }
 
-func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader models.SceneReader, addFunc addLinkFunc) error {
+func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader scene.Queryer, addFunc addLinkFunc) error {
 	others, err := match.PathToScenes(ctx, t.Name, paths, sceneReader)
 	if err != nil {
 		return err
@@ -125,7 +126,7 @@ func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader mode
 	return nil
 }
 
-func (t *tagger) tagImages(ctx context.Context, paths []string, imageReader models.ImageReader, addFunc addLinkFunc) error {
+func (t *tagger) tagImages(ctx context.Context, paths []string, imageReader image.Queryer, addFunc addLinkFunc) error {
 	others, err := match.PathToImages(ctx, t.Name, paths, imageReader)
 	if err != nil {
 		return err
@@ -146,7 +147,7 @@ func (t *tagger) tagImages(ctx context.Context, paths []string, imageReader mode
 	return nil
 }
 
-func (t *tagger) tagGalleries(ctx context.Context, paths []string, galleryReader models.GalleryReader, addFunc addLinkFunc) error {
+func (t *tagger) tagGalleries(ctx context.Context, paths []string, galleryReader match.GalleryQueryer, addFunc addLinkFunc) error {
 	others, err := match.PathToGalleries(ctx, t.Name, paths, galleryReader)
 	if err != nil {
 		return err
