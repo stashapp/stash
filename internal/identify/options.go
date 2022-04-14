@@ -14,7 +14,7 @@ type Source struct {
 	Options *MetadataOptions `json:"options"`
 }
 
-type TaskOptions struct {
+type Options struct {
 	// An ordered list of sources to identify items with. Only the first source that finds a match is used.
 	Sources []*Source `json:"sources"`
 	// Options defined here override the configured defaults

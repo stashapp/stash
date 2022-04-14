@@ -90,9 +90,9 @@ models:
   IdentifySource:
     model: github.com/stashapp/stash/internal/identify.Source
   IdentifyMetadataTaskOptions:
-    model: github.com/stashapp/stash/internal/identify.TaskOptions
+    model: github.com/stashapp/stash/internal/identify.Options
   IdentifyMetadataInput:
-    model: github.com/stashapp/stash/internal/identify.TaskOptions
+    model: github.com/stashapp/stash/internal/identify.Options
   IdentifyMetadataOptions:
     model: github.com/stashapp/stash/internal/identify.MetadataOptions
   IdentifyFieldOptions:

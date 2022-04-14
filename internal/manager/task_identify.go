@@ -22,13 +22,13 @@ var ErrInput = errors.New("invalid request input")
 type IdentifyJob struct {
 	txnManager       models.TransactionManager
 	postHookExecutor identify.SceneUpdatePostHookExecutor
-	input            identify.TaskOptions
+	input            identify.Options
 
 	stashBoxes []*models.StashBox
 	progress   *job.Progress
 }
 
-func CreateIdentifyJob(input identify.TaskOptions) *IdentifyJob {
+func CreateIdentifyJob(input identify.Options) *IdentifyJob {
 	return &IdentifyJob{
 		txnManager:       instance.TxnManager,
 		postHookExecutor: instance.PluginCache,
