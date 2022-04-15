@@ -32,7 +32,7 @@ func newScriptScraper(scraper scraperTypeConfig, config config, globalConfig Glo
 	}
 }
 
-func (s *scriptScraper) runScraperScript(inString string, out interface{}) error {
+func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, out interface{}) error {
 	command := s.scraper.Script
 
 	var cmd *exec.Cmd
@@ -46,7 +46,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		}
 
 		if p != nil {
-			cmd = p.Command(context.TODO(), command[1:])
+			cmd = p.Command(ctx, command[1:])
 		}
 
 		// if could not find python, just use the command args as-is
@@ -133,7 +133,7 @@ func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty models
 	switch ty {
 	case models.ScrapeContentTypePerformer:
 		var performers []models.ScrapedPerformer
-		err = s.runScraperScript(input, &performers)
+		err = s.runScraperScript(ctx, input, &performers)
 		if err == nil {
 			for _, p := range performers {
 				v := p
@@ -142,7 +142,7 @@ func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty models
 		}
 	case models.ScrapeContentTypeScene:
 		var scenes []models.ScrapedScene
-		err = s.runScraperScript(input, &scenes)
+		err = s.runScraperScript(ctx, input, &scenes)
 		if err == nil {
 			for _, s := range scenes {
 				v := s
@@ -187,19 +187,19 @@ func (s *scriptScraper) scrape(ctx context.Context, input string, ty models.Scra
 	switch ty {
 	case models.ScrapeContentTypePerformer:
 		var performer *models.ScrapedPerformer
-		err := s.runScraperScript(input, &performer)
+		err := s.runScraperScript(ctx, input, &performer)
 		return performer, err
 	case models.ScrapeContentTypeGallery:
 		var gallery *models.ScrapedGallery
-		err := s.runScraperScript(input, &gallery)
+		err := s.runScraperScript(ctx, input, &gallery)
 		return gallery, err
 	case models.ScrapeContentTypeScene:
 		var scene *models.ScrapedScene
-		err := s.runScraperScript(input, &scene)
+		err := s.runScraperScript(ctx, input, &scene)
 		return scene, err
 	case models.ScrapeContentTypeMovie:
 		var movie *models.ScrapedMovie
-		err := s.runScraperScript(input, &movie)
+		err := s.runScraperScript(ctx, input, &movie)
 		return movie, err
 	}
 
@@ -215,7 +215,7 @@ func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sc
 
 	var ret *models.ScrapedScene
 
-	err = s.runScraperScript(string(inString), &ret)
+	err = s.runScraperScript(ctx, string(inString), &ret)
 
 	return ret, err
 }
@@ -229,7 +229,7 @@ func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mod
 
 	var ret *models.ScrapedGallery
 
-	err = s.runScraperScript(string(inString), &ret)
+	err = s.runScraperScript(ctx, string(inString), &ret)
 
 	return ret, err
 }
