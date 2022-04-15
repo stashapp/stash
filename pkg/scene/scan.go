@@ -33,7 +33,6 @@ type Scanner struct {
 	UseFileMetadata     bool
 	FileNamingAlgorithm models.HashAlgorithm
 
-	Ctx              context.Context
 	CaseSensitiveFs  bool
 	TxnManager       models.TransactionManager
 	Paths            *paths.Paths
@@ -51,7 +50,7 @@ func FileScanner(hasher file.Hasher, fileNamingAlgorithm models.HashAlgorithm, c
 	}
 }
 
-func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFile) (err error) {
+func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBased, file file.SourceFile) (err error) {
 	scanned, err := scanner.Scanner.ScanExisting(existing, file)
 	if err != nil {
 		return err
@@ -111,7 +110,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 			scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
 		}
 
-		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 			defer close(done)
 			qb := r.Scene()
 
@@ -145,7 +144,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 			MigrateHash(scanner.Paths, oldHash, newHash)
 		}
 
-		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
+		scanner.PluginCache.ExecutePostHooks(ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 	}
 
 	// We already have this item in the database
@@ -155,7 +154,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 	return nil
 }
 
-func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, err error) {
+func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retScene *models.Scene, err error) {
 	scanned, err := scanner.Scanner.ScanNew(file)
 	if err != nil {
 		return nil, err
@@ -179,7 +178,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
 	var s *models.Scene
-	if err := scanner.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := scanner.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		qb := r.Scene()
 		if checksum != "" {
 			s, _ = qb.FindByChecksum(checksum)
@@ -221,7 +220,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 				Path:        &path,
 				Interactive: &interactive,
 			}
-			if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 				_, err := r.Scene().Update(scenePartial)
 				return err
 			}); err != nil {
@@ -229,7 +228,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 			}
 
 			scanner.makeScreenshots(path, nil, sceneHash)
-			scanner.PluginCache.ExecutePostHooks(scanner.Ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
+			scanner.PluginCache.ExecutePostHooks(ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 		}
 	} else {
 		logger.Infof("%s doesn't exist. Creating new item...", path)
@@ -270,7 +269,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 			_ = newScene.Date.Scan(videoFile.CreationTime)
 		}
 
-		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 			var err error
 			retScene, err = r.Scene().Create(newScene)
 			return err
@@ -279,7 +278,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retScene *models.Scene, e
 		}
 
 		scanner.makeScreenshots(path, videoFile, sceneHash)
-		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retScene.ID, plugin.SceneCreatePost, nil, nil)
+		scanner.PluginCache.ExecutePostHooks(ctx, retScene.ID, plugin.SceneCreatePost, nil, nil)
 	}
 
 	return retScene, nil

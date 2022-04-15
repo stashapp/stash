@@ -61,7 +61,7 @@ func (r *mutationResolver) ExportObjects(ctx context.Context, input models.Expor
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	t.Start(&wg)
+	t.Start(ctx, &wg)
 
 	if t.DownloadHash != "" {
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)

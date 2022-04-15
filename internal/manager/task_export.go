@@ -97,7 +97,7 @@ func CreateExportTask(a models.HashAlgorithm, input models.ExportObjectsInput) *
 	}
 }
 
-func (t *ExportTask) Start(wg *sync.WaitGroup) {
+func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count + Movie.count
 	workerCount := runtime.GOMAXPROCS(0) // set worker count to number of cpus available
@@ -130,7 +130,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 	paths.EnsureJSONDirs(t.baseDir)
 
-	txnErr := t.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := t.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		// include movie scenes and gallery images
 		if !t.full {
 			// only include movie scenes if includeDependencies is also set

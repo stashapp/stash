@@ -108,7 +108,7 @@ func (s *singleton) Export(ctx context.Context) (int, error) {
 			full:                true,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
-		task.Start(&wg)
+		task.Start(ctx, &wg)
 	})
 
 	return s.JobManager.Add(ctx, "Exporting...", j), nil
@@ -164,7 +164,7 @@ func (s *singleton) generateScreenshot(ctx context.Context, sceneId string, at *
 		}
 
 		var scene *models.Scene
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			var err error
 			scene, err = r.Scene().Find(sceneIdInt)
 			return err
@@ -213,7 +213,7 @@ func (s *singleton) MigrateHash(ctx context.Context) int {
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
 		var scenes []*models.Scene
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			var err error
 			scenes, err = r.Scene().All()
 			return err
@@ -275,7 +275,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 		// This is why we mark this section nolint. In principle, we should look to
 		// rewrite the section at some point, to avoid the linter warning.
 		if len(input.PerformerIds) > 0 { //nolint:gocritic
-			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 
 				for _, performerID := range input.PerformerIds {
@@ -315,7 +315,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 			// However, this doesn't really help with readability of the current section. Mark it
 			// as nolint for now. In the future we'd like to rewrite this code by factoring some of
 			// this into separate functions.
-			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 				var performers []*models.Performer
 				var err error
@@ -356,7 +356,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 		for _, task := range tasks {
 			wg.Add(1)
 			progress.ExecuteTask(task.Description(), func() {
-				task.Start()
+				task.Start(ctx)
 				wg.Done()
 			})
 

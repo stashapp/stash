@@ -22,7 +22,6 @@ type Scanner struct {
 
 	StripFileExtension bool
 
-	Ctx             context.Context
 	CaseSensitiveFs bool
 	TxnManager      models.TransactionManager
 	Paths           *paths.Paths
@@ -37,7 +36,7 @@ func FileScanner(hasher file.Hasher) file.Scanner {
 	}
 }
 
-func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFile) (retImage *models.Image, err error) {
+func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBased, file file.SourceFile) (retImage *models.Image, err error) {
 	scanned, err := scanner.Scanner.ScanExisting(existing, file)
 	if err != nil {
 		return nil, err
@@ -72,7 +71,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		done := make(chan struct{})
 		scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
 
-		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 			// free the mutex once transaction is complete
 			defer close(done)
 			var err error
@@ -100,13 +99,13 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 			}
 		}
 
-		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retImage.ID, plugin.ImageUpdatePost, nil, nil)
+		scanner.PluginCache.ExecutePostHooks(ctx, retImage.ID, plugin.ImageUpdatePost, nil, nil)
 	}
 
 	return
 }
 
-func (scanner *Scanner) ScanNew(f file.SourceFile) (retImage *models.Image, err error) {
+func (scanner *Scanner) ScanNew(ctx context.Context, f file.SourceFile) (retImage *models.Image, err error) {
 	scanned, err := scanner.Scanner.ScanNew(f)
 	if err != nil {
 		return nil, err
@@ -122,7 +121,7 @@ func (scanner *Scanner) ScanNew(f file.SourceFile) (retImage *models.Image, err 
 
 	// check for image by checksum
 	var existingImage *models.Image
-	if err := scanner.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := scanner.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		existingImage, err = r.Image().FindByChecksum(checksum)
 		return err
@@ -152,14 +151,14 @@ func (scanner *Scanner) ScanNew(f file.SourceFile) (retImage *models.Image, err 
 				Path: &path,
 			}
 
-			if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 				retImage, err = r.Image().Update(imagePartial)
 				return err
 			}); err != nil {
 				return nil, err
 			}
 
-			scanner.PluginCache.ExecutePostHooks(scanner.Ctx, existingImage.ID, plugin.ImageUpdatePost, nil, nil)
+			scanner.PluginCache.ExecutePostHooks(ctx, existingImage.ID, plugin.ImageUpdatePost, nil, nil)
 		}
 	} else {
 		logger.Infof("%s doesn't exist. Creating new item...", pathDisplayName)
@@ -177,7 +176,7 @@ func (scanner *Scanner) ScanNew(f file.SourceFile) (retImage *models.Image, err 
 			return nil, err
 		}
 
-		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 			var err error
 			retImage, err = r.Image().Create(newImage)
 			return err
@@ -185,7 +184,7 @@ func (scanner *Scanner) ScanNew(f file.SourceFile) (retImage *models.Image, err 
 			return nil, err
 		}
 
-		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retImage.ID, plugin.ImageCreatePost, nil, nil)
+		scanner.PluginCache.ExecutePostHooks(ctx, retImage.ID, plugin.ImageCreatePost, nil, nil)
 	}
 
 	return

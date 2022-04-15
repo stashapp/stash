@@ -40,7 +40,7 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 		return
 	}
 
-	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 		qb := r.Scene()
 		hashValue := sql.NullInt64{Int64: int64(*hash), Valid: true}
 		scenePartial := models.ScenePartial{

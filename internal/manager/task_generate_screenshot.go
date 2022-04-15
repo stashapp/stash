@@ -74,7 +74,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		return
 	}
 
-	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 		qb := r.Scene()
 		updatedTime := time.Now()
 		updatedScene := models.ScenePartial{
