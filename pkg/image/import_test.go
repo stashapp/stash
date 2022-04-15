@@ -159,10 +159,10 @@ func TestImporterPreImportWithGallery(t *testing.T) {
 		},
 	}
 
-	galleryReaderWriter.On("FindByChecksum", testCtx, existingGalleryChecksum).Return(&models.Gallery{
+	galleryReaderWriter.On("FindByChecksums", testCtx, []string{existingGalleryChecksum}).Return([]*models.Gallery{{
 		ID: existingGalleryID,
-	}, nil).Once()
-	galleryReaderWriter.On("FindByChecksum", testCtx, existingGalleryErr).Return(nil, errors.New("FindByChecksum error")).Once()
+	}}, nil).Once()
+	galleryReaderWriter.On("FindByChecksums", testCtx, []string{existingGalleryErr}).Return(nil, errors.New("FindByChecksum error")).Once()
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
@@ -192,7 +192,7 @@ func TestImporterPreImportWithMissingGallery(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	galleryReaderWriter.On("FindByChecksum", testCtx, missingGalleryChecksum).Return(nil, nil).Times(3)
+	galleryReaderWriter.On("FindByChecksums", testCtx, []string{missingGalleryChecksum}).Return(nil, nil).Times(3)
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
