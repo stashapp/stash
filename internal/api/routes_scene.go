@@ -182,7 +182,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	lockCtx := lm.ReadLock(r.Context(), scene.Path)
 	defer lockCtx.Cancel()
 
-	stream, err := encoder.GetTranscodeStream(lockCtx.Ctx, options)
+	stream, err := encoder.GetTranscodeStream(lockCtx, options)
 
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %v", err)

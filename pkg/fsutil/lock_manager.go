@@ -8,7 +8,7 @@ import (
 )
 
 type LockContext struct {
-	Ctx    context.Context
+	context.Context
 	cancel context.CancelFunc
 
 	cmd *exec.Cmd
@@ -63,8 +63,8 @@ func (m *ReadLockManager) ReadLock(ctx context.Context, fn string) *LockContext 
 	locks := m.readLocks[fn]
 
 	cc := &LockContext{
-		Ctx:    retCtx,
-		cancel: cancel,
+		Context: retCtx,
+		cancel:  cancel,
 	}
 	m.readLocks[fn] = append(locks, cc)
 
@@ -74,7 +74,7 @@ func (m *ReadLockManager) ReadLock(ctx context.Context, fn string) *LockContext 
 }
 
 func (m *ReadLockManager) waitAndUnlock(fn string, cc *LockContext) {
-	<-cc.Ctx.Done()
+	<-cc.Done()
 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -96,6 +96,6 @@ func (m *ReadLockManager) Cancel(fn string) {
 
 	for _, l := range locks {
 		l.Cancel()
-		<-l.Ctx.Done()
+		<-l.Done()
 	}
 }
