@@ -8,12 +8,19 @@ import (
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type NameFinderCreatorUpdater interface {
+	NameFinderCreator
+	UpdateFull(ctx context.Context, updatedMovie models.Movie) (*models.Movie, error)
+	UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error
+}
+
 type Importer struct {
-	ReaderWriter        models.MovieReaderWriter
-	StudioWriter        models.StudioReaderWriter
+	ReaderWriter        NameFinderCreatorUpdater
+	StudioWriter        studio.NameFinderCreator
 	Input               jsonschema.Movie
 	MissingRefBehaviour models.ImportMissingRefEnum
 

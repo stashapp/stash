@@ -9,6 +9,15 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type NameFinderCreatorUpdater interface {
+	FindByName(ctx context.Context, name string, nocase bool) (*models.Tag, error)
+	Create(ctx context.Context, newTag models.Tag) (*models.Tag, error)
+	UpdateFull(ctx context.Context, updatedTag models.Tag) (*models.Tag, error)
+	UpdateImage(ctx context.Context, tagID int, image []byte) error
+	UpdateAliases(ctx context.Context, tagID int, aliases []string) error
+	UpdateParentTags(ctx context.Context, tagID int, parentIDs []int) error
+}
+
 type ParentTagNotExistError struct {
 	missingParent string
 }
@@ -22,7 +31,7 @@ func (e ParentTagNotExistError) MissingParent() string {
 }
 
 type Importer struct {
-	ReaderWriter        models.TagReaderWriter
+	ReaderWriter        NameFinderCreatorUpdater
 	Input               jsonschema.Tag
 	MissingRefBehaviour models.ImportMissingRefEnum
 

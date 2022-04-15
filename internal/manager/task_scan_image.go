@@ -92,7 +92,13 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 	}
 }
 
-func (t *ScanTask) associateImageWithFolderGallery(ctx context.Context, imageID int, qb models.GalleryReaderWriter) (galleryID int, isNew bool, err error) {
+type GalleryImageAssociator interface {
+	FindByPath(ctx context.Context, path string) (*models.Gallery, error)
+	Create(ctx context.Context, newGallery models.Gallery) (*models.Gallery, error)
+	gallery.ImageUpdater
+}
+
+func (t *ScanTask) associateImageWithFolderGallery(ctx context.Context, imageID int, qb GalleryImageAssociator) (galleryID int, isNew bool, err error) {
 	// find a gallery with the path specified
 	path := filepath.Dir(t.file.Path())
 	var g *models.Gallery
