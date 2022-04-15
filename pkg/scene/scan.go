@@ -76,7 +76,9 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 			return err
 		}
 
-		videoFileToScene(s, videoFile)
+		if err := videoFileToScene(s, videoFile); err != nil {
+			return err
+		}
 		changed = true
 	} else if scanned.FileUpdated() || s.Interactive != interactive {
 		logger.Infof("Updated scene file %s", path)
@@ -94,7 +96,10 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 				return err
 			}
 		}
-		container := ffmpeg.MatchContainer(videoFile.Container, path)
+		container, err := ffmpeg.MatchContainer(videoFile.Container, path)
+		if err != nil {
+			return fmt.Errorf("getting container for %s: %w", path, err)
+		}
 		logger.Infof("Adding container %s to file %s", container, path)
 		s.Format = models.NullString(string(container))
 		changed = true
@@ -262,7 +267,9 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 			Interactive: interactive,
 		}
 
-		videoFileToScene(&newScene, videoFile)
+		if err := videoFileToScene(&newScene, videoFile); err != nil {
+			return nil, err
+		}
 
 		if scanner.UseFileMetadata {
 			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
@@ -289,8 +296,11 @@ func stripExtension(path string) string {
 	return strings.TrimSuffix(path, ext)
 }
 
-func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
-	container := ffmpeg.MatchContainer(videoFile.Container, s.Path)
+func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) error {
+	container, err := ffmpeg.MatchContainer(videoFile.Container, s.Path)
+	if err != nil {
+		return fmt.Errorf("matching container: %w", err)
+	}
 
 	s.Duration = sql.NullFloat64{Float64: videoFile.Duration, Valid: true}
 	s.VideoCodec = sql.NullString{String: videoFile.VideoCodec, Valid: true}
@@ -301,6 +311,8 @@ func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
 	s.Framerate = sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true}
 	s.Bitrate = sql.NullInt64{Int64: videoFile.Bitrate, Valid: true}
 	s.Size = sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true}
+
+	return nil
 }
 
 func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, checksum string) {

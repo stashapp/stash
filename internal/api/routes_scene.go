@@ -54,25 +54,6 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 // region Handlers
 
-func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
-	var container ffmpeg.Container
-	if scene.Format.Valid {
-		container = ffmpeg.Container(scene.Format.String)
-	} else { // container isn't in the DB
-		// shouldn't happen, fallback to ffprobe
-		ffprobe := manager.GetInstance().FFProbe
-		tmpVideoFile, err := ffprobe.NewVideoFile(scene.Path)
-		if err != nil {
-			logger.Errorf("[transcode] error reading video file: %v", err)
-			return ffmpeg.Container("")
-		}
-
-		container = ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
-	}
-
-	return container
-}
-
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
@@ -86,7 +67,11 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 	// only allow mkv streaming if the scene container is an mkv already
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	container := getSceneFileContainer(scene)
+	container, err := manager.GetSceneFileContainer(scene)
+	if err != nil {
+		logger.Errorf("[transcode] error getting container: %v", err)
+	}
+
 	if container != ffmpeg.Matroska {
 		w.WriteHeader(http.StatusBadRequest)
 		if _, err := w.Write([]byte("not an mkv file")); err != nil {

@@ -47,13 +47,13 @@ var ffprobeToContainer = map[string]Container{
 	MatroskaFfmpeg: Matroska,
 }
 
-func MatchContainer(format string, filePath string) Container { // match ffprobe string to our Container
+func MatchContainer(format string, filePath string) (Container, error) { // match ffprobe string to our Container
 	container := ffprobeToContainer[format]
 	if container == Matroska {
-		container = magicContainer(filePath) // use magic number instead of ffprobe for matroska,webm
+		return magicContainer(filePath) // use magic number instead of ffprobe for matroska,webm
 	}
 	if container == "" { // if format is not in our Container list leave it as ffprobes reported format_name
 		container = Container(format)
 	}
-	return container
+	return container, nil
 }

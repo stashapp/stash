@@ -21,7 +21,7 @@ func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
 			return ffmpeg.Container(""), fmt.Errorf("error reading video file: %v", err)
 		}
 
-		container = ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
+		return ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
 	}
 
 	return container, nil
