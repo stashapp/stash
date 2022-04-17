@@ -54,17 +54,6 @@ func IsLangInCaptions(lang string, captions []string) bool {
 	return false
 }
 
-// AddLangToCaptions returns a new string with lang added to the captions
-// No duplicate checks are done, use IsLangInCaptions first if needed
-func AddLangToCaptions(lang string, captions []string) []string {
-	c := captions
-	if lang == "" {
-		return c
-	}
-	c = append(c, lang)
-	return c
-}
-
 // GenerateCaptionCandidates generates a list of filenames with exts as extensions
 // that can associated with the caption
 func GenerateCaptionCandidates(captionPath string, exts []string) []string {
@@ -106,7 +95,7 @@ func CleanCaptions(fn string, captions []string) (cleanedCaptions []string, chan
 		for _, e := range CaptionExts {
 			f := GetCaptionPath(fn, l, e)
 			if _, er := os.Stat(f); er == nil {
-				cleanedCaptions = AddLangToCaptions(l, cleanedCaptions)
+				cleanedCaptions = append(cleanedCaptions, l)
 				found = true
 				break
 			}
