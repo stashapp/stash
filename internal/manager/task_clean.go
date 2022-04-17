@@ -29,7 +29,7 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 		logger.Infof("Running in Dry Mode")
 	}
 
-	if err := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		total, err := j.getCount(r)
 		if err != nil {
 			return fmt.Errorf("error getting count: %w", err)
@@ -401,7 +401,7 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 		Paths:          GetInstance().Paths,
 	}
 	var s *models.Scene
-	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+	if err := j.txnManager.WithTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Scene()
 
 		var err error
@@ -431,7 +431,7 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
 	var g *models.Gallery
 
-	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+	if err := j.txnManager.WithTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Gallery()
 
 		var err error
@@ -459,7 +459,7 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 	}
 
 	var i *models.Image
-	if err := j.txnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+	if err := j.txnManager.WithTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Image()
 
 		var err error

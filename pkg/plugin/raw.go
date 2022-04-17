@@ -71,7 +71,10 @@ func (t *rawPluginTask) Start() error {
 	go func() {
 		defer stdin.Close()
 
-		inBytes, _ := json.Marshal(t.input)
+		inBytes, err := json.Marshal(t.input)
+		if err != nil {
+			logger.Warnf("error marshalling raw command input")
+		}
 		if k, err := io.WriteString(stdin, string(inBytes)); err != nil {
 			logger.Warnf("error writing input to plugins stdin (wrote %v bytes out of %v): %v", k, len(string(inBytes)), err)
 		}
