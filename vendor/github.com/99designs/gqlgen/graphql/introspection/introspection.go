@@ -5,21 +5,22 @@ import "github.com/vektah/gqlparser/v2/ast"
 
 type (
 	Directive struct {
-		Name        string
-		Description string
-		Locations   []string
-		Args        []InputValue
+		Name         string
+		description  string
+		Locations    []string
+		Args         []InputValue
+		IsRepeatable bool
 	}
 
 	EnumValue struct {
 		Name        string
-		Description string
+		description string
 		deprecation *ast.Directive
 	}
 
 	Field struct {
 		Name        string
-		Description string
+		description string
 		Type        *Type
 		Args        []InputValue
 		deprecation *ast.Directive
@@ -27,7 +28,7 @@ type (
 
 	InputValue struct {
 		Name         string
-		Description  string
+		description  string
 		DefaultValue *string
 		Type         *Type
 	}
@@ -35,6 +36,13 @@ type (
 
 func WrapSchema(schema *ast.Schema) *Schema {
 	return &Schema{schema: schema}
+}
+
+func (f *EnumValue) Description() *string {
+	if f.description == "" {
+		return nil
+	}
+	return &f.description
 }
 
 func (f *EnumValue) IsDeprecated() bool {
@@ -54,6 +62,13 @@ func (f *EnumValue) DeprecationReason() *string {
 	return &reason.Value.Raw
 }
 
+func (f *Field) Description() *string {
+	if f.description == "" {
+		return nil
+	}
+	return &f.description
+}
+
 func (f *Field) IsDeprecated() bool {
 	return f.deprecation != nil
 }
@@ -69,4 +84,18 @@ func (f *Field) DeprecationReason() *string {
 	}
 
 	return &reason.Value.Raw
+}
+
+func (f *InputValue) Description() *string {
+	if f.description == "" {
+		return nil
+	}
+	return &f.description
+}
+
+func (f *Directive) Description() *string {
+	if f.description == "" {
+		return nil
+	}
+	return &f.description
 }

@@ -6,12 +6,17 @@ package levenshtein
 
 import "unicode/utf8"
 
+// minLengthThreshold is the length of the string beyond which
+// an allocation will be made. Strings smaller than this will be
+// zero alloc.
+const minLengthThreshold = 32
+
 // ComputeDistance computes the levenshtein distance between the two
 // strings passed as an argument. The return value is the levenshtein distance
 //
 // Works on runes (Unicode code points) but does not normalize
 // the input strings. See https://blog.golang.org/normalization
-// and the golang.org/x/text/unicode/norm pacage.
+// and the golang.org/x/text/unicode/norm package.
 func ComputeDistance(a, b string) int {
 	if len(a) == 0 {
 		return utf8.RuneCountInString(b)
@@ -39,8 +44,19 @@ func ComputeDistance(a, b string) int {
 	lenS1 := len(s1)
 	lenS2 := len(s2)
 
-	// init the row
-	x := make([]uint16, lenS1+1)
+	// Init the row.
+	var x []uint16
+	if lenS1+1 > minLengthThreshold {
+		x = make([]uint16, lenS1+1)
+	} else {
+		// We make a small optimization here for small strings.
+		// Because a slice of constant length is effectively an array,
+		// it does not allocate. So we can re-slice it to the right length
+		// as long as it is below a desired threshold.
+		x = make([]uint16, minLengthThreshold)
+		x = x[:lenS1+1]
+	}
+
 	// we start from 1 because index 0 is already 0.
 	for i := 1; i < len(x); i++ {
 		x[i] = uint16(i)

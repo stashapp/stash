@@ -1,33 +1,58 @@
 package clientgen
 
 import (
+	"fmt"
+
+	"github.com/Yamashou/gqlgenc/config"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
-	"golang.org/x/xerrors"
 )
 
-func ParseQueryDocuments(schema *ast.Schema, querySources []*ast.Source) (*ast.QueryDocument, error) {
-	var queryDocument ast.QueryDocument
+type merger struct {
+	document      ast.QueryDocument
+	unamedIndex   int
+	unamedPattern string
+}
+
+func newMerger(generateConfig *config.GenerateConfig) *merger {
+	unamedPattern := "Unamed"
+	if generateConfig != nil && generateConfig.UnamedPattern != "" {
+		unamedPattern = generateConfig.UnamedPattern
+	}
+
+	return &merger{unamedPattern: unamedPattern}
+}
+
+func ParseQueryDocuments(schema *ast.Schema, querySources []*ast.Source, generateConfig *config.GenerateConfig) (*ast.QueryDocument, error) {
+	merger := newMerger(generateConfig)
 	for _, querySource := range querySources {
 		query, gqlerr := parser.ParseQuery(querySource)
 		if gqlerr != nil {
-			return nil, xerrors.Errorf(": %w", gqlerr)
+			return nil, fmt.Errorf(": %w", gqlerr)
 		}
 
-		mergeQueryDocument(&queryDocument, query)
+		merger.mergeQueryDocument(query)
 	}
 
-	if errs := validator.Validate(schema, &queryDocument); errs != nil {
-		return nil, xerrors.Errorf(": %w", errs)
+	if errs := validator.Validate(schema, &merger.document); errs != nil {
+		return nil, fmt.Errorf(": %w", errs)
 	}
 
-	return &queryDocument, nil
+	return &merger.document, nil
 }
 
-func mergeQueryDocument(q, other *ast.QueryDocument) {
-	q.Operations = append(q.Operations, other.Operations...)
-	q.Fragments = append(q.Fragments, other.Fragments...)
+func (m *merger) mergeQueryDocument(other *ast.QueryDocument) {
+	for _, operation := range other.Operations {
+		if operation.Name == "" {
+			// We increment first so unamed queries will start at 1
+			m.unamedIndex++
+			operation.Name = fmt.Sprintf("%s%d", m.unamedPattern, m.unamedIndex)
+		}
+	}
+
+	m.document.Operations = append(m.document.Operations, other.Operations...)
+	m.document.Fragments = append(m.document.Fragments, other.Fragments...)
 }
 
 func QueryDocumentsByOperations(schema *ast.Schema, operations ast.OperationList) ([]*ast.QueryDocument, error) {
@@ -42,7 +67,7 @@ func QueryDocumentsByOperations(schema *ast.Schema, operations ast.OperationList
 		}
 
 		if errs := validator.Validate(schema, queryDocument); errs != nil {
-			return nil, xerrors.Errorf(": %w", errs)
+			return nil, fmt.Errorf(": %w", errs)
 		}
 
 		queryDocuments = append(queryDocuments, queryDocument)

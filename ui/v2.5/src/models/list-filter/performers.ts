@@ -2,6 +2,7 @@ import {
   createNumberCriterionOption,
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
+  createBooleanCriterionOption,
 } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
@@ -79,6 +80,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
+  createBooleanCriterionOption("ignore_auto_tag"),
   ...numberCriteria.map((c) => createNumberCriterionOption(c)),
   ...stringCriteria.map((c) => createStringCriterionOption(c)),
 ];

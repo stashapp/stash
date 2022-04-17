@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -183,11 +184,31 @@ func TestStudioIllegalQuery(t *testing.T) {
 	})
 }
 
+func TestStudioQueryIgnoreAutoTag(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		ignoreAutoTag := true
+		studioFilter := models.StudioFilterType{
+			IgnoreAutoTag: &ignoreAutoTag,
+		}
+
+		sqb := r.Studio()
+
+		studios := queryStudio(t, sqb, &studioFilter, nil)
+
+		assert.Len(t, studios, int(math.Ceil(float64(totalStudios)/5)))
+		for _, s := range studios {
+			assert.True(t, s.IgnoreAutoTag)
+		}
+
+		return nil
+	})
+}
+
 func TestStudioQueryForAutoTag(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		tqb := r.Studio()
 
-		name := studioNames[studioIdxWithScene] // find a studio by name
+		name := studioNames[studioIdxWithMovie] // find a studio by name
 
 		studios, err := tqb.QueryForAutoTag([]string{name})
 
@@ -195,12 +216,11 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
 
-		assert.Len(t, studios, 2)
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[0].Name.String))
-		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithScene]), strings.ToLower(studios[1].Name.String))
+		assert.Len(t, studios, 1)
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithMovie]), strings.ToLower(studios[0].Name.String))
 
 		// find by alias
-		name = getStudioStringValue(studioIdxWithScene, "Alias")
+		name = getStudioStringValue(studioIdxWithMovie, "Alias")
 		studios, err = tqb.QueryForAutoTag([]string{name})
 
 		if err != nil {
@@ -208,7 +228,7 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 		}
 
 		assert.Len(t, studios, 1)
-		assert.Equal(t, studioIDs[studioIdxWithScene], studios[0].ID)
+		assert.Equal(t, studioIDs[studioIdxWithMovie], studios[0].ID)
 
 		return nil
 	})

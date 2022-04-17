@@ -1,4 +1,5 @@
 import {
+  createBooleanCriterionOption,
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
@@ -34,6 +35,7 @@ const criterionOptions = [
   ParentStudiosCriterionOption,
   StudioIsMissingCriterionOption,
   RatingCriterionOption,
+  createBooleanCriterionOption("ignore_auto_tag"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),

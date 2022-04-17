@@ -147,10 +147,16 @@ export const LightboxComponent: React.FC<IProps> = ({
     setLightboxSettings({ scrollMode: v });
   }
 
+  const configuredDelay = config?.interface.imageLightbox.slideshowDelay
+    ? config.interface.imageLightbox.slideshowDelay * SECONDS_TO_MS
+    : undefined;
+
+  const savedDelay = lightboxSettings?.slideshowDelay
+    ? lightboxSettings.slideshowDelay * SECONDS_TO_MS
+    : undefined;
+
   const slideshowDelay =
-    lightboxSettings?.slideshowDelay ??
-    config?.interface.imageLightbox.slideshowDelay ??
-    DEFAULT_SLIDESHOW_DELAY;
+    savedDelay ?? configuredDelay ?? DEFAULT_SLIDESHOW_DELAY;
 
   function setSlideshowDelay(v: number) {
     setLightboxSettings({ slideshowDelay: v });
@@ -175,7 +181,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   const [
     displayedSlideshowInterval,
     setDisplayedSlideshowInterval,
-  ] = useState<string>(slideshowDelay.toString());
+  ] = useState<string>((slideshowDelay / SECONDS_TO_MS).toString());
 
   useEffect(() => {
     if (images !== oldImages.current && isSwitchingPage) {
@@ -264,7 +270,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (slideshowInterval) {
       setSlideshowInterval(null);
     } else {
-      setSlideshowInterval(slideshowDelay * SECONDS_TO_MS);
+      setSlideshowInterval(slideshowDelay);
     }
   }, [slideshowInterval, slideshowDelay]);
 
@@ -409,7 +415,7 @@ export const LightboxComponent: React.FC<IProps> = ({
         ? numberValue
         : MIN_VALID_INTERVAL_SECONDS;
 
-    setSlideshowDelay(numberValue * SECONDS_TO_MS);
+    setSlideshowDelay(numberValue);
 
     if (slideshowInterval !== null) {
       setSlideshowInterval(numberValue * SECONDS_TO_MS);
@@ -418,145 +424,140 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const currentIndex = index === null ? initialIndex : index;
 
-  const OptionsForm: React.FC<{}> = () => (
-    <>
-      {slideshowEnabled ? (
-        <Form.Group controlId="delay" as={Row} className="form-container">
-          <Col xs={4}>
-            <Form.Label className="col-form-label">
-              <FormattedMessage id="dialogs.lightbox.delay" />
-            </Form.Label>
-          </Col>
-          <Col xs={8}>
-            <Form.Control
-              type="number"
-              className="text-input"
-              min={1}
-              value={displayedSlideshowInterval ?? 0}
-              onChange={onDelayChange}
-              size="sm"
-            />
-          </Col>
-        </Form.Group>
-      ) : undefined}
+  // #2451: making OptionsForm an inline component means it
+  // get re-rendered each time. This makes the text
+  // field lose focus on input. Use function instead.
+  function renderOptionsForm() {
+    return (
+      <>
+        {slideshowEnabled ? (
+          <Form.Group controlId="delay" as={Row} className="form-container">
+            <Col xs={4}>
+              <Form.Label className="col-form-label">
+                <FormattedMessage id="dialogs.lightbox.delay" />
+              </Form.Label>
+            </Col>
+            <Col xs={8}>
+              <Form.Control
+                type="number"
+                className="text-input"
+                min={1}
+                value={displayedSlideshowInterval ?? 0}
+                onChange={onDelayChange}
+                size="sm"
+              />
+            </Col>
+          </Form.Group>
+        ) : undefined}
 
-      <Form.Group controlId="displayMode" as={Row}>
-        <Col xs={4}>
-          <Form.Label className="col-form-label">
-            <FormattedMessage id="dialogs.lightbox.display_mode.label" />
-          </Form.Label>
-        </Col>
-        <Col xs={8}>
-          <Form.Control
-            as="select"
-            onChange={(e) =>
-              setDisplayMode(e.target.value as GQL.ImageLightboxDisplayMode)
-            }
-            value={displayMode}
-            className="btn-secondary mx-1 mb-1"
-          >
-            {Array.from(imageLightboxDisplayModeIntlMap.entries()).map((v) => (
-              <option key={v[0]} value={v[0]}>
-                {intl.formatMessage({
-                  id: v[1],
-                })}
-              </option>
-            ))}
-          </Form.Control>
-        </Col>
-      </Form.Group>
-      <Form.Group>
-        <Form.Group controlId="scaleUp" as={Row} className="mb-1">
-          <Col>
-            <Form.Check
-              type="checkbox"
-              label={intl.formatMessage({
-                id: "dialogs.lightbox.scale_up.label",
-              })}
-              checked={lightboxSettings?.scaleUp ?? false}
-              disabled={displayMode === GQL.ImageLightboxDisplayMode.Original}
-              onChange={(v) => setScaleUp(v.currentTarget.checked)}
-            />
-          </Col>
-        </Form.Group>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "dialogs.lightbox.scale_up.description",
-          })}
-        </Form.Text>
-      </Form.Group>
-      <Form.Group>
-        <Form.Group controlId="resetZoomOnNav" as={Row} className="mb-1">
-          <Col>
-            <Form.Check
-              type="checkbox"
-              label={intl.formatMessage({
-                id: "dialogs.lightbox.reset_zoom_on_nav",
-              })}
-              checked={lightboxSettings?.resetZoomOnNav ?? false}
-              onChange={(v) => setResetZoomOnNav(v.currentTarget.checked)}
-            />
-          </Col>
-        </Form.Group>
-      </Form.Group>
-      <Form.Group controlId="scrollMode">
-        <Form.Group as={Row} className="mb-1">
+        <Form.Group controlId="displayMode" as={Row}>
           <Col xs={4}>
             <Form.Label className="col-form-label">
-              <FormattedMessage id="dialogs.lightbox.scroll_mode.label" />
+              <FormattedMessage id="dialogs.lightbox.display_mode.label" />
             </Form.Label>
           </Col>
           <Col xs={8}>
             <Form.Control
               as="select"
               onChange={(e) =>
-                setScrollMode(e.target.value as GQL.ImageLightboxScrollMode)
+                setDisplayMode(e.target.value as GQL.ImageLightboxDisplayMode)
               }
-              value={
-                lightboxSettings?.scrollMode ?? GQL.ImageLightboxScrollMode.Zoom
-              }
+              value={displayMode}
               className="btn-secondary mx-1 mb-1"
             >
-              <option
-                value={GQL.ImageLightboxScrollMode.Zoom}
-                key={GQL.ImageLightboxScrollMode.Zoom}
-              >
-                {intl.formatMessage({
-                  id: "dialogs.lightbox.scroll_mode.zoom",
-                })}
-              </option>
-              <option
-                value={GQL.ImageLightboxScrollMode.PanY}
-                key={GQL.ImageLightboxScrollMode.PanY}
-              >
-                {intl.formatMessage({
-                  id: "dialogs.lightbox.scroll_mode.pan_y",
-                })}
-              </option>
+              {Array.from(imageLightboxDisplayModeIntlMap.entries()).map(
+                (v) => (
+                  <option key={v[0]} value={v[0]}>
+                    {intl.formatMessage({
+                      id: v[1],
+                    })}
+                  </option>
+                )
+              )}
             </Form.Control>
           </Col>
         </Form.Group>
-        <Form.Text className="text-muted">
-          {intl.formatMessage({
-            id: "dialogs.lightbox.scroll_mode.description",
-          })}
-        </Form.Text>
-      </Form.Group>
-    </>
-  );
-
-  const optionsPopover = (
-    <>
-      <Popover.Title>
-        {intl.formatMessage({
-          id: "dialogs.lightbox.options",
-        })}
-      </Popover.Title>
-      <Popover.Content>
-        <OptionsForm />
-      </Popover.Content>
-    </>
-  );
+        <Form.Group>
+          <Form.Group controlId="scaleUp" as={Row} className="mb-1">
+            <Col>
+              <Form.Check
+                type="checkbox"
+                label={intl.formatMessage({
+                  id: "dialogs.lightbox.scale_up.label",
+                })}
+                checked={lightboxSettings?.scaleUp ?? false}
+                disabled={displayMode === GQL.ImageLightboxDisplayMode.Original}
+                onChange={(v) => setScaleUp(v.currentTarget.checked)}
+              />
+            </Col>
+          </Form.Group>
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "dialogs.lightbox.scale_up.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+        <Form.Group>
+          <Form.Group controlId="resetZoomOnNav" as={Row} className="mb-1">
+            <Col>
+              <Form.Check
+                type="checkbox"
+                label={intl.formatMessage({
+                  id: "dialogs.lightbox.reset_zoom_on_nav",
+                })}
+                checked={lightboxSettings?.resetZoomOnNav ?? false}
+                onChange={(v) => setResetZoomOnNav(v.currentTarget.checked)}
+              />
+            </Col>
+          </Form.Group>
+        </Form.Group>
+        <Form.Group controlId="scrollMode">
+          <Form.Group as={Row} className="mb-1">
+            <Col xs={4}>
+              <Form.Label className="col-form-label">
+                <FormattedMessage id="dialogs.lightbox.scroll_mode.label" />
+              </Form.Label>
+            </Col>
+            <Col xs={8}>
+              <Form.Control
+                as="select"
+                onChange={(e) =>
+                  setScrollMode(e.target.value as GQL.ImageLightboxScrollMode)
+                }
+                value={
+                  lightboxSettings?.scrollMode ??
+                  GQL.ImageLightboxScrollMode.Zoom
+                }
+                className="btn-secondary mx-1 mb-1"
+              >
+                <option
+                  value={GQL.ImageLightboxScrollMode.Zoom}
+                  key={GQL.ImageLightboxScrollMode.Zoom}
+                >
+                  {intl.formatMessage({
+                    id: "dialogs.lightbox.scroll_mode.zoom",
+                  })}
+                </option>
+                <option
+                  value={GQL.ImageLightboxScrollMode.PanY}
+                  key={GQL.ImageLightboxScrollMode.PanY}
+                >
+                  {intl.formatMessage({
+                    id: "dialogs.lightbox.scroll_mode.pan_y",
+                  })}
+                </option>
+              </Form.Control>
+            </Col>
+          </Form.Group>
+          <Form.Text className="text-muted">
+            {intl.formatMessage({
+              id: "dialogs.lightbox.scroll_mode.description",
+            })}
+          </Form.Text>
+        </Form.Group>
+      </>
+    );
+  }
 
   if (!isVisible) {
     return <></>;
@@ -566,7 +567,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     return <LoadingIndicator />;
   }
 
-  const currentImage = images[currentIndex];
+  const currentImage: ILightboxImage | undefined = images[currentIndex];
 
   function setRating(v: number | null) {
     if (currentImage?.id) {
@@ -582,7 +583,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   async function onIncrementClick() {
-    if (currentImage.id === undefined) return;
+    if (currentImage?.id === undefined) return;
     try {
       await mutateImageIncrementO(currentImage.id);
     } catch (e) {
@@ -591,7 +592,7 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   async function onDecrementClick() {
-    if (currentImage.id === undefined) return;
+    if (currentImage?.id === undefined) return;
     try {
       await mutateImageDecrementO(currentImage.id);
     } catch (e) {
@@ -600,9 +601,9 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   async function onResetClick() {
-    if (currentImage.id === undefined) return;
+    if (currentImage?.id === undefined) return;
     try {
-      await mutateImageResetO(currentImage.id);
+      await mutateImageResetO(currentImage?.id);
     } catch (e) {
       Toast.error(e);
     }
@@ -650,13 +651,18 @@ export const LightboxComponent: React.FC<IProps> = ({
                     {...props}
                     style={{ ...props.style }}
                   >
-                    {optionsPopover}
+                    <Popover.Title>
+                      {intl.formatMessage({
+                        id: "dialogs.lightbox.options",
+                      })}
+                    </Popover.Title>
+                    <Popover.Content>{renderOptionsForm()}</Popover.Content>
                   </div>
                 )}
               </Overlay>
             </div>
             <InputGroup className={CLASSNAME_OPTIONS_INLINE}>
-              <OptionsForm />
+              {renderOptionsForm()}
             </InputGroup>
           </div>
           {slideshowEnabled && (
@@ -766,18 +772,18 @@ export const LightboxComponent: React.FC<IProps> = ({
       )}
       <div className={CLASSNAME_FOOTER}>
         <div className={CLASSNAME_FOOTER_LEFT}>
-          {currentImage.id !== undefined && (
+          {currentImage?.id !== undefined && (
             <>
               <div>
                 <OCounterButton
                   onDecrement={onDecrementClick}
                   onIncrement={onIncrementClick}
                   onReset={onResetClick}
-                  value={currentImage.o_counter ?? 0}
+                  value={currentImage?.o_counter ?? 0}
                 />
               </div>
               <RatingStars
-                value={currentImage.rating ?? undefined}
+                value={currentImage?.rating ?? undefined}
                 onSetRating={(v) => {
                   setRating(v ?? null);
                 }}
@@ -786,8 +792,8 @@ export const LightboxComponent: React.FC<IProps> = ({
           )}
         </div>
         <div>
-          {currentImage.title && (
-            <Link to={`/images/${currentImage.id}`} onClick={() => hide()}>
+          {currentImage?.title && (
+            <Link to={`/images/${currentImage.id}`} onClick={() => close()}>
               {currentImage.title ?? ""}
             </Link>
           )}

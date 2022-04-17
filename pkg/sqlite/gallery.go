@@ -300,7 +300,7 @@ func galleryIsMissingCriterionHandler(qb *galleryQueryBuilder, isMissing *string
 				qb.performersRepository().join(f, "performers_join", "galleries.id")
 				f.addWhere("performers_join.gallery_id IS NULL")
 			case "date":
-				f.addWhere("galleries.date IS \"\" OR galleries.date IS \"0001-01-01\"")
+				f.addWhere("galleries.date IS NULL OR galleries.date IS \"\" OR galleries.date IS \"0001-01-01\"")
 			case "tags":
 				qb.tagsRepository().join(f, "tags_join", "galleries.id")
 				f.addWhere("tags_join.gallery_id IS NULL")

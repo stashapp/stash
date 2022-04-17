@@ -117,6 +117,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     death_date: yup.string().optional(),
     hair_color: yup.string().optional(),
     weight: yup.number().optional(),
+    ignore_auto_tag: yup.boolean().optional(),
   });
 
   const initialValues = {
@@ -143,6 +144,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     death_date: performer.death_date ?? "",
     hair_color: performer.hair_color ?? "",
     weight: performer.weight ?? undefined,
+    ignore_auto_tag: performer.ignore_auto_tag ?? false,
   };
 
   type InputValues = typeof initialValues;
@@ -943,6 +945,22 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderTagsField()}
 
         {renderStashIDs()}
+
+        <hr />
+
+        <Form.Group controlId="ignore-auto-tag" as={Row}>
+          <Form.Label column sm={labelXS} xl={labelXL}>
+            <FormattedMessage id="ignore_auto_tag" />
+          </Form.Label>
+          <Col sm={fieldXS} xl={fieldXL}>
+            <Form.Check
+              {...formik.getFieldProps({
+                name: "ignore_auto_tag",
+                type: "checkbox",
+              })}
+            />
+          </Col>
+        </Form.Group>
 
         {renderButtons("mt-3")}
       </Form>

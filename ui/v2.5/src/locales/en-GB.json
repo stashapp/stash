@@ -101,6 +101,7 @@
     },
     "temp_disable": "Disable temporarily…",
     "temp_enable": "Enable temporarily…",
+    "unset": "Unset",
     "use_default": "Use default",
     "view_random": "View Random",
     "continue": "Continue",
@@ -523,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "Slideshow is available in galleries when in wall view mode",
-        "heading": "Slideshow Delay"
+        "heading": "Slideshow Delay (seconds)"
       },
       "title": "User Interface"
     }
@@ -701,6 +702,7 @@
     "warmth": "Warmth"
   },
   "ethnicity": "Ethnicity",
+  "existing_value": "existing value",
   "eye_color": "Eye Colour",
   "fake_tits": "Fake Tits",
   "false": "False",
@@ -731,6 +733,7 @@
   "hasMarkers": "Has Markers",
   "height": "Height",
   "help": "Help",
+  "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
   "image_count": "Image Count",
   "images": "Images",

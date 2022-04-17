@@ -52,6 +52,8 @@ func UnmarshalString(v interface{}) (string, error) {
 		return v, nil
 	case int:
 		return strconv.Itoa(v), nil
+	case int64:
+		return strconv.FormatInt(v, 10), nil
 	case float64:
 		return fmt.Sprintf("%f", v), nil
 	case bool:

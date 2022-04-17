@@ -50,7 +50,9 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	database.Initialize(databaseFile)
+	if err := database.Initialize(databaseFile); err != nil {
+		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
+	}
 
 	// defer close and delete the database
 	defer testTeardown(databaseFile)

@@ -245,7 +245,11 @@ func (qb *tagQueryBuilder) QueryForAutoTag(words []string) ([]*models.Tag, error
 		args = append(args, ww)
 	}
 
-	where := strings.Join(whereClauses, " OR ")
+	whereOr := "(" + strings.Join(whereClauses, " OR ") + ")"
+	where := strings.Join([]string{
+		"tags.ignore_auto_tag = 0",
+		whereOr,
+	}, " AND ")
 	return qb.queryTags(query+" WHERE "+where, args)
 }
 
@@ -295,6 +299,7 @@ func (qb *tagQueryBuilder) makeFilter(tagFilter *models.TagFilterType) *filterBu
 
 	query.handleCriterion(stringCriterionHandler(tagFilter.Name, tagTable+".name"))
 	query.handleCriterion(tagAliasCriterionHandler(qb, tagFilter.Aliases))
+	query.handleCriterion(boolCriterionHandler(tagFilter.IgnoreAutoTag, tagTable+".ignore_auto_tag"))
 
 	query.handleCriterion(tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))
 	query.handleCriterion(tagSceneCountCriterionHandler(qb, tagFilter.SceneCount))

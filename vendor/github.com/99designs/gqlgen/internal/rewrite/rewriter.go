@@ -58,7 +58,7 @@ func (r *Rewriter) getFile(filename string) string {
 	if _, ok := r.files[filename]; !ok {
 		b, err := ioutil.ReadFile(filename)
 		if err != nil {
-			panic(fmt.Errorf("unable to load file, already exists: %s", err.Error()))
+			panic(fmt.Errorf("unable to load file, already exists: %w", err))
 		}
 
 		r.files[filename] = string(b)

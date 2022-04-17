@@ -16,10 +16,11 @@ type OperationContext struct {
 	OperationName string
 	Doc           *ast.QueryDocument
 
-	Operation            *ast.OperationDefinition
-	DisableIntrospection bool
-	Recover              RecoverFunc
-	ResolverMiddleware   FieldMiddleware
+	Operation              *ast.OperationDefinition
+	DisableIntrospection   bool
+	RecoverFunc            RecoverFunc
+	ResolverMiddleware     FieldMiddleware
+	RootResolverMiddleware RootFieldMiddleware
 
 	Stats Stats
 }
@@ -37,8 +38,11 @@ func (c *OperationContext) Validate(ctx context.Context) error {
 	if c.ResolverMiddleware == nil {
 		return errors.New("field 'ResolverMiddleware' is required")
 	}
-	if c.Recover == nil {
-		c.Recover = DefaultRecover
+	if c.RootResolverMiddleware == nil {
+		return errors.New("field 'RootResolverMiddleware' is required")
+	}
+	if c.RecoverFunc == nil {
+		c.RecoverFunc = DefaultRecover
 	}
 
 	return nil
@@ -104,4 +108,8 @@ func (c *OperationContext) Errorf(ctx context.Context, format string, args ...in
 // Deprecated: use graphql.AddError(ctx, err) instead
 func (c *OperationContext) Error(ctx context.Context, err error) {
 	AddError(ctx, err)
+}
+
+func (c *OperationContext) Recover(ctx context.Context, err interface{}) error {
+	return ErrorOnPath(ctx, c.RecoverFunc(ctx, err))
 }

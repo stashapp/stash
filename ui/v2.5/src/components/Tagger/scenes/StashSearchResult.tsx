@@ -275,7 +275,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     );
 
     function resolveField<T>(field: string, stashField: T, remoteField: T) {
-      if (excludedFieldList.includes(field)) {
+      // #2452 - don't overwrite fields that are already set if the remote field is empty
+      const remoteFieldIsNull =
+        remoteField === null || remoteField === undefined;
+      if (excludedFieldList.includes(field) || remoteFieldIsNull) {
         return stashField;
       }
 
@@ -307,10 +310,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       title: resolveField("title", stashScene.title, scene.title),
       details: resolveField("details", stashScene.details, scene.details),
       date: resolveField("date", stashScene.date, scene.date),
-      performer_ids:
-        filteredPerformerIDs.length === 0
-          ? stashScene.performers.map((p) => p.id)
-          : filteredPerformerIDs,
+      performer_ids: uniq(
+        stashScene.performers.map((p) => p.id).concat(filteredPerformerIDs)
+      ),
       studio_id: studioID,
       cover_image: resolveField("cover_image", undefined, imgData),
       url: resolveField("url", stashScene.url, scene.url),

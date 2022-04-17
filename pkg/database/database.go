@@ -23,7 +23,7 @@ import (
 var DB *sqlx.DB
 var WriteMu sync.Mutex
 var dbPath string
-var appSchemaVersion uint = 29
+var appSchemaVersion uint = 30
 var databaseSchemaVersion uint
 
 //go:embed migrations/*.sql

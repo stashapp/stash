@@ -22,7 +22,7 @@ type OutputStreamProvider interface {
 type StdoutStreamProvider struct {
 }
 
-func (this *StdoutStreamProvider) GetWriter(ctx context.Context, iface *Interface) (io.Writer, error, Cleanup) {
+func (*StdoutStreamProvider) GetWriter(ctx context.Context, iface *Interface) (io.Writer, error, Cleanup) {
 	return os.Stdout, nil, func() error { return nil }
 }
 
@@ -37,33 +37,33 @@ type FileOutputStreamProvider struct {
 	FileName                  string
 }
 
-func (this *FileOutputStreamProvider) GetWriter(ctx context.Context, iface *Interface) (io.Writer, error, Cleanup) {
+func (p *FileOutputStreamProvider) GetWriter(ctx context.Context, iface *Interface) (io.Writer, error, Cleanup) {
 	log := zerolog.Ctx(ctx).With().Str(logging.LogKeyInterface, iface.Name).Logger()
 	ctx = log.WithContext(ctx)
 
 	var path string
 
 	caseName := iface.Name
-	if this.Case == "underscore" || this.Case == "snake" {
-		caseName = this.underscoreCaseName(caseName)
+	if p.Case == "underscore" || p.Case == "snake" {
+		caseName = p.underscoreCaseName(caseName)
 	}
 
-	if this.KeepTree {
-		absOriginalDir, err := filepath.Abs(this.KeepTreeOriginalDirectory)
+	if p.KeepTree {
+		absOriginalDir, err := filepath.Abs(p.KeepTreeOriginalDirectory)
 		if err != nil {
 			return nil, err, func() error { return nil }
 		}
 		relativePath := strings.TrimPrefix(
-			filepath.Join(filepath.Dir(iface.FileName), this.filename(caseName)),
+			filepath.Join(filepath.Dir(iface.FileName), p.filename(caseName)),
 			absOriginalDir)
-		path = filepath.Join(this.BaseDir, relativePath)
+		path = filepath.Join(p.BaseDir, relativePath)
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return nil, err, func() error { return nil }
 		}
-	} else if this.InPackage {
-		path = filepath.Join(filepath.Dir(iface.FileName), this.filename(caseName))
+	} else if p.InPackage {
+		path = filepath.Join(filepath.Dir(iface.FileName), p.filename(caseName))
 	} else {
-		path = filepath.Join(this.BaseDir, this.filename(caseName))
+		path = filepath.Join(p.BaseDir, p.filename(caseName))
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return nil, err, func() error { return nil }
 		}
@@ -83,21 +83,21 @@ func (this *FileOutputStreamProvider) GetWriter(ctx context.Context, iface *Inte
 	}
 }
 
-func (this *FileOutputStreamProvider) filename(name string) string {
-	if this.FileName != "" {
-		return this.FileName
-	} else if this.InPackage && this.TestOnly {
+func (p *FileOutputStreamProvider) filename(name string) string {
+	if p.FileName != "" {
+		return p.FileName
+	} else if p.InPackage && p.TestOnly {
 		return "mock_" + name + "_test.go"
-	} else if this.InPackage {
+	} else if p.InPackage && !p.KeepTree {
 		return "mock_" + name + ".go"
-	} else if this.TestOnly {
+	} else if p.TestOnly {
 		return name + "_test.go"
 	}
 	return name + ".go"
 }
 
 // shamelessly taken from http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-camel-caseo
-func (this *FileOutputStreamProvider) underscoreCaseName(caseName string) string {
+func (*FileOutputStreamProvider) underscoreCaseName(caseName string) string {
 	rxp1 := regexp.MustCompile("(.)([A-Z][a-z]+)")
 	s1 := rxp1.ReplaceAllString(caseName, "${1}_${2}")
 	rxp2 := regexp.MustCompile("([a-z0-9])([A-Z])")

@@ -7,6 +7,44 @@ const CLASSNAME = "Lightbox";
 const CLASSNAME_CAROUSEL = `${CLASSNAME}-carousel`;
 const CLASSNAME_IMAGE = `${CLASSNAME_CAROUSEL}-image`;
 
+function calculateDefaultZoom(
+  width: number,
+  height: number,
+  boundWidth: number,
+  boundHeight: number,
+  displayMode: GQL.ImageLightboxDisplayMode,
+  scaleUp: boolean
+) {
+  // set initial zoom level based on options
+  let xZoom: number;
+  let yZoom: number;
+  let newZoom = 1;
+  switch (displayMode) {
+    case GQL.ImageLightboxDisplayMode.FitXy:
+      xZoom = boundWidth / width;
+      yZoom = boundHeight / height;
+
+      if (!scaleUp) {
+        xZoom = Math.min(xZoom, 1);
+        yZoom = Math.min(yZoom, 1);
+      }
+      newZoom = Math.min(xZoom, yZoom);
+      break;
+    case GQL.ImageLightboxDisplayMode.FitX:
+      newZoom = boundWidth / width;
+
+      if (!scaleUp) {
+        newZoom = Math.min(newZoom, 1);
+      }
+      break;
+    case GQL.ImageLightboxDisplayMode.Original:
+      newZoom = 1;
+      break;
+  }
+
+  return newZoom;
+}
+
 interface IProps {
   src: string;
   displayMode: GQL.ImageLightboxDisplayMode;
@@ -76,8 +114,58 @@ export const LightboxImage: React.FC<IProps> = ({
     };
   }, [src]);
 
+  const minMaxY = useCallback(
+    (appliedZoom: number) => {
+      let minY, maxY: number;
+      const inBounds = appliedZoom * height <= boxHeight;
+
+      // NOTE: I don't even know how these work, but they do
+      if (!inBounds) {
+        if (height > boxHeight) {
+          minY =
+            (appliedZoom * height - height) / 2 -
+            appliedZoom * height +
+            boxHeight;
+          maxY = (appliedZoom * height - height) / 2;
+        } else {
+          minY = (boxHeight - appliedZoom * height) / 2;
+          maxY = (appliedZoom * height - boxHeight) / 2;
+        }
+      } else {
+        minY = Math.min((boxHeight - height) / 2, 0);
+        maxY = minY;
+      }
+
+      return [minY, maxY];
+    },
+    [height, boxHeight]
+  );
+
+  const calculateInitialPosition = useCallback(
+    (appliedZoom: number) => {
+      // Center image from container's center
+      const newPositionX = Math.min((boxWidth - width) / 2, 0);
+      let newPositionY: number;
+
+      if (displayMode === GQL.ImageLightboxDisplayMode.FitXy) {
+        newPositionY = Math.min((boxHeight - height) / 2, 0);
+      } else {
+        // otherwise, align image with container
+        const [minY, maxY] = minMaxY(appliedZoom);
+        if (!alignBottom) {
+          newPositionY = maxY;
+        } else {
+          newPositionY = minY;
+        }
+      }
+
+      return [newPositionX, newPositionY];
+    },
+    [displayMode, boxWidth, width, boxHeight, height, alignBottom, minMaxY]
+  );
+
   useEffect(() => {
-    // don't set anything until we have the heights
+    // don't set anything until we have the dimensions
     if (!width || !height || !boxWidth || !boxHeight) {
       return;
     }
@@ -90,80 +178,47 @@ export const LightboxImage: React.FC<IProps> = ({
     }
 
     // set initial zoom level based on options
-    let xZoom: number;
-    let yZoom: number;
-    let newZoom = 1;
-    let newPositionY = 0;
-    switch (displayMode) {
-      case GQL.ImageLightboxDisplayMode.FitXy:
-        xZoom = boxWidth / width;
-        yZoom = boxHeight / height;
-
-        if (!scaleUp) {
-          xZoom = Math.min(xZoom, 1);
-          yZoom = Math.min(yZoom, 1);
-        }
-        newZoom = Math.min(xZoom, yZoom);
-        break;
-      case GQL.ImageLightboxDisplayMode.FitX:
-        newZoom = boxWidth / width;
-
-        if (!scaleUp) {
-          newZoom = Math.min(newZoom, 1);
-        }
-        break;
-      case GQL.ImageLightboxDisplayMode.Original:
-        newZoom = 1;
-        break;
-    }
-
-    // Center image from container's center
-    const newPositionX = Math.min((boxWidth - width) / 2, 0);
-
-    // if fitting to screen, then centre, other
-    if (displayMode === GQL.ImageLightboxDisplayMode.FitXy) {
-      newPositionY = Math.min((boxHeight - height) / 2, 0);
-    } else {
-      // otherwise, align top of image with container
-      if (!alignBottom) {
-        newPositionY = Math.min((height * newZoom - height) / 2, 0);
-      } else {
-        newPositionY = boxHeight - height * newZoom;
-      }
-    }
+    const newZoom = calculateDefaultZoom(
+      width,
+      height,
+      boxWidth,
+      boxHeight,
+      displayMode,
+      scaleUp
+    );
 
     setDefaultZoom(newZoom);
+
+    const [newPositionX, newPositionY] = calculateInitialPosition(newZoom * 1);
+
     setPositionX(newPositionX);
     setPositionY(newPositionY);
-  }, [width, height, boxWidth, boxHeight, displayMode, scaleUp, alignBottom]);
-
-  const calculateInitialPosition = useCallback(() => {
-    // Center image from container's center
-    const newPositionX = Math.min((boxWidth - width) / 2, 0);
-    let newPositionY: number;
-
-    if (zoom * defaultZoom * height > boxHeight) {
-      if (!alignBottom) {
-        newPositionY = (height * zoom * defaultZoom - height) / 2;
-      } else {
-        newPositionY = boxHeight - height * zoom * defaultZoom;
-      }
-    } else {
-      newPositionY = Math.min((boxHeight - height) / 2, 0);
-    }
-
-    return [newPositionX, newPositionY];
-  }, [boxWidth, width, boxHeight, height, zoom, defaultZoom, alignBottom]);
+  }, [
+    width,
+    height,
+    boxWidth,
+    boxHeight,
+    displayMode,
+    scaleUp,
+    alignBottom,
+    calculateInitialPosition,
+  ]);
 
   useEffect(() => {
     if (resetPosition !== resetPositionRef.current) {
       resetPositionRef.current = resetPosition;
 
-      const [x, y] = calculateInitialPosition();
+      const [x, y] = calculateInitialPosition(zoom * defaultZoom);
       setPositionX(x);
       setPositionY(y);
     }
-  }, [resetPosition, resetPositionRef, calculateInitialPosition]);
+  }, [
+    zoom,
+    defaultZoom,
+    resetPosition,
+    resetPositionRef,
+    calculateInitialPosition,
+  ]);
 
   function getScrollMode(ev: React.WheelEvent<HTMLDivElement>) {
     if (ev.shiftKey) {
@@ -186,27 +241,7 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   function onImageScrollPanY(ev: React.WheelEvent<HTMLDivElement>) {
-    const appliedZoom = zoom * defaultZoom;
-
-    let minY, maxY: number;
-    const inBounds = zoom * defaultZoom * height <= boxHeight;
-
-    // NOTE: I don't even know how these work, but they do
-    if (!inBounds) {
-      if (height > boxHeight) {
-        minY =
-          (appliedZoom * height - height) / 2 -
-          appliedZoom * height +
-          boxHeight;
-        maxY = (appliedZoom * height - height) / 2;
-      } else {
-        minY = (boxHeight - appliedZoom * height) / 2;
-        maxY = (appliedZoom * height - boxHeight) / 2;
-      }
-    } else {
-      minY = Math.min((boxHeight - height) / 2, 0);
-      maxY = minY;
-    }
+    const [minY, maxY] = minMaxY(zoom * defaultZoom);
 
     let newPositionY =
       positionY + (ev.deltaY < 0 ? SCROLL_PAN_STEP : -SCROLL_PAN_STEP);
@@ -219,10 +254,8 @@ export const LightboxImage: React.FC<IProps> = ({
       onRight();
     } else {
       // ensure image doesn't go offscreen
-      console.log("unconstrained y: " + newPositionY);
       newPositionY = Math.max(newPositionY, minY);
       newPositionY = Math.min(newPositionY, maxY);
-      console.log("positionY: " + positionY + " newPositionY: " + newPositionY);
 
       setPositionY(newPositionY);
     }
@@ -267,6 +300,8 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   function onImageMouseUp(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    if (ev.button !== 0) return;
+
     if (
       !mouseDownEvent.current ||
       ev.timeStamp - mouseDownEvent.current.timeStamp > 200

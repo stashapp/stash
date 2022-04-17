@@ -291,6 +291,18 @@ export class BooleanCriterion extends StringCriterion {
   }
 }
 
+export function createBooleanCriterionOption(
+  value: CriterionType,
+  messageID?: string,
+  parameterName?: string
+) {
+  return new BooleanCriterionOption(
+    messageID ?? value,
+    value,
+    parameterName ?? messageID ?? value
+  );
+}
+
 export class NumberCriterionOption extends CriterionOption {
   constructor(
     messageID: string,

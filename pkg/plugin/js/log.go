@@ -15,7 +15,10 @@ func argToString(call otto.FunctionCall) string {
 	arg := call.Argument(0)
 	if arg.IsObject() {
 		o, _ := arg.Export()
-		data, _ := json.Marshal(o)
+		data, err := json.Marshal(o)
+		if err != nil {
+			logger.Warnf("Couldn't json encode object")
+		}
 		return string(data)
 	}
 

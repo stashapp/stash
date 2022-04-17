@@ -2,9 +2,12 @@ package code
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
+	"os"
+	"os/exec"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -13,7 +16,9 @@ var mode = packages.NeedName |
 	packages.NeedImports |
 	packages.NeedTypes |
 	packages.NeedSyntax |
-	packages.NeedTypesInfo
+	packages.NeedTypesInfo |
+	packages.NeedModule |
+	packages.NeedDeps
 
 // Packages is a wrapper around x/tools/go/packages that maintains a (hopefully prewarmed) cache of packages
 // that can be invalidated as writes are made and packages are known to change.
@@ -24,6 +29,22 @@ type Packages struct {
 
 	numLoadCalls int // stupid test steam. ignore.
 	numNameCalls int // stupid test steam. ignore.
+}
+
+// ReloadAll will call LoadAll after clearing the package cache, so we can reload
+// packages in the case that the packages have changed
+func (p *Packages) ReloadAll(importPaths ...string) []*packages.Package {
+	p.packages = nil
+	return p.LoadAll(importPaths...)
+}
+
+func (p *Packages) checkModuleLoaded(pkgs []*packages.Package) bool {
+	for i := range pkgs {
+		if pkgs[i] == nil || pkgs[i].Module == nil {
+			return false
+		}
+	}
+	return true
 }
 
 // LoadAll will call packages.Load and return the package data for the given packages,
@@ -44,6 +65,13 @@ func (p *Packages) LoadAll(importPaths ...string) []*packages.Package {
 	if len(missing) > 0 {
 		p.numLoadCalls++
 		pkgs, err := packages.Load(&packages.Config{Mode: mode}, missing...)
+
+		// Sometimes packages.Load not loaded the module info. Call it again to reload it.
+		if !p.checkModuleLoaded(pkgs) {
+			fmt.Println("reloading module info")
+			pkgs, err = packages.Load(&packages.Config{Mode: mode}, missing...)
+		}
+
 		if err != nil {
 			p.loadErrors = append(p.loadErrors, err)
 		}
@@ -72,6 +100,13 @@ func (p *Packages) addToCache(pkg *packages.Package) {
 
 // Load works the same as LoadAll, except a single package at a time.
 func (p *Packages) Load(importPath string) *packages.Package {
+	// Quick cache check first to avoid expensive allocations of LoadAll()
+	if p.packages != nil {
+		if pkg, ok := p.packages[importPath]; ok {
+			return pkg
+		}
+	}
+
 	pkgs := p.LoadAll(importPath)
 	if len(pkgs) == 0 {
 		return nil
@@ -149,6 +184,17 @@ func (p *Packages) Evict(importPath string) {
 	}
 }
 
+func (p *Packages) ModTidy() error {
+	p.packages = nil
+	tidyCmd := exec.Command("go", "mod", "tidy")
+	tidyCmd.Stdout = os.Stdout
+	tidyCmd.Stderr = os.Stdout
+	if err := tidyCmd.Run(); err != nil {
+		return fmt.Errorf("go mod tidy failed: %w", err)
+	}
+	return nil
+}
+
 // Errors returns any errors that were returned by Load, either from the call itself or any of the loaded packages.
 func (p *Packages) Errors() PkgErrors {
 	var res []error //nolint:prealloc
@@ -159,6 +205,10 @@ func (p *Packages) Errors() PkgErrors {
 		}
 	}
 	return res
+}
+
+func (p *Packages) Count() int {
+	return len(p.packages)
 }
 
 type PkgErrors []error

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared";
-import { JWUtils } from "src/utils";
+import { VIDEO_PLAYER_ID } from "src/components/ScenePlayer";
 import * as GQL from "src/core/generated-graphql";
 
 interface ISceneVideoFilterPanelProps {
@@ -109,10 +109,11 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   );
 
   function updateVideoStyle() {
-    const playerId = JWUtils.playerID;
-    const playerVideoElement = document
-      .getElementById(playerId)
-      ?.getElementsByClassName("jw-video")[0];
+    const playerVideoContainer = document.getElementById(VIDEO_PLAYER_ID);
+    const videoElements =
+      playerVideoContainer?.getElementsByTagName("video") ?? [];
+    const playerVideoElement =
+      videoElements.length > 0 ? videoElements[0] : null;
 
     if (playerVideoElement != null) {
       let styleString = "filter:";
@@ -510,11 +511,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     const sceneAspectRatio = sceneWidth / sceneHeight;
     const sceneNewAspectRatio = sceneHeight / sceneWidth;
 
-    const playerId = JWUtils.playerID;
-    const playerVideoElement = document
-      .getElementById(playerId)
-      ?.getElementsByClassName("jw-video")[0];
-
+    const playerVideoElement = document.getElementById(VIDEO_PLAYER_ID);
     const playerWidth = playerVideoElement?.clientWidth ?? 1;
     const playerHeight = playerVideoElement?.clientHeight ?? 1;
     const playerAspectRation = playerWidth / playerHeight;

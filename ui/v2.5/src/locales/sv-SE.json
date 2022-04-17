@@ -28,10 +28,12 @@
     "delete_file": "Radera fil",
     "delete_file_and_funscript": "Radera fil (och funskript)",
     "delete_generated_supporting_files": "Radera genererade filer",
+    "delete_stashid": "Radera StashID",
     "disallow": "Tillåt ej",
     "download": "Ladda ner",
     "download_backup": "Ladda ner säkerhetskopia",
     "edit": "Redigera",
+    "edit_entity": "Redigera {entityType}",
     "export": "Exportera…",
     "export_all": "Exportera alla…",
     "find": "Sök",
@@ -50,11 +52,13 @@
     "ignore": "Ignorera",
     "import": "Importera…",
     "import_from_file": "Importera från fil",
+    "logout": "Logga ut",
     "merge": "Slå samman",
     "merge_from": "Slå samman från",
     "merge_into": "Slå samman till",
     "next_action": "Nästa",
     "not_running": "körs ej",
+    "open_in_external_player": "Öppna i extern spelare",
     "open_random": "Öppna slumpad",
     "overwrite": "Ersätt",
     "play_random": "Spela slumpad",
@@ -65,6 +69,7 @@
     "reload_plugins": "Ladda om tillägg",
     "reload_scrapers": "Ladda om skrapare",
     "remove": "Ta bort",
+    "remove_from_gallery": "Ta bort från Galleri",
     "rename_gen_files": "Döp om genererade filer",
     "rescan": "Skanna om",
     "reshuffle": "Blanda om",
@@ -79,6 +84,7 @@
     "scrape_with": "Skrapa med…",
     "search": "Sök",
     "select_all": "Välj alla",
+    "select_entity": "Välj {entityType}",
     "select_folders": "Välj mappar",
     "select_none": "Välj inga",
     "selective_auto_tag": "Selektiv Auto Tag",
@@ -101,6 +107,7 @@
     },
     "temp_disable": "Inaktivera tillfälligt…",
     "temp_enable": "Aktivera tillfälligt…",
+    "unset": "Oinställ",
     "use_default": "Använd standard",
     "view_random": "Visa slumpad"
   },
@@ -193,14 +200,19 @@
     "dlna": {
       "allow_temp_ip": "Tillåt {tempIP}",
       "allowed_ip_addresses": "Tillåtna IP-adresser",
+      "allowed_ip_temporarily": "Tillåter IP temporärt",
       "default_ip_whitelist": "Standard IP-vitlista",
       "default_ip_whitelist_desc": "Standard IP-adress för att komma åt DLNA. Använd {wildcard} för att tillåta alla IP-adresser.",
+      "disabled_dlna_temporarily": "Inaktivera DLNA temporärt",
+      "disallowed_ip": "Otillåtna IP",
       "enabled_by_default": "På som standard",
+      "enabled_dlna_temporarily": "Aktivera DLNA temporärt",
       "network_interfaces": "Nätverksgränssnitt",
       "network_interfaces_desc": "Nätverksgränssnitt att visa DLNA på. En tom lista gör att DLNA kör på alla gränssnitt. Kräver DLNA-omstart efter ändring.",
       "recent_ip_addresses": "Senaste IP-adresser",
       "server_display_name": "Servers visningsnamn",
       "server_display_name_desc": "Visningsnamnet för DLNA-servern. Återgår till standard {server_name} om tom.",
+      "successfully_cancelled_temporary_behaviour": "Lyckad avbrytning av temporärt beteende",
       "until_restart": "tills omstart"
     },
     "general": {
@@ -268,6 +280,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Antal parallella jobb för skanning/generering",
       "parallel_scan_head": "Parallell Skan/Generering",
       "preview_generation": "Generera förhandsvisningar",
+      "python_path": {
+        "description": "Lokation till python. Används för skriptade skrapare och plugins. Om blank, kommer python att hanteras från den interna miljön",
+        "heading": "Python Sökväg"
+      },
       "scraper_user_agent": "Användaragent för skrapning",
       "scraper_user_agent_desc": "Användaragent-sträng som används under http-förfrågningar under skrapning",
       "scrapers_path": {
@@ -436,6 +452,9 @@
       "handy_connection_key": {
         "description": "Handy anslutningsnyckel för interaktiva scener. Denna nyckel kommer låta Stash dela din nuvarande sceninformation med handyfeeling.com",
         "heading": "Handy Uppkopplingsnyckel"
+      },
+      "image_lightbox": {
+        "heading": "Bild Ljuslåda"
       },
       "images": {
         "heading": "Bilder",
@@ -606,6 +625,8 @@
       "marker_screenshots_tooltip": "Markör statiska JPG-bilder, krävs bara om Typ av Förhandsvisning är Statisk Bild.",
       "markers": "Markörförhandsvisningar",
       "markers_tooltip": "20-sekunders videor som börjar vid angiven tidsstämpel.",
+      "override_preview_generation_options": "Åsidosätt Inställningar för Förhandsvisningsgeneration",
+      "override_preview_generation_options_desc": "Åsidosätt inställningar för Förhandsvisningsgeneration. Standarder ställs in i System -> Förhandsvisningsgeneration.",
       "overwrite": "Ersätt existerande genererade filer",
       "phash": "Perceptuella hashar (för de-duplikation)",
       "preview_exclude_end_time_desc": "Exkludera de sista x sekunderna från videoförhandsvisning. Detta kan vara ett värde i sekunder, eller en procent (ex. 2%) av scenes totala speltid.",
@@ -681,6 +702,7 @@
     "warmth": "Värme"
   },
   "ethnicity": "Etnicitet",
+  "existing_value": "existerande värde",
   "eye_color": "Ögonfärg",
   "fake_tits": "Fejkbröst",
   "false": "Falsk",
@@ -848,6 +870,10 @@
       "something_went_wrong_description": "Om det här ser ut som ett problem med dina inputs, klicka bakåt för att fixa det. Annars, vänligen skapa en buggvarning på {githublink} eller hitta hjälp på {githublink}.",
       "something_went_wrong_while_setting_up_your_system": "Något gick fel i uppstarten av ditt system. Här är felet vi fick: {error}"
     },
+    "folder": {
+      "file_path": "Filsökväg",
+      "up_dir": "Upp en mapp"
+    },
     "github_repository": "Github förvaring",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "Sökväg för databas-säkerhetskopiering (lämna blank för att inaktivera säkerhetskopiering):",
@@ -901,10 +927,7 @@
       "next_step": "När du är redo att fortsätta med uppstarten av ett nytt system tryck på Nästa.",
       "unable_to_locate_specified_config": "Om du läser detta så kunde Stash inte hitta konfigurationsfilen som specifierades via kommandoraden eller miljön. Denna hjälp kommer guida dig genom processen av att ställa in en ny konfiguration."
     },
-    "welcome_to_stash": "Välkommen till Stash",
-    "folder": {
-      "up_dir": "Upp en mapp"
-    }
+    "welcome_to_stash": "Välkommen till Stash"
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash ID:er",
