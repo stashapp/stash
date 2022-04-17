@@ -20,7 +20,6 @@ const scenesGalleriesTable = "scenes_galleries"
 const moviesScenesTable = "movies_scenes"
 
 const sceneCaptionsTable = "scene_captions"
-const captionIDColumn = "caption_id"
 const sceneCaptionColumn = "caption"
 
 var scenesForPerformerQuery = selectAll(sceneTable) + `
