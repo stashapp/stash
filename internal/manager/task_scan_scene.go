@@ -80,12 +80,14 @@ func (t *ScanTask) associateCaptions(ctx context.Context) {
 			}
 			if s != nil { // found related Scene
 				logger.Debugf("Matched captions to scene %s", s.Path)
-
-				if !scene.IsLangInCaptions(captionLang, s.Captions) { // only update captions if language code is not present
-					newCaptions := scene.AddLangToCaptions(captionLang, s.Captions)
-					er = sqb.UpdateCaptions(s.ID, newCaptions)
-					if er == nil {
-						logger.Debugf("Updated captions for scene %s. Added %s", s.Path, captionLang)
+				captions, er := sqb.GetCaptions(s.ID)
+				if er == nil {
+					if !scene.IsLangInCaptions(captionLang, captions) { // only update captions if language code is not present
+						newCaptions := scene.AddLangToCaptions(captionLang, captions)
+						er = sqb.UpdateCaptions(s.ID, newCaptions)
+						if er == nil {
+							logger.Debugf("Updated captions for scene %s. Added %s", s.Path, captionLang)
+						}
 					}
 				}
 			}

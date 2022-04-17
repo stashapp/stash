@@ -12,8 +12,6 @@ import (
 
 var CaptionExts = []string{"vtt", "srt"} // in a case where vtt and srt files are both provided prioritize vtt file due to native support
 
-const CaptionSep = "|"
-
 // to be used for captions without a language code in the filename
 // ISO 639-1 uses 2 or 3 a-z chars for codes so 00 is a safe non valid choise
 // https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
@@ -47,9 +45,8 @@ func IsValidLanguage(lang string) bool {
 
 // IsLangInCaptions returns true if lang is present
 // in the captions
-func IsLangInCaptions(lang, captions string) bool {
-	splits := strings.Split(captions, CaptionSep)
-	for _, l := range splits {
+func IsLangInCaptions(lang string, captions []string) bool {
+	for _, l := range captions {
 		if l == lang {
 			return true
 		}
@@ -59,16 +56,12 @@ func IsLangInCaptions(lang, captions string) bool {
 
 // AddLangToCaptions returns a new string with lang added to the captions
 // No duplicate checks are done, use IsLangInCaptions first if needed
-func AddLangToCaptions(lang string, captions string) string {
+func AddLangToCaptions(lang string, captions []string) []string {
 	c := captions
 	if lang == "" {
 		return c
 	}
-	if len(c) > 0 {
-		c += CaptionSep + lang
-	} else {
-		c = lang
-	}
+	c = append(c, lang)
 	return c
 }
 
@@ -106,10 +99,9 @@ func GetCaptionsLangFromPath(captionPath string) string {
 }
 
 // CleanCaptions removes non existent/accessible language codes from captions
-func CleanCaptions(fn, captions string) (cleanedCaptions string, changed bool) {
+func CleanCaptions(fn string, captions []string) (cleanedCaptions []string, changed bool) {
 	changed = false
-	langs := strings.Split(captions, CaptionSep)
-	for _, l := range langs {
+	for _, l := range captions {
 		found := false
 		for _, e := range CaptionExts {
 			f := GetCaptionPath(fn, l, e)

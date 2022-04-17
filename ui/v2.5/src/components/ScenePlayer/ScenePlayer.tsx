@@ -352,7 +352,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       if (!scene) return;
 
       if (scene.captions) {
-        var languages = scene.captions.split("|");
+        var languages = scene.captions;
         var languageCode = getDefaultLanguageCode();
 
         for (let lang of languages) {

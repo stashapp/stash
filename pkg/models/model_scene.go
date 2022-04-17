@@ -36,7 +36,6 @@ type Scene struct {
 	UpdatedAt        SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 	Interactive      bool                `db:"interactive" json:"interactive"`
 	InteractiveSpeed sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
-	Captions         string              `db:"captions" json:"captions"`
 }
 
 func (s *Scene) File() File {
@@ -121,7 +120,6 @@ type ScenePartial struct {
 	UpdatedAt        *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
 	Interactive      *bool                `db:"interactive" json:"interactive"`
 	InteractiveSpeed *sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
-	Captions         *string              `db:"captions" json:"captions"`
 }
 
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.

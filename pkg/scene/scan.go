@@ -101,13 +101,25 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		changed = true
 	}
 
-	if s.Captions != "" && scanner.DetectCaptions { // remove deleted captions
-		clean, altered := CleanCaptions(path, s.Captions)
-		if altered {
-			logger.Debugf("Captions for %s cleaned: %s -> %s", path, s.Captions, clean)
-			s.Captions = clean
-			changed = true
+	if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		var err error
+		sqb := r.Scene()
+
+		captions, er := sqb.GetCaptions(s.ID)
+		if er == nil {
+			if len(captions) > 0 && scanner.DetectCaptions {
+				clean, altered := CleanCaptions(path, captions)
+				if altered {
+					er = sqb.UpdateCaptions(s.ID, clean)
+					if er == nil {
+						logger.Debugf("Captions for %s cleaned: %s -> %s", path, captions, clean)
+					}
+				}
+			}
 		}
+		return err
+	}); err != nil {
+		logger.Error(err.Error())
 	}
 
 	if changed {

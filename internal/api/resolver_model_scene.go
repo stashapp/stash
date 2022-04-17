@@ -126,6 +126,17 @@ func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (re
 	return ret, nil
 }
 
+func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []string, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Scene().GetCaptions(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, err
+}
+
 func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) (ret []*models.Gallery, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		ret, err = repo.Gallery().FindBySceneID(obj.ID)

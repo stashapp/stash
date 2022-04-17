@@ -12,7 +12,6 @@ import { RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { InteractiveCriterionOption } from "./criteria/interactive";
-import { CaptionsCriterionOption } from "./criteria/captions";
 import {
   PerformerTagsCriterionOption,
   TagsCriterionOption,
@@ -37,7 +36,6 @@ const sortByOptions = [
   "movie_scene_number",
   "interactive",
   "interactive_speed",
-  "captions",
   "perceptual_similarity",
   ...MediaSortByOptions,
 ].map(ListFilterOptions.createSortBy);
@@ -80,7 +78,7 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
   InteractiveCriterionOption,
-  CaptionsCriterionOption,
+  createStringCriterionOption("captions"),
   createMandatoryNumberCriterionOption("interactive_speed"),
 ];
 

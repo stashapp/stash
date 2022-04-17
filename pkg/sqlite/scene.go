@@ -19,6 +19,10 @@ const scenesTagsTable = "scenes_tags"
 const scenesGalleriesTable = "scenes_galleries"
 const moviesScenesTable = "movies_scenes"
 
+const sceneCaptionsTable = "scene_captions"
+const captionIDColumn = "caption_id"
+const sceneCaptionColumn = "caption"
+
 var scenesForPerformerQuery = selectAll(sceneTable) + `
 LEFT JOIN performers_scenes as performers_join on performers_join.scene_id = scenes.id
 WHERE performers_join.performer_id = ?
@@ -127,15 +131,23 @@ func (qb *sceneQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLite
 	})
 }
 
-func (qb *sceneQueryBuilder) UpdateCaptions(id int, newCaptions string) error {
-	_, err := qb.tx.Exec(
-		`UPDATE scenes SET captions = ? WHERE scenes.id = ?`,
-		newCaptions, id,
-	)
-	if err != nil {
-		return err
+func (qb *sceneQueryBuilder) captionRepository() *stringRepository {
+	return &stringRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: sceneCaptionsTable,
+			idColumn:  sceneIDColumn,
+		},
+		stringColumn: sceneCaptionColumn,
 	}
-	return nil
+}
+
+func (qb *sceneQueryBuilder) GetCaptions(sceneID int) ([]string, error) {
+	return qb.captionRepository().get(sceneID)
+}
+
+func (qb *sceneQueryBuilder) UpdateCaptions(sceneID int, newCaptions []string) error {
+	return qb.captionRepository().replace(sceneID, newCaptions)
 }
 
 func (qb *sceneQueryBuilder) IncrementOCounter(id int) (int, error) {
@@ -396,7 +408,7 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterion(boolCriterionHandler(sceneFilter.Interactive, "scenes.interactive"))
 	query.handleCriterion(intCriterionHandler(sceneFilter.InteractiveSpeed, "scenes.interactive_speed"))
 
-	query.handleCriterion(stringCriterionHandler(sceneFilter.Captions, "scenes.captions"))
+	query.handleCriterion(sceneCaptionCriterionHandler(qb, sceneFilter.Captions))
 
 	query.handleCriterion(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
@@ -618,6 +630,18 @@ func (qb *sceneQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 		foreignFK:    foreignFK,
 		addJoinsFunc: addJoinsFunc,
 	}
+}
+
+func sceneCaptionCriterionHandler(qb *sceneQueryBuilder, captions *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    sceneCaptionsTable,
+		stringColumn: sceneCaptionColumn,
+		addJoinTable: func(f *filterBuilder) {
+			qb.captionRepository().join(f, "", "scenes.id")
+		},
+	}
+
+	return h.handler(captions)
 }
 
 func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
