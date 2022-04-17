@@ -115,7 +115,7 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 		container = t.Scene.Format.String
 	}
 
-	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container)) != nil {
+	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container)) == nil {
 		return false
 	}
 
