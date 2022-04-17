@@ -82,7 +82,7 @@ func (t *ScanTask) associateCaptions(ctx context.Context) {
 				captions, er := sqb.GetCaptions(s.ID)
 				if er == nil {
 					if !scene.IsLangInCaptions(captionLang, captions) { // only update captions if language code is not present
-						newCaptions := scene.AddLangToCaptions(captionLang, captions)
+						newCaptions := append(captions, captionLang)
 						er = sqb.UpdateCaptions(s.ID, newCaptions)
 						if er == nil {
 							logger.Debugf("Updated captions for scene %s. Added %s", s.Path, captionLang)
