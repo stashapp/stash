@@ -67,8 +67,8 @@ func (b SceneURLBuilder) GetFunscriptURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/funscript"
 }
 
-func (b SceneURLBuilder) GetCaptionURL(lang string) string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/caption?lang=" + lang
+func (b SceneURLBuilder) GetCaptionURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/caption"
 }
 
 func (b SceneURLBuilder) GetInteractiveHeatmapURL() string {

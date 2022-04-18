@@ -98,7 +98,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	spritePath := builder.GetSpriteURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
 	funscriptPath := builder.GetFunscriptURL()
-	captionBasePath := builder.GetCaptionURL("")
+	captionBasePath := builder.GetCaptionURL()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
 	return &models.ScenePathsType{
@@ -126,7 +126,7 @@ func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (re
 	return ret, nil
 }
 
-func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []string, err error) {
+func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []*models.SceneCaption, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		ret, err = repo.Scene().GetCaptions(obj.ID)
 		return err

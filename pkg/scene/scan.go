@@ -107,7 +107,7 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 		captions, er := sqb.GetCaptions(s.ID)
 		if er == nil {
 			if len(captions) > 0 && scanner.DetectCaptions {
-				clean, altered := CleanCaptions(path, captions)
+				clean, altered := CleanCaptions(captions)
 				if altered {
 					er = sqb.UpdateCaptions(s.ID, clean)
 					if er == nil {

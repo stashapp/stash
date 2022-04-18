@@ -20,7 +20,9 @@ const scenesGalleriesTable = "scenes_galleries"
 const moviesScenesTable = "movies_scenes"
 
 const sceneCaptionsTable = "scene_captions"
-const sceneCaptionColumn = "caption"
+const sceneCaptionCodeColumn = "language_code"
+const sceneCaptionPathColumn = "path"
+const sceneCaptionTypeColumn = "caption_type"
 
 var scenesForPerformerQuery = selectAll(sceneTable) + `
 LEFT JOIN performers_scenes as performers_join on performers_join.scene_id = scenes.id
@@ -130,23 +132,26 @@ func (qb *sceneQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLite
 	})
 }
 
-func (qb *sceneQueryBuilder) captionRepository() *stringRepository {
-	return &stringRepository{
+func (qb *sceneQueryBuilder) captionRepository() *captionRepository {
+	return &captionRepository{
 		repository: repository{
 			tx:        qb.tx,
 			tableName: sceneCaptionsTable,
 			idColumn:  sceneIDColumn,
 		},
-		stringColumn: sceneCaptionColumn,
+		captionCodeColumn: sceneCaptionCodeColumn,
+		captionPathColumn: sceneCaptionPathColumn,
+		captionTypeColumn: sceneCaptionTypeColumn,
 	}
 }
 
-func (qb *sceneQueryBuilder) GetCaptions(sceneID int) ([]string, error) {
+func (qb *sceneQueryBuilder) GetCaptions(sceneID int) ([]*models.SceneCaption, error) {
 	return qb.captionRepository().get(sceneID)
 }
 
-func (qb *sceneQueryBuilder) UpdateCaptions(sceneID int, newCaptions []string) error {
-	return qb.captionRepository().replace(sceneID, newCaptions)
+func (qb *sceneQueryBuilder) UpdateCaptions(sceneID int, captions []*models.SceneCaption) error {
+	return qb.captionRepository().replace(sceneID, captions)
+
 }
 
 func (qb *sceneQueryBuilder) IncrementOCounter(id int) (int, error) {
@@ -634,7 +639,7 @@ func (qb *sceneQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 func sceneCaptionCriterionHandler(qb *sceneQueryBuilder, captions *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
 		joinTable:    sceneCaptionsTable,
-		stringColumn: sceneCaptionColumn,
+		stringColumn: sceneCaptionCodeColumn,
 		addJoinTable: func(f *filterBuilder) {
 			qb.captionRepository().join(f, "", "scenes.id")
 		},

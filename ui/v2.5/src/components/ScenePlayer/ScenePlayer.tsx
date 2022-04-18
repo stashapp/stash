@@ -352,18 +352,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       if (!scene) return;
 
       if (scene.captions) {
-        var languages = scene.captions;
+        var captions = scene.captions;
         var languageCode = getDefaultLanguageCode();
 
-        for (let lang of languages) {
+        for (let caption of captions) {
+          var lang = caption.language_code;
           var label = lang;
           if (languageMap.has(lang)) {
             label = languageMap.get(lang)!;
           }
+          var caption_type = caption.caption_type
+          
+          label = label + " (" + caption_type + ")"
           var setAsDefault = languageCode == lang;
           player.addRemoteTextTrack(
             {
-              src: scene.paths.caption + lang,
+              src: scene.paths.caption + '?lang='+lang + '&type=' + caption_type,
               kind: "captions",
               srclang: lang,
               label: label,

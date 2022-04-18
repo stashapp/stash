@@ -13,7 +13,11 @@ fragment SceneData on Scene {
   phash
   interactive
   interactive_speed
-  captions
+  captions {
+    language_code
+    path
+    caption_type
+  }
   created_at
   updated_at
 

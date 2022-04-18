@@ -293,23 +293,35 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 	http.ServeFile(w, r, filepath)
 }
 
-func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string) {
+func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string, ext string) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
 
-	for _, ext := range scene.CaptionExts {
-		caption := scene.GetCaptionPath(s.Path, lang, ext)
-		sub, err := scene.ReadSubs(caption)
-		if err == nil {
-			var b bytes.Buffer
-			err = sub.WriteToWebVTT(&b)
-			if err == nil {
-				w.Header().Set("Content-Type", "text/vtt")
-				w.Header().Add("Cache-Control", "no-cache")
-				_, _ = b.WriteTo(w)
+	path := ""
+	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		var err error
+		captions, err := repo.Scene().GetCaptions(s.ID)
+		for _, caption := range captions {
+			if lang == caption.LanguageCode && ext == caption.CaptionType {
+				path = caption.Path
+
+				sub, err := scene.ReadSubs(path)
+				if err == nil {
+					var b bytes.Buffer
+					err = sub.WriteToWebVTT(&b)
+					if err == nil {
+						w.Header().Set("Content-Type", "text/vtt")
+						w.Header().Add("Cache-Control", "no-cache")
+						_, _ = b.WriteTo(w)
+					}
+					return err
+				}
+				logger.Debugf("Error while reading subs: %v", err)
 			}
-			return
 		}
-		logger.Debugf("Error while reading subs: %v", err)
+		return err
+	}); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -320,7 +332,8 @@ func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {
 	}
 
 	l := r.Form.Get("lang")
-	rs.Caption(w, r, l)
+	ext := r.Form.Get("type")
+	rs.Caption(w, r, l, ext)
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {

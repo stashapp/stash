@@ -27,6 +27,12 @@ type SceneMovie {
   scene_index: Int
 }
 
+type SceneCaption {
+  language_code: String!
+  path: String!
+  caption_type: String!
+}
+
 type Scene {
   id: ID!
   checksum: String
@@ -42,7 +48,7 @@ type Scene {
   phash: String
   interactive: Boolean!
   interactive_speed: Int
-  captions: [String!]
+  captions: [SceneCaption!]
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time

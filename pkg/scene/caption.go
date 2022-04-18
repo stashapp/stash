@@ -8,6 +8,7 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/asticode/go-astisub"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 var CaptionExts = []string{"vtt", "srt"} // in a case where vtt and srt files are both provided prioritize vtt file due to native support
@@ -45,9 +46,9 @@ func IsValidLanguage(lang string) bool {
 
 // IsLangInCaptions returns true if lang is present
 // in the captions
-func IsLangInCaptions(lang string, captions []string) bool {
-	for _, l := range captions {
-		if l == lang {
+func IsLangInCaptions(lang string, ext string, captions []*models.SceneCaption) bool {
+	for _, caption := range captions {
+		if lang == caption.LanguageCode && ext == caption.CaptionType {
 			return true
 		}
 	}
@@ -88,20 +89,17 @@ func GetCaptionsLangFromPath(captionPath string) string {
 }
 
 // CleanCaptions removes non existent/accessible language codes from captions
-func CleanCaptions(fn string, captions []string) (cleanedCaptions []string, changed bool) {
+func CleanCaptions(captions []*models.SceneCaption) (cleanedCaptions []*models.SceneCaption, changed bool) {
 	changed = false
-	for _, l := range captions {
+	for _, caption := range captions {
 		found := false
-		for _, e := range CaptionExts {
-			f := GetCaptionPath(fn, l, e)
-			if _, er := os.Stat(f); er == nil {
-				cleanedCaptions = append(cleanedCaptions, l)
-				found = true
-				break
-			}
-			if !found {
-				changed = true
-			}
+		f := caption.Path
+		if _, er := os.Stat(f); er == nil {
+			cleanedCaptions = append(cleanedCaptions, caption)
+			found = true
+		}
+		if !found {
+			changed = true
 		}
 	}
 	return

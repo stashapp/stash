@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"path/filepath"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
@@ -81,9 +82,16 @@ func (t *ScanTask) associateCaptions(ctx context.Context) {
 				logger.Debugf("Matched captions to scene %s", s.Path)
 				captions, er := sqb.GetCaptions(s.ID)
 				if er == nil {
-					if !scene.IsLangInCaptions(captionLang, captions) { // only update captions if language code is not present
-						newCaptions := append(captions, captionLang)
-						er = sqb.UpdateCaptions(s.ID, newCaptions)
+					fileExt := filepath.Ext(captionPath)
+					ext := fileExt[1:]
+					if !scene.IsLangInCaptions(captionLang, ext, captions) { // only update captions if language code is not present
+						newCaption := &models.SceneCaption{
+							LanguageCode: captionLang,
+							Path:         captionPath,
+							CaptionType:  ext,
+						}
+						captions = append(captions, newCaption)
+						er = sqb.UpdateCaptions(s.ID, captions)
 						if er == nil {
 							logger.Debugf("Updated captions for scene %s. Added %s", s.Path, captionLang)
 						}
