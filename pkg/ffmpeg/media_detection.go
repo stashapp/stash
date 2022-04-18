@@ -3,8 +3,6 @@ package ffmpeg
 import (
 	"bytes"
 	"os"
-
-	"github.com/stashapp/stash/pkg/logger"
 )
 
 // detect file format from magic file number
@@ -42,11 +40,10 @@ func containsMatroskaSignature(buf, subType []byte) bool {
 // Returns the zero-value on errors or no-match. Implements mkv or
 // webm only, as ffprobe can't distinguish between them and not all
 // browsers support mkv
-func magicContainer(filePath string) Container {
+func magicContainer(filePath string) (Container, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		logger.Errorf("[magicfile] %v", err)
-		return ""
+		return "", err
 	}
 
 	defer file.Close()
@@ -54,15 +51,14 @@ func magicContainer(filePath string) Container {
 	buf := make([]byte, 4096)
 	_, err = file.Read(buf)
 	if err != nil {
-		logger.Errorf("[magicfile] %v", err)
-		return ""
+		return "", err
 	}
 
 	if webm(buf) {
-		return Webm
+		return Webm, nil
 	}
 	if mkv(buf) {
-		return Matroska
+		return Matroska, nil
 	}
-	return ""
+	return "", nil
 }

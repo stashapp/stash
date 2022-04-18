@@ -92,7 +92,7 @@ func (m *Manager) Start(ctx context.Context, description string, e JobExec) int 
 
 	m.queue = append(m.queue, &j)
 
-	m.dispatch(&j)
+	m.dispatch(ctx, &j)
 
 	return j.ID
 }
@@ -145,7 +145,7 @@ func (m *Manager) dispatcher() {
 			}
 		}
 
-		done := m.dispatch(j)
+		done := m.dispatch(j.outerCtx, j)
 
 		// unlock the mutex and wait for the job to finish
 		m.mutex.Unlock()
@@ -169,15 +169,13 @@ func (m *Manager) newProgress(j *Job) *Progress {
 	}
 }
 
-func (m *Manager) dispatch(j *Job) (done chan struct{}) {
+func (m *Manager) dispatch(ctx context.Context, j *Job) (done chan struct{}) {
 	// assumes lock held
 	t := time.Now()
 	j.StartTime = &t
 	j.Status = StatusRunning
 
-	ctx, cancelFunc := context.WithCancel(valueOnlyContext{
-		j.outerCtx,
-	})
+	ctx, cancelFunc := context.WithCancel(valueOnlyContext{ctx})
 	j.cancelFunc = cancelFunc
 
 	done = make(chan struct{})

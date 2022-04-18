@@ -1,11 +1,10 @@
-package models
+package json
 
 import (
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -23,12 +22,7 @@ func (jt *JSONTime) UnmarshalJSON(b []byte) error {
 	}
 
 	// #731 - returning an error here causes the entire JSON parse to fail for ffprobe.
-	// Changing so that it logs a warning instead.
-	var err error
-	jt.Time, err = utils.ParseDateStringAsTime(s)
-	if err != nil {
-		logger.Warnf("error unmarshalling JSONTime: %s", err.Error())
-	}
+	jt.Time, _ = utils.ParseDateStringAsTime(s)
 	return nil
 }
 

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -16,8 +17,8 @@ import (
 // of cover image.
 func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Scene, error) {
 	newSceneJSON := jsonschema.Scene{
-		CreatedAt: models.JSONTime{Time: scene.CreatedAt.Timestamp},
-		UpdatedAt: models.JSONTime{Time: scene.UpdatedAt.Timestamp},
+		CreatedAt: json.JSONTime{Time: scene.CreatedAt.Timestamp},
+		UpdatedAt: json.JSONTime{Time: scene.UpdatedAt.Timestamp},
 	}
 
 	if scene.Checksum.Valid {
@@ -85,7 +86,7 @@ func getSceneFileJSON(scene *models.Scene) *jsonschema.SceneFile {
 	ret := &jsonschema.SceneFile{}
 
 	if scene.FileModTime.Valid {
-		ret.ModTime = models.JSONTime{Time: scene.FileModTime.Timestamp}
+		ret.ModTime = json.JSONTime{Time: scene.FileModTime.Timestamp}
 	}
 
 	if scene.Size.Valid {
@@ -268,8 +269,8 @@ func GetSceneMarkersJSON(markerReader models.SceneMarkerReader, tagReader models
 			Seconds:    getDecimalString(sceneMarker.Seconds),
 			PrimaryTag: primaryTag.Name,
 			Tags:       getTagNames(sceneMarkerTags),
-			CreatedAt:  models.JSONTime{Time: sceneMarker.CreatedAt.Timestamp},
-			UpdatedAt:  models.JSONTime{Time: sceneMarker.UpdatedAt.Timestamp},
+			CreatedAt:  json.JSONTime{Time: sceneMarker.CreatedAt.Timestamp},
+			UpdatedAt:  json.JSONTime{Time: sceneMarker.UpdatedAt.Timestamp},
 		}
 
 		results = append(results, sceneMarkerJSON)

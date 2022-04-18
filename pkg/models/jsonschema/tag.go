@@ -5,17 +5,17 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 )
 
 type Tag struct {
-	Name          string          `json:"name,omitempty"`
-	Aliases       []string        `json:"aliases,omitempty"`
-	Image         string          `json:"image,omitempty"`
-	Parents       []string        `json:"parents,omitempty"`
-	IgnoreAutoTag bool            `json:"ignore_auto_tag,omitempty"`
-	CreatedAt     models.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt     models.JSONTime `json:"updated_at,omitempty"`
+	Name          string        `json:"name,omitempty"`
+	Aliases       []string      `json:"aliases,omitempty"`
+	Image         string        `json:"image,omitempty"`
+	Parents       []string      `json:"parents,omitempty"`
+	IgnoreAutoTag bool          `json:"ignore_auto_tag,omitempty"`
+	CreatedAt     json.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt     json.JSONTime `json:"updated_at,omitempty"`
 }
 
 func LoadTagFile(filePath string) (*Tag, error) {

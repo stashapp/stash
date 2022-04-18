@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/hash/videophash"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -26,26 +27,20 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 	}
 
 	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return
 	}
 
-	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
-	generator, err := NewPhashGenerator(*videoFile, sceneHash)
-
-	if err != nil {
-		logger.Errorf("error creating phash generator: %s", err.Error())
-		return
-	}
-	hash, err := generator.Generate()
+	hash, err := videophash.Generate(instance.FFMPEG, videoFile)
 	if err != nil {
 		logger.Errorf("error generating phash: %s", err.Error())
+		logErrorOutput(err)
 		return
 	}
 
-	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 		qb := r.Scene()
 		hashValue := sql.NullInt64{Int64: int64(*hash), Valid: true}
 		scenePartial := models.ScenePartial{

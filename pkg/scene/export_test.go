@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/utils"
@@ -175,10 +176,10 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 			VideoCodec: videoCodec,
 			Width:      width,
 		},
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 		Cover: image,
@@ -191,10 +192,10 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 func createEmptyJSONScene() *jsonschema.Scene {
 	return &jsonschema.Scene{
 		File: &jsonschema.SceneFile{},
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 	}
@@ -508,10 +509,10 @@ var getSceneMarkersJSONScenarios = []sceneMarkersTestScenario{
 					validTagName1,
 					validTagName2,
 				},
-				CreatedAt: models.JSONTime{
+				CreatedAt: json.JSONTime{
 					Time: createTime,
 				},
-				UpdatedAt: models.JSONTime{
+				UpdatedAt: json.JSONTime{
 					Time: updateTime,
 				},
 			},
@@ -522,10 +523,10 @@ var getSceneMarkersJSONScenarios = []sceneMarkersTestScenario{
 				Tags: []string{
 					validTagName2,
 				},
-				CreatedAt: models.JSONTime{
+				CreatedAt: json.JSONTime{
 					Time: createTime,
 				},
-				UpdatedAt: models.JSONTime{
+				UpdatedAt: json.JSONTime{
 					Time: updateTime,
 				},
 			},
