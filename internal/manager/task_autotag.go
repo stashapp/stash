@@ -472,7 +472,7 @@ func (t *autoTagFilesTask) getCount(ctx context.Context, r models.Repository) (i
 }
 
 func (t *autoTagFilesTask) processScenes(ctx context.Context, r models.Repository) error {
-	if job.IsCancelled(t.ctx) {
+	if job.IsCancelled(ctx) {
 		return nil
 	}
 
@@ -525,7 +525,7 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context, r models.Repositor
 }
 
 func (t *autoTagFilesTask) processImages(ctx context.Context, r models.Repository) error {
-	if job.IsCancelled(t.ctx) {
+	if job.IsCancelled(ctx) {
 		return nil
 	}
 
@@ -578,7 +578,7 @@ func (t *autoTagFilesTask) processImages(ctx context.Context, r models.Repositor
 }
 
 func (t *autoTagFilesTask) processGalleries(ctx context.Context, r models.Repository) error {
-	if job.IsCancelled(t.ctx) {
+	if job.IsCancelled(ctx) {
 		return nil
 	}
 
@@ -630,7 +630,7 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context, r models.Reposi
 	return nil
 }
 
-func (t *autoTagFilesTask) process() {
+func (t *autoTagFilesTask) process(ctx context.Context) {
 	r := t.txnManager
 	if err := r.WithTxn(ctx, func(ctx context.Context) error {
 		total, err := t.getCount(ctx, t.txnManager)
