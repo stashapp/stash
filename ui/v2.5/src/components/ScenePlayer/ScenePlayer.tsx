@@ -350,7 +350,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function loadCaptions(player: VideoJsPlayer) {
       if (!scene) return;
-      var hasDefault = false
+      var hasDefault = false;
 
       if (scene.captions) {
         var languageCode = getDefaultLanguageCode();
