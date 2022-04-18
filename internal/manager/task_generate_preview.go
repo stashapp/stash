@@ -4,20 +4,22 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
 type GeneratePreviewTask struct {
 	Scene        models.Scene
 	ImagePreview bool
 
-	Options models.GeneratePreviewOptionsInput
+	Options generate.PreviewOptions
 
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
+
+	generator *generate.Generator
 }
 
 func (t *GeneratePreviewTask) GetDescription() string {
@@ -25,41 +27,49 @@ func (t *GeneratePreviewTask) GetDescription() string {
 }
 
 func (t *GeneratePreviewTask) Start(ctx context.Context) {
-	videoFilename := t.videoFilename()
-	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
-	imageFilename := t.imageFilename()
-
 	if !t.Overwrite && !t.required() {
 		return
 	}
 
 	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
 	if err != nil {
-		logger.Errorf("error reading video file: %s", err.Error())
+		logger.Errorf("error reading video file: %v", err)
 		return
 	}
 
-	const generateVideo = true
-	generator, err := NewPreviewGenerator(*videoFile, videoChecksum, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, generateVideo, t.ImagePreview, t.Options.PreviewPreset.String())
+	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
 
-	if err != nil {
-		logger.Errorf("error creating preview generator: %s", err.Error())
+	if err := t.generateVideo(videoChecksum, videoFile.Duration); err != nil {
+		logger.Errorf("error generating preview: %v", err)
+		logErrorOutput(err)
 		return
 	}
-	generator.Overwrite = t.Overwrite
 
-	// set the preview generation configuration from the global config
-	generator.Info.ChunkCount = *t.Options.PreviewSegments
-	generator.Info.ChunkDuration = *t.Options.PreviewSegmentDuration
-	generator.Info.ExcludeStart = *t.Options.PreviewExcludeStart
-	generator.Info.ExcludeEnd = *t.Options.PreviewExcludeEnd
-	generator.Info.Audio = config.GetInstance().GetPreviewAudio()
-
-	if err := generator.Generate(); err != nil {
-		logger.Errorf("error generating preview: %s", err.Error())
-		return
+	if t.ImagePreview {
+		if err := t.generateWebp(videoChecksum); err != nil {
+			logger.Errorf("error generating preview webp: %v", err)
+			logErrorOutput(err)
+		}
 	}
+}
+
+func (t GeneratePreviewTask) generateVideo(videoChecksum string, videoDuration float64) error {
+	videoFilename := t.Scene.Path
+
+	if err := t.generator.PreviewVideo(context.TODO(), videoFilename, videoDuration, videoChecksum, t.Options, true); err != nil {
+		logger.Warnf("[generator] failed generating scene preview, trying fallback")
+		if err := t.generator.PreviewVideo(context.TODO(), videoFilename, videoDuration, videoChecksum, t.Options, true); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (t GeneratePreviewTask) generateWebp(videoChecksum string) error {
+	videoFilename := t.Scene.Path
+	return t.generator.PreviewWebp(context.TODO(), videoFilename, videoChecksum)
 }
 
 func (t GeneratePreviewTask) required() bool {
@@ -74,7 +84,7 @@ func (t *GeneratePreviewTask) doesVideoPreviewExist(sceneChecksum string) bool {
 		return false
 	}
 
-	videoExists, _ := fsutil.FileExists(instance.Paths.Scene.GetStreamPreviewPath(sceneChecksum))
+	videoExists, _ := fsutil.FileExists(instance.Paths.Scene.GetVideoPreviewPath(sceneChecksum))
 	return videoExists
 }
 
@@ -83,14 +93,6 @@ func (t *GeneratePreviewTask) doesImagePreviewExist(sceneChecksum string) bool {
 		return false
 	}
 
-	imageExists, _ := fsutil.FileExists(instance.Paths.Scene.GetStreamPreviewImagePath(sceneChecksum))
+	imageExists, _ := fsutil.FileExists(instance.Paths.Scene.GetWebpPreviewPath(sceneChecksum))
 	return imageExists
-}
-
-func (t *GeneratePreviewTask) videoFilename() string {
-	return t.Scene.GetHash(t.fileNamingAlgorithm) + ".mp4"
-}
-
-func (t *GeneratePreviewTask) imageFilename() string {
-	return t.Scene.GetHash(t.fileNamingAlgorithm) + ".webp"
 }

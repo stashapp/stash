@@ -6,9 +6,9 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
 type GenerateTranscodeTask struct {
@@ -18,6 +18,8 @@ type GenerateTranscodeTask struct {
 
 	// is true, generate even if video is browser-supported
 	Force bool
+
+	g *generate.Generator
 }
 
 func (t *GenerateTranscodeTask) GetDescription() string {
@@ -33,65 +35,60 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 	ffprobe := instance.FFProbe
 	var container ffmpeg.Container
 
-	if t.Scene.Format.Valid {
-		container = ffmpeg.Container(t.Scene.Format.String)
-	} else { // container isn't in the DB
-		// shouldn't happen unless user hasn't scanned after updating to PR#384+ version
-		tmpVideoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
-		if err != nil {
-			logger.Errorf("[transcode] error reading video file: %s", err.Error())
-			return
-		}
-
-		container = ffmpeg.MatchContainer(tmpVideoFile.Container, t.Scene.Path)
+	var err error
+	container, err = GetSceneFileContainer(&t.Scene)
+	if err != nil {
+		logger.Errorf("[transcode] error getting scene container: %s", err.Error())
+		return
 	}
 
 	videoCodec := t.Scene.VideoCodec.String
 	audioCodec := ffmpeg.MissingUnsupported
 	if t.Scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.AudioCodec(t.Scene.AudioCodec.String)
+		audioCodec = ffmpeg.ProbeAudioCodec(t.Scene.AudioCodec.String)
 	}
 
-	if !t.Force && ffmpeg.IsStreamable(videoCodec, audioCodec, container) {
+	if !t.Force && ffmpeg.IsStreamable(videoCodec, audioCodec, container) == nil {
 		return
 	}
 
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
+	// TODO - move transcode generation logic elsewhere
+
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
 	if err != nil {
 		logger.Errorf("[transcode] error reading video file: %s", err.Error())
 		return
 	}
 
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
-	outputPath := instance.Paths.Generated.GetTmpPath(sceneHash + ".mp4")
 	transcodeSize := config.GetInstance().GetMaxTranscodeSize()
-	options := ffmpeg.TranscodeOptions{
-		OutputPath:       outputPath,
-		MaxTranscodeSize: transcodeSize,
+
+	w, h := videoFile.TranscodeScale(transcodeSize.GetMaxResolution())
+
+	options := generate.TranscodeOptions{
+		Width:  w,
+		Height: h,
 	}
-	encoder := instance.FFMPEG
 
 	if videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
 		if audioCodec == ffmpeg.MissingUnsupported {
-			encoder.CopyVideo(*videoFile, options)
+			err = t.g.TranscodeCopyVideo(context.TODO(), videoFile.Path, sceneHash, options)
 		} else {
-			encoder.TranscodeAudio(*videoFile, options)
+			err = t.g.TranscodeAudio(context.TODO(), videoFile.Path, sceneHash, options)
 		}
 	} else {
 		if audioCodec == ffmpeg.MissingUnsupported {
-			// ffmpeg fails if it trys to transcode an unsupported audio codec
-			encoder.TranscodeVideo(*videoFile, options)
+			// ffmpeg fails if it tries to transcode an unsupported audio codec
+			err = t.g.TranscodeVideo(context.TODO(), videoFile.Path, sceneHash, options)
 		} else {
-			encoder.Transcode(*videoFile, options)
+			err = t.g.Transcode(context.TODO(), videoFile.Path, sceneHash, options)
 		}
 	}
 
-	if err := fsutil.SafeMove(outputPath, instance.Paths.Scene.GetTranscodePath(sceneHash)); err != nil {
-		logger.Errorf("[transcode] error generating transcode: %s", err.Error())
+	if err != nil {
+		logger.Errorf("[transcode] error generating transcode: %v", err)
 		return
 	}
-
-	logger.Debugf("[transcode] <%s> created transcode: %s", sceneHash, outputPath)
 }
 
 // return true if transcode is needed
@@ -111,14 +108,14 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 	container := ""
 	audioCodec := ffmpeg.MissingUnsupported
 	if t.Scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.AudioCodec(t.Scene.AudioCodec.String)
+		audioCodec = ffmpeg.ProbeAudioCodec(t.Scene.AudioCodec.String)
 	}
 
 	if t.Scene.Format.Valid {
 		container = t.Scene.Format.String
 	}
 
-	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container)) {
+	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container)) == nil {
 		return false
 	}
 

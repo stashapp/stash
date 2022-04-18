@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -11,8 +12,8 @@ import (
 // ToJSON converts a Movie into its JSON equivalent.
 func ToJSON(reader models.MovieReader, studioReader models.StudioReader, movie *models.Movie) (*jsonschema.Movie, error) {
 	newMovieJSON := jsonschema.Movie{
-		CreatedAt: models.JSONTime{Time: movie.CreatedAt.Timestamp},
-		UpdatedAt: models.JSONTime{Time: movie.UpdatedAt.Timestamp},
+		CreatedAt: json.JSONTime{Time: movie.CreatedAt.Timestamp},
+		UpdatedAt: json.JSONTime{Time: movie.UpdatedAt.Timestamp},
 	}
 
 	if movie.Name.Valid {

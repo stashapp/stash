@@ -37,8 +37,10 @@ type singleton struct {
 
 	Paths *paths.Paths
 
-	FFMPEG  ffmpeg.Encoder
+	FFMPEG  ffmpeg.FFMpeg
 	FFProbe ffmpeg.FFProbe
+
+	ReadLockManager *fsutil.ReadLockManager
 
 	SessionStore *session.Store
 
@@ -77,10 +79,11 @@ func Initialize() *singleton {
 		initProfiling(cfg.GetCPUProfilePath())
 
 		instance = &singleton{
-			Config:        cfg,
-			Logger:        l,
-			DownloadStore: NewDownloadStore(),
-			PluginCache:   plugin.NewCache(cfg),
+			Config:          cfg,
+			Logger:          l,
+			ReadLockManager: fsutil.NewReadLockManager(),
+			DownloadStore:   NewDownloadStore(),
+			PluginCache:     plugin.NewCache(cfg),
 
 			TxnManager: sqlite.NewTransactionManager(),
 
@@ -218,7 +221,7 @@ func initFFMPEG(ctx context.Context) error {
 			}
 		}
 
-		instance.FFMPEG = ffmpeg.Encoder(ffmpegPath)
+		instance.FFMPEG = ffmpeg.FFMpeg(ffmpegPath)
 		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
 	}
 
