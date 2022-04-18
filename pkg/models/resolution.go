@@ -168,3 +168,16 @@ func (e *StreamingResolutionEnum) UnmarshalGQL(v interface{}) error {
 func (e StreamingResolutionEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
+
+var streamingResolutionMax = map[StreamingResolutionEnum]int{
+	StreamingResolutionEnumLow:        resolutionRanges[ResolutionEnumLow].min,
+	StreamingResolutionEnumStandard:   resolutionRanges[ResolutionEnumStandard].min,
+	StreamingResolutionEnumStandardHd: resolutionRanges[ResolutionEnumStandardHd].min,
+	StreamingResolutionEnumFullHd:     resolutionRanges[ResolutionEnumFullHd].min,
+	StreamingResolutionEnumFourK:      resolutionRanges[ResolutionEnumFourK].min,
+	StreamingResolutionEnumOriginal:   0,
+}
+
+func (e StreamingResolutionEnum) GetMaxResolution() int {
+	return streamingResolutionMax[e]
+}

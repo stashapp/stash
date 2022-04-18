@@ -141,7 +141,7 @@ func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty Scrape
 			}
 		}
 	case ScrapeContentTypeScene:
-		var scenes []models.ScrapedScene
+		var scenes []ScrapedScene
 		err = s.runScraperScript(ctx, input, &scenes)
 		if err == nil {
 			for _, s := range scenes {
