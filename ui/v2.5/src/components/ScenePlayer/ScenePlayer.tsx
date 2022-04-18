@@ -350,6 +350,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function loadCaptions(player: VideoJsPlayer) {
       if (!scene) return;
+      var hasDefault = false
 
       if (scene.captions) {
         var languageCode = getDefaultLanguageCode();
@@ -362,7 +363,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           }
 
           label = label + " (" + caption.caption_type + ")";
-          var setAsDefault = languageCode == lang;
+          var setAsDefault = !hasDefault && languageCode == lang;
+          if (!hasDefault && setAsDefault) {
+            hasDefault = true;
+          }
           player.addRemoteTextTrack(
             {
               src:
