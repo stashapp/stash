@@ -88,8 +88,8 @@ type DraftEntity struct {
 	ID   *string `json:"id,omitempty"`
 }
 
-func (DraftEntity) IsSceneDraftStudio()    {}
 func (DraftEntity) IsSceneDraftPerformer() {}
+func (DraftEntity) IsSceneDraftStudio()    {}
 func (DraftEntity) IsSceneDraftTag()       {}
 
 type DraftEntityInput struct {
@@ -348,8 +348,8 @@ type Performer struct {
 	Updated         time.Time           `json:"updated"`
 }
 
-func (Performer) IsEditTarget()          {}
 func (Performer) IsSceneDraftPerformer() {}
+func (Performer) IsEditTarget()          {}
 
 type PerformerAppearance struct {
 	Performer *Performer `json:"performer,omitempty"`
@@ -681,18 +681,6 @@ type SceneDraft struct {
 
 func (SceneDraft) IsDraftData() {}
 
-type SceneDraftInput struct {
-	Title        *string             `json:"title,omitempty"`
-	Details      *string             `json:"details,omitempty"`
-	URL          *string             `json:"url,omitempty"`
-	Date         *string             `json:"date,omitempty"`
-	Studio       *DraftEntityInput   `json:"studio,omitempty"`
-	Performers   []*DraftEntityInput `json:"performers,omitempty"`
-	Tags         []*DraftEntityInput `json:"tags,omitempty"`
-	Image        *graphql.Upload     `json:"image,omitempty"`
-	Fingerprints []*FingerprintInput `json:"fingerprints,omitempty"`
-}
-
 type SceneEdit struct {
 	Title       *string `json:"title,omitempty"`
 	Details     *string `json:"details,omitempty"`
@@ -845,8 +833,8 @@ type Studio struct {
 	Updated      time.Time `json:"updated"`
 }
 
-func (Studio) IsEditTarget()       {}
 func (Studio) IsSceneDraftStudio() {}
+func (Studio) IsEditTarget()       {}
 
 type StudioCreateInput struct {
 	Name     string      `json:"name"`
@@ -921,8 +909,8 @@ type Tag struct {
 	Updated     time.Time    `json:"updated"`
 }
 
-func (Tag) IsEditTarget()    {}
 func (Tag) IsSceneDraftTag() {}
+func (Tag) IsEditTarget()    {}
 
 type TagCategory struct {
 	ID          string       `json:"id"`

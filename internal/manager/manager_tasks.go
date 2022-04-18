@@ -131,34 +131,6 @@ func (s *singleton) RunSingleTask(ctx context.Context, t Task) int {
 	return s.JobManager.Add(ctx, t.GetDescription(), j)
 }
 
-func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsInput) {
-	config := config.GetInstance()
-	if optionsInput.PreviewSegments == nil {
-		val := config.GetPreviewSegments()
-		optionsInput.PreviewSegments = &val
-	}
-
-	if optionsInput.PreviewSegmentDuration == nil {
-		val := config.GetPreviewSegmentDuration()
-		optionsInput.PreviewSegmentDuration = &val
-	}
-
-	if optionsInput.PreviewExcludeStart == nil {
-		val := config.GetPreviewExcludeStart()
-		optionsInput.PreviewExcludeStart = &val
-	}
-
-	if optionsInput.PreviewExcludeEnd == nil {
-		val := config.GetPreviewExcludeEnd()
-		optionsInput.PreviewExcludeEnd = &val
-	}
-
-	if optionsInput.PreviewPreset == nil {
-		val := config.GetPreviewPreset()
-		optionsInput.PreviewPreset = &val
-	}
-}
-
 func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataInput) (int, error) {
 	if err := s.validateFFMPEG(); err != nil {
 		return 0, err
