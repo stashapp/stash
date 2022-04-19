@@ -2,7 +2,6 @@ package image
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 
@@ -68,26 +67,26 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	}
 
 	if imageJSON.Title != "" {
-		newImage.Title = sql.NullString{String: imageJSON.Title, Valid: true}
+		newImage.Title = &imageJSON.Title
 	}
 	if imageJSON.Rating != 0 {
-		newImage.Rating = sql.NullInt64{Int64: int64(imageJSON.Rating), Valid: true}
+		newImage.Rating = &imageJSON.Rating
 	}
 
 	newImage.Organized = imageJSON.Organized
 	newImage.OCounter = imageJSON.OCounter
-	newImage.CreatedAt = models.SQLiteTimestamp{Timestamp: imageJSON.CreatedAt.GetTime()}
-	newImage.UpdatedAt = models.SQLiteTimestamp{Timestamp: imageJSON.UpdatedAt.GetTime()}
+	newImage.CreatedAt = imageJSON.CreatedAt.GetTime()
+	newImage.UpdatedAt = imageJSON.UpdatedAt.GetTime()
 
 	if imageJSON.File != nil {
 		if imageJSON.File.Size != 0 {
-			newImage.Size = sql.NullInt64{Int64: int64(imageJSON.File.Size), Valid: true}
+			newImage.Size = &imageJSON.File.Size
 		}
 		if imageJSON.File.Width != 0 {
-			newImage.Width = sql.NullInt64{Int64: int64(imageJSON.File.Width), Valid: true}
+			newImage.Width = &imageJSON.File.Width
 		}
 		if imageJSON.File.Height != 0 {
-			newImage.Height = sql.NullInt64{Int64: int64(imageJSON.File.Height), Valid: true}
+			newImage.Height = &imageJSON.File.Height
 		}
 	}
 
@@ -115,13 +114,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
-				i.image.StudioID = sql.NullInt64{
-					Int64: int64(studioID),
-					Valid: true,
-				}
+				i.image.StudioID = &studioID
 			}
 		} else {
-			i.image.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			i.image.StudioID = &studio.ID
 		}
 	}
 

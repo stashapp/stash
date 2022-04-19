@@ -572,8 +572,8 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 		newImageJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
-			if s.StudioID.Valid {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
+			if s.StudioID != nil {
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *s.StudioID)
 			}
 
 			t.galleries.IDs = intslice.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))

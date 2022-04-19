@@ -22,10 +22,16 @@ autobind:
   - github.com/stashapp/stash/pkg/scraper/stashbox
 
 models:
-  # autobind on config causes generation issues
   # Scalars
   Timestamp:
     model: github.com/stashapp/stash/pkg/models.Timestamp
+  # define to force resolvers
+  Image:
+    model: github.com/stashapp/stash/pkg/models.Image
+    fields:
+      title:
+        resolver: true
+  # autobind on config causes generation issues
   StashConfig:
     model: github.com/stashapp/stash/internal/manager/config.StashConfig
   StashConfigInput:

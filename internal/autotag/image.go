@@ -31,7 +31,7 @@ func ImagePerformers(ctx context.Context, s *models.Image, rw image.PerformerUpd
 //
 // Images will not be tagged if studio is already set.
 func ImageStudios(ctx context.Context, s *models.Image, rw ImageFinderUpdater, studioReader match.StudioAutoTagQueryer, cache *match.Cache) error {
-	if s.StudioID.Valid {
+	if s.StudioID != nil {
 		// don't modify
 		return nil
 	}

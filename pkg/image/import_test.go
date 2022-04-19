@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const (
+var (
 	path = "path"
 
 	imageNameErr = "imageNameErr"
@@ -86,7 +86,7 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.image.StudioID.Int64)
+	assert.Equal(t, existingStudioID, *i.image.StudioID)
 
 	i.Input.Studio = existingStudioErr
 	err = i.PreImport(testCtx)
@@ -122,7 +122,7 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.image.StudioID.Int64)
+	assert.Equal(t, existingStudioID, *i.image.StudioID)
 
 	studioReaderWriter.AssertExpectations(t)
 }
@@ -503,11 +503,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.ImageReaderWriter{}
 
 	image := models.Image{
-		Title: models.NullString(title),
+		Title: &title,
 	}
 
 	imageErr := models.Image{
-		Title: models.NullString(imageNameErr),
+		Title: &imageNameErr,
 	}
 
 	i := Importer{
@@ -538,11 +538,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.ImageReaderWriter{}
 
 	image := models.Image{
-		Title: models.NullString(title),
+		Title: &title,
 	}
 
 	imageErr := models.Image{
-		Title: models.NullString(imageNameErr),
+		Title: &imageNameErr,
 	}
 
 	i := Importer{

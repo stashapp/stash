@@ -74,7 +74,7 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 
 	if changed {
 		i.SetFile(*scanned.New)
-		i.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		i.UpdatedAt = time.Now()
 
 		// we are operating on a checksum now, so grab a mutex on the checksum
 		done := make(chan struct{})
@@ -173,12 +173,12 @@ func (scanner *Scanner) ScanNew(ctx context.Context, f file.SourceFile) (retImag
 		logger.Infof("%s doesn't exist. Creating new item...", pathDisplayName)
 		currentTime := time.Now()
 		newImage := models.Image{
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			CreatedAt: currentTime,
+			UpdatedAt: currentTime,
 		}
 		newImage.SetFile(*scanned)
-		newImage.Title.String = GetFilename(&newImage, scanner.StripFileExtension)
-		newImage.Title.Valid = true
+		fn := GetFilename(&newImage, scanner.StripFileExtension)
+		newImage.Title = &fn
 
 		if err := SetFileDetails(&newImage); err != nil {
 			logger.Error(err.Error())

@@ -42,7 +42,7 @@ func addImageStudio(ctx context.Context, imageWriter ImageFinderUpdater, imageID
 		return false, err
 	}
 
-	if image.StudioID.Valid {
+	if image.StudioID != nil {
 		return false, nil
 	}
 

@@ -38,15 +38,15 @@ const (
 	// errFindByMarkerID   = 19
 )
 
-const (
-	checksum  = "checksum"
-	title     = "title"
-	rating    = 5
-	organized = true
-	ocounter  = 2
-	size      = 123
-	width     = 100
-	height    = 100
+var (
+	checksum        = "checksum"
+	title           = "title"
+	rating          = 5
+	organized       = true
+	ocounter        = 2
+	size      int64 = 123
+	width           = 100
+	height          = 100
 )
 
 const (
@@ -62,20 +62,16 @@ var (
 func createFullImage(id int) models.Image {
 	return models.Image{
 		ID:        id,
-		Title:     models.NullString(title),
+		Title:     &title,
 		Checksum:  checksum,
-		Height:    models.NullInt64(height),
+		Height:    &height,
 		OCounter:  ocounter,
-		Rating:    models.NullInt64(rating),
-		Size:      models.NullInt64(int64(size)),
+		Rating:    &rating,
+		Size:      &size,
 		Organized: organized,
-		Width:     models.NullInt64(width),
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		Width:     &width,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
@@ -123,7 +119,7 @@ func TestToJSON(t *testing.T) {
 
 func createStudioImage(studioID int) models.Image {
 	return models.Image{
-		StudioID: models.NullInt64(int64(studioID)),
+		StudioID: &studioID,
 	}
 }
 

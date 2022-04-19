@@ -10,7 +10,7 @@ import (
 
 type ImageFile struct {
 	ModTime json.JSONTime `json:"mod_time,omitempty"`
-	Size    int           `json:"size"`
+	Size    int64         `json:"size"`
 	Width   int           `json:"width"`
 	Height  int           `json:"height"`
 }
