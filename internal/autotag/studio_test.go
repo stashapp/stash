@@ -166,7 +166,7 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 
 	mockImageReader := &mocks.ImageReaderWriter{}
 
-	const studioID = 2
+	var studioID = 2
 
 	var aliases []string
 
@@ -227,9 +227,8 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 	for i := range matchingPaths {
 		imageID := i + 1
 		mockImageReader.On("Find", testCtx, imageID).Return(&models.Image{}, nil).Once()
-		expectedStudioID := models.NullInt64(studioID)
-		mockImageReader.On("Update", testCtx, models.ImagePartial{
-			ID:       imageID,
+		expectedStudioID := &studioID
+		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
 			StudioID: &expectedStudioID,
 		}).Return(nil, nil).Once()
 	}

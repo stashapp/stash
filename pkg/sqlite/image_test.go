@@ -5,7 +5,6 @@ package sqlite_test
 
 import (
 	"context"
-	"database/sql"
 	"strconv"
 	"testing"
 
@@ -33,10 +32,8 @@ func TestImageFind(t *testing.T) {
 		imageID = 0
 		image, err = sqb.Find(ctx, imageID)
 
-		if err != nil {
-			t.Errorf("Error finding image: %s", err.Error())
-		}
-
+		// expect error when finding non-existing image
+		assert.NotNil(t, err)
 		assert.Nil(t, image)
 
 		return nil
@@ -253,7 +250,7 @@ func TestImageQueryPathAndRating(t *testing.T) {
 
 		assert.Len(t, images, 1)
 		assert.Equal(t, imagePath, images[0].Path)
-		assert.Equal(t, imageRating.Int64, images[0].Rating.Int64)
+		assert.Equal(t, int(imageRating.Int64), *images[0].Rating)
 
 		return nil
 	})
@@ -289,7 +286,7 @@ func TestImageQueryPathNotRating(t *testing.T) {
 		for _, image := range images {
 			verifyString(t, image.Path, pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyInt64(t, image.Rating, ratingCriterion)
+			verifyIntPtr(t, image.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -370,7 +367,7 @@ func verifyImagesRating(t *testing.T, ratingCriterion models.IntCriterionInput) 
 		}
 
 		for _, image := range images {
-			verifyInt64(t, image.Rating, ratingCriterion)
+			verifyIntPtr(t, image.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -448,9 +445,14 @@ func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 	})
 }
 
-func verifyImageResolution(t *testing.T, height sql.NullInt64, resolution models.ResolutionEnum) {
+func verifyImageResolution(t *testing.T, height *int, resolution models.ResolutionEnum) {
+	if !resolution.IsValid() {
+		return
+	}
+
 	assert := assert.New(t)
-	h := height.Int64
+	assert.NotNil(height)
+	h := *height
 
 	switch resolution {
 	case models.ResolutionEnumLow:
@@ -622,9 +624,9 @@ func TestImageQueryIsMissingRating(t *testing.T) {
 
 		assert.True(t, len(images) > 0)
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure rating is null
 		for _, image := range images {
-			assert.True(t, !image.Rating.Valid)
+			assert.Nil(t, image.Rating)
 		}
 
 		return nil

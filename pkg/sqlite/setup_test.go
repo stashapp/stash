@@ -605,6 +605,15 @@ func getRating(index int) sql.NullInt64 {
 	return sql.NullInt64{Int64: int64(rating), Valid: rating > 0}
 }
 
+func getIntPtr(r sql.NullInt64) *int {
+	if !r.Valid {
+		return nil
+	}
+
+	v := int(r.Int64)
+	return &v
+}
+
 func getOCounter(index int) int {
 	return index % 3
 }
@@ -688,23 +697,25 @@ func getImagePath(index int) string {
 
 func createImages(ctx context.Context, qb models.ImageReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
+		title := getImageStringValue(i, titleField)
+
 		image := models.Image{
 			Path:     getImagePath(i),
-			Title:    sql.NullString{String: getImageStringValue(i, titleField), Valid: true},
+			Title:    &title,
 			Checksum: getImageStringValue(i, checksumField),
-			Rating:   getRating(i),
+			Rating:   getIntPtr(getRating(i)),
 			OCounter: getOCounter(i),
-			Height:   getHeight(i),
-			Width:    getWidth(i),
+			Height:   getIntPtr(getHeight(i)),
+			Width:    getIntPtr(getWidth(i)),
 		}
 
-		created, err := qb.Create(ctx, image)
+		err := qb.Create(ctx, &image)
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())
 		}
 
-		imageIDs = append(imageIDs, created.ID)
+		imageIDs = append(imageIDs, image.ID)
 	}
 
 	return nil
@@ -1224,15 +1235,11 @@ func linkImageTags(ctx context.Context, iqb models.ImageReaderWriter) error {
 	})
 }
 
-func linkImageStudios(ctx context.Context, qb models.ImageWriter) error {
+func linkImageStudios(ctx context.Context, qb models.ImageReaderWriter) error {
 	return doLinks(imageStudioLinks, func(imageIndex, studioIndex int) error {
-		image := models.ImagePartial{
-			ID:       imageIDs[imageIndex],
-			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
-		}
-		_, err := qb.Update(ctx, image)
-
-		return err
+		image, _ := qb.Find(ctx, imageIDs[imageIndex])
+		image.StudioID = &studioIDs[studioIndex]
+		return qb.Update(ctx, image)
 	})
 }
 

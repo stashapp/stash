@@ -47,13 +47,12 @@ func addImageStudio(ctx context.Context, imageWriter ImageFinderUpdater, imageID
 	}
 
 	// set the studio id
-	s := sql.NullInt64{Int64: int64(studioID), Valid: true}
+	s := &studioID
 	imagePartial := models.ImagePartial{
-		ID:       imageID,
 		StudioID: &s,
 	}
 
-	if _, err := imageWriter.Update(ctx, imagePartial); err != nil {
+	if _, err := imageWriter.UpdatePartial(ctx, imageID, imagePartial); err != nil {
 		return false, err
 	}
 	return true, nil
@@ -126,7 +125,7 @@ func StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases
 type ImageFinderUpdater interface {
 	image.Queryer
 	Find(ctx context.Context, id int) (*models.Image, error)
-	Update(ctx context.Context, updatedImage models.ImagePartial) (*models.Image, error)
+	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
 }
 
 // StudioImages searches for images whose path matches the provided studio name and tags the image with the studio, if studio is not already set on the image.

@@ -290,12 +290,12 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.image)
+	err := i.ReaderWriter.Create(ctx, &i.image)
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %v", err)
 	}
 
-	id := created.ID
+	id := i.image.ID
 	i.ID = id
 	return &id, nil
 }
@@ -304,7 +304,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	image := i.image
 	image.ID = id
 	i.ID = id
-	_, err := i.ReaderWriter.UpdateFull(ctx, image)
+	err := i.ReaderWriter.Update(ctx, &image)
 	if err != nil {
 		return fmt.Errorf("error updating existing image: %v", err)
 	}

@@ -62,7 +62,7 @@ func TestImageStudios(t *testing.T) {
 
 	const imageID = 1
 	const studioName = "studio name"
-	const studioID = 2
+	var studioID = 2
 	studio := models.Studio{
 		ID:   studioID,
 		Name: models.NullString(studioName),
@@ -82,9 +82,8 @@ func TestImageStudios(t *testing.T) {
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockImageReader *mocks.ImageReaderWriter, test pathTestTable) {
 		if test.Matches {
 			mockImageReader.On("Find", testCtx, imageID).Return(&models.Image{}, nil).Once()
-			expectedStudioID := models.NullInt64(studioID)
-			mockImageReader.On("Update", testCtx, models.ImagePartial{
-				ID:       imageID,
+			expectedStudioID := &studioID
+			mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
 				StudioID: &expectedStudioID,
 			}).Return(nil, nil).Once()
 		}

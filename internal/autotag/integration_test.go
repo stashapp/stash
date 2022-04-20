@@ -232,9 +232,7 @@ func makeImage(name string, expectedResult bool) *models.Image {
 }
 
 func createImage(ctx context.Context, sqb models.ImageWriter, image *models.Image) error {
-	_, err := sqb.Create(ctx, *image)
-
-	if err != nil {
+	if err := sqb.Create(ctx, image); err != nil {
 		return fmt.Errorf("Failed to create image with name '%s': %s", image.Path, err.Error())
 	}
 
@@ -546,9 +544,9 @@ func TestParsePerformerImages(t *testing.T) {
 			}
 
 			// title is only set on images where we expect performer to be set
-			if *image.Title == image.Path && len(performers) == 0 {
+			if image.Title != nil && *image.Title == image.Path && len(performers) == 0 {
 				t.Errorf("Did not set performer '%s' for path '%s'", testName, image.Path)
-			} else if *image.Title != image.Path && len(performers) > 0 {
+			} else if (image.Title == nil || *image.Title != image.Path) && len(performers) > 0 {
 				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, image.Path)
 			}
 		}
@@ -596,14 +594,14 @@ func TestParseStudioImages(t *testing.T) {
 				}
 			} else {
 				// title is only set on images where we expect studio to be set
-				if *image.Title == image.Path {
+				if image.Title != nil && *image.Title == image.Path {
 					if image.StudioID == nil {
 						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path)
 					} else if *image.StudioID != studios[1].ID {
 						t.Errorf("Incorrect studio id %d set for path '%s'", *image.StudioID, image.Path)
 					}
 
-				} else if *image.Title != image.Path && *image.StudioID == studios[1].ID {
+				} else if (image.Title == nil || *image.Title != image.Path) && image.StudioID != nil && *image.StudioID == studios[1].ID {
 					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path)
 				}
 			}
@@ -654,9 +652,9 @@ func TestParseTagImages(t *testing.T) {
 			}
 
 			// title is only set on images where we expect performer to be set
-			if *image.Title == image.Path && len(tags) == 0 {
+			if image.Title != nil && *image.Title == image.Path && len(tags) == 0 {
 				t.Errorf("Did not set tag '%s' for path '%s'", testName, image.Path)
-			} else if *image.Title != image.Path && len(tags) > 0 {
+			} else if (image.Title == nil || *image.Title != image.Path) && len(tags) > 0 {
 				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, image.Path)
 			}
 		}

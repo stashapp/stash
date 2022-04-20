@@ -2,13 +2,14 @@ package image
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 type PartialUpdater interface {
-	Update(ctx context.Context, updatedImage models.ImagePartial) (*models.Image, error)
+	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
 }
 
 type PerformerUpdater interface {
@@ -21,10 +22,10 @@ type TagUpdater interface {
 	UpdateTags(ctx context.Context, imageID int, tagIDs []int) error
 }
 
-func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime models.NullSQLiteTimestamp) (*models.Image, error) {
-	return qb.Update(ctx, models.ImagePartial{
-		ID:          id,
-		FileModTime: &modTime,
+func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime time.Time) (*models.Image, error) {
+	ptr := &modTime
+	return qb.UpdatePartial(ctx, id, models.ImagePartial{
+		FileModTime: &ptr,
 	})
 }
 

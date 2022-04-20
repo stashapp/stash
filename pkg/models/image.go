@@ -113,9 +113,9 @@ type ImageReader interface {
 }
 
 type ImageWriter interface {
-	Create(ctx context.Context, newImage Image) (*Image, error)
-	Update(ctx context.Context, updatedImage ImagePartial) (*Image, error)
-	UpdateFull(ctx context.Context, updatedImage Image) (*Image, error)
+	Create(ctx context.Context, newImage *Image) error
+	Update(ctx context.Context, updatedImage *Image) error
+	UpdatePartial(ctx context.Context, id int, partial ImagePartial) (*Image, error)
 	IncrementOCounter(ctx context.Context, id int) (int, error)
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)

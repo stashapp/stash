@@ -516,10 +516,10 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", testCtx, image).Return(&models.Image{
-		ID: imageID,
-	}, nil).Once()
-	readerWriter.On("Create", testCtx, imageErr).Return(nil, errCreate).Once()
+	readerWriter.On("Create", testCtx, &image).Run(func(args mock.Arguments) {
+		args.Get(1).(*models.Image).ID = imageID
+	}).Return(nil).Once()
+	readerWriter.On("Create", testCtx, &imageErr).Return(errCreate).Once()
 
 	id, err := i.Create(testCtx)
 	assert.Equal(t, imageID, *id)
@@ -554,7 +554,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	image.ID = imageID
-	readerWriter.On("UpdateFull", testCtx, image).Return(nil, nil).Once()
+	readerWriter.On("Update", testCtx, &image).Return(nil).Once()
 
 	err := i.Update(testCtx, imageID)
 	assert.Nil(t, err)
@@ -564,7 +564,7 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	imageErr.ID = errImageID
-	readerWriter.On("UpdateFull", testCtx, imageErr).Return(nil, errUpdate).Once()
+	readerWriter.On("Update", testCtx, &imageErr).Return(errUpdate).Once()
 
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)

@@ -95,17 +95,30 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 
 	updatedTime := time.Now()
 	updatedImage := models.ImagePartial{
-		ID:        imageID,
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+		UpdatedAt: &updatedTime,
 	}
 
-	updatedImage.Title = translator.nullString(input.Title, "title")
-	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedImage.Organized = input.Organized
+	if translator.hasField("title") {
+		updatedImage.Title = &input.Title
+	}
+	if translator.hasField("rating") {
+		updatedImage.Rating = &input.Rating
+	}
+	if translator.hasField("studio_id") {
+		var studioID *int
+		if input.StudioID != nil {
+			v, _ := strconv.Atoi(*input.StudioID)
+			studioID = &v
+		}
+
+		updatedImage.StudioID = &studioID
+	}
+	if translator.hasField("organized") {
+		updatedImage.Organized = input.Organized
+	}
 
 	qb := r.repository.Image
-	image, err := qb.Update(ctx, updatedImage)
+	image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
 	if err != nil {
 		return nil, err
 	}
@@ -167,26 +180,38 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedTime := time.Now()
 
 	updatedImage := models.ImagePartial{
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+		UpdatedAt: &updatedTime,
 	}
 
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	updatedImage.Title = translator.nullString(input.Title, "title")
-	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedImage.Organized = input.Organized
+	if translator.hasField("title") {
+		updatedImage.Title = &input.Title
+	}
+	if translator.hasField("rating") {
+		updatedImage.Rating = &input.Rating
+	}
+	if translator.hasField("studio_id") {
+		var studioID *int
+		if input.StudioID != nil {
+			v, _ := strconv.Atoi(*input.StudioID)
+			studioID = &v
+		}
+
+		updatedImage.StudioID = &studioID
+	}
+	if translator.hasField("organized") {
+		updatedImage.Organized = input.Organized
+	}
 
 	// Start the transaction and save the image marker
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Image
 
 		for _, imageID := range imageIDs {
-			updatedImage.ID = imageID
-
-			image, err := qb.Update(ctx, updatedImage)
+			image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
 			if err != nil {
 				return err
 			}
