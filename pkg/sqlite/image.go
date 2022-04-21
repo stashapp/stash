@@ -15,7 +15,6 @@ import (
 )
 
 var imageTable = "images"
-var imageTableMgr = &table{table: goqu.T(imageTable)}
 
 const imageIDColumn = "image_id"
 const performersImagesTable = "performers_images"
@@ -77,10 +76,14 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 
 type imageQueryRow struct {
 	imageRow
+
+	GalleryID   nullInt `db:"gallery_id"`
+	TagID       nullInt `db:"tag_id"`
+	PerformerID nullInt `db:"performer_id"`
 }
 
 func (r *imageQueryRow) resolve() *models.Image {
-	return &models.Image{
+	ret := &models.Image{
 		ID:          r.ID,
 		Checksum:    r.Checksum,
 		Path:        r.Path,
@@ -96,6 +99,45 @@ func (r *imageQueryRow) resolve() *models.Image {
 		CreatedAt:   r.CreatedAt,
 		UpdatedAt:   r.UpdatedAt,
 	}
+
+	r.appendRelationships(ret)
+
+	return ret
+}
+
+func (r *imageQueryRow) appendRelationships(i *models.Image) {
+	if r.GalleryID.Valid {
+		i.GalleryIDs = append(i.GalleryIDs, r.GalleryID.int())
+	}
+	if r.TagID.Valid {
+		i.TagIDs = append(i.TagIDs, r.TagID.int())
+	}
+	if r.PerformerID.Valid {
+		i.PerformerIDs = append(i.PerformerIDs, r.PerformerID.int())
+	}
+}
+
+type imageQueryRows []imageQueryRow
+
+func (r imageQueryRows) resolve() []*models.Image {
+	var ret []*models.Image
+	var last *models.Image
+	var lastID int
+
+	for _, row := range r {
+		if last == nil || lastID != row.ID {
+			f := row.resolve()
+			last = f
+			lastID = row.ID
+			ret = append(ret, last)
+			continue
+		}
+
+		// must be merging with previous row
+		row.appendRelationships(last)
+	}
+
+	return ret
 }
 
 type imageQueryBuilder struct {
@@ -124,6 +166,22 @@ func (qb *imageQueryBuilder) Create(ctx context.Context, newObject *models.Image
 
 	newObject.ID = id
 
+	if len(newObject.GalleryIDs) > 0 {
+		if err := imageGalleriesTableMgr.insertJoins(ctx, newObject.ID, newObject.GalleryIDs); err != nil {
+			return err
+		}
+	}
+	if len(newObject.PerformerIDs) > 0 {
+		if err := imagesPerformersTableMgr.insertJoins(ctx, newObject.ID, newObject.PerformerIDs); err != nil {
+			return err
+		}
+	}
+	if len(newObject.TagIDs) > 0 {
+		if err := imagesTagsTableMgr.insertJoins(ctx, newObject.ID, newObject.TagIDs); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -140,6 +198,22 @@ func (qb *imageQueryBuilder) UpdatePartial(ctx context.Context, id int, partial 
 		return nil, err
 	}
 
+	if partial.GalleryIDs != nil {
+		if err := imageGalleriesTableMgr.modifyJoins(ctx, id, partial.GalleryIDs.IDs, partial.GalleryIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+	if partial.PerformerIDs != nil {
+		if err := imagesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+	if partial.TagIDs != nil {
+		if err := imagesTagsTableMgr.modifyJoins(ctx, id, partial.TagIDs.IDs, partial.TagIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	return qb.find(ctx, id)
 }
 
@@ -147,7 +221,21 @@ func (qb *imageQueryBuilder) Update(ctx context.Context, updatedObject *models.I
 	var r imageRow
 	r.fromImage(*updatedObject)
 
-	return imageTableMgr.updateByID(ctx, updatedObject.ID, r)
+	if err := imageTableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
+	}
+
+	if err := imageGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs); err != nil {
+		return err
+	}
+	if err := imagesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs); err != nil {
+		return err
+	}
+	if err := imagesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (qb *imageQueryBuilder) getOCounter(ctx context.Context, id int) (int, error) {
@@ -225,36 +313,53 @@ func (qb *imageQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models
 
 func (qb *imageQueryBuilder) selectDataset() *goqu.SelectDataset {
 	table := qb.table()
-	return goqu.From(table).Select(table.All())
+
+	return goqu.From(table).Select(
+		table.All(),
+		galleriesImagesJoinTable.Col("gallery_id"),
+		imagesTagsJoinTable.Col("tag_id"),
+		performersImagesJoinTable.Col("performer_id"),
+	).LeftJoin(
+		galleriesImagesJoinTable,
+		goqu.On(table.Col(idColumn).Eq(galleriesImagesJoinTable.Col("image_id"))),
+	).LeftJoin(
+		imagesTagsJoinTable,
+		goqu.On(table.Col(idColumn).Eq(imagesTagsJoinTable.Col("image_id"))),
+	).LeftJoin(
+		performersImagesJoinTable,
+		goqu.On(table.Col(idColumn).Eq(performersImagesJoinTable.Col("image_id"))),
+	)
 }
 
 func (qb *imageQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (*models.Image, error) {
-	var row imageQueryRow
-
-	if err := imageTableMgr.get(ctx, q, &row); err != nil {
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
 		return nil, err
 	}
 
-	return row.resolve(), nil
+	if len(ret) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	return ret[0], nil
 }
 
 func (qb *imageQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Image, error) {
-	var ret []*models.Image
-
 	const single = false
-	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+	var rows imageQueryRows
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
 		var f imageQueryRow
-		if err := rows.StructScan(&f); err != nil {
+		if err := r.StructScan(&f); err != nil {
 			return err
 		}
 
-		ret = append(ret, f.resolve())
+		rows = append(rows, f)
 		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	return ret, nil
+	return rows.resolve(), nil
 }
 
 func (qb *imageQueryBuilder) find(ctx context.Context, id int) (*models.Image, error) {
@@ -272,7 +377,7 @@ func (qb *imageQueryBuilder) FindByChecksum(ctx context.Context, checksum string
 	q := qb.selectDataset().Where(qb.table().Col("checksum").Eq(checksum))
 
 	ret, err := qb.get(ctx, q)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("getting image by checksum %s: %w", checksum, err)
 	}
 
@@ -292,13 +397,9 @@ func (qb *imageQueryBuilder) FindByPath(ctx context.Context, path string) (*mode
 
 func (qb *imageQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Image, error) {
 	table := qb.table()
-	joinTable := goqu.T(galleriesImagesTable)
 
-	q := qb.selectDataset().InnerJoin(
-		joinTable,
-		goqu.On(joinTable.Col("image_id").Eq(table.Col(idColumn))),
-	).Where(
-		joinTable.Col("gallery_id").Eq(galleryID),
+	q := qb.selectDataset().Where(
+		galleriesImagesJoinTable.Col("gallery_id").Eq(galleryID),
 	).GroupBy(table.Col(idColumn)).Order(table.Col("path").Asc())
 
 	ret, err := qb.getMany(ctx, q)

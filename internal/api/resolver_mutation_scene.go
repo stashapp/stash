@@ -345,7 +345,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 
 func adjustIDs(existingIDs []int, updateIDs BulkUpdateIds) []int {
 	// if we are setting the ids, just return the ids
-	if updateIDs.Mode == BulkUpdateIDModeSet {
+	if updateIDs.Mode == models.RelationshipUpdateModeSet {
 		existingIDs = []int{}
 		for _, idStr := range updateIDs.Ids {
 			id, _ := strconv.Atoi(idStr)
@@ -362,7 +362,7 @@ func adjustIDs(existingIDs []int, updateIDs BulkUpdateIds) []int {
 		foundExisting := false
 		for idx, existingID := range existingIDs {
 			if existingID == id {
-				if updateIDs.Mode == BulkUpdateIDModeRemove {
+				if updateIDs.Mode == models.RelationshipUpdateModeRemove {
 					// remove from the list
 					existingIDs = append(existingIDs[:idx], existingIDs[idx+1:]...)
 				}
@@ -372,7 +372,7 @@ func adjustIDs(existingIDs []int, updateIDs BulkUpdateIds) []int {
 			}
 		}
 
-		if !foundExisting && updateIDs.Mode != BulkUpdateIDModeRemove {
+		if !foundExisting && updateIDs.Mode != models.RelationshipUpdateModeRemove {
 			existingIDs = append(existingIDs, id)
 		}
 	}
@@ -418,7 +418,7 @@ func (r *mutationResolver) adjustSceneMovieIDs(ctx context.Context, sceneID int,
 	}
 
 	// if we are setting the ids, just return the ids
-	if updateIDs.Mode == BulkUpdateIDModeSet {
+	if updateIDs.Mode == models.RelationshipUpdateModeSet {
 		existingMovies = []models.MoviesScenes{}
 		for _, idStr := range updateIDs.Ids {
 			id, _ := strconv.Atoi(idStr)
@@ -435,7 +435,7 @@ func (r *mutationResolver) adjustSceneMovieIDs(ctx context.Context, sceneID int,
 		foundExisting := false
 		for idx, existingMovie := range existingMovies {
 			if existingMovie.MovieID == id {
-				if updateIDs.Mode == BulkUpdateIDModeRemove {
+				if updateIDs.Mode == models.RelationshipUpdateModeRemove {
 					// remove from the list
 					existingMovies = append(existingMovies[:idx], existingMovies[idx+1:]...)
 				}
@@ -445,7 +445,7 @@ func (r *mutationResolver) adjustSceneMovieIDs(ctx context.Context, sceneID int,
 			}
 		}
 
-		if !foundExisting && updateIDs.Mode != BulkUpdateIDModeRemove {
+		if !foundExisting && updateIDs.Mode != models.RelationshipUpdateModeRemove {
 			existingMovies = append(existingMovies, models.MoviesScenes{MovieID: id})
 		}
 	}

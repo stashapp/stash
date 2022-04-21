@@ -140,6 +140,14 @@ func (n nullInt) intPtr() *int {
 	return &v
 }
 
+func (n nullInt) int() int {
+	if !n.Valid {
+		return 0
+	}
+
+	return int(n.NullInt64.Int64)
+}
+
 // func (n nullInt) int() int {
 // 	return int(n.NullInt64.Int64)
 // }

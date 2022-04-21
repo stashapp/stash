@@ -5,6 +5,7 @@ package sqlite_test
 
 import (
 	"context"
+	"database/sql"
 	"strconv"
 	"testing"
 
@@ -33,7 +34,7 @@ func TestImageFind(t *testing.T) {
 		image, err = sqb.Find(ctx, imageID)
 
 		// expect error when finding non-existing image
-		assert.NotNil(t, err)
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 		assert.Nil(t, image)
 
 		return nil

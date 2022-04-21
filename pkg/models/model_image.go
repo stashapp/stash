@@ -22,6 +22,10 @@ type Image struct {
 	FileModTime *time.Time `json:"file_mod_time"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
+
+	GalleryIDs   []int `json:"gallery_ids"`
+	TagIDs       []int `json:"tag_ids"`
+	PerformerIDs []int `json:"performer_ids"`
 }
 
 func (i *Image) File() File {
@@ -84,6 +88,10 @@ type ImagePartial struct {
 	FileModTime **time.Time
 	CreatedAt   *time.Time
 	UpdatedAt   *time.Time
+
+	GalleryIDs   *UpdateIDs
+	TagIDs       *UpdateIDs
+	PerformerIDs *UpdateIDs
 }
 
 // ImageFileType represents the file metadata for an image.

@@ -89,6 +89,8 @@ models:
   ScanMetaDataFilterInput:
     model: github.com/stashapp/stash/internal/manager.ScanMetaDataFilterInput
   # renamed types
+  BulkUpdateIdMode:
+    model: github.com/stashapp/stash/pkg/models.RelationshipUpdateMode
   DLNAStatus:
     model: github.com/stashapp/stash/internal/dlna.Status
   DLNAIP:

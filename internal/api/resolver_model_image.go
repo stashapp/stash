@@ -38,7 +38,7 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*ImagePat
 func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret []*models.Gallery, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.repository.Gallery.FindByImageID(ctx, obj.ID)
+		ret, err = r.repository.Gallery.FindMany(ctx, obj.GalleryIDs)
 		return err
 	}); err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *mod
 
 func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*models.Tag, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Tag.FindByImageID(ctx, obj.ID)
+		ret, err = r.repository.Tag.FindMany(ctx, obj.TagIDs)
 		return err
 	}); err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*mod
 
 func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) (ret []*models.Performer, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Performer.FindByImageID(ctx, obj.ID)
+		ret, err = r.repository.Performer.FindMany(ctx, obj.PerformerIDs)
 		return err
 	}); err != nil {
 		return nil, err

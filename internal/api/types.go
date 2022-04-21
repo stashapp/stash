@@ -1,6 +1,12 @@
 package api
 
-import "math"
+import (
+	"fmt"
+	"math"
+
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+)
 
 // An enum https://golang.org/ref/spec#Iota
 const (
@@ -16,4 +22,15 @@ func handleFloat64(v float64) *float64 {
 	}
 
 	return &v
+}
+
+func translateUpdateIDs(strIDs []string, mode models.RelationshipUpdateMode) (*models.UpdateIDs, error) {
+	ids, err := stringslice.StringSliceToIntSlice(strIDs)
+	if err != nil {
+		return nil, fmt.Errorf("converting ids [%v]: %w", strIDs, err)
+	}
+	return &models.UpdateIDs{
+		IDs:  ids,
+		Mode: mode,
+	}, nil
 }
