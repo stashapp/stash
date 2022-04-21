@@ -310,7 +310,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
           style={getTagStyle(index)}
           {...dataAttrs}
         >
-          {marker.title}
+          {marker.title || marker.primary_tag.name}
         </div>
       );
     });
