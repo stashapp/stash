@@ -326,29 +326,27 @@ var (
 )
 
 var (
-	galleryPerformerLinks = [][2]int{
-		{galleryIdxWithPerformer, performerIdxWithGallery},
-		{galleryIdxWithTwoPerformers, performerIdx1WithGallery},
-		{galleryIdxWithTwoPerformers, performerIdx2WithGallery},
-		{galleryIdxWithPerformerTag, performerIdxWithTag},
-		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
-		{galleryIdx1WithPerformer, performerIdxWithTwoGalleries},
-		{galleryIdx2WithPerformer, performerIdxWithTwoGalleries},
-		{galleryIdxWithStudioPerformer, performerIdxWithGalleryStudio},
+	galleryPerformers = map[int][]int{
+		galleryIdxWithPerformer:        {performerIdxWithGallery},
+		galleryIdxWithTwoPerformers:    {performerIdx1WithGallery, performerIdx2WithGallery},
+		galleryIdxWithPerformerTag:     {performerIdxWithTag},
+		galleryIdxWithPerformerTwoTags: {performerIdxWithTwoTags},
+		galleryIdx1WithPerformer:       {performerIdxWithTwoGalleries},
+		galleryIdx2WithPerformer:       {performerIdxWithTwoGalleries},
+		galleryIdxWithStudioPerformer:  {performerIdxWithGalleryStudio},
 	}
 
-	galleryStudioLinks = [][2]int{
-		{galleryIdxWithStudio, studioIdxWithGallery},
-		{galleryIdx1WithStudio, studioIdxWithTwoGalleries},
-		{galleryIdx2WithStudio, studioIdxWithTwoGalleries},
-		{galleryIdxWithStudioPerformer, studioIdxWithGalleryPerformer},
-		{galleryIdxWithGrandChildStudio, studioIdxWithGrandParent},
+	galleryStudios = map[int]int{
+		galleryIdxWithStudio:           studioIdxWithGallery,
+		galleryIdx1WithStudio:          studioIdxWithTwoGalleries,
+		galleryIdx2WithStudio:          studioIdxWithTwoGalleries,
+		galleryIdxWithStudioPerformer:  studioIdxWithGalleryPerformer,
+		galleryIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
 
-	galleryTagLinks = [][2]int{
-		{galleryIdxWithTag, tagIdxWithGallery},
-		{galleryIdxWithTwoTags, tagIdx1WithGallery},
-		{galleryIdxWithTwoTags, tagIdx2WithGallery},
+	galleryTags = map[int][]int{
+		galleryIdxWithTag:     {tagIdxWithGallery},
+		galleryIdxWithTwoTags: {tagIdx1WithGallery, tagIdx2WithGallery},
 	}
 )
 
@@ -522,18 +520,6 @@ func populateDB() error {
 			return fmt.Errorf("error linking studios parent: %s", err.Error())
 		}
 
-		if err := linkGalleryPerformers(ctx, sqlite.GalleryReaderWriter); err != nil {
-			return fmt.Errorf("error linking gallery performers: %s", err.Error())
-		}
-
-		if err := linkGalleryTags(ctx, sqlite.GalleryReaderWriter); err != nil {
-			return fmt.Errorf("error linking gallery tags: %s", err.Error())
-		}
-
-		if err := linkGalleryStudios(ctx, sqlite.GalleryReaderWriter); err != nil {
-			return fmt.Errorf("error linking gallery studios: %s", err.Error())
-		}
-
 		if err := linkTagsParent(ctx, sqlite.TagReaderWriter); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
@@ -603,6 +589,23 @@ func getIntPtr(r sql.NullInt64) *int {
 	return &v
 }
 
+func getStringPtrFromNullString(r sql.NullString) *string {
+	if !r.Valid || r.String == "" {
+		return nil
+	}
+
+	v := r.String
+	return &v
+}
+
+func getStringPtr(r string) *string {
+	if r == "" {
+		return nil
+	}
+
+	return &r
+}
+
 func getOCounter(index int) int {
 	return index % 3
 }
@@ -641,6 +644,16 @@ func getObjectDate(index int) models.SQLiteDate {
 		String: date,
 		Valid:  date != "null",
 	}
+}
+
+func getObjectDateObject(index int) *models.Date {
+	d := getObjectDate(index)
+	if !d.Valid {
+		return nil
+	}
+
+	ret := models.NewDate(d.String)
+	return &ret
 }
 
 func createScenes(ctx context.Context, sqb models.SceneReaderWriter, n int) error {
@@ -733,22 +746,34 @@ func getGalleryNullStringValue(index int, field string) sql.NullString {
 
 func createGalleries(ctx context.Context, gqb models.GalleryReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
-		gallery := models.Gallery{
-			Path:     models.NullString(getGalleryStringValue(i, pathField)),
-			Title:    models.NullString(getGalleryStringValue(i, titleField)),
-			URL:      getGalleryNullStringValue(i, urlField),
-			Checksum: getGalleryStringValue(i, checksumField),
-			Rating:   getRating(i),
-			Date:     getObjectDate(i),
+		var studioID *int
+		if galleryStudios[i] != 0 {
+			v := studioIDs[galleryStudios[i]]
+			studioID = &v
 		}
 
-		created, err := gqb.Create(ctx, gallery)
+		pids := indexesToIDs(performerIDs, galleryPerformers[i])
+		tids := indexesToIDs(tagIDs, galleryTags[i])
+
+		gallery := &models.Gallery{
+			Path:         getStringPtr(getGalleryStringValue(i, pathField)),
+			Title:        getStringPtr(getGalleryStringValue(i, titleField)),
+			URL:          getStringPtrFromNullString(getGalleryNullStringValue(i, urlField)),
+			Checksum:     getGalleryStringValue(i, checksumField),
+			Rating:       getIntPtr(getRating(i)),
+			Date:         getObjectDateObject(i),
+			StudioID:     studioID,
+			PerformerIDs: pids,
+			TagIDs:       tids,
+		}
+
+		err := gqb.Create(ctx, gallery)
 
 		if err != nil {
 			return fmt.Errorf("Error creating gallery %v+: %s", gallery, err.Error())
 		}
 
-		galleryIDs = append(galleryIDs, created.ID)
+		galleryIDs = append(galleryIDs, gallery.ID)
 	}
 
 	return nil
@@ -1214,46 +1239,6 @@ func linkSceneStudios(ctx context.Context, sqb models.SceneWriter) error {
 		_, err := sqb.Update(ctx, scene)
 
 		return err
-	})
-}
-
-func linkGalleryPerformers(ctx context.Context, qb models.GalleryReaderWriter) error {
-	return doLinks(galleryPerformerLinks, func(galleryIndex, performerIndex int) error {
-		galleryID := galleryIDs[galleryIndex]
-		performers, err := qb.GetPerformerIDs(ctx, galleryID)
-		if err != nil {
-			return err
-		}
-
-		performers = append(performers, performerIDs[performerIndex])
-
-		return qb.UpdatePerformers(ctx, galleryID, performers)
-	})
-}
-
-func linkGalleryStudios(ctx context.Context, qb models.GalleryReaderWriter) error {
-	return doLinks(galleryStudioLinks, func(galleryIndex, studioIndex int) error {
-		gallery := models.GalleryPartial{
-			ID:       galleryIDs[galleryIndex],
-			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
-		}
-		_, err := qb.UpdatePartial(ctx, gallery)
-
-		return err
-	})
-}
-
-func linkGalleryTags(ctx context.Context, qb models.GalleryReaderWriter) error {
-	return doLinks(galleryTagLinks, func(galleryIndex, tagIndex int) error {
-		galleryID := galleryIDs[galleryIndex]
-		tags, err := qb.GetTagIDs(ctx, galleryID)
-		if err != nil {
-			return err
-		}
-
-		tags = append(tags, tagIDs[tagIndex])
-
-		return qb.UpdateTags(ctx, galleryID, tags)
 	})
 }
 

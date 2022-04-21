@@ -48,11 +48,16 @@ func queryURLParametersFromGallery(gallery *models.Gallery) queryURLParameters {
 	ret := make(queryURLParameters)
 	ret["checksum"] = gallery.Checksum
 
-	if gallery.Path.Valid {
-		ret["filename"] = filepath.Base(gallery.Path.String)
+	if gallery.Path != nil {
+		ret["filename"] = filepath.Base(*gallery.Path)
 	}
-	ret["title"] = gallery.Title.String
-	ret["url"] = gallery.URL.String
+	if gallery.Title != nil {
+		ret["title"] = *gallery.Title
+	}
+
+	if gallery.URL != nil {
+		ret["url"] = *gallery.URL
+	}
 
 	return ret
 }

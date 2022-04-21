@@ -333,17 +333,10 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 }
 
 func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
-	toStringPtr := func(s sql.NullString) *string {
-		if s.Valid {
-			return &s.String
-		}
-
-		return nil
-	}
-
-	dateToStringPtr := func(s models.SQLiteDate) *string {
-		if s.Valid {
-			return &s.String
+	dateToStringPtr := func(s *models.Date) *string {
+		if s != nil {
+			v := s.String()
+			return &v
 		}
 
 		return nil
@@ -351,9 +344,9 @@ func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
 
 	return models.GalleryUpdateInput{
 		ID:      strconv.Itoa(gallery.ID),
-		Title:   toStringPtr(gallery.Title),
-		Details: toStringPtr(gallery.Details),
-		URL:     toStringPtr(gallery.URL),
+		Title:   gallery.Title,
+		Details: gallery.Details,
+		URL:     gallery.URL,
 		Date:    dateToStringPtr(gallery.Date),
 	}
 }

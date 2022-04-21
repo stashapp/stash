@@ -5,7 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -17,69 +21,278 @@ const galleriesImagesTable = "galleries_images"
 const galleriesScenesTable = "scenes_galleries"
 const galleryIDColumn = "gallery_id"
 
+type galleryRow struct {
+	ID          int               `db:"id" goqu:"skipinsert"`
+	Path        nullString        `db:"path"`
+	Checksum    string            `db:"checksum"`
+	Zip         bool              `db:"zip"`
+	Title       nullString        `db:"title"`
+	URL         nullString        `db:"url"`
+	Date        models.SQLiteDate `db:"date"`
+	Details     nullString        `db:"details"`
+	Rating      nullInt           `db:"rating"`
+	Organized   bool              `db:"organized"`
+	StudioID    nullInt           `db:"studio_id,omitempty"`
+	FileModTime nullTime          `db:"file_mod_time"`
+	CreatedAt   time.Time         `db:"created_at"`
+	UpdatedAt   time.Time         `db:"updated_at"`
+}
+
+func (r *galleryRow) fromGallery(o models.Gallery) {
+	r.ID = o.ID
+	r.Path = newNullStringPtr(o.Path)
+	r.Checksum = o.Checksum
+	r.Zip = o.Zip
+	r.Title = newNullStringPtr(o.Title)
+	r.URL = newNullStringPtr(o.URL)
+	if o.Date != nil {
+		_ = r.Date.Scan(o.Date.Time)
+	}
+	r.Details = newNullStringPtr(o.Details)
+	r.Rating = newNullIntPtr(o.Rating)
+	r.Organized = o.Organized
+	r.StudioID = newNullIntPtr(o.StudioID)
+	r.FileModTime = newNullTime(o.FileModTime)
+	r.CreatedAt = o.CreatedAt
+	r.UpdatedAt = o.UpdatedAt
+}
+
+type galleryRowRecord struct {
+	updateRecord
+}
+
+func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
+	r.setNullStringPtr("path", o.Path)
+	r.setString("checksum", o.Checksum)
+	r.setBool("zip", o.Zip)
+	r.setNullStringPtr("title", o.Title)
+	r.setNullStringPtr("url", o.URL)
+	if o.Date != nil {
+		d := models.SQLiteDate{}
+		_ = d.Scan(*o.Date)
+		r.set("date", d)
+	}
+	r.setNullStringPtr("details", o.Details)
+	r.setNullIntPtr("rating", o.Rating)
+	r.setBool("organized", o.Organized)
+	r.setNullIntPtr("studio_id", o.StudioID)
+	r.setNullTimePtr("file_mod_time", o.FileModTime)
+	r.setTime("created_at", o.CreatedAt)
+	r.setTime("updated_at", o.UpdatedAt)
+}
+
+type galleryQueryRow struct {
+	galleryRow
+
+	TagID       nullInt `db:"tag_id"`
+	PerformerID nullInt `db:"performer_id"`
+}
+
+func (r *galleryQueryRow) resolve() *models.Gallery {
+	ret := &models.Gallery{
+		ID:          r.ID,
+		Path:        r.Path.stringPtr(),
+		Checksum:    r.Checksum,
+		Zip:         r.Zip,
+		Title:       r.Title.stringPtr(),
+		URL:         r.URL.stringPtr(),
+		Date:        r.Date.DatePtr(),
+		Details:     r.Details.stringPtr(),
+		Rating:      r.Rating.intPtr(),
+		Organized:   r.Organized,
+		StudioID:    r.StudioID.intPtr(),
+		FileModTime: r.FileModTime.timePtr(),
+		CreatedAt:   r.CreatedAt,
+		UpdatedAt:   r.UpdatedAt,
+	}
+
+	r.appendRelationships(ret)
+
+	return ret
+}
+
+func (r *galleryQueryRow) appendRelationships(i *models.Gallery) {
+	if r.TagID.Valid {
+		i.TagIDs = append(i.TagIDs, r.TagID.int())
+	}
+	if r.PerformerID.Valid {
+		i.PerformerIDs = append(i.PerformerIDs, r.PerformerID.int())
+	}
+}
+
+type galleryQueryRows []galleryQueryRow
+
+func (r galleryQueryRows) resolve() []*models.Gallery {
+	var ret []*models.Gallery
+	var last *models.Gallery
+	var lastID int
+
+	for _, row := range r {
+		if last == nil || lastID != row.ID {
+			f := row.resolve()
+			last = f
+			lastID = row.ID
+			ret = append(ret, last)
+			continue
+		}
+
+		// must be merging with previous row
+		row.appendRelationships(last)
+	}
+
+	return ret
+}
+
 type galleryQueryBuilder struct {
 	repository
+
+	tableMgr *table
 }
 
 var GalleryReaderWriter = &galleryQueryBuilder{
-	repository{
+	repository: repository{
 		tableName: galleryTable,
 		idColumn:  idColumn,
 	},
+	tableMgr: galleryTableMgr,
 }
 
-func (qb *galleryQueryBuilder) Create(ctx context.Context, newObject models.Gallery) (*models.Gallery, error) {
-	var ret models.Gallery
-	if err := qb.insertObject(ctx, newObject, &ret); err != nil {
-		return nil, err
+func (qb *galleryQueryBuilder) table() exp.IdentifierExpression {
+	return qb.tableMgr.table
+}
+
+func (qb *galleryQueryBuilder) Create(ctx context.Context, newObject *models.Gallery) error {
+	var r galleryRow
+	r.fromGallery(*newObject)
+
+	id, err := qb.tableMgr.insertID(ctx, r)
+	if err != nil {
+		return err
 	}
 
-	return &ret, nil
-}
+	newObject.ID = id
 
-func (qb *galleryQueryBuilder) Update(ctx context.Context, updatedObject models.Gallery) (*models.Gallery, error) {
-	const partial = false
-	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
-		return nil, err
+	if len(newObject.PerformerIDs) > 0 {
+		if err := galleriesPerformersTableMgr.insertJoins(ctx, newObject.ID, newObject.PerformerIDs); err != nil {
+			return err
+		}
+	}
+	if len(newObject.TagIDs) > 0 {
+		if err := galleriesTagsTableMgr.insertJoins(ctx, newObject.ID, newObject.TagIDs); err != nil {
+			return err
+		}
 	}
 
-	return qb.Find(ctx, updatedObject.ID)
+	return nil
 }
 
-func (qb *galleryQueryBuilder) UpdatePartial(ctx context.Context, updatedObject models.GalleryPartial) (*models.Gallery, error) {
-	const partial = true
-	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
-		return nil, err
+func (qb *galleryQueryBuilder) Update(ctx context.Context, updatedObject *models.Gallery) error {
+	var r galleryRow
+	r.fromGallery(*updatedObject)
+
+	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
 	}
 
-	return qb.Find(ctx, updatedObject.ID)
+	if err := galleriesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs); err != nil {
+		return err
+	}
+	if err := galleriesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (qb *galleryQueryBuilder) UpdateChecksum(ctx context.Context, id int, checksum string) error {
-	return qb.updateMap(ctx, id, map[string]interface{}{
-		"checksum": checksum,
-	})
-}
+func (qb *galleryQueryBuilder) UpdatePartial(ctx context.Context, id int, partial models.GalleryPartial) (*models.Gallery, error) {
+	r := galleryRowRecord{
+		updateRecord{
+			Record: make(exp.Record),
+		},
+	}
 
-func (qb *galleryQueryBuilder) UpdateFileModTime(ctx context.Context, id int, modTime models.NullSQLiteTimestamp) error {
-	return qb.updateMap(ctx, id, map[string]interface{}{
-		"file_mod_time": modTime,
-	})
+	r.fromPartial(partial)
+
+	if len(r.Record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.PerformerIDs != nil {
+		if err := galleriesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+	if partial.TagIDs != nil {
+		if err := galleriesTagsTableMgr.modifyJoins(ctx, id, partial.TagIDs.IDs, partial.TagIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
+	return qb.Find(ctx, id)
 }
 
 func (qb *galleryQueryBuilder) Destroy(ctx context.Context, id int) error {
-	return qb.destroyExisting(ctx, []int{id})
+	return qb.tableMgr.destroyExisting(ctx, []int{id})
+}
+
+func (qb *galleryQueryBuilder) selectDataset() *goqu.SelectDataset {
+	table := qb.table()
+
+	return goqu.From(table).Select(
+		table.All(),
+		galleriesTagsJoinTable.Col("tag_id"),
+		performersGalleriesJoinTable.Col("performer_id"),
+	).LeftJoin(
+		galleriesTagsJoinTable,
+		goqu.On(table.Col(idColumn).Eq(galleriesTagsJoinTable.Col(galleryIDColumn))),
+	).LeftJoin(
+		performersGalleriesJoinTable,
+		goqu.On(table.Col(idColumn).Eq(performersGalleriesJoinTable.Col(galleryIDColumn))),
+	)
+}
+
+func (qb *galleryQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (*models.Gallery, error) {
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	return ret[0], nil
+}
+
+func (qb *galleryQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Gallery, error) {
+	const single = false
+	var rows galleryQueryRows
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var f galleryQueryRow
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		rows = append(rows, f)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return rows.resolve(), nil
 }
 
 func (qb *galleryQueryBuilder) Find(ctx context.Context, id int) (*models.Gallery, error) {
-	var ret models.Gallery
-	if err := qb.getByID(ctx, id, &ret); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, err
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting gallery by id %d: %w", id, err)
 	}
-	return &ret, nil
+
+	return ret, nil
 }
 
 func (qb *galleryQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Gallery, error) {
@@ -101,60 +314,88 @@ func (qb *galleryQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*mode
 }
 
 func (qb *galleryQueryBuilder) FindByChecksum(ctx context.Context, checksum string) (*models.Gallery, error) {
-	query := "SELECT * FROM galleries WHERE checksum = ? LIMIT 1"
-	args := []interface{}{checksum}
-	return qb.queryGallery(ctx, query, args)
+	q := qb.selectDataset().Where(qb.table().Col("checksum").Eq(checksum))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting gallery by checksum %s: %w", checksum, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *galleryQueryBuilder) FindByChecksums(ctx context.Context, checksums []string) ([]*models.Gallery, error) {
-	query := "SELECT * FROM galleries WHERE checksum IN " + getInBinding(len(checksums))
-	var args []interface{}
-	for _, checksum := range checksums {
-		args = append(args, checksum)
+	q := qb.selectDataset().Where(qb.table().Col("checksum").In(checksums))
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting gallery by checksums: %w", err)
 	}
-	return qb.queryGalleries(ctx, query, args)
+
+	return ret, nil
 }
 
 func (qb *galleryQueryBuilder) FindByPath(ctx context.Context, path string) (*models.Gallery, error) {
-	query := "SELECT * FROM galleries WHERE path = ? LIMIT 1"
-	args := []interface{}{path}
-	return qb.queryGallery(ctx, query, args)
+	q := qb.selectDataset().Where(qb.table().Col("path").Eq(path))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting gallery by path %s: %w", path, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *galleryQueryBuilder) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Gallery, error) {
-	query := selectAll(galleryTable) + `
-		LEFT JOIN scenes_galleries as scenes_join on scenes_join.gallery_id = galleries.id
-		WHERE scenes_join.scene_id = ?
-		GROUP BY galleries.id
-	`
-	args := []interface{}{sceneID}
-	return qb.queryGalleries(ctx, query, args)
+	table := qb.table()
+
+	q := qb.selectDataset().InnerJoin(
+		galleriesScenesJoinTable,
+		goqu.On(table.Col(idColumn).Eq(galleriesScenesJoinTable.Col(galleryIDColumn))),
+	).Where(
+		galleriesScenesJoinTable.Col("scene_id").Eq(sceneID),
+	).GroupBy(table.Col(idColumn))
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting galleries for scene %d: %w", sceneID, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *galleryQueryBuilder) FindByImageID(ctx context.Context, imageID int) ([]*models.Gallery, error) {
-	query := selectAll(galleryTable) + `
-	INNER JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
-	WHERE images_join.image_id = ?
-	GROUP BY galleries.id
-	`
-	args := []interface{}{imageID}
-	return qb.queryGalleries(ctx, query, args)
+	table := qb.table()
+
+	q := qb.selectDataset().InnerJoin(
+		galleriesImagesJoinTable,
+		goqu.On(table.Col(idColumn).Eq(galleriesImagesJoinTable.Col(galleryIDColumn))),
+	).Where(
+		galleriesImagesJoinTable.Col("image_id").Eq(imageID),
+	).GroupBy(table.Col(idColumn))
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting galleries for image %d: %w", imageID, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *galleryQueryBuilder) CountByImageID(ctx context.Context, imageID int) (int, error) {
-	query := `SELECT image_id FROM galleries_images
-	WHERE image_id = ?
-	GROUP BY gallery_id`
-	args := []interface{}{imageID}
-	return qb.runCountQuery(ctx, qb.buildCountQuery(query), args)
+	joinTable := galleriesImagesJoinTable
+
+	q := goqu.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(imageIDColumn).Eq(imageID))
+	return count(ctx, q)
 }
 
 func (qb *galleryQueryBuilder) Count(ctx context.Context) (int, error) {
-	return qb.runCountQuery(ctx, qb.buildCountQuery("SELECT galleries.id FROM galleries"), nil)
+	q := goqu.Select(goqu.COUNT("*")).From(qb.table())
+	return count(ctx, q)
 }
 
 func (qb *galleryQueryBuilder) All(ctx context.Context) ([]*models.Gallery, error) {
-	return qb.queryGalleries(ctx, selectAll("galleries")+qb.getGallerySort(nil), nil)
+	return qb.getMany(ctx, qb.selectDataset())
 }
 
 func (qb *galleryQueryBuilder) validateFilter(galleryFilter *models.GalleryFilterType) error {
@@ -503,23 +744,6 @@ func (qb *galleryQueryBuilder) getGallerySort(findFilter *models.FindFilterType)
 	}
 }
 
-func (qb *galleryQueryBuilder) queryGallery(ctx context.Context, query string, args []interface{}) (*models.Gallery, error) {
-	results, err := qb.queryGalleries(ctx, query, args)
-	if err != nil || len(results) < 1 {
-		return nil, err
-	}
-	return results[0], nil
-}
-
-func (qb *galleryQueryBuilder) queryGalleries(ctx context.Context, query string, args []interface{}) ([]*models.Gallery, error) {
-	var ret models.Galleries
-	if err := qb.query(ctx, query, args, &ret); err != nil {
-		return nil, err
-	}
-
-	return []*models.Gallery(ret), nil
-}
-
 func (qb *galleryQueryBuilder) performersRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
@@ -531,14 +755,14 @@ func (qb *galleryQueryBuilder) performersRepository() *joinRepository {
 	}
 }
 
-func (qb *galleryQueryBuilder) GetPerformerIDs(ctx context.Context, galleryID int) ([]int, error) {
-	return qb.performersRepository().getIDs(ctx, galleryID)
-}
+// func (qb *galleryQueryBuilder) GetPerformerIDs(ctx context.Context, galleryID int) ([]int, error) {
+// 	return qb.performersRepository().getIDs(ctx, galleryID)
+// }
 
-func (qb *galleryQueryBuilder) UpdatePerformers(ctx context.Context, galleryID int, performerIDs []int) error {
-	// Delete the existing joins and then create new ones
-	return qb.performersRepository().replace(ctx, galleryID, performerIDs)
-}
+// func (qb *galleryQueryBuilder) UpdatePerformers(ctx context.Context, galleryID int, performerIDs []int) error {
+// 	// Delete the existing joins and then create new ones
+// 	return qb.performersRepository().replace(ctx, galleryID, performerIDs)
+// }
 
 func (qb *galleryQueryBuilder) tagsRepository() *joinRepository {
 	return &joinRepository{
@@ -551,14 +775,14 @@ func (qb *galleryQueryBuilder) tagsRepository() *joinRepository {
 	}
 }
 
-func (qb *galleryQueryBuilder) GetTagIDs(ctx context.Context, galleryID int) ([]int, error) {
-	return qb.tagsRepository().getIDs(ctx, galleryID)
-}
+// func (qb *galleryQueryBuilder) GetTagIDs(ctx context.Context, galleryID int) ([]int, error) {
+// 	return qb.tagsRepository().getIDs(ctx, galleryID)
+// }
 
-func (qb *galleryQueryBuilder) UpdateTags(ctx context.Context, galleryID int, tagIDs []int) error {
-	// Delete the existing joins and then create new ones
-	return qb.tagsRepository().replace(ctx, galleryID, tagIDs)
-}
+// func (qb *galleryQueryBuilder) UpdateTags(ctx context.Context, galleryID int, tagIDs []int) error {
+// 	// Delete the existing joins and then create new ones
+// 	return qb.tagsRepository().replace(ctx, galleryID, tagIDs)
+// }
 
 func (qb *galleryQueryBuilder) imagesRepository() *joinRepository {
 	return &joinRepository{

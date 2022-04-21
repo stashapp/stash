@@ -5,9 +5,11 @@ package sqlite_test
 
 import (
 	"context"
+	"database/sql"
 	"math"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -26,14 +28,12 @@ func TestGalleryFind(t *testing.T) {
 			t.Errorf("Error finding gallery: %s", err.Error())
 		}
 
-		assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path.String)
+		assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), *gallery.Path)
 
 		gallery, err = gqb.Find(ctx, 0)
 
-		if err != nil {
-			t.Errorf("Error finding gallery: %s", err.Error())
-		}
-
+		// expect error when finding non-existing image
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 		assert.Nil(t, gallery)
 
 		return nil
@@ -52,7 +52,7 @@ func TestGalleryFindByChecksum(t *testing.T) {
 			t.Errorf("Error finding gallery: %s", err.Error())
 		}
 
-		assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path.String)
+		assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), *gallery.Path)
 
 		galleryChecksum = "not exist"
 		gallery, err = gqb.FindByChecksum(ctx, galleryChecksum)
@@ -79,7 +79,7 @@ func TestGalleryFindByPath(t *testing.T) {
 			t.Errorf("Error finding gallery: %s", err.Error())
 		}
 
-		assert.Equal(t, galleryPath, gallery.Path.String)
+		assert.Equal(t, galleryPath, *gallery.Path)
 
 		galleryPath = "not exist"
 		gallery, err = gqb.FindByPath(ctx, galleryPath)
@@ -105,7 +105,7 @@ func TestGalleryFindBySceneID(t *testing.T) {
 			t.Errorf("Error finding gallery: %s", err.Error())
 		}
 
-		assert.Equal(t, getGalleryStringValue(galleryIdxWithScene, "Path"), galleries[0].Path.String)
+		assert.Equal(t, getGalleryStringValue(galleryIdxWithScene, "Path"), *galleries[0].Path)
 
 		galleries, err = gqb.FindBySceneID(ctx, 0)
 
@@ -193,7 +193,7 @@ func verifyGalleriesPath(ctx context.Context, t *testing.T, sqb models.GalleryRe
 	}
 
 	for _, gallery := range galleries {
-		verifyNullString(t, gallery.Path, pathCriterion)
+		verifyStringPtr(t, gallery.Path, pathCriterion)
 	}
 }
 
@@ -223,8 +223,8 @@ func TestGalleryQueryPathOr(t *testing.T) {
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 2)
-		assert.Equal(t, gallery1Path, galleries[0].Path.String)
-		assert.Equal(t, gallery2Path, galleries[1].Path.String)
+		assert.Equal(t, gallery1Path, *galleries[0].Path)
+		assert.Equal(t, gallery2Path, *galleries[1].Path)
 
 		return nil
 	})
@@ -233,7 +233,7 @@ func TestGalleryQueryPathOr(t *testing.T) {
 func TestGalleryQueryPathAndRating(t *testing.T) {
 	const galleryIdx = 1
 	galleryPath := getGalleryStringValue(galleryIdx, "Path")
-	galleryRating := getRating(galleryIdx)
+	galleryRating := getIntPtr(getRating(galleryIdx))
 
 	galleryFilter := models.GalleryFilterType{
 		Path: &models.StringCriterionInput{
@@ -242,7 +242,7 @@ func TestGalleryQueryPathAndRating(t *testing.T) {
 		},
 		And: &models.GalleryFilterType{
 			Rating: &models.IntCriterionInput{
-				Value:    int(galleryRating.Int64),
+				Value:    *galleryRating,
 				Modifier: models.CriterionModifierEquals,
 			},
 		},
@@ -254,8 +254,8 @@ func TestGalleryQueryPathAndRating(t *testing.T) {
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		assert.Len(t, galleries, 1)
-		assert.Equal(t, galleryPath, galleries[0].Path.String)
-		assert.Equal(t, galleryRating.Int64, galleries[0].Rating.Int64)
+		assert.Equal(t, galleryPath, *galleries[0].Path)
+		assert.Equal(t, *galleryRating, *galleries[0].Rating)
 
 		return nil
 	})
@@ -289,9 +289,9 @@ func TestGalleryQueryPathNotRating(t *testing.T) {
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		for _, gallery := range galleries {
-			verifyNullString(t, gallery.Path, pathCriterion)
+			verifyStringPtr(t, gallery.Path, pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyInt64(t, gallery.Rating, ratingCriterion)
+			verifyIntPtr(t, gallery.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -349,7 +349,7 @@ func TestGalleryQueryURL(t *testing.T) {
 
 	verifyFn := func(g *models.Gallery) {
 		t.Helper()
-		verifyNullString(t, g.URL, urlCriterion)
+		verifyStringPtr(t, g.URL, urlCriterion)
 	}
 
 	verifyGalleryQuery(t, filter, verifyFn)
@@ -428,7 +428,7 @@ func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInpu
 		}
 
 		for _, gallery := range galleries {
-			verifyInt64(t, gallery.Rating, ratingCriterion)
+			verifyIntPtr(t, gallery.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -580,7 +580,7 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 
 		// ensure date is null, empty or "0001-01-01"
 		for _, g := range galleries {
-			assert.True(t, !g.Date.Valid || g.Date.String == "" || g.Date.String == "0001-01-01")
+			assert.True(t, g.Date == nil || g.Date.Time == time.Time{})
 		}
 
 		return nil
@@ -907,11 +907,7 @@ func verifyGalleriesTagCount(t *testing.T, tagCountCriterion models.IntCriterion
 		assert.Greater(t, len(galleries), 0)
 
 		for _, gallery := range galleries {
-			ids, err := sqb.GetTagIDs(ctx, gallery.ID)
-			if err != nil {
-				return err
-			}
-			verifyInt(t, len(ids), tagCountCriterion)
+			verifyInt(t, len(gallery.TagIDs), tagCountCriterion)
 		}
 
 		return nil
@@ -948,11 +944,7 @@ func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.
 		assert.Greater(t, len(galleries), 0)
 
 		for _, gallery := range galleries {
-			ids, err := sqb.GetPerformerIDs(ctx, gallery.ID)
-			if err != nil {
-				return err
-			}
-			verifyInt(t, len(ids), performerCountCriterion)
+			verifyInt(t, len(gallery.PerformerIDs), performerCountCriterion)
 		}
 
 		return nil

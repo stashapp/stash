@@ -22,7 +22,7 @@ type ImageQueryPerformerUpdater interface {
 
 type GalleryQueryPerformerUpdater interface {
 	gallery.Queryer
-	gallery.PerformerUpdater
+	gallery.PartialUpdater
 }
 
 func getPerformerTagger(p *models.Performer, cache *match.Cache) tagger {
@@ -56,7 +56,7 @@ func PerformerImages(ctx context.Context, p *models.Performer, paths []string, r
 func PerformerGalleries(ctx context.Context, p *models.Performer, paths []string, rw GalleryQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
-	return t.tagGalleries(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-		return gallery.AddPerformer(ctx, rw, otherID, subjectID)
+	return t.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
+		return gallery.AddPerformer(ctx, rw, o, p.ID)
 	})
 }

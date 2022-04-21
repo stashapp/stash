@@ -14,6 +14,8 @@ type SQLiteDate struct {
 	Valid  bool
 }
 
+const sqliteDateLayout = "2006-01-02"
+
 // Scan implements the Scanner interface.
 func (t *SQLiteDate) Scan(value interface{}) error {
 	dateTime, ok := value.(time.Time)
@@ -23,7 +25,7 @@ func (t *SQLiteDate) Scan(value interface{}) error {
 		return nil
 	}
 
-	t.String = dateTime.Format("2006-01-02")
+	t.String = dateTime.Format(sqliteDateLayout)
 	if t.String != "" && t.String != "0001-01-01" {
 		t.Valid = true
 	} else {
@@ -44,7 +46,7 @@ func (t SQLiteDate) Value() (driver.Value, error) {
 		return "", nil
 	}
 
-	result, err := utils.ParseDateStringAsFormat(s, "2006-01-02")
+	result, err := utils.ParseDateStringAsFormat(s, sqliteDateLayout)
 	if err != nil {
 		return nil, fmt.Errorf("converting sqlite date %q: %w", s, err)
 	}
@@ -58,4 +60,22 @@ func (t *SQLiteDate) StringPtr() *string {
 
 	vv := t.String
 	return &vv
+}
+
+func (t *SQLiteDate) TimePtr() *time.Time {
+	if t == nil || !t.Valid {
+		return nil
+	}
+
+	ret, _ := time.Parse(sqliteDateLayout, t.String)
+	return &ret
+}
+
+func (t *SQLiteDate) DatePtr() *Date {
+	if t == nil || !t.Valid {
+		return nil
+	}
+
+	ret := NewDate(t.String)
+	return &ret
 }

@@ -6,6 +6,10 @@ var (
 	galleriesImagesJoinTable  = goqu.T(galleriesImagesTable)
 	imagesTagsJoinTable       = goqu.T(imagesTagsTable)
 	performersImagesJoinTable = goqu.T(performersImagesTable)
+
+	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
+	performersGalleriesJoinTable = goqu.T(performersGalleriesTable)
+	galleriesScenesJoinTable     = goqu.T(galleriesScenesTable)
 )
 
 var (
@@ -36,5 +40,28 @@ var (
 			idColumn: performersImagesJoinTable.Col(imageIDColumn),
 		},
 		fkColumn: performersImagesJoinTable.Col(performerIDColumn),
+	}
+)
+
+var (
+	galleryTableMgr = &table{
+		table:    goqu.T(galleryTable),
+		idColumn: goqu.T(galleryTable).Col(idColumn),
+	}
+
+	galleriesTagsTableMgr = &joinTable{
+		table: table{
+			table:    galleriesTagsJoinTable,
+			idColumn: galleriesTagsJoinTable.Col(galleryIDColumn),
+		},
+		fkColumn: galleriesTagsJoinTable.Col(tagIDColumn),
+	}
+
+	galleriesPerformersTableMgr = &joinTable{
+		table: table{
+			table:    performersGalleriesJoinTable,
+			idColumn: performersGalleriesJoinTable.Col(galleryIDColumn),
+		},
+		fkColumn: performersGalleriesJoinTable.Col(performerIDColumn),
 	}
 )

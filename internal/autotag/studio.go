@@ -36,6 +36,7 @@ func addSceneStudio(ctx context.Context, sceneWriter SceneFinderUpdater, sceneID
 }
 
 func addImageStudio(ctx context.Context, imageWriter image.PartialUpdater, i *models.Image, studioID int) (bool, error) {
+	// don't set if already set
 	if i.StudioID != nil {
 		return false, nil
 	}
@@ -52,25 +53,19 @@ func addImageStudio(ctx context.Context, imageWriter image.PartialUpdater, i *mo
 	return true, nil
 }
 
-func addGalleryStudio(ctx context.Context, galleryWriter GalleryFinderUpdater, galleryID, studioID int) (bool, error) {
+func addGalleryStudio(ctx context.Context, galleryWriter GalleryFinderUpdater, o *models.Gallery, studioID int) (bool, error) {
 	// don't set if already set
-	gallery, err := galleryWriter.Find(ctx, galleryID)
-	if err != nil {
-		return false, err
-	}
-
-	if gallery.StudioID.Valid {
+	if o.StudioID != nil {
 		return false, nil
 	}
 
 	// set the studio id
-	s := sql.NullInt64{Int64: int64(studioID), Valid: true}
+	s := &studioID
 	galleryPartial := models.GalleryPartial{
-		ID:       galleryID,
 		StudioID: &s,
 	}
 
-	if _, err := galleryWriter.UpdatePartial(ctx, galleryPartial); err != nil {
+	if _, err := galleryWriter.UpdatePartial(ctx, o.ID, galleryPartial); err != nil {
 		return false, err
 	}
 	return true, nil
@@ -139,8 +134,8 @@ func StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases
 
 type GalleryFinderUpdater interface {
 	gallery.Queryer
+	gallery.PartialUpdater
 	Find(ctx context.Context, id int) (*models.Gallery, error)
-	UpdatePartial(ctx context.Context, updatedGallery models.GalleryPartial) (*models.Gallery, error)
 }
 
 // StudioGalleries searches for galleries whose path matches the provided studio name and tags the gallery with the studio, if studio is not already set on the gallery.
@@ -148,8 +143,8 @@ func StudioGalleries(ctx context.Context, p *models.Studio, paths []string, alia
 	t := getStudioTagger(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagGalleries(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-			return addGalleryStudio(ctx, rw, otherID, subjectID)
+		if err := tt.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
+			return addGalleryStudio(ctx, rw, o, p.ID)
 		}); err != nil {
 			return err
 		}

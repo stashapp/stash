@@ -448,6 +448,39 @@ func verifyNullString(t *testing.T, value sql.NullString, criterion models.Strin
 	}
 }
 
+func verifyStringPtr(t *testing.T, value *string, criterion models.StringCriterionInput) {
+	t.Helper()
+	assert := assert.New(t)
+	if criterion.Modifier == models.CriterionModifierIsNull {
+		if value != nil && *value == "" {
+			// correct
+			return
+		}
+		assert.Nil(value, "expect is null values to be null")
+	}
+	if criterion.Modifier == models.CriterionModifierNotNull {
+		assert.NotNil(value, "expect is null values to be null")
+		assert.Greater(len(*value), 0)
+	}
+	if criterion.Modifier == models.CriterionModifierEquals {
+		assert.Equal(criterion.Value, *value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotEquals {
+		assert.NotEqual(criterion.Value, *value)
+	}
+	if criterion.Modifier == models.CriterionModifierMatchesRegex {
+		assert.NotNil(value)
+		assert.Regexp(regexp.MustCompile(criterion.Value), *value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
+		if value == nil {
+			// correct
+			return
+		}
+		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
+	}
+}
+
 func verifyString(t *testing.T, value string, criterion models.StringCriterionInput) {
 	t.Helper()
 	assert := assert.New(t)

@@ -200,9 +200,10 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	var galleries []*models.Gallery
 	matchingPaths, falsePaths := generateTestPaths(performerName, galleryExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
+		v := p
 		galleries = append(galleries, &models.Gallery{
 			ID:   i + 1,
-			Path: models.NullString(p),
+			Path: &v,
 		})
 	}
 
@@ -230,8 +231,12 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("GetPerformerIDs", testCtx, galleryID).Return(nil, nil).Once()
-		mockGalleryReader.On("UpdatePerformers", testCtx, galleryID, []int{performerID}).Return(nil).Once()
+		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := PerformerGalleries(testCtx, &performer, nil, mockGalleryReader, nil)

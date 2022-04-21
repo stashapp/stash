@@ -758,17 +758,17 @@ func (t *autoTagGalleryTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 		if t.performers {
 			if err := autotag.GalleryPerformers(ctx, t.gallery, r.Gallery, r.Performer, t.cache); err != nil {
-				return fmt.Errorf("error tagging gallery performers for %s: %v", t.gallery.Path.String, err)
+				return fmt.Errorf("error tagging gallery performers for %s: %v", *t.gallery.Path, err)
 			}
 		}
 		if t.studios {
 			if err := autotag.GalleryStudios(ctx, t.gallery, r.Gallery, r.Studio, t.cache); err != nil {
-				return fmt.Errorf("error tagging gallery studio for %s: %v", t.gallery.Path.String, err)
+				return fmt.Errorf("error tagging gallery studio for %s: %v", *t.gallery.Path, err)
 			}
 		}
 		if t.tags {
 			if err := autotag.GalleryTags(ctx, t.gallery, r.Gallery, r.Tag, t.cache); err != nil {
-				return fmt.Errorf("error tagging gallery tags for %s: %v", t.gallery.Path.String, err)
+				return fmt.Errorf("error tagging gallery tags for %s: %v", *t.gallery.Path, err)
 			}
 		}
 

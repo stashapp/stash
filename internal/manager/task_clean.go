@@ -322,11 +322,11 @@ func (j *cleanJob) shouldCleanScene(s *models.Scene) bool {
 
 func (j *cleanJob) shouldCleanGallery(ctx context.Context, g *models.Gallery, qb models.ImageReader) bool {
 	// never clean manually created galleries
-	if !g.Path.Valid {
+	if g.Path == nil {
 		return false
 	}
 
-	path := g.Path.String
+	path := *g.Path
 	if j.shouldClean(path) {
 		return true
 	}
@@ -451,7 +451,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
 
 	GetInstance().PluginCache.ExecutePostHooks(ctx, galleryID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 		Checksum: g.Checksum,
-		Path:     g.Path.String,
+		Path:     *g.Path,
 	}, nil)
 }
 

@@ -634,9 +634,18 @@ func (t *ExportTask) ExportGalleries(ctx context.Context, workers int, repo mode
 			logger.Progressf("[galleries] %d of %d", index, len(galleries))
 		}
 
+		var path string
+		var title string
+		if gallery.Path != nil {
+			path = *gallery.Path
+		}
+		if gallery.Title != nil {
+			title = *gallery.Title
+		}
+
 		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathNameMapping{
-			Path:     gallery.Path.String,
-			Name:     gallery.Title.String,
+			Path:     path,
+			Name:     title,
 			Checksum: gallery.Checksum,
 		})
 		jobCh <- gallery
@@ -686,8 +695,8 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 		newGalleryJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
-			if g.StudioID.Valid {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(g.StudioID.Int64))
+			if g.StudioID != nil {
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *g.StudioID)
 			}
 
 			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))

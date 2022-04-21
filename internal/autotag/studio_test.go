@@ -255,7 +255,7 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	aliasRegex := tc.aliasRegex
 	mockGalleryReader := &mocks.GalleryReaderWriter{}
 
-	const studioID = 2
+	var studioID = 2
 
 	var aliases []string
 
@@ -268,9 +268,10 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	var galleries []*models.Gallery
 	matchingPaths, falsePaths := generateTestPaths(testPathName, galleryExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
+		v := p
 		galleries = append(galleries, &models.Gallery{
 			ID:   i + 1,
-			Path: models.NullString(p),
+			Path: &v,
 		})
 	}
 
@@ -314,10 +315,8 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("Find", testCtx, galleryID).Return(&models.Gallery{}, nil).Once()
-		expectedStudioID := models.NullInt64(studioID)
-		mockGalleryReader.On("UpdatePartial", testCtx, models.GalleryPartial{
-			ID:       galleryID,
+		expectedStudioID := &studioID
+		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
 			StudioID: &expectedStudioID,
 		}).Return(nil, nil).Once()
 	}

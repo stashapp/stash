@@ -267,9 +267,10 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	var galleries []*models.Gallery
 	matchingPaths, falsePaths := generateTestPaths(testPathName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
+		v := p
 		galleries = append(galleries, &models.Gallery{
 			ID:   i + 1,
-			Path: models.NullString(p),
+			Path: &v,
 		})
 	}
 
@@ -313,8 +314,14 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("GetTagIDs", testCtx, galleryID).Return(nil, nil).Once()
-		mockGalleryReader.On("UpdateTags", testCtx, galleryID, []int{tagID}).Return(nil).Once()
+
+		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
+
 	}
 
 	err := TagGalleries(testCtx, &tag, nil, aliases, mockGalleryReader, nil)

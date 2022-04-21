@@ -243,75 +243,6 @@ func (_m *ImageReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models
 	return r0, r1
 }
 
-// GetGalleryIDs provides a mock function with given fields: ctx, imageID
-func (_m *ImageReaderWriter) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
-	ret := _m.Called(ctx, imageID)
-
-	var r0 []int
-	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
-		r0 = rf(ctx, imageID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, imageID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetPerformerIDs provides a mock function with given fields: ctx, imageID
-func (_m *ImageReaderWriter) GetPerformerIDs(ctx context.Context, imageID int) ([]int, error) {
-	ret := _m.Called(ctx, imageID)
-
-	var r0 []int
-	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
-		r0 = rf(ctx, imageID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, imageID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetTagIDs provides a mock function with given fields: ctx, imageID
-func (_m *ImageReaderWriter) GetTagIDs(ctx context.Context, imageID int) ([]int, error) {
-	ret := _m.Called(ctx, imageID)
-
-	var r0 []int
-	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
-		r0 = rf(ctx, imageID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, imageID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // IncrementOCounter provides a mock function with given fields: ctx, id
 func (_m *ImageReaderWriter) IncrementOCounter(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)
@@ -433,20 +364,6 @@ func (_m *ImageReaderWriter) Update(ctx context.Context, updatedImage *models.Im
 	return r0
 }
 
-// UpdateGalleries provides a mock function with given fields: ctx, imageID, galleryIDs
-func (_m *ImageReaderWriter) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
-	ret := _m.Called(ctx, imageID, galleryIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
-		r0 = rf(ctx, imageID, galleryIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // UpdatePartial provides a mock function with given fields: ctx, id, partial
 func (_m *ImageReaderWriter) UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error) {
 	ret := _m.Called(ctx, id, partial)
@@ -468,32 +385,4 @@ func (_m *ImageReaderWriter) UpdatePartial(ctx context.Context, id int, partial 
 	}
 
 	return r0, r1
-}
-
-// UpdatePerformers provides a mock function with given fields: ctx, imageID, performerIDs
-func (_m *ImageReaderWriter) UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error {
-	ret := _m.Called(ctx, imageID, performerIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
-		r0 = rf(ctx, imageID, performerIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// UpdateTags provides a mock function with given fields: ctx, imageID, tagIDs
-func (_m *ImageReaderWriter) UpdateTags(ctx context.Context, imageID int, tagIDs []int) error {
-	ret := _m.Called(ctx, imageID, tagIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
-		r0 = rf(ctx, imageID, tagIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }
