@@ -17,7 +17,7 @@ type SceneQueryPerformerUpdater interface {
 
 type ImageQueryPerformerUpdater interface {
 	image.Queryer
-	image.PerformerUpdater
+	image.PartialUpdater
 }
 
 type GalleryQueryPerformerUpdater interface {
@@ -47,8 +47,8 @@ func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, r
 func PerformerImages(ctx context.Context, p *models.Performer, paths []string, rw ImageQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
-	return t.tagImages(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-		return image.AddPerformer(ctx, rw, otherID, subjectID)
+	return t.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
+		return image.AddPerformer(ctx, rw, i, p.ID)
 	})
 }
 

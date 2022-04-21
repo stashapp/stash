@@ -12,16 +12,6 @@ type PartialUpdater interface {
 	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
 }
 
-type PerformerUpdater interface {
-	GetPerformerIDs(ctx context.Context, imageID int) ([]int, error)
-	UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error
-}
-
-type TagUpdater interface {
-	GetTagIDs(ctx context.Context, imageID int) ([]int, error)
-	UpdateTags(ctx context.Context, imageID int, tagIDs []int) error
-}
-
 func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime time.Time) (*models.Image, error) {
 	ptr := &modTime
 	return qb.UpdatePartial(ctx, id, models.ImagePartial{
@@ -29,17 +19,14 @@ func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime t
 	})
 }
 
-func AddPerformer(ctx context.Context, qb PerformerUpdater, id int, performerID int) (bool, error) {
-	performerIDs, err := qb.GetPerformerIDs(ctx, id)
-	if err != nil {
-		return false, err
-	}
-
-	oldLen := len(performerIDs)
-	performerIDs = intslice.IntAppendUnique(performerIDs, performerID)
-
-	if len(performerIDs) != oldLen {
-		if err := qb.UpdatePerformers(ctx, id, performerIDs); err != nil {
+func AddPerformer(ctx context.Context, qb PartialUpdater, i *models.Image, performerID int) (bool, error) {
+	if !intslice.IntInclude(i.PerformerIDs, performerID) {
+		if _, err := qb.UpdatePartial(ctx, i.ID, models.ImagePartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}); err != nil {
 			return false, err
 		}
 
@@ -49,17 +36,14 @@ func AddPerformer(ctx context.Context, qb PerformerUpdater, id int, performerID 
 	return false, nil
 }
 
-func AddTag(ctx context.Context, qb TagUpdater, id int, tagID int) (bool, error) {
-	tagIDs, err := qb.GetTagIDs(ctx, id)
-	if err != nil {
-		return false, err
-	}
-
-	oldLen := len(tagIDs)
-	tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
-
-	if len(tagIDs) != oldLen {
-		if err := qb.UpdateTags(ctx, id, tagIDs); err != nil {
+func AddTag(ctx context.Context, qb PartialUpdater, i *models.Image, tagID int) (bool, error) {
+	if !intslice.IntInclude(i.TagIDs, tagID) {
+		if _, err := qb.UpdatePartial(ctx, i.ID, models.ImagePartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}); err != nil {
 			return false, err
 		}
 

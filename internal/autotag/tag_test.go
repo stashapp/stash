@@ -221,8 +221,13 @@ func testTagImages(t *testing.T, tc testTagCase) {
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("GetTagIDs", testCtx, imageID).Return(nil, nil).Once()
-		mockImageReader.On("UpdateTags", testCtx, imageID, []int{tagID}).Return(nil).Once()
+
+		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := TagImages(testCtx, &tag, nil, aliases, mockImageReader, nil)

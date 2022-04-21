@@ -35,14 +35,8 @@ func addSceneStudio(ctx context.Context, sceneWriter SceneFinderUpdater, sceneID
 	return true, nil
 }
 
-func addImageStudio(ctx context.Context, imageWriter ImageFinderUpdater, imageID, studioID int) (bool, error) {
-	// don't set if already set
-	image, err := imageWriter.Find(ctx, imageID)
-	if err != nil {
-		return false, err
-	}
-
-	if image.StudioID != nil {
+func addImageStudio(ctx context.Context, imageWriter image.PartialUpdater, i *models.Image, studioID int) (bool, error) {
+	if i.StudioID != nil {
 		return false, nil
 	}
 
@@ -52,7 +46,7 @@ func addImageStudio(ctx context.Context, imageWriter ImageFinderUpdater, imageID
 		StudioID: &s,
 	}
 
-	if _, err := imageWriter.UpdatePartial(ctx, imageID, imagePartial); err != nil {
+	if _, err := imageWriter.UpdatePartial(ctx, i.ID, imagePartial); err != nil {
 		return false, err
 	}
 	return true, nil
@@ -133,8 +127,8 @@ func StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases
 	t := getStudioTagger(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagImages(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-			return addImageStudio(ctx, rw, otherID, subjectID)
+		if err := tt.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
+			return addImageStudio(ctx, rw, i, p.ID)
 		}); err != nil {
 			return err
 		}

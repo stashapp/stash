@@ -14,28 +14,12 @@ import (
 )
 
 const (
-	imageID = 1
-	// noImageID  = 2
+	imageID    = 1
 	errImageID = 3
 
 	studioID        = 4
 	missingStudioID = 5
 	errStudioID     = 6
-
-	// noGalleryID  = 7
-	// errGalleryID = 8
-
-	// noTagsID  = 11
-	errTagsID = 12
-
-	// noMoviesID     = 13
-	// errMoviesID    = 14
-	// errFindMovieID = 15
-
-	// noMarkersID         = 16
-	// errMarkersID        = 17
-	// errFindPrimaryTagID = 18
-	// errFindByMarkerID   = 19
 )
 
 var (
@@ -51,7 +35,6 @@ var (
 
 const (
 	studioName = "studioName"
-	// galleryChecksum = "galleryChecksum"
 )
 
 var (
@@ -174,48 +157,3 @@ func TestGetStudioName(t *testing.T) {
 
 	mockStudioReader.AssertExpectations(t)
 }
-
-// var getGalleryChecksumScenarios = []stringTestScenario{
-// 	{
-// 		createEmptyImage(imageID),
-// 		galleryChecksum,
-// 		false,
-// 	},
-// 	{
-// 		createEmptyImage(noGalleryID),
-// 		"",
-// 		false,
-// 	},
-// 	{
-// 		createEmptyImage(errGalleryID),
-// 		"",
-// 		true,
-// 	},
-// }
-
-// func TestGetGalleryChecksum(t *testing.T) {
-// 	mockGalleryReader := &mocks.GalleryReaderWriter{}
-
-// 	galleryErr := errors.New("error getting gallery")
-
-// 	mockGalleryReader.On("FindByImageID", imageID).Return(&models.Gallery{
-// 		Checksum: galleryChecksum,
-// 	}, nil).Once()
-// 	mockGalleryReader.On("FindByImageID", noGalleryID).Return(nil, nil).Once()
-// 	mockGalleryReader.On("FindByImageID", errGalleryID).Return(nil, galleryErr).Once()
-
-// 	for i, s := range getGalleryChecksumScenarios {
-// 		image := s.input
-// 		json, err := GetGalleryChecksum(mockGalleryReader, &image)
-
-// 		if !s.err && err != nil {
-// 			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-// 		} else if s.err && err == nil {
-// 			t.Errorf("[%d] expected error not returned", i)
-// 		} else {
-// 			assert.Equal(t, s.expected, json, "[%d]", i)
-// 		}
-// 	}
-
-// 	mockGalleryReader.AssertExpectations(t)
-// }

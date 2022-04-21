@@ -14,15 +14,8 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
-type FullCreatorUpdater interface {
-	FinderCreatorUpdater
-	UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error
-	UpdateTags(ctx context.Context, imageID int, tagIDs []int) error
-	UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error
-}
-
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
+	ReaderWriter        FinderCreatorUpdater
 	StudioWriter        studio.NameFinderCreator
 	GalleryWriter       gallery.ChecksumsFinder
 	PerformerWriter     performer.NameFinderCreator
@@ -31,11 +24,8 @@ type Importer struct {
 	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	ID         int
-	image      models.Image
-	galleries  []*models.Gallery
-	performers []*models.Performer
-	tags       []*models.Tag
+	ID    int
+	image models.Image
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -152,7 +142,7 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 				continue
 			}
 		} else {
-			i.galleries = append(i.galleries, gallery[0])
+			i.image.GalleryIDs = append(i.image.GalleryIDs, gallery[0].ID)
 		}
 	}
 
@@ -196,7 +186,9 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 			// ignore if MissingRefBehaviour set to Ignore
 		}
 
-		i.performers = performers
+		for _, p := range performers {
+			i.image.PerformerIDs = append(i.image.PerformerIDs, p.ID)
+		}
 	}
 
 	return nil
@@ -226,45 +218,15 @@ func (i *Importer) populateTags(ctx context.Context) error {
 			return err
 		}
 
-		i.tags = tags
+		for _, t := range tags {
+			i.image.TagIDs = append(i.image.TagIDs, t.ID)
+		}
 	}
 
 	return nil
 }
 
 func (i *Importer) PostImport(ctx context.Context, id int) error {
-	if len(i.galleries) > 0 {
-		var galleryIDs []int
-		for _, g := range i.galleries {
-			galleryIDs = append(galleryIDs, g.ID)
-		}
-
-		if err := i.ReaderWriter.UpdateGalleries(ctx, id, galleryIDs); err != nil {
-			return fmt.Errorf("failed to associate galleries: %v", err)
-		}
-	}
-
-	if len(i.performers) > 0 {
-		var performerIDs []int
-		for _, performer := range i.performers {
-			performerIDs = append(performerIDs, performer.ID)
-		}
-
-		if err := i.ReaderWriter.UpdatePerformers(ctx, id, performerIDs); err != nil {
-			return fmt.Errorf("failed to associate performers: %v", err)
-		}
-	}
-
-	if len(i.tags) > 0 {
-		var tagIDs []int
-		for _, t := range i.tags {
-			tagIDs = append(tagIDs, t.ID)
-		}
-		if err := i.ReaderWriter.UpdateTags(ctx, id, tagIDs); err != nil {
-			return fmt.Errorf("failed to associate tags: %v", err)
-		}
-	}
-
 	return nil
 }
 

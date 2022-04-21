@@ -194,8 +194,10 @@ func (qb *imageQueryBuilder) UpdatePartial(ctx context.Context, id int, partial 
 
 	r.fromPartial(partial)
 
-	if err := imageTableMgr.updateByID(ctx, id, r.Record); err != nil {
-		return nil, err
+	if len(r.Record) > 0 {
+		if err := imageTableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
 	}
 
 	if partial.GalleryIDs != nil {
@@ -792,14 +794,14 @@ func (qb *imageQueryBuilder) galleriesRepository() *joinRepository {
 	}
 }
 
-func (qb *imageQueryBuilder) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
-	return qb.galleriesRepository().getIDs(ctx, imageID)
-}
+// func (qb *imageQueryBuilder) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
+// 	return qb.galleriesRepository().getIDs(ctx, imageID)
+// }
 
-func (qb *imageQueryBuilder) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
-	// Delete the existing joins and then create new ones
-	return qb.galleriesRepository().replace(ctx, imageID, galleryIDs)
-}
+// func (qb *imageQueryBuilder) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
+// 	// Delete the existing joins and then create new ones
+// 	return qb.galleriesRepository().replace(ctx, imageID, galleryIDs)
+// }
 
 func (qb *imageQueryBuilder) performersRepository() *joinRepository {
 	return &joinRepository{

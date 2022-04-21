@@ -152,8 +152,12 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("GetPerformerIDs", testCtx, imageID).Return(nil, nil).Once()
-		mockImageReader.On("UpdatePerformers", testCtx, imageID, []int{performerID}).Return(nil).Once()
+		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := PerformerImages(testCtx, &performer, nil, mockImageReader, nil)
