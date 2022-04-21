@@ -6,6 +6,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 )
 
 type Studio struct {
@@ -13,8 +14,8 @@ type Studio struct {
 	URL           string           `json:"url,omitempty"`
 	ParentStudio  string           `json:"parent_studio,omitempty"`
 	Image         string           `json:"image,omitempty"`
-	CreatedAt     models.JSONTime  `json:"created_at,omitempty"`
-	UpdatedAt     models.JSONTime  `json:"updated_at,omitempty"`
+	CreatedAt     json.JSONTime    `json:"created_at,omitempty"`
+	UpdatedAt     json.JSONTime    `json:"updated_at,omitempty"`
 	Rating        int              `json:"rating,omitempty"`
 	Details       string           `json:"details,omitempty"`
 	Aliases       []string         `json:"aliases,omitempty"`

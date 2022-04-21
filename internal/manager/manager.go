@@ -37,8 +37,10 @@ type singleton struct {
 
 	Paths *paths.Paths
 
-	FFMPEG  ffmpeg.Encoder
+	FFMPEG  ffmpeg.FFMpeg
 	FFProbe ffmpeg.FFProbe
+
+	ReadLockManager *fsutil.ReadLockManager
 
 	SessionStore *session.Store
 
@@ -77,10 +79,11 @@ func Initialize() *singleton {
 		initProfiling(cfg.GetCPUProfilePath())
 
 		instance = &singleton{
-			Config:        cfg,
-			Logger:        l,
-			DownloadStore: NewDownloadStore(),
-			PluginCache:   plugin.NewCache(cfg),
+			Config:          cfg,
+			Logger:          l,
+			ReadLockManager: fsutil.NewReadLockManager(),
+			DownloadStore:   NewDownloadStore(),
+			PluginCache:     plugin.NewCache(cfg),
 
 			TxnManager: sqlite.NewTransactionManager(),
 
@@ -121,7 +124,7 @@ func Initialize() *singleton {
 			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
 		}
 
-		if err = initFFMPEG(); err != nil {
+		if err = initFFMPEG(ctx); err != nil {
 			logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
 		}
 
@@ -189,9 +192,7 @@ func initProfiling(cpuProfilePath string) {
 	}
 }
 
-func initFFMPEG() error {
-	ctx := context.TODO()
-
+func initFFMPEG(ctx context.Context) error {
 	// only do this if we have a config file set
 	if instance.Config.GetConfigFile() != "" {
 		// use same directory as config path
@@ -220,7 +221,7 @@ func initFFMPEG() error {
 			}
 		}
 
-		instance.FFMPEG = ffmpeg.Encoder(ffmpegPath)
+		instance.FFMPEG = ffmpeg.FFMpeg(ffmpegPath)
 		instance.FFProbe = ffmpeg.FFProbe(ffprobePath)
 	}
 
@@ -404,7 +405,7 @@ func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
 
 	s.Config.FinalizeSetup()
 
-	if err := initFFMPEG(); err != nil {
+	if err := initFFMPEG(ctx); err != nil {
 		return fmt.Errorf("error initializing FFMPEG subsystem: %v", err)
 	}
 

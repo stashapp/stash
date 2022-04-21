@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"strconv"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
 type GenerateMarkersTask struct {
@@ -21,6 +21,8 @@ type GenerateMarkersTask struct {
 
 	ImagePreview bool
 	Screenshot   bool
+
+	generator *generate.Generator
 }
 
 func (t *GenerateMarkersTask) GetDescription() string {
@@ -35,12 +37,12 @@ func (t *GenerateMarkersTask) GetDescription() string {
 
 func (t *GenerateMarkersTask) Start(ctx context.Context) {
 	if t.Scene != nil {
-		t.generateSceneMarkers()
+		t.generateSceneMarkers(ctx)
 	}
 
 	if t.Marker != nil {
 		var scene *models.Scene
-		if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			var err error
 			scene, err = r.Scene().Find(int(t.Marker.SceneID.Int64))
 			return err
@@ -55,7 +57,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 		}
 
 		ffprobe := instance.FFProbe
-		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
+		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
 		if err != nil {
 			logger.Errorf("error reading video file: %s", err.Error())
 			return
@@ -65,9 +67,9 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 	}
 }
 
-func (t *GenerateMarkersTask) generateSceneMarkers() {
+func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		sceneMarkers, err = r.SceneMarker().FindBySceneID(t.Scene.ID)
 		return err
@@ -81,7 +83,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 	}
 
 	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path, false)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return
@@ -107,70 +109,32 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	seconds := int(sceneMarker.Seconds)
 
-	videoExists := t.videoExists(sceneHash, seconds)
-	imageExists := !t.ImagePreview || t.imageExists(sceneHash, seconds)
-	screenshotExists := !t.Screenshot || t.screenshotExists(sceneHash, seconds)
+	g := t.generator
 
-	baseFilename := strconv.Itoa(seconds)
-
-	options := ffmpeg.SceneMarkerOptions{
-		ScenePath: scene.Path,
-		Seconds:   seconds,
-		Width:     640,
-		Audio:     instance.Config.GetPreviewAudio(),
+	if err := g.MarkerPreviewVideo(context.TODO(), videoFile.Path, sceneHash, seconds, instance.Config.GetPreviewAudio()); err != nil {
+		logger.Errorf("[generator] failed to generate marker video: %v", err)
+		logErrorOutput(err)
 	}
 
-	encoder := instance.FFMPEG
-
-	if t.Overwrite || !videoExists {
-		videoFilename := baseFilename + ".mp4"
-		videoPath := instance.Paths.SceneMarkers.GetStreamPath(sceneHash, seconds)
-
-		options.OutputPath = instance.Paths.Generated.GetTmpPath(videoFilename) // tmp output in case the process ends abruptly
-		if err := encoder.SceneMarkerVideo(*videoFile, options); err != nil {
-			logger.Errorf("[generator] failed to generate marker video: %s", err)
-		} else {
-			_ = fsutil.SafeMove(options.OutputPath, videoPath)
-			logger.Debug("created marker video: ", videoPath)
+	if t.ImagePreview {
+		if err := g.SceneMarkerWebp(context.TODO(), videoFile.Path, sceneHash, seconds); err != nil {
+			logger.Errorf("[generator] failed to generate marker image: %v", err)
+			logErrorOutput(err)
 		}
 	}
 
-	if t.ImagePreview && (t.Overwrite || !imageExists) {
-		imageFilename := baseFilename + ".webp"
-		imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(sceneHash, seconds)
-
-		options.OutputPath = instance.Paths.Generated.GetTmpPath(imageFilename) // tmp output in case the process ends abruptly
-		if err := encoder.SceneMarkerImage(*videoFile, options); err != nil {
-			logger.Errorf("[generator] failed to generate marker image: %s", err)
-		} else {
-			_ = fsutil.SafeMove(options.OutputPath, imagePath)
-			logger.Debug("created marker image: ", imagePath)
-		}
-	}
-
-	if t.Screenshot && (t.Overwrite || !screenshotExists) {
-		screenshotFilename := baseFilename + ".jpg"
-		screenshotPath := instance.Paths.SceneMarkers.GetStreamScreenshotPath(sceneHash, seconds)
-
-		screenshotOptions := ffmpeg.ScreenshotOptions{
-			OutputPath: instance.Paths.Generated.GetTmpPath(screenshotFilename), // tmp output in case the process ends abruptly
-			Quality:    2,
-			Width:      videoFile.Width,
-			Time:       float64(seconds),
-		}
-		if err := encoder.Screenshot(*videoFile, screenshotOptions); err != nil {
-			logger.Errorf("[generator] failed to generate marker screenshot: %s", err)
-		} else {
-			_ = fsutil.SafeMove(screenshotOptions.OutputPath, screenshotPath)
-			logger.Debug("created marker screenshot: ", screenshotPath)
+	if t.Screenshot {
+		if err := g.SceneMarkerScreenshot(context.TODO(), videoFile.Path, sceneHash, seconds, videoFile.Width); err != nil {
+			logger.Errorf("[generator] failed to generate marker screenshot: %v", err)
+			logErrorOutput(err)
 		}
 	}
 }
 
-func (t *GenerateMarkersTask) markersNeeded() int {
+func (t *GenerateMarkersTask) markersNeeded(ctx context.Context) int {
 	markers := 0
 	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		sceneMarkers, err = r.SceneMarker().FindBySceneID(t.Scene.ID)
 		return err
@@ -212,7 +176,7 @@ func (t *GenerateMarkersTask) videoExists(sceneChecksum string, seconds int) boo
 		return false
 	}
 
-	videoPath := instance.Paths.SceneMarkers.GetStreamPath(sceneChecksum, seconds)
+	videoPath := instance.Paths.SceneMarkers.GetVideoPreviewPath(sceneChecksum, seconds)
 	videoExists, _ := fsutil.FileExists(videoPath)
 
 	return videoExists
@@ -223,7 +187,7 @@ func (t *GenerateMarkersTask) imageExists(sceneChecksum string, seconds int) boo
 		return false
 	}
 
-	imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(sceneChecksum, seconds)
+	imagePath := instance.Paths.SceneMarkers.GetWebpPreviewPath(sceneChecksum, seconds)
 	imageExists, _ := fsutil.FileExists(imagePath)
 
 	return imageExists
@@ -234,7 +198,7 @@ func (t *GenerateMarkersTask) screenshotExists(sceneChecksum string, seconds int
 		return false
 	}
 
-	screenshotPath := instance.Paths.SceneMarkers.GetStreamScreenshotPath(sceneChecksum, seconds)
+	screenshotPath := instance.Paths.SceneMarkers.GetScreenshotPath(sceneChecksum, seconds)
 	screenshotExists, _ := fsutil.FileExists(screenshotPath)
 
 	return screenshotExists

@@ -2,6 +2,7 @@ package image
 
 import (
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 )
 
@@ -11,8 +12,8 @@ import (
 func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON := jsonschema.Image{
 		Checksum:  image.Checksum,
-		CreatedAt: models.JSONTime{Time: image.CreatedAt.Timestamp},
-		UpdatedAt: models.JSONTime{Time: image.UpdatedAt.Timestamp},
+		CreatedAt: json.JSONTime{Time: image.CreatedAt.Timestamp},
+		UpdatedAt: json.JSONTime{Time: image.UpdatedAt.Timestamp},
 	}
 
 	if image.Title.Valid {
@@ -35,7 +36,7 @@ func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
 	ret := &jsonschema.ImageFile{}
 
 	if image.FileModTime.Valid {
-		ret.ModTime = models.JSONTime{Time: image.FileModTime.Timestamp}
+		ret.ModTime = json.JSONTime{Time: image.FileModTime.Timestamp}
 	}
 
 	if image.Size.Valid {
