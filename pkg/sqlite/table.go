@@ -111,6 +111,16 @@ type joinTable struct {
 	fkColumn exp.IdentifierExpression
 }
 
+func (t *joinTable) invert() *joinTable {
+	return &joinTable{
+		table: table{
+			table:    t.table.table,
+			idColumn: t.fkColumn,
+		},
+		fkColumn: t.table.idColumn,
+	}
+}
+
 func (t *joinTable) get(ctx context.Context, id int) ([]int, error) {
 	q := goqu.Select(t.fkColumn).From(t.table.table).Where(t.idColumn.Eq(id))
 
@@ -195,6 +205,240 @@ func (t *joinTable) modifyJoins(ctx context.Context, id int, foreignIDs []int, m
 		return t.addJoins(ctx, id, foreignIDs)
 	case models.RelationshipUpdateModeRemove:
 		return t.destroyJoins(ctx, id, foreignIDs)
+	}
+
+	return nil
+}
+
+type stashIDTable struct {
+	table
+}
+
+type stashIDRow struct {
+	StashID  nullString `db:"stash_id"`
+	Endpoint nullString `db:"endpoint"`
+}
+
+func (r *stashIDRow) resolve() *models.StashID {
+	return &models.StashID{
+		StashID:  r.StashID.String,
+		Endpoint: r.Endpoint.String,
+	}
+}
+
+func (t *stashIDTable) get(ctx context.Context, id int) ([]*models.StashID, error) {
+	q := goqu.Select("endpoint", "stash_id").From(t.table.table).Where(t.idColumn.Eq(id))
+
+	const single = false
+	var ret []*models.StashID
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var v stashIDRow
+		if err := rows.StructScan(&v); err != nil {
+			return err
+		}
+
+		ret = append(ret, v.resolve())
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting stash ids from %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *stashIDTable) insertJoin(ctx context.Context, id int, v *models.StashID) (sql.Result, error) {
+	q := goqu.Insert(t.table.table).Cols(t.idColumn.GetCol(), "endpoint", "stash_id").Vals(
+		goqu.Vals{id, v.Endpoint, v.StashID},
+	)
+	ret, err := exec(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("inserting into %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *stashIDTable) insertJoins(ctx context.Context, id int, v []*models.StashID) error {
+	for _, fk := range v {
+		if _, err := t.insertJoin(ctx, id, fk); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (t *stashIDTable) replaceJoins(ctx context.Context, id int, v []*models.StashID) error {
+	if err := t.destroy(ctx, []int{id}); err != nil {
+		return err
+	}
+
+	return t.insertJoins(ctx, id, v)
+}
+
+func (t *stashIDTable) addJoins(ctx context.Context, id int, v []*models.StashID) error {
+	// get existing foreign keys
+	fks, err := t.get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// only add values that are not already present
+	var filtered []*models.StashID
+	for _, vv := range v {
+		for _, e := range fks {
+			if vv.Endpoint == e.Endpoint {
+				continue
+			}
+
+			filtered = append(filtered, vv)
+		}
+	}
+	return t.insertJoins(ctx, id, filtered)
+}
+
+func (t *stashIDTable) destroyJoins(ctx context.Context, id int, v []*models.StashID) error {
+	for _, vv := range v {
+		q := goqu.Delete(t.table.table).Where(
+			t.idColumn.Eq(id),
+			t.table.table.Col("endpoint").Eq(vv.Endpoint),
+			t.table.table.Col("stash_id").Eq(vv.StashID),
+		)
+
+		if _, err := exec(ctx, q); err != nil {
+			return fmt.Errorf("destroying %s: %w", t.table.table.GetTable(), err)
+		}
+	}
+
+	return nil
+}
+
+func (t *stashIDTable) modifyJoins(ctx context.Context, id int, v []*models.StashID, mode models.RelationshipUpdateMode) error {
+	switch mode {
+	case models.RelationshipUpdateModeSet:
+		return t.replaceJoins(ctx, id, v)
+	case models.RelationshipUpdateModeAdd:
+		return t.addJoins(ctx, id, v)
+	case models.RelationshipUpdateModeRemove:
+		return t.destroyJoins(ctx, id, v)
+	}
+
+	return nil
+}
+
+type scenesMoviesTable struct {
+	table
+}
+
+type moviesScenesRow struct {
+	MovieID    nullInt `db:"movie_id"`
+	SceneIndex nullInt `db:"scene_index"`
+}
+
+func (r moviesScenesRow) resolve(sceneID int) models.MoviesScenes {
+	return models.MoviesScenes{
+		MovieID:    r.MovieID.int(),
+		SceneID:    sceneID,
+		SceneIndex: r.SceneIndex.intPtr(),
+	}
+}
+
+func (t *scenesMoviesTable) get(ctx context.Context, id int) ([]models.MoviesScenes, error) {
+	q := goqu.Select("movie_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
+
+	const single = false
+	var ret []models.MoviesScenes
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var v moviesScenesRow
+		if err := rows.StructScan(&v); err != nil {
+			return err
+		}
+
+		ret = append(ret, v.resolve(id))
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("getting scene movies from %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *scenesMoviesTable) insertJoin(ctx context.Context, id int, v models.MoviesScenes) (sql.Result, error) {
+	q := goqu.Insert(t.table.table).Cols(t.idColumn.GetCol(), "movie_id", "scene_index").Vals(
+		goqu.Vals{id, v.MovieID, newNullIntPtr(v.SceneIndex)},
+	)
+	ret, err := exec(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("inserting into %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return ret, nil
+}
+
+func (t *scenesMoviesTable) insertJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+	for _, fk := range v {
+		if _, err := t.insertJoin(ctx, id, fk); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (t *scenesMoviesTable) replaceJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+	if err := t.destroy(ctx, []int{id}); err != nil {
+		return err
+	}
+
+	return t.insertJoins(ctx, id, v)
+}
+
+func (t *scenesMoviesTable) addJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+	// get existing foreign keys
+	fks, err := t.get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// only add values that are not already present
+	var filtered []models.MoviesScenes
+	for _, vv := range v {
+		for _, e := range fks {
+			if vv.MovieID == e.MovieID {
+				continue
+			}
+
+			filtered = append(filtered, vv)
+		}
+	}
+	return t.insertJoins(ctx, id, filtered)
+}
+
+func (t *scenesMoviesTable) destroyJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
+	for _, vv := range v {
+		q := goqu.Delete(t.table.table).Where(
+			t.idColumn.Eq(id),
+			t.table.table.Col("movie_id").Eq(vv.MovieID),
+		)
+
+		if _, err := exec(ctx, q); err != nil {
+			return fmt.Errorf("destroying %s: %w", t.table.table.GetTable(), err)
+		}
+	}
+
+	return nil
+}
+
+func (t *scenesMoviesTable) modifyJoins(ctx context.Context, id int, v []models.MoviesScenes, mode models.RelationshipUpdateMode) error {
+	switch mode {
+	case models.RelationshipUpdateModeSet:
+		return t.replaceJoins(ctx, id, v)
+	case models.RelationshipUpdateModeAdd:
+		return t.addJoins(ctx, id, v)
+	case models.RelationshipUpdateModeRemove:
+		return t.destroyJoins(ctx, id, v)
 	}
 
 	return nil

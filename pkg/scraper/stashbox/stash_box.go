@@ -35,7 +35,6 @@ import (
 
 type SceneReader interface {
 	Find(ctx context.Context, id int) (*models.Scene, error)
-	GetStashIDs(ctx context.Context, sceneID int) ([]*models.StashID, error)
 }
 
 type PerformerReader interface {
@@ -327,11 +326,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 				continue
 			}
 
-			stashIDs, err := qb.GetStashIDs(ctx, sceneID)
-			if err != nil {
-				return err
-			}
-
+			stashIDs := scene.StashIDs
 			sceneStashID := ""
 			for _, stashID := range stashIDs {
 				if stashID.Endpoint == endpoint {

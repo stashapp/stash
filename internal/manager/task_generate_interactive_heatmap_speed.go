@@ -55,10 +55,9 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		qb := t.TxnManager.Scene
 		scenePartial := models.ScenePartial{
-			ID:               s.ID,
 			InteractiveSpeed: &median,
 		}
-		_, err := qb.Update(ctx, scenePartial)
+		_, err := qb.UpdatePartial(ctx, s.ID, scenePartial)
 		return err
 	}); err != nil {
 		logger.Error(err.Error())

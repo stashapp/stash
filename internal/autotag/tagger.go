@@ -37,6 +37,7 @@ type tagger struct {
 type addLinkFunc func(subjectID, otherID int) (bool, error)
 type addImageLinkFunc func(o *models.Image) (bool, error)
 type addGalleryLinkFunc func(o *models.Gallery) (bool, error)
+type addSceneLinkFunc func(o *models.Scene) (bool, error)
 
 func (t *tagger) addError(otherType, otherName string, err error) error {
 	return fmt.Errorf("error adding %s '%s' to %s '%s': %s", otherType, otherName, t.Type, t.Name, err.Error())
@@ -109,14 +110,14 @@ func (t *tagger) tagTags(ctx context.Context, tagReader match.TagAutoTagQueryer,
 	return nil
 }
 
-func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader scene.Queryer, addFunc addLinkFunc) error {
+func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader scene.Queryer, addFunc addSceneLinkFunc) error {
 	others, err := match.PathToScenes(ctx, t.Name, paths, sceneReader)
 	if err != nil {
 		return err
 	}
 
 	for _, p := range others {
-		added, err := addFunc(t.ID, p.ID)
+		added, err := addFunc(p)
 
 		if err != nil {
 			return t.addError("scene", p.GetTitle(), err)

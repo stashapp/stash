@@ -10,25 +10,19 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 )
 
-func addSceneStudio(ctx context.Context, sceneWriter SceneFinderUpdater, sceneID, studioID int) (bool, error) {
+func addSceneStudio(ctx context.Context, sceneWriter scene.PartialUpdater, o *models.Scene, studioID int) (bool, error) {
 	// don't set if already set
-	scene, err := sceneWriter.Find(ctx, sceneID)
-	if err != nil {
-		return false, err
-	}
-
-	if scene.StudioID != nil {
+	if o.StudioID != nil {
 		return false, nil
 	}
 
 	// set the studio id
 	s := &studioID
 	scenePartial := models.ScenePartial{
-		ID:       sceneID,
 		StudioID: &s,
 	}
 
-	if _, err := sceneWriter.Update(ctx, scenePartial); err != nil {
+	if _, err := sceneWriter.UpdatePartial(ctx, o.ID, scenePartial); err != nil {
 		return false, err
 	}
 	return true, nil
@@ -91,8 +85,7 @@ func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache) []t
 
 type SceneFinderUpdater interface {
 	scene.Queryer
-	Find(ctx context.Context, id int) (*models.Scene, error)
-	Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error)
+	scene.PartialUpdater
 }
 
 // StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.
@@ -100,8 +93,8 @@ func StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases
 	t := getStudioTagger(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagScenes(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-			return addSceneStudio(ctx, rw, otherID, subjectID)
+		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
+			return addSceneStudio(ctx, rw, o, p.ID)
 		}); err != nil {
 			return err
 		}

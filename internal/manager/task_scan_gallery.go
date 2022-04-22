@@ -120,7 +120,12 @@ func (t *ScanTask) associateGallery(ctx context.Context, wg *sizedwaitgroup.Size
 				}
 				if !isAssoc {
 					logger.Infof("associate: Gallery %s is related to scene: %d", path, scene.ID)
-					if err := sqb.UpdateGalleries(ctx, scene.ID, []int{g.ID}); err != nil {
+					if _, err := sqb.UpdatePartial(ctx, scene.ID, models.ScenePartial{
+						GalleryIDs: &models.UpdateIDs{
+							IDs:  []int{g.ID},
+							Mode: models.RelationshipUpdateModeAdd,
+						},
+					}); err != nil {
 						return err
 					}
 				}

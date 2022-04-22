@@ -199,3 +199,25 @@ func newNullTime(v *time.Time) nullTime {
 type nullFloat64 struct {
 	sql.NullFloat64
 }
+
+func (n nullFloat64) float64Ptr() *float64 {
+	if !n.Valid {
+		return nil
+	}
+
+	return &n.NullFloat64.Float64
+}
+
+func newNullFloat64Ptr(v *float64) nullFloat64 {
+	ret := nullFloat64{
+		NullFloat64: sql.NullFloat64{
+			Valid: v != nil,
+		},
+	}
+
+	if ret.Valid {
+		ret.Float64 = *v
+	}
+
+	return ret
+}

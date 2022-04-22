@@ -10,6 +10,11 @@ var (
 	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
 	performersGalleriesJoinTable = goqu.T(performersGalleriesTable)
 	galleriesScenesJoinTable     = goqu.T(galleriesScenesTable)
+
+	scenesTagsJoinTable       = goqu.T(scenesTagsTable)
+	scenesPerformersJoinTable = goqu.T(performersScenesTable)
+	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
+	scenesMoviesJoinTable     = goqu.T(moviesScenesTable)
 )
 
 var (
@@ -71,5 +76,44 @@ var (
 			idColumn: galleriesScenesJoinTable.Col(galleryIDColumn),
 		},
 		fkColumn: galleriesScenesJoinTable.Col(sceneIDColumn),
+	}
+)
+
+var (
+	sceneTableMgr = &table{
+		table:    goqu.T(sceneTable),
+		idColumn: goqu.T(sceneTable).Col(idColumn),
+	}
+
+	scenesTagsTableMgr = &joinTable{
+		table: table{
+			table:    scenesTagsJoinTable,
+			idColumn: scenesTagsJoinTable.Col(sceneIDColumn),
+		},
+		fkColumn: scenesTagsJoinTable.Col(tagIDColumn),
+	}
+
+	scenesPerformersTableMgr = &joinTable{
+		table: table{
+			table:    scenesPerformersJoinTable,
+			idColumn: scenesPerformersJoinTable.Col(sceneIDColumn),
+		},
+		fkColumn: scenesPerformersJoinTable.Col(performerIDColumn),
+	}
+
+	scenesGalleriesTableMgr = galleriesScenesTableMgr.invert()
+
+	scenesStashIDsTableMgr = &stashIDTable{
+		table: table{
+			table:    scenesStashIDsJoinTable,
+			idColumn: scenesStashIDsJoinTable.Col(sceneIDColumn),
+		},
+	}
+
+	scenesMoviesTableMgr = &scenesMoviesTable{
+		table: table{
+			table:    scenesMoviesJoinTable,
+			idColumn: scenesMoviesJoinTable.Col(sceneIDColumn),
+		},
 	}
 )

@@ -78,7 +78,6 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		qb := t.txnManager.Scene
 		updatedTime := time.Now()
 		updatedScene := models.ScenePartial{
-			ID:        t.Scene.ID,
 			UpdatedAt: &updatedTime,
 		}
 
@@ -92,7 +91,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		}
 
 		// update the scene with the update date
-		_, err = qb.Update(ctx, updatedScene)
+		_, err = qb.UpdatePartial(ctx, t.Scene.ID, updatedScene)
 		if err != nil {
 			return fmt.Errorf("error updating scene: %v", err)
 		}

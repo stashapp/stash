@@ -20,8 +20,6 @@ import (
 type FullCreatorUpdater interface {
 	CreatorUpdater
 	Updater
-	UpdateGalleries(ctx context.Context, sceneID int, galleryIDs []int) error
-	UpdateMovies(ctx context.Context, sceneID int, movies []models.MoviesScenes) error
 }
 
 type Importer struct {
@@ -38,10 +36,6 @@ type Importer struct {
 
 	ID             int
 	scene          models.Scene
-	galleries      []*models.Gallery
-	performers     []*models.Performer
-	movies         []models.MoviesScenes
-	tags           []*models.Tag
 	coverImageData []byte
 }
 
@@ -154,6 +148,10 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 		}
 	}
 
+	for _, v := range i.Input.StashIDs {
+		newScene.StashIDs = append(newScene.StashIDs, v)
+	}
+
 	return newScene
 }
 
@@ -224,7 +222,9 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 			// we don't create galleries - just ignore
 		}
 
-		i.galleries = galleries
+		for _, o := range galleries {
+			i.scene.GalleryIDs = append(i.scene.GalleryIDs, o.ID)
+		}
 	}
 
 	return nil
@@ -267,7 +267,9 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 			// ignore if MissingRefBehaviour set to Ignore
 		}
 
-		i.performers = performers
+		for _, p := range performers {
+			i.scene.PerformerIDs = append(i.scene.PerformerIDs, p.ID)
+		}
 	}
 
 	return nil
@@ -324,7 +326,7 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 				toAdd.SceneIndex = &index
 			}
 
-			i.movies = append(i.movies, toAdd)
+			i.scene.Movies = append(i.scene.Movies, toAdd)
 		}
 	}
 
@@ -350,7 +352,9 @@ func (i *Importer) populateTags(ctx context.Context) error {
 			return err
 		}
 
-		i.tags = tags
+		for _, p := range tags {
+			i.scene.TagIDs = append(i.scene.TagIDs, p.ID)
+		}
 	}
 
 	return nil
@@ -360,53 +364,6 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 	if len(i.coverImageData) > 0 {
 		if err := i.ReaderWriter.UpdateCover(ctx, id, i.coverImageData); err != nil {
 			return fmt.Errorf("error setting scene images: %v", err)
-		}
-	}
-
-	if len(i.galleries) > 0 {
-		var galleryIDs []int
-		for _, gallery := range i.galleries {
-			galleryIDs = append(galleryIDs, gallery.ID)
-		}
-
-		if err := i.ReaderWriter.UpdateGalleries(ctx, id, galleryIDs); err != nil {
-			return fmt.Errorf("failed to associate galleries: %v", err)
-		}
-	}
-
-	if len(i.performers) > 0 {
-		var performerIDs []int
-		for _, performer := range i.performers {
-			performerIDs = append(performerIDs, performer.ID)
-		}
-
-		if err := i.ReaderWriter.UpdatePerformers(ctx, id, performerIDs); err != nil {
-			return fmt.Errorf("failed to associate performers: %v", err)
-		}
-	}
-
-	if len(i.movies) > 0 {
-		for index := range i.movies {
-			i.movies[index].SceneID = id
-		}
-		if err := i.ReaderWriter.UpdateMovies(ctx, id, i.movies); err != nil {
-			return fmt.Errorf("failed to associate movies: %v", err)
-		}
-	}
-
-	if len(i.tags) > 0 {
-		var tagIDs []int
-		for _, t := range i.tags {
-			tagIDs = append(tagIDs, t.ID)
-		}
-		if err := i.ReaderWriter.UpdateTags(ctx, id, tagIDs); err != nil {
-			return fmt.Errorf("failed to associate tags: %v", err)
-		}
-	}
-
-	if len(i.Input.StashIDs) > 0 {
-		if err := i.ReaderWriter.UpdateStashIDs(ctx, id, i.Input.StashIDs); err != nil {
-			return fmt.Errorf("error setting stash id: %v", err)
 		}
 	}
 
@@ -443,12 +400,11 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.scene)
-	if err != nil {
+	if err := i.ReaderWriter.Create(ctx, &i.scene); err != nil {
 		return nil, fmt.Errorf("error creating scene: %v", err)
 	}
 
-	id := created.ID
+	id := i.scene.ID
 	i.ID = id
 	return &id, nil
 }
@@ -457,8 +413,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	scene := i.scene
 	scene.ID = id
 	i.ID = id
-	_, err := i.ReaderWriter.UpdateFull(ctx, scene)
-	if err != nil {
+	if err := i.ReaderWriter.Update(ctx, &scene); err != nil {
 		return fmt.Errorf("error updating existing scene: %v", err)
 	}
 

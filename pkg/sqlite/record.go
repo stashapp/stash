@@ -50,6 +50,12 @@ func (r *updateRecord) setNullInt64Ptr(destField string, v **int64) {
 	}
 }
 
+func (r *updateRecord) setNullFloat64Ptr(destField string, v **float64) {
+	if v != nil {
+		r.set(destField, newNullFloat64Ptr(*v))
+	}
+}
+
 func (r *updateRecord) setNullTimePtr(destField string, v **time.Time) {
 	if v != nil {
 		r.set(destField, newNullTime(*v))

@@ -139,19 +139,37 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	ret.PerformerIDs, err = rel.performers(ctx, ignoreMale)
+	performerIDs, err := rel.performers(ctx, ignoreMale)
 	if err != nil {
 		return nil, err
 	}
+	if performerIDs != nil {
+		ret.Partial.PerformerIDs = &models.UpdateIDs{
+			IDs:  performerIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	}
 
-	ret.TagIDs, err = rel.tags(ctx)
+	tagIDs, err := rel.tags(ctx)
 	if err != nil {
 		return nil, err
 	}
+	if tagIDs != nil {
+		ret.Partial.TagIDs = &models.UpdateIDs{
+			IDs:  tagIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	}
 
-	ret.StashIDs, err = rel.stashIDs(ctx)
+	stashIDs, err := rel.stashIDs(ctx)
 	if err != nil {
 		return nil, err
+	}
+	if stashIDs != nil {
+		ret.Partial.StashIDs = &models.UpdateStashIDs{
+			StashIDs: stashIDs,
+			Mode:     models.RelationshipUpdateModeSet,
+		}
 	}
 
 	setCoverImage := false
@@ -229,9 +247,7 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 }
 
 func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
-	partial := models.ScenePartial{
-		ID: scene.ID,
-	}
+	partial := models.ScenePartial{}
 
 	if scraped.Title != nil && (scene.Title == nil || *scene.Title != *scraped.Title) {
 		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != nil && *scene.Title != "") {

@@ -443,7 +443,7 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 			continue
 		}
 
-		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(ctx, movieReader, sceneReader, s)
+		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(ctx, movieReader, s)
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene movies JSON: %s", sceneHash, err.Error())
 			continue
@@ -463,7 +463,7 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 			}
 			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tagIDs)
 
-			movieIDs, err := scene.GetDependentMovieIDs(ctx, sceneReader, s)
+			movieIDs, err := scene.GetDependentMovieIDs(ctx, s)
 			if err != nil {
 				logger.Errorf("[scenes] <%s> error getting scene movies: %s", sceneHash, err.Error())
 				continue

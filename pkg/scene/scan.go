@@ -25,10 +25,11 @@ const mutexType = "scene"
 type CreatorUpdater interface {
 	FindByChecksum(ctx context.Context, checksum string) (*models.Scene, error)
 	FindByOSHash(ctx context.Context, oshash string) (*models.Scene, error)
-	Create(ctx context.Context, newScene models.Scene) (*models.Scene, error)
-	UpdateFull(ctx context.Context, updatedScene models.Scene) (*models.Scene, error)
-	Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error)
+	Create(ctx context.Context, newScene *models.Scene) error
+	Update(ctx context.Context, updatedScene *models.Scene) error
+	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
 
+	// FIXME
 	GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error)
 	UpdateCaptions(ctx context.Context, id int, captions []*models.SceneCaption) error
 }
@@ -172,8 +173,7 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 			s.Interactive = interactive
 			s.UpdatedAt = time.Now()
 
-			_, err := qb.UpdateFull(ctx, *s)
-			return err
+			return qb.Update(ctx, s)
 		}); err != nil {
 			return err
 		}
@@ -256,12 +256,11 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 		} else {
 			logger.Infof("%s already exists. Updating path...", path)
 			scenePartial := models.ScenePartial{
-				ID:          s.ID,
 				Path:        &path,
 				Interactive: &interactive,
 			}
 			if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
-				_, err := scanner.CreatorUpdater.Update(ctx, scenePartial)
+				_, err := scanner.CreatorUpdater.UpdatePartial(ctx, s.ID, scenePartial)
 				return err
 			}); err != nil {
 				return nil, err
@@ -316,12 +315,12 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 		}
 
 		if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
-			var err error
-			retScene, err = scanner.CreatorUpdater.Create(ctx, newScene)
-			return err
+			return scanner.CreatorUpdater.Create(ctx, &newScene)
 		}); err != nil {
 			return nil, err
 		}
+
+		retScene = &newScene
 
 		scanner.makeScreenshots(path, videoFile, sceneHash)
 		scanner.PluginCache.ExecutePostHooks(ctx, retScene.ID, plugin.SceneCreatePost, nil, nil)

@@ -12,7 +12,7 @@ import (
 
 type SceneQueryPerformerUpdater interface {
 	scene.Queryer
-	scene.PerformerUpdater
+	scene.PartialUpdater
 }
 
 type ImageQueryPerformerUpdater interface {
@@ -38,8 +38,8 @@ func getPerformerTagger(p *models.Performer, cache *match.Cache) tagger {
 func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, rw SceneQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
-	return t.tagScenes(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-		return scene.AddPerformer(ctx, rw, otherID, subjectID)
+	return t.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
+		return scene.AddPerformer(ctx, rw, o, p.ID)
 	})
 }
 

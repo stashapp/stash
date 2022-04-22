@@ -44,10 +44,9 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 		hashValue := int64(*hash)
 		v := &hashValue
 		scenePartial := models.ScenePartial{
-			ID:    t.Scene.ID,
 			Phash: &v,
 		}
-		_, err := qb.Update(ctx, scenePartial)
+		_, err := qb.UpdatePartial(ctx, t.Scene.ID, scenePartial)
 		return err
 	}); err != nil {
 		logger.Error(err.Error())

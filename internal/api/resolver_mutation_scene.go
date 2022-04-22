@@ -100,7 +100,6 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	updatedTime := time.Now()
 	updatedScene := models.ScenePartial{
-		ID:        sceneID,
 		UpdatedAt: &updatedTime,
 	}
 
@@ -160,7 +159,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	qb := r.repository.Scene
-	s, err := qb.Update(ctx, updatedScene)
+	s, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
 	if err != nil {
 		return nil, err
 	}
@@ -181,53 +180,6 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	return s, nil
-}
-
-func (r *mutationResolver) updateScenePerformers(ctx context.Context, sceneID int, performerIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
-	if err != nil {
-		return err
-	}
-	return r.repository.Scene.UpdatePerformers(ctx, sceneID, ids)
-}
-
-func (r *mutationResolver) updateSceneMovies(ctx context.Context, sceneID int, movies []*models.SceneMovieInput) error {
-	var movieJoins []models.MoviesScenes
-
-	for _, movie := range movies {
-		movieID, err := strconv.Atoi(movie.MovieID)
-		if err != nil {
-			return err
-		}
-
-		movieJoin := models.MoviesScenes{
-			MovieID: movieID,
-		}
-
-		if movie.SceneIndex != nil {
-			movieJoin.SceneIndex = movie.SceneIndex
-		}
-
-		movieJoins = append(movieJoins, movieJoin)
-	}
-
-	return r.repository.Scene.UpdateMovies(ctx, sceneID, movieJoins)
-}
-
-func (r *mutationResolver) updateSceneTags(ctx context.Context, sceneID int, tagsIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(tagsIDs)
-	if err != nil {
-		return err
-	}
-	return r.repository.Scene.UpdateTags(ctx, sceneID, ids)
-}
-
-func (r *mutationResolver) updateSceneGalleries(ctx context.Context, sceneID int, galleryIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(galleryIDs)
-	if err != nil {
-		return err
-	}
-	return r.repository.Scene.UpdateGalleries(ctx, sceneID, ids)
 }
 
 func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneUpdateInput) ([]*models.Scene, error) {
@@ -291,9 +243,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		qb := r.repository.Scene
 
 		for _, sceneID := range sceneIDs {
-			updatedScene.ID = sceneID
-
-			scene, err := qb.Update(ctx, updatedScene)
+			scene, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
 			if err != nil {
 				return err
 			}
@@ -359,15 +309,6 @@ func adjustIDs(existingIDs []int, updateIDs BulkUpdateIds) []int {
 	return existingIDs
 }
 
-func (r *mutationResolver) adjustScenePerformerIDs(ctx context.Context, sceneID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = r.repository.Scene.GetPerformerIDs(ctx, sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
 type tagIDsGetter interface {
 	GetTagIDs(ctx context.Context, id int) ([]int, error)
 }
@@ -379,57 +320,6 @@ func adjustTagIDs(ctx context.Context, qb tagIDsGetter, sceneID int, ids BulkUpd
 	}
 
 	return adjustIDs(ret, ids), nil
-}
-
-func (r *mutationResolver) adjustSceneGalleryIDs(ctx context.Context, sceneID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = r.repository.Scene.GetGalleryIDs(ctx, sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func (r *mutationResolver) adjustSceneMovieIDs(ctx context.Context, sceneID int, updateIDs BulkUpdateIds) ([]models.MoviesScenes, error) {
-	existingMovies, err := r.repository.Scene.GetMovies(ctx, sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	// if we are setting the ids, just return the ids
-	if updateIDs.Mode == models.RelationshipUpdateModeSet {
-		existingMovies = []models.MoviesScenes{}
-		for _, idStr := range updateIDs.Ids {
-			id, _ := strconv.Atoi(idStr)
-			existingMovies = append(existingMovies, models.MoviesScenes{MovieID: id})
-		}
-
-		return existingMovies, nil
-	}
-
-	for _, idStr := range updateIDs.Ids {
-		id, _ := strconv.Atoi(idStr)
-
-		// look for the id in the list
-		foundExisting := false
-		for idx, existingMovie := range existingMovies {
-			if existingMovie.MovieID == id {
-				if updateIDs.Mode == models.RelationshipUpdateModeRemove {
-					// remove from the list
-					existingMovies = append(existingMovies[:idx], existingMovies[idx+1:]...)
-				}
-
-				foundExisting = true
-				break
-			}
-		}
-
-		if !foundExisting && updateIDs.Mode != models.RelationshipUpdateModeRemove {
-			existingMovies = append(existingMovies, models.MoviesScenes{MovieID: id})
-		}
-	}
-
-	return existingMovies, err
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {

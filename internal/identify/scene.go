@@ -16,9 +16,6 @@ import (
 )
 
 type SceneReaderUpdater interface {
-	GetPerformerIDs(ctx context.Context, sceneID int) ([]int, error)
-	GetTagIDs(ctx context.Context, sceneID int) ([]int, error)
-	GetStashIDs(ctx context.Context, sceneID int) ([]*models.StashID, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 	scene.Updater
 }
@@ -85,10 +82,7 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 	endpoint := g.result.source.RemoteSite
 
 	var performerIDs []int
-	originalPerformerIDs, err := g.sceneReader.GetPerformerIDs(ctx, g.scene.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting scene performers: %w", err)
-	}
+	originalPerformerIDs := g.scene.PerformerIDs
 
 	if strategy == FieldStrategyMerge {
 		// add to existing
@@ -135,10 +129,7 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	}
 
 	var tagIDs []int
-	originalTagIDs, err := g.sceneReader.GetTagIDs(ctx, target.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting scene tags: %w", err)
-	}
+	originalTagIDs := target.TagIDs
 
 	if strategy == FieldStrategyMerge {
 		// add to existing
@@ -196,10 +187,7 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]*models.StashID, er
 
 	var originalStashIDs []*models.StashID
 	var stashIDs []*models.StashID
-	stashIDPtrs, err := g.sceneReader.GetStashIDs(ctx, target.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting scene tag: %w", err)
-	}
+	stashIDPtrs := target.StashIDs
 
 	// convert existing to non-pointer types
 	for _, stashID := range stashIDPtrs {

@@ -40,7 +40,7 @@ type Scene struct {
 	TagIDs       []int          `json:"tag_ids"`
 	PerformerIDs []int          `json:"performer_ids"`
 	Movies       []MoviesScenes `json:"movies"`
-	StashIDs     []StashID      `json:"stash_ids"`
+	StashIDs     []*StashID     `json:"stash_ids"`
 }
 
 func (s *Scene) File() File {
@@ -86,7 +86,6 @@ func (s *Scene) SetFile(f File) {
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry. Only non-nil fields will be updated.
 type ScenePartial struct {
-	ID               int
 	Checksum         **string
 	OSHash           **string
 	Path             *string
@@ -96,6 +95,7 @@ type ScenePartial struct {
 	Date             **Date
 	Rating           **int
 	Organized        *bool
+	OCounter         *int
 	Size             **string
 	Duration         **float64
 	VideoCodec       **string
@@ -106,7 +106,7 @@ type ScenePartial struct {
 	Framerate        **float64
 	Bitrate          **int
 	StudioID         **int
-	FileModTime      *time.Time
+	FileModTime      **time.Time
 	Phash            **int64
 	CreatedAt        *time.Time
 	UpdatedAt        *time.Time
@@ -140,12 +140,12 @@ type SceneUpdateInput struct {
 	Movies           []*SceneMovieInput `json:"movies"`
 	TagIds           []string           `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage *string   `json:"cover_image"`
-	StashIds   []StashID `json:"stash_ids"`
+	CoverImage *string    `json:"cover_image"`
+	StashIds   []*StashID `json:"stash_ids"`
 }
 
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
-func (s ScenePartial) UpdateInput() SceneUpdateInput {
+func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 	boolPtrCopy := func(v *bool) *bool {
 		if v == nil {
 			return nil
@@ -163,7 +163,7 @@ func (s ScenePartial) UpdateInput() SceneUpdateInput {
 	}
 
 	return SceneUpdateInput{
-		ID:           strconv.Itoa(s.ID),
+		ID:           strconv.Itoa(id),
 		Title:        stringDblPtrToPtr(s.Title),
 		Details:      stringDblPtrToPtr(s.Details),
 		URL:          stringDblPtrToPtr(s.URL),
@@ -193,7 +193,8 @@ func (s *ScenePartial) SetFile(f File) {
 	}
 	zeroTime := time.Time{}
 	if f.FileModTime != zeroTime {
-		s.FileModTime = &f.FileModTime
+		v := &f.FileModTime
+		s.FileModTime = &v
 	}
 	if f.Size != "" {
 		v := &f.Size

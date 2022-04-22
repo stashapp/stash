@@ -116,15 +116,9 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Scene
 		mqb := r.repository.Movie
 
-		sceneMovies, err := qb.GetMovies(ctx, obj.ID)
-		if err != nil {
-			return err
-		}
-
-		for _, sm := range sceneMovies {
+		for _, sm := range obj.Movies {
 			movie, err := mqb.Find(ctx, sm.MovieID)
 			if err != nil {
 				return err
