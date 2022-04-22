@@ -42,10 +42,15 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 		return
 	}
 
-	videoCodec := t.Scene.VideoCodec.String
+	var videoCodec string
+
+	if t.Scene.VideoCodec != nil {
+		videoCodec = *t.Scene.VideoCodec
+	}
+
 	audioCodec := ffmpeg.MissingUnsupported
-	if t.Scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.ProbeAudioCodec(t.Scene.AudioCodec.String)
+	if t.Scene.AudioCodec != nil {
+		audioCodec = ffmpeg.ProbeAudioCodec(*t.Scene.AudioCodec)
 	}
 
 	if !t.Force && ffmpeg.IsStreamable(videoCodec, audioCodec, container) == nil {
@@ -104,15 +109,18 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 		return true
 	}
 
-	videoCodec := t.Scene.VideoCodec.String
+	var videoCodec string
+	if t.Scene.VideoCodec != nil {
+		videoCodec = *t.Scene.VideoCodec
+	}
 	container := ""
 	audioCodec := ffmpeg.MissingUnsupported
-	if t.Scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.ProbeAudioCodec(t.Scene.AudioCodec.String)
+	if t.Scene.AudioCodec != nil {
+		audioCodec = ffmpeg.ProbeAudioCodec(*t.Scene.AudioCodec)
 	}
 
-	if t.Scene.Format.Valid {
-		container = t.Scene.Format.String
+	if t.Scene.Format != nil {
+		container = *t.Scene.Format
 	}
 
 	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container)) == nil {

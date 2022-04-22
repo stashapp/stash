@@ -52,3 +52,34 @@ func nullInt64PtrToStringPtr(v *sql.NullInt64) *string {
 	vv := strconv.FormatInt(v.Int64, 10)
 	return &vv
 }
+
+func stringDblPtrToPtr(v **string) *string {
+	if v == nil {
+		return nil
+	}
+
+	return *v
+}
+
+func intDblPtrToPtr(v **int) *int {
+	if v == nil {
+		return nil
+	}
+
+	return *v
+}
+
+func intDblPtrToStringPtr(v **int) *string {
+	if v == nil {
+		return nil
+	}
+
+	var ret *string
+
+	if *v != nil {
+		vv := strconv.Itoa(**v)
+		ret = &vv
+	}
+
+	return ret
+}

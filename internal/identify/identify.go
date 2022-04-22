@@ -2,7 +2,6 @@ package identify
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -129,10 +128,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	}
 
 	if studioID != nil {
-		ret.Partial.StudioID = &sql.NullInt64{
-			Int64: *studioID,
-			Valid: true,
-		}
+		ret.Partial.StudioID = &studioID
 	}
 
 	ignoreMale := false
@@ -198,8 +194,8 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 
 		as := ""
 		title := updater.Partial.Title
-		if title != nil {
-			as = fmt.Sprintf(" as %s", title.String)
+		if title != nil && *title != nil {
+			as = fmt.Sprintf(" as %s", **title)
 		}
 		logger.Infof("Successfully identified %s%s using %s", s.Path, as, result.source.Name)
 
@@ -237,27 +233,26 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 		ID: scene.ID,
 	}
 
-	if scraped.Title != nil && scene.Title.String != *scraped.Title {
-		if shouldSetSingleValueField(fieldOptions["title"], scene.Title.String != "") {
-			partial.Title = models.NullStringPtr(*scraped.Title)
+	if scraped.Title != nil && (scene.Title == nil || *scene.Title != *scraped.Title) {
+		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != nil && *scene.Title != "") {
+			partial.Title = &scraped.Title
 		}
 	}
-	if scraped.Date != nil && scene.Date.String != *scraped.Date {
-		if shouldSetSingleValueField(fieldOptions["date"], scene.Date.Valid) {
-			partial.Date = &models.SQLiteDate{
-				String: *scraped.Date,
-				Valid:  true,
-			}
+	if scraped.Date != nil && (scene.Date == nil || scene.Date.String() != *scraped.Date) {
+		if shouldSetSingleValueField(fieldOptions["date"], scene.Date != nil) {
+			d := models.NewDate(*scraped.Date)
+			dd := &d
+			partial.Date = &dd
 		}
 	}
-	if scraped.Details != nil && scene.Details.String != *scraped.Details {
-		if shouldSetSingleValueField(fieldOptions["details"], scene.Details.String != "") {
-			partial.Details = models.NullStringPtr(*scraped.Details)
+	if scraped.Details != nil && (scene.Details == nil || *scene.Details != *scraped.Details) {
+		if shouldSetSingleValueField(fieldOptions["details"], scene.Details != nil && *scene.Details != "") {
+			partial.Details = &scraped.Details
 		}
 	}
-	if scraped.URL != nil && scene.URL.String != *scraped.URL {
-		if shouldSetSingleValueField(fieldOptions["url"], scene.URL.String != "") {
-			partial.URL = models.NullStringPtr(*scraped.URL)
+	if scraped.URL != nil && (scene.URL == nil || *scene.URL != *scraped.URL) {
+		if shouldSetSingleValueField(fieldOptions["url"], scene.URL != nil && *scene.URL != "") {
+			partial.URL = &scraped.URL
 		}
 	}
 

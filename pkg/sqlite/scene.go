@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
@@ -85,6 +86,42 @@ FROM scenes
 WHERE phash IS NOT NULL
 ORDER BY size DESC
 `
+
+type sceneRow struct {
+	ID               int               `db:"id"`
+	Checksum         nullString        `db:"checksum"`
+	OSHash           nullString        `db:"oshash"`
+	Path             string            `db:"path"`
+	Title            nullString        `db:"title"`
+	Details          nullString        `db:"details"`
+	URL              nullString        `db:"url"`
+	Date             models.SQLiteDate `db:"date"`
+	Rating           nullInt           `db:"rating"`
+	Organized        bool              `db:"organized"`
+	OCounter         int               `db:"o_counter"`
+	Size             nullString        `db:"size" json:"size"`
+	Duration         nullFloat64       `db:"duration" json:"duration"`
+	VideoCodec       nullString        `db:"video_codec" json:"video_codec"`
+	Format           nullString        `db:"format" json:"format_name"`
+	AudioCodec       nullString        `db:"audio_codec" json:"audio_codec"`
+	Width            nullInt           `db:"width" json:"width"`
+	Height           nullInt           `db:"height" json:"height"`
+	Framerate        nullFloat64       `db:"framerate" json:"framerate"`
+	Bitrate          nullInt           `db:"bitrate" json:"bitrate"`
+	StudioID         nullInt           `db:"studio_id,omitempty" json:"studio_id"`
+	FileModTime      nullTime          `db:"file_mod_time" json:"file_mod_time"`
+	Phash            nullInt           `db:"phash,omitempty" json:"phash"`
+	CreatedAt        time.Time         `db:"created_at" json:"created_at"`
+	UpdatedAt        time.Time         `db:"updated_at" json:"updated_at"`
+	Interactive      bool              `db:"interactive" json:"interactive"`
+	InteractiveSpeed nullInt           `db:"interactive_speed" json:"interactive_speed"`
+}
+
+type moviesScenesRow struct {
+	MovieID    int           `db:"movie_id" json:"movie_id"`
+	SceneID    int           `db:"scene_id" json:"scene_id"`
+	SceneIndex sql.NullInt64 `db:"scene_index" json:"scene_index"`
+}
 
 type sceneQueryBuilder struct {
 	repository
@@ -969,7 +1006,7 @@ func (qb *sceneQueryBuilder) GetStashIDs(ctx context.Context, sceneID int) ([]*m
 	return qb.stashIDRepository().get(ctx, sceneID)
 }
 
-func (qb *sceneQueryBuilder) UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []models.StashID) error {
+func (qb *sceneQueryBuilder) UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []*models.StashID) error {
 	return qb.stashIDRepository().replace(ctx, sceneID, stashIDs)
 }
 

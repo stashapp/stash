@@ -196,6 +196,6 @@ func newNullTime(v *time.Time) nullTime {
 	}
 }
 
-// type nullFloat64 struct {
-// 	sql.NullFloat64
-// }
+type nullFloat64 struct {
+	sql.NullFloat64
+}

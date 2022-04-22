@@ -472,7 +472,7 @@ func (r *stashIDRepository) get(ctx context.Context, id int) ([]*models.StashID,
 	return []*models.StashID(ret), err
 }
 
-func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []models.StashID) error {
+func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []*models.StashID) error {
 	if err := r.destroy(ctx, []int{id}); err != nil {
 		return err
 	}

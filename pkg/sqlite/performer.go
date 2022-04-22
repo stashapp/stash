@@ -604,7 +604,7 @@ func (qb *performerQueryBuilder) GetStashIDs(ctx context.Context, performerID in
 	return qb.stashIDRepository().get(ctx, performerID)
 }
 
-func (qb *performerQueryBuilder) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error {
+func (qb *performerQueryBuilder) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []*models.StashID) error {
 	return qb.stashIDRepository().replace(ctx, performerID, stashIDs)
 }
 

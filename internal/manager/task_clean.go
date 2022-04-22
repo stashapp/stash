@@ -424,9 +424,19 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 	// perform the post-commit actions
 	fileDeleter.Commit()
 
+	var checksum string
+	var oshash string
+
+	if s.Checksum != nil {
+		checksum = *s.Checksum
+	}
+	if s.OSHash != nil {
+		oshash = *s.OSHash
+	}
+
 	GetInstance().PluginCache.ExecutePostHooks(ctx, sceneID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
-		Checksum: s.Checksum.String,
-		OSHash:   s.OSHash.String,
+		Checksum: checksum,
+		OSHash:   oshash,
 		Path:     s.Path,
 	}, nil)
 }

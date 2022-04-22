@@ -2,7 +2,6 @@ package scene
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -82,66 +81,76 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
-		Checksum: sql.NullString{String: sceneJSON.Checksum, Valid: sceneJSON.Checksum != ""},
-		OSHash:   sql.NullString{String: sceneJSON.OSHash, Valid: sceneJSON.OSHash != ""},
-		Path:     i.Path,
+		Path: i.Path,
+	}
+
+	if sceneJSON.Checksum != "" {
+		newScene.Checksum = &sceneJSON.Checksum
+	}
+	if sceneJSON.OSHash != "" {
+		newScene.OSHash = &sceneJSON.OSHash
 	}
 
 	if sceneJSON.Phash != "" {
 		hash, err := strconv.ParseUint(sceneJSON.Phash, 16, 64)
-		newScene.Phash = sql.NullInt64{Int64: int64(hash), Valid: err == nil}
+		if err == nil {
+			v := int64(hash)
+			newScene.Phash = &v
+		}
 	}
 
 	if sceneJSON.Title != "" {
-		newScene.Title = sql.NullString{String: sceneJSON.Title, Valid: true}
+		newScene.Title = &sceneJSON.Title
 	}
 	if sceneJSON.Details != "" {
-		newScene.Details = sql.NullString{String: sceneJSON.Details, Valid: true}
+		newScene.Details = &sceneJSON.Details
 	}
 	if sceneJSON.URL != "" {
-		newScene.URL = sql.NullString{String: sceneJSON.URL, Valid: true}
+		newScene.URL = &sceneJSON.URL
 	}
 	if sceneJSON.Date != "" {
-		newScene.Date = models.SQLiteDate{String: sceneJSON.Date, Valid: true}
+		d := models.NewDate(sceneJSON.Date)
+		newScene.Date = &d
 	}
 	if sceneJSON.Rating != 0 {
-		newScene.Rating = sql.NullInt64{Int64: int64(sceneJSON.Rating), Valid: true}
+		newScene.Rating = &sceneJSON.Rating
 	}
 
 	newScene.Organized = sceneJSON.Organized
 	newScene.OCounter = sceneJSON.OCounter
-	newScene.CreatedAt = models.SQLiteTimestamp{Timestamp: sceneJSON.CreatedAt.GetTime()}
-	newScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: sceneJSON.UpdatedAt.GetTime()}
+	newScene.CreatedAt = sceneJSON.CreatedAt.GetTime()
+	newScene.UpdatedAt = sceneJSON.UpdatedAt.GetTime()
 
 	if sceneJSON.File != nil {
 		if sceneJSON.File.Size != "" {
-			newScene.Size = sql.NullString{String: sceneJSON.File.Size, Valid: true}
+			newScene.Size = &sceneJSON.File.Size
 		}
 		if sceneJSON.File.Duration != "" {
 			duration, _ := strconv.ParseFloat(sceneJSON.File.Duration, 64)
-			newScene.Duration = sql.NullFloat64{Float64: duration, Valid: true}
+			newScene.Duration = &duration
 		}
 		if sceneJSON.File.VideoCodec != "" {
-			newScene.VideoCodec = sql.NullString{String: sceneJSON.File.VideoCodec, Valid: true}
+			newScene.VideoCodec = &sceneJSON.File.VideoCodec
 		}
 		if sceneJSON.File.AudioCodec != "" {
-			newScene.AudioCodec = sql.NullString{String: sceneJSON.File.AudioCodec, Valid: true}
+			newScene.AudioCodec = &sceneJSON.File.AudioCodec
 		}
 		if sceneJSON.File.Format != "" {
-			newScene.Format = sql.NullString{String: sceneJSON.File.Format, Valid: true}
+			newScene.Format = &sceneJSON.File.Format
 		}
 		if sceneJSON.File.Width != 0 {
-			newScene.Width = sql.NullInt64{Int64: int64(sceneJSON.File.Width), Valid: true}
+			newScene.Width = &sceneJSON.File.Width
 		}
 		if sceneJSON.File.Height != 0 {
-			newScene.Height = sql.NullInt64{Int64: int64(sceneJSON.File.Height), Valid: true}
+			newScene.Height = &sceneJSON.File.Height
 		}
 		if sceneJSON.File.Framerate != "" {
 			framerate, _ := strconv.ParseFloat(sceneJSON.File.Framerate, 64)
-			newScene.Framerate = sql.NullFloat64{Float64: framerate, Valid: true}
+			newScene.Framerate = &framerate
 		}
 		if sceneJSON.File.Bitrate != 0 {
-			newScene.Bitrate = sql.NullInt64{Int64: int64(sceneJSON.File.Bitrate), Valid: true}
+			v := int64(sceneJSON.File.Bitrate)
+			newScene.Bitrate = &v
 		}
 	}
 
@@ -169,13 +178,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
-				i.scene.StudioID = sql.NullInt64{
-					Int64: int64(studioID),
-					Valid: true,
-				}
+				i.scene.StudioID = &studioID
 			}
 		} else {
-			i.scene.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			i.scene.StudioID = &studio.ID
 		}
 	}
 
@@ -314,10 +320,8 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 			}
 
 			if inputMovie.SceneIndex != 0 {
-				toAdd.SceneIndex = sql.NullInt64{
-					Int64: int64(inputMovie.SceneIndex),
-					Valid: true,
-				}
+				index := inputMovie.SceneIndex
+				toAdd.SceneIndex = &index
 			}
 
 			i.movies = append(i.movies, toAdd)

@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -40,10 +39,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 		return
 	}
 
-	median := sql.NullInt64{
-		Int64: generator.InteractiveSpeed,
-		Valid: true,
-	}
+	median := &generator.InteractiveSpeed
 
 	var s *models.Scene
 

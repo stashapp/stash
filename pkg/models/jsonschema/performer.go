@@ -10,34 +10,34 @@ import (
 )
 
 type Performer struct {
-	Name          string           `json:"name,omitempty"`
-	Gender        string           `json:"gender,omitempty"`
-	URL           string           `json:"url,omitempty"`
-	Twitter       string           `json:"twitter,omitempty"`
-	Instagram     string           `json:"instagram,omitempty"`
-	Birthdate     string           `json:"birthdate,omitempty"`
-	Ethnicity     string           `json:"ethnicity,omitempty"`
-	Country       string           `json:"country,omitempty"`
-	EyeColor      string           `json:"eye_color,omitempty"`
-	Height        string           `json:"height,omitempty"`
-	Measurements  string           `json:"measurements,omitempty"`
-	FakeTits      string           `json:"fake_tits,omitempty"`
-	CareerLength  string           `json:"career_length,omitempty"`
-	Tattoos       string           `json:"tattoos,omitempty"`
-	Piercings     string           `json:"piercings,omitempty"`
-	Aliases       string           `json:"aliases,omitempty"`
-	Favorite      bool             `json:"favorite,omitempty"`
-	Tags          []string         `json:"tags,omitempty"`
-	Image         string           `json:"image,omitempty"`
-	CreatedAt     json.JSONTime    `json:"created_at,omitempty"`
-	UpdatedAt     json.JSONTime    `json:"updated_at,omitempty"`
-	Rating        int              `json:"rating,omitempty"`
-	Details       string           `json:"details,omitempty"`
-	DeathDate     string           `json:"death_date,omitempty"`
-	HairColor     string           `json:"hair_color,omitempty"`
-	Weight        int              `json:"weight,omitempty"`
-	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
-	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
+	Name          string            `json:"name,omitempty"`
+	Gender        string            `json:"gender,omitempty"`
+	URL           string            `json:"url,omitempty"`
+	Twitter       string            `json:"twitter,omitempty"`
+	Instagram     string            `json:"instagram,omitempty"`
+	Birthdate     string            `json:"birthdate,omitempty"`
+	Ethnicity     string            `json:"ethnicity,omitempty"`
+	Country       string            `json:"country,omitempty"`
+	EyeColor      string            `json:"eye_color,omitempty"`
+	Height        string            `json:"height,omitempty"`
+	Measurements  string            `json:"measurements,omitempty"`
+	FakeTits      string            `json:"fake_tits,omitempty"`
+	CareerLength  string            `json:"career_length,omitempty"`
+	Tattoos       string            `json:"tattoos,omitempty"`
+	Piercings     string            `json:"piercings,omitempty"`
+	Aliases       string            `json:"aliases,omitempty"`
+	Favorite      bool              `json:"favorite,omitempty"`
+	Tags          []string          `json:"tags,omitempty"`
+	Image         string            `json:"image,omitempty"`
+	CreatedAt     json.JSONTime     `json:"created_at,omitempty"`
+	UpdatedAt     json.JSONTime     `json:"updated_at,omitempty"`
+	Rating        int               `json:"rating,omitempty"`
+	Details       string            `json:"details,omitempty"`
+	DeathDate     string            `json:"death_date,omitempty"`
+	HairColor     string            `json:"hair_color,omitempty"`
+	Weight        int               `json:"weight,omitempty"`
+	StashIDs      []*models.StashID `json:"stash_ids,omitempty"`
+	IgnoreAutoTag bool              `json:"ignore_auto_tag,omitempty"`
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

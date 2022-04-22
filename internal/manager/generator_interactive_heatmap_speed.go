@@ -15,7 +15,7 @@ import (
 )
 
 type InteractiveHeatmapSpeedGenerator struct {
-	InteractiveSpeed int64
+	InteractiveSpeed int
 	Funscript        Script
 	FunscriptPath    string
 	HeatmapPath      string
@@ -176,7 +176,7 @@ func (g *InteractiveHeatmapSpeedGenerator) RenderHeatmap() error {
 	return err
 }
 
-func (funscript *Script) CalculateMedian() int64 {
+func (funscript *Script) CalculateMedian() int {
 	sort.Slice(funscript.Actions, func(i, j int) bool {
 		return funscript.Actions[i].Speed < funscript.Actions[j].Speed
 	})
@@ -184,10 +184,10 @@ func (funscript *Script) CalculateMedian() int64 {
 	mNumber := len(funscript.Actions) / 2
 
 	if len(funscript.Actions)%2 != 0 {
-		return int64(funscript.Actions[mNumber].Speed)
+		return int(funscript.Actions[mNumber].Speed)
 	}
 
-	return int64((funscript.Actions[mNumber-1].Speed + funscript.Actions[mNumber].Speed) / 2)
+	return int((funscript.Actions[mNumber-1].Speed + funscript.Actions[mNumber].Speed) / 2)
 }
 
 func (gt GradientTable) GetInterpolatedColorFor(t float64) colorful.Color {

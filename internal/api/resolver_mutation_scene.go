@@ -101,16 +101,53 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	updatedTime := time.Now()
 	updatedScene := models.ScenePartial{
 		ID:        sceneID,
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+		UpdatedAt: &updatedTime,
 	}
 
-	updatedScene.Title = translator.nullString(input.Title, "title")
-	updatedScene.Details = translator.nullString(input.Details, "details")
-	updatedScene.URL = translator.nullString(input.URL, "url")
-	updatedScene.Date = translator.sqliteDate(input.Date, "date")
-	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedScene.Title = translator.stringDblPtr(input.Title, "title")
+	updatedScene.Details = translator.stringDblPtr(input.Details, "details")
+	updatedScene.URL = translator.stringDblPtr(input.URL, "url")
+	updatedScene.Date = translator.dateDblPtr(input.Date, "date")
+	updatedScene.Rating = translator.intDblPtr(input.Rating, "rating")
+	updatedScene.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")
 	updatedScene.Organized = input.Organized
+
+	if translator.hasField("performer_ids") {
+		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
+		}
+	}
+
+	if translator.hasField("tag_ids") {
+		updatedScene.TagIDs, err = translateUpdateIDs(input.TagIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
+
+	if translator.hasField("gallery_ids") {
+		updatedScene.GalleryIDs, err = translateUpdateIDs(input.GalleryIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting gallery ids: %w", err)
+		}
+	}
+
+	// Save the movies
+	if translator.hasField("movies") {
+		updatedScene.MovieIDs, err = models.UpdateMovieIDsFromInput(input.Movies)
+		if err != nil {
+			return nil, fmt.Errorf("converting movie ids: %w", err)
+		}
+	}
+
+	// Save the stash_ids
+	if translator.hasField("stash_ids") {
+		updatedScene.StashIDs = &models.UpdateStashIDs{
+			StashIDs: input.StashIds,
+			Mode:     models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
@@ -131,42 +168,6 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	// update cover table
 	if len(coverImageData) > 0 {
 		if err := qb.UpdateCover(ctx, sceneID, coverImageData); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the performers
-	if translator.hasField("performer_ids") {
-		if err := r.updateScenePerformers(ctx, sceneID, input.PerformerIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the movies
-	if translator.hasField("movies") {
-		if err := r.updateSceneMovies(ctx, sceneID, input.Movies); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the tags
-	if translator.hasField("tag_ids") {
-		if err := r.updateSceneTags(ctx, sceneID, input.TagIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the galleries
-	if translator.hasField("gallery_ids") {
-		if err := r.updateSceneGalleries(ctx, sceneID, input.GalleryIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the stash_ids
-	if translator.hasField("stash_ids") {
-		stashIDJoins := models.StashIDsFromInput(input.StashIds)
-		if err := qb.UpdateStashIDs(ctx, sceneID, stashIDJoins); err != nil {
 			return nil, err
 		}
 	}
@@ -204,10 +205,7 @@ func (r *mutationResolver) updateSceneMovies(ctx context.Context, sceneID int, m
 		}
 
 		if movie.SceneIndex != nil {
-			movieJoin.SceneIndex = sql.NullInt64{
-				Int64: int64(*movie.SceneIndex),
-				Valid: true,
-			}
+			movieJoin.SceneIndex = movie.SceneIndex
 		}
 
 		movieJoins = append(movieJoins, movieJoin)
@@ -246,16 +244,45 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	}
 
 	updatedScene := models.ScenePartial{
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+		UpdatedAt: &updatedTime,
 	}
 
-	updatedScene.Title = translator.nullString(input.Title, "title")
-	updatedScene.Details = translator.nullString(input.Details, "details")
-	updatedScene.URL = translator.nullString(input.URL, "url")
-	updatedScene.Date = translator.sqliteDate(input.Date, "date")
-	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedScene.Title = translator.stringDblPtr(input.Title, "title")
+	updatedScene.Details = translator.stringDblPtr(input.Details, "details")
+	updatedScene.URL = translator.stringDblPtr(input.URL, "url")
+	updatedScene.Date = translator.dateDblPtr(input.Date, "date")
+	updatedScene.Rating = translator.intDblPtr(input.Rating, "rating")
+	updatedScene.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")
 	updatedScene.Organized = input.Organized
+
+	if translator.hasField("performer_ids") {
+		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
+		}
+	}
+
+	if translator.hasField("tag_ids") {
+		updatedScene.TagIDs, err = translateUpdateIDs(input.TagIds.Ids, input.TagIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
+
+	if translator.hasField("gallery_ids") {
+		updatedScene.GalleryIDs, err = translateUpdateIDs(input.GalleryIds.Ids, input.GalleryIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting gallery ids: %w", err)
+		}
+	}
+
+	// Save the movies
+	if translator.hasField("movies") {
+		updatedScene.MovieIDs, err = translateSceneMovieIDs(*input.MovieIds)
+		if err != nil {
+			return nil, fmt.Errorf("converting movie ids: %w", err)
+		}
+	}
 
 	ret := []*models.Scene{}
 
@@ -272,54 +299,6 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 			}
 
 			ret = append(ret, scene)
-
-			// Save the performers
-			if translator.hasField("performer_ids") {
-				performerIDs, err := r.adjustScenePerformerIDs(ctx, sceneID, *input.PerformerIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdatePerformers(ctx, sceneID, performerIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the tags
-			if translator.hasField("tag_ids") {
-				tagIDs, err := adjustTagIDs(ctx, qb, sceneID, *input.TagIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateTags(ctx, sceneID, tagIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the galleries
-			if translator.hasField("gallery_ids") {
-				galleryIDs, err := r.adjustSceneGalleryIDs(ctx, sceneID, *input.GalleryIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateGalleries(ctx, sceneID, galleryIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the movies
-			if translator.hasField("movie_ids") {
-				movies, err := r.adjustSceneMovieIDs(ctx, sceneID, *input.MovieIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateMovies(ctx, sceneID, movies); err != nil {
-					return err
-				}
-			}
 		}
 
 		return nil
@@ -498,8 +477,8 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	// call post hook after performing the other actions
 	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
 		SceneDestroyInput: input,
-		Checksum:          s.Checksum.String,
-		OSHash:            s.OSHash.String,
+		Checksum:          stringPtrToString(s.Checksum),
+		OSHash:            stringPtrToString(s.OSHash),
 		Path:              s.Path,
 	}, nil)
 
@@ -554,8 +533,8 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 		// call post hook after performing the other actions
 		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.ScenesDestroyInput{
 			ScenesDestroyInput: input,
-			Checksum:           scene.Checksum.String,
-			OSHash:             scene.OSHash.String,
+			Checksum:           stringPtrToString(scene.Checksum),
+			OSHash:             stringPtrToString(scene.OSHash),
 			Path:               scene.Path,
 		}, nil)
 	}

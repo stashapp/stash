@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 type RelationshipUpdateMode string
@@ -52,4 +54,12 @@ func (e RelationshipUpdateMode) MarshalGQL(w io.Writer) {
 type UpdateIDs struct {
 	IDs  []int                  `json:"ids"`
 	Mode RelationshipUpdateMode `json:"mode"`
+}
+
+func (u *UpdateIDs) IDStrings() []string {
+	if u == nil {
+		return nil
+	}
+
+	return intslice.IntSliceToStringSlice(u.IDs)
 }

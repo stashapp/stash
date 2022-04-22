@@ -79,7 +79,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		updatedTime := time.Now()
 		updatedScene := models.ScenePartial{
 			ID:        t.Scene.ID,
-			UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+			UpdatedAt: &updatedTime,
 		}
 
 		if err := scene.SetScreenshot(instance.Paths, checksum, coverImageData); err != nil {

@@ -2,7 +2,6 @@ package scene
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -102,7 +101,7 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 	}
 
 	// check for container
-	if !s.Format.Valid {
+	if s.Format == nil {
 		if videoFile == nil {
 			videoFile, err = scanner.VideoFileCreator.NewVideoFile(path)
 			if err != nil {
@@ -114,7 +113,8 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 			return fmt.Errorf("getting container for %s: %w", path, err)
 		}
 		logger.Infof("Adding container %s to file %s", container, path)
-		s.Format = models.NullString(string(container))
+		containerStr := string(container)
+		s.Format = &containerStr
 		changed = true
 	}
 
@@ -156,7 +156,7 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 
 			// ensure no clashes of hashes
 			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
-				dupe, _ := qb.FindByChecksum(ctx, s.Checksum.String)
+				dupe, _ := qb.FindByChecksum(ctx, *s.Checksum)
 				if dupe != nil {
 					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, dupe.Path)
 				}
@@ -170,7 +170,7 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 			}
 
 			s.Interactive = interactive
-			s.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+			s.UpdatedAt = time.Now()
 
 			_, err := qb.UpdateFull(ctx, *s)
 			return err
@@ -289,17 +289,19 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 		}
 
 		newScene := models.Scene{
-			Checksum: sql.NullString{String: checksum, Valid: checksum != ""},
-			OSHash:   sql.NullString{String: oshash, Valid: oshash != ""},
-			Path:     path,
-			FileModTime: models.NullSQLiteTimestamp{
-				Timestamp: scanned.FileModTime,
-				Valid:     true,
-			},
-			Title:       sql.NullString{String: title, Valid: true},
-			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
+			Path:        path,
+			FileModTime: &scanned.FileModTime,
+			Title:       &title,
+			CreatedAt:   currentTime,
+			UpdatedAt:   currentTime,
 			Interactive: interactive,
+		}
+
+		if checksum != "" {
+			newScene.Checksum = &checksum
+		}
+		if oshash != "" {
+			newScene.OSHash = &oshash
 		}
 
 		if err := videoFileToScene(&newScene, videoFile); err != nil {
@@ -307,8 +309,10 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 		}
 
 		if scanner.UseFileMetadata {
-			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
-			_ = newScene.Date.Scan(videoFile.CreationTime)
+			newScene.Details = &videoFile.Comment
+			d := models.SQLiteDate{}
+			_ = d.Scan(videoFile.CreationTime)
+			newScene.Date = d.DatePtr()
 		}
 
 		if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
@@ -337,15 +341,17 @@ func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) error {
 		return fmt.Errorf("matching container: %w", err)
 	}
 
-	s.Duration = sql.NullFloat64{Float64: videoFile.Duration, Valid: true}
-	s.VideoCodec = sql.NullString{String: videoFile.VideoCodec, Valid: true}
-	s.AudioCodec = sql.NullString{String: videoFile.AudioCodec, Valid: true}
-	s.Format = sql.NullString{String: string(container), Valid: true}
-	s.Width = sql.NullInt64{Int64: int64(videoFile.Width), Valid: true}
-	s.Height = sql.NullInt64{Int64: int64(videoFile.Height), Valid: true}
-	s.Framerate = sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true}
-	s.Bitrate = sql.NullInt64{Int64: videoFile.Bitrate, Valid: true}
-	s.Size = sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true}
+	s.Duration = &videoFile.Duration
+	s.VideoCodec = &videoFile.VideoCodec
+	s.AudioCodec = &videoFile.AudioCodec
+	containerStr := string(container)
+	s.Format = &containerStr
+	s.Width = &videoFile.Width
+	s.Height = &videoFile.Height
+	s.Framerate = &videoFile.FrameRate
+	s.Bitrate = &videoFile.Bitrate
+	size := strconv.FormatInt(videoFile.Size, 10)
+	s.Size = &size
 
 	return nil
 }

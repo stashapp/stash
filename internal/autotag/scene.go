@@ -31,7 +31,7 @@ func ScenePerformers(ctx context.Context, s *models.Scene, rw scene.PerformerUpd
 //
 // Scenes will not be tagged if studio is already set.
 func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, studioReader match.StudioAutoTagQueryer, cache *match.Cache) error {
-	if s.StudioID.Valid {
+	if s.StudioID != nil {
 		// don't modify
 		return nil
 	}

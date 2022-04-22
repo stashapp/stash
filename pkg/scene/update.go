@@ -2,7 +2,6 @@ package scene
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -16,7 +15,7 @@ type Updater interface {
 	PartialUpdater
 	UpdatePerformers(ctx context.Context, sceneID int, performerIDs []int) error
 	UpdateTags(ctx context.Context, sceneID int, tagIDs []int) error
-	UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []models.StashID) error
+	UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []*models.StashID) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 }
 
@@ -55,7 +54,7 @@ type UpdateSet struct {
 	// Not set if nil. Set to []int{} to clear existing
 	TagIDs []int
 	// Not set if nil. Set to []int{} to clear existing
-	StashIDs []models.StashID
+	StashIDs []*models.StashID
 	// Not set if nil. Set to []byte{} to clear existing
 	CoverImage []byte
 }
@@ -82,9 +81,8 @@ func (u *UpdateSet) Update(ctx context.Context, qb Updater, screenshotSetter Scr
 
 	partial := u.Partial
 	partial.ID = u.ID
-	partial.UpdatedAt = &models.SQLiteTimestamp{
-		Timestamp: time.Now(),
-	}
+	updatedAt := time.Now()
+	partial.UpdatedAt = &updatedAt
 
 	ret, err := qb.Update(ctx, partial)
 	if err != nil {
@@ -128,21 +126,6 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	u.Partial.ID = u.ID
 	ret := u.Partial.UpdateInput()
 
-	if u.PerformerIDs != nil {
-		ret.PerformerIds = intslice.IntSliceToStringSlice(u.PerformerIDs)
-	}
-
-	if u.TagIDs != nil {
-		ret.TagIds = intslice.IntSliceToStringSlice(u.TagIDs)
-	}
-
-	if u.StashIDs != nil {
-		for _, s := range u.StashIDs {
-			ss := s.StashIDInput()
-			ret.StashIds = append(ret.StashIds, &ss)
-		}
-	}
-
 	if u.CoverImage != nil {
 		// convert back to base64
 		data := utils.GetBase64StringFromData(u.CoverImage)
@@ -153,36 +136,32 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 }
 
 func UpdateFormat(ctx context.Context, qb PartialUpdater, id int, format string) (*models.Scene, error) {
+	v := &format
 	return qb.Update(ctx, models.ScenePartial{
-		ID: id,
-		Format: &sql.NullString{
-			String: format,
-			Valid:  true,
-		},
+		ID:     id,
+		Format: &v,
 	})
 }
 
 func UpdateOSHash(ctx context.Context, qb PartialUpdater, id int, oshash string) (*models.Scene, error) {
+	v := &oshash
+
 	return qb.Update(ctx, models.ScenePartial{
-		ID: id,
-		OSHash: &sql.NullString{
-			String: oshash,
-			Valid:  true,
-		},
+		ID:     id,
+		OSHash: &v,
 	})
 }
 
 func UpdateChecksum(ctx context.Context, qb PartialUpdater, id int, checksum string) (*models.Scene, error) {
+	v := &checksum
+
 	return qb.Update(ctx, models.ScenePartial{
-		ID: id,
-		Checksum: &sql.NullString{
-			String: checksum,
-			Valid:  true,
-		},
+		ID:       id,
+		Checksum: &v,
 	})
 }
 
-func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime models.NullSQLiteTimestamp) (*models.Scene, error) {
+func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime time.Time) (*models.Scene, error) {
 	return qb.Update(ctx, models.ScenePartial{
 		ID:          id,
 		FileModTime: &modTime,

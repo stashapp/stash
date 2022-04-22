@@ -2,7 +2,6 @@ package autotag
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -18,12 +17,12 @@ func addSceneStudio(ctx context.Context, sceneWriter SceneFinderUpdater, sceneID
 		return false, err
 	}
 
-	if scene.StudioID.Valid {
+	if scene.StudioID != nil {
 		return false, nil
 	}
 
 	// set the studio id
-	s := sql.NullInt64{Int64: int64(studioID), Valid: true}
+	s := &studioID
 	scenePartial := models.ScenePartial{
 		ID:       sceneID,
 		StudioID: &s,

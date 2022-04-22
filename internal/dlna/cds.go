@@ -108,9 +108,20 @@ func sceneToContainer(scene *models.Scene, parent string, host string) interface
 	}
 
 	mimeType := "video/mp4"
-	size, _ := strconv.Atoi(scene.Size.String)
+	var size int
+	if scene.Size != nil {
+		size, _ = strconv.Atoi(*scene.Size)
+	}
 
-	duration := int64(scene.Duration.Float64)
+	var duration int64
+	if scene.Duration != nil {
+		duration = int64(*scene.Duration)
+	}
+
+	var bitrate uint
+	if scene.Bitrate != nil {
+		bitrate = uint(*scene.Bitrate)
+	}
 
 	item.Res = append(item.Res, upnpav.Resource{
 		URL: (&url.URL{
@@ -124,7 +135,7 @@ func sceneToContainer(scene *models.Scene, parent string, host string) interface
 		ProtocolInfo: fmt.Sprintf("http-get:*:%s:%s", mimeType, dlna.ContentFeatures{
 			SupportRange: true,
 		}.String()),
-		Bitrate: uint(scene.Bitrate.Int64),
+		Bitrate: bitrate,
 		// TODO - make %d:%02d:%02d string
 		Duration: formatDurationSexagesimal(time.Duration(duration) * time.Second),
 		Size:     uint64(size),
@@ -370,7 +381,7 @@ func (me *contentDirectoryService) handleBrowseMetadata(obj object, host string)
 			// http://upnp.org/specs/av/UPnP-av-ContentDirectory-v1-Service.pdf
 			// maximum update ID is 2**32, then rolls back to 0
 			const maxUpdateID int64 = 1 << 32
-			updateID = fmt.Sprint(scene.UpdatedAt.Timestamp.Unix() % maxUpdateID)
+			updateID = fmt.Sprint(scene.UpdatedAt.Unix() % maxUpdateID)
 		} else {
 			return nil, upnp.Errorf(upnpav.NoSuchObjectErrorCode, "scene not found")
 		}

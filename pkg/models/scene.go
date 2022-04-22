@@ -167,7 +167,7 @@ type SceneWriter interface {
 	UpdateTags(ctx context.Context, sceneID int, tagIDs []int) error
 	UpdateGalleries(ctx context.Context, sceneID int, galleryIDs []int) error
 	UpdateMovies(ctx context.Context, sceneID int, movies []MoviesScenes) error
-	UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []StashID) error
+	UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []*StashID) error
 }
 
 type SceneReaderWriter interface {

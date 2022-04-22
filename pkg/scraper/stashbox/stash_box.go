@@ -153,30 +153,30 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, sceneIDs [
 				return fmt.Errorf("scene with id %d not found", sceneID)
 			}
 
-			if scene.Checksum.Valid {
+			if scene.Checksum != nil {
 				fingerprints = append(fingerprints, &graphql.FingerprintQueryInput{
-					Hash:      scene.Checksum.String,
+					Hash:      *scene.Checksum,
 					Algorithm: graphql.FingerprintAlgorithmMd5,
 				})
-				fpToScene[scene.Checksum.String] = append(fpToScene[scene.Checksum.String], index)
+				fpToScene[*scene.Checksum] = append(fpToScene[*scene.Checksum], index)
 			}
 
-			if scene.OSHash.Valid {
+			if scene.OSHash != nil {
 				fingerprints = append(fingerprints, &graphql.FingerprintQueryInput{
-					Hash:      scene.OSHash.String,
+					Hash:      *scene.OSHash,
 					Algorithm: graphql.FingerprintAlgorithmOshash,
 				})
-				fpToScene[scene.OSHash.String] = append(fpToScene[scene.OSHash.String], index)
+				fpToScene[*scene.OSHash] = append(fpToScene[*scene.OSHash], index)
 			}
 
-			if scene.Phash.Valid {
-				phashStr := utils.PhashToString(scene.Phash.Int64)
+			if scene.Phash != nil {
+				phashStr := utils.PhashToString(*scene.Phash)
 				fingerprints = append(fingerprints, &graphql.FingerprintQueryInput{
 					Hash:      phashStr,
 					Algorithm: graphql.FingerprintAlgorithmPhash,
 				})
 				fpToScene[phashStr] = append(fpToScene[phashStr], index)
-				phashToScene[scene.Phash.Int64] = append(phashToScene[scene.Phash.Int64], index)
+				phashToScene[*scene.Phash] = append(phashToScene[*scene.Phash], index)
 			}
 		}
 
@@ -249,23 +249,23 @@ func (c Client) FindStashBoxScenesByFingerprintsFlat(ctx context.Context, sceneI
 				return fmt.Errorf("scene with id %d not found", sceneID)
 			}
 
-			if scene.Checksum.Valid {
+			if scene.Checksum != nil {
 				fingerprints = append(fingerprints, &graphql.FingerprintQueryInput{
-					Hash:      scene.Checksum.String,
+					Hash:      *scene.Checksum,
 					Algorithm: graphql.FingerprintAlgorithmMd5,
 				})
 			}
 
-			if scene.OSHash.Valid {
+			if scene.OSHash != nil {
 				fingerprints = append(fingerprints, &graphql.FingerprintQueryInput{
-					Hash:      scene.OSHash.String,
+					Hash:      *scene.OSHash,
 					Algorithm: graphql.FingerprintAlgorithmOshash,
 				})
 			}
 
-			if scene.Phash.Valid {
+			if scene.Phash != nil {
 				fingerprints = append(fingerprints, &graphql.FingerprintQueryInput{
-					Hash:      utils.PhashToString(scene.Phash.Int64),
+					Hash:      utils.PhashToString(*scene.Phash),
 					Algorithm: graphql.FingerprintAlgorithmPhash,
 				})
 			}
@@ -340,11 +340,11 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 			}
 
 			if sceneStashID != "" {
-				if scene.Checksum.Valid && scene.Duration.Valid {
+				if scene.Checksum != nil && scene.Duration != nil {
 					fingerprint := graphql.FingerprintInput{
-						Hash:      scene.Checksum.String,
+						Hash:      *scene.Checksum,
 						Algorithm: graphql.FingerprintAlgorithmMd5,
-						Duration:  int(scene.Duration.Float64),
+						Duration:  int(*scene.Duration),
 					}
 					fingerprints = append(fingerprints, graphql.FingerprintSubmission{
 						SceneID:     sceneStashID,
@@ -352,11 +352,11 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 					})
 				}
 
-				if scene.OSHash.Valid && scene.Duration.Valid {
+				if scene.OSHash != nil && scene.Duration != nil {
 					fingerprint := graphql.FingerprintInput{
-						Hash:      scene.OSHash.String,
+						Hash:      *scene.OSHash,
 						Algorithm: graphql.FingerprintAlgorithmOshash,
-						Duration:  int(scene.Duration.Float64),
+						Duration:  int(*scene.Duration),
 					}
 					fingerprints = append(fingerprints, graphql.FingerprintSubmission{
 						SceneID:     sceneStashID,
@@ -364,11 +364,11 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 					})
 				}
 
-				if scene.Phash.Valid && scene.Duration.Valid {
+				if scene.Phash != nil && scene.Duration != nil {
 					fingerprint := graphql.FingerprintInput{
-						Hash:      utils.PhashToString(scene.Phash.Int64),
+						Hash:      utils.PhashToString(*scene.Phash),
 						Algorithm: graphql.FingerprintAlgorithmPhash,
-						Duration:  int(scene.Duration.Float64),
+						Duration:  int(*scene.Duration),
 					}
 					fingerprints = append(fingerprints, graphql.FingerprintSubmission{
 						SceneID:     sceneStashID,
@@ -853,22 +853,23 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 			return err
 		}
 
-		if scene.Title.Valid {
-			draft.Title = &scene.Title.String
+		if scene.Title != nil {
+			draft.Title = scene.Title
 		}
-		if scene.Details.Valid {
-			draft.Details = &scene.Details.String
+		if scene.Details != nil {
+			draft.Details = scene.Details
 		}
-		if len(strings.TrimSpace(scene.URL.String)) > 0 {
-			url := strings.TrimSpace(scene.URL.String)
+		if scene.URL != nil && len(strings.TrimSpace(*scene.URL)) > 0 {
+			url := strings.TrimSpace(*scene.URL)
 			draft.URL = &url
 		}
-		if scene.Date.Valid {
-			draft.Date = &scene.Date.String
+		if scene.Date != nil {
+			v := scene.Date.String()
+			draft.Date = &v
 		}
 
-		if scene.StudioID.Valid {
-			studio, err := sqb.Find(ctx, int(scene.StudioID.Int64))
+		if scene.StudioID != nil {
+			studio, err := sqb.Find(ctx, int(*scene.StudioID))
 			if err != nil {
 				return err
 			}
@@ -890,29 +891,29 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		}
 
 		fingerprints := []*graphql.FingerprintInput{}
-		if scene.OSHash.Valid && scene.Duration.Valid {
+		if scene.OSHash != nil && scene.Duration != nil {
 			fingerprint := graphql.FingerprintInput{
-				Hash:      scene.OSHash.String,
+				Hash:      *scene.OSHash,
 				Algorithm: graphql.FingerprintAlgorithmOshash,
-				Duration:  int(scene.Duration.Float64),
+				Duration:  int(*scene.Duration),
 			}
 			fingerprints = append(fingerprints, &fingerprint)
 		}
 
-		if scene.Checksum.Valid && scene.Duration.Valid {
+		if scene.Checksum != nil && scene.Duration != nil {
 			fingerprint := graphql.FingerprintInput{
-				Hash:      scene.Checksum.String,
+				Hash:      *scene.Checksum,
 				Algorithm: graphql.FingerprintAlgorithmMd5,
-				Duration:  int(scene.Duration.Float64),
+				Duration:  int(*scene.Duration),
 			}
 			fingerprints = append(fingerprints, &fingerprint)
 		}
 
-		if scene.Phash.Valid && scene.Duration.Valid {
+		if scene.Phash != nil && scene.Duration != nil {
 			fingerprint := graphql.FingerprintInput{
-				Hash:      utils.PhashToString(scene.Phash.Int64),
+				Hash:      utils.PhashToString(*scene.Phash),
 				Algorithm: graphql.FingerprintAlgorithmPhash,
-				Duration:  int(scene.Duration.Float64),
+				Duration:  int(*scene.Duration),
 			}
 			fingerprints = append(fingerprints, &fingerprint)
 		}

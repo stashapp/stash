@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/hash/videophash"
@@ -42,10 +41,11 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 
 	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 		qb := t.txnManager.Scene
-		hashValue := sql.NullInt64{Int64: int64(*hash), Valid: true}
+		hashValue := int64(*hash)
+		v := &hashValue
 		scenePartial := models.ScenePartial{
 			ID:    t.Scene.ID,
-			Phash: &hashValue,
+			Phash: &v,
 		}
 		_, err := qb.Update(ctx, scenePartial)
 		return err
@@ -55,5 +55,5 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 }
 
 func (t *GeneratePhashTask) shouldGenerate() bool {
-	return t.Overwrite || !t.Scene.Phash.Valid
+	return t.Overwrite || t.Scene.Phash == nil
 }
