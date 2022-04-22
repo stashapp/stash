@@ -64,4 +64,12 @@ var (
 		},
 		fkColumn: performersGalleriesJoinTable.Col(performerIDColumn),
 	}
+
+	galleriesScenesTableMgr = &joinTable{
+		table: table{
+			table:    galleriesScenesJoinTable,
+			idColumn: galleriesScenesJoinTable.Col(galleryIDColumn),
+		},
+		fkColumn: galleriesScenesJoinTable.Col(sceneIDColumn),
+	}
 )

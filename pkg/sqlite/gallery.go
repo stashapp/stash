@@ -84,6 +84,7 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 type galleryQueryRow struct {
 	galleryRow
 
+	SceneID     nullInt `db:"scene_id"`
 	TagID       nullInt `db:"tag_id"`
 	PerformerID nullInt `db:"performer_id"`
 }
@@ -117,6 +118,9 @@ func (r *galleryQueryRow) appendRelationships(i *models.Gallery) {
 	}
 	if r.PerformerID.Valid {
 		i.PerformerIDs = append(i.PerformerIDs, r.PerformerID.int())
+	}
+	if r.SceneID.Valid {
+		i.SceneIDs = append(i.SceneIDs, r.SceneID.int())
 	}
 }
 
@@ -172,15 +176,14 @@ func (qb *galleryQueryBuilder) Create(ctx context.Context, newObject *models.Gal
 
 	newObject.ID = id
 
-	if len(newObject.PerformerIDs) > 0 {
-		if err := galleriesPerformersTableMgr.insertJoins(ctx, newObject.ID, newObject.PerformerIDs); err != nil {
-			return err
-		}
+	if err := galleriesPerformersTableMgr.insertJoins(ctx, newObject.ID, newObject.PerformerIDs); err != nil {
+		return err
 	}
-	if len(newObject.TagIDs) > 0 {
-		if err := galleriesTagsTableMgr.insertJoins(ctx, newObject.ID, newObject.TagIDs); err != nil {
-			return err
-		}
+	if err := galleriesTagsTableMgr.insertJoins(ctx, newObject.ID, newObject.TagIDs); err != nil {
+		return err
+	}
+	if err := galleriesScenesTableMgr.insertJoins(ctx, newObject.ID, newObject.SceneIDs); err != nil {
+		return err
 	}
 
 	return nil
@@ -198,6 +201,9 @@ func (qb *galleryQueryBuilder) Update(ctx context.Context, updatedObject *models
 		return err
 	}
 	if err := galleriesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
+		return err
+	}
+	if err := galleriesScenesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.SceneIDs); err != nil {
 		return err
 	}
 
@@ -229,6 +235,11 @@ func (qb *galleryQueryBuilder) UpdatePartial(ctx context.Context, id int, partia
 			return nil, err
 		}
 	}
+	if partial.SceneIDs != nil {
+		if err := galleriesScenesTableMgr.modifyJoins(ctx, id, partial.SceneIDs.IDs, partial.SceneIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
 
 	return qb.Find(ctx, id)
 }
@@ -250,6 +261,9 @@ func (qb *galleryQueryBuilder) selectDataset() *goqu.SelectDataset {
 	).LeftJoin(
 		performersGalleriesJoinTable,
 		goqu.On(table.Col(idColumn).Eq(performersGalleriesJoinTable.Col(galleryIDColumn))),
+	).LeftJoin(
+		galleriesScenesJoinTable,
+		goqu.On(table.Col(idColumn).Eq(galleriesScenesJoinTable.Col(galleryIDColumn))),
 	)
 }
 
@@ -349,10 +363,7 @@ func (qb *galleryQueryBuilder) FindByPath(ctx context.Context, path string) (*mo
 func (qb *galleryQueryBuilder) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Gallery, error) {
 	table := qb.table()
 
-	q := qb.selectDataset().InnerJoin(
-		galleriesScenesJoinTable,
-		goqu.On(table.Col(idColumn).Eq(galleriesScenesJoinTable.Col(galleryIDColumn))),
-	).Where(
+	q := qb.selectDataset().Where(
 		galleriesScenesJoinTable.Col("scene_id").Eq(sceneID),
 	).GroupBy(table.Col(idColumn))
 
@@ -755,15 +766,6 @@ func (qb *galleryQueryBuilder) performersRepository() *joinRepository {
 	}
 }
 
-// func (qb *galleryQueryBuilder) GetPerformerIDs(ctx context.Context, galleryID int) ([]int, error) {
-// 	return qb.performersRepository().getIDs(ctx, galleryID)
-// }
-
-// func (qb *galleryQueryBuilder) UpdatePerformers(ctx context.Context, galleryID int, performerIDs []int) error {
-// 	// Delete the existing joins and then create new ones
-// 	return qb.performersRepository().replace(ctx, galleryID, performerIDs)
-// }
-
 func (qb *galleryQueryBuilder) tagsRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
@@ -774,15 +776,6 @@ func (qb *galleryQueryBuilder) tagsRepository() *joinRepository {
 		fkColumn: "tag_id",
 	}
 }
-
-// func (qb *galleryQueryBuilder) GetTagIDs(ctx context.Context, galleryID int) ([]int, error) {
-// 	return qb.tagsRepository().getIDs(ctx, galleryID)
-// }
-
-// func (qb *galleryQueryBuilder) UpdateTags(ctx context.Context, galleryID int, tagIDs []int) error {
-// 	// Delete the existing joins and then create new ones
-// 	return qb.tagsRepository().replace(ctx, galleryID, tagIDs)
-// }
 
 func (qb *galleryQueryBuilder) imagesRepository() *joinRepository {
 	return &joinRepository{
@@ -802,24 +795,4 @@ func (qb *galleryQueryBuilder) GetImageIDs(ctx context.Context, galleryID int) (
 func (qb *galleryQueryBuilder) UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.imagesRepository().replace(ctx, galleryID, imageIDs)
-}
-
-func (qb *galleryQueryBuilder) scenesRepository() *joinRepository {
-	return &joinRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: galleriesScenesTable,
-			idColumn:  galleryIDColumn,
-		},
-		fkColumn: sceneIDColumn,
-	}
-}
-
-func (qb *galleryQueryBuilder) GetSceneIDs(ctx context.Context, galleryID int) ([]int, error) {
-	return qb.scenesRepository().getIDs(ctx, galleryID)
-}
-
-func (qb *galleryQueryBuilder) UpdateScenes(ctx context.Context, galleryID int, sceneIDs []int) error {
-	// Delete the existing joins and then create new ones
-	return qb.scenesRepository().replace(ctx, galleryID, sceneIDs)
 }

@@ -71,16 +71,15 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	if err != nil {
 		return nil, fmt.Errorf("converting tag ids: %w", err)
 	}
+	newGallery.SceneIDs, err = stringslice.StringSliceToIntSlice(input.SceneIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting scene ids: %w", err)
+	}
 
 	// Start the transaction and save the gallery
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Gallery
 		if err := qb.Create(ctx, &newGallery); err != nil {
-			return err
-		}
-
-		// Save the scenes
-		if err := r.updateGalleryScenes(ctx, qb, newGallery.ID, input.SceneIds); err != nil {
 			return err
 		}
 
@@ -95,14 +94,6 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 
 type GallerySceneUpdater interface {
 	UpdateScenes(ctx context.Context, galleryID int, sceneIDs []int) error
-}
-
-func (r *mutationResolver) updateGalleryScenes(ctx context.Context, qb GallerySceneUpdater, galleryID int, sceneIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
-	if err != nil {
-		return err
-	}
-	return qb.UpdateScenes(ctx, galleryID, ids)
 }
 
 func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.GalleryUpdateInput) (ret *models.Gallery, err error) {
@@ -224,18 +215,18 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		}
 	}
 
+	if translator.hasField("scene_ids") {
+		updatedGallery.SceneIDs, err = translateUpdateIDs(input.SceneIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting scene ids: %w", err)
+		}
+	}
+
 	// gallery scene is set from the scene only
 
 	gallery, err := qb.UpdatePartial(ctx, galleryID, updatedGallery)
 	if err != nil {
 		return nil, err
-	}
-
-	// Save the scenes
-	if translator.hasField("scene_ids") {
-		if err := r.updateGalleryScenes(ctx, qb, galleryID, input.SceneIds); err != nil {
-			return nil, err
-		}
 	}
 
 	return gallery, nil
@@ -275,6 +266,13 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 		}
 	}
 
+	if translator.hasField("scene_ids") {
+		updatedGallery.SceneIDs, err = translateUpdateIDs(input.SceneIds.Ids, input.SceneIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting scene ids: %w", err)
+		}
+	}
+
 	ret := []*models.Gallery{}
 
 	// Start the transaction and save the galleries
@@ -290,18 +288,6 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 			}
 
 			ret = append(ret, gallery)
-
-			// Save the scenes
-			if translator.hasField("scene_ids") {
-				sceneIDs, err := adjustGallerySceneIDs(ctx, qb, galleryID, *input.SceneIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateScenes(ctx, galleryID, sceneIDs); err != nil {
-					return err
-				}
-			}
 		}
 
 		return nil
@@ -327,15 +313,6 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 
 type GallerySceneGetter interface {
 	GetSceneIDs(ctx context.Context, galleryID int) ([]int, error)
-}
-
-func adjustGallerySceneIDs(ctx context.Context, qb GallerySceneGetter, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetSceneIDs(ctx, galleryID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
 }
 
 func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.GalleryDestroyInput) (bool, error) {

@@ -21,6 +21,7 @@ type Gallery struct {
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 
+	SceneIDs     []int `json:"scene_ids"`
 	TagIDs       []int `json:"tag_ids"`
 	PerformerIDs []int `json:"performer_ids"`
 }
@@ -42,6 +43,7 @@ type GalleryPartial struct {
 	CreatedAt   *time.Time
 	UpdatedAt   *time.Time
 
+	SceneIDs     *UpdateIDs
 	TagIDs       *UpdateIDs
 	PerformerIDs *UpdateIDs
 }
