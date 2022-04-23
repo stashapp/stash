@@ -520,11 +520,11 @@ func (_m *PerformerReaderWriter) UpdateImage(ctx context.Context, performerID in
 }
 
 // UpdateStashIDs provides a mock function with given fields: ctx, performerID, stashIDs
-func (_m *PerformerReaderWriter) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error {
+func (_m *PerformerReaderWriter) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []*models.StashID) error {
 	ret := _m.Called(ctx, performerID, stashIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []models.StashID) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int, []*models.StashID) error); ok {
 		r0 = rf(ctx, performerID, stashIDs)
 	} else {
 		r0 = ret.Error(0)

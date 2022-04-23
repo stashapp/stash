@@ -251,7 +251,7 @@ func (qb *galleryQueryBuilder) Destroy(ctx context.Context, id int) error {
 func (qb *galleryQueryBuilder) selectDataset() *goqu.SelectDataset {
 	table := qb.table()
 
-	return goqu.From(table).Select(
+	return dialect.From(table).Select(
 		table.All(),
 		galleriesTagsJoinTable.Col("tag_id"),
 		performersGalleriesJoinTable.Col("performer_id"),
@@ -396,12 +396,12 @@ func (qb *galleryQueryBuilder) FindByImageID(ctx context.Context, imageID int) (
 func (qb *galleryQueryBuilder) CountByImageID(ctx context.Context, imageID int) (int, error) {
 	joinTable := galleriesImagesJoinTable
 
-	q := goqu.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(imageIDColumn).Eq(imageID))
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(imageIDColumn).Eq(imageID))
 	return count(ctx, q)
 }
 
 func (qb *galleryQueryBuilder) Count(ctx context.Context) (int, error) {
-	q := goqu.Select(goqu.COUNT("*")).From(qb.table())
+	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
 }
 

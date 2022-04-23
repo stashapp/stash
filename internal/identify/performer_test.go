@@ -141,13 +141,13 @@ func Test_createMissingPerformer(t *testing.T) {
 		return p.Name.String == invalidName
 	})).Return(nil, errors.New("error creating performer"))
 
-	mockPerformerReaderWriter.On("UpdateStashIDs", testCtx, performerID, []models.StashID{
+	mockPerformerReaderWriter.On("UpdateStashIDs", testCtx, performerID, []*models.StashID{
 		{
 			Endpoint: invalidEndpoint,
 			StashID:  remoteSiteID,
 		},
 	}).Return(errors.New("error updating stash ids"))
-	mockPerformerReaderWriter.On("UpdateStashIDs", testCtx, performerID, []models.StashID{
+	mockPerformerReaderWriter.On("UpdateStashIDs", testCtx, performerID, []*models.StashID{
 		{
 			Endpoint: validEndpoint,
 			StashID:  remoteSiteID,

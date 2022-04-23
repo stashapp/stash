@@ -168,7 +168,7 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	return tagIDs, nil
 }
 
-func (g sceneRelationships) stashIDs(ctx context.Context) ([]*models.StashID, error) {
+func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, error) {
 	remoteSiteID := g.result.result.RemoteSiteID
 	fieldStrategy := g.fieldOptions["stash_ids"]
 	target := g.scene
@@ -185,18 +185,13 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]*models.StashID, er
 		strategy = fieldStrategy.Strategy
 	}
 
-	var originalStashIDs []*models.StashID
-	var stashIDs []*models.StashID
-	stashIDPtrs := target.StashIDs
-
-	// convert existing to non-pointer types
-	for _, stashID := range stashIDPtrs {
-		originalStashIDs = append(originalStashIDs, stashID)
-	}
+	var stashIDs []models.StashID
+	originalStashIDs := target.StashIDs
 
 	if strategy == FieldStrategyMerge {
 		// add to existing
-		stashIDs = originalStashIDs
+		// make a copy so we don't modify the original
+		stashIDs = append(stashIDs, originalStashIDs...)
 	}
 
 	for i, stashID := range stashIDs {
@@ -214,7 +209,7 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]*models.StashID, er
 	}
 
 	// not found, create new entry
-	stashIDs = append(stashIDs, &models.StashID{
+	stashIDs = append(stashIDs, models.StashID{
 		StashID:  *remoteSiteID,
 		Endpoint: endpoint,
 	})

@@ -148,9 +148,7 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 		}
 	}
 
-	for _, v := range i.Input.StashIDs {
-		newScene.StashIDs = append(newScene.StashIDs, v)
-	}
+	newScene.StashIDs = append(newScene.StashIDs, i.Input.StashIDs...)
 
 	return newScene
 }

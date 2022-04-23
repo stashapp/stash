@@ -72,7 +72,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 	mockSceneReader := &mocks.SceneReaderWriter{}
 
-	const studioID = 2
+	var studioID = 2
 
 	var aliases []string
 
@@ -134,10 +134,8 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("Find", testCtx, sceneID).Return(&models.Scene{}, nil).Once()
-		expectedStudioID := models.NullInt64(studioID)
-		mockSceneReader.On("Update", testCtx, models.ScenePartial{
-			ID:       sceneID,
+		expectedStudioID := &studioID
+		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
 			StudioID: &expectedStudioID,
 		}).Return(nil, nil).Once()
 	}

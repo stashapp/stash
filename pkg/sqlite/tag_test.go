@@ -957,10 +957,11 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		// ensure scene points to new tag
-		sceneTagIDs, err := sqlite.SceneReaderWriter.GetTagIDs(ctx, sceneIDs[sceneIdxWithTwoTags])
+		s, err := sqlite.SceneReaderWriter.Find(ctx, sceneIDs[sceneIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
+		sceneTagIDs := s.TagIDs
 
 		assert.Contains(sceneTagIDs, destID)
 

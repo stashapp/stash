@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -37,10 +38,8 @@ func TestSceneFind(t *testing.T) {
 		sceneID = 0
 		scene, err = sqb.Find(ctx, sceneID)
 
-		if err != nil {
-			t.Errorf("Error finding scene: %s", err.Error())
-		}
-
+		// expect error when finding non-existing image
+		assert.ErrorIs(t, err, sql.ErrNoRows)
 		assert.Nil(t, scene)
 
 		return nil
@@ -108,6 +107,7 @@ func TestSceneWall(t *testing.T) {
 
 		if err != nil {
 			t.Errorf("Error finding scenes: %s", err.Error())
+			return nil
 		}
 
 		assert.Len(t, scenes, 1)
@@ -120,6 +120,7 @@ func TestSceneWall(t *testing.T) {
 
 		if err != nil {
 			t.Errorf("Error finding scene: %s", err.Error())
+			return nil
 		}
 
 		assert.Len(t, scenes, 0)
@@ -216,7 +217,7 @@ func TestSceneQueryURL(t *testing.T) {
 
 	verifyFn := func(s *models.Scene) {
 		t.Helper()
-		verifyNullString(t, s.URL, urlCriterion)
+		verifyStringPtr(t, s.URL, urlCriterion)
 	}
 
 	verifySceneQuery(t, filter, verifyFn)
@@ -275,7 +276,7 @@ func TestSceneQueryPathOr(t *testing.T) {
 func TestSceneQueryPathAndRating(t *testing.T) {
 	const sceneIdx = 1
 	scenePath := getSceneStringValue(sceneIdx, "Path")
-	sceneRating := getRating(sceneIdx)
+	sceneRating := int(getRating(sceneIdx).Int64)
 
 	sceneFilter := models.SceneFilterType{
 		Path: &models.StringCriterionInput{
@@ -284,7 +285,7 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 		},
 		And: &models.SceneFilterType{
 			Rating: &models.IntCriterionInput{
-				Value:    int(sceneRating.Int64),
+				Value:    sceneRating,
 				Modifier: models.CriterionModifierEquals,
 			},
 		},
@@ -297,7 +298,7 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, scenePath, scenes[0].Path)
-		assert.Equal(t, sceneRating.Int64, scenes[0].Rating.Int64)
+		assert.Equal(t, sceneRating, *scenes[0].Rating)
 
 		return nil
 	})
@@ -333,7 +334,7 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 		for _, scene := range scenes {
 			verifyString(t, scene.Path, pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyInt64(t, scene.Rating, ratingCriterion)
+			verifyIntPtr(t, scene.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -533,7 +534,7 @@ func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			verifyInt64(t, scene.Rating, ratingCriterion)
+			verifyIntPtr(t, scene.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -674,12 +675,16 @@ func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInp
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
+			var duration float64
+			if scene.Duration != nil {
+				duration = *scene.Duration
+			}
 			if durationCriterion.Modifier == models.CriterionModifierEquals {
-				assert.True(t, scene.Duration.Float64 >= float64(durationCriterion.Value) && scene.Duration.Float64 < float64(durationCriterion.Value+1))
+				assert.True(t, duration >= float64(durationCriterion.Value) && duration < float64(durationCriterion.Value+1))
 			} else if durationCriterion.Modifier == models.CriterionModifierNotEquals {
-				assert.True(t, scene.Duration.Float64 < float64(durationCriterion.Value) || scene.Duration.Float64 >= float64(durationCriterion.Value+1))
+				assert.True(t, duration < float64(durationCriterion.Value) || duration >= float64(durationCriterion.Value+1))
 			} else {
-				verifyFloat64(t, scene.Duration, durationCriterion)
+				verifyFloat64Ptr(t, scene.Duration, durationCriterion)
 			}
 		}
 
@@ -706,6 +711,24 @@ func verifyFloat64(t *testing.T, value sql.NullFloat64, criterion models.IntCrit
 	}
 	if criterion.Modifier == models.CriterionModifierLessThan {
 		assert.True(value.Float64 < float64(criterion.Value))
+	}
+}
+
+func verifyFloat64Ptr(t *testing.T, value *float64, criterion models.IntCriterionInput) {
+	assert := assert.New(t)
+	switch criterion.Modifier {
+	case models.CriterionModifierIsNull:
+		assert.Nil(value, "expect is null values to be null")
+	case models.CriterionModifierNotNull:
+		assert.NotNil(value, "expect is not null values to not be null")
+	case models.CriterionModifierEquals:
+		assert.EqualValues(float64(criterion.Value), value)
+	case models.CriterionModifierNotEquals:
+		assert.NotEqualValues(float64(criterion.Value), value)
+	case models.CriterionModifierGreaterThan:
+		assert.True(value != nil && *value > float64(criterion.Value))
+	case models.CriterionModifierLessThan:
+		assert.True(value != nil && *value < float64(criterion.Value))
 	}
 }
 
@@ -738,9 +761,18 @@ func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
 	})
 }
 
-func verifySceneResolution(t *testing.T, height sql.NullInt64, resolution models.ResolutionEnum) {
+func verifySceneResolution(t *testing.T, height *int, resolution models.ResolutionEnum) {
+	if !resolution.IsValid() {
+		return
+	}
+
 	assert := assert.New(t)
-	h := height.Int64
+	assert.NotNil(height)
+	if t.Failed() {
+		return
+	}
+
+	h := *height
 
 	switch resolution {
 	case models.ResolutionEnumLow:
@@ -808,22 +840,21 @@ func queryScenes(ctx context.Context, t *testing.T, queryBuilder models.SceneRea
 	return queryScene(ctx, t, queryBuilder, &sceneFilter, nil)
 }
 
-func createScene(ctx context.Context, queryBuilder models.SceneReaderWriter, width int64, height int64) (*models.Scene, error) {
+func createScene(ctx context.Context, queryBuilder models.SceneReaderWriter, width int, height int) (*models.Scene, error) {
 	name := fmt.Sprintf("TestSceneQueryResolutionModifiers %d %d", width, height)
-	scene := models.Scene{
-		Path: name,
-		Width: sql.NullInt64{
-			Int64: width,
-			Valid: true,
-		},
-		Height: sql.NullInt64{
-			Int64: height,
-			Valid: true,
-		},
-		Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
+	checksum := md5.FromString(name)
+	scene := &models.Scene{
+		Path:     name,
+		Width:    &width,
+		Height:   &height,
+		Checksum: &checksum,
 	}
 
-	return queryBuilder.Create(ctx, scene)
+	if err := queryBuilder.Create(ctx, scene); err != nil {
+		return nil, err
+	}
+
+	return scene, nil
 }
 
 func TestSceneQueryHasMarkers(t *testing.T) {
@@ -995,7 +1026,7 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 
 		// ensure date is null, empty or "0001-01-01"
 		for _, scene := range scenes {
-			assert.True(t, !scene.Date.Valid || scene.Date.String == "" || scene.Date.String == "0001-01-01")
+			assert.True(t, scene.Date == nil || scene.Date.Time == time.Time{})
 		}
 
 		return nil
@@ -1042,7 +1073,7 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 
 		// ensure date is null, empty or "0001-01-01"
 		for _, scene := range scenes {
-			assert.True(t, !scene.Rating.Valid)
+			assert.Nil(t, scene.Rating)
 		}
 
 		return nil
@@ -1475,11 +1506,7 @@ func verifyScenesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInp
 		assert.Greater(t, len(scenes), 0)
 
 		for _, scene := range scenes {
-			ids, err := sqb.GetTagIDs(ctx, scene.ID)
-			if err != nil {
-				return err
-			}
-			verifyInt(t, len(ids), tagCountCriterion)
+			verifyInt(t, len(scene.TagIDs), tagCountCriterion)
 		}
 
 		return nil
@@ -1516,11 +1543,7 @@ func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.Int
 		assert.Greater(t, len(scenes), 0)
 
 		for _, scene := range scenes {
-			ids, err := sqb.GetPerformerIDs(ctx, scene.ID)
-			if err != nil {
-				return err
-			}
-			verifyInt(t, len(ids), performerCountCriterion)
+			verifyInt(t, len(scene.PerformerIDs), performerCountCriterion)
 		}
 
 		return nil
@@ -1655,30 +1678,29 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 
 		// create performer to test against
 		const name = "TestSceneUpdateSceneCover"
-		scene := models.Scene{
+		checksum := md5.FromString(name)
+		scene := &models.Scene{
 			Path:     name,
-			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
+			Checksum: &checksum,
 		}
-		created, err := qb.Create(ctx, scene)
-		if err != nil {
+		if err := qb.Create(ctx, scene); err != nil {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
 		image := []byte("image")
-		err = qb.UpdateCover(ctx, created.ID, image)
-		if err != nil {
+		if err := qb.UpdateCover(ctx, scene.ID, image); err != nil {
 			return fmt.Errorf("Error updating scene cover: %s", err.Error())
 		}
 
 		// ensure image set
-		storedImage, err := qb.GetCover(ctx, created.ID)
+		storedImage, err := qb.GetCover(ctx, scene.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
 		assert.Equal(t, storedImage, image)
 
 		// set nil image
-		err = qb.UpdateCover(ctx, created.ID, nil)
+		err = qb.UpdateCover(ctx, scene.ID, nil)
 		if err == nil {
 			return fmt.Errorf("Expected error setting nil image")
 		}
@@ -1695,28 +1717,26 @@ func TestSceneDestroySceneCover(t *testing.T) {
 
 		// create performer to test against
 		const name = "TestSceneDestroySceneCover"
-		scene := models.Scene{
+		checksum := md5.FromString(name)
+		scene := &models.Scene{
 			Path:     name,
-			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
+			Checksum: &checksum,
 		}
-		created, err := qb.Create(ctx, scene)
-		if err != nil {
+		if err := qb.Create(ctx, scene); err != nil {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
 		image := []byte("image")
-		err = qb.UpdateCover(ctx, created.ID, image)
-		if err != nil {
+		if err := qb.UpdateCover(ctx, scene.ID, image); err != nil {
 			return fmt.Errorf("Error updating scene image: %s", err.Error())
 		}
 
-		err = qb.DestroyCover(ctx, created.ID)
-		if err != nil {
+		if err := qb.DestroyCover(ctx, scene.ID); err != nil {
 			return fmt.Errorf("Error destroying scene cover: %s", err.Error())
 		}
 
 		// image should be nil
-		storedImage, err := qb.GetCover(ctx, created.ID)
+		storedImage, err := qb.GetCover(ctx, scene.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
@@ -1734,20 +1754,62 @@ func TestSceneStashIDs(t *testing.T) {
 
 		// create scene to test against
 		const name = "TestSceneStashIDs"
-		scene := models.Scene{
+		checksum := md5.FromString(name)
+		scene := &models.Scene{
 			Path:     name,
-			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
+			Checksum: &checksum,
 		}
-		created, err := qb.Create(ctx, scene)
-		if err != nil {
+		if err := qb.Create(ctx, scene); err != nil {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
-		testStashIDReaderWriter(ctx, t, qb, created.ID)
+		testSceneStashIDs(ctx, t, scene)
 		return nil
 	}); err != nil {
 		t.Error(err.Error())
 	}
+}
+
+func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
+	// ensure no stash IDs to begin with
+	assert.Len(t, s.StashIDs, 0)
+
+	// add stash ids
+	const stashIDStr = "stashID"
+	const endpoint = "endpoint"
+	stashID := models.StashID{
+		StashID:  stashIDStr,
+		Endpoint: endpoint,
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	// update stash ids and ensure was updated
+	var err error
+	s, err = qb.UpdatePartial(ctx, s.ID, models.ScenePartial{
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeSet,
+		},
+	})
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	assert.Equal(t, []models.StashID{stashID}, s.StashIDs)
+
+	// remove stash ids and ensure was updated
+	s, err = qb.UpdatePartial(ctx, s.ID, models.ScenePartial{
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeRemove,
+		},
+	})
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	assert.Len(t, s.StashIDs, 0)
 }
 
 func TestSceneQueryQTrim(t *testing.T) {

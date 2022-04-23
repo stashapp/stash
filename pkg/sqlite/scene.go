@@ -45,7 +45,7 @@ ORDER BY size DESC
 `
 
 type sceneRow struct {
-	ID               int               `db:"id"`
+	ID               int               `db:"id" goqu:"skipinsert"`
 	Checksum         nullString        `db:"checksum"`
 	OSHash           nullString        `db:"oshash"`
 	Path             string            `db:"path"`
@@ -205,7 +205,7 @@ func (r *sceneQueryRow) appendRelationships(i *models.Scene) {
 		})
 	}
 	if r.StashID.Valid {
-		i.StashIDs = append(i.StashIDs, &models.StashID{
+		i.StashIDs = append(i.StashIDs, models.StashID{
 			StashID:  r.StashID.String,
 			Endpoint: r.Endpoint.String,
 		})
@@ -356,7 +356,7 @@ func (qb *sceneQueryBuilder) Update(ctx context.Context, updatedObject *models.S
 }
 
 func (qb *sceneQueryBuilder) getOCounter(ctx context.Context, id int) (int, error) {
-	q := goqu.From(qb.table()).Select("o_counter").Where(goqu.Ex{"id": id})
+	q := dialect.From(qb.table()).Select("o_counter").Where(goqu.Ex{"id": id})
 
 	const single = true
 	var ret int
@@ -440,7 +440,7 @@ func (qb *sceneQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models
 func (qb *sceneQueryBuilder) selectDataset() *goqu.SelectDataset {
 	table := qb.table()
 
-	return goqu.From(table).Select(
+	return dialect.From(table).Select(
 		table.All(),
 		galleriesScenesJoinTable.Col("gallery_id"),
 		scenesTagsJoinTable.Col("tag_id"),
@@ -546,7 +546,7 @@ func (qb *sceneQueryBuilder) findBySubquery(ctx context.Context, sq *goqu.Select
 	table := qb.table()
 
 	q := qb.selectDataset().Where(
-		table.Col(idColumn).In(
+		table.Col(idColumn).Eq(
 			sq,
 		),
 	).GroupBy(table.Col(idColumn))
@@ -555,7 +555,7 @@ func (qb *sceneQueryBuilder) findBySubquery(ctx context.Context, sq *goqu.Select
 }
 
 func (qb *sceneQueryBuilder) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Scene, error) {
-	sq := goqu.From(scenesPerformersJoinTable).Select(scenesPerformersJoinTable.Col(sceneIDColumn)).Where(
+	sq := dialect.From(scenesPerformersJoinTable).Select(scenesPerformersJoinTable.Col(sceneIDColumn)).Where(
 		scenesPerformersJoinTable.Col(performerIDColumn).Eq(performerID),
 	)
 	ret, err := qb.findBySubquery(ctx, sq)
@@ -568,7 +568,7 @@ func (qb *sceneQueryBuilder) FindByPerformerID(ctx context.Context, performerID 
 }
 
 func (qb *sceneQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Scene, error) {
-	sq := goqu.From(galleriesScenesJoinTable).Select(galleriesScenesJoinTable.Col(sceneIDColumn)).Where(
+	sq := dialect.From(galleriesScenesJoinTable).Select(galleriesScenesJoinTable.Col(sceneIDColumn)).Where(
 		galleriesScenesJoinTable.Col(galleryIDColumn).Eq(galleryID),
 	)
 	ret, err := qb.findBySubquery(ctx, sq)
@@ -583,12 +583,12 @@ func (qb *sceneQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int)
 func (qb *sceneQueryBuilder) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	joinTable := scenesPerformersJoinTable
 
-	q := goqu.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(performerIDColumn).Eq(performerID))
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(performerIDColumn).Eq(performerID))
 	return count(ctx, q)
 }
 
 func (qb *sceneQueryBuilder) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
-	sq := goqu.From(scenesMoviesJoinTable).Select(scenesMoviesJoinTable.Col(sceneIDColumn)).Where(
+	sq := dialect.From(scenesMoviesJoinTable).Select(scenesMoviesJoinTable.Col(sceneIDColumn)).Where(
 		scenesMoviesJoinTable.Col(movieIDColumn).Eq(movieID),
 	)
 	ret, err := qb.findBySubquery(ctx, sq)
@@ -603,17 +603,17 @@ func (qb *sceneQueryBuilder) FindByMovieID(ctx context.Context, movieID int) ([]
 func (qb *sceneQueryBuilder) CountByMovieID(ctx context.Context, movieID int) (int, error) {
 	joinTable := scenesMoviesJoinTable
 
-	q := goqu.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(movieIDColumn).Eq(movieID))
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(movieIDColumn).Eq(movieID))
 	return count(ctx, q)
 }
 
 func (qb *sceneQueryBuilder) Count(ctx context.Context) (int, error) {
-	q := goqu.Select(goqu.COUNT("*")).From(qb.table())
+	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
 }
 
 func (qb *sceneQueryBuilder) Size(ctx context.Context) (float64, error) {
-	q := goqu.Select(goqu.SUM(qb.table().Col("size").Cast("double"))).From(qb.table())
+	q := dialect.Select(goqu.SUM(qb.table().Col("size").Cast("double"))).From(qb.table())
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
@@ -623,7 +623,7 @@ func (qb *sceneQueryBuilder) Size(ctx context.Context) (float64, error) {
 }
 
 func (qb *sceneQueryBuilder) Duration(ctx context.Context) (float64, error) {
-	q := goqu.Select(goqu.SUM(qb.table().Col("duration").Cast("double"))).From(qb.table())
+	q := dialect.Select(goqu.SUM(qb.table().Col("duration").Cast("double"))).From(qb.table())
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
@@ -635,14 +635,14 @@ func (qb *sceneQueryBuilder) Duration(ctx context.Context) (float64, error) {
 func (qb *sceneQueryBuilder) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	table := qb.table()
 
-	q := goqu.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
 	return count(ctx, q)
 }
 
 func (qb *sceneQueryBuilder) CountByTagID(ctx context.Context, tagID int) (int, error) {
 	joinTable := scenesTagsJoinTable
 
-	q := goqu.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
 	return count(ctx, q)
 }
 
@@ -650,7 +650,7 @@ func (qb *sceneQueryBuilder) CountByTagID(ctx context.Context, tagID int) (int, 
 func (qb *sceneQueryBuilder) CountMissingChecksum(ctx context.Context) (int, error) {
 	table := qb.table()
 
-	q := goqu.Select(goqu.COUNT("*")).From(table).Where(table.Col("checksum").IsNull())
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("checksum").IsNull())
 	return count(ctx, q)
 }
 
@@ -658,7 +658,7 @@ func (qb *sceneQueryBuilder) CountMissingChecksum(ctx context.Context) (int, err
 func (qb *sceneQueryBuilder) CountMissingOSHash(ctx context.Context) (int, error) {
 	table := qb.table()
 
-	q := goqu.Select(goqu.COUNT("*")).From(table).Where(table.Col("oshash").IsNull())
+	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("oshash").IsNull())
 	return count(ctx, q)
 }
 
@@ -669,7 +669,7 @@ func (qb *sceneQueryBuilder) Wall(ctx context.Context, q *string) ([]*models.Sce
 	}
 
 	table := qb.table()
-	qq := qb.selectDataset().Where(table.Col("details").Like("%" + s + "%")).Order(goqu.I("RANDOM()").Asc()).Limit(80)
+	qq := qb.selectDataset().Where(table.Col("details").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
 	return qb.getMany(ctx, qq)
 }
 

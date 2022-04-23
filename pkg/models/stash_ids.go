@@ -6,6 +6,6 @@ type StashID struct {
 }
 
 type UpdateStashIDs struct {
-	StashIDs []*StashID             `json:"stash_ids"`
+	StashIDs []StashID              `json:"stash_ids"`
 	Mode     RelationshipUpdateMode `json:"mode"`
 }

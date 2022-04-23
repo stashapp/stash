@@ -13,7 +13,7 @@ import (
 
 type stashIDReaderWriter interface {
 	GetStashIDs(ctx context.Context, performerID int) ([]*models.StashID, error)
-	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
+	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []*models.StashID) error
 }
 
 func testStashIDReaderWriter(ctx context.Context, t *testing.T, r stashIDReaderWriter, id int) {
@@ -26,25 +26,25 @@ func testStashIDReaderWriter(ctx context.Context, t *testing.T, r stashIDReaderW
 	// add stash ids
 	const stashIDStr = "stashID"
 	const endpoint = "endpoint"
-	stashID := models.StashID{
+	stashID := &models.StashID{
 		StashID:  stashIDStr,
 		Endpoint: endpoint,
 	}
 
 	// update stash ids and ensure was updated
-	if err := r.UpdateStashIDs(ctx, id, []models.StashID{stashID}); err != nil {
+	if err := r.UpdateStashIDs(ctx, id, []*models.StashID{stashID}); err != nil {
 		t.Error(err.Error())
 	}
 
-	testStashIDs(ctx, t, r, id, []*models.StashID{&stashID})
+	testStashIDs(ctx, t, r, id, []*models.StashID{stashID})
 
 	// update non-existing id - should return error
-	if err := r.UpdateStashIDs(ctx, -1, []models.StashID{stashID}); err == nil {
+	if err := r.UpdateStashIDs(ctx, -1, []*models.StashID{stashID}); err == nil {
 		t.Error("expected error when updating non-existing id")
 	}
 
 	// remove stash ids and ensure was updated
-	if err := r.UpdateStashIDs(ctx, id, []models.StashID{}); err != nil {
+	if err := r.UpdateStashIDs(ctx, id, []*models.StashID{}); err != nil {
 		t.Error(err.Error())
 	}
 

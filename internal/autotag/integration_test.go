@@ -146,7 +146,7 @@ func createScenes(ctx context.Context, sqb models.SceneReaderWriter) error {
 
 	// create scene with existing studio io
 	studioScene := makeScene(existingStudioSceneName, true)
-	studioScene.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
+	studioScene.StudioID = &existingStudioID
 	err := createScene(ctx, sqb, studioScene)
 	if err != nil {
 		return err
@@ -156,21 +156,22 @@ func createScenes(ctx context.Context, sqb models.SceneReaderWriter) error {
 }
 
 func makeScene(name string, expectedResult bool) *models.Scene {
+	checksum := md5.FromString(name)
 	scene := &models.Scene{
-		Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
+		Checksum: &checksum,
 		Path:     name,
 	}
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		scene.Title = sql.NullString{Valid: true, String: name}
+		scene.Title = &name
 	}
 
 	return scene
 }
 
 func createScene(ctx context.Context, sqb models.SceneWriter, scene *models.Scene) error {
-	_, err := sqb.Create(ctx, *scene)
+	err := sqb.Create(ctx, scene)
 
 	if err != nil {
 		return fmt.Errorf("Failed to create scene with name '%s': %s", scene.Path, err.Error())
@@ -389,9 +390,9 @@ func TestParsePerformerScenes(t *testing.T) {
 			}
 
 			// title is only set on scenes where we expect performer to be set
-			if scene.Title.String == scene.Path && len(performers) == 0 {
+			if scene.Title != nil && *scene.Title == scene.Path && len(performers) == 0 {
 				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path)
-			} else if scene.Title.String != scene.Path && len(performers) > 0 {
+			} else if (scene.Title == nil || *scene.Title != scene.Path) && len(performers) > 0 {
 				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path)
 			}
 		}
@@ -434,19 +435,19 @@ func TestParseStudioScenes(t *testing.T) {
 		for _, scene := range scenes {
 			// check for existing studio id scene first
 			if scene.Path == existingStudioSceneName {
-				if scene.StudioID.Int64 != int64(existingStudioID) {
+				if scene.StudioID == nil || *scene.StudioID != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for scene with existing studio ID")
 				}
 			} else {
 				// title is only set on scenes where we expect studio to be set
-				if scene.Title.String == scene.Path {
-					if !scene.StudioID.Valid {
+				if scene.Title != nil && *scene.Title == scene.Path {
+					if scene.StudioID == nil {
 						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
-					} else if scene.StudioID.Int64 != int64(studios[1].ID) {
-						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID.Int64, scene.Path)
+					} else if scene.StudioID != nil && *scene.StudioID != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID, scene.Path)
 					}
 
-				} else if scene.Title.String != scene.Path && scene.StudioID.Int64 == int64(studios[1].ID) {
+				} else if (scene.Title == nil || *scene.Title != scene.Path) && scene.StudioID != nil && *scene.StudioID == studios[1].ID {
 					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
 				}
 			}
@@ -497,9 +498,9 @@ func TestParseTagScenes(t *testing.T) {
 			}
 
 			// title is only set on scenes where we expect tag to be set
-			if scene.Title.String == scene.Path && len(tags) == 0 {
+			if scene.Title != nil && *scene.Title == scene.Path && len(tags) == 0 {
 				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path)
-			} else if scene.Title.String != scene.Path && len(tags) > 0 {
+			} else if (scene.Title == nil || *scene.Title != scene.Path) && len(tags) > 0 {
 				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path)
 			}
 		}

@@ -77,8 +77,12 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("GetPerformerIDs", testCtx, sceneID).Return(nil, nil).Once()
-		mockSceneReader.On("UpdatePerformers", testCtx, sceneID, []int{performerID}).Return(nil).Once()
+		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := PerformerScenes(testCtx, &performer, nil, mockSceneReader, nil)

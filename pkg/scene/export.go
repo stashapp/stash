@@ -88,9 +88,9 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 		newSceneJSON.Cover = utils.GetBase64StringFromData(cover)
 	}
 
-	var ret []*models.StashID
+	var ret []models.StashID
 	for _, stashID := range scene.StashIDs {
-		newJoin := &models.StashID{
+		newJoin := models.StashID{
 			StashID:  stashID.StashID,
 			Endpoint: stashID.Endpoint,
 		}

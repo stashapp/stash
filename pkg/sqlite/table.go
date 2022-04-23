@@ -9,6 +9,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
@@ -19,7 +20,7 @@ type table struct {
 }
 
 func (t *table) insert(ctx context.Context, o interface{}) (sql.Result, error) {
-	q := goqu.Insert(t.table).Rows(o)
+	q := dialect.Insert(t.table).Rows(o)
 	ret, err := exec(ctx, q)
 	if err != nil {
 		return nil, fmt.Errorf("inserting into %s: %w", t.table.GetTable(), err)
@@ -43,7 +44,7 @@ func (t *table) insertID(ctx context.Context, o interface{}) (int, error) {
 }
 
 func (t *table) updateByID(ctx context.Context, id interface{}, o interface{}) error {
-	q := goqu.Update(t.table).Set(o).Where(t.byID(id))
+	q := dialect.Update(t.table).Set(o).Where(t.byID(id))
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("updating %s: %w", t.table.GetTable(), err)
@@ -57,7 +58,7 @@ func (t *table) byID(id interface{}) exp.Expression {
 }
 
 func (t *table) idExists(ctx context.Context, id int) (bool, error) {
-	q := goqu.Select(goqu.COUNT("*")).From(t.table).Where(t.byID(id))
+	q := dialect.Select(goqu.COUNT("*")).From(t.table).Where(t.byID(id))
 
 	var count int
 	if err := querySimple(ctx, q, &count); err != nil {
@@ -83,7 +84,7 @@ func (t *table) destroyExisting(ctx context.Context, ids []int) error {
 }
 
 func (t *table) destroy(ctx context.Context, ids []int) error {
-	q := goqu.Delete(t.table).Where(t.idColumn.In(ids))
+	q := dialect.Delete(t.table).Where(t.idColumn.In(ids))
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("destroying %s: %w", t.table.GetTable(), err)
@@ -122,7 +123,7 @@ func (t *joinTable) invert() *joinTable {
 }
 
 func (t *joinTable) get(ctx context.Context, id int) ([]int, error) {
-	q := goqu.Select(t.fkColumn).From(t.table.table).Where(t.idColumn.Eq(id))
+	q := dialect.Select(t.fkColumn).From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
 	var ret []int
@@ -143,7 +144,7 @@ func (t *joinTable) get(ctx context.Context, id int) ([]int, error) {
 }
 
 func (t *joinTable) insertJoin(ctx context.Context, id, foreignID int) (sql.Result, error) {
-	q := goqu.Insert(t.table.table).Cols(t.idColumn.GetCol(), t.fkColumn.GetCol()).Vals(
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), t.fkColumn.GetCol()).Vals(
 		goqu.Vals{id, foreignID},
 	)
 	ret, err := exec(ctx, q)
@@ -185,7 +186,7 @@ func (t *joinTable) addJoins(ctx context.Context, id int, foreignIDs []int) erro
 }
 
 func (t *joinTable) destroyJoins(ctx context.Context, id int, foreignIDs []int) error {
-	q := goqu.Delete(t.table.table).Where(
+	q := dialect.Delete(t.table.table).Where(
 		t.idColumn.Eq(id),
 		t.fkColumn.In(foreignIDs),
 	)
@@ -227,7 +228,7 @@ func (r *stashIDRow) resolve() *models.StashID {
 }
 
 func (t *stashIDTable) get(ctx context.Context, id int) ([]*models.StashID, error) {
-	q := goqu.Select("endpoint", "stash_id").From(t.table.table).Where(t.idColumn.Eq(id))
+	q := dialect.Select("endpoint", "stash_id").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
 	var ret []*models.StashID
@@ -247,8 +248,8 @@ func (t *stashIDTable) get(ctx context.Context, id int) ([]*models.StashID, erro
 	return ret, nil
 }
 
-func (t *stashIDTable) insertJoin(ctx context.Context, id int, v *models.StashID) (sql.Result, error) {
-	q := goqu.Insert(t.table.table).Cols(t.idColumn.GetCol(), "endpoint", "stash_id").Vals(
+func (t *stashIDTable) insertJoin(ctx context.Context, id int, v models.StashID) (sql.Result, error) {
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "endpoint", "stash_id").Vals(
 		goqu.Vals{id, v.Endpoint, v.StashID},
 	)
 	ret, err := exec(ctx, q)
@@ -259,7 +260,7 @@ func (t *stashIDTable) insertJoin(ctx context.Context, id int, v *models.StashID
 	return ret, nil
 }
 
-func (t *stashIDTable) insertJoins(ctx context.Context, id int, v []*models.StashID) error {
+func (t *stashIDTable) insertJoins(ctx context.Context, id int, v []models.StashID) error {
 	for _, fk := range v {
 		if _, err := t.insertJoin(ctx, id, fk); err != nil {
 			return err
@@ -269,7 +270,7 @@ func (t *stashIDTable) insertJoins(ctx context.Context, id int, v []*models.Stas
 	return nil
 }
 
-func (t *stashIDTable) replaceJoins(ctx context.Context, id int, v []*models.StashID) error {
+func (t *stashIDTable) replaceJoins(ctx context.Context, id int, v []models.StashID) error {
 	if err := t.destroy(ctx, []int{id}); err != nil {
 		return err
 	}
@@ -277,7 +278,7 @@ func (t *stashIDTable) replaceJoins(ctx context.Context, id int, v []*models.Sta
 	return t.insertJoins(ctx, id, v)
 }
 
-func (t *stashIDTable) addJoins(ctx context.Context, id int, v []*models.StashID) error {
+func (t *stashIDTable) addJoins(ctx context.Context, id int, v []models.StashID) error {
 	// get existing foreign keys
 	fks, err := t.get(ctx, id)
 	if err != nil {
@@ -285,7 +286,7 @@ func (t *stashIDTable) addJoins(ctx context.Context, id int, v []*models.StashID
 	}
 
 	// only add values that are not already present
-	var filtered []*models.StashID
+	var filtered []models.StashID
 	for _, vv := range v {
 		for _, e := range fks {
 			if vv.Endpoint == e.Endpoint {
@@ -298,9 +299,9 @@ func (t *stashIDTable) addJoins(ctx context.Context, id int, v []*models.StashID
 	return t.insertJoins(ctx, id, filtered)
 }
 
-func (t *stashIDTable) destroyJoins(ctx context.Context, id int, v []*models.StashID) error {
+func (t *stashIDTable) destroyJoins(ctx context.Context, id int, v []models.StashID) error {
 	for _, vv := range v {
-		q := goqu.Delete(t.table.table).Where(
+		q := dialect.Delete(t.table.table).Where(
 			t.idColumn.Eq(id),
 			t.table.table.Col("endpoint").Eq(vv.Endpoint),
 			t.table.table.Col("stash_id").Eq(vv.StashID),
@@ -314,7 +315,7 @@ func (t *stashIDTable) destroyJoins(ctx context.Context, id int, v []*models.Sta
 	return nil
 }
 
-func (t *stashIDTable) modifyJoins(ctx context.Context, id int, v []*models.StashID, mode models.RelationshipUpdateMode) error {
+func (t *stashIDTable) modifyJoins(ctx context.Context, id int, v []models.StashID, mode models.RelationshipUpdateMode) error {
 	switch mode {
 	case models.RelationshipUpdateModeSet:
 		return t.replaceJoins(ctx, id, v)
@@ -345,7 +346,7 @@ func (r moviesScenesRow) resolve(sceneID int) models.MoviesScenes {
 }
 
 func (t *scenesMoviesTable) get(ctx context.Context, id int) ([]models.MoviesScenes, error) {
-	q := goqu.Select("movie_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
+	q := dialect.Select("movie_id", "scene_index").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
 	var ret []models.MoviesScenes
@@ -366,7 +367,7 @@ func (t *scenesMoviesTable) get(ctx context.Context, id int) ([]models.MoviesSce
 }
 
 func (t *scenesMoviesTable) insertJoin(ctx context.Context, id int, v models.MoviesScenes) (sql.Result, error) {
-	q := goqu.Insert(t.table.table).Cols(t.idColumn.GetCol(), "movie_id", "scene_index").Vals(
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "movie_id", "scene_index").Vals(
 		goqu.Vals{id, v.MovieID, newNullIntPtr(v.SceneIndex)},
 	)
 	ret, err := exec(ctx, q)
@@ -418,7 +419,7 @@ func (t *scenesMoviesTable) addJoins(ctx context.Context, id int, v []models.Mov
 
 func (t *scenesMoviesTable) destroyJoins(ctx context.Context, id int, v []models.MoviesScenes) error {
 	for _, vv := range v {
-		q := goqu.Delete(t.table.table).Where(
+		q := dialect.Delete(t.table.table).Where(
 			t.idColumn.Eq(id),
 			t.table.table.Col("movie_id").Eq(vv.MovieID),
 		)
@@ -459,6 +460,7 @@ func exec(ctx context.Context, stmt sqler) (sql.Result, error) {
 		return nil, fmt.Errorf("generating sql: %w", err)
 	}
 
+	logger.Tracef("SQL: %s [%v]", sql, args)
 	ret, err := tx.ExecContext(ctx, sql)
 	if err != nil {
 		return nil, fmt.Errorf("executing `%s` [%v]: %w", sql, args, err)
@@ -487,6 +489,7 @@ func queryFunc(ctx context.Context, query *goqu.SelectDataset, single bool, f fu
 		return err
 	}
 
+	logger.Tracef("SQL: %s [%v]", q, args)
 	rows, err := tx.QueryxContext(ctx, q, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -521,6 +524,7 @@ func querySimple(ctx context.Context, query *goqu.SelectDataset, out interface{}
 		return err
 	}
 
+	logger.Tracef("SQL: %s [%v]", q, args)
 	rows, err := tx.QueryxContext(ctx, q, args...)
 	if err != nil {
 		return fmt.Errorf("querying `%s` [%v]: %w", q, args, err)

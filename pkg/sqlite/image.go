@@ -241,7 +241,7 @@ func (qb *imageQueryBuilder) Update(ctx context.Context, updatedObject *models.I
 }
 
 func (qb *imageQueryBuilder) getOCounter(ctx context.Context, id int) (int, error) {
-	q := goqu.From(qb.table()).Select("o_counter").Where(goqu.Ex{"id": id})
+	q := dialect.From(qb.table()).Select("o_counter").Where(goqu.Ex{"id": id})
 
 	const single = true
 	var ret int
@@ -316,7 +316,7 @@ func (qb *imageQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models
 func (qb *imageQueryBuilder) selectDataset() *goqu.SelectDataset {
 	table := qb.table()
 
-	return goqu.From(table).Select(
+	return dialect.From(table).Select(
 		table.All(),
 		galleriesImagesJoinTable.Col("gallery_id"),
 		imagesTagsJoinTable.Col("tag_id"),
@@ -415,17 +415,17 @@ func (qb *imageQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int)
 func (qb *imageQueryBuilder) CountByGalleryID(ctx context.Context, galleryID int) (int, error) {
 	joinTable := goqu.T(galleriesImagesTable)
 
-	q := goqu.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col("gallery_id").Eq(galleryID))
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col("gallery_id").Eq(galleryID))
 	return count(ctx, q)
 }
 
 func (qb *imageQueryBuilder) Count(ctx context.Context) (int, error) {
-	q := goqu.Select(goqu.COUNT("*")).From(qb.table())
+	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
 }
 
 func (qb *imageQueryBuilder) Size(ctx context.Context) (float64, error) {
-	q := goqu.Select(goqu.SUM(qb.table().Col("size").Cast("double"))).From(qb.table())
+	q := dialect.Select(goqu.SUM(qb.table().Col("size").Cast("double"))).From(qb.table())
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err

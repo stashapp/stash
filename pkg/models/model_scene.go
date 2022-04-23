@@ -40,7 +40,7 @@ type Scene struct {
 	TagIDs       []int          `json:"tag_ids"`
 	PerformerIDs []int          `json:"performer_ids"`
 	Movies       []MoviesScenes `json:"movies"`
-	StashIDs     []*StashID     `json:"stash_ids"`
+	StashIDs     []StashID      `json:"stash_ids"`
 }
 
 func (s *Scene) File() File {
@@ -140,8 +140,8 @@ type SceneUpdateInput struct {
 	Movies           []*SceneMovieInput `json:"movies"`
 	TagIds           []string           `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage *string    `json:"cover_image"`
-	StashIds   []*StashID `json:"stash_ids"`
+	CoverImage *string   `json:"cover_image"`
+	StashIds   []StashID `json:"stash_ids"`
 }
 
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
@@ -162,6 +162,11 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		dateStr = &v
 	}
 
+	var stashIDs []StashID
+	if s.StashIDs != nil {
+		stashIDs = s.StashIDs.StashIDs
+	}
+
 	return SceneUpdateInput{
 		ID:           strconv.Itoa(id),
 		Title:        stringDblPtrToPtr(s.Title),
@@ -175,7 +180,7 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		PerformerIds: s.PerformerIDs.IDStrings(),
 		Movies:       s.MovieIDs.SceneMovieInputs(),
 		TagIds:       s.TagIDs.IDStrings(),
-		StashIds:     s.StashIDs.StashIDs,
+		StashIds:     stashIDs,
 	}
 }
 

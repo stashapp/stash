@@ -133,8 +133,12 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("GetTagIDs", testCtx, sceneID).Return(nil, nil).Once()
-		mockSceneReader.On("UpdateTags", testCtx, sceneID, []int{tagID}).Return(nil).Once()
+		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := TagScenes(testCtx, &tag, nil, aliases, mockSceneReader, nil)
