@@ -3,6 +3,7 @@ import {
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
+import { CaptionedCriterionOption } from "./criteria/captioned";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
 import { MoviesCriterionOption } from "./criteria/movies";
@@ -78,7 +79,7 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
   InteractiveCriterionOption,
-  createStringCriterionOption("captions"),
+  CaptionedCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),
 ];
 

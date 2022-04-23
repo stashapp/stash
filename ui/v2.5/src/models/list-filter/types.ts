@@ -113,7 +113,7 @@ export type CriterionType =
   | "stash_id"
   | "interactive"
   | "interactive_speed"
-  | "captions"
+  | "captioned"
   | "name"
   | "details"
   | "title"

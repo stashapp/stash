@@ -13,6 +13,7 @@ import {
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";
+import { CaptionedCriterion } from "./captioned";
 import { HasMarkersCriterion } from "./has-markers";
 import {
   PerformerIsMissingCriterionOption,
@@ -159,8 +160,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new StringCriterion(new StringCriterionOption(type, type));
     case "interactive":
       return new InteractiveCriterion();
-    case "captions":
-      return new StringCriterion(new StringCriterionOption(type, type));
+    case "captioned":
+      return new CaptionedCriterion();
     case "parent_tag_count":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(
