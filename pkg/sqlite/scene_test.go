@@ -402,73 +402,707 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			}
 
 			assert.Equal(copy, *s)
-
-			return
 		})
 	}
 }
 
-// func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
-// 	var (
-// 		path        = "path"
-// 		title       = "title"
-// 		checksum    = "checksum"
-// 		url         = "url"
-// 		rating      = 3
-// 		details     = "details"
-// 		fileModTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-// 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-// 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-// 	)
+func clearScenePartial() models.ScenePartial {
+	// leave mandatory fields
+	return models.ScenePartial{
+		OSHash:           models.OptionalString{Set: true, Null: true},
+		Title:            models.OptionalString{Set: true, Null: true},
+		Details:          models.OptionalString{Set: true, Null: true},
+		URL:              models.OptionalString{Set: true, Null: true},
+		Date:             models.OptionalDate{Set: true, Null: true},
+		Rating:           models.OptionalInt{Set: true, Null: true},
+		Size:             models.OptionalString{Set: true, Null: true},
+		Duration:         models.OptionalFloat64{Set: true, Null: true},
+		VideoCodec:       models.OptionalString{Set: true, Null: true},
+		AudioCodec:       models.OptionalString{Set: true, Null: true},
+		Format:           models.OptionalString{Set: true, Null: true},
+		Width:            models.OptionalInt{Set: true, Null: true},
+		Height:           models.OptionalInt{Set: true, Null: true},
+		Framerate:        models.OptionalFloat64{Set: true, Null: true},
+		Bitrate:          models.OptionalInt64{Set: true, Null: true},
+		StudioID:         models.OptionalInt{Set: true, Null: true},
+		FileModTime:      models.OptionalTime{Set: true, Null: true},
+		Phash:            models.OptionalInt64{Set: true, Null: true},
+		InteractiveSpeed: models.OptionalInt{Set: true, Null: true},
+		GalleryIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		TagIDs:           &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		PerformerIDs:     &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		StashIDs:         &models.UpdateStashIDs{Mode: models.RelationshipUpdateModeSet},
+	}
+}
 
-// 	tests := []struct {
-// 		name    string
-// 		id      int
-// 		partial models.ScenePartial
-// 		want    models.Scene
-// 		wantErr bool
-// 	}{
-// 		{
-// 			"full",
-// 			sceneIDs[sceneIdxWithScene],
-// 			models.ScenePartial{
-// 				Path:         &path,
-// 				Checksum:     checksum,
-// 				Zip:          false,
-// 				Title:        &title,
-// 				URL:          &url,
-// 				Date:         &date,
-// 				Details:      &details,
-// 				Rating:       &rating,
-// 				Organized:    true,
-// 				StudioID:     &studioIDs[studioIdxWithScene],
-// 				FileModTime:  &fileModTime,
-// 				CreatedAt:    createdAt,
-// 				UpdatedAt:    updatedAt,
-// 				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
-// 				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-// 				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
-// 			},
-// 			models.Scene{},
-// 			false,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		qb := sqlite.SceneReaderWriter
+func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
+	var (
+		path                   = "path"
+		title                  = "title"
+		checksum               = "checksum"
+		oshash                 = "oshash"
+		details                = "details"
+		url                    = "url"
+		rating                 = 3
+		ocounter               = 5
+		size                   = "1234"
+		duration               = 1.234
+		width                  = 640
+		height                 = 480
+		framerate              = 2.345
+		bitrate          int64 = 234
+		videoCodec             = "videoCodec"
+		audioCodec             = "audioCodec"
+		format                 = "format"
+		fileModTime            = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		phash            int64 = 4567
+		interactive            = true
+		interactiveSpeed       = 100
+		sceneIndex             = 123
+		sceneIndex2            = 234
+		endpoint1              = "endpoint1"
+		endpoint2              = "endpoint2"
+		stashID1               = "stashid1"
+		stashID2               = "stashid2"
 
-// 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-// 			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("sceneQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("sceneQueryBuilder.UpdatePartial() = %v, want %v", got, tt.want)
-// 			}
-// 			return
-// 		})
-// 	}
-// }
+		date = models.NewDate("2003-02-01")
+	)
+
+	tests := []struct {
+		name    string
+		id      int
+		partial models.ScenePartial
+		want    models.Scene
+		wantErr bool
+	}{
+		{
+			"full",
+			sceneIDs[sceneIdxWithSpacedName],
+			models.ScenePartial{
+				Path:             models.NewOptionalString(path),
+				Checksum:         models.NewOptionalString(checksum),
+				OSHash:           models.NewOptionalString(oshash),
+				Title:            models.NewOptionalString(title),
+				Details:          models.NewOptionalString(details),
+				URL:              models.NewOptionalString(url),
+				Date:             models.NewOptionalDate(date),
+				Rating:           models.NewOptionalInt(rating),
+				Organized:        models.NewOptionalBool(true),
+				OCounter:         models.NewOptionalInt(ocounter),
+				Size:             models.NewOptionalString(size),
+				Duration:         models.NewOptionalFloat64(duration),
+				VideoCodec:       models.NewOptionalString(videoCodec),
+				AudioCodec:       models.NewOptionalString(audioCodec),
+				Format:           models.NewOptionalString(format),
+				Width:            models.NewOptionalInt(width),
+				Height:           models.NewOptionalInt(height),
+				Framerate:        models.NewOptionalFloat64(framerate),
+				Bitrate:          models.NewOptionalInt64(bitrate),
+				StudioID:         models.NewOptionalInt(studioIDs[studioIdxWithScene]),
+				FileModTime:      models.NewOptionalTime(fileModTime),
+				Phash:            models.NewOptionalInt64(phash),
+				CreatedAt:        models.NewOptionalTime(createdAt),
+				UpdatedAt:        models.NewOptionalTime(updatedAt),
+				Interactive:      models.NewOptionalBool(interactive),
+				InteractiveSpeed: models.NewOptionalInt(interactiveSpeed),
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithScene]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: []models.MoviesScenes{
+						{
+							MovieID:    movieIDs[movieIdxWithScene],
+							SceneIndex: &sceneIndex,
+						},
+						{
+							MovieID:    movieIDs[movieIdxWithStudio],
+							SceneIndex: &sceneIndex2,
+						},
+					},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: []models.StashID{
+						{
+							StashID:  stashID1,
+							Endpoint: endpoint1,
+						},
+						{
+							StashID:  stashID2,
+							Endpoint: endpoint2,
+						},
+					},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+			},
+			models.Scene{
+				ID:               sceneIDs[sceneIdxWithSpacedName],
+				Path:             path,
+				Checksum:         &checksum,
+				OSHash:           &oshash,
+				Title:            title,
+				Details:          details,
+				URL:              url,
+				Date:             &date,
+				Rating:           &rating,
+				Organized:        true,
+				OCounter:         ocounter,
+				Size:             &size,
+				Duration:         &duration,
+				VideoCodec:       &videoCodec,
+				AudioCodec:       &audioCodec,
+				Format:           &format,
+				Width:            &width,
+				Height:           &height,
+				Framerate:        &framerate,
+				Bitrate:          &bitrate,
+				StudioID:         &studioIDs[studioIdxWithScene],
+				FileModTime:      &fileModTime,
+				Phash:            &phash,
+				CreatedAt:        createdAt,
+				UpdatedAt:        updatedAt,
+				Interactive:      interactive,
+				InteractiveSpeed: &interactiveSpeed,
+				GalleryIDs:       []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:           []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs:     []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+				Movies: []models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithScene],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				},
+				StashIDs: []models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				},
+			},
+			false,
+		},
+		{
+			"clear all",
+			sceneIDs[sceneIdxWithSpacedName],
+			clearScenePartial(),
+			models.Scene{
+				ID:       sceneIDs[sceneIdxWithSpacedName],
+				Path:     getSceneStringValue(sceneIdxWithSpacedName, pathField),
+				Checksum: getSceneStringPtr(sceneIdxWithSpacedName, checksumField),
+			},
+			false,
+		},
+		{
+			"invalid id",
+			invalidID,
+			models.ScenePartial{},
+			models.Scene{},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		qb := sqlite.SceneReaderWriter
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			assert.Equal(tt.want, *got)
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			assert.Equal(tt.want, *s)
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
+	var (
+		sceneIndex  = 123
+		sceneIndex2 = 234
+		endpoint1   = "endpoint1"
+		endpoint2   = "endpoint2"
+		stashID1    = "stashid1"
+		stashID2    = "stashid2"
+
+		movieScenes = []models.MoviesScenes{
+			{
+				MovieID:    movieIDs[movieIdxWithDupName],
+				SceneIndex: &sceneIndex,
+			},
+			{
+				MovieID:    movieIDs[movieIdxWithStudio],
+				SceneIndex: &sceneIndex2,
+			},
+		}
+
+		stashIDs = []models.StashID{
+			{
+				StashID:  stashID1,
+				Endpoint: endpoint1,
+			},
+			{
+				StashID:  stashID2,
+				Endpoint: endpoint2,
+			},
+		}
+	)
+
+	tests := []struct {
+		name    string
+		id      int
+		partial models.ScenePartial
+		want    models.Scene
+		wantErr bool
+	}{
+		{
+			"add galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[galleryIdx1WithImage], tagIDs[galleryIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				GalleryIDs: append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
+					galleryIDs[galleryIdx1WithImage],
+					galleryIDs[galleryIdx1WithPerformer],
+				),
+			},
+			false,
+		},
+		{
+			"add tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				TagIDs: append(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
+					tagIDs[tagIdx1WithDupName],
+					tagIDs[tagIdx1WithGallery],
+				),
+			},
+			false,
+		},
+		{
+			"add performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName], performerIDs[performerIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				PerformerIDs: append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithDupName],
+					performerIDs[performerIdx1WithGallery],
+				),
+			},
+			false,
+		},
+		{
+			"add movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: movieScenes,
+					Mode:   models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				Movies: append([]models.MoviesScenes{
+					{
+						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
+					},
+				}, movieScenes...),
+			},
+			false,
+		},
+		{
+			"add stash ids",
+			sceneIDs[sceneIdxWithSpacedName],
+			models.ScenePartial{
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: stashIDs,
+					Mode:     models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				StashIDs: append(stashIDs, []models.StashID{sceneStashID(sceneIdxWithSpacedName)}...),
+			},
+			false,
+		},
+		{
+			"add duplicate galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[galleryIdxWithScene], tagIDs[galleryIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				GalleryIDs: append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
+					tagIDs[galleryIdx1WithPerformer],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				TagIDs: append(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
+					tagIDs[tagIdx1WithGallery],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				PerformerIDs: append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithGallery],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: append([]models.MoviesScenes{
+						{
+							MovieID:    movieIDs[movieIdxWithScene],
+							SceneIndex: &sceneIndex,
+						},
+					},
+						movieScenes...,
+					),
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				Movies: append([]models.MoviesScenes{
+					{
+						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
+					},
+				}, movieScenes...),
+			},
+			false,
+		},
+		{
+			"add duplicate stash ids",
+			sceneIDs[sceneIdxWithSpacedName],
+			models.ScenePartial{
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: []models.StashID{
+						sceneStashID(sceneIdxWithSpacedName),
+					},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				StashIDs: []models.StashID{sceneStashID(sceneIdxWithSpacedName)},
+			},
+			false,
+		},
+		{
+			"add invalid galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{},
+			true,
+		},
+		{
+			"add invalid tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{},
+			true,
+		},
+		{
+			"add invalid performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{},
+			true,
+		},
+		{
+			"add invalid movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: []models.MoviesScenes{
+						{
+							MovieID: invalidID,
+						},
+					},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{},
+			true,
+		},
+		{
+			"remove galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[galleryIdxWithScene]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{},
+			false,
+		},
+		{
+			"remove tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithScene]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				TagIDs: []int{tagIDs[tagIdx2WithScene]},
+			},
+			false,
+		},
+		{
+			"remove performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithScene]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				PerformerIDs: []int{performerIDs[performerIdx2WithScene]},
+			},
+			false,
+		},
+		{
+			"remove movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: []models.MoviesScenes{
+						{
+							MovieID: movieIDs[movieIdxWithScene],
+						},
+					},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{},
+			false,
+		},
+		{
+			"remove stash ids",
+			sceneIDs[sceneIdxWithSpacedName],
+			models.ScenePartial{
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: []models.StashID{sceneStashID(sceneIdxWithSpacedName)},
+					Mode:     models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{},
+			false,
+		},
+		{
+			"remove unrelated galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[galleryIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				GalleryIDs: []int{galleryIDs[galleryIdxWithScene]},
+			},
+			false,
+		},
+		{
+			"remove unrelated tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				TagIDs: indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
+			},
+			false,
+		},
+		{
+			"remove unrelated performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				PerformerIDs: indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+			},
+			false,
+		},
+		{
+			"remove unrelated movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: []models.MoviesScenes{
+						{
+							MovieID: movieIDs[movieIdxWithDupName],
+						},
+					},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				Movies: []models.MoviesScenes{
+					{
+						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
+					},
+				},
+			},
+			false,
+		},
+		{
+			"remove unrelated stash ids",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: stashIDs,
+					Mode:     models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				StashIDs: []models.StashID{sceneStashID(sceneIdxWithGallery)},
+			},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		qb := sqlite.SceneReaderWriter
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			// only compare fields that were in the partial
+			if tt.partial.PerformerIDs != nil {
+				assert.Equal(tt.want.PerformerIDs, got.PerformerIDs)
+				assert.Equal(tt.want.PerformerIDs, s.PerformerIDs)
+			}
+			if tt.partial.TagIDs != nil {
+				assert.Equal(tt.want.TagIDs, got.TagIDs)
+				assert.Equal(tt.want.TagIDs, s.TagIDs)
+			}
+			if tt.partial.GalleryIDs != nil {
+				assert.Equal(tt.want.GalleryIDs, got.GalleryIDs)
+				assert.Equal(tt.want.GalleryIDs, s.GalleryIDs)
+			}
+			if tt.partial.MovieIDs != nil {
+				assert.Equal(tt.want.Movies, got.Movies)
+				assert.Equal(tt.want.Movies, s.Movies)
+			}
+			if tt.partial.StashIDs != nil {
+				assert.Equal(tt.want.StashIDs, got.StashIDs)
+				assert.Equal(tt.want.StashIDs, s.StashIDs)
+			}
+		})
+	}
+}
 
 func Test_sceneQueryBuilder_IncrementOCounter(t *testing.T) {
 	tests := []struct {

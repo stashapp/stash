@@ -569,11 +569,16 @@ func getSceneStringValue(index int, field string) string {
 }
 
 func getSceneStringPtr(index int, field string) *string {
+	v := getPrefixedStringValue("scene", index, field)
+	return &v
+}
+
+func getSceneNullStringPtr(index int, field string) *string {
 	return getStringPtrFromNullString(getPrefixedNullStringValue("scene", index, field))
 }
 
 func getSceneEmptyString(index int, field string) string {
-	v := getSceneStringPtr(index, field)
+	v := getSceneNullStringPtr(index, field)
 	if v == nil {
 		return ""
 	}
