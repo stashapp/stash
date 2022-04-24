@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// TODO - this should be moved to sqlite
 type SQLiteDate struct {
 	String string
 	Valid  bool

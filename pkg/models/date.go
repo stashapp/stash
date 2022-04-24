@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+// Date wraps a time.Time with a format of "YYYY-MM-DD"
 type Date struct {
 	time.Time
 }
