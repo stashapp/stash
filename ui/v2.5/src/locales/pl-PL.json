@@ -107,6 +107,7 @@
     },
     "temp_disable": "Wyłącz tymczasowo…",
     "temp_enable": "Włącz tymczasowo…",
+    "unset": "Nieustawiony",
     "use_default": "Użyj domyślnych",
     "view_random": "Pokaż losowe"
   },
@@ -451,6 +452,9 @@
       "handy_connection_key": {
         "description": "Klucz połączenia Handy używany w scenach interaktywnych. Ustawienie tego klucza umożliwi Stash udostępnianie informacji o bieżącej scenie w witrynie handyfeeling.com",
         "heading": "Klucz połączenia Handy"
+      },
+      "image_lightbox": {
+        "heading": "Pole podglądu obrazu"
       },
       "images": {
         "heading": "Zdjęcia",
