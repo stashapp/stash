@@ -90,14 +90,6 @@ func (t changesetTranslator) nullString(value *string, field string) *sql.NullSt
 	return ret
 }
 
-func (t changesetTranslator) stringPtr(value *string, field string) *string {
-	if !t.hasField(field) {
-		return nil
-	}
-
-	return value
-}
-
 func (t changesetTranslator) optionalString(value *string, field string) models.OptionalString {
 	if !t.hasField(field) {
 		return models.OptionalString{}
@@ -119,17 +111,6 @@ func (t changesetTranslator) sqliteDate(value *string, field string) *models.SQL
 	}
 
 	return ret
-}
-
-func (t changesetTranslator) dateDblPtr(value *string, field string) **models.Date {
-	if !t.hasField(field) {
-		return nil
-	}
-
-	ret := models.NewDate(*value)
-	ptr := &ret
-
-	return &ptr
 }
 
 func (t changesetTranslator) optionalDate(value *string, field string) models.OptionalDate {
@@ -162,14 +143,6 @@ func (t changesetTranslator) nullInt64(value *int, field string) *sql.NullInt64 
 	return ret
 }
 
-func (t changesetTranslator) intDblPtr(value *int, field string) **int {
-	if !t.hasField(field) {
-		return nil
-	}
-
-	return &value
-}
-
 func (t changesetTranslator) optionalInt(value *int, field string) models.OptionalInt {
 	if !t.hasField(field) {
 		return models.OptionalInt{}
@@ -191,16 +164,6 @@ func (t changesetTranslator) nullInt64FromString(value *string, field string) *s
 	}
 
 	return ret
-}
-
-func (t changesetTranslator) intDblPtrFromString(value *string, field string) **int {
-	if !t.hasField(field) {
-		return nil
-	}
-
-	vv, _ := strconv.Atoi(*value)
-	ptr := &vv
-	return &ptr
 }
 
 func (t changesetTranslator) optionalIntFromString(value *string, field string) (models.OptionalInt, error) {

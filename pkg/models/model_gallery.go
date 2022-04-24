@@ -29,23 +29,30 @@ type Gallery struct {
 // GalleryPartial represents part of a Gallery object. It is used to update
 // the database entry. Only non-nil fields will be updated.
 type GalleryPartial struct {
-	Path        **string
-	Checksum    *string
-	Zip         *bool
-	Title       *string
-	URL         *string
-	Date        **Date
-	Details     *string
-	Rating      **int
-	Organized   *bool
-	StudioID    **int
-	FileModTime **time.Time
-	CreatedAt   *time.Time
-	UpdatedAt   *time.Time
+	Path        OptionalString
+	Checksum    OptionalString
+	Zip         OptionalBool
+	Title       OptionalString
+	URL         OptionalString
+	Date        OptionalDate
+	Details     OptionalString
+	Rating      OptionalInt
+	Organized   OptionalBool
+	StudioID    OptionalInt
+	FileModTime OptionalTime
+	CreatedAt   OptionalTime
+	UpdatedAt   OptionalTime
 
 	SceneIDs     *UpdateIDs
 	TagIDs       *UpdateIDs
 	PerformerIDs *UpdateIDs
+}
+
+func NewGalleryPartial() GalleryPartial {
+	updatedTime := time.Now()
+	return GalleryPartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
+	}
 }
 
 func (s *Gallery) File() File {

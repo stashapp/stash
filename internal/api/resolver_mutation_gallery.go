@@ -177,10 +177,7 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		return nil, errors.New("not found")
 	}
 
-	updatedTime := time.Now()
-	updatedGallery := models.GalleryPartial{
-		UpdatedAt: &updatedTime,
-	}
+	updatedGallery := models.NewGalleryPartial()
 
 	if input.Title != nil {
 		// ensure title is not empty
@@ -191,18 +188,21 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		// if gallery is not zip-based, then generate the checksum from the title
 		if originalGallery.Path != nil {
 			checksum := md5.FromString(*input.Title)
-			updatedGallery.Checksum = &checksum
+			updatedGallery.Checksum = models.NewOptionalString(checksum)
 		}
 
-		updatedGallery.Title = input.Title
+		updatedGallery.Title = models.NewOptionalString(*input.Title)
 	}
 
-	updatedGallery.Details = translator.stringPtr(input.Details, "details")
-	updatedGallery.URL = translator.stringPtr(input.URL, "url")
-	updatedGallery.Date = translator.dateDblPtr(input.Date, "date")
-	updatedGallery.Rating = translator.intDblPtr(input.Rating, "rating")
-	updatedGallery.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")
-	updatedGallery.Organized = input.Organized
+	updatedGallery.Details = translator.optionalString(input.Details, "details")
+	updatedGallery.URL = translator.optionalString(input.URL, "url")
+	updatedGallery.Date = translator.optionalDate(input.Date, "date")
+	updatedGallery.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
 
 	if translator.hasField("performer_ids") {
 		updatedGallery.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
@@ -237,24 +237,24 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 
 func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGalleryUpdateInput) ([]*models.Gallery, error) {
 	// Populate gallery from the input
-	updatedTime := time.Now()
-
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	updatedGallery := models.GalleryPartial{
-		UpdatedAt: &updatedTime,
-	}
+	updatedGallery := models.NewGalleryPartial()
 
-	updatedGallery.Details = translator.stringPtr(input.Details, "details")
-	updatedGallery.URL = translator.stringPtr(input.URL, "url")
-	updatedGallery.Date = translator.dateDblPtr(input.Date, "date")
-	updatedGallery.Rating = translator.intDblPtr(input.Rating, "rating")
-	updatedGallery.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")
-	updatedGallery.Organized = input.Organized
+	updatedGallery.Details = translator.optionalString(input.Details, "details")
+	updatedGallery.URL = translator.optionalString(input.URL, "url")
+	updatedGallery.Date = translator.optionalDate(input.Date, "date")
+	updatedGallery.Rating = translator.optionalInt(input.Rating, "rating")
 
 	var err error
+	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
+
 	if translator.hasField("performer_ids") {
 		updatedGallery.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)
 		if err != nil {

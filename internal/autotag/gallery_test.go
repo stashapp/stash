@@ -88,9 +88,9 @@ func TestGalleryStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockGalleryReader *mocks.GalleryReaderWriter, test pathTestTable) {
 		if test.Matches {
-			expectedStudioID := &studioID
+			expectedStudioID := studioID
 			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
-				StudioID: &expectedStudioID,
+				StudioID: models.NewOptionalInt(expectedStudioID),
 			}).Return(nil, nil).Once()
 		}
 

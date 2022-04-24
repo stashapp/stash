@@ -63,21 +63,17 @@ type galleryRowRecord struct {
 }
 
 func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
-	r.setNullStringPtr("path", o.Path)
+	r.setNullString("path", o.Path)
 	r.setString("checksum", o.Checksum)
 	r.setBool("zip", o.Zip)
 	r.setNullString("title", o.Title)
 	r.setNullString("url", o.URL)
-	if o.Date != nil {
-		d := models.SQLiteDate{}
-		_ = d.Scan(*o.Date)
-		r.set("date", d)
-	}
+	r.setSQLiteDate("date", o.Date)
 	r.setNullString("details", o.Details)
-	r.setNullIntPtr("rating", o.Rating)
+	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
-	r.setNullIntPtr("studio_id", o.StudioID)
-	r.setNullTimePtr("file_mod_time", o.FileModTime)
+	r.setNullInt("studio_id", o.StudioID)
+	r.setNullTime("file_mod_time", o.FileModTime)
 	r.setTime("created_at", o.CreatedAt)
 	r.setTime("updated_at", o.UpdatedAt)
 }

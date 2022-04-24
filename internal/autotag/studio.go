@@ -51,9 +51,8 @@ func addGalleryStudio(ctx context.Context, galleryWriter GalleryFinderUpdater, o
 	}
 
 	// set the studio id
-	s := &studioID
 	galleryPartial := models.GalleryPartial{
-		StudioID: &s,
+		StudioID: models.NewOptionalInt(studioID),
 	}
 
 	if _, err := galleryWriter.UpdatePartial(ctx, o.ID, galleryPartial); err != nil {

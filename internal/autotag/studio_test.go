@@ -313,9 +313,9 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		expectedStudioID := &studioID
+		expectedStudioID := studioID
 		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
-			StudioID: &expectedStudioID,
+			StudioID: models.NewOptionalInt(expectedStudioID),
 		}).Return(nil, nil).Once()
 	}
 
