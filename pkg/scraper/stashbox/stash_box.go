@@ -848,14 +848,14 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 			return err
 		}
 
-		if scene.Title != nil {
-			draft.Title = scene.Title
+		if scene.Title != "" {
+			draft.Title = &scene.Title
 		}
-		if scene.Details != nil {
-			draft.Details = scene.Details
+		if scene.Details != "" {
+			draft.Details = &scene.Details
 		}
-		if scene.URL != nil && len(strings.TrimSpace(*scene.URL)) > 0 {
-			url := strings.TrimSpace(*scene.URL)
+		if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
+			url := strings.TrimSpace(scene.URL)
 			draft.URL = &url
 		}
 		if scene.Date != nil {

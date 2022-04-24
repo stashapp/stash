@@ -12,9 +12,9 @@ type Scene struct {
 	Checksum         *string    `json:"checksum"`
 	OSHash           *string    `json:"oshash"`
 	Path             string     `json:"path"`
-	Title            *string    `json:"title"`
-	Details          *string    `json:"details"`
-	URL              *string    `json:"url"`
+	Title            string     `json:"title"`
+	Details          string     `json:"details"`
+	URL              string     `json:"url"`
 	Date             *Date      `json:"date"`
 	Rating           *int       `json:"rating"`
 	Organized        bool       `json:"organized"`
@@ -89,9 +89,9 @@ type ScenePartial struct {
 	Checksum         **string
 	OSHash           **string
 	Path             *string
-	Title            **string
-	Details          **string
-	URL              **string
+	Title            *string
+	Details          *string
+	URL              *string
 	Date             **Date
 	Rating           **int
 	Organized        *bool
@@ -169,9 +169,9 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 
 	return SceneUpdateInput{
 		ID:           strconv.Itoa(id),
-		Title:        stringDblPtrToPtr(s.Title),
-		Details:      stringDblPtrToPtr(s.Details),
-		URL:          stringDblPtrToPtr(s.URL),
+		Title:        s.Title,
+		Details:      s.Details,
+		URL:          s.URL,
 		Date:         dateStr,
 		Rating:       intDblPtrToPtr(s.Rating),
 		Organized:    boolPtrCopy(s.Organized),
@@ -210,8 +210,8 @@ func (s *ScenePartial) SetFile(f File) {
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
 func (s Scene) GetTitle() string {
-	if s.Title != nil && *s.Title != "" {
-		return *s.Title
+	if s.Title != "" {
+		return s.Title
 	}
 
 	return filepath.Base(s.Path)

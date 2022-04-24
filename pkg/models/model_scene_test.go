@@ -40,9 +40,9 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 			"full",
 			id,
 			ScenePartial{
-				Title:     &titlePtr,
-				Details:   &detailsPtr,
-				URL:       &urlPtr,
+				Title:     titlePtr,
+				Details:   detailsPtr,
+				URL:       urlPtr,
 				Date:      &dateObjPtr,
 				Rating:    &ratingPtr,
 				Organized: &organized,

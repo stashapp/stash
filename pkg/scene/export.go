@@ -38,6 +38,9 @@ type TagFinder interface {
 // of cover image.
 func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (*jsonschema.Scene, error) {
 	newSceneJSON := jsonschema.Scene{
+		Title:     scene.Title,
+		URL:       scene.URL,
+		Details:   scene.Details,
 		CreatedAt: json.JSONTime{Time: scene.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: scene.UpdatedAt},
 	}
@@ -54,14 +57,6 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 		newSceneJSON.Phash = utils.PhashToString(*scene.Phash)
 	}
 
-	if scene.Title != nil {
-		newSceneJSON.Title = *scene.Title
-	}
-
-	if scene.URL != nil {
-		newSceneJSON.URL = *scene.URL
-	}
-
 	if scene.Date != nil {
 		newSceneJSON.Date = scene.Date.String()
 	}
@@ -72,10 +67,6 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 
 	newSceneJSON.Organized = scene.Organized
 	newSceneJSON.OCounter = scene.OCounter
-
-	if scene.Details != nil {
-		newSceneJSON.Details = *scene.Details
-	}
 
 	newSceneJSON.File = getSceneFileJSON(scene)
 

@@ -212,8 +212,8 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 
 		as := ""
 		title := updater.Partial.Title
-		if title != nil && *title != nil {
-			as = fmt.Sprintf(" as %s", **title)
+		if title != nil {
+			as = fmt.Sprintf(" as %s", *title)
 		}
 		logger.Infof("Successfully identified %s%s using %s", s.Path, as, result.source.Name)
 
@@ -249,9 +249,9 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
 	partial := models.ScenePartial{}
 
-	if scraped.Title != nil && (scene.Title == nil || *scene.Title != *scraped.Title) {
-		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != nil && *scene.Title != "") {
-			partial.Title = &scraped.Title
+	if scraped.Title != nil && (scene.Title != *scraped.Title) {
+		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != "") {
+			partial.Title = scraped.Title
 		}
 	}
 	if scraped.Date != nil && (scene.Date == nil || scene.Date.String() != *scraped.Date) {
@@ -261,14 +261,14 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 			partial.Date = &dd
 		}
 	}
-	if scraped.Details != nil && (scene.Details == nil || *scene.Details != *scraped.Details) {
-		if shouldSetSingleValueField(fieldOptions["details"], scene.Details != nil && *scene.Details != "") {
-			partial.Details = &scraped.Details
+	if scraped.Details != nil && (scene.Details != *scraped.Details) {
+		if shouldSetSingleValueField(fieldOptions["details"], scene.Details != "") {
+			partial.Details = scraped.Details
 		}
 	}
-	if scraped.URL != nil && (scene.URL == nil || *scene.URL != *scraped.URL) {
-		if shouldSetSingleValueField(fieldOptions["url"], scene.URL != nil && *scene.URL != "") {
-			partial.URL = &scraped.URL
+	if scraped.URL != nil && (scene.URL != *scraped.URL) {
+		if shouldSetSingleValueField(fieldOptions["url"], scene.URL != "") {
+			partial.URL = scraped.URL
 		}
 	}
 

@@ -164,7 +164,7 @@ func makeScene(name string, expectedResult bool) *models.Scene {
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		scene.Title = &name
+		scene.Title = name
 	}
 
 	return scene
@@ -390,9 +390,9 @@ func TestParsePerformerScenes(t *testing.T) {
 			}
 
 			// title is only set on scenes where we expect performer to be set
-			if scene.Title != nil && *scene.Title == scene.Path && len(performers) == 0 {
+			if scene.Title == scene.Path && len(performers) == 0 {
 				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path)
-			} else if (scene.Title == nil || *scene.Title != scene.Path) && len(performers) > 0 {
+			} else if scene.Title != scene.Path && len(performers) > 0 {
 				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path)
 			}
 		}
@@ -440,14 +440,14 @@ func TestParseStudioScenes(t *testing.T) {
 				}
 			} else {
 				// title is only set on scenes where we expect studio to be set
-				if scene.Title != nil && *scene.Title == scene.Path {
+				if scene.Title == scene.Path {
 					if scene.StudioID == nil {
 						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
 					} else if scene.StudioID != nil && *scene.StudioID != studios[1].ID {
 						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID, scene.Path)
 					}
 
-				} else if (scene.Title == nil || *scene.Title != scene.Path) && scene.StudioID != nil && *scene.StudioID == studios[1].ID {
+				} else if scene.Title != scene.Path && scene.StudioID != nil && *scene.StudioID == studios[1].ID {
 					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
 				}
 			}
@@ -498,9 +498,9 @@ func TestParseTagScenes(t *testing.T) {
 			}
 
 			// title is only set on scenes where we expect tag to be set
-			if scene.Title != nil && *scene.Title == scene.Path && len(tags) == 0 {
+			if scene.Title == scene.Path && len(tags) == 0 {
 				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path)
-			} else if (scene.Title == nil || *scene.Title != scene.Path) && len(tags) > 0 {
+			} else if (scene.Title != scene.Path) && len(tags) > 0 {
 				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path)
 			}
 		}

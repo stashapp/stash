@@ -23,8 +23,8 @@ func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret["checksum"] = stringPtrToString(scene.Checksum)
 	ret["oshash"] = stringPtrToString(scene.OSHash)
 	ret["filename"] = filepath.Base(scene.Path)
-	ret["title"] = stringPtrToString(scene.Title)
-	ret["url"] = stringPtrToString(scene.URL)
+	ret["title"] = scene.Title
+	ret["url"] = scene.URL
 	return ret
 }
 

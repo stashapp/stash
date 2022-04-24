@@ -38,6 +38,12 @@ func (r *updateRecord) setNullStringPtr(destField string, v **string) {
 	}
 }
 
+func (r *updateRecord) setNullString(destField string, v *string) {
+	if v != nil {
+		r.set(destField, newNullString(*v))
+	}
+}
+
 func (r *updateRecord) setNullIntPtr(destField string, v **int) {
 	if v != nil {
 		r.set(destField, newNullIntPtr(*v))

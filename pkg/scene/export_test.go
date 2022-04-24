@@ -100,12 +100,12 @@ var (
 func createFullScene(id int) models.Scene {
 	return models.Scene{
 		ID:         id,
-		Title:      &title,
+		Title:      title,
 		AudioCodec: &audioCodec,
 		Bitrate:    &bitrate,
 		Checksum:   &checksum,
 		Date:       &dateObj,
-		Details:    &details,
+		Details:    details,
 		Duration:   &duration,
 		Format:     &format,
 		Framerate:  &framerate,
@@ -118,7 +118,7 @@ func createFullScene(id int) models.Scene {
 		Size:       &size,
 		VideoCodec: &videoCodec,
 		Width:      &width,
-		URL:        &url,
+		URL:        url,
 		StashIDs: []models.StashID{
 			stashID,
 		},

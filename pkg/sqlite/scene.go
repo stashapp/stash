@@ -80,9 +80,9 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Checksum = newNullStringPtr(o.Checksum)
 	r.OSHash = newNullStringPtr(o.OSHash)
 	r.Path = o.Path
-	r.Title = newNullStringPtr(o.Title)
-	r.Details = newNullStringPtr(o.Details)
-	r.URL = newNullStringPtr(o.URL)
+	r.Title = newNullString(o.Title)
+	r.Details = newNullString(o.Details)
+	r.URL = newNullString(o.URL)
 	if o.Date != nil {
 		_ = r.Date.Scan(o.Date.Time)
 	}
@@ -115,9 +115,9 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullStringPtr("checksum", o.Checksum)
 	r.setNullStringPtr("oshash", o.OSHash)
 	r.setString("path", o.Path)
-	r.setNullStringPtr("title", o.Title)
-	r.setNullStringPtr("details", o.Details)
-	r.setNullStringPtr("url", o.URL)
+	r.setNullString("title", o.Title)
+	r.setNullString("details", o.Details)
+	r.setNullString("url", o.URL)
 	if o.Date != nil {
 		d := models.SQLiteDate{}
 		_ = d.Scan(*o.Date)
@@ -161,9 +161,9 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Checksum:         r.Checksum.stringPtr(),
 		OSHash:           r.OSHash.stringPtr(),
 		Path:             r.Path,
-		Title:            r.Title.stringPtr(),
-		Details:          r.Details.stringPtr(),
-		URL:              r.URL.stringPtr(),
+		Title:            r.Title.String,
+		Details:          r.Details.String,
+		URL:              r.URL.String,
 		Date:             r.Date.DatePtr(),
 		Rating:           r.Rating.intPtr(),
 		Organized:        r.Organized,

@@ -32,9 +32,9 @@ func newNullStringPtr(v *string) nullString {
 	}
 }
 
-// func newNullString(v string) nullString {
-// 	return newNullStringPtr(&v)
-// }
+func newNullString(v string) nullString {
+	return newNullStringPtr(&v)
+}
 
 type nullInt64 struct {
 	sql.NullInt64

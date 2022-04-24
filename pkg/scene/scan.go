@@ -290,7 +290,7 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 		newScene := models.Scene{
 			Path:        path,
 			FileModTime: &scanned.FileModTime,
-			Title:       &title,
+			Title:       title,
 			CreatedAt:   currentTime,
 			UpdatedAt:   currentTime,
 			Interactive: interactive,
@@ -308,7 +308,7 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 		}
 
 		if scanner.UseFileMetadata {
-			newScene.Details = &videoFile.Comment
+			newScene.Details = videoFile.Comment
 			d := models.SQLiteDate{}
 			_ = d.Scan(videoFile.CreationTime)
 			newScene.Date = d.DatePtr()

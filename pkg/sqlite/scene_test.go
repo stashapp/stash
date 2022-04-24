@@ -66,9 +66,9 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Path:             path,
 				Checksum:         &checksum,
 				OSHash:           &oshash,
-				Title:            &title,
-				Details:          &details,
-				URL:              &url,
+				Title:            title,
+				Details:          details,
+				URL:              url,
 				Date:             &date,
 				Rating:           &rating,
 				Organized:        true,
@@ -240,9 +240,9 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Path:             path,
 				Checksum:         &checksum,
 				OSHash:           &oshash,
-				Title:            &title,
-				Details:          &details,
-				URL:              &url,
+				Title:            title,
+				Details:          details,
+				URL:              url,
 				Date:             &date,
 				Rating:           &rating,
 				Organized:        true,
@@ -1139,7 +1139,7 @@ func TestSceneQueryURL(t *testing.T) {
 
 	verifyFn := func(s *models.Scene) {
 		t.Helper()
-		verifyStringPtr(t, s.URL, urlCriterion)
+		verifyString(t, s.URL, urlCriterion)
 	}
 
 	verifySceneQuery(t, filter, verifyFn)
@@ -1304,6 +1304,7 @@ func TestSceneIllegalQuery(t *testing.T) {
 }
 
 func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func(s *models.Scene)) {
+	t.Helper()
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
 		sqb := sqlite.SceneReaderWriter

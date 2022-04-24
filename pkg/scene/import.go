@@ -75,7 +75,10 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
-		Path: i.Path,
+		Path:    i.Path,
+		Title:   sceneJSON.Title,
+		Details: sceneJSON.Details,
+		URL:     sceneJSON.URL,
 	}
 
 	if sceneJSON.Checksum != "" {
@@ -93,15 +96,6 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 		}
 	}
 
-	if sceneJSON.Title != "" {
-		newScene.Title = &sceneJSON.Title
-	}
-	if sceneJSON.Details != "" {
-		newScene.Details = &sceneJSON.Details
-	}
-	if sceneJSON.URL != "" {
-		newScene.URL = &sceneJSON.URL
-	}
 	if sceneJSON.Date != "" {
 		d := models.NewDate(sceneJSON.Date)
 		newScene.Date = &d

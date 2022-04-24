@@ -89,6 +89,14 @@ func (t changesetTranslator) nullString(value *string, field string) *sql.NullSt
 	return ret
 }
 
+func (t changesetTranslator) stringPtr(value *string, field string) *string {
+	if !t.hasField(field) {
+		return nil
+	}
+
+	return value
+}
+
 func (t changesetTranslator) stringDblPtr(value *string, field string) **string {
 	if !t.hasField(field) {
 		return nil

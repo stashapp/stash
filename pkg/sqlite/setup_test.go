@@ -572,6 +572,15 @@ func getSceneStringPtr(index int, field string) *string {
 	return getStringPtrFromNullString(getPrefixedNullStringValue("scene", index, field))
 }
 
+func getSceneEmptyString(index int, field string) string {
+	v := getSceneStringPtr(index, field)
+	if v == nil {
+		return ""
+	}
+
+	return *v
+}
+
 func getSceneTitle(index int) string {
 	switch index {
 	case sceneIdxWithSpacedName:
@@ -700,11 +709,11 @@ func makeScene(i int) *models.Scene {
 
 	return &models.Scene{
 		Path:         getSceneStringValue(i, pathField),
-		Title:        &title,
+		Title:        title,
 		Checksum:     &checksum,
 		OSHash:       &oshash,
-		Details:      &details,
-		URL:          getSceneStringPtr(i, urlField),
+		Details:      details,
+		URL:          getSceneEmptyString(i, urlField),
 		Rating:       getIntPtr(getRating(i)),
 		OCounter:     getOCounter(i),
 		Duration:     getSceneDuration(i),

@@ -103,9 +103,9 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		UpdatedAt: &updatedTime,
 	}
 
-	updatedScene.Title = translator.stringDblPtr(input.Title, "title")
-	updatedScene.Details = translator.stringDblPtr(input.Details, "details")
-	updatedScene.URL = translator.stringDblPtr(input.URL, "url")
+	updatedScene.Title = translator.stringPtr(input.Title, "title")
+	updatedScene.Details = translator.stringPtr(input.Details, "details")
+	updatedScene.URL = translator.stringPtr(input.URL, "url")
 	updatedScene.Date = translator.dateDblPtr(input.Date, "date")
 	updatedScene.Rating = translator.intDblPtr(input.Rating, "rating")
 	updatedScene.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")
@@ -199,9 +199,9 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		UpdatedAt: &updatedTime,
 	}
 
-	updatedScene.Title = translator.stringDblPtr(input.Title, "title")
-	updatedScene.Details = translator.stringDblPtr(input.Details, "details")
-	updatedScene.URL = translator.stringDblPtr(input.URL, "url")
+	updatedScene.Title = translator.stringPtr(input.Title, "title")
+	updatedScene.Details = translator.stringPtr(input.Details, "details")
+	updatedScene.URL = translator.stringPtr(input.URL, "url")
 	updatedScene.Date = translator.dateDblPtr(input.Date, "date")
 	updatedScene.Rating = translator.intDblPtr(input.Rating, "rating")
 	updatedScene.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")

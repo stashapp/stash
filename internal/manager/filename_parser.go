@@ -335,7 +335,7 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 	switch field.field {
 	case "title":
 		v := value.(string)
-		h.result.Title = &v
+		h.result.Title = v
 	case "date":
 		if validateDate(value.(string)) {
 			d := models.NewDate(value.(string))
@@ -686,8 +686,8 @@ func (p *SceneFilenameParser) setMovies(ctx context.Context, qb MovieNameFinder,
 }
 
 func (p *SceneFilenameParser) setParserResult(ctx context.Context, repo SceneFilenameParserRepository, h sceneHolder, result *SceneParserResult) {
-	if h.result.Title != nil {
-		title := *h.result.Title
+	if h.result.Title != "" {
+		title := h.result.Title
 		title = p.replaceWhitespaceCharacters(title)
 
 		if p.ParserInput.CapitalizeTitle != nil && *p.ParserInput.CapitalizeTitle {

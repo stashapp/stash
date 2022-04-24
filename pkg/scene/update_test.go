@@ -183,7 +183,7 @@ func TestUpdater_Update(t *testing.T) {
 			&UpdateSet{
 				ID: sceneID,
 				Partial: models.ScenePartial{
-					Title: &titlePtr,
+					Title: titlePtr,
 				},
 			},
 			false,
@@ -194,7 +194,7 @@ func TestUpdater_Update(t *testing.T) {
 			&UpdateSet{
 				ID: badUpdateID,
 				Partial: models.ScenePartial{
-					Title: &titlePtr,
+					Title: titlePtr,
 				},
 			},
 			true,
@@ -311,7 +311,7 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 			UpdateSet{
 				ID: sceneID,
 				Partial: models.ScenePartial{
-					Title: &titlePtr,
+					Title: titlePtr,
 				},
 			},
 			models.SceneUpdateInput{

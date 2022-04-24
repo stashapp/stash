@@ -579,11 +579,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.SceneReaderWriter{}
 
 	scene := models.Scene{
-		Title: &title,
+		Title: title,
 	}
 
 	sceneErr := models.Scene{
-		Title: &sceneNameErr,
+		Title: sceneNameErr,
 	}
 
 	i := Importer{
@@ -614,11 +614,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.SceneReaderWriter{}
 
 	scene := models.Scene{
-		Title: &title,
+		Title: title,
 	}
 
 	sceneErr := models.Scene{
-		Title: &sceneNameErr,
+		Title: sceneNameErr,
 	}
 
 	i := Importer{

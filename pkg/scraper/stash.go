@@ -317,9 +317,9 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 
 	return models.SceneUpdateInput{
 		ID:      strconv.Itoa(scene.ID),
-		Title:   scene.Title,
-		Details: scene.Details,
-		URL:     scene.URL,
+		Title:   &scene.Title,
+		Details: &scene.Details,
+		URL:     &scene.URL,
 		Date:    dateToStringPtr(scene.Date),
 	}
 }
