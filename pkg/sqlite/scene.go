@@ -284,23 +284,24 @@ func (qb *sceneQueryBuilder) Create(ctx context.Context, newObject *models.Scene
 		return err
 	}
 
-	newObject.ID = id
+	if err := scenesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
+		return err
+	}
+	if err := scenesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs); err != nil {
+		return err
+	}
+	if err := scenesGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs); err != nil {
+		return err
+	}
+	if err := scenesStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs); err != nil {
+		return err
+	}
+	if err := scenesMoviesTableMgr.insertJoins(ctx, id, newObject.Movies); err != nil {
+		return err
+	}
 
-	if err := scenesPerformersTableMgr.insertJoins(ctx, newObject.ID, newObject.PerformerIDs); err != nil {
-		return err
-	}
-	if err := scenesTagsTableMgr.insertJoins(ctx, newObject.ID, newObject.TagIDs); err != nil {
-		return err
-	}
-	if err := scenesGalleriesTableMgr.insertJoins(ctx, newObject.ID, newObject.GalleryIDs); err != nil {
-		return err
-	}
-	if err := scenesStashIDsTableMgr.insertJoins(ctx, newObject.ID, newObject.StashIDs); err != nil {
-		return err
-	}
-	if err := scenesMoviesTableMgr.insertJoins(ctx, newObject.ID, newObject.Movies); err != nil {
-		return err
-	}
+	// only assign id once we are successful
+	newObject.ID = id
 
 	return nil
 }

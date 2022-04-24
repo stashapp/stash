@@ -427,6 +427,15 @@ func withRollbackTxn(f func(ctx context.Context) error) error {
 	return ret
 }
 
+func runWithRollbackTxn(t *testing.T, name string, f func(t *testing.T, ctx context.Context)) {
+	withRollbackTxn(func(ctx context.Context) error {
+		t.Run(name, func(t *testing.T) {
+			f(t, ctx)
+		})
+		return nil
+	})
+}
+
 func testTeardown(databaseFile string) {
 	err := db.Close()
 
@@ -724,34 +733,38 @@ func getImagePath(index int) string {
 	return getImageStringValue(index, pathField)
 }
 
+func makeImage(i int) *models.Image {
+	title := getImageStringValue(i, titleField)
+	var studioID *int
+	if _, ok := imageStudios[i]; ok {
+		v := studioIDs[imageStudios[i]]
+		studioID = &v
+	}
+
+	gids := indexesToIDs(galleryIDs, imageGalleries[i])
+	pids := indexesToIDs(performerIDs, imagePerformers[i])
+	tids := indexesToIDs(tagIDs, imageTags[i])
+
+	return &models.Image{
+		Path:         getImagePath(i),
+		Title:        &title,
+		Checksum:     getImageStringValue(i, checksumField),
+		Rating:       getIntPtr(getRating(i)),
+		OCounter:     getOCounter(i),
+		Height:       getIntPtr(getHeight(i)),
+		Width:        getIntPtr(getWidth(i)),
+		StudioID:     studioID,
+		GalleryIDs:   gids,
+		PerformerIDs: pids,
+		TagIDs:       tids,
+	}
+}
+
 func createImages(ctx context.Context, qb models.ImageReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
-		title := getImageStringValue(i, titleField)
-		var studioID *int
-		if _, ok := imageStudios[i]; ok {
-			v := studioIDs[imageStudios[i]]
-			studioID = &v
-		}
+		image := makeImage(i)
 
-		gids := indexesToIDs(galleryIDs, imageGalleries[i])
-		pids := indexesToIDs(performerIDs, imagePerformers[i])
-		tids := indexesToIDs(tagIDs, imageTags[i])
-
-		image := models.Image{
-			Path:         getImagePath(i),
-			Title:        &title,
-			Checksum:     getImageStringValue(i, checksumField),
-			Rating:       getIntPtr(getRating(i)),
-			OCounter:     getOCounter(i),
-			Height:       getIntPtr(getHeight(i)),
-			Width:        getIntPtr(getWidth(i)),
-			StudioID:     studioID,
-			GalleryIDs:   gids,
-			PerformerIDs: pids,
-			TagIDs:       tids,
-		}
-
-		err := qb.Create(ctx, &image)
+		err := qb.Create(ctx, image)
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())

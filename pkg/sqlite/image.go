@@ -143,45 +143,49 @@ func (r imageQueryRows) resolve() []*models.Image {
 
 type imageQueryBuilder struct {
 	repository
+
+	tableMgr *table
 }
 
 var ImageReaderWriter = &imageQueryBuilder{
-	repository{
+	repository: repository{
 		tableName: imageTable,
 		idColumn:  idColumn,
 	},
+	tableMgr: imageTableMgr,
 }
 
 func (qb *imageQueryBuilder) table() exp.IdentifierExpression {
-	return imageTableMgr.table
+	return qb.tableMgr.table
 }
 
 func (qb *imageQueryBuilder) Create(ctx context.Context, newObject *models.Image) error {
 	var r imageRow
 	r.fromImage(*newObject)
 
-	id, err := imageTableMgr.insertID(ctx, r)
+	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
 	}
 
-	newObject.ID = id
-
 	if len(newObject.GalleryIDs) > 0 {
-		if err := imageGalleriesTableMgr.insertJoins(ctx, newObject.ID, newObject.GalleryIDs); err != nil {
+		if err := imageGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs); err != nil {
 			return err
 		}
 	}
 	if len(newObject.PerformerIDs) > 0 {
-		if err := imagesPerformersTableMgr.insertJoins(ctx, newObject.ID, newObject.PerformerIDs); err != nil {
+		if err := imagesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
 			return err
 		}
 	}
 	if len(newObject.TagIDs) > 0 {
-		if err := imagesTagsTableMgr.insertJoins(ctx, newObject.ID, newObject.TagIDs); err != nil {
+		if err := imagesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs); err != nil {
 			return err
 		}
 	}
+
+	// only assign id once we are successful
+	newObject.ID = id
 
 	return nil
 }
@@ -196,7 +200,7 @@ func (qb *imageQueryBuilder) UpdatePartial(ctx context.Context, id int, partial 
 	r.fromPartial(partial)
 
 	if len(r.Record) > 0 {
-		if err := imageTableMgr.updateByID(ctx, id, r.Record); err != nil {
+		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
 			return nil, err
 		}
 	}
@@ -224,7 +228,7 @@ func (qb *imageQueryBuilder) Update(ctx context.Context, updatedObject *models.I
 	var r imageRow
 	r.fromImage(*updatedObject)
 
-	if err := imageTableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
 	}
 
@@ -259,7 +263,11 @@ func (qb *imageQueryBuilder) getOCounter(ctx context.Context, id int) (int, erro
 }
 
 func (qb *imageQueryBuilder) IncrementOCounter(ctx context.Context, id int) (int, error) {
-	if err := imageTableMgr.updateByID(ctx, id, goqu.Record{
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
 		"o_counter": goqu.L("o_counter + 1"),
 	}); err != nil {
 		return 0, err
@@ -269,17 +277,28 @@ func (qb *imageQueryBuilder) IncrementOCounter(ctx context.Context, id int) (int
 }
 
 func (qb *imageQueryBuilder) DecrementOCounter(ctx context.Context, id int) (int, error) {
-	if err := imageTableMgr.updateByID(ctx, id, goqu.Record{
-		"o_counter": goqu.L("o_counter - 1"),
-	}); err != nil {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return 0, err
+	}
+
+	table := qb.table()
+	q := dialect.Update(table).Set(goqu.Record{
+		"o_counter": goqu.L("o_counter - 1"),
+	}).Where(qb.tableMgr.byID(id), goqu.L("o_counter > 0"))
+
+	if _, err := exec(ctx, q); err != nil {
+		return 0, fmt.Errorf("updating %s: %w", table.GetTable(), err)
 	}
 
 	return qb.getOCounter(ctx, id)
 }
 
 func (qb *imageQueryBuilder) ResetOCounter(ctx context.Context, id int) (int, error) {
-	if err := imageTableMgr.updateByID(ctx, id, goqu.Record{
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
 		"o_counter": 0,
 	}); err != nil {
 		return 0, err
@@ -289,7 +308,7 @@ func (qb *imageQueryBuilder) ResetOCounter(ctx context.Context, id int) (int, er
 }
 
 func (qb *imageQueryBuilder) Destroy(ctx context.Context, id int) error {
-	return imageTableMgr.destroyExisting(ctx, []int{id})
+	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
 func (qb *imageQueryBuilder) Find(ctx context.Context, id int) (*models.Image, error) {
@@ -302,10 +321,6 @@ func (qb *imageQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models
 		image, err := qb.Find(ctx, id)
 		if err != nil {
 			return nil, err
-		}
-
-		if image == nil {
-			return nil, fmt.Errorf("image with id %d not found", id)
 		}
 
 		images = append(images, image)
@@ -366,7 +381,7 @@ func (qb *imageQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset)
 }
 
 func (qb *imageQueryBuilder) find(ctx context.Context, id int) (*models.Image, error) {
-	q := qb.selectDataset().Where(imageTableMgr.byID(id))
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {

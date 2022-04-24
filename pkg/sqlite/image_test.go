@@ -5,94 +5,797 @@ package sqlite_test
 
 import (
 	"context"
-	"database/sql"
+	"reflect"
 	"strconv"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestImageFind(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		// assume that the first image is imageWithGalleryPath
-		sqb := sqlite.ImageReaderWriter
+func Test_imageQueryBuilder_Create(t *testing.T) {
+	var (
+		path              = "path"
+		title             = "title"
+		checksum          = "checksum"
+		rating            = 3
+		ocounter          = 5
+		size        int64 = 1234
+		width             = 640
+		height            = 480
+		fileModTime       = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt         = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt         = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+	)
 
-		const imageIdx = 0
-		imageID := imageIDs[imageIdx]
-		image, err := sqb.Find(ctx, imageID)
+	tests := []struct {
+		name      string
+		newObject models.Image
+		wantErr   bool
+	}{
+		{
+			"full",
+			models.Image{
+				Path:         path,
+				Checksum:     checksum,
+				Title:        &title,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				Size:         &size,
+				Width:        &width,
+				Height:       &height,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				FileModTime:  &fileModTime,
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			models.Image{
+				StudioID: &invalidID,
+			},
+			true,
+		},
+		{
+			"invalid gallery id",
+			models.Image{
+				GalleryIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			models.Image{
+				TagIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			models.Image{
+				PerformerIDs: []int{invalidID},
+			},
+			true,
+		},
+	}
 
-		if err != nil {
-			t.Errorf("Error finding image: %s", err.Error())
-		}
+	qb := sqlite.ImageReaderWriter
 
-		assert.Equal(t, getImageStringValue(imageIdx, "Path"), image.Path)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		imageID = 0
-		image, err = sqb.Find(ctx, imageID)
+			s := tt.newObject
+			if err := qb.Create(ctx, &s); (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
 
-		// expect error when finding non-existing image
-		assert.ErrorIs(t, err, sql.ErrNoRows)
-		assert.Nil(t, image)
+			if tt.wantErr {
+				assert.Zero(s.ID)
+				return
+			}
 
-		return nil
-	})
+			assert.NotZero(s.ID)
+
+			copy := tt.newObject
+			copy.ID = s.ID
+
+			assert.Equal(copy, s)
+
+			// ensure can find the scene
+			found, err := qb.Find(ctx, s.ID)
+			if err != nil {
+				t.Errorf("imageQueryBuilder.Find() error = %v", err)
+			}
+
+			assert.Equal(copy, *found)
+
+			return
+		})
+	}
 }
 
-func TestImageFindByPath(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+func Test_imageQueryBuilder_Update(t *testing.T) {
+	var (
+		title             = "title"
+		checksum          = "checksum"
+		rating            = 3
+		ocounter          = 5
+		size        int64 = 1234
+		width             = 640
+		height            = 480
+		fileModTime       = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt         = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt         = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+	)
 
-		const imageIdx = 1
-		imagePath := getImageStringValue(imageIdx, "Path")
-		image, err := sqb.FindByPath(ctx, imagePath)
+	tests := []struct {
+		name          string
+		updatedObject *models.Image
+		wantErr       bool
+	}{
+		{
+			"full",
+			&models.Image{
+				ID:           imageIDs[imageIdxWithGallery],
+				Checksum:     checksum,
+				Title:        &title,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				Size:         &size,
+				Width:        &width,
+				Height:       &height,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				FileModTime:  &fileModTime,
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"clear nullables",
+			&models.Image{
+				ID:        imageIDs[imageIdxWithGallery],
+				Checksum:  checksum,
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear gallery ids",
+			&models.Image{
+				ID:        imageIDs[imageIdxWithGallery],
+				Checksum:  checksum,
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear tag ids",
+			&models.Image{
+				ID:        imageIDs[imageIdxWithTag],
+				Checksum:  checksum,
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear performer ids",
+			&models.Image{
+				ID:        imageIDs[imageIdxWithPerformer],
+				Checksum:  checksum,
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			&models.Image{
+				ID:        imageIDs[imageIdxWithGallery],
+				Checksum:  checksum,
+				Organized: true,
+				StudioID:  &invalidID,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			true,
+		},
+		{
+			"invalid gallery id",
+			&models.Image{
+				ID:         imageIDs[imageIdxWithGallery],
+				Checksum:   checksum,
+				Organized:  true,
+				GalleryIDs: []int{invalidID},
+				CreatedAt:  createdAt,
+				UpdatedAt:  updatedAt,
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			&models.Image{
+				ID:        imageIDs[imageIdxWithGallery],
+				Checksum:  checksum,
+				Organized: true,
+				TagIDs:    []int{invalidID},
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			&models.Image{
+				ID:           imageIDs[imageIdxWithGallery],
+				Checksum:     checksum,
+				Organized:    true,
+				PerformerIDs: []int{invalidID},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+			},
+			true,
+		},
+	}
 
-		if err != nil {
-			t.Errorf("Error finding image: %s", err.Error())
-		}
+	qb := sqlite.ImageReaderWriter
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		assert.Equal(t, imageIDs[imageIdx], image.ID)
-		assert.Equal(t, imagePath, image.Path)
+			copy := *tt.updatedObject
 
-		imagePath = "not exist"
-		image, err = sqb.FindByPath(ctx, imagePath)
+			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-		if err != nil {
-			t.Errorf("Error finding image: %s", err.Error())
-		}
+			if tt.wantErr {
+				return
+			}
 
-		assert.Nil(t, image)
+			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			if err != nil {
+				t.Errorf("imageQueryBuilder.Find() error = %v", err)
+			}
 
-		return nil
-	})
+			assert.Equal(copy, *s)
+
+			return
+		})
+	}
 }
 
-func TestImageFindByGalleryID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+// func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
+// 	var (
+// 		path        = "path"
+// 		title       = "title"
+// 		checksum    = "checksum"
+// 		url         = "url"
+// 		rating      = 3
+// 		details     = "details"
+// 		fileModTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+// 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+// 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+// 	)
 
-		images, err := sqb.FindByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+// 	tests := []struct {
+// 		name    string
+// 		id      int
+// 		partial models.ImagePartial
+// 		want    models.Image
+// 		wantErr bool
+// 	}{
+// 		{
+// 			"full",
+// 			imageIDs[imageIdxWithScene],
+// 			models.ImagePartial{
+// 				Path:         &path,
+// 				Checksum:     checksum,
+// 				Zip:          false,
+// 				Title:        &title,
+// 				URL:          &url,
+// 				Date:         &date,
+// 				Details:      &details,
+// 				Rating:       &rating,
+// 				Organized:    true,
+// 				StudioID:     &studioIDs[studioIdxWithScene],
+// 				FileModTime:  &fileModTime,
+// 				CreatedAt:    createdAt,
+// 				UpdatedAt:    updatedAt,
+// 				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
+// 				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+// 				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+// 			},
+// 			models.Image{},
+// 			false,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		qb := sqlite.ImageReaderWriter
 
-		if err != nil {
-			t.Errorf("Error finding images: %s", err.Error())
-		}
+// 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+// 			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+// 			if (err != nil) != tt.wantErr {
+// 				t.Errorf("imageQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+// 				return
+// 			}
+// 			if !reflect.DeepEqual(got, tt.want) {
+// 				t.Errorf("imageQueryBuilder.UpdatePartial() = %v, want %v", got, tt.want)
+// 			}
+// 			return
+// 		})
+// 	}
+// }
 
-		assert.Len(t, images, 2)
-		assert.Equal(t, imageIDs[imageIdx1WithGallery], images[0].ID)
-		assert.Equal(t, imageIDs[imageIdx2WithGallery], images[1].ID)
+func Test_imageQueryBuilder_IncrementOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"increment",
+			imageIDs[1],
+			2,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
 
-		images, err = sqb.FindByGalleryID(ctx, galleryIDs[galleryIdxWithScene])
+	qb := sqlite.ImageReaderWriter
 
-		if err != nil {
-			t.Errorf("Error finding images: %s", err.Error())
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.IncrementOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.IncrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("imageQueryBuilder.IncrementOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
-		assert.Len(t, images, 0)
+func Test_imageQueryBuilder_DecrementOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"decrement",
+			imageIDs[2],
+			1,
+			false,
+		},
+		{
+			"zero",
+			imageIDs[0],
+			0,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
 
-		return nil
-	})
+	qb := sqlite.ImageReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.DecrementOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.DecrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("imageQueryBuilder.DecrementOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_imageQueryBuilder_ResetOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"decrement",
+			imageIDs[2],
+			0,
+			false,
+		},
+		{
+			"zero",
+			imageIDs[0],
+			0,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := sqlite.ImageReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.ResetOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.ResetOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("imageQueryBuilder.ResetOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_imageQueryBuilder_Destroy(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		wantErr bool
+	}{
+		{
+			"valid",
+			imageIDs[imageIdxWithGallery],
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			true,
+		},
+	}
+
+	qb := sqlite.ImageReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			withRollbackTxn(func(ctx context.Context) error {
+				if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+					t.Errorf("imageQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				// ensure cannot be found
+				i, err := qb.Find(ctx, tt.id)
+
+				assert.NotNil(err)
+				assert.Nil(i)
+				return nil
+			})
+		})
+	}
+}
+
+func makeImageWithID(index int) *models.Image {
+	ret := makeImage(index)
+	ret.ID = imageIDs[index]
+	return ret
+}
+
+func Test_imageQueryBuilder_Find(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    *models.Image
+		wantErr bool
+	}{
+		{
+			"valid",
+			imageIDs[imageIdxWithGallery],
+			makeImageWithID(imageIdxWithGallery),
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			nil,
+			true,
+		},
+		{
+			"with performers",
+			imageIDs[imageIdxWithTwoPerformers],
+			makeImageWithID(imageIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			imageIDs[imageIdxWithTwoTags],
+			makeImageWithID(imageIdxWithTwoTags),
+			false,
+		},
+	}
+
+	qb := sqlite.ImageReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.Find(ctx, tt.id)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("imageQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+
+				assert.Equal(tt.want, got)
+				return nil
+			})
+		})
+	}
+}
+
+func Test_imageQueryBuilder_FindMany(t *testing.T) {
+	tests := []struct {
+		name    string
+		ids     []int
+		want    []*models.Image
+		wantErr bool
+	}{
+		{
+			"valid with relationships",
+			[]int{imageIDs[imageIdxWithGallery], imageIDs[imageIdxWithTwoPerformers], imageIDs[imageIdxWithTwoTags]},
+			[]*models.Image{
+				makeImageWithID(imageIdxWithGallery),
+				makeImageWithID(imageIdxWithTwoPerformers),
+				makeImageWithID(imageIdxWithTwoTags),
+			},
+			false,
+		},
+		{
+			"invalid",
+			[]int{imageIDs[imageIdxWithGallery], imageIDs[imageIdxWithTwoPerformers], invalidID},
+			nil,
+			true,
+		},
+	}
+
+	qb := sqlite.ImageReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.FindMany(ctx, tt.ids)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("imageQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("imageQueryBuilder.FindMany() = %v, want %v", got, tt.want)
+				}
+				return nil
+			})
+		})
+	}
+}
+
+func Test_imageQueryBuilder_FindByChecksum(t *testing.T) {
+	getChecksum := func(index int) string {
+		return getImageStringValue(index, checksumField)
+	}
+
+	tests := []struct {
+		name     string
+		checksum string
+		want     *models.Image
+		wantErr  bool
+	}{
+		{
+			"valid",
+			getChecksum(imageIdxWithGallery),
+			makeImageWithID(imageIdxWithGallery),
+			false,
+		},
+		{
+			"invalid",
+			"invalid checksum",
+			nil,
+			false,
+		},
+		{
+			"with performers",
+			getChecksum(imageIdxWithTwoPerformers),
+			makeImageWithID(imageIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			getChecksum(imageIdxWithTwoTags),
+			makeImageWithID(imageIdxWithTwoTags),
+			false,
+		},
+	}
+
+	qb := sqlite.ImageReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.FindByChecksum(ctx, tt.checksum)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("imageQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("imageQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
+				}
+				return nil
+			})
+		})
+	}
+}
+
+func Test_imageQueryBuilder_FindByPath(t *testing.T) {
+	getPath := func(index int) string {
+		return getImageStringValue(index, pathField)
+	}
+
+	tests := []struct {
+		name    string
+		path    string
+		want    *models.Image
+		wantErr bool
+	}{
+		{
+			"valid",
+			getPath(imageIdxWithGallery),
+			makeImageWithID(imageIdxWithGallery),
+			false,
+		},
+		{
+			"invalid",
+			"invalid path",
+			nil,
+			false,
+		},
+		{
+			"with performers",
+			getPath(imageIdxWithTwoPerformers),
+			makeImageWithID(imageIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			getPath(imageIdxWithTwoTags),
+			makeImageWithID(imageIdxWithTwoTags),
+			false,
+		},
+	}
+
+	qb := sqlite.ImageReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.FindByPath(ctx, tt.path)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("imageQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("imageQueryBuilder.FindByPath() = %v, want %v", got, tt.want)
+				}
+				return nil
+			})
+		})
+	}
+}
+
+func Test_imageQueryBuilder_FindByGalleryID(t *testing.T) {
+	tests := []struct {
+		name      string
+		galleryID int
+		want      []*models.Image
+		wantErr   bool
+	}{
+		{
+			"valid",
+			galleryIDs[galleryIdxWithTwoImages],
+			[]*models.Image{makeImageWithID(imageIdx1WithGallery), makeImageWithID(imageIdx2WithGallery)},
+			false,
+		},
+		{
+			"none",
+			galleryIDs[galleryIdx1WithPerformer],
+			nil,
+			false,
+		},
+	}
+
+	qb := sqlite.ImageReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByGalleryID(ctx, tt.galleryID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.FindByGalleryID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+			return
+		})
+	}
+}
+
+func Test_imageQueryBuilder_CountByGalleryID(t *testing.T) {
+	tests := []struct {
+		name      string
+		galleryID int
+		want      int
+		wantErr   bool
+	}{
+		{
+			"valid",
+			galleryIDs[galleryIdxWithTwoImages],
+			2,
+			false,
+		},
+		{
+			"none",
+			galleryIDs[galleryIdx1WithPerformer],
+			0,
+			false,
+		},
+	}
+
+	qb := sqlite.ImageReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.CountByGalleryID(ctx, tt.galleryID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.CountByGalleryID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("imageQueryBuilder.CountByGalleryID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
 
 func TestImageQueryQ(t *testing.T) {
@@ -1204,12 +1907,6 @@ func TestImageQueryPagination(t *testing.T) {
 	})
 }
 
-// TODO Update
-// TODO IncrementOCounter
-// TODO DecrementOCounter
-// TODO ResetOCounter
-// TODO Destroy
-// TODO FindByChecksum
 // TODO Count
 // TODO SizeCount
 // TODO All

@@ -93,37 +93,35 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
 			s := tt.newObject
-			withRollbackTxn(func(ctx context.Context) error {
-				if err := qb.Create(ctx, &s); (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
-				}
+			if err := qb.Create(ctx, &s); (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
 
-				if tt.wantErr {
-					assert.Zero(s.ID)
-					return nil
-				}
+			if tt.wantErr {
+				assert.Zero(s.ID)
+				return
+			}
 
-				assert.NotZero(s.ID)
+			assert.NotZero(s.ID)
 
-				copy := tt.newObject
-				copy.ID = s.ID
+			copy := tt.newObject
+			copy.ID = s.ID
 
-				assert.Equal(copy, s)
+			assert.Equal(copy, s)
 
-				// ensure can find the scene
-				found, err := qb.Find(ctx, s.ID)
-				if err != nil {
-					t.Errorf("galleryQueryBuilder.Find() error = %v", err)
-				}
+			// ensure can find the scene
+			found, err := qb.Find(ctx, s.ID)
+			if err != nil {
+				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
+			}
 
-				assert.Equal(copy, *found)
+			assert.Equal(copy, *found)
 
-				return nil
-			})
+			return
 		})
 	}
 }
@@ -267,29 +265,27 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 
 	qb := sqlite.GalleryReaderWriter
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
-			withRollbackTxn(func(ctx context.Context) error {
-				copy := *tt.updatedObject
+			copy := *tt.updatedObject
 
-				if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
-				}
+			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-				if tt.wantErr {
-					return nil
-				}
+			if tt.wantErr {
+				return
+			}
 
-				s, err := qb.Find(ctx, tt.updatedObject.ID)
-				if err != nil {
-					t.Errorf("galleryQueryBuilder.Find() error = %v", err)
-				}
+			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			if err != nil {
+				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
+			}
 
-				assert.Equal(copy, *s)
+			assert.Equal(copy, *s)
 
-				return nil
-			})
+			return
 		})
 	}
 }
@@ -342,18 +338,16 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 // 	for _, tt := range tests {
 // 		qb := sqlite.GalleryReaderWriter
 
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			withRollbackTxn(func(ctx context.Context) error {
-// 				got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
-// 				if (err != nil) != tt.wantErr {
-// 					t.Errorf("galleryQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
-// 					return nil
-// 				}
-// 				if !reflect.DeepEqual(got, tt.want) {
-// 					t.Errorf("galleryQueryBuilder.UpdatePartial() = %v, want %v", got, tt.want)
-// 				}
-// 				return nil
-// 			})
+// 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+// 			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+// 			if (err != nil) != tt.wantErr {
+// 				t.Errorf("galleryQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+// 				return
+// 			}
+// 			if !reflect.DeepEqual(got, tt.want) {
+// 				t.Errorf("galleryQueryBuilder.UpdatePartial() = %v, want %v", got, tt.want)
+// 			}
+// 			return
 // 		})
 // 	}
 // }
@@ -379,14 +373,20 @@ func Test_galleryQueryBuilder_Destroy(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		withRollbackTxn(func(ctx context.Context) error {
-			t.Run(tt.name, func(t *testing.T) {
-				if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
-				}
-			})
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-			return nil
+			if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			// ensure cannot be found
+			i, err := qb.Find(ctx, tt.id)
+
+			assert.NotNil(err)
+			assert.Nil(i)
+			return
+
 		})
 	}
 }
@@ -439,18 +439,15 @@ func Test_galleryQueryBuilder_Find(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.Find(ctx, tt.id)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
+			got, err := qb.Find(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-				assert.Equal(tt.want, got)
-				return nil
-			})
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -483,18 +480,15 @@ func Test_galleryQueryBuilder_FindMany(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindMany(ctx, tt.ids)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("galleryQueryBuilder.FindMany() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.FindMany(ctx, tt.ids)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("galleryQueryBuilder.FindMany() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -539,18 +533,15 @@ func Test_galleryQueryBuilder_FindByChecksum(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindByChecksum(ctx, tt.checksum)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("galleryQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.FindByChecksum(ctx, tt.checksum)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("galleryQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -600,18 +591,15 @@ func Test_galleryQueryBuilder_FindByChecksums(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindByChecksums(ctx, tt.checksums)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("galleryQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.FindByChecksums(ctx, tt.checksums)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("galleryQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -656,18 +644,15 @@ func Test_galleryQueryBuilder_FindByPath(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindByPath(ctx, tt.path)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("galleryQueryBuilder.FindByPath() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.FindByPath(ctx, tt.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("galleryQueryBuilder.FindByPath() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -696,18 +681,15 @@ func Test_galleryQueryBuilder_FindBySceneID(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindBySceneID(ctx, tt.sceneID)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.FindBySceneID() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
+			got, err := qb.FindBySceneID(ctx, tt.sceneID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindBySceneID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-				assert.Equal(tt.want, got)
-				return nil
-			})
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -739,18 +721,15 @@ func Test_galleryQueryBuilder_FindByImageID(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindByImageID(ctx, tt.imageID)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.FindByImageID() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("galleryQueryBuilder.FindByImageID() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.FindByImageID(ctx, tt.imageID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindByImageID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("galleryQueryBuilder.FindByImageID() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -779,18 +758,15 @@ func Test_galleryQueryBuilder_CountByImageID(t *testing.T) {
 	qb := sqlite.GalleryReaderWriter
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.CountByImageID(ctx, tt.imageID)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("galleryQueryBuilder.CountByImageID() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
-				if got != tt.want {
-					t.Errorf("galleryQueryBuilder.CountByImageID() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.CountByImageID(ctx, tt.imageID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.CountByImageID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("galleryQueryBuilder.CountByImageID() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

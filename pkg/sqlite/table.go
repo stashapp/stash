@@ -19,6 +19,15 @@ type table struct {
 	idColumn exp.IdentifierExpression
 }
 
+type NotFoundError struct {
+	ID    int
+	Table string
+}
+
+func (e *NotFoundError) Error() string {
+	return fmt.Sprintf("id %d does not exist in %s", e.ID, e.Table)
+}
+
 func (t *table) insert(ctx context.Context, o interface{}) (sql.Result, error) {
 	q := dialect.Insert(t.table).Rows(o)
 	ret, err := exec(ctx, q)
@@ -68,6 +77,19 @@ func (t *table) idExists(ctx context.Context, id int) (bool, error) {
 	return count == 1, nil
 }
 
+func (t *table) checkIDExists(ctx context.Context, id int) error {
+	exists, err := t.idExists(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return &NotFoundError{ID: id, Table: t.table.GetTable()}
+	}
+
+	return nil
+}
+
 func (t *table) destroyExisting(ctx context.Context, ids []int) error {
 	for _, id := range ids {
 		exists, err := t.idExists(ctx, id)
@@ -76,7 +98,10 @@ func (t *table) destroyExisting(ctx context.Context, ids []int) error {
 		}
 
 		if !exists {
-			return fmt.Errorf("id %d does not exist in %s", id, t.table.GetTable())
+			return &NotFoundError{
+				ID:    id,
+				Table: t.table.GetTable(),
+			}
 		}
 	}
 
