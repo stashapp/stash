@@ -85,39 +85,50 @@ func (s *Scene) SetFile(f File) {
 
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry. Only non-nil fields will be updated.
+// Uses Nullable_ to represent fields.
+// Where field is a value, if NullString_.Valid is false, then the field is not updated.
+// Where field is a pointer,
+// Uses pointers to Nullable_ for
 type ScenePartial struct {
-	Checksum         **string
-	OSHash           **string
-	Path             *string
-	Title            *string
-	Details          *string
-	URL              *string
-	Date             **Date
-	Rating           **int
-	Organized        *bool
-	OCounter         *int
-	Size             **string
-	Duration         **float64
-	VideoCodec       **string
-	Format           **string
-	AudioCodec       **string
-	Width            **int
-	Height           **int
-	Framerate        **float64
-	Bitrate          **int
-	StudioID         **int
-	FileModTime      **time.Time
-	Phash            **int64
-	CreatedAt        *time.Time
-	UpdatedAt        *time.Time
-	Interactive      *bool
-	InteractiveSpeed **int
+	Checksum         OptionalString
+	OSHash           OptionalString
+	Path             OptionalString
+	Title            OptionalString
+	Details          OptionalString
+	URL              OptionalString
+	Date             OptionalDate
+	Rating           OptionalInt
+	Organized        OptionalBool
+	OCounter         OptionalInt
+	Size             OptionalString
+	Duration         OptionalFloat64
+	VideoCodec       OptionalString
+	Format           OptionalString
+	AudioCodec       OptionalString
+	Width            OptionalInt
+	Height           OptionalInt
+	Framerate        OptionalFloat64
+	Bitrate          OptionalInt64
+	StudioID         OptionalInt
+	FileModTime      OptionalTime
+	Phash            OptionalInt64
+	CreatedAt        OptionalTime
+	UpdatedAt        OptionalTime
+	Interactive      OptionalBool
+	InteractiveSpeed OptionalInt
 
 	GalleryIDs   *UpdateIDs
 	TagIDs       *UpdateIDs
 	PerformerIDs *UpdateIDs
 	MovieIDs     *UpdateMovieIDs
 	StashIDs     *UpdateStashIDs
+}
+
+func NewScenePartial() ScenePartial {
+	updatedTime := time.Now()
+	return ScenePartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
+	}
 }
 
 type SceneMovieInput struct {
@@ -146,18 +157,9 @@ type SceneUpdateInput struct {
 
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
 func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
-	boolPtrCopy := func(v *bool) *bool {
-		if v == nil {
-			return nil
-		}
-
-		vv := *v
-		return &vv
-	}
-
 	var dateStr *string
-	if s.Date != nil {
-		d := *s.Date
+	if s.Date.Set {
+		d := s.Date.Value
 		v := d.String()
 		dateStr = &v
 	}
@@ -169,13 +171,13 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 
 	return SceneUpdateInput{
 		ID:           strconv.Itoa(id),
-		Title:        s.Title,
-		Details:      s.Details,
-		URL:          s.URL,
+		Title:        s.Title.Ptr(),
+		Details:      s.Details.Ptr(),
+		URL:          s.URL.Ptr(),
 		Date:         dateStr,
-		Rating:       intDblPtrToPtr(s.Rating),
-		Organized:    boolPtrCopy(s.Organized),
-		StudioID:     intDblPtrToStringPtr(s.StudioID),
+		Rating:       s.Rating.Ptr(),
+		Organized:    s.Organized.Ptr(),
+		StudioID:     s.StudioID.StringPtr(),
 		GalleryIds:   s.GalleryIDs.IDStrings(),
 		PerformerIds: s.PerformerIDs.IDStrings(),
 		Movies:       s.MovieIDs.SceneMovieInputs(),
@@ -185,25 +187,20 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 }
 
 func (s *ScenePartial) SetFile(f File) {
-	path := f.Path
-	s.Path = &path
+	s.Path = NewOptionalString(f.Path)
 
 	if f.Checksum != "" {
-		v := &f.Checksum
-		s.Checksum = &v
+		s.Checksum = NewOptionalString(f.Checksum)
 	}
 	if f.OSHash != "" {
-		v := &f.OSHash
-		s.OSHash = &v
+		s.OSHash = NewOptionalString(f.OSHash)
 	}
 	zeroTime := time.Time{}
 	if f.FileModTime != zeroTime {
-		v := &f.FileModTime
-		s.FileModTime = &v
+		s.FileModTime = NewOptionalTime(f.FileModTime)
 	}
 	if f.Size != "" {
-		v := &f.Size
-		s.Size = &v
+		s.Size = NewOptionalString(f.Size)
 	}
 }
 

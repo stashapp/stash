@@ -42,9 +42,8 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 		qb := t.txnManager.Scene
 		hashValue := int64(*hash)
-		v := &hashValue
 		scenePartial := models.ScenePartial{
-			Phash: &v,
+			Phash: models.NewOptionalInt64(hashValue),
 		}
 		_, err := qb.UpdatePartial(ctx, t.Scene.ID, scenePartial)
 		return err

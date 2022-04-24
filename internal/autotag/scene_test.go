@@ -223,9 +223,9 @@ func TestSceneStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
-			expectedStudioID := &studioID
+			expectedStudioID := studioID
 			mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
-				StudioID: &expectedStudioID,
+				StudioID: models.NewOptionalInt(expectedStudioID),
 			}).Return(nil, nil).Once()
 		}
 

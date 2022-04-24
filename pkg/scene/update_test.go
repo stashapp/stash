@@ -35,7 +35,7 @@ func TestUpdater_IsEmpty(t *testing.T) {
 			"partial set",
 			&UpdateSet{
 				Partial: models.ScenePartial{
-					Organized: &organized,
+					Organized: models.NewOptionalBool(organized),
 				},
 			},
 			false,
@@ -134,8 +134,6 @@ func TestUpdater_Update(t *testing.T) {
 	qb.On("UpdateCover", ctx, sceneID, cover).Return(nil).Once()
 	qb.On("UpdateCover", ctx, badCoverID, cover).Return(updateErr).Once()
 
-	titlePtr := &title
-
 	tests := []struct {
 		name    string
 		u       *UpdateSet
@@ -183,7 +181,7 @@ func TestUpdater_Update(t *testing.T) {
 			&UpdateSet{
 				ID: sceneID,
 				Partial: models.ScenePartial{
-					Title: titlePtr,
+					Title: models.NewOptionalString(title),
 				},
 			},
 			false,
@@ -194,7 +192,7 @@ func TestUpdater_Update(t *testing.T) {
 			&UpdateSet{
 				ID: badUpdateID,
 				Partial: models.ScenePartial{
-					Title: titlePtr,
+					Title: models.NewOptionalString(title),
 				},
 			},
 			true,
@@ -260,7 +258,6 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 	}
 
 	title := "title"
-	titlePtr := &title
 	cover := []byte("cover")
 	coverB64 := "Y292ZXI="
 
@@ -311,7 +308,7 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 			UpdateSet{
 				ID: sceneID,
 				Partial: models.ScenePartial{
-					Title: titlePtr,
+					Title: models.NewOptionalString(title),
 				},
 			},
 			models.SceneUpdateInput{

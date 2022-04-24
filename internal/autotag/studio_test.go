@@ -134,9 +134,9 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		expectedStudioID := &studioID
+		expectedStudioID := studioID
 		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
-			StudioID: &expectedStudioID,
+			StudioID: models.NewOptionalInt(expectedStudioID),
 		}).Return(nil, nil).Once()
 	}
 

@@ -98,18 +98,18 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	var coverImageData []byte
 
-	updatedTime := time.Now()
-	updatedScene := models.ScenePartial{
-		UpdatedAt: &updatedTime,
+	updatedScene := models.NewScenePartial()
+	updatedScene.Title = translator.optionalString(input.Title, "title")
+	updatedScene.Details = translator.optionalString(input.Details, "details")
+	updatedScene.URL = translator.optionalString(input.URL, "url")
+	updatedScene.Date = translator.optionalDate(input.Date, "date")
+	updatedScene.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	updatedScene.Title = translator.stringPtr(input.Title, "title")
-	updatedScene.Details = translator.stringPtr(input.Details, "details")
-	updatedScene.URL = translator.stringPtr(input.URL, "url")
-	updatedScene.Date = translator.dateDblPtr(input.Date, "date")
-	updatedScene.Rating = translator.intDblPtr(input.Rating, "rating")
-	updatedScene.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")
-	updatedScene.Organized = input.Organized
+	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 
 	if translator.hasField("performer_ids") {
 		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
@@ -189,23 +189,22 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	}
 
 	// Populate scene from the input
-	updatedTime := time.Now()
-
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	updatedScene := models.ScenePartial{
-		UpdatedAt: &updatedTime,
+	updatedScene := models.NewScenePartial()
+	updatedScene.Title = translator.optionalString(input.Title, "title")
+	updatedScene.Details = translator.optionalString(input.Details, "details")
+	updatedScene.URL = translator.optionalString(input.URL, "url")
+	updatedScene.Date = translator.optionalDate(input.Date, "date")
+	updatedScene.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	updatedScene.Title = translator.stringPtr(input.Title, "title")
-	updatedScene.Details = translator.stringPtr(input.Details, "details")
-	updatedScene.URL = translator.stringPtr(input.URL, "url")
-	updatedScene.Date = translator.dateDblPtr(input.Date, "date")
-	updatedScene.Rating = translator.intDblPtr(input.Rating, "rating")
-	updatedScene.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")
-	updatedScene.Organized = input.Organized
+	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 
 	if translator.hasField("performer_ids") {
 		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)

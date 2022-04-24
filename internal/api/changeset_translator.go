@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -97,6 +98,14 @@ func (t changesetTranslator) stringPtr(value *string, field string) *string {
 	return value
 }
 
+func (t changesetTranslator) optionalString(value *string, field string) models.OptionalString {
+	if !t.hasField(field) {
+		return models.OptionalString{}
+	}
+
+	return models.NewOptionalStringPtr(value)
+}
+
 func (t changesetTranslator) sqliteDate(value *string, field string) *models.SQLiteDate {
 	if !t.hasField(field) {
 		return nil
@@ -123,6 +132,21 @@ func (t changesetTranslator) dateDblPtr(value *string, field string) **models.Da
 	return &ptr
 }
 
+func (t changesetTranslator) optionalDate(value *string, field string) models.OptionalDate {
+	if !t.hasField(field) {
+		return models.OptionalDate{}
+	}
+
+	if value == nil {
+		return models.OptionalDate{
+			Set:  true,
+			Null: true,
+		}
+	}
+
+	return models.NewOptionalDate(models.NewDate(*value))
+}
+
 func (t changesetTranslator) nullInt64(value *int, field string) *sql.NullInt64 {
 	if !t.hasField(field) {
 		return nil
@@ -144,6 +168,14 @@ func (t changesetTranslator) intDblPtr(value *int, field string) **int {
 	}
 
 	return &value
+}
+
+func (t changesetTranslator) optionalInt(value *int, field string) models.OptionalInt {
+	if !t.hasField(field) {
+		return models.OptionalInt{}
+	}
+
+	return models.NewOptionalIntPtr(value)
 }
 
 func (t changesetTranslator) nullInt64FromString(value *string, field string) *sql.NullInt64 {
@@ -171,6 +203,25 @@ func (t changesetTranslator) intDblPtrFromString(value *string, field string) **
 	return &ptr
 }
 
+func (t changesetTranslator) optionalIntFromString(value *string, field string) (models.OptionalInt, error) {
+	if !t.hasField(field) {
+		return models.OptionalInt{}, nil
+	}
+
+	if value == nil {
+		return models.OptionalInt{
+			Set:  true,
+			Null: true,
+		}, nil
+	}
+
+	vv, err := strconv.Atoi(*value)
+	if err != nil {
+		return models.OptionalInt{}, fmt.Errorf("converting %v to int: %w", *value, err)
+	}
+	return models.NewOptionalInt(vv), nil
+}
+
 func (t changesetTranslator) nullBool(value *bool, field string) *sql.NullBool {
 	if !t.hasField(field) {
 		return nil
@@ -184,4 +235,12 @@ func (t changesetTranslator) nullBool(value *bool, field string) *sql.NullBool {
 	}
 
 	return ret
+}
+
+func (t changesetTranslator) optionalBool(value *bool, field string) models.OptionalBool {
+	if !t.hasField(field) {
+		return models.OptionalBool{}
+	}
+
+	return models.NewOptionalBoolPtr(value)
 }

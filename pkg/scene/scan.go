@@ -256,8 +256,8 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 		} else {
 			logger.Infof("%s already exists. Updating path...", path)
 			scenePartial := models.ScenePartial{
-				Path:        &path,
-				Interactive: &interactive,
+				Path:        models.NewOptionalString(path),
+				Interactive: models.NewOptionalBool(interactive),
 			}
 			if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
 				_, err := scanner.CreatorUpdater.UpdatePartial(ctx, s.ID, scenePartial)

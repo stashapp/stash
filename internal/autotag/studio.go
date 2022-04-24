@@ -17,9 +17,8 @@ func addSceneStudio(ctx context.Context, sceneWriter scene.PartialUpdater, o *mo
 	}
 
 	// set the studio id
-	s := &studioID
 	scenePartial := models.ScenePartial{
-		StudioID: &s,
+		StudioID: models.NewOptionalInt(studioID),
 	}
 
 	if _, err := sceneWriter.UpdatePartial(ctx, o.ID, scenePartial); err != nil {

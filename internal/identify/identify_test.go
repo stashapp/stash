@@ -251,18 +251,14 @@ func Test_getScenePartial(t *testing.T) {
 	)
 
 	var (
-		scrapedTitle      = "scrapedTitle"
-		scrapedTitlePtr   = &scrapedTitle
-		scrapedDate       = "2002-02-02"
-		scrapedDetails    = "scrapedDetails"
-		scrapedDetailsPtr = &scrapedDetails
-		scrapedURL        = "scrapedURL"
-		scrapedURLPtr     = &scrapedURL
+		scrapedTitle   = "scrapedTitle"
+		scrapedDate    = "2002-02-02"
+		scrapedDetails = "scrapedDetails"
+		scrapedURL     = "scrapedURL"
 	)
 
 	originalDateObj := models.NewDate(originalDate)
 	scrapedDateObj := models.NewDate(scrapedDate)
-	scrapedDatePtr := &scrapedDateObj
 
 	originalScene := &models.Scene{
 		Title:   originalTitle,
@@ -277,10 +273,10 @@ func Test_getScenePartial(t *testing.T) {
 	emptyScene := &models.Scene{}
 
 	postPartial := models.ScenePartial{
-		Title:   scrapedTitlePtr,
-		Date:    &scrapedDatePtr,
-		Details: scrapedDetailsPtr,
-		URL:     scrapedURLPtr,
+		Title:   models.NewOptionalString(scrapedTitle),
+		Date:    models.NewOptionalDate(scrapedDateObj),
+		Details: models.NewOptionalString(scrapedDetails),
+		URL:     models.NewOptionalString(scrapedURL),
 	}
 
 	scrapedScene := &scraper.ScrapedScene{
@@ -388,7 +384,7 @@ func Test_getScenePartial(t *testing.T) {
 				true,
 			},
 			models.ScenePartial{
-				Organized: &setOrganised,
+				Organized: models.NewOptionalBool(setOrganised),
 			},
 		},
 		{

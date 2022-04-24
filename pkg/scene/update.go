@@ -53,7 +53,7 @@ func (u *UpdateSet) Update(ctx context.Context, qb Updater, screenshotSetter Scr
 
 	partial := u.Partial
 	updatedAt := time.Now()
-	partial.UpdatedAt = &updatedAt
+	partial.UpdatedAt = models.NewOptionalTime(updatedAt)
 
 	ret, err := qb.UpdatePartial(ctx, u.ID, partial)
 	if err != nil {
@@ -88,32 +88,32 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 }
 
 func UpdateFormat(ctx context.Context, qb PartialUpdater, id int, format string) (*models.Scene, error) {
-	v := &format
+	v := format
 	return qb.UpdatePartial(ctx, id, models.ScenePartial{
-		Format: &v,
+		Format: models.NewOptionalString(v),
 	})
 }
 
 func UpdateOSHash(ctx context.Context, qb PartialUpdater, id int, oshash string) (*models.Scene, error) {
-	v := &oshash
+	v := oshash
 
 	return qb.UpdatePartial(ctx, id, models.ScenePartial{
-		OSHash: &v,
+		OSHash: models.NewOptionalString(v),
 	})
 }
 
 func UpdateChecksum(ctx context.Context, qb PartialUpdater, id int, checksum string) (*models.Scene, error) {
-	v := &checksum
+	v := checksum
 
 	return qb.UpdatePartial(ctx, id, models.ScenePartial{
-		Checksum: &v,
+		Checksum: models.NewOptionalString(v),
 	})
 }
 
 func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime time.Time) (*models.Scene, error) {
-	v := &modTime
+	v := modTime
 	return qb.UpdatePartial(ctx, id, models.ScenePartial{
-		FileModTime: &v,
+		FileModTime: models.NewOptionalTime(v),
 	})
 }
 

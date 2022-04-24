@@ -39,7 +39,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 		return
 	}
 
-	median := &generator.InteractiveSpeed
+	median := generator.InteractiveSpeed
 
 	var s *models.Scene
 
@@ -55,7 +55,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		qb := t.TxnManager.Scene
 		scenePartial := models.ScenePartial{
-			InteractiveSpeed: &median,
+			InteractiveSpeed: models.NewOptionalInt(median),
 		}
 		_, err := qb.UpdatePartial(ctx, s.ID, scenePartial)
 		return err

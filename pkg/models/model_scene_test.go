@@ -13,22 +13,16 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 
 	var (
 		title       = "title"
-		titlePtr    = &title
 		details     = "details"
-		detailsPtr  = &details
 		url         = "url"
-		urlPtr      = &url
 		date        = "2001-02-03"
 		rating      = 4
-		ratingPtr   = &rating
 		organized   = true
 		studioID    = 2
-		studioIDPtr = &studioID
 		studioIDStr = "2"
 	)
 
 	dateObj := NewDate(date)
-	dateObjPtr := &dateObj
 
 	tests := []struct {
 		name string
@@ -40,13 +34,13 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 			"full",
 			id,
 			ScenePartial{
-				Title:     titlePtr,
-				Details:   detailsPtr,
-				URL:       urlPtr,
-				Date:      &dateObjPtr,
-				Rating:    &ratingPtr,
-				Organized: &organized,
-				StudioID:  &studioIDPtr,
+				Title:     NewOptionalString(title),
+				Details:   NewOptionalString(details),
+				URL:       NewOptionalString(url),
+				Date:      NewOptionalDate(dateObj),
+				Rating:    NewOptionalInt(rating),
+				Organized: NewOptionalBool(organized),
+				StudioID:  NewOptionalInt(studioID),
 			},
 			SceneUpdateInput{
 				ID:        idStr,

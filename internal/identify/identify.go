@@ -128,7 +128,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	}
 
 	if studioID != nil {
-		ret.Partial.StudioID = &studioID
+		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
 	}
 
 	ignoreMale := false
@@ -212,8 +212,8 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 
 		as := ""
 		title := updater.Partial.Title
-		if title != nil {
-			as = fmt.Sprintf(" as %s", *title)
+		if title.Ptr() != nil {
+			as = fmt.Sprintf(" as %s", title.Value)
 		}
 		logger.Infof("Successfully identified %s%s using %s", s.Path, as, result.source.Name)
 
@@ -251,30 +251,29 @@ func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOp
 
 	if scraped.Title != nil && (scene.Title != *scraped.Title) {
 		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != "") {
-			partial.Title = scraped.Title
+			partial.Title = models.NewOptionalString(*scraped.Title)
 		}
 	}
 	if scraped.Date != nil && (scene.Date == nil || scene.Date.String() != *scraped.Date) {
 		if shouldSetSingleValueField(fieldOptions["date"], scene.Date != nil) {
 			d := models.NewDate(*scraped.Date)
-			dd := &d
-			partial.Date = &dd
+			partial.Date = models.NewOptionalDate(d)
 		}
 	}
 	if scraped.Details != nil && (scene.Details != *scraped.Details) {
 		if shouldSetSingleValueField(fieldOptions["details"], scene.Details != "") {
-			partial.Details = scraped.Details
+			partial.Details = models.NewOptionalString(*scraped.Details)
 		}
 	}
 	if scraped.URL != nil && (scene.URL != *scraped.URL) {
 		if shouldSetSingleValueField(fieldOptions["url"], scene.URL != "") {
-			partial.URL = scraped.URL
+			partial.URL = models.NewOptionalString(*scraped.URL)
 		}
 	}
 
 	if setOrganized && !scene.Organized {
 		// just reuse the boolean since we know it's true
-		partial.Organized = &setOrganized
+		partial.Organized = models.NewOptionalBool(setOrganized)
 	}
 
 	return partial
