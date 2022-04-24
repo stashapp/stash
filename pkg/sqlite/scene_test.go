@@ -691,7 +691,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			sceneIDs[sceneIdxWithGallery],
 			models.ScenePartial{
 				GalleryIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[galleryIdx1WithImage], tagIDs[galleryIdx1WithPerformer]},
+					IDs:  []int{galleryIDs[galleryIdx1WithImage], galleryIDs[galleryIdx1WithPerformer]},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
 			},
@@ -774,13 +774,13 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			sceneIDs[sceneIdxWithGallery],
 			models.ScenePartial{
 				GalleryIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[galleryIdxWithScene], tagIDs[galleryIdx1WithPerformer]},
+					IDs:  []int{galleryIDs[galleryIdxWithScene], galleryIDs[galleryIdx1WithPerformer]},
 					Mode: models.RelationshipUpdateModeAdd,
 				},
 			},
 			models.Scene{
 				GalleryIDs: append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
-					tagIDs[galleryIdx1WithPerformer],
+					galleryIDs[galleryIdx1WithPerformer],
 				),
 			},
 			false,
@@ -915,7 +915,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			sceneIDs[sceneIdxWithGallery],
 			models.ScenePartial{
 				GalleryIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[galleryIdxWithScene]},
+					IDs:  []int{galleryIDs[galleryIdxWithScene]},
 					Mode: models.RelationshipUpdateModeRemove,
 				},
 			},
@@ -983,7 +983,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			sceneIDs[sceneIdxWithGallery],
 			models.ScenePartial{
 				GalleryIDs: &models.UpdateIDs{
-					IDs:  []int{tagIDs[galleryIdx1WithImage]},
+					IDs:  []int{galleryIDs[galleryIdx1WithImage]},
 					Mode: models.RelationshipUpdateModeRemove,
 				},
 			},

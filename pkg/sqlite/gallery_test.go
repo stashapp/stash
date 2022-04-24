@@ -290,67 +290,407 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 	}
 }
 
-// func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
-// 	var (
-// 		path        = "path"
-// 		title       = "title"
-// 		checksum    = "checksum"
-// 		url         = "url"
-// 		rating      = 3
-// 		details     = "details"
-// 		fileModTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-// 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-// 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-// 	)
+func clearGalleryPartial() models.GalleryPartial {
+	// leave mandatory fields
+	return models.GalleryPartial{
+		Title:        models.OptionalString{Set: true, Null: true},
+		Details:      models.OptionalString{Set: true, Null: true},
+		URL:          models.OptionalString{Set: true, Null: true},
+		Date:         models.OptionalDate{Set: true, Null: true},
+		Rating:       models.OptionalInt{Set: true, Null: true},
+		StudioID:     models.OptionalInt{Set: true, Null: true},
+		FileModTime:  models.OptionalTime{Set: true, Null: true},
+		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+	}
+}
 
-// 	tests := []struct {
-// 		name    string
-// 		id      int
-// 		partial models.GalleryPartial
-// 		want    models.Gallery
-// 		wantErr bool
-// 	}{
-// 		{
-// 			"full",
-// 			galleryIDs[galleryIdxWithScene],
-// 			models.GalleryPartial{
-// 				Path:         &path,
-// 				Checksum:     checksum,
-// 				Zip:          false,
-// 				Title:        &title,
-// 				URL:          &url,
-// 				Date:         &date,
-// 				Details:      &details,
-// 				Rating:       &rating,
-// 				Organized:    true,
-// 				StudioID:     &studioIDs[studioIdxWithScene],
-// 				FileModTime:  &fileModTime,
-// 				CreatedAt:    createdAt,
-// 				UpdatedAt:    updatedAt,
-// 				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
-// 				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-// 				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
-// 			},
-// 			models.Gallery{},
-// 			false,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		qb := sqlite.GalleryReaderWriter
+func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
+	var (
+		path        = "path"
+		title       = "title"
+		checksum    = "checksum"
+		zip         = true
+		details     = "details"
+		url         = "url"
+		rating      = 3
+		fileModTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-// 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-// 			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
-// 			if (err != nil) != tt.wantErr {
-// 				t.Errorf("galleryQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
-// 				return
-// 			}
-// 			if !reflect.DeepEqual(got, tt.want) {
-// 				t.Errorf("galleryQueryBuilder.UpdatePartial() = %v, want %v", got, tt.want)
-// 			}
-// 			return
-// 		})
-// 	}
-// }
+		date = models.NewDate("2003-02-01")
+	)
+
+	tests := []struct {
+		name    string
+		id      int
+		partial models.GalleryPartial
+		want    models.Gallery
+		wantErr bool
+	}{
+		{
+			"full",
+			galleryIDs[galleryIdxWithImage],
+			models.GalleryPartial{
+				Path:        models.NewOptionalString(path),
+				Checksum:    models.NewOptionalString(checksum),
+				Zip:         models.NewOptionalBool(zip),
+				Title:       models.NewOptionalString(title),
+				Details:     models.NewOptionalString(details),
+				URL:         models.NewOptionalString(url),
+				Date:        models.NewOptionalDate(date),
+				Rating:      models.NewOptionalInt(rating),
+				Organized:   models.NewOptionalBool(true),
+				StudioID:    models.NewOptionalInt(studioIDs[studioIdxWithGallery]),
+				FileModTime: models.NewOptionalTime(fileModTime),
+				CreatedAt:   models.NewOptionalTime(createdAt),
+				UpdatedAt:   models.NewOptionalTime(updatedAt),
+
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{sceneIDs[sceneIdxWithGallery]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithGallery], performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+			},
+			models.Gallery{
+				ID:           galleryIDs[galleryIdxWithImage],
+				Path:         &path,
+				Checksum:     checksum,
+				Zip:          zip,
+				Title:        title,
+				Details:      details,
+				URL:          url,
+				Date:         &date,
+				Rating:       &rating,
+				Organized:    true,
+				StudioID:     &studioIDs[studioIdxWithGallery],
+				FileModTime:  &fileModTime,
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				SceneIDs:     []int{sceneIDs[sceneIdxWithGallery]},
+				TagIDs:       []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithGallery], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"clear all",
+			galleryIDs[galleryIdxWithImage],
+			clearGalleryPartial(),
+			models.Gallery{
+				ID:       galleryIDs[galleryIdxWithImage],
+				Path:     getGalleryNullStringPtr(galleryIdxWithImage, pathField),
+				Checksum: getGalleryStringValue(galleryIdxWithImage, checksumField),
+			},
+			false,
+		},
+		{
+			"invalid id",
+			invalidID,
+			models.GalleryPartial{},
+			models.Gallery{},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		qb := sqlite.GalleryReaderWriter
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			assert.Equal(tt.want, *got)
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
+			}
+
+			assert.Equal(tt.want, *s)
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_UpdatePartialRelationships(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		partial models.GalleryPartial
+		want    models.Gallery
+		wantErr bool
+	}{
+		{
+			"add scenes",
+			galleryIDs[galleryIdx1WithImage],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[sceneIdx1WithStudio], tagIDs[sceneIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				SceneIDs: append(indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(galleryIdx1WithImage)),
+					sceneIDs[sceneIdx1WithStudio],
+					sceneIDs[sceneIdx1WithPerformer],
+				),
+			},
+			false,
+		},
+		{
+			"add tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				TagIDs: append(indexesToIDs(tagIDs, galleryTags[galleryIdxWithTwoTags]),
+					tagIDs[tagIdx1WithDupName],
+					tagIDs[tagIdx1WithImage],
+				),
+			},
+			false,
+		},
+		{
+			"add performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName], performerIDs[performerIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				PerformerIDs: append(indexesToIDs(performerIDs, galleryPerformers[galleryIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithDupName],
+					performerIDs[performerIdx1WithImage],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate scenes",
+			galleryIDs[galleryIdxWithScene],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{sceneIDs[sceneIdxWithGallery], sceneIDs[sceneIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				SceneIDs: append(indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(galleryIdxWithScene)),
+					sceneIDs[sceneIdx1WithPerformer],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithScene]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				TagIDs: append(indexesToIDs(tagIDs, galleryTags[galleryIdxWithTwoTags]),
+					tagIDs[tagIdx1WithScene],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithGallery], performerIDs[performerIdx1WithScene]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				PerformerIDs: append(indexesToIDs(performerIDs, galleryPerformers[galleryIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithScene],
+				),
+			},
+			false,
+		},
+		{
+			"add invalid scenes",
+			galleryIDs[galleryIdxWithScene],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{},
+			true,
+		},
+		{
+			"add invalid tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{},
+			true,
+		},
+		{
+			"add invalid performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{},
+			true,
+		},
+		{
+			"remove scenes",
+			galleryIDs[galleryIdxWithScene],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{sceneIDs[sceneIdxWithGallery]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{},
+			false,
+		},
+		{
+			"remove tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				TagIDs: []int{tagIDs[tagIdx2WithGallery]},
+			},
+			false,
+		},
+		{
+			"remove performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				PerformerIDs: []int{performerIDs[performerIdx2WithGallery]},
+			},
+			false,
+		},
+		{
+			"remove unrelated scenes",
+			galleryIDs[galleryIdxWithScene],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[sceneIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				SceneIDs: []int{sceneIDs[sceneIdxWithGallery]},
+			},
+			false,
+		},
+		{
+			"remove unrelated tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				TagIDs: indexesToIDs(tagIDs, galleryTags[galleryIdxWithTwoTags]),
+			},
+			false,
+		},
+		{
+			"remove unrelated performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				PerformerIDs: indexesToIDs(performerIDs, galleryPerformers[galleryIdxWithTwoPerformers]),
+			},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		qb := sqlite.GalleryReaderWriter
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
+			}
+
+			// only compare fields that were in the partial
+			if tt.partial.PerformerIDs != nil {
+				assert.Equal(tt.want.PerformerIDs, got.PerformerIDs)
+				assert.Equal(tt.want.PerformerIDs, s.PerformerIDs)
+			}
+			if tt.partial.TagIDs != nil {
+				assert.Equal(tt.want.TagIDs, got.TagIDs)
+				assert.Equal(tt.want.TagIDs, s.TagIDs)
+			}
+			if tt.partial.SceneIDs != nil {
+				assert.Equal(tt.want.SceneIDs, got.SceneIDs)
+				assert.Equal(tt.want.SceneIDs, s.SceneIDs)
+			}
+		})
+	}
+}
 
 func Test_galleryQueryBuilder_Destroy(t *testing.T) {
 	tests := []struct {

@@ -822,6 +822,10 @@ func getGalleryNullStringValue(index int, field string) sql.NullString {
 	return getPrefixedNullStringValue("gallery", index, field)
 }
 
+func getGalleryNullStringPtr(index int, field string) *string {
+	return getStringPtr(getPrefixedStringValue("gallery", index, field))
+}
+
 func makeGallery(i int, includeScenes bool) *models.Gallery {
 	var studioID *int
 	if _, ok := galleryStudios[i]; ok {
