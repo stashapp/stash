@@ -11,6 +11,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 const galleryTable = "galleries"
@@ -114,13 +115,13 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 
 func (r *galleryQueryRow) appendRelationships(i *models.Gallery) {
 	if r.TagID.Valid {
-		i.TagIDs = append(i.TagIDs, r.TagID.int())
+		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, r.TagID.int())
 	}
 	if r.PerformerID.Valid {
-		i.PerformerIDs = append(i.PerformerIDs, r.PerformerID.int())
+		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, r.PerformerID.int())
 	}
 	if r.SceneID.Valid {
-		i.SceneIDs = append(i.SceneIDs, r.SceneID.int())
+		i.SceneIDs = intslice.IntAppendUnique(i.SceneIDs, r.SceneID.int())
 	}
 }
 
@@ -174,17 +175,18 @@ func (qb *galleryQueryBuilder) Create(ctx context.Context, newObject *models.Gal
 		return err
 	}
 
-	newObject.ID = id
+	if err := galleriesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
+		return err
+	}
+	if err := galleriesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs); err != nil {
+		return err
+	}
+	if err := galleriesScenesTableMgr.insertJoins(ctx, id, newObject.SceneIDs); err != nil {
+		return err
+	}
 
-	if err := galleriesPerformersTableMgr.insertJoins(ctx, newObject.ID, newObject.PerformerIDs); err != nil {
-		return err
-	}
-	if err := galleriesTagsTableMgr.insertJoins(ctx, newObject.ID, newObject.TagIDs); err != nil {
-		return err
-	}
-	if err := galleriesScenesTableMgr.insertJoins(ctx, newObject.ID, newObject.SceneIDs); err != nil {
-		return err
-	}
+	// only assign id once we are successful
+	newObject.ID = id
 
 	return nil
 }
@@ -255,6 +257,7 @@ func (qb *galleryQueryBuilder) selectDataset() *goqu.SelectDataset {
 		table.All(),
 		galleriesTagsJoinTable.Col("tag_id"),
 		performersGalleriesJoinTable.Col("performer_id"),
+		galleriesScenesJoinTable.Col("scene_id"),
 	).LeftJoin(
 		galleriesTagsJoinTable,
 		goqu.On(table.Col(idColumn).Eq(galleriesTagsJoinTable.Col(galleryIDColumn))),

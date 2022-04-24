@@ -244,14 +244,30 @@ type idAssociation struct {
 	second int
 }
 
+type linkMap map[int][]int
+
+func (m linkMap) reverseLookup(idx int) []int {
+	var result []int
+
+	for k, v := range m {
+		for _, vv := range v {
+			if vv == idx {
+				result = append(result, k)
+			}
+		}
+	}
+
+	return result
+}
+
 var (
-	sceneTags = map[int][]int{
+	sceneTags = linkMap{
 		sceneIdxWithTag:          {tagIdxWithScene},
 		sceneIdxWithTwoTags:      {tagIdx1WithScene, tagIdx2WithScene},
 		sceneIdxWithMarkerAndTag: {tagIdx3WithScene},
 	}
 
-	scenePerformers = map[int][]int{
+	scenePerformers = linkMap{
 		sceneIdxWithPerformer:        {performerIdxWithScene},
 		sceneIdxWithTwoPerformers:    {performerIdx1WithScene, performerIdx2WithScene},
 		sceneIdxWithPerformerTag:     {performerIdxWithTag},
@@ -261,11 +277,11 @@ var (
 		sceneIdxWithStudioPerformer:  {performerIdxWithSceneStudio},
 	}
 
-	sceneGalleries = map[int][]int{
+	sceneGalleries = linkMap{
 		sceneIdxWithGallery: {galleryIdxWithScene},
 	}
 
-	sceneMovies = map[int][]int{
+	sceneMovies = linkMap{
 		sceneIdxWithMovie: {movieIdxWithScene},
 	}
 
@@ -294,7 +310,7 @@ var (
 )
 
 var (
-	imageGalleries = map[int][]int{
+	imageGalleries = linkMap{
 		imageIdxWithGallery:      {galleryIdxWithImage},
 		imageIdx1WithGallery:     {galleryIdxWithTwoImages},
 		imageIdx2WithGallery:     {galleryIdxWithTwoImages},
@@ -307,11 +323,11 @@ var (
 		imageIdxWithStudioPerformer:  studioIdxWithImagePerformer,
 		imageIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
-	imageTags = map[int][]int{
+	imageTags = linkMap{
 		imageIdxWithTag:     {tagIdxWithImage},
 		imageIdxWithTwoTags: {tagIdx1WithImage, tagIdx2WithImage},
 	}
-	imagePerformers = map[int][]int{
+	imagePerformers = linkMap{
 		imageIdxWithPerformer:        {performerIdxWithImage},
 		imageIdxWithTwoPerformers:    {performerIdx1WithImage, performerIdx2WithImage},
 		imageIdxWithPerformerTag:     {performerIdxWithTag},
@@ -323,7 +339,7 @@ var (
 )
 
 var (
-	galleryPerformers = map[int][]int{
+	galleryPerformers = linkMap{
 		galleryIdxWithPerformer:        {performerIdxWithGallery},
 		galleryIdxWithTwoPerformers:    {performerIdx1WithGallery, performerIdx2WithGallery},
 		galleryIdxWithPerformerTag:     {performerIdxWithTag},
@@ -341,7 +357,7 @@ var (
 		galleryIdxWithGrandChildStudio: studioIdxWithGrandParent,
 	}
 
-	galleryTags = map[int][]int{
+	galleryTags = linkMap{
 		galleryIdxWithTag:     {tagIdxWithGallery},
 		galleryIdxWithTwoTags: {tagIdx1WithGallery, tagIdx2WithGallery},
 	}
@@ -378,6 +394,10 @@ var (
 )
 
 func indexesToIDs(ids []int, indexes []int) []int {
+	if len(indexes) == 0 {
+		return nil
+	}
+
 	ret := make([]int, len(indexes))
 	for i, idx := range indexes {
 		ret[i] = ids[idx]
@@ -634,48 +654,52 @@ func getObjectDateObject(index int) *models.Date {
 	return &ret
 }
 
+func makeScene(i int) *models.Scene {
+	title := getSceneTitle(i)
+	checksum := getSceneStringValue(i, checksumField)
+	details := getSceneStringValue(i, "Details")
+
+	var studioID *int
+	if _, ok := sceneStudios[i]; ok {
+		v := studioIDs[sceneStudios[i]]
+		studioID = &v
+	}
+
+	gids := indexesToIDs(galleryIDs, sceneGalleries[i])
+	pids := indexesToIDs(performerIDs, scenePerformers[i])
+	tids := indexesToIDs(tagIDs, sceneTags[i])
+
+	mids := indexesToIDs(movieIDs, sceneMovies[i])
+	movies := make([]models.MoviesScenes, len(mids))
+	for i, m := range mids {
+		movies[i] = models.MoviesScenes{
+			MovieID: m,
+		}
+	}
+
+	return &models.Scene{
+		Path:         getSceneStringValue(i, pathField),
+		Title:        &title,
+		Checksum:     &checksum,
+		Details:      &details,
+		URL:          getSceneStringPtr(i, urlField),
+		Rating:       getIntPtr(getRating(i)),
+		OCounter:     getOCounter(i),
+		Duration:     getSceneDuration(i),
+		Height:       getIntPtr(getHeight(i)),
+		Width:        getIntPtr(getWidth(i)),
+		Date:         getObjectDateObject(i),
+		StudioID:     studioID,
+		GalleryIDs:   gids,
+		PerformerIDs: pids,
+		TagIDs:       tids,
+		Movies:       movies,
+	}
+}
+
 func createScenes(ctx context.Context, sqb models.SceneReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
-		title := getSceneTitle(i)
-		checksum := getSceneStringValue(i, checksumField)
-		details := getSceneStringValue(i, "Details")
-
-		var studioID *int
-		if _, ok := sceneStudios[i]; ok {
-			v := studioIDs[sceneStudios[i]]
-			studioID = &v
-		}
-
-		gids := indexesToIDs(galleryIDs, sceneGalleries[i])
-		pids := indexesToIDs(performerIDs, scenePerformers[i])
-		tids := indexesToIDs(tagIDs, sceneTags[i])
-
-		mids := indexesToIDs(movieIDs, sceneMovies[i])
-		movies := make([]models.MoviesScenes, len(mids))
-		for i, m := range mids {
-			movies[i] = models.MoviesScenes{
-				MovieID: m,
-			}
-		}
-
-		scene := &models.Scene{
-			Path:         getSceneStringValue(i, pathField),
-			Title:        &title,
-			Checksum:     &checksum,
-			Details:      &details,
-			URL:          getSceneStringPtr(i, urlField),
-			Rating:       getIntPtr(getRating(i)),
-			OCounter:     getOCounter(i),
-			Duration:     getSceneDuration(i),
-			Height:       getIntPtr(getHeight(i)),
-			Width:        getIntPtr(getWidth(i)),
-			Date:         getObjectDateObject(i),
-			StudioID:     studioID,
-			GalleryIDs:   gids,
-			PerformerIDs: pids,
-			TagIDs:       tids,
-			Movies:       movies,
-		}
+		scene := makeScene(i)
 
 		if err := sqb.Create(ctx, scene); err != nil {
 			return fmt.Errorf("Error creating scene %v+: %s", scene, err.Error())
@@ -747,28 +771,40 @@ func getGalleryNullStringValue(index int, field string) sql.NullString {
 	return getPrefixedNullStringValue("gallery", index, field)
 }
 
+func makeGallery(i int, includeScenes bool) *models.Gallery {
+	var studioID *int
+	if _, ok := galleryStudios[i]; ok {
+		v := studioIDs[galleryStudios[i]]
+		studioID = &v
+	}
+
+	pids := indexesToIDs(performerIDs, galleryPerformers[i])
+	tids := indexesToIDs(tagIDs, galleryTags[i])
+
+	ret := &models.Gallery{
+		Path:         getStringPtr(getGalleryStringValue(i, pathField)),
+		Title:        getStringPtr(getGalleryStringValue(i, titleField)),
+		URL:          getStringPtrFromNullString(getGalleryNullStringValue(i, urlField)),
+		Checksum:     getGalleryStringValue(i, checksumField),
+		Rating:       getIntPtr(getRating(i)),
+		Date:         getObjectDateObject(i),
+		StudioID:     studioID,
+		PerformerIDs: pids,
+		TagIDs:       tids,
+	}
+
+	if includeScenes {
+		ret.SceneIDs = indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(i))
+	}
+
+	return ret
+}
+
 func createGalleries(ctx context.Context, gqb models.GalleryReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
-		var studioID *int
-		if _, ok := galleryStudios[i]; ok {
-			v := studioIDs[galleryStudios[i]]
-			studioID = &v
-		}
-
-		pids := indexesToIDs(performerIDs, galleryPerformers[i])
-		tids := indexesToIDs(tagIDs, galleryTags[i])
-
-		gallery := &models.Gallery{
-			Path:         getStringPtr(getGalleryStringValue(i, pathField)),
-			Title:        getStringPtr(getGalleryStringValue(i, titleField)),
-			URL:          getStringPtrFromNullString(getGalleryNullStringValue(i, urlField)),
-			Checksum:     getGalleryStringValue(i, checksumField),
-			Rating:       getIntPtr(getRating(i)),
-			Date:         getObjectDateObject(i),
-			StudioID:     studioID,
-			PerformerIDs: pids,
-			TagIDs:       tids,
-		}
+		// scene relationship will be created with scenes
+		const includeScenes = false
+		gallery := makeGallery(i, includeScenes)
 
 		err := gqb.Create(ctx, gallery)
 

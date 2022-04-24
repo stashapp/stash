@@ -13,6 +13,7 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -187,25 +188,45 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 	return ret
 }
 
+func MovieAppendUnique(e []models.MoviesScenes, toAdd models.MoviesScenes) []models.MoviesScenes {
+	for _, ee := range e {
+		if ee == toAdd {
+			return e
+		}
+	}
+
+	return append(e, toAdd)
+}
+
+func StashIDAppendUnique(e []models.StashID, toAdd models.StashID) []models.StashID {
+	for _, ee := range e {
+		if ee == toAdd {
+			return e
+		}
+	}
+
+	return append(e, toAdd)
+}
+
 func (r *sceneQueryRow) appendRelationships(i *models.Scene) {
 	if r.TagID.Valid {
-		i.TagIDs = append(i.TagIDs, r.TagID.int())
+		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, r.TagID.int())
 	}
 	if r.PerformerID.Valid {
-		i.PerformerIDs = append(i.PerformerIDs, r.PerformerID.int())
+		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, r.PerformerID.int())
 	}
 	if r.GalleryID.Valid {
-		i.GalleryIDs = append(i.GalleryIDs, r.GalleryID.int())
+		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, r.GalleryID.int())
 	}
 	if r.MovieID.Valid {
-		i.Movies = append(i.Movies, models.MoviesScenes{
+		i.Movies = MovieAppendUnique(i.Movies, models.MoviesScenes{
 			SceneID:    r.ID,
 			MovieID:    r.MovieID.int(),
 			SceneIndex: r.SceneIndex.intPtr(),
 		})
 	}
 	if r.StashID.Valid {
-		i.StashIDs = append(i.StashIDs, models.StashID{
+		i.StashIDs = StashIDAppendUnique(i.StashIDs, models.StashID{
 			StashID:  r.StashID.String,
 			Endpoint: r.Endpoint.String,
 		})

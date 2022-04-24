@@ -9,6 +9,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -107,13 +108,13 @@ func (r *imageQueryRow) resolve() *models.Image {
 
 func (r *imageQueryRow) appendRelationships(i *models.Image) {
 	if r.GalleryID.Valid {
-		i.GalleryIDs = append(i.GalleryIDs, r.GalleryID.int())
+		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, r.GalleryID.int())
 	}
 	if r.TagID.Valid {
-		i.TagIDs = append(i.TagIDs, r.TagID.int())
+		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, r.TagID.int())
 	}
 	if r.PerformerID.Valid {
-		i.PerformerIDs = append(i.PerformerIDs, r.PerformerID.int())
+		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, r.PerformerID.int())
 	}
 }
 
