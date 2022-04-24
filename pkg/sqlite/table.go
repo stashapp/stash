@@ -365,7 +365,6 @@ type moviesScenesRow struct {
 func (r moviesScenesRow) resolve(sceneID int) models.MoviesScenes {
 	return models.MoviesScenes{
 		MovieID:    r.MovieID.int(),
-		SceneID:    sceneID,
 		SceneIndex: r.SceneIndex.intPtr(),
 	}
 }

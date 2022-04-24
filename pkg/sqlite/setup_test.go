@@ -663,9 +663,17 @@ func getObjectDateObject(index int) *models.Date {
 	return &ret
 }
 
+func sceneStashID(i int) models.StashID {
+	return models.StashID{
+		StashID:  getSceneStringValue(i, "stashid"),
+		Endpoint: getSceneStringValue(i, "endpoint"),
+	}
+}
+
 func makeScene(i int) *models.Scene {
 	title := getSceneTitle(i)
 	checksum := getSceneStringValue(i, checksumField)
+	oshash := getSceneStringValue(i, "oshash")
 	details := getSceneStringValue(i, "Details")
 
 	var studioID *int
@@ -679,10 +687,14 @@ func makeScene(i int) *models.Scene {
 	tids := indexesToIDs(tagIDs, sceneTags[i])
 
 	mids := indexesToIDs(movieIDs, sceneMovies[i])
-	movies := make([]models.MoviesScenes, len(mids))
-	for i, m := range mids {
-		movies[i] = models.MoviesScenes{
-			MovieID: m,
+
+	var movies []models.MoviesScenes
+	if len(mids) > 0 {
+		movies = make([]models.MoviesScenes, len(mids))
+		for i, m := range mids {
+			movies[i] = models.MoviesScenes{
+				MovieID: m,
+			}
 		}
 	}
 
@@ -690,6 +702,7 @@ func makeScene(i int) *models.Scene {
 		Path:         getSceneStringValue(i, pathField),
 		Title:        &title,
 		Checksum:     &checksum,
+		OSHash:       &oshash,
 		Details:      &details,
 		URL:          getSceneStringPtr(i, urlField),
 		Rating:       getIntPtr(getRating(i)),
@@ -703,6 +716,9 @@ func makeScene(i int) *models.Scene {
 		PerformerIDs: pids,
 		TagIDs:       tids,
 		Movies:       movies,
+		StashIDs: []models.StashID{
+			sceneStashID(i),
+		},
 	}
 }
 

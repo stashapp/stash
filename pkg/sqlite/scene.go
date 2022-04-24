@@ -57,22 +57,22 @@ type sceneRow struct {
 	Rating           nullInt           `db:"rating"`
 	Organized        bool              `db:"organized"`
 	OCounter         int               `db:"o_counter"`
-	Size             nullString        `db:"size" json:"size"`
-	Duration         nullFloat64       `db:"duration" json:"duration"`
-	VideoCodec       nullString        `db:"video_codec" json:"video_codec"`
-	Format           nullString        `db:"format" json:"format_name"`
-	AudioCodec       nullString        `db:"audio_codec" json:"audio_codec"`
-	Width            nullInt           `db:"width" json:"width"`
-	Height           nullInt           `db:"height" json:"height"`
-	Framerate        nullFloat64       `db:"framerate" json:"framerate"`
-	Bitrate          nullInt64         `db:"bitrate" json:"bitrate"`
-	StudioID         nullInt           `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime      nullTime          `db:"file_mod_time" json:"file_mod_time"`
-	Phash            nullInt64         `db:"phash,omitempty" json:"phash"`
-	CreatedAt        time.Time         `db:"created_at" json:"created_at"`
-	UpdatedAt        time.Time         `db:"updated_at" json:"updated_at"`
-	Interactive      bool              `db:"interactive" json:"interactive"`
-	InteractiveSpeed nullInt           `db:"interactive_speed" json:"interactive_speed"`
+	Size             nullString        `db:"size"`
+	Duration         nullFloat64       `db:"duration"`
+	VideoCodec       nullString        `db:"video_codec"`
+	Format           nullString        `db:"format"`
+	AudioCodec       nullString        `db:"audio_codec"`
+	Width            nullInt           `db:"width"`
+	Height           nullInt           `db:"height"`
+	Framerate        nullFloat64       `db:"framerate"`
+	Bitrate          nullInt64         `db:"bitrate"`
+	StudioID         nullInt           `db:"studio_id,omitempty"`
+	FileModTime      nullTime          `db:"file_mod_time"`
+	Phash            nullInt64         `db:"phash,omitempty"`
+	CreatedAt        time.Time         `db:"created_at"`
+	UpdatedAt        time.Time         `db:"updated_at"`
+	Interactive      bool              `db:"interactive"`
+	InteractiveSpeed nullInt           `db:"interactive_speed"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -92,6 +92,7 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Size = newNullStringPtr(o.Size)
 	r.Duration = newNullFloat64Ptr(o.Duration)
 	r.VideoCodec = newNullStringPtr(o.VideoCodec)
+	r.Format = newNullStringPtr(o.Format)
 	r.AudioCodec = newNullStringPtr(o.AudioCodec)
 	r.Width = newNullIntPtr(o.Width)
 	r.Height = newNullIntPtr(o.Height)
@@ -128,6 +129,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullStringPtr("size", o.Size)
 	r.setNullFloat64Ptr("duration", o.Duration)
 	r.setNullStringPtr("video_codec", o.VideoCodec)
+	r.setNullStringPtr("format", o.Format)
 	r.setNullStringPtr("audio_codec", o.AudioCodec)
 	r.setNullIntPtr("width", o.Width)
 	r.setNullIntPtr("height", o.Height)
@@ -169,6 +171,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Size:             r.Size.stringPtr(),
 		Duration:         r.Duration.float64Ptr(),
 		VideoCodec:       r.VideoCodec.stringPtr(),
+		Format:           r.Format.stringPtr(),
 		AudioCodec:       r.AudioCodec.stringPtr(),
 		Width:            r.Width.intPtr(),
 		Height:           r.Height.intPtr(),
@@ -188,9 +191,9 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 	return ret
 }
 
-func MovieAppendUnique(e []models.MoviesScenes, toAdd models.MoviesScenes) []models.MoviesScenes {
+func movieAppendUnique(e []models.MoviesScenes, toAdd models.MoviesScenes) []models.MoviesScenes {
 	for _, ee := range e {
-		if ee == toAdd {
+		if ee.Equal(toAdd) {
 			return e
 		}
 	}
@@ -198,7 +201,7 @@ func MovieAppendUnique(e []models.MoviesScenes, toAdd models.MoviesScenes) []mod
 	return append(e, toAdd)
 }
 
-func StashIDAppendUnique(e []models.StashID, toAdd models.StashID) []models.StashID {
+func stashIDAppendUnique(e []models.StashID, toAdd models.StashID) []models.StashID {
 	for _, ee := range e {
 		if ee == toAdd {
 			return e
@@ -219,14 +222,13 @@ func (r *sceneQueryRow) appendRelationships(i *models.Scene) {
 		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, r.GalleryID.int())
 	}
 	if r.MovieID.Valid {
-		i.Movies = MovieAppendUnique(i.Movies, models.MoviesScenes{
-			SceneID:    r.ID,
+		i.Movies = movieAppendUnique(i.Movies, models.MoviesScenes{
 			MovieID:    r.MovieID.int(),
 			SceneIndex: r.SceneIndex.intPtr(),
 		})
 	}
 	if r.StashID.Valid {
-		i.StashIDs = StashIDAppendUnique(i.StashIDs, models.StashID{
+		i.StashIDs = stashIDAppendUnique(i.StashIDs, models.StashID{
 			StashID:  r.StashID.String,
 			Endpoint: r.Endpoint.String,
 		})
@@ -260,6 +262,7 @@ type sceneQueryBuilder struct {
 	repository
 
 	tableMgr *table
+	oCounterManager
 }
 
 var SceneReaderWriter = &sceneQueryBuilder{
@@ -268,7 +271,8 @@ var SceneReaderWriter = &sceneQueryBuilder{
 		idColumn:  idColumn,
 	},
 
-	tableMgr: sceneTableMgr,
+	tableMgr:        sceneTableMgr,
+	oCounterManager: oCounterManager{imageTableMgr},
 }
 
 func (qb *sceneQueryBuilder) table() exp.IdentifierExpression {
@@ -375,53 +379,6 @@ func (qb *sceneQueryBuilder) Update(ctx context.Context, updatedObject *models.S
 	}
 
 	return nil
-}
-
-func (qb *sceneQueryBuilder) getOCounter(ctx context.Context, id int) (int, error) {
-	q := dialect.From(qb.table()).Select("o_counter").Where(goqu.Ex{"id": id})
-
-	const single = true
-	var ret int
-	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		if err := rows.Scan(&ret); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (qb *sceneQueryBuilder) IncrementOCounter(ctx context.Context, id int) (int, error) {
-	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"o_counter": goqu.L("o_counter + 1"),
-	}); err != nil {
-		return 0, err
-	}
-
-	return qb.getOCounter(ctx, id)
-}
-
-func (qb *sceneQueryBuilder) DecrementOCounter(ctx context.Context, id int) (int, error) {
-	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"o_counter": goqu.L("o_counter - 1"),
-	}); err != nil {
-		return 0, err
-	}
-
-	return qb.getOCounter(ctx, id)
-}
-
-func (qb *sceneQueryBuilder) ResetOCounter(ctx context.Context, id int) (int, error) {
-	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"o_counter": 0,
-	}); err != nil {
-		return 0, err
-	}
-
-	return qb.getOCounter(ctx, id)
 }
 
 func (qb *sceneQueryBuilder) Destroy(ctx context.Context, id int) error {

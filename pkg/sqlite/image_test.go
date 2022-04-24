@@ -553,16 +553,13 @@ func Test_imageQueryBuilder_Find(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.Find(ctx, tt.id)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("imageQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
+			got, err := qb.Find(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-				assert.Equal(tt.want, got)
-				return nil
-			})
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -596,17 +593,14 @@ func Test_imageQueryBuilder_FindMany(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindMany(ctx, tt.ids)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("imageQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("imageQueryBuilder.FindMany() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+			got, err := qb.FindMany(ctx, tt.ids)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("imageQueryBuilder.FindMany() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -652,17 +646,14 @@ func Test_imageQueryBuilder_FindByChecksum(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindByChecksum(ctx, tt.checksum)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("imageQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("imageQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+			got, err := qb.FindByChecksum(ctx, tt.checksum)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("imageQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -708,17 +699,14 @@ func Test_imageQueryBuilder_FindByPath(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindByPath(ctx, tt.path)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("imageQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("imageQueryBuilder.FindByPath() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+			got, err := qb.FindByPath(ctx, tt.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("imageQueryBuilder.FindByPath() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

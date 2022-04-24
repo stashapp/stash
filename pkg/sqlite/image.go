@@ -145,6 +145,7 @@ type imageQueryBuilder struct {
 	repository
 
 	tableMgr *table
+	oCounterManager
 }
 
 var ImageReaderWriter = &imageQueryBuilder{
@@ -152,7 +153,8 @@ var ImageReaderWriter = &imageQueryBuilder{
 		tableName: imageTable,
 		idColumn:  idColumn,
 	},
-	tableMgr: imageTableMgr,
+	tableMgr:        imageTableMgr,
+	oCounterManager: oCounterManager{imageTableMgr},
 }
 
 func (qb *imageQueryBuilder) table() exp.IdentifierExpression {
@@ -243,68 +245,6 @@ func (qb *imageQueryBuilder) Update(ctx context.Context, updatedObject *models.I
 	}
 
 	return nil
-}
-
-func (qb *imageQueryBuilder) getOCounter(ctx context.Context, id int) (int, error) {
-	q := dialect.From(qb.table()).Select("o_counter").Where(goqu.Ex{"id": id})
-
-	const single = true
-	var ret int
-	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		if err := rows.Scan(&ret); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return 0, err
-	}
-
-	return ret, nil
-}
-
-func (qb *imageQueryBuilder) IncrementOCounter(ctx context.Context, id int) (int, error) {
-	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
-		return 0, err
-	}
-
-	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"o_counter": goqu.L("o_counter + 1"),
-	}); err != nil {
-		return 0, err
-	}
-
-	return qb.getOCounter(ctx, id)
-}
-
-func (qb *imageQueryBuilder) DecrementOCounter(ctx context.Context, id int) (int, error) {
-	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
-		return 0, err
-	}
-
-	table := qb.table()
-	q := dialect.Update(table).Set(goqu.Record{
-		"o_counter": goqu.L("o_counter - 1"),
-	}).Where(qb.tableMgr.byID(id), goqu.L("o_counter > 0"))
-
-	if _, err := exec(ctx, q); err != nil {
-		return 0, fmt.Errorf("updating %s: %w", table.GetTable(), err)
-	}
-
-	return qb.getOCounter(ctx, id)
-}
-
-func (qb *imageQueryBuilder) ResetOCounter(ctx context.Context, id int) (int, error) {
-	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
-		return 0, err
-	}
-
-	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"o_counter": 0,
-	}); err != nil {
-		return 0, err
-	}
-
-	return qb.getOCounter(ctx, id)
 }
 
 func (qb *imageQueryBuilder) Destroy(ctx context.Context, id int) error {

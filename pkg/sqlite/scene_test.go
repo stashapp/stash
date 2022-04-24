@@ -8,70 +8,992 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
+	"reflect"
 	"regexp"
 	"strconv"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestSceneFind(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		// assume that the first scene is sceneWithGalleryPath
-		sqb := sqlite.SceneReaderWriter
+func Test_sceneQueryBuilder_Create(t *testing.T) {
+	var (
+		path                   = "path"
+		title                  = "title"
+		checksum               = "checksum"
+		oshash                 = "oshash"
+		details                = "details"
+		url                    = "url"
+		rating                 = 3
+		ocounter               = 5
+		size                   = "1234"
+		duration               = 1.234
+		width                  = 640
+		height                 = 480
+		framerate              = 2.345
+		bitrate          int64 = 234
+		videoCodec             = "videoCodec"
+		audioCodec             = "audioCodec"
+		format                 = "format"
+		fileModTime            = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		phash            int64 = 4567
+		interactive            = true
+		interactiveSpeed       = 100
+		sceneIndex             = 123
+		sceneIndex2            = 234
+		endpoint1              = "endpoint1"
+		endpoint2              = "endpoint2"
+		stashID1               = "stashid1"
+		stashID2               = "stashid2"
 
-		const sceneIdx = 0
-		sceneID := sceneIDs[sceneIdx]
-		scene, err := sqb.Find(ctx, sceneID)
+		date = models.NewDate("2003-02-01")
+	)
 
-		if err != nil {
-			t.Errorf("Error finding scene: %s", err.Error())
-		}
+	tests := []struct {
+		name      string
+		newObject models.Scene
+		wantErr   bool
+	}{
+		{
+			"full",
+			models.Scene{
+				Path:             path,
+				Checksum:         &checksum,
+				OSHash:           &oshash,
+				Title:            &title,
+				Details:          &details,
+				URL:              &url,
+				Date:             &date,
+				Rating:           &rating,
+				Organized:        true,
+				OCounter:         ocounter,
+				Size:             &size,
+				Duration:         &duration,
+				VideoCodec:       &videoCodec,
+				AudioCodec:       &audioCodec,
+				Format:           &format,
+				Width:            &width,
+				Height:           &height,
+				Framerate:        &framerate,
+				Bitrate:          &bitrate,
+				StudioID:         &studioIDs[studioIdxWithScene],
+				FileModTime:      &fileModTime,
+				Phash:            &phash,
+				CreatedAt:        createdAt,
+				UpdatedAt:        updatedAt,
+				Interactive:      interactive,
+				InteractiveSpeed: &interactiveSpeed,
+				GalleryIDs:       []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:           []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs:     []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+				Movies: []models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithScene],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				},
+				StashIDs: []models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				},
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			models.Scene{
+				StudioID: &invalidID,
+			},
+			true,
+		},
+		{
+			"invalid gallery id",
+			models.Scene{
+				GalleryIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			models.Scene{
+				TagIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			models.Scene{
+				PerformerIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid movie id",
+			models.Scene{
+				Movies: []models.MoviesScenes{
+					{
+						MovieID:    invalidID,
+						SceneIndex: &sceneIndex,
+					},
+				},
+			},
+			true,
+		},
+	}
 
-		assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
+	qb := sqlite.SceneReaderWriter
 
-		sceneID = 0
-		scene, err = sqb.Find(ctx, sceneID)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		// expect error when finding non-existing image
-		assert.ErrorIs(t, err, sql.ErrNoRows)
-		assert.Nil(t, scene)
+			s := tt.newObject
+			if err := qb.Create(ctx, &s); (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
 
-		return nil
-	})
+			if tt.wantErr {
+				assert.Zero(s.ID)
+				return
+			}
+
+			assert.NotZero(s.ID)
+
+			copy := tt.newObject
+			copy.ID = s.ID
+
+			assert.Equal(copy, s)
+
+			// ensure can find the scene
+			found, err := qb.Find(ctx, s.ID)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			assert.Equal(copy, *found)
+
+			return
+		})
+	}
 }
 
-func TestSceneFindByPath(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+func Test_sceneQueryBuilder_Update(t *testing.T) {
+	var (
+		path                   = "path"
+		title                  = "title"
+		checksum               = "checksum"
+		oshash                 = "oshash"
+		details                = "details"
+		url                    = "url"
+		rating                 = 3
+		ocounter               = 5
+		size                   = "1234"
+		duration               = 1.234
+		width                  = 640
+		height                 = 480
+		framerate              = 2.345
+		bitrate          int64 = 234
+		videoCodec             = "videoCodec"
+		audioCodec             = "audioCodec"
+		format                 = "format"
+		fileModTime            = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+		createdAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		phash            int64 = 4567
+		interactive            = true
+		interactiveSpeed       = 100
+		sceneIndex             = 123
+		sceneIndex2            = 234
+		endpoint1              = "endpoint1"
+		endpoint2              = "endpoint2"
+		stashID1               = "stashid1"
+		stashID2               = "stashid2"
 
-		const sceneIdx = 1
-		scenePath := getSceneStringValue(sceneIdx, "Path")
-		scene, err := sqb.FindByPath(ctx, scenePath)
+		date = models.NewDate("2003-02-01")
+	)
 
-		if err != nil {
-			t.Errorf("Error finding scene: %s", err.Error())
-		}
+	tests := []struct {
+		name          string
+		updatedObject *models.Scene
+		wantErr       bool
+	}{
+		{
+			"full",
+			&models.Scene{
+				ID:               sceneIDs[sceneIdxWithGallery],
+				Path:             path,
+				Checksum:         &checksum,
+				OSHash:           &oshash,
+				Title:            &title,
+				Details:          &details,
+				URL:              &url,
+				Date:             &date,
+				Rating:           &rating,
+				Organized:        true,
+				OCounter:         ocounter,
+				Size:             &size,
+				Duration:         &duration,
+				VideoCodec:       &videoCodec,
+				AudioCodec:       &audioCodec,
+				Format:           &format,
+				Width:            &width,
+				Height:           &height,
+				Framerate:        &framerate,
+				Bitrate:          &bitrate,
+				StudioID:         &studioIDs[studioIdxWithScene],
+				FileModTime:      &fileModTime,
+				Phash:            &phash,
+				CreatedAt:        createdAt,
+				UpdatedAt:        updatedAt,
+				Interactive:      interactive,
+				InteractiveSpeed: &interactiveSpeed,
+				GalleryIDs:       []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:           []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs:     []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+				Movies: []models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithScene],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				},
+				StashIDs: []models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				},
+			},
+			false,
+		},
+		{
+			"clear nullables",
+			&models.Scene{
+				ID:       sceneIDs[sceneIdxWithSpacedName],
+				Checksum: &checksum,
+			},
+			false,
+		},
+		{
+			"clear gallery ids",
+			&models.Scene{
+				ID:       sceneIDs[sceneIdxWithGallery],
+				Checksum: &checksum,
+			},
+			false,
+		},
+		{
+			"clear tag ids",
+			&models.Scene{
+				ID:       sceneIDs[sceneIdxWithTag],
+				Checksum: &checksum,
+			},
+			false,
+		},
+		{
+			"clear performer ids",
+			&models.Scene{
+				ID:       sceneIDs[sceneIdxWithPerformer],
+				Checksum: &checksum,
+			},
+			false,
+		},
+		{
+			"clear movies",
+			&models.Scene{
+				ID:       sceneIDs[sceneIdxWithMovie],
+				Checksum: &checksum,
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			&models.Scene{
+				ID:       sceneIDs[sceneIdxWithGallery],
+				Checksum: &checksum,
+				StudioID: &invalidID,
+			},
+			true,
+		},
+		{
+			"invalid gallery id",
+			&models.Scene{
+				ID:         sceneIDs[sceneIdxWithGallery],
+				Checksum:   &checksum,
+				GalleryIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			&models.Scene{
+				ID:       sceneIDs[sceneIdxWithGallery],
+				Checksum: &checksum,
+				TagIDs:   []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			&models.Scene{
+				ID:           sceneIDs[sceneIdxWithGallery],
+				Checksum:     &checksum,
+				PerformerIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid movie id",
+			&models.Scene{
+				ID:       sceneIDs[sceneIdxWithSpacedName],
+				Checksum: &checksum,
+				Movies: []models.MoviesScenes{
+					{
+						MovieID:    invalidID,
+						SceneIndex: &sceneIndex,
+					},
+				},
+			},
+			true,
+		},
+	}
 
-		assert.Equal(t, sceneIDs[sceneIdx], scene.ID)
-		assert.Equal(t, scenePath, scene.Path)
+	qb := sqlite.SceneReaderWriter
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		scenePath = "not exist"
-		scene, err = sqb.FindByPath(ctx, scenePath)
+			copy := *tt.updatedObject
 
-		if err != nil {
-			t.Errorf("Error finding scene: %s", err.Error())
-		}
+			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-		assert.Nil(t, scene)
+			if tt.wantErr {
+				return
+			}
 
-		return nil
-	})
+			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			assert.Equal(copy, *s)
+
+			return
+		})
+	}
+}
+
+// func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
+// 	var (
+// 		path        = "path"
+// 		title       = "title"
+// 		checksum    = "checksum"
+// 		url         = "url"
+// 		rating      = 3
+// 		details     = "details"
+// 		fileModTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+// 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+// 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+// 	)
+
+// 	tests := []struct {
+// 		name    string
+// 		id      int
+// 		partial models.ScenePartial
+// 		want    models.Scene
+// 		wantErr bool
+// 	}{
+// 		{
+// 			"full",
+// 			sceneIDs[sceneIdxWithScene],
+// 			models.ScenePartial{
+// 				Path:         &path,
+// 				Checksum:     checksum,
+// 				Zip:          false,
+// 				Title:        &title,
+// 				URL:          &url,
+// 				Date:         &date,
+// 				Details:      &details,
+// 				Rating:       &rating,
+// 				Organized:    true,
+// 				StudioID:     &studioIDs[studioIdxWithScene],
+// 				FileModTime:  &fileModTime,
+// 				CreatedAt:    createdAt,
+// 				UpdatedAt:    updatedAt,
+// 				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
+// 				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+// 				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+// 			},
+// 			models.Scene{},
+// 			false,
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		qb := sqlite.SceneReaderWriter
+
+// 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+// 			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+// 			if (err != nil) != tt.wantErr {
+// 				t.Errorf("sceneQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+// 				return
+// 			}
+// 			if !reflect.DeepEqual(got, tt.want) {
+// 				t.Errorf("sceneQueryBuilder.UpdatePartial() = %v, want %v", got, tt.want)
+// 			}
+// 			return
+// 		})
+// 	}
+// }
+
+func Test_sceneQueryBuilder_IncrementOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"increment",
+			sceneIDs[1],
+			2,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.IncrementOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.IncrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("sceneQueryBuilder.IncrementOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_DecrementOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"decrement",
+			sceneIDs[2],
+			1,
+			false,
+		},
+		{
+			"zero",
+			sceneIDs[0],
+			0,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.DecrementOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.DecrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("sceneQueryBuilder.DecrementOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"decrement",
+			sceneIDs[2],
+			0,
+			false,
+		},
+		{
+			"zero",
+			sceneIDs[0],
+			0,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.ResetOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.ResetOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("sceneQueryBuilder.ResetOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_Destroy(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		wantErr bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdxWithGallery],
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			true,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			withRollbackTxn(func(ctx context.Context) error {
+				if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				// ensure cannot be found
+				i, err := qb.Find(ctx, tt.id)
+
+				assert.NotNil(err)
+				assert.Nil(i)
+				return nil
+			})
+		})
+	}
+}
+
+func makeSceneWithID(index int) *models.Scene {
+	ret := makeScene(index)
+	ret.ID = sceneIDs[index]
+
+	if ret.Date != nil && ret.Date.IsZero() {
+		ret.Date = nil
+	}
+
+	return ret
+}
+
+func Test_sceneQueryBuilder_Find(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    *models.Scene
+		wantErr bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdxWithSpacedName],
+			makeSceneWithID(sceneIdxWithSpacedName),
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			nil,
+			true,
+		},
+		{
+			"with galleries",
+			sceneIDs[sceneIdxWithGallery],
+			makeSceneWithID(sceneIdxWithGallery),
+			false,
+		},
+		{
+			"with performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			makeSceneWithID(sceneIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			makeSceneWithID(sceneIdxWithTwoTags),
+			false,
+		},
+		{
+			"with movies",
+			sceneIDs[sceneIdxWithMovie],
+			makeSceneWithID(sceneIdxWithMovie),
+			false,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.Find(ctx, tt.id)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+
+				assert.Equal(tt.want, got)
+				return nil
+			})
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_FindMany(t *testing.T) {
+	tests := []struct {
+		name    string
+		ids     []int
+		want    []*models.Scene
+		wantErr bool
+	}{
+		{
+			"valid with relationships",
+			[]int{
+				sceneIDs[sceneIdxWithGallery],
+				sceneIDs[sceneIdxWithTwoPerformers],
+				sceneIDs[sceneIdxWithTwoTags],
+				sceneIDs[sceneIdxWithMovie],
+			},
+			[]*models.Scene{
+				makeSceneWithID(sceneIdxWithGallery),
+				makeSceneWithID(sceneIdxWithTwoPerformers),
+				makeSceneWithID(sceneIdxWithTwoTags),
+				makeSceneWithID(sceneIdxWithMovie),
+			},
+			false,
+		},
+		{
+			"invalid",
+			[]int{sceneIDs[sceneIdxWithGallery], sceneIDs[sceneIdxWithTwoPerformers], invalidID},
+			nil,
+			true,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindMany(ctx, tt.ids)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_FindByChecksum(t *testing.T) {
+	getChecksum := func(index int) string {
+		return getSceneStringValue(index, checksumField)
+	}
+
+	tests := []struct {
+		name     string
+		checksum string
+		want     *models.Scene
+		wantErr  bool
+	}{
+		{
+			"valid",
+			getChecksum(sceneIdxWithSpacedName),
+			makeSceneWithID(sceneIdxWithSpacedName),
+			false,
+		},
+		{
+			"invalid",
+			"invalid checksum",
+			nil,
+			false,
+		},
+		{
+			"with galleries",
+			getChecksum(sceneIdxWithGallery),
+			makeSceneWithID(sceneIdxWithGallery),
+			false,
+		},
+		{
+			"with performers",
+			getChecksum(sceneIdxWithTwoPerformers),
+			makeSceneWithID(sceneIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			getChecksum(sceneIdxWithTwoTags),
+			makeSceneWithID(sceneIdxWithTwoTags),
+			false,
+		},
+		{
+			"with movies",
+			getChecksum(sceneIdxWithMovie),
+			makeSceneWithID(sceneIdxWithMovie),
+			false,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.FindByChecksum(ctx, tt.checksum)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("sceneQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
+				}
+				return nil
+			})
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
+	getOSHash := func(index int) string {
+		return getSceneStringValue(index, "oshash")
+	}
+
+	tests := []struct {
+		name    string
+		oshash  string
+		want    *models.Scene
+		wantErr bool
+	}{
+		{
+			"valid",
+			getOSHash(sceneIdxWithSpacedName),
+			makeSceneWithID(sceneIdxWithSpacedName),
+			false,
+		},
+		{
+			"invalid",
+			"invalid oshash",
+			nil,
+			false,
+		},
+		{
+			"with galleries",
+			getOSHash(sceneIdxWithGallery),
+			makeSceneWithID(sceneIdxWithGallery),
+			false,
+		},
+		{
+			"with performers",
+			getOSHash(sceneIdxWithTwoPerformers),
+			makeSceneWithID(sceneIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			getOSHash(sceneIdxWithTwoTags),
+			makeSceneWithID(sceneIdxWithTwoTags),
+			false,
+		},
+		{
+			"with movies",
+			getOSHash(sceneIdxWithMovie),
+			makeSceneWithID(sceneIdxWithMovie),
+			false,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.FindByOSHash(ctx, tt.oshash)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.FindByOSHash() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("sceneQueryBuilder.FindByOSHash() = %v, want %v", got, tt.want)
+				}
+				return nil
+			})
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
+	getPath := func(index int) string {
+		return getSceneStringValue(index, pathField)
+	}
+
+	tests := []struct {
+		name    string
+		path    string
+		want    *models.Scene
+		wantErr bool
+	}{
+		{
+			"valid",
+			getPath(sceneIdxWithSpacedName),
+			makeSceneWithID(sceneIdxWithSpacedName),
+			false,
+		},
+		{
+			"invalid",
+			"invalid path",
+			nil,
+			false,
+		},
+		{
+			"with galleries",
+			getPath(sceneIdxWithGallery),
+			makeSceneWithID(sceneIdxWithGallery),
+			false,
+		},
+		{
+			"with performers",
+			getPath(sceneIdxWithTwoPerformers),
+			makeSceneWithID(sceneIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			getPath(sceneIdxWithTwoTags),
+			makeSceneWithID(sceneIdxWithTwoTags),
+			false,
+		},
+		{
+			"with movies",
+			getPath(sceneIdxWithMovie),
+			makeSceneWithID(sceneIdxWithMovie),
+			false,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.FindByPath(ctx, tt.path)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("sceneQueryBuilder.FindByPath() = %v, want %v", got, tt.want)
+				}
+				return nil
+			})
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_FindByGalleryID(t *testing.T) {
+	tests := []struct {
+		name      string
+		galleryID int
+		want      []*models.Scene
+		wantErr   bool
+	}{
+		{
+			"valid",
+			galleryIDs[galleryIdxWithScene],
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGallery)},
+			false,
+		},
+		{
+			"none",
+			galleryIDs[galleryIdx1WithPerformer],
+			nil,
+			false,
+		},
+	}
+
+	qb := sqlite.SceneReaderWriter
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByGalleryID(ctx, tt.galleryID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindByGalleryID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+			return
+		})
+	}
 }
 
 func TestSceneCountByPerformerID(t *testing.T) {
@@ -1855,12 +2777,6 @@ func TestSceneQueryQTrim(t *testing.T) {
 	}
 }
 
-// TODO Update
-// TODO IncrementOCounter
-// TODO DecrementOCounter
-// TODO ResetOCounter
-// TODO Destroy
-// TODO FindByChecksum
 // TODO Count
 // TODO SizeCount
 // TODO All
