@@ -10,10 +10,10 @@ type Gallery struct {
 	Path        *string    `json:"path"`
 	Checksum    string     `json:"checksum"`
 	Zip         bool       `json:"zip"`
-	Title       *string    `json:"title"`
-	URL         *string    `json:"url"`
+	Title       string     `json:"title"`
+	URL         string     `json:"url"`
 	Date        *Date      `json:"date"`
-	Details     *string    `json:"details"`
+	Details     string     `json:"details"`
 	Rating      *int       `json:"rating"`
 	Organized   bool       `json:"organized"`
 	StudioID    *int       `json:"studio_id"`
@@ -32,10 +32,10 @@ type GalleryPartial struct {
 	Path        **string
 	Checksum    *string
 	Zip         *bool
-	Title       **string
-	URL         **string
+	Title       *string
+	URL         *string
 	Date        **Date
-	Details     **string
+	Details     *string
 	Rating      **int
 	Organized   *bool
 	StudioID    **int
@@ -83,8 +83,8 @@ func (s *Gallery) SetFile(f File) {
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
 func (s Gallery) GetTitle() string {
-	if s.Title != nil {
-		return *s.Title
+	if s.Title != "" {
+		return s.Title
 	}
 
 	if s.Path != nil {

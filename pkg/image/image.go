@@ -225,8 +225,8 @@ func IsCover(img *models.Image) bool {
 }
 
 func GetTitle(s *models.Image) string {
-	if s.Title != nil {
-		return *s.Title
+	if s.Title != "" {
+		return s.Title
 	}
 
 	_, fn := file.ZipFilePath(s.Path)

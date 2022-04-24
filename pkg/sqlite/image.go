@@ -42,7 +42,7 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Checksum = i.Checksum
 	r.Path = i.Path
-	r.Title = newNullStringPtr(i.Title)
+	r.Title = newNullString(i.Title)
 	r.Rating = newNullIntPtr(i.Rating)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
@@ -88,7 +88,7 @@ func (r *imageQueryRow) resolve() *models.Image {
 		ID:          r.ID,
 		Checksum:    r.Checksum,
 		Path:        r.Path,
-		Title:       r.Title.stringPtr(),
+		Title:       r.Title.String,
 		Rating:      r.Rating.intPtr(),
 		Organized:   r.Organized,
 		OCounter:    r.OCounter,

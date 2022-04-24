@@ -154,7 +154,7 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retG
 			title := fsutil.GetNameFromPath(path, scanner.StripFileExtension)
 			g = &models.Gallery{
 				Zip:       true,
-				Title:     &title,
+				Title:     title,
 				CreatedAt: currentTime,
 				UpdatedAt: currentTime,
 			}

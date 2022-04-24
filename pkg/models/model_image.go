@@ -11,7 +11,7 @@ type Image struct {
 	ID          int        `json:"id"`
 	Checksum    string     `json:"checksum"`
 	Path        string     `json:"path"`
-	Title       *string    `json:"title"`
+	Title       string     `json:"title"`
 	Rating      *int       `json:"rating"`
 	Organized   bool       `json:"organized"`
 	OCounter    int        `json:"o_counter"`
@@ -67,8 +67,8 @@ func (i *Image) SetFile(f File) {
 // GetTitle returns the title of the image. If the Title field is empty,
 // then the base filename is returned.
 func (i *Image) GetTitle() string {
-	if i.Title != nil {
-		return *i.Title
+	if i.Title != "" {
+		return i.Title
 	}
 
 	return filepath.Base(i.Path)

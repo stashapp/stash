@@ -97,16 +97,6 @@ func (t changesetTranslator) stringPtr(value *string, field string) *string {
 	return value
 }
 
-func (t changesetTranslator) stringDblPtr(value *string, field string) **string {
-	if !t.hasField(field) {
-		return nil
-	}
-
-	v := &value
-
-	return v
-}
-
 func (t changesetTranslator) sqliteDate(value *string, field string) *models.SQLiteDate {
 	if !t.hasField(field) {
 		return nil

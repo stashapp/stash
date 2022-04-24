@@ -42,14 +42,17 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	// Populate a new performer from the input
 	currentTime := time.Now()
 	newGallery := models.Gallery{
-		Title:     &input.Title,
+		Title:     input.Title,
 		Checksum:  checksum,
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
-	newGallery.URL = input.URL
-	newGallery.Details = input.Details
-	newGallery.URL = input.URL
+	if input.URL != nil {
+		newGallery.URL = *input.URL
+	}
+	if input.Details != nil {
+		newGallery.Details = *input.Details
+	}
 
 	if input.Date != nil {
 		d := models.NewDate(*input.Date)
@@ -191,11 +194,11 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 			updatedGallery.Checksum = &checksum
 		}
 
-		updatedGallery.Title = &input.Title
+		updatedGallery.Title = input.Title
 	}
 
-	updatedGallery.Details = translator.stringDblPtr(input.Details, "details")
-	updatedGallery.URL = translator.stringDblPtr(input.URL, "url")
+	updatedGallery.Details = translator.stringPtr(input.Details, "details")
+	updatedGallery.URL = translator.stringPtr(input.URL, "url")
 	updatedGallery.Date = translator.dateDblPtr(input.Date, "date")
 	updatedGallery.Rating = translator.intDblPtr(input.Rating, "rating")
 	updatedGallery.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")
@@ -244,8 +247,8 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 		UpdatedAt: &updatedTime,
 	}
 
-	updatedGallery.Details = translator.stringDblPtr(input.Details, "details")
-	updatedGallery.URL = translator.stringDblPtr(input.URL, "url")
+	updatedGallery.Details = translator.stringPtr(input.Details, "details")
+	updatedGallery.URL = translator.stringPtr(input.URL, "url")
 	updatedGallery.Date = translator.dateDblPtr(input.Date, "date")
 	updatedGallery.Rating = translator.intDblPtr(input.Rating, "rating")
 	updatedGallery.StudioID = translator.intDblPtrFromString(input.StudioID, "studio_id")

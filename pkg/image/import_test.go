@@ -422,11 +422,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.ImageReaderWriter{}
 
 	image := models.Image{
-		Title: &title,
+		Title: title,
 	}
 
 	imageErr := models.Image{
-		Title: &imageNameErr,
+		Title: imageNameErr,
 	}
 
 	i := Importer{
@@ -457,11 +457,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.ImageReaderWriter{}
 
 	image := models.Image{
-		Title: &title,
+		Title: title,
 	}
 
 	imageErr := models.Image{
-		Title: &imageNameErr,
+		Title: imageNameErr,
 	}
 
 	i := Importer{

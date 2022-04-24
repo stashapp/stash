@@ -177,7 +177,7 @@ func (scanner *Scanner) ScanNew(ctx context.Context, f file.SourceFile) (retImag
 		}
 		newImage.SetFile(*scanned)
 		fn := GetFilename(newImage, scanner.StripFileExtension)
-		newImage.Title = &fn
+		newImage.Title = fn
 
 		if err := SetFileDetails(newImage); err != nil {
 			logger.Error(err.Error())

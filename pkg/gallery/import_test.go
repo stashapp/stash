@@ -82,12 +82,12 @@ func TestImporterPreImport(t *testing.T) {
 	expectedGallery := models.Gallery{
 		Path:      &path,
 		Checksum:  checksum,
-		Title:     &title,
+		Title:     title,
 		Date:      &dateObj,
-		Details:   &details,
+		Details:   details,
 		Rating:    &rating,
 		Organized: organized,
-		URL:       &url,
+		URL:       url,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
@@ -388,11 +388,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.GalleryReaderWriter{}
 
 	gallery := models.Gallery{
-		Title: &title,
+		Title: title,
 	}
 
 	galleryErr := models.Gallery{
-		Title: &galleryNameErr,
+		Title: galleryNameErr,
 	}
 
 	i := Importer{
@@ -422,7 +422,7 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.GalleryReaderWriter{}
 
 	gallery := models.Gallery{
-		Title: &title,
+		Title: title,
 	}
 
 	i := Importer{

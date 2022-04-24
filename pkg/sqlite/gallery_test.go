@@ -44,10 +44,10 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				Path:         &path,
 				Checksum:     checksum,
 				Zip:          false,
-				Title:        &title,
-				URL:          &url,
+				Title:        title,
+				URL:          url,
 				Date:         &date,
-				Details:      &details,
+				Details:      details,
 				Rating:       &rating,
 				Organized:    true,
 				StudioID:     &studioIDs[studioIdxWithScene],
@@ -153,10 +153,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				Path:         &path,
 				Checksum:     checksum,
 				Zip:          false,
-				Title:        &title,
-				URL:          &url,
+				Title:        title,
+				URL:          url,
 				Date:         &date,
-				Details:      &details,
+				Details:      details,
 				Rating:       &rating,
 				Organized:    true,
 				StudioID:     &studioIDs[studioIdxWithScene],
@@ -1001,7 +1001,7 @@ func TestGalleryQueryURL(t *testing.T) {
 
 	verifyFn := func(g *models.Gallery) {
 		t.Helper()
-		verifyStringPtr(t, g.URL, urlCriterion)
+		verifyString(t, g.URL, urlCriterion)
 	}
 
 	verifyGalleryQuery(t, filter, verifyFn)

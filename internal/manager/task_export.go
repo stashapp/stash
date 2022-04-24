@@ -635,12 +635,9 @@ func (t *ExportTask) ExportGalleries(ctx context.Context, workers int, repo mode
 		}
 
 		var path string
-		var title string
+		title := gallery.Title
 		if gallery.Path != nil {
 			path = *gallery.Path
-		}
-		if gallery.Title != nil {
-			title = *gallery.Title
 		}
 
 		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathNameMapping{

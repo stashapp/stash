@@ -45,7 +45,7 @@ var (
 func createFullImage(id int) models.Image {
 	return models.Image{
 		ID:        id,
-		Title:     &title,
+		Title:     title,
 		Checksum:  checksum,
 		Height:    &height,
 		OCounter:  ocounter,

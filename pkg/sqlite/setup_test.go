@@ -621,6 +621,14 @@ func getStringPtr(r string) *string {
 	return &r
 }
 
+func getEmptyStringFromPtr(v *string) string {
+	if v == nil {
+		return ""
+	}
+
+	return *v
+}
+
 func getOCounter(index int) int {
 	return index % 3
 }
@@ -772,7 +780,7 @@ func makeImage(i int) *models.Image {
 
 	return &models.Image{
 		Path:         getImagePath(i),
-		Title:        &title,
+		Title:        title,
 		Checksum:     getImageStringValue(i, checksumField),
 		Rating:       getIntPtr(getRating(i)),
 		OCounter:     getOCounter(i),
@@ -821,8 +829,8 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 
 	ret := &models.Gallery{
 		Path:         getStringPtr(getGalleryStringValue(i, pathField)),
-		Title:        getStringPtr(getGalleryStringValue(i, titleField)),
-		URL:          getStringPtrFromNullString(getGalleryNullStringValue(i, urlField)),
+		Title:        getGalleryStringValue(i, titleField),
+		URL:          getGalleryNullStringValue(i, urlField).String,
 		Checksum:     getGalleryStringValue(i, checksumField),
 		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDateObject(i),

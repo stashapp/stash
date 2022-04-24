@@ -119,7 +119,7 @@ func (t *ScanTask) associateImageWithFolderGallery(ctx context.Context, imageID 
 			Path:      &path,
 			CreatedAt: currentTime,
 			UpdatedAt: currentTime,
-			Title:     &title,
+			Title:     title,
 		}
 
 		logger.Infof("Creating gallery for folder %s", path)

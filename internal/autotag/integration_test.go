@@ -226,7 +226,7 @@ func makeImage(name string, expectedResult bool) *models.Image {
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		image.Title = &name
+		image.Title = name
 	}
 
 	return image
@@ -286,7 +286,7 @@ func makeGallery(name string, expectedResult bool) *models.Gallery {
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		gallery.Title = &name
+		gallery.Title = name
 	}
 
 	return gallery
@@ -545,9 +545,9 @@ func TestParsePerformerImages(t *testing.T) {
 			}
 
 			// title is only set on images where we expect performer to be set
-			if image.Title != nil && *image.Title == image.Path && len(performers) == 0 {
+			if image.Title == image.Path && len(performers) == 0 {
 				t.Errorf("Did not set performer '%s' for path '%s'", testName, image.Path)
-			} else if (image.Title == nil || *image.Title != image.Path) && len(performers) > 0 {
+			} else if image.Title != image.Path && len(performers) > 0 {
 				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, image.Path)
 			}
 		}
@@ -595,14 +595,14 @@ func TestParseStudioImages(t *testing.T) {
 				}
 			} else {
 				// title is only set on images where we expect studio to be set
-				if image.Title != nil && *image.Title == image.Path {
+				if image.Title == image.Path {
 					if image.StudioID == nil {
 						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path)
 					} else if *image.StudioID != studios[1].ID {
 						t.Errorf("Incorrect studio id %d set for path '%s'", *image.StudioID, image.Path)
 					}
 
-				} else if (image.Title == nil || *image.Title != image.Path) && image.StudioID != nil && *image.StudioID == studios[1].ID {
+				} else if image.Title != image.Path && image.StudioID != nil && *image.StudioID == studios[1].ID {
 					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path)
 				}
 			}
@@ -653,9 +653,9 @@ func TestParseTagImages(t *testing.T) {
 			}
 
 			// title is only set on images where we expect performer to be set
-			if image.Title != nil && *image.Title == image.Path && len(tags) == 0 {
+			if image.Title == image.Path && len(tags) == 0 {
 				t.Errorf("Did not set tag '%s' for path '%s'", testName, image.Path)
-			} else if (image.Title == nil || *image.Title != image.Path) && len(tags) > 0 {
+			} else if image.Title != image.Path && len(tags) > 0 {
 				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, image.Path)
 			}
 		}
@@ -700,9 +700,9 @@ func TestParsePerformerGalleries(t *testing.T) {
 			}
 
 			// title is only set on galleries where we expect performer to be set
-			if gallery.Title != nil && *gallery.Title == *gallery.Path && len(performers) == 0 {
+			if gallery.Title == *gallery.Path && len(performers) == 0 {
 				t.Errorf("Did not set performer '%s' for path '%s'", testName, *gallery.Path)
-			} else if (gallery.Title == nil || *gallery.Title != *gallery.Path) && len(performers) > 0 {
+			} else if gallery.Title != *gallery.Path && len(performers) > 0 {
 				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, *gallery.Path)
 			}
 		}
@@ -750,14 +750,14 @@ func TestParseStudioGalleries(t *testing.T) {
 				}
 			} else {
 				// title is only set on galleries where we expect studio to be set
-				if gallery.Title != nil && *gallery.Title == *gallery.Path {
+				if gallery.Title == *gallery.Path {
 					if gallery.StudioID == nil {
 						t.Errorf("Did not set studio '%s' for path '%s'", testName, *gallery.Path)
 					} else if *gallery.StudioID != studios[1].ID {
 						t.Errorf("Incorrect studio id %d set for path '%s'", *gallery.StudioID, *gallery.Path)
 					}
 
-				} else if (gallery.Title == nil || *gallery.Title != *gallery.Path) && (gallery.StudioID != nil && *gallery.StudioID == studios[1].ID) {
+				} else if gallery.Title != *gallery.Path && (gallery.StudioID != nil && *gallery.StudioID == studios[1].ID) {
 					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, *gallery.Path)
 				}
 			}
@@ -808,9 +808,9 @@ func TestParseTagGalleries(t *testing.T) {
 			}
 
 			// title is only set on galleries where we expect performer to be set
-			if gallery.Title != nil && *gallery.Title == *gallery.Path && len(tags) == 0 {
+			if gallery.Title == *gallery.Path && len(tags) == 0 {
 				t.Errorf("Did not set tag '%s' for path '%s'", testName, *gallery.Path)
-			} else if (gallery.Title == nil || *gallery.Title != *gallery.Path) && len(tags) > 0 {
+			} else if gallery.Title != *gallery.Path && len(tags) > 0 {
 				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, *gallery.Path)
 			}
 		}

@@ -44,12 +44,12 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.Path = newNullStringPtr(o.Path)
 	r.Checksum = o.Checksum
 	r.Zip = o.Zip
-	r.Title = newNullStringPtr(o.Title)
-	r.URL = newNullStringPtr(o.URL)
+	r.Title = newNullString(o.Title)
+	r.URL = newNullString(o.URL)
 	if o.Date != nil {
 		_ = r.Date.Scan(o.Date.Time)
 	}
-	r.Details = newNullStringPtr(o.Details)
+	r.Details = newNullString(o.Details)
 	r.Rating = newNullIntPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = newNullIntPtr(o.StudioID)
@@ -66,14 +66,14 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullStringPtr("path", o.Path)
 	r.setString("checksum", o.Checksum)
 	r.setBool("zip", o.Zip)
-	r.setNullStringPtr("title", o.Title)
-	r.setNullStringPtr("url", o.URL)
+	r.setNullString("title", o.Title)
+	r.setNullString("url", o.URL)
 	if o.Date != nil {
 		d := models.SQLiteDate{}
 		_ = d.Scan(*o.Date)
 		r.set("date", d)
 	}
-	r.setNullStringPtr("details", o.Details)
+	r.setNullString("details", o.Details)
 	r.setNullIntPtr("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullIntPtr("studio_id", o.StudioID)
@@ -96,10 +96,10 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		Path:        r.Path.stringPtr(),
 		Checksum:    r.Checksum,
 		Zip:         r.Zip,
-		Title:       r.Title.stringPtr(),
-		URL:         r.URL.stringPtr(),
+		Title:       r.Title.String,
+		URL:         r.URL.String,
 		Date:        r.Date.DatePtr(),
-		Details:     r.Details.stringPtr(),
+		Details:     r.Details.String,
 		Rating:      r.Rating.intPtr(),
 		Organized:   r.Organized,
 		StudioID:    r.StudioID.intPtr(),

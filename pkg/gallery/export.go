@@ -14,6 +14,9 @@ import (
 func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	newGalleryJSON := jsonschema.Gallery{
 		Checksum:  gallery.Checksum,
+		Title:     gallery.Title,
+		URL:       gallery.URL,
+		Details:   gallery.Details,
 		Zip:       gallery.Zip,
 		CreatedAt: json.JSONTime{Time: gallery.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt},
@@ -27,14 +30,6 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 		newGalleryJSON.FileModTime = json.JSONTime{Time: *gallery.FileModTime}
 	}
 
-	if gallery.Title != nil {
-		newGalleryJSON.Title = *gallery.Title
-	}
-
-	if gallery.URL != nil {
-		newGalleryJSON.URL = *gallery.URL
-	}
-
 	if gallery.Date != nil {
 		newGalleryJSON.Date = gallery.Date.String()
 	}
@@ -44,10 +39,6 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	}
 
 	newGalleryJSON.Organized = gallery.Organized
-
-	if gallery.Details != nil {
-		newGalleryJSON.Details = *gallery.Details
-	}
 
 	return &newGalleryJSON, nil
 }

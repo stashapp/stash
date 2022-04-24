@@ -23,8 +23,13 @@ func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret["checksum"] = stringPtrToString(scene.Checksum)
 	ret["oshash"] = stringPtrToString(scene.OSHash)
 	ret["filename"] = filepath.Base(scene.Path)
-	ret["title"] = scene.Title
-	ret["url"] = scene.URL
+
+	if scene.Title != "" {
+		ret["title"] = scene.Title
+	}
+	if scene.URL != "" {
+		ret["url"] = scene.URL
+	}
 	return ret
 }
 
@@ -58,12 +63,12 @@ func queryURLParametersFromGallery(gallery *models.Gallery) queryURLParameters {
 	if gallery.Path != nil {
 		ret["filename"] = filepath.Base(*gallery.Path)
 	}
-	if gallery.Title != nil {
-		ret["title"] = *gallery.Title
+	if gallery.Title != "" {
+		ret["title"] = gallery.Title
 	}
 
-	if gallery.URL != nil {
-		ret["url"] = *gallery.URL
+	if gallery.URL != "" {
+		ret["url"] = gallery.URL
 	}
 
 	return ret

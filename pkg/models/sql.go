@@ -26,14 +26,6 @@ func NullInt64(v int64) sql.NullInt64 {
 	}
 }
 
-func stringDblPtrToPtr(v **string) *string {
-	if v == nil {
-		return nil
-	}
-
-	return *v
-}
-
 func intDblPtrToPtr(v **int) *int {
 	if v == nil {
 		return nil

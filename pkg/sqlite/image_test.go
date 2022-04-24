@@ -40,7 +40,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			models.Image{
 				Path:         path,
 				Checksum:     checksum,
-				Title:        &title,
+				Title:        title,
 				Rating:       &rating,
 				Organized:    true,
 				OCounter:     ocounter,
@@ -147,7 +147,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID:           imageIDs[imageIdxWithGallery],
 				Checksum:     checksum,
-				Title:        &title,
+				Title:        title,
 				Rating:       &rating,
 				Organized:    true,
 				OCounter:     ocounter,

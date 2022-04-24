@@ -53,13 +53,13 @@ func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.G
 	}
 
 	if galleryJSON.Title != "" {
-		newGallery.Title = &galleryJSON.Title
+		newGallery.Title = galleryJSON.Title
 	}
 	if galleryJSON.Details != "" {
-		newGallery.Details = &galleryJSON.Details
+		newGallery.Details = galleryJSON.Details
 	}
 	if galleryJSON.URL != "" {
-		newGallery.URL = &galleryJSON.URL
+		newGallery.URL = galleryJSON.URL
 	}
 	if galleryJSON.Date != "" {
 		d := models.NewDate(galleryJSON.Date)

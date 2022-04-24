@@ -15,12 +15,9 @@ import (
 func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON := jsonschema.Image{
 		Checksum:  image.Checksum,
+		Title:     image.Title,
 		CreatedAt: json.JSONTime{Time: image.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: image.UpdatedAt},
-	}
-
-	if image.Title != nil {
-		newImageJSON.Title = *image.Title
 	}
 
 	if image.Rating != nil {

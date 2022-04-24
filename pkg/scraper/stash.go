@@ -336,9 +336,9 @@ func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
 
 	return models.GalleryUpdateInput{
 		ID:      strconv.Itoa(gallery.ID),
-		Title:   gallery.Title,
-		Details: gallery.Details,
-		URL:     gallery.URL,
+		Title:   &gallery.Title,
+		Details: &gallery.Details,
+		URL:     &gallery.URL,
 		Date:    dateToStringPtr(gallery.Date),
 	}
 }
