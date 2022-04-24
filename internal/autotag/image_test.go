@@ -85,9 +85,9 @@ func TestImageStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockImageReader *mocks.ImageReaderWriter, test pathTestTable) {
 		if test.Matches {
-			expectedStudioID := &studioID
+			expectedStudioID := studioID
 			mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
-				StudioID: &expectedStudioID,
+				StudioID: models.NewOptionalInt(expectedStudioID),
 			}).Return(nil, nil).Once()
 		}
 

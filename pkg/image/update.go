@@ -13,9 +13,8 @@ type PartialUpdater interface {
 }
 
 func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime time.Time) (*models.Image, error) {
-	ptr := &modTime
 	return qb.UpdatePartial(ctx, id, models.ImagePartial{
-		FileModTime: &ptr,
+		FileModTime: models.NewOptionalTime(modTime),
 	})
 }
 

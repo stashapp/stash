@@ -60,19 +60,19 @@ type imageRowRecord struct {
 }
 
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
-	r.setString("checksum", i.Checksum)
-	r.setString("path", i.Path)
-	r.setNullStringPtr("title", i.Title)
-	r.setNullIntPtr("rating", i.Rating)
-	r.setBool("organized", i.Organized)
-	r.setInt("o_counter", i.OCounter)
-	r.setNullInt64Ptr("size", i.Size)
-	r.setNullIntPtr("width", i.Width)
-	r.setNullIntPtr("height", i.Height)
-	r.setNullIntPtr("studio_id", i.StudioID)
-	r.setNullTimePtr("file_mod_time", i.FileModTime)
-	r.setTime("created_at", i.CreatedAt)
-	r.setTime("updated_at", i.UpdatedAt)
+	r.setOptionalString("checksum", i.Checksum)
+	r.setOptionalString("path", i.Path)
+	r.setOptionalNullString("title", i.Title)
+	r.setOptionalNullInt("rating", i.Rating)
+	r.setOptionalBool("organized", i.Organized)
+	r.setOptionalInt("o_counter", i.OCounter)
+	r.setOptionalNullInt64("size", i.Size)
+	r.setOptionalNullInt("width", i.Width)
+	r.setOptionalNullInt("height", i.Height)
+	r.setOptionalNullInt("studio_id", i.StudioID)
+	r.setOptionalNullTime("file_mod_time", i.FileModTime)
+	r.setOptionalTime("created_at", i.CreatedAt)
+	r.setOptionalTime("updated_at", i.UpdatedAt)
 }
 
 type imageQueryRow struct {

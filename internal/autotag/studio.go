@@ -34,9 +34,8 @@ func addImageStudio(ctx context.Context, imageWriter image.PartialUpdater, i *mo
 	}
 
 	// set the studio id
-	s := &studioID
 	imagePartial := models.ImagePartial{
-		StudioID: &s,
+		StudioID: models.NewOptionalInt(studioID),
 	}
 
 	if _, err := imageWriter.UpdatePartial(ctx, i.ID, imagePartial); err != nil {

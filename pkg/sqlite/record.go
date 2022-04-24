@@ -54,12 +54,6 @@ func (r *updateRecord) setOptionalBool(destField string, v models.OptionalBool) 
 	}
 }
 
-func (r *updateRecord) setInt(destField string, v *int) {
-	if v != nil {
-		r.set(destField, *v)
-	}
-}
-
 // TODO - rename to setInt
 func (r *updateRecord) setOptionalInt(destField string, v models.OptionalInt) {
 	if v.Set {
@@ -92,12 +86,6 @@ func (r *updateRecord) setNullString(destField string, v *string) {
 func (r *updateRecord) setNullIntPtr(destField string, v **int) {
 	if v != nil {
 		r.set(destField, newNullIntPtr(*v))
-	}
-}
-
-func (r *updateRecord) setNullInt64Ptr(destField string, v **int64) {
-	if v != nil {
-		r.set(destField, newNullInt64Ptr(*v))
 	}
 }
 

@@ -224,9 +224,9 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		expectedStudioID := &studioID
+		expectedStudioID := studioID
 		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
-			StudioID: &expectedStudioID,
+			StudioID: models.NewOptionalInt(expectedStudioID),
 		}).Return(nil, nil).Once()
 	}
 

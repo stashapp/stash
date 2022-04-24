@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
@@ -93,29 +92,14 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		return nil, err
 	}
 
-	updatedTime := time.Now()
-	updatedImage := models.ImagePartial{
-		UpdatedAt: &updatedTime,
+	updatedImage := models.NewImagePartial()
+	updatedImage.Title = translator.optionalString(input.Title, "title")
+	updatedImage.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
-
-	if translator.hasField("title") {
-		updatedImage.Title = &input.Title
-	}
-	if translator.hasField("rating") {
-		updatedImage.Rating = &input.Rating
-	}
-	if translator.hasField("studio_id") {
-		var studioID *int
-		if input.StudioID != nil {
-			v, _ := strconv.Atoi(*input.StudioID)
-			studioID = &v
-		}
-
-		updatedImage.StudioID = &studioID
-	}
-	if translator.hasField("organized") {
-		updatedImage.Organized = input.Organized
-	}
+	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	if translator.hasField("gallery_ids") {
 		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds, models.RelationshipUpdateModeSet)
@@ -154,34 +138,19 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	}
 
 	// Populate image from the input
-	updatedTime := time.Now()
-
-	updatedImage := models.ImagePartial{
-		UpdatedAt: &updatedTime,
-	}
+	updatedImage := models.NewImagePartial()
 
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	if translator.hasField("title") {
-		updatedImage.Title = &input.Title
+	updatedImage.Title = translator.optionalString(input.Title, "title")
+	updatedImage.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
-	if translator.hasField("rating") {
-		updatedImage.Rating = &input.Rating
-	}
-	if translator.hasField("studio_id") {
-		var studioID *int
-		if input.StudioID != nil {
-			v, _ := strconv.Atoi(*input.StudioID)
-			studioID = &v
-		}
-
-		updatedImage.StudioID = &studioID
-	}
-	if translator.hasField("organized") {
-		updatedImage.Organized = input.Organized
-	}
+	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
 	if translator.hasField("gallery_ids") {
 		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds.Ids, input.GalleryIds.Mode)

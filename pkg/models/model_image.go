@@ -75,23 +75,30 @@ func (i *Image) GetTitle() string {
 }
 
 type ImagePartial struct {
-	Checksum    *string
-	Path        *string
-	Title       **string
-	Rating      **int
-	Organized   *bool
-	OCounter    *int
-	Size        **int64
-	Width       **int
-	Height      **int
-	StudioID    **int
-	FileModTime **time.Time
-	CreatedAt   *time.Time
-	UpdatedAt   *time.Time
+	Checksum    OptionalString
+	Path        OptionalString
+	Title       OptionalString
+	Rating      OptionalInt
+	Organized   OptionalBool
+	OCounter    OptionalInt
+	Size        OptionalInt64
+	Width       OptionalInt
+	Height      OptionalInt
+	StudioID    OptionalInt
+	FileModTime OptionalTime
+	CreatedAt   OptionalTime
+	UpdatedAt   OptionalTime
 
 	GalleryIDs   *UpdateIDs
 	TagIDs       *UpdateIDs
 	PerformerIDs *UpdateIDs
+}
+
+func NewImagePartial() ImagePartial {
+	updatedTime := time.Now()
+	return ImagePartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
+	}
 }
 
 // ImageFileType represents the file metadata for an image.

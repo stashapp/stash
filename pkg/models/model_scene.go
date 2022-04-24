@@ -84,11 +84,7 @@ func (s *Scene) SetFile(f File) {
 }
 
 // ScenePartial represents part of a Scene object. It is used to update
-// the database entry. Only non-nil fields will be updated.
-// Uses Nullable_ to represent fields.
-// Where field is a value, if NullString_.Valid is false, then the field is not updated.
-// Where field is a pointer,
-// Uses pointers to Nullable_ for
+// the database entry.
 type ScenePartial struct {
 	Checksum         OptionalString
 	OSHash           OptionalString
