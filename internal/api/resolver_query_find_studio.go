@@ -24,14 +24,14 @@ func (r *queryResolver) FindStudio(ctx context.Context, id string) (ret *models.
 	return ret, nil
 }
 
-func (r *queryResolver) FindStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.FindFilterType) (ret *models.FindStudiosResultType, err error) {
+func (r *queryResolver) FindStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.FindFilterType) (ret *FindStudiosResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		studios, total, err := repo.Studio().Query(studioFilter, filter)
 		if err != nil {
 			return err
 		}
 
-		ret = &models.FindStudiosResultType{
+		ret = &FindStudiosResultType{
 			Count:   total,
 			Studios: studios,
 		}

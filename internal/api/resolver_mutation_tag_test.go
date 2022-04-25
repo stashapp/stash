@@ -73,13 +73,13 @@ func TestTagCreate(t *testing.T) {
 	expectedErr := errors.New("TagCreate error")
 	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(nil, expectedErr)
 
-	_, err := r.Mutation().TagCreate(context.TODO(), models.TagCreateInput{
+	_, err := r.Mutation().TagCreate(context.TODO(), TagCreateInput{
 		Name: existingTagName,
 	})
 
 	assert.NotNil(t, err)
 
-	_, err = r.Mutation().TagCreate(context.TODO(), models.TagCreateInput{
+	_, err = r.Mutation().TagCreate(context.TODO(), TagCreateInput{
 		Name: errTagName,
 	})
 
@@ -98,7 +98,7 @@ func TestTagCreate(t *testing.T) {
 	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(newTag, nil)
 	tagRW.On("Find", newTagID).Return(newTag, nil)
 
-	tag, err := r.Mutation().TagCreate(context.TODO(), models.TagCreateInput{
+	tag, err := r.Mutation().TagCreate(context.TODO(), TagCreateInput{
 		Name: tagName,
 	})
 

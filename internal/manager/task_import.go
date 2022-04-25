@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -35,7 +36,7 @@ type ImportTask struct {
 	BaseDir             string
 	TmpZip              string
 	Reset               bool
-	DuplicateBehaviour  models.ImportDuplicateEnum
+	DuplicateBehaviour  ImportDuplicateEnum
 	MissingRefBehaviour models.ImportMissingRefEnum
 
 	mappings            *jsonschema.Mappings
@@ -43,7 +44,13 @@ type ImportTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) (*ImportTask, error) {
+type ImportObjectsInput struct {
+	File                graphql.Upload              `json:"file"`
+	DuplicateBehaviour  ImportDuplicateEnum         `json:"duplicateBehaviour"`
+	MissingRefBehaviour models.ImportMissingRefEnum `json:"missingRefBehaviour"`
+}
+
+func CreateImportTask(a models.HashAlgorithm, input ImportObjectsInput) (*ImportTask, error) {
 	baseDir, err := instance.Paths.Generated.TempDir("import")
 	if err != nil {
 		logger.Errorf("error creating temporary directory for import: %s", err.Error())
@@ -101,7 +108,7 @@ func (t *ImportTask) Start(ctx context.Context) {
 
 	// set default behaviour if not provided
 	if !t.DuplicateBehaviour.IsValid() {
-		t.DuplicateBehaviour = models.ImportDuplicateEnumFail
+		t.DuplicateBehaviour = ImportDuplicateEnumFail
 	}
 	if !t.MissingRefBehaviour.IsValid() {
 		t.MissingRefBehaviour = models.ImportMissingRefEnumFail

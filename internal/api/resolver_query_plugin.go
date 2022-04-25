@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 )
 
-func (r *queryResolver) Plugins(ctx context.Context) ([]*models.Plugin, error) {
+func (r *queryResolver) Plugins(ctx context.Context) ([]*plugin.Plugin, error) {
 	return manager.GetInstance().PluginCache.ListPlugins(), nil
 }
 
-func (r *queryResolver) PluginTasks(ctx context.Context) ([]*models.PluginTask, error) {
+func (r *queryResolver) PluginTasks(ctx context.Context) ([]*plugin.PluginTask, error) {
 	return manager.GetInstance().PluginCache.ListPluginTasks(), nil
 }

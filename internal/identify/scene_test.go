@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/mock"
 )
@@ -19,8 +20,8 @@ func Test_sceneRelationships_studio(t *testing.T) {
 	invalidStoredID := "invalidStoredID"
 	createMissing := true
 
-	defaultOptions := &models.IdentifyFieldOptionsInput{
-		Strategy: models.IdentifyFieldStrategyMerge,
+	defaultOptions := &FieldOptions{
+		Strategy: FieldStrategyMerge,
 	}
 
 	repo := mocks.NewTransactionManager()
@@ -30,13 +31,13 @@ func Test_sceneRelationships_studio(t *testing.T) {
 
 	tr := sceneRelationships{
 		repo:         repo,
-		fieldOptions: make(map[string]*models.IdentifyFieldOptionsInput),
+		fieldOptions: make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
 		name         string
 		scene        *models.Scene
-		fieldOptions *models.IdentifyFieldOptionsInput
+		fieldOptions *FieldOptions
 		result       *models.ScrapedStudio
 		want         *int64
 		wantErr      bool
@@ -52,8 +53,8 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		{
 			"ignore",
 			&models.Scene{},
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyIgnore,
+			&FieldOptions{
+				Strategy: FieldStrategyIgnore,
 			},
 			&models.ScrapedStudio{
 				StoredID: &validStoredID,
@@ -104,8 +105,8 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		{
 			"create missing",
 			&models.Scene{},
-			&models.IdentifyFieldOptionsInput{
-				Strategy:      models.IdentifyFieldStrategyMerge,
+			&FieldOptions{
+				Strategy:      FieldStrategyMerge,
 				CreateMissing: &createMissing,
 			},
 			&models.ScrapedStudio{},
@@ -118,7 +119,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 			tr.scene = tt.scene
 			tr.fieldOptions["studio"] = tt.fieldOptions
 			tr.result = &scrapeResult{
-				result: &models.ScrapedScene{
+				result: &scraper.ScrapedScene{
 					Studio: tt.result,
 				},
 			}
@@ -151,8 +152,8 @@ func Test_sceneRelationships_performers(t *testing.T) {
 	female := models.GenderEnumFemale.String()
 	male := models.GenderEnumMale.String()
 
-	defaultOptions := &models.IdentifyFieldOptionsInput{
-		Strategy: models.IdentifyFieldStrategyMerge,
+	defaultOptions := &FieldOptions{
+		Strategy: FieldStrategyMerge,
 	}
 
 	repo := mocks.NewTransactionManager()
@@ -162,13 +163,13 @@ func Test_sceneRelationships_performers(t *testing.T) {
 
 	tr := sceneRelationships{
 		repo:         repo,
-		fieldOptions: make(map[string]*models.IdentifyFieldOptionsInput),
+		fieldOptions: make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
 		name         string
 		sceneID      int
-		fieldOptions *models.IdentifyFieldOptionsInput
+		fieldOptions *FieldOptions
 		scraped      []*models.ScrapedPerformer
 		ignoreMale   bool
 		want         []int
@@ -177,8 +178,8 @@ func Test_sceneRelationships_performers(t *testing.T) {
 		{
 			"ignore",
 			sceneID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyIgnore,
+			&FieldOptions{
+				Strategy: FieldStrategyIgnore,
 			},
 			[]*models.ScrapedPerformer{
 				{
@@ -255,8 +256,8 @@ func Test_sceneRelationships_performers(t *testing.T) {
 		{
 			"overwrite",
 			sceneWithPerformerID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyOverwrite,
+			&FieldOptions{
+				Strategy: FieldStrategyOverwrite,
 			},
 			[]*models.ScrapedPerformer{
 				{
@@ -271,8 +272,8 @@ func Test_sceneRelationships_performers(t *testing.T) {
 		{
 			"ignore male (not male)",
 			sceneWithPerformerID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyOverwrite,
+			&FieldOptions{
+				Strategy: FieldStrategyOverwrite,
 			},
 			[]*models.ScrapedPerformer{
 				{
@@ -288,8 +289,8 @@ func Test_sceneRelationships_performers(t *testing.T) {
 		{
 			"error getting tag ID",
 			sceneID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy:      models.IdentifyFieldStrategyOverwrite,
+			&FieldOptions{
+				Strategy:      FieldStrategyOverwrite,
 				CreateMissing: &createMissing,
 			},
 			[]*models.ScrapedPerformer{
@@ -310,7 +311,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 			}
 			tr.fieldOptions["performers"] = tt.fieldOptions
 			tr.result = &scrapeResult{
-				result: &models.ScrapedScene{
+				result: &scraper.ScrapedScene{
 					Performers: tt.scraped,
 				},
 			}
@@ -342,8 +343,8 @@ func Test_sceneRelationships_tags(t *testing.T) {
 	validName := "validName"
 	invalidName := "invalidName"
 
-	defaultOptions := &models.IdentifyFieldOptionsInput{
-		Strategy: models.IdentifyFieldStrategyMerge,
+	defaultOptions := &FieldOptions{
+		Strategy: FieldStrategyMerge,
 	}
 
 	repo := mocks.NewTransactionManager()
@@ -362,13 +363,13 @@ func Test_sceneRelationships_tags(t *testing.T) {
 
 	tr := sceneRelationships{
 		repo:         repo,
-		fieldOptions: make(map[string]*models.IdentifyFieldOptionsInput),
+		fieldOptions: make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
 		name         string
 		sceneID      int
-		fieldOptions *models.IdentifyFieldOptionsInput
+		fieldOptions *FieldOptions
 		scraped      []*models.ScrapedTag
 		want         []int
 		wantErr      bool
@@ -376,8 +377,8 @@ func Test_sceneRelationships_tags(t *testing.T) {
 		{
 			"ignore",
 			sceneID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyIgnore,
+			&FieldOptions{
+				Strategy: FieldStrategyIgnore,
 			},
 			[]*models.ScrapedTag{
 				{
@@ -434,8 +435,8 @@ func Test_sceneRelationships_tags(t *testing.T) {
 		{
 			"overwrite",
 			sceneWithTagID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyOverwrite,
+			&FieldOptions{
+				Strategy: FieldStrategyOverwrite,
 			},
 			[]*models.ScrapedTag{
 				{
@@ -449,8 +450,8 @@ func Test_sceneRelationships_tags(t *testing.T) {
 		{
 			"error getting tag ID",
 			sceneID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyOverwrite,
+			&FieldOptions{
+				Strategy: FieldStrategyOverwrite,
 			},
 			[]*models.ScrapedTag{
 				{
@@ -464,8 +465,8 @@ func Test_sceneRelationships_tags(t *testing.T) {
 		{
 			"create missing",
 			sceneID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy:      models.IdentifyFieldStrategyOverwrite,
+			&FieldOptions{
+				Strategy:      FieldStrategyOverwrite,
 				CreateMissing: &createMissing,
 			},
 			[]*models.ScrapedTag{
@@ -479,8 +480,8 @@ func Test_sceneRelationships_tags(t *testing.T) {
 		{
 			"error creating",
 			sceneID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy:      models.IdentifyFieldStrategyOverwrite,
+			&FieldOptions{
+				Strategy:      FieldStrategyOverwrite,
 				CreateMissing: &createMissing,
 			},
 			[]*models.ScrapedTag{
@@ -499,7 +500,7 @@ func Test_sceneRelationships_tags(t *testing.T) {
 			}
 			tr.fieldOptions["tags"] = tt.fieldOptions
 			tr.result = &scrapeResult{
-				result: &models.ScrapedScene{
+				result: &scraper.ScrapedScene{
 					Tags: tt.scraped,
 				},
 			}
@@ -529,8 +530,8 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 	remoteSiteID := "remoteSiteID"
 	newRemoteSiteID := "newRemoteSiteID"
 
-	defaultOptions := &models.IdentifyFieldOptionsInput{
-		Strategy: models.IdentifyFieldStrategyMerge,
+	defaultOptions := &FieldOptions{
+		Strategy: FieldStrategyMerge,
 	}
 
 	repo := mocks.NewTransactionManager()
@@ -545,13 +546,13 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 
 	tr := sceneRelationships{
 		repo:         repo,
-		fieldOptions: make(map[string]*models.IdentifyFieldOptionsInput),
+		fieldOptions: make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
 		name         string
 		sceneID      int
-		fieldOptions *models.IdentifyFieldOptionsInput
+		fieldOptions *FieldOptions
 		endpoint     string
 		remoteSiteID *string
 		want         []models.StashID
@@ -560,8 +561,8 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		{
 			"ignore",
 			sceneID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyIgnore,
+			&FieldOptions{
+				Strategy: FieldStrategyIgnore,
 			},
 			newEndpoint,
 			&remoteSiteID,
@@ -639,8 +640,8 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		{
 			"overwrite",
 			sceneWithStashID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyOverwrite,
+			&FieldOptions{
+				Strategy: FieldStrategyOverwrite,
 			},
 			newEndpoint,
 			&newRemoteSiteID,
@@ -655,8 +656,8 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		{
 			"overwrite same",
 			sceneWithStashID,
-			&models.IdentifyFieldOptionsInput{
-				Strategy: models.IdentifyFieldStrategyOverwrite,
+			&FieldOptions{
+				Strategy: FieldStrategyOverwrite,
 			},
 			existingEndpoint,
 			&remoteSiteID,
@@ -674,7 +675,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 				source: ScraperSource{
 					RemoteSite: tt.endpoint,
 				},
-				result: &models.ScrapedScene{
+				result: &scraper.ScrapedScene{
 					RemoteSiteID: tt.remoteSiteID,
 				},
 			}
@@ -712,7 +713,7 @@ func Test_sceneRelationships_cover(t *testing.T) {
 
 	tr := sceneRelationships{
 		repo:         repo,
-		fieldOptions: make(map[string]*models.IdentifyFieldOptionsInput),
+		fieldOptions: make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
@@ -764,7 +765,7 @@ func Test_sceneRelationships_cover(t *testing.T) {
 				ID: tt.sceneID,
 			}
 			tr.result = &scrapeResult{
-				result: &models.ScrapedScene{
+				result: &scraper.ScrapedScene{
 					Image: tt.image,
 				},
 			}

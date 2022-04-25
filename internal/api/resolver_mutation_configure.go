@@ -15,17 +15,17 @@ import (
 
 var ErrOverriddenConfig = errors.New("cannot set overridden value")
 
-func (r *mutationResolver) Setup(ctx context.Context, input models.SetupInput) (bool, error) {
+func (r *mutationResolver) Setup(ctx context.Context, input manager.SetupInput) (bool, error) {
 	err := manager.GetInstance().Setup(ctx, input)
 	return err == nil, err
 }
 
-func (r *mutationResolver) Migrate(ctx context.Context, input models.MigrateInput) (bool, error) {
+func (r *mutationResolver) Migrate(ctx context.Context, input manager.MigrateInput) (bool, error) {
 	err := manager.GetInstance().Migrate(ctx, input)
 	return err == nil, err
 }
 
-func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
+func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGeneralInput) (*ConfigGeneralResult, error) {
 	c := config.GetInstance()
 
 	existingPaths := c.GetStashPaths()
@@ -281,7 +281,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	return makeConfigGeneralResult(), nil
 }
 
-func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.ConfigInterfaceInput) (*models.ConfigInterfaceResult, error) {
+func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigInterfaceInput) (*ConfigInterfaceResult, error) {
 	c := config.GetInstance()
 
 	setBool := func(key string, v *bool) {
@@ -338,10 +338,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 			c.Set(config.ImageLightboxSlideshowDelay, *options.SlideshowDelay)
 		}
 
-		setString(config.ImageLightboxDisplayMode, (*string)(options.DisplayMode))
+		setString(config.ImageLightboxDisplayModeKey, (*string)(options.DisplayMode))
 		setBool(config.ImageLightboxScaleUp, options.ScaleUp)
 		setBool(config.ImageLightboxResetZoomOnNav, options.ResetZoomOnNav)
-		setString(config.ImageLightboxScrollMode, (*string)(options.ScrollMode))
+		setString(config.ImageLightboxScrollModeKey, (*string)(options.ScrollMode))
 
 		if options.ScrollAttemptsBeforeChange != nil {
 			c.Set(config.ImageLightboxScrollAttemptsBeforeChange, *options.ScrollAttemptsBeforeChange)
@@ -376,7 +376,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 	return makeConfigInterfaceResult(), nil
 }
 
-func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.ConfigDLNAInput) (*models.ConfigDLNAResult, error) {
+func (r *mutationResolver) ConfigureDlna(ctx context.Context, input ConfigDLNAInput) (*ConfigDLNAResult, error) {
 	c := config.GetInstance()
 
 	if input.ServerName != nil {
@@ -413,7 +413,7 @@ func (r *mutationResolver) ConfigureDlna(ctx context.Context, input models.Confi
 	return makeConfigDLNAResult(), nil
 }
 
-func (r *mutationResolver) ConfigureScraping(ctx context.Context, input models.ConfigScrapingInput) (*models.ConfigScrapingResult, error) {
+func (r *mutationResolver) ConfigureScraping(ctx context.Context, input ConfigScrapingInput) (*ConfigScrapingResult, error) {
 	c := config.GetInstance()
 
 	refreshScraperCache := false
@@ -445,7 +445,7 @@ func (r *mutationResolver) ConfigureScraping(ctx context.Context, input models.C
 	return makeConfigScrapingResult(), nil
 }
 
-func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input models.ConfigDefaultSettingsInput) (*models.ConfigDefaultSettingsResult, error) {
+func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDefaultSettingsInput) (*ConfigDefaultSettingsResult, error) {
 	c := config.GetInstance()
 
 	if input.Identify != nil {
@@ -479,7 +479,7 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input models.C
 	return makeConfigDefaultsResult(), nil
 }
 
-func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.GenerateAPIKeyInput) (string, error) {
+func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input GenerateAPIKeyInput) (string, error) {
 	c := config.GetInstance()
 
 	var newAPIKey string

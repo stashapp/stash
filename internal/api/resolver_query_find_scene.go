@@ -36,7 +36,7 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 	return scene, nil
 }
 
-func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneHashInput) (*models.Scene, error) {
+func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInput) (*models.Scene, error) {
 	var scene *models.Scene
 
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
@@ -64,7 +64,7 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneH
 	return scene, nil
 }
 
-func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIDs []int, filter *models.FindFilterType) (ret *models.FindScenesResultType, err error) {
+func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIDs []int, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var scenes []*models.Scene
 		var err error
@@ -101,7 +101,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 			return err
 		}
 
-		ret = &models.FindScenesResultType{
+		ret = &FindScenesResultType{
 			Count:    result.Count,
 			Scenes:   scenes,
 			Duration: result.TotalDuration,
@@ -116,7 +116,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 	return ret, nil
 }
 
-func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *models.FindFilterType) (ret *models.FindScenesResultType, err error) {
+func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *models.FindFilterType) (ret *FindScenesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 
 		sceneFilter := &models.SceneFilterType{}
@@ -156,7 +156,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 			return err
 		}
 
-		ret = &models.FindScenesResultType{
+		ret = &FindScenesResultType{
 			Count:    result.Count,
 			Scenes:   scenes,
 			Duration: result.TotalDuration,
@@ -171,7 +171,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 	return ret, nil
 }
 
-func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config models.SceneParserInput) (ret *models.SceneParserResultType, err error) {
+func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config manager.SceneParserInput) (ret *SceneParserResultType, err error) {
 	parser := manager.NewSceneFilenameParser(filter, config)
 
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
@@ -181,7 +181,7 @@ func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.
 			return err
 		}
 
-		ret = &models.SceneParserResultType{
+		ret = &SceneParserResultType{
 			Count:   count,
 			Results: result,
 		}

@@ -1,10 +1,20 @@
 package plugin
 
-import (
-	"github.com/stashapp/stash/pkg/models"
-)
+type PluginArgInput struct {
+	Key   string            `json:"key"`
+	Value *PluginValueInput `json:"value"`
+}
 
-func findArg(args []*models.PluginArgInput, name string) *models.PluginArgInput {
+type PluginValueInput struct {
+	Str *string             `json:"str"`
+	I   *int                `json:"i"`
+	B   *bool               `json:"b"`
+	F   *float64            `json:"f"`
+	O   []*PluginArgInput   `json:"o"`
+	A   []*PluginValueInput `json:"a"`
+}
+
+func findArg(args []*PluginArgInput, name string) *PluginArgInput {
 	for _, v := range args {
 		if v.Key == name {
 			return v
@@ -14,13 +24,13 @@ func findArg(args []*models.PluginArgInput, name string) *models.PluginArgInput 
 	return nil
 }
 
-func applyDefaultArgs(args []*models.PluginArgInput, defaultArgs map[string]string) []*models.PluginArgInput {
+func applyDefaultArgs(args []*PluginArgInput, defaultArgs map[string]string) []*PluginArgInput {
 	for k, v := range defaultArgs {
 		if arg := findArg(args, k); arg == nil {
 			v := v // Copy v, because it's being exported out of the loop
-			args = append(args, &models.PluginArgInput{
+			args = append(args, &PluginArgInput{
 				Key: k,
-				Value: &models.PluginValueInput{
+				Value: &PluginValueInput{
 					Str: &v,
 				},
 			})

@@ -21,7 +21,7 @@ func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	return ret
 }
 
-func queryURLParametersFromScrapedScene(scene models.ScrapedSceneInput) queryURLParameters {
+func queryURLParametersFromScrapedScene(scene ScrapedSceneInput) queryURLParameters {
 	ret := make(queryURLParameters)
 
 	setField := func(field string, value *string) {
