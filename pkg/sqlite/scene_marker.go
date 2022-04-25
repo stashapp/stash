@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -297,7 +296,7 @@ func (qb *sceneMarkerQueryBuilder) querySceneMarkers(ctx context.Context, query 
 }
 
 func (qb *sceneMarkerQueryBuilder) queryMarkerStringsResultType(ctx context.Context, query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
-	rows, err := database.DB.Queryx(query, args...)
+	rows, err := qb.tx.Queryx(ctx, query, args...)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}

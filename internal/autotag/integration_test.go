@@ -10,7 +10,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -33,7 +32,7 @@ var db *sqlite.Database
 var r models.Repository
 
 func testTeardown(databaseFile string) {
-	err := database.DB.Close()
+	err := db.Close()
 
 	if err != nil {
 		panic(err)
@@ -54,13 +53,11 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	if err := database.Initialize(databaseFile); err != nil {
+	db = &sqlite.Database{}
+	if err := db.Open(databaseFile); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
 
-	db = &sqlite.Database{
-		DB: database.DB,
-	}
 	r = db.TxnRepository()
 
 	// defer close and delete the database

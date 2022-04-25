@@ -100,7 +100,7 @@ func CreateExportTask(a models.HashAlgorithm, input ExportObjectsInput) *ExportT
 	}
 
 	return &ExportTask{
-		txnManager:          GetInstance().TxnManager,
+		txnManager:          GetInstance().Repository,
 		fileNamingAlgorithm: a,
 		scenes:              newExportSpec(input.Scenes),
 		images:              newExportSpec(input.Images),

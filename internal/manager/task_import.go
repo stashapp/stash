@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -73,7 +71,7 @@ func CreateImportTask(a models.HashAlgorithm, input ImportObjectsInput) (*Import
 	}
 
 	return &ImportTask{
-		txnManager:          GetInstance().TxnManager,
+		txnManager:          GetInstance().Repository,
 		BaseDir:             baseDir,
 		TmpZip:              tmpZip,
 		Reset:               false,
@@ -126,7 +124,7 @@ func (t *ImportTask) Start(ctx context.Context) {
 	t.scraped = scraped
 
 	if t.Reset {
-		err := database.Reset(config.GetInstance().GetDatabasePath())
+		err := t.txnManager.Reset()
 
 		if err != nil {
 			logger.Errorf("Error resetting database: %s", err.Error())

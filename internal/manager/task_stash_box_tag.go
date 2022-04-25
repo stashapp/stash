@@ -41,17 +41,17 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 	var performer *models.ScrapedPerformer
 	var err error
 
-	client := stashbox.NewClient(*t.box, instance.TxnManager, stashbox.Repository{
-		Scene:     instance.TxnManager.Scene,
-		Performer: instance.TxnManager.Performer,
-		Tag:       instance.TxnManager.Tag,
-		Studio:    instance.TxnManager.Studio,
+	client := stashbox.NewClient(*t.box, instance.Repository, stashbox.Repository{
+		Scene:     instance.Repository.Scene,
+		Performer: instance.Repository.Performer,
+		Tag:       instance.Repository.Tag,
+		Studio:    instance.Repository.Studio,
 	})
 
 	if t.refresh {
 		var performerID string
-		txnErr := txn.WithTxn(ctx, instance.TxnManager, func(ctx context.Context) error {
-			stashids, _ := instance.TxnManager.Performer.GetStashIDs(ctx, t.performer.ID)
+		txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+			stashids, _ := instance.Repository.Performer.GetStashIDs(ctx, t.performer.ID)
 			for _, id := range stashids {
 				if id.Endpoint == t.box.Endpoint {
 					performerID = id.StashID
@@ -161,8 +161,8 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				partial.URL = &value
 			}
 
-			txnErr := txn.WithTxn(ctx, instance.TxnManager, func(ctx context.Context) error {
-				r := instance.TxnManager
+			txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				r := instance.Repository
 				_, err := r.Performer.Update(ctx, partial)
 
 				if !t.refresh {
@@ -224,8 +224,8 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				URL:          getNullString(performer.URL),
 				UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 			}
-			err := txn.WithTxn(ctx, instance.TxnManager, func(ctx context.Context) error {
-				r := instance.TxnManager
+			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				r := instance.Repository
 				createdPerformer, err := r.Performer.Create(ctx, newPerformer)
 				if err != nil {
 					return err

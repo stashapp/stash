@@ -208,7 +208,8 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	ss := manager.SceneServer{
-		TxnManager: rs.txnManager,
+		TxnManager:       rs.txnManager,
+		SceneCoverGetter: rs.sceneFinder,
 	}
 	ss.ServeScreenshot(scene, w, r)
 }

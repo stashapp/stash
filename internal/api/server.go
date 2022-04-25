@@ -73,7 +73,7 @@ func Start() error {
 		return errors.New(message)
 	}
 
-	txnManager := manager.GetInstance().TxnManager
+	txnManager := manager.GetInstance().Repository
 	pluginCache := manager.GetInstance().PluginCache
 	resolver := &Resolver{
 		txnManager:   txnManager,

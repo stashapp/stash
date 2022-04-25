@@ -20,9 +20,13 @@ func (*TxnManager) Rollback(ctx context.Context) error {
 	return nil
 }
 
+func (*TxnManager) Reset() error {
+	return nil
+}
+
 func NewTxnRepository() models.Repository {
 	return models.Repository{
-		Manager:     &TxnManager{},
+		TxnManager:  &TxnManager{},
 		Gallery:     &GalleryReaderWriter{},
 		Image:       &ImageReaderWriter{},
 		Movie:       &MovieReaderWriter{},

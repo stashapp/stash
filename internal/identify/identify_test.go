@@ -139,7 +139,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 
 func TestSceneIdentifier_modifyScene(t *testing.T) {
 	repo := models.Repository{
-		Manager: &mocks.TxnManager{},
+		TxnManager: &mocks.TxnManager{},
 	}
 	tr := &SceneIdentifier{}
 

@@ -6,8 +6,13 @@ import (
 	"github.com/stashapp/stash/pkg/txn"
 )
 
-type Repository struct {
+type TxnManager interface {
 	txn.Manager
+	Reset() error
+}
+
+type Repository struct {
+	TxnManager
 
 	Gallery     GalleryReaderWriter
 	Image       ImageReaderWriter

@@ -1,4 +1,4 @@
-package database
+package sqlite
 
 import (
 	"database/sql"
@@ -20,99 +20,135 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-var DB *sqlx.DB
-var WriteMu sync.Mutex
-var dbPath string
 var appSchemaVersion uint = 31
-var databaseSchemaVersion uint
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
 
 var (
-	// ErrMigrationNeeded indicates that a database migration is needed
-	// before the database can be initialized
-	ErrMigrationNeeded = errors.New("database migration required")
-
 	// ErrDatabaseNotInitialized indicates that the database is not
 	// initialized, usually due to an incomplete configuration.
 	ErrDatabaseNotInitialized = errors.New("database not initialized")
 )
 
-const sqlite3Driver = "sqlite3ex"
-
-// Ready returns an error if the database is not ready to begin transactions.
-func Ready() error {
-	if DB == nil {
-		return ErrDatabaseNotInitialized
-	}
-
-	return nil
+// ErrMigrationNeeded indicates that a database migration is needed
+// before the database can be initialized
+type MigrationNeededError struct {
+	CurrentSchemaVersion  uint
+	RequiredSchemaVersion uint
 }
+
+func (e *MigrationNeededError) Error() string {
+	return fmt.Sprintf("database schema version %d does not match required schema version %d", e.CurrentSchemaVersion, e.RequiredSchemaVersion)
+}
+
+type MismatchedSchemaVersionError struct {
+	CurrentSchemaVersion  uint
+	RequiredSchemaVersion uint
+}
+
+func (e *MismatchedSchemaVersionError) Error() string {
+	return fmt.Sprintf("schema version %d is incompatible with required schema version %d", e.CurrentSchemaVersion, e.RequiredSchemaVersion)
+}
+
+const sqlite3Driver = "sqlite3ex"
 
 func init() {
 	// register custom driver with regexp function
 	registerCustomDriver()
 }
 
-// Initialize initializes the database. If the database is new, then it
+type Database struct {
+	db     *sqlx.DB
+	dbPath string
+
+	schemaVersion uint
+
+	writeMu sync.Mutex
+}
+
+// Ready returns an error if the database is not ready to begin transactions.
+func (db *Database) Ready() error {
+	if db.db == nil {
+		return ErrDatabaseNotInitialized
+	}
+
+	return nil
+}
+
+// Open initializes the database. If the database is new, then it
 // performs a full migration to the latest schema version. Otherwise, any
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
-func Initialize(databasePath string) error {
-	dbPath = databasePath
+func (db *Database) Open(dbPath string) error {
+	db.writeMu.Lock()
+	defer db.writeMu.Unlock()
 
-	if err := getDatabaseSchemaVersion(); err != nil {
-		return fmt.Errorf("error getting database schema version: %v", err)
+	db.dbPath = dbPath
+
+	databaseSchemaVersion, err := db.getDatabaseSchemaVersion()
+	if err != nil {
+		return fmt.Errorf("getting database schema version: %w", err)
 	}
+
+	db.schemaVersion = databaseSchemaVersion
 
 	if databaseSchemaVersion == 0 {
 		// new database, just run the migrations
-		if err := RunMigrations(); err != nil {
+		if err := db.RunMigrations(); err != nil {
 			return fmt.Errorf("error running initial schema migrations: %v", err)
 		}
-		// RunMigrations calls Initialise. Just return
-		return nil
 	} else {
 		if databaseSchemaVersion > appSchemaVersion {
-			panic(fmt.Sprintf("Database schema version %d is incompatible with required schema version %d", databaseSchemaVersion, appSchemaVersion))
+			return &MismatchedSchemaVersionError{
+				CurrentSchemaVersion:  databaseSchemaVersion,
+				RequiredSchemaVersion: appSchemaVersion,
+			}
 		}
 
 		// if migration is needed, then don't open the connection
-		if NeedsMigration() {
-			logger.Warnf("Database schema version %d does not match required schema version %d.", databaseSchemaVersion, appSchemaVersion)
-			return nil
+		if db.needsMigration() {
+			return &MigrationNeededError{
+				CurrentSchemaVersion:  databaseSchemaVersion,
+				RequiredSchemaVersion: appSchemaVersion,
+			}
 		}
 	}
 
-	const disableForeignKeys = false
-	DB = open(databasePath, disableForeignKeys)
+	// RunMigrations may have opened a connection already
+	if db.db == nil {
+		const disableForeignKeys = false
+		db.db, err = db.open(disableForeignKeys)
+		if err != nil {
+			return err
+		}
+	}
 
-	if err := runCustomMigrations(); err != nil {
+	if err := db.runCustomMigrations(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func Close() error {
-	WriteMu.Lock()
-	defer WriteMu.Unlock()
+func (db *Database) Close() error {
+	db.writeMu.Lock()
+	defer db.writeMu.Unlock()
 
-	if DB != nil {
-		if err := DB.Close(); err != nil {
+	if db.db != nil {
+		if err := db.db.Close(); err != nil {
 			return err
 		}
 
-		DB = nil
+		db.db = nil
 	}
 
 	return nil
 }
 
-func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
+func (db *Database) open(disableForeignKeys bool) (*sqlx.DB, error) {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + databasePath + "?_journal=WAL&_sync=NORMAL"
+	url := "file:" + db.dbPath + "?_journal=WAL&_sync=NORMAL"
 	if !disableForeignKeys {
 		url += "&_fk=true"
 	}
@@ -122,14 +158,15 @@ func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	conn.SetMaxIdleConns(4)
 	conn.SetConnMaxLifetime(30 * time.Second)
 	if err != nil {
-		logger.Fatalf("db.Open(): %q\n", err)
+		return nil, fmt.Errorf("db.Open(): %w", err)
 	}
 
-	return conn
+	return conn, nil
 }
 
-func Reset(databasePath string) error {
-	err := DB.Close()
+func (db *Database) Reset() error {
+	databasePath := db.dbPath
+	err := db.Close()
 
 	if err != nil {
 		return errors.New("Error closing database: " + err.Error())
@@ -151,7 +188,7 @@ func Reset(databasePath string) error {
 		}
 	}
 
-	if err := Initialize(databasePath); err != nil {
+	if err := db.Open(databasePath); err != nil {
 		return fmt.Errorf("[reset DB] unable to initialize: %w", err)
 	}
 
@@ -160,18 +197,19 @@ func Reset(databasePath string) error {
 
 // Backup the database. If db is nil, then uses the existing database
 // connection.
-func Backup(db *sqlx.DB, backupPath string) error {
-	if db == nil {
+func (db *Database) Backup(backupPath string) error {
+	thisDB := db.db
+	if thisDB == nil {
 		var err error
-		db, err = sqlx.Connect(sqlite3Driver, "file:"+dbPath+"?_fk=true")
+		thisDB, err = sqlx.Connect(sqlite3Driver, "file:"+db.dbPath+"?_fk=true")
 		if err != nil {
-			return fmt.Errorf("open database %s failed: %v", dbPath, err)
+			return fmt.Errorf("open database %s failed: %v", db.dbPath, err)
 		}
-		defer db.Close()
+		defer thisDB.Close()
 	}
 
 	logger.Infof("Backing up database into: %s", backupPath)
-	_, err := db.Exec(`VACUUM INTO "` + backupPath + `"`)
+	_, err := thisDB.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
 		return fmt.Errorf("vacuum failed: %v", err)
 	}
@@ -179,40 +217,43 @@ func Backup(db *sqlx.DB, backupPath string) error {
 	return nil
 }
 
-func RestoreFromBackup(backupPath string) error {
-	logger.Infof("Restoring backup database %s into %s", backupPath, dbPath)
-	return os.Rename(backupPath, dbPath)
+func (db *Database) RestoreFromBackup(backupPath string) error {
+	logger.Infof("Restoring backup database %s into %s", backupPath, db.dbPath)
+	return os.Rename(backupPath, db.dbPath)
 }
 
 // Migrate the database
-func NeedsMigration() bool {
-	return databaseSchemaVersion != appSchemaVersion
+func (db *Database) needsMigration() bool {
+	return db.schemaVersion != appSchemaVersion
 }
 
-func AppSchemaVersion() uint {
+func (db *Database) AppSchemaVersion() uint {
 	return appSchemaVersion
 }
 
-func DatabasePath() string {
-	return dbPath
+func (db *Database) DatabasePath() string {
+	return db.dbPath
 }
 
-func DatabaseBackupPath() string {
-	return fmt.Sprintf("%s.%d.%s", dbPath, databaseSchemaVersion, time.Now().Format("20060102_150405"))
+func (db *Database) DatabaseBackupPath() string {
+	return fmt.Sprintf("%s.%d.%s", db.dbPath, db.schemaVersion, time.Now().Format("20060102_150405"))
 }
 
-func Version() uint {
-	return databaseSchemaVersion
+func (db *Database) Version() uint {
+	return db.schemaVersion
 }
 
-func getMigrate() (*migrate.Migrate, error) {
+func (db *Database) getMigrate() (*migrate.Migrate, error) {
 	migrations, err := iofs.New(migrationsBox, "migrations")
 	if err != nil {
 		panic(err.Error())
 	}
 
 	const disableForeignKeys = true
-	conn := open(dbPath, disableForeignKeys)
+	conn, err := db.open(disableForeignKeys)
+	if err != nil {
+		return nil, err
+	}
 
 	driver, err := sqlite3mig.WithInstance(conn.DB, &sqlite3mig.Config{})
 	if err != nil {
@@ -223,31 +264,31 @@ func getMigrate() (*migrate.Migrate, error) {
 	return migrate.NewWithInstance(
 		"iofs",
 		migrations,
-		dbPath,
+		db.dbPath,
 		driver,
 	)
 }
 
-func getDatabaseSchemaVersion() error {
-	m, err := getMigrate()
+func (db *Database) getDatabaseSchemaVersion() (uint, error) {
+	m, err := db.getMigrate()
 	if err != nil {
-		return err
-	}
-
-	databaseSchemaVersion, _, _ = m.Version()
-	m.Close()
-	return nil
-}
-
-// Migrate the database
-func RunMigrations() error {
-	m, err := getMigrate()
-	if err != nil {
-		panic(err.Error())
+		return 0, err
 	}
 	defer m.Close()
 
-	databaseSchemaVersion, _, _ = m.Version()
+	ret, _, _ := m.Version()
+	return ret, nil
+}
+
+// Migrate the database
+func (db *Database) RunMigrations() error {
+	m, err := db.getMigrate()
+	if err != nil {
+		return err
+	}
+	defer m.Close()
+
+	databaseSchemaVersion, _, _ := m.Version()
 	stepNumber := appSchemaVersion - databaseSchemaVersion
 	if stepNumber != 0 {
 		logger.Infof("Migrating database from version %d to %d", databaseSchemaVersion, appSchemaVersion)
@@ -258,14 +299,19 @@ func RunMigrations() error {
 		}
 	}
 
+	// update the schema version
+	db.schemaVersion, _, _ = m.Version()
+
 	// re-initialise the database
-	if err = Initialize(dbPath); err != nil {
-		logger.Warnf("Error re-initializing the database: %v", err)
+	const disableForeignKeys = false
+	db.db, err = db.open(disableForeignKeys)
+	if err != nil {
+		return fmt.Errorf("re-initializing the database: %w", err)
 	}
 
 	// run a vacuum on the database
 	logger.Info("Performing vacuum on database")
-	_, err = DB.Exec("VACUUM")
+	_, err = db.db.Exec("VACUUM")
 	if err != nil {
 		logger.Warnf("error while performing post-migration vacuum: %v", err)
 	}

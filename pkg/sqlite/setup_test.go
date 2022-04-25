@@ -13,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
@@ -409,7 +408,7 @@ func withRollbackTxn(f func(ctx context.Context) error) error {
 }
 
 func testTeardown(databaseFile string) {
-	err := database.DB.Close()
+	err := db.Close()
 
 	if err != nil {
 		panic(err)
@@ -430,16 +429,14 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	if err := database.Initialize(databaseFile); err != nil {
+	db = &sqlite.Database{}
+
+	if err := db.Open(databaseFile); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
 
 	// defer close and delete the database
 	defer testTeardown(databaseFile)
-
-	db = &sqlite.Database{
-		DB: database.DB,
-	}
 
 	err = populateDB()
 	if err != nil {

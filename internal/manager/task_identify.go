@@ -52,7 +52,7 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	// if scene ids provided, use those
 	// otherwise, batch query for all scenes - ordering by path
-	if err := txn.WithTxn(ctx, instance.TxnManager, func(ctx context.Context) error {
+	if err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 		if len(j.input.SceneIDs) == 0 {
 			return j.identifyAllScenes(ctx, sources)
 		}
@@ -70,7 +70,7 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 
 			// find the scene
 			var err error
-			scene, err := instance.TxnManager.Scene.Find(ctx, id)
+			scene, err := instance.Repository.Scene.Find(ctx, id)
 			if err != nil {
 				return fmt.Errorf("error finding scene with id %d: %w", id, err)
 			}
@@ -102,7 +102,7 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, sources []identify.
 	// get the count
 	pp := 0
 	findFilter.PerPage = &pp
-	countResult, err := instance.TxnManager.Scene.Query(ctx, models.SceneQueryOptions{
+	countResult, err := instance.Repository.Scene.Query(ctx, models.SceneQueryOptions{
 		QueryOptions: models.QueryOptions{
 			FindFilter: findFilter,
 			Count:      true,
@@ -115,7 +115,7 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, sources []identify.
 
 	j.progress.SetTotal(countResult.Count)
 
-	return scene.BatchProcess(ctx, instance.TxnManager.Scene, sceneFilter, findFilter, func(scene *models.Scene) error {
+	return scene.BatchProcess(ctx, instance.Repository.Scene, sceneFilter, findFilter, func(scene *models.Scene) error {
 		if job.IsCancelled(ctx) {
 			return nil
 		}
@@ -133,10 +133,10 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 	var taskError error
 	j.progress.ExecuteTask("Identifying "+s.Path, func() {
 		task := identify.SceneIdentifier{
-			SceneReaderUpdater: instance.TxnManager.Scene,
-			StudioCreator:      instance.TxnManager.Studio,
-			PerformerCreator:   instance.TxnManager.Performer,
-			TagCreator:         instance.TxnManager.Tag,
+			SceneReaderUpdater: instance.Repository.Scene,
+			StudioCreator:      instance.Repository.Studio,
+			PerformerCreator:   instance.Repository.Performer,
+			TagCreator:         instance.Repository.Tag,
 
 			DefaultOptions: j.input.Options,
 			Sources:        sources,
@@ -147,7 +147,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 			SceneUpdatePostHookExecutor: j.postHookExecutor,
 		}
 
-		taskError = task.Identify(ctx, instance.TxnManager, s)
+		taskError = task.Identify(ctx, instance.Repository, s)
 	})
 
 	if taskError != nil {
@@ -171,11 +171,11 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 			src = identify.ScraperSource{
 				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
-					stashbox.NewClient(*stashBox, instance.TxnManager, stashbox.Repository{
-						Scene:     instance.TxnManager.Scene,
-						Performer: instance.TxnManager.Performer,
-						Tag:       instance.TxnManager.Tag,
-						Studio:    instance.TxnManager.Studio,
+					stashbox.NewClient(*stashBox, instance.Repository, stashbox.Repository{
+						Scene:     instance.Repository.Scene,
+						Performer: instance.Repository.Performer,
+						Tag:       instance.Repository.Tag,
+						Studio:    instance.Repository.Studio,
 					}),
 					stashBox.Endpoint,
 				},

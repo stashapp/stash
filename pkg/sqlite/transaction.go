@@ -14,16 +14,12 @@ const (
 	txnKey key = iota + 1
 )
 
-type Database struct {
-	DB *sqlx.DB
-}
-
 func (db *Database) Begin(ctx context.Context) (context.Context, error) {
 	if tx, _ := getTx(ctx); tx != nil {
 		return nil, fmt.Errorf("already in transaction")
 	}
 
-	tx, err := db.DB.BeginTxx(ctx, nil)
+	tx, err := db.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("beginning transaction: %w", err)
 	}
@@ -57,7 +53,7 @@ func getTx(ctx context.Context) (*sqlx.Tx, error) {
 
 func (db *Database) TxnRepository() models.Repository {
 	return models.Repository{
-		Manager:     db,
+		TxnManager:  db,
 		Gallery:     GalleryReaderWriter,
 		Image:       ImageReaderWriter,
 		Movie:       MovieReaderWriter,
