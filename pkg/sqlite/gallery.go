@@ -327,7 +327,7 @@ func (qb *galleryQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*mode
 }
 
 func (qb *galleryQueryBuilder) FindByChecksum(ctx context.Context, checksum string) (*models.Gallery, error) {
-	q := qb.selectDataset().Where(qb.table().Col("checksum").Eq(checksum))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("checksum").Eq(checksum))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -338,7 +338,7 @@ func (qb *galleryQueryBuilder) FindByChecksum(ctx context.Context, checksum stri
 }
 
 func (qb *galleryQueryBuilder) FindByChecksums(ctx context.Context, checksums []string) ([]*models.Gallery, error) {
-	q := qb.selectDataset().Where(qb.table().Col("checksum").In(checksums))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("checksum").In(checksums))
 
 	ret, err := qb.getMany(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -349,7 +349,7 @@ func (qb *galleryQueryBuilder) FindByChecksums(ctx context.Context, checksums []
 }
 
 func (qb *galleryQueryBuilder) FindByPath(ctx context.Context, path string) (*models.Gallery, error) {
-	q := qb.selectDataset().Where(qb.table().Col("path").Eq(path))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(path))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

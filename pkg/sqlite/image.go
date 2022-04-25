@@ -332,7 +332,7 @@ func (qb *imageQueryBuilder) find(ctx context.Context, id int) (*models.Image, e
 }
 
 func (qb *imageQueryBuilder) FindByChecksum(ctx context.Context, checksum string) (*models.Image, error) {
-	q := qb.selectDataset().Where(qb.table().Col("checksum").Eq(checksum))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("checksum").Eq(checksum))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -343,7 +343,7 @@ func (qb *imageQueryBuilder) FindByChecksum(ctx context.Context, checksum string
 }
 
 func (qb *imageQueryBuilder) FindByPath(ctx context.Context, path string) (*models.Image, error) {
-	q := qb.selectDataset().Where(qb.table().Col("path").Eq(path))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(path))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

@@ -485,7 +485,7 @@ func (qb *sceneQueryBuilder) find(ctx context.Context, id int) (*models.Scene, e
 }
 
 func (qb *sceneQueryBuilder) FindByChecksum(ctx context.Context, checksum string) (*models.Scene, error) {
-	q := qb.selectDataset().Where(qb.table().Col("checksum").Eq(checksum))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("checksum").Eq(checksum))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -496,7 +496,7 @@ func (qb *sceneQueryBuilder) FindByChecksum(ctx context.Context, checksum string
 }
 
 func (qb *sceneQueryBuilder) FindByOSHash(ctx context.Context, oshash string) (*models.Scene, error) {
-	q := qb.selectDataset().Where(qb.table().Col("oshash").Eq(oshash))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("oshash").Eq(oshash))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -507,7 +507,7 @@ func (qb *sceneQueryBuilder) FindByOSHash(ctx context.Context, oshash string) (*
 }
 
 func (qb *sceneQueryBuilder) FindByPath(ctx context.Context, path string) (*models.Scene, error) {
-	q := qb.selectDataset().Where(qb.table().Col("path").Eq(path))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(path))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -644,7 +644,7 @@ func (qb *sceneQueryBuilder) Wall(ctx context.Context, q *string) ([]*models.Sce
 	}
 
 	table := qb.table()
-	qq := qb.selectDataset().Where(table.Col("details").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
+	qq := qb.selectDataset().Prepared(true).Where(table.Col("details").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
 	return qb.getMany(ctx, qq)
 }
 

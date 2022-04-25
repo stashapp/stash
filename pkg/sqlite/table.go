@@ -29,7 +29,7 @@ func (e *NotFoundError) Error() string {
 }
 
 func (t *table) insert(ctx context.Context, o interface{}) (sql.Result, error) {
-	q := dialect.Insert(t.table).Rows(o)
+	q := dialect.Insert(t.table).Prepared(true).Rows(o)
 	ret, err := exec(ctx, q)
 	if err != nil {
 		return nil, fmt.Errorf("inserting into %s: %w", t.table.GetTable(), err)
@@ -53,7 +53,7 @@ func (t *table) insertID(ctx context.Context, o interface{}) (int, error) {
 }
 
 func (t *table) updateByID(ctx context.Context, id interface{}, o interface{}) error {
-	q := dialect.Update(t.table).Set(o).Where(t.byID(id))
+	q := dialect.Update(t.table).Prepared(true).Set(o).Where(t.byID(id))
 
 	if _, err := exec(ctx, q); err != nil {
 		return fmt.Errorf("updating %s: %w", t.table.GetTable(), err)
@@ -485,7 +485,7 @@ func exec(ctx context.Context, stmt sqler) (sql.Result, error) {
 	}
 
 	logger.Tracef("SQL: %s [%v]", sql, args)
-	ret, err := tx.ExecContext(ctx, sql)
+	ret, err := tx.ExecContext(ctx, sql, args...)
 	if err != nil {
 		return nil, fmt.Errorf("executing `%s` [%v]: %w", sql, args, err)
 	}
