@@ -23,14 +23,14 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (ret *mode
 	return ret, nil
 }
 
-func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType) (ret *models.FindPerformersResultType, err error) {
+func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType) (ret *FindPerformersResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		performers, total, err := repo.Performer().Query(performerFilter, filter)
 		if err != nil {
 			return err
 		}
 
-		ret = &models.FindPerformersResultType{
+		ret = &FindPerformersResultType{
 			Count:      total,
 			Performers: performers,
 		}

@@ -20,7 +20,7 @@ import (
 
 type autoTagJob struct {
 	txnManager models.TransactionManager
-	input      models.AutoTagMetadataInput
+	input      AutoTagMetadataInput
 
 	cache match.Cache
 }
@@ -40,7 +40,7 @@ func (j *autoTagJob) Execute(ctx context.Context, progress *job.Progress) {
 	logger.Infof("Finished autotag after %s", time.Since(begin).String())
 }
 
-func (j *autoTagJob) isFileBasedAutoTag(input models.AutoTagMetadataInput) bool {
+func (j *autoTagJob) isFileBasedAutoTag(input AutoTagMetadataInput) bool {
 	const wildcard = "*"
 	performerIds := input.Performers
 	studioIds := input.Studios

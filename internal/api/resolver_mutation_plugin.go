@@ -5,10 +5,10 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 )
 
-func (r *mutationResolver) RunPluginTask(ctx context.Context, pluginID string, taskName string, args []*models.PluginArgInput) (string, error) {
+func (r *mutationResolver) RunPluginTask(ctx context.Context, pluginID string, taskName string, args []*plugin.PluginArgInput) (string, error) {
 	m := manager.GetInstance()
 	m.RunPluginTask(ctx, pluginID, taskName, args)
 	return "todo", nil

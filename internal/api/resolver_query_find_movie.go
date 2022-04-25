@@ -23,14 +23,14 @@ func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.M
 	return ret, nil
 }
 
-func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.MovieFilterType, filter *models.FindFilterType) (ret *models.FindMoviesResultType, err error) {
+func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.MovieFilterType, filter *models.FindFilterType) (ret *FindMoviesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		movies, total, err := repo.Movie().Query(movieFilter, filter)
 		if err != nil {
 			return err
 		}
 
-		ret = &models.FindMoviesResultType{
+		ret = &FindMoviesResultType{
 			Count:  total,
 			Movies: movies,
 		}

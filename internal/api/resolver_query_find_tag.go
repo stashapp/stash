@@ -23,14 +23,14 @@ func (r *queryResolver) FindTag(ctx context.Context, id string) (ret *models.Tag
 	return ret, nil
 }
 
-func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.FindFilterType) (ret *models.FindTagsResultType, err error) {
+func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.FindFilterType) (ret *FindTagsResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		tags, total, err := repo.Tag().Query(tagFilter, filter)
 		if err != nil {
 			return err
 		}
 
-		ret = &models.FindTagsResultType{
+		ret = &FindTagsResultType{
 			Count: total,
 			Tags:  tags,
 		}

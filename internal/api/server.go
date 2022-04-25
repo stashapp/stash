@@ -30,7 +30,6 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/ui"
 )
 
@@ -81,7 +80,7 @@ func Start() error {
 		hookExecutor: pluginCache,
 	}
 
-	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: resolver}))
+	gqlSrv := gqlHandler.New(NewExecutableSchema(Config{Resolvers: resolver}))
 	gqlSrv.SetRecoverFunc(recoverFunc)
 	gqlSrv.AddTransport(gqlTransport.Websocket{
 		Upgrader: websocket.Upgrader{

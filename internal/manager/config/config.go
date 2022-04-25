@@ -15,6 +15,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/hash"
 	"github.com/stashapp/stash/pkg/logger"
@@ -147,10 +148,10 @@ const (
 	// Image lightbox options
 	legacyImageLightboxSlideshowDelay       = "slideshow_delay"
 	ImageLightboxSlideshowDelay             = "image_lightbox.slideshow_delay"
-	ImageLightboxDisplayMode                = "image_lightbox.display_mode"
+	ImageLightboxDisplayModeKey             = "image_lightbox.display_mode"
 	ImageLightboxScaleUp                    = "image_lightbox.scale_up"
 	ImageLightboxResetZoomOnNav             = "image_lightbox.reset_zoom_on_nav"
-	ImageLightboxScrollMode                 = "image_lightbox.scroll_mode"
+	ImageLightboxScrollModeKey              = "image_lightbox.scroll_mode"
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
 
 	UI = "ui"
@@ -459,14 +460,27 @@ func (i *Instance) getStringMapString(key string) map[string]string {
 	return i.viper(key).GetStringMapString(key)
 }
 
+type StashConfig struct {
+	Path         string `json:"path"`
+	ExcludeVideo bool   `json:"excludeVideo"`
+	ExcludeImage bool   `json:"excludeImage"`
+}
+
+// Stash configuration details
+type StashConfigInput struct {
+	Path         string `json:"path"`
+	ExcludeVideo bool   `json:"excludeVideo"`
+	ExcludeImage bool   `json:"excludeImage"`
+}
+
 // GetStathPaths returns the configured stash library paths.
 // Works opposite to the usual case - it will return the override
 // value only if the main value is not set.
-func (i *Instance) GetStashPaths() []*models.StashConfig {
+func (i *Instance) GetStashPaths() []*StashConfig {
 	i.RLock()
 	defer i.RUnlock()
 
-	var ret []*models.StashConfig
+	var ret []*StashConfig
 
 	v := i.main
 	if !v.IsSet(Stash) {
@@ -478,7 +492,7 @@ func (i *Instance) GetStashPaths() []*models.StashConfig {
 		ss := v.GetStringSlice(Stash)
 		ret = nil
 		for _, path := range ss {
-			toAdd := &models.StashConfig{
+			toAdd := &StashConfig{
 				Path: path,
 			}
 			ret = append(ret, toAdd)
@@ -609,8 +623,8 @@ func (i *Instance) GetScraperExcludeTagPatterns() []string {
 	return i.getStringSlice(ScraperExcludeTagPatterns)
 }
 
-func (i *Instance) GetStashBoxes() models.StashBoxes {
-	var boxes models.StashBoxes
+func (i *Instance) GetStashBoxes() []*models.StashBox {
+	var boxes []*models.StashBox
 	if err := i.unmarshalKey(StashBoxes, &boxes); err != nil {
 		logger.Warnf("error in unmarshalkey: %v", err)
 	}
@@ -796,7 +810,13 @@ func (i *Instance) ValidateCredentials(username string, password string) bool {
 
 var stashBoxRe = regexp.MustCompile("^http.*graphql$")
 
-func (i *Instance) ValidateStashBoxes(boxes []*models.StashBoxInput) error {
+type StashBoxInput struct {
+	Endpoint string `json:"endpoint"`
+	APIKey   string `json:"api_key"`
+	Name     string `json:"name"`
+}
+
+func (i *Instance) ValidateStashBoxes(boxes []*StashBoxInput) error {
 	isMulti := len(boxes) > 1
 
 	for _, box := range boxes {
@@ -932,18 +952,18 @@ func (i *Instance) getSlideshowDelay() int {
 	return ret
 }
 
-func (i *Instance) GetImageLightboxOptions() models.ConfigImageLightboxResult {
+func (i *Instance) GetImageLightboxOptions() ConfigImageLightboxResult {
 	i.RLock()
 	defer i.RUnlock()
 
 	delay := i.getSlideshowDelay()
 
-	ret := models.ConfigImageLightboxResult{
+	ret := ConfigImageLightboxResult{
 		SlideshowDelay: &delay,
 	}
 
-	if v := i.viperWith(ImageLightboxDisplayMode); v != nil {
-		mode := models.ImageLightboxDisplayMode(v.GetString(ImageLightboxDisplayMode))
+	if v := i.viperWith(ImageLightboxDisplayModeKey); v != nil {
+		mode := ImageLightboxDisplayMode(v.GetString(ImageLightboxDisplayModeKey))
 		ret.DisplayMode = &mode
 	}
 	if v := i.viperWith(ImageLightboxScaleUp); v != nil {
@@ -954,8 +974,8 @@ func (i *Instance) GetImageLightboxOptions() models.ConfigImageLightboxResult {
 		value := v.GetBool(ImageLightboxResetZoomOnNav)
 		ret.ResetZoomOnNav = &value
 	}
-	if v := i.viperWith(ImageLightboxScrollMode); v != nil {
-		mode := models.ImageLightboxScrollMode(v.GetString(ImageLightboxScrollMode))
+	if v := i.viperWith(ImageLightboxScrollModeKey); v != nil {
+		mode := ImageLightboxScrollMode(v.GetString(ImageLightboxScrollModeKey))
 		ret.ScrollMode = &mode
 	}
 	if v := i.viperWith(ImageLightboxScrollAttemptsBeforeChange); v != nil {
@@ -965,8 +985,8 @@ func (i *Instance) GetImageLightboxOptions() models.ConfigImageLightboxResult {
 	return ret
 }
 
-func (i *Instance) GetDisableDropdownCreate() *models.ConfigDisableDropdownCreate {
-	return &models.ConfigDisableDropdownCreate{
+func (i *Instance) GetDisableDropdownCreate() *ConfigDisableDropdownCreate {
+	return &ConfigDisableDropdownCreate{
 		Performer: i.getBool(DisableDropdownCreatePerformer),
 		Studio:    i.getBool(DisableDropdownCreateStudio),
 		Tag:       i.getBool(DisableDropdownCreateTag),
@@ -1055,13 +1075,13 @@ func (i *Instance) GetDeleteGeneratedDefault() bool {
 // GetDefaultIdentifySettings returns the default Identify task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOptions {
+func (i *Instance) GetDefaultIdentifySettings() *identify.Options {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(DefaultIdentifySettings)
 
 	if v.IsSet(DefaultIdentifySettings) {
-		var ret models.IdentifyMetadataTaskOptions
+		var ret identify.Options
 		if err := v.UnmarshalKey(DefaultIdentifySettings, &ret); err != nil {
 			return nil
 		}
@@ -1074,13 +1094,13 @@ func (i *Instance) GetDefaultIdentifySettings() *models.IdentifyMetadataTaskOpti
 // GetDefaultScanSettings returns the default Scan task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (i *Instance) GetDefaultScanSettings() *models.ScanMetadataOptions {
+func (i *Instance) GetDefaultScanSettings() *ScanMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(DefaultScanSettings)
 
 	if v.IsSet(DefaultScanSettings) {
-		var ret models.ScanMetadataOptions
+		var ret ScanMetadataOptions
 		if err := v.UnmarshalKey(DefaultScanSettings, &ret); err != nil {
 			return nil
 		}
@@ -1093,13 +1113,13 @@ func (i *Instance) GetDefaultScanSettings() *models.ScanMetadataOptions {
 // GetDefaultAutoTagSettings returns the default Scan task settings.
 // Returns nil if the settings could not be unmarshalled, or if it
 // has not been set.
-func (i *Instance) GetDefaultAutoTagSettings() *models.AutoTagMetadataOptions {
+func (i *Instance) GetDefaultAutoTagSettings() *AutoTagMetadataOptions {
 	i.RLock()
 	defer i.RUnlock()
 	v := i.viper(DefaultAutoTagSettings)
 
 	if v.IsSet(DefaultAutoTagSettings) {
-		var ret models.AutoTagMetadataOptions
+		var ret AutoTagMetadataOptions
 		if err := v.UnmarshalKey(DefaultAutoTagSettings, &ret); err != nil {
 			return nil
 		}

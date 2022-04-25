@@ -11,7 +11,7 @@ import (
 // postScrape handles post-processing of scraped content. If the content
 // requires post-processing, this function fans out to the given content
 // type and post-processes it.
-func (c Cache) postScrape(ctx context.Context, content models.ScrapedContent) (models.ScrapedContent, error) {
+func (c Cache) postScrape(ctx context.Context, content ScrapedContent) (ScrapedContent, error) {
 	// Analyze the concrete type, call the right post-processing function
 	switch v := content.(type) {
 	case *models.ScrapedPerformer:
@@ -20,17 +20,17 @@ func (c Cache) postScrape(ctx context.Context, content models.ScrapedContent) (m
 		}
 	case models.ScrapedPerformer:
 		return c.postScrapePerformer(ctx, v)
-	case *models.ScrapedScene:
+	case *ScrapedScene:
 		if v != nil {
 			return c.postScrapeScene(ctx, *v)
 		}
-	case models.ScrapedScene:
+	case ScrapedScene:
 		return c.postScrapeScene(ctx, v)
-	case *models.ScrapedGallery:
+	case *ScrapedGallery:
 		if v != nil {
 			return c.postScrapeGallery(ctx, *v)
 		}
-	case models.ScrapedGallery:
+	case ScrapedGallery:
 		return c.postScrapeGallery(ctx, v)
 	case *models.ScrapedMovie:
 		if v != nil {
@@ -44,7 +44,7 @@ func (c Cache) postScrape(ctx context.Context, content models.ScrapedContent) (m
 	return content, nil
 }
 
-func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer) (models.ScrapedContent, error) {
+func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer) (ScrapedContent, error) {
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		tqb := r.Tag()
 
@@ -67,7 +67,7 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 	return p, nil
 }
 
-func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (models.ScrapedContent, error) {
+func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (ScrapedContent, error) {
 	if m.Studio != nil {
 		if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			return match.ScrapedStudio(r.Studio(), m.Studio, nil)
@@ -105,7 +105,7 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 	return nil
 }
 
-func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene) (models.ScrapedContent, error) {
+func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (ScrapedContent, error) {
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		mqb := r.Movie()
@@ -159,7 +159,7 @@ func (c Cache) postScrapeScene(ctx context.Context, scene models.ScrapedScene) (
 	return scene, nil
 }
 
-func (c Cache) postScrapeGallery(ctx context.Context, g models.ScrapedGallery) (models.ScrapedContent, error) {
+func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (ScrapedContent, error) {
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		pqb := r.Performer()
 		tqb := r.Tag()

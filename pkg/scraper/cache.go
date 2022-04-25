@@ -148,8 +148,8 @@ func (c *Cache) ReloadScrapers() error {
 
 // ListScrapers lists scrapers matching one of the given types.
 // Returns a list of scrapers, sorted by their ID.
-func (c Cache) ListScrapers(tys []models.ScrapeContentType) []*models.Scraper {
-	var ret []*models.Scraper
+func (c Cache) ListScrapers(tys []ScrapeContentType) []*Scraper {
+	var ret []*Scraper
 	for _, s := range c.scrapers {
 		for _, t := range tys {
 			if s.supports(t) {
@@ -168,7 +168,7 @@ func (c Cache) ListScrapers(tys []models.ScrapeContentType) []*models.Scraper {
 }
 
 // GetScraper returns the scraper matching the provided id.
-func (c Cache) GetScraper(scraperID string) *models.Scraper {
+func (c Cache) GetScraper(scraperID string) *Scraper {
 	s := c.findScraper(scraperID)
 	if s != nil {
 		spec := s.spec()
@@ -187,7 +187,7 @@ func (c Cache) findScraper(scraperID string) scraper {
 	return nil
 }
 
-func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	// find scraper with the provided id
 	s := c.findScraper(id)
 	if s == nil {
@@ -206,7 +206,7 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.Scrap
 }
 
 // ScrapeFragment uses the given fragment input to scrape
-func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (models.ScrapedContent, error) {
+func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (ScrapedContent, error) {
 	s := c.findScraper(id)
 	if s == nil {
 		return nil, fmt.Errorf("%w: id %s", ErrNotFound, id)
@@ -228,7 +228,7 @@ func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (mode
 // ScrapeURL scrapes a given url for the given content. Searches the scraper cache
 // and picks the first scraper capable of scraping the given url into the desired
 // content. Returns the scraped content or an error if the scrape fails.
-func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (c Cache) ScrapeURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
 	for _, s := range c.scrapers {
 		if s.supportsURL(url, ty) {
 			ul, ok := s.(urlScraper)
@@ -251,7 +251,7 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeConten
 	return nil, nil
 }
 
-func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty ScrapeContentType) (ScrapedContent, error) {
 	s := c.findScraper(scraperID)
 	if s == nil {
 		return nil, fmt.Errorf("%w: id %s", ErrNotFound, scraperID)
@@ -261,9 +261,9 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 		return nil, fmt.Errorf("%w: cannot use scraper %s to scrape %v content", ErrNotSupported, scraperID, ty)
 	}
 
-	var ret models.ScrapedContent
+	var ret ScrapedContent
 	switch ty {
-	case models.ScrapeContentTypeScene:
+	case ScrapeContentTypeScene:
 		ss, ok := s.(sceneScraper)
 		if !ok {
 			return nil, fmt.Errorf("%w: cannot use scraper %s as a scene scraper", ErrNotSupported, scraperID)
@@ -284,7 +284,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 		if scraped != nil {
 			ret = scraped
 		}
-	case models.ScrapeContentTypeGallery:
+	case ScrapeContentTypeGallery:
 		gs, ok := s.(galleryScraper)
 		if !ok {
 			return nil, fmt.Errorf("%w: cannot use scraper %s as a gallery scraper", ErrNotSupported, scraperID)
