@@ -44,7 +44,7 @@ func generateSpriteScreenshot(encoder ffmpeg.FFMpeg, input string, t float64) (i
 	}
 
 	args := transcoder.ScreenshotTime(input, t, options)
-	data, err := encoder.GenerateOutput(context.Background(), args)
+	data, err := encoder.GenerateOutput(context.Background(), args, nil)
 	if err != nil {
 		return nil, err
 	}
