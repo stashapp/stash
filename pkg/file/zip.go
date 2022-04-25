@@ -2,63 +2,84 @@ package file
 
 import (
 	"archive/zip"
-	"io"
+	"fmt"
 	"io/fs"
-	"strings"
+	"os"
+	"path/filepath"
 )
 
-const zipSeparator = "\x00"
-
-type zipFile struct {
+type ZipFS struct {
+	*zip.Reader
+	zipInfo fs.FileInfo
 	zipPath string
-	zf      *zip.File
 }
 
-func (f *zipFile) Open() (io.ReadCloser, error) {
-	return f.zf.Open()
+// zipDirEntry is a special FileInfo that returns the zip file as a directory.
+type zipDirEntry struct {
+	fs.FileInfo
 }
 
-func (f *zipFile) Path() string {
-	// TODO - fix this
-	return ZipFilename(f.zipPath, f.zf.Name)
-}
+func (d *zipDirEntry) IsDir() bool { return true }
 
-func (f *zipFile) FileInfo() fs.FileInfo {
-	return f.zf.FileInfo()
-}
-
-func ZipFile(zipPath string, zf *zip.File) SourceFile {
-	return &zipFile{
-		zipPath: zipPath,
-		zf:      zf,
+func (f *ZipFS) rel(name string) (string, error) {
+	if f.zipPath == name {
+		return ".", nil
 	}
-}
 
-func ZipFilename(zipFilename, filenameInZip string) string {
-	return zipFilename + zipSeparator + filenameInZip
-}
-
-// IsZipPath returns true if the path includes the zip separator byte,
-// indicating it is within a zip file.
-func IsZipPath(p string) bool {
-	return strings.Contains(p, zipSeparator)
-}
-
-// ZipPathDisplayName converts an zip path for display. It translates the zip
-// file separator character into '/', since this character is also used for
-// path separators within zip files. It returns the original provided path
-// if it does not contain the zip file separator character.
-func ZipPathDisplayName(path string) string {
-	return strings.ReplaceAll(path, zipSeparator, "/")
-}
-
-func ZipFilePath(path string) (zipFilename, filename string) {
-	nullIndex := strings.Index(path, zipSeparator)
-	if nullIndex != -1 {
-		zipFilename = path[0:nullIndex]
-		filename = path[nullIndex+1:]
-	} else {
-		filename = path
+	relName, err := filepath.Rel(f.zipPath, name)
+	if err != nil {
+		return "", fmt.Errorf("internal error getting relative path: %w", err)
 	}
-	return
+
+	return relName, nil
+}
+
+func (f *ZipFS) Lstat(name string) (fs.FileInfo, error) {
+	if f.zipPath == name {
+		return &zipDirEntry{
+			FileInfo: f.zipInfo,
+		}, nil
+	}
+
+	relName, err := f.rel(name)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ff := range f.File {
+		if ff.Name == relName {
+			return ff.FileInfo(), nil
+		}
+	}
+
+	return nil, os.ErrNotExist
+}
+
+type zipReadDirFile struct {
+	fs.File
+}
+
+func (f *zipReadDirFile) ReadDir(n int) ([]fs.DirEntry, error) {
+	asReadDirFile, _ := f.File.(fs.ReadDirFile)
+	if asReadDirFile == nil {
+		return nil, fmt.Errorf("internal error: not a ReadDirFile")
+	}
+
+	return asReadDirFile.ReadDir(n)
+}
+
+func (f *ZipFS) Open(name string) (fs.ReadDirFile, error) {
+	relName, err := f.rel(name)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := f.Reader.Open(relName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &zipReadDirFile{
+		File: r,
+	}, nil
 }

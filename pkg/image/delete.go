@@ -34,11 +34,11 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 // Destroy destroys an image, optionally marking the file and generated files for deletion.
 func Destroy(ctx context.Context, i *models.Image, destroyer Destroyer, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
 	// don't try to delete if the image is in a zip file
-	if deleteFile && !file.IsZipPath(i.Path) {
-		if err := fileDeleter.Files([]string{i.Path}); err != nil {
-			return err
-		}
-	}
+	// if deleteFile && !file.IsZipPath(i.Path) {
+	// 	if err := fileDeleter.Files([]string{i.Path}); err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	if deleteGenerated {
 		if err := fileDeleter.MarkGeneratedFiles(i); err != nil {

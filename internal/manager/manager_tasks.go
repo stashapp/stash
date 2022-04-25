@@ -83,13 +83,14 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		return 0, err
 	}
 
-	scanJob := ScanJob{
-		txnManager:    s.Repository,
-		input:         input,
-		subscriptions: s.scanSubs,
-	}
+	// scanJob := ScanJob{
+	// 	txnManager:    s.Repository,
+	// 	input:         input,
+	// 	subscriptions: s.scanSubs,
+	// }
 
-	return s.JobManager.Add(ctx, "Scanning...", &scanJob), nil
+	// return s.JobManager.Add(ctx, "Scanning...", &scanJob), nil
+	panic("TODO")
 }
 
 func (s *Manager) Import(ctx context.Context) (int, error) {

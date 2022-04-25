@@ -7,14 +7,9 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/hash/md5"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	_ "golang.org/x/image/webp"
 )
@@ -89,37 +84,38 @@ func (i *imageReadCloser) Close() error {
 }
 
 func openSourceImage(path string) (io.ReadCloser, error) {
-	// may need to read from a zip file
-	zipFilename, filename := file.ZipFilePath(path)
-	if zipFilename != "" {
-		r, err := zip.OpenReader(zipFilename)
-		if err != nil {
-			return nil, err
-		}
+	// // may need to read from a zip file
+	// zipFilename, filename := file.ZipFilePath(path)
+	// if zipFilename != "" {
+	// 	r, err := zip.OpenReader(zipFilename)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
 
-		// defer closing of zip to the calling function, unless an error
-		// is returned, in which case it should be closed immediately
+	// 	// defer closing of zip to the calling function, unless an error
+	// 	// is returned, in which case it should be closed immediately
 
-		// find the file matching the filename
-		for _, f := range r.File {
-			if f.Name == filename {
-				src, err := f.Open()
-				if err != nil {
-					r.Close()
-					return nil, err
-				}
-				return &imageReadCloser{
-					src: src,
-					zrc: r,
-				}, nil
-			}
-		}
+	// 	// find the file matching the filename
+	// 	for _, f := range r.File {
+	// 		if f.Name == filename {
+	// 			src, err := f.Open()
+	// 			if err != nil {
+	// 				r.Close()
+	// 				return nil, err
+	// 			}
+	// 			return &imageReadCloser{
+	// 				src: src,
+	// 				zrc: r,
+	// 			}, nil
+	// 		}
+	// 	}
 
-		r.Close()
-		return nil, fmt.Errorf("file with name '%s' not found in zip file '%s'", filename, zipFilename)
-	}
+	// 	r.Close()
+	// 	return nil, fmt.Errorf("file with name '%s' not found in zip file '%s'", filename, zipFilename)
+	// }
 
-	return os.Open(filename)
+	// return os.Open(filename)
+	panic("TODO")
 }
 
 // GetFileDetails returns a pointer to an Image object with the
@@ -172,56 +168,58 @@ func GetFileModTime(path string) (time.Time, error) {
 
 func stat(path string) (os.FileInfo, error) {
 	// may need to read from a zip file
-	zipFilename, filename := file.ZipFilePath(path)
-	if zipFilename != "" {
-		r, err := zip.OpenReader(zipFilename)
-		if err != nil {
-			return nil, err
-		}
-		defer r.Close()
+	// zipFilename, filename := file.ZipFilePath(path)
+	// if zipFilename != "" {
+	// 	r, err := zip.OpenReader(zipFilename)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	defer r.Close()
 
-		// find the file matching the filename
-		for _, f := range r.File {
-			if f.Name == filename {
-				return f.FileInfo(), nil
-			}
-		}
+	// 	// find the file matching the filename
+	// 	for _, f := range r.File {
+	// 		if f.Name == filename {
+	// 			return f.FileInfo(), nil
+	// 		}
+	// 	}
 
-		return nil, fmt.Errorf("file with name '%s' not found in zip file '%s'", filename, zipFilename)
-	}
+	// 	return nil, fmt.Errorf("file with name '%s' not found in zip file '%s'", filename, zipFilename)
+	// }
 
-	return os.Stat(filename)
+	// return os.Stat(filename)
+	panic("TODO")
 }
 
 func Serve(w http.ResponseWriter, r *http.Request, path string) {
-	zipFilename, _ := file.ZipFilePath(path)
-	w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week
-	if zipFilename == "" {
-		http.ServeFile(w, r, path)
-	} else {
-		rc, err := openSourceImage(path)
-		if err != nil {
-			// assume not found
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			return
-		}
-		defer rc.Close()
+	// zipFilename, _ := file.ZipFilePath(path)
+	// w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week
+	// if zipFilename == "" {
+	// 	http.ServeFile(w, r, path)
+	// } else {
+	// 	rc, err := openSourceImage(path)
+	// 	if err != nil {
+	// 		// assume not found
+	// 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	// 		return
+	// 	}
+	// 	defer rc.Close()
 
-		data, err := io.ReadAll(rc)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	// 	data, err := io.ReadAll(rc)
+	// 	if err != nil {
+	// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 		return
+	// 	}
 
-		if k, err := w.Write(data); err != nil {
-			logger.Warnf("failure while serving image (wrote %v bytes out of %v): %v", k, len(data), err)
-		}
-	}
+	// 	if k, err := w.Write(data); err != nil {
+	// 		logger.Warnf("failure while serving image (wrote %v bytes out of %v): %v", k, len(data), err)
+	// 	}
+	// }
 }
 
 func IsCover(img *models.Image) bool {
-	_, fn := file.ZipFilePath(img.Path)
-	return strings.HasSuffix(fn, "cover.jpg")
+	// _, fn := file.ZipFilePath(img.Path)
+	// return strings.HasSuffix(fn, "cover.jpg")
+	panic("TODO")
 }
 
 func GetTitle(s *models.Image) string {
@@ -229,13 +227,16 @@ func GetTitle(s *models.Image) string {
 		return s.Title
 	}
 
-	_, fn := file.ZipFilePath(s.Path)
-	return filepath.Base(fn)
+	// _, fn := file.ZipFilePath(s.Path)
+	// return filepath.Base(fn)
+	panic("TODO")
 }
 
 // GetFilename gets the base name of the image file
 // If stripExt is set the file extension is omitted from the name
 func GetFilename(s *models.Image, stripExt bool) string {
-	_, fn := file.ZipFilePath(s.Path)
-	return fsutil.GetNameFromPath(fn, stripExt)
+	// _, fn := file.ZipFilePath(s.Path)
+	// return fsutil.GetNameFromPath(fn, stripExt)
+
+	panic("TODO")
 }
