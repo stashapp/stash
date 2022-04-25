@@ -8,11 +8,12 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type SceneScraper interface {
-	ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error)
+	ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error)
 }
 
 type SceneUpdatePostHookExecutor interface {
@@ -21,13 +22,13 @@ type SceneUpdatePostHookExecutor interface {
 
 type ScraperSource struct {
 	Name       string
-	Options    *models.IdentifyMetadataOptionsInput
+	Options    *MetadataOptions
 	Scraper    SceneScraper
 	RemoteSite string
 }
 
 type SceneIdentifier struct {
-	DefaultOptions              *models.IdentifyMetadataOptionsInput
+	DefaultOptions              *MetadataOptions
 	Sources                     []ScraperSource
 	ScreenshotSetter            scene.ScreenshotSetter
 	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
@@ -53,7 +54,7 @@ func (t *SceneIdentifier) Identify(ctx context.Context, txnManager models.Transa
 }
 
 type scrapeResult struct {
-	result *models.ScrapedScene
+	result *scraper.ScrapedScene
 	source ScraperSource
 }
 
@@ -84,7 +85,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		ID: s.ID,
 	}
 
-	options := []models.IdentifyMetadataOptionsInput{}
+	options := []MetadataOptions{}
 	if result.source.Options != nil {
 		options = append(options, *result.source.Options)
 	}
@@ -208,9 +209,9 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.Tra
 	return nil
 }
 
-func getFieldOptions(options []models.IdentifyMetadataOptionsInput) map[string]*models.IdentifyFieldOptionsInput {
+func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 	// prefer source-specific field strategies, then the defaults
-	ret := make(map[string]*models.IdentifyFieldOptionsInput)
+	ret := make(map[string]*FieldOptions)
 	for _, oo := range options {
 		for _, f := range oo.FieldOptions {
 			if _, found := ret[f.Field]; !found {
@@ -222,7 +223,7 @@ func getFieldOptions(options []models.IdentifyMetadataOptionsInput) map[string]*
 	return ret
 }
 
-func getScenePartial(scene *models.Scene, scraped *models.ScrapedScene, fieldOptions map[string]*models.IdentifyFieldOptionsInput, setOrganized bool) models.ScenePartial {
+func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
 	partial := models.ScenePartial{
 		ID: scene.ID,
 	}
@@ -259,17 +260,17 @@ func getScenePartial(scene *models.Scene, scraped *models.ScrapedScene, fieldOpt
 	return partial
 }
 
-func shouldSetSingleValueField(strategy *models.IdentifyFieldOptionsInput, hasExistingValue bool) bool {
+func shouldSetSingleValueField(strategy *FieldOptions, hasExistingValue bool) bool {
 	// if unset then default to MERGE
-	fs := models.IdentifyFieldStrategyMerge
+	fs := FieldStrategyMerge
 
 	if strategy != nil && strategy.Strategy.IsValid() {
 		fs = strategy.Strategy
 	}
 
-	if fs == models.IdentifyFieldStrategyIgnore {
+	if fs == FieldStrategyIgnore {
 		return false
 	}
 
-	return !hasExistingValue || fs == models.IdentifyFieldStrategyOverwrite
+	return !hasExistingValue || fs == FieldStrategyOverwrite
 }

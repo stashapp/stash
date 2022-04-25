@@ -1,5 +1,71 @@
 package models
 
+type PHashDuplicationCriterionInput struct {
+	Duplicated *bool `json:"duplicated"`
+	// Currently unimplemented
+	Distance *int `json:"distance"`
+}
+
+type SceneFilterType struct {
+	And     *SceneFilterType      `json:"AND"`
+	Or      *SceneFilterType      `json:"OR"`
+	Not     *SceneFilterType      `json:"NOT"`
+	Title   *StringCriterionInput `json:"title"`
+	Details *StringCriterionInput `json:"details"`
+	// Filter by file oshash
+	Oshash *StringCriterionInput `json:"oshash"`
+	// Filter by file checksum
+	Checksum *StringCriterionInput `json:"checksum"`
+	// Filter by file phash
+	Phash *StringCriterionInput `json:"phash"`
+	// Filter by path
+	Path *StringCriterionInput `json:"path"`
+	// Filter by rating
+	Rating *IntCriterionInput `json:"rating"`
+	// Filter by organized
+	Organized *bool `json:"organized"`
+	// Filter by o-counter
+	OCounter *IntCriterionInput `json:"o_counter"`
+	// Filter Scenes that have an exact phash match available
+	Duplicated *PHashDuplicationCriterionInput `json:"duplicated"`
+	// Filter by resolution
+	Resolution *ResolutionCriterionInput `json:"resolution"`
+	// Filter by duration (in seconds)
+	Duration *IntCriterionInput `json:"duration"`
+	// Filter to only include scenes which have markers. `true` or `false`
+	HasMarkers *string `json:"has_markers"`
+	// Filter to only include scenes missing this property
+	IsMissing *string `json:"is_missing"`
+	// Filter to only include scenes with this studio
+	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter to only include scenes with this movie
+	Movies *MultiCriterionInput `json:"movies"`
+	// Filter to only include scenes with these tags
+	Tags *HierarchicalMultiCriterionInput `json:"tags"`
+	// Filter by tag count
+	TagCount *IntCriterionInput `json:"tag_count"`
+	// Filter to only include scenes with performers with these tags
+	PerformerTags *HierarchicalMultiCriterionInput `json:"performer_tags"`
+	// Filter scenes that have performers that have been favorited
+	PerformerFavorite *bool `json:"performer_favorite"`
+	// Filter scenes by performer age at time of scene
+	PerformerAge *IntCriterionInput `json:"performer_age"`
+	// Filter to only include scenes with these performers
+	Performers *MultiCriterionInput `json:"performers"`
+	// Filter by performer count
+	PerformerCount *IntCriterionInput `json:"performer_count"`
+	// Filter by StashID
+	StashID *StringCriterionInput `json:"stash_id"`
+	// Filter by url
+	URL *StringCriterionInput `json:"url"`
+	// Filter by interactive
+	Interactive *bool `json:"interactive"`
+	// Filter by InteractiveSpeed
+	InteractiveSpeed *IntCriterionInput `json:"interactive_speed"`
+
+	Captions *StringCriterionInput `json:"captions"`
+}
+
 type SceneQueryOptions struct {
 	QueryOptions
 	SceneFilter *SceneFilterType
@@ -16,6 +82,18 @@ type SceneQueryResult struct {
 	finder     SceneFinder
 	scenes     []*Scene
 	resolveErr error
+}
+
+type SceneDestroyInput struct {
+	ID              string `json:"id"`
+	DeleteFile      *bool  `json:"delete_file"`
+	DeleteGenerated *bool  `json:"delete_generated"`
+}
+
+type ScenesDestroyInput struct {
+	Ids             []string `json:"ids"`
+	DeleteFile      *bool    `json:"delete_file"`
+	DeleteGenerated *bool    `json:"delete_generated"`
 }
 
 func NewSceneQueryResult(finder SceneFinder) *SceneQueryResult {

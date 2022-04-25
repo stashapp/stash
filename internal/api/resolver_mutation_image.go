@@ -26,7 +26,7 @@ func (r *mutationResolver) getImage(ctx context.Context, id int) (ret *models.Im
 	return ret, nil
 }
 
-func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUpdateInput) (ret *models.Image, err error) {
+func (r *mutationResolver) ImageUpdate(ctx context.Context, input ImageUpdateInput) (ret *models.Image, err error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
@@ -44,7 +44,7 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUp
 	return r.getImage(ctx, ret.ID)
 }
 
-func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.ImageUpdateInput) (ret []*models.Image, err error) {
+func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdateInput) (ret []*models.Image, err error) {
 	inputMaps := getUpdateInputMaps(ctx)
 
 	// Start the transaction and save the image
@@ -86,7 +86,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.Ima
 	return newRet, nil
 }
 
-func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Image, error) {
+func (r *mutationResolver) imageUpdate(input ImageUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Image, error) {
 	// Populate image from the input
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -157,7 +157,7 @@ func (r *mutationResolver) updateImageTags(qb models.ImageReaderWriter, imageID 
 	return qb.UpdateTags(imageID, ids)
 }
 
-func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.BulkImageUpdateInput) (ret []*models.Image, err error) {
+func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageUpdateInput) (ret []*models.Image, err error) {
 	imageIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, err
@@ -251,7 +251,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 	return newRet, nil
 }
 
-func adjustImageGalleryIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
+func adjustImageGalleryIDs(qb models.ImageReader, imageID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetGalleryIDs(imageID)
 	if err != nil {
 		return nil, err
@@ -260,7 +260,7 @@ func adjustImageGalleryIDs(qb models.ImageReader, imageID int, ids models.BulkUp
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustImagePerformerIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
+func adjustImagePerformerIDs(qb models.ImageReader, imageID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetPerformerIDs(imageID)
 	if err != nil {
 		return nil, err
@@ -269,7 +269,7 @@ func adjustImagePerformerIDs(qb models.ImageReader, imageID int, ids models.Bulk
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustImageTagIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
+func adjustImageTagIDs(qb models.ImageReader, imageID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetTagIDs(imageID)
 	if err != nil {
 		return nil, err

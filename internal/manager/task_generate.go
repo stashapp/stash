@@ -17,11 +17,45 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type GenerateMetadataInput struct {
+	Sprites             *bool                        `json:"sprites"`
+	Previews            *bool                        `json:"previews"`
+	ImagePreviews       *bool                        `json:"imagePreviews"`
+	PreviewOptions      *GeneratePreviewOptionsInput `json:"previewOptions"`
+	Markers             *bool                        `json:"markers"`
+	MarkerImagePreviews *bool                        `json:"markerImagePreviews"`
+	MarkerScreenshots   *bool                        `json:"markerScreenshots"`
+	Transcodes          *bool                        `json:"transcodes"`
+	// Generate transcodes even if not required
+	ForceTranscodes           *bool `json:"forceTranscodes"`
+	Phashes                   *bool `json:"phashes"`
+	InteractiveHeatmapsSpeeds *bool `json:"interactiveHeatmapsSpeeds"`
+	// scene ids to generate for
+	SceneIDs []string `json:"sceneIDs"`
+	// marker ids to generate for
+	MarkerIDs []string `json:"markerIDs"`
+	// overwrite existing media
+	Overwrite *bool `json:"overwrite"`
+}
+
+type GeneratePreviewOptionsInput struct {
+	// Number of segments in a preview file
+	PreviewSegments *int `json:"previewSegments"`
+	// Preview segment duration, in seconds
+	PreviewSegmentDuration *float64 `json:"previewSegmentDuration"`
+	// Duration of start of video to exclude when generating previews
+	PreviewExcludeStart *string `json:"previewExcludeStart"`
+	// Duration of end of video to exclude when generating previews
+	PreviewExcludeEnd *string `json:"previewExcludeEnd"`
+	// Preset when generating preview
+	PreviewPreset *models.PreviewPreset `json:"previewPreset"`
+}
+
 const generateQueueSize = 200000
 
 type GenerateJob struct {
 	txnManager models.TransactionManager
-	input      models.GenerateMetadataInput
+	input      GenerateMetadataInput
 
 	overwrite      bool
 	fileNamingAlgo models.HashAlgorithm
@@ -194,7 +228,7 @@ func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, que
 	return totals
 }
 
-func getGeneratePreviewOptions(optionsInput models.GeneratePreviewOptionsInput) generate.PreviewOptions {
+func getGeneratePreviewOptions(optionsInput GeneratePreviewOptionsInput) generate.PreviewOptions {
 	config := config.GetInstance()
 
 	ret := generate.PreviewOptions{
@@ -246,7 +280,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 
 	generatePreviewOptions := j.input.PreviewOptions
 	if generatePreviewOptions == nil {
-		generatePreviewOptions = &models.GeneratePreviewOptionsInput{}
+		generatePreviewOptions = &GeneratePreviewOptionsInput{}
 	}
 	options := getGeneratePreviewOptions(*generatePreviewOptions)
 

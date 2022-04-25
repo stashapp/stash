@@ -13,13 +13,13 @@ import (
 	"golang.org/x/text/collate"
 )
 
-func (r *queryResolver) Configuration(ctx context.Context) (*models.ConfigResult, error) {
+func (r *queryResolver) Configuration(ctx context.Context) (*ConfigResult, error) {
 	return makeConfigResult(), nil
 }
 
-func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*models.Directory, error) {
+func (r *queryResolver) Directory(ctx context.Context, path, locale *string) (*Directory, error) {
 
-	directory := &models.Directory{}
+	directory := &Directory{}
 	var err error
 
 	col := newCollator(locale, collate.IgnoreCase, collate.Numeric)
@@ -59,8 +59,8 @@ func getParent(path string) *string {
 	}
 }
 
-func makeConfigResult() *models.ConfigResult {
-	return &models.ConfigResult{
+func makeConfigResult() *ConfigResult {
+	return &ConfigResult{
 		General:   makeConfigGeneralResult(),
 		Interface: makeConfigInterfaceResult(),
 		Dlna:      makeConfigDLNAResult(),
@@ -70,7 +70,7 @@ func makeConfigResult() *models.ConfigResult {
 	}
 }
 
-func makeConfigGeneralResult() *models.ConfigGeneralResult {
+func makeConfigGeneralResult() *ConfigGeneralResult {
 	config := config.GetInstance()
 	logFile := config.GetLogFile()
 
@@ -82,7 +82,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 	scraperUserAgent := config.GetScraperUserAgent()
 	scraperCDPPath := config.GetScraperCDPPath()
 
-	return &models.ConfigGeneralResult{
+	return &ConfigGeneralResult{
 		Stashes:                      config.GetStashPaths(),
 		DatabasePath:                 config.GetDatabasePath(),
 		GeneratedPath:                config.GetGeneratedPath(),
@@ -125,7 +125,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 	}
 }
 
-func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
+func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	config := config.GetInstance()
 	menuItems := config.GetMenuItems()
 	soundOnPreview := config.GetSoundOnPreview()
@@ -149,7 +149,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	// FIXME - misnamed output field means we have redundant fields
 	disableDropdownCreate := config.GetDisableDropdownCreate()
 
-	return &models.ConfigInterfaceResult{
+	return &ConfigInterfaceResult{
 		MenuItems:                    menuItems,
 		SoundOnPreview:               &soundOnPreview,
 		WallShowTitle:                &wallShowTitle,
@@ -177,10 +177,10 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	}
 }
 
-func makeConfigDLNAResult() *models.ConfigDLNAResult {
+func makeConfigDLNAResult() *ConfigDLNAResult {
 	config := config.GetInstance()
 
-	return &models.ConfigDLNAResult{
+	return &ConfigDLNAResult{
 		ServerName:     config.GetDLNAServerName(),
 		Enabled:        config.GetDLNADefaultEnabled(),
 		WhitelistedIPs: config.GetDLNADefaultIPWhitelist(),
@@ -188,13 +188,13 @@ func makeConfigDLNAResult() *models.ConfigDLNAResult {
 	}
 }
 
-func makeConfigScrapingResult() *models.ConfigScrapingResult {
+func makeConfigScrapingResult() *ConfigScrapingResult {
 	config := config.GetInstance()
 
 	scraperUserAgent := config.GetScraperUserAgent()
 	scraperCDPPath := config.GetScraperCDPPath()
 
-	return &models.ConfigScrapingResult{
+	return &ConfigScrapingResult{
 		ScraperUserAgent:   &scraperUserAgent,
 		ScraperCertCheck:   config.GetScraperCertCheck(),
 		ScraperCDPPath:     &scraperCDPPath,
@@ -202,12 +202,12 @@ func makeConfigScrapingResult() *models.ConfigScrapingResult {
 	}
 }
 
-func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
+func makeConfigDefaultsResult() *ConfigDefaultSettingsResult {
 	config := config.GetInstance()
 	deleteFileDefault := config.GetDeleteFileDefault()
 	deleteGeneratedDefault := config.GetDeleteGeneratedDefault()
 
-	return &models.ConfigDefaultSettingsResult{
+	return &ConfigDefaultSettingsResult{
 		Identify:        config.GetDefaultIdentifySettings(),
 		Scan:            config.GetDefaultScanSettings(),
 		AutoTag:         config.GetDefaultAutoTagSettings(),
@@ -221,7 +221,7 @@ func makeConfigUIResult() map[string]interface{} {
 	return config.GetInstance().GetUIConfiguration()
 }
 
-func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input models.StashBoxInput) (*models.StashBoxValidationResult, error) {
+func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input config.StashBoxInput) (*StashBoxValidationResult, error) {
 	client := stashbox.NewClient(models.StashBox{Endpoint: input.Endpoint, APIKey: input.APIKey}, r.txnManager)
 	user, err := client.GetUser(ctx)
 
@@ -248,7 +248,7 @@ func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input m
 		}
 	}
 
-	result := models.StashBoxValidationResult{
+	result := StashBoxValidationResult{
 		Valid:  valid,
 		Status: status,
 	}

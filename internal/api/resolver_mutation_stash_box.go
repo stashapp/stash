@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
-func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input models.StashBoxFingerprintSubmissionInput) (bool, error) {
+func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input StashBoxFingerprintSubmissionInput) (bool, error) {
 	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
@@ -23,12 +23,12 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 	return client.SubmitStashBoxFingerprints(ctx, input.SceneIds, boxes[input.StashBoxIndex].Endpoint)
 }
 
-func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input models.StashBoxBatchPerformerTagInput) (string, error) {
+func (r *mutationResolver) StashBoxBatchPerformerTag(ctx context.Context, input manager.StashBoxBatchPerformerTagInput) (string, error) {
 	jobID := manager.GetInstance().StashBoxBatchPerformerTag(ctx, input)
 	return strconv.Itoa(jobID), nil
 }
 
-func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input models.StashBoxDraftSubmissionInput) (*string, error) {
+func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input StashBoxDraftSubmissionInput) (*string, error) {
 	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
@@ -58,7 +58,7 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input m
 	return res, err
 }
 
-func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, input models.StashBoxDraftSubmissionInput) (*string, error) {
+func (r *mutationResolver) SubmitStashBoxPerformerDraft(ctx context.Context, input StashBoxDraftSubmissionInput) (*string, error) {
 	boxes := config.GetInstance().GetStashBoxes()
 
 	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {

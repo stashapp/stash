@@ -50,20 +50,26 @@ func includeSceneStreamPath(scene *models.Scene, streamingResolution models.Stre
 	return int64(maxStreamingResolution.GetMinResolution()) >= minResolution
 }
 
-func makeStreamEndpoint(streamURL string, streamingResolution models.StreamingResolutionEnum, mimeType, label string) *models.SceneStreamEndpoint {
-	return &models.SceneStreamEndpoint{
+type SceneStreamEndpoint struct {
+	URL      string  `json:"url"`
+	MimeType *string `json:"mime_type"`
+	Label    *string `json:"label"`
+}
+
+func makeStreamEndpoint(streamURL string, streamingResolution models.StreamingResolutionEnum, mimeType, label string) *SceneStreamEndpoint {
+	return &SceneStreamEndpoint{
 		URL:      fmt.Sprintf("%s?resolution=%s", streamURL, streamingResolution.String()),
 		MimeType: &mimeType,
 		Label:    &label,
 	}
 }
 
-func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreamingTranscodeSize models.StreamingResolutionEnum) ([]*models.SceneStreamEndpoint, error) {
+func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreamingTranscodeSize models.StreamingResolutionEnum) ([]*SceneStreamEndpoint, error) {
 	if scene == nil {
 		return nil, fmt.Errorf("nil scene")
 	}
 
-	var ret []*models.SceneStreamEndpoint
+	var ret []*SceneStreamEndpoint
 	mimeWebm := ffmpeg.MimeWebm
 	mimeHLS := ffmpeg.MimeHLS
 	mimeMp4 := ffmpeg.MimeMp4
@@ -82,7 +88,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 
 	if HasTranscode(scene, config.GetInstance().GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
 		label := "Direct stream"
-		ret = append(ret, &models.SceneStreamEndpoint{
+		ret = append(ret, &SceneStreamEndpoint{
 			URL:      directStreamURL,
 			MimeType: &mimeMp4,
 			Label:    &label,
@@ -92,7 +98,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	// only add mkv stream endpoint if the scene container is an mkv already
 	if container == ffmpeg.Matroska {
 		label := "mkv"
-		ret = append(ret, &models.SceneStreamEndpoint{
+		ret = append(ret, &SceneStreamEndpoint{
 			URL: directStreamURL + ".mkv",
 			// set mkv to mp4 to trick the client, since many clients won't try mkv
 			MimeType: &mimeMp4,
@@ -115,8 +121,8 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	mp4LabelStandard := "MP4 Standard (480p)" // "STANDARD"
 	mp4LabelLow := "MP4 Low (240p)"           // "LOW"
 
-	var webmStreams []*models.SceneStreamEndpoint
-	var mp4Streams []*models.SceneStreamEndpoint
+	var webmStreams []*SceneStreamEndpoint
+	var mp4Streams []*SceneStreamEndpoint
 
 	webmURL := directStreamURL + ".webm"
 	mp4URL := directStreamURL + ".mp4"
@@ -149,7 +155,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	ret = append(ret, webmStreams...)
 	ret = append(ret, mp4Streams...)
 
-	defaultStreams := []*models.SceneStreamEndpoint{
+	defaultStreams := []*SceneStreamEndpoint{
 		{
 			URL:      directStreamURL + ".webm",
 			MimeType: &mimeWebm,
@@ -159,7 +165,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 
 	ret = append(ret, defaultStreams...)
 
-	hls := models.SceneStreamEndpoint{
+	hls := SceneStreamEndpoint{
 		URL:      directStreamURL + ".m3u8",
 		MimeType: &mimeHLS,
 		Label:    &labelHLS,

@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *mutationResolver) SaveFilter(ctx context.Context, input models.SaveFilterInput) (ret *models.SavedFilter, err error) {
+func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput) (ret *models.SavedFilter, err error) {
 	if strings.TrimSpace(input.Name) == "" {
 		return nil, errors.New("name must be non-empty")
 	}
@@ -42,7 +42,7 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input models.SaveFilt
 	return ret, err
 }
 
-func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input models.DestroyFilterInput) (bool, error) {
+func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input DestroyFilterInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return false, err
@@ -57,7 +57,7 @@ func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input models.
 	return true, nil
 }
 
-func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input models.SetDefaultFilterInput) (bool, error) {
+func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input SetDefaultFilterInput) (bool, error) {
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.SavedFilter()
 

@@ -232,7 +232,7 @@ func (r *mutationResolver) updateSceneGalleries(qb models.SceneReaderWriter, sce
 	return qb.UpdateGalleries(sceneID, ids)
 }
 
-func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.BulkSceneUpdateInput) ([]*models.Scene, error) {
+func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneUpdateInput) ([]*models.Scene, error) {
 	sceneIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, err
@@ -343,9 +343,9 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 	return newRet, nil
 }
 
-func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
+func adjustIDs(existingIDs []int, updateIDs BulkUpdateIds) []int {
 	// if we are setting the ids, just return the ids
-	if updateIDs.Mode == models.BulkUpdateIDModeSet {
+	if updateIDs.Mode == BulkUpdateIDModeSet {
 		existingIDs = []int{}
 		for _, idStr := range updateIDs.Ids {
 			id, _ := strconv.Atoi(idStr)
@@ -362,7 +362,7 @@ func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
 		foundExisting := false
 		for idx, existingID := range existingIDs {
 			if existingID == id {
-				if updateIDs.Mode == models.BulkUpdateIDModeRemove {
+				if updateIDs.Mode == BulkUpdateIDModeRemove {
 					// remove from the list
 					existingIDs = append(existingIDs[:idx], existingIDs[idx+1:]...)
 				}
@@ -372,7 +372,7 @@ func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
 			}
 		}
 
-		if !foundExisting && updateIDs.Mode != models.BulkUpdateIDModeRemove {
+		if !foundExisting && updateIDs.Mode != BulkUpdateIDModeRemove {
 			existingIDs = append(existingIDs, id)
 		}
 	}
@@ -380,7 +380,7 @@ func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
 	return existingIDs
 }
 
-func adjustScenePerformerIDs(qb models.SceneReader, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
+func adjustScenePerformerIDs(qb models.SceneReader, sceneID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetPerformerIDs(sceneID)
 	if err != nil {
 		return nil, err
@@ -393,7 +393,7 @@ type tagIDsGetter interface {
 	GetTagIDs(id int) ([]int, error)
 }
 
-func adjustTagIDs(qb tagIDsGetter, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
+func adjustTagIDs(qb tagIDsGetter, sceneID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetTagIDs(sceneID)
 	if err != nil {
 		return nil, err
@@ -402,7 +402,7 @@ func adjustTagIDs(qb tagIDsGetter, sceneID int, ids models.BulkUpdateIds) (ret [
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustSceneGalleryIDs(qb models.SceneReader, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
+func adjustSceneGalleryIDs(qb models.SceneReader, sceneID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetGalleryIDs(sceneID)
 	if err != nil {
 		return nil, err
@@ -411,14 +411,14 @@ func adjustSceneGalleryIDs(qb models.SceneReader, sceneID int, ids models.BulkUp
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustSceneMovieIDs(qb models.SceneReader, sceneID int, updateIDs models.BulkUpdateIds) ([]models.MoviesScenes, error) {
+func adjustSceneMovieIDs(qb models.SceneReader, sceneID int, updateIDs BulkUpdateIds) ([]models.MoviesScenes, error) {
 	existingMovies, err := qb.GetMovies(sceneID)
 	if err != nil {
 		return nil, err
 	}
 
 	// if we are setting the ids, just return the ids
-	if updateIDs.Mode == models.BulkUpdateIDModeSet {
+	if updateIDs.Mode == BulkUpdateIDModeSet {
 		existingMovies = []models.MoviesScenes{}
 		for _, idStr := range updateIDs.Ids {
 			id, _ := strconv.Atoi(idStr)
@@ -435,7 +435,7 @@ func adjustSceneMovieIDs(qb models.SceneReader, sceneID int, updateIDs models.Bu
 		foundExisting := false
 		for idx, existingMovie := range existingMovies {
 			if existingMovie.MovieID == id {
-				if updateIDs.Mode == models.BulkUpdateIDModeRemove {
+				if updateIDs.Mode == BulkUpdateIDModeRemove {
 					// remove from the list
 					existingMovies = append(existingMovies[:idx], existingMovies[idx+1:]...)
 				}
@@ -445,7 +445,7 @@ func adjustSceneMovieIDs(qb models.SceneReader, sceneID int, updateIDs models.Bu
 			}
 		}
 
-		if !foundExisting && updateIDs.Mode != models.BulkUpdateIDModeRemove {
+		if !foundExisting && updateIDs.Mode != BulkUpdateIDModeRemove {
 			existingMovies = append(existingMovies, models.MoviesScenes{MovieID: id})
 		}
 	}
@@ -574,7 +574,7 @@ func (r *mutationResolver) getSceneMarker(ctx context.Context, id int) (ret *mod
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.SceneMarkerCreateInput) (*models.SceneMarker, error) {
+func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input SceneMarkerCreateInput) (*models.SceneMarker, error) {
 	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
 	if err != nil {
 		return nil, err
@@ -609,7 +609,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 	return r.getSceneMarker(ctx, ret.ID)
 }
 
-func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.SceneMarkerUpdateInput) (*models.SceneMarker, error) {
+func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input SceneMarkerUpdateInput) (*models.SceneMarker, error) {
 	// Populate scene marker from the input
 	sceneMarkerID, err := strconv.Atoi(input.ID)
 	if err != nil {

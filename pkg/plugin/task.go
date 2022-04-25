@@ -6,6 +6,12 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
+type PluginTask struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	Plugin      *Plugin `json:"plugin"`
+}
+
 // Task is the interface that handles management of a single plugin task.
 type Task interface {
 	// Start starts the plugin task. Returns an error if task could not be

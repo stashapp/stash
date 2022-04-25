@@ -19,7 +19,7 @@ import (
 
 type cleanJob struct {
 	txnManager models.TransactionManager
-	input      models.CleanMetadataInput
+	input      CleanMetadataInput
 	scanSubs   *subscriptionManager
 }
 
@@ -488,7 +488,7 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 	}, nil)
 }
 
-func getStashFromPath(pathToCheck string) *models.StashConfig {
+func getStashFromPath(pathToCheck string) *config.StashConfig {
 	for _, s := range config.GetInstance().GetStashPaths() {
 		if fsutil.IsPathInDir(s.Path, filepath.Dir(pathToCheck)) {
 			return s
@@ -497,7 +497,7 @@ func getStashFromPath(pathToCheck string) *models.StashConfig {
 	return nil
 }
 
-func getStashFromDirPath(pathToCheck string) *models.StashConfig {
+func getStashFromDirPath(pathToCheck string) *config.StashConfig {
 	for _, s := range config.GetInstance().GetStashPaths() {
 		if fsutil.IsPathInDir(s.Path, pathToCheck) {
 			return s
