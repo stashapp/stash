@@ -16,7 +16,7 @@
 *.out
 
 # GraphQL generated output
-pkg/models/generated_*.go
+internal/api/generated_*.go
 ui/v2.5/src/core/generated-*.tsx
 
 ####

@@ -26,7 +26,7 @@ func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *model
 	return ret, nil
 }
 
-func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
+func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerCreateInput) (*models.Performer, error) {
 	// generate checksum from performer name rather than image
 	checksum := md5.FromString(input.Name)
 
@@ -167,7 +167,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	return r.getPerformer(ctx, performer.ID)
 }
 
-func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
+func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerUpdateInput) (*models.Performer, error) {
 	// Populate performer from the input
 	performerID, _ := strconv.Atoi(input.ID)
 	updatedPerformer := models.PerformerPartial{
@@ -298,7 +298,7 @@ func (r *mutationResolver) updatePerformerTags(qb models.PerformerReaderWriter, 
 	return qb.UpdateTags(performerID, ids)
 }
 
-func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models.BulkPerformerUpdateInput) ([]*models.Performer, error) {
+func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPerformerUpdateInput) ([]*models.Performer, error) {
 	performerIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, err
@@ -409,7 +409,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input models
 	return newRet, nil
 }
 
-func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
+func (r *mutationResolver) PerformerDestroy(ctx context.Context, input PerformerDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return false, err

@@ -1,5 +1,54 @@
 package models
 
+type ImageFilterType struct {
+	And   *ImageFilterType      `json:"AND"`
+	Or    *ImageFilterType      `json:"OR"`
+	Not   *ImageFilterType      `json:"NOT"`
+	Title *StringCriterionInput `json:"title"`
+	// Filter by file checksum
+	Checksum *StringCriterionInput `json:"checksum"`
+	// Filter by path
+	Path *StringCriterionInput `json:"path"`
+	// Filter by rating
+	Rating *IntCriterionInput `json:"rating"`
+	// Filter by organized
+	Organized *bool `json:"organized"`
+	// Filter by o-counter
+	OCounter *IntCriterionInput `json:"o_counter"`
+	// Filter by resolution
+	Resolution *ResolutionCriterionInput `json:"resolution"`
+	// Filter to only include images missing this property
+	IsMissing *string `json:"is_missing"`
+	// Filter to only include images with this studio
+	Studios *HierarchicalMultiCriterionInput `json:"studios"`
+	// Filter to only include images with these tags
+	Tags *HierarchicalMultiCriterionInput `json:"tags"`
+	// Filter by tag count
+	TagCount *IntCriterionInput `json:"tag_count"`
+	// Filter to only include images with performers with these tags
+	PerformerTags *HierarchicalMultiCriterionInput `json:"performer_tags"`
+	// Filter to only include images with these performers
+	Performers *MultiCriterionInput `json:"performers"`
+	// Filter by performer count
+	PerformerCount *IntCriterionInput `json:"performer_count"`
+	// Filter images that have performers that have been favorited
+	PerformerFavorite *bool `json:"performer_favorite"`
+	// Filter to only include images with these galleries
+	Galleries *MultiCriterionInput `json:"galleries"`
+}
+
+type ImageDestroyInput struct {
+	ID              string `json:"id"`
+	DeleteFile      *bool  `json:"delete_file"`
+	DeleteGenerated *bool  `json:"delete_generated"`
+}
+
+type ImagesDestroyInput struct {
+	Ids             []string `json:"ids"`
+	DeleteFile      *bool    `json:"delete_file"`
+	DeleteGenerated *bool    `json:"delete_generated"`
+}
+
 type ImageQueryOptions struct {
 	QueryOptions
 	ImageFilter *ImageFilterType

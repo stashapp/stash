@@ -122,6 +122,30 @@ type ScenePartial struct {
 	InteractiveSpeed *sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
 }
 
+type SceneMovieInput struct {
+	MovieID    string `json:"movie_id"`
+	SceneIndex *int   `json:"scene_index"`
+}
+
+type SceneUpdateInput struct {
+	ClientMutationID *string            `json:"clientMutationId"`
+	ID               string             `json:"id"`
+	Title            *string            `json:"title"`
+	Details          *string            `json:"details"`
+	URL              *string            `json:"url"`
+	Date             *string            `json:"date"`
+	Rating           *int               `json:"rating"`
+	Organized        *bool              `json:"organized"`
+	StudioID         *string            `json:"studio_id"`
+	GalleryIds       []string           `json:"gallery_ids"`
+	PerformerIds     []string           `json:"performer_ids"`
+	Movies           []*SceneMovieInput `json:"movies"`
+	TagIds           []string           `json:"tag_ids"`
+	// This should be a URL or a base64 encoded data URL
+	CoverImage *string         `json:"cover_image"`
+	StashIds   []*StashIDInput `json:"stash_ids"`
+}
+
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
 func (s ScenePartial) UpdateInput() SceneUpdateInput {
 	boolPtrCopy := func(v *bool) *bool {

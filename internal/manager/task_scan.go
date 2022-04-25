@@ -25,7 +25,7 @@ const scanQueueSize = 200000
 
 type ScanJob struct {
 	txnManager    models.TransactionManager
-	input         models.ScanMetadataInput
+	input         ScanMetadataInput
 	subscriptions *subscriptionManager
 }
 
@@ -88,15 +88,15 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		task := ScanTask{
 			TxnManager:           j.txnManager,
 			file:                 file.FSFile(f.path, f.info),
-			UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
-			StripFileExtension:   utils.IsTrue(input.StripFileExtension),
+			UseFileMetadata:      input.UseFileMetadata,
+			StripFileExtension:   input.StripFileExtension,
 			fileNamingAlgorithm:  fileNamingAlgo,
 			calculateMD5:         calculateMD5,
-			GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
-			GenerateImagePreview: utils.IsTrue(input.ScanGenerateImagePreviews),
-			GenerateSprite:       utils.IsTrue(input.ScanGenerateSprites),
-			GeneratePhash:        utils.IsTrue(input.ScanGeneratePhashes),
-			GenerateThumbnails:   utils.IsTrue(input.ScanGenerateThumbnails),
+			GeneratePreview:      input.ScanGeneratePreviews,
+			GenerateImagePreview: input.ScanGenerateImagePreviews,
+			GenerateSprite:       input.ScanGenerateSprites,
+			GeneratePhash:        input.ScanGeneratePhashes,
+			GenerateThumbnails:   input.ScanGenerateThumbnails,
 			progress:             progress,
 			CaseSensitiveFs:      f.caseSensitiveFs,
 			mutexManager:         mutexManager,
@@ -145,7 +145,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.subscriptions.notify()
 }
 
-func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, scanQueue chan<- scanFile, parallelTasks int) (total int, newFiles int) {
+func (j *ScanJob) queueFiles(ctx context.Context, paths []*config.StashConfig, scanQueue chan<- scanFile, parallelTasks int) (total int, newFiles int) {
 	defer close(scanQueue)
 
 	var minModTime time.Time
@@ -322,7 +322,7 @@ func (t *ScanTask) Start(ctx context.Context) {
 		iwg.Add()
 
 		go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", path), func() {
-			options := getGeneratePreviewOptions(models.GeneratePreviewOptionsInput{})
+			options := getGeneratePreviewOptions(GeneratePreviewOptionsInput{})
 			const overwrite = false
 
 			g := &generate.Generator{
@@ -349,7 +349,7 @@ func (t *ScanTask) Start(ctx context.Context) {
 	iwg.Wait()
 }
 
-func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
+func walkFilesToScan(s *config.StashConfig, f filepath.WalkFunc) error {
 	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()

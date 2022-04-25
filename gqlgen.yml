@@ -4,46 +4,110 @@ schema:
   - "graphql/schema/types/*.graphql"
   - "graphql/schema/*.graphql"
 exec:
-  filename: pkg/models/generated_exec.go
+  filename: internal/api/generated_exec.go
 model:
-  filename: pkg/models/generated_models.go
+  filename: internal/api/generated_models.go
 resolver:
   filename: internal/api/resolver.go
   type: Resolver
 
 struct_tag: gqlgen
 
+autobind:
+  - github.com/stashapp/stash/pkg/models
+  - github.com/stashapp/stash/pkg/plugin
+  - github.com/stashapp/stash/pkg/scraper
+  - github.com/stashapp/stash/internal/identify
+  - github.com/stashapp/stash/internal/dlna
+  - github.com/stashapp/stash/pkg/scraper/stashbox
+
 models:
+  # autobind on config causes generation issues
   # Scalars
   Timestamp:
     model: github.com/stashapp/stash/pkg/models.Timestamp
-  # Objects
-  Gallery:
-    model: github.com/stashapp/stash/pkg/models.Gallery
-  Image:
-    model: github.com/stashapp/stash/pkg/models.Image
-  ImageFileType:
-    model: github.com/stashapp/stash/pkg/models.ImageFileType
-  Performer:
-    model: github.com/stashapp/stash/pkg/models.Performer
-  Scene:
-    model: github.com/stashapp/stash/pkg/models.Scene
-  SceneMarker:
-    model: github.com/stashapp/stash/pkg/models.SceneMarker
-  ScrapedItem:
-    model: github.com/stashapp/stash/pkg/models.ScrapedItem
-  Studio:
-    model: github.com/stashapp/stash/pkg/models.Studio
-  Movie:
-    model: github.com/stashapp/stash/pkg/models.Movie
-  Tag:
-    model: github.com/stashapp/stash/pkg/models.Tag
-  SceneFileType:
-    model: github.com/stashapp/stash/pkg/models.SceneFileType
-  SavedFilter:
-    model: github.com/stashapp/stash/pkg/models.SavedFilter
-  StashID:
-    model: github.com/stashapp/stash/pkg/models.StashID
-  SceneCaption:
-    model: github.com/stashapp/stash/pkg/models.SceneCaption
-
+  StashConfig:
+    model: github.com/stashapp/stash/internal/manager/config.StashConfig
+  StashConfigInput:
+    model: github.com/stashapp/stash/internal/manager/config.StashConfigInput
+  StashBoxInput:
+    model: github.com/stashapp/stash/internal/manager/config.StashBoxInput
+  ConfigImageLightboxResult:
+    model: github.com/stashapp/stash/internal/manager/config.ConfigImageLightboxResult
+  ImageLightboxDisplayMode:
+    model: github.com/stashapp/stash/internal/manager/config.ImageLightboxDisplayMode
+  ImageLightboxScrollMode:
+    model: github.com/stashapp/stash/internal/manager/config.ImageLightboxScrollMode
+  ConfigDisableDropdownCreate:
+    model: github.com/stashapp/stash/internal/manager/config.ConfigDisableDropdownCreate
+  ScanMetadataOptions:
+    model:  github.com/stashapp/stash/internal/manager/config.ScanMetadataOptions
+  AutoTagMetadataOptions:
+    model: github.com/stashapp/stash/internal/manager/config.AutoTagMetadataOptions
+  SceneParserInput:
+    model: github.com/stashapp/stash/internal/manager.SceneParserInput
+  SceneParserResult:
+    model: github.com/stashapp/stash/internal/manager.SceneParserResult
+  SceneMovieID:
+    model: github.com/stashapp/stash/internal/manager.SceneMovieID
+  SystemStatus:
+    model: github.com/stashapp/stash/internal/manager.SystemStatus
+  SystemStatusEnum:
+    model: github.com/stashapp/stash/internal/manager.SystemStatusEnum
+  ImportDuplicateEnum:
+    model: github.com/stashapp/stash/internal/manager.ImportDuplicateEnum
+  SetupInput:
+    model: github.com/stashapp/stash/internal/manager.SetupInput
+  MigrateInput:
+    model: github.com/stashapp/stash/internal/manager.MigrateInput
+  ScanMetadataInput:
+    model: github.com/stashapp/stash/internal/manager.ScanMetadataInput
+  GenerateMetadataInput:
+    model: github.com/stashapp/stash/internal/manager.GenerateMetadataInput
+  GeneratePreviewOptionsInput:
+    model: github.com/stashapp/stash/internal/manager.GeneratePreviewOptionsInput
+  AutoTagMetadataInput:
+    model: github.com/stashapp/stash/internal/manager.AutoTagMetadataInput
+  CleanMetadataInput:
+    model: github.com/stashapp/stash/internal/manager.CleanMetadataInput
+  StashBoxBatchPerformerTagInput:
+    model: github.com/stashapp/stash/internal/manager.StashBoxBatchPerformerTagInput
+  SceneStreamEndpoint:
+    model: github.com/stashapp/stash/internal/manager.SceneStreamEndpoint
+  ExportObjectTypeInput:
+    model: github.com/stashapp/stash/internal/manager.ExportObjectTypeInput
+  ExportObjectsInput:
+    model: github.com/stashapp/stash/internal/manager.ExportObjectsInput
+  ImportObjectsInput:
+    model: github.com/stashapp/stash/internal/manager.ImportObjectsInput
+  ScanMetaDataFilterInput:
+    model: github.com/stashapp/stash/internal/manager.ScanMetaDataFilterInput
+  # renamed types
+  DLNAStatus:
+    model: github.com/stashapp/stash/internal/dlna.Status
+  DLNAIP:
+    model: github.com/stashapp/stash/internal/dlna.Dlnaip
+  IdentifySource:
+    model: github.com/stashapp/stash/internal/identify.Source
+  IdentifyMetadataTaskOptions:
+    model: github.com/stashapp/stash/internal/identify.Options
+  IdentifyMetadataInput:
+    model: github.com/stashapp/stash/internal/identify.Options
+  IdentifyMetadataOptions:
+    model: github.com/stashapp/stash/internal/identify.MetadataOptions
+  IdentifyFieldOptions:
+    model: github.com/stashapp/stash/internal/identify.FieldOptions
+  IdentifyFieldStrategy:
+    model: github.com/stashapp/stash/internal/identify.FieldStrategy
+  ScraperSource:
+    model: github.com/stashapp/stash/pkg/scraper.Source
+  # rebind inputs to types
+  IdentifySourceInput:
+    model: github.com/stashapp/stash/internal/identify.Source
+  IdentifyFieldOptionsInput:
+    model: github.com/stashapp/stash/internal/identify.FieldOptions
+  IdentifyMetadataOptionsInput:
+    model: github.com/stashapp/stash/internal/identify.MetadataOptions
+  ScraperSourceInput:
+    model: github.com/stashapp/stash/pkg/scraper.Source
+  

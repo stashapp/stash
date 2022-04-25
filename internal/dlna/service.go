@@ -12,6 +12,20 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+type Status struct {
+	Running bool `json:"running"`
+	// If not currently running, time until it will be started. If running, time until it will be stopped
+	Until              *time.Time `json:"until"`
+	RecentIPAddresses  []string   `json:"recentIPAddresses"`
+	AllowedIPAddresses []*Dlnaip  `json:"allowedIPAddresses"`
+}
+
+type Dlnaip struct {
+	IPAddress string `json:"ipAddress"`
+	// Time until IP will be no longer allowed/disallowed
+	Until *time.Time `json:"until"`
+}
+
 type dmsConfig struct {
 	Path                string
 	IfNames             []string
@@ -273,11 +287,11 @@ func (s *Service) IsRunning() bool {
 	return s.running
 }
 
-func (s *Service) Status() *models.DLNAStatus {
+func (s *Service) Status() *Status {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	ret := &models.DLNAStatus{
+	ret := &Status{
 		Running:            s.running,
 		RecentIPAddresses:  s.ipWhitelistMgr.getRecent(),
 		AllowedIPAddresses: s.ipWhitelistMgr.getTempAllowed(),
