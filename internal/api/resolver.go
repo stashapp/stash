@@ -38,37 +38,37 @@ func (r *Resolver) scraperCache() *scraper.Cache {
 	return manager.GetInstance().ScraperCache
 }
 
-func (r *Resolver) Gallery() models.GalleryResolver {
+func (r *Resolver) Gallery() GalleryResolver {
 	return &galleryResolver{r}
 }
-func (r *Resolver) Mutation() models.MutationResolver {
+func (r *Resolver) Mutation() MutationResolver {
 	return &mutationResolver{r}
 }
-func (r *Resolver) Performer() models.PerformerResolver {
+func (r *Resolver) Performer() PerformerResolver {
 	return &performerResolver{r}
 }
-func (r *Resolver) Query() models.QueryResolver {
+func (r *Resolver) Query() QueryResolver {
 	return &queryResolver{r}
 }
-func (r *Resolver) Scene() models.SceneResolver {
+func (r *Resolver) Scene() SceneResolver {
 	return &sceneResolver{r}
 }
-func (r *Resolver) Image() models.ImageResolver {
+func (r *Resolver) Image() ImageResolver {
 	return &imageResolver{r}
 }
-func (r *Resolver) SceneMarker() models.SceneMarkerResolver {
+func (r *Resolver) SceneMarker() SceneMarkerResolver {
 	return &sceneMarkerResolver{r}
 }
-func (r *Resolver) Studio() models.StudioResolver {
+func (r *Resolver) Studio() StudioResolver {
 	return &studioResolver{r}
 }
-func (r *Resolver) Movie() models.MovieResolver {
+func (r *Resolver) Movie() MovieResolver {
 	return &movieResolver{r}
 }
-func (r *Resolver) Subscription() models.SubscriptionResolver {
+func (r *Resolver) Subscription() SubscriptionResolver {
 	return &subscriptionResolver{r}
 }
-func (r *Resolver) Tag() models.TagResolver {
+func (r *Resolver) Tag() TagResolver {
 	return &tagResolver{r}
 }
 
@@ -125,8 +125,8 @@ func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *stri
 	return ret, nil
 }
 
-func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, error) {
-	var ret models.StatsResultType
+func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
+	var ret StatsResultType
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		scenesQB := repo.Scene()
 		imageQB := repo.Image()
@@ -146,7 +146,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 		moviesCount, _ := moviesQB.Count()
 		tagsCount, _ := tagsQB.Count()
 
-		ret = models.StatsResultType{
+		ret = StatsResultType{
 			SceneCount:     scenesCount,
 			ScenesSize:     scenesSize,
 			ScenesDuration: scenesDuration,
@@ -167,10 +167,10 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 	return &ret, nil
 }
 
-func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
+func (r *queryResolver) Version(ctx context.Context) (*Version, error) {
 	version, hash, buildtime := GetVersion()
 
-	return &models.Version{
+	return &Version{
 		Version:   &version,
 		Hash:      hash,
 		BuildTime: buildtime,
@@ -178,7 +178,7 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 }
 
 // Latestversion returns the latest git shorthash commit.
-func (r *queryResolver) Latestversion(ctx context.Context) (*models.ShortVersion, error) {
+func (r *queryResolver) Latestversion(ctx context.Context) (*ShortVersion, error) {
 	ver, url, err := GetLatestVersion(ctx, true)
 	if err == nil {
 		logger.Infof("Retrieved latest hash: %s", ver)
@@ -186,21 +186,21 @@ func (r *queryResolver) Latestversion(ctx context.Context) (*models.ShortVersion
 		logger.Errorf("Error while retrieving latest hash: %s", err)
 	}
 
-	return &models.ShortVersion{
+	return &ShortVersion{
 		Shorthash: ver,
 		URL:       url,
 	}, err
 }
 
 // Get scene marker tags which show up under the video.
-func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([]*models.SceneMarkerTag, error) {
+func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([]*SceneMarkerTag, error) {
 	sceneID, err := strconv.Atoi(scene_id)
 	if err != nil {
 		return nil, err
 	}
 
 	var keys []int
-	tags := make(map[int]*models.SceneMarkerTag)
+	tags := make(map[int]*SceneMarkerTag)
 
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		sceneMarkers, err := repo.SceneMarker().FindBySceneID(sceneID)
@@ -216,7 +216,7 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 			}
 			_, hasKey := tags[markerPrimaryTag.ID]
 			if !hasKey {
-				sceneMarkerTag := &models.SceneMarkerTag{Tag: markerPrimaryTag}
+				sceneMarkerTag := &SceneMarkerTag{Tag: markerPrimaryTag}
 				tags[markerPrimaryTag.ID] = sceneMarkerTag
 				keys = append(keys, markerPrimaryTag.ID)
 			}
@@ -235,7 +235,7 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 		return a.SceneMarkers[0].Seconds < b.SceneMarkers[0].Seconds
 	})
 
-	var result []*models.SceneMarkerTag
+	var result []*SceneMarkerTag
 	for _, key := range keys {
 		result = append(result, tags[key])
 	}

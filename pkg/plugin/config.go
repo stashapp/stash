@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/models"
 	"gopkg.in/yaml.v2"
 )
 
@@ -59,11 +58,11 @@ type Config struct {
 	Hooks []*HookConfig `yaml:"hooks"`
 }
 
-func (c Config) getPluginTasks(includePlugin bool) []*models.PluginTask {
-	var ret []*models.PluginTask
+func (c Config) getPluginTasks(includePlugin bool) []*PluginTask {
+	var ret []*PluginTask
 
 	for _, o := range c.Tasks {
-		task := &models.PluginTask{
+		task := &PluginTask{
 			Name:        o.Name,
 			Description: &o.Description,
 		}
@@ -77,11 +76,11 @@ func (c Config) getPluginTasks(includePlugin bool) []*models.PluginTask {
 	return ret
 }
 
-func (c Config) getPluginHooks(includePlugin bool) []*models.PluginHook {
-	var ret []*models.PluginHook
+func (c Config) getPluginHooks(includePlugin bool) []*PluginHook {
+	var ret []*PluginHook
 
 	for _, o := range c.Hooks {
-		hook := &models.PluginHook{
+		hook := &PluginHook{
 			Name:        o.Name,
 			Description: &o.Description,
 			Hooks:       convertHooks(o.TriggeredBy),
@@ -113,8 +112,8 @@ func (c Config) getName() string {
 	return c.id
 }
 
-func (c Config) toPlugin() *models.Plugin {
-	return &models.Plugin{
+func (c Config) toPlugin() *Plugin {
+	return &Plugin{
 		ID:          c.id,
 		Name:        c.getName(),
 		Description: c.Description,

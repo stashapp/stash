@@ -85,7 +85,7 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 	}, nil
 }
 
-func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.ScenePathsType, error) {
+func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	config := manager.GetInstance().Config
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
@@ -101,7 +101,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	captionBasePath := builder.GetCaptionURL()
 	interactiveHeatmap := builder.GetInteractiveHeatmapURL()
 
-	return &models.ScenePathsType{
+	return &ScenePathsType{
 		Screenshot:         &screenshotPath,
 		Preview:            &previewPath,
 		Stream:             &streamPath,
@@ -163,7 +163,7 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 	return ret, nil
 }
 
-func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*models.SceneMovie, err error) {
+func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		qb := repo.Scene()
 		mqb := repo.Movie()
@@ -180,7 +180,7 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*m
 			}
 
 			sceneIdx := sm.SceneIndex
-			sceneMovie := &models.SceneMovie{
+			sceneMovie := &SceneMovie{
 				Movie: movie,
 			}
 
@@ -252,7 +252,7 @@ func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*ti
 	return &obj.FileModTime.Timestamp, nil
 }
 
-func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*models.SceneStreamEndpoint, error) {
+func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*manager.SceneStreamEndpoint, error) {
 	config := manager.GetInstance().Config
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)

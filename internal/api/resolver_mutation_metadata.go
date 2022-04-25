@@ -9,15 +9,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *mutationResolver) MetadataScan(ctx context.Context, input models.ScanMetadataInput) (string, error) {
+func (r *mutationResolver) MetadataScan(ctx context.Context, input manager.ScanMetadataInput) (string, error) {
 	jobID, err := manager.GetInstance().Scan(ctx, input)
 
 	if err != nil {
@@ -36,7 +36,7 @@ func (r *mutationResolver) MetadataImport(ctx context.Context) (string, error) {
 	return strconv.Itoa(jobID), nil
 }
 
-func (r *mutationResolver) ImportObjects(ctx context.Context, input models.ImportObjectsInput) (string, error) {
+func (r *mutationResolver) ImportObjects(ctx context.Context, input manager.ImportObjectsInput) (string, error) {
 	t, err := manager.CreateImportTask(config.GetInstance().GetVideoFileNamingAlgorithm(), input)
 	if err != nil {
 		return "", err
@@ -56,7 +56,7 @@ func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
 	return strconv.Itoa(jobID), nil
 }
 
-func (r *mutationResolver) ExportObjects(ctx context.Context, input models.ExportObjectsInput) (*string, error) {
+func (r *mutationResolver) ExportObjects(ctx context.Context, input manager.ExportObjectsInput) (*string, error) {
 	t := manager.CreateExportTask(config.GetInstance().GetVideoFileNamingAlgorithm(), input)
 
 	var wg sync.WaitGroup
@@ -75,7 +75,7 @@ func (r *mutationResolver) ExportObjects(ctx context.Context, input models.Expor
 	return nil, nil
 }
 
-func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.GenerateMetadataInput) (string, error) {
+func (r *mutationResolver) MetadataGenerate(ctx context.Context, input manager.GenerateMetadataInput) (string, error) {
 	jobID, err := manager.GetInstance().Generate(ctx, input)
 
 	if err != nil {
@@ -85,19 +85,19 @@ func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.Ge
 	return strconv.Itoa(jobID), nil
 }
 
-func (r *mutationResolver) MetadataAutoTag(ctx context.Context, input models.AutoTagMetadataInput) (string, error) {
+func (r *mutationResolver) MetadataAutoTag(ctx context.Context, input manager.AutoTagMetadataInput) (string, error) {
 	jobID := manager.GetInstance().AutoTag(ctx, input)
 	return strconv.Itoa(jobID), nil
 }
 
-func (r *mutationResolver) MetadataIdentify(ctx context.Context, input models.IdentifyMetadataInput) (string, error) {
+func (r *mutationResolver) MetadataIdentify(ctx context.Context, input identify.Options) (string, error) {
 	t := manager.CreateIdentifyJob(input)
 	jobID := manager.GetInstance().JobManager.Add(ctx, "Identifying...", t)
 
 	return strconv.Itoa(jobID), nil
 }
 
-func (r *mutationResolver) MetadataClean(ctx context.Context, input models.CleanMetadataInput) (string, error) {
+func (r *mutationResolver) MetadataClean(ctx context.Context, input manager.CleanMetadataInput) (string, error) {
 	jobID := manager.GetInstance().Clean(ctx, input)
 	return strconv.Itoa(jobID), nil
 }
@@ -107,7 +107,7 @@ func (r *mutationResolver) MigrateHashNaming(ctx context.Context) (string, error
 	return strconv.Itoa(jobID), nil
 }
 
-func (r *mutationResolver) BackupDatabase(ctx context.Context, input models.BackupDatabaseInput) (*string, error) {
+func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatabaseInput) (*string, error) {
 	// if download is true, then backup to temporary file and return a link
 	download := input.Download != nil && *input.Download
 	mgr := manager.GetInstance()

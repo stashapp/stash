@@ -1,5 +1,22 @@
 package models
 
+type SceneMarkerFilterType struct {
+	// Filter to only include scene markers with this tag
+	TagID *string `json:"tag_id"`
+	// Filter to only include scene markers with these tags
+	Tags *HierarchicalMultiCriterionInput `json:"tags"`
+	// Filter to only include scene markers attached to a scene with these tags
+	SceneTags *HierarchicalMultiCriterionInput `json:"scene_tags"`
+	// Filter to only include scene markers with these performers
+	Performers *MultiCriterionInput `json:"performers"`
+}
+
+type MarkerStringsResultType struct {
+	Count int    `json:"count"`
+	ID    string `json:"id"`
+	Title string `json:"title"`
+}
+
 type SceneMarkerReader interface {
 	Find(id int) (*SceneMarker, error)
 	FindMany(ids []int) ([]*SceneMarker, error)

@@ -6,13 +6,12 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/job"
-	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *queryResolver) JobQueue(ctx context.Context) ([]*models.Job, error) {
+func (r *queryResolver) JobQueue(ctx context.Context) ([]*Job, error) {
 	queue := manager.GetInstance().JobManager.GetQueue()
 
-	var ret []*models.Job
+	var ret []*Job
 	for _, j := range queue {
 		ret = append(ret, jobToJobModel(j))
 	}
@@ -20,7 +19,7 @@ func (r *queryResolver) JobQueue(ctx context.Context) ([]*models.Job, error) {
 	return ret, nil
 }
 
-func (r *queryResolver) FindJob(ctx context.Context, input models.FindJobInput) (*models.Job, error) {
+func (r *queryResolver) FindJob(ctx context.Context, input FindJobInput) (*Job, error) {
 	jobID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
@@ -33,10 +32,10 @@ func (r *queryResolver) FindJob(ctx context.Context, input models.FindJobInput) 
 	return jobToJobModel(*j), nil
 }
 
-func jobToJobModel(j job.Job) *models.Job {
-	ret := &models.Job{
+func jobToJobModel(j job.Job) *Job {
+	ret := &Job{
 		ID:          strconv.Itoa(j.ID),
-		Status:      models.JobStatus(j.Status),
+		Status:      JobStatus(j.Status),
 		Description: j.Description,
 		SubTasks:    j.Details,
 		StartTime:   j.StartTime,

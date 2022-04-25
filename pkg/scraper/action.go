@@ -25,12 +25,12 @@ func (e scraperAction) IsValid() bool {
 }
 
 type scraperActionImpl interface {
-	scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error)
-	scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error)
-	scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error)
+	scrapeByURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error)
+	scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error)
+	scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error)
 
-	scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error)
-	scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error)
+	scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error)
+	scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error)
 }
 
 func (c config) getScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, globalConfig GlobalConfig) scraperActionImpl {

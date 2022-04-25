@@ -5,6 +5,13 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
+type PluginHook struct {
+	Name        string   `json:"name"`
+	Description *string  `json:"description"`
+	Hooks       []string `json:"hooks"`
+	Plugin      *Plugin  `json:"plugin"`
+}
+
 type HookTriggerEnum string
 
 // Scan-related hooks are current disabled until post-hook execution is

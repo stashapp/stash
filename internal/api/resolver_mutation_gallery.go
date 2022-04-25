@@ -31,7 +31,7 @@ func (r *mutationResolver) getGallery(ctx context.Context, id int) (ret *models.
 	return ret, nil
 }
 
-func (r *mutationResolver) GalleryCreate(ctx context.Context, input models.GalleryCreateInput) (*models.Gallery, error) {
+func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreateInput) (*models.Gallery, error) {
 	// name must be provided
 	if input.Title == "" {
 		return nil, errors.New("title must not be empty")
@@ -273,7 +273,7 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, transl
 	return gallery, nil
 }
 
-func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.BulkGalleryUpdateInput) ([]*models.Gallery, error) {
+func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGalleryUpdateInput) ([]*models.Gallery, error) {
 	// Populate gallery from the input
 	updatedTime := time.Now()
 
@@ -367,7 +367,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 	return newRet, nil
 }
 
-func adjustGalleryPerformerIDs(qb models.GalleryReader, galleryID int, ids models.BulkUpdateIds) (ret []int, err error) {
+func adjustGalleryPerformerIDs(qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetPerformerIDs(galleryID)
 	if err != nil {
 		return nil, err
@@ -376,7 +376,7 @@ func adjustGalleryPerformerIDs(qb models.GalleryReader, galleryID int, ids model
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustGalleryTagIDs(qb models.GalleryReader, galleryID int, ids models.BulkUpdateIds) (ret []int, err error) {
+func adjustGalleryTagIDs(qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetTagIDs(galleryID)
 	if err != nil {
 		return nil, err
@@ -385,7 +385,7 @@ func adjustGalleryTagIDs(qb models.GalleryReader, galleryID int, ids models.Bulk
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustGallerySceneIDs(qb models.GalleryReader, galleryID int, ids models.BulkUpdateIds) (ret []int, err error) {
+func adjustGallerySceneIDs(qb models.GalleryReader, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetSceneIDs(galleryID)
 	if err != nil {
 		return nil, err
@@ -526,7 +526,7 @@ func isStashPath(path string) bool {
 	return false
 }
 
-func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.GalleryAddInput) (bool, error) {
+func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAddInput) (bool, error) {
 	galleryID, err := strconv.Atoi(input.GalleryID)
 	if err != nil {
 		return false, err
@@ -566,7 +566,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.Ga
 	return true, nil
 }
 
-func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input models.GalleryRemoveInput) (bool, error) {
+func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input GalleryRemoveInput) (bool, error) {
 	galleryID, err := strconv.Atoi(input.GalleryID)
 	if err != nil {
 		return false, err

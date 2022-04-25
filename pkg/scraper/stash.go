@@ -83,7 +83,7 @@ type scrapedPerformerStash struct {
 	Weight       *string            `graphql:"weight" json:"weight"`
 }
 
-func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
+func (s *stashScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
 	if input.Gallery != nil || input.Scene != nil {
 		return nil, fmt.Errorf("%w: using stash scraper as a fragment scraper", ErrNotSupported)
 	}
@@ -138,8 +138,8 @@ type stashFindSceneNamesResultType struct {
 	Scenes []*scrapedSceneStash `graphql:"scenes"`
 }
 
-func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scene *scrapedSceneStash) (*models.ScrapedScene, error) {
-	ret := models.ScrapedScene{}
+func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scene *scrapedSceneStash) (*ScrapedScene, error) {
+	ret := ScrapedScene{}
 	err := copier.Copy(&ret, scene)
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func (s *stashScraper) scrapedStashSceneToScrapedScene(ctx context.Context, scen
 	return &ret, nil
 }
 
-func (s *stashScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (s *stashScraper) scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	client := s.getStashClient()
 
 	page := 1
@@ -168,9 +168,9 @@ func (s *stashScraper) scrapeByName(ctx context.Context, name string, ty models.
 		},
 	}
 
-	var ret []models.ScrapedContent
+	var ret []ScrapedContent
 	switch ty {
-	case models.ScrapeContentTypeScene:
+	case ScrapeContentTypeScene:
 		var q struct {
 			FindScenes stashFindSceneNamesResultType `graphql:"findScenes(filter: $f)"`
 		}
@@ -189,7 +189,7 @@ func (s *stashScraper) scrapeByName(ctx context.Context, name string, ty models.
 		}
 
 		return ret, nil
-	case models.ScrapeContentTypePerformer:
+	case ScrapeContentTypePerformer:
 		var q struct {
 			FindPerformers stashFindPerformerNamesResultType `graphql:"findPerformers(filter: $f)"`
 		}
@@ -221,7 +221,7 @@ type scrapedSceneStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
 	// query by MD5
 	var q struct {
 		FindScene *scrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
@@ -273,7 +273,7 @@ type scrapedGalleryStash struct {
 	Performers []*scrapedPerformerStash `graphql:"performers" json:"performers"`
 }
 
-func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {
 	var q struct {
 		FindGallery *scrapedGalleryStash `graphql:"findGalleryByHash(input: $c)"`
 	}
@@ -296,7 +296,7 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	}
 
 	// need to copy back to a scraped scene
-	ret := models.ScrapedGallery{}
+	ret := ScrapedGallery{}
 	if err := copier.Copy(&ret, q.FindGallery); err != nil {
 		return nil, err
 	}
@@ -304,7 +304,7 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 	return &ret, nil
 }
 
-func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ models.ScrapeContentType) (models.ScrapedContent, error) {
+func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ ScrapeContentType) (ScrapedContent, error) {
 	return nil, ErrNotSupported
 }
 

@@ -22,6 +22,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -56,7 +57,7 @@ func (c Client) getHTTPClient() *http.Client {
 }
 
 // QueryStashBoxScene queries stash-box for scenes using a query string.
-func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*models.ScrapedScene, error) {
+func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*scraper.ScrapedScene, error) {
 	scenes, err := c.client.SearchScene(ctx, queryStr)
 	if err != nil {
 		return nil, err
@@ -64,7 +65,7 @@ func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*mod
 
 	sceneFragments := scenes.SearchScene
 
-	var ret []*models.ScrapedScene
+	var ret []*scraper.ScrapedScene
 	for _, s := range sceneFragments {
 		ss, err := c.sceneFragmentToScrapedScene(ctx, s)
 		if err != nil {
@@ -78,7 +79,7 @@ func (c Client) QueryStashBoxScene(ctx context.Context, queryStr string) ([]*mod
 
 // FindStashBoxScenesByFingerprints queries stash-box for a scene using the
 // scene's MD5/OSHASH checksum, or PHash.
-func (c Client) FindStashBoxSceneByFingerprints(ctx context.Context, sceneID int) ([]*models.ScrapedScene, error) {
+func (c Client) FindStashBoxSceneByFingerprints(ctx context.Context, sceneID int) ([]*scraper.ScrapedScene, error) {
 	res, err := c.FindStashBoxScenesByFingerprints(ctx, []int{sceneID})
 	if len(res) > 0 {
 		return res[0], err
@@ -89,7 +90,7 @@ func (c Client) FindStashBoxSceneByFingerprints(ctx context.Context, sceneID int
 // FindStashBoxScenesByFingerprints queries stash-box for scenes using every
 // scene's MD5/OSHASH checksum, or PHash, and returns results in the same order
 // as the input slice.
-func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int) ([][]*models.ScrapedScene, error) {
+func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int) ([][]*scraper.ScrapedScene, error) {
 	var fingerprints [][]*graphql.FingerprintQueryInput
 
 	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
@@ -140,8 +141,8 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 	return c.findStashBoxScenesByFingerprints(ctx, fingerprints)
 }
 
-func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][]*graphql.FingerprintQueryInput) ([][]*models.ScrapedScene, error) {
-	var ret [][]*models.ScrapedScene
+func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][]*graphql.FingerprintQueryInput) ([][]*scraper.ScrapedScene, error) {
+	var ret [][]*scraper.ScrapedScene
 	for i := 0; i < len(scenes); i += 40 {
 		end := i + 40
 		if end > len(scenes) {
@@ -154,7 +155,7 @@ func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][
 		}
 
 		for _, sceneFragments := range scenes.FindScenesBySceneFingerprints {
-			var sceneResults []*models.ScrapedScene
+			var sceneResults []*scraper.ScrapedScene
 			for _, scene := range sceneFragments {
 				ss, err := c.sceneFragmentToScrapedScene(ctx, scene)
 				if err != nil {
@@ -261,10 +262,10 @@ func (c Client) submitStashBoxFingerprints(ctx context.Context, fingerprints []g
 }
 
 // QueryStashBoxPerformer queries stash-box for performers using a query string.
-func (c Client) QueryStashBoxPerformer(ctx context.Context, queryStr string) ([]*models.StashBoxPerformerQueryResult, error) {
+func (c Client) QueryStashBoxPerformer(ctx context.Context, queryStr string) ([]*StashBoxPerformerQueryResult, error) {
 	performers, err := c.queryStashBoxPerformer(ctx, queryStr)
 
-	res := []*models.StashBoxPerformerQueryResult{
+	res := []*StashBoxPerformerQueryResult{
 		{
 			Query:   queryStr,
 			Results: performers,
@@ -299,7 +300,7 @@ func (c Client) queryStashBoxPerformer(ctx context.Context, queryStr string) ([]
 }
 
 // FindStashBoxPerformersByNames queries stash-box for performers by name
-func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs []string) ([]*models.StashBoxPerformerQueryResult, error) {
+func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs []string) ([]*StashBoxPerformerQueryResult, error) {
 	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return nil, err
@@ -377,8 +378,8 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 	return ret, nil
 }
 
-func (c Client) findStashBoxPerformersByNames(ctx context.Context, performers []*models.Performer) ([]*models.StashBoxPerformerQueryResult, error) {
-	var ret []*models.StashBoxPerformerQueryResult
+func (c Client) findStashBoxPerformersByNames(ctx context.Context, performers []*models.Performer) ([]*StashBoxPerformerQueryResult, error) {
+	var ret []*StashBoxPerformerQueryResult
 	for _, performer := range performers {
 		if performer.Name.Valid {
 			performerResults, err := c.queryStashBoxPerformer(ctx, performer.Name.String)
@@ -386,7 +387,7 @@ func (c Client) findStashBoxPerformersByNames(ctx context.Context, performers []
 				return nil, err
 			}
 
-			result := models.StashBoxPerformerQueryResult{
+			result := StashBoxPerformerQueryResult{
 				Query:   strconv.Itoa(performer.ID),
 				Results: performerResults,
 			}
@@ -602,9 +603,9 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	return fingerprints
 }
 
-func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.SceneFragment) (*models.ScrapedScene, error) {
+func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.SceneFragment) (*scraper.ScrapedScene, error) {
 	stashID := s.ID
-	ss := &models.ScrapedScene{
+	ss := &scraper.ScrapedScene{
 		Title:        s.Title,
 		Date:         s.Date,
 		Details:      s.Details,

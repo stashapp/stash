@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -34,12 +35,12 @@ func isImage(pathname string) bool {
 	return fsutil.MatchExtension(pathname, imgExt)
 }
 
-func getScanPaths(inputPaths []string) []*models.StashConfig {
+func getScanPaths(inputPaths []string) []*config.StashConfig {
 	if len(inputPaths) == 0 {
 		return config.GetInstance().GetStashPaths()
 	}
 
-	var ret []*models.StashConfig
+	var ret []*config.StashConfig
 	for _, p := range inputPaths {
 		s := getStashFromDirPath(p)
 		if s == nil {
@@ -62,7 +63,22 @@ func (s *Manager) ScanSubscribe(ctx context.Context) <-chan bool {
 	return s.scanSubs.subscribe(ctx)
 }
 
-func (s *Manager) Scan(ctx context.Context, input models.ScanMetadataInput) (int, error) {
+type ScanMetadataInput struct {
+	Paths []string `json:"paths"`
+
+	config.ScanMetadataOptions
+
+	// Filter options for the scan
+	Filter *ScanMetaDataFilterInput `json:"filter"`
+}
+
+// Filter options for meta data scannning
+type ScanMetaDataFilterInput struct {
+	// If set, files with a modification time before this time point are ignored by the scan
+	MinModTime *time.Time `json:"minModTime"`
+}
+
+func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error) {
 	if err := s.validateFFMPEG(); err != nil {
 		return 0, err
 	}
@@ -88,7 +104,7 @@ func (s *Manager) Import(ctx context.Context) (int, error) {
 			txnManager:          s.TxnManager,
 			BaseDir:             metadataPath,
 			Reset:               true,
-			DuplicateBehaviour:  models.ImportDuplicateEnumFail,
+			DuplicateBehaviour:  ImportDuplicateEnumFail,
 			MissingRefBehaviour: models.ImportMissingRefEnumFail,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
@@ -131,7 +147,7 @@ func (s *Manager) RunSingleTask(ctx context.Context, t Task) int {
 	return s.JobManager.Add(ctx, t.GetDescription(), j)
 }
 
-func (s *Manager) Generate(ctx context.Context, input models.GenerateMetadataInput) (int, error) {
+func (s *Manager) Generate(ctx context.Context, input GenerateMetadataInput) (int, error) {
 	if err := s.validateFFMPEG(); err != nil {
 		return 0, err
 	}
@@ -193,7 +209,18 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 	return s.JobManager.Add(ctx, fmt.Sprintf("Generating screenshot for scene id %s", sceneId), j)
 }
 
-func (s *Manager) AutoTag(ctx context.Context, input models.AutoTagMetadataInput) int {
+type AutoTagMetadataInput struct {
+	// Paths to tag, null for all files
+	Paths []string `json:"paths"`
+	// IDs of performers to tag files with, or "*" for all
+	Performers []string `json:"performers"`
+	// IDs of studios to tag files with, or "*" for all
+	Studios []string `json:"studios"`
+	// IDs of tags to tag files with, or "*" for all
+	Tags []string `json:"tags"`
+}
+
+func (s *Manager) AutoTag(ctx context.Context, input AutoTagMetadataInput) int {
 	j := autoTagJob{
 		txnManager: s.TxnManager,
 		input:      input,
@@ -202,7 +229,13 @@ func (s *Manager) AutoTag(ctx context.Context, input models.AutoTagMetadataInput
 	return s.JobManager.Add(ctx, "Auto-tagging...", &j)
 }
 
-func (s *Manager) Clean(ctx context.Context, input models.CleanMetadataInput) int {
+type CleanMetadataInput struct {
+	Paths []string `json:"paths"`
+	// Do a dry run. Don't delete any files
+	DryRun bool `json:"dryRun"`
+}
+
+func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	j := cleanJob{
 		txnManager: s.TxnManager,
 		input:      input,
@@ -260,7 +293,21 @@ func (s *Manager) MigrateHash(ctx context.Context) int {
 	return s.JobManager.Add(ctx, "Migrating scene hashes...", j)
 }
 
-func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input models.StashBoxBatchPerformerTagInput) int {
+// If neither performer_ids nor performer_names are set, tag all performers
+type StashBoxBatchPerformerTagInput struct {
+	// Stash endpoint to use for the performer tagging
+	Endpoint int `json:"endpoint"`
+	// Fields to exclude when executing the performer tagging
+	ExcludeFields []string `json:"exclude_fields"`
+	// Refresh performers already tagged by StashBox if true. Only tag performers with no StashBox tagging if false
+	Refresh bool `json:"refresh"`
+	// If set, only tag these performer ids
+	PerformerIds []string `json:"performer_ids"`
+	// If set, only tag these performer names
+	PerformerNames []string `json:"performer_names"`
+}
+
+func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxBatchPerformerTagInput) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		logger.Infof("Initiating stash-box batch performer tag")
 

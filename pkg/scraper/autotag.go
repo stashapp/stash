@@ -83,8 +83,8 @@ func autotagMatchTags(path string, tagReader models.TagReader, trimExt bool) ([]
 	return ret, nil
 }
 
-func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
-	var ret *models.ScrapedScene
+func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*ScrapedScene, error) {
+	var ret *ScrapedScene
 	const trimExt = false
 
 	// populate performers, studio and tags based on scene path
@@ -105,7 +105,7 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 		}
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 {
-			ret = &models.ScrapedScene{
+			ret = &ScrapedScene{
 				Performers: performers,
 				Studio:     studio,
 				Tags:       tags,
@@ -120,7 +120,7 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 	return ret, nil
 }
 
-func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, gallery *models.Gallery) (*ScrapedGallery, error) {
 	if !gallery.Path.Valid {
 		// not valid for non-path-based galleries
 		return nil, nil
@@ -129,7 +129,7 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 	// only trim extension if gallery is file-based
 	trimExt := gallery.Zip
 
-	var ret *models.ScrapedGallery
+	var ret *ScrapedGallery
 
 	// populate performers, studio and tags based on scene path
 	if err := s.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
@@ -149,7 +149,7 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 		}
 
 		if len(performers) > 0 || studio != nil || len(tags) > 0 {
-			ret = &models.ScrapedGallery{
+			ret = &ScrapedGallery{
 				Performers: performers,
 				Studio:     studio,
 				Tags:       tags,
@@ -164,33 +164,33 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 	return ret, nil
 }
 
-func (s autotagScraper) supports(ty models.ScrapeContentType) bool {
+func (s autotagScraper) supports(ty ScrapeContentType) bool {
 	switch ty {
-	case models.ScrapeContentTypeScene:
+	case ScrapeContentTypeScene:
 		return true
-	case models.ScrapeContentTypeGallery:
+	case ScrapeContentTypeGallery:
 		return true
 	}
 
 	return false
 }
 
-func (s autotagScraper) supportsURL(url string, ty models.ScrapeContentType) bool {
+func (s autotagScraper) supportsURL(url string, ty ScrapeContentType) bool {
 	return false
 }
 
-func (s autotagScraper) spec() models.Scraper {
-	supportedScrapes := []models.ScrapeType{
-		models.ScrapeTypeFragment,
+func (s autotagScraper) spec() Scraper {
+	supportedScrapes := []ScrapeType{
+		ScrapeTypeFragment,
 	}
 
-	return models.Scraper{
+	return Scraper{
 		ID:   autoTagScraperID,
 		Name: autoTagScraperName,
-		Scene: &models.ScraperSpec{
+		Scene: &ScraperSpec{
 			SupportedScrapes: supportedScrapes,
 		},
-		Gallery: &models.ScraperSpec{
+		Gallery: &ScraperSpec{
 			SupportedScrapes: supportedScrapes,
 		},
 	}

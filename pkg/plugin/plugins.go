@@ -22,6 +22,16 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
+type Plugin struct {
+	ID          string        `json:"id"`
+	Name        string        `json:"name"`
+	Description *string       `json:"description"`
+	URL         *string       `json:"url"`
+	Version     *string       `json:"version"`
+	Tasks       []*PluginTask `json:"tasks"`
+	Hooks       []*PluginHook `json:"hooks"`
+}
+
 type ServerConfig interface {
 	GetHost() string
 	GetPort() int
@@ -103,8 +113,8 @@ func loadPlugins(path string) ([]Config, error) {
 }
 
 // ListPlugins returns plugin details for all of the loaded plugins.
-func (c Cache) ListPlugins() []*models.Plugin {
-	var ret []*models.Plugin
+func (c Cache) ListPlugins() []*Plugin {
+	var ret []*Plugin
 	for _, s := range c.plugins {
 		ret = append(ret, s.toPlugin())
 	}
@@ -113,8 +123,8 @@ func (c Cache) ListPlugins() []*models.Plugin {
 }
 
 // ListPluginTasks returns all runnable plugin tasks in all loaded plugins.
-func (c Cache) ListPluginTasks() []*models.PluginTask {
-	var ret []*models.PluginTask
+func (c Cache) ListPluginTasks() []*PluginTask {
+	var ret []*PluginTask
 	for _, s := range c.plugins {
 		ret = append(ret, s.getPluginTasks(true)...)
 	}
@@ -122,7 +132,7 @@ func (c Cache) ListPluginTasks() []*models.PluginTask {
 	return ret
 }
 
-func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args []*models.PluginArgInput) common.PluginInput {
+func buildPluginInput(plugin *Config, operation *OperationConfig, serverConnection common.StashServerConnection, args []*PluginArgInput) common.PluginInput {
 	args = applyDefaultArgs(args, operation.DefaultArgs)
 	serverConnection.PluginDir = plugin.getConfigPath()
 	return common.PluginInput{
@@ -152,7 +162,7 @@ func (c Cache) makeServerConnection(ctx context.Context) common.StashServerConne
 // CreateTask runs the plugin operation for the pluginID and operation
 // name provided. Returns an error if the plugin or the operation could not be
 // resolved.
-func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName string, args []*models.PluginArgInput, progress chan float64) (Task, error) {
+func (c Cache) CreateTask(ctx context.Context, pluginID string, operationName string, args []*PluginArgInput, progress chan float64) (Task, error) {
 	serverConnection := c.makeServerConnection(ctx)
 
 	// find the plugin and operation
