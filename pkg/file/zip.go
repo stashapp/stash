@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 )
 
+// ZipFS is a file system backed by a zip file.
 type ZipFS struct {
 	*zip.Reader
 	zipInfo fs.FileInfo

@@ -18,6 +18,7 @@ import (
 
 const scanQueueSize = 200000
 
+// Repository provides access to storage methods for files and folders.
 type Repository struct {
 	txn.Manager
 	Store
@@ -26,14 +27,27 @@ type Repository struct {
 	FolderStore FolderStore
 }
 
+// Scanner scans files into the database.
+// TODO - explain the scanning process
 type Scanner struct {
-	FS FS
-
 	Repository          Repository
-	FingerprintHandlers FingerprintHandler
+	FingerprintHandlers FingerprintCalculator
 	ScanFilters         []Filter
 	Handlers            []Handler
-	ProgressReports     ScanProgressReporter
+	FS                  FS
+}
+
+// ScanProgressReporter is used to report progress of the scan.
+type ScanProgressReporter interface {
+	SetTotal(total int)
+	Increment()
+}
+
+type scanJob struct {
+	*Scanner
+
+	ProgressReports ScanProgressReporter
+	options         ScanOptions
 
 	startTime      time.Time
 	fileQueue      chan scanFile
@@ -46,26 +60,38 @@ type Scanner struct {
 	txnMutex sync.Mutex
 }
 
-type ScanProgressReporter interface {
-	SetTotal(total int)
-	Increment()
+// ScanOptions provides options for scanning files.
+type ScanOptions struct {
+	Paths []string
+}
+
+// Scan starts the scanning process.
+func (s *Scanner) Scan(ctx context.Context, options ScanOptions, progressReporter ScanProgressReporter) {
+	job := &scanJob{
+		Scanner:         s,
+		ProgressReports: progressReporter,
+		options:         options,
+	}
+
+	job.execute(ctx)
 }
 
 type scanFile struct {
-	*BasicFile
+	*BaseFile
 	fs      FS
 	info    fs.FileInfo
 	zipFile *scanFile
 }
 
-func (s *Scanner) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
+func (s *scanJob) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
 	// get exclusive access to the database
 	s.txnMutex.Lock()
 	defer s.txnMutex.Unlock()
 	return txn.WithTxn(ctx, s.Repository, fn)
 }
 
-func (s *Scanner) Scan(ctx context.Context, paths []string) {
+func (s *scanJob) execute(ctx context.Context) {
+	paths := s.options.Paths
 	logger.Infof("scanning %d paths", len(paths))
 	s.startTime = time.Now()
 
@@ -99,7 +125,7 @@ func (s *Scanner) Scan(ctx context.Context, paths []string) {
 	logger.Info("Finished scanning files")
 }
 
-func (s *Scanner) queueFiles(ctx context.Context, paths []string) error {
+func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
 	var err error
 	for _, p := range paths {
 		err = symWalk(s.FS, p, s.queueFileFunc(ctx, s.FS, nil))
@@ -117,7 +143,7 @@ func (s *Scanner) queueFiles(ctx context.Context, paths []string) error {
 	return nil
 }
 
-func (s *Scanner) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs.WalkDirFunc {
+func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs.WalkDirFunc {
 	return func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -133,7 +159,7 @@ func (s *Scanner) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 		}
 
 		ff := scanFile{
-			BasicFile: &BasicFile{
+			BaseFile: &BaseFile{
 				DirEntry: DirEntry{
 					Path:        path,
 					ModTime:     modTime(info),
@@ -153,7 +179,7 @@ func (s *Scanner) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 		accept := len(s.ScanFilters) == 0
 		for _, filter := range s.ScanFilters {
 			// accept if any filter accepts the file
-			if filter.Accept(ff.BasicFile) {
+			if filter.Accept(ff.BaseFile) {
 				accept = true
 				break
 			}
@@ -192,7 +218,7 @@ func (s *Scanner) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 	}
 }
 
-func (s *Scanner) scanZipFile(ctx context.Context, f scanFile) error {
+func (s *scanJob) scanZipFile(ctx context.Context, f scanFile) error {
 	reader, err := f.fs.Open(f.Path)
 	if err != nil {
 		return err
@@ -220,7 +246,7 @@ func (s *Scanner) scanZipFile(ctx context.Context, f scanFile) error {
 	return symWalk(zipFS, f.Path, s.queueFileFunc(ctx, zipFS, &f))
 }
 
-func (s *Scanner) processQueue(ctx context.Context) error {
+func (s *scanJob) processQueue(ctx context.Context) error {
 	for f := range s.fileQueue {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -241,7 +267,7 @@ func (s *Scanner) processQueue(ctx context.Context) error {
 	return nil
 }
 
-func (s *Scanner) processQueueItem(ctx context.Context, f scanFile) {
+func (s *scanJob) processQueueItem(ctx context.Context, f scanFile) {
 	var err error
 	if f.info.IsDir() {
 		err = s.handleFolder(ctx, f)
@@ -254,14 +280,14 @@ func (s *Scanner) processQueueItem(ctx context.Context, f scanFile) {
 	}
 }
 
-func (s *Scanner) getFolderID(ctx context.Context, path string) (*FolderID, error) {
+func (s *scanJob) getFolderID(ctx context.Context, path string) (*FolderID, error) {
 	// check the folder cache first
 	if f, ok := s.folderPathToID.Load(path); ok {
 		v := f.(FolderID)
 		return &v, nil
 	}
 
-	ret, err := s.Repository.FolderStore.GetByPath(ctx, path)
+	ret, err := s.Repository.FolderStore.FindByPath(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +300,7 @@ func (s *Scanner) getFolderID(ctx context.Context, path string) (*FolderID, erro
 	return &ret.ID, nil
 }
 
-func (s *Scanner) getZipFileID(ctx context.Context, zipFile *scanFile) (*FileID, error) {
+func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*ID, error) {
 	if zipFile == nil {
 		return nil, nil
 	}
@@ -283,11 +309,11 @@ func (s *Scanner) getZipFileID(ctx context.Context, zipFile *scanFile) (*FileID,
 
 	// check the folder cache first
 	if f, ok := s.zipPathToID.Load(path); ok {
-		v := f.(FileID)
+		v := f.(ID)
 		return &v, nil
 	}
 
-	ret, err := s.Repository.GetByPath(ctx, path)
+	ret, err := s.Repository.FindByPath(ctx, path)
 	if err != nil {
 		return nil, fmt.Errorf("getting zip file ID for %q: %w", path, err)
 	}
@@ -296,16 +322,16 @@ func (s *Scanner) getZipFileID(ctx context.Context, zipFile *scanFile) (*FileID,
 		return nil, fmt.Errorf("zip file %q doesn't exist in database", zipFile.Path)
 	}
 
-	s.zipPathToID.Store(path, ret.Basic().ID)
-	return &ret.Basic().ID, nil
+	s.zipPathToID.Store(path, ret.Base().ID)
+	return &ret.Base().ID, nil
 }
 
-func (s *Scanner) handleFolder(ctx context.Context, file scanFile) error {
+func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 	path := file.Path
 
 	return s.withTxn(ctx, func(ctx context.Context) error {
 		// determine if folder already exists in data store (by path)
-		f, err := s.Repository.FolderStore.GetByPath(ctx, path)
+		f, err := s.Repository.FolderStore.FindByPath(ctx, path)
 		if err != nil {
 			return fmt.Errorf("checking for existing folder %q: %w", path, err)
 		}
@@ -329,7 +355,7 @@ func (s *Scanner) handleFolder(ctx context.Context, file scanFile) error {
 	})
 }
 
-func (s *Scanner) onNewFolder(ctx context.Context, file scanFile) (*Folder, error) {
+func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, error) {
 	now := time.Now()
 
 	toCreate := Folder{
@@ -373,7 +399,7 @@ func (s *Scanner) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 	return f, nil
 }
 
-func (s *Scanner) onExistingFolder(ctx context.Context, f scanFile, existing *Folder) (*Folder, error) {
+func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *Folder) (*Folder, error) {
 	// check if the mod time is changed
 	entryModTime := f.ModTime
 
@@ -398,14 +424,14 @@ func modTime(info fs.FileInfo) time.Time {
 	return info.ModTime().Truncate(time.Second)
 }
 
-func (s *Scanner) handleFile(ctx context.Context, f scanFile) error {
+func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 	// TODO - ensure file should be included
 
 	var ff File
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
 		// determine if file already exists in data store
 		var err error
-		ff, err = s.Repository.GetByPath(ctx, f.Path)
+		ff, err = s.Repository.FindByPath(ctx, f.Path)
 		if err != nil {
 			return fmt.Errorf("checking for existing file %q: %w", f.Path, err)
 		}
@@ -430,15 +456,15 @@ func (s *Scanner) handleFile(ctx context.Context, f scanFile) error {
 	return nil
 }
 
-func (s *Scanner) isZipFile(entry fs.FileInfo) bool {
+func (s *scanJob) isZipFile(entry fs.FileInfo) bool {
 	// TODO - this should be configurable
 	return strings.HasSuffix(entry.Name(), ".zip")
 }
 
-func (s *Scanner) onNewFile(ctx context.Context, f scanFile) (*BasicFile, error) {
+func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (*BaseFile, error) {
 	now := time.Now()
 
-	file := f.BasicFile
+	file := f.BaseFile
 	path := file.Path
 
 	file.CreatedAt = now
@@ -503,7 +529,7 @@ func (s *Scanner) onNewFile(ctx context.Context, f scanFile) (*BasicFile, error)
 	return file, nil
 }
 
-func (s *Scanner) fireHandlers(ctx context.Context, fs FS, f File) error {
+func (s *scanJob) fireHandlers(ctx context.Context, fs FS, f File) error {
 	for _, h := range s.Handlers {
 		if err := h.Handle(ctx, fs, f); err != nil {
 			return err
@@ -513,7 +539,7 @@ func (s *Scanner) fireHandlers(ctx context.Context, fs FS, f File) error {
 	return nil
 }
 
-func (s *Scanner) calculateFingerprint(fs FS, f *BasicFile, path string) (*Fingerprint, error) {
+func (s *scanJob) calculateFingerprint(fs FS, f *BaseFile, path string) (*Fingerprint, error) {
 	logger.Infof("Calculating fingerprint for %s ...", path)
 
 	// calculate primary fingerprint for the file
@@ -531,8 +557,8 @@ func (s *Scanner) calculateFingerprint(fs FS, f *BasicFile, path string) (*Finge
 	return fp, nil
 }
 
-func (s *Scanner) handleRename(ctx context.Context, f *BasicFile, fp *Fingerprint) (bool, error) {
-	others, err := s.Repository.GetByFingerprint(ctx, *fp)
+func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp *Fingerprint) (bool, error) {
+	others, err := s.Repository.FindByFingerprint(ctx, *fp)
 	if err != nil {
 		return false, fmt.Errorf("getting files by fingerprint %q: %w", fp, err)
 	}
@@ -542,7 +568,7 @@ func (s *Scanner) handleRename(ctx context.Context, f *BasicFile, fp *Fingerprin
 	for _, other := range others {
 		// if file does not exist, then update it to the new path
 		// TODO - this could be in a zip file
-		if _, err := s.FS.Lstat(other.Basic().Path); err != nil {
+		if _, err := s.FS.Lstat(other.Base().Path); err != nil {
 			missing = append(missing, other)
 		}
 	}
@@ -551,7 +577,7 @@ func (s *Scanner) handleRename(ctx context.Context, f *BasicFile, fp *Fingerprin
 	switch {
 	case n == 1:
 		// assume does not exist, update existing file
-		other := missing[0].Basic()
+		other := missing[0].Base()
 
 		logger.Infof("%s moved to %s. Updating path...", other.Path, f.Path)
 		f.ID = other.ID
@@ -571,8 +597,8 @@ func (s *Scanner) handleRename(ctx context.Context, f *BasicFile, fp *Fingerprin
 	return false, nil
 }
 
-func (s *Scanner) onExistingFile(ctx context.Context, f scanFile, existing File) (File, error) {
-	base := existing.Basic()
+func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File) (File, error) {
+	base := existing.Base()
 	path := base.Path
 
 	base.scanned()
@@ -610,7 +636,7 @@ func (s *Scanner) onExistingFile(ctx context.Context, f scanFile, existing File)
 	return existing, nil
 }
 
-func (s *Scanner) markMissingFiles(ctx context.Context) {
+func (s *scanJob) markMissingFiles(ctx context.Context) {
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
 		return s.Repository.MarkMissing(ctx, s.startTime)
 	}); err != nil {

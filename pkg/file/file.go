@@ -6,16 +6,18 @@ import (
 	"time"
 )
 
-type FileID int32
+// ID represents an ID of a file.
+type ID int32
 
-func (i FileID) String() string {
+func (i ID) String() string {
 	return strconv.Itoa(int(i))
 }
 
+// DirEntry represents a file or directory in the file system.
 type DirEntry struct {
 	Path           string    `json:"path"`
 	ParentFolderID *FolderID `json:"parent_folder_id"`
-	ZipFileID      *FileID   `json:"zip_file_id"`
+	ZipFileID      *ID       `json:"zip_file_id"`
 
 	ModTime      time.Time  `json:"mod_time"`
 	MissingSince *time.Time `json:"missing_since"`
@@ -28,13 +30,15 @@ func (e *DirEntry) scanned() {
 	e.MissingSince = nil
 }
 
+// File represents a file in the file system.
 type File interface {
-	Basic() *BasicFile
+	Base() *BaseFile
 	SetFingerprint(fp Fingerprint)
 }
 
-type BasicFile struct {
-	ID FileID `json:"id"`
+// BaseFile represents a file in the file system.
+type BaseFile struct {
+	ID ID `json:"id"`
 
 	DirEntry
 	Basename string `json:"basename"`
@@ -43,16 +47,13 @@ type BasicFile struct {
 
 	Size int64 `json:"size"`
 
-	Title   string     `json:"title"`
-	Details string     `json:"details"`
-	Date    *time.Time `json:"date"`
-	Rating  *int       `json:"rating"`
-
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (f *BasicFile) SetFingerprint(fp Fingerprint) {
+// SetFingerprint sets the fingerprint of the file.
+// If a fingerprint of the same type already exists, it is overwritten.
+func (f *BaseFile) SetFingerprint(fp Fingerprint) {
 	for i, existing := range f.Fingerprints {
 		if existing.Type == fp.Type {
 			f.Fingerprints[i] = fp
@@ -63,29 +64,35 @@ func (f *BasicFile) SetFingerprint(fp Fingerprint) {
 	f.Fingerprints = append(f.Fingerprints, fp)
 }
 
-func (f *BasicFile) Basic() *BasicFile {
+// Base is used to fulfil the File interface.
+func (f *BaseFile) Base() *BaseFile {
 	return f
 }
 
+// Getter provides methods to find Files.
 type Getter interface {
-	GetByPath(ctx context.Context, path string) (File, error)
-	GetByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
+	FindByPath(ctx context.Context, path string) (File, error)
+	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
 }
 
+// Creator provides methods to create Files.
 type Creator interface {
-	Create(ctx context.Context, f *BasicFile) error
+	Create(ctx context.Context, f *BaseFile) error
 }
 
+// Updater provides methods to update Files.
 type Updater interface {
-	Update(ctx context.Context, f *BasicFile) error
+	Update(ctx context.Context, f *BaseFile) error
 }
 
+// Store provides methods to find, create and update Files.
 type Store interface {
 	Getter
 	Creator
 	Updater
 }
 
+// MissedMarker wraps the MarkMissing method.
 type MissedMarker interface {
 	MarkMissing(ctx context.Context, scanTime time.Time) error
 }

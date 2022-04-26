@@ -5,11 +5,13 @@ import (
 	"os"
 )
 
+// FS represents a file system.
 type FS interface {
 	Lstat(name string) (fs.FileInfo, error)
 	Open(name string) (fs.ReadDirFile, error)
 }
 
+// OsFS is a file system backed by the OS.
 type OsFS struct{}
 
 func (f *OsFS) Lstat(name string) (fs.FileInfo, error) {
