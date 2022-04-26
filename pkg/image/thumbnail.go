@@ -117,5 +117,5 @@ func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, format stri
 		Quality:       ffmpegImageQuality,
 	})
 
-	return e.ffmpeg.GenerateOutput(context.TODO(), args)
+	return e.ffmpeg.GenerateOutput(context.TODO(), args, image)
 }

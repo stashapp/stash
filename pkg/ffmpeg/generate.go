@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os/exec"
 	"strings"
 )
@@ -35,8 +36,14 @@ func (f FFMpeg) Generate(ctx context.Context, args Args) error {
 }
 
 // GenerateOutput runs ffmpeg with the given args and returns it standard output.
-func (f FFMpeg) GenerateOutput(ctx context.Context, args []string) ([]byte, error) {
+func (f FFMpeg) GenerateOutput(ctx context.Context, args []string, stdin io.Reader) ([]byte, error) {
 	cmd := f.Command(ctx, args)
+	cmd.Stdin = stdin
 
-	return cmd.Output()
+	ret, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("error running ffmpeg command <%s>: %w", strings.Join(args, " "), err)
+	}
+
+	return ret, nil
 }

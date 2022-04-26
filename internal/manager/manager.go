@@ -151,8 +151,13 @@ func initJobManager() *job.Manager {
 			case j := <-c.RemovedJob:
 				if instance.Config.GetNotificationsEnabled() {
 					cleanDesc := strings.TrimRight(j.Description, ".")
-					timeElapsed := j.EndTime.Sub(*j.StartTime)
 
+					if j.StartTime == nil {
+						// Task was never started
+						return
+					}
+
+					timeElapsed := j.EndTime.Sub(*j.StartTime)
 					desktop.SendNotification("Task Finished", "Task \""+cleanDesc+"\" is finished in "+formatDuration(timeElapsed)+".")
 				}
 			case <-ctx.Done():
