@@ -18,6 +18,7 @@ func (i FolderID) String() string {
 type Folder struct {
 	ID FolderID `json:"id"`
 	DirEntry
+	Path           string    `json:"path"`
 	ParentFolderID *FolderID `json:"parent_folder_id"`
 
 	CreatedAt time.Time `json:"created_at"`

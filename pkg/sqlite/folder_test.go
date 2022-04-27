@@ -35,12 +35,12 @@ func Test_folderQueryBuilder_Create(t *testing.T) {
 			"full",
 			file.Folder{
 				DirEntry: file.DirEntry{
-					Path:         path,
 					ZipFileID:    &fileIDs[fileIdxZip],
 					ModTime:      fileModTime,
 					MissingSince: &updatedAt,
 					LastScanned:  createdAt,
 				},
+				Path:      path,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
@@ -49,9 +49,7 @@ func Test_folderQueryBuilder_Create(t *testing.T) {
 		{
 			"invalid parent folder id",
 			file.Folder{
-				DirEntry: file.DirEntry{
-					Path: path,
-				},
+				Path:           path,
 				ParentFolderID: &invalidFolderID,
 			},
 			true,
@@ -60,9 +58,9 @@ func Test_folderQueryBuilder_Create(t *testing.T) {
 			"invalid zip file id",
 			file.Folder{
 				DirEntry: file.DirEntry{
-					Path:      path,
 					ZipFileID: &invalidFileID,
 				},
+				Path: path,
 			},
 			true,
 		},
@@ -120,12 +118,12 @@ func Test_folderQueryBuilder_Update(t *testing.T) {
 			&file.Folder{
 				ID: folderIDs[folderIdxIsMissing],
 				DirEntry: file.DirEntry{
-					Path:         path,
 					ZipFileID:    &fileIDs[fileIdxZip],
 					ModTime:      fileModTime,
 					MissingSince: &updatedAt,
 					LastScanned:  createdAt,
 				},
+				Path:      path,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
@@ -134,40 +132,32 @@ func Test_folderQueryBuilder_Update(t *testing.T) {
 		{
 			"clear zip",
 			&file.Folder{
-				ID: folderIDs[folderIdxInZip],
-				DirEntry: file.DirEntry{
-					Path: path,
-				},
+				ID:   folderIDs[folderIdxInZip],
+				Path: path,
 			},
 			false,
 		},
 		{
 			"clear missing since",
 			&file.Folder{
-				ID: folderIDs[folderIdxIsMissing],
-				DirEntry: file.DirEntry{
-					Path: path,
-				},
+				ID:   folderIDs[folderIdxIsMissing],
+				Path: path,
 			},
 			false,
 		},
 		{
 			"clear folder",
 			&file.Folder{
-				ID: folderIDs[folderIdxWithParentFolder],
-				DirEntry: file.DirEntry{
-					Path: path,
-				},
+				ID:   folderIDs[folderIdxWithParentFolder],
+				Path: path,
 			},
 			false,
 		},
 		{
 			"invalid parent folder id",
 			&file.Folder{
-				ID: folderIDs[folderIdxIsMissing],
-				DirEntry: file.DirEntry{
-					Path: path,
-				},
+				ID:             folderIDs[folderIdxIsMissing],
+				Path:           path,
 				ParentFolderID: &invalidFolderID,
 			},
 			true,
@@ -177,9 +167,9 @@ func Test_folderQueryBuilder_Update(t *testing.T) {
 			&file.Folder{
 				ID: folderIDs[folderIdxIsMissing],
 				DirEntry: file.DirEntry{
-					Path:      path,
 					ZipFileID: &invalidFileID,
 				},
+				Path: path,
 			},
 			true,
 		},

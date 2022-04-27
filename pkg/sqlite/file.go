@@ -168,12 +168,12 @@ func (r *fileQueryRow) resolve() file.File {
 	basic := &file.BaseFile{
 		ID: file.ID(r.ID),
 		DirEntry: file.DirEntry{
-			Path:         filepath.Join(r.Path, r.Basename),
 			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
 			ModTime:      r.ModTime,
 			MissingSince: r.MissingSince.Ptr(),
 			LastScanned:  r.LastScanned,
 		},
+		Path:           filepath.Join(r.Path, r.Basename),
 		ParentFolderID: r.ParentFolderID,
 		Basename:       r.Basename,
 		Size:           r.Size,

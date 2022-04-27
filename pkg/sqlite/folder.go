@@ -68,12 +68,12 @@ func (r *folderQueryRow) resolve() *file.Folder {
 	ret := &file.Folder{
 		ID: r.ID,
 		DirEntry: file.DirEntry{
-			Path:         string(r.Path),
 			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
 			ModTime:      r.ModTime,
 			MissingSince: r.MissingSince.Ptr(),
 			LastScanned:  r.LastScanned,
 		},
+		Path:           string(r.Path),
 		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
 		CreatedAt:      r.CreatedAt,
 		UpdatedAt:      r.UpdatedAt,

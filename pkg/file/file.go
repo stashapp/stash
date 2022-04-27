@@ -15,8 +15,7 @@ func (i ID) String() string {
 
 // DirEntry represents a file or directory in the file system.
 type DirEntry struct {
-	Path      string `json:"path"`
-	ZipFileID *ID    `json:"zip_file_id"`
+	ZipFileID *ID `json:"zip_file_id"`
 
 	ModTime      time.Time  `json:"mod_time"`
 	MissingSince *time.Time `json:"missing_since"`
@@ -40,6 +39,10 @@ type BaseFile struct {
 	ID ID `json:"id"`
 
 	DirEntry
+
+	// resolved from parent folder and basename only - not stored in DB
+	Path string `json:"path"`
+
 	Basename       string   `json:"basename"`
 	ParentFolderID FolderID `json:"parent_folder_id"`
 

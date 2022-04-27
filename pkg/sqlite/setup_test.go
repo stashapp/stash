@@ -628,12 +628,12 @@ func makeFolder(i int) file.Folder {
 	return file.Folder{
 		ParentFolderID: folderID,
 		DirEntry: file.DirEntry{
-			Path: getFolderPath(i),
 			// zip files have to be added after creating files
 			ModTime:      getFolderModTime(i),
 			MissingSince: getFolderMissingSince(i),
 			LastScanned:  getFolderLastScan(i),
 		},
+		Path: getFolderPath(i),
 	}
 }
 

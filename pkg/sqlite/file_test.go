@@ -48,12 +48,12 @@ func Test_fileFileStore_Create(t *testing.T) {
 			"full",
 			&file.BaseFile{
 				DirEntry: file.DirEntry{
-					Path:         getFilePath(folderIdxWithFiles, basename),
 					ZipFileID:    &fileIDs[fileIdxZip],
 					ModTime:      fileModTime,
 					MissingSince: &missingSince,
 					LastScanned:  lastScanned,
 				},
+				Path:           getFilePath(folderIdxWithFiles, basename),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 				Basename:       basename,
 				Size:           size,
@@ -73,12 +73,12 @@ func Test_fileFileStore_Create(t *testing.T) {
 			&file.VideoFile{
 				BaseFile: &file.BaseFile{
 					DirEntry: file.DirEntry{
-						Path:         getFilePath(folderIdxWithFiles, basename),
 						ZipFileID:    &fileIDs[fileIdxZip],
 						ModTime:      fileModTime,
 						MissingSince: &missingSince,
 						LastScanned:  lastScanned,
 					},
+					Path:           getFilePath(folderIdxWithFiles, basename),
 					ParentFolderID: folderIDs[folderIdxWithFiles],
 					Basename:       basename,
 					Size:           size,
@@ -107,12 +107,12 @@ func Test_fileFileStore_Create(t *testing.T) {
 			&file.ImageFile{
 				BaseFile: &file.BaseFile{
 					DirEntry: file.DirEntry{
-						Path:         getFilePath(folderIdxWithFiles, basename),
 						ZipFileID:    &fileIDs[fileIdxZip],
 						ModTime:      fileModTime,
 						MissingSince: &missingSince,
 						LastScanned:  lastScanned,
 					},
+					Path:           getFilePath(folderIdxWithFiles, basename),
 					ParentFolderID: folderIDs[folderIdxWithFiles],
 					Basename:       basename,
 					Size:           size,
@@ -135,11 +135,11 @@ func Test_fileFileStore_Create(t *testing.T) {
 			"duplicate path",
 			&file.BaseFile{
 				DirEntry: file.DirEntry{
-					Path:         getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 					ModTime:      fileModTime,
 					MissingSince: &missingSince,
 					LastScanned:  lastScanned,
 				},
+				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 				Basename:       getFileBaseName(fileIdxZip),
 				Size:           size,
@@ -269,12 +269,12 @@ func Test_fileStore_Update(t *testing.T) {
 			&file.BaseFile{
 				ID: fileIDs[fileIdxInZip],
 				DirEntry: file.DirEntry{
-					Path:         getFilePath(folderIdxWithFiles, basename),
 					ZipFileID:    &fileIDs[fileIdxZip],
 					ModTime:      fileModTime,
 					MissingSince: &missingSince,
 					LastScanned:  lastScanned,
 				},
+				Path:           getFilePath(folderIdxWithFiles, basename),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 				Basename:       basename,
 				Size:           size,
@@ -295,12 +295,12 @@ func Test_fileStore_Update(t *testing.T) {
 				BaseFile: &file.BaseFile{
 					ID: fileIDs[fileIdxStartVideoFiles],
 					DirEntry: file.DirEntry{
-						Path:         getFilePath(folderIdxWithFiles, basename),
 						ZipFileID:    &fileIDs[fileIdxStartVideoFiles],
 						ModTime:      fileModTime,
 						MissingSince: &missingSince,
 						LastScanned:  lastScanned,
 					},
+					Path:           getFilePath(folderIdxWithFiles, basename),
 					ParentFolderID: folderIDs[folderIdxWithFiles],
 					Basename:       basename,
 					Size:           size,
@@ -330,12 +330,12 @@ func Test_fileStore_Update(t *testing.T) {
 				BaseFile: &file.BaseFile{
 					ID: fileIDs[fileIdxStartImageFiles],
 					DirEntry: file.DirEntry{
-						Path:         getFilePath(folderIdxWithFiles, basename),
 						ZipFileID:    &fileIDs[fileIdxStartImageFiles],
 						ModTime:      fileModTime,
 						MissingSince: &missingSince,
 						LastScanned:  lastScanned,
 					},
+					Path:           getFilePath(folderIdxWithFiles, basename),
 					ParentFolderID: folderIDs[folderIdxWithFiles],
 					Basename:       basename,
 					Size:           size,
@@ -359,11 +359,11 @@ func Test_fileStore_Update(t *testing.T) {
 			&file.BaseFile{
 				ID: fileIDs[fileIdxInZip],
 				DirEntry: file.DirEntry{
-					Path:         getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 					ModTime:      fileModTime,
 					MissingSince: &missingSince,
 					LastScanned:  lastScanned,
 				},
+				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 				Basename:       getFileBaseName(fileIdxZip),
 				Size:           size,
@@ -381,10 +381,8 @@ func Test_fileStore_Update(t *testing.T) {
 		{
 			"clear zip",
 			&file.BaseFile{
-				ID: fileIDs[fileIdxInZip],
-				DirEntry: file.DirEntry{
-					Path: getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
-				},
+				ID:             fileIDs[fileIdxInZip],
+				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 				Basename:       getFileBaseName(fileIdxZip),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 			},
@@ -393,10 +391,8 @@ func Test_fileStore_Update(t *testing.T) {
 		{
 			"clear missing since",
 			&file.BaseFile{
-				ID: fileIDs[fileIdxIsMissing],
-				DirEntry: file.DirEntry{
-					Path: getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxIsMissing)),
-				},
+				ID:             fileIDs[fileIdxIsMissing],
+				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxIsMissing)),
 				Basename:       getFileBaseName(fileIdxIsMissing),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 			},
@@ -405,20 +401,16 @@ func Test_fileStore_Update(t *testing.T) {
 		{
 			"clear folder",
 			&file.BaseFile{
-				ID: fileIDs[fileIdxZip],
-				DirEntry: file.DirEntry{
-					Path: basename,
-				},
+				ID:   fileIDs[fileIdxZip],
+				Path: basename,
 			},
 			true,
 		},
 		{
 			"invalid parent folder id",
 			&file.BaseFile{
-				ID: fileIDs[fileIdxZip],
-				DirEntry: file.DirEntry{
-					Path: basename,
-				},
+				ID:             fileIDs[fileIdxZip],
+				Path:           basename,
 				ParentFolderID: invalidFolderID,
 			},
 			true,
@@ -426,9 +418,9 @@ func Test_fileStore_Update(t *testing.T) {
 		{
 			"invalid zip file id",
 			&file.BaseFile{
-				ID: fileIDs[fileIdxZip],
+				ID:   fileIDs[fileIdxZip],
+				Path: basename,
 				DirEntry: file.DirEntry{
-					Path:      basename,
 					ZipFileID: &invalidFileID,
 				},
 				ParentFolderID: folderIDs[folderIdxWithFiles],

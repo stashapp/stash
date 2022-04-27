@@ -160,10 +160,10 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 		ff := scanFile{
 			BaseFile: &BaseFile{
 				DirEntry: DirEntry{
-					Path:        path,
 					ModTime:     modTime(info),
 					LastScanned: time.Now(),
 				},
+				Path:     path,
 				Basename: filepath.Base(path),
 				Size:     info.Size(),
 			},
@@ -359,9 +359,9 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 
 	toCreate := &Folder{
 		DirEntry: DirEntry{
-			Path:    file.Path,
 			ModTime: file.ModTime,
 		},
+		Path:      file.Path,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
