@@ -18,7 +18,7 @@ var (
 	invalidFileID   = file.ID(invalidID)
 )
 
-func Test_folderQueryBuilder_Create(t *testing.T) {
+func Test_FolderStore_Create(t *testing.T) {
 	var (
 		path        = "path"
 		fileModTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -74,7 +74,7 @@ func Test_folderQueryBuilder_Create(t *testing.T) {
 
 			s := tt.newObject
 			if err := qb.Create(ctx, &s); (err != nil) != tt.wantErr {
-				t.Errorf("folderQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
+				t.Errorf("FolderStore.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 
 			if tt.wantErr {
@@ -92,7 +92,7 @@ func Test_folderQueryBuilder_Create(t *testing.T) {
 			// ensure can find the folder
 			found, err := qb.FindByPath(ctx, path)
 			if err != nil {
-				t.Errorf("folderQueryBuilder.Find() error = %v", err)
+				t.Errorf("FolderStore.Find() error = %v", err)
 			}
 
 			assert.Equal(copy, *found)
@@ -100,7 +100,7 @@ func Test_folderQueryBuilder_Create(t *testing.T) {
 	}
 }
 
-func Test_folderQueryBuilder_Update(t *testing.T) {
+func Test_FolderStore_Update(t *testing.T) {
 	var (
 		path        = "path"
 		fileModTime = time.Date(2000, 1, 2, 3, 4, 5, 6, time.UTC)
@@ -183,7 +183,7 @@ func Test_folderQueryBuilder_Update(t *testing.T) {
 			copy := *tt.updatedObject
 
 			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
-				t.Errorf("folderQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("FolderStore.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if tt.wantErr {
@@ -192,7 +192,7 @@ func Test_folderQueryBuilder_Update(t *testing.T) {
 
 			s, err := qb.FindByPath(ctx, path)
 			if err != nil {
-				t.Errorf("folderQueryBuilder.Find() error = %v", err)
+				t.Errorf("FolderStore.Find() error = %v", err)
 			}
 
 			assert.Equal(copy, *s)
@@ -209,9 +209,9 @@ func makeFolderWithID(index int) *file.Folder {
 	return &ret
 }
 
-func Test_folderQueryBuilder_FindByPath(t *testing.T) {
+func Test_FolderStore_FindByPath(t *testing.T) {
 	getPath := func(index int) string {
-		return getFolderPath(index)
+		return folderPaths[index]
 	}
 
 	tests := []struct {
@@ -240,11 +240,91 @@ func Test_folderQueryBuilder_FindByPath(t *testing.T) {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			got, err := qb.FindByPath(ctx, tt.path)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("folderQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("FolderStore.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("folderQueryBuilder.FindByPath() = %v, want %v", got, tt.want)
+				t.Errorf("FolderStore.FindByPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFolderStore_MarkMissing(t *testing.T) {
+	var (
+		beforeScanned = getFolderLastScan(0).Add(-1 * time.Hour)
+		afterScanned  = getFolderLastScan(totalFolders).Add(1 * time.Hour)
+	)
+
+	tests := []struct {
+		name           string
+		scanStartTime  time.Time
+		scanPaths      []string
+		missingIndexes []int
+		wantErr        bool
+	}{
+		{
+			"after scan time",
+			afterScanned,
+			nil,
+			[]int{
+				folderIdxWithSubFolder,
+				folderIdxWithParentFolder,
+				folderIdxWithFiles,
+				folderIdxInZip,
+			},
+			false,
+		},
+		{
+			"before scan time",
+			beforeScanned,
+			nil,
+			nil,
+			false,
+		},
+		{
+			"excluded path",
+			afterScanned,
+			[]string{"foo"},
+			nil,
+			false,
+		},
+		{
+			"included path",
+			afterScanned,
+			[]string{folderPaths[folderIdxWithSubFolder]},
+			[]int{
+				folderIdxWithSubFolder,
+				folderIdxWithParentFolder,
+			},
+			false,
+		},
+	}
+
+	qb := db.Folder
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			n, err := qb.MarkMissing(ctx, tt.scanStartTime, tt.scanPaths)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FolderStore.MarkMissing() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			assert.Equal(len(tt.missingIndexes), n, "number of folders marked missing")
+
+			for _, idx := range tt.missingIndexes {
+				f, err := qb.Find(ctx, folderIDs[idx])
+				if err != nil {
+					t.Errorf("FolderStore.Find() error = %v", err)
+					return
+				}
+
+				assert.NotNil(f.MissingSince, "folder marked missing")
 			}
 		})
 	}

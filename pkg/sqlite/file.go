@@ -530,3 +530,40 @@ func (qb *FileStore) FindByFingerprint(ctx context.Context, fp file.Fingerprint)
 
 	return qb.findBySubquery(ctx, sq)
 }
+
+func (qb *FileStore) MarkMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string) (int, error) {
+	now := time.Now()
+	table := qb.table()
+	folderTable := folderTableMgr.table
+
+	var pathEx []exp.Expression
+	for _, p := range scanPaths {
+		pathEx = append(pathEx, table.Col("path").Like(p+"%"))
+	}
+
+	q := dialect.Update(table).Prepared(true).Set(exp.Record{
+		"missing_since": now,
+	}).Where(
+		table.Col("last_scanned").Lt(scanStartTime),
+		table.Col("missing_since").IsNull(),
+	)
+
+	if len(pathEx) > 0 {
+		sq := dialect.From(table).Select(table.Col(idColumn)).InnerJoin(
+			folderTable,
+			goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
+		).Where(
+			goqu.Or(pathEx...),
+		)
+
+		q = q.Where(table.Col(idColumn).Eq(sq))
+	}
+
+	r, err := exec(ctx, q)
+	if err != nil {
+		return 0, fmt.Errorf("marking files as missing: %w", err)
+	}
+
+	n, _ := r.RowsAffected()
+	return int(n), nil
+}

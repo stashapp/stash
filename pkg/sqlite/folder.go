@@ -178,6 +178,17 @@ func (qb *FolderStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*f
 	return rows.resolve(), nil
 }
 
+func (qb *FolderStore) Find(ctx context.Context, id file.FolderID) (*file.Folder, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting folder by id %d: %w", id, err)
+	}
+
+	return ret, nil
+}
+
 func (qb *FolderStore) FindByPath(ctx context.Context, path string) (*file.Folder, error) {
 	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(path))
 
@@ -187,4 +198,30 @@ func (qb *FolderStore) FindByPath(ctx context.Context, path string) (*file.Folde
 	}
 
 	return ret, nil
+}
+
+func (qb *FolderStore) MarkMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string) (int, error) {
+	now := time.Now()
+	table := qb.table()
+
+	var pathEx []exp.Expression
+	for _, p := range scanPaths {
+		pathEx = append(pathEx, table.Col("path").Like(p+"%"))
+	}
+
+	q := dialect.Update(table).Prepared(true).Set(exp.Record{
+		"missing_since": now,
+	}).Where(
+		table.Col("last_scanned").Lt(scanStartTime),
+		table.Col("missing_since").IsNull(),
+		goqu.Or(pathEx...),
+	)
+
+	r, err := exec(ctx, q)
+	if err != nil {
+		return 0, fmt.Errorf("marking folders as missing: %w", err)
+	}
+
+	n, _ := r.RowsAffected()
+	return int(n), nil
 }

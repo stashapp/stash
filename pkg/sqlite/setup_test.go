@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
@@ -258,6 +259,8 @@ var (
 	markerIDs      []int
 	savedFilterIDs []int
 
+	folderPaths []string
+
 	tagNames       []string
 	studioNames    []string
 	movieNames     []string
@@ -291,7 +294,8 @@ var (
 	}
 
 	fileFolders = map[int]int{
-		fileIdxZip: folderIdxWithFiles,
+		fileIdxZip:   folderIdxWithFiles,
+		fileIdxInZip: folderIdxInZip,
 	}
 
 	folderZipFiles = map[int]int{
@@ -597,8 +601,14 @@ func populateDB() error {
 	return nil
 }
 
-func getFolderPath(index int) string {
-	return getPrefixedStringValue("folder", index, pathField)
+func getFolderPath(index int, parentFolderIdx *int) string {
+	path := getPrefixedStringValue("folder", index, pathField)
+
+	if parentFolderIdx != nil {
+		return filepath.Join(folderPaths[*parentFolderIdx], path)
+	}
+
+	return path
 }
 
 func getFolderModTime(index int) time.Time {
@@ -620,8 +630,10 @@ func getFolderLastScan(index int) time.Time {
 
 func makeFolder(i int) file.Folder {
 	var folderID *file.FolderID
-	if _, ok := folderParentFolders[i]; ok {
-		v := folderIDs[folderParentFolders[i]]
+	var folderIdx *int
+	if pidx, ok := folderParentFolders[i]; ok {
+		folderIdx = &pidx
+		v := folderIDs[pidx]
 		folderID = &v
 	}
 
@@ -633,7 +645,7 @@ func makeFolder(i int) file.Folder {
 			MissingSince: getFolderMissingSince(i),
 			LastScanned:  getFolderLastScan(i),
 		},
-		Path: getFolderPath(i),
+		Path: getFolderPath(i, folderIdx),
 	}
 }
 
@@ -648,6 +660,7 @@ func createFolders(ctx context.Context) error {
 		}
 
 		folderIDs = append(folderIDs, folder.ID)
+		folderPaths = append(folderPaths, folder.Path)
 	}
 
 	return nil

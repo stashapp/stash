@@ -14,7 +14,7 @@ import (
 )
 
 func getFilePath(folderIdx int, basename string) string {
-	return filepath.Join(getFolderPath(folderIdx), basename)
+	return filepath.Join(folderPaths[folderIdx], basename)
 }
 
 func Test_fileFileStore_Create(t *testing.T) {
@@ -607,6 +607,85 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 			}
 
 			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func TestFileStore_MarkMissing(t *testing.T) {
+	var (
+		beforeScanned = getFileLastScan(0).Add(-1 * time.Hour)
+		afterScanned  = getFileLastScan(totalFiles).Add(1 * time.Hour)
+	)
+
+	tests := []struct {
+		name           string
+		scanStartTime  time.Time
+		scanPaths      []string
+		missingIndexes []int
+		wantErr        bool
+	}{
+		{
+			"after scan time",
+			afterScanned,
+			nil,
+			[]int{
+				fileIdxZip,
+				fileIdxInZip,
+				fileIdxStartVideoFiles,
+				fileIdxStartImageFiles,
+			},
+			false,
+		},
+		{
+			"before scan time",
+			beforeScanned,
+			nil,
+			nil,
+			false,
+		},
+		{
+			"excluded path",
+			afterScanned,
+			[]string{"foo"},
+			nil,
+			false,
+		},
+		{
+			"included path",
+			afterScanned,
+			[]string{folderPaths[folderIdxInZip]},
+			[]int{
+				folderIdxInZip,
+			},
+			false,
+		},
+	}
+
+	qb := db.Folder
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			n, err := qb.MarkMissing(ctx, tt.scanStartTime, tt.scanPaths)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FileStore.MarkMissing() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			assert.Equal(len(tt.missingIndexes), n, "number of files marked missing")
+
+			for _, idx := range tt.missingIndexes {
+				f, err := qb.Find(ctx, folderIDs[idx])
+				if err != nil {
+					t.Errorf("FileStore.Find() error = %v", err)
+					return
+				}
+
+				assert.NotNil(f.MissingSince, "file marked missing")
+			}
 		})
 	}
 }
