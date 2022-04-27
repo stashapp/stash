@@ -22,7 +22,6 @@ const scanQueueSize = 200000
 type Repository struct {
 	txn.Manager
 	Store
-	MissedMarker
 
 	FolderStore FolderStore
 }
@@ -30,12 +29,15 @@ type Repository struct {
 // Scanner scans files into the database.
 // TODO - explain the scanning process
 type Scanner struct {
-	Repository          Repository
-	FingerprintHandlers FingerprintCalculator
-	FileDecorators      []Decorator
-	ScanFilters         []Filter
-	Handlers            []Handler
-	FS                  FS
+	FS                    FS
+	Repository            Repository
+	FingerprintCalculator FingerprintCalculator
+
+	// FileDecorators are applied to files as they are scanned.
+	FileDecorators []Decorator
+
+	// Handlers are called after a file has been scanned.
+	Handlers []Handler
 }
 
 // ScanProgressReporter is used to report progress of the scan.
@@ -64,6 +66,9 @@ type scanJob struct {
 // ScanOptions provides options for scanning files.
 type ScanOptions struct {
 	Paths []string
+
+	// ScanFilters are used to determine if a file should be scanned.
+	ScanFilters []PathFilter
 }
 
 // Scan starts the scanning process.
@@ -157,6 +162,10 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 			return fmt.Errorf("reading info for %q: %w", path, err)
 		}
 
+		if !s.acceptEntry(path, info) {
+			return fs.SkipDir
+		}
+
 		ff := scanFile{
 			BaseFile: &BaseFile{
 				DirEntry: DirEntry{
@@ -172,20 +181,6 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 			// there is no guarantee that the zip file has been scanned
 			// so we can't just plug in the id.
 			zipFile: zipFile,
-		}
-
-		// always accept if there's no filters
-		accept := len(s.ScanFilters) == 0
-		for _, filter := range s.ScanFilters {
-			// accept if any filter accepts the file
-			if filter.Accept(ff.BaseFile) {
-				accept = true
-				break
-			}
-		}
-
-		if !accept {
-			return fs.SkipDir
 		}
 
 		if info.IsDir() {
@@ -215,6 +210,20 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 
 		return nil
 	}
+}
+
+func (s *scanJob) acceptEntry(path string, info fs.FileInfo) bool {
+	// always accept if there's no filters
+	accept := len(s.options.ScanFilters) == 0
+	for _, filter := range s.options.ScanFilters {
+		// accept if any filter accepts the file
+		if filter.Accept(path, info) {
+			accept = true
+			break
+		}
+	}
+
+	return accept
 }
 
 func (s *scanJob) scanZipFile(ctx context.Context, f scanFile) error {
@@ -496,12 +505,12 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 		baseFile.ZipFileID = zipFileID
 	}
 
-	fp, err := s.calculateFingerprint(f.fs, baseFile, path)
+	fp, err := s.calculateFingerprints(f.fs, baseFile, path)
 	if err != nil {
 		return nil, err
 	}
 
-	baseFile.SetFingerprint(*fp)
+	baseFile.SetFingerprints(fp)
 
 	// determine if the file is renamed from an existing file in the store
 	renamed, err := s.handleRename(ctx, baseFile, fp)
@@ -553,17 +562,14 @@ func (s *scanJob) fireHandlers(ctx context.Context, fs FS, f File) error {
 	return nil
 }
 
-func (s *scanJob) calculateFingerprint(fs FS, f *BaseFile, path string) (*Fingerprint, error) {
-	logger.Infof("Calculating fingerprint for %s ...", path)
+func (s *scanJob) calculateFingerprints(fs FS, f *BaseFile, path string) ([]Fingerprint, error) {
+	logger.Infof("Calculating fingerprints for %s ...", path)
 
 	// calculate primary fingerprint for the file
-	r, err := fs.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("opening file %q: %w", path, err)
-	}
-	defer r.Close()
-
-	fp, err := s.FingerprintHandlers.CalculateFingerprint(f, r)
+	fp, err := s.FingerprintCalculator.CalculateFingerprints(f, &fsOpener{
+		fs:   fs,
+		name: path,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("calculating fingerprint for file %q: %w", path, err)
 	}
@@ -571,10 +577,35 @@ func (s *scanJob) calculateFingerprint(fs FS, f *BaseFile, path string) (*Finger
 	return fp, nil
 }
 
-func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp *Fingerprint) (File, error) {
-	others, err := s.Repository.FindByFingerprint(ctx, *fp)
-	if err != nil {
-		return nil, fmt.Errorf("getting files by fingerprint %q: %w", fp, err)
+func appendFileUnique(v []File, toAdd []File) []File {
+	for _, f := range toAdd {
+		found := false
+		id := f.Base().ID
+		for _, vv := range v {
+			if vv.Base().ID == id {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			v = append(v, f)
+		}
+	}
+
+	return v
+}
+
+func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp []Fingerprint) (File, error) {
+	var others []File
+
+	for _, tfp := range fp {
+		thisOthers, err := s.Repository.FindByFingerprint(ctx, tfp)
+		if err != nil {
+			return nil, fmt.Errorf("getting files by fingerprint %v: %w", tfp, err)
+		}
+
+		others = appendFileUnique(others, thisOthers)
 	}
 
 	var missing []File
@@ -629,13 +660,13 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 		base.Size = f.Size
 		base.UpdatedAt = time.Now()
 
-		// calculate and update primary fingerprint for the file
-		fp, err := s.calculateFingerprint(f.fs, base, path)
+		// calculate and update fingerprints for the file
+		fp, err := s.calculateFingerprints(f.fs, base, path)
 		if err != nil {
 			return nil, err
 		}
 
-		existing.SetFingerprint(*fp)
+		existing.SetFingerprints(fp)
 
 		existing, err = s.fireDecorators(ctx, f.fs, existing)
 		if err != nil {
@@ -660,8 +691,26 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 
 func (s *scanJob) markMissingFiles(ctx context.Context) {
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		return s.Repository.MarkMissing(ctx, s.startTime)
+		n, err := s.Repository.FolderStore.MarkMissing(ctx, s.startTime, s.options.Paths)
+		if err != nil {
+			return nil
+		}
+
+		if n > 0 {
+			logger.Infof("Marked %d folders as missing", n)
+		}
+
+		n, err = s.Repository.MarkMissing(ctx, s.startTime, s.options.Paths)
+		if err != nil {
+			return err
+		}
+
+		if n > 0 {
+			logger.Infof("Marked %d files as missing", n)
+		}
+
+		return nil
 	}); err != nil {
-		logger.Errorf("Error marking missing files: %v", err)
+		logger.Errorf("Error marking missing files and folders: %v", err)
 	}
 }

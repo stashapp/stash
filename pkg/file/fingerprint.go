@@ -1,7 +1,9 @@
 package file
 
-import (
-	"io"
+var (
+	FingerprintTypeOshash = "oshash"
+	FingerprintTypeMD5    = "md5"
+	FingerprintTypePhash  = "phash"
 )
 
 // Fingerprint represents a fingerprint of a file.
@@ -12,5 +14,5 @@ type Fingerprint struct {
 
 // FingerprintCalculator calculates a fingerprint for the provided file.
 type FingerprintCalculator interface {
-	CalculateFingerprint(f *BaseFile, r io.Reader) (*Fingerprint, error)
+	CalculateFingerprints(f *BaseFile, o Opener) ([]Fingerprint, error)
 }

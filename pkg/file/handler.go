@@ -1,6 +1,20 @@
 package file
 
-import "context"
+import (
+	"context"
+	"io/fs"
+)
+
+// PathFilter provides a filter function for paths.
+type PathFilter interface {
+	Accept(path string, info fs.FileInfo) bool
+}
+
+type PathFilterFunc func(path string) bool
+
+func (pff PathFilterFunc) Accept(path string) bool {
+	return pff(path)
+}
 
 // Filter provides a filter function for Files.
 type Filter interface {

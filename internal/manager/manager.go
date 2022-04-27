@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime/pprof"
 	"strconv"
 	"strings"
@@ -19,6 +21,9 @@ import (
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/file/image"
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -118,6 +123,8 @@ type Manager struct {
 	Database   *sqlite.Database
 	Repository models.Repository
 
+	Scanner *file.Scanner
+
 	scanSubs *subscriptionManager
 }
 
@@ -151,7 +158,7 @@ func initialize() error {
 	l := initLog()
 	initProfiling(cfg.GetCPUProfilePath())
 
-	db := &sqlite.Database{}
+	db := sqlite.NewDatabase()
 
 	instance = &Manager{
 		Config:          cfg,
@@ -200,14 +207,12 @@ func initialize() error {
 			err = cfg.Validate()
 		}
 
-		if err != nil {
-			panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
-		} else if err := instance.PostInit(ctx); err != nil {
-			var migrationNeededErr *sqlite.MigrationNeededError
-			if errors.As(err, &migrationNeededErr) {
-				logger.Warn(err.Error())
-			} else {
-				panic(err)
+		instance.Scanner = makeScanner(db)
+
+		// if DLNA is enabled, start it now
+		if instance.Config.GetDLNADefaultEnabled() {
+			if err := instance.DLNAService.Start(nil); err != nil {
+				logger.Warnf("could not start DLNA service: %v", err)
 			}
 		}
 
@@ -237,6 +242,91 @@ func initialize() error {
 	}
 
 	return nil
+}
+
+type scanFilter struct {
+	stashPaths        []*config.StashConfig
+	generatedPath     string
+	vidExt            []string
+	imgExt            []string
+	zipExt            []string
+	videoExcludeRegex []*regexp.Regexp
+	imageExcludeRegex []*regexp.Regexp
+}
+
+func newScanFilter(c *config.Instance) *scanFilter {
+	return &scanFilter{
+		stashPaths:        c.GetStashPaths(),
+		generatedPath:     c.GetGeneratedPath(),
+		vidExt:            c.GetVideoExtensions(),
+		imgExt:            c.GetImageExtensions(),
+		zipExt:            c.GetGalleryExtensions(),
+		videoExcludeRegex: generateRegexps(c.GetExcludes()),
+		imageExcludeRegex: generateRegexps(c.GetImageExcludes()),
+	}
+}
+
+func (f *scanFilter) Accept(path string, info fs.FileInfo) bool {
+	if fsutil.IsPathInDir(f.generatedPath, path) {
+		return false
+	}
+
+	isVideoFile := fsutil.MatchExtension(path, f.vidExt)
+	isImageFile := fsutil.MatchExtension(path, f.imgExt)
+	isZipFile := fsutil.MatchExtension(path, f.zipExt)
+
+	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile {
+		return false
+	}
+
+	s := getStashFromDirPath(path)
+
+	if s == nil {
+		return false
+	}
+
+	// shortcut: skip the directory entirely if it matches both exclusion patterns
+	// add a trailing separator so that it correctly matches against patterns like path/.*
+	pathExcludeTest := path + string(filepath.Separator)
+	if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
+		return false
+	}
+
+	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
+		return false
+	} else if !isVideoFile && s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex) {
+		return false
+	}
+
+	return true
+}
+
+func makeScanner(db *sqlite.Database) *file.Scanner {
+	return &file.Scanner{
+		Repository: file.Repository{
+			Manager:     db,
+			Store:       db.File,
+			FolderStore: db.Folder,
+		},
+		FileDecorators: []file.Decorator{
+			&file.FilteredDecorator{
+				Decorator: &video.Decorator{
+					FFProbe: instance.FFProbe,
+				},
+				Filter: file.FilterFunc(func(f file.File) bool {
+					return isVideo(f.Base().Basename)
+				}),
+			},
+			&file.FilteredDecorator{
+				Decorator: &image.Decorator{},
+				Filter: file.FilterFunc(func(f file.File) bool {
+					return isImage(f.Base().Basename)
+				}),
+			},
+		},
+		FingerprintCalculator: &fingerprintCalculator{instance.Config},
+		FS:                    &file.OsFS{},
+	}
 }
 
 func initJobManager() *job.Manager {
@@ -526,6 +616,8 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	if err := initFFMPEG(ctx); err != nil {
 		return fmt.Errorf("error initializing FFMPEG subsystem: %v", err)
 	}
+
+	instance.Scanner = makeScanner(instance.Database)
 
 	return nil
 }

@@ -40,6 +40,8 @@ const (
 	StatusFinished Status = "FINISHED"
 	// StatusCancelled means that the job was cancelled and is now stopped.
 	StatusCancelled Status = "CANCELLED"
+	// StatusFailed means that the job failed.
+	StatusFailed Status = "FAILED"
 )
 
 // Job represents the status of a queued or running job.

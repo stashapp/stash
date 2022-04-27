@@ -45,4 +45,5 @@ type FolderStore interface {
 	FolderGetter
 	FolderCreator
 	FolderUpdater
+	MissingMarker
 }

@@ -16,10 +16,10 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 )
 
-func isGallery(pathname string) bool {
-	gExt := config.GetInstance().GetGalleryExtensions()
-	return fsutil.MatchExtension(pathname, gExt)
-}
+// func isZip(pathname string) bool {
+// 	gExt := config.GetInstance().GetGalleryExtensions()
+// 	return fsutil.MatchExtension(pathname, gExt)
+// }
 
 func isCaptions(pathname string) bool {
 	return fsutil.MatchExtension(pathname, scene.CaptionExts)
@@ -83,14 +83,13 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 		return 0, err
 	}
 
-	// scanJob := ScanJob{
-	// 	txnManager:    s.Repository,
-	// 	input:         input,
-	// 	subscriptions: s.scanSubs,
-	// }
+	scanJob := ScanJob{
+		scanner:       s.Scanner,
+		input:         input,
+		subscriptions: s.scanSubs,
+	}
 
-	// return s.JobManager.Add(ctx, "Scanning...", &scanJob), nil
-	panic("TODO")
+	return s.JobManager.Add(ctx, "Scanning...", &scanJob), nil
 }
 
 func (s *Manager) Import(ctx context.Context) (int, error) {

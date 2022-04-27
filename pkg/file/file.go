@@ -31,7 +31,7 @@ func (e *DirEntry) scanned() {
 // File represents a file in the file system.
 type File interface {
 	Base() *BaseFile
-	SetFingerprint(fp Fingerprint)
+	SetFingerprints(fp []Fingerprint)
 }
 
 // BaseFile represents a file in the file system.
@@ -52,6 +52,14 @@ type BaseFile struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// SetFingerprints sets the fingerprints of the file.
+// If a fingerprint of the same type already exists, it is overwritten.
+func (f *BaseFile) SetFingerprints(fp []Fingerprint) {
+	for _, v := range fp {
+		f.SetFingerprint(v)
+	}
 }
 
 // SetFingerprint sets the fingerprint of the file.
@@ -93,11 +101,12 @@ type Store interface {
 	Getter
 	Creator
 	Updater
+	MissingMarker
 }
 
-// MissedMarker wraps the MarkMissing method.
-type MissedMarker interface {
-	MarkMissing(ctx context.Context, scanTime time.Time) error
+// MissingMarker wraps the MarkMissing method.
+type MissingMarker interface {
+	MarkMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string) (int, error)
 }
 
 // Decorator wraps the Decorate method to add additional functionality while scanning files.
