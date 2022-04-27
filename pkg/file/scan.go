@@ -32,6 +32,7 @@ type Repository struct {
 type Scanner struct {
 	Repository          Repository
 	FingerprintHandlers FingerprintCalculator
+	FileDecorators      []Decorator
 	ScanFilters         []Filter
 	Handlers            []Handler
 	FS                  FS
@@ -121,8 +122,6 @@ func (s *scanJob) execute(ctx context.Context) {
 
 	// now mark any files not seen as missing
 	s.markMissingFiles(ctx)
-
-	logger.Info("Finished scanning files")
 }
 
 func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
@@ -358,7 +357,7 @@ func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, error) {
 	now := time.Now()
 
-	toCreate := Folder{
+	toCreate := &Folder{
 		DirEntry: DirEntry{
 			Path:    file.Path,
 			ModTime: file.ModTime,
@@ -391,12 +390,11 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 	}
 
 	logger.Infof("%s doesn't exist. Creating new folder entry...", file.Path)
-	f, err := s.Repository.FolderStore.Create(ctx, toCreate)
-	if err != nil {
+	if err := s.Repository.FolderStore.Create(ctx, toCreate); err != nil {
 		return nil, fmt.Errorf("creating folder %q: %w", file.Path, err)
 	}
 
-	return f, nil
+	return toCreate, nil
 }
 
 func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *Folder) (*Folder, error) {
@@ -411,8 +409,7 @@ func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *Fo
 	existing.scanned()
 
 	var err error
-	_, err = s.Repository.FolderStore.Update(ctx, *existing)
-	if err != nil {
+	if err = s.Repository.FolderStore.Update(ctx, existing); err != nil {
 		return nil, fmt.Errorf("updating folder %q: %w", f.Path, err)
 	}
 
@@ -461,14 +458,14 @@ func (s *scanJob) isZipFile(entry fs.FileInfo) bool {
 	return strings.HasSuffix(entry.Name(), ".zip")
 }
 
-func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (*BaseFile, error) {
+func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 	now := time.Now()
 
-	file := f.BaseFile
-	path := file.Path
+	baseFile := f.BaseFile
+	path := baseFile.Path
 
-	file.CreatedAt = now
-	file.UpdatedAt = now
+	baseFile.CreatedAt = now
+	baseFile.UpdatedAt = now
 
 	// find the parent folder
 	parentFolderID, err := s.getFolderID(ctx, filepath.Dir(path))
@@ -488,7 +485,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (*BaseFile, error) 
 		return nil, nil
 	}
 
-	file.ParentFolderID = parentFolderID
+	baseFile.ParentFolderID = *parentFolderID
 
 	zipFileID, err := s.getZipFileID(ctx, f.zipFile)
 	if err != nil {
@@ -496,24 +493,29 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (*BaseFile, error) 
 	}
 
 	if zipFileID != nil {
-		file.ZipFileID = zipFileID
+		baseFile.ZipFileID = zipFileID
 	}
 
-	fp, err := s.calculateFingerprint(f.fs, file, path)
+	fp, err := s.calculateFingerprint(f.fs, baseFile, path)
 	if err != nil {
 		return nil, err
 	}
 
-	file.SetFingerprint(*fp)
+	baseFile.SetFingerprint(*fp)
 
 	// determine if the file is renamed from an existing file in the store
-	renamed, err := s.handleRename(ctx, file, fp)
+	renamed, err := s.handleRename(ctx, baseFile, fp)
 	if err != nil {
 		return nil, err
 	}
 
-	if renamed {
-		return file, nil
+	if renamed != nil {
+		return renamed, nil
+	}
+
+	file, err := s.fireDecorators(ctx, f.fs, baseFile)
+	if err != nil {
+		return nil, err
 	}
 
 	// if not renamed, add file to store
@@ -527,6 +529,18 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (*BaseFile, error) 
 	}
 
 	return file, nil
+}
+
+func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, error) {
+	for _, h := range s.FileDecorators {
+		var err error
+		f, err = h.Decorate(ctx, fs, f)
+		if err != nil {
+			return f, err
+		}
+	}
+
+	return f, nil
 }
 
 func (s *scanJob) fireHandlers(ctx context.Context, fs FS, f File) error {
@@ -557,10 +571,10 @@ func (s *scanJob) calculateFingerprint(fs FS, f *BaseFile, path string) (*Finger
 	return fp, nil
 }
 
-func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp *Fingerprint) (bool, error) {
+func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp *Fingerprint) (File, error) {
 	others, err := s.Repository.FindByFingerprint(ctx, *fp)
 	if err != nil {
-		return false, fmt.Errorf("getting files by fingerprint %q: %w", fp, err)
+		return nil, fmt.Errorf("getting files by fingerprint %q: %w", fp, err)
 	}
 
 	var missing []File
@@ -577,24 +591,27 @@ func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp *Fingerprint
 	switch {
 	case n == 1:
 		// assume does not exist, update existing file
-		other := missing[0].Base()
+		other := missing[0]
+		otherBase := other.Base()
 
-		logger.Infof("%s moved to %s. Updating path...", other.Path, f.Path)
-		f.ID = other.ID
-		f.CreatedAt = other.CreatedAt
-		f.Fingerprints = other.Fingerprints
-		if err := s.Repository.Update(ctx, f); err != nil {
-			return false, fmt.Errorf("updating file for rename %q: %w", f.Path, err)
+		logger.Infof("%s moved to %s. Updating path...", otherBase.Path, f.Path)
+		f.ID = otherBase.ID
+		f.CreatedAt = otherBase.CreatedAt
+		f.Fingerprints = otherBase.Fingerprints
+		*otherBase = *f
+
+		if err := s.Repository.Update(ctx, other); err != nil {
+			return nil, fmt.Errorf("updating file for rename %q: %w", f.Path, err)
 		}
 
-		return true, nil
+		return other, nil
 	case n > 1:
 		// multiple candidates
 		// TODO - mark all as missing and just create a new file
-		return false, nil
+		return nil, nil
 	}
 
-	return false, nil
+	return nil, nil
 }
 
 func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File) (File, error) {
@@ -619,9 +636,14 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 		}
 
 		existing.SetFingerprint(*fp)
+
+		existing, err = s.fireDecorators(ctx, f.fs, existing)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	if err := s.Repository.Update(ctx, base); err != nil {
+	if err := s.Repository.Update(ctx, existing); err != nil {
 		return nil, fmt.Errorf("updating file %q: %w", path, err)
 	}
 

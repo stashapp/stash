@@ -24,7 +24,8 @@ CREATE TABLE `files` (
   `created_at` datetime not null,
   `updated_at` datetime not null,
   foreign key(`parent_folder_id`) references `folders`(`id`) on delete CASCADE,
-  foreign key(`zip_file_id`) references `files`(`id`) on delete CASCADE
+  foreign key(`zip_file_id`) references `files`(`id`) on delete CASCADE,
+  CHECK (`basename` != '')
 );
 
 CREATE UNIQUE INDEX `index_files_basename_unique` ON `files` (`zip_file_id`, `parent_folder_id`, `basename`);
@@ -33,12 +34,12 @@ ALTER TABLE `folders` ADD COLUMN `zip_file_id` integer REFERENCES `files`(`id`) 
 CREATE UNIQUE INDEX `index_folders_path_unique` on `folders` (`zip_file_id`, `path`);
 
 CREATE TABLE `fingerprints` (
-  `fingerprint_id` integer not null primary key autoincrement,
+  `id` integer not null primary key autoincrement,
   `type` varchar(255) NOT NULL,
-  `fingerprint` blob NOT NULL,
+  `fingerprint` blob NOT NULL
 );
 
-CREATE UNIQUE INDEX `index_fingerprint_type_fingerprint_unique` ON `files` (`type`, `fingerprint`);
+CREATE UNIQUE INDEX `index_fingerprint_type_fingerprint_unique` ON `fingerprints` (`type`, `fingerprint`);
 
 CREATE TABLE `files_fingerprints` (
   `file_id` integer NOT NULL,
@@ -48,7 +49,7 @@ CREATE TABLE `files_fingerprints` (
   PRIMARY KEY (`file_id`, `fingerprint_id`)
 );
 
-CREATE INDEX `index_files_fingerprints_type_fingerprint` ON `files_fingerprints` (`type`, `fingerprint`);
+CREATE INDEX `index_files_fingerprints_fingerprint_id` ON `files_fingerprints` (`fingerprint_id`);
 
 CREATE TABLE `video_files` (
   `file_id` integer NOT NULL primary key,
@@ -68,7 +69,7 @@ CREATE TABLE `image_files` (
   `format` varchar(255) NOT NULL,
   `width` tinyint NOT NULL,
 	`height` tinyint NOT NULL,
-  foreign key(`file_id`) references `files`(`id`) on delete CASCADE,
+  foreign key(`file_id`) references `files`(`id`) on delete CASCADE
 );
 
 CREATE TABLE `images_files` (
@@ -80,6 +81,8 @@ CREATE TABLE `images_files` (
     PRIMARY KEY(`image_id`, `file_id`)
 );
 
+CREATE INDEX `index_images_files_file_id` ON `images_files` (`file_id`);
+
 CREATE TABLE `images_fingerprints` (
   `image_id` integer NOT NULL,
   `fingerprint_id` integer NOT NULL,
@@ -87,6 +90,8 @@ CREATE TABLE `images_fingerprints` (
   foreign key(`fingerprint_id`) references `fingerprints`(`id`) on delete CASCADE,
   PRIMARY KEY (`image_id`, `fingerprint_id`)
 );
+
+CREATE INDEX `index_images_fingerprints_fingerprint_id` ON `images_fingerprints` (`fingerprint_id`);
 
 CREATE TABLE `galleries_files` (
     `gallery_id` integer NOT NULL,
@@ -97,6 +102,8 @@ CREATE TABLE `galleries_files` (
     PRIMARY KEY(`gallery_id`, `file_id`)
 );
 
+CREATE INDEX `index_galleries_files_file_id` ON `galleries_files` (`file_id`);
+
 CREATE TABLE `galleries_fingerprints` (
   `gallery_id` integer NOT NULL,
   `fingerprint_id` integer NOT NULL,
@@ -104,6 +111,8 @@ CREATE TABLE `galleries_fingerprints` (
   foreign key(`fingerprint_id`) references `fingerprints`(`id`) on delete CASCADE,
   PRIMARY KEY (`gallery_id`, `fingerprint_id`)
 );
+
+CREATE INDEX `index_galleries_fingerprints_fingerprint_id` ON `galleries_fingerprints` (`fingerprint_id`);
 
 CREATE TABLE `scenes_files` (
     `scene_id` integer NOT NULL,
@@ -114,6 +123,8 @@ CREATE TABLE `scenes_files` (
     PRIMARY KEY(`scene_id`, `file_id`)
 );
 
+CREATE INDEX `index_scenes_files_file_id` ON `scenes_files` (`file_id`);
+
 CREATE TABLE `scenes_fingerprints` (
   `scene_id` integer NOT NULL,
   `fingerprint_id` integer NOT NULL,
@@ -121,4 +132,5 @@ CREATE TABLE `scenes_fingerprints` (
   foreign key(`fingerprint_id`) references `fingerprints`(`id`) on delete CASCADE,
   PRIMARY KEY (`scene_id`, `fingerprint_id`)
 );
-    
+
+CREATE INDEX `index_scenes_fingerprints_fingerprint_id` ON `scenes_fingerprints` (`fingerprint_id`);

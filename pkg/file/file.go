@@ -15,9 +15,8 @@ func (i ID) String() string {
 
 // DirEntry represents a file or directory in the file system.
 type DirEntry struct {
-	Path           string    `json:"path"`
-	ParentFolderID *FolderID `json:"parent_folder_id"`
-	ZipFileID      *ID       `json:"zip_file_id"`
+	Path      string `json:"path"`
+	ZipFileID *ID    `json:"zip_file_id"`
 
 	ModTime      time.Time  `json:"mod_time"`
 	MissingSince *time.Time `json:"missing_since"`
@@ -41,7 +40,8 @@ type BaseFile struct {
 	ID ID `json:"id"`
 
 	DirEntry
-	Basename string `json:"basename"`
+	Basename       string   `json:"basename"`
+	ParentFolderID FolderID `json:"parent_folder_id"`
 
 	Fingerprints []Fingerprint `json:"fingerprints"`
 
@@ -77,12 +77,12 @@ type Getter interface {
 
 // Creator provides methods to create Files.
 type Creator interface {
-	Create(ctx context.Context, f *BaseFile) error
+	Create(ctx context.Context, f File) error
 }
 
 // Updater provides methods to update Files.
 type Updater interface {
-	Update(ctx context.Context, f *BaseFile) error
+	Update(ctx context.Context, f File) error
 }
 
 // Store provides methods to find, create and update Files.
@@ -95,4 +95,22 @@ type Store interface {
 // MissedMarker wraps the MarkMissing method.
 type MissedMarker interface {
 	MarkMissing(ctx context.Context, scanTime time.Time) error
+}
+
+// Decorator wraps the Decorate method to add additional functionality while scanning files.
+type Decorator interface {
+	Decorate(ctx context.Context, fs FS, f File) (File, error)
+}
+
+type FilteredDecorator struct {
+	Decorator
+	Filter
+}
+
+// Decorate runs the decorator if the filter accepts the file.
+func (d *FilteredDecorator) Decorate(ctx context.Context, fs FS, f File) (File, error) {
+	if d.Accept(f) {
+		return d.Decorator.Decorate(ctx, fs, f)
+	}
+	return f, nil
 }

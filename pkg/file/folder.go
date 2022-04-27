@@ -18,6 +18,7 @@ func (i FolderID) String() string {
 type Folder struct {
 	ID FolderID `json:"id"`
 	DirEntry
+	ParentFolderID *FolderID `json:"parent_folder_id"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -30,12 +31,12 @@ type FolderGetter interface {
 
 // FolderCreator provides methods to create Folders.
 type FolderCreator interface {
-	Create(ctx context.Context, f Folder) (*Folder, error)
+	Create(ctx context.Context, f *Folder) error
 }
 
 // FolderUpdater provides methods to update Folders.
 type FolderUpdater interface {
-	Update(ctx context.Context, f Folder) (*Folder, error)
+	Update(ctx context.Context, f *Folder) error
 }
 
 // FolderStore provides methods to find, create and update Folders.

@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
@@ -22,6 +23,27 @@ import (
 
 const (
 	spacedSceneTitle = "zzz yyy xxx"
+)
+
+const (
+	folderIdxWithSubFolder = iota
+	folderIdxWithParentFolder
+	folderIdxWithFiles
+	folderIdxInZip
+	folderIdxIsMissing
+
+	totalFolders
+)
+
+const (
+	fileIdxZip = iota
+	fileIdxIsMissing
+	fileIdxInZip
+
+	fileIdxStartVideoFiles
+	fileIdxStartImageFiles
+
+	totalFiles
 )
 
 const (
@@ -223,6 +245,9 @@ const (
 )
 
 var (
+	folderIDs []file.FolderID
+	fileIDs   []file.ID
+
 	sceneIDs       []int
 	imageIDs       []int
 	performerIDs   []int
@@ -259,6 +284,24 @@ func (m linkMap) reverseLookup(idx int) []int {
 
 	return result
 }
+
+var (
+	folderParentFolders = map[int]int{
+		folderIdxWithParentFolder: folderIdxWithSubFolder,
+	}
+
+	fileFolders = map[int]int{
+		fileIdxZip: folderIdxWithFiles,
+	}
+
+	folderZipFiles = map[int]int{
+		folderIdxInZip: fileIdxZip,
+	}
+
+	fileZipFiles = map[int]int{
+		fileIdxInZip: fileIdxZip,
+	}
+)
 
 var (
 	sceneTags = linkMap{
@@ -458,7 +501,7 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	db = &sqlite.Database{}
+	db = sqlite.NewDatabase()
 
 	if err := db.Open(databaseFile); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
@@ -478,6 +521,16 @@ func runTests(m *testing.M) int {
 
 func populateDB() error {
 	if err := withTxn(func(ctx context.Context) error {
+		if err := createFolders(ctx); err != nil {
+			return fmt.Errorf("creating folders: %w", err)
+		}
+
+		if err := createFiles(ctx); err != nil {
+			return fmt.Errorf("creating files: %w", err)
+		}
+
+		// TODO - link folders to zip files
+
 		if err := createMovies(ctx, sqlite.MovieReaderWriter, moviesNameCase, moviesNameNoCase); err != nil {
 			return fmt.Errorf("error creating movies: %s", err.Error())
 		}
@@ -539,6 +592,179 @@ func populateDB() error {
 		return nil
 	}); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func getFolderPath(index int) string {
+	return getPrefixedStringValue("folder", index, pathField)
+}
+
+func getFolderModTime(index int) time.Time {
+	return time.Date(2000, 1, (index%10)+1, 0, 0, 0, 0, time.UTC)
+}
+
+func getFolderMissingSince(index int) *time.Time {
+	if index == folderIdxIsMissing {
+		v := time.Now().Add(-time.Hour)
+		return &v
+	}
+
+	return nil
+}
+
+func getFolderLastScan(index int) time.Time {
+	return getFolderModTime(index)
+}
+
+func makeFolder(i int) file.Folder {
+	var folderID *file.FolderID
+	if _, ok := folderParentFolders[i]; ok {
+		v := folderIDs[folderParentFolders[i]]
+		folderID = &v
+	}
+
+	return file.Folder{
+		ParentFolderID: folderID,
+		DirEntry: file.DirEntry{
+			Path: getFolderPath(i),
+			// zip files have to be added after creating files
+			ModTime:      getFolderModTime(i),
+			MissingSince: getFolderMissingSince(i),
+			LastScanned:  getFolderLastScan(i),
+		},
+	}
+}
+
+func createFolders(ctx context.Context) error {
+	qb := db.Folder
+
+	for i := 0; i < totalFolders; i++ {
+		folder := makeFolder(i)
+
+		if err := qb.Create(ctx, &folder); err != nil {
+			return fmt.Errorf("Error creating folder [%d] %v+: %s", i, folder, err.Error())
+		}
+
+		folderIDs = append(folderIDs, folder.ID)
+	}
+
+	return nil
+}
+
+func getFileBaseName(index int) string {
+	return getPrefixedStringValue("file", index, "basename")
+}
+
+func getFileStringValue(index int, field string) string {
+	return getPrefixedStringValue("file", index, field)
+}
+
+func getFileLastScan(index int) time.Time {
+	return getFolderLastScan(index)
+}
+
+func getFileModTime(index int) time.Time {
+	return getFolderModTime(index)
+}
+
+func getFileMissingSince(index int) *time.Time {
+	if index == fileIdxIsMissing {
+		v := time.Now().Add(-time.Hour)
+		return &v
+	}
+
+	return nil
+}
+
+func getFileFingerprints(index int) []file.Fingerprint {
+	return []file.Fingerprint{
+		{
+			Type:        "MD5",
+			Fingerprint: getPrefixedStringValue("file", index, "md5"),
+		},
+		{
+			Type:        "OSHASH",
+			Fingerprint: getPrefixedStringValue("file", index, "oshash"),
+		},
+	}
+}
+
+func getFileSize(index int) int64 {
+	return int64(index) * 10
+}
+
+func getFileDuration(index int) float64 {
+	duration := (index % 4) + 1
+	duration = duration * 100
+
+	return float64(duration) + 0.432
+}
+
+func makeFile(i int) file.File {
+	folderID := folderIDs[fileFolders[i]]
+	if folderID == 0 {
+		folderID = folderIDs[folderIdxWithFiles]
+	}
+
+	var zipFileID *file.ID
+	if zipFileIndex, found := fileZipFiles[i]; found {
+		zipFileID = &fileIDs[zipFileIndex]
+	}
+
+	var ret file.File
+	baseFile := &file.BaseFile{
+		Basename:       getFileBaseName(i),
+		ParentFolderID: folderID,
+		DirEntry: file.DirEntry{
+			// zip files have to be added after creating files
+			ModTime:      getFileModTime(i),
+			MissingSince: getFileMissingSince(i),
+			LastScanned:  getFileLastScan(i),
+			ZipFileID:    zipFileID,
+		},
+		Fingerprints: getFileFingerprints(i),
+		Size:         getFileSize(i),
+	}
+
+	ret = baseFile
+
+	if i >= fileIdxStartVideoFiles && i < fileIdxStartImageFiles {
+		ret = &file.VideoFile{
+			BaseFile:   baseFile,
+			Format:     getFileStringValue(i, "format"),
+			Width:      int(getWidth(i).Int64),
+			Height:     int(getHeight(i).Int64),
+			Duration:   getFileDuration(i),
+			VideoCodec: getFileStringValue(i, "videoCodec"),
+			AudioCodec: getFileStringValue(i, "audioCodec"),
+			FrameRate:  getFileDuration(i) * 2,
+			BitRate:    int64(getFileDuration(i)) * 3,
+		}
+	} else if i >= fileIdxStartImageFiles {
+		ret = &file.ImageFile{
+			BaseFile: baseFile,
+			Format:   getFileStringValue(i, "format"),
+			Width:    int(getWidth(i).Int64),
+			Height:   int(getHeight(i).Int64),
+		}
+	}
+
+	return ret
+}
+
+func createFiles(ctx context.Context) error {
+	qb := db.File
+
+	for i := 0; i < totalFiles; i++ {
+		file := makeFile(i)
+
+		if err := qb.Create(ctx, file); err != nil {
+			return fmt.Errorf("Error creating file [%d] %v+: %s", i, file, err.Error())
+		}
+
+		fileIDs = append(fileIDs, file.Base().ID)
 	}
 
 	return nil

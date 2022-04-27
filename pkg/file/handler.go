@@ -7,6 +7,12 @@ type Filter interface {
 	Accept(f File) bool
 }
 
+type FilterFunc func(f File) bool
+
+func (ff FilterFunc) Accept(f File) bool {
+	return ff(f)
+}
+
 // Handler provides a handler for Files.
 type Handler interface {
 	Handle(ctx context.Context, fs FS, f File) error

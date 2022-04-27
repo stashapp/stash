@@ -134,12 +134,12 @@ var (
 
 	videoFileTableMgr = &table{
 		table:    goqu.T(videoFileTable),
-		idColumn: goqu.T(videoFileTable).Col(idColumn),
+		idColumn: goqu.T(videoFileTable).Col(fileIDColumn),
 	}
 
 	imageFileTableMgr = &table{
 		table:    goqu.T(imageFileTable),
-		idColumn: goqu.T(imageFileTable).Col(idColumn),
+		idColumn: goqu.T(imageFileTable).Col(fileIDColumn),
 	}
 
 	folderTableMgr = &table{

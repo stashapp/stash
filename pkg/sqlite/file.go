@@ -40,7 +40,7 @@ func (r *basicFileRow) fromBasicFile(o file.BaseFile) {
 	r.ID = o.ID
 	r.Basename = o.Basename
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
-	r.ParentFolderID = file.FolderID(*o.ParentFolderID)
+	r.ParentFolderID = o.ParentFolderID
 	r.Size = o.Size
 	r.ModTime = o.ModTime
 	r.MissingSince = null.TimeFromPtr(o.MissingSince)
@@ -101,8 +101,8 @@ type videoFileQueryRow struct {
 	BitRate    null.Int    `db:"bit_rate"`
 }
 
-func (f *videoFileQueryRow) resolve() file.VideoFile {
-	return file.VideoFile{
+func (f *videoFileQueryRow) resolve() *file.VideoFile {
+	return &file.VideoFile{
 		Format:     f.Format.String,
 		Width:      int(f.Width.Int64),
 		Height:     int(f.Height.Int64),
@@ -138,8 +138,8 @@ type imageFileQueryRow struct {
 	Height null.Int    `db:"image_height"`
 }
 
-func (f *imageFileQueryRow) resolve() file.ImageFile {
-	return file.ImageFile{
+func (f *imageFileQueryRow) resolve() *file.ImageFile {
+	return &file.ImageFile{
 		Format: f.Format.String,
 		Width:  int(f.Width.Int64),
 		Height: int(f.Height.Int64),
@@ -168,17 +168,17 @@ func (r *fileQueryRow) resolve() file.File {
 	basic := &file.BaseFile{
 		ID: file.ID(r.ID),
 		DirEntry: file.DirEntry{
-			Path:           filepath.Join(r.Path, r.Basename),
-			ZipFileID:      nullIntFileIDPtr(r.ZipFileID),
-			ParentFolderID: &r.ParentFolderID,
-			ModTime:        r.ModTime,
-			MissingSince:   r.MissingSince.Ptr(),
-			LastScanned:    r.LastScanned,
+			Path:         filepath.Join(r.Path, r.Basename),
+			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
+			ModTime:      r.ModTime,
+			MissingSince: r.MissingSince.Ptr(),
+			LastScanned:  r.LastScanned,
 		},
-		Basename:  r.Basename,
-		Size:      r.Size,
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
+		ParentFolderID: r.ParentFolderID,
+		Basename:       r.Basename,
+		Size:           r.Size,
+		CreatedAt:      r.CreatedAt,
+		UpdatedAt:      r.UpdatedAt,
 	}
 
 	var ret file.File = basic
@@ -229,26 +229,28 @@ func (r fileQueryRows) resolve() []file.File {
 	return ret
 }
 
-type fileQueryBuilder struct {
+type FileStore struct {
 	repository
 
 	tableMgr *table
 }
 
-var FileReaderWriter = &fileQueryBuilder{
-	repository: repository{
-		tableName: sceneTable,
-		idColumn:  idColumn,
-	},
+func NewFileStore() *FileStore {
+	return &FileStore{
+		repository: repository{
+			tableName: sceneTable,
+			idColumn:  idColumn,
+		},
 
-	tableMgr: fileTableMgr,
+		tableMgr: fileTableMgr,
+	}
 }
 
-func (qb *fileQueryBuilder) table() exp.IdentifierExpression {
+func (qb *FileStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
-func (qb *fileQueryBuilder) Create(ctx context.Context, f file.File) error {
+func (qb *FileStore) Create(ctx context.Context, f file.File) error {
 	var r basicFileRow
 	r.fromBasicFile(*f.Base())
 
@@ -260,14 +262,13 @@ func (qb *fileQueryBuilder) Create(ctx context.Context, f file.File) error {
 	fileID := file.ID(id)
 
 	// create extended stuff here
-	if vf, ok := f.(file.VideoFile); ok {
-		if err := qb.createVideoFile(ctx, fileID, vf); err != nil {
+	switch ef := f.(type) {
+	case *file.VideoFile:
+		if err := qb.createVideoFile(ctx, fileID, *ef); err != nil {
 			return err
 		}
-	}
-
-	if imf, ok := f.(file.ImageFile); ok {
-		if err := qb.createImageFile(ctx, fileID, imf); err != nil {
+	case *file.ImageFile:
+		if err := qb.createImageFile(ctx, fileID, *ef); err != nil {
 			return err
 		}
 	}
@@ -287,7 +288,7 @@ func (qb *fileQueryBuilder) Create(ctx context.Context, f file.File) error {
 	return nil
 }
 
-func (qb *fileQueryBuilder) Update(ctx context.Context, f file.File) error {
+func (qb *FileStore) Update(ctx context.Context, f file.File) error {
 	var r basicFileRow
 	r.fromBasicFile(*f.Base())
 
@@ -298,14 +299,13 @@ func (qb *fileQueryBuilder) Update(ctx context.Context, f file.File) error {
 	}
 
 	// create extended stuff here
-	if vf, ok := f.(file.VideoFile); ok {
-		if err := qb.updateVideoFile(ctx, id, vf); err != nil {
+	switch ef := f.(type) {
+	case *file.VideoFile:
+		if err := qb.updateOrCreateVideoFile(ctx, id, *ef); err != nil {
 			return err
 		}
-	}
-
-	if imf, ok := f.(file.ImageFile); ok {
-		if err := qb.updateImageFile(ctx, id, imf); err != nil {
+	case *file.ImageFile:
+		if err := qb.updateOrCreateImageFile(ctx, id, *ef); err != nil {
 			return err
 		}
 	}
@@ -324,7 +324,7 @@ func (qb *fileQueryBuilder) Update(ctx context.Context, f file.File) error {
 	return nil
 }
 
-func (qb *fileQueryBuilder) createVideoFile(ctx context.Context, id file.ID, f file.VideoFile) error {
+func (qb *FileStore) createVideoFile(ctx context.Context, id file.ID, f file.VideoFile) error {
 	var r videoFileRow
 	r.fromVideoFile(f)
 	r.FileID = id
@@ -335,7 +335,16 @@ func (qb *fileQueryBuilder) createVideoFile(ctx context.Context, id file.ID, f f
 	return nil
 }
 
-func (qb *fileQueryBuilder) updateVideoFile(ctx context.Context, id file.ID, f file.VideoFile) error {
+func (qb *FileStore) updateOrCreateVideoFile(ctx context.Context, id file.ID, f file.VideoFile) error {
+	exists, err := videoFileTableMgr.idExists(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return qb.createVideoFile(ctx, id, f)
+	}
+
 	var r videoFileRow
 	r.fromVideoFile(f)
 	r.FileID = id
@@ -346,7 +355,7 @@ func (qb *fileQueryBuilder) updateVideoFile(ctx context.Context, id file.ID, f f
 	return nil
 }
 
-func (qb *fileQueryBuilder) createImageFile(ctx context.Context, id file.ID, f file.ImageFile) error {
+func (qb *FileStore) createImageFile(ctx context.Context, id file.ID, f file.ImageFile) error {
 	var r imageFileRow
 	r.fromImageFile(f)
 	r.FileID = id
@@ -357,7 +366,16 @@ func (qb *fileQueryBuilder) createImageFile(ctx context.Context, id file.ID, f f
 	return nil
 }
 
-func (qb *fileQueryBuilder) updateImageFile(ctx context.Context, id file.ID, f file.ImageFile) error {
+func (qb *FileStore) updateOrCreateImageFile(ctx context.Context, id file.ID, f file.ImageFile) error {
+	exists, err := imageFileTableMgr.idExists(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return qb.createImageFile(ctx, id, f)
+	}
+
 	var r imageFileRow
 	r.fromImageFile(f)
 	r.FileID = id
@@ -368,7 +386,7 @@ func (qb *fileQueryBuilder) updateImageFile(ctx context.Context, id file.ID, f f
 	return nil
 }
 
-func (qb *fileQueryBuilder) getOrCreateFingerprintIDs(ctx context.Context, f *file.BaseFile) ([]int, error) {
+func (qb *FileStore) getOrCreateFingerprintIDs(ctx context.Context, f *file.BaseFile) ([]int, error) {
 	fpqb := FingerprintReaderWriter
 	var ids []int
 	for _, fp := range f.Fingerprints {
@@ -385,7 +403,7 @@ func (qb *fileQueryBuilder) getOrCreateFingerprintIDs(ctx context.Context, f *fi
 	return ids, nil
 }
 
-func (qb *fileQueryBuilder) selectDataset() *goqu.SelectDataset {
+func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 	table := qb.table()
 
 	folderTable := folderTableMgr.table
@@ -407,8 +425,11 @@ func (qb *fileQueryBuilder) selectDataset() *goqu.SelectDataset {
 		folderTable,
 		goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
 	).LeftJoin(
+		filesFingerprintsJoinTable,
+		goqu.On(table.Col(idColumn).Eq(filesFingerprintsJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
 		fingerprintTable,
-		goqu.On(table.Col(idColumn).Eq(fingerprintTable.Col(fileIDColumn))),
+		goqu.On(filesFingerprintsJoinTable.Col(fingerprintIDColumn).Eq(fingerprintTable.Col(idColumn))),
 	).LeftJoin(
 		videoFileTable,
 		goqu.On(table.Col(idColumn).Eq(videoFileTable.Col(fileIDColumn))),
@@ -418,7 +439,7 @@ func (qb *fileQueryBuilder) selectDataset() *goqu.SelectDataset {
 	)
 }
 
-func (qb *fileQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (file.File, error) {
+func (qb *FileStore) get(ctx context.Context, q *goqu.SelectDataset) (file.File, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
@@ -431,7 +452,7 @@ func (qb *fileQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (fil
 	return ret[0], nil
 }
 
-func (qb *fileQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]file.File, error) {
+func (qb *FileStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]file.File, error) {
 	const single = false
 	var rows fileQueryRows
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
@@ -449,10 +470,21 @@ func (qb *fileQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) 
 	return rows.resolve(), nil
 }
 
-func (qb *fileQueryBuilder) FindByPath(ctx context.Context, path string) (file.File, error) {
+func (qb *FileStore) Find(ctx context.Context, id file.ID) (file.File, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting file by id %d: %w", id, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error) {
 	// separate basename from path
-	basename := filepath.Base(path)
-	dir := filepath.Dir(path)
+	basename := filepath.Base(p)
+	dir, _ := path(filepath.Dir(p)).Value()
 
 	table := qb.table()
 	folderTable := folderTableMgr.table
@@ -464,8 +496,37 @@ func (qb *fileQueryBuilder) FindByPath(ctx context.Context, path string) (file.F
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("getting folder by path %s: %w", path, err)
+		return nil, fmt.Errorf("getting folder by path %s: %w", p, err)
 	}
 
 	return ret, nil
+}
+
+func (qb *FileStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]file.File, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
+func (qb *FileStore) FindByFingerprint(ctx context.Context, fp file.Fingerprint) ([]file.File, error) {
+	fingerprintTable := fingerprintTableMgr.table
+
+	filesFingerprints := filesFingerprintsJoinTable.As("ff")
+	fingerprints := fingerprintTable.As("fp")
+
+	sq := dialect.From(filesFingerprints).Select(filesFingerprints.Col(fileIDColumn)).LeftJoin(
+		fingerprints,
+		goqu.On(filesFingerprints.Col(fingerprintIDColumn).Eq(fingerprints.Col(idColumn))),
+	).Where(
+		fingerprints.Col("type").Eq(fp.Type),
+		fingerprints.Col("fingerprint").Eq(fp.Fingerprint),
+	)
+
+	return qb.findBySubquery(ctx, sq)
 }

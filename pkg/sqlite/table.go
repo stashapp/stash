@@ -68,7 +68,7 @@ func (t *table) byID(id interface{}) exp.Expression {
 	return t.idColumn.Eq(id)
 }
 
-func (t *table) idExists(ctx context.Context, id int) (bool, error) {
+func (t *table) idExists(ctx context.Context, id interface{}) (bool, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(t.table).Where(t.byID(id))
 
 	var count int

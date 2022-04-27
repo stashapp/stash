@@ -59,12 +59,22 @@ func init() {
 }
 
 type Database struct {
+	File   *FileStore
+	Folder *FolderStore
+
 	db     *sqlx.DB
 	dbPath string
 
 	schemaVersion uint
 
 	writeMu sync.Mutex
+}
+
+func NewDatabase() *Database {
+	return &Database{
+		File:   NewFileStore(),
+		Folder: NewFolderStore(),
+	}
 }
 
 // Ready returns an error if the database is not ready to begin transactions.

@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/doug-martin/goqu/v9/exp"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/file"
 	"gopkg.in/guregu/null.v4"
 )
@@ -74,12 +75,21 @@ func (qb *fingerprintQueryBuilder) getID(ctx context.Context, f file.Fingerprint
 	table := qb.table()
 	q := dialect.From(table).Select(table.Col(idColumn)).Where(table.Col("type").Eq(f.Type), table.Col("fingerprint").Eq(f.Fingerprint))
 
-	var id int
-	if err := querySimple(ctx, q, &id); err != nil && !errors.Is(err, sql.ErrNoRows) {
+	var id *int
+	const single = true
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		var v int
+		if err := rows.Scan(&v); err != nil {
+			return err
+		}
+
+		id = &v
+		return nil
+	}); err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}
 
-	return &id, nil
+	return id, nil
 }
 
 func (qb *fingerprintQueryBuilder) Create(ctx context.Context, f file.Fingerprint) (*int, error) {

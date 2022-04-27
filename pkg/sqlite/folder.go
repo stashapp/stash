@@ -3,8 +3,10 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
@@ -16,21 +18,39 @@ import (
 
 const folderTable = "folders"
 
+// path stores file paths in a platform-agnostic format and converts to platform-specific format for actual use.
+type path string
+
+func (p *path) Scan(value interface{}) error {
+	v, ok := value.(string)
+	if !ok {
+		return fmt.Errorf("invalid path type %T", value)
+	}
+
+	*p = path(filepath.FromSlash(v))
+	return nil
+}
+
+func (p path) Value() (driver.Value, error) {
+	return string(filepath.ToSlash(string(p))), nil
+}
+
 type folderRow struct {
-	ID             file.FolderID `db:"id" goqu:"skipinsert"`
-	Path           string        `db:"path"`
-	ZipFileID      null.Int      `db:"zip_file_id"`
-	ParentFolderID null.Int      `db:"parent_folder_id"`
-	ModTime        time.Time     `db:"mod_time"`
-	MissingSince   null.Time     `db:"missing_since"`
-	LastScanned    time.Time     `db:"last_scanned"`
-	CreatedAt      time.Time     `db:"created_at"`
-	UpdatedAt      time.Time     `db:"updated_at"`
+	ID file.FolderID `db:"id" goqu:"skipinsert"`
+	// Path is stored in the OS-agnostic slash format
+	Path           path      `db:"path"`
+	ZipFileID      null.Int  `db:"zip_file_id"`
+	ParentFolderID null.Int  `db:"parent_folder_id"`
+	ModTime        time.Time `db:"mod_time"`
+	MissingSince   null.Time `db:"missing_since"`
+	LastScanned    time.Time `db:"last_scanned"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
 }
 
 func (r *folderRow) fromFolder(o file.Folder) {
 	r.ID = o.ID
-	r.Path = o.Path
+	r.Path = path(o.Path)
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
 	r.ModTime = o.ModTime
@@ -48,15 +68,15 @@ func (r *folderQueryRow) resolve() *file.Folder {
 	ret := &file.Folder{
 		ID: r.ID,
 		DirEntry: file.DirEntry{
-			Path:           r.Path,
-			ZipFileID:      nullIntFileIDPtr(r.ZipFileID),
-			ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
-			ModTime:        r.ModTime,
-			MissingSince:   r.MissingSince.Ptr(),
-			LastScanned:    r.LastScanned,
+			Path:         string(r.Path),
+			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
+			ModTime:      r.ModTime,
+			MissingSince: r.MissingSince.Ptr(),
+			LastScanned:  r.LastScanned,
 		},
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
+		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
+		CreatedAt:      r.CreatedAt,
+		UpdatedAt:      r.UpdatedAt,
 	}
 
 	return ret
@@ -75,22 +95,24 @@ func (r folderQueryRows) resolve() []*file.Folder {
 	return ret
 }
 
-type folderQueryBuilder struct {
+type FolderStore struct {
 	repository
 
 	tableMgr *table
 }
 
-var FolderReaderWriter = &folderQueryBuilder{
-	repository: repository{
-		tableName: sceneTable,
-		idColumn:  idColumn,
-	},
+func NewFolderStore() *FolderStore {
+	return &FolderStore{
+		repository: repository{
+			tableName: sceneTable,
+			idColumn:  idColumn,
+		},
 
-	tableMgr: folderTableMgr,
+		tableMgr: folderTableMgr,
+	}
 }
 
-func (qb *folderQueryBuilder) Create(ctx context.Context, f *file.Folder) error {
+func (qb *FolderStore) Create(ctx context.Context, f *file.Folder) error {
 	var r folderRow
 	r.fromFolder(*f)
 
@@ -105,7 +127,7 @@ func (qb *folderQueryBuilder) Create(ctx context.Context, f *file.Folder) error 
 	return nil
 }
 
-func (qb *folderQueryBuilder) Update(ctx context.Context, updatedObject *file.Folder) error {
+func (qb *FolderStore) Update(ctx context.Context, updatedObject *file.Folder) error {
 	var r folderRow
 	r.fromFolder(*updatedObject)
 
@@ -116,16 +138,16 @@ func (qb *folderQueryBuilder) Update(ctx context.Context, updatedObject *file.Fo
 	return nil
 }
 
-func (qb *folderQueryBuilder) table() exp.IdentifierExpression {
+func (qb *FolderStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
-func (qb *folderQueryBuilder) selectDataset() *goqu.SelectDataset {
+func (qb *FolderStore) selectDataset() *goqu.SelectDataset {
 	table := qb.table()
 	return dialect.From(table)
 }
 
-func (qb *folderQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (*file.Folder, error) {
+func (qb *FolderStore) get(ctx context.Context, q *goqu.SelectDataset) (*file.Folder, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
@@ -138,7 +160,7 @@ func (qb *folderQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (*
 	return ret[0], nil
 }
 
-func (qb *folderQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*file.Folder, error) {
+func (qb *FolderStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*file.Folder, error) {
 	const single = false
 	var rows folderQueryRows
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
@@ -156,7 +178,7 @@ func (qb *folderQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset
 	return rows.resolve(), nil
 }
 
-func (qb *folderQueryBuilder) FindByPath(ctx context.Context, path string) (*file.Folder, error) {
+func (qb *FolderStore) FindByPath(ctx context.Context, path string) (*file.Folder, error) {
 	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(path))
 
 	ret, err := qb.get(ctx, q)
