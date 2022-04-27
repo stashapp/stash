@@ -538,7 +538,7 @@ func (qb *FileStore) MarkMissing(ctx context.Context, scanStartTime time.Time, s
 
 	var pathEx []exp.Expression
 	for _, p := range scanPaths {
-		pathEx = append(pathEx, table.Col("path").Like(p+"%"))
+		pathEx = append(pathEx, folderTable.Col("path").Like(p+"%"))
 	}
 
 	q := dialect.Update(table).Prepared(true).Set(exp.Record{

@@ -655,13 +655,13 @@ func TestFileStore_MarkMissing(t *testing.T) {
 			afterScanned,
 			[]string{folderPaths[folderIdxInZip]},
 			[]int{
-				folderIdxInZip,
+				fileIdxInZip,
 			},
 			false,
 		},
 	}
 
-	qb := db.Folder
+	qb := db.File
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -678,13 +678,13 @@ func TestFileStore_MarkMissing(t *testing.T) {
 			assert.Equal(len(tt.missingIndexes), n, "number of files marked missing")
 
 			for _, idx := range tt.missingIndexes {
-				f, err := qb.Find(ctx, folderIDs[idx])
+				f, err := qb.Find(ctx, fileIDs[idx])
 				if err != nil {
 					t.Errorf("FileStore.Find() error = %v", err)
 					return
 				}
 
-				assert.NotNil(f.MissingSince, "file marked missing")
+				assert.NotNil(f.Base().MissingSince, "file marked missing")
 			}
 		})
 	}
