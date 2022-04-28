@@ -242,7 +242,7 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 		}
 
 		for _, image := range images {
-			progress.ExecuteTask(fmt.Sprintf("Assessing image %s for clean", image.Path), func() {
+			progress.ExecuteTask(fmt.Sprintf("Assessing image %s for clean", image.Path()), func() {
 				if j.shouldCleanImage(image) {
 					toDelete = append(toDelete, image.ID)
 				} else {
@@ -370,24 +370,25 @@ func (j *cleanJob) shouldCleanGallery(ctx context.Context, g *models.Gallery, qb
 }
 
 func (j *cleanJob) shouldCleanImage(s *models.Image) bool {
-	if j.shouldClean(s.Path) {
+	path := s.Path()
+	if j.shouldClean(path) {
 		return true
 	}
 
-	stash := getStashFromPath(s.Path)
+	stash := getStashFromPath(path)
 	if stash.ExcludeImage {
-		logger.Infof("File in stash library that excludes images. Marking to clean: \"%s\"", s.Path)
+		logger.Infof("File in stash library that excludes images. Marking to clean: \"%s\"", path)
 		return true
 	}
 
 	config := config.GetInstance()
-	if !fsutil.MatchExtension(s.Path, config.GetImageExtensions()) {
-		logger.Infof("File extension does not match image extensions. Marking to clean: \"%s\"", s.Path)
+	if !fsutil.MatchExtension(path, config.GetImageExtensions()) {
+		logger.Infof("File extension does not match image extensions. Marking to clean: \"%s\"", path)
 		return true
 	}
 
-	if matchFile(s.Path, config.GetImageExcludes()) {
-		logger.Infof("File matched regex. Marking to clean: \"%s\"", s.Path)
+	if matchFile(path, config.GetImageExcludes()) {
+		logger.Infof("File matched regex. Marking to clean: \"%s\"", path)
 		return true
 	}
 
@@ -496,8 +497,8 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 	// perform the post-commit actions
 	fileDeleter.Commit()
 	GetInstance().PluginCache.ExecutePostHooks(ctx, imageID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
-		Checksum: i.Checksum,
-		Path:     i.Path,
+		Checksum: i.Checksum(),
+		Path:     i.Path(),
 	}, nil)
 }
 

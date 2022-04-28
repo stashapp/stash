@@ -8,7 +8,8 @@ type Image {
   path: String!
   created_at: Time!
   updated_at: Time!
-  file_mod_time: Time
+  
+  file_mod_time: Time @deprecated(reason: "Use file.mod_time")
 
   file: ImageFileType! # Resolver
   paths: ImagePathsType! # Resolver
@@ -20,9 +21,10 @@ type Image {
 }
 
 type ImageFileType {
-  size: Int
-  width: Int
-  height: Int
+  mod_time: Time!
+  size: Int!
+  width: Int!
+  height: Int!
 }
 
 type ImagePathsType {

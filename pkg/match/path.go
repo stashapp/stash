@@ -344,7 +344,7 @@ func PathToImages(ctx context.Context, name string, paths []string, imageReader 
 
 	r := nameToRegexp(name, useUnicode)
 	for _, p := range images {
-		if regexpMatchesPath(r, p.Path) != -1 {
+		if regexpMatchesPath(r, p.Path()) != -1 {
 			ret = append(ret, p)
 		}
 	}

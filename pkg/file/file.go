@@ -46,7 +46,7 @@ type BaseFile struct {
 	Basename       string   `json:"basename"`
 	ParentFolderID FolderID `json:"parent_folder_id"`
 
-	Fingerprints []Fingerprint `json:"fingerprints"`
+	Fingerprints Fingerprints `json:"fingerprints"`
 
 	Size int64 `json:"size"`
 

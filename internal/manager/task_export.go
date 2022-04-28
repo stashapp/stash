@@ -518,7 +518,7 @@ func (t *ExportTask) ExportImages(ctx context.Context, workers int, repo models.
 		if (i % 100) == 0 { // make progress easier to read
 			logger.Progressf("[images] %d of %d", index, len(images))
 		}
-		t.Mappings.Images = append(t.Mappings.Images, jsonschema.PathNameMapping{Path: image.Path, Checksum: image.Checksum})
+		t.Mappings.Images = append(t.Mappings.Images, jsonschema.PathNameMapping{Path: image.Path(), Checksum: image.Checksum()})
 		jobCh <- image // feed workers
 	}
 
@@ -536,7 +536,7 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 	tagReader := repo.Tag
 
 	for s := range jobChan {
-		imageHash := s.Checksum
+		imageHash := s.Checksum()
 
 		newImageJSON := image.ToBasicJSON(s)
 

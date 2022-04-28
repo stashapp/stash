@@ -431,8 +431,8 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	// call image destroy post hook as well
 	for _, img := range imgsDestroyed {
 		r.hookExecutor.ExecutePostHooks(ctx, img.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
-			Checksum: img.Checksum,
-			Path:     img.Path,
+			Checksum: img.Checksum(),
+			Path:     img.Path(),
 		}, nil)
 	}
 

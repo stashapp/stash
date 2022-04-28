@@ -42,17 +42,17 @@ type imageRow struct {
 
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
-	r.Checksum = i.Checksum
-	r.Path = i.Path
+	// r.Checksum = i.Checksum
+	// r.Path = i.Path
 	r.Title = zero.StringFrom(i.Title)
 	r.Rating = intFromPtr(i.Rating)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
-	r.Size = null.IntFromPtr(i.Size)
-	r.Width = intFromPtr(i.Width)
-	r.Height = intFromPtr(i.Height)
+	// r.Size = null.IntFromPtr(i.Size)
+	// r.Width = intFromPtr(i.Width)
+	// r.Height = intFromPtr(i.Height)
 	r.StudioID = intFromPtr(i.StudioID)
-	r.FileModTime = null.TimeFromPtr(i.FileModTime)
+	// r.FileModTime = null.TimeFromPtr(i.FileModTime)
 	r.CreatedAt = i.CreatedAt
 	r.UpdatedAt = i.UpdatedAt
 }
@@ -87,20 +87,20 @@ type imageQueryRow struct {
 
 func (r *imageQueryRow) resolve() *models.Image {
 	ret := &models.Image{
-		ID:          r.ID,
-		Checksum:    r.Checksum,
-		Path:        r.Path,
-		Title:       r.Title.String,
-		Rating:      nullIntPtr(r.Rating),
-		Organized:   r.Organized,
-		OCounter:    r.OCounter,
-		Size:        r.Size.Ptr(),
-		Width:       nullIntPtr(r.Width),
-		Height:      nullIntPtr(r.Height),
-		StudioID:    nullIntPtr(r.StudioID),
-		FileModTime: r.FileModTime.Ptr(),
-		CreatedAt:   r.CreatedAt,
-		UpdatedAt:   r.UpdatedAt,
+		ID: r.ID,
+		// Checksum:    r.Checksum,
+		// Path:        r.Path,
+		Title:     r.Title.String,
+		Rating:    nullIntPtr(r.Rating),
+		Organized: r.Organized,
+		OCounter:  r.OCounter,
+		// Size:        r.Size.Ptr(),
+		// Width:       nullIntPtr(r.Width),
+		// Height:      nullIntPtr(r.Height),
+		StudioID: nullIntPtr(r.StudioID),
+		// FileModTime: r.FileModTime.Ptr(),
+		CreatedAt: r.CreatedAt,
+		UpdatedAt: r.UpdatedAt,
 	}
 
 	r.appendRelationships(ret)

@@ -12,6 +12,18 @@ type Fingerprint struct {
 	Fingerprint interface{}
 }
 
+type Fingerprints []Fingerprint
+
+func (f Fingerprints) Get(type_ string) interface{} {
+	for _, fp := range f {
+		if fp.Type == type_ {
+			return fp.Fingerprint
+		}
+	}
+
+	return nil
+}
+
 // FingerprintCalculator calculates a fingerprint for the provided file.
 type FingerprintCalculator interface {
 	CalculateFingerprints(f *BaseFile, o Opener) ([]Fingerprint, error)

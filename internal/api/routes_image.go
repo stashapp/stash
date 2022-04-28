@@ -43,7 +43,7 @@ func (rs imageRoutes) Routes() chi.Router {
 
 func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	img := r.Context().Value(imageKey).(*models.Image)
-	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(img.Checksum, models.DefaultGthumbWidth)
+	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(img.Checksum(), models.DefaultGthumbWidth)
 
 	w.Header().Add("Cache-Control", "max-age=604800000")
 
@@ -72,7 +72,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 
 		// write the generated thumbnail to disk if enabled
 		if manager.GetInstance().Config.IsWriteImageThumbnails() {
-			logger.Debugf("writing thumbnail to disk: %s", img.Path)
+			logger.Debugf("writing thumbnail to disk: %s", img.Path())
 			if err := fsutil.WriteFile(filepath, data); err != nil {
 				logger.Errorf("error writing thumbnail for image %s: %s", img.Path, err)
 			}
@@ -87,7 +87,7 @@ func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	i := r.Context().Value(imageKey).(*models.Image)
 
 	// if image is in a zip file, we need to serve it specifically
-	image.Serve(w, r, i.Path)
+	image.Serve(w, r, i.Path())
 }
 
 // endregion

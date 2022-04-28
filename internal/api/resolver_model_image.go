@@ -2,26 +2,32 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
-	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, error) {
-	ret := image.GetTitle(obj)
+	ret := obj.GetTitle()
 	return &ret, nil
 }
 
-func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*models.ImageFileType, error) {
-	width := obj.Width
-	height := obj.Height
-	size := obj.Size
-	return &models.ImageFileType{
-		Size:   size,
+func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFileType, error) {
+	f := obj.PrimaryFile()
+	width := f.Width
+	height := f.Height
+	size := f.Size
+	return &ImageFileType{
+		Size:   int(size),
 		Width:  width,
 		Height: height,
 	}, nil
+}
+
+func (r *imageResolver) FileModTime(ctx context.Context, obj *models.Image) (*time.Time, error) {
+	f := obj.PrimaryFile()
+	return &f.ModTime, nil
 }
 
 func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*ImagePathsType, error) {

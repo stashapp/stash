@@ -1,77 +1,80 @@
 package models
 
 import (
-	"path/filepath"
-	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/file"
 )
 
 // Image stores the metadata for a single image.
 type Image struct {
-	ID          int        `json:"id"`
-	Checksum    string     `json:"checksum"`
-	Path        string     `json:"path"`
-	Title       string     `json:"title"`
-	Rating      *int       `json:"rating"`
-	Organized   bool       `json:"organized"`
-	OCounter    int        `json:"o_counter"`
-	Size        *int64     `json:"size"`
-	Width       *int       `json:"width"`
-	Height      *int       `json:"height"`
-	StudioID    *int       `json:"studio_id"`
-	FileModTime *time.Time `json:"file_mod_time"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID int `json:"id"`
+
+	// Checksum  string `json:"checksum"`
+	// Path      string `json:"path"`
+
+	Title     string `json:"title"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	OCounter  int    `json:"o_counter"`
+	StudioID  *int   `json:"studio_id"`
+
+	// transient - not persisted
+	Files []*file.ImageFile
+
+	// Size        *int64     `json:"size"`
+	// Width       *int       `json:"width"`
+	// Height      *int       `json:"height"`
+	// FileModTime *time.Time `json:"file_mod_time"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	GalleryIDs   []int `json:"gallery_ids"`
 	TagIDs       []int `json:"tag_ids"`
 	PerformerIDs []int `json:"performer_ids"`
 }
 
-func (i *Image) File() File {
-	ret := File{
-		Path: i.Path,
+func (i Image) PrimaryFile() *file.ImageFile {
+	if len(i.Files) == 0 {
+		return nil
 	}
 
-	ret.Checksum = i.Checksum
-	if i.FileModTime != nil {
-		ret.FileModTime = *i.FileModTime
-	}
-	if i.Size != nil {
-		ret.Size = strconv.FormatInt(*i.Size, 10)
-	}
-
-	return ret
+	return i.Files[0]
 }
 
-func (i *Image) SetFile(f File) {
-	path := f.Path
-	i.Path = path
+func (i Image) Path() string {
+	if p := i.PrimaryFile(); p != nil {
+		return p.Path
+	}
 
-	if f.Checksum != "" {
-		i.Checksum = f.Checksum
-	}
-	zeroTime := time.Time{}
-	t := f.FileModTime
-	if t != zeroTime {
-		i.FileModTime = &t
-	}
-	if f.Size != "" {
-		size, err := strconv.ParseInt(f.Size, 10, 64)
-		if err == nil {
-			i.Size = &size
+	return ""
+}
+
+func (i Image) Checksum() string {
+	if p := i.PrimaryFile(); p != nil {
+		v := p.Fingerprints.Get(file.FingerprintTypeMD5)
+		if v == nil {
+			return ""
 		}
+
+		return v.(string)
 	}
+	return ""
 }
 
 // GetTitle returns the title of the image. If the Title field is empty,
 // then the base filename is returned.
-func (i *Image) GetTitle() string {
+func (i Image) GetTitle() string {
 	if i.Title != "" {
 		return i.Title
 	}
 
-	return filepath.Base(i.Path)
+	if p := i.PrimaryFile(); p != nil {
+		return p.Basename
+	}
+
+	return ""
 }
 
 type ImagePartial struct {
@@ -99,13 +102,6 @@ func NewImagePartial() ImagePartial {
 	return ImagePartial{
 		UpdatedAt: NewOptionalTime(updatedTime),
 	}
-}
-
-// ImageFileType represents the file metadata for an image.
-type ImageFileType struct {
-	Size   *int64 `graphql:"size" json:"size"`
-	Width  *int   `graphql:"width" json:"width"`
-	Height *int   `graphql:"height" json:"height"`
 }
 
 type Images []*Image
