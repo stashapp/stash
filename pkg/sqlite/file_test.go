@@ -627,19 +627,16 @@ func TestFileStore_MarkMissing(t *testing.T) {
 		{
 			"after scan time",
 			afterScanned,
-			nil,
+			[]string{folderPaths[folderIdxInZip]},
 			[]int{
-				fileIdxZip,
 				fileIdxInZip,
-				fileIdxStartVideoFiles,
-				fileIdxStartImageFiles,
 			},
 			false,
 		},
 		{
 			"before scan time",
 			beforeScanned,
-			nil,
+			[]string{folderPaths[folderIdxInZip]},
 			nil,
 			false,
 		},
@@ -648,15 +645,6 @@ func TestFileStore_MarkMissing(t *testing.T) {
 			afterScanned,
 			[]string{"foo"},
 			nil,
-			false,
-		},
-		{
-			"included path",
-			afterScanned,
-			[]string{folderPaths[folderIdxInZip]},
-			[]int{
-				fileIdxInZip,
-			},
 			false,
 		},
 	}

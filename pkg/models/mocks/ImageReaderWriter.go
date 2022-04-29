@@ -80,11 +80,11 @@ func (_m *ImageReaderWriter) CountByGalleryID(ctx context.Context, galleryID int
 }
 
 // Create provides a mock function with given fields: ctx, newImage
-func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.Image) error {
+func (_m *ImageReaderWriter) Create(ctx context.Context, newImage *models.ImageCreateInput) error {
 	ret := _m.Called(ctx, newImage)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.Image) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *models.ImageCreateInput) error); ok {
 		r0 = rf(ctx, newImage)
 	} else {
 		r0 = ret.Error(0)
@@ -152,15 +152,15 @@ func (_m *ImageReaderWriter) Find(ctx context.Context, id int) (*models.Image, e
 }
 
 // FindByChecksum provides a mock function with given fields: ctx, checksum
-func (_m *ImageReaderWriter) FindByChecksum(ctx context.Context, checksum string) (*models.Image, error) {
+func (_m *ImageReaderWriter) FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error) {
 	ret := _m.Called(ctx, checksum)
 
-	var r0 *models.Image
-	if rf, ok := ret.Get(0).(func(context.Context, string) *models.Image); ok {
+	var r0 []*models.Image
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*models.Image); ok {
 		r0 = rf(ctx, checksum)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Image)
+			r0 = ret.Get(0).([]*models.Image)
 		}
 	}
 
@@ -198,15 +198,15 @@ func (_m *ImageReaderWriter) FindByGalleryID(ctx context.Context, galleryID int)
 }
 
 // FindByPath provides a mock function with given fields: ctx, path
-func (_m *ImageReaderWriter) FindByPath(ctx context.Context, path string) (*models.Image, error) {
+func (_m *ImageReaderWriter) FindByPath(ctx context.Context, path string) ([]*models.Image, error) {
 	ret := _m.Called(ctx, path)
 
-	var r0 *models.Image
-	if rf, ok := ret.Get(0).(func(context.Context, string) *models.Image); ok {
+	var r0 []*models.Image
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*models.Image); ok {
 		r0 = rf(ctx, path)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Image)
+			r0 = ret.Get(0).([]*models.Image)
 		}
 	}
 

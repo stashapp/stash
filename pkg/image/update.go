@@ -2,7 +2,6 @@ package image
 
 import (
 	"context"
-	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
@@ -10,12 +9,6 @@ import (
 
 type PartialUpdater interface {
 	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
-}
-
-func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime time.Time) (*models.Image, error) {
-	return qb.UpdatePartial(ctx, id, models.ImagePartial{
-		FileModTime: models.NewOptionalTime(modTime),
-	})
 }
 
 func AddPerformer(ctx context.Context, qb PartialUpdater, i *models.Image, performerID int) (bool, error) {

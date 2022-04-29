@@ -77,20 +77,19 @@ func (i Image) GetTitle() string {
 	return ""
 }
 
+type ImageCreateInput struct {
+	*Image
+	FileIDs []file.ID
+}
+
 type ImagePartial struct {
-	Checksum    OptionalString
-	Path        OptionalString
-	Title       OptionalString
-	Rating      OptionalInt
-	Organized   OptionalBool
-	OCounter    OptionalInt
-	Size        OptionalInt64
-	Width       OptionalInt
-	Height      OptionalInt
-	StudioID    OptionalInt
-	FileModTime OptionalTime
-	CreatedAt   OptionalTime
-	UpdatedAt   OptionalTime
+	Title     OptionalString
+	Rating    OptionalInt
+	Organized OptionalBool
+	OCounter  OptionalInt
+	StudioID  OptionalInt
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
 
 	GalleryIDs   *UpdateIDs
 	TagIDs       *UpdateIDs

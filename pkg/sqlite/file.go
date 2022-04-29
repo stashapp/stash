@@ -132,10 +132,18 @@ func videoFileQueryColumns() []interface{} {
 // we redefine this to change the columns around
 // otherwise, we collide with the video file columns
 type imageFileQueryRow struct {
-	FileID null.Int    `db:"file_id_image"`
 	Format null.String `db:"image_format"`
 	Width  null.Int    `db:"image_width"`
 	Height null.Int    `db:"image_height"`
+}
+
+func (imageFileQueryRow) columns(table *table) []interface{} {
+	ex := table.table
+	return []interface{}{
+		ex.Col("format").As("image_format"),
+		ex.Col("width").As("image_width"),
+		ex.Col("height").As("image_height"),
+	}
 }
 
 func (f *imageFileQueryRow) resolve() *file.ImageFile {
@@ -146,19 +154,19 @@ func (f *imageFileQueryRow) resolve() *file.ImageFile {
 	}
 }
 
-func imageFileQueryColumns() []interface{} {
-	table := imageFileTableMgr.table
-	return []interface{}{
-		table.Col("file_id").As("file_id_image"),
-		table.Col("format").As("image_format"),
-		table.Col("width").As("image_width"),
-		table.Col("height").As("image_height"),
-	}
-}
-
 type fileQueryRow struct {
-	basicFileRow
-	Path string `db:"path"`
+	FileID         null.Int    `db:"file_id"`
+	Basename       null.String `db:"basename"`
+	ZipFileID      null.Int    `db:"zip_file_id"`
+	ParentFolderID null.Int    `db:"parent_folder_id"`
+	Size           null.Int    `db:"size"`
+	ModTime        null.Time   `db:"mod_time"`
+	MissingSince   null.Time   `db:"missing_since"`
+	LastScanned    null.Time   `db:"last_scanned"`
+	CreatedAt      null.Time   `db:"created_at"`
+	UpdatedAt      null.Time   `db:"updated_at"`
+
+	FolderPath null.String `db:"folder_path"`
 	fingerprintQueryRow
 	videoFileQueryRow
 	imageFileQueryRow
@@ -166,19 +174,19 @@ type fileQueryRow struct {
 
 func (r *fileQueryRow) resolve() file.File {
 	basic := &file.BaseFile{
-		ID: file.ID(r.ID),
+		ID: file.ID(r.FileID.Int64),
 		DirEntry: file.DirEntry{
 			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
-			ModTime:      r.ModTime,
+			ModTime:      r.ModTime.Time,
 			MissingSince: r.MissingSince.Ptr(),
-			LastScanned:  r.LastScanned,
+			LastScanned:  r.LastScanned.Time,
 		},
-		Path:           filepath.Join(r.Path, r.Basename),
-		ParentFolderID: r.ParentFolderID,
-		Basename:       r.Basename,
-		Size:           r.Size,
-		CreatedAt:      r.CreatedAt,
-		UpdatedAt:      r.UpdatedAt,
+		Path:           filepath.Join(r.FolderPath.String, r.Basename.String),
+		ParentFolderID: file.FolderID(r.ParentFolderID.Int64),
+		Basename:       r.Basename.String,
+		Size:           r.Size.Int64,
+		CreatedAt:      r.CreatedAt.Time,
+		UpdatedAt:      r.UpdatedAt.Time,
 	}
 
 	var ret file.File = basic
@@ -189,7 +197,7 @@ func (r *fileQueryRow) resolve() file.File {
 		ret = vf
 	}
 
-	if r.imageFileQueryRow.FileID.Valid {
+	if r.imageFileQueryRow.Format.Valid {
 		imf := r.imageFileQueryRow.resolve()
 		imf.BaseFile = basic
 		ret = imf
@@ -200,9 +208,32 @@ func (r *fileQueryRow) resolve() file.File {
 	return ret
 }
 
+func appendFingerprintsUnique(vs []file.Fingerprint, v ...file.Fingerprint) []file.Fingerprint {
+	for _, vv := range v {
+		found := false
+		for _, vsv := range vs {
+			if vsv.Type == vv.Type {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			vs = append(vs, vv)
+		}
+	}
+	return vs
+}
+
 func (r *fileQueryRow) appendRelationships(i *file.BaseFile) {
-	if r.Type.Valid {
-		i.Fingerprints = append(i.Fingerprints, r.fingerprintQueryRow.resolve())
+	if r.fingerprintQueryRow.valid() {
+		i.Fingerprints = appendFingerprintsUnique(i.Fingerprints, r.fingerprintQueryRow.resolve())
+	}
+}
+
+func mergeFiles(dest file.File, src file.File) {
+	if src.Base().Fingerprints != nil {
+		dest.Base().Fingerprints = appendFingerprintsUnique(dest.Base().Fingerprints, src.Base().Fingerprints...)
 	}
 }
 
@@ -214,10 +245,10 @@ func (r fileQueryRows) resolve() []file.File {
 	var lastID file.ID
 
 	for _, row := range r {
-		if last == nil || lastID != row.ID {
+		if last == nil || lastID != file.ID(row.FileID.Int64) {
 			f := row.resolve()
 			last = f
-			lastID = row.ID
+			lastID = file.ID(row.FileID.Int64)
 			ret = append(ret, last)
 			continue
 		}
@@ -227,6 +258,11 @@ func (r fileQueryRows) resolve() []file.File {
 	}
 
 	return ret
+}
+
+type relatedFileQueryRow struct {
+	fileQueryRow
+	Primary null.Bool `db:"primary"`
 }
 
 type FileStore struct {
@@ -412,16 +448,27 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 	imageFileTable := imageFileTableMgr.table
 
 	cols := []interface{}{
-		table.All(),
-		folderTable.Col("path"),
+		table.Col("id").As("file_id"),
+		table.Col("basename"),
+		table.Col("zip_file_id"),
+		table.Col("parent_folder_id"),
+		table.Col("size"),
+		table.Col("mod_time"),
+		table.Col("missing_since"),
+		table.Col("last_scanned"),
+		table.Col("created_at"),
+		table.Col("updated_at"),
+		folderTable.Col("path").As("folder_path"),
 		fingerprintTable.Col("type").As("fingerprint_type"),
 		fingerprintTable.Col("fingerprint"),
 	}
 
 	cols = append(cols, videoFileQueryColumns()...)
-	cols = append(cols, imageFileQueryColumns()...)
+	cols = append(cols, imageFileQueryRow{}.columns(imageFileTableMgr)...)
 
-	return dialect.From(table).Select(cols...).InnerJoin(
+	ret := dialect.From(table).Select(cols...)
+
+	return ret.InnerJoin(
 		folderTable,
 		goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
 	).LeftJoin(

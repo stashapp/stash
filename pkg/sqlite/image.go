@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"gopkg.in/guregu/null.v4"
@@ -19,40 +21,31 @@ import (
 
 var imageTable = "images"
 
-const imageIDColumn = "image_id"
-const performersImagesTable = "performers_images"
-const imagesTagsTable = "images_tags"
+const (
+	imageIDColumn         = "image_id"
+	performersImagesTable = "performers_images"
+	imagesTagsTable       = "images_tags"
+	imagesFilesTable      = "images_files"
+)
 
 type imageRow struct {
-	ID          int         `db:"id" goqu:"skipinsert"`
-	Checksum    string      `db:"checksum"`
-	Path        string      `db:"path"`
-	Title       zero.String `db:"title"`
-	Rating      null.Int    `db:"rating"`
-	Organized   bool        `db:"organized"`
-	OCounter    int         `db:"o_counter"`
-	Size        null.Int    `db:"size"`
-	Width       null.Int    `db:"width"`
-	Height      null.Int    `db:"height"`
-	StudioID    null.Int    `db:"studio_id,omitempty"`
-	FileModTime null.Time   `db:"file_mod_time"`
-	CreatedAt   time.Time   `db:"created_at"`
-	UpdatedAt   time.Time   `db:"updated_at"`
+	ID        int         `db:"id" goqu:"skipinsert"`
+	Title     zero.String `db:"title"`
+	Rating    null.Int    `db:"rating"`
+	Organized bool        `db:"organized"`
+	OCounter  int         `db:"o_counter"`
+	StudioID  null.Int    `db:"studio_id,omitempty"`
+	CreatedAt time.Time   `db:"created_at"`
+	UpdatedAt time.Time   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
-	// r.Checksum = i.Checksum
-	// r.Path = i.Path
 	r.Title = zero.StringFrom(i.Title)
 	r.Rating = intFromPtr(i.Rating)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
-	// r.Size = null.IntFromPtr(i.Size)
-	// r.Width = intFromPtr(i.Width)
-	// r.Height = intFromPtr(i.Height)
 	r.StudioID = intFromPtr(i.StudioID)
-	// r.FileModTime = null.TimeFromPtr(i.FileModTime)
 	r.CreatedAt = i.CreatedAt
 	r.UpdatedAt = i.UpdatedAt
 }
@@ -62,23 +55,19 @@ type imageRowRecord struct {
 }
 
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
-	r.setString("checksum", i.Checksum)
-	r.setString("path", i.Path)
 	r.setNullString("title", i.Title)
 	r.setNullInt("rating", i.Rating)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
-	r.setNullInt64("size", i.Size)
-	r.setNullInt("width", i.Width)
-	r.setNullInt("height", i.Height)
 	r.setNullInt("studio_id", i.StudioID)
-	r.setNullTime("file_mod_time", i.FileModTime)
 	r.setTime("created_at", i.CreatedAt)
 	r.setTime("updated_at", i.UpdatedAt)
 }
 
 type imageQueryRow struct {
 	imageRow
+
+	relatedFileQueryRow
 
 	GalleryID   null.Int `db:"gallery_id"`
 	TagID       null.Int `db:"tag_id"`
@@ -87,18 +76,12 @@ type imageQueryRow struct {
 
 func (r *imageQueryRow) resolve() *models.Image {
 	ret := &models.Image{
-		ID: r.ID,
-		// Checksum:    r.Checksum,
-		// Path:        r.Path,
+		ID:        r.ID,
 		Title:     r.Title.String,
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
 		OCounter:  r.OCounter,
-		// Size:        r.Size.Ptr(),
-		// Width:       nullIntPtr(r.Width),
-		// Height:      nullIntPtr(r.Height),
-		StudioID: nullIntPtr(r.StudioID),
-		// FileModTime: r.FileModTime.Ptr(),
+		StudioID:  nullIntPtr(r.StudioID),
 		CreatedAt: r.CreatedAt,
 		UpdatedAt: r.UpdatedAt,
 	}
@@ -106,6 +89,25 @@ func (r *imageQueryRow) resolve() *models.Image {
 	r.appendRelationships(ret)
 
 	return ret
+}
+
+func appendImageFileUnique(vs []*file.ImageFile, toAdd *file.ImageFile, isPrimary bool) []*file.ImageFile {
+	// check in reverse, since it's most likely to be the last one
+	for i := len(vs) - 1; i >= 0; i-- {
+		if vs[i].Base().ID == toAdd.Base().ID {
+
+			// merge the two
+			mergeFiles(vs[i], toAdd)
+			return vs
+		}
+	}
+
+	if !isPrimary {
+		return append(vs, toAdd)
+	}
+
+	// primary should be first
+	return append([]*file.ImageFile{toAdd}, vs...)
 }
 
 func (r *imageQueryRow) appendRelationships(i *models.Image) {
@@ -117,6 +119,11 @@ func (r *imageQueryRow) appendRelationships(i *models.Image) {
 	}
 	if r.PerformerID.Valid {
 		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, int(r.PerformerID.Int64))
+	}
+
+	if r.relatedFileQueryRow.FileID.Valid {
+		f := r.fileQueryRow.resolve().(*file.ImageFile)
+		i.Files = appendImageFileUnique(i.Files, f, r.Primary.Bool)
 	}
 }
 
@@ -146,7 +153,8 @@ func (r imageQueryRows) resolve() []*models.Image {
 type imageQueryBuilder struct {
 	repository
 
-	tableMgr *table
+	tableMgr      *table
+	queryTableMgr *table
 	oCounterManager
 }
 
@@ -156,6 +164,7 @@ var ImageReaderWriter = &imageQueryBuilder{
 		idColumn:  idColumn,
 	},
 	tableMgr:        imageTableMgr,
+	queryTableMgr:   imageQueryTableMgr,
 	oCounterManager: oCounterManager{imageTableMgr},
 }
 
@@ -163,13 +172,24 @@ func (qb *imageQueryBuilder) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
-func (qb *imageQueryBuilder) Create(ctx context.Context, newObject *models.Image) error {
+func (qb *imageQueryBuilder) queryTable() exp.IdentifierExpression {
+	return qb.queryTableMgr.table
+}
+
+func (qb *imageQueryBuilder) Create(ctx context.Context, newObject *models.ImageCreateInput) error {
 	var r imageRow
-	r.fromImage(*newObject)
+	r.fromImage(*newObject.Image)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
+	}
+
+	if len(newObject.FileIDs) > 0 {
+		const firstPrimary = true
+		if err := imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, newObject.FileIDs); err != nil {
+			return err
+		}
 	}
 
 	if len(newObject.GalleryIDs) > 0 {
@@ -272,23 +292,7 @@ func (qb *imageQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models
 }
 
 func (qb *imageQueryBuilder) selectDataset() *goqu.SelectDataset {
-	table := qb.table()
-
-	return dialect.From(table).Select(
-		table.All(),
-		galleriesImagesJoinTable.Col("gallery_id"),
-		imagesTagsJoinTable.Col("tag_id"),
-		performersImagesJoinTable.Col("performer_id"),
-	).LeftJoin(
-		galleriesImagesJoinTable,
-		goqu.On(table.Col(idColumn).Eq(galleriesImagesJoinTable.Col("image_id"))),
-	).LeftJoin(
-		imagesTagsJoinTable,
-		goqu.On(table.Col(idColumn).Eq(imagesTagsJoinTable.Col("image_id"))),
-	).LeftJoin(
-		performersImagesJoinTable,
-		goqu.On(table.Col(idColumn).Eq(performersImagesJoinTable.Col("image_id"))),
-	)
+	return dialect.From(imagesQueryTable).Select(imagesQueryTable.All())
 }
 
 func (qb *imageQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (*models.Image, error) {
@@ -323,7 +327,7 @@ func (qb *imageQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset)
 }
 
 func (qb *imageQueryBuilder) find(ctx context.Context, id int) (*models.Image, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+	q := qb.selectDataset().Where(qb.queryTableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
@@ -333,34 +337,58 @@ func (qb *imageQueryBuilder) find(ctx context.Context, id int) (*models.Image, e
 	return ret, nil
 }
 
-func (qb *imageQueryBuilder) FindByChecksum(ctx context.Context, checksum string) (*models.Image, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("checksum").Eq(checksum))
+func (qb *imageQueryBuilder) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Image, error) {
+	table := qb.queryTable()
 
-	ret, err := qb.get(ctx, q)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
+func (qb *imageQueryBuilder) FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error) {
+	table := imagesQueryTable
+
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
+		table.Col("fingerprint_type").Eq(file.FingerprintTypeMD5),
+		table.Col("fingerprint").Eq(checksum),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
 		return nil, fmt.Errorf("getting image by checksum %s: %w", checksum, err)
 	}
 
 	return ret, nil
 }
 
-func (qb *imageQueryBuilder) FindByPath(ctx context.Context, path string) (*models.Image, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(path))
+func (qb *imageQueryBuilder) FindByPath(ctx context.Context, p string) ([]*models.Image, error) {
+	table := imagesQueryTable
+	basename := filepath.Base(p)
+	dir, _ := path(filepath.Dir(p)).Value()
 
-	ret, err := qb.get(ctx, q)
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
+		table.Col("folder_path").Eq(dir),
+		table.Col("basename").Eq(basename),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("getting image by path %s: %w", path, err)
+		return nil, fmt.Errorf("getting image by path %s: %w", p, err)
 	}
 
 	return ret, nil
 }
 
 func (qb *imageQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Image, error) {
-	table := qb.table()
+	table := qb.queryTable()
 
 	q := qb.selectDataset().Where(
-		galleriesImagesJoinTable.Col("gallery_id").Eq(galleryID),
-	).GroupBy(table.Col(idColumn)).Order(table.Col("path").Asc())
+		table.Col("gallery_id").Eq(galleryID),
+	).GroupBy(table.Col(idColumn)).Order(table.Col("folder_path").Asc(), table.Col("basename").Asc())
 
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {

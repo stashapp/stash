@@ -92,10 +92,10 @@ type ImageReader interface {
 	ImageFinder
 	// TODO - remove this in another PR
 	Find(ctx context.Context, id int) (*Image, error)
-	FindByChecksum(ctx context.Context, checksum string) (*Image, error)
+	FindByChecksum(ctx context.Context, checksum string) ([]*Image, error)
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Image, error)
 	CountByGalleryID(ctx context.Context, galleryID int) (int, error)
-	FindByPath(ctx context.Context, path string) (*Image, error)
+	FindByPath(ctx context.Context, path string) ([]*Image, error)
 	Count(ctx context.Context) (int, error)
 	Size(ctx context.Context) (float64, error)
 	All(ctx context.Context) ([]*Image, error)
@@ -104,7 +104,7 @@ type ImageReader interface {
 }
 
 type ImageWriter interface {
-	Create(ctx context.Context, newImage *Image) error
+	Create(ctx context.Context, newImage *ImageCreateInput) error
 	Update(ctx context.Context, updatedImage *Image) error
 	UpdatePartial(ctx context.Context, id int, partial ImagePartial) (*Image, error)
 	IncrementOCounter(ctx context.Context, id int) (int, error)

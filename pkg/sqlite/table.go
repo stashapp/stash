@@ -11,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/guregu/null.v4"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
@@ -471,6 +472,47 @@ func (t *scenesMoviesTable) modifyJoins(ctx context.Context, id int, v []models.
 	return nil
 }
 
+type relatedFilesTable struct {
+	table
+}
+
+// type scenesFilesRow struct {
+// 	SceneID int     `db:"scene_id"`
+// 	Primary bool    `db:"primary"`
+// 	FileID  file.ID `db:"file_id"`
+// }
+
+func (t *relatedFilesTable) insertJoin(ctx context.Context, id int, primary bool, fileID file.ID) error {
+	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "primary", "file_id").Vals(
+		goqu.Vals{id, primary, fileID},
+	)
+	_, err := exec(ctx, q)
+	if err != nil {
+		return fmt.Errorf("inserting into %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
+func (t *relatedFilesTable) insertJoins(ctx context.Context, id int, firstPrimary bool, fileIDs []file.ID) error {
+	for i, fk := range fileIDs {
+		if err := t.insertJoin(ctx, id, firstPrimary && i == 0, fk); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// func (t *scenesFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []file.ID) error {
+// 	if err := t.destroy(ctx, []int{id}); err != nil {
+// 		return err
+// 	}
+
+// 	const firstPrimary = true
+// 	return t.insertJoins(ctx, id, firstPrimary, fileIDs)
+// }
+
 type sqler interface {
 	ToSQL() (sql string, params []interface{}, err error)
 }
@@ -569,3 +611,11 @@ func querySimple(ctx context.Context, query *goqu.SelectDataset, out interface{}
 
 	return nil
 }
+
+// func cols(table exp.IdentifierExpression, cols []string) []interface{} {
+// 	var ret []interface{}
+// 	for _, c := range cols {
+// 		ret = append(ret, table.Col(c))
+// 	}
+// 	return ret
+// }

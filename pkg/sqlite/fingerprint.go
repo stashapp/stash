@@ -32,6 +32,10 @@ type fingerprintQueryRow struct {
 	Fingerprint interface{} `db:"fingerprint"`
 }
 
+func (r fingerprintQueryRow) valid() bool {
+	return r.Type.Valid
+}
+
 func (r *fingerprintQueryRow) resolve() file.Fingerprint {
 	return file.Fingerprint{
 		Type:        r.Type.String,

@@ -33,6 +33,8 @@ const (
 	folderIdxInZip
 	folderIdxIsMissing
 
+	folderIdxWithImageFiles
+
 	totalFolders
 )
 
@@ -559,7 +561,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating scenes: %s", err.Error())
 		}
 
-		if err := createImages(ctx, sqlite.ImageReaderWriter, totalImages); err != nil {
+		if err := createImages(ctx, totalImages); err != nil {
 			return fmt.Errorf("error creating images: %s", err.Error())
 		}
 
@@ -747,8 +749,8 @@ func makeFile(i int) file.File {
 		ret = &file.VideoFile{
 			BaseFile:   baseFile,
 			Format:     getFileStringValue(i, "format"),
-			Width:      int(getWidth(i).Int64),
-			Height:     int(getHeight(i).Int64),
+			Width:      getWidth(i),
+			Height:     getHeight(i),
 			Duration:   getFileDuration(i),
 			VideoCodec: getFileStringValue(i, "videoCodec"),
 			AudioCodec: getFileStringValue(i, "audioCodec"),
@@ -759,8 +761,8 @@ func makeFile(i int) file.File {
 		ret = &file.ImageFile{
 			BaseFile: baseFile,
 			Format:   getFileStringValue(i, "format"),
-			Width:    int(getWidth(i).Int64),
-			Height:   int(getHeight(i).Int64),
+			Width:    getWidth(i),
+			Height:   getHeight(i),
 		}
 	}
 
@@ -888,21 +890,15 @@ func getSceneDuration(index int) *float64 {
 	return &v
 }
 
-func getHeight(index int) sql.NullInt64 {
-	heights := []int64{0, 200, 240, 300, 480, 700, 720, 800, 1080, 1500, 2160, 3000}
+func getHeight(index int) int {
+	heights := []int{200, 240, 300, 480, 700, 720, 800, 1080, 1500, 2160, 3000}
 	height := heights[index%len(heights)]
-	return sql.NullInt64{
-		Int64: height,
-		Valid: height != 0,
-	}
+	return height
 }
 
-func getWidth(index int) sql.NullInt64 {
+func getWidth(index int) int {
 	height := getHeight(index)
-	return sql.NullInt64{
-		Int64: height.Int64 * 2,
-		Valid: height.Valid,
-	}
+	return height * 2
 }
 
 func getObjectDate(index int) models.SQLiteDate {
@@ -959,6 +955,9 @@ func makeScene(i int) *models.Scene {
 		}
 	}
 
+	height := getHeight(i)
+	width := getWidth(i)
+
 	return &models.Scene{
 		Path:         getSceneStringValue(i, pathField),
 		Title:        title,
@@ -969,8 +968,8 @@ func makeScene(i int) *models.Scene {
 		Rating:       getIntPtr(getRating(i)),
 		OCounter:     getOCounter(i),
 		Duration:     getSceneDuration(i),
-		Height:       getIntPtr(getHeight(i)),
-		Width:        getIntPtr(getWidth(i)),
+		Height:       &height,
+		Width:        &width,
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
 		GalleryIDs:   gids,
@@ -1001,13 +1000,26 @@ func getImageStringValue(index int, field string) string {
 	return fmt.Sprintf("image_%04d_%s", index, field)
 }
 
-func getImagePath(index int) string {
-	// TODO - currently not working
-	// if index == imageIdxInZip {
-	// 	return image.ZipFilename(zipPath, "image_0001_Path")
-	// }
-
+func getImageBasename(index int) string {
 	return getImageStringValue(index, pathField)
+}
+
+func makeImageFile(i int) *file.ImageFile {
+	return &file.ImageFile{
+		BaseFile: &file.BaseFile{
+			Path:           getFilePath(folderIdxWithImageFiles, getImageBasename(i)),
+			Basename:       getImageBasename(i),
+			ParentFolderID: folderIDs[folderIdxWithImageFiles],
+			Fingerprints: []file.Fingerprint{
+				{
+					Type:        file.FingerprintTypeMD5,
+					Fingerprint: getImageStringValue(i, checksumField),
+				},
+			},
+		},
+		Height: getHeight(i),
+		Width:  getWidth(i),
+	}
 }
 
 func makeImage(i int) *models.Image {
@@ -1023,13 +1035,9 @@ func makeImage(i int) *models.Image {
 	tids := indexesToIDs(tagIDs, imageTags[i])
 
 	return &models.Image{
-		Path:         getImagePath(i),
 		Title:        title,
-		Checksum:     getImageStringValue(i, checksumField),
 		Rating:       getIntPtr(getRating(i)),
 		OCounter:     getOCounter(i),
-		Height:       getIntPtr(getHeight(i)),
-		Width:        getIntPtr(getWidth(i)),
 		StudioID:     studioID,
 		GalleryIDs:   gids,
 		PerformerIDs: pids,
@@ -1037,11 +1045,22 @@ func makeImage(i int) *models.Image {
 	}
 }
 
-func createImages(ctx context.Context, qb models.ImageReaderWriter, n int) error {
+func createImages(ctx context.Context, n int) error {
+	qb := db.TxnRepository().Image
+	fqb := db.File
+
 	for i := 0; i < n; i++ {
+		f := makeImageFile(i)
+		if err := fqb.Create(ctx, f); err != nil {
+			return fmt.Errorf("creating image file: %w", err)
+		}
+
 		image := makeImage(i)
 
-		err := qb.Create(ctx, image)
+		err := qb.Create(ctx, &models.ImageCreateInput{
+			Image:   image,
+			FileIDs: []file.ID{f.ID},
+		})
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())
