@@ -157,7 +157,7 @@
       "match_failed_already_tagged": "Scen redan taggad",
       "match_failed_no_result": "Inga resultat hittades",
       "match_success": "Scen taggad",
-      "phash_matches": "{count] PHashar matchar",
+      "phash_matches": "{count} PHashar matchar",
       "unnamed": "Namnlös"
     },
     "verb_match_fp": "Matcha fingeravtryck",
