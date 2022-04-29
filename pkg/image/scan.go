@@ -9,8 +9,8 @@ import (
 // const mutexType = "image"
 
 type FinderCreatorUpdater interface {
-	FindByChecksum(ctx context.Context, checksum string) (*models.Image, error)
-	Create(ctx context.Context, newImage *models.Image) error
+	FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error)
+	Create(ctx context.Context, newImage *models.ImageCreateInput) error
 	Update(ctx context.Context, updatedImage *models.Image) error
 }
 

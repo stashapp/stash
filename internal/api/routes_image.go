@@ -18,7 +18,7 @@ import (
 
 type ImageFinder interface {
 	Find(ctx context.Context, id int) (*models.Image, error)
-	FindByChecksum(ctx context.Context, checksum string) (*models.Image, error)
+	FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error)
 }
 
 type imageRoutes struct {
@@ -101,7 +101,10 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.imageFinder
 			if imageID == 0 {
-				image, _ = qb.FindByChecksum(ctx, imageIdentifierQueryParam)
+				images, _ := qb.FindByChecksum(ctx, imageIdentifierQueryParam)
+				if len(images) > 0 {
+					image = images[0]
+				}
 			} else {
 				image, _ = qb.Find(ctx, imageID)
 			}

@@ -1485,60 +1485,58 @@ func verifyImagesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInp
 	})
 }
 
-// func TestImageQueryResolution(t *testing.T) {
-// 	verifyImagesResolution(t, models.ResolutionEnumLow)
-// 	verifyImagesResolution(t, models.ResolutionEnumStandard)
-// 	verifyImagesResolution(t, models.ResolutionEnumStandardHd)
-// 	verifyImagesResolution(t, models.ResolutionEnumFullHd)
-// 	verifyImagesResolution(t, models.ResolutionEnumFourK)
-// 	verifyImagesResolution(t, models.ResolutionEnum("unknown"))
-// }
+func TestImageQueryResolution(t *testing.T) {
+	verifyImagesResolution(t, models.ResolutionEnumLow)
+	verifyImagesResolution(t, models.ResolutionEnumStandard)
+	verifyImagesResolution(t, models.ResolutionEnumStandardHd)
+	verifyImagesResolution(t, models.ResolutionEnumFullHd)
+	verifyImagesResolution(t, models.ResolutionEnumFourK)
+	verifyImagesResolution(t, models.ResolutionEnum("unknown"))
+}
 
-// func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
-// 	withTxn(func(ctx context.Context) error {
-// 		sqb := sqlite.ImageReaderWriter
-// 		imageFilter := models.ImageFilterType{
-// 			Resolution: &models.ResolutionCriterionInput{
-// 				Value:    resolution,
-// 				Modifier: models.CriterionModifierEquals,
-// 			},
-// 		}
+func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.ImageReaderWriter
+		imageFilter := models.ImageFilterType{
+			Resolution: &models.ResolutionCriterionInput{
+				Value:    resolution,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
 
-// 		images, _, err := queryImagesWithCount(ctx, sqb, &imageFilter, nil)
-// 		if err != nil {
-// 			t.Errorf("Error querying image: %s", err.Error())
-// 		}
+		images, _, err := queryImagesWithCount(ctx, sqb, &imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-// 		for _, image := range images {
-// 			verifyImageResolution(t, image.Height, resolution)
-// 		}
+		for _, image := range images {
+			verifyImageResolution(t, image.Files[0].Height, resolution)
+		}
 
-// 		return nil
-// 	})
-// }
+		return nil
+	})
+}
 
-// func verifyImageResolution(t *testing.T, height *int, resolution models.ResolutionEnum) {
-// 	if !resolution.IsValid() {
-// 		return
-// 	}
+func verifyImageResolution(t *testing.T, height int, resolution models.ResolutionEnum) {
+	if !resolution.IsValid() {
+		return
+	}
 
-// 	assert := assert.New(t)
-// 	assert.NotNil(height)
-// 	h := *height
+	assert := assert.New(t)
 
-// 	switch resolution {
-// 	case models.ResolutionEnumLow:
-// 		assert.True(h < 480)
-// 	case models.ResolutionEnumStandard:
-// 		assert.True(h >= 480 && h < 720)
-// 	case models.ResolutionEnumStandardHd:
-// 		assert.True(h >= 720 && h < 1080)
-// 	case models.ResolutionEnumFullHd:
-// 		assert.True(h >= 1080 && h < 2160)
-// 	case models.ResolutionEnumFourK:
-// 		assert.True(h >= 2160)
-// 	}
-// }
+	switch resolution {
+	case models.ResolutionEnumLow:
+		assert.True(height < 480)
+	case models.ResolutionEnumStandard:
+		assert.True(height >= 480 && height < 720)
+	case models.ResolutionEnumStandardHd:
+		assert.True(height >= 720 && height < 1080)
+	case models.ResolutionEnumFullHd:
+		assert.True(height >= 1080 && height < 2160)
+	case models.ResolutionEnumFourK:
+		assert.True(height >= 2160)
+	}
+}
 
 func TestImageQueryIsMissingGalleries(t *testing.T) {
 	withTxn(func(ctx context.Context) error {

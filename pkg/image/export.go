@@ -14,7 +14,7 @@ import (
 // of cover image.
 func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON := jsonschema.Image{
-		Checksum:  image.Checksum,
+		Checksum:  image.Checksum(),
 		Title:     image.Title,
 		CreatedAt: json.JSONTime{Time: image.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: image.UpdatedAt},
@@ -35,21 +35,12 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
 	ret := &jsonschema.ImageFile{}
 
-	if image.FileModTime != nil {
-		ret.ModTime = json.JSONTime{Time: *image.FileModTime}
-	}
+	f := image.PrimaryFile()
 
-	if image.Size != nil {
-		ret.Size = *image.Size
-	}
-
-	if image.Width != nil {
-		ret.Width = *image.Width
-	}
-
-	if image.Height != nil {
-		ret.Height = *image.Height
-	}
+	ret.ModTime = json.JSONTime{Time: f.ModTime}
+	ret.Size = f.Size
+	ret.Width = f.Width
+	ret.Height = f.Height
 
 	return ret
 }

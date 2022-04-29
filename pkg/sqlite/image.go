@@ -468,13 +468,24 @@ func (qb *imageQueryBuilder) makeFilter(ctx context.Context, imageFilter *models
 		query.not(qb.makeFilter(ctx, imageFilter.Not))
 	}
 
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Checksum, "images.checksum"))
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if imageFilter.Checksum != nil {
+			f.addLeftJoin(imagesFilesTable, "", "images_files.image_id = images.id")
+			f.addLeftJoin(filesFingerprintsTable, "", "images_files.file_id = files_fingerprints.file_id")
+			f.addLeftJoin(fingerprintTable, "", "files_fingerprints.fingerprint_id = fingerprints.id AND fingerprints.type = 'md5'")
+		}
+
+		stringCriterionHandler(imageFilter.Checksum, "fingerprints.fingerprint")(ctx, f)
+	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Path, "images.path"))
+
+	// TODO - complex query
+	// query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Path, "images.path"))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating"))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized"))
-	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "images.height", "images.width"))
+
+	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "images_query.image_height", "images_query.image_width"))
 	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
 
 	query.handleCriterion(ctx, imageTagsCriterionHandler(qb, imageFilter.Tags))
@@ -500,8 +511,27 @@ func (qb *imageQueryBuilder) makeQuery(ctx context.Context, imageFilter *models.
 	query := qb.newQuery()
 	distinctIDs(&query, imageTable)
 
+	// for convenience, join with the query view
+	query.addJoins(join{
+		table:    imagesQueryTable.GetTable(),
+		onClause: "images.id = images_query.id",
+		joinType: "INNER",
+	})
+
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"images.title", "images.path", "images.checksum"}
+		// add joins for files and checksum
+		query.addJoins(join{
+			table:    imagesFilesTable,
+			onClause: "images_files.image_id = images.id",
+		}, join{
+			table:    filesFingerprintsTable,
+			onClause: "images_files.file_id = files_fingerprints.file_id",
+		}, join{
+			table:    fingerprintTable,
+			onClause: "files_fingerprints.fingerprint_id = fingerprints.id AND fingerprints.type = 'md5'",
+		})
+
+		searchColumns := []string{"images.title", "images_query.folder_path", "images_query.basename", "fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 

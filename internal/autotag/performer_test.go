@@ -3,6 +3,7 @@ package autotag
 import (
 	"testing"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -126,8 +127,8 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	matchingPaths, falsePaths := generateTestPaths(performerName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:   i + 1,
-			Path: p,
+			ID:    i + 1,
+			Files: []*file.ImageFile{makeImageFile(p)},
 		})
 	}
 

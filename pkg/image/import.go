@@ -52,8 +52,8 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	newImage := models.Image{
-		Checksum: imageJSON.Checksum,
-		Path:     i.Path,
+		// Checksum: imageJSON.Checksum,
+		// Path:     i.Path,
 	}
 
 	if imageJSON.Title != "" {
@@ -68,17 +68,17 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	newImage.CreatedAt = imageJSON.CreatedAt.GetTime()
 	newImage.UpdatedAt = imageJSON.UpdatedAt.GetTime()
 
-	if imageJSON.File != nil {
-		if imageJSON.File.Size != 0 {
-			newImage.Size = &imageJSON.File.Size
-		}
-		if imageJSON.File.Width != 0 {
-			newImage.Width = &imageJSON.File.Width
-		}
-		if imageJSON.File.Height != 0 {
-			newImage.Height = &imageJSON.File.Height
-		}
-	}
+	// if imageJSON.File != nil {
+	// 	if imageJSON.File.Size != 0 {
+	// 		newImage.Size = &imageJSON.File.Size
+	// 	}
+	// 	if imageJSON.File.Width != 0 {
+	// 		newImage.Width = &imageJSON.File.Width
+	// 	}
+	// 	if imageJSON.File.Height != 0 {
+	// 		newImage.Height = &imageJSON.File.Height
+	// 	}
+	// }
 
 	return newImage
 }
@@ -235,7 +235,7 @@ func (i *Importer) Name() string {
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	var existing *models.Image
+	var existing []*models.Image
 	var err error
 	existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
 
@@ -243,8 +243,8 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 		return nil, err
 	}
 
-	if existing != nil {
-		id := existing.ID
+	if len(existing) > 0 {
+		id := existing[0].ID
 		return &id, nil
 	}
 
@@ -252,7 +252,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.image)
+	err := i.ReaderWriter.Create(ctx, &models.ImageCreateInput{Image: &i.image})
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %v", err)
 	}
