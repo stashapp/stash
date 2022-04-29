@@ -55,7 +55,7 @@ func (db *Database) TxnRepository() models.Repository {
 	return models.Repository{
 		TxnManager:  db,
 		Gallery:     GalleryReaderWriter,
-		Image:       ImageReaderWriter,
+		Image:       db.Image,
 		Movie:       MovieReaderWriter,
 		Performer:   PerformerReaderWriter,
 		Scene:       SceneReaderWriter,

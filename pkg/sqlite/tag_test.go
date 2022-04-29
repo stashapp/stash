@@ -981,7 +981,7 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(markerTagIDs, destID)
 
 		// ensure image points to new tag
-		imageTagIDs, err := sqlite.ImageReaderWriter.GetTagIDs(ctx, imageIDs[imageIdxWithTwoTags])
+		imageTagIDs, err := db.Image.GetTagIDs(ctx, imageIDs[imageIdxWithTwoTags])
 		if err != nil {
 			return err
 		}

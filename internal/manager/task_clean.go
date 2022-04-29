@@ -18,7 +18,7 @@ import (
 )
 
 type cleanJob struct {
-	txnManager models.Repository
+	txnManager Repository
 	input      CleanMetadataInput
 	scanSubs   *subscriptionManager
 }
@@ -68,7 +68,7 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 	logger.Info("Finished Cleaning")
 }
 
-func (j *cleanJob) getCount(ctx context.Context, r models.Repository) (int, error) {
+func (j *cleanJob) getCount(ctx context.Context, r Repository) (int, error) {
 	sceneFilter := scene.PathsFilter(j.input.Paths)
 	sceneResult, err := r.Scene.Query(ctx, models.SceneQueryOptions{
 		QueryOptions: models.QueryOptions{
@@ -283,14 +283,14 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 
 func (j *cleanJob) shouldClean(path string) bool {
 	// use image.FileExists for zip file checking
-	fileExists := image.FileExists(path)
+	// fileExists := image.FileExists(path)
 
-	// #1102 - clean anything in generated path
-	generatedPath := config.GetInstance().GetGeneratedPath()
-	if !fileExists || getStashFromPath(path) == nil || fsutil.IsPathInDir(generatedPath, path) {
-		logger.Infof("File not found. Marking to clean: \"%s\"", path)
-		return true
-	}
+	// // #1102 - clean anything in generated path
+	// generatedPath := config.GetInstance().GetGeneratedPath()
+	// if !fileExists || getStashFromPath(path) == nil || fsutil.IsPathInDir(generatedPath, path) {
+	// 	logger.Infof("File not found. Marking to clean: \"%s\"", path)
+	// 	return true
+	// }
 
 	return false
 }

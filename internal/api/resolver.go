@@ -32,7 +32,7 @@ type hookExecutor interface {
 
 type Resolver struct {
 	txnManager txn.Manager
-	repository models.Repository
+	repository manager.Repository
 
 	hookExecutor hookExecutor
 }

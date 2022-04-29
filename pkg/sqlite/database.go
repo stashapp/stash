@@ -61,6 +61,7 @@ func init() {
 type Database struct {
 	File   *FileStore
 	Folder *FolderStore
+	Image  *ImageStore
 
 	db     *sqlx.DB
 	dbPath string
@@ -74,6 +75,7 @@ func NewDatabase() *Database {
 	return &Database{
 		File:   NewFileStore(),
 		Folder: NewFolderStore(),
+		Image:  NewImageStore(),
 	}
 }
 

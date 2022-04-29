@@ -19,7 +19,7 @@ import (
 )
 
 type autoTagJob struct {
-	txnManager models.Repository
+	txnManager Repository
 	input      AutoTagMetadataInput
 
 	cache match.Cache
@@ -351,7 +351,7 @@ type autoTagFilesTask struct {
 	tags       bool
 
 	progress   *job.Progress
-	txnManager models.Repository
+	txnManager Repository
 	cache      *match.Cache
 }
 
@@ -431,7 +431,7 @@ func (t *autoTagFilesTask) makeGalleryFilter() *models.GalleryFilterType {
 	return ret
 }
 
-func (t *autoTagFilesTask) getCount(ctx context.Context, r models.Repository) (int, error) {
+func (t *autoTagFilesTask) getCount(ctx context.Context, r Repository) (int, error) {
 	pp := 0
 	findFilter := &models.FindFilterType{
 		PerPage: &pp,
@@ -471,7 +471,7 @@ func (t *autoTagFilesTask) getCount(ctx context.Context, r models.Repository) (i
 	return sceneCount + imageCount + galleryCount, nil
 }
 
-func (t *autoTagFilesTask) processScenes(ctx context.Context, r models.Repository) error {
+func (t *autoTagFilesTask) processScenes(ctx context.Context, r Repository) error {
 	if job.IsCancelled(ctx) {
 		return nil
 	}
@@ -524,7 +524,7 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context, r models.Repositor
 	return nil
 }
 
-func (t *autoTagFilesTask) processImages(ctx context.Context, r models.Repository) error {
+func (t *autoTagFilesTask) processImages(ctx context.Context, r Repository) error {
 	if job.IsCancelled(ctx) {
 		return nil
 	}
@@ -577,7 +577,7 @@ func (t *autoTagFilesTask) processImages(ctx context.Context, r models.Repositor
 	return nil
 }
 
-func (t *autoTagFilesTask) processGalleries(ctx context.Context, r models.Repository) error {
+func (t *autoTagFilesTask) processGalleries(ctx context.Context, r Repository) error {
 	if job.IsCancelled(ctx) {
 		return nil
 	}
@@ -668,7 +668,7 @@ func (t *autoTagFilesTask) process(ctx context.Context) {
 }
 
 type autoTagSceneTask struct {
-	txnManager models.Repository
+	txnManager Repository
 	scene      *models.Scene
 
 	performers bool
@@ -705,7 +705,7 @@ func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 type autoTagImageTask struct {
-	txnManager models.Repository
+	txnManager Repository
 	image      *models.Image
 
 	performers bool
@@ -742,7 +742,7 @@ func (t *autoTagImageTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 type autoTagGalleryTask struct {
-	txnManager models.Repository
+	txnManager Repository
 	gallery    *models.Gallery
 
 	performers bool

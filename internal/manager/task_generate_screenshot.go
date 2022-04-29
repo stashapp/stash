@@ -16,7 +16,7 @@ type GenerateScreenshotTask struct {
 	Scene               models.Scene
 	ScreenshotAt        *float64
 	fileNamingAlgorithm models.HashAlgorithm
-	txnManager          models.Repository
+	txnManager          Repository
 }
 
 func (t *GenerateScreenshotTask) Start(ctx context.Context) {

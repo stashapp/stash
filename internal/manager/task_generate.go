@@ -54,7 +54,7 @@ type GeneratePreviewOptionsInput struct {
 const generateQueueSize = 200000
 
 type GenerateJob struct {
-	txnManager models.Repository
+	txnManager Repository
 	input      GenerateMetadataInput
 
 	overwrite      bool

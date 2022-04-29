@@ -14,7 +14,7 @@ type GenerateInteractiveHeatmapSpeedTask struct {
 	Scene               models.Scene
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
-	TxnManager          models.Repository
+	TxnManager          Repository
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) GetDescription() string {

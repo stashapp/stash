@@ -28,7 +28,7 @@ import (
 )
 
 type ImportTask struct {
-	txnManager models.Repository
+	txnManager Repository
 	json       jsonUtils
 
 	BaseDir             string

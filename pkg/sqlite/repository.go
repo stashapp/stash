@@ -142,7 +142,7 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 	}
 
 	if err := r.tx.Select(ctx, &result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return []int{}, err
+		return []int{}, fmt.Errorf("running query: %s [%v]: %w", query, args, err)
 	}
 
 	vsm := make([]int, len(result))
@@ -190,12 +190,16 @@ func (r *repository) query(ctx context.Context, query string, args []interface{}
 }
 
 func (r *repository) queryStruct(ctx context.Context, query string, args []interface{}, out interface{}) error {
-	return r.queryFunc(ctx, query, args, true, func(rows *sqlx.Rows) error {
+	if err := r.queryFunc(ctx, query, args, true, func(rows *sqlx.Rows) error {
 		if err := rows.StructScan(out); err != nil {
 			return err
 		}
 		return nil
-	})
+	}); err != nil {
+		return fmt.Errorf("executing query: %s [%v]: %w", query, args, err)
+	}
+
+	return nil
 }
 
 func (r *repository) querySimple(ctx context.Context, query string, args []interface{}, out interface{}) error {

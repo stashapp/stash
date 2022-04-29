@@ -32,7 +32,7 @@ import (
 )
 
 type ExportTask struct {
-	txnManager models.Repository
+	txnManager Repository
 	full       bool
 
 	baseDir string
@@ -286,7 +286,7 @@ func (t *ExportTask) zipFile(fn, outDir string, z *zip.Writer) error {
 	return nil
 }
 
-func (t *ExportTask) populateMovieScenes(ctx context.Context, repo models.Repository) {
+func (t *ExportTask) populateMovieScenes(ctx context.Context, repo Repository) {
 	reader := repo.Movie
 	sceneReader := repo.Scene
 
@@ -316,7 +316,7 @@ func (t *ExportTask) populateMovieScenes(ctx context.Context, repo models.Reposi
 	}
 }
 
-func (t *ExportTask) populateGalleryImages(ctx context.Context, repo models.Repository) {
+func (t *ExportTask) populateGalleryImages(ctx context.Context, repo Repository) {
 	reader := repo.Gallery
 	imageReader := repo.Image
 
@@ -346,7 +346,7 @@ func (t *ExportTask) populateGalleryImages(ctx context.Context, repo models.Repo
 	}
 }
 
-func (t *ExportTask) ExportScenes(ctx context.Context, workers int, repo models.Repository) {
+func (t *ExportTask) ExportScenes(ctx context.Context, workers int, repo Repository) {
 	var scenesWg sync.WaitGroup
 
 	sceneReader := repo.Scene
@@ -390,7 +390,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int, repo models.
 	logger.Infof("[scenes] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Scene, repo models.Repository, t *ExportTask) {
+func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Scene, repo Repository, t *ExportTask) {
 	defer wg.Done()
 	sceneReader := repo.Scene
 	studioReader := repo.Studio
@@ -484,7 +484,7 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 	}
 }
 
-func (t *ExportTask) ExportImages(ctx context.Context, workers int, repo models.Repository) {
+func (t *ExportTask) ExportImages(ctx context.Context, workers int, repo Repository) {
 	var imagesWg sync.WaitGroup
 
 	imageReader := repo.Image
@@ -528,7 +528,7 @@ func (t *ExportTask) ExportImages(ctx context.Context, workers int, repo models.
 	logger.Infof("[images] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Image, repo models.Repository, t *ExportTask) {
+func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Image, repo Repository, t *ExportTask) {
 	defer wg.Done()
 	studioReader := repo.Studio
 	galleryReader := repo.Gallery
@@ -599,7 +599,7 @@ func (t *ExportTask) getGalleryChecksums(galleries []*models.Gallery) (ret []str
 	return
 }
 
-func (t *ExportTask) ExportGalleries(ctx context.Context, workers int, repo models.Repository) {
+func (t *ExportTask) ExportGalleries(ctx context.Context, workers int, repo Repository) {
 	var galleriesWg sync.WaitGroup
 
 	reader := repo.Gallery
@@ -654,7 +654,7 @@ func (t *ExportTask) ExportGalleries(ctx context.Context, workers int, repo mode
 	logger.Infof("[galleries] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Gallery, repo models.Repository, t *ExportTask) {
+func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Gallery, repo Repository, t *ExportTask) {
 	defer wg.Done()
 	studioReader := repo.Studio
 	performerReader := repo.Performer
@@ -711,7 +711,7 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 	}
 }
 
-func (t *ExportTask) ExportPerformers(ctx context.Context, workers int, repo models.Repository) {
+func (t *ExportTask) ExportPerformers(ctx context.Context, workers int, repo Repository) {
 	var performersWg sync.WaitGroup
 
 	reader := repo.Performer
@@ -751,7 +751,7 @@ func (t *ExportTask) ExportPerformers(ctx context.Context, workers int, repo mod
 	logger.Infof("[performers] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Performer, repo models.Repository) {
+func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Performer, repo Repository) {
 	defer wg.Done()
 
 	performerReader := repo.Performer
@@ -789,7 +789,7 @@ func (t *ExportTask) exportPerformer(ctx context.Context, wg *sync.WaitGroup, jo
 	}
 }
 
-func (t *ExportTask) ExportStudios(ctx context.Context, workers int, repo models.Repository) {
+func (t *ExportTask) ExportStudios(ctx context.Context, workers int, repo Repository) {
 	var studiosWg sync.WaitGroup
 
 	reader := repo.Studio
@@ -830,7 +830,7 @@ func (t *ExportTask) ExportStudios(ctx context.Context, workers int, repo models
 	logger.Infof("[studios] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func (t *ExportTask) exportStudio(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Studio, repo models.Repository) {
+func (t *ExportTask) exportStudio(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Studio, repo Repository) {
 	defer wg.Done()
 
 	studioReader := repo.Studio
@@ -854,7 +854,7 @@ func (t *ExportTask) exportStudio(ctx context.Context, wg *sync.WaitGroup, jobCh
 	}
 }
 
-func (t *ExportTask) ExportTags(ctx context.Context, workers int, repo models.Repository) {
+func (t *ExportTask) ExportTags(ctx context.Context, workers int, repo Repository) {
 	var tagsWg sync.WaitGroup
 
 	reader := repo.Tag
@@ -898,7 +898,7 @@ func (t *ExportTask) ExportTags(ctx context.Context, workers int, repo models.Re
 	logger.Infof("[tags] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func (t *ExportTask) exportTag(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Tag, repo models.Repository) {
+func (t *ExportTask) exportTag(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Tag, repo Repository) {
 	defer wg.Done()
 
 	tagReader := repo.Tag
@@ -925,7 +925,7 @@ func (t *ExportTask) exportTag(ctx context.Context, wg *sync.WaitGroup, jobChan 
 	}
 }
 
-func (t *ExportTask) ExportMovies(ctx context.Context, workers int, repo models.Repository) {
+func (t *ExportTask) ExportMovies(ctx context.Context, workers int, repo Repository) {
 	var moviesWg sync.WaitGroup
 
 	reader := repo.Movie
@@ -966,7 +966,7 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int, repo models.
 	logger.Infof("[movies] export complete in %s. %d workers used.", time.Since(startTime), workers)
 
 }
-func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Movie, repo models.Repository) {
+func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Movie, repo Repository) {
 	defer wg.Done()
 
 	movieReader := repo.Movie
@@ -999,7 +999,7 @@ func (t *ExportTask) exportMovie(ctx context.Context, wg *sync.WaitGroup, jobCha
 	}
 }
 
-func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo models.Repository) {
+func (t *ExportTask) ExportScrapedItems(ctx context.Context, repo Repository) {
 	qb := repo.ScrapedItem
 	sqb := repo.Studio
 	scrapedItems, err := qb.All(ctx)

@@ -688,7 +688,7 @@ func verifyPerformersImageCount(t *testing.T, imageCountCriterion models.IntCrit
 		for _, performer := range performers {
 			pp := 0
 
-			result, err := sqlite.ImageReaderWriter.Query(ctx, models.ImageQueryOptions{
+			result, err := db.Image.Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: &models.FindFilterType{
 						PerPage: &pp,

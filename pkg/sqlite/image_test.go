@@ -12,7 +12,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -97,7 +96,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -291,7 +290,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -412,7 +411,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := sqlite.ImageReaderWriter
+		qb := db.Image
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -669,7 +668,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		qb := sqlite.ImageReaderWriter
+		qb := db.Image
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -727,7 +726,7 @@ func Test_imageQueryBuilder_IncrementOCounter(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -770,7 +769,7 @@ func Test_imageQueryBuilder_DecrementOCounter(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -813,7 +812,7 @@ func Test_imageQueryBuilder_ResetOCounter(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -847,7 +846,7 @@ func Test_imageQueryBuilder_Destroy(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -910,7 +909,7 @@ func Test_imageQueryBuilder_Find(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -954,7 +953,7 @@ func Test_imageQueryBuilder_FindMany(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1012,7 +1011,7 @@ func Test_imageQueryBuilder_FindByChecksum(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1069,7 +1068,7 @@ func Test_imageQueryBuilder_FindByPath(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1108,7 +1107,7 @@ func Test_imageQueryBuilder_FindByGalleryID(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1150,7 +1149,7 @@ func Test_imageQueryBuilder_CountByGalleryID(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.ImageReaderWriter
+	qb := db.Image
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1172,7 +1171,7 @@ func TestImageQueryQ(t *testing.T) {
 
 		q := getImageStringValue(imageIdx, titleField)
 
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		imageQueryQ(ctx, t, sqb, q, imageIdx)
 
@@ -1247,7 +1246,7 @@ func TestImageQueryPath(t *testing.T) {
 
 func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput, expected int) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			Path: &pathCriterion,
 		}
@@ -1285,7 +1284,7 @@ func TestImageQueryPathOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
@@ -1316,7 +1315,7 @@ func TestImageQueryPathAndRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
@@ -1351,7 +1350,7 @@ func TestImageQueryPathNotRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
@@ -1382,7 +1381,7 @@ func TestImageIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		_, _, err := queryImagesWithCount(ctx, sqb, imageFilter, nil)
 		assert.NotNil(err)
@@ -1428,7 +1427,7 @@ func TestImageQueryRating(t *testing.T) {
 
 func verifyImagesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			Rating: &ratingCriterion,
 		}
@@ -1467,7 +1466,7 @@ func TestImageQueryOCounter(t *testing.T) {
 
 func verifyImagesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			OCounter: &oCounterCriterion,
 		}
@@ -1496,7 +1495,7 @@ func TestImageQueryResolution(t *testing.T) {
 
 func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			Resolution: &models.ResolutionCriterionInput{
 				Value:    resolution,
@@ -1540,7 +1539,7 @@ func verifyImageResolution(t *testing.T, height int, resolution models.Resolutio
 
 func TestImageQueryIsMissingGalleries(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "galleries"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -1577,7 +1576,7 @@ func TestImageQueryIsMissingGalleries(t *testing.T) {
 
 func TestImageQueryIsMissingStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "studio"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -1612,7 +1611,7 @@ func TestImageQueryIsMissingStudio(t *testing.T) {
 
 func TestImageQueryIsMissingPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "performers"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -1649,7 +1648,7 @@ func TestImageQueryIsMissingPerformers(t *testing.T) {
 
 func TestImageQueryIsMissingTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "tags"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -1681,7 +1680,7 @@ func TestImageQueryIsMissingTags(t *testing.T) {
 
 func TestImageQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "rating"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -1705,7 +1704,7 @@ func TestImageQueryIsMissingRating(t *testing.T) {
 
 func TestImageQueryGallery(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		galleryCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(galleryIDs[galleryIdxWithImage]),
@@ -1763,7 +1762,7 @@ func TestImageQueryGallery(t *testing.T) {
 
 func TestImageQueryPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		performerCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(performerIDs[performerIdxWithImage]),
@@ -1840,7 +1839,7 @@ func TestImageQueryPerformers(t *testing.T) {
 
 func TestImageQueryTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithImage]),
@@ -1917,7 +1916,7 @@ func TestImageQueryTags(t *testing.T) {
 
 func TestImageQueryStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
@@ -1963,7 +1962,7 @@ func TestImageQueryStudio(t *testing.T) {
 
 func TestImageQueryStudioDepth(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -2033,7 +2032,7 @@ func queryImages(ctx context.Context, t *testing.T, sqb models.ImageReader, imag
 
 func TestImageQueryPerformerTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
@@ -2130,7 +2129,7 @@ func TestImageQueryTagCount(t *testing.T) {
 
 func verifyImagesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -2171,7 +2170,7 @@ func TestImageQueryPerformerCount(t *testing.T) {
 
 func verifyImagesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
@@ -2200,7 +2199,7 @@ func TestImageQuerySorting(t *testing.T) {
 			Direction: &direction,
 		}
 
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		images, _, err := queryImagesWithCount(ctx, sqb, nil, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying image: %s", err.Error())
@@ -2237,7 +2236,7 @@ func TestImageQueryPagination(t *testing.T) {
 			PerPage: &perPage,
 		}
 
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		images, _, err := queryImagesWithCount(ctx, sqb, nil, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying image: %s", err.Error())

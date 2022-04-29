@@ -87,7 +87,13 @@ func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	i := r.Context().Value(imageKey).(*models.Image)
 
 	// if image is in a zip file, we need to serve it specifically
-	image.Serve(w, r, i.Path())
+
+	if len(i.Files) == 0 {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	i.Files[0].Serve(w, r)
 }
 
 // endregion

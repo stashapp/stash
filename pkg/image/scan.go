@@ -2,16 +2,82 @@ package image
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
+)
+
+var (
+	ErrNotImageFile = errors.New("not an image file")
 )
 
 // const mutexType = "image"
 
 type FinderCreatorUpdater interface {
-	FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error)
+	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Image, error)
+	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Image, error)
 	Create(ctx context.Context, newImage *models.ImageCreateInput) error
 	Update(ctx context.Context, updatedImage *models.Image) error
+}
+
+type ScanHandler struct {
+	CreatorUpdater FinderCreatorUpdater
+
+	PluginCache *plugin.Cache
+}
+
+func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error {
+	imageFile, ok := f.(*file.ImageFile)
+	if !ok {
+		return ErrNotImageFile
+	}
+
+	// try to match the file to an image
+	existing, err := h.CreatorUpdater.FindByFileID(ctx, imageFile.ID)
+	if err != nil {
+		return fmt.Errorf("finding existing image: %w", err)
+	}
+
+	if len(existing) > 0 {
+		// assume nothing to be done
+		// TODO - may need to update the title?
+		return nil
+	}
+
+	// try also to match file by fingerprints
+	existing, err = h.CreatorUpdater.FindByFingerprints(ctx, imageFile.Fingerprints)
+	if len(existing) > 0 {
+		// associate this file with the existing images
+		// for _, img := range existing {
+		// 	// TODO
+		// 	return nil
+		// }
+	}
+
+	// create a new image
+	now := time.Now()
+	newImage := &models.Image{
+		Title:     imageFile.Basename,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	// TODO - generate thumbnails
+
+	if err := h.CreatorUpdater.Create(ctx, &models.ImageCreateInput{
+		Image:   newImage,
+		FileIDs: []file.ID{imageFile.ID},
+	}); err != nil {
+		return fmt.Errorf("creating new image: %w", err)
+	}
+
+	h.PluginCache.ExecutePostHooks(ctx, newImage.ID, plugin.ImageCreatePost, nil, nil)
+
+	return nil
 }
 
 // type Scanner struct {

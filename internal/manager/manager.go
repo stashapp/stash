@@ -22,12 +22,12 @@ import (
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/file/image"
+	file_image "github.com/stashapp/stash/pkg/file/image"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
@@ -121,7 +121,7 @@ type Manager struct {
 	DLNAService *dlna.Service
 
 	Database   *sqlite.Database
-	Repository models.Repository
+	Repository Repository
 
 	Scanner *file.Scanner
 
@@ -167,20 +167,8 @@ func initialize() error {
 		DownloadStore:   NewDownloadStore(),
 		PluginCache:     plugin.NewCache(cfg),
 
-		Database: db,
-		Repository: models.Repository{
-			TxnManager:  db,
-			Gallery:     sqlite.GalleryReaderWriter,
-			Image:       sqlite.ImageReaderWriter,
-			Movie:       sqlite.MovieReaderWriter,
-			Performer:   sqlite.PerformerReaderWriter,
-			Scene:       sqlite.SceneReaderWriter,
-			SceneMarker: sqlite.SceneMarkerReaderWriter,
-			ScrapedItem: sqlite.ScrapedItemReaderWriter,
-			Studio:      sqlite.StudioReaderWriter,
-			Tag:         sqlite.TagReaderWriter,
-			SavedFilter: sqlite.SavedFilterReaderWriter,
-		},
+		Database:   db,
+		Repository: sqliteRepository(db),
 
 		scanSubs: &subscriptionManager{},
 	}
@@ -207,7 +195,7 @@ func initialize() error {
 			err = cfg.Validate()
 		}
 
-		instance.Scanner = makeScanner(db)
+		instance.Scanner = makeScanner(db, instance.PluginCache)
 
 		// if DLNA is enabled, start it now
 		if instance.Config.GetDLNADefaultEnabled() {
@@ -301,7 +289,15 @@ func (f *scanFilter) Accept(path string, info fs.FileInfo) bool {
 	return true
 }
 
-func makeScanner(db *sqlite.Database) *file.Scanner {
+func videoFileFilter(f file.File) bool {
+	return isVideo(f.Base().Basename)
+}
+
+func imageFileFilter(f file.File) bool {
+	return isImage(f.Base().Basename)
+}
+
+func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 	return &file.Scanner{
 		Repository: file.Repository{
 			Manager:     db,
@@ -313,19 +309,24 @@ func makeScanner(db *sqlite.Database) *file.Scanner {
 				Decorator: &video.Decorator{
 					FFProbe: instance.FFProbe,
 				},
-				Filter: file.FilterFunc(func(f file.File) bool {
-					return isVideo(f.Base().Basename)
-				}),
+				Filter: file.FilterFunc(videoFileFilter),
 			},
 			&file.FilteredDecorator{
-				Decorator: &image.Decorator{},
-				Filter: file.FilterFunc(func(f file.File) bool {
-					return isImage(f.Base().Basename)
-				}),
+				Decorator: &file_image.Decorator{},
+				Filter:    file.FilterFunc(imageFileFilter),
 			},
 		},
 		FingerprintCalculator: &fingerprintCalculator{instance.Config},
 		FS:                    &file.OsFS{},
+		Handlers: []file.Handler{
+			&file.FilteredHandler{
+				Filter: file.FilterFunc(imageFileFilter),
+				Handler: &image.ScanHandler{
+					CreatorUpdater: db.Image,
+					PluginCache:    pluginCache,
+				},
+			},
+		},
 	}
 }
 
@@ -617,7 +618,7 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 		return fmt.Errorf("error initializing FFMPEG subsystem: %v", err)
 	}
 
-	instance.Scanner = makeScanner(instance.Database)
+	instance.Scanner = makeScanner(instance.Database, instance.PluginCache)
 
 	return nil
 }

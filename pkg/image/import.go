@@ -235,18 +235,18 @@ func (i *Importer) Name() string {
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	var existing []*models.Image
-	var err error
-	existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
+	// var existing []*models.Image
+	// var err error
+	// existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
 
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if len(existing) > 0 {
-		id := existing[0].ID
-		return &id, nil
-	}
+	// if len(existing) > 0 {
+	// 	id := existing[0].ID
+	// 	return &id, nil
+	// }
 
 	return nil, nil
 }

@@ -58,10 +58,15 @@ func NewThumbnailEncoder(ffmpegEncoder ffmpeg.FFMpeg) ThumbnailEncoder {
 // It returns nil and an error if an error occurs reading, decoding or encoding
 // the image, or if the image is not suitable for thumbnails.
 func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte, error) {
-	reader, err := openSourceImage(img.Path())
+	if len(img.Files) == 0 {
+		return nil, errors.New("no files found for image")
+	}
+
+	reader, err := img.Files[0].Open()
 	if err != nil {
 		return nil, err
 	}
+	defer reader.Close()
 
 	buf := new(bytes.Buffer)
 	if _, err := buf.ReadFrom(reader); err != nil {

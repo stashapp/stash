@@ -13,7 +13,7 @@ type GeneratePhashTask struct {
 	Scene               models.Scene
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
-	txnManager          models.Repository
+	txnManager          Repository
 }
 
 func (t *GeneratePhashTask) GetDescription() string {

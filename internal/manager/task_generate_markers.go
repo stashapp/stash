@@ -13,7 +13,7 @@ import (
 )
 
 type GenerateMarkersTask struct {
-	TxnManager          models.Repository
+	TxnManager          Repository
 	Scene               *models.Scene
 	Marker              *models.SceneMarker
 	Overwrite           bool
