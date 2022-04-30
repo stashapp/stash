@@ -322,11 +322,11 @@ func (j *cleanJob) shouldCleanScene(s *models.Scene) bool {
 
 func (j *cleanJob) shouldCleanGallery(ctx context.Context, g *models.Gallery, qb models.ImageReader) bool {
 	// never clean manually created galleries
-	if g.Path == nil {
+	path := g.Path()
+	if path == "" {
 		return false
 	}
 
-	path := *g.Path
 	if j.shouldClean(path) {
 		return true
 	}
@@ -338,28 +338,29 @@ func (j *cleanJob) shouldCleanGallery(ctx context.Context, g *models.Gallery, qb
 	}
 
 	config := config.GetInstance()
-	if g.Zip {
-		if !fsutil.MatchExtension(path, config.GetGalleryExtensions()) {
-			logger.Infof("File extension does not match gallery extensions. Marking to clean: \"%s\"", path)
-			return true
-		}
+	// TODO
+	// if g.Zip {
+	// 	if !fsutil.MatchExtension(path, config.GetGalleryExtensions()) {
+	// 		logger.Infof("File extension does not match gallery extensions. Marking to clean: \"%s\"", path)
+	// 		return true
+	// 	}
 
-		if countImagesInZip(path) == 0 {
-			logger.Infof("Gallery has 0 images. Marking to clean: \"%s\"", path)
-			return true
-		}
-	} else {
-		// folder-based - delete if it has no images
-		count, err := qb.CountByGalleryID(ctx, g.ID)
-		if err != nil {
-			logger.Warnf("Error trying to count gallery images for %q: %v", path, err)
-			return false
-		}
+	// 	if countImagesInZip(path) == 0 {
+	// 		logger.Infof("Gallery has 0 images. Marking to clean: \"%s\"", path)
+	// 		return true
+	// 	}
+	// } else {
+	// 	// folder-based - delete if it has no images
+	// 	count, err := qb.CountByGalleryID(ctx, g.ID)
+	// 	if err != nil {
+	// 		logger.Warnf("Error trying to count gallery images for %q: %v", path, err)
+	// 		return false
+	// 	}
 
-		if count == 0 {
-			return true
-		}
-	}
+	// 	if count == 0 {
+	// 		return true
+	// 	}
+	// }
 
 	if matchFile(path, config.GetImageExcludes()) {
 		logger.Infof("File matched regex. Marking to clean: \"%s\"", path)
@@ -461,8 +462,8 @@ func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
 	}
 
 	GetInstance().PluginCache.ExecutePostHooks(ctx, galleryID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
-		Checksum: g.Checksum,
-		Path:     *g.Path,
+		Checksum: g.Checksum(),
+		Path:     g.Path(),
 	}, nil)
 }
 

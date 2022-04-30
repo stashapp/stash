@@ -2,10 +2,20 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
+	f := obj.PrimaryFile()
+	if f != nil {
+		return &f.Base().ModTime, nil
+	}
+
+	return nil, nil
+}
 
 func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret []*models.Image, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

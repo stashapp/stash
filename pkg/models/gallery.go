@@ -1,6 +1,10 @@
 package models
 
-import "context"
+import (
+	"context"
+
+	"github.com/stashapp/stash/pkg/file"
+)
 
 type GalleryFilterType struct {
 	And     *GalleryFilterType    `json:"AND"`
@@ -71,9 +75,9 @@ type GalleryDestroyInput struct {
 type GalleryReader interface {
 	Find(ctx context.Context, id int) (*Gallery, error)
 	FindMany(ctx context.Context, ids []int) ([]*Gallery, error)
-	FindByChecksum(ctx context.Context, checksum string) (*Gallery, error)
+	FindByChecksum(ctx context.Context, checksum string) ([]*Gallery, error)
 	FindByChecksums(ctx context.Context, checksums []string) ([]*Gallery, error)
-	FindByPath(ctx context.Context, path string) (*Gallery, error)
+	FindByPath(ctx context.Context, path string) ([]*Gallery, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Gallery, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Gallery, error)
 	Count(ctx context.Context) (int, error)
@@ -84,7 +88,7 @@ type GalleryReader interface {
 }
 
 type GalleryWriter interface {
-	Create(ctx context.Context, newGallery *Gallery) error
+	Create(ctx context.Context, newGallery *Gallery, fileIDs []file.ID) error
 	Update(ctx context.Context, updatedGallery *Gallery) error
 	UpdatePartial(ctx context.Context, id int, updatedGallery GalleryPartial) (*Gallery, error)
 	Destroy(ctx context.Context, id int) error

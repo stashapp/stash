@@ -3,45 +3,82 @@ package models
 import (
 	"path/filepath"
 	"time"
+
+	"github.com/stashapp/stash/pkg/file"
 )
 
 type Gallery struct {
-	ID          int        `json:"id"`
-	Path        *string    `json:"path"`
-	Checksum    string     `json:"checksum"`
-	Zip         bool       `json:"zip"`
-	Title       string     `json:"title"`
-	URL         string     `json:"url"`
-	Date        *Date      `json:"date"`
-	Details     string     `json:"details"`
-	Rating      *int       `json:"rating"`
-	Organized   bool       `json:"organized"`
-	StudioID    *int       `json:"studio_id"`
-	FileModTime *time.Time `json:"file_mod_time"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID int `json:"id"`
+
+	// Path        *string    `json:"path"`
+	// Checksum    string     `json:"checksum"`
+	// Zip         bool       `json:"zip"`
+
+	Title     string `json:"title"`
+	URL       string `json:"url"`
+	Date      *Date  `json:"date"`
+	Details   string `json:"details"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	StudioID  *int   `json:"studio_id"`
+
+	// FileModTime *time.Time `json:"file_mod_time"`
+
+	// transient - not persisted
+	Files []file.File
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	SceneIDs     []int `json:"scene_ids"`
 	TagIDs       []int `json:"tag_ids"`
 	PerformerIDs []int `json:"performer_ids"`
 }
 
+func (g Gallery) PrimaryFile() file.File {
+	if len(g.Files) == 0 {
+		return nil
+	}
+
+	return g.Files[0]
+}
+
+func (g Gallery) Path() string {
+	if p := g.PrimaryFile(); p != nil {
+		return p.Base().Path
+	}
+
+	return ""
+}
+
+func (g Gallery) Checksum() string {
+	if p := g.PrimaryFile(); p != nil {
+		v := p.Base().Fingerprints.Get(file.FingerprintTypeMD5)
+		if v == nil {
+			return ""
+		}
+
+		return v.(string)
+	}
+	return ""
+}
+
 // GalleryPartial represents part of a Gallery object. It is used to update
 // the database entry. Only non-nil fields will be updated.
 type GalleryPartial struct {
-	Path        OptionalString
-	Checksum    OptionalString
-	Zip         OptionalBool
-	Title       OptionalString
-	URL         OptionalString
-	Date        OptionalDate
-	Details     OptionalString
-	Rating      OptionalInt
-	Organized   OptionalBool
-	StudioID    OptionalInt
-	FileModTime OptionalTime
-	CreatedAt   OptionalTime
-	UpdatedAt   OptionalTime
+	// Path        OptionalString
+	// Checksum    OptionalString
+	// Zip         OptionalBool
+	Title     OptionalString
+	URL       OptionalString
+	Date      OptionalDate
+	Details   OptionalString
+	Rating    OptionalInt
+	Organized OptionalBool
+	StudioID  OptionalInt
+	// FileModTime OptionalTime
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
 
 	SceneIDs     *UpdateIDs
 	TagIDs       *UpdateIDs
@@ -55,47 +92,15 @@ func NewGalleryPartial() GalleryPartial {
 	}
 }
 
-func (s *Gallery) File() File {
-	var path string
-	if s.Path != nil {
-		path = *s.Path
-	}
-	ret := File{
-		Path: path,
-	}
-
-	ret.Checksum = s.Checksum
-
-	if s.FileModTime != nil {
-		ret.FileModTime = *s.FileModTime
-	}
-
-	return ret
-}
-
-func (s *Gallery) SetFile(f File) {
-	path := f.Path
-	s.Path = &path
-
-	if f.Checksum != "" {
-		s.Checksum = f.Checksum
-	}
-
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		s.FileModTime = &f.FileModTime
-	}
-}
-
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
-func (s Gallery) GetTitle() string {
-	if s.Title != "" {
-		return s.Title
+func (g Gallery) GetTitle() string {
+	if g.Title != "" {
+		return g.Title
 	}
 
-	if s.Path != nil {
-		return filepath.Base(*s.Path)
+	if len(g.Files) > 0 {
+		return filepath.Base(g.Path())
 	}
 
 	return ""

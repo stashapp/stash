@@ -381,7 +381,8 @@ func PathToGalleries(ctx context.Context, name string, paths []string, galleryRe
 
 	r := nameToRegexp(name, useUnicode)
 	for _, p := range gallerys {
-		if p.Path != nil && regexpMatchesPath(r, *p.Path) != -1 {
+		path := p.Path()
+		if path != "" && regexpMatchesPath(r, path) != -1 {
 			ret = append(ret, p)
 		}
 	}

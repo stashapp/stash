@@ -10,8 +10,8 @@ import (
 
 func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 	var path string
-	if s.Path != nil {
-		path = *s.Path
+	if s.Path() != "" {
+		path = s.Path()
 	}
 
 	// only trim the extension if gallery is file-based

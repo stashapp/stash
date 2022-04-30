@@ -2,16 +2,72 @@ package gallery
 
 import (
 	"context"
+	"fmt"
+	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
 )
 
 // const mutexType = "gallery"
 
 type FinderCreatorUpdater interface {
-	FindByChecksum(ctx context.Context, checksum string) (*models.Gallery, error)
-	Create(ctx context.Context, newGallery *models.Gallery) error
+	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
+	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Gallery, error)
+	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []file.ID) error
 	Update(ctx context.Context, updatedGallery *models.Gallery) error
+}
+
+type ScanHandler struct {
+	CreatorUpdater FinderCreatorUpdater
+
+	PluginCache *plugin.Cache
+}
+
+func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error {
+	baseFile := f.Base()
+
+	// try to match the file to a gallery
+	existing, err := h.CreatorUpdater.FindByFileID(ctx, f.Base().ID)
+	if err != nil {
+		return fmt.Errorf("finding existing gallery: %w", err)
+	}
+
+	if len(existing) > 0 {
+		// assume nothing to be done
+		// TODO - may need to update the title?
+		return nil
+	}
+
+	// try also to match file by fingerprints
+	existing, err = h.CreatorUpdater.FindByFingerprints(ctx, baseFile.Fingerprints)
+	if len(existing) > 0 {
+		// associate this file with the existing images
+		// for _, img := range existing {
+		// 	// TODO
+		// 	return nil
+		// }
+		return nil
+	}
+
+	// create a new image
+	now := time.Now()
+	newGallery := &models.Gallery{
+		Title:     baseFile.Basename,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	// TODO - generate thumbnails
+
+	if err := h.CreatorUpdater.Create(ctx, newGallery, []file.ID{baseFile.ID}); err != nil {
+		return fmt.Errorf("creating new image: %w", err)
+	}
+
+	h.PluginCache.ExecutePostHooks(ctx, newGallery.ID, plugin.ImageCreatePost, nil, nil)
+
+	return nil
 }
 
 // type Scanner struct {

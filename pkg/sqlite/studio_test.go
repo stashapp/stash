@@ -585,7 +585,7 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 		for _, studio := range studios {
 			pp := 0
 
-			_, count, err := sqlite.GalleryReaderWriter.Query(ctx, &models.GalleryFilterType{
+			_, count, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
 				Studios: &models.HierarchicalMultiCriterionInput{
 					Value:    []string{strconv.Itoa(studio.ID)},
 					Modifier: models.CriterionModifierIncludes,

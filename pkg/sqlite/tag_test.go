@@ -988,7 +988,7 @@ func TestTagMerge(t *testing.T) {
 
 		assert.Contains(imageTagIDs, destID)
 
-		g, err := sqlite.GalleryReaderWriter.Find(ctx, galleryIDs[galleryIdxWithTwoTags])
+		g, err := db.Gallery.Find(ctx, galleryIDs[galleryIdxWithTwoTags])
 		if err != nil {
 			return err
 		}

@@ -744,7 +744,7 @@ func verifyPerformersGalleryCount(t *testing.T, galleryCountCriterion models.Int
 		for _, performer := range performers {
 			pp := 0
 
-			_, count, err := sqlite.GalleryReaderWriter.Query(ctx, &models.GalleryFilterType{
+			_, count, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
 				Performers: &models.MultiCriterionInput{
 					Value:    []string{strconv.Itoa(performer.ID)},
 					Modifier: models.CriterionModifierIncludes,

@@ -25,6 +25,7 @@ import (
 	file_image "github.com/stashapp/stash/pkg/file/image"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
@@ -297,6 +298,10 @@ func imageFileFilter(f file.File) bool {
 	return isImage(f.Base().Basename)
 }
 
+func galleryFileFilter(f file.File) bool {
+	return isZip(f.Base().Basename)
+}
+
 func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 	return &file.Scanner{
 		Repository: file.Repository{
@@ -323,6 +328,14 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 				Filter: file.FilterFunc(imageFileFilter),
 				Handler: &image.ScanHandler{
 					CreatorUpdater: db.Image,
+					GalleryFinder:  db.Gallery,
+					PluginCache:    pluginCache,
+				},
+			},
+			&file.FilteredHandler{
+				Filter: file.FilterFunc(galleryFileFilter),
+				Handler: &gallery.ScanHandler{
+					CreatorUpdater: db.Gallery,
 					PluginCache:    pluginCache,
 				},
 			},

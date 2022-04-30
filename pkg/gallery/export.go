@@ -13,22 +13,14 @@ import (
 // does not convert the relationships to other objects.
 func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	newGalleryJSON := jsonschema.Gallery{
-		Checksum:  gallery.Checksum,
 		Title:     gallery.Title,
 		URL:       gallery.URL,
 		Details:   gallery.Details,
-		Zip:       gallery.Zip,
 		CreatedAt: json.JSONTime{Time: gallery.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt},
 	}
 
-	if gallery.Path != nil {
-		newGalleryJSON.Path = *gallery.Path
-	}
-
-	if gallery.FileModTime != nil {
-		newGalleryJSON.FileModTime = json.JSONTime{Time: *gallery.FileModTime}
-	}
+	newGalleryJSON.Path = gallery.Path()
 
 	if gallery.Date != nil {
 		newGalleryJSON.Date = gallery.Date.String()
@@ -72,8 +64,8 @@ func GetIDs(galleries []*models.Gallery) []int {
 func GetChecksums(galleries []*models.Gallery) []string {
 	var results []string
 	for _, gallery := range galleries {
-		if gallery.Checksum != "" {
-			results = append(results, gallery.Checksum)
+		if gallery.Checksum() != "" {
+			results = append(results, gallery.Checksum())
 		}
 	}
 

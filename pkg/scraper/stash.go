@@ -279,8 +279,9 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 		Checksum *string `graphql:"checksum" json:"checksum"`
 	}
 
+	checksum := gallery.Checksum()
 	input := GalleryHashInput{
-		Checksum: &gallery.Checksum,
+		Checksum: &checksum,
 	}
 
 	vars := map[string]interface{}{

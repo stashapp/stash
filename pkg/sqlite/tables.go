@@ -14,7 +14,9 @@ var (
 	performersImagesJoinTable = goqu.T(performersImagesTable)
 	imagesFilesJoinTable      = goqu.T(imagesFilesTable)
 	imagesQueryTable          = goqu.T("images_query")
+	galleriesQueryTable       = goqu.T("galleries_query")
 
+	galleriesFilesJoinTable      = goqu.T(galleriesFilesTable)
 	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
 	performersGalleriesJoinTable = goqu.T(performersGalleriesTable)
 	galleriesScenesJoinTable     = goqu.T(galleriesScenesTable)
@@ -75,6 +77,18 @@ var (
 	galleryTableMgr = &table{
 		table:    goqu.T(galleryTable),
 		idColumn: goqu.T(galleryTable).Col(idColumn),
+	}
+
+	galleryQueryTableMgr = &table{
+		table:    galleriesQueryTable,
+		idColumn: galleriesQueryTable.Col(idColumn),
+	}
+
+	galleriesFilesTableMgr = &relatedFilesTable{
+		table: table{
+			table:    galleriesFilesJoinTable,
+			idColumn: galleriesFilesJoinTable.Col(galleryIDColumn),
+		},
 	}
 
 	galleriesTagsTableMgr = &joinTable{

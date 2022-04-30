@@ -43,14 +43,7 @@ func (i *Importer) PreImport(ctx context.Context) error {
 }
 
 func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.Gallery {
-	newGallery := models.Gallery{
-		Checksum: galleryJSON.Checksum,
-		Zip:      galleryJSON.Zip,
-	}
-
-	if galleryJSON.Path != "" {
-		newGallery.Path = &galleryJSON.Path
-	}
+	newGallery := models.Gallery{}
 
 	if galleryJSON.Title != "" {
 		newGallery.Title = galleryJSON.Title
@@ -246,21 +239,22 @@ func (i *Importer) Name() string {
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	existing, err := i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
-	if err != nil {
-		return nil, err
-	}
+	// TODO
+	// existing, err := i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if existing != nil {
-		id := existing.ID
-		return &id, nil
-	}
+	// if existing != nil {
+	// 	id := existing.ID
+	// 	return &id, nil
+	// }
 
 	return nil, nil
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.gallery)
+	err := i.ReaderWriter.Create(ctx, &i.gallery, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating gallery: %v", err)
 	}

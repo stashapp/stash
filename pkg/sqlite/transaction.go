@@ -54,7 +54,7 @@ func getTx(ctx context.Context) (*sqlx.Tx, error) {
 func (db *Database) TxnRepository() models.Repository {
 	return models.Repository{
 		TxnManager:  db,
-		Gallery:     GalleryReaderWriter,
+		Gallery:     db.Gallery,
 		Image:       db.Image,
 		Movie:       MovieReaderWriter,
 		Performer:   PerformerReaderWriter,

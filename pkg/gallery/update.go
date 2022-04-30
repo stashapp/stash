@@ -2,7 +2,6 @@ package gallery
 
 import (
 	"context"
-	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
@@ -15,12 +14,6 @@ type PartialUpdater interface {
 type ImageUpdater interface {
 	GetImageIDs(ctx context.Context, galleryID int) ([]int, error)
 	UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error
-}
-
-func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime time.Time) (*models.Gallery, error) {
-	return qb.UpdatePartial(ctx, id, models.GalleryPartial{
-		FileModTime: models.NewOptionalTime(modTime),
-	})
 }
 
 func AddImage(ctx context.Context, qb ImageUpdater, galleryID int, imageID int) error {

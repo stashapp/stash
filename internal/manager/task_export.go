@@ -594,7 +594,7 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 
 func (t *ExportTask) getGalleryChecksums(galleries []*models.Gallery) (ret []string) {
 	for _, g := range galleries {
-		ret = append(ret, g.Checksum)
+		ret = append(ret, g.Checksum())
 	}
 	return
 }
@@ -634,16 +634,13 @@ func (t *ExportTask) ExportGalleries(ctx context.Context, workers int, repo Repo
 			logger.Progressf("[galleries] %d of %d", index, len(galleries))
 		}
 
-		var path string
 		title := gallery.Title
-		if gallery.Path != nil {
-			path = *gallery.Path
-		}
+		path := gallery.Path()
 
 		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathNameMapping{
 			Path:     path,
 			Name:     title,
-			Checksum: gallery.Checksum,
+			Checksum: gallery.Checksum(),
 		})
 		jobCh <- gallery
 	}
@@ -661,7 +658,7 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 	tagReader := repo.Tag
 
 	for g := range jobChan {
-		galleryHash := g.Checksum
+		galleryHash := g.Checksum()
 
 		newGalleryJSON, err := gallery.ToBasicJSON(g)
 		if err != nil {

@@ -34,6 +34,7 @@ const (
 	folderIdxIsMissing
 
 	folderIdxWithImageFiles
+	folderIdxWithGalleryFiles
 
 	totalFolders
 )
@@ -45,6 +46,7 @@ const (
 
 	fileIdxStartVideoFiles
 	fileIdxStartImageFiles
+	fileIdxStartGalleryFiles
 
 	totalFiles
 )
@@ -553,7 +555,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating studios: %s", err.Error())
 		}
 
-		if err := createGalleries(ctx, sqlite.GalleryReaderWriter, totalGalleries); err != nil {
+		if err := createGalleries(ctx, totalGalleries); err != nil {
 			return fmt.Errorf("error creating galleries: %s", err.Error())
 		}
 
@@ -757,7 +759,7 @@ func makeFile(i int) file.File {
 			FrameRate:  getFileDuration(i) * 2,
 			BitRate:    int64(getFileDuration(i)) * 3,
 		}
-	} else if i >= fileIdxStartImageFiles {
+	} else if i >= fileIdxStartImageFiles && i < fileIdxStartGalleryFiles {
 		ret = &file.ImageFile{
 			BaseFile: baseFile,
 			Format:   getFileStringValue(i, "format"),
@@ -1084,6 +1086,24 @@ func getGalleryNullStringPtr(index int, field string) *string {
 	return getStringPtr(getPrefixedStringValue("gallery", index, field))
 }
 
+func getGalleryBasename(index int) string {
+	return getGalleryStringValue(index, pathField)
+}
+
+func makeGalleryFile(i int) *file.BaseFile {
+	return &file.BaseFile{
+		Path:           getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(i)),
+		Basename:       getGalleryBasename(i),
+		ParentFolderID: folderIDs[folderIdxWithGalleryFiles],
+		Fingerprints: []file.Fingerprint{
+			{
+				Type:        file.FingerprintTypeMD5,
+				Fingerprint: getGalleryStringValue(i, checksumField),
+			},
+		},
+	}
+}
+
 func makeGallery(i int, includeScenes bool) *models.Gallery {
 	var studioID *int
 	if _, ok := galleryStudios[i]; ok {
@@ -1095,10 +1115,8 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	tids := indexesToIDs(tagIDs, galleryTags[i])
 
 	ret := &models.Gallery{
-		Path:         getStringPtr(getGalleryStringValue(i, pathField)),
 		Title:        getGalleryStringValue(i, titleField),
 		URL:          getGalleryNullStringValue(i, urlField).String,
-		Checksum:     getGalleryStringValue(i, checksumField),
 		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
@@ -1113,13 +1131,21 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	return ret
 }
 
-func createGalleries(ctx context.Context, gqb models.GalleryReaderWriter, n int) error {
+func createGalleries(ctx context.Context, n int) error {
+	gqb := db.TxnRepository().Gallery
+	fqb := db.File
+
 	for i := 0; i < n; i++ {
+		f := makeGalleryFile(i)
+		if err := fqb.Create(ctx, f); err != nil {
+			return fmt.Errorf("creating gallery file: %w", err)
+		}
+
 		// scene relationship will be created with scenes
 		const includeScenes = false
 		gallery := makeGallery(i, includeScenes)
 
-		err := gqb.Create(ctx, gallery)
+		err := gqb.Create(ctx, gallery, []file.ID{f.ID})
 
 		if err != nil {
 			return fmt.Errorf("Error creating gallery %v+: %s", gallery, err.Error())

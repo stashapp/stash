@@ -27,7 +27,11 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 
 func (r *imageResolver) FileModTime(ctx context.Context, obj *models.Image) (*time.Time, error) {
 	f := obj.PrimaryFile()
-	return &f.ModTime, nil
+	if f != nil {
+		return &f.ModTime, nil
+	}
+
+	return nil, nil
 }
 
 func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*ImagePathsType, error) {

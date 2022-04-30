@@ -199,7 +199,7 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 
 		var pluckedChecksums []string
 		for _, gallery := range galleries {
-			pluckedChecksums = append(pluckedChecksums, gallery.Checksum)
+			pluckedChecksums = append(pluckedChecksums, gallery.Checksum())
 		}
 
 		missingGalleries := stringslice.StrFilter(checksums, func(checksum string) bool {

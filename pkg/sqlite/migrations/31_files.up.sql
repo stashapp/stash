@@ -185,6 +185,56 @@ ALTER TABLE `images_new` rename to `images`;
 
 CREATE INDEX `index_images_on_studio_id` on `images` (`studio_id`);
 
+
+CREATE TABLE `galleries_new` (
+  `id` integer not null primary key autoincrement,
+  -- REMOVED: `path` varchar(510),
+  -- REMOVED: `checksum` varchar(255) not null,
+  -- REMOVED: `zip` boolean not null default '0',
+  `title` varchar(255),
+  `url` varchar(255),
+  `date` date,
+  `details` text,
+  `studio_id` integer,
+  `rating` tinyint,
+  -- REMOVED: `file_mod_time` datetime,
+  `organized` boolean not null default '0',
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  foreign key(`studio_id`) references `studios`(`id`) on delete SET NULL
+);
+
+INSERT INTO `galleries_new`
+  (
+    `id`,
+    `title`,
+    `url`,
+    `date`,
+    `details`,
+    `studio_id`,
+    `rating`,
+    `organized`,
+    `created_at`,
+    `updated_at`
+  )
+  SELECT 
+    `id`,
+    `title`,
+    `url`,
+    `date`,
+    `details`,
+    `studio_id`,
+    `rating`,
+    `organized`,
+    `created_at`,
+    `updated_at`
+  FROM `galleries`;
+
+DROP TABLE `galleries`;
+ALTER TABLE `galleries_new` rename to `galleries`;
+
+CREATE INDEX `index_galleries_on_studio_id` on `galleries` (`studio_id`);
+
 -- CREATE TABLE `scenes_new` (
 --   `id` integer not null primary key autoincrement,
 --   -- REMOVED: `path` varchar(510) not null,
@@ -300,4 +350,44 @@ CREATE VIEW `images_query` AS
   LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
   LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
   LEFT JOIN `files_fingerprints` ON (`images_files`.`file_id` = `files_fingerprints`.`file_id`) 
+  LEFT JOIN `fingerprints` ON (`files_fingerprints`.`fingerprint_id` = `fingerprints`.`id`);
+
+CREATE VIEW `galleries_query` AS 
+  SELECT 
+    `galleries`.`id`,
+    `galleries`.`title`,
+    `galleries`.`url`,
+    `galleries`.`date`,
+    `galleries`.`details`,
+    `galleries`.`rating`,
+    `galleries`.`organized`,
+    `galleries`.`studio_id`,
+    `galleries`.`created_at`,
+    `galleries`.`updated_at`,
+    `galleries_tags`.`tag_id`,
+    `scenes_galleries`.`scene_id`,
+    `performers_galleries`.`performer_id`,
+    `files`.`id` as `file_id`,
+    `files`.`basename`,
+    `files`.`size`,
+    `files`.`mod_time`,
+    `files`.`missing_since`,
+    `files`.`last_scanned`,
+    `files`.`zip_file_id`,
+    `folders`.`id` as `parent_folder_id`,
+    `folders`.`path` as `folder_path`,
+    `zip_files`.`basename` as `zip_basename`,
+    `zip_files_folders`.`path` as `zip_folder_path`,
+    `fingerprints`.`type` as `fingerprint_type`,
+    `fingerprints`.`fingerprint`
+  FROM `galleries`
+  LEFT JOIN `performers_galleries` ON (`galleries`.`id` = `performers_galleries`.`gallery_id`) 
+  LEFT JOIN `galleries_tags` ON (`galleries`.`id` = `galleries_tags`.`gallery_id`)
+  LEFT JOIN `scenes_galleries` ON (`galleries`.`id` = `scenes_galleries`.`gallery_id`) 
+  LEFT JOIN `galleries_files` ON (`galleries`.`id` = `galleries_files`.`gallery_id`) 
+  LEFT JOIN `files` ON (`galleries_files`.`file_id` = `files`.`id`) 
+  LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
+  LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
+  LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
+  LEFT JOIN `files_fingerprints` ON (`galleries_files`.`file_id` = `files_fingerprints`.`file_id`) 
   LEFT JOIN `fingerprints` ON (`files_fingerprints`.`fingerprint_id` = `fingerprints`.`id`);

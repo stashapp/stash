@@ -24,13 +24,33 @@ type FinderCreatorUpdater interface {
 	Update(ctx context.Context, updatedImage *models.Image) error
 }
 
+type GalleryFinder interface {
+	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
+}
+
 type ScanHandler struct {
 	CreatorUpdater FinderCreatorUpdater
+	GalleryFinder  GalleryFinder
 
 	PluginCache *plugin.Cache
 }
 
+func (h *ScanHandler) validate() error {
+	if h.CreatorUpdater == nil {
+		return errors.New("CreatorUpdater is required")
+	}
+	if h.GalleryFinder == nil {
+		return errors.New("GalleryFinder is required")
+	}
+
+	return nil
+}
+
 func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error {
+	if err := h.validate(); err != nil {
+		return err
+	}
+
 	imageFile, ok := f.(*file.ImageFile)
 	if !ok {
 		return ErrNotImageFile
@@ -64,6 +84,18 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		Title:     imageFile.Basename,
 		CreatedAt: now,
 		UpdatedAt: now,
+	}
+
+	// if the file is in a zip, then associate it with the gallery
+	if imageFile.ZipFileID != nil {
+		g, err := h.GalleryFinder.FindByFileID(ctx, *imageFile.ZipFileID)
+		if err != nil {
+			return fmt.Errorf("finding gallery for zip file id %d: %w", *imageFile.ZipFileID, err)
+		}
+
+		for _, gg := range g {
+			newImage.GalleryIDs = append(newImage.GalleryIDs, gg.ID)
+		}
 	}
 
 	// TODO - generate thumbnails

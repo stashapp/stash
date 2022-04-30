@@ -16,10 +16,10 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 )
 
-// func isZip(pathname string) bool {
-// 	gExt := config.GetInstance().GetGalleryExtensions()
-// 	return fsutil.MatchExtension(pathname, gExt)
-// }
+func isZip(pathname string) bool {
+	gExt := config.GetInstance().GetGalleryExtensions()
+	return fsutil.MatchExtension(pathname, gExt)
+}
 
 func isCaptions(pathname string) bool {
 	return fsutil.MatchExtension(pathname, scene.CaptionExts)

@@ -10,7 +10,6 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -36,14 +35,10 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 		return nil, errors.New("title must not be empty")
 	}
 
-	// for manually created galleries, generate checksum from title
-	checksum := md5.FromString(input.Title)
-
 	// Populate a new performer from the input
 	currentTime := time.Now()
 	newGallery := models.Gallery{
 		Title:     input.Title,
-		Checksum:  checksum,
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
@@ -82,7 +77,7 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	// Start the transaction and save the gallery
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Gallery
-		if err := qb.Create(ctx, &newGallery); err != nil {
+		if err := qb.Create(ctx, &newGallery, nil); err != nil {
 			return err
 		}
 
@@ -183,12 +178,6 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		// ensure title is not empty
 		if *input.Title == "" {
 			return nil, errors.New("title must not be empty")
-		}
-
-		// if gallery is not zip-based, then generate the checksum from the title
-		if originalGallery.Path != nil {
-			checksum := md5.FromString(*input.Title)
-			updatedGallery.Checksum = models.NewOptionalString(checksum)
 		}
 
 		updatedGallery.Title = models.NewOptionalString(*input.Title)
@@ -331,12 +320,12 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 		Paths:   manager.GetInstance().Paths,
 	}
 
-	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
-	deleteFile := utils.IsTrue(input.DeleteFile)
+	// deleteGenerated := utils.IsTrue(input.DeleteGenerated)
+	// deleteFile := utils.IsTrue(input.DeleteFile)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Gallery
-		iqb := r.repository.Image
+		// iqb := r.repository.Image
 
 		for _, id := range galleryIDs {
 			gallery, err := qb.Find(ctx, id)
@@ -351,50 +340,51 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 			galleries = append(galleries, gallery)
 
 			// if this is a zip-based gallery, delete the images as well first
-			if gallery.Zip {
-				imgs, err := iqb.FindByGalleryID(ctx, id)
-				if err != nil {
-					return err
-				}
+			// TODO
+			// if gallery.Path() {
+			// 	imgs, err := iqb.FindByGalleryID(ctx, id)
+			// 	if err != nil {
+			// 		return err
+			// 	}
 
-				for _, img := range imgs {
-					if err := image.Destroy(ctx, img, iqb, fileDeleter, deleteGenerated, false); err != nil {
-						return err
-					}
+			// 	for _, img := range imgs {
+			// 		if err := image.Destroy(ctx, img, iqb, fileDeleter, deleteGenerated, false); err != nil {
+			// 			return err
+			// 		}
 
-					imgsDestroyed = append(imgsDestroyed, img)
-				}
+			// 		imgsDestroyed = append(imgsDestroyed, img)
+			// 	}
 
-				if deleteFile {
-					if err := fileDeleter.Files([]string{*gallery.Path}); err != nil {
-						return err
-					}
-				}
-			} else if deleteFile {
-				// Delete image if it is only attached to this gallery
-				imgs, err := iqb.FindByGalleryID(ctx, id)
-				if err != nil {
-					return err
-				}
+			// 	if deleteFile {
+			// 		if err := fileDeleter.Files([]string{*gallery.Path}); err != nil {
+			// 			return err
+			// 		}
+			// 	}
+			// } else if deleteFile {
+			// 	// Delete image if it is only attached to this gallery
+			// 	imgs, err := iqb.FindByGalleryID(ctx, id)
+			// 	if err != nil {
+			// 		return err
+			// 	}
 
-				for _, img := range imgs {
-					imgGalleries, err := qb.FindByImageID(ctx, img.ID)
-					if err != nil {
-						return err
-					}
+			// 	for _, img := range imgs {
+			// 		imgGalleries, err := qb.FindByImageID(ctx, img.ID)
+			// 		if err != nil {
+			// 			return err
+			// 		}
 
-					if len(imgGalleries) == 1 {
-						if err := image.Destroy(ctx, img, iqb, fileDeleter, deleteGenerated, deleteFile); err != nil {
-							return err
-						}
+			// 		if len(imgGalleries) == 1 {
+			// 			if err := image.Destroy(ctx, img, iqb, fileDeleter, deleteGenerated, deleteFile); err != nil {
+			// 				return err
+			// 			}
 
-						imgsDestroyed = append(imgsDestroyed, img)
-					}
-				}
+			// 			imgsDestroyed = append(imgsDestroyed, img)
+			// 		}
+			// 	}
 
-				// we only want to delete a folder-based gallery if it is empty.
-				// don't do this with the file deleter
-			}
+			// 	// we only want to delete a folder-based gallery if it is empty.
+			// 	// don't do this with the file deleter
+			// }
 
 			if err := qb.Destroy(ctx, id); err != nil {
 				return err
@@ -412,10 +402,11 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 	for _, gallery := range galleries {
 		// don't delete stash library paths
-		if utils.IsTrue(input.DeleteFile) && !gallery.Zip && gallery.Path != nil && !isStashPath(*gallery.Path) {
+		path := gallery.Path()
+		if utils.IsTrue(input.DeleteFile) && path != "" && !isStashPath(path) {
 			// try to remove the folder - it is possible that it is not empty
 			// so swallow the error if present
-			_ = os.Remove(*gallery.Path)
+			_ = os.Remove(path)
 		}
 	}
 
@@ -423,8 +414,8 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	for _, gallery := range galleries {
 		r.hookExecutor.ExecutePostHooks(ctx, gallery.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			GalleryDestroyInput: input,
-			Checksum:            gallery.Checksum,
-			Path:                *gallery.Path,
+			Checksum:            gallery.Checksum(),
+			Path:                gallery.Path(),
 		}, nil)
 	}
 
@@ -472,9 +463,10 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 			return errors.New("gallery not found")
 		}
 
-		if gallery.Zip {
-			return errors.New("cannot modify zip gallery images")
-		}
+		// TODO
+		// if gallery.Zip {
+		// 	return errors.New("cannot modify zip gallery images")
+		// }
 
 		newIDs, err := qb.GetImageIDs(ctx, galleryID)
 		if err != nil {
@@ -512,9 +504,10 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 			return errors.New("gallery not found")
 		}
 
-		if gallery.Zip {
-			return errors.New("cannot modify zip gallery images")
-		}
+		// TODO
+		// if gallery.Zip {
+		// 	return errors.New("cannot modify zip gallery images")
+		// }
 
 		newIDs, err := qb.GetImageIDs(ctx, galleryID)
 		if err != nil {

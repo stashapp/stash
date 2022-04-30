@@ -6,13 +6,12 @@ package sqlite_test
 import (
 	"context"
 	"math"
-	"reflect"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,15 +19,14 @@ var invalidID = -1
 
 func Test_galleryQueryBuilder_Create(t *testing.T) {
 	var (
-		path        = "path"
-		title       = "title"
-		checksum    = "checksum"
-		url         = "url"
-		rating      = 3
-		details     = "details"
-		fileModTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title     = "title"
+		url       = "url"
+		rating    = 3
+		details   = "details"
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		galleryFile = makeFileWithID(fileIdxStartGalleryFiles)
 	)
 
 	date := models.NewDate("2003-02-01")
@@ -41,9 +39,6 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 		{
 			"full",
 			models.Gallery{
-				Path:         &path,
-				Checksum:     checksum,
-				Zip:          false,
 				Title:        title,
 				URL:          url,
 				Date:         &date,
@@ -51,7 +46,27 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				Rating:       &rating,
 				Organized:    true,
 				StudioID:     &studioIDs[studioIdxWithScene],
-				FileModTime:  &fileModTime,
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"with file",
+			models.Gallery{
+				Title:     title,
+				URL:       url,
+				Date:      &date,
+				Details:   details,
+				Rating:    &rating,
+				Organized: true,
+				StudioID:  &studioIDs[studioIdxWithScene],
+				Files: []file.File{
+					galleryFile,
+				},
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
@@ -90,14 +105,19 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
 			s := tt.newObject
-			if err := qb.Create(ctx, &s); (err != nil) != tt.wantErr {
+			var fileIDs []file.ID
+			if len(s.Files) > 0 {
+				fileIDs = []file.ID{s.Files[0].Base().ID}
+			}
+
+			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
 				t.Errorf("galleryQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 
@@ -119,6 +139,10 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
 			}
 
+			if !assert.NotNil(found) {
+				return
+			}
+
 			assert.Equal(copy, *found)
 
 			return
@@ -128,15 +152,12 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 
 func Test_galleryQueryBuilder_Update(t *testing.T) {
 	var (
-		path        = "path"
-		title       = "title"
-		checksum    = "checksum"
-		url         = "url"
-		rating      = 3
-		details     = "details"
-		fileModTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title     = "title"
+		url       = "url"
+		rating    = 3
+		details   = "details"
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 	)
 
 	date := models.NewDate("2003-02-01")
@@ -149,18 +170,17 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"full",
 			&models.Gallery{
-				ID:           galleryIDs[galleryIdxWithScene],
-				Path:         &path,
-				Checksum:     checksum,
-				Zip:          false,
-				Title:        title,
-				URL:          url,
-				Date:         &date,
-				Details:      details,
-				Rating:       &rating,
-				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithScene],
-				FileModTime:  &fileModTime,
+				ID:        galleryIDs[galleryIdxWithScene],
+				Title:     title,
+				URL:       url,
+				Date:      &date,
+				Details:   details,
+				Rating:    &rating,
+				Organized: true,
+				StudioID:  &studioIDs[studioIdxWithScene],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithScene),
+				},
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
@@ -172,8 +192,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"clear nullables",
 			&models.Gallery{
-				ID:        galleryIDs[galleryIdxWithImage],
-				Checksum:  checksum,
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithImage),
+				},
 				Organized: true,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
@@ -183,8 +205,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"clear scene ids",
 			&models.Gallery{
-				ID:        galleryIDs[galleryIdxWithScene],
-				Checksum:  checksum,
+				ID: galleryIDs[galleryIdxWithScene],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithScene),
+				},
 				Organized: true,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
@@ -194,8 +218,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"clear tag ids",
 			&models.Gallery{
-				ID:        galleryIDs[galleryIdxWithTag],
-				Checksum:  checksum,
+				ID: galleryIDs[galleryIdxWithTag],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithTag),
+				},
 				Organized: true,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
@@ -205,8 +231,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"clear performer ids",
 			&models.Gallery{
-				ID:        galleryIDs[galleryIdxWithPerformer],
-				Checksum:  checksum,
+				ID: galleryIDs[galleryIdxWithPerformer],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithPerformer),
+				},
 				Organized: true,
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
@@ -216,8 +244,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid studio id",
 			&models.Gallery{
-				ID:        galleryIDs[galleryIdxWithImage],
-				Checksum:  checksum,
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithImage),
+				},
 				Organized: true,
 				StudioID:  &invalidID,
 				CreatedAt: createdAt,
@@ -228,8 +258,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid scene id",
 			&models.Gallery{
-				ID:        galleryIDs[galleryIdxWithImage],
-				Checksum:  checksum,
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithImage),
+				},
 				Organized: true,
 				SceneIDs:  []int{invalidID},
 				CreatedAt: createdAt,
@@ -240,8 +272,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid tag id",
 			&models.Gallery{
-				ID:        galleryIDs[galleryIdxWithImage],
-				Checksum:  checksum,
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithImage),
+				},
 				Organized: true,
 				TagIDs:    []int{invalidID},
 				CreatedAt: createdAt,
@@ -252,8 +286,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid performer id",
 			&models.Gallery{
-				ID:           galleryIDs[galleryIdxWithImage],
-				Checksum:     checksum,
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithImage),
+				},
 				Organized:    true,
 				PerformerIDs: []int{invalidID},
 				CreatedAt:    createdAt,
@@ -263,7 +299,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -283,10 +319,19 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
 			}
 
+			// ignore file ids
+			clearGalleryFileIDs(s)
+
 			assert.Equal(copy, *s)
 
 			return
 		})
+	}
+}
+
+func clearGalleryFileIDs(gallery *models.Gallery) {
+	for _, f := range gallery.Files {
+		f.Base().ID = 0
 	}
 }
 
@@ -299,7 +344,6 @@ func clearGalleryPartial() models.GalleryPartial {
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
-		FileModTime:  models.OptionalTime{Set: true, Null: true},
 		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 	}
@@ -307,16 +351,12 @@ func clearGalleryPartial() models.GalleryPartial {
 
 func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		path        = "path"
-		title       = "title"
-		checksum    = "checksum"
-		zip         = true
-		details     = "details"
-		url         = "url"
-		rating      = 3
-		fileModTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		title     = "title"
+		details   = "details"
+		url       = "url"
+		rating    = 3
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
 		date = models.NewDate("2003-02-01")
 	)
@@ -332,19 +372,15 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			galleryIDs[galleryIdxWithImage],
 			models.GalleryPartial{
-				Path:        models.NewOptionalString(path),
-				Checksum:    models.NewOptionalString(checksum),
-				Zip:         models.NewOptionalBool(zip),
-				Title:       models.NewOptionalString(title),
-				Details:     models.NewOptionalString(details),
-				URL:         models.NewOptionalString(url),
-				Date:        models.NewOptionalDate(date),
-				Rating:      models.NewOptionalInt(rating),
-				Organized:   models.NewOptionalBool(true),
-				StudioID:    models.NewOptionalInt(studioIDs[studioIdxWithGallery]),
-				FileModTime: models.NewOptionalTime(fileModTime),
-				CreatedAt:   models.NewOptionalTime(createdAt),
-				UpdatedAt:   models.NewOptionalTime(updatedAt),
+				Title:     models.NewOptionalString(title),
+				Details:   models.NewOptionalString(details),
+				URL:       models.NewOptionalString(url),
+				Date:      models.NewOptionalDate(date),
+				Rating:    models.NewOptionalInt(rating),
+				Organized: models.NewOptionalBool(true),
+				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithGallery]),
+				CreatedAt: models.NewOptionalTime(createdAt),
+				UpdatedAt: models.NewOptionalTime(updatedAt),
 
 				SceneIDs: &models.UpdateIDs{
 					IDs:  []int{sceneIDs[sceneIdxWithGallery]},
@@ -360,18 +396,17 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				},
 			},
 			models.Gallery{
-				ID:           galleryIDs[galleryIdxWithImage],
-				Path:         &path,
-				Checksum:     checksum,
-				Zip:          zip,
-				Title:        title,
-				Details:      details,
-				URL:          url,
-				Date:         &date,
-				Rating:       &rating,
-				Organized:    true,
-				StudioID:     &studioIDs[studioIdxWithGallery],
-				FileModTime:  &fileModTime,
+				ID:        galleryIDs[galleryIdxWithImage],
+				Title:     title,
+				Details:   details,
+				URL:       url,
+				Date:      &date,
+				Rating:    &rating,
+				Organized: true,
+				StudioID:  &studioIDs[studioIdxWithGallery],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithImage),
+				},
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     []int{sceneIDs[sceneIdxWithGallery]},
@@ -385,9 +420,10 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 			galleryIDs[galleryIdxWithImage],
 			clearGalleryPartial(),
 			models.Gallery{
-				ID:       galleryIDs[galleryIdxWithImage],
-				Path:     getGalleryNullStringPtr(galleryIdxWithImage, pathField),
-				Checksum: getGalleryStringValue(galleryIdxWithImage, checksumField),
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithImage),
+				},
 			},
 			false,
 		},
@@ -400,7 +436,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := sqlite.GalleryReaderWriter
+		qb := db.Gallery
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -415,6 +451,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				return
 			}
 
+			clearGalleryFileIDs(got)
 			assert.Equal(tt.want, *got)
 
 			s, err := qb.Find(ctx, tt.id)
@@ -422,6 +459,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
 			}
 
+			clearGalleryFileIDs(s)
 			assert.Equal(tt.want, *s)
 		})
 	}
@@ -655,7 +693,7 @@ func Test_galleryQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		qb := sqlite.GalleryReaderWriter
+		qb := db.Gallery
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -710,7 +748,7 @@ func Test_galleryQueryBuilder_Destroy(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -739,6 +777,8 @@ func makeGalleryWithID(index int) *models.Gallery {
 	if ret.Date != nil && ret.Date.IsZero() {
 		ret.Date = nil
 	}
+
+	ret.Files = []file.File{makeGalleryFile(index)}
 
 	return ret
 }
@@ -776,7 +816,7 @@ func Test_galleryQueryBuilder_Find(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -787,6 +827,9 @@ func Test_galleryQueryBuilder_Find(t *testing.T) {
 				return
 			}
 
+			if got != nil {
+				clearGalleryFileIDs(got)
+			}
 			assert.Equal(tt.want, got)
 		})
 	}
@@ -817,18 +860,22 @@ func Test_galleryQueryBuilder_FindMany(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 			got, err := qb.FindMany(ctx, tt.ids)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("galleryQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("galleryQueryBuilder.FindMany() = %v, want %v", got, tt.want)
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
 			}
+
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -841,13 +888,13 @@ func Test_galleryQueryBuilder_FindByChecksum(t *testing.T) {
 	tests := []struct {
 		name     string
 		checksum string
-		want     *models.Gallery
+		want     []*models.Gallery
 		wantErr  bool
 	}{
 		{
 			"valid",
 			getChecksum(galleryIdxWithImage),
-			makeGalleryWithID(galleryIdxWithImage),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithImage)},
 			false,
 		},
 		{
@@ -859,29 +906,33 @@ func Test_galleryQueryBuilder_FindByChecksum(t *testing.T) {
 		{
 			"with performers",
 			getChecksum(galleryIdxWithTwoPerformers),
-			makeGalleryWithID(galleryIdxWithTwoPerformers),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithTwoPerformers)},
 			false,
 		},
 		{
 			"with tags",
 			getChecksum(galleryIdxWithTwoTags),
-			makeGalleryWithID(galleryIdxWithTwoTags),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithTwoTags)},
 			false,
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 			got, err := qb.FindByChecksum(ctx, tt.checksum)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("galleryQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("galleryQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
 			}
+
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -928,37 +979,41 @@ func Test_galleryQueryBuilder_FindByChecksums(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 			got, err := qb.FindByChecksums(ctx, tt.checksums)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("galleryQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("galleryQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
 			}
+
+			assert.Equal(tt.want, got)
 		})
 	}
 }
 
 func Test_galleryQueryBuilder_FindByPath(t *testing.T) {
 	getPath := func(index int) string {
-		return getGalleryStringValue(index, pathField)
+		return getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(index))
 	}
 
 	tests := []struct {
 		name    string
 		path    string
-		want    *models.Gallery
+		want    []*models.Gallery
 		wantErr bool
 	}{
 		{
 			"valid",
 			getPath(galleryIdxWithImage),
-			makeGalleryWithID(galleryIdxWithImage),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithImage)},
 			false,
 		},
 		{
@@ -970,29 +1025,33 @@ func Test_galleryQueryBuilder_FindByPath(t *testing.T) {
 		{
 			"with performers",
 			getPath(galleryIdxWithTwoPerformers),
-			makeGalleryWithID(galleryIdxWithTwoPerformers),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithTwoPerformers)},
 			false,
 		},
 		{
 			"with tags",
 			getPath(galleryIdxWithTwoTags),
-			makeGalleryWithID(galleryIdxWithTwoTags),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithTwoTags)},
 			false,
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 			got, err := qb.FindByPath(ctx, tt.path)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("galleryQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("galleryQueryBuilder.FindByPath() = %v, want %v", got, tt.want)
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
 			}
+
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -1018,7 +1077,7 @@ func Test_galleryQueryBuilder_FindBySceneID(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1027,6 +1086,10 @@ func Test_galleryQueryBuilder_FindBySceneID(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("galleryQueryBuilder.FindBySceneID() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
 			}
 
 			assert.Equal(tt.want, got)
@@ -1058,18 +1121,22 @@ func Test_galleryQueryBuilder_FindByImageID(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 			got, err := qb.FindByImageID(ctx, tt.imageID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("galleryQueryBuilder.FindByImageID() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("galleryQueryBuilder.FindByImageID() = %v, want %v", got, tt.want)
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
 			}
+
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -1095,7 +1162,7 @@ func Test_galleryQueryBuilder_CountByImageID(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.GalleryReaderWriter
+	qb := db.Gallery
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1116,22 +1183,22 @@ func TestGalleryQueryQ(t *testing.T) {
 		const galleryIdx = 0
 
 		q := getGalleryStringValue(galleryIdx, pathField)
-
-		sqb := sqlite.GalleryReaderWriter
-
-		galleryQueryQ(ctx, t, sqb, q, galleryIdx)
+		galleryQueryQ(ctx, t, q, galleryIdx)
 
 		return nil
 	})
 }
 
-func galleryQueryQ(ctx context.Context, t *testing.T, qb models.GalleryReader, q string, expectedGalleryIdx int) {
+func galleryQueryQ(ctx context.Context, t *testing.T, q string, expectedGalleryIdx int) {
+	qb := db.Gallery
+
 	filter := models.FindFilterType{
 		Q: &q,
 	}
 	galleries, _, err := qb.Query(ctx, nil, &filter)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
+		return
 	}
 
 	assert.Len(t, galleries, 1)
@@ -1158,34 +1225,35 @@ func TestGalleryQueryPath(t *testing.T) {
 			Modifier: models.CriterionModifierEquals,
 		}
 
-		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
+		verifyGalleriesPath(ctx, t, pathCriterion)
 
 		pathCriterion.Modifier = models.CriterionModifierNotEquals
-		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
+		verifyGalleriesPath(ctx, t, pathCriterion)
 
 		pathCriterion.Modifier = models.CriterionModifierMatchesRegex
 		pathCriterion.Value = "gallery.*1_Path"
-		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
+		verifyGalleriesPath(ctx, t, pathCriterion)
 
 		pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
-		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
+		verifyGalleriesPath(ctx, t, pathCriterion)
 
 		return nil
 	})
 }
 
-func verifyGalleriesPath(ctx context.Context, t *testing.T, sqb models.GalleryReader, pathCriterion models.StringCriterionInput) {
+func verifyGalleriesPath(ctx context.Context, t *testing.T, pathCriterion models.StringCriterionInput) {
 	galleryFilter := models.GalleryFilterType{
 		Path: &pathCriterion,
 	}
 
+	sqb := db.Gallery
 	galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
 	}
 
 	for _, gallery := range galleries {
-		verifyStringPtr(t, gallery.Path, pathCriterion)
+		verifyString(t, gallery.Path(), pathCriterion)
 	}
 }
 
@@ -1210,13 +1278,16 @@ func TestGalleryQueryPathOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
-		assert.Len(t, galleries, 2)
-		assert.Equal(t, gallery1Path, *galleries[0].Path)
-		assert.Equal(t, gallery2Path, *galleries[1].Path)
+		if !assert.Len(t, galleries, 2) {
+			return nil
+		}
+
+		assert.Equal(t, gallery1Path, galleries[0].Path())
+		assert.Equal(t, gallery2Path, galleries[1].Path())
 
 		return nil
 	})
@@ -1241,12 +1312,15 @@ func TestGalleryQueryPathAndRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
-		assert.Len(t, galleries, 1)
-		assert.Equal(t, galleryPath, *galleries[0].Path)
+		if !assert.Len(t, galleries, 1) {
+			return nil
+		}
+
+		assert.Equal(t, galleryPath, galleries[0].Path())
 		assert.Equal(t, *galleryRating, *galleries[0].Rating)
 
 		return nil
@@ -1276,12 +1350,12 @@ func TestGalleryQueryPathNotRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		for _, gallery := range galleries {
-			verifyStringPtr(t, gallery.Path, pathCriterion)
+			verifyString(t, gallery.Path(), pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
 			verifyIntPtr(t, gallery.Rating, ratingCriterion)
 		}
@@ -1307,7 +1381,7 @@ func TestGalleryIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		_, _, err := sqb.Query(ctx, galleryFilter, nil)
 		assert.NotNil(err)
@@ -1367,7 +1441,7 @@ func TestGalleryQueryURL(t *testing.T) {
 func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn func(s *models.Gallery)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &filter, nil)
 
@@ -1409,7 +1483,7 @@ func TestGalleryQueryRating(t *testing.T) {
 
 func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		galleryFilter := models.GalleryFilterType{
 			Rating: &ratingCriterion,
 		}
@@ -1429,7 +1503,7 @@ func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInpu
 
 func TestGalleryQueryIsMissingScene(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.GalleryReaderWriter
+		qb := db.Gallery
 		isMissing := "scenes"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1473,7 +1547,7 @@ func queryGallery(ctx context.Context, t *testing.T, sqb models.GalleryReader, g
 
 func TestGalleryQueryIsMissingStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		isMissing := "studio"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1502,7 +1576,7 @@ func TestGalleryQueryIsMissingStudio(t *testing.T) {
 
 func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		isMissing := "performers"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1533,7 +1607,7 @@ func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 
 func TestGalleryQueryIsMissingTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		isMissing := "tags"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1559,7 +1633,7 @@ func TestGalleryQueryIsMissingTags(t *testing.T) {
 
 func TestGalleryQueryIsMissingDate(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		isMissing := "date"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -1581,7 +1655,7 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 
 func TestGalleryQueryPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		performerCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(performerIDs[performerIdxWithGallery]),
@@ -1637,7 +1711,7 @@ func TestGalleryQueryPerformers(t *testing.T) {
 
 func TestGalleryQueryTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithGallery]),
@@ -1692,7 +1766,7 @@ func TestGalleryQueryTags(t *testing.T) {
 
 func TestGalleryQueryStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGallery]),
@@ -1732,7 +1806,7 @@ func TestGalleryQueryStudio(t *testing.T) {
 
 func TestGalleryQueryStudioDepth(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -1793,7 +1867,7 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 
 func TestGalleryQueryPerformerTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
@@ -1890,7 +1964,7 @@ func TestGalleryQueryTagCount(t *testing.T) {
 
 func verifyGalleriesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		galleryFilter := models.GalleryFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -1927,7 +2001,7 @@ func TestGalleryQueryPerformerCount(t *testing.T) {
 
 func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		galleryFilter := models.GalleryFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
@@ -1945,7 +2019,7 @@ func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.
 
 func TestGalleryQueryAverageResolution(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.GalleryReaderWriter
+		qb := db.Gallery
 		resolution := models.ResolutionEnumLow
 		galleryFilter := models.GalleryFilterType{
 			AverageResolution: &models.ResolutionCriterionInput{
@@ -1983,7 +2057,7 @@ func TestGalleryQueryImageCount(t *testing.T) {
 
 func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		galleryFilter := models.GalleryFilterType{
 			ImageCount: &imageCountCriterion,
 		}
