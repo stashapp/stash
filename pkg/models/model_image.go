@@ -10,9 +10,6 @@ import (
 type Image struct {
 	ID int `json:"id"`
 
-	// Checksum  string `json:"checksum"`
-	// Path      string `json:"path"`
-
 	Title     string `json:"title"`
 	Rating    *int   `json:"rating"`
 	Organized bool   `json:"organized"`
@@ -21,11 +18,6 @@ type Image struct {
 
 	// transient - not persisted
 	Files []*file.ImageFile
-
-	// Size        *int64     `json:"size"`
-	// Width       *int       `json:"width"`
-	// Height      *int       `json:"height"`
-	// FileModTime *time.Time `json:"file_mod_time"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

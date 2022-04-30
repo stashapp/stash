@@ -22,6 +22,7 @@ type DirEntry struct {
 	ZipFileID *ID `json:"zip_file_id"`
 
 	// transient - not persisted
+	// only guaranteed to have id, path and basename set
 	ZipFile File
 
 	ModTime      time.Time  `json:"mod_time"`
@@ -90,8 +91,20 @@ func (f *BaseFile) Base() *BaseFile {
 
 func (f *BaseFile) Open() (io.ReadCloser, error) {
 	if f.ZipFile != nil {
-		// TODO handle zip file
-		panic("not implemented")
+		fs := &OsFS{}
+
+		zipPath := f.ZipFile.Base().Path
+		info, err := fs.Lstat(zipPath)
+		if err != nil {
+			return nil, err
+		}
+
+		zfs, err := newZipFS(fs, zipPath, info)
+		if err != nil {
+			return nil, err
+		}
+
+		return zfs.OpenOnly(f.Path)
 	}
 
 	// assume os file

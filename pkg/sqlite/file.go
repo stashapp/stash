@@ -166,6 +166,9 @@ type fileQueryRow struct {
 	CreatedAt      null.Time   `db:"created_at"`
 	UpdatedAt      null.Time   `db:"updated_at"`
 
+	ZipBasename   null.String `db:"zip_basename"`
+	ZipFolderPath null.String `db:"zip_folder_path"`
+
 	FolderPath null.String `db:"folder_path"`
 	fingerprintQueryRow
 	videoFileQueryRow
@@ -187,6 +190,14 @@ func (r *fileQueryRow) resolve() file.File {
 		Size:           r.Size.Int64,
 		CreatedAt:      r.CreatedAt.Time,
 		UpdatedAt:      r.UpdatedAt.Time,
+	}
+
+	if basic.ZipFileID != nil && r.ZipFolderPath.Valid && r.ZipBasename.Valid {
+		basic.ZipFile = &file.BaseFile{
+			ID:       *basic.ZipFileID,
+			Path:     filepath.Join(r.ZipFolderPath.String, r.ZipBasename.String),
+			Basename: r.ZipBasename.String,
+		}
 	}
 
 	var ret file.File = basic

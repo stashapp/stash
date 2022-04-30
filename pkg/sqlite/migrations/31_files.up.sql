@@ -28,7 +28,9 @@ CREATE TABLE `files` (
   CHECK (`basename` != '')
 );
 
-CREATE UNIQUE INDEX `index_files_basename_unique` ON `files` (`zip_file_id`, `parent_folder_id`, `basename`);
+CREATE UNIQUE INDEX `index_files_zip_basename_unique` ON `files` (`zip_file_id`, `parent_folder_id`, `basename`);
+CREATE INDEX `index_files_on_parent_folder_id_basename` on `files` (`parent_folder_id`, `basename`);
+CREATE INDEX `index_files_on_basename` on `files` (`basename`);
 
 ALTER TABLE `folders` ADD COLUMN `zip_file_id` integer REFERENCES `files`(`id`) ON DELETE CASCADE;
 CREATE UNIQUE INDEX `index_folders_path_unique` on `folders` (`zip_file_id`, `path`);
@@ -280,8 +282,11 @@ CREATE VIEW `images_query` AS
     `files`.`mod_time`,
     `files`.`missing_since`,
     `files`.`last_scanned`,
+    `files`.`zip_file_id`,
     `folders`.`id` as `parent_folder_id`,
     `folders`.`path` as `folder_path`,
+    `zip_files`.`basename` as `zip_basename`,
+    `zip_files_folders`.`path` as `zip_folder_path`,
     `fingerprints`.`type` as `fingerprint_type`,
     `fingerprints`.`fingerprint`
   FROM `images`
@@ -292,5 +297,7 @@ CREATE VIEW `images_query` AS
   LEFT JOIN `image_files` ON (`images_files`.`file_id` = `image_files`.`file_id`) 
   LEFT JOIN `files` ON (`images_files`.`file_id` = `files`.`id`) 
   LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
+  LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
+  LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
   LEFT JOIN `files_fingerprints` ON (`images_files`.`file_id` = `files_fingerprints`.`file_id`) 
   LEFT JOIN `fingerprints` ON (`files_fingerprints`.`fingerprint_id` = `fingerprints`.`id`);

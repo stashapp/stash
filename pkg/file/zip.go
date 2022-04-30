@@ -2,17 +2,46 @@ package file
 
 import (
 	"archive/zip"
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 )
 
+var errNotReaderAt = errors.New("not a ReaderAt")
+
 // ZipFS is a file system backed by a zip file.
 type ZipFS struct {
 	*zip.Reader
-	zipInfo fs.FileInfo
-	zipPath string
+	zipFileCloser io.Closer
+	zipInfo       fs.FileInfo
+	zipPath       string
+}
+
+func newZipFS(fs FS, path string, info fs.FileInfo) (*ZipFS, error) {
+	reader, err := fs.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	asReaderAt, _ := reader.(io.ReaderAt)
+	if asReaderAt == nil {
+		return nil, errNotReaderAt
+	}
+
+	zipReader, err := zip.NewReader(asReaderAt, info.Size())
+	if err != nil {
+		return nil, err
+	}
+
+	return &ZipFS{
+		Reader:        zipReader,
+		zipFileCloser: reader,
+		zipInfo:       info,
+		zipPath:       path,
+	}, nil
 }
 
 // zipDirEntry is a special FileInfo that returns the zip file as a directory.
@@ -83,4 +112,31 @@ func (f *ZipFS) Open(name string) (fs.ReadDirFile, error) {
 	return &zipReadDirFile{
 		File: r,
 	}, nil
+}
+
+func (f *ZipFS) Close() error {
+	return f.zipFileCloser.Close()
+}
+
+// openOnly returns a ReadCloser where calling Close will close the zip fs as well.
+func (f *ZipFS) OpenOnly(name string) (io.ReadCloser, error) {
+	r, err := f.Open(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &wrappedReadCloser{
+		ReadCloser: r,
+		outer:      f,
+	}, nil
+}
+
+type wrappedReadCloser struct {
+	io.ReadCloser
+	outer io.Closer
+}
+
+func (f *wrappedReadCloser) Close() error {
+	_ = f.ReadCloser.Close()
+	return f.outer.Close()
 }

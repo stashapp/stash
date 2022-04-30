@@ -1,11 +1,9 @@
 package file
 
 import (
-	"archive/zip"
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -163,7 +161,11 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 		}
 
 		if !s.acceptEntry(path, info) {
-			return fs.SkipDir
+			if info.IsDir() {
+				return fs.SkipDir
+			}
+
+			return nil
 		}
 
 		ff := scanFile{
@@ -227,29 +229,18 @@ func (s *scanJob) acceptEntry(path string, info fs.FileInfo) bool {
 }
 
 func (s *scanJob) scanZipFile(ctx context.Context, f scanFile) error {
-	reader, err := f.fs.Open(f.Path)
+	zipFS, err := newZipFS(f.fs, f.Path, f.info)
 	if err != nil {
-		return err
-	}
-	defer reader.Close()
+		if errors.Is(err, errNotReaderAt) {
+			// can't walk the zip file
+			// just return
+			return nil
+		}
 
-	asReaderAt, _ := reader.(io.ReaderAt)
-	if asReaderAt == nil {
-		// can't walk the zip file
-		// just return
-		return nil
-	}
-
-	zipReader, err := zip.NewReader(asReaderAt, f.Size)
-	if err != nil {
 		return err
 	}
 
-	zipFS := &ZipFS{
-		Reader:  zipReader,
-		zipInfo: f.info,
-		zipPath: f.Path,
-	}
+	defer zipFS.Close()
 
 	return symWalk(zipFS, f.Path, s.queueFileFunc(ctx, zipFS, &f))
 }
@@ -454,6 +445,7 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 	}
 
 	if ff != nil && s.isZipFile(f.info) {
+		f.BaseFile = ff.Base()
 		if err := s.scanZipFile(ctx, f); err != nil {
 			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)
 		}
