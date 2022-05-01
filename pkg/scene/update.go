@@ -87,36 +87,6 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	return ret
 }
 
-func UpdateFormat(ctx context.Context, qb PartialUpdater, id int, format string) (*models.Scene, error) {
-	v := format
-	return qb.UpdatePartial(ctx, id, models.ScenePartial{
-		Format: models.NewOptionalString(v),
-	})
-}
-
-func UpdateOSHash(ctx context.Context, qb PartialUpdater, id int, oshash string) (*models.Scene, error) {
-	v := oshash
-
-	return qb.UpdatePartial(ctx, id, models.ScenePartial{
-		OSHash: models.NewOptionalString(v),
-	})
-}
-
-func UpdateChecksum(ctx context.Context, qb PartialUpdater, id int, checksum string) (*models.Scene, error) {
-	v := checksum
-
-	return qb.UpdatePartial(ctx, id, models.ScenePartial{
-		Checksum: models.NewOptionalString(v),
-	})
-}
-
-func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime time.Time) (*models.Scene, error) {
-	v := modTime
-	return qb.UpdatePartial(ctx, id, models.ScenePartial{
-		FileModTime: models.NewOptionalTime(v),
-	})
-}
-
 func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Scene, performerID int) (bool, error) {
 	if !intslice.IntInclude(o.PerformerIDs, performerID) {
 		if _, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{

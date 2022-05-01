@@ -12,16 +12,16 @@ import (
 func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
 	var container ffmpeg.Container
 	if scene.Format != nil {
-		container = ffmpeg.Container(*scene.Format)
+		container = ffmpeg.Container(scene.Format())
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
 		ffprobe := GetInstance().FFProbe
-		tmpVideoFile, err := ffprobe.NewVideoFile(scene.Path)
+		tmpVideoFile, err := ffprobe.NewVideoFile(scene.Path())
 		if err != nil {
 			return ffmpeg.Container(""), fmt.Errorf("error reading video file: %v", err)
 		}
 
-		return ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
+		return ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path())
 	}
 
 	return container, nil
@@ -79,8 +79,8 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 
 	// direct stream should only apply when the audio codec is supported
 	audioCodec := ffmpeg.MissingUnsupported
-	if scene.AudioCodec != nil {
-		audioCodec = ffmpeg.ProbeAudioCodec(*scene.AudioCodec)
+	if scene.AudioCodec() != "" {
+		audioCodec = ffmpeg.ProbeAudioCodec(scene.AudioCodec())
 	}
 
 	// don't care if we can't get the container

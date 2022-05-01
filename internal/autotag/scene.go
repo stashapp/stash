@@ -13,7 +13,7 @@ func getSceneFileTagger(s *models.Scene, cache *match.Cache) tagger {
 		ID:    s.ID,
 		Type:  "scene",
 		Name:  s.GetTitle(),
-		Path:  s.Path,
+		Path:  s.Path(),
 		cache: cache,
 	}
 }

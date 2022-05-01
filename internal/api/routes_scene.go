@@ -116,7 +116,7 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	ffprobe := manager.GetInstance().FFProbe
-	videoFile, err := ffprobe.NewVideoFile(scene.Path)
+	videoFile, err := ffprobe.NewVideoFile(scene.Path())
 	if err != nil {
 		logger.Errorf("[stream] error reading video file: %v", err)
 		return
@@ -149,8 +149,10 @@ func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, streamFormat ffmpeg.StreamFormat) {
-	logger.Debugf("Streaming as %s", streamFormat.MimeType)
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	f := scene.PrimaryFile()
+	logger.Debugf("Streaming as %s", streamFormat.MimeType)
 
 	// start stream based on query param, if provided
 	if err := r.ParseForm(); err != nil {
@@ -162,24 +164,15 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	requestedSize := r.Form.Get("resolution")
 
 	audioCodec := ffmpeg.MissingUnsupported
-	if scene.AudioCodec != nil {
-		audioCodec = ffmpeg.ProbeAudioCodec(*scene.AudioCodec)
+	if f.AudioCodec != "" {
+		audioCodec = ffmpeg.ProbeAudioCodec(f.AudioCodec)
 	}
 
-	var (
-		width  int
-		height int
-	)
-
-	if scene.Width != nil {
-		width = *scene.Width
-	}
-	if scene.Height != nil {
-		height = *scene.Height
-	}
+	width := f.Width
+	height := f.Height
 
 	options := ffmpeg.TranscodeStreamOptions{
-		Input:     scene.Path,
+		Input:     f.Path,
 		Codec:     streamFormat,
 		VideoOnly: audioCodec == ffmpeg.MissingUnsupported,
 
@@ -198,7 +191,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 
 	lm := manager.GetInstance().ReadLockManager
 	streamRequestCtx := manager.NewStreamRequestContext(w, r)
-	lockCtx := lm.ReadLock(streamRequestCtx, scene.Path)
+	lockCtx := lm.ReadLock(streamRequestCtx, f.Path)
 	defer lockCtx.Cancel()
 
 	stream, err := encoder.GetTranscodeStream(lockCtx, options)
@@ -307,7 +300,7 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
-	funscript := scene.GetFunscriptPath(s.Path)
+	funscript := scene.GetFunscriptPath(s.Path())
 	serveFileNoCache(w, r, funscript)
 }
 

@@ -139,11 +139,11 @@ func Destroy(ctx context.Context, scene *models.Scene, qb Destroyer, mqb MarkerD
 	}
 
 	if deleteFile {
-		if err := fileDeleter.Files([]string{scene.Path}); err != nil {
+		if err := fileDeleter.Files([]string{scene.Path()}); err != nil {
 			return err
 		}
 
-		funscriptPath := GetFunscriptPath(scene.Path)
+		funscriptPath := GetFunscriptPath(scene.Path())
 		funscriptExists, _ := fsutil.FileExists(funscriptPath)
 		if funscriptExists {
 			if err := fileDeleter.Files([]string{funscriptPath}); err != nil {

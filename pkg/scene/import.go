@@ -3,7 +3,6 @@ package scene
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/gallery"
@@ -75,26 +74,26 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
-		Path:    i.Path,
+		// Path:    i.Path,
 		Title:   sceneJSON.Title,
 		Details: sceneJSON.Details,
 		URL:     sceneJSON.URL,
 	}
 
-	if sceneJSON.Checksum != "" {
-		newScene.Checksum = &sceneJSON.Checksum
-	}
-	if sceneJSON.OSHash != "" {
-		newScene.OSHash = &sceneJSON.OSHash
-	}
+	// if sceneJSON.Checksum != "" {
+	// 	newScene.Checksum = &sceneJSON.Checksum
+	// }
+	// if sceneJSON.OSHash != "" {
+	// 	newScene.OSHash = &sceneJSON.OSHash
+	// }
 
-	if sceneJSON.Phash != "" {
-		hash, err := strconv.ParseUint(sceneJSON.Phash, 16, 64)
-		if err == nil {
-			v := int64(hash)
-			newScene.Phash = &v
-		}
-	}
+	// if sceneJSON.Phash != "" {
+	// 	hash, err := strconv.ParseUint(sceneJSON.Phash, 16, 64)
+	// 	if err == nil {
+	// 		v := int64(hash)
+	// 		newScene.Phash = &v
+	// 	}
+	// }
 
 	if sceneJSON.Date != "" {
 		d := models.NewDate(sceneJSON.Date)
@@ -109,38 +108,38 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene.CreatedAt = sceneJSON.CreatedAt.GetTime()
 	newScene.UpdatedAt = sceneJSON.UpdatedAt.GetTime()
 
-	if sceneJSON.File != nil {
-		if sceneJSON.File.Size != "" {
-			newScene.Size = &sceneJSON.File.Size
-		}
-		if sceneJSON.File.Duration != "" {
-			duration, _ := strconv.ParseFloat(sceneJSON.File.Duration, 64)
-			newScene.Duration = &duration
-		}
-		if sceneJSON.File.VideoCodec != "" {
-			newScene.VideoCodec = &sceneJSON.File.VideoCodec
-		}
-		if sceneJSON.File.AudioCodec != "" {
-			newScene.AudioCodec = &sceneJSON.File.AudioCodec
-		}
-		if sceneJSON.File.Format != "" {
-			newScene.Format = &sceneJSON.File.Format
-		}
-		if sceneJSON.File.Width != 0 {
-			newScene.Width = &sceneJSON.File.Width
-		}
-		if sceneJSON.File.Height != 0 {
-			newScene.Height = &sceneJSON.File.Height
-		}
-		if sceneJSON.File.Framerate != "" {
-			framerate, _ := strconv.ParseFloat(sceneJSON.File.Framerate, 64)
-			newScene.Framerate = &framerate
-		}
-		if sceneJSON.File.Bitrate != 0 {
-			v := int64(sceneJSON.File.Bitrate)
-			newScene.Bitrate = &v
-		}
-	}
+	// if sceneJSON.File != nil {
+	// 	if sceneJSON.File.Size != "" {
+	// 		newScene.Size = &sceneJSON.File.Size
+	// 	}
+	// 	if sceneJSON.File.Duration != "" {
+	// 		duration, _ := strconv.ParseFloat(sceneJSON.File.Duration, 64)
+	// 		newScene.Duration = &duration
+	// 	}
+	// 	if sceneJSON.File.VideoCodec != "" {
+	// 		newScene.VideoCodec = &sceneJSON.File.VideoCodec
+	// 	}
+	// 	if sceneJSON.File.AudioCodec != "" {
+	// 		newScene.AudioCodec = &sceneJSON.File.AudioCodec
+	// 	}
+	// 	if sceneJSON.File.Format != "" {
+	// 		newScene.Format = &sceneJSON.File.Format
+	// 	}
+	// 	if sceneJSON.File.Width != 0 {
+	// 		newScene.Width = &sceneJSON.File.Width
+	// 	}
+	// 	if sceneJSON.File.Height != 0 {
+	// 		newScene.Height = &sceneJSON.File.Height
+	// 	}
+	// 	if sceneJSON.File.Framerate != "" {
+	// 		framerate, _ := strconv.ParseFloat(sceneJSON.File.Framerate, 64)
+	// 		newScene.Framerate = &framerate
+	// 	}
+	// 	if sceneJSON.File.Bitrate != 0 {
+	// 		v := int64(sceneJSON.File.Bitrate)
+	// 		newScene.Bitrate = &v
+	// 	}
+	// }
 
 	newScene.StashIDs = append(newScene.StashIDs, i.Input.StashIDs...)
 

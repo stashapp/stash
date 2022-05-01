@@ -229,9 +229,12 @@ func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 		Oshash   *string `graphql:"oshash" json:"oshash"`
 	}
 
+	checksum := scene.Checksum()
+	oshash := scene.OSHash()
+
 	input := SceneHashInput{
-		Checksum: scene.Checksum,
-		Oshash:   scene.OSHash,
+		Checksum: &checksum,
+		Oshash:   &oshash,
 	}
 
 	vars := map[string]interface{}{

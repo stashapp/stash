@@ -237,9 +237,10 @@ type sceneHolder struct {
 
 func newSceneHolder(scene *models.Scene) *sceneHolder {
 	sceneCopy := models.Scene{
-		ID:       scene.ID,
-		Checksum: scene.Checksum,
-		Path:     scene.Path,
+		ID:    scene.ID,
+		Files: scene.Files,
+		// Checksum: scene.Checksum,
+		// Path:     scene.Path,
 	}
 	ret := sceneHolder{
 		scene:  scene,
@@ -384,9 +385,9 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 	// scene path in the match. Otherwise, use the default behaviour of just
 	// the file's basename
 	// must be double \ because of the regex escaping
-	filename := filepath.Base(scene.Path)
+	filename := filepath.Base(scene.Path())
 	if strings.Contains(m.regexString, `\\`) || strings.Contains(m.regexString, "/") {
-		filename = scene.Path
+		filename = scene.Path()
 	}
 
 	result := m.regex.FindStringSubmatch(filename)

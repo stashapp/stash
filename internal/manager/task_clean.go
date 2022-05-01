@@ -296,23 +296,23 @@ func (j *cleanJob) shouldClean(path string) bool {
 }
 
 func (j *cleanJob) shouldCleanScene(s *models.Scene) bool {
-	if j.shouldClean(s.Path) {
+	if j.shouldClean(s.Path()) {
 		return true
 	}
 
-	stash := getStashFromPath(s.Path)
+	stash := getStashFromPath(s.Path())
 	if stash.ExcludeVideo {
 		logger.Infof("File in stash library that excludes video. Marking to clean: \"%s\"", s.Path)
 		return true
 	}
 
 	config := config.GetInstance()
-	if !fsutil.MatchExtension(s.Path, config.GetVideoExtensions()) {
+	if !fsutil.MatchExtension(s.Path(), config.GetVideoExtensions()) {
 		logger.Infof("File extension does not match video extensions. Marking to clean: \"%s\"", s.Path)
 		return true
 	}
 
-	if matchFile(s.Path, config.GetExcludes()) {
+	if matchFile(s.Path(), config.GetExcludes()) {
 		logger.Infof("File matched regex. Marking to clean: \"%s\"", s.Path)
 		return true
 	}
@@ -426,20 +426,13 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 	// perform the post-commit actions
 	fileDeleter.Commit()
 
-	var checksum string
-	var oshash string
-
-	if s.Checksum != nil {
-		checksum = *s.Checksum
-	}
-	if s.OSHash != nil {
-		oshash = *s.OSHash
-	}
+	checksum := s.Checksum()
+	oshash := s.OSHash()
 
 	GetInstance().PluginCache.ExecutePostHooks(ctx, sceneID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
 		Checksum: checksum,
 		OSHash:   oshash,
-		Path:     s.Path,
+		Path:     s.Path(),
 	}, nil)
 }
 

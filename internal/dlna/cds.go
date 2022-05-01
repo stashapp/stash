@@ -108,20 +108,19 @@ func sceneToContainer(scene *models.Scene, parent string, host string) interface
 	}
 
 	mimeType := "video/mp4"
-	var size int
-	if scene.Size != nil {
-		size, _ = strconv.Atoi(*scene.Size)
-	}
+	// TODO
+	// var size int
+	// if scene.Size != nil {
+	// 	size, _ = strconv.Atoi(*scene.Size)
+	// }
 
-	var duration int64
-	if scene.Duration != nil {
-		duration = int64(*scene.Duration)
-	}
+	duration := int64(scene.Duration())
 
-	var bitrate uint
-	if scene.Bitrate != nil {
-		bitrate = uint(*scene.Bitrate)
-	}
+	// TODO
+	// var bitrate uint
+	// if scene.Bitrate != nil {
+	// 	bitrate = uint(*scene.Bitrate)
+	// }
 
 	item.Res = append(item.Res, upnpav.Resource{
 		URL: (&url.URL{
@@ -135,10 +134,10 @@ func sceneToContainer(scene *models.Scene, parent string, host string) interface
 		ProtocolInfo: fmt.Sprintf("http-get:*:%s:%s", mimeType, dlna.ContentFeatures{
 			SupportRange: true,
 		}.String()),
-		Bitrate: bitrate,
+		// Bitrate: bitrate,
 		// TODO - make %d:%02d:%02d string
 		Duration: formatDurationSexagesimal(time.Duration(duration) * time.Second),
-		Size:     uint64(size),
+		// Size:     uint64(size),
 		// Resolution: resolution,
 	})
 

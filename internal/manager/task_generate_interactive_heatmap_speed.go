@@ -27,7 +27,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	}
 
 	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
-	funscriptPath := scene.GetFunscriptPath(t.Scene.Path)
+	funscriptPath := scene.GetFunscriptPath(t.Scene.Path())
 	heatmapPath := instance.Paths.Scene.GetInteractiveHeatmapPath(videoChecksum)
 
 	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath)
@@ -45,7 +45,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 
 	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		s, err = t.TxnManager.Scene.FindByPath(ctx, t.Scene.Path)
+		s, err = t.TxnManager.Scene.FindByPath(ctx, t.Scene.Path())
 		return err
 	}); err != nil {
 		logger.Error(err.Error())

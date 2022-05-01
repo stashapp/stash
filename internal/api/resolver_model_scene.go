@@ -2,12 +2,21 @@ package api
 
 import (
 	"context"
+	"strconv"
+	"time"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
+	if obj.PrimaryFile() != nil {
+		return &obj.PrimaryFile().ModTime, nil
+	}
+	return nil, nil
+}
 
 func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, error) {
 	if obj.Date != nil {
@@ -18,21 +27,23 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 }
 
 func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
-	var bitrate *int
-	if obj.Bitrate != nil {
-		v := int(*obj.Bitrate)
-		bitrate = &v
+	f := obj.PrimaryFile()
+	if f == nil {
+		return nil, nil
 	}
 
+	bitrate := int(f.BitRate)
+	size := strconv.FormatInt(f.Size, 10)
+
 	return &models.SceneFileType{
-		Size:       obj.Size,
-		Duration:   handleFloat64Ptr(obj.Duration),
-		VideoCodec: obj.VideoCodec,
-		AudioCodec: obj.AudioCodec,
-		Width:      obj.Width,
-		Height:     obj.Height,
-		Framerate:  handleFloat64Ptr(obj.Framerate),
-		Bitrate:    bitrate,
+		Size:       &size,
+		Duration:   handleFloat64(f.Duration),
+		VideoCodec: &f.VideoCodec,
+		AudioCodec: &f.AudioCodec,
+		Width:      &f.Width,
+		Height:     &f.Height,
+		Framerate:  handleFloat64(f.FrameRate),
+		Bitrate:    &bitrate,
 	}, nil
 }
 
@@ -163,8 +174,9 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret 
 }
 
 func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {
-	if obj.Phash != nil {
-		hexval := utils.PhashToString(*obj.Phash)
+	phash := obj.Phash()
+	if phash != 0 {
+		hexval := utils.PhashToString(phash)
 		return &hexval, nil
 	}
 	return nil, nil

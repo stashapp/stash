@@ -20,7 +20,7 @@ type GenerateScreenshotTask struct {
 }
 
 func (t *GenerateScreenshotTask) Start(ctx context.Context) {
-	scenePath := t.Scene.Path
+	scenePath := t.Scene.Path()
 	ffprobe := instance.FFProbe
 	probeResult, err := ffprobe.NewVideoFile(scenePath)
 

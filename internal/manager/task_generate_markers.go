@@ -27,7 +27,7 @@ type GenerateMarkersTask struct {
 
 func (t *GenerateMarkersTask) GetDescription() string {
 	if t.Scene != nil {
-		return fmt.Sprintf("Generating markers for %s", t.Scene.Path)
+		return fmt.Sprintf("Generating markers for %s", t.Scene.Path())
 	} else if t.Marker != nil {
 		return fmt.Sprintf("Generating marker preview for marker ID %d", t.Marker.ID)
 	}
@@ -57,7 +57,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 		}
 
 		ffprobe := instance.FFProbe
-		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
+		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path())
 		if err != nil {
 			logger.Errorf("error reading video file: %s", err.Error())
 			return
@@ -83,7 +83,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	}
 
 	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path())
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return

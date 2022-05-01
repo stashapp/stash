@@ -4,37 +4,43 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/file"
 )
 
 // Scene stores the metadata for a single video scene.
 type Scene struct {
-	ID               int        `json:"id"`
-	Checksum         *string    `json:"checksum"`
-	OSHash           *string    `json:"oshash"`
-	Path             string     `json:"path"`
-	Title            string     `json:"title"`
-	Details          string     `json:"details"`
-	URL              string     `json:"url"`
-	Date             *Date      `json:"date"`
-	Rating           *int       `json:"rating"`
-	Organized        bool       `json:"organized"`
-	OCounter         int        `json:"o_counter"`
-	Size             *string    `json:"size"`
-	Duration         *float64   `json:"duration"`
-	VideoCodec       *string    `json:"video_codec"`
-	Format           *string    `json:"format_name"`
-	AudioCodec       *string    `json:"audio_codec"`
-	Width            *int       `json:"width"`
-	Height           *int       `json:"height"`
-	Framerate        *float64   `json:"framerate"`
-	Bitrate          *int64     `json:"bitrate"`
-	StudioID         *int       `json:"studio_id"`
-	FileModTime      *time.Time `json:"file_mod_time"`
-	Phash            *int64     `json:"phash"`
-	CreatedAt        time.Time  `json:"created_at"`
-	UpdatedAt        time.Time  `json:"updated_at"`
-	Interactive      bool       `json:"interactive"`
-	InteractiveSpeed *int       `json:"interactive_speed"`
+	ID int `json:"id"`
+	// Checksum         *string    `json:"checksum"`
+	// OSHash           *string    `json:"oshash"`
+	// Path             string     `json:"path"`
+	Title     string `json:"title"`
+	Details   string `json:"details"`
+	URL       string `json:"url"`
+	Date      *Date  `json:"date"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	OCounter  int    `json:"o_counter"`
+	// Size             *string    `json:"size"`
+	// Duration         *float64   `json:"duration"`
+	// VideoCodec       *string    `json:"video_codec"`
+	// Format           *string    `json:"format_name"`
+	// AudioCodec       *string    `json:"audio_codec"`
+	// Width            *int       `json:"width"`
+	// Height           *int       `json:"height"`
+	// Framerate        *float64   `json:"framerate"`
+	// Bitrate          *int64     `json:"bitrate"`
+	StudioID *int `json:"studio_id"`
+	// FileModTime      *time.Time `json:"file_mod_time"`
+	// Phash            *int64     `json:"phash"`
+
+	// transient - not persisted
+	Files []*file.VideoFile
+
+	Interactive      bool      `json:"interactive"`
+	InteractiveSpeed *int      `json:"interactive_speed"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 
 	GalleryIDs   []int          `json:"gallery_ids"`
 	TagIDs       []int          `json:"tag_ids"`
@@ -43,75 +49,115 @@ type Scene struct {
 	StashIDs     []StashID      `json:"stash_ids"`
 }
 
-func (s *Scene) File() File {
-	ret := File{
-		Path: s.Path,
+func (s Scene) PrimaryFile() *file.VideoFile {
+	if len(s.Files) == 0 {
+		return nil
 	}
 
-	if s.Checksum != nil {
-		ret.Checksum = *s.Checksum
-	}
-	if s.OSHash != nil {
-		ret.OSHash = *s.OSHash
-	}
-	if s.FileModTime != nil {
-		ret.FileModTime = *s.FileModTime
-	}
-	if s.Size != nil {
-		ret.Size = *s.Size
-	}
-
-	return ret
+	return s.Files[0]
 }
 
-func (s *Scene) SetFile(f File) {
-	path := f.Path
-	s.Path = path
+func (s Scene) Path() string {
+	if p := s.PrimaryFile(); p != nil {
+		return p.Base().Path
+	}
 
-	if f.Checksum != "" {
-		s.Checksum = &f.Checksum
+	return ""
+}
+
+func (s Scene) getHash(type_ string) string {
+	if p := s.PrimaryFile(); p != nil {
+		v := p.Base().Fingerprints.Get(type_)
+		if v == nil {
+			return ""
+		}
+
+		return v.(string)
 	}
-	if f.OSHash != "" {
-		s.OSHash = &f.OSHash
+	return ""
+}
+
+func (s Scene) Checksum() string {
+	return s.getHash(file.FingerprintTypeMD5)
+}
+
+func (s Scene) OSHash() string {
+	return s.getHash(file.FingerprintTypeOshash)
+}
+
+func (s Scene) Phash() int64 {
+	if p := s.PrimaryFile(); p != nil {
+		v := p.Base().Fingerprints.Get(file.FingerprintTypePhash)
+		if v == nil {
+			return 0
+		}
+
+		return v.(int64)
 	}
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		s.FileModTime = &f.FileModTime
+	return 0
+}
+
+func (s Scene) Duration() float64 {
+	if p := s.PrimaryFile(); p != nil {
+		return p.Duration
 	}
-	if f.Size != "" {
-		s.Size = &f.Size
+
+	return 0
+}
+
+func (s Scene) Format() string {
+	if p := s.PrimaryFile(); p != nil {
+		return p.Format
 	}
+
+	return ""
+}
+
+func (s Scene) VideoCodec() string {
+	if p := s.PrimaryFile(); p != nil {
+		return p.VideoCodec
+	}
+
+	return ""
+}
+
+func (s Scene) AudioCodec() string {
+	if p := s.PrimaryFile(); p != nil {
+		return p.AudioCodec
+	}
+
+	return ""
 }
 
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry.
 type ScenePartial struct {
-	Checksum         OptionalString
-	OSHash           OptionalString
-	Path             OptionalString
-	Title            OptionalString
-	Details          OptionalString
-	URL              OptionalString
-	Date             OptionalDate
-	Rating           OptionalInt
-	Organized        OptionalBool
-	OCounter         OptionalInt
-	Size             OptionalString
-	Duration         OptionalFloat64
-	VideoCodec       OptionalString
-	Format           OptionalString
-	AudioCodec       OptionalString
-	Width            OptionalInt
-	Height           OptionalInt
-	Framerate        OptionalFloat64
-	Bitrate          OptionalInt64
-	StudioID         OptionalInt
-	FileModTime      OptionalTime
-	Phash            OptionalInt64
-	CreatedAt        OptionalTime
-	UpdatedAt        OptionalTime
+	// Checksum         OptionalString
+	// OSHash           OptionalString
+	// Path             OptionalString
+	Title     OptionalString
+	Details   OptionalString
+	URL       OptionalString
+	Date      OptionalDate
+	Rating    OptionalInt
+	Organized OptionalBool
+	OCounter  OptionalInt
+	// Size             OptionalString
+	// Duration         OptionalFloat64
+	// VideoCodec       OptionalString
+	// Format           OptionalString
+	// AudioCodec       OptionalString
+	// Width            OptionalInt
+	// Height           OptionalInt
+	// Framerate        OptionalFloat64
+	// Bitrate          OptionalInt64
+	StudioID OptionalInt
+	// FileModTime      OptionalTime
+	// Phash            OptionalInt64
 	Interactive      OptionalBool
 	InteractiveSpeed OptionalInt
+	CreatedAt        OptionalTime
+	UpdatedAt        OptionalTime
 
 	GalleryIDs   *UpdateIDs
 	TagIDs       *UpdateIDs
@@ -182,24 +228,6 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 	}
 }
 
-func (s *ScenePartial) SetFile(f File) {
-	s.Path = NewOptionalString(f.Path)
-
-	if f.Checksum != "" {
-		s.Checksum = NewOptionalString(f.Checksum)
-	}
-	if f.OSHash != "" {
-		s.OSHash = NewOptionalString(f.OSHash)
-	}
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		s.FileModTime = NewOptionalTime(f.FileModTime)
-	}
-	if f.Size != "" {
-		s.Size = NewOptionalString(f.Size)
-	}
-}
-
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
 func (s Scene) GetTitle() string {
@@ -207,23 +235,36 @@ func (s Scene) GetTitle() string {
 		return s.Title
 	}
 
-	return filepath.Base(s.Path)
+	return filepath.Base(s.Path())
 }
 
 // GetHash returns the hash of the scene, based on the hash algorithm provided. If
 // hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
 func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
-	return s.File().GetHash(hashAlgorithm)
+	f := s.PrimaryFile()
+	if f == nil {
+		return ""
+	}
+
+	switch hashAlgorithm {
+	case HashAlgorithmMd5:
+		return f.Base().Fingerprints.Get(file.FingerprintTypeMD5).(string)
+	case HashAlgorithmOshash:
+		return f.Base().Fingerprints.Get(file.FingerprintTypeOshash).(string)
+	}
+
+	return ""
 }
 
 func (s Scene) GetMinResolution() int {
-	var w, h int
-	if s.Width != nil {
-		w = *s.Width
+	f := s.PrimaryFile()
+	if f == nil {
+		return 0
 	}
-	if s.Height != nil {
-		h = *s.Height
-	}
+
+	w := f.Width
+	h := f.Height
+
 	if w < h {
 		return w
 	}

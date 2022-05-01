@@ -20,9 +20,9 @@ func stringPtrToString(s *string) string {
 
 func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret := make(queryURLParameters)
-	ret["checksum"] = stringPtrToString(scene.Checksum)
-	ret["oshash"] = stringPtrToString(scene.OSHash)
-	ret["filename"] = filepath.Base(scene.Path)
+	ret["checksum"] = scene.Checksum()
+	ret["oshash"] = scene.OSHash()
+	ret["filename"] = filepath.Base(scene.Path())
 
 	if scene.Title != "" {
 		ret["title"] = scene.Title
