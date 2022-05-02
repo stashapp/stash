@@ -26,13 +26,42 @@ func init() {
 }
 
 func main() {
-	manager.Initialize()
-	api.Start()
+	defer recoverPanic()
+
+	_, err := manager.Initialize()
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		defer recoverPanic()
+		if err := api.Start(); err != nil {
+			handleError(err)
+		} else {
+			manager.GetInstance().Shutdown(0)
+		}
+	}()
 
 	go handleSignals()
 	desktop.Start(manager.GetInstance(), &manager.FaviconProvider{UIBox: ui.UIBox})
 
 	blockForever()
+}
+
+func recoverPanic() {
+	if p := recover(); p != nil {
+		handleError(fmt.Errorf("Panic: %v", p))
+	}
+}
+
+func handleError(err error) {
+	desktop.FatalError(err)
+
+	if desktop.IsDesktop() {
+		manager.GetInstance().Shutdown(0)
+	} else {
+		panic(err)
+	}
 }
 
 func handleSignals() {
