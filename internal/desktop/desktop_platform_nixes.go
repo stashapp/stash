@@ -39,7 +39,7 @@ func revealInFileManager(path string) {
 }
 
 func isDoubleClickLaunched() bool {
-	false
+	return false
 }
 
 func hideConsole() {
