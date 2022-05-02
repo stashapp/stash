@@ -88,6 +88,8 @@ export const LightboxImage: React.FC<IProps> = ({
   const pointerCache = useRef<React.PointerEvent<HTMLDivElement>[]>([]);
   const prevDiff = useRef<number | undefined>();
 
+  const navOnScroll = useRef(true);
+
   useEffect(() => {
     const box = container.current;
     if (box) {
@@ -249,10 +251,22 @@ export const LightboxImage: React.FC<IProps> = ({
     // #2389 - if scroll up and at top, then go to previous image
     // if scroll down and at bottom, then go to next image
     if (newPositionY > maxY && positionY === maxY) {
-      onLeft();
+      // #2535 - require additional scroll before changing page
+      if (navOnScroll.current) {
+        onLeft();
+      } else {
+        navOnScroll.current = true;
+      }
     } else if (newPositionY < minY && positionY === minY) {
-      onRight();
+      // #2535 - require additional scroll before changing page
+      if (navOnScroll.current) {
+        onRight();
+      } else {
+        navOnScroll.current = true;
+      }
     } else {
+      navOnScroll.current = false;
+
       // ensure image doesn't go offscreen
       newPositionY = Math.max(newPositionY, minY);
       newPositionY = Math.min(newPositionY, maxY);
