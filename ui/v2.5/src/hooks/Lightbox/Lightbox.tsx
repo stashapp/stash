@@ -158,6 +158,11 @@ export const LightboxComponent: React.FC<IProps> = ({
   const slideshowDelay =
     savedDelay ?? configuredDelay ?? DEFAULT_SLIDESHOW_DELAY;
 
+  const scrollAttemptsBeforeChange = Math.max(
+    0,
+    config?.interface.imageLightbox.scrollAttemptsBeforeChange ?? 0
+  );
+
   function setSlideshowDelay(v: number) {
     setLightboxSettings({ slideshowDelay: v });
   }
@@ -733,6 +738,8 @@ export const LightboxComponent: React.FC<IProps> = ({
                   onRight={handleRight}
                   alignBottom={movingLeft}
                   zoom={i === currentIndex ? zoom : 1}
+                  current={i === currentIndex}
+                  scrollAttemptsBeforeChange={scrollAttemptsBeforeChange}
                   setZoom={(v) => setZoom(v)}
                   resetPosition={resetPosition}
                 />
