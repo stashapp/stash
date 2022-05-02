@@ -50,12 +50,6 @@ ifndef OFFICIAL_BUILD
     $(eval OFFICIAL_BUILD := false)
 endif
 
-ifdef IS_WIN_OS
-ifndef SUPPRESS_WINDOWSGUI
-PLATFORM_SPECIFIC_LDFLAGS := -H windowsgui
-endif
-endif
-
 build: pre-build
 build:
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/internal/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/internal/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/internal/api.githash=$(GITHASH)')
