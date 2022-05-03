@@ -164,7 +164,8 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	encoder := manager.GetInstance().FFMPEG
 
 	lm := manager.GetInstance().ReadLockManager
-	lockCtx := lm.ReadLock(r.Context(), scene.Path)
+	streamRequestCtx := manager.NewStreamRequestContext(w, r)
+	lockCtx := lm.ReadLock(streamRequestCtx, scene.Path)
 	defer lockCtx.Cancel()
 
 	stream, err := encoder.GetTranscodeStream(lockCtx, options)
