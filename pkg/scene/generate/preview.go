@@ -91,6 +91,11 @@ func (g Generator) PreviewVideo(ctx context.Context, input string, videoDuration
 }
 
 func (g *Generator) previewVideo(input string, videoDuration float64, options PreviewOptions, fallback bool) generateFn {
+	// #2496 - generate a single preview video for videos shorter than segments * segment duration
+	if videoDuration < options.SegmentDuration*float64(options.Segments) {
+		return g.previewVideoSingle(input, videoDuration, options, fallback)
+	}
+
 	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
 		// a list of tmp files used during the preview generation
 		var tmpFiles []string
@@ -142,6 +147,20 @@ func (g *Generator) previewVideo(input string, videoDuration float64, options Pr
 		}
 
 		return g.previewVideoChunkCombine(lockCtx, concatFilePath, tmpFn)
+	}
+}
+
+func (g *Generator) previewVideoSingle(input string, videoDuration float64, options PreviewOptions, fallback bool) generateFn {
+	return func(lockCtx *fsutil.LockContext, tmpFn string) error {
+		chunkOptions := previewChunkOptions{
+			StartTime:  0,
+			Duration:   videoDuration,
+			OutputPath: tmpFn,
+			Audio:      options.Audio,
+			Preset:     options.Preset,
+		}
+
+		return g.previewVideoChunk(lockCtx, input, chunkOptions, fallback)
 	}
 }
 
