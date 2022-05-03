@@ -166,7 +166,7 @@ export class ListFilterModel {
         this.displayMode !== DEFAULT_PARAMS.displayMode
           ? this.displayMode
           : undefined,
-      q: this.searchTerm,
+      q: this.searchTerm ? encodeURIComponent(this.searchTerm) : undefined,
       p:
         this.currentPage !== DEFAULT_PARAMS.currentPage
           ? this.currentPage
