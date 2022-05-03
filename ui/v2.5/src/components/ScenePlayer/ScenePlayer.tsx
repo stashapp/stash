@@ -412,7 +412,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     playerRef.current?.pause();
   };
   const onScrubberSeek = (seconds: number) => {
-    playerRef.current?.currentTime(seconds);
+    const player = playerRef.current;
+    if (player) {
+      player.play()?.then(() => {
+        player.currentTime(seconds);
+      });
+    }
   };
 
   const isPortrait =
