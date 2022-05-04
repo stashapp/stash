@@ -71,7 +71,6 @@ cross-compile-windows: export GOARCH := amd64
 cross-compile-windows: export CC := x86_64-w64-mingw32-gcc
 cross-compile-windows: export CXX := x86_64-w64-mingw32-g++
 cross-compile-windows: OUTPUT := -o dist/stash-win.exe
-cross-compile-windows: PLATFORM_SPECIFIC_LDFLAGS := -H windowsgui
 cross-compile-windows: build-release-static
 
 cross-compile-macos-intel: export GOOS := darwin
