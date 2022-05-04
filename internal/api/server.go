@@ -41,7 +41,7 @@ var githash string
 var uiBox = ui.UIBox
 var loginUIBox = ui.LoginUIBox
 
-func Start() {
+func Start() error {
 	initialiseImages()
 
 	r := chi.NewRouter()
@@ -263,16 +263,18 @@ func Start() {
 		displayAddress = "http://" + displayAddress + "/"
 	}
 
-	go func() {
-		if tlsConfig != nil {
-			logger.Infof("stash is running at " + displayAddress)
-			logger.Error(server.ListenAndServeTLS("", ""))
-		} else {
-			logger.Infof("stash is running at " + displayAddress)
-			logger.Error(server.ListenAndServe())
-		}
-		manager.GetInstance().Shutdown(0)
-	}()
+	logger.Infof("stash is running at " + displayAddress)
+	if tlsConfig != nil {
+		err = server.ListenAndServeTLS("", "")
+	} else {
+		err = server.ListenAndServe()
+	}
+
+	if !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	return nil
 }
 
 func printVersion() {
