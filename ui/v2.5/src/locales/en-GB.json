@@ -453,6 +453,16 @@
         "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com",
         "heading": "Handy Connection Key"
       },
+      "handy_connection": {
+        "connect": "Connect",
+        "server_offset": {
+          "heading": "Server Offset"
+        },
+        "status": {
+          "heading": "Handy Connection Status"
+        },
+        "sync": "Sync"
+      },
       "images": {
         "heading": "Images",
         "options": {
@@ -730,6 +740,15 @@
     "NON_BINARY": "Non-Binary"
   },
   "hair_color": "Hair Colour",
+  "handy_connection_status": {
+    "connecting": "Connecting",
+    "disconnected": "Disconnected",
+    "error": "Error connecting to Handy",
+    "missing": "Missing",
+    "ready": "Ready",
+    "syncing": "Syncing with server",
+    "uploading": "Uploading script"
+  },
   "hasMarkers": "Has Markers",
   "height": "Height",
   "help": "Help",

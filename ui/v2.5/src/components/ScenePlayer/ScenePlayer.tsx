@@ -117,9 +117,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const [time, setTime] = useState(0);
 
-  const { interactive: interactiveClient, uploadScript } = React.useContext(
-    InteractiveContext
-  );
+  const {
+    interactive: interactiveClient,
+    uploadScript,
+    initialised: interactiveInitialised,
+  } = React.useContext(InteractiveContext);
 
   const [initialTimestamp] = useState(timestamp);
 
@@ -181,12 +183,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
 
   useEffect(() => {
-    if (scene?.interactive) {
+    if (scene?.interactive && interactiveInitialised) {
       uploadScript(scene.paths.funscript || "");
     }
   }, [
     uploadScript,
-    interactiveClient,
+    interactiveInitialised,
     scene?.interactive,
     scene?.paths.funscript,
   ]);

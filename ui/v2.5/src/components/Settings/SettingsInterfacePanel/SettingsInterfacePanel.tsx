@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { DurationInput, LoadingIndicator } from "src/components/Shared";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { SettingSection } from "../SettingSection";
@@ -46,7 +46,10 @@ export const SettingsInterfacePanel: React.FC = () => {
   const {
     interactive,
     state: interactiveState,
+    error: interactiveError,
     serverOffset: interactiveServerOffset,
+    initialised: interactiveInitialised,
+    initialise: initialiseInteractive,
     sync: interactiveSync,
   } = React.useContext(InteractiveContext);
 
@@ -406,21 +409,38 @@ export const SettingsInterfacePanel: React.FC = () => {
               <div>
                 <h3>
                   {intl.formatMessage({
-                    id: "config.ui.handy_connection_status.heading",
+                    id: "config.ui.handy_connection.status.heading",
                   })}
                 </h3>
 
                 <div className="value">
-                  {connectionStateLabel(interactiveState)}
+                  <FormattedMessage
+                    id={connectionStateLabel(interactiveState)}
+                  />
+                  {interactiveError && <span>: {interactiveError}</span>}
                 </div>
               </div>
-              <div />
+              <div>
+                {!interactiveInitialised && (
+                  <Button
+                    disabled={
+                      interactiveState === ConnectionState.Connecting ||
+                      interactiveState === ConnectionState.Syncing
+                    }
+                    onClick={() => initialiseInteractive()}
+                  >
+                    {intl.formatMessage({
+                      id: "config.ui.handy_connection.connect",
+                    })}
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="setting" id="handy-server-offset">
               <div>
                 <h3>
                   {intl.formatMessage({
-                    id: "config.ui.handy_connection_status.heading",
+                    id: "config.ui.handy_connection.server_offset.heading",
                   })}
                 </h3>
 
@@ -429,14 +449,19 @@ export const SettingsInterfacePanel: React.FC = () => {
                 </div>
               </div>
               <div>
-                <Button
-                  disabled={interactiveState === ConnectionState.Syncing}
-                  onClick={() => interactiveSync()}
-                >
-                  {intl.formatMessage({
-                    id: "config.ui.handy_connection_sync",
-                  })}
-                </Button>
+                {interactiveInitialised && (
+                  <Button
+                    disabled={
+                      !interactiveInitialised ||
+                      interactiveState === ConnectionState.Syncing
+                    }
+                    onClick={() => interactiveSync()}
+                  >
+                    {intl.formatMessage({
+                      id: "config.ui.handy_connection.sync",
+                    })}
+                  </Button>
+                )}
               </div>
             </div>
           </>

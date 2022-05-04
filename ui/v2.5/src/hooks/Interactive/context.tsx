@@ -37,6 +37,9 @@ export interface IState {
   interactive: InteractiveAPI;
   state: ConnectionState;
   serverOffset: number;
+  initialised: boolean;
+  error?: string;
+  initialise: () => Promise<void>;
   uploadScript: (funscriptPath: string) => Promise<void>;
   sync: () => Promise<void>;
 }
@@ -45,6 +48,10 @@ export const InteractiveContext = React.createContext<IState>({
   interactive: new InteractiveAPI("", 0),
   state: ConnectionState.Missing,
   serverOffset: 0,
+  initialised: false,
+  initialise: () => {
+    return Promise.resolve();
+  },
   uploadScript: () => {
     return Promise.resolve();
   },
@@ -75,6 +82,34 @@ export const InteractiveProvider: React.FC = ({ children }) => {
   const [scriptOffset, setScriptOffset] = useState<number>(0);
   const [interactive] = useState<InteractiveAPI>(new InteractiveAPI("", 0));
 
+  const [initialised, setInitialised] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+
+  const initialise = useCallback(async () => {
+    setError(undefined);
+
+    if (!config?.serverOffset) {
+      setState(ConnectionState.Syncing);
+      const offset = await interactive.sync();
+      setConfig({ serverOffset: offset });
+      setState(ConnectionState.Ready);
+      setInitialised(true);
+    } else {
+      interactive.setServerTimeOffset(config.serverOffset);
+      setState(ConnectionState.Connecting);
+      try {
+        await interactive.connect();
+        setState(ConnectionState.Ready);
+        setInitialised(true);
+      } catch (e) {
+        if (e instanceof Error) {
+          setError(e.message ?? e.toString());
+          setState(ConnectionState.Error);
+        }
+      }
+    }
+  }, [config, interactive, setConfig]);
+
   useEffect(() => {
     if (!stashConfig) {
       return;
@@ -95,24 +130,16 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     interactive.scriptOffset = scriptOffset;
 
     if (oldKey !== interactive.handyKey && interactive.handyKey) {
-      if (!config?.serverOffset) {
-        setState(ConnectionState.Syncing);
-        interactive.sync().then((offset) => {
-          setConfig({ serverOffset: offset });
-          setState(ConnectionState.Ready);
-        });
-      } else {
-        interactive.setServerTimeOffset(config.serverOffset);
-        setState(ConnectionState.Connecting);
-        interactive.connect().then(() => {
-          setState(ConnectionState.Ready);
-        });
-      }
+      initialise();
     }
-  }, [handyKey, scriptOffset, config, interactive, setConfig]);
+  }, [handyKey, scriptOffset, config, interactive, initialise]);
 
   const sync = useCallback(async () => {
-    if (!interactive.handyKey || state === ConnectionState.Syncing) {
+    if (
+      !interactive.handyKey ||
+      state === ConnectionState.Syncing ||
+      !initialised
+    ) {
       return;
     }
 
@@ -120,7 +147,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
     const offset = await interactive.sync();
     setConfig({ serverOffset: offset });
     setState(ConnectionState.Ready);
-  }, [interactive, state, setConfig]);
+  }, [interactive, state, setConfig, initialised]);
 
   const uploadScript = useCallback(
     async (funscriptPath: string) => {
@@ -150,7 +177,10 @@ export const InteractiveProvider: React.FC = ({ children }) => {
       value={{
         interactive,
         state,
+        error,
         serverOffset: config?.serverOffset ?? 0,
+        initialised,
+        initialise,
         uploadScript,
         sync,
       }}

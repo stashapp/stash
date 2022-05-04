@@ -3,6 +3,7 @@ import {
   HandyMode,
   HsspSetupResult,
   CsvUploadResponse,
+  HandyFirmwareStatus,
 } from "thehandy/lib/types";
 
 interface IFunscript {
@@ -106,7 +107,16 @@ export class Interactive {
   }
 
   async connect() {
-    return this._handy.getConnected();
+    const connected = await this._handy.getConnected();
+    if (!connected) {
+      throw new Error("Handy not connected");
+    }
+
+    // check the firmware and make sure it's compatible
+    const info = await this._handy.getInfo();
+    if (info.fwStatus === HandyFirmwareStatus.updateRequired) {
+      throw new Error("Handy firmware update required");
+    }
   }
 
   set handyKey(key: string) {

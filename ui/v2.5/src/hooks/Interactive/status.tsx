@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import { FormattedMessage } from "react-intl";
 import {
   ConnectionState,
   connectionStateLabel,
@@ -7,10 +8,12 @@ import {
 } from "./context";
 
 export const SceneInteractiveStatus: React.FC = ({}) => {
-  const { state } = React.useContext(InteractiveContext);
+  const { state, error } = React.useContext(InteractiveContext);
 
   function getStateClass() {
     switch (state) {
+      case ConnectionState.Connecting:
+        return "interactive-status-connecting";
       case ConnectionState.Disconnected:
         return "interactive-status-disconnected";
       case ConnectionState.Error:
@@ -33,7 +36,10 @@ export const SceneInteractiveStatus: React.FC = ({}) => {
   return (
     <div className={`scene-interactive-status ${getStateClass()}`}>
       <FontAwesomeIcon pulse icon="circle" size="xs" />
-      <span className="status-text">{connectionStateLabel(state)}</span>
+      <span className="status-text">
+        <FormattedMessage id={connectionStateLabel(state)} />
+        {error && <span>: {error}</span>}
+      </span>
     </div>
   );
 };

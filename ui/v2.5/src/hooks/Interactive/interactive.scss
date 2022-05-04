@@ -8,6 +8,7 @@ div.scene-interactive-status {
     color: $danger;
   }
 
+  &.interactive-status-connecting svg,
   &.interactive-status-syncing svg,
   &.interactive-status-uploading svg {
     animation: 1s ease 0s infinite alternate fadepulse;
