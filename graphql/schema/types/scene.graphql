@@ -29,7 +29,6 @@ type SceneMovie {
 
 type SceneCaption {
   language_code: String!
-  path: String!
   caption_type: String!
 }
 

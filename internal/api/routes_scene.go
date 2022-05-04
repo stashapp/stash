@@ -288,15 +288,14 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string, ext string) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
 
-	path := ""
 	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 		var err error
 		captions, err := repo.Scene().GetCaptions(s.ID)
 		for _, caption := range captions {
 			if lang == caption.LanguageCode && ext == caption.CaptionType {
-				path = caption.Path
+				captionPath := scene.GetCaptionPath(s.Path, caption)
 
-				sub, err := scene.ReadSubs(path)
+				sub, err := scene.ReadSubs(captionPath)
 				if err == nil {
 					var b bytes.Buffer
 					err = sub.WriteToWebVTT(&b)

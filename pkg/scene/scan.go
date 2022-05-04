@@ -31,7 +31,6 @@ type Scanner struct {
 
 	StripFileExtension  bool
 	UseFileMetadata     bool
-	DetectCaptions      bool
 	FileNamingAlgorithm models.HashAlgorithm
 
 	CaseSensitiveFs  bool
@@ -112,8 +111,8 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 
 		captions, er := sqb.GetCaptions(s.ID)
 		if er == nil {
-			if len(captions) > 0 && scanner.DetectCaptions {
-				clean, altered := CleanCaptions(captions)
+			if len(captions) > 0 {
+				clean, altered := CleanCaptions(s.Path, captions)
 				if altered {
 					er = sqb.UpdateCaptions(s.ID, clean)
 					if er == nil {

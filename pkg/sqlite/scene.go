@@ -21,7 +21,6 @@ const moviesScenesTable = "movies_scenes"
 
 const sceneCaptionsTable = "scene_captions"
 const sceneCaptionCodeColumn = "language_code"
-const sceneCaptionPathColumn = "path"
 const sceneCaptionTypeColumn = "caption_type"
 
 var scenesForPerformerQuery = selectAll(sceneTable) + `
@@ -140,7 +139,6 @@ func (qb *sceneQueryBuilder) captionRepository() *captionRepository {
 			idColumn:  sceneIDColumn,
 		},
 		captionCodeColumn: sceneCaptionCodeColumn,
-		captionPathColumn: sceneCaptionPathColumn,
 		captionTypeColumn: sceneCaptionTypeColumn,
 	}
 }
@@ -399,7 +397,6 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterion(durationCriterionHandler(sceneFilter.Duration, "scenes.duration"))
 	query.handleCriterion(resolutionCriterionHandler(sceneFilter.Resolution, "scenes.height", "scenes.width"))
 	query.handleCriterion(hasMarkersCriterionHandler(sceneFilter.HasMarkers))
-	query.handleCriterion(captionedCriterionHandler(sceneFilter.Captioned))
 	query.handleCriterion(sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
 	query.handleCriterion(stringCriterionHandler(sceneFilter.URL, "scenes.url"))
 
@@ -412,6 +409,8 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 
 	query.handleCriterion(boolCriterionHandler(sceneFilter.Interactive, "scenes.interactive"))
 	query.handleCriterion(intCriterionHandler(sceneFilter.InteractiveSpeed, "scenes.interactive_speed"))
+
+	query.handleCriterion(sceneCaptionCriterionHandler(qb, sceneFilter.Captions))
 
 	query.handleCriterion(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
@@ -594,19 +593,6 @@ func hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
 	}
 }
 
-func captionedCriterionHandler(captioned *string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
-		if captioned != nil {
-			f.addLeftJoin("scene_captions", "", "scene_captions.scene_id = scenes.id")
-			if *captioned == "true" {
-				f.addHaving("count(scene_captions.scene_id) > 0")
-			} else {
-				f.addWhere("scene_captions.path IS NULL")
-			}
-		}
-	}
-}
-
 func sceneIsMissingCriterionHandler(qb *sceneQueryBuilder, isMissing *string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
@@ -646,6 +632,18 @@ func (qb *sceneQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinT
 		foreignFK:    foreignFK,
 		addJoinsFunc: addJoinsFunc,
 	}
+}
+
+func sceneCaptionCriterionHandler(qb *sceneQueryBuilder, captions *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    sceneCaptionsTable,
+		stringColumn: sceneCaptionCodeColumn,
+		addJoinTable: func(f *filterBuilder) {
+			qb.captionRepository().join(f, "", "scenes.id")
+		},
+	}
+
+	return h.handler(captions)
 }
 
 func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {

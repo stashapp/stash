@@ -62,7 +62,6 @@ func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
 		PluginCache:      instance.PluginCache,
 		MutexManager:     t.mutexManager,
 		UseFileMetadata:  t.UseFileMetadata,
-		DetectCaptions:   t.DetectCaptions,
 	}
 
 	if s != nil {
@@ -109,7 +108,6 @@ func (t *ScanTask) associateCaptions(ctx context.Context) {
 					if !scene.IsLangInCaptions(captionLang, ext, captions) { // only update captions if language code is not present
 						newCaption := &models.SceneCaption{
 							LanguageCode: captionLang,
-							Path:         captionPath,
 							CaptionType:  ext,
 						}
 						captions = append(captions, newCaption)

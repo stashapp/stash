@@ -118,7 +118,6 @@ fragment ConfigDefaultSettingsData on ConfigDefaultSettingsResult {
   scan {
     useFileMetadata
     stripFileExtension
-    scanDetectCaptions
     scanGeneratePreviews
     scanGenerateImagePreviews
     scanGenerateSprites

@@ -15,7 +15,6 @@ fragment SlimSceneData on Scene {
   interactive_speed
   captions {
     language_code
-    path
     caption_type
   }
 

@@ -370,25 +370,22 @@ func (r *imageRepository) replace(id int, image []byte) error {
 type captionRepository struct {
 	repository
 	captionCodeColumn string
-	captionPathColumn string
 	captionTypeColumn string
 }
 
 func (r *captionRepository) get(id int) ([]*models.SceneCaption, error) {
-	query := fmt.Sprintf("SELECT %s, %s, %s from %s WHERE %s = ?", r.captionCodeColumn, r.captionPathColumn, r.captionTypeColumn, r.tableName, r.idColumn)
+	query := fmt.Sprintf("SELECT %s, %s from %s WHERE %s = ?", r.captionCodeColumn, r.captionTypeColumn, r.tableName, r.idColumn)
 	var ret []*models.SceneCaption
 	err := r.queryFunc(query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
 		var captionCodeColumn string
-		var captionPathColumn string
 		var captionTypeColumn string
 
-		if err := rows.Scan(&captionCodeColumn, &captionPathColumn, &captionTypeColumn); err != nil {
+		if err := rows.Scan(&captionCodeColumn, &captionTypeColumn); err != nil {
 			return err
 		}
 
 		caption := &models.SceneCaption{
 			LanguageCode: captionCodeColumn,
-			Path:         captionPathColumn,
 			CaptionType:  captionTypeColumn,
 		}
 		ret = append(ret, caption)
@@ -398,8 +395,8 @@ func (r *captionRepository) get(id int) ([]*models.SceneCaption, error) {
 }
 
 func (r *captionRepository) insert(id int, caption *models.SceneCaption) (sql.Result, error) {
-	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)", r.tableName, r.idColumn, r.captionCodeColumn, r.captionPathColumn, r.captionTypeColumn)
-	return r.tx.Exec(stmt, id, caption.LanguageCode, caption.Path, caption.CaptionType)
+	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)", r.tableName, r.idColumn, r.captionCodeColumn, r.captionTypeColumn)
+	return r.tx.Exec(stmt, id, caption.LanguageCode, caption.CaptionType)
 }
 
 func (r *captionRepository) replace(id int, captions []*models.SceneCaption) error {

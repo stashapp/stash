@@ -85,8 +85,6 @@ input ScanMetadataInput {
   scanGeneratePhashes: Boolean
   """Generate image thumbnails during scan"""
   scanGenerateThumbnails: Boolean
-  """Detect scene captions"""
-  scanDetectCaptions: Boolean
 
   "Filter options for the scan"
   filter: ScanMetaDataFilterInput
@@ -107,8 +105,6 @@ type ScanMetadataOptions {
   scanGeneratePhashes: Boolean!
   """Generate image thumbnails during scan"""
   scanGenerateThumbnails: Boolean!
-  """Detect scene captions"""
-  scanDetectCaptions: Boolean!
 }
 
 input CleanMetadataInput {

@@ -15,7 +15,6 @@ fragment SceneData on Scene {
   interactive_speed
   captions {
     language_code
-    path
     caption_type
   }
   created_at

@@ -20,16 +20,10 @@ const LangUknown = "00"
 
 // GetCaptionPath generates the path of a caption
 // from a given file path, wanted language and caption sufffix
-func GetCaptionPath(path, lang, suffix string) string {
-	ext := filepath.Ext(path)
-	fn := strings.TrimSuffix(path, ext)
-	captionExt := ""
-	if len(lang) == 0 || lang == LangUknown {
-		captionExt = suffix
-	} else {
-		captionExt = lang + "." + suffix
-	}
-	return fn + "." + captionExt
+func GetCaptionPath(scenePath string, caption *models.SceneCaption) string {
+	sceneExt := filepath.Ext(scenePath)
+	sceneName := strings.TrimSuffix(scenePath, sceneExt)
+	return sceneName + "." + caption.LanguageCode + "." + caption.CaptionType
 }
 
 // ReadSubs reads a captions file
@@ -89,11 +83,11 @@ func GetCaptionsLangFromPath(captionPath string) string {
 }
 
 // CleanCaptions removes non existent/accessible language codes from captions
-func CleanCaptions(captions []*models.SceneCaption) (cleanedCaptions []*models.SceneCaption, changed bool) {
+func CleanCaptions(scenePath string, captions []*models.SceneCaption) (cleanedCaptions []*models.SceneCaption, changed bool) {
 	changed = false
 	for _, caption := range captions {
 		found := false
-		f := caption.Path
+		f := GetCaptionPath(scenePath, caption)
 		if _, er := os.Stat(f); er == nil {
 			cleanedCaptions = append(cleanedCaptions, caption)
 			found = true

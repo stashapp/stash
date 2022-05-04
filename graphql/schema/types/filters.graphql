@@ -174,8 +174,8 @@ input SceneFilterType {
   interactive: Boolean
   """Filter by InteractiveSpeed"""
   interactive_speed: IntCriterionInput
-  """Filter to only include scenes which have captions. `true` or `false`"""
-  captioned: String
+  """Filter by captions"""
+  captions: StringCriterionInput
 }
 
 input MovieFilterType {

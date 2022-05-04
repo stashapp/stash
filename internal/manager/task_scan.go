@@ -90,7 +90,6 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			file:                 file.FSFile(f.path, f.info),
 			UseFileMetadata:      utils.IsTrue(input.UseFileMetadata),
 			StripFileExtension:   utils.IsTrue(input.StripFileExtension),
-			DetectCaptions:       utils.IsTrue(input.ScanDetectCaptions),
 			fileNamingAlgorithm:  fileNamingAlgo,
 			calculateMD5:         calculateMD5,
 			GeneratePreview:      utils.IsTrue(input.ScanGeneratePreviews),
@@ -254,7 +253,6 @@ type ScanTask struct {
 	file                 file.SourceFile
 	UseFileMetadata      bool
 	StripFileExtension   bool
-	DetectCaptions       bool
 	calculateMD5         bool
 	fileNamingAlgorithm  models.HashAlgorithm
 	GenerateSprite       bool
@@ -280,7 +278,7 @@ func (t *ScanTask) Start(ctx context.Context) {
 			s = t.scanScene(ctx)
 		case isImage(path):
 			t.scanImage(ctx)
-		case t.DetectCaptions && isCaptions(path):
+		case isCaptions(path):
 			t.associateCaptions(ctx)
 		}
 	})

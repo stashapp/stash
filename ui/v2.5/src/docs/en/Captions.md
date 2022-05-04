@@ -11,6 +11,4 @@ These files need to be named as follows:
 
 Where `{language_code}` is defined by the [ISO-6399-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) (2 letters) standard and `ext` is the file extension. Captions files without a language code will be labeled as Unknown in the video player but will work fine.
 
-To enable detection of these files during a scan, make sure to toggle the `Search for caption files` scan option on.
-
 Scenes with captions can be filtered with the `captions` criterion.
