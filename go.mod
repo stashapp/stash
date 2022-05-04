@@ -46,7 +46,6 @@ require (
 )
 
 require (
-	github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
 	github.com/asticode/go-astisub v0.20.0
 	github.com/go-chi/httplog v0.2.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
@@ -61,7 +60,6 @@ require (
 require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/antchfx/xpath v1.2.0 // indirect
-	github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab // indirect
 	github.com/asticode/go-astikit v0.20.0 // indirect
 	github.com/asticode/go-astits v1.8.0 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
