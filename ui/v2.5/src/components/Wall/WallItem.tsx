@@ -182,10 +182,12 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   const renderText = () => {
     if (!showTextContainer) return;
 
+    const markerTitle = props.sceneMarker?.title;
+
     const title = props.sceneMarker
-      ? `${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(
-          props.sceneMarker.seconds
-        )}`
+      ? `${
+          markerTitle ? `${markerTitle} - ` : ""
+        }${TextUtils.secondsToTimestamp(props.sceneMarker.seconds)}`
       : props.scene?.title ?? "";
     const tags = props.sceneMarker
       ? [props.sceneMarker.primary_tag, ...props.sceneMarker.tags]

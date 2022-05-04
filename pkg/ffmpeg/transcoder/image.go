@@ -20,6 +20,8 @@ func ImageThumbnail(input string, options ImageThumbnailOptions) ffmpeg.Args {
 	videoFilter = videoFilter.ScaleMaxSize(options.MaxDimensions)
 
 	var args ffmpeg.Args
+	args = append(args, "-hide_banner")
+	args = args.LogLevel(ffmpeg.LogLevelError)
 
 	args = args.Overwrite().
 		ImageFormat(options.InputFormat).

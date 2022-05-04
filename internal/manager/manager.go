@@ -31,7 +31,7 @@ import (
 	"github.com/stashapp/stash/ui"
 )
 
-type singleton struct {
+type Manager struct {
 	Config *config.Instance
 	Logger *log.Logger
 
@@ -58,85 +58,94 @@ type singleton struct {
 	scanSubs *subscriptionManager
 }
 
-var instance *singleton
+var instance *Manager
 var once sync.Once
 
-func GetInstance() *singleton {
-	Initialize()
+func GetInstance() *Manager {
+	if _, err := Initialize(); err != nil {
+		panic(err)
+	}
 	return instance
 }
 
-func Initialize() *singleton {
+func Initialize() (*Manager, error) {
+	var err error
 	once.Do(func() {
-		ctx := context.TODO()
-		cfg, err := config.Initialize()
-
-		if err != nil {
-			panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
-		}
-
-		l := initLog()
-		initProfiling(cfg.GetCPUProfilePath())
-
-		instance = &singleton{
-			Config:          cfg,
-			Logger:          l,
-			ReadLockManager: fsutil.NewReadLockManager(),
-			DownloadStore:   NewDownloadStore(),
-			PluginCache:     plugin.NewCache(cfg),
-
-			TxnManager: sqlite.NewTransactionManager(),
-
-			scanSubs: &subscriptionManager{},
-		}
-
-		instance.JobManager = initJobManager()
-
-		sceneServer := SceneServer{
-			TXNManager: instance.TxnManager,
-		}
-		instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
-
-		if !cfg.IsNewSystem() {
-			logger.Infof("using config file: %s", cfg.GetConfigFile())
-
-			if err == nil {
-				err = cfg.Validate()
-			}
-
-			if err != nil {
-				panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
-			} else if err := instance.PostInit(ctx); err != nil {
-				panic(err)
-			}
-
-			initSecurity(cfg)
-		} else {
-			cfgFile := cfg.GetConfigFile()
-			if cfgFile != "" {
-				cfgFile += " "
-			}
-
-			// create temporary session store - this will be re-initialised
-			// after config is complete
-			instance.SessionStore = session.NewStore(cfg)
-
-			logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
-		}
-
-		if err = initFFMPEG(ctx); err != nil {
-			logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
-		}
-
-		// if DLNA is enabled, start it now
-		if instance.Config.GetDLNADefaultEnabled() {
-			if err := instance.DLNAService.Start(nil); err != nil {
-				logger.Warnf("could not start DLNA service: %v", err)
-			}
-		}
+		err = initialize()
 	})
 
-	return instance
+	return instance, err
+}
+
+func initialize() error {
+	ctx := context.TODO()
+	cfg, err := config.Initialize()
+
+	if err != nil {
+		return fmt.Errorf("initializing configuration: %w", err)
+	}
+
+	l := initLog()
+	initProfiling(cfg.GetCPUProfilePath())
+
+	instance = &Manager{
+		Config:          cfg,
+		Logger:          l,
+		ReadLockManager: fsutil.NewReadLockManager(),
+		DownloadStore:   NewDownloadStore(),
+		PluginCache:     plugin.NewCache(cfg),
+
+		TxnManager: sqlite.NewTransactionManager(),
+
+		scanSubs: &subscriptionManager{},
+	}
+
+	instance.JobManager = initJobManager()
+
+	sceneServer := SceneServer{
+		TXNManager: instance.TxnManager,
+	}
+	instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
+
+	if !cfg.IsNewSystem() {
+		logger.Infof("using config file: %s", cfg.GetConfigFile())
+
+		if err == nil {
+			err = cfg.Validate()
+		}
+
+		if err != nil {
+			return fmt.Errorf("error initializing configuration: %w", err)
+		} else if err := instance.PostInit(ctx); err != nil {
+			return err
+		}
+
+		initSecurity(cfg)
+	} else {
+		cfgFile := cfg.GetConfigFile()
+		if cfgFile != "" {
+			cfgFile += " "
+		}
+
+		// create temporary session store - this will be re-initialised
+		// after config is complete
+		instance.SessionStore = session.NewStore(cfg)
+
+		logger.Warnf("config file %snot found. Assuming new system...", cfgFile)
+	}
+
+	if err = initFFMPEG(ctx); err != nil {
+		logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
+	}
+
+	// if DLNA is enabled, start it now
+	if instance.Config.GetDLNADefaultEnabled() {
+		if err := instance.DLNAService.Start(nil); err != nil {
+			logger.Warnf("could not start DLNA service: %v", err)
+		}
+	}
+
+	return nil
 }
 
 func initJobManager() *job.Manager {
@@ -151,8 +160,13 @@ func initJobManager() *job.Manager {
 			case j := <-c.RemovedJob:
 				if instance.Config.GetNotificationsEnabled() {
 					cleanDesc := strings.TrimRight(j.Description, ".")
-					timeElapsed := j.EndTime.Sub(*j.StartTime)
 
+					if j.StartTime == nil {
+						// Task was never started
+						return
+					}
+
+					timeElapsed := j.EndTime.Sub(*j.StartTime)
 					desktop.SendNotification("Task Finished", "Task \""+cleanDesc+"\" is finished in "+formatDuration(timeElapsed)+".")
 				}
 			case <-ctx.Done():
@@ -240,7 +254,7 @@ func initLog() *log.Logger {
 // PostInit initialises the paths, caches and txnManager after the initial
 // configuration has been set. Should only be called if the configuration
 // is valid.
-func (s *singleton) PostInit(ctx context.Context) error {
+func (s *Manager) PostInit(ctx context.Context) error {
 	if err := s.Config.SetInitialConfig(); err != nil {
 		logger.Warnf("could not set initial configuration: %v", err)
 	}
@@ -300,7 +314,7 @@ func writeStashIcon() {
 }
 
 // initScraperCache initializes a new scraper cache and returns it.
-func (s *singleton) initScraperCache() *scraper.Cache {
+func (s *Manager) initScraperCache() *scraper.Cache {
 	ret, err := scraper.NewCache(config.GetInstance(), s.TxnManager)
 
 	if err != nil {
@@ -310,7 +324,7 @@ func (s *singleton) initScraperCache() *scraper.Cache {
 	return ret
 }
 
-func (s *singleton) RefreshConfig() {
+func (s *Manager) RefreshConfig() {
 	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	config := s.Config
 	if config.Validate() == nil {
@@ -337,7 +351,7 @@ func (s *singleton) RefreshConfig() {
 
 // RefreshScraperCache refreshes the scraper cache. Call this when scraper
 // configuration changes.
-func (s *singleton) RefreshScraperCache() {
+func (s *Manager) RefreshScraperCache() {
 	s.ScraperCache = s.initScraperCache()
 }
 
@@ -356,7 +370,7 @@ func setSetupDefaults(input *models.SetupInput) {
 	}
 }
 
-func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
+func (s *Manager) Setup(ctx context.Context, input models.SetupInput) error {
 	setSetupDefaults(&input)
 	c := s.Config
 
@@ -412,7 +426,7 @@ func (s *singleton) Setup(ctx context.Context, input models.SetupInput) error {
 	return nil
 }
 
-func (s *singleton) validateFFMPEG() error {
+func (s *Manager) validateFFMPEG() error {
 	if s.FFMPEG == "" || s.FFProbe == "" {
 		return errors.New("missing ffmpeg and/or ffprobe")
 	}
@@ -420,7 +434,7 @@ func (s *singleton) validateFFMPEG() error {
 	return nil
 }
 
-func (s *singleton) Migrate(ctx context.Context, input models.MigrateInput) error {
+func (s *Manager) Migrate(ctx context.Context, input models.MigrateInput) error {
 	// always backup so that we can roll back to the previous version if
 	// migration fails
 	backupPath := input.BackupPath
@@ -460,7 +474,7 @@ func (s *singleton) Migrate(ctx context.Context, input models.MigrateInput) erro
 	return nil
 }
 
-func (s *singleton) GetSystemStatus() *models.SystemStatus {
+func (s *Manager) GetSystemStatus() *models.SystemStatus {
 	status := models.SystemStatusEnumOk
 	dbSchema := int(database.Version())
 	dbPath := database.DatabasePath()
@@ -483,7 +497,7 @@ func (s *singleton) GetSystemStatus() *models.SystemStatus {
 }
 
 // Shutdown gracefully stops the manager
-func (s *singleton) Shutdown(code int) {
+func (s *Manager) Shutdown(code int) {
 	// stop any profiling at exit
 	pprof.StopCPUProfile()
 

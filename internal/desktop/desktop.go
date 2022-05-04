@@ -1,6 +1,7 @@
 package desktop
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -29,6 +30,8 @@ type FaviconProvider interface {
 // MUST be run on the main goroutine or will have no effect on macOS
 func Start(shutdownHandler ShutdownHandler, faviconProvider FaviconProvider) {
 	if IsDesktop() {
+		hideConsole()
+
 		c := config.GetInstance()
 		if !c.GetNoBrowser() {
 			openURLInBrowser("")
@@ -60,6 +63,11 @@ func SendNotification(title string, text string) {
 }
 
 func IsDesktop() bool {
+	if isDoubleClickLaunched() {
+		fmt.Println("double click launched")
+		return true
+	}
+
 	// Check if running under root
 	if os.Getuid() == 0 {
 		return false
