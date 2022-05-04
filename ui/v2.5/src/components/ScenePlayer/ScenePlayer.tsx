@@ -15,7 +15,8 @@ import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
-import { Interactive } from "src/utils/interactive";
+import { InteractiveContext } from "src/hooks/Interactive/context";
+import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 
 export const VIDEO_PLAYER_ID = "VideoJsPlayer";
 
@@ -116,8 +117,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const [time, setTime] = useState(0);
 
-  const [interactiveClient] = useState(
-    new Interactive(config?.handyKey || "", config?.funscriptOffset || 0)
+  const { interactive: interactiveClient, uploadScript } = React.useContext(
+    InteractiveContext
   );
 
   const [initialTimestamp] = useState(timestamp);
@@ -181,9 +182,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
     if (scene?.interactive) {
-      interactiveClient.uploadScript(scene.paths.funscript || "");
+      uploadScript(scene.paths.funscript || "");
     }
-  }, [interactiveClient, scene?.interactive, scene?.paths.funscript]);
+  }, [
+    uploadScript,
+    interactiveClient,
+    scene?.interactive,
+    scene?.paths.funscript,
+  ]);
 
   useEffect(() => {
     if (skipButtonsRef.current) {
@@ -431,6 +437,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           className="video-js vjs-big-play-centered"
         />
       </div>
+      {scene?.interactive && playerRef.current?.paused() && (
+        <SceneInteractiveStatus />
+      )}
       {scene && (
         <ScenePlayerScrubber
           scene={scene}

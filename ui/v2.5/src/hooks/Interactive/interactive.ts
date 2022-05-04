@@ -92,10 +92,10 @@ async function uploadCsv(
 // Interactive currently uses the Handy API, but could be expanded to use buttplug.io
 // via buttplugio/buttplug-rs-ffi's WASM module.
 export class Interactive {
-  private _connected: boolean;
-  private _playing: boolean;
-  private _scriptOffset: number;
-  private _handy: Handy;
+  _connected: boolean;
+  _playing: boolean;
+  _scriptOffset: number;
+  _handy: Handy;
 
   constructor(handyKey: string, scriptOffset: number) {
     this._handy = new Handy();
@@ -105,23 +105,33 @@ export class Interactive {
     this._playing = false;
   }
 
+  async connect() {
+    return this._handy.getConnected();
+  }
+
+  set handyKey(key: string) {
+    this._handy.connectionKey = key;
+  }
+
   get handyKey(): string {
     return this._handy.connectionKey;
+  }
+
+  set scriptOffset(offset: number) {
+    this._scriptOffset = offset;
   }
 
   async uploadScript(funscriptPath: string) {
     if (!(this._handy.connectionKey && funscriptPath)) {
       return;
     }
-    // Calibrates the latency between the browser client and the Handy server's
-    // This is done before a script upload to ensure a synchronized experience
-    await this._handy.getServerTimeOffset();
 
     const csv = await fetch(funscriptPath)
       .then((response) => response.json())
       .then((json) => convertFunscriptToCSV(json));
     const fileName = `${Math.round(Math.random() * 100000000)}.csv`;
     const csvFile = new File([csv], fileName);
+
     const tempURL = await uploadCsv(csvFile).then((response) => response.url);
 
     await this._handy.setMode(HandyMode.hssp);
@@ -129,6 +139,14 @@ export class Interactive {
     this._connected = await this._handy
       .setHsspSetup(tempURL)
       .then((result) => result === HsspSetupResult.downloaded);
+  }
+
+  async sync() {
+    return this._handy.getServerTimeOffset();
+  }
+
+  setServerTimeOffset(offset: number) {
+    this._handy.estimatedServerTimeOffset = offset;
   }
 
   async play(position: number) {
