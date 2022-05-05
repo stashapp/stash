@@ -147,7 +147,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         chaptersButton: false,
       },
       nativeControlsForTouch: false,
-      playbackRates: [0.75, 1, 1.5, 2, 3, 4],
+      playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
       inactivityTimeout: 2000,
       preload: "none",
       userActions: {
@@ -471,6 +471,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       handleError(true);
     });
 
+    // changing source (eg when seeking) resets the playback rate
+    // so set the default in addition to the current rate
+    player.on("ratechange", function (this: VideoJsPlayer) {
+      this.defaultPlaybackRate(this.playbackRate());
+    });
+
     player.on("loadedmetadata", () => {
       if (!player.videoWidth() && !player.videoHeight()) {
         // Occurs during preload when videos with supported audio/unsupported video are preloaded.
@@ -532,7 +538,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     playerRef.current?.pause();
   };
   const onScrubberSeek = (seconds: number) => {
-    playerRef.current?.currentTime(seconds);
+    const player = playerRef.current;
+    if (player) {
+      player.play()?.then(() => {
+        player.currentTime(seconds);
+      });
+    }
   };
 
   const isPortrait =
