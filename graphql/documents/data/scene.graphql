@@ -75,5 +75,7 @@ fragment SceneData on Scene {
     url
     mime_type
     label
+    disabled
+    disabled_reason
   }
 }

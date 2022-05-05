@@ -290,7 +290,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     player.src(
-      scene.sceneStreams.map((stream) => ({
+      scene.sceneStreams.filter((stream) => !stream.disabled).map((stream) => ({
         src: stream.url,
         type: stream.mime_type ?? undefined,
         label: stream.label ?? undefined,

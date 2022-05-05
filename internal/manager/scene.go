@@ -79,15 +79,28 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 
 	// don't care if we can't get the container
 	container, _ := GetSceneFileContainer(scene)
+	videoCodec := scene.VideoCodec.String
 
-	if HasTranscode(scene, config.GetInstance().GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
-		label := "Direct stream"
-		ret = append(ret, &models.SceneStreamEndpoint{
-			URL:      directStreamURL,
-			MimeType: &mimeMp4,
-			Label:    &label,
-		})
+	directStreamLabel := "Direct stream"
+	directStreamEndpoint := &models.SceneStreamEndpoint{
+		URL:      directStreamURL,
+		MimeType: &mimeMp4,
+		Label:    &directStreamLabel,
 	}
+
+	var directStreamErr error
+	if !HasTranscode(scene, config.GetInstance().GetVideoFileNamingAlgorithm()) {
+		directStreamErr = ffmpeg.IsStreamable(videoCodec, audioCodec, container)
+	}
+
+	if directStreamErr != nil {
+		disabled := true
+		reason := directStreamErr.Error()
+		directStreamEndpoint.Disabled = &disabled
+		directStreamEndpoint.DisabledReason = &reason
+	}
+
+	ret = append(ret, directStreamEndpoint)
 
 	// only add mkv stream endpoint if the scene container is an mkv already
 	if container == ffmpeg.Matroska {
