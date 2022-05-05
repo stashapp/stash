@@ -46,9 +46,8 @@ func recoverPanic() {
 }
 
 func handleError(err error) {
-	desktop.FatalError(err)
-
 	if desktop.IsDesktop() {
+		desktop.FatalError(err)
 		manager.GetInstance().Shutdown(0)
 	} else {
 		panic(err)
