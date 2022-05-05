@@ -38,6 +38,18 @@ const (
 	Hls            string = "hls" // only used from the browser to indicate hls support
 )
 
+var containerToMimeType = map[Container]string{
+	Mp4:      "video/mp4",
+	M4v:      "video/mp4",
+	Mov:      "video/quicktime",
+	Matroska: "video/x-matroska",
+	Webm:     "video/webm",
+}
+
+func (c Container) MimeType() string {
+	return containerToMimeType[c]
+}
+
 var ffprobeToContainer = map[string]Container{
 	Mp4Ffmpeg:      Mp4,
 	WmvFfmpeg:      Wmv,

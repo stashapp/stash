@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -60,7 +61,20 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 	streamRequestCtx := NewStreamRequestContext(w, r)
 	lockCtx := GetInstance().ReadLockManager.ReadLock(streamRequestCtx, filepath)
 	defer lockCtx.Cancel()
+
+	setContentType(scene, w)
 	http.ServeFile(w, r, filepath)
+}
+
+func setContentType(scene *models.Scene, w http.ResponseWriter) {
+	// it's possible that the file extension does not match the required content type
+	// set it here. If no mime type is matched, it will defer to original behaviour
+	container := ffmpeg.Container(scene.Format.String)
+	mimeType := container.MimeType()
+
+	if mimeType != "" {
+		w.Header().Set("Content-Type", mimeType)
+	}
 }
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
