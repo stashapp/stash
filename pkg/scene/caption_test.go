@@ -17,7 +17,7 @@ type testCase struct {
 var testCases = []testCase{
 	{
 		captionPath:        "/stash/video.vtt",
-		expectedLang:       LangUknown,
+		expectedLang:       LangUnknown,
 		expectedCandidates: []string{"/stash/video.mkv", "/stash/video.mp4"},
 	},
 	{
@@ -27,7 +27,7 @@ var testCases = []testCase{
 	},
 	{
 		captionPath:        "/stash/video.test.srt",
-		expectedLang:       LangUknown,
+		expectedLang:       LangUnknown,
 		expectedCandidates: []string{"/stash/video.test.mkv", "/stash/video.test.mp4"}, // no lang code/lang code invalid test should remain
 	},
 	{
@@ -37,7 +37,7 @@ var testCases = []testCase{
 	},
 	{
 		captionPath:        "C:\\videos\\video.xx.srt",
-		expectedLang:       LangUknown,
+		expectedLang:       LangUnknown,
 		expectedCandidates: []string{"C:\\videos\\video.xx.mkv", "C:\\videos\\video.xx.mp4"}, // no lang code/lang code invalid xx should remain
 	},
 }

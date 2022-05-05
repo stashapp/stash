@@ -16,7 +16,7 @@ var CaptionExts = []string{"vtt", "srt"} // in a case where vtt and srt files ar
 // to be used for captions without a language code in the filename
 // ISO 639-1 uses 2 or 3 a-z chars for codes so 00 is a safe non valid choise
 // https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-const LangUknown = "00"
+const LangUnknown = "00"
 
 // GetCaptionPath generates the path of a caption
 // from a given file path, wanted language and caption sufffix
@@ -73,7 +73,7 @@ func GenerateCaptionCandidates(captionPath string, exts []string) []string {
 // GetCaptionsLangFromPath returns the language code from a given captions path
 // If no valid language is present LangUknown is returned
 func GetCaptionsLangFromPath(captionPath string) string {
-	langCode := LangUknown
+	langCode := LangUnknown
 	basename := strings.TrimSuffix(captionPath, filepath.Ext(captionPath)) // caption filename without the extension
 	languageExt := filepath.Ext(basename)
 	if len(languageExt) > 2 && IsValidLanguage(languageExt[1:]) {
