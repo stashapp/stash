@@ -294,9 +294,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 		captions, err := repo.Scene().GetCaptions(s.ID)
 		for _, caption := range captions {
 			if lang == caption.LanguageCode && ext == caption.CaptionType {
-				captionPath := scene.GetCaptionPath(s.Path, caption)
-
-				sub, err := scene.ReadSubs(captionPath)
+				sub, err := scene.ReadSubs(caption.Path(s.Path))
 				if err == nil {
 					var b bytes.Buffer
 					err = sub.WriteToWebVTT(&b)

@@ -108,6 +108,7 @@ func (t *ScanTask) associateCaptions(ctx context.Context) {
 					if !scene.IsLangInCaptions(captionLang, ext, captions) { // only update captions if language code is not present
 						newCaption := &models.SceneCaption{
 							LanguageCode: captionLang,
+							Filename:     filepath.Base(captionPath),
 							CaptionType:  ext,
 						}
 						captions = append(captions, newCaption)

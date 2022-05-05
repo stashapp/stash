@@ -21,6 +21,7 @@ const moviesScenesTable = "movies_scenes"
 
 const sceneCaptionsTable = "scene_captions"
 const sceneCaptionCodeColumn = "language_code"
+const sceneCaptionFilenameColumn = "filename"
 const sceneCaptionTypeColumn = "caption_type"
 
 var scenesForPerformerQuery = selectAll(sceneTable) + `
@@ -138,8 +139,6 @@ func (qb *sceneQueryBuilder) captionRepository() *captionRepository {
 			tableName: sceneCaptionsTable,
 			idColumn:  sceneIDColumn,
 		},
-		captionCodeColumn: sceneCaptionCodeColumn,
-		captionTypeColumn: sceneCaptionTypeColumn,
 	}
 }
 

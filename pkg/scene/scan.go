@@ -31,6 +31,7 @@ type Scanner struct {
 
 	StripFileExtension  bool
 	UseFileMetadata     bool
+	DetectCaptions      bool
 	FileNamingAlgorithm models.HashAlgorithm
 
 	CaseSensitiveFs  bool
