@@ -20,7 +20,7 @@ func (ss *sceneScreenshotter) GenerateScreenshot(ctx context.Context, probeResul
 }
 
 func (ss *sceneScreenshotter) GenerateThumbnail(ctx context.Context, probeResult *ffmpeg.VideoFile, hash string) error {
-	return ss.g.Screenshot(ctx, probeResult.Path, hash, probeResult.Width, probeResult.Duration, generate.ScreenshotOptions{})
+	return ss.g.Thumbnail(ctx, probeResult.Path, hash, probeResult.Duration, generate.ScreenshotOptions{})
 }
 
 func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
