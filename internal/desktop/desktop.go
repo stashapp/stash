@@ -1,7 +1,6 @@
 package desktop
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -64,7 +63,6 @@ func SendNotification(title string, text string) {
 
 func IsDesktop() bool {
 	if isDoubleClickLaunched() {
-		fmt.Println("double click launched")
 		return true
 	}
 
