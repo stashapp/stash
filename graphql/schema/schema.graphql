@@ -17,7 +17,7 @@ type Query {
   findDuplicateScenes(distance: Int): [[Scene!]!]!
 
   """Return valid stream paths"""
-  sceneStreams(id: ID): [SceneStreamEndpoint!]!
+  sceneStreams(id: ID): [SceneStreamEndpoint!]! @deprecated(reason: "included in Scene")
 
   parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
 

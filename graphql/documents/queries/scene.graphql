@@ -66,13 +66,3 @@ query ParseSceneFilenames($filter: FindFilterType!, $config: SceneParserInput!) 
     }
   }
 }
-
-query SceneStreams($id: ID!) {
-  findScene(id: $id) {
-    sceneStreams {
-      url
-      mime_type
-      label
-    }
-  }
-}

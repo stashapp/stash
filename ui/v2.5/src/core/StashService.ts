@@ -208,8 +208,6 @@ export const useFindGallery = (id: string) => {
 };
 export const useFindScene = (id: string) =>
   GQL.useFindSceneQuery({ variables: { id } });
-export const useSceneStreams = (id: string) =>
-  GQL.useSceneStreamsQuery({ variables: { id } });
 
 export const useFindImage = (id: string) =>
   GQL.useFindImageQuery({ variables: { id } });
