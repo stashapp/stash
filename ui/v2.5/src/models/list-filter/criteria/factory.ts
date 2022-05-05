@@ -43,6 +43,7 @@ import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
 import { RatingCriterionOption } from "./rating";
 import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
+import { CaptionCriterion } from "./captions";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -160,7 +161,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "interactive":
       return new InteractiveCriterion();
     case "captions":
-      return new StringCriterion(new StringCriterionOption(type, type));
+      return new CaptionCriterion();
     case "parent_tag_count":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(

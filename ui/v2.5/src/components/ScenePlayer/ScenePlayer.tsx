@@ -16,6 +16,7 @@ import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
 import { Interactive } from "src/utils/interactive";
+import { languageMap } from "src/utils/caption";
 
 export const VIDEO_PLAYER_ID = "VideoJsPlayer";
 
@@ -223,19 +224,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
     let prevCaptionOffset = 0;
-
-    const languageMap = new Map<string, string>([
-      ["de", "Deutsche"],
-      ["en", "English"],
-      ["es", "Español"],
-      ["fr", "Français"],
-      ["it", "Italiano"],
-      ["ja", "日本"],
-      ["ko", "한국인"],
-      ["nl", "Holandés"],
-      ["pt", "Português"],
-      ["00", "Unknown"], // stash reserved language code
-    ]);
 
     function addCaptionOffset(player: VideoJsPlayer, offset: number) {
       const tracks = player.remoteTextTracks();
