@@ -18,6 +18,8 @@ const (
 	Mp3                ProbeAudioCodec = "mp3"
 	Opus               ProbeAudioCodec = "opus"
 	Vorbis             ProbeAudioCodec = "vorbis"
+	PcmS16BE           ProbeAudioCodec = "pcm_s16be"
+	PcmS16LE           ProbeAudioCodec = "pcm_s16le"
 	MissingUnsupported ProbeAudioCodec = ""
 
 	Mp4Ffmpeg      string = "mov,mp4,m4a,3gp,3g2,mj2" // browsers support all of them
