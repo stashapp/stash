@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
-const usePageVisibility = (visibilityChangeCallback: () => void): void => {
-  const savedVisibilityChangedCallback = useRef<() => void>();
+const usePageVisibility = (visibilityChangeCallback: (hidden: boolean) => void): void => {
+  const savedVisibilityChangedCallback = useRef<(hidden: boolean) => void>();
 
   useEffect(() => {
     // resolve event names for different browsers
@@ -31,18 +31,24 @@ const usePageVisibility = (visibilityChangeCallback: () => void): void => {
 
     savedVisibilityChangedCallback.current = visibilityChangeCallback;
 
+    function fireCallback() {
+      const callback = savedVisibilityChangedCallback.current;
+      if (callback) {
+        const isHidden = document.visibilityState !== "visible";
+        callback(isHidden);
+      }
+    }
+
     document.addEventListener(
       visibilityChange,
-      savedVisibilityChangedCallback.current
+      fireCallback
     );
 
     return () => {
-      if (savedVisibilityChangedCallback.current) {
-        document.removeEventListener(
-          visibilityChange,
-          savedVisibilityChangedCallback.current
-        );
-      }
+      document.removeEventListener(
+        visibilityChange,
+        fireCallback
+      );
     };
   }, [visibilityChangeCallback]);
 };
