@@ -290,11 +290,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     player.src(
-      scene.sceneStreams.filter((stream) => !stream.disabled).map((stream) => ({
-        src: stream.url,
-        type: stream.mime_type ?? undefined,
-        label: stream.label ?? undefined,
-      }))
+      scene.sceneStreams
+        .filter((stream) => !stream.disabled)
+        .map((stream) => ({
+          src: stream.url,
+          type: stream.mime_type ?? undefined,
+          label: stream.label ?? undefined,
+        }))
     );
 
     if (scene.paths.chapters_vtt) {

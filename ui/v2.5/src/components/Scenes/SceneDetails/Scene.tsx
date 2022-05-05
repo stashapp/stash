@@ -44,7 +44,7 @@ interface IProps {
   scene: GQL.SceneDataFragment;
   refetch: () => void;
   setTimestamp: (num: number) => void;
-  queueScenes: GQL.SceneDataFragment[];
+  queueScenes: GQL.SlimSceneDataFragment[];
   onQueueNext: () => void;
   onQueuePrevious: () => void;
   onQueueRandom: () => void;
@@ -507,7 +507,9 @@ const SceneLoader: React.FC = () => {
     () => SceneQueue.fromQueryParameters(location.search),
     [location.search]
   );
-  const [queueScenes, setQueueScenes] = useState<GQL.SceneDataFragment[]>([]);
+  const [queueScenes, setQueueScenes] = useState<GQL.SlimSceneDataFragment[]>(
+    []
+  );
 
   const [queueTotal, setQueueTotal] = useState(0);
   const [queueStart, setQueueStart] = useState(1);
