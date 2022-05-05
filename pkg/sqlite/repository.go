@@ -37,8 +37,6 @@ func (r *repository) getAll(id int, f func(rows *sqlx.Rows) error) error {
 }
 
 func (r *repository) insert(obj interface{}) (sql.Result, error) {
-	keys := listKeys(obj, false)
-	strings.Split(keys, "")
 	stmt := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", r.tableName, listKeys(obj, false), listKeys(obj, true))
 	return r.tx.NamedExec(stmt, obj)
 }
