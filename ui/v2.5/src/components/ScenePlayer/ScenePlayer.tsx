@@ -15,7 +15,7 @@ import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
-import { InteractiveContext } from "src/hooks/Interactive/context";
+import { ConnectionState, InteractiveContext } from "src/hooks/Interactive/context";
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 
@@ -122,6 +122,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     interactive: interactiveClient,
     uploadScript,
     initialised: interactiveInitialised,
+    state: interactiveState,
   } = React.useContext(InteractiveContext);
 
   const [initialTimestamp] = useState(timestamp);
@@ -565,7 +566,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           className="video-js vjs-big-play-centered"
         />
       </div>
-      {scene?.interactive && playerRef.current?.paused() && (
+      {scene?.interactive && (interactiveState !== ConnectionState.Ready || playerRef.current?.paused()) && (
         <SceneInteractiveStatus />
       )}
       {scene && (
