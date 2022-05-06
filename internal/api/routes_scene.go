@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"net/http"
 	"strconv"
@@ -41,6 +42,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/vtt/chapter", rs.ChapterVtt)
 		r.Get("/funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
+		r.Get("/caption", rs.CaptionLang)
 
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
@@ -282,6 +284,46 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "image/png")
 	filepath := manager.GetInstance().Paths.Scene.GetInteractiveHeatmapPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 	http.ServeFile(w, r, filepath)
+}
+
+func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string, ext string) {
+	s := r.Context().Value(sceneKey).(*models.Scene)
+
+	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		var err error
+		captions, err := repo.Scene().GetCaptions(s.ID)
+		for _, caption := range captions {
+			if lang == caption.LanguageCode && ext == caption.CaptionType {
+				sub, err := scene.ReadSubs(caption.Path(s.Path))
+				if err == nil {
+					var b bytes.Buffer
+					err = sub.WriteToWebVTT(&b)
+					if err == nil {
+						w.Header().Set("Content-Type", "text/vtt")
+						w.Header().Add("Cache-Control", "no-cache")
+						_, _ = b.WriteTo(w)
+					}
+					return err
+				}
+				logger.Debugf("Error while reading subs: %v", err)
+			}
+		}
+		return err
+	}); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (rs sceneRoutes) CaptionLang(w http.ResponseWriter, r *http.Request) {
+	// serve caption based on lang query param, if provided
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[caption] error parsing query form: %v", err)
+	}
+
+	l := r.Form.Get("lang")
+	ext := r.Form.Get("type")
+	rs.Caption(w, r, l, ext)
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
