@@ -29,6 +29,9 @@ type CreatorUpdater interface {
 	Create(ctx context.Context, newScene models.Scene) (*models.Scene, error)
 	UpdateFull(ctx context.Context, updatedScene models.Scene) (*models.Scene, error)
 	Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error)
+
+	GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error)
+	UpdateCaptions(ctx context.Context, id int, captions []*models.SceneCaption) error
 }
 
 type videoFileCreator interface {
@@ -115,16 +118,17 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 		changed = true
 	}
 
-	if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-		var err error
-		sqb := r.Scene()
+	qb := scanner.CreatorUpdater
 
-		captions, er := sqb.GetCaptions(s.ID)
+	if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
+		var err error
+
+		captions, er := qb.GetCaptions(ctx, s.ID)
 		if er == nil {
 			if len(captions) > 0 {
 				clean, altered := CleanCaptions(s.Path, captions)
 				if altered {
-					er = sqb.UpdateCaptions(s.ID, clean)
+					er = qb.UpdateCaptions(ctx, s.ID, clean)
 					if er == nil {
 						logger.Debugf("Captions for %s cleaned: %s -> %s", path, captions, clean)
 					}

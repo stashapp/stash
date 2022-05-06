@@ -140,12 +140,12 @@ func (qb *sceneQueryBuilder) captionRepository() *captionRepository {
 	}
 }
 
-func (qb *sceneQueryBuilder) GetCaptions(sceneID int) ([]*models.SceneCaption, error) {
-	return qb.captionRepository().get(sceneID)
+func (qb *sceneQueryBuilder) GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error) {
+	return qb.captionRepository().get(ctx, sceneID)
 }
 
-func (qb *sceneQueryBuilder) UpdateCaptions(sceneID int, captions []*models.SceneCaption) error {
-	return qb.captionRepository().replace(sceneID, captions)
+func (qb *sceneQueryBuilder) UpdateCaptions(ctx context.Context, sceneID int, captions []*models.SceneCaption) error {
+	return qb.captionRepository().replace(ctx, sceneID, captions)
 
 }
 

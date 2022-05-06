@@ -127,8 +127,8 @@ func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (re
 }
 
 func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []*models.SceneCaption, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Scene().GetCaptions(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Scene.GetCaptions(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

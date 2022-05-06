@@ -25,6 +25,7 @@ type SceneFinder interface {
 	scene.IDFinder
 	FindByChecksum(ctx context.Context, checksum string) (*models.Scene, error)
 	FindByOSHash(ctx context.Context, oshash string) (*models.Scene, error)
+	GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error)
 }
 
 type SceneMarkerFinder interface {
@@ -308,9 +309,9 @@ func (rs sceneRoutes) InteractiveHeatmap(w http.ResponseWriter, r *http.Request)
 func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang string, ext string) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
 
-	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+	if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
-		captions, err := repo.Scene().GetCaptions(s.ID)
+		captions, err := rs.sceneFinder.GetCaptions(ctx, s.ID)
 		for _, caption := range captions {
 			if lang == caption.LanguageCode && ext == caption.CaptionType {
 				sub, err := scene.ReadSubs(caption.Path(s.Path))

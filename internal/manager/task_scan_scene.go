@@ -90,12 +90,12 @@ func (t *ScanTask) associateCaptions(ctx context.Context) {
 	captionLang := scene.GetCaptionsLangFromPath(captionPath)
 
 	relatedFiles := scene.GenerateCaptionCandidates(captionPath, vExt)
-	if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		sqb := r.Scene()
+		sqb := t.TxnManager.Scene
 
 		for _, scenePath := range relatedFiles {
-			s, er := sqb.FindByPath(scenePath)
+			s, er := sqb.FindByPath(ctx, scenePath)
 
 			if er != nil {
 				logger.Errorf("Error searching for scene %s: %v", scenePath, er)
@@ -103,7 +103,7 @@ func (t *ScanTask) associateCaptions(ctx context.Context) {
 			}
 			if s != nil { // found related Scene
 				logger.Debugf("Matched captions to scene %s", s.Path)
-				captions, er := sqb.GetCaptions(s.ID)
+				captions, er := sqb.GetCaptions(ctx, s.ID)
 				if er == nil {
 					fileExt := filepath.Ext(captionPath)
 					ext := fileExt[1:]
@@ -114,7 +114,7 @@ func (t *ScanTask) associateCaptions(ctx context.Context) {
 							CaptionType:  ext,
 						}
 						captions = append(captions, newCaption)
-						er = sqb.UpdateCaptions(s.ID, captions)
+						er = sqb.UpdateCaptions(ctx, s.ID, captions)
 						if er == nil {
 							logger.Debugf("Updated captions for scene %s. Added %s", s.Path, captionLang)
 						}

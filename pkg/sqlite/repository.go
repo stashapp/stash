@@ -370,10 +370,10 @@ type captionRepository struct {
 	repository
 }
 
-func (r *captionRepository) get(id int) ([]*models.SceneCaption, error) {
+func (r *captionRepository) get(ctx context.Context, id int) ([]*models.SceneCaption, error) {
 	query := fmt.Sprintf("SELECT %s, %s, %s from %s WHERE %s = ?", sceneCaptionCodeColumn, sceneCaptionFilenameColumn, sceneCaptionTypeColumn, r.tableName, r.idColumn)
 	var ret []*models.SceneCaption
-	err := r.queryFunc(query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
+	err := r.queryFunc(ctx, query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
 		var captionCode string
 		var captionFilename string
 		var captionType string
@@ -393,18 +393,18 @@ func (r *captionRepository) get(id int) ([]*models.SceneCaption, error) {
 	return ret, err
 }
 
-func (r *captionRepository) insert(id int, caption *models.SceneCaption) (sql.Result, error) {
+func (r *captionRepository) insert(ctx context.Context, id int, caption *models.SceneCaption) (sql.Result, error) {
 	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)", r.tableName, r.idColumn, sceneCaptionCodeColumn, sceneCaptionFilenameColumn, sceneCaptionTypeColumn)
-	return r.tx.Exec(stmt, id, caption.LanguageCode, caption.Filename, caption.CaptionType)
+	return r.tx.Exec(ctx, stmt, id, caption.LanguageCode, caption.Filename, caption.CaptionType)
 }
 
-func (r *captionRepository) replace(id int, captions []*models.SceneCaption) error {
-	if err := r.destroy([]int{id}); err != nil {
+func (r *captionRepository) replace(ctx context.Context, id int, captions []*models.SceneCaption) error {
+	if err := r.destroy(ctx, []int{id}); err != nil {
 		return err
 	}
 
 	for _, caption := range captions {
-		if _, err := r.insert(id, caption); err != nil {
+		if _, err := r.insert(ctx, id, caption); err != nil {
 			return err
 		}
 	}

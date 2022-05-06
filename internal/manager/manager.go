@@ -160,13 +160,9 @@ func initialize() error {
 		DownloadStore:   NewDownloadStore(),
 		PluginCache:     plugin.NewCache(cfg),
 
-		Database:   db,
-		Repository: db.TxnRepository(),
-
-		TxnManager: models.Repository{
-			Manager: &sqlite.Database{
-				DB: database.DB,
-			},
+		Database: db,
+		Repository: models.Repository{
+			TxnManager:  db,
 			Gallery:     sqlite.GalleryReaderWriter,
 			Image:       sqlite.ImageReaderWriter,
 			Movie:       sqlite.MovieReaderWriter,
@@ -182,18 +178,13 @@ func initialize() error {
 		scanSubs: &subscriptionManager{},
 	}
 
-	sceneServer := SceneServer{
-		TxnManager:       instance.TxnManager,
-		SceneCoverGetter: instance.TxnManager.Scene,
-	}
-	instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
-
 	instance.JobManager = initJobManager()
 
 	sceneServer := SceneServer{
 		TxnManager:       instance.Repository,
 		SceneCoverGetter: instance.Repository.Scene,
 	}
+
 	instance.DLNAService = dlna.NewService(instance.Repository, dlna.Repository{
 		SceneFinder:     instance.Repository.Scene,
 		StudioFinder:    instance.Repository.Studio,
