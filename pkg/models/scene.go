@@ -62,6 +62,7 @@ type SceneReader interface {
 	Wall(q *string) ([]*Scene, error)
 	All() ([]*Scene, error)
 	Query(options SceneQueryOptions) (*SceneQueryResult, error)
+	GetCaptions(sceneID int) ([]*SceneCaption, error)
 	GetCover(sceneID int) ([]byte, error)
 	GetMovies(sceneID int) ([]MoviesScenes, error)
 	GetTagIDs(sceneID int) ([]int, error)
@@ -79,6 +80,7 @@ type SceneWriter interface {
 	ResetOCounter(id int) (int, error)
 	UpdateFileModTime(id int, modTime NullSQLiteTimestamp) error
 	Destroy(id int) error
+	UpdateCaptions(id int, captions []*SceneCaption) error
 	UpdateCover(sceneID int, cover []byte) error
 	DestroyCover(sceneID int) error
 	UpdatePerformers(sceneID int, performerIDs []int) error

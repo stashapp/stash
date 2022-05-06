@@ -50,12 +50,15 @@ github.com/antchfx/htmlquery
 # github.com/antchfx/xpath v1.2.0
 ## explicit; go 1.14
 github.com/antchfx/xpath
-# github.com/apenwarr/fixconsole v0.0.0-20191012055117-5a9f6489cc29
-## explicit; go 1.12
-github.com/apenwarr/fixconsole
-# github.com/apenwarr/w32 v0.0.0-20190407065021-aa00fece76ab
-## explicit
-github.com/apenwarr/w32
+# github.com/asticode/go-astikit v0.20.0
+## explicit; go 1.13
+github.com/asticode/go-astikit
+# github.com/asticode/go-astisub v0.20.0
+## explicit; go 1.13
+github.com/asticode/go-astisub
+# github.com/asticode/go-astits v1.8.0
+## explicit; go 1.13
+github.com/asticode/go-astits
 # github.com/chromedp/cdproto v0.0.0-20210622022015-fe1827b46b84
 ## explicit; go 1.14
 github.com/chromedp/cdproto

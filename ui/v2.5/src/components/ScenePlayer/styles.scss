@@ -492,6 +492,10 @@ $sceneTabWidth: 450px;
   z-index: 1;
 }
 
+.vjs-text-track-settings select {
+  background: #fff;
+}
+
 .VideoPlayer
   .video-js
   .vjs-seek-button.skip-back

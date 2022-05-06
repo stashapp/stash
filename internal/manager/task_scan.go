@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -277,6 +278,8 @@ func (t *ScanTask) Start(ctx context.Context) {
 			s = t.scanScene(ctx)
 		case isImage(path):
 			t.scanImage(ctx)
+		case isCaptions(path):
+			t.associateCaptions(ctx)
 		}
 	})
 
@@ -351,6 +354,7 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
+	capExt := scene.CaptionExts
 	excludeVidRegex := generateRegexps(config.GetExcludes())
 	excludeImgRegex := generateRegexps(config.GetImageExcludes())
 
@@ -392,6 +396,10 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 			if (fsutil.MatchExtension(path, imgExt) || fsutil.MatchExtension(path, gExt)) && !matchFileRegex(path, excludeImgRegex) {
 				return f(path, info, err)
 			}
+		}
+
+		if fsutil.MatchExtension(path, capExt) {
+			return f(path, info, err)
 		}
 
 		return nil

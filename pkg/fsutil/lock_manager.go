@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+type Cancellable interface {
+	Cancel()
+}
+
 type LockContext struct {
 	context.Context
 	cancel context.CancelFunc
@@ -56,6 +60,16 @@ func NewReadLockManager() *ReadLockManager {
 // Per standard WithCancel usage, cancel must be called when the lock is freed.
 func (m *ReadLockManager) ReadLock(ctx context.Context, fn string) *LockContext {
 	retCtx, cancel := context.WithCancel(ctx)
+
+	// if Cancellable, call Cancel() when cancelled
+	cancellable, ok := ctx.(Cancellable)
+	if ok {
+		origCancel := cancel
+		cancel = func() {
+			origCancel()
+			cancellable.Cancel()
+		}
+	}
 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

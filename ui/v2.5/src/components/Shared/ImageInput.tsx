@@ -19,6 +19,10 @@ interface IImageInput {
   acceptSVG?: boolean;
 }
 
+function acceptExtensions(acceptSVG: boolean = false) {
+  return `.jpg,.jpeg,.png,.webp,.gif${acceptSVG ? ",.svg" : ""}`;
+}
+
 export const ImageInput: React.FC<IImageInput> = ({
   isEditing,
   text,
@@ -42,7 +46,7 @@ export const ImageInput: React.FC<IImageInput> = ({
         <Form.Control
           type="file"
           onChange={onImageChange}
-          accept={`.jpg,.jpeg,.png${acceptSVG ? ",.svg" : ""}`}
+          accept={acceptExtensions(acceptSVG)}
         />
       </Form.Label>
     );
@@ -102,7 +106,7 @@ export const ImageInput: React.FC<IImageInput> = ({
               <Form.Control
                 type="file"
                 onChange={onImageChange}
-                accept={`.jpg,.jpeg,.png${acceptSVG ? ",.svg" : ""}`}
+                accept={acceptExtensions(acceptSVG)}
               />
             </Form.Label>
           </div>

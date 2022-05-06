@@ -37,3 +37,11 @@ func sendNotification(notificationTitle string, notificationText string) {
 func revealInFileManager(path string) {
 
 }
+
+func isDoubleClickLaunched() bool {
+	return false
+}
+
+func hideConsole() {
+
+}
