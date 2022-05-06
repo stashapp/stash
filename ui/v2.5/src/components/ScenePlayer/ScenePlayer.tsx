@@ -290,7 +290,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     // log a message if we can't stream directly
-    const disabledStream = scene.sceneStreams.find((stream) => stream.disabled && stream.disabled_reason);
+    const disabledStream = scene.sceneStreams.find(
+      (stream) => stream.disabled && stream.disabled_reason
+    );
     if (disabledStream) {
       // eslint-disable-next-line no-console
       console.log("Cannot stream directly: " + disabledStream.disabled_reason);
