@@ -532,6 +532,10 @@
           "toggle_sound": "Enable sound"
         }
       },
+      "scroll_attempts_before_change": {
+        "description": "Number of times to attempt to scroll before moving to the next/previous item. Only applies for Pan Y scroll mode.",
+        "heading": "Scroll attempts before transition"
+      },
       "slideshow_delay": {
         "description": "Slideshow is available in galleries when in wall view mode",
         "heading": "Slideshow Delay (seconds)"
@@ -762,6 +766,7 @@
   "instagram": "Instagram",
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",
+  "captions": "Captions",
   "isMissing": "Is Missing",
   "library": "Library",
   "loading": {

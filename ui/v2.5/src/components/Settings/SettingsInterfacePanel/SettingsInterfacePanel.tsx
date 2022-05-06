@@ -304,6 +304,15 @@ export const SettingsInterfacePanel: React.FC = () => {
             </option>
           ))}
         </SelectSetting>
+
+        <NumberSetting
+          headingID="config.ui.scroll_attempts_before_change.heading"
+          subHeadingID="config.ui.scroll_attempts_before_change.description"
+          value={iface.imageLightbox?.scrollAttemptsBeforeChange ?? 0}
+          onChange={(v) =>
+            saveLightboxSettings({ scrollAttemptsBeforeChange: v })
+          }
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.editing.heading">

@@ -17,6 +17,7 @@ import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
 import { InteractiveContext } from "src/hooks/Interactive/context";
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
+import { languageMap } from "src/utils/caption";
 
 export const VIDEO_PLAYER_ID = "VideoJsPlayer";
 
@@ -150,7 +151,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         chaptersButton: false,
       },
       nativeControlsForTouch: false,
-      playbackRates: [0.75, 1, 1.5, 2, 3, 4],
+      playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
       inactivityTimeout: 2000,
       preload: "none",
       userActions: {
@@ -162,6 +163,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     };
 
     const player = VideoJS(videoElement, options);
+
+    const settings = (player as any).textTrackSettings;
+    settings.setValues({
+      backgroundColor: "#000",
+      backgroundOpacity: "0.5",
+    });
+    settings.updateDisplay();
 
     (player as any).landscapeFullscreen({
       fullscreen: {
@@ -223,6 +231,38 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
 
   useEffect(() => {
+    let prevCaptionOffset = 0;
+
+    function addCaptionOffset(player: VideoJsPlayer, offset: number) {
+      const tracks = player.remoteTextTracks();
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        const { cues } = track;
+        if (cues) {
+          for (let j = 0; j < cues.length; j++) {
+            const cue = cues[j];
+            cue.startTime = cue.startTime + offset;
+            cue.endTime = cue.endTime + offset;
+          }
+        }
+      }
+    }
+
+    function removeCaptionOffset(player: VideoJsPlayer, offset: number) {
+      const tracks = player.remoteTextTracks();
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        const { cues } = track;
+        if (cues) {
+          for (let j = 0; j < cues.length; j++) {
+            const cue = cues[j];
+            cue.startTime = cue.startTime + prevCaptionOffset - offset;
+            cue.endTime = cue.endTime + prevCaptionOffset - offset;
+          }
+        }
+      }
+    }
+
     function handleOffset(player: VideoJsPlayer) {
       if (!scene) return;
 
@@ -230,10 +270,24 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
       const isDirect =
         currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
+
+      const curTime = player.currentTime();
       if (!isDirect) {
         (player as any).setOffsetDuration(scene.file.duration);
       } else {
         (player as any).clearOffsetDuration();
+      }
+
+      if (curTime != prevCaptionOffset) {
+        if (!isDirect) {
+          removeCaptionOffset(player, curTime);
+          prevCaptionOffset = curTime;
+        } else {
+          if (prevCaptionOffset != 0) {
+            addCaptionOffset(player, prevCaptionOffset);
+            prevCaptionOffset = 0;
+          }
+        }
       }
     }
 
@@ -276,6 +330,58 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       return false;
     }
 
+    function getDefaultLanguageCode() {
+      var languageCode = window.navigator.language;
+
+      if (languageCode.indexOf("-") !== -1) {
+        languageCode = languageCode.split("-")[0];
+      }
+
+      if (languageCode.indexOf("_") !== -1) {
+        languageCode = languageCode.split("_")[0];
+      }
+
+      return languageCode;
+    }
+
+    function loadCaptions(player: VideoJsPlayer) {
+      if (!scene) return;
+
+      if (scene.captions) {
+        var languageCode = getDefaultLanguageCode();
+        var hasDefault = false;
+
+        for (let caption of scene.captions) {
+          var lang = caption.language_code;
+          var label = lang;
+          if (languageMap.has(lang)) {
+            label = languageMap.get(lang)!;
+          }
+
+          label = label + " (" + caption.caption_type + ")";
+          var setAsDefault = !hasDefault && languageCode == lang;
+          if (!hasDefault && setAsDefault) {
+            hasDefault = true;
+          }
+          player.addRemoteTextTrack(
+            {
+              src:
+                scene.paths.caption +
+                "?lang=" +
+                lang +
+                "&type=" +
+                caption.caption_type,
+              kind: "captions",
+              srclang: lang,
+              label: label,
+              default: setAsDefault,
+            },
+            true
+          );
+        }
+      }
+    }
+
     if (!scene || scene.id === sceneId.current) return;
     sceneId.current = scene.id;
 
@@ -293,8 +399,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     (player as any).clearOffsetDuration();
 
     const tracks = player.remoteTextTracks();
-    if (tracks.length > 0) {
-      player.removeRemoteTextTrack(tracks[0] as any);
+    for (let i = 0; i < tracks.length; i++) {
+      player.removeRemoteTextTrack(tracks[i] as any);
     }
 
     player.src(
@@ -314,6 +420,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
         true
       );
+    }
+
+    if (scene.captions?.length! > 0) {
+      loadCaptions(player);
     }
 
     player.currentTime(0);
@@ -346,17 +456,21 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       if (scene.interactive) {
         interactiveClient.ensurePlaying(this.currentTime());
       }
-
       setTime(this.currentTime());
     });
 
     player.on("seeking", function (this: VideoJsPlayer) {
-      // backwards compatibility - may want to remove this in future
       this.play();
     });
 
     player.on("error", () => {
       handleError(true);
+    });
+
+    // changing source (eg when seeking) resets the playback rate
+    // so set the default in addition to the current rate
+    player.on("ratechange", function (this: VideoJsPlayer) {
+      this.defaultPlaybackRate(this.playbackRate());
     });
 
     player.on("loadedmetadata", () => {
@@ -420,7 +534,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     playerRef.current?.pause();
   };
   const onScrubberSeek = (seconds: number) => {
-    playerRef.current?.currentTime(seconds);
+    const player = playerRef.current;
+    if (player) {
+      player.play()?.then(() => {
+        player.currentTime(seconds);
+      });
+    }
   };
 
   const isPortrait =

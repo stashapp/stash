@@ -52,12 +52,12 @@ func Splice(concatFile string, options SpliceOptions) ffmpeg.Args {
 	args = args.VideoCodec(options.VideoCodec)
 	args = args.AppendArgs(options.VideoArgs)
 
-	// if audio codec is not provided, then skip it
+	// if audio codec is not provided, then use copy
 	if options.AudioCodec == "" {
-		args = args.SkipAudio()
-	} else {
-		args = args.AudioCodec(options.AudioCodec)
+		options.AudioCodec = ffmpeg.AudioCodecCopy
 	}
+
+	args = args.AudioCodec(options.AudioCodec)
 	args = args.AppendArgs(options.AudioArgs)
 
 	args = args.Format(options.Format)
