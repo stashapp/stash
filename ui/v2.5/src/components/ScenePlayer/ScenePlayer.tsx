@@ -509,6 +509,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         src: scene?.paths.vtt,
         showTimestamp: true,
       });
+
+    return () => {
+      if (scene.interactive) {
+        // stop the interactive client
+        interactiveClient.pause();
+      }
+    }
   }, [
     scene,
     config?.autostartVideo,
