@@ -279,8 +279,11 @@ export const LightboxComponent: React.FC<IProps> = ({
     }
   }, [slideshowInterval, slideshowDelay]);
 
-  usePageVisibility(() => {
-    toggleSlideshow();
+  // stop slideshow when the page is hidden
+  usePageVisibility((hidden: boolean) => {
+    if (hidden) {
+      setSlideshowInterval(null);
+    }
   });
 
   const close = useCallback(() => {
