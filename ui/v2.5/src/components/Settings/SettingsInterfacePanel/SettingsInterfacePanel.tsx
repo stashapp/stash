@@ -454,7 +454,7 @@ export const SettingsInterfacePanel: React.FC = () => {
                 </h3>
 
                 <div className="value">
-                  {-interactiveServerOffset.toFixed()}ms
+                  {interactiveServerOffset.toFixed()}ms
                 </div>
               </div>
               <div>

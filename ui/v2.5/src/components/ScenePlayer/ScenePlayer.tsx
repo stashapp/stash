@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
@@ -15,7 +21,10 @@ import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
-import { ConnectionState, InteractiveContext } from "src/hooks/Interactive/context";
+import {
+  ConnectionState,
+  InteractiveContext,
+} from "src/hooks/Interactive/context";
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 
@@ -121,11 +130,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const {
     interactive: interactiveClient,
     uploadScript,
+    currentScript,
     initialised: interactiveInitialised,
     state: interactiveState,
   } = React.useContext(InteractiveContext);
 
   const [initialTimestamp] = useState(timestamp);
+  const [ready, setReady] = useState(false);
+  const started = useRef(false);
+  const interactiveReady = useRef(false);
 
   const maxLoopDuration = config?.maximumLoopDuration ?? 0;
 
@@ -193,7 +206,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
     if (scene?.interactive && interactiveInitialised) {
-      uploadScript(scene.paths.funscript || "");
+      interactiveReady.current = false;
+      uploadScript(scene.paths.funscript || "").then(() => {
+        interactiveReady.current = true;
+      });
     }
   }, [
     uploadScript,
@@ -230,6 +246,24 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
     };
   }, []);
+
+  const start = useCallback(() => {
+    const player = playerRef.current;
+    if (player && scene) {
+      started.current = true;
+
+      player
+        .play()
+        ?.then(() => {
+          if (initialTimestamp > 0) {
+            player.currentTime(initialTimestamp);
+          }
+        })
+        .catch(() => {
+          if (scene.paths.screenshot) player.poster(scene.paths.screenshot);
+        });
+    }
+  }, [scene, initialTimestamp]);
 
   useEffect(() => {
     let prevCaptionOffset = 0;
@@ -383,6 +417,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
     }
 
+    // always stop the interactive client on initialisation
+    interactiveClient.pause();
+    interactiveReady.current = false;
+
     if (!scene || scene.id === sceneId.current) return;
     sceneId.current = scene.id;
 
@@ -429,79 +467,74 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.currentTime(0);
 
-    player.loop(
+    const looping =
       !!scene.file.duration &&
-        maxLoopDuration !== 0 &&
-        scene.file.duration < maxLoopDuration
-    );
+      maxLoopDuration !== 0 &&
+      scene.file.duration < maxLoopDuration;
+    player.loop(looping);
+    interactiveClient.setLooping(looping);
 
-    player.on("loadstart", function (this: VideoJsPlayer) {
+    function loadstart(this: VideoJsPlayer) {
       // handle offset after loading so that we get the correct current source
       handleOffset(this);
-    });
+    }
 
-    player.on("play", function (this: VideoJsPlayer) {
-      player.poster("");
-      if (scene.interactive) {
+    player.on("loadstart", loadstart);
+
+    function onPlay(this: VideoJsPlayer) {
+      this.poster("");
+      if (scene?.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
       }
-    });
+    }
+    player.on("play", onPlay);
 
-    player.on("pause", () => {
-      if (scene.interactive) {
-        interactiveClient.pause();
-      }
-    });
+    function pause() {
+      interactiveClient.pause();
+    }
+    player.on("pause", pause);
 
-    player.on("timeupdate", function (this: VideoJsPlayer) {
-      if (scene.interactive) {
+    function timeupdate(this: VideoJsPlayer) {
+      if (scene?.interactive && interactiveReady.current) {
         interactiveClient.ensurePlaying(this.currentTime());
       }
       setTime(this.currentTime());
-    });
+    }
+    player.on("timeupdate", timeupdate);
 
-    player.on("seeking", function (this: VideoJsPlayer) {
+    function seeking(this: VideoJsPlayer) {
       this.play();
-    });
+    }
+    player.on("seeking", seeking);
 
-    player.on("error", () => {
+    function error() {
       handleError(true);
-    });
+    }
+    player.on("error", error);
 
     // changing source (eg when seeking) resets the playback rate
     // so set the default in addition to the current rate
-    player.on("ratechange", function (this: VideoJsPlayer) {
+    function ratechange(this: VideoJsPlayer) {
       this.defaultPlaybackRate(this.playbackRate());
-    });
+    }
+    player.on("ratechange", ratechange);
 
-    player.on("loadedmetadata", () => {
-      if (!player.videoWidth() && !player.videoHeight()) {
+    function loadedmetadata(this: VideoJsPlayer) {
+      if (!this.videoWidth() && !this.videoHeight()) {
         // Occurs during preload when videos with supported audio/unsupported video are preloaded.
         // Treat this as a decoding error and try the next source without playing.
         // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
-        const currentFile = player.currentSrc();
+        const currentFile = this.currentSrc();
         if (currentFile != null && !currentFile.includes("m3u8")) {
           // const play = !player.paused();
           // handleError(play);
-          player.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+          this.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
         }
       }
-    });
+    }
+    player.on("loadedmetadata", loadedmetadata);
 
     player.load();
-
-    if (auto) {
-      player
-        .play()
-        ?.then(() => {
-          if (initialTimestamp > 0) {
-            player.currentTime(initialTimestamp);
-          }
-        })
-        .catch(() => {
-          if (scene.paths.screenshot) player.poster(scene.paths.screenshot);
-        });
-    }
 
     if ((player as any).vttThumbnails?.src)
       (player as any).vttThumbnails?.src(scene?.paths.vtt);
@@ -511,12 +544,24 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         showTimestamp: true,
       });
 
+    setReady(true);
+    started.current = false;
+
     return () => {
-      if (scene.interactive) {
-        // stop the interactive client
-        interactiveClient.pause();
-      }
-    }
+      setReady(false);
+
+      // stop the interactive client
+      interactiveClient.pause();
+
+      player.off("loadstart", loadstart);
+      player.off("play", onPlay);
+      player.off("pause", pause);
+      player.off("timeupdate", timeupdate);
+      player.off("seeking", seeking);
+      player.off("error", error);
+      player.off("ratechange", ratechange);
+      player.off("loadedmetadata", loadedmetadata);
+    };
   }, [
     scene,
     config?.autostartVideo,
@@ -524,6 +569,35 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     initialTimestamp,
     autoplay,
     interactiveClient,
+    start,
+  ]);
+
+  useEffect(() => {
+    if (!ready || started.current) {
+      return;
+    }
+
+    const auto =
+      autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
+
+    // check if we're waiting for the interactive client
+    const interactiveWaiting =
+      scene?.interactive &&
+      interactiveClient.handyKey &&
+      currentScript !== scene.paths.funscript;
+
+    if (scene && auto && !interactiveWaiting) {
+      start();
+    }
+  }, [
+    config?.autostartVideo,
+    initialTimestamp,
+    scene,
+    ready,
+    interactiveClient,
+    currentScript,
+    autoplay,
+    start,
   ]);
 
   useEffect(() => {
@@ -566,9 +640,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           className="video-js vjs-big-play-centered"
         />
       </div>
-      {scene?.interactive && (interactiveState !== ConnectionState.Ready || playerRef.current?.paused()) && (
-        <SceneInteractiveStatus />
-      )}
+      {scene?.interactive &&
+        (interactiveState !== ConnectionState.Ready ||
+          playerRef.current?.paused()) && <SceneInteractiveStatus />}
       {scene && (
         <ScenePlayerScrubber
           scene={scene}

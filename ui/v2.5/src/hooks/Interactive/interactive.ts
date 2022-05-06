@@ -185,4 +185,11 @@ export class Interactive {
     }
     await this.play(position);
   }
+
+  async setLooping(looping: boolean) {
+    if (!this._connected) {
+      return;
+    }
+    this._handy.setHsspLoop(looping);
+  }
 }

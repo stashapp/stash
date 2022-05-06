@@ -38,6 +38,7 @@ export interface IState {
   state: ConnectionState;
   serverOffset: number;
   initialised: boolean;
+  currentScript?: string;
   error?: string;
   initialise: () => Promise<void>;
   uploadScript: (funscriptPath: string) => Promise<void>;
@@ -151,6 +152,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
 
   const uploadScript = useCallback(
     async (funscriptPath: string) => {
+      interactive.pause();
       if (
         !interactive.handyKey ||
         !funscriptPath ||
@@ -162,12 +164,11 @@ export const InteractiveProvider: React.FC = ({ children }) => {
       setState(ConnectionState.Uploading);
       try {
         await interactive.uploadScript(funscriptPath);
+        setCurrentScript(funscriptPath);
+        setState(ConnectionState.Ready);
       } catch (e) {
         setState(ConnectionState.Error);
-        return;
       }
-      setCurrentScript(funscriptPath);
-      setState(ConnectionState.Ready);
     },
     [interactive, currentScript]
   );
@@ -178,6 +179,7 @@ export const InteractiveProvider: React.FC = ({ children }) => {
         interactive,
         state,
         error,
+        currentScript,
         serverOffset: config?.serverOffset ?? 0,
         initialised,
         initialise,
