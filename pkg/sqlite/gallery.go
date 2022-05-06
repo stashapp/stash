@@ -12,6 +12,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"gopkg.in/guregu/null.v4"
+	"gopkg.in/guregu/null.v4/zero"
 )
 
 const galleryTable = "galleries"
@@ -24,36 +26,36 @@ const galleryIDColumn = "gallery_id"
 
 type galleryRow struct {
 	ID          int               `db:"id" goqu:"skipinsert"`
-	Path        nullString        `db:"path"`
+	Path        zero.String       `db:"path"`
 	Checksum    string            `db:"checksum"`
 	Zip         bool              `db:"zip"`
-	Title       nullString        `db:"title"`
-	URL         nullString        `db:"url"`
+	Title       zero.String       `db:"title"`
+	URL         zero.String       `db:"url"`
 	Date        models.SQLiteDate `db:"date"`
-	Details     nullString        `db:"details"`
-	Rating      nullInt           `db:"rating"`
+	Details     zero.String       `db:"details"`
+	Rating      null.Int          `db:"rating"`
 	Organized   bool              `db:"organized"`
-	StudioID    nullInt           `db:"studio_id,omitempty"`
-	FileModTime nullTime          `db:"file_mod_time"`
+	StudioID    null.Int          `db:"studio_id,omitempty"`
+	FileModTime null.Time         `db:"file_mod_time"`
 	CreatedAt   time.Time         `db:"created_at"`
 	UpdatedAt   time.Time         `db:"updated_at"`
 }
 
 func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.ID = o.ID
-	r.Path = newNullStringPtr(o.Path)
+	r.Path = zero.StringFromPtr(o.Path)
 	r.Checksum = o.Checksum
 	r.Zip = o.Zip
-	r.Title = newNullString(o.Title)
-	r.URL = newNullString(o.URL)
+	r.Title = zero.StringFrom(o.Title)
+	r.URL = zero.StringFrom(o.URL)
 	if o.Date != nil {
 		_ = r.Date.Scan(o.Date.Time)
 	}
-	r.Details = newNullString(o.Details)
-	r.Rating = newNullIntPtr(o.Rating)
+	r.Details = zero.StringFrom(o.Details)
+	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
-	r.StudioID = newNullIntPtr(o.StudioID)
-	r.FileModTime = newNullTime(o.FileModTime)
+	r.StudioID = intFromPtr(o.StudioID)
+	r.FileModTime = null.TimeFromPtr(o.FileModTime)
 	r.CreatedAt = o.CreatedAt
 	r.UpdatedAt = o.UpdatedAt
 }
@@ -81,25 +83,25 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 type galleryQueryRow struct {
 	galleryRow
 
-	SceneID     nullInt `db:"scene_id"`
-	TagID       nullInt `db:"tag_id"`
-	PerformerID nullInt `db:"performer_id"`
+	SceneID     null.Int `db:"scene_id"`
+	TagID       null.Int `db:"tag_id"`
+	PerformerID null.Int `db:"performer_id"`
 }
 
 func (r *galleryQueryRow) resolve() *models.Gallery {
 	ret := &models.Gallery{
 		ID:          r.ID,
-		Path:        r.Path.stringPtr(),
+		Path:        r.Path.Ptr(),
 		Checksum:    r.Checksum,
 		Zip:         r.Zip,
 		Title:       r.Title.String,
 		URL:         r.URL.String,
 		Date:        r.Date.DatePtr(),
 		Details:     r.Details.String,
-		Rating:      r.Rating.intPtr(),
+		Rating:      nullIntPtr(r.Rating),
 		Organized:   r.Organized,
-		StudioID:    r.StudioID.intPtr(),
-		FileModTime: r.FileModTime.timePtr(),
+		StudioID:    nullIntPtr(r.StudioID),
+		FileModTime: r.FileModTime.Ptr(),
 		CreatedAt:   r.CreatedAt,
 		UpdatedAt:   r.UpdatedAt,
 	}
@@ -111,13 +113,13 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 
 func (r *galleryQueryRow) appendRelationships(i *models.Gallery) {
 	if r.TagID.Valid {
-		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, r.TagID.int())
+		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, int(r.TagID.Int64))
 	}
 	if r.PerformerID.Valid {
-		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, r.PerformerID.int())
+		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, int(r.PerformerID.Int64))
 	}
 	if r.SceneID.Valid {
-		i.SceneIDs = intslice.IntAppendUnique(i.SceneIDs, r.SceneID.int())
+		i.SceneIDs = intslice.IntAppendUnique(i.SceneIDs, int(r.SceneID.Int64))
 	}
 }
 

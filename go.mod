@@ -56,6 +56,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/gqlparser/v2 v2.4.1
+	gopkg.in/guregu/null.v4 v4.0.0
 )
 
 require (

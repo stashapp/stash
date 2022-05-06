@@ -487,6 +487,10 @@ golang.org/x/tools/internal/typesinternal
 ## explicit; go 1.11
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
+# gopkg.in/guregu/null.v4 v4.0.0
+## explicit
+gopkg.in/guregu/null.v4
+gopkg.in/guregu/null.v4/zero
 # gopkg.in/ini.v1 v1.66.4
 ## explicit
 gopkg.in/ini.v1

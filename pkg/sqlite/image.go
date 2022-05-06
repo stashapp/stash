@@ -10,6 +10,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"gopkg.in/guregu/null.v4"
+	"gopkg.in/guregu/null.v4/zero"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -22,35 +24,35 @@ const performersImagesTable = "performers_images"
 const imagesTagsTable = "images_tags"
 
 type imageRow struct {
-	ID          int        `db:"id" goqu:"skipinsert"`
-	Checksum    string     `db:"checksum"`
-	Path        string     `db:"path"`
-	Title       nullString `db:"title"`
-	Rating      nullInt    `db:"rating"`
-	Organized   bool       `db:"organized"`
-	OCounter    int        `db:"o_counter"`
-	Size        nullInt64  `db:"size"`
-	Width       nullInt    `db:"width"`
-	Height      nullInt    `db:"height"`
-	StudioID    nullInt    `db:"studio_id,omitempty"`
-	FileModTime nullTime   `db:"file_mod_time"`
-	CreatedAt   time.Time  `db:"created_at"`
-	UpdatedAt   time.Time  `db:"updated_at"`
+	ID          int         `db:"id" goqu:"skipinsert"`
+	Checksum    string      `db:"checksum"`
+	Path        string      `db:"path"`
+	Title       zero.String `db:"title"`
+	Rating      null.Int    `db:"rating"`
+	Organized   bool        `db:"organized"`
+	OCounter    int         `db:"o_counter"`
+	Size        null.Int    `db:"size"`
+	Width       null.Int    `db:"width"`
+	Height      null.Int    `db:"height"`
+	StudioID    null.Int    `db:"studio_id,omitempty"`
+	FileModTime null.Time   `db:"file_mod_time"`
+	CreatedAt   time.Time   `db:"created_at"`
+	UpdatedAt   time.Time   `db:"updated_at"`
 }
 
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Checksum = i.Checksum
 	r.Path = i.Path
-	r.Title = newNullString(i.Title)
-	r.Rating = newNullIntPtr(i.Rating)
+	r.Title = zero.StringFrom(i.Title)
+	r.Rating = intFromPtr(i.Rating)
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
-	r.Size = newNullInt64Ptr(i.Size)
-	r.Width = newNullIntPtr(i.Width)
-	r.Height = newNullIntPtr(i.Height)
-	r.StudioID = newNullIntPtr(i.StudioID)
-	r.FileModTime = newNullTime(i.FileModTime)
+	r.Size = null.IntFromPtr(i.Size)
+	r.Width = intFromPtr(i.Width)
+	r.Height = intFromPtr(i.Height)
+	r.StudioID = intFromPtr(i.StudioID)
+	r.FileModTime = null.TimeFromPtr(i.FileModTime)
 	r.CreatedAt = i.CreatedAt
 	r.UpdatedAt = i.UpdatedAt
 }
@@ -78,9 +80,9 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 type imageQueryRow struct {
 	imageRow
 
-	GalleryID   nullInt `db:"gallery_id"`
-	TagID       nullInt `db:"tag_id"`
-	PerformerID nullInt `db:"performer_id"`
+	GalleryID   null.Int `db:"gallery_id"`
+	TagID       null.Int `db:"tag_id"`
+	PerformerID null.Int `db:"performer_id"`
 }
 
 func (r *imageQueryRow) resolve() *models.Image {
@@ -89,14 +91,14 @@ func (r *imageQueryRow) resolve() *models.Image {
 		Checksum:    r.Checksum,
 		Path:        r.Path,
 		Title:       r.Title.String,
-		Rating:      r.Rating.intPtr(),
+		Rating:      nullIntPtr(r.Rating),
 		Organized:   r.Organized,
 		OCounter:    r.OCounter,
-		Size:        r.Size.int64Ptr(),
-		Width:       r.Width.intPtr(),
-		Height:      r.Height.intPtr(),
-		StudioID:    r.StudioID.intPtr(),
-		FileModTime: r.FileModTime.timePtr(),
+		Size:        r.Size.Ptr(),
+		Width:       nullIntPtr(r.Width),
+		Height:      nullIntPtr(r.Height),
+		StudioID:    nullIntPtr(r.StudioID),
+		FileModTime: r.FileModTime.Ptr(),
 		CreatedAt:   r.CreatedAt,
 		UpdatedAt:   r.UpdatedAt,
 	}
@@ -108,13 +110,13 @@ func (r *imageQueryRow) resolve() *models.Image {
 
 func (r *imageQueryRow) appendRelationships(i *models.Image) {
 	if r.GalleryID.Valid {
-		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, r.GalleryID.int())
+		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, int(r.GalleryID.Int64))
 	}
 	if r.TagID.Valid {
-		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, r.TagID.int())
+		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, int(r.TagID.Int64))
 	}
 	if r.PerformerID.Valid {
-		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, r.PerformerID.int())
+		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, int(r.PerformerID.Int64))
 	}
 }
 

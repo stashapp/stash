@@ -12,6 +12,9 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"gopkg.in/guregu/null.v4"
+	"gopkg.in/guregu/null.v4/zero"
+
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
@@ -47,64 +50,64 @@ ORDER BY size DESC
 
 type sceneRow struct {
 	ID               int               `db:"id" goqu:"skipinsert"`
-	Checksum         nullString        `db:"checksum"`
-	OSHash           nullString        `db:"oshash"`
+	Checksum         zero.String       `db:"checksum"`
+	OSHash           zero.String       `db:"oshash"`
 	Path             string            `db:"path"`
-	Title            nullString        `db:"title"`
-	Details          nullString        `db:"details"`
-	URL              nullString        `db:"url"`
+	Title            zero.String       `db:"title"`
+	Details          zero.String       `db:"details"`
+	URL              zero.String       `db:"url"`
 	Date             models.SQLiteDate `db:"date"`
-	Rating           nullInt           `db:"rating"`
+	Rating           null.Int          `db:"rating"`
 	Organized        bool              `db:"organized"`
 	OCounter         int               `db:"o_counter"`
-	Size             nullString        `db:"size"`
-	Duration         nullFloat64       `db:"duration"`
-	VideoCodec       nullString        `db:"video_codec"`
-	Format           nullString        `db:"format"`
-	AudioCodec       nullString        `db:"audio_codec"`
-	Width            nullInt           `db:"width"`
-	Height           nullInt           `db:"height"`
-	Framerate        nullFloat64       `db:"framerate"`
-	Bitrate          nullInt64         `db:"bitrate"`
-	StudioID         nullInt           `db:"studio_id,omitempty"`
-	FileModTime      nullTime          `db:"file_mod_time"`
-	Phash            nullInt64         `db:"phash,omitempty"`
+	Size             zero.String       `db:"size"`
+	Duration         null.Float        `db:"duration"`
+	VideoCodec       zero.String       `db:"video_codec"`
+	Format           zero.String       `db:"format"`
+	AudioCodec       zero.String       `db:"audio_codec"`
+	Width            null.Int          `db:"width"`
+	Height           null.Int          `db:"height"`
+	Framerate        null.Float        `db:"framerate"`
+	Bitrate          null.Int          `db:"bitrate"`
+	StudioID         null.Int          `db:"studio_id,omitempty"`
+	FileModTime      null.Time         `db:"file_mod_time"`
+	Phash            null.Int          `db:"phash,omitempty"`
 	CreatedAt        time.Time         `db:"created_at"`
 	UpdatedAt        time.Time         `db:"updated_at"`
 	Interactive      bool              `db:"interactive"`
-	InteractiveSpeed nullInt           `db:"interactive_speed"`
+	InteractiveSpeed null.Int          `db:"interactive_speed"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
 	r.ID = o.ID
-	r.Checksum = newNullStringPtr(o.Checksum)
-	r.OSHash = newNullStringPtr(o.OSHash)
+	r.Checksum = zero.StringFromPtr(o.Checksum)
+	r.OSHash = zero.StringFromPtr(o.OSHash)
 	r.Path = o.Path
-	r.Title = newNullString(o.Title)
-	r.Details = newNullString(o.Details)
-	r.URL = newNullString(o.URL)
+	r.Title = zero.StringFrom(o.Title)
+	r.Details = zero.StringFrom(o.Details)
+	r.URL = zero.StringFrom(o.URL)
 	if o.Date != nil {
 		_ = r.Date.Scan(o.Date.Time)
 	}
-	r.Rating = newNullIntPtr(o.Rating)
+	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.OCounter = o.OCounter
-	r.Size = newNullStringPtr(o.Size)
-	r.Duration = newNullFloat64Ptr(o.Duration)
-	r.VideoCodec = newNullStringPtr(o.VideoCodec)
-	r.Format = newNullStringPtr(o.Format)
-	r.AudioCodec = newNullStringPtr(o.AudioCodec)
-	r.Width = newNullIntPtr(o.Width)
-	r.Height = newNullIntPtr(o.Height)
-	r.Framerate = newNullFloat64Ptr(o.Framerate)
-	r.Bitrate = newNullInt64Ptr(o.Bitrate)
-	r.StudioID = newNullIntPtr(o.StudioID)
-	r.FileModTime = newNullTime(o.FileModTime)
-	r.Phash = newNullInt64Ptr(o.Phash)
+	r.Size = zero.StringFromPtr(o.Size)
+	r.Duration = null.FloatFromPtr(o.Duration)
+	r.VideoCodec = zero.StringFromPtr(o.VideoCodec)
+	r.Format = zero.StringFromPtr(o.Format)
+	r.AudioCodec = zero.StringFromPtr(o.AudioCodec)
+	r.Width = intFromPtr(o.Width)
+	r.Height = intFromPtr(o.Height)
+	r.Framerate = null.FloatFromPtr(o.Framerate)
+	r.Bitrate = null.IntFromPtr(o.Bitrate)
+	r.StudioID = intFromPtr(o.StudioID)
+	r.FileModTime = null.TimeFromPtr(o.FileModTime)
+	r.Phash = null.IntFromPtr(o.Phash)
 	r.CreatedAt = o.CreatedAt
 	r.UpdatedAt = o.UpdatedAt
 	r.Interactive = o.Interactive
-	r.InteractiveSpeed = newNullIntPtr(o.InteractiveSpeed)
+	r.InteractiveSpeed = intFromPtr(o.InteractiveSpeed)
 }
 
 type sceneRowRecord struct {
@@ -143,9 +146,9 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 type sceneQueryRow struct {
 	sceneRow
 
-	GalleryID   nullInt `db:"gallery_id"`
-	TagID       nullInt `db:"tag_id"`
-	PerformerID nullInt `db:"performer_id"`
+	GalleryID   null.Int `db:"gallery_id"`
+	TagID       null.Int `db:"tag_id"`
+	PerformerID null.Int `db:"performer_id"`
 
 	moviesScenesRow
 	stashIDRow
@@ -154,32 +157,32 @@ type sceneQueryRow struct {
 func (r *sceneQueryRow) resolve() *models.Scene {
 	ret := &models.Scene{
 		ID:               r.ID,
-		Checksum:         r.Checksum.stringPtr(),
-		OSHash:           r.OSHash.stringPtr(),
+		Checksum:         r.Checksum.Ptr(),
+		OSHash:           r.OSHash.Ptr(),
 		Path:             r.Path,
 		Title:            r.Title.String,
 		Details:          r.Details.String,
 		URL:              r.URL.String,
 		Date:             r.Date.DatePtr(),
-		Rating:           r.Rating.intPtr(),
+		Rating:           nullIntPtr(r.Rating),
 		Organized:        r.Organized,
 		OCounter:         r.OCounter,
-		Size:             r.Size.stringPtr(),
-		Duration:         r.Duration.float64Ptr(),
-		VideoCodec:       r.VideoCodec.stringPtr(),
-		Format:           r.Format.stringPtr(),
-		AudioCodec:       r.AudioCodec.stringPtr(),
-		Width:            r.Width.intPtr(),
-		Height:           r.Height.intPtr(),
-		Framerate:        r.Framerate.float64Ptr(),
-		Bitrate:          r.Bitrate.int64Ptr(),
-		StudioID:         r.StudioID.intPtr(),
-		FileModTime:      r.FileModTime.timePtr(),
-		Phash:            r.Phash.int64Ptr(),
+		Size:             r.Size.Ptr(),
+		Duration:         r.Duration.Ptr(),
+		VideoCodec:       r.VideoCodec.Ptr(),
+		Format:           r.Format.Ptr(),
+		AudioCodec:       r.AudioCodec.Ptr(),
+		Width:            nullIntPtr(r.Width),
+		Height:           nullIntPtr(r.Height),
+		Framerate:        r.Framerate.Ptr(),
+		Bitrate:          r.Bitrate.Ptr(),
+		StudioID:         nullIntPtr(r.StudioID),
+		FileModTime:      r.FileModTime.Ptr(),
+		Phash:            r.Phash.Ptr(),
 		CreatedAt:        r.CreatedAt,
 		UpdatedAt:        r.UpdatedAt,
 		Interactive:      r.Interactive,
-		InteractiveSpeed: r.InteractiveSpeed.intPtr(),
+		InteractiveSpeed: nullIntPtr(r.InteractiveSpeed),
 	}
 
 	r.appendRelationships(ret)
@@ -209,18 +212,18 @@ func stashIDAppendUnique(e []models.StashID, toAdd models.StashID) []models.Stas
 
 func (r *sceneQueryRow) appendRelationships(i *models.Scene) {
 	if r.TagID.Valid {
-		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, r.TagID.int())
+		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, int(r.TagID.Int64))
 	}
 	if r.PerformerID.Valid {
-		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, r.PerformerID.int())
+		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, int(r.PerformerID.Int64))
 	}
 	if r.GalleryID.Valid {
-		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, r.GalleryID.int())
+		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, int(r.GalleryID.Int64))
 	}
 	if r.MovieID.Valid {
 		i.Movies = movieAppendUnique(i.Movies, models.MoviesScenes{
-			MovieID:    r.MovieID.int(),
-			SceneIndex: r.SceneIndex.intPtr(),
+			MovieID:    int(r.MovieID.Int64),
+			SceneIndex: nullIntPtr(r.SceneIndex),
 		})
 	}
 	if r.StashID.Valid {

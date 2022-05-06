@@ -3,6 +3,8 @@ package sqlite
 import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/stashapp/stash/pkg/models"
+	"gopkg.in/guregu/null.v4"
+	"gopkg.in/guregu/null.v4/zero"
 )
 
 type updateRecord struct {
@@ -24,7 +26,7 @@ func (r *updateRecord) setString(destField string, v models.OptionalString) {
 
 func (r *updateRecord) setNullString(destField string, v models.OptionalString) {
 	if v.Set {
-		r.set(destField, newNullStringPtr(v.Ptr()))
+		r.set(destField, zero.StringFromPtr(v.Ptr()))
 	}
 }
 
@@ -48,7 +50,7 @@ func (r *updateRecord) setInt(destField string, v models.OptionalInt) {
 
 func (r *updateRecord) setNullInt(destField string, v models.OptionalInt) {
 	if v.Set {
-		r.set(destField, newNullIntPtr(v.Ptr()))
+		r.set(destField, intFromPtr(v.Ptr()))
 	}
 }
 
@@ -64,7 +66,7 @@ func (r *updateRecord) setNullInt(destField string, v models.OptionalInt) {
 // TODO - rename to setNullInt64
 func (r *updateRecord) setNullInt64(destField string, v models.OptionalInt64) {
 	if v.Set {
-		r.set(destField, newNullInt64Ptr(v.Ptr()))
+		r.set(destField, null.IntFromPtr(v.Ptr()))
 	}
 }
 
@@ -79,7 +81,7 @@ func (r *updateRecord) setNullInt64(destField string, v models.OptionalInt64) {
 
 func (r *updateRecord) setNullFloat64(destField string, v models.OptionalFloat64) {
 	if v.Set {
-		r.set(destField, newNullFloat64Ptr(v.Ptr()))
+		r.set(destField, null.FloatFromPtr(v.Ptr()))
 	}
 }
 
@@ -94,7 +96,7 @@ func (r *updateRecord) setTime(destField string, v models.OptionalTime) {
 
 func (r *updateRecord) setNullTime(destField string, v models.OptionalTime) {
 	if v.Set {
-		r.set(destField, newNullTime(v.Ptr()))
+		r.set(destField, null.TimeFromPtr(v.Ptr()))
 	}
 }
 

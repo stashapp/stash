@@ -9,6 +9,8 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
+	"gopkg.in/guregu/null.v4"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
@@ -241,8 +243,8 @@ type stashIDTable struct {
 }
 
 type stashIDRow struct {
-	StashID  nullString `db:"stash_id"`
-	Endpoint nullString `db:"endpoint"`
+	StashID  null.String `db:"stash_id"`
+	Endpoint null.String `db:"endpoint"`
 }
 
 func (r *stashIDRow) resolve() *models.StashID {
@@ -358,14 +360,14 @@ type scenesMoviesTable struct {
 }
 
 type moviesScenesRow struct {
-	MovieID    nullInt `db:"movie_id"`
-	SceneIndex nullInt `db:"scene_index"`
+	MovieID    null.Int `db:"movie_id"`
+	SceneIndex null.Int `db:"scene_index"`
 }
 
 func (r moviesScenesRow) resolve(sceneID int) models.MoviesScenes {
 	return models.MoviesScenes{
-		MovieID:    r.MovieID.int(),
-		SceneIndex: r.SceneIndex.intPtr(),
+		MovieID:    int(r.MovieID.Int64),
+		SceneIndex: nullIntPtr(r.SceneIndex),
 	}
 }
 
@@ -392,7 +394,7 @@ func (t *scenesMoviesTable) get(ctx context.Context, id int) ([]models.MoviesSce
 
 func (t *scenesMoviesTable) insertJoin(ctx context.Context, id int, v models.MoviesScenes) (sql.Result, error) {
 	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), "movie_id", "scene_index").Vals(
-		goqu.Vals{id, v.MovieID, newNullIntPtr(v.SceneIndex)},
+		goqu.Vals{id, v.MovieID, intFromPtr(v.SceneIndex)},
 	)
 	ret, err := exec(ctx, q)
 	if err != nil {
