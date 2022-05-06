@@ -289,6 +289,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       player.removeRemoteTextTrack(tracks[0] as any);
     }
 
+    // log a message if we can't stream directly
+    const disabledStream = scene.sceneStreams.find((stream) => stream.disabled && stream.disabled_reason);
+    if (disabledStream) {
+      // eslint-disable-next-line no-console
+      console.log("Cannot stream directly: " + disabledStream.disabled_reason);
+    }
+
     player.src(
       scene.sceneStreams
         .filter((stream) => !stream.disabled)
