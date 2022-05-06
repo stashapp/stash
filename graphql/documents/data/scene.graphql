@@ -13,6 +13,10 @@ fragment SceneData on Scene {
   phash
   interactive
   interactive_speed
+  captions {
+    language_code
+    caption_type
+  }
   created_at
   updated_at
 
@@ -37,6 +41,7 @@ fragment SceneData on Scene {
     sprite
     funscript
     interactive_heatmap
+    caption
   }
 
   scene_markers {

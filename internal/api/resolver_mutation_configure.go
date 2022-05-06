@@ -342,6 +342,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		setBool(config.ImageLightboxScaleUp, options.ScaleUp)
 		setBool(config.ImageLightboxResetZoomOnNav, options.ResetZoomOnNav)
 		setString(config.ImageLightboxScrollMode, (*string)(options.ScrollMode))
+
+		if options.ScrollAttemptsBeforeChange != nil {
+			c.Set(config.ImageLightboxScrollAttemptsBeforeChange, *options.ScrollAttemptsBeforeChange)
+		}
 	}
 
 	if input.CSS != nil {

@@ -60,11 +60,12 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
     try {
       await deleteScene();
       Toast.success({ content: toastMessage });
+      props.onClose(true);
     } catch (e) {
       Toast.error(e);
+      props.onClose(false);
     }
     setIsDeleting(false);
-    props.onClose(true);
   }
 
   function funscriptPath(scenePath: string) {

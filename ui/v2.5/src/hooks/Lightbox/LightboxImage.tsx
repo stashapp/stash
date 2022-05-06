@@ -52,6 +52,8 @@ interface IProps {
   scrollMode: GQL.ImageLightboxScrollMode;
   resetPosition?: boolean;
   zoom: number;
+  scrollAttemptsBeforeChange: number;
+  current: boolean;
   // set to true to align image with bottom instead of top
   alignBottom?: boolean;
   setZoom: (v: number) => void;
@@ -68,6 +70,8 @@ export const LightboxImage: React.FC<IProps> = ({
   scrollMode,
   alignBottom,
   zoom,
+  scrollAttemptsBeforeChange,
+  current,
   setZoom,
   resetPosition,
 }) => {
@@ -87,6 +91,8 @@ export const LightboxImage: React.FC<IProps> = ({
   const startPoints = useRef<number[]>([0, 0]);
   const pointerCache = useRef<React.PointerEvent<HTMLDivElement>[]>([]);
   const prevDiff = useRef<number | undefined>();
+
+  const scrollAttempts = useRef(0);
 
   useEffect(() => {
     const box = container.current;
@@ -193,6 +199,12 @@ export const LightboxImage: React.FC<IProps> = ({
 
     setPositionX(newPositionX);
     setPositionY(newPositionY);
+
+    if (alignBottom) {
+      scrollAttempts.current = scrollAttemptsBeforeChange;
+    } else {
+      scrollAttempts.current = -scrollAttemptsBeforeChange;
+    }
   }, [
     width,
     height,
@@ -202,6 +214,7 @@ export const LightboxImage: React.FC<IProps> = ({
     scaleUp,
     alignBottom,
     calculateInitialPosition,
+    scrollAttemptsBeforeChange,
   ]);
 
   useEffect(() => {
@@ -241,26 +254,48 @@ export const LightboxImage: React.FC<IProps> = ({
   }
 
   function onImageScrollPanY(ev: React.WheelEvent<HTMLDivElement>) {
-    const [minY, maxY] = minMaxY(zoom * defaultZoom);
+    if (current) {
+      const [minY, maxY] = minMaxY(zoom * defaultZoom);
 
-    let newPositionY =
-      positionY + (ev.deltaY < 0 ? SCROLL_PAN_STEP : -SCROLL_PAN_STEP);
+      const scrollable = positionY !== maxY || positionY !== minY;
 
-    // #2389 - if scroll up and at top, then go to previous image
-    // if scroll down and at bottom, then go to next image
-    if (newPositionY > maxY && positionY === maxY) {
-      onLeft();
-    } else if (newPositionY < minY && positionY === minY) {
-      onRight();
-    } else {
-      // ensure image doesn't go offscreen
-      newPositionY = Math.max(newPositionY, minY);
-      newPositionY = Math.min(newPositionY, maxY);
+      let newPositionY =
+        positionY + (ev.deltaY < 0 ? SCROLL_PAN_STEP : -SCROLL_PAN_STEP);
 
-      setPositionY(newPositionY);
+      // #2389 - if scroll up and at top, then go to previous image
+      // if scroll down and at bottom, then go to next image
+      if (newPositionY > maxY && positionY === maxY) {
+        // #2535 - require additional scrolls before changing page
+        if (
+          !scrollable ||
+          scrollAttempts.current <= -scrollAttemptsBeforeChange
+        ) {
+          onLeft();
+        } else {
+          scrollAttempts.current--;
+        }
+      } else if (newPositionY < minY && positionY === minY) {
+        // #2535 - require additional scrolls before changing page
+        if (
+          !scrollable ||
+          scrollAttempts.current >= scrollAttemptsBeforeChange
+        ) {
+          onRight();
+        } else {
+          scrollAttempts.current++;
+        }
+      } else {
+        scrollAttempts.current = 0;
+
+        // ensure image doesn't go offscreen
+        newPositionY = Math.max(newPositionY, minY);
+        newPositionY = Math.min(newPositionY, maxY);
+
+        setPositionY(newPositionY);
+      }
+
+      ev.stopPropagation();
     }
-
-    ev.stopPropagation();
   }
 
   function onImageScroll(ev: React.WheelEvent<HTMLDivElement>) {
@@ -418,7 +453,7 @@ export const LightboxImage: React.FC<IProps> = ({
             alt=""
             draggable={false}
             style={{ touchAction: "none" }}
-            onWheel={(e) => onImageScroll(e)}
+            onWheel={current ? (e) => onImageScroll(e) : undefined}
             onMouseDown={(e) => onImageMouseDown(e)}
             onMouseUp={(e) => onImageMouseUp(e)}
             onMouseMove={(e) => onImageMouseOver(e)}

@@ -2,7 +2,9 @@ package manager
 
 import (
 	"context"
+	"path/filepath"
 
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
@@ -20,7 +22,7 @@ func (ss *sceneScreenshotter) GenerateScreenshot(ctx context.Context, probeResul
 }
 
 func (ss *sceneScreenshotter) GenerateThumbnail(ctx context.Context, probeResult *ffmpeg.VideoFile, hash string) error {
-	return ss.g.Screenshot(ctx, probeResult.Path, hash, probeResult.Width, probeResult.Duration, generate.ScreenshotOptions{})
+	return ss.g.Thumbnail(ctx, probeResult.Path, hash, probeResult.Duration, generate.ScreenshotOptions{})
 }
 
 func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
@@ -77,4 +79,49 @@ func (t *ScanTask) scanScene(ctx context.Context) *models.Scene {
 	}
 
 	return retScene
+}
+
+// associates captions to scene/s with the same basename
+func (t *ScanTask) associateCaptions(ctx context.Context) {
+	vExt := config.GetInstance().GetVideoExtensions()
+	captionPath := t.file.Path()
+	captionLang := scene.GetCaptionsLangFromPath(captionPath)
+
+	relatedFiles := scene.GenerateCaptionCandidates(captionPath, vExt)
+	if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
+		var err error
+		sqb := r.Scene()
+
+		for _, scenePath := range relatedFiles {
+			s, er := sqb.FindByPath(scenePath)
+
+			if er != nil {
+				logger.Errorf("Error searching for scene %s: %v", scenePath, er)
+				continue
+			}
+			if s != nil { // found related Scene
+				logger.Debugf("Matched captions to scene %s", s.Path)
+				captions, er := sqb.GetCaptions(s.ID)
+				if er == nil {
+					fileExt := filepath.Ext(captionPath)
+					ext := fileExt[1:]
+					if !scene.IsLangInCaptions(captionLang, ext, captions) { // only update captions if language code is not present
+						newCaption := &models.SceneCaption{
+							LanguageCode: captionLang,
+							Filename:     filepath.Base(captionPath),
+							CaptionType:  ext,
+						}
+						captions = append(captions, newCaption)
+						er = sqb.UpdateCaptions(s.ID, captions)
+						if er == nil {
+							logger.Debugf("Updated captions for scene %s. Added %s", s.Path, captionLang)
+						}
+					}
+				}
+			}
+		}
+		return err
+	}); err != nil {
+		logger.Error(err.Error())
+	}
 }

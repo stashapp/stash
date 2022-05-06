@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/stashapp/stash/internal/manager/config"
@@ -9,6 +10,31 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+type StreamRequestContext struct {
+	context.Context
+	ResponseWriter http.ResponseWriter
+}
+
+func NewStreamRequestContext(w http.ResponseWriter, r *http.Request) *StreamRequestContext {
+	return &StreamRequestContext{
+		Context:        r.Context(),
+		ResponseWriter: w,
+	}
+}
+
+func (c *StreamRequestContext) Cancel() {
+	hj, ok := (c.ResponseWriter).(http.Hijacker)
+	if !ok {
+		return
+	}
+
+	// hijack and close the connection
+	conn, _, _ := hj.Hijack()
+	if conn != nil {
+		conn.Close()
+	}
+}
 
 func KillRunningStreams(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) {
 	instance.ReadLockManager.Cancel(scene.Path)
@@ -31,7 +57,8 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 
 	filepath := GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(fileNamingAlgo))
-	lockCtx := GetInstance().ReadLockManager.ReadLock(r.Context(), filepath)
+	streamRequestCtx := NewStreamRequestContext(w, r)
+	lockCtx := GetInstance().ReadLockManager.ReadLock(streamRequestCtx, filepath)
 	defer lockCtx.Cancel()
 	http.ServeFile(w, r, filepath)
 }
