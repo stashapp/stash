@@ -107,6 +107,7 @@
     },
     "temp_disable": "Disabilita temporaneamente…",
     "temp_enable": "Abilita temporaneamente…",
+    "unset": "Rimuovere Impostazione",
     "use_default": "Usa predefinito",
     "view_random": "Guarda Casuale"
   },
@@ -523,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "La presentazione è disponibile nelle gallerie quando in modalità muro",
-        "heading": "Ritardo Presentazione"
+        "heading": "Ritardo Presentazione (secondi)"
       },
       "title": "Interfaccia Utente"
     }
@@ -701,6 +702,7 @@
     "warmth": "Temperatura Colore"
   },
   "ethnicity": "Etnia",
+  "existing_value": "valore esistente",
   "eye_color": "Colore Occhi",
   "fake_tits": "Tette Finte",
   "false": "Falso",
@@ -731,6 +733,7 @@
   "hasMarkers": "Ha Marcatori",
   "height": "Altezza",
   "help": "Aiuto",
+  "ignore_auto_tag": "Ignora Auto Tag",
   "image": "Immagine",
   "image_count": "Numero Immagini",
   "images": "Immagini",
