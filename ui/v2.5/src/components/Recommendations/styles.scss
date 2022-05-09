@@ -38,6 +38,12 @@
   white-space: normal;
 }
 
+.recommendations-container .studio-card hr,
+.recommendations-container .movie-card hr,
+.recommendations-container .gallery-card hr {
+  margin-top: auto;
+}
+
 /* Slider */
 .slick-slider {
   box-sizing: border-box;

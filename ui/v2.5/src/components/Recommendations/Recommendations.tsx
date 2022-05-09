@@ -56,7 +56,7 @@ const Recommendations: React.FC = () => {
     performerResult.data && performerResult.data.findPerformers;
 
   const galleryfilter = new ListFilterModel(GQL.FilterMode.Galleries);
-  galleryfilter.sortBy = "created_at";
+  galleryfilter.sortBy = "date";
   galleryfilter.sortDirection = GQL.SortDirectionEnum.Desc;
   galleryfilter.itemsPerPage = itemsPerPage;
   const galleryResult = useFindGalleries(galleryfilter);
