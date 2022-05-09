@@ -754,7 +754,6 @@
   "latestMovies": "Latest Movies",
   "latestPerformers": "Latest Performers",
   "latestScenes": "Latest Scenes",
-  "mostActiveStudios": "Most Active Studios",
   "library": "Library",
   "loading": {
     "generic": "Loading…"
@@ -778,6 +777,7 @@
   },
   "megabits_per_second": "{value} megabits per second",
   "metadata": "Metadata",
+  "mostActiveStudios": "Most Active Studios",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",
   "movies": "Movies",
