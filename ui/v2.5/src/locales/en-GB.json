@@ -706,7 +706,7 @@
     "scale": "Scale",
     "warmth": "Warmth"
   },
-  "emptyServer": "You must be new. Add some scenes to your server to view recommendations on this page.",
+  "emptyServer": "Add some scenes to your server to view recommendations on this page.",
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",
@@ -913,6 +913,7 @@
     "scenes_duration": "Scenes duration",
     "scenes_size": "Scenes size"
   },
+  "statistics": "Statistics",
   "status": "Status: {statusText}",
   "studio": "Studio",
   "studio_depth": "Levels (empty for all)",

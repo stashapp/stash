@@ -66,9 +66,9 @@ const messages = defineMessages({
     id: "donate",
     defaultMessage: "Donate",
   },
-  stats: {
-    id: "stats",
-    defaultMessage: "Stats",
+  statistics: {
+    id: "statistics",
+    defaultMessage: "Statistics",
   },
 });
 
@@ -271,7 +271,7 @@ export const MainNavbar: React.FC = () => {
         >
           <Button
             className="minimal d-flex align-items-center h-100"
-            title={intl.formatMessage({ id: "stats" })}
+            title={intl.formatMessage({ id: "statistics" })}
           >
             <Icon icon="chart-bar" />
           </Button>

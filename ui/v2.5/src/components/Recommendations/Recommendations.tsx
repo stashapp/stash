@@ -80,7 +80,7 @@ const Recommendations: React.FC = () => {
     emptyServer: {
       id: "emptyServer",
       defaultMessage:
-        "You must be new. Add some scenes to your server to view recommendations on this page.",
+        "Add some scenes to your server to view recommendations on this page.",
     },
     latestScenes: {
       id: "latestScenes",
