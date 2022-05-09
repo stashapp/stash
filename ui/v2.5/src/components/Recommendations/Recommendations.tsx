@@ -31,21 +31,30 @@ const Recommendations: React.FC = () => {
   scenefilter.sortDirection = GQL.SortDirectionEnum.Desc;
   scenefilter.itemsPerPage = itemsPerPage;
   const sceneResult = useFindScenes(scenefilter);
-  const hasScenes = sceneResult.data && sceneResult.data.findScenes;
+  const hasScenes =
+    sceneResult.data &&
+    sceneResult.data.findScenes &&
+    sceneResult.data.findScenes.count > 0;
 
   const studiofilter = new ListFilterModel(GQL.FilterMode.Studios);
   studiofilter.sortBy = "scenes_count";
   studiofilter.sortDirection = GQL.SortDirectionEnum.Desc;
   studiofilter.itemsPerPage = itemsPerPage;
   const studioResult = useFindStudios(studiofilter);
-  const hasStudios = studioResult.data && studioResult.data.findStudios;
+  const hasStudios =
+    studioResult.data &&
+    studioResult.data.findStudios &&
+    studioResult.data.findStudios.count > 0;
 
   const moviefilter = new ListFilterModel(GQL.FilterMode.Movies);
   moviefilter.sortBy = "date";
   moviefilter.sortDirection = GQL.SortDirectionEnum.Desc;
   moviefilter.itemsPerPage = itemsPerPage;
   const movieResult = useFindMovies(moviefilter);
-  const hasMovies = movieResult.data && movieResult.data.findMovies;
+  const hasMovies =
+    movieResult.data &&
+    movieResult.data.findMovies &&
+    movieResult.data.findMovies.count > 0;
 
   const performerfilter = new ListFilterModel(GQL.FilterMode.Performers);
   performerfilter.sortBy = "created_at";
@@ -53,14 +62,19 @@ const Recommendations: React.FC = () => {
   performerfilter.itemsPerPage = itemsPerPage;
   const performerResult = useFindPerformers(performerfilter);
   const hasPerformers =
-    performerResult.data && performerResult.data.findPerformers;
+    performerResult.data &&
+    performerResult.data.findPerformers &&
+    performerResult.data.findPerformers.count > 0;
 
   const galleryfilter = new ListFilterModel(GQL.FilterMode.Galleries);
   galleryfilter.sortBy = "date";
   galleryfilter.sortDirection = GQL.SortDirectionEnum.Desc;
   galleryfilter.itemsPerPage = itemsPerPage;
   const galleryResult = useFindGalleries(galleryfilter);
-  const hasGalleries = galleryResult.data && galleryResult.data.findGalleries;
+  const hasGalleries =
+    galleryResult.data &&
+    galleryResult.data.findGalleries &&
+    galleryResult.data.findGalleries.count > 0;
 
   const messages = defineMessages({
     emptyServer: {
@@ -142,7 +156,7 @@ const Recommendations: React.FC = () => {
                 <div>
                   <h2>{intl.formatMessage(messages.mostActiveStudios)}</h2>
                 </div>
-                <a href="/studios?sortby=scenes_count">View all</a>
+                <a href="/studios?sortby=scenes_count&sortdir=desc">View all</a>
               </div>
               <Slider {...settings}>
                 {studioResult.data?.findStudios.studios.map((studio) => (

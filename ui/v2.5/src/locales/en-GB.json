@@ -121,6 +121,7 @@
   "birth_year": "Birth Year",
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
+  "captions": "Captions",
   "career_length": "Career Length",
   "component_tagger": {
     "config": {
@@ -705,6 +706,7 @@
     "scale": "Scale",
     "warmth": "Warmth"
   },
+  "emptyServer": "You must be new. Add some scenes to your server to view recommendations on this page.",
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",
@@ -747,8 +749,12 @@
   "instagram": "Instagram",
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",
-  "captions": "Captions",
   "isMissing": "Is Missing",
+  "latestGalleries": "Latest Galleries",
+  "latestMovies": "Latest Movies",
+  "latestPerformers": "Latest Performers",
+  "latestScenes": "Latest Scenes",
+  "mostActiveStudios": "Most Active Studios",
   "library": "Library",
   "loading": {
     "generic": "Loading…"
