@@ -908,12 +908,12 @@
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
+  "statistics": "Statistics",
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
     "scenes_size": "Scenes size"
   },
-  "statistics": "Statistics",
   "status": "Status: {statusText}",
   "studio": "Studio",
   "studio_depth": "Levels (empty for all)",
