@@ -78,28 +78,28 @@ const Recommendations: React.FC = () => {
 
   const messages = defineMessages({
     emptyServer: {
-      id: "emptyServer",
+      id: "empty_server",
       defaultMessage:
         "Add some scenes to your server to view recommendations on this page.",
     },
     latestScenes: {
-      id: "latestScenes",
+      id: "latest_scenes",
       defaultMessage: "Latest Scenes",
     },
     mostActiveStudios: {
-      id: "mostActiveStudios",
+      id: "most_active_studios",
       defaultMessage: "Most Active Studios",
     },
     latestMovies: {
-      id: "latestMovies",
+      id: "latest_movies",
       defaultMessage: "Latest Movies",
     },
     latestPerformers: {
-      id: "latestPerformers",
+      id: "latest_performers",
       defaultMessage: "Latest Performers",
     },
     latestGalleries: {
-      id: "latestGalleries",
+      id: "latest_galleries",
       defaultMessage: "Latest Galleries",
     },
   });

@@ -706,7 +706,7 @@
     "scale": "Scale",
     "warmth": "Warmth"
   },
-  "emptyServer": "Add some scenes to your server to view recommendations on this page.",
+  "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",
@@ -750,10 +750,10 @@
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",
   "isMissing": "Is Missing",
-  "latestGalleries": "Latest Galleries",
-  "latestMovies": "Latest Movies",
-  "latestPerformers": "Latest Performers",
-  "latestScenes": "Latest Scenes",
+  "latest_galleries": "Latest Galleries",
+  "latest_movies": "Latest Movies",
+  "latest_performers": "Latest Performers",
+  "latest_scenes": "Latest Scenes",
   "library": "Library",
   "loading": {
     "generic": "Loading…"
@@ -777,7 +777,7 @@
   },
   "megabits_per_second": "{value} megabits per second",
   "metadata": "Metadata",
-  "mostActiveStudios": "Most Active Studios",
+  "most_active_studios": "Most Active Studios",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",
   "movies": "Movies",
