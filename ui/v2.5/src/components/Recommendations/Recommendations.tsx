@@ -107,7 +107,7 @@ const Recommendations: React.FC = () => {
   var settings = {
     dots: !isTouch,
     arrows: !isTouch,
-    infinite: true,
+    infinite: !isTouch,
     speed: 500,
     variableWidth: true,
     swipeToSlide: true,
