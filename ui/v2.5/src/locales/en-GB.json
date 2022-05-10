@@ -977,7 +977,7 @@
     "submission_successful": "Submission successful",
     "submission_failed": "Submission failed",
     "go_review_draft": "Go to {endpoint_name} to review draft.",
-    "submit_update": "Already exists in Stash-Box"
+    "submit_update": "Already exists in {endpoint_name}"
   },
   "performer_tagger": {
     "network_error": "Network Error",

@@ -8,7 +8,12 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 interface IProps {
   show: boolean;
-  entity: { name?: string | null; id: string; title?: string | null, stash_ids: { stash_id: string; endpoint: string; }[] };
+  entity: {
+    name?: string | null;
+    id: string;
+    title?: string | null;
+    stash_ids: { stash_id: string; endpoint: string }[];
+  };
   boxes: Pick<GQL.StashBox, "name" | "endpoint">[];
   query: DocumentNode;
   onHide: () => void;
@@ -60,7 +65,10 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
     setSelectedBox(Number.parseInt(e.currentTarget.value) ?? 0);
 
   // If the scene has an attached stash_id from that endpoint, the operation will be an update
-  const isUpdate = entity.stash_ids.find(id => id.endpoint === boxes[selectedBox].endpoint) !== undefined;
+  const isUpdate =
+    entity.stash_ids.find(
+      (id) => id.endpoint === boxes[selectedBox].endpoint
+    ) !== undefined;
 
   return (
     <Modal
@@ -91,13 +99,21 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
             </Form.Control>
           </Form.Group>
           <div className="text-right">
-            { isUpdate && (
+            {isUpdate && (
               <span className="mr-2">
-                <FormattedMessage id="stashbox.submit_update" />
+                <FormattedMessage
+                  id="stashbox.submit_update"
+                  values={{ endpoint_name: boxes[selectedBox].name }}
+                />
               </span>
             )}
-            <Button onClick={handleSubmit} variant={isUpdate ? 'primary' : 'success'}>
-              <FormattedMessage id={`actions.${isUpdate ? 'submit_update' : 'submit'}`} />{" "}
+            <Button
+              onClick={handleSubmit}
+              variant={isUpdate ? "primary" : "success"}
+            >
+              <FormattedMessage
+                id={`actions.${isUpdate ? "submit_update" : "submit"}`}
+              />{" "}
             </Button>
           </div>
         </>
