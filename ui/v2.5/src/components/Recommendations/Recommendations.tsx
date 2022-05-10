@@ -115,25 +115,25 @@ const Recommendations: React.FC = () => {
     slidesToScroll: !isTouch ? 5 : 1,
     responsive: [
       {
-      breakpoint: 1909,
-      settings: {
-        slidesToShow: 4,
-        slidesToScroll: !isTouch ? 4 : 1
-      }
+        breakpoint: 1909,
+        settings: {
+          slidesToShow: 4,
+          slidesToScroll: !isTouch ? 4 : 1,
+        },
       },
       {
-      breakpoint: 1542,
-      settings: {
-        slidesToShow: 3,
-        slidesToScroll: !isTouch ? 3 : 1
-      }
+        breakpoint: 1542,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: !isTouch ? 3 : 1,
+        },
       },
       {
         breakpoint: 1170,
         settings: {
           slidesToShow: 2,
-          slidesToScroll: !isTouch ? 2 : 1
-        }
+          slidesToScroll: !isTouch ? 2 : 1,
+        },
       },
       {
         breakpoint: 801,
@@ -141,9 +141,9 @@ const Recommendations: React.FC = () => {
           slidesToShow: 1,
           slidesToScroll: 1,
           dots: false,
-        }
-      }
-    ]
+        },
+      },
+    ],
   };
   const queue = SceneQueue.fromListFilterModel(scenefilter);
 
