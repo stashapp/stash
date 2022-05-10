@@ -876,8 +876,8 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 
 	out := struct {
 		Total    int
-		Duration nullFloat64
-		Size     nullFloat64
+		Duration null.Float
+		Size     null.Float
 	}{}
 	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
@@ -1013,7 +1013,7 @@ func (qb *SceneStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, f
 	}
 }
 
-func sceneCaptionCriterionHandler(qb *sceneQueryBuilder, captions *models.StringCriterionInput) criterionHandlerFunc {
+func sceneCaptionCriterionHandler(qb *SceneStore, captions *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
 		joinTable:    sceneCaptionsTable,
 		stringColumn: sceneCaptionCodeColumn,
