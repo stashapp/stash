@@ -14,12 +14,19 @@ const (
 	Flv      Container = "flv"
 	Mpegts   Container = "mpegts"
 
-	Aac                ProbeAudioCodec = "aac"
-	Mp3                ProbeAudioCodec = "mp3"
-	Opus               ProbeAudioCodec = "opus"
-	Vorbis             ProbeAudioCodec = "vorbis"
-	PcmS16BE           ProbeAudioCodec = "pcm_s16be"
-	PcmS16LE           ProbeAudioCodec = "pcm_s16le"
+	Aac      ProbeAudioCodec = "aac"
+	Mp3      ProbeAudioCodec = "mp3"
+	Opus     ProbeAudioCodec = "opus"
+	Vorbis   ProbeAudioCodec = "vorbis"
+	PcmS16BE ProbeAudioCodec = "pcm_s16be"
+	PcmS16LE ProbeAudioCodec = "pcm_s16le"
+	PcmU8    ProbeAudioCodec = "pcm_u8"
+	PcmF32LE ProbeAudioCodec = "pcm_f32le"
+	PcmS32LE ProbeAudioCodec = "pcm_s32le"
+	PcmS24LE ProbeAudioCodec = "pcm_s24le"
+	PcmAlaw  ProbeAudioCodec = "pcm_alaw"
+	PcmMulaw ProbeAudioCodec = "pcm_mulaw"
+
 	MissingUnsupported ProbeAudioCodec = ""
 
 	Mp4Ffmpeg      string = "mov,mp4,m4a,3gp,3g2,mj2" // browsers support all of them

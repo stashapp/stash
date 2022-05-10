@@ -20,7 +20,20 @@ var validForHevc = []Container{Mp4}
 
 var validAudioForMkv = []ProbeAudioCodec{Aac, Mp3, Vorbis, Opus}
 var validAudioForWebm = []ProbeAudioCodec{Vorbis, Opus}
-var validAudioForMp4 = []ProbeAudioCodec{Aac, Mp3, PcmS16BE, PcmS16LE}
+var validAudioForMp4 = []ProbeAudioCodec{
+	Aac,
+	Mp3,
+	// the following are only valid for Chrome
+	// not in Firefox, so they are disabled
+	// PcmF32LE,
+	// PcmS32LE,
+	// PcmS24LE,
+	// PcmS16BE,
+	// PcmS16LE,
+	// PcmU8,
+	// PcmAlaw,
+	// PcmMulaw,
+}
 
 var (
 	// ErrUnsupportedVideoCodecForBrowser is returned when the video codec is not supported for browser streaming.
@@ -46,7 +59,7 @@ func IsStreamable(videoCodec string, audioCodec ProbeAudioCodec, container Conta
 		return fmt.Errorf("%w: %s/%s", ErrUnsupportedVideoCodecContainer, videoCodec, container)
 	}
 
-	if !IsValidAudioForContainer(audioCodec, container) {
+	if !isValidAudioForContainer(audioCodec, container) {
 		return fmt.Errorf("%w: %s/%s", ErrUnsupportedAudioCodecContainer, audioCodec, container)
 	}
 
@@ -79,7 +92,16 @@ func isValidAudio(audio ProbeAudioCodec, validCodecs []ProbeAudioCodec) bool {
 }
 
 // IsValidAudioForContainer returns true if the audio codec is valid for the container.
-func IsValidAudioForContainer(audio ProbeAudioCodec, format Container) bool {
+func IsValidAudioForContainer(audio ProbeAudioCodec, format Container) error {
+	if isValidAudioForContainer(audio, format) {
+		return nil
+	}
+
+	return fmt.Errorf("%w: %s/%s", ErrUnsupportedAudioCodecContainer, audio, format)
+}
+
+// isValidAudioForContainer returns true if the audio codec is valid for the container.
+func isValidAudioForContainer(audio ProbeAudioCodec, format Container) bool {
 	switch format {
 	case Matroska:
 		return isValidAudio(audio, validAudioForMkv)
