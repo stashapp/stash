@@ -930,7 +930,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		if err != nil {
 			return err
 		}
-		var stashID *string = nil
+		var stashID *string
 		for _, v := range stashIDs {
 			if v.Endpoint == endpoint {
 				stashID = &v.StashID
@@ -1028,7 +1028,7 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		if err != nil {
 			return err
 		}
-		var stashID *string = nil
+		var stashID *string
 		for _, v := range stashIDs {
 			if v.Endpoint == endpoint {
 				stashID = &v.StashID
