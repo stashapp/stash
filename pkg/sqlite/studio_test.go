@@ -486,7 +486,7 @@ func verifyStudiosSceneCount(t *testing.T, sceneCountCriterion models.IntCriteri
 		assert.Greater(t, len(studios), 0)
 
 		for _, studio := range studios {
-			sceneCount, err := sqlite.SceneReaderWriter.CountByStudioID(ctx, studio.ID)
+			sceneCount, err := db.Scene.CountByStudioID(ctx, studio.ID)
 			if err != nil {
 				return err
 			}

@@ -63,6 +63,7 @@ type Database struct {
 	Folder  *FolderStore
 	Image   *ImageStore
 	Gallery *GalleryStore
+	Scene   *SceneStore
 
 	db     *sqlx.DB
 	dbPath string
@@ -78,6 +79,7 @@ func NewDatabase() *Database {
 		Folder:  NewFolderStore(),
 		Image:   NewImageStore(),
 		Gallery: NewGalleryStore(),
+		Scene:   NewSceneStore(),
 	}
 }
 

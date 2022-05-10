@@ -11,8 +11,9 @@ import (
 
 func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
 	var container ffmpeg.Container
-	if scene.Format != nil {
-		container = ffmpeg.Container(scene.Format())
+	format := scene.Format()
+	if format != "" {
+		container = ffmpeg.Container(format)
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
 		ffprobe := GetInstance().FFProbe

@@ -645,7 +645,7 @@ func verifyPerformersSceneCount(t *testing.T, sceneCountCriterion models.IntCrit
 		assert.Greater(t, len(performers), 0)
 
 		for _, performer := range performers {
-			ids, err := sqlite.SceneReaderWriter.FindByPerformerID(ctx, performer.ID)
+			ids, err := db.Scene.FindByPerformerID(ctx, performer.ID)
 			if err != nil {
 				return err
 			}

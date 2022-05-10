@@ -6,6 +6,7 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -20,6 +21,11 @@ type GalleryReaderWriter interface {
 	gallery.FinderCreatorUpdater
 }
 
+type SceneReaderWriter interface {
+	models.SceneReaderWriter
+	scene.CreatorUpdater
+}
+
 type Repository struct {
 	models.TxnManager
 
@@ -27,7 +33,7 @@ type Repository struct {
 	Image       ImageReaderWriter
 	Movie       models.MovieReaderWriter
 	Performer   models.PerformerReaderWriter
-	Scene       models.SceneReaderWriter
+	Scene       SceneReaderWriter
 	SceneMarker models.SceneMarkerReaderWriter
 	ScrapedItem models.ScrapedItemReaderWriter
 	Studio      models.StudioReaderWriter
@@ -48,7 +54,7 @@ func sqliteRepository(d *sqlite.Database) Repository {
 		Image:       d.Image,
 		Movie:       txnRepo.Movie,
 		Performer:   txnRepo.Performer,
-		Scene:       txnRepo.Scene,
+		Scene:       d.Scene,
 		SceneMarker: txnRepo.SceneMarker,
 		ScrapedItem: txnRepo.ScrapedItem,
 		Studio:      txnRepo.Studio,

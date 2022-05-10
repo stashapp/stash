@@ -18,7 +18,7 @@ type GenerateInteractiveHeatmapSpeedTask struct {
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) GetDescription() string {
-	return fmt.Sprintf("Generating heatmap and speed for %s", t.Scene.Path)
+	return fmt.Sprintf("Generating heatmap and speed for %s", t.Scene.Path())
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
@@ -41,23 +41,12 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 
 	median := generator.InteractiveSpeed
 
-	var s *models.Scene
-
-	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
-		var err error
-		s, err = t.TxnManager.Scene.FindByPath(ctx, t.Scene.Path())
-		return err
-	}); err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
 	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		qb := t.TxnManager.Scene
 		scenePartial := models.ScenePartial{
 			InteractiveSpeed: models.NewOptionalInt(median),
 		}
-		_, err := qb.UpdatePartial(ctx, s.ID, scenePartial)
+		_, err := qb.UpdatePartial(ctx, t.Scene.ID, scenePartial)
 		return err
 	}); err != nil {
 		logger.Error(err.Error())

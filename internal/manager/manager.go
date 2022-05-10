@@ -31,6 +31,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -336,6 +337,13 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 				Filter: file.FilterFunc(galleryFileFilter),
 				Handler: &gallery.ScanHandler{
 					CreatorUpdater: db.Gallery,
+					PluginCache:    pluginCache,
+				},
+			},
+			&file.FilteredHandler{
+				Filter: file.FilterFunc(videoFileFilter),
+				Handler: &scene.ScanHandler{
+					CreatorUpdater: db.Scene,
 					PluginCache:    pluginCache,
 				},
 			},

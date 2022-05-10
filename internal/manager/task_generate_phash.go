@@ -53,5 +53,5 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 }
 
 func (t *GeneratePhashTask) shouldGenerate() bool {
-	return t.Overwrite || t.Scene.Phash == nil
+	return t.Overwrite || t.Scene.Phash() == 0
 }

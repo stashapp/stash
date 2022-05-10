@@ -14,45 +14,32 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_sceneQueryBuilder_Create(t *testing.T) {
 	var (
-		path                   = "path"
-		title                  = "title"
-		checksum               = "checksum"
-		oshash                 = "oshash"
-		details                = "details"
-		url                    = "url"
-		rating                 = 3
-		ocounter               = 5
-		size                   = "1234"
-		duration               = 1.234
-		width                  = 640
-		height                 = 480
-		framerate              = 2.345
-		bitrate          int64 = 234
-		videoCodec             = "videoCodec"
-		audioCodec             = "audioCodec"
-		format                 = "format"
-		fileModTime            = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-		createdAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		phash            int64 = 4567
-		interactive            = true
-		interactiveSpeed       = 100
-		sceneIndex             = 123
-		sceneIndex2            = 234
-		endpoint1              = "endpoint1"
-		endpoint2              = "endpoint2"
-		stashID1               = "stashid1"
-		stashID2               = "stashid2"
+		title            = "title"
+		details          = "details"
+		url              = "url"
+		rating           = 3
+		ocounter         = 5
+		createdAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		interactive      = true
+		interactiveSpeed = 100
+		sceneIndex       = 123
+		sceneIndex2      = 234
+		endpoint1        = "endpoint1"
+		endpoint2        = "endpoint2"
+		stashID1         = "stashid1"
+		stashID2         = "stashid2"
 
 		date = models.NewDate("2003-02-01")
+
+		videoFile = makeFileWithID(fileIdxStartVideoFiles)
 	)
 
 	tests := []struct {
@@ -63,9 +50,6 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		{
 			"full",
 			models.Scene{
-				Path:             path,
-				Checksum:         &checksum,
-				OSHash:           &oshash,
 				Title:            title,
 				Details:          details,
 				URL:              url,
@@ -73,18 +57,51 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Rating:           &rating,
 				Organized:        true,
 				OCounter:         ocounter,
-				Size:             &size,
-				Duration:         &duration,
-				VideoCodec:       &videoCodec,
-				AudioCodec:       &audioCodec,
-				Format:           &format,
-				Width:            &width,
-				Height:           &height,
-				Framerate:        &framerate,
-				Bitrate:          &bitrate,
 				StudioID:         &studioIDs[studioIdxWithScene],
-				FileModTime:      &fileModTime,
-				Phash:            &phash,
+				CreatedAt:        createdAt,
+				UpdatedAt:        updatedAt,
+				Interactive:      interactive,
+				InteractiveSpeed: &interactiveSpeed,
+				GalleryIDs:       []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:           []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs:     []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+				Movies: []models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithScene],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				},
+				StashIDs: []models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				},
+			},
+			false,
+		},
+		{
+			"with file",
+			models.Scene{
+				Title:     title,
+				Details:   details,
+				URL:       url,
+				Date:      &date,
+				Rating:    &rating,
+				Organized: true,
+				OCounter:  ocounter,
+				StudioID:  &studioIDs[studioIdxWithScene],
+				Files: []*file.VideoFile{
+					videoFile.(*file.VideoFile),
+				},
 				CreatedAt:        createdAt,
 				UpdatedAt:        updatedAt,
 				Interactive:      interactive,
@@ -157,14 +174,19 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
 
+			var fileIDs []file.ID
+			for _, f := range tt.newObject.Files {
+				fileIDs = append(fileIDs, f.ID)
+			}
+
 			s := tt.newObject
-			if err := qb.Create(ctx, &s); (err != nil) != tt.wantErr {
+			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
 				t.Errorf("sceneQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
 			}
 
@@ -186,6 +208,9 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
 			}
 
+			if !assert.NotNil(found) {
+				return
+			}
 			assert.Equal(copy, *found)
 
 			return
@@ -193,37 +218,29 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 	}
 }
 
+func clearSceneFileIDs(scene *models.Scene) {
+	for _, f := range scene.Files {
+		f.Base().ID = 0
+	}
+}
+
 func Test_sceneQueryBuilder_Update(t *testing.T) {
 	var (
-		path                   = "path"
-		title                  = "title"
-		checksum               = "checksum"
-		oshash                 = "oshash"
-		details                = "details"
-		url                    = "url"
-		rating                 = 3
-		ocounter               = 5
-		size                   = "1234"
-		duration               = 1.234
-		width                  = 640
-		height                 = 480
-		framerate              = 2.345
-		bitrate          int64 = 234
-		videoCodec             = "videoCodec"
-		audioCodec             = "audioCodec"
-		format                 = "format"
-		fileModTime            = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-		createdAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		phash            int64 = 4567
-		interactive            = true
-		interactiveSpeed       = 100
-		sceneIndex             = 123
-		sceneIndex2            = 234
-		endpoint1              = "endpoint1"
-		endpoint2              = "endpoint2"
-		stashID1               = "stashid1"
-		stashID2               = "stashid2"
+		title            = "title"
+		details          = "details"
+		url              = "url"
+		rating           = 3
+		ocounter         = 5
+		createdAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		interactive      = true
+		interactiveSpeed = 100
+		sceneIndex       = 123
+		sceneIndex2      = 234
+		endpoint1        = "endpoint1"
+		endpoint2        = "endpoint2"
+		stashID1         = "stashid1"
+		stashID2         = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 	)
@@ -236,10 +253,10 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		{
 			"full",
 			&models.Scene{
-				ID:               sceneIDs[sceneIdxWithGallery],
-				Path:             path,
-				Checksum:         &checksum,
-				OSHash:           &oshash,
+				ID: sceneIDs[sceneIdxWithGallery],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithGallery),
+				},
 				Title:            title,
 				Details:          details,
 				URL:              url,
@@ -247,18 +264,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Rating:           &rating,
 				Organized:        true,
 				OCounter:         ocounter,
-				Size:             &size,
-				Duration:         &duration,
-				VideoCodec:       &videoCodec,
-				AudioCodec:       &audioCodec,
-				Format:           &format,
-				Width:            &width,
-				Height:           &height,
-				Framerate:        &framerate,
-				Bitrate:          &bitrate,
 				StudioID:         &studioIDs[studioIdxWithScene],
-				FileModTime:      &fileModTime,
-				Phash:            &phash,
 				CreatedAt:        createdAt,
 				UpdatedAt:        updatedAt,
 				Interactive:      interactive,
@@ -292,48 +298,60 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		{
 			"clear nullables",
 			&models.Scene{
-				ID:       sceneIDs[sceneIdxWithSpacedName],
-				Checksum: &checksum,
+				ID: sceneIDs[sceneIdxWithSpacedName],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithSpacedName),
+				},
 			},
 			false,
 		},
 		{
 			"clear gallery ids",
 			&models.Scene{
-				ID:       sceneIDs[sceneIdxWithGallery],
-				Checksum: &checksum,
+				ID: sceneIDs[sceneIdxWithGallery],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithGallery),
+				},
 			},
 			false,
 		},
 		{
 			"clear tag ids",
 			&models.Scene{
-				ID:       sceneIDs[sceneIdxWithTag],
-				Checksum: &checksum,
+				ID: sceneIDs[sceneIdxWithTag],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithTag),
+				},
 			},
 			false,
 		},
 		{
 			"clear performer ids",
 			&models.Scene{
-				ID:       sceneIDs[sceneIdxWithPerformer],
-				Checksum: &checksum,
+				ID: sceneIDs[sceneIdxWithPerformer],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithPerformer),
+				},
 			},
 			false,
 		},
 		{
 			"clear movies",
 			&models.Scene{
-				ID:       sceneIDs[sceneIdxWithMovie],
-				Checksum: &checksum,
+				ID: sceneIDs[sceneIdxWithMovie],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithMovie),
+				},
 			},
 			false,
 		},
 		{
 			"invalid studio id",
 			&models.Scene{
-				ID:       sceneIDs[sceneIdxWithGallery],
-				Checksum: &checksum,
+				ID: sceneIDs[sceneIdxWithGallery],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithGallery),
+				},
 				StudioID: &invalidID,
 			},
 			true,
@@ -341,8 +359,10 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid gallery id",
 			&models.Scene{
-				ID:         sceneIDs[sceneIdxWithGallery],
-				Checksum:   &checksum,
+				ID: sceneIDs[sceneIdxWithGallery],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithGallery),
+				},
 				GalleryIDs: []int{invalidID},
 			},
 			true,
@@ -350,17 +370,21 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid tag id",
 			&models.Scene{
-				ID:       sceneIDs[sceneIdxWithGallery],
-				Checksum: &checksum,
-				TagIDs:   []int{invalidID},
+				ID: sceneIDs[sceneIdxWithGallery],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithGallery),
+				},
+				TagIDs: []int{invalidID},
 			},
 			true,
 		},
 		{
 			"invalid performer id",
 			&models.Scene{
-				ID:           sceneIDs[sceneIdxWithGallery],
-				Checksum:     &checksum,
+				ID: sceneIDs[sceneIdxWithGallery],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithGallery),
+				},
 				PerformerIDs: []int{invalidID},
 			},
 			true,
@@ -368,8 +392,10 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid movie id",
 			&models.Scene{
-				ID:       sceneIDs[sceneIdxWithSpacedName],
-				Checksum: &checksum,
+				ID: sceneIDs[sceneIdxWithSpacedName],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithSpacedName),
+				},
 				Movies: []models.MoviesScenes{
 					{
 						MovieID:    invalidID,
@@ -381,7 +407,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -401,6 +427,9 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
 			}
 
+			// ignore file ids
+			clearSceneFileIDs(s)
+
 			assert.Equal(copy, *s)
 		})
 	}
@@ -409,24 +438,12 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 func clearScenePartial() models.ScenePartial {
 	// leave mandatory fields
 	return models.ScenePartial{
-		OSHash:           models.OptionalString{Set: true, Null: true},
 		Title:            models.OptionalString{Set: true, Null: true},
 		Details:          models.OptionalString{Set: true, Null: true},
 		URL:              models.OptionalString{Set: true, Null: true},
 		Date:             models.OptionalDate{Set: true, Null: true},
 		Rating:           models.OptionalInt{Set: true, Null: true},
-		Size:             models.OptionalString{Set: true, Null: true},
-		Duration:         models.OptionalFloat64{Set: true, Null: true},
-		VideoCodec:       models.OptionalString{Set: true, Null: true},
-		AudioCodec:       models.OptionalString{Set: true, Null: true},
-		Format:           models.OptionalString{Set: true, Null: true},
-		Width:            models.OptionalInt{Set: true, Null: true},
-		Height:           models.OptionalInt{Set: true, Null: true},
-		Framerate:        models.OptionalFloat64{Set: true, Null: true},
-		Bitrate:          models.OptionalInt64{Set: true, Null: true},
 		StudioID:         models.OptionalInt{Set: true, Null: true},
-		FileModTime:      models.OptionalTime{Set: true, Null: true},
-		Phash:            models.OptionalInt64{Set: true, Null: true},
 		InteractiveSpeed: models.OptionalInt{Set: true, Null: true},
 		GalleryIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		TagIDs:           &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
@@ -437,35 +454,21 @@ func clearScenePartial() models.ScenePartial {
 
 func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		path                   = "path"
-		title                  = "title"
-		checksum               = "checksum"
-		oshash                 = "oshash"
-		details                = "details"
-		url                    = "url"
-		rating                 = 3
-		ocounter               = 5
-		size                   = "1234"
-		duration               = 1.234
-		width                  = 640
-		height                 = 480
-		framerate              = 2.345
-		bitrate          int64 = 234
-		videoCodec             = "videoCodec"
-		audioCodec             = "audioCodec"
-		format                 = "format"
-		fileModTime            = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-		createdAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		phash            int64 = 4567
-		interactive            = true
-		interactiveSpeed       = 100
-		sceneIndex             = 123
-		sceneIndex2            = 234
-		endpoint1              = "endpoint1"
-		endpoint2              = "endpoint2"
-		stashID1               = "stashid1"
-		stashID2               = "stashid2"
+		title            = "title"
+		details          = "details"
+		url              = "url"
+		rating           = 3
+		ocounter         = 5
+		createdAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		interactive      = true
+		interactiveSpeed = 100
+		sceneIndex       = 123
+		sceneIndex2      = 234
+		endpoint1        = "endpoint1"
+		endpoint2        = "endpoint2"
+		stashID1         = "stashid1"
+		stashID2         = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 	)
@@ -481,9 +484,6 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			sceneIDs[sceneIdxWithSpacedName],
 			models.ScenePartial{
-				Path:             models.NewOptionalString(path),
-				Checksum:         models.NewOptionalString(checksum),
-				OSHash:           models.NewOptionalString(oshash),
 				Title:            models.NewOptionalString(title),
 				Details:          models.NewOptionalString(details),
 				URL:              models.NewOptionalString(url),
@@ -491,18 +491,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Rating:           models.NewOptionalInt(rating),
 				Organized:        models.NewOptionalBool(true),
 				OCounter:         models.NewOptionalInt(ocounter),
-				Size:             models.NewOptionalString(size),
-				Duration:         models.NewOptionalFloat64(duration),
-				VideoCodec:       models.NewOptionalString(videoCodec),
-				AudioCodec:       models.NewOptionalString(audioCodec),
-				Format:           models.NewOptionalString(format),
-				Width:            models.NewOptionalInt(width),
-				Height:           models.NewOptionalInt(height),
-				Framerate:        models.NewOptionalFloat64(framerate),
-				Bitrate:          models.NewOptionalInt64(bitrate),
 				StudioID:         models.NewOptionalInt(studioIDs[studioIdxWithScene]),
-				FileModTime:      models.NewOptionalTime(fileModTime),
-				Phash:            models.NewOptionalInt64(phash),
 				CreatedAt:        models.NewOptionalTime(createdAt),
 				UpdatedAt:        models.NewOptionalTime(updatedAt),
 				Interactive:      models.NewOptionalBool(interactive),
@@ -547,10 +536,10 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				},
 			},
 			models.Scene{
-				ID:               sceneIDs[sceneIdxWithSpacedName],
-				Path:             path,
-				Checksum:         &checksum,
-				OSHash:           &oshash,
+				ID: sceneIDs[sceneIdxWithSpacedName],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithSpacedName),
+				},
 				Title:            title,
 				Details:          details,
 				URL:              url,
@@ -558,18 +547,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Rating:           &rating,
 				Organized:        true,
 				OCounter:         ocounter,
-				Size:             &size,
-				Duration:         &duration,
-				VideoCodec:       &videoCodec,
-				AudioCodec:       &audioCodec,
-				Format:           &format,
-				Width:            &width,
-				Height:           &height,
-				Framerate:        &framerate,
-				Bitrate:          &bitrate,
 				StudioID:         &studioIDs[studioIdxWithScene],
-				FileModTime:      &fileModTime,
-				Phash:            &phash,
 				CreatedAt:        createdAt,
 				UpdatedAt:        updatedAt,
 				Interactive:      interactive,
@@ -605,9 +583,10 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			sceneIDs[sceneIdxWithSpacedName],
 			clearScenePartial(),
 			models.Scene{
-				ID:       sceneIDs[sceneIdxWithSpacedName],
-				Path:     getSceneStringValue(sceneIdxWithSpacedName, pathField),
-				Checksum: getSceneStringPtr(sceneIdxWithSpacedName, checksumField),
+				ID: sceneIDs[sceneIdxWithSpacedName],
+				Files: []*file.VideoFile{
+					makeSceneFile(sceneIdxWithSpacedName),
+				},
 			},
 			false,
 		},
@@ -620,7 +599,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		qb := sqlite.SceneReaderWriter
+		qb := db.Scene
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -635,12 +614,18 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				return
 			}
 
+			// ignore file ids
+			clearSceneFileIDs(got)
+
 			assert.Equal(tt.want, *got)
 
 			s, err := qb.Find(ctx, tt.id)
 			if err != nil {
 				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
 			}
+
+			// ignore file ids
+			clearSceneFileIDs(s)
 
 			assert.Equal(tt.want, *s)
 		})
@@ -1059,7 +1044,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		qb := sqlite.SceneReaderWriter
+		qb := db.Scene
 
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
@@ -1125,7 +1110,7 @@ func Test_sceneQueryBuilder_IncrementOCounter(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1168,7 +1153,7 @@ func Test_sceneQueryBuilder_DecrementOCounter(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1211,7 +1196,7 @@ func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1245,7 +1230,7 @@ func Test_sceneQueryBuilder_Destroy(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1273,6 +1258,8 @@ func makeSceneWithID(index int) *models.Scene {
 	if ret.Date != nil && ret.Date.IsZero() {
 		ret.Date = nil
 	}
+
+	ret.Files = []*file.VideoFile{makeSceneFile(index)}
 
 	return ret
 }
@@ -1322,7 +1309,7 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1332,6 +1319,10 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 				if (err != nil) != tt.wantErr {
 					t.Errorf("sceneQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
 					return nil
+				}
+
+				if got != nil {
+					clearSceneFileIDs(got)
 				}
 
 				assert.Equal(tt.want, got)
@@ -1372,7 +1363,7 @@ func Test_sceneQueryBuilder_FindMany(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1381,6 +1372,10 @@ func Test_sceneQueryBuilder_FindMany(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+
+			for _, s := range got {
+				clearSceneFileIDs(s)
 			}
 
 			assert.Equal(tt.want, got)
@@ -1396,13 +1391,13 @@ func Test_sceneQueryBuilder_FindByChecksum(t *testing.T) {
 	tests := []struct {
 		name     string
 		checksum string
-		want     *models.Scene
+		want     []*models.Scene
 		wantErr  bool
 	}{
 		{
 			"valid",
 			getChecksum(sceneIdxWithSpacedName),
-			makeSceneWithID(sceneIdxWithSpacedName),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
 			false,
 		},
 		{
@@ -1414,42 +1409,47 @@ func Test_sceneQueryBuilder_FindByChecksum(t *testing.T) {
 		{
 			"with galleries",
 			getChecksum(sceneIdxWithGallery),
-			makeSceneWithID(sceneIdxWithGallery),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGallery)},
 			false,
 		},
 		{
 			"with performers",
 			getChecksum(sceneIdxWithTwoPerformers),
-			makeSceneWithID(sceneIdxWithTwoPerformers),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoPerformers)},
 			false,
 		},
 		{
 			"with tags",
 			getChecksum(sceneIdxWithTwoTags),
-			makeSceneWithID(sceneIdxWithTwoTags),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoTags)},
 			false,
 		},
 		{
 			"with movies",
 			getChecksum(sceneIdxWithMovie),
-			makeSceneWithID(sceneIdxWithMovie),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithMovie)},
 			false,
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			withTxn(func(ctx context.Context) error {
+				assert := assert.New(t)
 				got, err := qb.FindByChecksum(ctx, tt.checksum)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("sceneQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
 					return nil
 				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("sceneQueryBuilder.FindByChecksum() = %v, want %v", got, tt.want)
+
+				for _, s := range got {
+					clearSceneFileIDs(s)
 				}
+
+				assert.Equal(tt.want, got)
+
 				return nil
 			})
 		})
@@ -1464,13 +1464,13 @@ func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
 	tests := []struct {
 		name    string
 		oshash  string
-		want    *models.Scene
+		want    []*models.Scene
 		wantErr bool
 	}{
 		{
 			"valid",
 			getOSHash(sceneIdxWithSpacedName),
-			makeSceneWithID(sceneIdxWithSpacedName),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
 			false,
 		},
 		{
@@ -1482,30 +1482,30 @@ func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
 		{
 			"with galleries",
 			getOSHash(sceneIdxWithGallery),
-			makeSceneWithID(sceneIdxWithGallery),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGallery)},
 			false,
 		},
 		{
 			"with performers",
 			getOSHash(sceneIdxWithTwoPerformers),
-			makeSceneWithID(sceneIdxWithTwoPerformers),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoPerformers)},
 			false,
 		},
 		{
 			"with tags",
 			getOSHash(sceneIdxWithTwoTags),
-			makeSceneWithID(sceneIdxWithTwoTags),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoTags)},
 			false,
 		},
 		{
 			"with movies",
 			getOSHash(sceneIdxWithMovie),
-			makeSceneWithID(sceneIdxWithMovie),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithMovie)},
 			false,
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1515,6 +1515,11 @@ func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
 					t.Errorf("sceneQueryBuilder.FindByOSHash() error = %v, wantErr %v", err, tt.wantErr)
 					return nil
 				}
+
+				for _, s := range got {
+					clearSceneFileIDs(s)
+				}
+
 				if !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("sceneQueryBuilder.FindByOSHash() = %v, want %v", got, tt.want)
 				}
@@ -1526,19 +1531,19 @@ func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
 
 func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 	getPath := func(index int) string {
-		return getSceneStringValue(index, pathField)
+		return getFilePath(folderIdxWithSceneFiles, getSceneBasename(index))
 	}
 
 	tests := []struct {
 		name    string
 		path    string
-		want    *models.Scene
+		want    []*models.Scene
 		wantErr bool
 	}{
 		{
 			"valid",
 			getPath(sceneIdxWithSpacedName),
-			makeSceneWithID(sceneIdxWithSpacedName),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
 			false,
 		},
 		{
@@ -1550,42 +1555,47 @@ func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 		{
 			"with galleries",
 			getPath(sceneIdxWithGallery),
-			makeSceneWithID(sceneIdxWithGallery),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGallery)},
 			false,
 		},
 		{
 			"with performers",
 			getPath(sceneIdxWithTwoPerformers),
-			makeSceneWithID(sceneIdxWithTwoPerformers),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoPerformers)},
 			false,
 		},
 		{
 			"with tags",
 			getPath(sceneIdxWithTwoTags),
-			makeSceneWithID(sceneIdxWithTwoTags),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoTags)},
 			false,
 		},
 		{
 			"with movies",
 			getPath(sceneIdxWithMovie),
-			makeSceneWithID(sceneIdxWithMovie),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithMovie)},
 			false,
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			withTxn(func(ctx context.Context) error {
+				assert := assert.New(t)
 				got, err := qb.FindByPath(ctx, tt.path)
 				if (err != nil) != tt.wantErr {
 					t.Errorf("sceneQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
 					return nil
 				}
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("sceneQueryBuilder.FindByPath() = %v, want %v", got, tt.want)
+
+				for _, s := range got {
+					clearSceneFileIDs(s)
 				}
+
+				assert.Equal(tt.want, got)
+
 				return nil
 			})
 		})
@@ -1613,7 +1623,7 @@ func Test_sceneQueryBuilder_FindByGalleryID(t *testing.T) {
 		},
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
@@ -1624,6 +1634,10 @@ func Test_sceneQueryBuilder_FindByGalleryID(t *testing.T) {
 				return
 			}
 
+			for _, s := range got {
+				clearSceneFileIDs(s)
+			}
+
 			assert.Equal(tt.want, got)
 			return
 		})
@@ -1632,7 +1646,7 @@ func Test_sceneQueryBuilder_FindByGalleryID(t *testing.T) {
 
 func TestSceneCountByPerformerID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		count, err := sqb.CountByPerformerID(ctx, performerIDs[performerIdxWithScene])
 
 		if err != nil {
@@ -1655,7 +1669,7 @@ func TestSceneCountByPerformerID(t *testing.T) {
 
 func TestSceneWall(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		const sceneIdx = 2
 		wallQuery := getSceneStringValue(sceneIdx, "Details")
@@ -1669,7 +1683,8 @@ func TestSceneWall(t *testing.T) {
 		assert.Len(t, scenes, 1)
 		scene := scenes[0]
 		assert.Equal(t, sceneIDs[sceneIdx], scene.ID)
-		assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
+		scenePath := getFilePath(folderIdxWithSceneFiles, getSceneBasename(sceneIdx))
+		assert.Equal(t, scenePath, scene.Path())
 
 		wallQuery = "not exist"
 		scenes, err = sqb.Wall(ctx, &wallQuery)
@@ -1691,7 +1706,7 @@ func TestSceneQueryQ(t *testing.T) {
 	q := getSceneStringValue(sceneIdx, titleField)
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		sceneQueryQ(ctx, t, sqb, q, sceneIdx)
 
@@ -1709,6 +1724,7 @@ func queryScene(ctx context.Context, t *testing.T, sqb models.SceneReader, scene
 	})
 	if err != nil {
 		t.Errorf("Error querying scene: %v", err)
+		return nil
 	}
 
 	scenes, err := result.Resolve(ctx)
@@ -1817,11 +1833,13 @@ func TestSceneQueryPathOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
-		assert.Len(t, scenes, 2)
+		if !assert.Len(t, scenes, 2) {
+			return nil
+		}
 		assert.Equal(t, scene1Path, scenes[0].Path)
 		assert.Equal(t, scene2Path, scenes[1].Path)
 
@@ -1848,11 +1866,13 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
-		assert.Len(t, scenes, 1)
+		if !assert.Len(t, scenes, 1) {
+			return nil
+		}
 		assert.Equal(t, scenePath, scenes[0].Path)
 		assert.Equal(t, sceneRating, *scenes[0].Rating)
 
@@ -1883,12 +1903,12 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			verifyString(t, scene.Path, pathCriterion)
+			verifyString(t, scene.Path(), pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
 			verifyIntPtr(t, scene.Rating, ratingCriterion)
 		}
@@ -1914,7 +1934,7 @@ func TestSceneIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		queryOptions := models.SceneQueryOptions{
 			SceneFilter: sceneFilter,
@@ -1941,7 +1961,7 @@ func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func
 	t.Helper()
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		scenes := queryScene(ctx, t, sqb, &filter, nil)
 
@@ -1958,7 +1978,7 @@ func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func
 
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Path: &pathCriterion,
 		}
@@ -1966,7 +1986,7 @@ func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			verifyString(t, scene.Path, pathCriterion)
+			verifyString(t, scene.Path(), pathCriterion)
 		}
 
 		return nil
@@ -2083,7 +2103,7 @@ func TestSceneQueryRating(t *testing.T) {
 
 func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Rating: &ratingCriterion,
 		}
@@ -2165,7 +2185,7 @@ func TestSceneQueryOCounter(t *testing.T) {
 
 func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			OCounter: &oCounterCriterion,
 		}
@@ -2224,7 +2244,7 @@ func TestSceneQueryDuration(t *testing.T) {
 
 func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Duration: &durationCriterion,
 		}
@@ -2232,16 +2252,13 @@ func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInp
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			var duration float64
-			if scene.Duration != nil {
-				duration = *scene.Duration
-			}
+			duration := scene.Duration()
 			if durationCriterion.Modifier == models.CriterionModifierEquals {
 				assert.True(t, duration >= float64(durationCriterion.Value) && duration < float64(durationCriterion.Value+1))
 			} else if durationCriterion.Modifier == models.CriterionModifierNotEquals {
 				assert.True(t, duration < float64(durationCriterion.Value) || duration >= float64(durationCriterion.Value+1))
 			} else {
-				verifyFloat64Ptr(t, scene.Duration, durationCriterion)
+				verifyFloat64(t, duration, durationCriterion)
 			}
 		}
 
@@ -2249,25 +2266,19 @@ func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInp
 	})
 }
 
-func verifyFloat64(t *testing.T, value sql.NullFloat64, criterion models.IntCriterionInput) {
+func verifyFloat64(t *testing.T, value float64, criterion models.IntCriterionInput) {
 	assert := assert.New(t)
-	if criterion.Modifier == models.CriterionModifierIsNull {
-		assert.False(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierNotNull {
-		assert.True(value.Valid, "expect is null values to be null")
-	}
 	if criterion.Modifier == models.CriterionModifierEquals {
-		assert.Equal(float64(criterion.Value), value.Float64)
+		assert.Equal(float64(criterion.Value), value)
 	}
 	if criterion.Modifier == models.CriterionModifierNotEquals {
-		assert.NotEqual(float64(criterion.Value), value.Float64)
+		assert.NotEqual(float64(criterion.Value), value)
 	}
 	if criterion.Modifier == models.CriterionModifierGreaterThan {
-		assert.True(value.Float64 > float64(criterion.Value))
+		assert.True(value > float64(criterion.Value))
 	}
 	if criterion.Modifier == models.CriterionModifierLessThan {
-		assert.True(value.Float64 < float64(criterion.Value))
+		assert.True(value < float64(criterion.Value))
 	}
 }
 
@@ -2300,7 +2311,7 @@ func TestSceneQueryResolution(t *testing.T) {
 
 func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Resolution: &models.ResolutionCriterionInput{
 				Value:    resolution,
@@ -2311,7 +2322,12 @@ func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			verifySceneResolution(t, scene.Height, resolution)
+			f := scene.PrimaryFile()
+			height := 0
+			if f != nil {
+				height = f.Height
+			}
+			verifySceneResolution(t, &height, resolution)
 		}
 
 		return nil
@@ -2354,14 +2370,14 @@ func TestAllResolutionsHaveResolutionRange(t *testing.T) {
 
 func TestSceneQueryResolutionModifiers(t *testing.T) {
 	if err := withRollbackTxn(func(ctx context.Context) error {
-		qb := sqlite.SceneReaderWriter
-		sceneNoResolution, _ := createScene(ctx, qb, 0, 0)
-		firstScene540P, _ := createScene(ctx, qb, 960, 540)
-		secondScene540P, _ := createScene(ctx, qb, 1280, 719)
-		firstScene720P, _ := createScene(ctx, qb, 1280, 720)
-		secondScene720P, _ := createScene(ctx, qb, 1280, 721)
-		thirdScene720P, _ := createScene(ctx, qb, 1920, 1079)
-		scene1080P, _ := createScene(ctx, qb, 1920, 1080)
+		qb := db.Scene
+		sceneNoResolution, _ := createScene(ctx, 0, 0)
+		firstScene540P, _ := createScene(ctx, 960, 540)
+		secondScene540P, _ := createScene(ctx, 1280, 719)
+		firstScene720P, _ := createScene(ctx, 1280, 720)
+		secondScene720P, _ := createScene(ctx, 1280, 721)
+		thirdScene720P, _ := createScene(ctx, 1920, 1079)
+		scene1080P, _ := createScene(ctx, 1920, 1080)
 
 		scenesEqualTo720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierEquals)
 		scenesNotEqualTo720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierNotEquals)
@@ -2397,17 +2413,25 @@ func queryScenes(ctx context.Context, t *testing.T, queryBuilder models.SceneRea
 	return queryScene(ctx, t, queryBuilder, &sceneFilter, nil)
 }
 
-func createScene(ctx context.Context, queryBuilder models.SceneReaderWriter, width int, height int) (*models.Scene, error) {
+func createScene(ctx context.Context, width int, height int) (*models.Scene, error) {
 	name := fmt.Sprintf("TestSceneQueryResolutionModifiers %d %d", width, height)
-	checksum := md5.FromString(name)
-	scene := &models.Scene{
-		Path:     name,
-		Width:    &width,
-		Height:   &height,
-		Checksum: &checksum,
+
+	sceneFile := &file.VideoFile{
+		BaseFile: &file.BaseFile{
+			Basename:       name,
+			ParentFolderID: folderIDs[folderIdxWithSceneFiles],
+		},
+		Width:  width,
+		Height: height,
 	}
 
-	if err := queryBuilder.Create(ctx, scene); err != nil {
+	if err := db.File.Create(ctx, sceneFile); err != nil {
+		return nil, err
+	}
+
+	scene := &models.Scene{}
+
+	if err := db.Scene.Create(ctx, scene, []file.ID{sceneFile.ID}); err != nil {
 		return nil, err
 	}
 
@@ -2416,7 +2440,7 @@ func createScene(ctx context.Context, queryBuilder models.SceneReaderWriter, wid
 
 func TestSceneQueryHasMarkers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		hasMarkers := "true"
 		sceneFilter := models.SceneFilterType{
 			HasMarkers: &hasMarkers,
@@ -2452,7 +2476,7 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 
 func TestSceneQueryIsMissingGallery(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		isMissing := "galleries"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -2481,7 +2505,7 @@ func TestSceneQueryIsMissingGallery(t *testing.T) {
 
 func TestSceneQueryIsMissingStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		isMissing := "studio"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -2510,7 +2534,7 @@ func TestSceneQueryIsMissingStudio(t *testing.T) {
 
 func TestSceneQueryIsMissingMovies(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		isMissing := "movie"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -2539,7 +2563,7 @@ func TestSceneQueryIsMissingMovies(t *testing.T) {
 
 func TestSceneQueryIsMissingPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		isMissing := "performers"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -2570,7 +2594,7 @@ func TestSceneQueryIsMissingPerformers(t *testing.T) {
 
 func TestSceneQueryIsMissingDate(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		isMissing := "date"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -2592,7 +2616,7 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 
 func TestSceneQueryIsMissingTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		isMissing := "tags"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -2618,7 +2642,7 @@ func TestSceneQueryIsMissingTags(t *testing.T) {
 
 func TestSceneQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		isMissing := "rating"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -2639,7 +2663,7 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 
 func TestSceneQueryPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		performerCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(performerIDs[performerIdxWithScene]),
@@ -2695,7 +2719,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 
 func TestSceneQueryTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithScene]),
@@ -2750,7 +2774,7 @@ func TestSceneQueryTags(t *testing.T) {
 
 func TestSceneQueryPerformerTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
@@ -2828,7 +2852,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 
 func TestSceneQueryStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
@@ -2868,7 +2892,7 @@ func TestSceneQueryStudio(t *testing.T) {
 
 func TestSceneQueryStudioDepth(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -2928,7 +2952,7 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 
 func TestSceneQueryMovies(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		movieCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(movieIDs[movieIdxWithScene]),
@@ -2975,8 +2999,12 @@ func TestSceneQuerySorting(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		scenes := queryScene(ctx, t, sqb, nil, &findFilter)
+
+		if !assert.Greater(t, len(scenes), 0) {
+			return nil
+		}
 
 		// scenes should be in same order as indexes
 		firstScene := scenes[0]
@@ -3006,7 +3034,7 @@ func TestSceneQueryPagination(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		scenes := queryScene(ctx, t, sqb, nil, &findFilter)
 
 		assert.Len(t, scenes, 1)
@@ -3054,7 +3082,7 @@ func TestSceneQueryTagCount(t *testing.T) {
 
 func verifyScenesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -3091,7 +3119,7 @@ func TestSceneQueryPerformerCount(t *testing.T) {
 
 func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
@@ -3109,7 +3137,7 @@ func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.Int
 
 func TestSceneCountByTagID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		sceneCount, err := sqb.CountByTagID(ctx, tagIDs[tagIdxWithScene])
 
@@ -3133,7 +3161,7 @@ func TestSceneCountByTagID(t *testing.T) {
 
 func TestSceneCountByMovieID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		sceneCount, err := sqb.CountByMovieID(ctx, movieIDs[movieIdxWithScene])
 
@@ -3157,7 +3185,7 @@ func TestSceneCountByMovieID(t *testing.T) {
 
 func TestSceneCountByStudioID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		sceneCount, err := sqb.CountByStudioID(ctx, studioIDs[studioIdxWithScene])
 
@@ -3181,7 +3209,7 @@ func TestSceneCountByStudioID(t *testing.T) {
 
 func TestFindByMovieID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		scenes, err := sqb.FindByMovieID(ctx, movieIDs[movieIdxWithScene])
 
@@ -3206,7 +3234,7 @@ func TestFindByMovieID(t *testing.T) {
 
 func TestFindByPerformerID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.SceneReaderWriter
+		sqb := db.Scene
 
 		scenes, err := sqb.FindByPerformerID(ctx, performerIDs[performerIdxWithScene])
 
@@ -3231,33 +3259,24 @@ func TestFindByPerformerID(t *testing.T) {
 
 func TestSceneUpdateSceneCover(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.SceneReaderWriter
+		qb := db.Scene
 
-		// create performer to test against
-		const name = "TestSceneUpdateSceneCover"
-		checksum := md5.FromString(name)
-		scene := &models.Scene{
-			Path:     name,
-			Checksum: &checksum,
-		}
-		if err := qb.Create(ctx, scene); err != nil {
-			return fmt.Errorf("Error creating scene: %s", err.Error())
-		}
+		sceneID := sceneIDs[sceneIdxWithGallery]
 
 		image := []byte("image")
-		if err := qb.UpdateCover(ctx, scene.ID, image); err != nil {
+		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
 			return fmt.Errorf("Error updating scene cover: %s", err.Error())
 		}
 
 		// ensure image set
-		storedImage, err := qb.GetCover(ctx, scene.ID)
+		storedImage, err := qb.GetCover(ctx, sceneID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
 		assert.Equal(t, storedImage, image)
 
 		// set nil image
-		err = qb.UpdateCover(ctx, scene.ID, nil)
+		err = qb.UpdateCover(ctx, sceneID, nil)
 		if err == nil {
 			return fmt.Errorf("Expected error setting nil image")
 		}
@@ -3270,30 +3289,21 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 
 func TestSceneDestroySceneCover(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.SceneReaderWriter
+		qb := db.Scene
 
-		// create performer to test against
-		const name = "TestSceneDestroySceneCover"
-		checksum := md5.FromString(name)
-		scene := &models.Scene{
-			Path:     name,
-			Checksum: &checksum,
-		}
-		if err := qb.Create(ctx, scene); err != nil {
-			return fmt.Errorf("Error creating scene: %s", err.Error())
-		}
+		sceneID := sceneIDs[sceneIdxWithGallery]
 
 		image := []byte("image")
-		if err := qb.UpdateCover(ctx, scene.ID, image); err != nil {
+		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
 			return fmt.Errorf("Error updating scene image: %s", err.Error())
 		}
 
-		if err := qb.DestroyCover(ctx, scene.ID); err != nil {
+		if err := qb.DestroyCover(ctx, sceneID); err != nil {
 			return fmt.Errorf("Error destroying scene cover: %s", err.Error())
 		}
 
 		// image should be nil
-		storedImage, err := qb.GetCover(ctx, scene.ID)
+		storedImage, err := qb.GetCover(ctx, sceneID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
@@ -3307,16 +3317,14 @@ func TestSceneDestroySceneCover(t *testing.T) {
 
 func TestSceneStashIDs(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.SceneReaderWriter
+		qb := db.Scene
 
 		// create scene to test against
 		const name = "TestSceneStashIDs"
-		checksum := md5.FromString(name)
 		scene := &models.Scene{
-			Path:     name,
-			Checksum: &checksum,
+			Title: name,
 		}
-		if err := qb.Create(ctx, scene); err != nil {
+		if err := qb.Create(ctx, scene, nil); err != nil {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
@@ -3339,7 +3347,7 @@ func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
 		Endpoint: endpoint,
 	}
 
-	qb := sqlite.SceneReaderWriter
+	qb := db.Scene
 
 	// update stash ids and ensure was updated
 	var err error
@@ -3371,7 +3379,7 @@ func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
 
 func TestSceneQueryQTrim(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
-		qb := sqlite.SceneReaderWriter
+		qb := db.Scene
 
 		expectedID := sceneIDs[sceneIdxWithSpacedName]
 

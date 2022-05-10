@@ -115,7 +115,7 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 		}
 
 		for _, scene := range scenes {
-			progress.ExecuteTask(fmt.Sprintf("Assessing scene %s for clean", scene.Path), func() {
+			progress.ExecuteTask(fmt.Sprintf("Assessing scene %s for clean", scene.Path()), func() {
 				if j.shouldCleanScene(scene) {
 					toDelete = append(toDelete, scene.ID)
 				} else {

@@ -65,7 +65,7 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		return fmt.Errorf("creating new image: %w", err)
 	}
 
-	h.PluginCache.ExecutePostHooks(ctx, newGallery.ID, plugin.ImageCreatePost, nil, nil)
+	h.PluginCache.ExecutePostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
 
 	return nil
 }

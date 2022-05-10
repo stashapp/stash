@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -15,17 +16,21 @@ import (
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-const sceneTable = "scenes"
-const sceneIDColumn = "scene_id"
-const performersScenesTable = "performers_scenes"
-const scenesTagsTable = "scenes_tags"
-const scenesGalleriesTable = "scenes_galleries"
-const moviesScenesTable = "movies_scenes"
+const (
+	sceneTable            = "scenes"
+	scenesFilesTable      = "scenes_files"
+	sceneIDColumn         = "scene_id"
+	performersScenesTable = "performers_scenes"
+	scenesTagsTable       = "scenes_tags"
+	scenesGalleriesTable  = "scenes_galleries"
+	moviesScenesTable     = "movies_scenes"
+)
 
 const sceneCaptionsTable = "scene_captions"
 const sceneCaptionCodeColumn = "language_code"
@@ -50,9 +55,6 @@ ORDER BY size DESC
 
 type sceneRow struct {
 	ID               int               `db:"id" goqu:"skipinsert"`
-	Checksum         zero.String       `db:"checksum"`
-	OSHash           zero.String       `db:"oshash"`
-	Path             string            `db:"path"`
 	Title            zero.String       `db:"title"`
 	Details          zero.String       `db:"details"`
 	URL              zero.String       `db:"url"`
@@ -60,29 +62,15 @@ type sceneRow struct {
 	Rating           null.Int          `db:"rating"`
 	Organized        bool              `db:"organized"`
 	OCounter         int               `db:"o_counter"`
-	Size             zero.String       `db:"size"`
-	Duration         null.Float        `db:"duration"`
-	VideoCodec       zero.String       `db:"video_codec"`
-	Format           zero.String       `db:"format"`
-	AudioCodec       zero.String       `db:"audio_codec"`
-	Width            null.Int          `db:"width"`
-	Height           null.Int          `db:"height"`
-	Framerate        null.Float        `db:"framerate"`
-	Bitrate          null.Int          `db:"bitrate"`
 	StudioID         null.Int          `db:"studio_id,omitempty"`
-	FileModTime      null.Time         `db:"file_mod_time"`
-	Phash            null.Int          `db:"phash,omitempty"`
-	CreatedAt        time.Time         `db:"created_at"`
-	UpdatedAt        time.Time         `db:"updated_at"`
 	Interactive      bool              `db:"interactive"`
 	InteractiveSpeed null.Int          `db:"interactive_speed"`
+	CreatedAt        time.Time         `db:"created_at"`
+	UpdatedAt        time.Time         `db:"updated_at"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
 	r.ID = o.ID
-	r.Checksum = zero.StringFromPtr(o.Checksum)
-	r.OSHash = zero.StringFromPtr(o.OSHash)
-	r.Path = o.Path
 	r.Title = zero.StringFrom(o.Title)
 	r.Details = zero.StringFrom(o.Details)
 	r.URL = zero.StringFrom(o.URL)
@@ -92,18 +80,7 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.OCounter = o.OCounter
-	r.Size = zero.StringFromPtr(o.Size)
-	r.Duration = null.FloatFromPtr(o.Duration)
-	r.VideoCodec = zero.StringFromPtr(o.VideoCodec)
-	r.Format = zero.StringFromPtr(o.Format)
-	r.AudioCodec = zero.StringFromPtr(o.AudioCodec)
-	r.Width = intFromPtr(o.Width)
-	r.Height = intFromPtr(o.Height)
-	r.Framerate = null.FloatFromPtr(o.Framerate)
-	r.Bitrate = null.IntFromPtr(o.Bitrate)
 	r.StudioID = intFromPtr(o.StudioID)
-	r.FileModTime = null.TimeFromPtr(o.FileModTime)
-	r.Phash = null.IntFromPtr(o.Phash)
 	r.CreatedAt = o.CreatedAt
 	r.UpdatedAt = o.UpdatedAt
 	r.Interactive = o.Interactive
@@ -115,9 +92,6 @@ type sceneRowRecord struct {
 }
 
 func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
-	r.setNullString("checksum", o.Checksum)
-	r.setNullString("oshash", o.OSHash)
-	r.setString("path", o.Path)
 	r.setNullString("title", o.Title)
 	r.setNullString("details", o.Details)
 	r.setNullString("url", o.URL)
@@ -125,18 +99,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setInt("o_counter", o.OCounter)
-	r.setNullString("size", o.Size)
-	r.setNullFloat64("duration", o.Duration)
-	r.setNullString("video_codec", o.VideoCodec)
-	r.setNullString("format", o.Format)
-	r.setNullString("audio_codec", o.AudioCodec)
-	r.setNullInt("width", o.Width)
-	r.setNullInt("height", o.Height)
-	r.setNullFloat64("framerate", o.Framerate)
-	r.setNullInt64("bitrate", o.Bitrate)
 	r.setNullInt("studio_id", o.StudioID)
-	r.setNullTime("file_mod_time", o.FileModTime)
-	r.setNullInt64("phash", o.Phash)
 	r.setTime("created_at", o.CreatedAt)
 	r.setTime("updated_at", o.UpdatedAt)
 	r.setBool("interactive", o.Interactive)
@@ -145,6 +108,8 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 
 type sceneQueryRow struct {
 	sceneRow
+
+	relatedFileQueryRow
 
 	GalleryID   null.Int `db:"gallery_id"`
 	TagID       null.Int `db:"tag_id"`
@@ -157,9 +122,6 @@ type sceneQueryRow struct {
 func (r *sceneQueryRow) resolve() *models.Scene {
 	ret := &models.Scene{
 		ID:               r.ID,
-		Checksum:         r.Checksum.Ptr(),
-		OSHash:           r.OSHash.Ptr(),
-		Path:             r.Path,
 		Title:            r.Title.String,
 		Details:          r.Details.String,
 		URL:              r.URL.String,
@@ -167,18 +129,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Rating:           nullIntPtr(r.Rating),
 		Organized:        r.Organized,
 		OCounter:         r.OCounter,
-		Size:             r.Size.Ptr(),
-		Duration:         r.Duration.Ptr(),
-		VideoCodec:       r.VideoCodec.Ptr(),
-		Format:           r.Format.Ptr(),
-		AudioCodec:       r.AudioCodec.Ptr(),
-		Width:            nullIntPtr(r.Width),
-		Height:           nullIntPtr(r.Height),
-		Framerate:        r.Framerate.Ptr(),
-		Bitrate:          r.Bitrate.Ptr(),
 		StudioID:         nullIntPtr(r.StudioID),
-		FileModTime:      r.FileModTime.Ptr(),
-		Phash:            r.Phash.Ptr(),
 		CreatedAt:        r.CreatedAt,
 		UpdatedAt:        r.UpdatedAt,
 		Interactive:      r.Interactive,
@@ -210,6 +161,25 @@ func stashIDAppendUnique(e []models.StashID, toAdd models.StashID) []models.Stas
 	return append(e, toAdd)
 }
 
+func appendVideoFileUnique(vs []*file.VideoFile, toAdd *file.VideoFile, isPrimary bool) []*file.VideoFile {
+	// check in reverse, since it's most likely to be the last one
+	for i := len(vs) - 1; i >= 0; i-- {
+		if vs[i].Base().ID == toAdd.Base().ID {
+
+			// merge the two
+			mergeFiles(vs[i], toAdd)
+			return vs
+		}
+	}
+
+	if !isPrimary {
+		return append(vs, toAdd)
+	}
+
+	// primary should be first
+	return append([]*file.VideoFile{toAdd}, vs...)
+}
+
 func (r *sceneQueryRow) appendRelationships(i *models.Scene) {
 	if r.TagID.Valid {
 		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, int(r.TagID.Int64))
@@ -231,6 +201,11 @@ func (r *sceneQueryRow) appendRelationships(i *models.Scene) {
 			StashID:  r.StashID.String,
 			Endpoint: r.Endpoint.String,
 		})
+	}
+
+	if r.relatedFileQueryRow.FileID.Valid {
+		f := r.fileQueryRow.resolve().(*file.VideoFile)
+		i.Files = appendVideoFileUnique(i.Files, f, r.Primary.Bool)
 	}
 }
 
@@ -257,34 +232,49 @@ func (r sceneQueryRows) resolve() []*models.Scene {
 	return ret
 }
 
-type sceneQueryBuilder struct {
+type SceneStore struct {
 	repository
 
-	tableMgr *table
+	tableMgr      *table
+	queryTableMgr *table
 	oCounterManager
 }
 
-var SceneReaderWriter = &sceneQueryBuilder{
-	repository: repository{
-		tableName: sceneTable,
-		idColumn:  idColumn,
-	},
+func NewSceneStore() *SceneStore {
+	return &SceneStore{
+		repository: repository{
+			tableName: sceneTable,
+			idColumn:  idColumn,
+		},
 
-	tableMgr:        sceneTableMgr,
-	oCounterManager: oCounterManager{imageTableMgr},
+		tableMgr:        sceneTableMgr,
+		queryTableMgr:   sceneQueryTableMgr,
+		oCounterManager: oCounterManager{sceneTableMgr},
+	}
 }
 
-func (qb *sceneQueryBuilder) table() exp.IdentifierExpression {
+func (qb *SceneStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
-func (qb *sceneQueryBuilder) Create(ctx context.Context, newObject *models.Scene) error {
+func (qb *SceneStore) queryTable() exp.IdentifierExpression {
+	return qb.queryTableMgr.table
+}
+
+func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileIDs []file.ID) error {
 	var r sceneRow
 	r.fromScene(*newObject)
 
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
+	}
+
+	if len(fileIDs) > 0 {
+		const firstPrimary = true
+		if err := scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, fileIDs); err != nil {
+			return err
+		}
 	}
 
 	if err := scenesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
@@ -309,7 +299,7 @@ func (qb *sceneQueryBuilder) Create(ctx context.Context, newObject *models.Scene
 	return nil
 }
 
-func (qb *sceneQueryBuilder) UpdatePartial(ctx context.Context, id int, partial models.ScenePartial) (*models.Scene, error) {
+func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.ScenePartial) (*models.Scene, error) {
 	r := sceneRowRecord{
 		updateRecord{
 			Record: make(exp.Record),
@@ -353,7 +343,7 @@ func (qb *sceneQueryBuilder) UpdatePartial(ctx context.Context, id int, partial 
 	return qb.Find(ctx, id)
 }
 
-func (qb *sceneQueryBuilder) Update(ctx context.Context, updatedObject *models.Scene) error {
+func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) error {
 	var r sceneRow
 	r.fromScene(*updatedObject)
 
@@ -380,7 +370,7 @@ func (qb *sceneQueryBuilder) Update(ctx context.Context, updatedObject *models.S
 	return nil
 }
 
-func (qb *sceneQueryBuilder) Destroy(ctx context.Context, id int) error {
+func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
 	// delete all related table rows
 	// TODO - this should be handled by a delete cascade
 	if err := qb.performersRepository().destroy(ctx, []int{id}); err != nil {
@@ -393,11 +383,11 @@ func (qb *sceneQueryBuilder) Destroy(ctx context.Context, id int) error {
 	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
-func (qb *sceneQueryBuilder) Find(ctx context.Context, id int) (*models.Scene, error) {
+func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 	return qb.find(ctx, id)
 }
 
-func (qb *sceneQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
+func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
 	var scenes []*models.Scene
 	for _, id := range ids {
 		scene, err := qb.Find(ctx, id)
@@ -415,37 +405,11 @@ func (qb *sceneQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models
 	return scenes, nil
 }
 
-func (qb *sceneQueryBuilder) selectDataset() *goqu.SelectDataset {
-	table := qb.table()
-
-	return dialect.From(table).Select(
-		table.All(),
-		galleriesScenesJoinTable.Col("gallery_id"),
-		scenesTagsJoinTable.Col("tag_id"),
-		scenesPerformersJoinTable.Col("performer_id"),
-		scenesMoviesJoinTable.Col("movie_id"),
-		scenesMoviesJoinTable.Col("scene_index"),
-		scenesStashIDsJoinTable.Col("stash_id"),
-		scenesStashIDsJoinTable.Col("endpoint"),
-	).LeftJoin(
-		galleriesScenesJoinTable,
-		goqu.On(table.Col(idColumn).Eq(galleriesScenesJoinTable.Col(sceneIDColumn))),
-	).LeftJoin(
-		scenesTagsJoinTable,
-		goqu.On(table.Col(idColumn).Eq(scenesTagsJoinTable.Col(sceneIDColumn))),
-	).LeftJoin(
-		scenesPerformersJoinTable,
-		goqu.On(table.Col(idColumn).Eq(scenesPerformersJoinTable.Col(sceneIDColumn))),
-	).LeftJoin(
-		scenesMoviesJoinTable,
-		goqu.On(table.Col(idColumn).Eq(scenesMoviesJoinTable.Col(sceneIDColumn))),
-	).LeftJoin(
-		scenesStashIDsJoinTable,
-		goqu.On(table.Col(idColumn).Eq(scenesStashIDsJoinTable.Col(sceneIDColumn))),
-	)
+func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
+	return dialect.From(scenesQueryTable).Select(scenesQueryTable.All())
 }
 
-func (qb *sceneQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (*models.Scene, error) {
+func (qb *SceneStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Scene, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
 		return nil, err
@@ -458,7 +422,7 @@ func (qb *sceneQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (*m
 	return ret[0], nil
 }
 
-func (qb *sceneQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Scene, error) {
+func (qb *SceneStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Scene, error) {
 	const single = false
 	var rows sceneQueryRows
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
@@ -476,8 +440,8 @@ func (qb *sceneQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset)
 	return rows.resolve(), nil
 }
 
-func (qb *sceneQueryBuilder) find(ctx context.Context, id int) (*models.Scene, error) {
-	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+func (qb *SceneStore) find(ctx context.Context, id int) (*models.Scene, error) {
+	q := qb.selectDataset().Where(qb.queryTableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
@@ -487,52 +451,106 @@ func (qb *sceneQueryBuilder) find(ctx context.Context, id int) (*models.Scene, e
 	return ret, nil
 }
 
-func (qb *sceneQueryBuilder) FindByChecksum(ctx context.Context, checksum string) (*models.Scene, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("checksum").Eq(checksum))
+func (qb *SceneStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error) {
+	table := qb.queryTable()
 
-	ret, err := qb.get(ctx, q)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("getting gallery by checksum %s: %w", checksum, err)
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
+		table.Col("file_id").Eq(fileID),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting scenes by file id %d: %w", fileID, err)
 	}
 
 	return ret, nil
 }
 
-func (qb *sceneQueryBuilder) FindByOSHash(ctx context.Context, oshash string) (*models.Scene, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("oshash").Eq(oshash))
+func (qb *SceneStore) FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Scene, error) {
+	table := qb.queryTable()
 
-	ret, err := qb.get(ctx, q)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("getting gallery by oshash %s: %w", oshash, err)
+	var ex []exp.Expression
+
+	for _, v := range fp {
+		ex = append(ex, goqu.And(
+			table.Col("fingerprint_type").Eq(v.Type),
+			table.Col("fingerprint").Eq(v.Fingerprint),
+		))
+	}
+
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(goqu.Or(ex...))
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting scenes by fingerprints: %w", err)
 	}
 
 	return ret, nil
 }
 
-func (qb *sceneQueryBuilder) FindByPath(ctx context.Context, path string) (*models.Scene, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(path))
+func (qb *SceneStore) FindByChecksum(ctx context.Context, checksum string) ([]*models.Scene, error) {
+	table := qb.queryTable()
 
-	ret, err := qb.get(ctx, q)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("getting gallery by path %s: %w", path, err)
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
+		table.Col("fingerprint_type").Eq(file.FingerprintTypeMD5),
+		table.Col("fingerprint").Eq(checksum),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting scenes by checksum %s: %w", checksum, err)
 	}
 
 	return ret, nil
 }
 
-func (qb *sceneQueryBuilder) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Scene, error) {
-	table := qb.table()
+func (qb *SceneStore) FindByOSHash(ctx context.Context, oshash string) ([]*models.Scene, error) {
+	table := qb.queryTable()
+
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
+		table.Col("fingerprint_type").Eq(file.FingerprintTypeOshash),
+		table.Col("fingerprint").Eq(oshash),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting scenes by oshash %s: %w", oshash, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene, error) {
+	table := scenesQueryTable
+	basename := filepath.Base(p)
+	dir, _ := path(filepath.Dir(p)).Value()
+
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
+		table.Col("folder_path").Eq(dir),
+		table.Col("basename").Eq(basename),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting scene by path %s: %w", p, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Scene, error) {
+	table := qb.queryTable()
 
 	q := qb.selectDataset().Where(
 		table.Col(idColumn).Eq(
 			sq,
 		),
-	).GroupBy(table.Col(idColumn))
+	)
 
 	return qb.getMany(ctx, q)
 }
 
-func (qb *sceneQueryBuilder) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Scene, error) {
+func (qb *SceneStore) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesPerformersJoinTable).Select(scenesPerformersJoinTable.Col(sceneIDColumn)).Where(
 		scenesPerformersJoinTable.Col(performerIDColumn).Eq(performerID),
 	)
@@ -545,7 +563,7 @@ func (qb *sceneQueryBuilder) FindByPerformerID(ctx context.Context, performerID 
 	return ret, nil
 }
 
-func (qb *sceneQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Scene, error) {
+func (qb *SceneStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Scene, error) {
 	sq := dialect.From(galleriesScenesJoinTable).Select(galleriesScenesJoinTable.Col(sceneIDColumn)).Where(
 		galleriesScenesJoinTable.Col(galleryIDColumn).Eq(galleryID),
 	)
@@ -558,14 +576,14 @@ func (qb *sceneQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int)
 	return ret, nil
 }
 
-func (qb *sceneQueryBuilder) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
+func (qb *SceneStore) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
 	joinTable := scenesPerformersJoinTable
 
 	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(performerIDColumn).Eq(performerID))
 	return count(ctx, q)
 }
 
-func (qb *sceneQueryBuilder) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
+func (qb *SceneStore) FindByMovieID(ctx context.Context, movieID int) ([]*models.Scene, error) {
 	sq := dialect.From(scenesMoviesJoinTable).Select(scenesMoviesJoinTable.Col(sceneIDColumn)).Where(
 		scenesMoviesJoinTable.Col(movieIDColumn).Eq(movieID),
 	)
@@ -578,20 +596,20 @@ func (qb *sceneQueryBuilder) FindByMovieID(ctx context.Context, movieID int) ([]
 	return ret, nil
 }
 
-func (qb *sceneQueryBuilder) CountByMovieID(ctx context.Context, movieID int) (int, error) {
+func (qb *SceneStore) CountByMovieID(ctx context.Context, movieID int) (int, error) {
 	joinTable := scenesMoviesJoinTable
 
 	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(movieIDColumn).Eq(movieID))
 	return count(ctx, q)
 }
 
-func (qb *sceneQueryBuilder) Count(ctx context.Context) (int, error) {
+func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)
 }
 
-func (qb *sceneQueryBuilder) Size(ctx context.Context) (float64, error) {
-	q := dialect.Select(goqu.SUM(qb.table().Col("size").Cast("double"))).From(qb.table())
+func (qb *SceneStore) Size(ctx context.Context) (float64, error) {
+	q := dialect.Select(goqu.SUM(qb.queryTable().Col("size").Cast("double"))).From(qb.table())
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
@@ -600,8 +618,8 @@ func (qb *sceneQueryBuilder) Size(ctx context.Context) (float64, error) {
 	return ret, nil
 }
 
-func (qb *sceneQueryBuilder) Duration(ctx context.Context) (float64, error) {
-	q := dialect.Select(goqu.SUM(qb.table().Col("duration").Cast("double"))).From(qb.table())
+func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
+	q := dialect.Select(goqu.SUM(qb.queryTable().Col("duration").Cast("double"))).From(qb.table())
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
@@ -610,14 +628,14 @@ func (qb *sceneQueryBuilder) Duration(ctx context.Context) (float64, error) {
 	return ret, nil
 }
 
-func (qb *sceneQueryBuilder) CountByStudioID(ctx context.Context, studioID int) (int, error) {
+func (qb *SceneStore) CountByStudioID(ctx context.Context, studioID int) (int, error) {
 	table := qb.table()
 
 	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col(studioIDColumn).Eq(studioID))
 	return count(ctx, q)
 }
 
-func (qb *sceneQueryBuilder) CountByTagID(ctx context.Context, tagID int) (int, error) {
+func (qb *SceneStore) CountByTagID(ctx context.Context, tagID int) (int, error) {
 	joinTable := scenesTagsJoinTable
 
 	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(tagIDColumn).Eq(tagID))
@@ -625,36 +643,40 @@ func (qb *sceneQueryBuilder) CountByTagID(ctx context.Context, tagID int) (int, 
 }
 
 // CountMissingChecksum returns the number of scenes missing a checksum value.
-func (qb *sceneQueryBuilder) CountMissingChecksum(ctx context.Context) (int, error) {
-	table := qb.table()
+func (qb *SceneStore) CountMissingChecksum(ctx context.Context) (int, error) {
+	// TODO
+	panic("not implemented")
+	// table := qb.queryTable()
 
-	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("checksum").IsNull())
-	return count(ctx, q)
+	// q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("checksum").IsNull())
+	// return count(ctx, q)
 }
 
 // CountMissingOSHash returns the number of scenes missing an oshash value.
-func (qb *sceneQueryBuilder) CountMissingOSHash(ctx context.Context) (int, error) {
-	table := qb.table()
+func (qb *SceneStore) CountMissingOSHash(ctx context.Context) (int, error) {
+	// TODO
+	panic("not implemented")
+	// table := qb.table()
 
-	q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("oshash").IsNull())
-	return count(ctx, q)
+	// q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("oshash").IsNull())
+	// return count(ctx, q)
 }
 
-func (qb *sceneQueryBuilder) Wall(ctx context.Context, q *string) ([]*models.Scene, error) {
+func (qb *SceneStore) Wall(ctx context.Context, q *string) ([]*models.Scene, error) {
 	s := ""
 	if q != nil {
 		s = *q
 	}
 
-	table := qb.table()
+	table := qb.queryTable()
 	qq := qb.selectDataset().Prepared(true).Where(table.Col("details").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
 	return qb.getMany(ctx, qq)
 }
 
-func (qb *sceneQueryBuilder) All(ctx context.Context) ([]*models.Scene, error) {
+func (qb *SceneStore) All(ctx context.Context) ([]*models.Scene, error) {
 	return qb.getMany(ctx, qb.selectDataset().Order(
-		qb.table().Col("path").Asc(),
-		qb.table().Col("date").Asc(),
+		qb.queryTable().Col("path").Asc(),
+		qb.queryTable().Col("date").Asc(),
 	))
 }
 
@@ -662,7 +684,7 @@ func illegalFilterCombination(type1, type2 string) error {
 	return fmt.Errorf("cannot have %s and %s in the same filter", type1, type2)
 }
 
-func (qb *sceneQueryBuilder) validateFilter(sceneFilter *models.SceneFilterType) error {
+func (qb *SceneStore) validateFilter(sceneFilter *models.SceneFilterType) error {
 	const and = "AND"
 	const or = "OR"
 	const not = "NOT"
@@ -693,7 +715,7 @@ func (qb *sceneQueryBuilder) validateFilter(sceneFilter *models.SceneFilterType)
 	return nil
 }
 
-func (qb *sceneQueryBuilder) makeFilter(ctx context.Context, sceneFilter *models.SceneFilterType) *filterBuilder {
+func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneFilterType) *filterBuilder {
 	query := &filterBuilder{}
 
 	if sceneFilter.And != nil {
@@ -706,11 +728,22 @@ func (qb *sceneQueryBuilder) makeFilter(ctx context.Context, sceneFilter *models
 		query.not(qb.makeFilter(ctx, sceneFilter.Not))
 	}
 
-	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Path, "scenes.path"))
+	// TODO
+	// query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Path, "scenes.path"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Title, "scenes.title"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Details, "scenes.details"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Oshash, "scenes.oshash"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Checksum, "scenes.checksum"))
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if sceneFilter.Checksum != nil {
+			f.addLeftJoin(scenesFilesTable, "", "scenes_files.scene_id = scenes.id")
+			f.addLeftJoin(filesFingerprintsTable, "", "scenes_files.file_id = files_fingerprints.file_id")
+			f.addLeftJoin(fingerprintTable, "", "files_fingerprints.fingerprint_id = fingerprints.id AND fingerprints.type = 'md5'")
+		}
+
+		stringCriterionHandler(sceneFilter.Checksum, "fingerprints.fingerprint")(ctx, f)
+	}))
+
 	query.handleCriterion(ctx, phashCriterionHandler(sceneFilter.Phash))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating, "scenes.rating"))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter"))
@@ -747,7 +780,7 @@ func (qb *sceneQueryBuilder) makeFilter(ctx context.Context, sceneFilter *models
 	return query
 }
 
-func (qb *sceneQueryBuilder) Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
+func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
 	sceneFilter := options.SceneFilter
 	findFilter := options.FindFilter
 
@@ -761,9 +794,34 @@ func (qb *sceneQueryBuilder) Query(ctx context.Context, options models.SceneQuer
 	query := qb.newQuery()
 	distinctIDs(&query, sceneTable)
 
+	// for convenience, join with the query view
+	query.addJoins(join{
+		table:    scenesQueryTable.GetTable(),
+		onClause: "scenes.id = scenes_query.id",
+		joinType: "INNER",
+	})
+
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join("scene_markers", "", "scene_markers.scene_id = scenes.id")
-		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.oshash", "scenes.checksum", "scene_markers.title"}
+
+		// add joins for files and checksum
+		query.addJoins(join{
+			table:    "scenes_files",
+			onClause: "scenes_files.scene_id = scenes.id",
+		}, join{
+			table:    filesFingerprintsTable,
+			onClause: "scenes_files.file_id = files_fingerprints.file_id",
+		}, join{
+			table:    fingerprintTable,
+			as:       "fingerprints_md5",
+			onClause: "files_fingerprints.fingerprint_id = fingerprints_md5.id AND fingerprints_md5.type = 'md5'",
+		}, join{
+			table:    fingerprintTable,
+			as:       "fingerprints_oshash",
+			onClause: "files_fingerprints.fingerprint_id = fingerprints_oshash.id AND fingerprints_oshash.type = 'oshash'",
+		})
+
+		searchColumns := []string{"scenes.title", "scenes.details", "scenes_query.folder_path", "scenes_query.basename", "fingerprints_oshash.fingerprint", "fingerprints_md5.fingerprint", "scene_markers.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -791,7 +849,7 @@ func (qb *sceneQueryBuilder) Query(ctx context.Context, options models.SceneQuer
 	return result, nil
 }
 
-func (qb *sceneQueryBuilder) queryGroupedFields(ctx context.Context, options models.SceneQueryOptions, query queryBuilder) (*models.SceneQueryResult, error) {
+func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.SceneQueryOptions, query queryBuilder) (*models.SceneQueryResult, error) {
 	if !options.Count && !options.TotalDuration && !options.TotalSize {
 		// nothing to do - return empty result
 		return models.NewSceneQueryResult(qb), nil
@@ -804,13 +862,13 @@ func (qb *sceneQueryBuilder) queryGroupedFields(ctx context.Context, options mod
 	}
 
 	if options.TotalDuration {
-		query.addColumn("COALESCE(scenes.duration, 0) as duration")
-		aggregateQuery.addColumn("COALESCE(SUM(temp.duration), 0) as duration")
+		query.addColumn("COALESCE(scenes_query.duration, 0) as duration")
+		aggregateQuery.addColumn("SUM(temp.duration) as duration")
 	}
 
 	if options.TotalSize {
-		query.addColumn("COALESCE(scenes.size, 0) as size")
-		aggregateQuery.addColumn("COALESCE(SUM(temp.size), 0) as size")
+		query.addColumn("COALESCE(scenes_query.size, 0) as size")
+		aggregateQuery.addColumn("SUM(temp.size) as size")
 	}
 
 	const includeSortPagination = false
@@ -818,8 +876,8 @@ func (qb *sceneQueryBuilder) queryGroupedFields(ctx context.Context, options mod
 
 	out := struct {
 		Total    int
-		Duration float64
-		Size     float64
+		Duration nullFloat64
+		Size     nullFloat64
 	}{}
 	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
@@ -827,8 +885,8 @@ func (qb *sceneQueryBuilder) queryGroupedFields(ctx context.Context, options mod
 
 	ret := models.NewSceneQueryResult(qb)
 	ret.Count = out.Total
-	ret.TotalDuration = out.Duration
-	ret.TotalSize = out.Size
+	ret.TotalDuration = out.Duration.Float64
+	ret.TotalSize = out.Size.Float64
 	return ret, nil
 }
 
@@ -914,7 +972,7 @@ func hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
 	}
 }
 
-func sceneIsMissingCriterionHandler(qb *sceneQueryBuilder, isMissing *string) criterionHandlerFunc {
+func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
@@ -944,7 +1002,7 @@ func sceneIsMissingCriterionHandler(qb *sceneQueryBuilder, isMissing *string) cr
 	}
 }
 
-func (qb *sceneQueryBuilder) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
+func (qb *SceneStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, foreignFK string, addJoinsFunc func(f *filterBuilder)) multiCriterionHandlerBuilder {
 	return multiCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		foreignTable: foreignTable,
@@ -967,7 +1025,7 @@ func sceneCaptionCriterionHandler(qb *sceneQueryBuilder, captions *models.String
 	return h.handler(captions)
 }
 
-func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func sceneTagsCriterionHandler(qb *SceneStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := joinedHierarchicalMultiCriterionHandlerBuilder{
 		tx: qb.tx,
 
@@ -984,7 +1042,7 @@ func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalM
 	return h.handler(tags)
 }
 
-func sceneTagCountCriterionHandler(qb *sceneQueryBuilder, tagCount *models.IntCriterionInput) criterionHandlerFunc {
+func sceneTagCountCriterionHandler(qb *SceneStore, tagCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    scenesTagsTable,
@@ -994,7 +1052,7 @@ func sceneTagCountCriterionHandler(qb *sceneQueryBuilder, tagCount *models.IntCr
 	return h.handler(tagCount)
 }
 
-func scenePerformersCriterionHandler(qb *sceneQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
+func scenePerformersCriterionHandler(qb *SceneStore, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	h := joinedMultiCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    performersScenesTable,
@@ -1010,7 +1068,7 @@ func scenePerformersCriterionHandler(qb *sceneQueryBuilder, performers *models.M
 	return h.handler(performers)
 }
 
-func scenePerformerCountCriterionHandler(qb *sceneQueryBuilder, performerCount *models.IntCriterionInput) criterionHandlerFunc {
+func scenePerformerCountCriterionHandler(qb *SceneStore, performerCount *models.IntCriterionInput) criterionHandlerFunc {
 	h := countCriterionHandlerBuilder{
 		primaryTable: sceneTable,
 		joinTable:    performersScenesTable,
@@ -1057,7 +1115,7 @@ func scenePerformerAgeCriterionHandler(performerAge *models.IntCriterionInput) c
 	}
 }
 
-func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func sceneStudioCriterionHandler(qb *SceneStore, studios *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	h := hierarchicalMultiCriterionHandlerBuilder{
 		tx: qb.tx,
 
@@ -1071,7 +1129,7 @@ func sceneStudioCriterionHandler(qb *sceneQueryBuilder, studios *models.Hierarch
 	return h.handler(studios)
 }
 
-func sceneMoviesCriterionHandler(qb *sceneQueryBuilder, movies *models.MultiCriterionInput) criterionHandlerFunc {
+func sceneMoviesCriterionHandler(qb *SceneStore, movies *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
 		qb.moviesRepository().join(f, "", "scenes.id")
 		f.addLeftJoin("movies", "", "movies_scenes.movie_id = movies.id")
@@ -1080,7 +1138,7 @@ func sceneMoviesCriterionHandler(qb *sceneQueryBuilder, movies *models.MultiCrit
 	return h.handler(movies)
 }
 
-func scenePerformerTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
+func scenePerformerTagsCriterionHandler(qb *SceneStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if tags != nil {
 			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
@@ -1115,7 +1173,7 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 	}
 }
 
-func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
+func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindFilterType) {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
 		return
 	}
@@ -1134,7 +1192,7 @@ func (qb *sceneQueryBuilder) setSceneSort(query *queryBuilder, findFilter *model
 	}
 }
 
-func (qb *sceneQueryBuilder) imageRepository() *imageRepository {
+func (qb *SceneStore) imageRepository() *imageRepository {
 	return &imageRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -1145,19 +1203,19 @@ func (qb *sceneQueryBuilder) imageRepository() *imageRepository {
 	}
 }
 
-func (qb *sceneQueryBuilder) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
+func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
 	return qb.imageRepository().get(ctx, sceneID)
 }
 
-func (qb *sceneQueryBuilder) UpdateCover(ctx context.Context, sceneID int, image []byte) error {
+func (qb *SceneStore) UpdateCover(ctx context.Context, sceneID int, image []byte) error {
 	return qb.imageRepository().replace(ctx, sceneID, image)
 }
 
-func (qb *sceneQueryBuilder) DestroyCover(ctx context.Context, sceneID int) error {
+func (qb *SceneStore) DestroyCover(ctx context.Context, sceneID int) error {
 	return qb.imageRepository().destroy(ctx, []int{sceneID})
 }
 
-func (qb *sceneQueryBuilder) moviesRepository() *repository {
+func (qb *SceneStore) moviesRepository() *repository {
 	return &repository{
 		tx:        qb.tx,
 		tableName: moviesScenesTable,
@@ -1165,7 +1223,7 @@ func (qb *sceneQueryBuilder) moviesRepository() *repository {
 	}
 }
 
-func (qb *sceneQueryBuilder) performersRepository() *joinRepository {
+func (qb *SceneStore) performersRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -1176,7 +1234,7 @@ func (qb *sceneQueryBuilder) performersRepository() *joinRepository {
 	}
 }
 
-func (qb *sceneQueryBuilder) tagsRepository() *joinRepository {
+func (qb *SceneStore) tagsRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -1187,7 +1245,7 @@ func (qb *sceneQueryBuilder) tagsRepository() *joinRepository {
 	}
 }
 
-func (qb *sceneQueryBuilder) galleriesRepository() *joinRepository {
+func (qb *SceneStore) galleriesRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -1198,7 +1256,7 @@ func (qb *sceneQueryBuilder) galleriesRepository() *joinRepository {
 	}
 }
 
-func (qb *sceneQueryBuilder) stashIDRepository() *stashIDRepository {
+func (qb *SceneStore) stashIDRepository() *stashIDRepository {
 	return &stashIDRepository{
 		repository{
 			tx:        qb.tx,
@@ -1208,7 +1266,7 @@ func (qb *sceneQueryBuilder) stashIDRepository() *stashIDRepository {
 	}
 }
 
-func (qb *sceneQueryBuilder) captionRepository() *captionRepository {
+func (qb *SceneStore) captionRepository() *captionRepository {
 	return &captionRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -1218,15 +1276,15 @@ func (qb *sceneQueryBuilder) captionRepository() *captionRepository {
 	}
 }
 
-func (qb *sceneQueryBuilder) GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error) {
+func (qb *SceneStore) GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error) {
 	return qb.captionRepository().get(ctx, sceneID)
 }
 
-func (qb *sceneQueryBuilder) UpdateCaptions(ctx context.Context, sceneID int, captions []*models.SceneCaption) error {
+func (qb *SceneStore) UpdateCaptions(ctx context.Context, sceneID int, captions []*models.SceneCaption) error {
 	return qb.captionRepository().replace(ctx, sceneID, captions)
 }
 
-func (qb *sceneQueryBuilder) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {
+func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {
 	var dupeIds [][]int
 	if distance == 0 {
 		var ids []string

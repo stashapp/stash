@@ -86,7 +86,7 @@ func getSort(sort string, direction string, tableName string) string {
 		colName := getColumn(tableName, sort)
 		var additional string
 		if tableName == "scenes" {
-			additional = ", bitrate DESC, framerate DESC, scenes.rating DESC, scenes.duration DESC"
+			additional = ", scenes_query.bit_rate DESC, scenes_query.frame_rate DESC, scenes.rating DESC, scenes_query.duration DESC"
 		} else if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}

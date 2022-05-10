@@ -35,6 +35,7 @@ const (
 
 	folderIdxWithImageFiles
 	folderIdxWithGalleryFiles
+	folderIdxWithSceneFiles
 
 	totalFolders
 )
@@ -559,7 +560,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating galleries: %s", err.Error())
 		}
 
-		if err := createScenes(ctx, sqlite.SceneReaderWriter, totalScenes); err != nil {
+		if err := createScenes(ctx, totalScenes); err != nil {
 			return fmt.Errorf("error creating scenes: %s", err.Error())
 		}
 
@@ -881,15 +882,11 @@ func getOCounter(index int) int {
 	return index % 3
 }
 
-func getSceneDuration(index int) *float64 {
-	duration := index % 4
+func getSceneDuration(index int) float64 {
+	duration := (index % 4) + 1
 	duration = duration * 100
 
-	if duration == 0 {
-		return nil
-	}
-	v := float64(duration) + 0.432
-	return &v
+	return float64(duration) + 0.432
 }
 
 func getHeight(index int) int {
@@ -929,10 +926,35 @@ func sceneStashID(i int) models.StashID {
 	}
 }
 
+func getSceneBasename(index int) string {
+	return getSceneStringValue(index, pathField)
+}
+
+func makeSceneFile(i int) *file.VideoFile {
+	return &file.VideoFile{
+		BaseFile: &file.BaseFile{
+			Path:           getFilePath(folderIdxWithSceneFiles, getSceneBasename(i)),
+			Basename:       getSceneBasename(i),
+			ParentFolderID: folderIDs[folderIdxWithSceneFiles],
+			Fingerprints: []file.Fingerprint{
+				{
+					Type:        file.FingerprintTypeMD5,
+					Fingerprint: getSceneStringValue(i, checksumField),
+				},
+				{
+					Type:        file.FingerprintTypeOshash,
+					Fingerprint: getSceneStringValue(i, "oshash"),
+				},
+			},
+		},
+		Duration: getSceneDuration(i),
+		Height:   getHeight(i),
+		Width:    getWidth(i),
+	}
+}
+
 func makeScene(i int) *models.Scene {
 	title := getSceneTitle(i)
-	checksum := getSceneStringValue(i, checksumField)
-	oshash := getSceneStringValue(i, "oshash")
 	details := getSceneStringValue(i, "Details")
 
 	var studioID *int
@@ -957,21 +979,12 @@ func makeScene(i int) *models.Scene {
 		}
 	}
 
-	height := getHeight(i)
-	width := getWidth(i)
-
 	return &models.Scene{
-		Path:         getSceneStringValue(i, pathField),
 		Title:        title,
-		Checksum:     &checksum,
-		OSHash:       &oshash,
 		Details:      details,
 		URL:          getSceneEmptyString(i, urlField),
 		Rating:       getIntPtr(getRating(i)),
 		OCounter:     getOCounter(i),
-		Duration:     getSceneDuration(i),
-		Height:       &height,
-		Width:        &width,
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
 		GalleryIDs:   gids,
@@ -984,11 +997,19 @@ func makeScene(i int) *models.Scene {
 	}
 }
 
-func createScenes(ctx context.Context, sqb models.SceneReaderWriter, n int) error {
+func createScenes(ctx context.Context, n int) error {
+	sqb := db.Scene
+	fqb := db.File
+
 	for i := 0; i < n; i++ {
+		f := makeSceneFile(i)
+		if err := fqb.Create(ctx, f); err != nil {
+			return fmt.Errorf("creating scene file: %w", err)
+		}
+
 		scene := makeScene(i)
 
-		if err := sqb.Create(ctx, scene); err != nil {
+		if err := sqb.Create(ctx, scene, []file.ID{f.ID}); err != nil {
 			return fmt.Errorf("Error creating scene %v+: %s", scene, err.Error())
 		}
 

@@ -11,13 +11,6 @@ type queryURLReplacements map[string]mappedRegexConfigs
 
 type queryURLParameters map[string]string
 
-func stringPtrToString(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
-}
-
 func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret := make(queryURLParameters)
 	ret["checksum"] = scene.Checksum()

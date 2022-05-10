@@ -23,8 +23,8 @@ type SceneFinder interface {
 	manager.SceneCoverGetter
 
 	scene.IDFinder
-	FindByChecksum(ctx context.Context, checksum string) (*models.Scene, error)
-	FindByOSHash(ctx context.Context, oshash string) (*models.Scene, error)
+	FindByChecksum(ctx context.Context, checksum string) ([]*models.Scene, error)
+	FindByOSHash(ctx context.Context, oshash string) ([]*models.Scene, error)
 	GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error)
 }
 
@@ -319,7 +319,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 		captions, err := rs.sceneFinder.GetCaptions(ctx, s.ID)
 		for _, caption := range captions {
 			if lang == caption.LanguageCode && ext == caption.CaptionType {
-				sub, err := scene.ReadSubs(caption.Path(s.Path))
+				sub, err := scene.ReadSubs(caption.Path(s.Path()))
 				if err == nil {
 					var b bytes.Buffer
 					err = sub.WriteToWebVTT(&b)
@@ -465,11 +465,17 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.sceneFinder
 			if sceneID == 0 {
+				var scenes []*models.Scene
 				// determine checksum/os by the length of the query param
 				if len(sceneIdentifierQueryParam) == 32 {
-					scene, _ = qb.FindByChecksum(ctx, sceneIdentifierQueryParam)
+					scenes, _ = qb.FindByChecksum(ctx, sceneIdentifierQueryParam)
+
 				} else {
-					scene, _ = qb.FindByOSHash(ctx, sceneIdentifierQueryParam)
+					scenes, _ = qb.FindByOSHash(ctx, sceneIdentifierQueryParam)
+				}
+
+				if len(scenes) > 0 {
+					scene = scenes[0]
 				}
 			} else {
 				scene, _ = qb.Find(ctx, sceneID)

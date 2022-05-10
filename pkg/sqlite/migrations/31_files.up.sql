@@ -235,76 +235,76 @@ ALTER TABLE `galleries_new` rename to `galleries`;
 
 CREATE INDEX `index_galleries_on_studio_id` on `galleries` (`studio_id`);
 
--- CREATE TABLE `scenes_new` (
---   `id` integer not null primary key autoincrement,
---   -- REMOVED: `path` varchar(510) not null,
---   -- REMOVED: `checksum` varchar(255),
---   -- REMOVED: `oshash` varchar(255),
---   `title` varchar(255),
---   `details` text,
---   `url` varchar(255),
---   `date` date,
---   `rating` tinyint,
---   -- REMOVED: `size` varchar(255),
---   -- REMOVED: `duration` float,
---   -- REMOVED: `video_codec` varchar(255),
---   -- REMOVED: `audio_codec` varchar(255),
---   -- REMOVED: `width` tinyint,
---   -- REMOVED: `height` tinyint,
---   -- REMOVED: `framerate` float,
---   -- REMOVED: `bitrate` integer,
---   `studio_id` integer,
---   `o_counter` tinyint not null default 0,
---   -- REMOVED: `format` varchar(255),
---   `organized` boolean not null default '0',
---   `interactive` boolean not null default '0',
---   `interactive_speed` int,
---   `created_at` datetime not null,
---   `updated_at` datetime not null,
---   -- REMOVED: `file_mod_time` datetime,
---   -- REMOVED: `phash` blob,
---   foreign key(`studio_id`) references `studios`(`id`) on delete SET NULL
---   -- REMOVED: CHECK (`checksum` is not null or `oshash` is not null)
--- );
+CREATE TABLE `scenes_new` (
+  `id` integer not null primary key autoincrement,
+  -- REMOVED: `path` varchar(510) not null,
+  -- REMOVED: `checksum` varchar(255),
+  -- REMOVED: `oshash` varchar(255),
+  `title` varchar(255),
+  `details` text,
+  `url` varchar(255),
+  `date` date,
+  `rating` tinyint,
+  -- REMOVED: `size` varchar(255),
+  -- REMOVED: `duration` float,
+  -- REMOVED: `video_codec` varchar(255),
+  -- REMOVED: `audio_codec` varchar(255),
+  -- REMOVED: `width` tinyint,
+  -- REMOVED: `height` tinyint,
+  -- REMOVED: `framerate` float,
+  -- REMOVED: `bitrate` integer,
+  `studio_id` integer,
+  `o_counter` tinyint not null default 0,
+  -- REMOVED: `format` varchar(255),
+  `organized` boolean not null default '0',
+  `interactive` boolean not null default '0',
+  `interactive_speed` int,
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  -- REMOVED: `file_mod_time` datetime,
+  -- REMOVED: `phash` blob,
+  foreign key(`studio_id`) references `studios`(`id`) on delete SET NULL
+  -- REMOVED: CHECK (`checksum` is not null or `oshash` is not null)
+);
 
--- INSERT INTO `scenes_new`
---   (
---     `id`,
---     `title`,
---     `details`,
---     `url`,
---     `date`,
---     `rating`,
---     `studio_id`,
---     `o_counter`,
---     `organized`,
---     `interactive`,
---     `interactive_speed`,
---     `created_at`,
---     `updated_at`
---   )
---   SELECT 
---     `id`,
---     `title`,
---     `details`,
---     `url`,
---     `date`,
---     `rating`,
---     `studio_id`,
---     `o_counter`,
---     `organized`,
---     `interactive`,
---     `interactive_speed`,
---     `created_at`,
---     `updated_at`
---   FROM `scenes`;
+INSERT INTO `scenes_new`
+  (
+    `id`,
+    `title`,
+    `details`,
+    `url`,
+    `date`,
+    `rating`,
+    `studio_id`,
+    `o_counter`,
+    `organized`,
+    `interactive`,
+    `interactive_speed`,
+    `created_at`,
+    `updated_at`
+  )
+  SELECT 
+    `id`,
+    `title`,
+    `details`,
+    `url`,
+    `date`,
+    `rating`,
+    `studio_id`,
+    `o_counter`,
+    `organized`,
+    `interactive`,
+    `interactive_speed`,
+    `created_at`,
+    `updated_at`
+  FROM `scenes`;
 
--- -- TODO - transfer fingerprint information
+-- TODO - transfer fingerprint information
 
--- DROP TABLE `scenes`;
+DROP TABLE `scenes`;
 
--- ALTER TABLE `scenes_new` rename to `scenes`;
--- CREATE INDEX `index_scenes_on_studio_id` on `scenes` (`studio_id`);
+ALTER TABLE `scenes_new` rename to `scenes`;
+CREATE INDEX `index_scenes_on_studio_id` on `scenes` (`studio_id`);
 
 PRAGMA foreign_keys=ON;
 
@@ -390,4 +390,62 @@ CREATE VIEW `galleries_query` AS
   LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
   LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
   LEFT JOIN `files_fingerprints` ON (`galleries_files`.`file_id` = `files_fingerprints`.`file_id`) 
+  LEFT JOIN `fingerprints` ON (`files_fingerprints`.`fingerprint_id` = `fingerprints`.`id`);
+
+CREATE VIEW `scenes_query` AS 
+  SELECT 
+    `scenes`.`id`,
+    `scenes`.`title`,
+    `scenes`.`details`,
+    `scenes`.`url`,
+    `scenes`.`date`,
+    `scenes`.`rating`,
+    `scenes`.`studio_id`,
+    `scenes`.`o_counter`,
+    `scenes`.`organized`,
+    `scenes`.`interactive`,
+    `scenes`.`interactive_speed`,
+    `scenes`.`created_at`,
+    `scenes`.`updated_at`,
+    `scenes_tags`.`tag_id`,
+    `scenes_galleries`.`gallery_id`,
+    `performers_scenes`.`performer_id`,
+    `movies_scenes`.`movie_id`,
+    `movies_scenes`.`scene_index`,
+    `scene_stash_ids`.`stash_id`,
+    `scene_stash_ids`.`endpoint`,
+    `video_files`.`format` as `video_format`,
+    `video_files`.`width` as `video_width`,
+    `video_files`.`height` as `video_height`,
+    `video_files`.`duration`,
+    `video_files`.`video_codec`,
+    `video_files`.`audio_codec`,
+    `video_files`.`frame_rate`,
+    `video_files`.`bit_rate`,
+    `files`.`id` as `file_id`,
+    `files`.`basename`,
+    `files`.`size`,
+    `files`.`mod_time`,
+    `files`.`missing_since`,
+    `files`.`last_scanned`,
+    `files`.`zip_file_id`,
+    `folders`.`id` as `parent_folder_id`,
+    `folders`.`path` as `folder_path`,
+    `zip_files`.`basename` as `zip_basename`,
+    `zip_files_folders`.`path` as `zip_folder_path`,
+    `fingerprints`.`type` as `fingerprint_type`,
+    `fingerprints`.`fingerprint`
+  FROM `scenes`
+  LEFT JOIN `performers_scenes` ON (`scenes`.`id` = `performers_scenes`.`scene_id`) 
+  LEFT JOIN `scenes_tags` ON (`scenes`.`id` = `scenes_tags`.`scene_id`)
+  LEFT JOIN `movies_scenes` ON (`scenes`.`id` = `movies_scenes`.`scene_id`)
+  LEFT JOIN `scene_stash_ids` ON (`scenes`.`id` = `scene_stash_ids`.`scene_id`)
+  LEFT JOIN `scenes_galleries` ON (`scenes`.`id` = `scenes_galleries`.`scene_id`) 
+  LEFT JOIN `scenes_files` ON (`scenes`.`id` = `scenes_files`.`scene_id`) 
+  LEFT JOIN `video_files` ON (`scenes_files`.`file_id` = `video_files`.`file_id`) 
+  LEFT JOIN `files` ON (`scenes_files`.`file_id` = `files`.`id`) 
+  LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
+  LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
+  LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
+  LEFT JOIN `files_fingerprints` ON (`scenes_files`.`file_id` = `files_fingerprints`.`file_id`) 
   LEFT JOIN `fingerprints` ON (`files_fingerprints`.`fingerprint_id` = `fingerprints`.`id`);

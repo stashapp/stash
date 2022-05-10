@@ -152,7 +152,7 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 
 	withTxn(func(ctx context.Context) error {
 		testTags := func(m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
-			s, err := sqlite.SceneReaderWriter.Find(ctx, int(m.SceneID.Int64))
+			s, err := db.Scene.Find(ctx, int(m.SceneID.Int64))
 			if err != nil {
 				t.Errorf("error getting marker tag ids: %v", err)
 				return

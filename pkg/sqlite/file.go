@@ -202,7 +202,7 @@ func (r *fileQueryRow) resolve() file.File {
 
 	var ret file.File = basic
 
-	if r.videoFileQueryRow.FileID.Valid {
+	if r.videoFileQueryRow.Format.Valid {
 		vf := r.videoFileQueryRow.resolve()
 		vf.BaseFile = basic
 		ret = vf

@@ -567,10 +567,11 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 			onClause: "images_files.file_id = files_fingerprints.file_id",
 		}, join{
 			table:    fingerprintTable,
-			onClause: "files_fingerprints.fingerprint_id = fingerprints.id AND fingerprints.type = 'md5'",
+			as:       "fingerprints_md5",
+			onClause: "files_fingerprints.fingerprint_id = fingerprints_md5.id AND fingerprints_md5.type = 'md5'",
 		})
 
-		searchColumns := []string{"images.title", "images_query.folder_path", "images_query.basename", "fingerprints.fingerprint"}
+		searchColumns := []string{"images.title", "images_query.folder_path", "images_query.basename", "fingerprints_md5.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 

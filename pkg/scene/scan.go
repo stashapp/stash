@@ -2,22 +2,108 @@ package scene
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"time"
 
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin"
+)
+
+var (
+	ErrNotVideoFile = errors.New("not a video file")
 )
 
 // const mutexType = "scene"
 
 type CreatorUpdater interface {
-	FindByChecksum(ctx context.Context, checksum string) (*models.Scene, error)
-	FindByOSHash(ctx context.Context, oshash string) (*models.Scene, error)
-	Create(ctx context.Context, newScene *models.Scene) error
+	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error)
+	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Scene, error)
+	Create(ctx context.Context, newScene *models.Scene, fileIDs []file.ID) error
 	Update(ctx context.Context, updatedScene *models.Scene) error
 	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
 
 	// FIXME
 	GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error)
 	UpdateCaptions(ctx context.Context, id int, captions []*models.SceneCaption) error
+}
+
+type ScanHandler struct {
+	CreatorUpdater CreatorUpdater
+
+	CoverGenerator CoverGenerator
+	PluginCache    *plugin.Cache
+}
+
+func (h *ScanHandler) validate() error {
+	if h.CreatorUpdater == nil {
+		return errors.New("CreatorUpdater is required")
+	}
+	if h.CoverGenerator == nil {
+		return errors.New("CoverGenerator is required")
+	}
+
+	return nil
+}
+
+func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error {
+	if err := h.validate(); err != nil {
+		return err
+	}
+
+	videoFile, ok := f.(*file.VideoFile)
+	if !ok {
+		return ErrNotVideoFile
+	}
+
+	// try to match the file to a scene
+	existing, err := h.CreatorUpdater.FindByFileID(ctx, f.Base().ID)
+	if err != nil {
+		return fmt.Errorf("finding existing scene: %w", err)
+	}
+
+	if len(existing) > 0 {
+		// assume nothing to be done
+		// TODO - may need to update the title?
+		return nil
+	}
+
+	// try also to match file by fingerprints
+	existing, err = h.CreatorUpdater.FindByFingerprints(ctx, videoFile.Fingerprints)
+	if len(existing) > 0 {
+		// associate this file with the existing scenes
+		// for _, img := range existing {
+		// 	// TODO
+		// 	return nil
+		// }
+		return nil
+	}
+
+	// create a new image
+	now := time.Now()
+	newScene := &models.Scene{
+		Title:     videoFile.Basename,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	// TODO - generate thumbnails
+
+	if err := h.CreatorUpdater.Create(ctx, newScene, []file.ID{videoFile.ID}); err != nil {
+		return fmt.Errorf("creating new scene: %w", err)
+	}
+
+	if err := h.CoverGenerator.GenerateCover(ctx, newScene, videoFile); err != nil {
+		// just log if cover generation fails. We can try again on rescan
+		logger.Errorf("Error generating cover for %s: %v", videoFile.Path, err)
+	}
+
+	h.PluginCache.ExecutePostHooks(ctx, newScene.ID, plugin.SceneCreatePost, nil, nil)
+
+	return nil
 }
 
 // type videoFileCreator interface {
@@ -341,42 +427,42 @@ type CreatorUpdater interface {
 // 	return nil
 // }
 
-// func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, checksum string) {
-// 	thumbPath := scanner.Paths.Scene.GetThumbnailScreenshotPath(checksum)
-// 	normalPath := scanner.Paths.Scene.GetScreenshotPath(checksum)
+func (h *ScanHandler) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, checksum string) {
+	// thumbPath := h.Paths.Scene.GetThumbnailScreenshotPath(checksum)
+	// normalPath := h.Paths.Scene.GetScreenshotPath(checksum)
 
-// 	thumbExists, _ := fsutil.FileExists(thumbPath)
-// 	normalExists, _ := fsutil.FileExists(normalPath)
+	// thumbExists, _ := fsutil.FileExists(thumbPath)
+	// normalExists, _ := fsutil.FileExists(normalPath)
 
-// 	if thumbExists && normalExists {
-// 		return
-// 	}
+	// if thumbExists && normalExists {
+	// 	return
+	// }
 
-// 	if probeResult == nil {
-// 		var err error
-// 		probeResult, err = scanner.VideoFileCreator.NewVideoFile(path)
+	// if probeResult == nil {
+	// 	var err error
+	// 	probeResult, err = h.VideoFileCreator.NewVideoFile(path)
 
-// 		if err != nil {
-// 			logger.Error(err.Error())
-// 			return
-// 		}
-// 		logger.Infof("Regenerating images for %s", path)
-// 	}
+	// 	if err != nil {
+	// 		logger.Error(err.Error())
+	// 		return
+	// 	}
+	// 	logger.Infof("Regenerating images for %s", path)
+	// }
 
-// 	if !thumbExists {
-// 		logger.Debugf("Creating thumbnail for %s", path)
-// 		if err := scanner.Screenshotter.GenerateThumbnail(context.TODO(), probeResult, checksum); err != nil {
-// 			logger.Errorf("Error creating thumbnail for %s: %v", err)
-// 		}
-// 	}
+	// if !thumbExists {
+	// 	logger.Debugf("Creating thumbnail for %s", path)
+	// 	if err := h.Screenshotter.GenerateThumbnail(context.TODO(), probeResult, checksum); err != nil {
+	// 		logger.Errorf("Error creating thumbnail for %s: %v", err)
+	// 	}
+	// }
 
-// 	if !normalExists {
-// 		logger.Debugf("Creating screenshot for %s", path)
-// 		if err := scanner.Screenshotter.GenerateScreenshot(context.TODO(), probeResult, checksum); err != nil {
-// 			logger.Errorf("Error creating screenshot for %s: %v", err)
-// 		}
-// 	}
-// }
+	// if !normalExists {
+	// 	logger.Debugf("Creating screenshot for %s", path)
+	// 	if err := h.Screenshotter.GenerateScreenshot(context.TODO(), probeResult, checksum); err != nil {
+	// 		logger.Errorf("Error creating screenshot for %s: %v", err)
+	// 	}
+	// }
+}
 
 // func getInteractive(path string) bool {
 // 	_, err := os.Stat(GetFunscriptPath(path))

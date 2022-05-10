@@ -15,13 +15,14 @@ var (
 	imagesFilesJoinTable      = goqu.T(imagesFilesTable)
 	imagesQueryTable          = goqu.T("images_query")
 	galleriesQueryTable       = goqu.T("galleries_query")
+	scenesQueryTable          = goqu.T("scenes_query")
 
 	galleriesFilesJoinTable      = goqu.T(galleriesFilesTable)
 	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
 	performersGalleriesJoinTable = goqu.T(performersGalleriesTable)
 	galleriesScenesJoinTable     = goqu.T(galleriesScenesTable)
 
-	// scenesFilesJoinTable      = goqu.T("scenes_files")
+	scenesFilesJoinTable      = goqu.T(scenesFilesTable)
 	scenesTagsJoinTable       = goqu.T(scenesTagsTable)
 	scenesPerformersJoinTable = goqu.T(performersScenesTable)
 	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
@@ -122,12 +123,17 @@ var (
 		idColumn: goqu.T(sceneTable).Col(idColumn),
 	}
 
-	// scenesFilesTableMgr = &relatedFilesTable{
-	// 	table: table{
-	// 		table:    scenesFilesJoinTable,
-	// 		idColumn: scenesFilesJoinTable.Col(sceneIDColumn),
-	// 	},
-	// }
+	sceneQueryTableMgr = &table{
+		table:    scenesQueryTable,
+		idColumn: scenesQueryTable.Col(idColumn),
+	}
+
+	scenesFilesTableMgr = &relatedFilesTable{
+		table: table{
+			table:    scenesFilesJoinTable,
+			idColumn: scenesFilesJoinTable.Col(sceneIDColumn),
+		},
+	}
 
 	scenesTagsTableMgr = &joinTable{
 		table: table{

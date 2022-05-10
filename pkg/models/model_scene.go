@@ -10,10 +10,7 @@ import (
 
 // Scene stores the metadata for a single video scene.
 type Scene struct {
-	ID int `json:"id"`
-	// Checksum         *string    `json:"checksum"`
-	// OSHash           *string    `json:"oshash"`
-	// Path             string     `json:"path"`
+	ID        int    `json:"id"`
 	Title     string `json:"title"`
 	Details   string `json:"details"`
 	URL       string `json:"url"`
@@ -21,18 +18,7 @@ type Scene struct {
 	Rating    *int   `json:"rating"`
 	Organized bool   `json:"organized"`
 	OCounter  int    `json:"o_counter"`
-	// Size             *string    `json:"size"`
-	// Duration         *float64   `json:"duration"`
-	// VideoCodec       *string    `json:"video_codec"`
-	// Format           *string    `json:"format_name"`
-	// AudioCodec       *string    `json:"audio_codec"`
-	// Width            *int       `json:"width"`
-	// Height           *int       `json:"height"`
-	// Framerate        *float64   `json:"framerate"`
-	// Bitrate          *int64     `json:"bitrate"`
-	StudioID *int `json:"studio_id"`
-	// FileModTime      *time.Time `json:"file_mod_time"`
-	// Phash            *int64     `json:"phash"`
+	StudioID  *int   `json:"studio_id"`
 
 	// transient - not persisted
 	Files []*file.VideoFile
@@ -132,28 +118,14 @@ func (s Scene) AudioCodec() string {
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry.
 type ScenePartial struct {
-	// Checksum         OptionalString
-	// OSHash           OptionalString
-	// Path             OptionalString
-	Title     OptionalString
-	Details   OptionalString
-	URL       OptionalString
-	Date      OptionalDate
-	Rating    OptionalInt
-	Organized OptionalBool
-	OCounter  OptionalInt
-	// Size             OptionalString
-	// Duration         OptionalFloat64
-	// VideoCodec       OptionalString
-	// Format           OptionalString
-	// AudioCodec       OptionalString
-	// Width            OptionalInt
-	// Height           OptionalInt
-	// Framerate        OptionalFloat64
-	// Bitrate          OptionalInt64
-	StudioID OptionalInt
-	// FileModTime      OptionalTime
-	// Phash            OptionalInt64
+	Title            OptionalString
+	Details          OptionalString
+	URL              OptionalString
+	Date             OptionalDate
+	Rating           OptionalInt
+	Organized        OptionalBool
+	OCounter         OptionalInt
+	StudioID         OptionalInt
 	Interactive      OptionalBool
 	InteractiveSpeed OptionalInt
 	CreatedAt        OptionalTime

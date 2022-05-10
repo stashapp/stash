@@ -1,6 +1,10 @@
 package models
 
-import "context"
+import (
+	"context"
+
+	"github.com/stashapp/stash/pkg/file"
+)
 
 type PHashDuplicationCriterionInput struct {
 	Duplicated *bool `json:"duplicated"`
@@ -121,9 +125,9 @@ type SceneReader interface {
 	SceneFinder
 	// TODO - remove this in another PR
 	Find(ctx context.Context, id int) (*Scene, error)
-	FindByChecksum(ctx context.Context, checksum string) (*Scene, error)
-	FindByOSHash(ctx context.Context, oshash string) (*Scene, error)
-	FindByPath(ctx context.Context, path string) (*Scene, error)
+	FindByChecksum(ctx context.Context, checksum string) ([]*Scene, error)
+	FindByOSHash(ctx context.Context, oshash string) ([]*Scene, error)
+	FindByPath(ctx context.Context, path string) ([]*Scene, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindDuplicates(ctx context.Context, distance int) ([][]*Scene, error)
@@ -147,7 +151,7 @@ type SceneReader interface {
 }
 
 type SceneWriter interface {
-	Create(ctx context.Context, newScene *Scene) error
+	Create(ctx context.Context, newScene *Scene, fileIDs []file.ID) error
 	Update(ctx context.Context, updatedScene *Scene) error
 	UpdatePartial(ctx context.Context, id int, updatedScene ScenePartial) (*Scene, error)
 	IncrementOCounter(ctx context.Context, id int) (int, error)

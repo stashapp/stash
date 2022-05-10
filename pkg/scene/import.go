@@ -366,32 +366,33 @@ func (i *Importer) Name() string {
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	var existing *models.Scene
-	var err error
+	// TODO
+	// var existing []*models.Scene
+	// var err error
 
-	switch i.FileNamingAlgorithm {
-	case models.HashAlgorithmMd5:
-		existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
-	case models.HashAlgorithmOshash:
-		existing, err = i.ReaderWriter.FindByOSHash(ctx, i.Input.OSHash)
-	default:
-		panic("unknown file naming algorithm")
-	}
+	// switch i.FileNamingAlgorithm {
+	// case models.HashAlgorithmMd5:
+	// 	existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
+	// case models.HashAlgorithmOshash:
+	// 	existing, err = i.ReaderWriter.FindByOSHash(ctx, i.Input.OSHash)
+	// default:
+	// 	panic("unknown file naming algorithm")
+	// }
 
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if existing != nil {
-		id := existing.ID
-		return &id, nil
-	}
+	// if len(existing) > 0 {
+	// 	id := existing[0].ID
+	// 	return &id, nil
+	// }
 
 	return nil, nil
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	if err := i.ReaderWriter.Create(ctx, &i.scene); err != nil {
+	if err := i.ReaderWriter.Create(ctx, &i.scene, nil); err != nil {
 		return nil, fmt.Errorf("error creating scene: %v", err)
 	}
 
