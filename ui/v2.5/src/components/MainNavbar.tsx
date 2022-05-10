@@ -66,6 +66,10 @@ const messages = defineMessages({
     id: "donate",
     defaultMessage: "Donate",
   },
+  statistics: {
+    id: "statistics",
+    defaultMessage: "Statistics",
+  },
 });
 
 const allMenuItems: IMenuItem[] = [
@@ -259,6 +263,19 @@ export const MainNavbar: React.FC = () => {
             </span>
           </Button>
         </Nav.Link>
+        <NavLink
+          className="nav-utility"
+          exact
+          to="/stats"
+          onClick={handleDismiss}
+        >
+          <Button
+            className="minimal d-flex align-items-center h-100"
+            title={intl.formatMessage({ id: "statistics" })}
+          >
+            <Icon icon="chart-bar" />
+          </Button>
+        </NavLink>
         <NavLink
           className="nav-utility"
           exact
