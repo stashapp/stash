@@ -35,6 +35,7 @@ import * as GQL from "./core/generated-graphql";
 import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
 import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/Manual";
+import { InteractiveProvider } from "./hooks/Interactive/context";
 
 initPolyfills();
 
@@ -150,12 +151,14 @@ export const App: React.FC = () => {
           <ToastProvider>
             <LightboxProvider>
               <ManualProvider>
-                <Helmet
-                  titleTemplate={`%s ${TITLE_SUFFIX}`}
-                  defaultTitle="Stash"
-                />
-                {maybeRenderNavbar()}
-                <div className="main container-fluid">{renderContent()}</div>
+                <InteractiveProvider>
+                  <Helmet
+                    titleTemplate={`%s ${TITLE_SUFFIX}`}
+                    defaultTitle="Stash"
+                  />
+                  {maybeRenderNavbar()}
+                  <div className="main container-fluid">{renderContent()}</div>
+                </InteractiveProvider>
               </ManualProvider>
             </LightboxProvider>
           </ToastProvider>
