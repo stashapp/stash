@@ -79,7 +79,6 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 
 	// don't care if we can't get the container
 	container, _ := GetSceneFileContainer(scene)
-	videoCodec := scene.VideoCodec.String
 
 	directStreamLabel := "Direct stream"
 	directStreamEndpoint := &models.SceneStreamEndpoint{
@@ -90,7 +89,9 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 
 	var directStreamErr error
 	if !HasTranscode(scene, config.GetInstance().GetVideoFileNamingAlgorithm()) {
-		directStreamErr = ffmpeg.IsStreamable(videoCodec, audioCodec, container)
+		// only check that audio codec is streamable for the container
+		// different browsers support different video codecs
+		directStreamErr = ffmpeg.IsValidAudioForContainer(audioCodec, container)
 	}
 
 	if directStreamErr != nil {
