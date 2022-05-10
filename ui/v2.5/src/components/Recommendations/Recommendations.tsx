@@ -112,27 +112,27 @@ const Recommendations: React.FC = () => {
     variableWidth: true,
     swipeToSlide: true,
     slidesToShow: 5,
-    slidesToScroll: 5,
+    slidesToScroll: !isTouch ? 5 : 1,
     responsive: [
       {
       breakpoint: 1909,
       settings: {
         slidesToShow: 4,
-        slidesToScroll: 4
+        slidesToScroll: !isTouch ? 4 : 1
       }
       },
       {
       breakpoint: 1542,
       settings: {
         slidesToShow: 3,
-        slidesToScroll: 3
+        slidesToScroll: !isTouch ? 3 : 1
       }
       },
       {
         breakpoint: 1170,
         settings: {
           slidesToShow: 2,
-          slidesToScroll: 2
+          slidesToScroll: !isTouch ? 2 : 1
         }
       },
       {
