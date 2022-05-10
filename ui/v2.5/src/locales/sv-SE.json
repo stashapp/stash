@@ -121,6 +121,7 @@
   "birth_year": "Födelseår",
   "birthdate": "Födelsedatum",
   "bitrate": "Bithastighet",
+  "captions": "Undertexter",
   "career_length": "Karriärlängd",
   "component_tagger": {
     "config": {
@@ -521,6 +522,10 @@
           "display_title": "Visa titel och taggar",
           "toggle_sound": "Aktivera ljud"
         }
+      },
+      "scroll_attempts_before_change": {
+        "description": "Antal gånger att försöka bläddra innan flytt till nästa/tidigare objekt. Används bara för Pan Y-läget.",
+        "heading": "Bläddringsförsök innan flytt"
       },
       "slideshow_delay": {
         "description": "Bildspel är tillgängligt för gallerier i väggvisningsläge",
