@@ -121,6 +121,7 @@
   "birth_year": "Birth Year",
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
+  "captions": "Captions",
   "career_length": "Career Length",
   "component_tagger": {
     "config": {
@@ -715,6 +716,7 @@
     "scale": "Scale",
     "warmth": "Warmth"
   },
+  "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",
@@ -766,8 +768,11 @@
   "instagram": "Instagram",
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",
-  "captions": "Captions",
   "isMissing": "Is Missing",
+  "latest_galleries": "Latest Galleries",
+  "latest_movies": "Latest Movies",
+  "latest_performers": "Latest Performers",
+  "latest_scenes": "Latest Scenes",
   "library": "Library",
   "loading": {
     "generic": "Loading…"
@@ -791,6 +796,7 @@
   },
   "megabits_per_second": "{value} megabits per second",
   "metadata": "Metadata",
+  "most_active_studios": "Most Active Studios",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",
   "movies": "Movies",
@@ -921,6 +927,7 @@
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
+  "statistics": "Statistics",
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",

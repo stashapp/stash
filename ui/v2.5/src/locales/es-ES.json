@@ -107,6 +107,7 @@
     },
     "temp_disable": "Deshabilitar temporalmente…",
     "temp_enable": "Habilitar temporalmente…",
+    "unset": "Desactivar",
     "use_default": "Predeterminada",
     "view_random": "Ver aleatoria"
   },
@@ -523,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "La presentación de diapositivas estará disponible en las galerías al seleccionar el muro como modo de visualización",
-        "heading": "Retardo en la presentación de diapositivas"
+        "heading": "Retardo en la presentación de diapositivas (segundos)"
       },
       "title": "Interfaz de usuario"
     }
@@ -701,6 +702,7 @@
     "warmth": "Calidez"
   },
   "ethnicity": "Origen étnico",
+  "existing_value": "valor existente",
   "eye_color": "Color de ojos",
   "fake_tits": "Pecho operado",
   "false": "No",
@@ -731,6 +733,7 @@
   "hasMarkers": "Tiene marcadores",
   "height": "Estatura",
   "help": "Ayuda",
+  "ignore_auto_tag": "Ignorar Etiquetado Automático",
   "image": "Imagen",
   "image_count": "Número de imágenes",
   "images": "Imágenes",

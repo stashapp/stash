@@ -107,6 +107,7 @@
     },
     "temp_disable": "暂时关闭…",
     "temp_enable": "暂时启用…",
+    "unset": "重设",
     "use_default": "使用默认",
     "view_random": "随机查看"
   },
@@ -279,6 +280,10 @@
       "number_of_parallel_task_for_scan_generation_head": "扫描/生成的并行任务数量",
       "parallel_scan_head": "并行扫描/生成",
       "preview_generation": "生成预览",
+      "python_path": {
+        "description": "Python 执行程序的位置。给网页挖掘器和插件的源文件使用。如果没有，python会从环境变量找到",
+        "heading": "Python 路径"
+      },
       "scraper_user_agent": "挖掘器用户代理(User Agent)",
       "scraper_user_agent_desc": "挖掘器运行时的用户代理名(User Agent)",
       "scrapers_path": {
@@ -448,6 +453,9 @@
         "description": "用于互动场景的快速连接密钥。设定此密匙会允许Stash分享你当前的短片资料到handyfeeling.com",
         "heading": "快速连接密钥"
       },
+      "image_lightbox": {
+        "heading": "图片灯箱"
+      },
       "images": {
         "heading": "图片",
         "options": {
@@ -516,7 +524,7 @@
       },
       "slideshow_delay": {
         "description": "在影音墙模式下，图库可用幻灯片功能",
-        "heading": "幻灯片延迟"
+        "heading": "幻灯片延迟（秒）"
       },
       "title": "用户界面"
     }
@@ -694,6 +702,7 @@
     "warmth": "色温"
   },
   "ethnicity": "人种",
+  "existing_value": "现值",
   "eye_color": "瞳孔颜色",
   "fake_tits": "假奶",
   "false": "假",
@@ -724,6 +733,7 @@
   "hasMarkers": "含有章节标记",
   "height": "身高",
   "help": "说明",
+  "ignore_auto_tag": "忽略自动标签",
   "image": "图片",
   "image_count": "图片数量",
   "images": "图片",
