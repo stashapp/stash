@@ -31,32 +31,33 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 }
 
 type Query struct {
-	FindPerformer                *Performer                   "json:\"findPerformer\" graphql:\"findPerformer\""
-	QueryPerformers              QueryPerformersResultType    "json:\"queryPerformers\" graphql:\"queryPerformers\""
-	FindStudio                   *Studio                      "json:\"findStudio\" graphql:\"findStudio\""
-	QueryStudios                 QueryStudiosResultType       "json:\"queryStudios\" graphql:\"queryStudios\""
-	FindTag                      *Tag                         "json:\"findTag\" graphql:\"findTag\""
-	QueryTags                    QueryTagsResultType          "json:\"queryTags\" graphql:\"queryTags\""
-	FindTagCategory              *TagCategory                 "json:\"findTagCategory\" graphql:\"findTagCategory\""
-	QueryTagCategories           QueryTagCategoriesResultType "json:\"queryTagCategories\" graphql:\"queryTagCategories\""
-	FindScene                    *Scene                       "json:\"findScene\" graphql:\"findScene\""
-	FindSceneByFingerprint       []*Scene                     "json:\"findSceneByFingerprint\" graphql:\"findSceneByFingerprint\""
-	FindScenesByFingerprints     []*Scene                     "json:\"findScenesByFingerprints\" graphql:\"findScenesByFingerprints\""
-	FindScenesByFullFingerprints []*Scene                     "json:\"findScenesByFullFingerprints\" graphql:\"findScenesByFullFingerprints\""
-	QueryScenes                  QueryScenesResultType        "json:\"queryScenes\" graphql:\"queryScenes\""
-	FindSite                     *Site                        "json:\"findSite\" graphql:\"findSite\""
-	QuerySites                   QuerySitesResultType         "json:\"querySites\" graphql:\"querySites\""
-	FindEdit                     *Edit                        "json:\"findEdit\" graphql:\"findEdit\""
-	QueryEdits                   QueryEditsResultType         "json:\"queryEdits\" graphql:\"queryEdits\""
-	FindUser                     *User                        "json:\"findUser\" graphql:\"findUser\""
-	QueryUsers                   QueryUsersResultType         "json:\"queryUsers\" graphql:\"queryUsers\""
-	Me                           *User                        "json:\"me\" graphql:\"me\""
-	SearchPerformer              []*Performer                 "json:\"searchPerformer\" graphql:\"searchPerformer\""
-	SearchScene                  []*Scene                     "json:\"searchScene\" graphql:\"searchScene\""
-	FindDraft                    *Draft                       "json:\"findDraft\" graphql:\"findDraft\""
-	FindDrafts                   []*Draft                     "json:\"findDrafts\" graphql:\"findDrafts\""
-	Version                      Version                      "json:\"version\" graphql:\"version\""
-	GetConfig                    StashBoxConfig               "json:\"getConfig\" graphql:\"getConfig\""
+	FindPerformer                 *Performer                   "json:\"findPerformer\" graphql:\"findPerformer\""
+	QueryPerformers               QueryPerformersResultType    "json:\"queryPerformers\" graphql:\"queryPerformers\""
+	FindStudio                    *Studio                      "json:\"findStudio\" graphql:\"findStudio\""
+	QueryStudios                  QueryStudiosResultType       "json:\"queryStudios\" graphql:\"queryStudios\""
+	FindTag                       *Tag                         "json:\"findTag\" graphql:\"findTag\""
+	QueryTags                     QueryTagsResultType          "json:\"queryTags\" graphql:\"queryTags\""
+	FindTagCategory               *TagCategory                 "json:\"findTagCategory\" graphql:\"findTagCategory\""
+	QueryTagCategories            QueryTagCategoriesResultType "json:\"queryTagCategories\" graphql:\"queryTagCategories\""
+	FindScene                     *Scene                       "json:\"findScene\" graphql:\"findScene\""
+	FindSceneByFingerprint        []*Scene                     "json:\"findSceneByFingerprint\" graphql:\"findSceneByFingerprint\""
+	FindScenesByFingerprints      []*Scene                     "json:\"findScenesByFingerprints\" graphql:\"findScenesByFingerprints\""
+	FindScenesByFullFingerprints  []*Scene                     "json:\"findScenesByFullFingerprints\" graphql:\"findScenesByFullFingerprints\""
+	FindScenesBySceneFingerprints [][]*Scene                   "json:\"findScenesBySceneFingerprints\" graphql:\"findScenesBySceneFingerprints\""
+	QueryScenes                   QueryScenesResultType        "json:\"queryScenes\" graphql:\"queryScenes\""
+	FindSite                      *Site                        "json:\"findSite\" graphql:\"findSite\""
+	QuerySites                    QuerySitesResultType         "json:\"querySites\" graphql:\"querySites\""
+	FindEdit                      *Edit                        "json:\"findEdit\" graphql:\"findEdit\""
+	QueryEdits                    QueryEditsResultType         "json:\"queryEdits\" graphql:\"queryEdits\""
+	FindUser                      *User                        "json:\"findUser\" graphql:\"findUser\""
+	QueryUsers                    QueryUsersResultType         "json:\"queryUsers\" graphql:\"queryUsers\""
+	Me                            *User                        "json:\"me\" graphql:\"me\""
+	SearchPerformer               []*Performer                 "json:\"searchPerformer\" graphql:\"searchPerformer\""
+	SearchScene                   []*Scene                     "json:\"searchScene\" graphql:\"searchScene\""
+	FindDraft                     *Draft                       "json:\"findDraft\" graphql:\"findDraft\""
+	FindDrafts                    []*Draft                     "json:\"findDrafts\" graphql:\"findDrafts\""
+	Version                       Version                      "json:\"version\" graphql:\"version\""
+	GetConfig                     StashBoxConfig               "json:\"getConfig\" graphql:\"getConfig\""
 }
 type Mutation struct {
 	SceneCreate          *Scene                "json:\"sceneCreate\" graphql:\"sceneCreate\""
@@ -95,6 +96,10 @@ type Mutation struct {
 	PerformerEdit        Edit                  "json:\"performerEdit\" graphql:\"performerEdit\""
 	StudioEdit           Edit                  "json:\"studioEdit\" graphql:\"studioEdit\""
 	TagEdit              Edit                  "json:\"tagEdit\" graphql:\"tagEdit\""
+	SceneEditUpdate      Edit                  "json:\"sceneEditUpdate\" graphql:\"sceneEditUpdate\""
+	PerformerEditUpdate  Edit                  "json:\"performerEditUpdate\" graphql:\"performerEditUpdate\""
+	StudioEditUpdate     Edit                  "json:\"studioEditUpdate\" graphql:\"studioEditUpdate\""
+	TagEditUpdate        Edit                  "json:\"tagEditUpdate\" graphql:\"tagEditUpdate\""
 	EditVote             Edit                  "json:\"editVote\" graphql:\"editVote\""
 	EditComment          Edit                  "json:\"editComment\" graphql:\"editComment\""
 	ApplyEdit            Edit                  "json:\"applyEdit\" graphql:\"applyEdit\""
@@ -226,20 +231,6 @@ const FindSceneByFingerprintDocument = `query FindSceneByFingerprint ($fingerpri
 		... SceneFragment
 	}
 }
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-}
 fragment PerformerFragment on Performer {
 	id
 	name
@@ -278,15 +269,29 @@ fragment FuzzyDateFragment on FuzzyDate {
 	date
 	accuracy
 }
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
+}
 fragment MeasurementsFragment on Measurements {
 	band_size
 	cup_size
 	waist
 	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
 }
 fragment FingerprintFragment on Fingerprint {
 	algorithm
@@ -324,14 +329,14 @@ fragment ImageFragment on Image {
 	width
 	height
 }
-fragment TagFragment on Tag {
+fragment StudioFragment on Studio {
 	name
 	id
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
 	}
 }
 `
@@ -354,9 +359,30 @@ const FindScenesByFullFingerprintsDocument = `query FindScenesByFullFingerprints
 		... SceneFragment
 	}
 }
-fragment URLFragment on URL {
-	url
-	type
+fragment SceneFragment on Scene {
+	id
+	title
+	details
+	duration
+	date
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	studio {
+		... StudioFragment
+	}
+	tags {
+		... TagFragment
+	}
+	performers {
+		... PerformerAppearanceFragment
+	}
+	fingerprints {
+		... FingerprintFragment
+	}
 }
 fragment StudioFragment on Studio {
 	name
@@ -373,6 +399,35 @@ fragment PerformerAppearanceFragment on PerformerAppearance {
 	performer {
 		... PerformerFragment
 	}
+}
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment TagFragment on Tag {
+	name
+	id
 }
 fragment PerformerFragment on Performer {
 	id
@@ -408,59 +463,9 @@ fragment PerformerFragment on Performer {
 		... BodyModificationFragment
 	}
 }
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment SceneFragment on Scene {
-	id
-	title
-	details
-	duration
-	date
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	studio {
-		... StudioFragment
-	}
-	tags {
-		... TagFragment
-	}
-	performers {
-		... PerformerAppearanceFragment
-	}
-	fingerprints {
-		... FingerprintFragment
-	}
-}
-fragment TagFragment on Tag {
-	name
-	id
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
 fragment BodyModificationFragment on BodyModification {
 	location
 	description
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
 }
 `
 
@@ -486,23 +491,15 @@ fragment URLFragment on URL {
 	url
 	type
 }
-fragment TagFragment on Tag {
-	name
+fragment ImageFragment on Image {
 	id
+	url
+	width
+	height
 }
 fragment FuzzyDateFragment on FuzzyDate {
 	date
 	accuracy
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
 }
 fragment FingerprintFragment on Fingerprint {
 	algorithm
@@ -534,12 +531,6 @@ fragment SceneFragment on Scene {
 		... FingerprintFragment
 	}
 }
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
 fragment StudioFragment on Studio {
 	name
 	id
@@ -549,6 +540,10 @@ fragment StudioFragment on Studio {
 	images {
 		... ImageFragment
 	}
+}
+fragment TagFragment on Tag {
+	name
+	id
 }
 fragment PerformerAppearanceFragment on PerformerAppearance {
 	as
@@ -589,6 +584,16 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
 `
 
@@ -610,30 +615,6 @@ const SearchPerformerDocument = `query SearchPerformer ($term: String!) {
 		... PerformerFragment
 	}
 }
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment ImageFragment on Image {
-	id
-	url
-	width
-	height
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
 fragment PerformerFragment on Performer {
 	id
 	name
@@ -667,6 +648,30 @@ fragment PerformerFragment on Performer {
 	piercings {
 		... BodyModificationFragment
 	}
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
 `
 
@@ -688,10 +693,6 @@ const FindPerformerByIDDocument = `query FindPerformerByID ($id: ID!) {
 		... PerformerFragment
 	}
 }
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
 fragment PerformerFragment on Performer {
 	id
 	name
@@ -746,6 +747,10 @@ fragment MeasurementsFragment on Measurements {
 	waist
 	hip
 }
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
 `
 
 func (c *Client) FindPerformerByID(ctx context.Context, id string, httpRequestOptions ...client.HTTPRequestOption) (*FindPerformerByID, error) {
@@ -765,83 +770,6 @@ const FindSceneByIDDocument = `query FindSceneByID ($id: ID!) {
 	findScene(id: $id) {
 		... SceneFragment
 	}
-}
-fragment PerformerFragment on Performer {
-	id
-	name
-	disambiguation
-	aliases
-	gender
-	merged_ids
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-	birthdate {
-		... FuzzyDateFragment
-	}
-	ethnicity
-	country
-	eye_color
-	hair_color
-	height
-	measurements {
-		... MeasurementsFragment
-	}
-	breast_type
-	career_start_year
-	career_end_year
-	tattoos {
-		... BodyModificationFragment
-	}
-	piercings {
-		... BodyModificationFragment
-	}
-}
-fragment MeasurementsFragment on Measurements {
-	band_size
-	cup_size
-	waist
-	hip
-}
-fragment BodyModificationFragment on BodyModification {
-	location
-	description
-}
-fragment URLFragment on URL {
-	url
-	type
-}
-fragment StudioFragment on Studio {
-	name
-	id
-	urls {
-		... URLFragment
-	}
-	images {
-		... ImageFragment
-	}
-}
-fragment TagFragment on Tag {
-	name
-	id
-}
-fragment PerformerAppearanceFragment on PerformerAppearance {
-	as
-	performer {
-		... PerformerFragment
-	}
-}
-fragment FuzzyDateFragment on FuzzyDate {
-	date
-	accuracy
-}
-fragment FingerprintFragment on Fingerprint {
-	algorithm
-	hash
-	duration
 }
 fragment SceneFragment on Scene {
 	id
@@ -868,11 +796,88 @@ fragment SceneFragment on Scene {
 		... FingerprintFragment
 	}
 }
+fragment URLFragment on URL {
+	url
+	type
+}
 fragment ImageFragment on Image {
 	id
 	url
 	width
 	height
+}
+fragment StudioFragment on Studio {
+	name
+	id
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
+}
+fragment PerformerFragment on Performer {
+	id
+	name
+	disambiguation
+	aliases
+	gender
+	merged_ids
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	birthdate {
+		... FuzzyDateFragment
+	}
+	ethnicity
+	country
+	eye_color
+	hair_color
+	height
+	measurements {
+		... MeasurementsFragment
+	}
+	breast_type
+	career_start_year
+	career_end_year
+	tattoos {
+		... BodyModificationFragment
+	}
+	piercings {
+		... BodyModificationFragment
+	}
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
 }
 `
 

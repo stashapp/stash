@@ -926,6 +926,19 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 			}
 		}
 
+		stashIDs, err := qb.GetStashIDs(sceneID)
+		if err != nil {
+			return err
+		}
+		var stashID *string = nil
+		for _, v := range stashIDs {
+			if v.Endpoint == endpoint {
+				stashID = &v.StashID
+				break
+			}
+		}
+		draft.ID = stashID
+
 		return nil
 	}); err != nil {
 		return nil, err
@@ -1010,6 +1023,19 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		if len(urls) > 0 {
 			draft.Urls = urls
 		}
+
+		stashIDs, err := pqb.GetStashIDs(performer.ID)
+		if err != nil {
+			return err
+		}
+		var stashID *string = nil
+		for _, v := range stashIDs {
+			if v.Endpoint == endpoint {
+				stashID = &v.StashID
+				break
+			}
+		}
+		draft.ID = stashID
 
 		return nil
 	}); err != nil {

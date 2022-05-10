@@ -88,9 +88,9 @@ type DraftEntity struct {
 	ID   *string `json:"id,omitempty"`
 }
 
-func (DraftEntity) IsSceneDraftPerformer() {}
-func (DraftEntity) IsSceneDraftStudio()    {}
 func (DraftEntity) IsSceneDraftTag()       {}
+func (DraftEntity) IsSceneDraftStudio()    {}
+func (DraftEntity) IsSceneDraftPerformer() {}
 
 type DraftEntityInput struct {
 	Name string  `json:"name"`
@@ -130,7 +130,8 @@ type Edit struct {
 	Status      VoteStatusEnum `json:"status"`
 	Applied     bool           `json:"applied"`
 	Created     time.Time      `json:"created"`
-	Updated     time.Time      `json:"updated"`
+	Updated     *time.Time     `json:"updated,omitempty"`
+	Closed      *time.Time     `json:"closed,omitempty"`
 }
 
 type EditComment struct {
@@ -149,8 +150,6 @@ type EditInput struct {
 	// Not required for create type
 	ID        *string       `json:"id,omitempty"`
 	Operation OperationEnum `json:"operation"`
-	// Required for amending an existing edit
-	EditID *string `json:"edit_id,omitempty"`
 	// Only required for merge type
 	MergeSourceIds []string `json:"merge_source_ids,omitempty"`
 	Comment        *string  `json:"comment,omitempty"`
@@ -206,15 +205,13 @@ type Fingerprint struct {
 }
 
 type FingerprintEditInput struct {
-	UserIds   []string             `json:"user_ids,omitempty"`
-	Hash      string               `json:"hash"`
-	Algorithm FingerprintAlgorithm `json:"algorithm"`
-	Duration  int                  `json:"duration"`
-	Created   time.Time            `json:"created"`
-	// @deprecated(reason: "unused")
-	Submissions *int `json:"submissions,omitempty"`
-	// @deprecated(reason: "unused")
-	Updated *time.Time `json:"updated,omitempty"`
+	UserIds     []string             `json:"user_ids,omitempty"`
+	Hash        string               `json:"hash"`
+	Algorithm   FingerprintAlgorithm `json:"algorithm"`
+	Duration    int                  `json:"duration"`
+	Created     time.Time            `json:"created"`
+	Submissions *int                 `json:"submissions,omitempty"`
+	Updated     *time.Time           `json:"updated,omitempty"`
 }
 
 type FingerprintInput struct {
@@ -348,8 +345,8 @@ type Performer struct {
 	Updated         time.Time           `json:"updated"`
 }
 
-func (Performer) IsSceneDraftPerformer() {}
 func (Performer) IsEditTarget()          {}
+func (Performer) IsSceneDraftPerformer() {}
 
 type PerformerAppearance struct {
 	Performer *Performer `json:"performer,omitempty"`
@@ -390,6 +387,7 @@ type PerformerDestroyInput struct {
 }
 
 type PerformerDraft struct {
+	ID              *string  `json:"id,omitempty"`
 	Name            string   `json:"name"`
 	Aliases         *string  `json:"aliases,omitempty"`
 	Gender          *string  `json:"gender,omitempty"`
@@ -412,6 +410,7 @@ type PerformerDraft struct {
 func (PerformerDraft) IsDraftData() {}
 
 type PerformerDraftInput struct {
+	ID              *string         `json:"id,omitempty"`
 	Name            string          `json:"name"`
 	Aliases         *string         `json:"aliases,omitempty"`
 	Gender          *string         `json:"gender,omitempty"`
@@ -432,19 +431,18 @@ type PerformerDraftInput struct {
 }
 
 type PerformerEdit struct {
-	Name              *string        `json:"name,omitempty"`
-	Disambiguation    *string        `json:"disambiguation,omitempty"`
-	AddedAliases      []string       `json:"added_aliases,omitempty"`
-	RemovedAliases    []string       `json:"removed_aliases,omitempty"`
-	Gender            *GenderEnum    `json:"gender,omitempty"`
-	AddedUrls         []*URL         `json:"added_urls,omitempty"`
-	RemovedUrls       []*URL         `json:"removed_urls,omitempty"`
-	Birthdate         *string        `json:"birthdate,omitempty"`
-	BirthdateAccuracy *string        `json:"birthdate_accuracy,omitempty"`
-	Ethnicity         *EthnicityEnum `json:"ethnicity,omitempty"`
-	Country           *string        `json:"country,omitempty"`
-	EyeColor          *EyeColorEnum  `json:"eye_color,omitempty"`
-	HairColor         *HairColorEnum `json:"hair_color,omitempty"`
+	Name           *string        `json:"name,omitempty"`
+	Disambiguation *string        `json:"disambiguation,omitempty"`
+	AddedAliases   []string       `json:"added_aliases,omitempty"`
+	RemovedAliases []string       `json:"removed_aliases,omitempty"`
+	Gender         *GenderEnum    `json:"gender,omitempty"`
+	AddedUrls      []*URL         `json:"added_urls,omitempty"`
+	RemovedUrls    []*URL         `json:"removed_urls,omitempty"`
+	Birthdate      *string        `json:"birthdate,omitempty"`
+	Ethnicity      *EthnicityEnum `json:"ethnicity,omitempty"`
+	Country        *string        `json:"country,omitempty"`
+	EyeColor       *EyeColorEnum  `json:"eye_color,omitempty"`
+	HairColor      *HairColorEnum `json:"hair_color,omitempty"`
 	// Height in cm
 	Height           *int                `json:"height,omitempty"`
 	CupSize          *string             `json:"cup_size,omitempty"`
@@ -461,6 +459,11 @@ type PerformerEdit struct {
 	AddedImages      []*Image            `json:"added_images,omitempty"`
 	RemovedImages    []*Image            `json:"removed_images,omitempty"`
 	DraftID          *string             `json:"draft_id,omitempty"`
+	Aliases          []string            `json:"aliases,omitempty"`
+	Urls             []*URL              `json:"urls,omitempty"`
+	Images           []*Image            `json:"images,omitempty"`
+	Tattoos          []*BodyModification `json:"tattoos,omitempty"`
+	Piercings        []*BodyModification `json:"piercings,omitempty"`
 }
 
 func (PerformerEdit) IsEditDetails() {}
@@ -631,6 +634,7 @@ type Scene struct {
 	Title        *string                `json:"title,omitempty"`
 	Details      *string                `json:"details,omitempty"`
 	Date         *string                `json:"date,omitempty"`
+	DateFuzzy    *FuzzyDate             `json:"date_fuzzy,omitempty"`
 	Urls         []*URL                 `json:"urls,omitempty"`
 	Studio       *Studio                `json:"studio,omitempty"`
 	Tags         []*Tag                 `json:"tags,omitempty"`
@@ -652,7 +656,7 @@ type SceneCreateInput struct {
 	Title        *string                     `json:"title,omitempty"`
 	Details      *string                     `json:"details,omitempty"`
 	Urls         []*URLInput                 `json:"urls,omitempty"`
-	Date         *string                     `json:"date,omitempty"`
+	Date         *FuzzyDateInput             `json:"date,omitempty"`
 	StudioID     *string                     `json:"studio_id,omitempty"`
 	Performers   []*PerformerAppearanceInput `json:"performers,omitempty"`
 	TagIds       []string                    `json:"tag_ids,omitempty"`
@@ -668,6 +672,7 @@ type SceneDestroyInput struct {
 }
 
 type SceneDraft struct {
+	ID           *string               `json:"id,omitempty"`
 	Title        *string               `json:"title,omitempty"`
 	Details      *string               `json:"details,omitempty"`
 	URL          *URL                  `json:"url,omitempty"`
@@ -701,6 +706,11 @@ type SceneEdit struct {
 	Director            *string                `json:"director,omitempty"`
 	Code                *string                `json:"code,omitempty"`
 	DraftID             *string                `json:"draft_id,omitempty"`
+	Urls                []*URL                 `json:"urls,omitempty"`
+	Performers          []*PerformerAppearance `json:"performers,omitempty"`
+	Tags                []*Tag                 `json:"tags,omitempty"`
+	Images              []*Image               `json:"images,omitempty"`
+	Fingerprints        []*Fingerprint         `json:"fingerprints,omitempty"`
 }
 
 func (SceneEdit) IsEditDetails() {}
@@ -709,7 +719,7 @@ type SceneEditDetailsInput struct {
 	Title        *string                     `json:"title,omitempty"`
 	Details      *string                     `json:"details,omitempty"`
 	Urls         []*URLInput                 `json:"urls,omitempty"`
-	Date         *string                     `json:"date,omitempty"`
+	Date         *FuzzyDateInput             `json:"date,omitempty"`
 	StudioID     *string                     `json:"studio_id,omitempty"`
 	Performers   []*PerformerAppearanceInput `json:"performers,omitempty"`
 	TagIds       []string                    `json:"tag_ids,omitempty"`
@@ -760,7 +770,7 @@ type SceneUpdateInput struct {
 	Title        *string                     `json:"title,omitempty"`
 	Details      *string                     `json:"details,omitempty"`
 	Urls         []*URLInput                 `json:"urls,omitempty"`
-	Date         *string                     `json:"date,omitempty"`
+	Date         *FuzzyDateInput             `json:"date,omitempty"`
 	StudioID     *string                     `json:"studio_id,omitempty"`
 	Performers   []*PerformerAppearanceInput `json:"performers,omitempty"`
 	TagIds       []string                    `json:"tag_ids,omitempty"`
@@ -855,6 +865,8 @@ type StudioEdit struct {
 	Parent        *Studio  `json:"parent,omitempty"`
 	AddedImages   []*Image `json:"added_images,omitempty"`
 	RemovedImages []*Image `json:"removed_images,omitempty"`
+	Images        []*Image `json:"images,omitempty"`
+	Urls          []*URL   `json:"urls,omitempty"`
 }
 
 func (StudioEdit) IsEditDetails() {}
@@ -953,6 +965,7 @@ type TagEdit struct {
 	AddedAliases   []string     `json:"added_aliases,omitempty"`
 	RemovedAliases []string     `json:"removed_aliases,omitempty"`
 	Category       *TagCategory `json:"category,omitempty"`
+	Aliases        []string     `json:"aliases,omitempty"`
 }
 
 func (TagEdit) IsEditDetails() {}
