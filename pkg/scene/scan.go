@@ -105,6 +105,27 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 		changed = true
 	}
 
+	if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		var err error
+		sqb := r.Scene()
+
+		captions, er := sqb.GetCaptions(s.ID)
+		if er == nil {
+			if len(captions) > 0 {
+				clean, altered := CleanCaptions(s.Path, captions)
+				if altered {
+					er = sqb.UpdateCaptions(s.ID, clean)
+					if er == nil {
+						logger.Debugf("Captions for %s cleaned: %s -> %s", path, captions, clean)
+					}
+				}
+			}
+		}
+		return err
+	}); err != nil {
+		logger.Error(err.Error())
+	}
+
 	if changed {
 		// we are operating on a checksum now, so grab a mutex on the checksum
 		done := make(chan struct{})

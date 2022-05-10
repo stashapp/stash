@@ -365,6 +365,52 @@ func (r *imageRepository) replace(id int, image []byte) error {
 	return err
 }
 
+type captionRepository struct {
+	repository
+}
+
+func (r *captionRepository) get(id int) ([]*models.SceneCaption, error) {
+	query := fmt.Sprintf("SELECT %s, %s, %s from %s WHERE %s = ?", sceneCaptionCodeColumn, sceneCaptionFilenameColumn, sceneCaptionTypeColumn, r.tableName, r.idColumn)
+	var ret []*models.SceneCaption
+	err := r.queryFunc(query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
+		var captionCode string
+		var captionFilename string
+		var captionType string
+
+		if err := rows.Scan(&captionCode, &captionFilename, &captionType); err != nil {
+			return err
+		}
+
+		caption := &models.SceneCaption{
+			LanguageCode: captionCode,
+			Filename:     captionFilename,
+			CaptionType:  captionType,
+		}
+		ret = append(ret, caption)
+		return nil
+	})
+	return ret, err
+}
+
+func (r *captionRepository) insert(id int, caption *models.SceneCaption) (sql.Result, error) {
+	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)", r.tableName, r.idColumn, sceneCaptionCodeColumn, sceneCaptionFilenameColumn, sceneCaptionTypeColumn)
+	return r.tx.Exec(stmt, id, caption.LanguageCode, caption.Filename, caption.CaptionType)
+}
+
+func (r *captionRepository) replace(id int, captions []*models.SceneCaption) error {
+	if err := r.destroy([]int{id}); err != nil {
+		return err
+	}
+
+	for _, caption := range captions {
+		if _, err := r.insert(id, caption); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type stringRepository struct {
 	repository
 	stringColumn string
