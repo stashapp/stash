@@ -87,6 +87,10 @@ const Recommendations: React.FC = () => {
       id: "latest_galleries",
       defaultMessage: "Latest Galleries",
     },
+    viewAll: {
+      id: "view_all",
+      defaultMessage: "View All",
+    },
   });
 
   if (
@@ -113,41 +117,51 @@ const Recommendations: React.FC = () => {
             {hasScenes && (
               <SceneRecommendationRow
                 isTouch={isTouch}
+                filter={scenefilter}
                 result={sceneResult}
                 queue={SceneQueue.fromListFilterModel(scenefilter)}
                 header={intl.formatMessage(messages.latestScenes)}
+                linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
 
             {hasStudios && (
               <StudioRecommendationRow
                 isTouch={isTouch}
+                filter={studiofilter}
                 result={studioResult}
                 header={intl.formatMessage(messages.latestStudios)}
+                linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
 
             {hasMovies && (
               <MovieRecommendationRow
                 isTouch={isTouch}
+                filter={moviefilter}
                 result={movieResult}
                 header={intl.formatMessage(messages.latestMovies)}
+                linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
 
             {hasPerformers && (
               <PerformerRecommendationRow
                 isTouch={isTouch}
+                filter={performerfilter}
                 result={performerResult}
                 header={intl.formatMessage(messages.latestPerformers)}
+                linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
 
             {hasGalleries && (
               <GalleryRecommendationRow
                 isTouch={isTouch}
+                filter={galleryfilter}
                 result={galleryResult}
                 header={intl.formatMessage(messages.latestGalleries)}
+                linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
           </div>

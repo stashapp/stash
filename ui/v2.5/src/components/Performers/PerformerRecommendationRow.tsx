@@ -2,11 +2,14 @@ import React, { FunctionComponent } from "react";
 import { FindPerformersQueryResult } from "src/core/generated-graphql";
 import Slider from "react-slick";
 import { PerformerCard } from "./PerformerCard";
+import { ListFilterModel } from "src/models/list-filter/filter";
 
 interface IProps {
   isTouch: boolean;
+  filter: ListFilterModel;
   result: FindPerformersQueryResult;
   header: String;
+  linkText: String;
 }
 
 export const PerformerRecommendationRow: FunctionComponent<IProps> = (
@@ -71,7 +74,9 @@ export const PerformerRecommendationRow: FunctionComponent<IProps> = (
         <div>
           <h2>{props.header}</h2>
         </div>
-        <a href="/scenes?sortby=date&sortdir=desc">View all</a>
+        <a href={`/performers?${props.filter.makeQueryParameters()}`}>
+          {props.linkText}
+        </a>
       </div>
       <Slider {...settings}>
         {props.result.data?.findPerformers.performers.map((p) => (

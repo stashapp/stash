@@ -2,11 +2,14 @@ import React, { FunctionComponent } from "react";
 import { FindGalleriesQueryResult } from "src/core/generated-graphql";
 import Slider from "react-slick";
 import { GalleryCard } from "./GalleryCard";
+import { ListFilterModel } from "src/models/list-filter/filter";
 
 interface IProps {
   isTouch: boolean;
+  filter: ListFilterModel;
   result: FindGalleriesQueryResult;
   header: String;
+  linkText: String;
 }
 
 export const GalleryRecommendationRow: FunctionComponent<IProps> = (
@@ -71,7 +74,9 @@ export const GalleryRecommendationRow: FunctionComponent<IProps> = (
         <div>
           <h2>{props.header}</h2>
         </div>
-        <a href="/scenes?sortby=date&sortdir=desc">View all</a>
+        <a href={`/galleries?${props.filter.makeQueryParameters()}`}>
+          {props.linkText}
+        </a>
       </div>
       <Slider {...settings}>
         {props.result.data?.findGalleries.galleries.map((gallery) => (

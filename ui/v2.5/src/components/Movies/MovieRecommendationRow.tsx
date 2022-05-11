@@ -2,11 +2,14 @@ import React, { FunctionComponent } from "react";
 import { FindMoviesQueryResult } from "src/core/generated-graphql";
 import Slider from "react-slick";
 import { MovieCard } from "./MovieCard";
+import { ListFilterModel } from "src/models/list-filter/filter";
 
 interface IProps {
   isTouch: boolean;
+  filter: ListFilterModel;
   result: FindMoviesQueryResult;
   header: String;
+  linkText: String;
 }
 
 export const MovieRecommendationRow: FunctionComponent<IProps> = (
@@ -71,7 +74,9 @@ export const MovieRecommendationRow: FunctionComponent<IProps> = (
         <div>
           <h2>{props.header}</h2>
         </div>
-        <a href="/scenes?sortby=date&sortdir=desc">View all</a>
+        <a href={`/movies?${props.filter.makeQueryParameters()}`}>
+          {props.linkText}
+        </a>
       </div>
       <Slider {...settings}>
         {props.result.data?.findMovies.movies.map((p) => (

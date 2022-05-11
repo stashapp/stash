@@ -2,11 +2,14 @@ import React, { FunctionComponent } from "react";
 import { FindStudiosQueryResult } from "src/core/generated-graphql";
 import Slider from "react-slick";
 import { StudioCard } from "./StudioCard";
+import { ListFilterModel } from "src/models/list-filter/filter";
 
 interface IProps {
   isTouch: boolean;
+  filter: ListFilterModel;
   result: FindStudiosQueryResult;
   header: String;
+  linkText: String;
 }
 
 export const StudioRecommendationRow: FunctionComponent<IProps> = (
@@ -71,7 +74,9 @@ export const StudioRecommendationRow: FunctionComponent<IProps> = (
         <div>
           <h2>{props.header}</h2>
         </div>
-        <a href="/scenes?sortby=created_at&sortdir=desc">View all</a>
+        <a href={`/studios?${props.filter.makeQueryParameters()}`}>
+          {props.linkText}
+        </a>
       </div>
       <Slider {...settings}>
         {props.result.data?.findStudios.studios.map((studio) => (

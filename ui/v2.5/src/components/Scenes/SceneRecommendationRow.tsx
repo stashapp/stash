@@ -3,12 +3,15 @@ import { FindScenesQueryResult } from "src/core/generated-graphql";
 import Slider from "react-slick";
 import { SceneCard } from "./SceneCard";
 import { SceneQueue } from "src/models/sceneQueue";
+import { ListFilterModel } from "src/models/list-filter/filter";
 
 interface IProps {
   isTouch: boolean;
+  filter: ListFilterModel;
   result: FindScenesQueryResult;
   queue: SceneQueue;
   header: String;
+  linkText: String;
 }
 
 export const SceneRecommendationRow: FunctionComponent<IProps> = (
@@ -73,7 +76,9 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
         <div>
           <h2>{props.header}</h2>
         </div>
-        <a href="/scenes?sortby=date&sortdir=desc">View all</a>
+        <a href={`/scenes?${props.filter.makeQueryParameters()}`}>
+          {props.linkText}
+        </a>
       </div>
       <Slider {...settings}>
         {props.result.data?.findScenes.scenes.map((scene, index) => (
