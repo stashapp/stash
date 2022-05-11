@@ -15,7 +15,6 @@ import { PerformerRecommendationRow } from "src/components/Performers/PerformerR
 import { GalleryRecommendationRow } from "src/components/Galleries/GalleryRecommendationRow";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import Slider from "react-slick";
 import { LoadingIndicator } from "src/components/Shared";
 
 const Recommendations: React.FC = () => {

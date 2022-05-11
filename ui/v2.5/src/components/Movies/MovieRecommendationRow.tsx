@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from "react";
-import _ from "lodash";
 import { FindMoviesQueryResult } from "src/core/generated-graphql";
 import Slider from "react-slick";
 import { MovieCard } from "./MovieCard";
