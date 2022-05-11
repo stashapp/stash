@@ -34,7 +34,7 @@ const Recommendations: React.FC = () => {
   const hasScenes = !!sceneResult?.data?.findScenes?.count;
 
   const studiofilter = new ListFilterModel(GQL.FilterMode.Studios);
-  studiofilter.sortBy = "scenes_count";
+  studiofilter.sortBy = "created_at";
   studiofilter.sortDirection = GQL.SortDirectionEnum.Desc;
   studiofilter.itemsPerPage = itemsPerPage;
   const studioResult = useFindStudios(studiofilter);
@@ -71,9 +71,9 @@ const Recommendations: React.FC = () => {
       id: "latest_scenes",
       defaultMessage: "Latest Scenes",
     },
-    mostActiveStudios: {
-      id: "most_active_studios",
-      defaultMessage: "Most Active Studios",
+    latestStudios: {
+      id: "latest_studios",
+      defaultMessage: "Latest Studios",
     },
     latestMovies: {
       id: "latest_movies",
@@ -123,7 +123,7 @@ const Recommendations: React.FC = () => {
               <StudioRecommendationRow
                 isTouch={isTouch}
                 result={studioResult}
-                header={intl.formatMessage(messages.mostActiveStudios)}
+                header={intl.formatMessage(messages.latestStudios)}
               />
             )}
 

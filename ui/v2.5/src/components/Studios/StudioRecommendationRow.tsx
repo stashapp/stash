@@ -71,7 +71,7 @@ export const StudioRecommendationRow: FunctionComponent<IProps> = (
         <div>
           <h2>{props.header}</h2>
         </div>
-        <a href="/scenes?sortby=date&sortdir=desc">View all</a>
+        <a href="/scenes?sortby=created_at&sortdir=desc">View all</a>
       </div>
       <Slider {...settings}>
         {props.result.data?.findStudios.studios.map((studio) => (
