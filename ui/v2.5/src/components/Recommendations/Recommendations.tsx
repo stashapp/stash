@@ -8,14 +8,15 @@ import {
   useFindGalleries,
   useFindPerformers,
 } from "src/core/StashService";
-import { SceneCard } from "src/components/Scenes/SceneCard";
-import { StudioCard } from "src/components/Studios/StudioCard";
-import { MovieCard } from "src/components/Movies/MovieCard";
-import { PerformerCard } from "src/components/Performers/PerformerCard";
-import { GalleryCard } from "src/components/Galleries/GalleryCard";
+import { SceneRecommendationRow } from "src/components/Scenes/SceneRecommendationRow";
+import { StudioRecommendationRow } from "src/components/Studios/StudioRecommendationRow";
+import { MovieRecommendationRow } from "src/components/Movies/MovieRecommendationRow";
+import { PerformerRecommendationRow } from "src/components/Performers/PerformerRecommendationRow";
+import { GalleryRecommendationRow } from "src/components/Galleries/GalleryRecommendationRow";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Slider from "react-slick";
+import { LoadingIndicator } from "src/components/Shared";
 
 const Recommendations: React.FC = () => {
   function isTouchEnabled() {
@@ -31,50 +32,35 @@ const Recommendations: React.FC = () => {
   scenefilter.sortDirection = GQL.SortDirectionEnum.Desc;
   scenefilter.itemsPerPage = itemsPerPage;
   const sceneResult = useFindScenes(scenefilter);
-  const hasScenes =
-    sceneResult.data &&
-    sceneResult.data.findScenes &&
-    sceneResult.data.findScenes.count > 0;
+  const hasScenes = !!sceneResult?.data?.findScenes?.count;
 
   const studiofilter = new ListFilterModel(GQL.FilterMode.Studios);
   studiofilter.sortBy = "scenes_count";
   studiofilter.sortDirection = GQL.SortDirectionEnum.Desc;
   studiofilter.itemsPerPage = itemsPerPage;
   const studioResult = useFindStudios(studiofilter);
-  const hasStudios =
-    studioResult.data &&
-    studioResult.data.findStudios &&
-    studioResult.data.findStudios.count > 0;
+  const hasStudios = !!studioResult?.data?.findStudios?.count;
 
   const moviefilter = new ListFilterModel(GQL.FilterMode.Movies);
   moviefilter.sortBy = "date";
   moviefilter.sortDirection = GQL.SortDirectionEnum.Desc;
   moviefilter.itemsPerPage = itemsPerPage;
   const movieResult = useFindMovies(moviefilter);
-  const hasMovies =
-    movieResult.data &&
-    movieResult.data.findMovies &&
-    movieResult.data.findMovies.count > 0;
+  const hasMovies = !!movieResult?.data?.findMovies?.count;
 
   const performerfilter = new ListFilterModel(GQL.FilterMode.Performers);
   performerfilter.sortBy = "created_at";
   performerfilter.sortDirection = GQL.SortDirectionEnum.Desc;
   performerfilter.itemsPerPage = itemsPerPage;
   const performerResult = useFindPerformers(performerfilter);
-  const hasPerformers =
-    performerResult.data &&
-    performerResult.data.findPerformers &&
-    performerResult.data.findPerformers.count > 0;
+  const hasPerformers = !!performerResult?.data?.findPerformers?.count;
 
   const galleryfilter = new ListFilterModel(GQL.FilterMode.Galleries);
   galleryfilter.sortBy = "date";
   galleryfilter.sortDirection = GQL.SortDirectionEnum.Desc;
   galleryfilter.itemsPerPage = itemsPerPage;
   const galleryResult = useFindGalleries(galleryfilter);
-  const hasGalleries =
-    galleryResult.data &&
-    galleryResult.data.findGalleries &&
-    galleryResult.data.findGalleries.count > 0;
+  const hasGalleries = !!galleryResult?.data?.findGalleries?.count;
 
   const messages = defineMessages({
     emptyServer: {
@@ -104,160 +90,72 @@ const Recommendations: React.FC = () => {
     },
   });
 
-  var settings = {
-    dots: !isTouch,
-    arrows: !isTouch,
-    infinite: !isTouch,
-    speed: 300,
-    variableWidth: true,
-    swipeToSlide: true,
-    slidesToShow: 5,
-    slidesToScroll: !isTouch ? 5 : 1,
-    responsive: [
-      {
-        breakpoint: 1909,
-        settings: {
-          slidesToShow: 4,
-          slidesToScroll: !isTouch ? 4 : 1,
-        },
-      },
-      {
-        breakpoint: 1542,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: !isTouch ? 3 : 1,
-        },
-      },
-      {
-        breakpoint: 1170,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: !isTouch ? 2 : 1,
-        },
-      },
-      {
-        breakpoint: 801,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          dots: false,
-        },
-      },
-    ],
-  };
-  const queue = SceneQueue.fromListFilterModel(scenefilter);
+  if (
+    sceneResult.loading ||
+    studioResult.loading ||
+    movieResult.loading ||
+    performerResult.loading ||
+    galleryResult.loading
+  ) {
+    return <LoadingIndicator />;
+  } else {
+    return (
+      <div className="recommendations-container">
+        {!hasScenes &&
+        !hasStudios &&
+        !hasMovies &&
+        !hasPerformers &&
+        !hasGalleries ? (
+          <div className="no-recommendations">
+            {intl.formatMessage(messages.emptyServer)}
+          </div>
+        ) : (
+          <div>
+            {hasScenes && (
+              <SceneRecommendationRow
+                isTouch={isTouch}
+                result={sceneResult}
+                queue={SceneQueue.fromListFilterModel(scenefilter)}
+                header={intl.formatMessage(messages.latestScenes)}
+              />
+            )}
 
-  return (
-    <div className="recommendations-container">
-      {!hasScenes &&
-      !hasStudios &&
-      !hasMovies &&
-      !hasPerformers &&
-      !hasGalleries ? (
-        <div className="no-recommendations">
-          {intl.formatMessage(messages.emptyServer)}
-        </div>
-      ) : (
-        <div>
-          {hasScenes && (
-            <div className="recommendation-row">
-              <div className="recommendation-row-head">
-                <div>
-                  <h2>{intl.formatMessage(messages.latestScenes)}</h2>
-                </div>
-                <a href="/scenes?sortby=date&sortdir=desc">View all</a>
-              </div>
-              <Slider {...settings}>
-                {sceneResult.data?.findScenes.scenes.map((scene, index) => (
-                  <SceneCard
-                    key={scene.id}
-                    scene={scene}
-                    queue={queue}
-                    index={index}
-                    zoomIndex={1}
-                  />
-                ))}
-              </Slider>
-            </div>
-          )}
+            {hasStudios && (
+              <StudioRecommendationRow
+                isTouch={isTouch}
+                result={studioResult}
+                header={intl.formatMessage(messages.mostActiveStudios)}
+              />
+            )}
 
-          {hasStudios && (
-            <div className="recommendation-row">
-              <div className="recommendation-row-head">
-                <div>
-                  <h2>{intl.formatMessage(messages.mostActiveStudios)}</h2>
-                </div>
-                <a href="/studios?sortby=scenes_count&sortdir=desc">View all</a>
-              </div>
-              <Slider {...settings}>
-                {studioResult.data?.findStudios.studios.map((studio) => (
-                  <StudioCard
-                    key={studio.id}
-                    studio={studio}
-                    hideParent={true}
-                  />
-                ))}
-              </Slider>
-            </div>
-          )}
+            {hasMovies && (
+              <MovieRecommendationRow
+                isTouch={isTouch}
+                result={movieResult}
+                header={intl.formatMessage(messages.latestMovies)}
+              />
+            )}
 
-          {hasMovies && (
-            <div className="recommendation-row">
-              <div className="recommendation-row-head">
-                <div>
-                  <h2>{intl.formatMessage(messages.latestMovies)}</h2>
-                </div>
-                <a href="/movies?sortby=date&sortdir=desc">View all</a>
-              </div>
-              <Slider {...settings}>
-                {movieResult.data?.findMovies.movies.map((p) => (
-                  <MovieCard key={p.id} movie={p} />
-                ))}
-              </Slider>
-            </div>
-          )}
+            {hasPerformers && (
+              <PerformerRecommendationRow
+                isTouch={isTouch}
+                result={performerResult}
+                header={intl.formatMessage(messages.latestPerformers)}
+              />
+            )}
 
-          {hasPerformers && (
-            <div className="recommendation-row">
-              <div className="recommendation-row-head">
-                <div>
-                  <h2>{intl.formatMessage(messages.latestPerformers)}</h2>
-                </div>
-                <a href="/performers?sortby=created_at&sortdir=desc">
-                  View all
-                </a>
-              </div>
-              <Slider {...settings}>
-                {performerResult.data?.findPerformers.performers.map((p) => (
-                  <PerformerCard key={p.id} performer={p} />
-                ))}
-              </Slider>
-            </div>
-          )}
-
-          {hasGalleries && (
-            <div className="recommendation-row">
-              <div className="recommendation-row-head">
-                <div>
-                  <h2>{intl.formatMessage(messages.latestGalleries)}</h2>
-                </div>
-                <a href="/galleries?sortby=date&sortdir=desc">View all</a>
-              </div>
-              <Slider {...settings}>
-                {galleryResult.data?.findGalleries.galleries.map((gallery) => (
-                  <GalleryCard
-                    key={gallery.id}
-                    gallery={gallery}
-                    zoomIndex={1}
-                  />
-                ))}
-              </Slider>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+            {hasGalleries && (
+              <GalleryRecommendationRow
+                isTouch={isTouch}
+                result={galleryResult}
+                header={intl.formatMessage(messages.latestGalleries)}
+              />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 };
 
 export default Recommendations;
