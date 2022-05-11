@@ -450,6 +450,16 @@
         "description": "Tidsfördröjning i millisekunder för interaktiva skripter.",
         "heading": "Funscript fördröjning (ms)"
       },
+      "handy_connection": {
+        "connect": "Koppla ihop",
+        "server_offset": {
+          "heading": "Serverförskjutning"
+        },
+        "status": {
+          "heading": "Handy Uppkopplingsstatus"
+        },
+        "sync": "Synka"
+      },
       "handy_connection_key": {
         "description": "Handy anslutningsnyckel för interaktiva scener. Denna nyckel kommer låta Stash dela din nuvarande sceninformation med handyfeeling.com",
         "heading": "Handy Uppkopplingsnyckel"
@@ -706,6 +716,7 @@
     "scale": "Skala",
     "warmth": "Värme"
   },
+  "empty_server": "Lägg till några scener i Stash för att se rekommendationer på denna sida.",
   "ethnicity": "Etnicitet",
   "existing_value": "existerande värde",
   "eye_color": "Ögonfärg",
@@ -735,6 +746,15 @@
     "TRANSGENDER_MALE": "Trans Man"
   },
   "hair_color": "Hårfärg",
+  "handy_connection_status": {
+    "connecting": "Kopplar ihop",
+    "disconnected": "Kopplad isär",
+    "error": "Fel vid koppling till Handy",
+    "missing": "Saknas",
+    "ready": "Redo",
+    "syncing": "Synkar med server",
+    "uploading": "Laddar upp skript"
+  },
   "hasMarkers": "Har markörer",
   "height": "Längd",
   "help": "Hjälp",
@@ -749,6 +769,10 @@
   "interactive": "Interaktiv",
   "interactive_speed": "Interaktiv hastighet",
   "isMissing": "Saknas",
+  "latest_galleries": "Nya Gallerier",
+  "latest_movies": "Nya Filmer",
+  "latest_performers": "Nya Stjärnor",
+  "latest_scenes": "Nya Scener",
   "library": "Bibliotek",
   "loading": {
     "generic": "Laddar…"
@@ -772,6 +796,7 @@
   },
   "megabits_per_second": "{value} megabit per sekund",
   "metadata": "Metadata",
+  "most_active_studios": "Mest Aktiva Studior",
   "movie": "Film",
   "movie_scene_number": "Filmscennummer",
   "movies": "Filmer",
@@ -943,6 +968,7 @@
     "submission_failed": "Misslyckad inskickning",
     "submission_successful": "Lyckad inskickning"
   },
+  "statistics": "Statistik",
   "stats": {
     "image_size": "Storlek på bilder",
     "scenes_duration": "Total speltid",
