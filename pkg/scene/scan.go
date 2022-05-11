@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -89,8 +88,6 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
-
-	// TODO - generate thumbnails
 
 	if err := h.CreatorUpdater.Create(ctx, newScene, []file.ID{videoFile.ID}); err != nil {
 		return fmt.Errorf("creating new scene: %w", err)
@@ -427,42 +424,32 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 // 	return nil
 // }
 
-func (h *ScanHandler) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, checksum string) {
-	// thumbPath := h.Paths.Scene.GetThumbnailScreenshotPath(checksum)
-	// normalPath := h.Paths.Scene.GetScreenshotPath(checksum)
+// func (h *ScanHandler) makeScreenshots(ctx context.Context, scene *models.Scene, f *file.VideoFile) {
+// 	checksum := scene.GetHash()
+// 	thumbPath := h.Paths.Scene.GetThumbnailScreenshotPath(checksum)
+// 	normalPath := h.Paths.Scene.GetScreenshotPath(checksum)
 
-	// thumbExists, _ := fsutil.FileExists(thumbPath)
-	// normalExists, _ := fsutil.FileExists(normalPath)
+// 	thumbExists, _ := fsutil.FileExists(thumbPath)
+// 	normalExists, _ := fsutil.FileExists(normalPath)
 
-	// if thumbExists && normalExists {
-	// 	return
-	// }
+// 	if thumbExists && normalExists {
+// 		return
+// 	}
 
-	// if probeResult == nil {
-	// 	var err error
-	// 	probeResult, err = h.VideoFileCreator.NewVideoFile(path)
+// 	if !thumbExists {
+// 		logger.Debugf("Creating thumbnail for %s", f.Path)
+// 		if err := h.Screenshotter.GenerateThumbnail(ctx, probeResult, checksum); err != nil {
+// 			logger.Errorf("Error creating thumbnail for %s: %v", err)
+// 		}
+// 	}
 
-	// 	if err != nil {
-	// 		logger.Error(err.Error())
-	// 		return
-	// 	}
-	// 	logger.Infof("Regenerating images for %s", path)
-	// }
-
-	// if !thumbExists {
-	// 	logger.Debugf("Creating thumbnail for %s", path)
-	// 	if err := h.Screenshotter.GenerateThumbnail(context.TODO(), probeResult, checksum); err != nil {
-	// 		logger.Errorf("Error creating thumbnail for %s: %v", err)
-	// 	}
-	// }
-
-	// if !normalExists {
-	// 	logger.Debugf("Creating screenshot for %s", path)
-	// 	if err := h.Screenshotter.GenerateScreenshot(context.TODO(), probeResult, checksum); err != nil {
-	// 		logger.Errorf("Error creating screenshot for %s: %v", err)
-	// 	}
-	// }
-}
+// 	if !normalExists {
+// 		logger.Debugf("Creating screenshot for %s", f.Path)
+// 		if err := h.Screenshotter.GenerateScreenshot(ctx, probeResult, checksum); err != nil {
+// 			logger.Errorf("Error creating screenshot for %s: %v", err)
+// 		}
+// 	}
+// }
 
 // func getInteractive(path string) bool {
 // 	_, err := os.Stat(GetFunscriptPath(path))

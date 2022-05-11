@@ -20,7 +20,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-var appSchemaVersion uint = 31
+var appSchemaVersion uint = 32
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -262,7 +262,7 @@ func (db *Database) Version() uint {
 func (db *Database) getMigrate() (*migrate.Migrate, error) {
 	migrations, err := iofs.New(migrationsBox, "migrations")
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
 	const disableForeignKeys = true

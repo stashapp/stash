@@ -2,6 +2,7 @@ package video
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -14,6 +15,10 @@ type Decorator struct {
 }
 
 func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file.File, error) {
+	if d.FFProbe == "" {
+		return f, errors.New("ffprobe not configured")
+	}
+
 	base := f.Base()
 	// TODO - copy to temp file if not an OsFS
 	if _, isOs := fs.(*file.OsFS); !isOs {

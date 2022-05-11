@@ -29,9 +29,11 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -197,12 +199,16 @@ func initialize() error {
 			err = cfg.Validate()
 		}
 
-		instance.Scanner = makeScanner(db, instance.PluginCache)
+		if err != nil {
+			return fmt.Errorf("error initializing configuration: %w", err)
+		}
 
-		// if DLNA is enabled, start it now
-		if instance.Config.GetDLNADefaultEnabled() {
-			if err := instance.DLNAService.Start(nil); err != nil {
-				logger.Warnf("could not start DLNA service: %v", err)
+		if err := instance.PostInit(ctx); err != nil {
+			var migrationNeededErr *sqlite.MigrationNeededError
+			if errors.As(err, &migrationNeededErr) {
+				logger.Warn(err.Error())
+			} else {
+				return err
 			}
 		}
 
@@ -223,6 +229,8 @@ func initialize() error {
 	if err = initFFMPEG(ctx); err != nil {
 		logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
 	}
+
+	instance.Scanner = makeScanner(db, instance.PluginCache)
 
 	// if DLNA is enabled, start it now
 	if instance.Config.GetDLNADefaultEnabled() {
@@ -303,6 +311,19 @@ func galleryFileFilter(f file.File) bool {
 	return isZip(f.Base().Basename)
 }
 
+type coverGenerator struct {
+}
+
+func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene, f *file.VideoFile) error {
+	gg := generate.Generator{
+		Encoder:     instance.FFMPEG,
+		LockManager: instance.ReadLockManager,
+		ScenePaths:  instance.Paths.Scene,
+	}
+
+	return gg.Screenshot(ctx, f.Path, scene.GetHash(instance.Config.GetVideoFileNamingAlgorithm()), f.Width, f.Duration, generate.ScreenshotOptions{})
+}
+
 func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 	return &file.Scanner{
 		Repository: file.Repository{
@@ -345,6 +366,7 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 				Handler: &scene.ScanHandler{
 					CreatorUpdater: db.Scene,
 					PluginCache:    pluginCache,
+					CoverGenerator: &coverGenerator{},
 				},
 			},
 		},
@@ -483,8 +505,12 @@ func (s *Manager) PostInit(ctx context.Context) error {
 			if err := fsutil.EmptyDir(instance.Paths.Generated.Downloads); err != nil {
 				logger.Warnf("could not empty Downloads directory: %v", err)
 			}
-			if err := fsutil.EmptyDir(instance.Paths.Generated.Tmp); err != nil {
-				logger.Warnf("could not empty Tmp directory: %v", err)
+			if err := fsutil.EnsureDir(instance.Paths.Generated.Tmp); err != nil {
+				logger.Warnf("could not create Tmp directory: %v", err)
+			} else {
+				if err := fsutil.EmptyDir(instance.Paths.Generated.Tmp); err != nil {
+					logger.Warnf("could not empty Tmp directory: %v", err)
+				}
 			}
 		}, deleteTimeout, func(done chan struct{}) {
 			logger.Info("Please wait. Deleting temporary files...") // print

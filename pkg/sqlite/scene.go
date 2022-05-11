@@ -293,8 +293,12 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		return err
 	}
 
-	// only assign id once we are successful
-	newObject.ID = id
+	updated, err := qb.find(ctx, id)
+	if err != nil {
+		return fmt.Errorf("finding after create: %w", err)
+	}
+
+	*newObject = *updated
 
 	return nil
 }
