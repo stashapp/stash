@@ -4,7 +4,7 @@ import Slider from "react-slick";
 import { SceneCard } from "./SceneCard";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSettings } from "src/core/recommendations";
+import { getSlickSliderSettings } from "src/core/recommendations";
 
 interface IProps {
   isTouch: boolean;
@@ -29,7 +29,7 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
           {props.linkText}
         </a>
       </div>
-      <Slider {...getSlickSettings(cardCount!, props.isTouch)}>
+      <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
         {props.result.data?.findScenes.scenes.map((scene, index) => (
           <SceneCard
             key={scene.id}

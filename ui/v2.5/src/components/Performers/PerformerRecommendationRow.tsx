@@ -3,7 +3,7 @@ import { FindPerformersQueryResult } from "src/core/generated-graphql";
 import Slider from "react-slick";
 import { PerformerCard } from "./PerformerCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSettings } from "src/core/recommendations";
+import { getSlickSliderSettings } from "src/core/recommendations";
 
 interface IProps {
   isTouch: boolean;
@@ -27,7 +27,7 @@ export const PerformerRecommendationRow: FunctionComponent<IProps> = (
           {props.linkText}
         </a>
       </div>
-      <Slider {...getSlickSettings(cardCount!, props.isTouch)}>
+      <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
         {props.result.data?.findPerformers.performers.map((p) => (
           <PerformerCard key={p.id} performer={p} />
         ))}

@@ -3,7 +3,7 @@ import { FindStudiosQueryResult } from "src/core/generated-graphql";
 import Slider from "react-slick";
 import { StudioCard } from "./StudioCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSettings } from "src/core/recommendations";
+import { getSlickSliderSettings } from "src/core/recommendations";
 
 interface IProps {
   isTouch: boolean;
@@ -27,7 +27,7 @@ export const StudioRecommendationRow: FunctionComponent<IProps> = (
           {props.linkText}
         </a>
       </div>
-      <Slider {...getSlickSettings(cardCount!, props.isTouch)}>
+      <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
         {props.result.data?.findStudios.studios.map((studio) => (
           <StudioCard key={studio.id} studio={studio} hideParent={true} />
         ))}

@@ -12,7 +12,7 @@ function determineSlidesToScroll(
   }
 }
 
-export function getSlickSettings(cardCount: number, isTouch: boolean) {
+export function getSlickSliderSettings(cardCount: number, isTouch: boolean) {
   return {
     dots: !isTouch,
     arrows: !isTouch,

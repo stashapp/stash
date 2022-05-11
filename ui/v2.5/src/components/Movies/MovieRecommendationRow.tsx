@@ -3,7 +3,7 @@ import { FindMoviesQueryResult } from "src/core/generated-graphql";
 import Slider from "react-slick";
 import { MovieCard } from "./MovieCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { getSlickSettings } from "src/core/recommendations";
+import { getSlickSliderSettings } from "src/core/recommendations";
 
 interface IProps {
   isTouch: boolean;
@@ -27,7 +27,7 @@ export const MovieRecommendationRow: FunctionComponent<IProps> = (
           {props.linkText}
         </a>
       </div>
-      <Slider {...getSlickSettings(cardCount!, props.isTouch)}>
+      <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
         {props.result.data?.findMovies.movies.map((p) => (
           <MovieCard key={p.id} movie={p} />
         ))}
