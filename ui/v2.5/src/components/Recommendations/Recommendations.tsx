@@ -67,25 +67,25 @@ const Recommendations: React.FC = () => {
       defaultMessage:
         "Add some scenes to your server to view recommendations on this page.",
     },
-    latestScenes: {
-      id: "latest_scenes",
-      defaultMessage: "Latest Scenes",
+    recentlyAddedStudios: {
+      id: "recently_added_studios",
+      defaultMessage: "Recently Added Studios",
     },
-    latestStudios: {
-      id: "latest_studios",
-      defaultMessage: "Latest Studios",
+    recentlyAddedPerformers: {
+      id: "recently_added_performers",
+      defaultMessage: "Recently Added Performers",
     },
-    latestMovies: {
-      id: "latest_movies",
-      defaultMessage: "Latest Movies",
+    recentlyReleasedGalleries: {
+      id: "recently_released_galleries",
+      defaultMessage: "Recently Released Galleries",
     },
-    latestPerformers: {
-      id: "latest_performers",
-      defaultMessage: "Latest Performers",
+    recentlyReleasedMovies: {
+      id: "recently_released_movies",
+      defaultMessage: "Recently Released Movies",
     },
-    latestGalleries: {
-      id: "latest_galleries",
-      defaultMessage: "Latest Galleries",
+    recentlyReleasedScenes: {
+      id: "recently_released_scenes",
+      defaultMessage: "Recently Released Scenes",
     },
     viewAll: {
       id: "view_all",
@@ -120,7 +120,7 @@ const Recommendations: React.FC = () => {
                 filter={scenefilter}
                 result={sceneResult}
                 queue={SceneQueue.fromListFilterModel(scenefilter)}
-                header={intl.formatMessage(messages.latestScenes)}
+                header={intl.formatMessage(messages.recentlyReleasedScenes)}
                 linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
@@ -130,7 +130,7 @@ const Recommendations: React.FC = () => {
                 isTouch={isTouch}
                 filter={studiofilter}
                 result={studioResult}
-                header={intl.formatMessage(messages.latestStudios)}
+                header={intl.formatMessage(messages.recentlyAddedStudios)}
                 linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
@@ -140,7 +140,7 @@ const Recommendations: React.FC = () => {
                 isTouch={isTouch}
                 filter={moviefilter}
                 result={movieResult}
-                header={intl.formatMessage(messages.latestMovies)}
+                header={intl.formatMessage(messages.recentlyReleasedMovies)}
                 linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
@@ -150,7 +150,7 @@ const Recommendations: React.FC = () => {
                 isTouch={isTouch}
                 filter={performerfilter}
                 result={performerResult}
-                header={intl.formatMessage(messages.latestPerformers)}
+                header={intl.formatMessage(messages.recentlyAddedPerformers)}
                 linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
@@ -160,7 +160,7 @@ const Recommendations: React.FC = () => {
                 isTouch={isTouch}
                 filter={galleryfilter}
                 result={galleryResult}
-                header={intl.formatMessage(messages.latestGalleries)}
+                header={intl.formatMessage(messages.recentlyReleasedGalleries)}
                 linkText={intl.formatMessage(messages.viewAll)}
               />
             )}
