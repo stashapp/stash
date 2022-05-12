@@ -533,6 +533,10 @@
           "toggle_sound": "Włącz dźwięk"
         }
       },
+      "scroll_attempts_before_change": {
+        "description": "Ilość prób przewijania przed przejściem do następnej/poprzedniej pozycji. Ma zastosowanie tylko w trybie Pan Y.",
+        "heading": "Próby przewijania przed przejściem"
+      },
       "slideshow_delay": {
         "description": "Pokaz slajdów jest dostępny w galeriach w trybie widoku ściany",
         "heading": "Opóźnienie pokazu slajdów (sekundy)"
@@ -712,6 +716,7 @@
     "scale": "Skala",
     "warmth": "Ciepło"
   },
+  "empty_server": "Aby zobaczyć rekomendacje na tej stronie dodaj sceny do serwera.",
   "ethnicity": "Pochodzenie etniczne",
   "existing_value": "istniejąca wartość",
   "eye_color": "Kolor oczu",
@@ -764,7 +769,6 @@
   "interactive": "Interaktywny",
   "interactive_speed": "Prędkość interaktywna",
   "isMissing": "Brakuje",
-  "latest_movies": "Najnowsze Filmy",
   "latest_scenes": "Najnowsze Sceny",
   "library": "Biblioteka",
   "loading": {
@@ -857,6 +861,11 @@
   "queue": "Kolejka",
   "random": "Losowo",
   "rating": "Ocena",
+  "recently_added_performers": "Niedawno Dodani Wykonawcy",
+  "recently_added_studios": "Niedawno Dodane Studia",
+  "recently_released_galleries": "Niedawno Dodane Galerie",
+  "recently_released_movies": "Niedawno Dodane Filmy",
+  "recently_released_scenes": "Niedawno Dodane Sceny",
   "resolution": "Rozdzielczość",
   "scene": "Scena",
   "sceneTagger": "Otagowywacz scen",
@@ -1002,6 +1011,7 @@
   "updated_at": "Zaktualizowano",
   "url": "URL",
   "videos": "Filmy wideo",
+  "view_all": "Pokaż Wszystko",
   "weight": "Waga",
   "years_old": "lat(a)"
 }
