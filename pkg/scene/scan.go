@@ -64,40 +64,64 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		return fmt.Errorf("finding existing scene: %w", err)
 	}
 
+	if len(existing) == 0 {
+		// try also to match file by fingerprints
+		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, videoFile.Fingerprints)
+		if err != nil {
+			return fmt.Errorf("finding existing scene by fingerprints: %w", err)
+		}
+	}
+
 	if len(existing) > 0 {
-		// assume nothing to be done
-		// TODO - may need to update the title?
-		return nil
+		if err := h.associateExisting(ctx, existing, videoFile); err != nil {
+			return err
+		}
+	} else {
+		// create a new scene
+		now := time.Now()
+		newScene := &models.Scene{
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+
+		if err := h.CreatorUpdater.Create(ctx, newScene, []file.ID{videoFile.ID}); err != nil {
+			return fmt.Errorf("creating new scene: %w", err)
+		}
+
+		h.PluginCache.ExecutePostHooks(ctx, newScene.ID, plugin.SceneCreatePost, nil, nil)
+
+		existing = []*models.Scene{newScene}
 	}
 
-	// try also to match file by fingerprints
-	existing, err = h.CreatorUpdater.FindByFingerprints(ctx, videoFile.Fingerprints)
-	if len(existing) > 0 {
-		// associate this file with the existing scenes
-		// for _, img := range existing {
-		// 	// TODO
-		// 	return nil
-		// }
-		return nil
+	for _, s := range existing {
+		if err := h.CoverGenerator.GenerateCover(ctx, s, videoFile); err != nil {
+			// just log if cover generation fails. We can try again on rescan
+			logger.Errorf("Error generating cover for %s: %v", videoFile.Path, err)
+		}
 	}
 
-	// create a new image
-	now := time.Now()
-	newScene := &models.Scene{
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
+	return nil
+}
 
-	if err := h.CreatorUpdater.Create(ctx, newScene, []file.ID{videoFile.ID}); err != nil {
-		return fmt.Errorf("creating new scene: %w", err)
-	}
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Scene, f *file.VideoFile) error {
+	for _, s := range existing {
+		found := false
+		for _, sf := range s.Files {
+			if sf.ID == f.Base().ID {
+				found = true
+				break
+			}
+		}
 
-	if err := h.CoverGenerator.GenerateCover(ctx, newScene, videoFile); err != nil {
-		// just log if cover generation fails. We can try again on rescan
-		logger.Errorf("Error generating cover for %s: %v", videoFile.Path, err)
-	}
+		if !found {
+			logger.Infof("Adding %s to scene %s", f.Path, s.GetTitle())
+			s.Files = append(s.Files, f)
+		}
 
-	h.PluginCache.ExecutePostHooks(ctx, newScene.ID, plugin.SceneCreatePost, nil, nil)
+		if err := h.CreatorUpdater.Update(ctx, s); err != nil {
+			return fmt.Errorf("updating scene: %w", err)
+		}
+	}
 
 	return nil
 }

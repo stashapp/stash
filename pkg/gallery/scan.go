@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 )
@@ -34,37 +35,57 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		return fmt.Errorf("finding existing gallery: %w", err)
 	}
 
-	if len(existing) > 0 {
-		// assume nothing to be done
-		// TODO - may need to update the title?
-		return nil
+	if len(existing) == 0 {
+		// try also to match file by fingerprints
+		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, baseFile.Fingerprints)
+		if err != nil {
+			return fmt.Errorf("finding existing gallery by fingerprints: %w", err)
+		}
 	}
 
-	// try also to match file by fingerprints
-	existing, err = h.CreatorUpdater.FindByFingerprints(ctx, baseFile.Fingerprints)
 	if len(existing) > 0 {
-		// associate this file with the existing images
-		// for _, img := range existing {
-		// 	// TODO
-		// 	return nil
-		// }
-		return nil
-	}
+		if err := h.associateExisting(ctx, existing, f); err != nil {
+			return err
+		}
+	} else {
+		// create a new image
+		now := time.Now()
+		newGallery := &models.Gallery{
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
 
-	// create a new image
-	now := time.Now()
-	newGallery := &models.Gallery{
-		CreatedAt: now,
-		UpdatedAt: now,
+		if err := h.CreatorUpdater.Create(ctx, newGallery, []file.ID{baseFile.ID}); err != nil {
+			return fmt.Errorf("creating new image: %w", err)
+		}
+
+		h.PluginCache.ExecutePostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
 	}
 
 	// TODO - generate thumbnails
 
-	if err := h.CreatorUpdater.Create(ctx, newGallery, []file.ID{baseFile.ID}); err != nil {
-		return fmt.Errorf("creating new image: %w", err)
-	}
+	return nil
+}
 
-	h.PluginCache.ExecutePostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Gallery, f file.File) error {
+	for _, i := range existing {
+		found := false
+		for _, sf := range i.Files {
+			if sf.Base().ID == f.Base().ID {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			logger.Infof("Adding %s to gallery %s", f.Base().Path, i.GetTitle())
+			i.Files = append(i.Files, f)
+		}
+
+		if err := h.CreatorUpdater.Update(ctx, i); err != nil {
+			return fmt.Errorf("updating gallery: %w", err)
+		}
+	}
 
 	return nil
 }

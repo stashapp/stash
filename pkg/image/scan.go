@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 )
@@ -62,51 +63,72 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		return fmt.Errorf("finding existing image: %w", err)
 	}
 
-	if len(existing) > 0 {
-		// assume nothing to be done
-		// TODO - may need to update the title?
-		return nil
-	}
-
-	// try also to match file by fingerprints
-	existing, err = h.CreatorUpdater.FindByFingerprints(ctx, imageFile.Fingerprints)
-	if len(existing) > 0 {
-		// associate this file with the existing images
-		// for _, img := range existing {
-		// 	// TODO
-		// 	return nil
-		// }
-	}
-
-	// create a new image
-	now := time.Now()
-	newImage := &models.Image{
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
-
-	// if the file is in a zip, then associate it with the gallery
-	if imageFile.ZipFileID != nil {
-		g, err := h.GalleryFinder.FindByFileID(ctx, *imageFile.ZipFileID)
+	if len(existing) == 0 {
+		// try also to match file by fingerprints
+		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, imageFile.Fingerprints)
 		if err != nil {
-			return fmt.Errorf("finding gallery for zip file id %d: %w", *imageFile.ZipFileID, err)
+			return fmt.Errorf("finding existing image by fingerprints: %w", err)
+		}
+	}
+
+	if len(existing) > 0 {
+		if err := h.associateExisting(ctx, existing, imageFile); err != nil {
+			return err
+		}
+	} else {
+		// create a new image
+		now := time.Now()
+		newImage := &models.Image{
+			CreatedAt: now,
+			UpdatedAt: now,
 		}
 
-		for _, gg := range g {
-			newImage.GalleryIDs = append(newImage.GalleryIDs, gg.ID)
+		// if the file is in a zip, then associate it with the gallery
+		if imageFile.ZipFileID != nil {
+			g, err := h.GalleryFinder.FindByFileID(ctx, *imageFile.ZipFileID)
+			if err != nil {
+				return fmt.Errorf("finding gallery for zip file id %d: %w", *imageFile.ZipFileID, err)
+			}
+
+			for _, gg := range g {
+				newImage.GalleryIDs = append(newImage.GalleryIDs, gg.ID)
+			}
 		}
+
+		if err := h.CreatorUpdater.Create(ctx, &models.ImageCreateInput{
+			Image:   newImage,
+			FileIDs: []file.ID{imageFile.ID},
+		}); err != nil {
+			return fmt.Errorf("creating new image: %w", err)
+		}
+
+		h.PluginCache.ExecutePostHooks(ctx, newImage.ID, plugin.ImageCreatePost, nil, nil)
 	}
 
 	// TODO - generate thumbnails
 
-	if err := h.CreatorUpdater.Create(ctx, &models.ImageCreateInput{
-		Image:   newImage,
-		FileIDs: []file.ID{imageFile.ID},
-	}); err != nil {
-		return fmt.Errorf("creating new image: %w", err)
-	}
+	return nil
+}
 
-	h.PluginCache.ExecutePostHooks(ctx, newImage.ID, plugin.ImageCreatePost, nil, nil)
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Image, f *file.ImageFile) error {
+	for _, i := range existing {
+		found := false
+		for _, sf := range i.Files {
+			if sf.ID == f.Base().ID {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			logger.Infof("Adding %s to image %s", f.Path, i.GetTitle())
+			i.Files = append(i.Files, f)
+		}
+
+		if err := h.CreatorUpdater.Update(ctx, i); err != nil {
+			return fmt.Errorf("updating image: %w", err)
+		}
+	}
 
 	return nil
 }
