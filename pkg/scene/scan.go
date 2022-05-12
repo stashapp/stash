@@ -84,7 +84,6 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 	// create a new image
 	now := time.Now()
 	newScene := &models.Scene{
-		Title:     videoFile.Basename,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}

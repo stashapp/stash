@@ -251,10 +251,12 @@ export const Image: React.FC = () => {
     return <ErrorMessage error={`No image found with id ${id}.`} />;
   }
 
+  const title = image.title || TextUtils.fileNameFromPath(image.path);
+
   return (
     <div className="row">
       <Helmet>
-        <title>{image.title ?? TextUtils.fileNameFromPath(image.path)}</title>
+        <title>{title}</title>
       </Helmet>
 
       {maybeRenderDeleteDialog()}
@@ -271,16 +273,14 @@ export const Image: React.FC = () => {
               </Link>
             </h1>
           )}
-          <h3 className="image-header">
-            {image.title ?? TextUtils.fileNameFromPath(image.path)}
-          </h3>
+          <h3 className="image-header">{title}</h3>
         </div>
         {renderTabs()}
       </div>
       <div className="image-container">
         <img
           className="m-sm-auto no-gutter image-image"
-          alt={image.title ?? ""}
+          alt={title}
           src={image.paths.image ?? ""}
         />
       </div>

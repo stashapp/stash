@@ -274,7 +274,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
     <div className="row">
       <Helmet>
         <title>
-          {gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? "")}
+          {gallery.title || TextUtils.fileNameFromPath(gallery.path ?? "")}
         </title>
       </Helmet>
       {maybeRenderDeleteDialog()}
@@ -292,7 +292,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
             </h1>
           )}
           <h3 className="gallery-header">
-            {gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? "")}
+            {gallery.title || TextUtils.fileNameFromPath(gallery.path ?? "")}
           </h3>
         </div>
         {renderTabs()}

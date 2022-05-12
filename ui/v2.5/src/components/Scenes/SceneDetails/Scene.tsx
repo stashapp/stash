@@ -452,10 +452,12 @@ const ScenePage: React.FC<IProps> = ({
     return collapsed ? ">" : "<";
   }
 
+  const title = scene.title || TextUtils.fileNameFromPath(scene.path);
+
   return (
     <>
       <Helmet>
-        <title>{scene.title ?? TextUtils.fileNameFromPath(scene.path)}</title>
+        <title>{title}</title>
       </Helmet>
       {maybeRenderSceneGenerateDialog()}
       {maybeRenderDeleteDialog()}
@@ -476,9 +478,7 @@ const ScenePage: React.FC<IProps> = ({
               </Link>
             </h1>
           )}
-          <h3 className="scene-header">
-            {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
-          </h3>
+          <h3 className="scene-header">{title}</h3>
         </div>
         {renderTabs()}
       </div>

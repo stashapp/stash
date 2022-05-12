@@ -81,7 +81,6 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 	// create a new image
 	now := time.Now()
 	newImage := &models.Image{
-		Title:     imageFile.Basename,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
