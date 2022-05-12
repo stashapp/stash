@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -192,36 +191,29 @@ func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, que
 
 	findFilter := models.BatchFindFilter(batchSize)
 
-	if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-		for more := true; more; {
-			if job.IsCancelled(ctx) {
-				return context.Canceled
-			}
-
-			scenes, err := scene.Query(ctx, j.txnManager.Scene, nil, findFilter)
-			if err != nil {
-				return err
-			}
-
-			for _, ss := range scenes {
-				if job.IsCancelled(ctx) {
-					return context.Canceled
-				}
-
-				j.queueSceneJobs(ctx, g, ss, queue, &totals)
-			}
-
-			if len(scenes) != batchSize {
-				more = false
-			} else {
-				*findFilter.Page++
-			}
+	for more := true; more; {
+		if job.IsCancelled(ctx) {
+			return totals
 		}
 
-		return nil
-	}); err != nil {
-		if !errors.Is(err, context.Canceled) {
+		scenes, err := scene.Query(ctx, j.txnManager.Scene, nil, findFilter)
+		if err != nil {
 			logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
+			return totals
+		}
+
+		for _, ss := range scenes {
+			if job.IsCancelled(ctx) {
+				return totals
+			}
+
+			j.queueSceneJobs(ctx, g, ss, queue, &totals)
+		}
+
+		if len(scenes) != batchSize {
+			more = false
+		} else {
+			*findFilter.Page++
 		}
 	}
 
