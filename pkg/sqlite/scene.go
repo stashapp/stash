@@ -741,11 +741,10 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.Checksum != nil {
 			f.addLeftJoin(scenesFilesTable, "", "scenes_files.scene_id = scenes.id")
-			f.addLeftJoin(filesFingerprintsTable, "", "scenes_files.file_id = files_fingerprints.file_id")
-			f.addLeftJoin(fingerprintTable, "", "files_fingerprints.fingerprint_id = fingerprints.id AND fingerprints.type = 'md5'")
+			f.addLeftJoin(fingerprintTable, "", "scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'md5'")
 		}
 
-		stringCriterionHandler(sceneFilter.Checksum, "fingerprints.fingerprint")(ctx, f)
+		stringCriterionHandler(sceneFilter.Checksum, "files_fingerprints.fingerprint")(ctx, f)
 	}))
 
 	query.handleCriterion(ctx, phashCriterionHandler(sceneFilter.Phash))
@@ -813,16 +812,13 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 			table:    "scenes_files",
 			onClause: "scenes_files.scene_id = scenes.id",
 		}, join{
-			table:    filesFingerprintsTable,
-			onClause: "scenes_files.file_id = files_fingerprints.file_id",
-		}, join{
 			table:    fingerprintTable,
 			as:       "fingerprints_md5",
-			onClause: "files_fingerprints.fingerprint_id = fingerprints_md5.id AND fingerprints_md5.type = 'md5'",
+			onClause: "scenes_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'",
 		}, join{
 			table:    fingerprintTable,
 			as:       "fingerprints_oshash",
-			onClause: "files_fingerprints.fingerprint_id = fingerprints_oshash.id AND fingerprints_oshash.type = 'oshash'",
+			onClause: "scenes_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'",
 		})
 
 		searchColumns := []string{"scenes.title", "scenes.details", "scenes_query.folder_path", "scenes_query.basename", "fingerprints_oshash.fingerprint", "fingerprints_md5.fingerprint", "scene_markers.title"}

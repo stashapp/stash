@@ -510,11 +510,10 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if imageFilter.Checksum != nil {
 			f.addLeftJoin(imagesFilesTable, "", "images_files.image_id = images.id")
-			f.addLeftJoin(filesFingerprintsTable, "", "images_files.file_id = files_fingerprints.file_id")
-			f.addLeftJoin(fingerprintTable, "", "files_fingerprints.fingerprint_id = fingerprints.id AND fingerprints.type = 'md5'")
+			f.addLeftJoin(fingerprintTable, "", "images_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'md5'")
 		}
 
-		stringCriterionHandler(imageFilter.Checksum, "fingerprints.fingerprint")(ctx, f)
+		stringCriterionHandler(imageFilter.Checksum, "files_fingerprints.fingerprint")(ctx, f)
 	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
 
@@ -563,12 +562,9 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 			table:    imagesFilesTable,
 			onClause: "images_files.image_id = images.id",
 		}, join{
-			table:    filesFingerprintsTable,
-			onClause: "images_files.file_id = files_fingerprints.file_id",
-		}, join{
 			table:    fingerprintTable,
 			as:       "fingerprints_md5",
-			onClause: "files_fingerprints.fingerprint_id = fingerprints_md5.id AND fingerprints_md5.type = 'md5'",
+			onClause: "images_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'",
 		})
 
 		searchColumns := []string{"images.title", "images_query.folder_path", "images_query.basename", "fingerprints_md5.fingerprint"}

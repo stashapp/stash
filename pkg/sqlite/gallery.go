@@ -581,14 +581,11 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 			table:    galleriesFilesTable,
 			onClause: "galleries_files.gallery_id = galleries.id",
 		}, join{
-			table:    filesFingerprintsTable,
-			onClause: "galleries_files.file_id = files_fingerprints.file_id",
-		}, join{
 			table:    fingerprintTable,
-			onClause: "files_fingerprints.fingerprint_id = fingerprints.id AND fingerprints.type = 'md5'",
+			onClause: "galleries_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'md5'",
 		})
 
-		searchColumns := []string{"galleries.title", "galleries_query.folder_path", "galleries_query.basename", "fingerprints.fingerprint"}
+		searchColumns := []string{"galleries.title", "galleries_query.folder_path", "galleries_query.basename", "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 

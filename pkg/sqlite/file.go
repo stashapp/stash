@@ -16,11 +16,10 @@ import (
 )
 
 const (
-	fileTable              = "files"
-	videoFileTable         = "video_files"
-	imageFileTable         = "image_files"
-	fileIDColumn           = "file_id"
-	filesFingerprintsTable = "files_fingerprints"
+	fileTable      = "files"
+	videoFileTable = "video_files"
+	imageFileTable = "image_files"
+	fileIDColumn   = "file_id"
 )
 
 type basicFileRow struct {
@@ -320,12 +319,7 @@ func (qb *FileStore) Create(ctx context.Context, f file.File) error {
 		}
 	}
 
-	fpIDs, err := qb.getOrCreateFingerprintIDs(ctx, f.Base())
-	if err != nil {
-		return err
-	}
-
-	if err := filesFingerprintsTableMgr.insertJoins(ctx, id, fpIDs); err != nil {
+	if err := FingerprintReaderWriter.insertJoins(ctx, fileID, f.Base().Fingerprints); err != nil {
 		return err
 	}
 
@@ -357,16 +351,9 @@ func (qb *FileStore) Update(ctx context.Context, f file.File) error {
 		}
 	}
 
-	fpIDs, err := qb.getOrCreateFingerprintIDs(ctx, f.Base())
-	if err != nil {
+	if err := FingerprintReaderWriter.replaceJoins(ctx, id, f.Base().Fingerprints); err != nil {
 		return err
 	}
-
-	if err := filesFingerprintsTableMgr.replaceJoins(ctx, int(id), fpIDs); err != nil {
-		return err
-	}
-
-	// TODO - delete unused fingerprints
 
 	return nil
 }
@@ -433,23 +420,6 @@ func (qb *FileStore) updateOrCreateImageFile(ctx context.Context, id file.ID, f 
 	return nil
 }
 
-func (qb *FileStore) getOrCreateFingerprintIDs(ctx context.Context, f *file.BaseFile) ([]int, error) {
-	fpqb := FingerprintReaderWriter
-	var ids []int
-	for _, fp := range f.Fingerprints {
-		id, err := fpqb.getOrCreate(ctx, fp)
-		if err != nil {
-			return nil, err
-		}
-
-		if id != nil {
-			ids = append(ids, *id)
-		}
-	}
-
-	return ids, nil
-}
-
 func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 	table := qb.table()
 
@@ -483,11 +453,8 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 		folderTable,
 		goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
 	).LeftJoin(
-		filesFingerprintsJoinTable,
-		goqu.On(table.Col(idColumn).Eq(filesFingerprintsJoinTable.Col(fileIDColumn))),
-	).LeftJoin(
 		fingerprintTable,
-		goqu.On(filesFingerprintsJoinTable.Col(fingerprintIDColumn).Eq(fingerprintTable.Col(idColumn))),
+		goqu.On(table.Col(idColumn).Eq(fingerprintTable.Col(fileIDColumn))),
 	).LeftJoin(
 		videoFileTable,
 		goqu.On(table.Col(idColumn).Eq(videoFileTable.Col(fileIDColumn))),
@@ -575,13 +542,9 @@ func (qb *FileStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset)
 func (qb *FileStore) FindByFingerprint(ctx context.Context, fp file.Fingerprint) ([]file.File, error) {
 	fingerprintTable := fingerprintTableMgr.table
 
-	filesFingerprints := filesFingerprintsJoinTable.As("ff")
 	fingerprints := fingerprintTable.As("fp")
 
-	sq := dialect.From(filesFingerprints).Select(filesFingerprints.Col(fileIDColumn)).LeftJoin(
-		fingerprints,
-		goqu.On(filesFingerprints.Col(fingerprintIDColumn).Eq(fingerprints.Col(idColumn))),
-	).Where(
+	sq := dialect.From(fingerprints).Select(fingerprints.Col(fileIDColumn)).Where(
 		fingerprints.Col("type").Eq(fp.Type),
 		fingerprints.Col("fingerprint").Eq(fp.Fingerprint),
 	)

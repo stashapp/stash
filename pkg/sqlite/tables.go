@@ -27,8 +27,6 @@ var (
 	scenesPerformersJoinTable = goqu.T(performersScenesTable)
 	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
 	scenesMoviesJoinTable     = goqu.T(moviesScenesTable)
-
-	filesFingerprintsJoinTable = goqu.T(filesFingerprintsTable)
 )
 
 var (
@@ -192,13 +190,5 @@ var (
 	fingerprintTableMgr = &table{
 		table:    goqu.T(fingerprintTable),
 		idColumn: goqu.T(fingerprintTable).Col(idColumn),
-	}
-
-	filesFingerprintsTableMgr = &joinTable{
-		table: table{
-			table:    filesFingerprintsJoinTable,
-			idColumn: filesFingerprintsJoinTable.Col(fileIDColumn),
-		},
-		fkColumn: filesFingerprintsJoinTable.Col(fingerprintIDColumn),
 	}
 )

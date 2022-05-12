@@ -2,30 +2,17 @@ package sqlite
 
 import (
 	"context"
-	"database/sql"
-	"errors"
+	"fmt"
 
+	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/file"
 	"gopkg.in/guregu/null.v4"
 )
 
 const (
-	fingerprintTable    = "fingerprints"
-	fingerprintIDColumn = "fingerprint_id"
+	fingerprintTable = "files_fingerprints"
 )
-
-type fingerprintRow struct {
-	ID          int         `db:"id" goqu:"skipinsert"`
-	Type        string      `db:"type"`
-	Fingerprint interface{} `db:"fingerprint"`
-}
-
-func (f *fingerprintRow) fromFingerprint(fp file.Fingerprint) {
-	f.Type = fp.Type
-	f.Fingerprint = fp.Fingerprint
-}
 
 type fingerprintQueryRow struct {
 	Type        null.String `db:"fingerprint_type"`
@@ -52,58 +39,43 @@ type fingerprintQueryBuilder struct {
 var FingerprintReaderWriter = &fingerprintQueryBuilder{
 	repository: repository{
 		tableName: fingerprintTable,
-		idColumn:  idColumn,
+		idColumn:  fileIDColumn,
 	},
 
 	tableMgr: fingerprintTableMgr,
 }
 
-func (qb *fingerprintQueryBuilder) getOrCreate(ctx context.Context, f file.Fingerprint) (*int, error) {
-	id, err := qb.getID(ctx, f)
+func (qb *fingerprintQueryBuilder) insert(ctx context.Context, fileID file.ID, f file.Fingerprint) error {
+	table := qb.table()
+	q := dialect.Insert(table).Cols(fileIDColumn, "type", "fingerprint").Vals(
+		goqu.Vals{fileID, f.Type, f.Fingerprint},
+	)
+	_, err := exec(ctx, q)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("inserting into %s: %w", table.GetTable(), err)
 	}
 
-	if id != nil {
-		return id, nil
+	return nil
+}
+
+func (qb *fingerprintQueryBuilder) insertJoins(ctx context.Context, fileID file.ID, f []file.Fingerprint) error {
+	for _, ff := range f {
+		if err := qb.insert(ctx, fileID, ff); err != nil {
+			return err
+		}
 	}
 
-	return qb.Create(ctx, f)
+	return nil
+}
+
+func (qb *fingerprintQueryBuilder) replaceJoins(ctx context.Context, fileID file.ID, f []file.Fingerprint) error {
+	if err := qb.destroy(ctx, []int{int(fileID)}); err != nil {
+		return err
+	}
+
+	return qb.insertJoins(ctx, fileID, f)
 }
 
 func (qb *fingerprintQueryBuilder) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
-}
-
-func (qb *fingerprintQueryBuilder) getID(ctx context.Context, f file.Fingerprint) (*int, error) {
-	table := qb.table()
-	q := dialect.From(table).Select(table.Col(idColumn)).Where(table.Col("type").Eq(f.Type), table.Col("fingerprint").Eq(f.Fingerprint))
-
-	var id *int
-	const single = true
-	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		var v int
-		if err := rows.Scan(&v); err != nil {
-			return err
-		}
-
-		id = &v
-		return nil
-	}); err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
-	}
-
-	return id, nil
-}
-
-func (qb *fingerprintQueryBuilder) Create(ctx context.Context, f file.Fingerprint) (*int, error) {
-	var r fingerprintRow
-	r.fromFingerprint(f)
-
-	id, err := qb.tableMgr.insertID(ctx, r)
-	if err != nil {
-		return nil, err
-	}
-
-	return &id, nil
 }

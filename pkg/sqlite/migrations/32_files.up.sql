@@ -35,23 +35,15 @@ CREATE INDEX `index_files_on_basename` on `files` (`basename`);
 ALTER TABLE `folders` ADD COLUMN `zip_file_id` integer REFERENCES `files`(`id`) ON DELETE CASCADE;
 CREATE UNIQUE INDEX `index_folders_path_unique` on `folders` (`zip_file_id`, `path`);
 
-CREATE TABLE `fingerprints` (
-  `id` integer not null primary key autoincrement,
-  `type` varchar(255) NOT NULL,
-  `fingerprint` blob NOT NULL
-);
-
-CREATE UNIQUE INDEX `index_fingerprint_type_fingerprint_unique` ON `fingerprints` (`type`, `fingerprint`);
-
 CREATE TABLE `files_fingerprints` (
   `file_id` integer NOT NULL,
-  `fingerprint_id` integer NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `fingerprint` blob NOT NULL,
   foreign key(`file_id`) references `files`(`id`) on delete CASCADE,
-  foreign key(`fingerprint_id`) references `fingerprints`(`id`) on delete CASCADE,
-  PRIMARY KEY (`file_id`, `fingerprint_id`)
+  PRIMARY KEY (`file_id`, `type`, `fingerprint`)
 );
 
-CREATE INDEX `index_files_fingerprints_fingerprint_id` ON `files_fingerprints` (`fingerprint_id`);
+CREATE INDEX `index_fingerprint_type_fingerprint` ON `files_fingerprints` (`type`, `fingerprint`);
 
 CREATE TABLE `video_files` (
   `file_id` integer NOT NULL primary key,
@@ -85,16 +77,6 @@ CREATE TABLE `images_files` (
 
 CREATE INDEX `index_images_files_file_id` ON `images_files` (`file_id`);
 
-CREATE TABLE `images_fingerprints` (
-  `image_id` integer NOT NULL,
-  `fingerprint_id` integer NOT NULL,
-  foreign key(`image_id`) references `images`(`id`) on delete CASCADE,
-  foreign key(`fingerprint_id`) references `fingerprints`(`id`) on delete CASCADE,
-  PRIMARY KEY (`image_id`, `fingerprint_id`)
-);
-
-CREATE INDEX `index_images_fingerprints_fingerprint_id` ON `images_fingerprints` (`fingerprint_id`);
-
 CREATE TABLE `galleries_files` (
     `gallery_id` integer NOT NULL,
     `file_id` integer NOT NULL,
@@ -105,16 +87,6 @@ CREATE TABLE `galleries_files` (
 );
 
 CREATE INDEX `index_galleries_files_file_id` ON `galleries_files` (`file_id`);
-
-CREATE TABLE `galleries_fingerprints` (
-  `gallery_id` integer NOT NULL,
-  `fingerprint_id` integer NOT NULL,
-  foreign key(`gallery_id`) references `galleries`(`id`) on delete CASCADE,
-  foreign key(`fingerprint_id`) references `fingerprints`(`id`) on delete CASCADE,
-  PRIMARY KEY (`gallery_id`, `fingerprint_id`)
-);
-
-CREATE INDEX `index_galleries_fingerprints_fingerprint_id` ON `galleries_fingerprints` (`fingerprint_id`);
 
 CREATE TABLE `scenes_files` (
     `scene_id` integer NOT NULL,
@@ -127,17 +99,6 @@ CREATE TABLE `scenes_files` (
 
 CREATE INDEX `index_scenes_files_file_id` ON `scenes_files` (`file_id`);
 
-CREATE TABLE `scenes_fingerprints` (
-  `scene_id` integer NOT NULL,
-  `fingerprint_id` integer NOT NULL,
-  foreign key(`scene_id`) references `scenes`(`id`) on delete CASCADE,
-  foreign key(`fingerprint_id`) references `fingerprints`(`id`) on delete CASCADE,
-  PRIMARY KEY (`scene_id`, `fingerprint_id`)
-);
-
-CREATE INDEX `index_scenes_fingerprints_fingerprint_id` ON `scenes_fingerprints` (`fingerprint_id`);
-
--- TODO massage scenes to new schema
 PRAGMA foreign_keys=OFF;
 
 CREATE TABLE `images_new` (
@@ -337,8 +298,8 @@ CREATE VIEW `images_query` AS
     `folders`.`path` as `folder_path`,
     `zip_files`.`basename` as `zip_basename`,
     `zip_files_folders`.`path` as `zip_folder_path`,
-    `fingerprints`.`type` as `fingerprint_type`,
-    `fingerprints`.`fingerprint`
+    `files_fingerprints`.`type` as `fingerprint_type`,
+    `files_fingerprints`.`fingerprint`
   FROM `images`
   LEFT JOIN `performers_images` ON (`images`.`id` = `performers_images`.`image_id`) 
   LEFT JOIN `galleries_images` ON (`images`.`id` = `galleries_images`.`image_id`) 
@@ -349,8 +310,7 @@ CREATE VIEW `images_query` AS
   LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
   LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
   LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
-  LEFT JOIN `files_fingerprints` ON (`images_files`.`file_id` = `files_fingerprints`.`file_id`) 
-  LEFT JOIN `fingerprints` ON (`files_fingerprints`.`fingerprint_id` = `fingerprints`.`id`);
+  LEFT JOIN `files_fingerprints` ON (`images_files`.`file_id` = `files_fingerprints`.`file_id`);
 
 CREATE VIEW `galleries_query` AS 
   SELECT 
@@ -378,8 +338,8 @@ CREATE VIEW `galleries_query` AS
     `folders`.`path` as `folder_path`,
     `zip_files`.`basename` as `zip_basename`,
     `zip_files_folders`.`path` as `zip_folder_path`,
-    `fingerprints`.`type` as `fingerprint_type`,
-    `fingerprints`.`fingerprint`
+    `files_fingerprints`.`type` as `fingerprint_type`,
+    `files_fingerprints`.`fingerprint`
   FROM `galleries`
   LEFT JOIN `performers_galleries` ON (`galleries`.`id` = `performers_galleries`.`gallery_id`) 
   LEFT JOIN `galleries_tags` ON (`galleries`.`id` = `galleries_tags`.`gallery_id`)
@@ -389,8 +349,7 @@ CREATE VIEW `galleries_query` AS
   LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
   LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
   LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
-  LEFT JOIN `files_fingerprints` ON (`galleries_files`.`file_id` = `files_fingerprints`.`file_id`) 
-  LEFT JOIN `fingerprints` ON (`files_fingerprints`.`fingerprint_id` = `fingerprints`.`id`);
+  LEFT JOIN `files_fingerprints` ON (`galleries_files`.`file_id` = `files_fingerprints`.`file_id`);
 
 CREATE VIEW `scenes_query` AS 
   SELECT 
@@ -433,8 +392,8 @@ CREATE VIEW `scenes_query` AS
     `folders`.`path` as `folder_path`,
     `zip_files`.`basename` as `zip_basename`,
     `zip_files_folders`.`path` as `zip_folder_path`,
-    `fingerprints`.`type` as `fingerprint_type`,
-    `fingerprints`.`fingerprint`
+    `files_fingerprints`.`type` as `fingerprint_type`,
+    `files_fingerprints`.`fingerprint`
   FROM `scenes`
   LEFT JOIN `performers_scenes` ON (`scenes`.`id` = `performers_scenes`.`scene_id`) 
   LEFT JOIN `scenes_tags` ON (`scenes`.`id` = `scenes_tags`.`scene_id`)
@@ -447,5 +406,4 @@ CREATE VIEW `scenes_query` AS
   LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
   LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
   LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
-  LEFT JOIN `files_fingerprints` ON (`scenes_files`.`file_id` = `files_fingerprints`.`file_id`) 
-  LEFT JOIN `fingerprints` ON (`files_fingerprints`.`fingerprint_id` = `fingerprints`.`id`);
+  LEFT JOIN `files_fingerprints` ON (`scenes_files`.`file_id` = `files_fingerprints`.`file_id`);
