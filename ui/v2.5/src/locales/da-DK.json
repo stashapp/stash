@@ -769,9 +769,7 @@
   "interactive": "Interaktiv",
   "interactive_speed": "Interaktiv hastighed",
   "isMissing": "Mangler",
-  "latest_galleries": "Seneste Gallerier",
   "latest_movies": "Seneste film",
-  "latest_performers": "Seneste optrædende",
   "latest_scenes": "Seneste scener",
   "library": "Bibliotek",
   "loading": {
@@ -796,7 +794,6 @@
   },
   "megabits_per_second": "{value} megabit pr. sekund",
   "metadata": "Metadata",
-  "most_active_studios": "Mest aktive studier",
   "movie": "Film",
   "movie_scene_number": "Film Scene Nummer",
   "movies": "Film",

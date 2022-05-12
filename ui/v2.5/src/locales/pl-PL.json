@@ -764,9 +764,7 @@
   "interactive": "Interaktywny",
   "interactive_speed": "Prędkość interaktywna",
   "isMissing": "Brakuje",
-  "latest_galleries": "Najnowsze Galerie",
   "latest_movies": "Najnowsze Filmy",
-  "latest_performers": "Najnowsi Wykonawcy",
   "latest_scenes": "Najnowsze Sceny",
   "library": "Biblioteka",
   "loading": {
@@ -791,7 +789,6 @@
   },
   "megabits_per_second": "{value} megabitów na sekundę",
   "metadata": "Metadane",
-  "most_active_studios": "Najbardziej Aktywne Studia",
   "movie": "Film",
   "movie_scene_number": "Numer sceny filmu",
   "movies": "Filmy",

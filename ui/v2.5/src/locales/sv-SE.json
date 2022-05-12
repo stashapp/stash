@@ -769,9 +769,7 @@
   "interactive": "Interaktiv",
   "interactive_speed": "Interaktiv hastighet",
   "isMissing": "Saknas",
-  "latest_galleries": "Nya Gallerier",
   "latest_movies": "Nya Filmer",
-  "latest_performers": "Nya Stjärnor",
   "latest_scenes": "Nya Scener",
   "library": "Bibliotek",
   "loading": {
@@ -796,7 +794,6 @@
   },
   "megabits_per_second": "{value} megabit per sekund",
   "metadata": "Metadata",
-  "most_active_studios": "Mest Aktiva Studior",
   "movie": "Film",
   "movie_scene_number": "Filmscennummer",
   "movies": "Filmer",
