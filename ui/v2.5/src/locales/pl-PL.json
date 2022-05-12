@@ -121,6 +121,7 @@
   "birth_year": "Rok urodzenia",
   "birthdate": "Data urodzenia",
   "bitrate": "Szybkość transmisji",
+  "captions": "Napisy",
   "career_length": "Długość kariery",
   "component_tagger": {
     "config": {
@@ -449,6 +450,16 @@
         "description": "Przesunięcie czasowe w milisekundach dla odtwarzania skryptów interaktywnych.",
         "heading": "Przesunięcie Funscript (ms)"
       },
+      "handy_connection": {
+        "connect": "Połącz",
+        "server_offset": {
+          "heading": "Przesunięcie serwera"
+        },
+        "status": {
+          "heading": "Stan podłączenia Handy"
+        },
+        "sync": "Synchronizuj"
+      },
       "handy_connection_key": {
         "description": "Klucz połączenia Handy używany w scenach interaktywnych. Ustawienie tego klucza umożliwi Stash udostępnianie informacji o bieżącej scenie w witrynie handyfeeling.com",
         "heading": "Klucz połączenia Handy"
@@ -730,6 +741,15 @@
     "TRANSGENDER_MALE": "Transgenderowy mężczyzna"
   },
   "hair_color": "Kolor włosów",
+  "handy_connection_status": {
+    "connecting": "Podłączanie",
+    "disconnected": "Rozłączono",
+    "error": "Błąd połączenia z Handy",
+    "missing": "Brak",
+    "ready": "Podłączono",
+    "syncing": "Synchronizacja z serwerem",
+    "uploading": "Wgrywanie skryptu"
+  },
   "hasMarkers": "Ma znaczniki",
   "height": "Wzrost",
   "help": "Help",
@@ -744,6 +764,10 @@
   "interactive": "Interaktywny",
   "interactive_speed": "Prędkość interaktywna",
   "isMissing": "Brakuje",
+  "latest_galleries": "Najnowsze Galerie",
+  "latest_movies": "Najnowsze Filmy",
+  "latest_performers": "Najnowsi Wykonawcy",
+  "latest_scenes": "Najnowsze Sceny",
   "library": "Biblioteka",
   "loading": {
     "generic": "Ładowanie…"
@@ -767,6 +791,7 @@
   },
   "megabits_per_second": "{value} megabitów na sekundę",
   "metadata": "Metadane",
+  "most_active_studios": "Najbardziej Aktywne Studia",
   "movie": "Film",
   "movie_scene_number": "Numer sceny filmu",
   "movies": "Filmy",
@@ -938,6 +963,7 @@
     "submission_failed": "Zgłoszenie nie powiodło się",
     "submission_successful": "Zgłoszenie przesłano sukcesem"
   },
+  "statistics": "Statystyki",
   "stats": {
     "image_size": "Rozmiar obrazów",
     "scenes_duration": "Czas trwania scen",
