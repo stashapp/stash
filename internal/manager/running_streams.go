@@ -58,8 +58,11 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 
 	filepath := GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(fileNamingAlgo))
 	streamRequestCtx := NewStreamRequestContext(w, r)
-	lockCtx := GetInstance().ReadLockManager.ReadLock(streamRequestCtx, filepath)
-	defer lockCtx.Cancel()
+
+	// #2579 - hijacking and closing the connection here causes video playback to fail in Safari
+	// We trust that the request context will be closed, so we don't need to call Cancel on the
+	// returned context here.
+	_ = GetInstance().ReadLockManager.ReadLock(streamRequestCtx, filepath)
 	http.ServeFile(w, r, filepath)
 }
 
