@@ -40,10 +40,16 @@ type FolderUpdater interface {
 	Update(ctx context.Context, f *Folder) error
 }
 
+// MissingMarker wraps the MarkMissing method.
+type FolderMissingMarker interface {
+	FindMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string, page uint, limit uint) ([]*Folder, error)
+	MarkMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string) (int, error)
+}
+
 // FolderStore provides methods to find, create and update Folders.
 type FolderStore interface {
 	FolderGetter
 	FolderCreator
 	FolderUpdater
-	MissingMarker
+	FolderMissingMarker
 }

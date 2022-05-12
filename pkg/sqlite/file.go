@@ -589,6 +589,34 @@ func (qb *FileStore) FindByFingerprint(ctx context.Context, fp file.Fingerprint)
 	return qb.findBySubquery(ctx, sq)
 }
 
+func (qb *FileStore) FindMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string, page uint, limit uint) ([]file.File, error) {
+	table := qb.table()
+	folderTable := folderTableMgr.table
+
+	var pathEx []exp.Expression
+	for _, p := range scanPaths {
+		pathEx = append(pathEx, folderTable.Col("path").Like(p+"%"))
+	}
+
+	q := dialect.From(table).Prepared(true).Select(table.Col(idColumn)).Where(
+		table.Col("last_scanned").Lt(scanStartTime),
+		table.Col("missing_since").IsNull(),
+	)
+
+	if len(pathEx) > 0 {
+		q = q.InnerJoin(
+			folderTable,
+			goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
+		).Where(
+			goqu.Or(pathEx...),
+		)
+	}
+
+	q = q.Limit(limit).Offset((page - 1) * limit)
+
+	return qb.findBySubquery(ctx, q)
+}
+
 func (qb *FileStore) MarkMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string) (int, error) {
 	now := time.Now()
 	table := qb.table()

@@ -169,6 +169,7 @@ type Store interface {
 
 // MissingMarker wraps the MarkMissing method.
 type MissingMarker interface {
+	FindMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string, page uint, limit uint) ([]File, error)
 	MarkMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string) (int, error)
 }
 

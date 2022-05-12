@@ -359,7 +359,8 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 
 	toCreate := &Folder{
 		DirEntry: DirEntry{
-			ModTime: file.ModTime,
+			ModTime:     file.ModTime,
+			LastScanned: file.LastScanned,
 		},
 		Path:      file.Path,
 		CreatedAt: now,
@@ -683,6 +684,13 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 
 func (s *scanJob) markMissingFiles(ctx context.Context) {
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
+		if err := s.logMissingFolders(ctx); err != nil {
+			return err
+		}
+		if err := s.logMissingFiles(ctx); err != nil {
+			return err
+		}
+
 		n, err := s.Repository.FolderStore.MarkMissing(ctx, s.startTime, s.options.Paths)
 		if err != nil {
 			return nil
@@ -705,4 +713,50 @@ func (s *scanJob) markMissingFiles(ctx context.Context) {
 	}); err != nil {
 		logger.Errorf("Error marking missing files and folders: %v", err)
 	}
+}
+
+func (s *scanJob) logMissingFiles(ctx context.Context) error {
+	const limit = 1000
+	var page uint = 1
+	for {
+		missing, err := s.Repository.FindMissing(ctx, s.startTime, s.options.Paths, page, limit)
+		if err != nil {
+			return fmt.Errorf("finding missing files: %w", err)
+		}
+
+		if len(missing) == 0 {
+			break
+		}
+
+		for _, f := range missing {
+			logger.Infof("Marking %s as missing", f.Base().Path)
+		}
+
+		page++
+	}
+
+	return nil
+}
+
+func (s *scanJob) logMissingFolders(ctx context.Context) error {
+	const limit = 1000
+	var page uint = 1
+	for {
+		missing, err := s.Repository.FolderStore.FindMissing(ctx, s.startTime, s.options.Paths, page, limit)
+		if err != nil {
+			return fmt.Errorf("finding missing folders: %w", err)
+		}
+
+		if len(missing) == 0 {
+			break
+		}
+
+		for _, f := range missing {
+			logger.Infof("Marking %s as missing", f.Path)
+		}
+
+		page++
+	}
+
+	return nil
 }

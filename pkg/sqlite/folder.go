@@ -200,6 +200,38 @@ func (qb *FolderStore) FindByPath(ctx context.Context, path string) (*file.Folde
 	return ret, nil
 }
 
+func (qb *FolderStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*file.Folder, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col(idColumn).Eq(
+			sq,
+		),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
+func (qb *FolderStore) FindMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string, page uint, limit uint) ([]*file.Folder, error) {
+	table := qb.table()
+	folderTable := folderTableMgr.table
+
+	var pathEx []exp.Expression
+	for _, p := range scanPaths {
+		pathEx = append(pathEx, folderTable.Col("path").Like(p+"%"))
+	}
+
+	q := dialect.From(table).Prepared(true).Select(table.Col(idColumn)).Where(
+		table.Col("last_scanned").Lt(scanStartTime),
+		table.Col("missing_since").IsNull(),
+		goqu.Or(pathEx...),
+	)
+
+	q = q.Limit(limit).Offset((page - 1) * limit)
+
+	return qb.findBySubquery(ctx, q)
+}
+
 func (qb *FolderStore) MarkMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string) (int, error) {
 	now := time.Now()
 	table := qb.table()
