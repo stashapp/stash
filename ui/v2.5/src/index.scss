@@ -338,13 +338,21 @@ div.dropdown-menu {
   margin-right: 10px;
 }
 
+.wrap-tags {
+  flex-wrap: wrap;
+  row-gap: 10px;
+  column-gap: 10px;
+  .badge {
+    white-space: normal !important;
+  }
+}
+
 .tag-item {
   background-color: $muted-gray;
   color: $dark-text;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
-  margin: 5px;
   padding: 2px 6px;
 
   &:hover {
