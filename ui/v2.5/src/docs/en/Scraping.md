@@ -39,7 +39,7 @@ Scrapers are added by placing yaml configuration files (format: `scrapername.yml
 
 > **⚠️ Note:** Some scrapers may require more than just the yaml file, consult the individual scraper documentation
 
-After the yaml files are added, removed or edited while stash is running, they can be reloaded going to `Settings > Scrapers` and clicking `Reload Scrapers`.
+After the yaml files are added, removed or edited while stash is running, they can be reloaded going to `Settings > Metadata Providers > Scrapers` and clicking `Reload Scrapers`.
 
 The stash community maintains a number of custom scraper configuration files that can be found [here](https://github.com/stashapp/CommunityScrapers).
   
