@@ -703,7 +703,7 @@
     "contrast": "Kontrast",
     "gamma": "Gamma",
     "green": "Grøn",
-    "hue": "Hue",
+    "hue": "Nuance",
     "name": "Filtre",
     "name_transforms": "Forvandler",
     "red": "Rød",
@@ -769,7 +769,6 @@
   "interactive": "Interaktiv",
   "interactive_speed": "Interaktiv hastighed",
   "isMissing": "Mangler",
-  "latest_movies": "Seneste film",
   "latest_scenes": "Seneste scener",
   "library": "Bibliotek",
   "loading": {
@@ -862,6 +861,11 @@
   "queue": "Kø",
   "random": "Tilfældig",
   "rating": "Bedømmelse",
+  "recently_added_performers": "Senest Tilføjede Skuespillere",
+  "recently_added_studios": "Senest Tilføjede Studier",
+  "recently_released_galleries": "Senest Tilføjede Gallerier",
+  "recently_released_movies": "Senest Tilføjede Film",
+  "recently_released_scenes": "Senest Tilføjede Scener",
   "resolution": "Opløsning",
   "scene": "Scene",
   "sceneTagger": "Scenetagger",
@@ -1007,6 +1011,7 @@
   "updated_at": "Opdateret Den",
   "url": "URL",
   "videos": "Videoer",
+  "view_all": "Se alle",
   "weight": "Vægt",
   "years_old": "år gammel"
 }
