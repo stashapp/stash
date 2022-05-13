@@ -78,6 +78,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
+  // https://en.wikipedia.org/wiki/List_of_language_names
   return (
     <>
       <SettingSection headingID="config.ui.basic_settings">
@@ -87,6 +88,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.language ?? undefined}
           onChange={(v) => saveInterface({ language: v })}
         >
+          <option value="da-DK">Dansk (Danmark)</option>
           <option value="de-DE">Deutsch (Deutschland)</option>
           <option value="en-GB">English (United Kingdom)</option>
           <option value="en-US">English (United States)</option>
@@ -97,6 +99,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="it-IT">Italiano</option>
           <option value="ja-JP">日本語 (日本)</option>
           <option value="nl-NL">Nederlands (Nederland)</option>
+          <option value="pl-PL">Polski</option>
           <option value="pt-BR">Português (Brasil)</option>
           <option value="ru-RU">Русский (Россия) (Preview)</option>
           <option value="sv-SE">Svenska</option>
