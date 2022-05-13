@@ -339,12 +339,15 @@ div.dropdown-menu {
 }
 
 .wrap-tags {
+  column-gap: 10px;
   flex-wrap: wrap;
   row-gap: 10px;
-  column-gap: 10px;
+
+  /* stylelint-disable */
   .badge {
     white-space: normal !important;
   }
+  /* stylelint-enable */
 }
 
 .tag-item {
