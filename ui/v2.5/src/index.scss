@@ -346,6 +346,7 @@ div.dropdown-menu {
   /* stylelint-disable */
   .badge {
     white-space: normal !important;
+    margin: unset;
   }
   /* stylelint-enable */
 }
@@ -356,6 +357,7 @@ div.dropdown-menu {
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
+  margin: 5px;
   padding: 2px 6px;
 
   &:hover {
