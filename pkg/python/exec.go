@@ -3,6 +3,7 @@ package python
 import (
 	"context"
 	"os/exec"
+	"strings"
 
 	stashExec "github.com/stashapp/stash/pkg/exec"
 )
@@ -40,5 +41,6 @@ func Resolve() (*Python, error) {
 
 // IsPythonCommand returns true if arg is "python" or "python3"
 func IsPythonCommand(arg string) bool {
-	return arg == "python" || arg == "python3"
+	// Allow the use of fully qualified paths.
+	return strings.HasSuffix(arg, "/python") || strings.HasSuffix(arg, "/python3")
 }
