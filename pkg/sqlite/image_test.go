@@ -1224,7 +1224,7 @@ func imageQueryQ(ctx context.Context, t *testing.T, sqb models.ImageReader, q st
 
 func TestImageQueryPath(t *testing.T) {
 	const imageIdx = 1
-	imagePath := getImageStringValue(imageIdx, "Path")
+	imagePath := getFilePath(folderIdxWithImageFiles, getImageBasename(imageIdx))
 
 	pathCriterion := models.StringCriterionInput{
 		Value:    imagePath,
@@ -1267,8 +1267,8 @@ func TestImageQueryPathOr(t *testing.T) {
 	const image1Idx = 1
 	const image2Idx = 2
 
-	image1Path := getImageStringValue(image1Idx, "Path")
-	image2Path := getImageStringValue(image2Idx, "Path")
+	image1Path := getFilePath(folderIdxWithImageFiles, getImageBasename(image1Idx))
+	image2Path := getFilePath(folderIdxWithImageFiles, getImageBasename(image2Idx))
 
 	imageFilter := models.ImageFilterType{
 		Path: &models.StringCriterionInput{
@@ -1288,9 +1288,12 @@ func TestImageQueryPathOr(t *testing.T) {
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
-		assert.Len(t, images, 2)
-		assert.Equal(t, image1Path, images[0].Path)
-		assert.Equal(t, image2Path, images[1].Path)
+		if !assert.Len(t, images, 2) {
+			return nil
+		}
+
+		assert.Equal(t, image1Path, images[0].Path())
+		assert.Equal(t, image2Path, images[1].Path())
 
 		return nil
 	})
@@ -1298,7 +1301,7 @@ func TestImageQueryPathOr(t *testing.T) {
 
 func TestImageQueryPathAndRating(t *testing.T) {
 	const imageIdx = 1
-	imagePath := getImageStringValue(imageIdx, "Path")
+	imagePath := getFilePath(folderIdxWithImageFiles, getImageBasename(imageIdx))
 	imageRating := getRating(imageIdx)
 
 	imageFilter := models.ImageFilterType{
@@ -1320,7 +1323,7 @@ func TestImageQueryPathAndRating(t *testing.T) {
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
 		assert.Len(t, images, 1)
-		assert.Equal(t, imagePath, images[0].Path)
+		assert.Equal(t, imagePath, images[0].Path())
 		assert.Equal(t, int(imageRating.Int64), *images[0].Rating)
 
 		return nil

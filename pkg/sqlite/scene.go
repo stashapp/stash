@@ -732,27 +732,44 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 		query.not(qb.makeFilter(ctx, sceneFilter.Not))
 	}
 
-	// TODO
-	// query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Path, "scenes.path"))
+	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "scenes_query.folder_path", "scenes_query.basename"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Title, "scenes.title"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Details, "scenes.details"))
-	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Oshash, "scenes.oshash"))
-	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Checksum, "scenes.checksum"))
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if sceneFilter.Checksum != nil {
-			f.addLeftJoin(scenesFilesTable, "", "scenes_files.scene_id = scenes.id")
-			f.addLeftJoin(fingerprintTable, "", "scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'md5'")
+		if sceneFilter.Oshash != nil {
+			f.addLeftJoin(fingerprintTable, "fingerprints_oshash", "scenes_query.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
 		}
 
-		stringCriterionHandler(sceneFilter.Checksum, "files_fingerprints.fingerprint")(ctx, f)
+		stringCriterionHandler(sceneFilter.Oshash, "fingerprints_oshash.fingerprint")(ctx, f)
 	}))
 
-	query.handleCriterion(ctx, phashCriterionHandler(sceneFilter.Phash))
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if sceneFilter.Checksum != nil {
+			f.addLeftJoin(fingerprintTable, "fingerprints_md5", "scenes_query.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
+		}
+
+		stringCriterionHandler(sceneFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
+	}))
+
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if sceneFilter.Phash != nil {
+			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_query.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+
+			value, _ := utils.StringToPhash(sceneFilter.Phash.Value)
+			intCriterionHandler(&models.IntCriterionInput{
+				Value:    int(value),
+				Modifier: sceneFilter.Phash.Modifier,
+			}, "fingerprints_phash.fingerprint")(ctx, f)
+		}
+	}))
+
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating, "scenes.rating"))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter"))
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Organized, "scenes.organized"))
-	query.handleCriterion(ctx, durationCriterionHandler(sceneFilter.Duration, "scenes.duration"))
-	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "scenes.height", "scenes.width"))
+
+	query.handleCriterion(ctx, durationCriterionHandler(sceneFilter.Duration, "scenes_query.duration"))
+	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "scenes_query.video_height", "scenes_query.video_width"))
+
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterion(ctx, sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.URL, "scenes.url"))
@@ -807,21 +824,7 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join("scene_markers", "", "scene_markers.scene_id = scenes.id")
 
-		// add joins for files and checksum
-		query.addJoins(join{
-			table:    "scenes_files",
-			onClause: "scenes_files.scene_id = scenes.id",
-		}, join{
-			table:    fingerprintTable,
-			as:       "fingerprints_md5",
-			onClause: "scenes_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'",
-		}, join{
-			table:    fingerprintTable,
-			as:       "fingerprints_oshash",
-			onClause: "scenes_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'",
-		})
-
-		searchColumns := []string{"scenes.title", "scenes.details", "scenes_query.folder_path", "scenes_query.basename", "fingerprints_oshash.fingerprint", "fingerprints_md5.fingerprint", "scene_markers.title"}
+		searchColumns := []string{"scenes.title", "scenes.details", "scenes_query.folder_path", "scenes_query.basename", "scenes_query.fingerprint", "scene_markers.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -888,29 +891,6 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 	ret.TotalDuration = out.Duration.Float64
 	ret.TotalSize = out.Size.Float64
 	return ret, nil
-}
-
-func phashCriterionHandler(phashFilter *models.StringCriterionInput) criterionHandlerFunc {
-	return func(ctx context.Context, f *filterBuilder) {
-		if phashFilter != nil {
-			// convert value to int from hex
-			// ignore errors
-			value, _ := utils.StringToPhash(phashFilter.Value)
-
-			if modifier := phashFilter.Modifier; phashFilter.Modifier.IsValid() {
-				switch modifier {
-				case models.CriterionModifierEquals:
-					f.addWhere("scenes.phash = ?", value)
-				case models.CriterionModifierNotEquals:
-					f.addWhere("scenes.phash != ?", value)
-				case models.CriterionModifierIsNull:
-					f.addWhere("scenes.phash IS NULL")
-				case models.CriterionModifierNotNull:
-					f.addWhere("scenes.phash IS NOT NULL")
-				}
-			}
-		}
-	}
 }
 
 func scenePhashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput) criterionHandlerFunc {

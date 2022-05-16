@@ -1216,29 +1216,63 @@ func galleryQueryQ(ctx context.Context, t *testing.T, q string, expectedGalleryI
 }
 
 func TestGalleryQueryPath(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		const galleryIdx = 1
-		galleryPath := getGalleryStringValue(galleryIdx, "Path")
+	const galleryIdx = 1
+	galleryPath := getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(galleryIdx))
 
-		pathCriterion := models.StringCriterionInput{
-			Value:    galleryPath,
-			Modifier: models.CriterionModifierEquals,
-		}
+	tests := []struct {
+		name  string
+		input models.StringCriterionInput
+	}{
+		{
+			"equals",
+			models.StringCriterionInput{
+				Value:    galleryPath,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+		{
+			"not equals",
+			models.StringCriterionInput{
+				Value:    galleryPath,
+				Modifier: models.CriterionModifierNotEquals,
+			},
+		},
+		{
+			"matches regex",
+			models.StringCriterionInput{
+				Value:    "gallery.*1_Path",
+				Modifier: models.CriterionModifierMatchesRegex,
+			},
+		},
+		{
+			"not matches regex",
+			models.StringCriterionInput{
+				Value:    "gallery.*1_Path",
+				Modifier: models.CriterionModifierNotMatchesRegex,
+			},
+		},
+	}
 
-		verifyGalleriesPath(ctx, t, pathCriterion)
+	qb := db.Gallery
 
-		pathCriterion.Modifier = models.CriterionModifierNotEquals
-		verifyGalleriesPath(ctx, t, pathCriterion)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, count, err := qb.Query(ctx, &models.GalleryFilterType{
+				Path: &tt.input,
+			}, nil)
 
-		pathCriterion.Modifier = models.CriterionModifierMatchesRegex
-		pathCriterion.Value = "gallery.*1_Path"
-		verifyGalleriesPath(ctx, t, pathCriterion)
+			if err != nil {
+				t.Errorf("GalleryStore.TestSceneQueryPath() error = %v", err)
+				return
+			}
 
-		pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
-		verifyGalleriesPath(ctx, t, pathCriterion)
+			assert.NotEqual(t, 0, count)
 
-		return nil
-	})
+			for _, gallery := range got {
+				verifyString(t, gallery.Path(), tt.input)
+			}
+		})
+	}
 }
 
 func verifyGalleriesPath(ctx context.Context, t *testing.T, pathCriterion models.StringCriterionInput) {
@@ -1261,8 +1295,8 @@ func TestGalleryQueryPathOr(t *testing.T) {
 	const gallery1Idx = 1
 	const gallery2Idx = 2
 
-	gallery1Path := getGalleryStringValue(gallery1Idx, "Path")
-	gallery2Path := getGalleryStringValue(gallery2Idx, "Path")
+	gallery1Path := getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(gallery1Idx))
+	gallery2Path := getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(gallery2Idx))
 
 	galleryFilter := models.GalleryFilterType{
 		Path: &models.StringCriterionInput{
@@ -1295,7 +1329,7 @@ func TestGalleryQueryPathOr(t *testing.T) {
 
 func TestGalleryQueryPathAndRating(t *testing.T) {
 	const galleryIdx = 1
-	galleryPath := getGalleryStringValue(galleryIdx, "Path")
+	galleryPath := getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(galleryIdx))
 	galleryRating := getIntPtr(getRating(galleryIdx))
 
 	galleryFilter := models.GalleryFilterType{

@@ -33,6 +33,7 @@ const (
 	folderIdxInZip
 	folderIdxIsMissing
 
+	folderIdxForObjectFiles
 	folderIdxWithImageFiles
 	folderIdxWithGalleryFiles
 	folderIdxWithSceneFiles
@@ -296,6 +297,9 @@ func (m linkMap) reverseLookup(idx int) []int {
 var (
 	folderParentFolders = map[int]int{
 		folderIdxWithParentFolder: folderIdxWithSubFolder,
+		folderIdxWithSceneFiles:   folderIdxForObjectFiles,
+		folderIdxWithImageFiles:   folderIdxForObjectFiles,
+		folderIdxWithGalleryFiles: folderIdxForObjectFiles,
 	}
 
 	fileFolders = map[int]int{

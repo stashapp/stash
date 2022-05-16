@@ -31,8 +31,12 @@ func (p *path) Scan(value interface{}) error {
 	return nil
 }
 
+func (p path) String() string {
+	return filepath.ToSlash(string(p))
+}
+
 func (p path) Value() (driver.Value, error) {
-	return string(filepath.ToSlash(string(p))), nil
+	return p.String(), nil
 }
 
 type folderRow struct {

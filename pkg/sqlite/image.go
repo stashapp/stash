@@ -509,16 +509,14 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if imageFilter.Checksum != nil {
-			f.addLeftJoin(imagesFilesTable, "", "images_files.image_id = images.id")
-			f.addLeftJoin(fingerprintTable, "", "images_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'md5'")
+			f.addLeftJoin(fingerprintTable, "fingerprints_md5", "galleries_query.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
 		}
 
-		stringCriterionHandler(imageFilter.Checksum, "files_fingerprints.fingerprint")(ctx, f)
+		stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
 	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
 
-	// TODO - complex query
-	// query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Path, "images.path"))
+	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "images_query.folder_path", "images_query.basename"))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating"))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized"))
@@ -557,17 +555,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 	})
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		// add joins for files and checksum
-		query.addJoins(join{
-			table:    imagesFilesTable,
-			onClause: "images_files.image_id = images.id",
-		}, join{
-			table:    fingerprintTable,
-			as:       "fingerprints_md5",
-			onClause: "images_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'",
-		})
-
-		searchColumns := []string{"images.title", "images_query.folder_path", "images_query.basename", "fingerprints_md5.fingerprint"}
+		searchColumns := []string{"images.title", "images_query.folder_path", "images_query.basename", "images_query.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 

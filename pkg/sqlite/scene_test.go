@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -1753,33 +1755,185 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 }
 
 func TestSceneQueryPath(t *testing.T) {
-	const sceneIdx = 1
-	scenePath := getSceneStringValue(sceneIdx, "Path")
+	const (
+		sceneIdx      = 1
+		otherSceneIdx = 2
+	)
+	folder := folderPaths[folderIdxWithSceneFiles]
+	basename := getSceneBasename(sceneIdx)
+	scenePath := getFilePath(folderIdxWithSceneFiles, getSceneBasename(sceneIdx))
 
-	pathCriterion := models.StringCriterionInput{
-		Value:    scenePath,
-		Modifier: models.CriterionModifierEquals,
+	tests := []struct {
+		name        string
+		input       models.StringCriterionInput
+		mustInclude []int
+		mustExclude []int
+	}{
+		{
+			"equals full path",
+			models.StringCriterionInput{
+				Value:    scenePath,
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			[]int{otherSceneIdx},
+		},
+		{
+			"equals folder name",
+			models.StringCriterionInput{
+				Value:    folder,
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"equals folder name trailing slash",
+			models.StringCriterionInput{
+				Value:    folder + string(filepath.Separator),
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"equals base name",
+			models.StringCriterionInput{
+				Value:    basename,
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"equals base name leading slash",
+			models.StringCriterionInput{
+				Value:    string(filepath.Separator) + basename,
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"equals full path wildcard",
+			models.StringCriterionInput{
+				Value:    filepath.Join(folder, "scene_0001_%"),
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			[]int{otherSceneIdx},
+		},
+		{
+			"not equals full path",
+			models.StringCriterionInput{
+				Value:    scenePath,
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			[]int{otherSceneIdx},
+			[]int{sceneIdx},
+		},
+		{
+			"not equals folder name",
+			models.StringCriterionInput{
+				Value:    folder,
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			nil,
+			[]int{sceneIdx},
+		},
+		{
+			"not equals basename",
+			models.StringCriterionInput{
+				Value:    basename,
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			nil,
+			[]int{sceneIdx},
+		},
+		{
+			"includes folder name",
+			models.StringCriterionInput{
+				Value:    folder,
+				Modifier: models.CriterionModifierIncludes,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"includes base name",
+			models.StringCriterionInput{
+				Value:    basename,
+				Modifier: models.CriterionModifierIncludes,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"includes full path",
+			models.StringCriterionInput{
+				Value:    scenePath,
+				Modifier: models.CriterionModifierIncludes,
+			},
+			[]int{sceneIdx},
+			[]int{otherSceneIdx},
+		},
+		{
+			"matches regex",
+			models.StringCriterionInput{
+				Value:    "scene_.*1_Path",
+				Modifier: models.CriterionModifierMatchesRegex,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"not matches regex",
+			models.StringCriterionInput{
+				Value:    "scene_.*1_Path",
+				Modifier: models.CriterionModifierNotMatchesRegex,
+			},
+			nil,
+			[]int{sceneIdx},
+		},
 	}
 
-	verifyScenesPath(t, pathCriterion)
+	qb := db.Scene
 
-	pathCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyScenesPath(t, pathCriterion)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: &models.SceneFilterType{
+					Path: &tt.input,
+				},
+			})
 
-	pathCriterion.Modifier = models.CriterionModifierMatchesRegex
-	pathCriterion.Value = "scene_.*1_Path"
-	verifyScenesPath(t, pathCriterion)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.TestSceneQueryPath() error = %v", err)
+				return
+			}
 
-	pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
-	verifyScenesPath(t, pathCriterion)
+			mustInclude := indexesToIDs(sceneIDs, tt.mustInclude)
+			mustExclude := indexesToIDs(sceneIDs, tt.mustExclude)
+
+			missing := intslice.IntExclude(mustInclude, got.IDs)
+			if len(missing) > 0 {
+				t.Errorf("SceneStore.TestSceneQueryPath() missing expected IDs: %v", missing)
+			}
+
+			notExcluded := intslice.IntIntercect(mustExclude, got.IDs)
+			if len(notExcluded) > 0 {
+				t.Errorf("SceneStore.TestSceneQueryPath() expected IDs to be excluded: %v", notExcluded)
+			}
+		})
+	}
 }
 
 func TestSceneQueryURL(t *testing.T) {
 	const sceneIdx = 1
-	scenePath := getSceneStringValue(sceneIdx, urlField)
+	sceneURL := getSceneStringValue(sceneIdx, urlField)
 
 	urlCriterion := models.StringCriterionInput{
-		Value:    scenePath,
+		Value:    sceneURL,
 		Modifier: models.CriterionModifierEquals,
 	}
 
@@ -1816,8 +1970,8 @@ func TestSceneQueryPathOr(t *testing.T) {
 	const scene1Idx = 1
 	const scene2Idx = 2
 
-	scene1Path := getSceneStringValue(scene1Idx, "Path")
-	scene2Path := getSceneStringValue(scene2Idx, "Path")
+	scene1Path := getFilePath(folderIdxWithSceneFiles, getSceneBasename(scene1Idx))
+	scene2Path := getFilePath(folderIdxWithSceneFiles, getSceneBasename(scene2Idx))
 
 	sceneFilter := models.SceneFilterType{
 		Path: &models.StringCriterionInput{
@@ -1840,8 +1994,8 @@ func TestSceneQueryPathOr(t *testing.T) {
 		if !assert.Len(t, scenes, 2) {
 			return nil
 		}
-		assert.Equal(t, scene1Path, scenes[0].Path)
-		assert.Equal(t, scene2Path, scenes[1].Path)
+		assert.Equal(t, scene1Path, scenes[0].Path())
+		assert.Equal(t, scene2Path, scenes[1].Path())
 
 		return nil
 	})
@@ -1849,7 +2003,7 @@ func TestSceneQueryPathOr(t *testing.T) {
 
 func TestSceneQueryPathAndRating(t *testing.T) {
 	const sceneIdx = 1
-	scenePath := getSceneStringValue(sceneIdx, "Path")
+	scenePath := getFilePath(folderIdxWithSceneFiles, getSceneBasename(sceneIdx))
 	sceneRating := int(getRating(sceneIdx).Int64)
 
 	sceneFilter := models.SceneFilterType{
@@ -1873,7 +2027,7 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 		if !assert.Len(t, scenes, 1) {
 			return nil
 		}
-		assert.Equal(t, scenePath, scenes[0].Path)
+		assert.Equal(t, scenePath, scenes[0].Path())
 		assert.Equal(t, sceneRating, *scenes[0].Rating)
 
 		return nil

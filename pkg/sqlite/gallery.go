@@ -536,9 +536,26 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Title, "galleries.title"))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Details, "galleries.details"))
-	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Checksum, "galleries.checksum"))
-	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.IsZip, "galleries.zip"))
-	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Path, "galleries.path"))
+
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if galleryFilter.Checksum != nil {
+			f.addLeftJoin(fingerprintTable, "fingerprints_md5", "galleries_query.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
+		}
+
+		stringCriterionHandler(galleryFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
+	}))
+
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if galleryFilter.IsZip != nil {
+			if *galleryFilter.IsZip {
+				f.addWhere("galleries_query.file_id IS NOT NULL")
+			} else {
+				f.addWhere("galleries_query.file_id IS NULL")
+			}
+		}
+	}))
+
+	query.handleCriterion(ctx, pathCriterionHandler(galleryFilter.Path, "galleries_query.folder_path", "galleries_query.basename"))
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating, "galleries.rating"))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))
 	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized"))
@@ -577,15 +594,7 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		// add joins for files and checksum
-		query.addJoins(join{
-			table:    galleriesFilesTable,
-			onClause: "galleries_files.gallery_id = galleries.id",
-		}, join{
-			table:    fingerprintTable,
-			onClause: "galleries_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'md5'",
-		})
-
-		searchColumns := []string{"galleries.title", "galleries_query.folder_path", "galleries_query.basename", "files_fingerprints.fingerprint"}
+		searchColumns := []string{"galleries.title", "galleries_query.folder_path", "galleries_query.basename", "galleries_query.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
