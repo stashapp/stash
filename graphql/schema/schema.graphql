@@ -3,6 +3,7 @@ type Query {
   # Filters
   findSavedFilters(mode: FilterMode!): [SavedFilter!]!
   findDefaultFilter(mode: FilterMode!): SavedFilter
+  findRecommendedFilters: [SavedFilter!]!
 
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene

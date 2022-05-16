@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { FindMoviesQueryResult } from "src/core/generated-graphql";
+import { useFindMovies } from "src/core/StashService";
 import Slider from "react-slick";
 import { MovieCard } from "./MovieCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -8,15 +8,18 @@ import { getSlickSliderSettings } from "src/core/recommendations";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  result: FindMoviesQueryResult;
   header: String;
   linkText: String;
+  loadingArr: boolean[];
+  index: number;
 }
 
 export const MovieRecommendationRow: FunctionComponent<IProps> = (
   props: IProps
 ) => {
-  const cardCount = props.result.data?.findMovies.count;
+  const result = useFindMovies(props.filter);
+  const cardCount = result.data?.findMovies.count;
+  props.loadingArr[props.index] = result.loading;
   return (
     <div className="recommendation-row movie-recommendations">
       <div className="recommendation-row-head">
@@ -28,8 +31,8 @@ export const MovieRecommendationRow: FunctionComponent<IProps> = (
         </a>
       </div>
       <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
-        {props.result.data?.findMovies.movies.map((p) => (
-          <MovieCard key={p.id} movie={p} />
+        {result.data?.findMovies.movies.map((m) => (
+          <MovieCard key={m.id} movie={m} />
         ))}
       </Slider>
     </div>

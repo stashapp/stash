@@ -50,6 +50,7 @@
     "ignore": "Ignore",
     "import": "Import…",
     "import_from_file": "Import from file",
+    "manage_recommendations": "Manage Recommendations",
     "merge": "Merge",
     "merge_from": "Merge from",
     "merge_into": "Merge into",
@@ -269,6 +270,7 @@
       "include_audio_desc": "Includes audio stream when generating previews.",
       "include_audio_head": "Include audio",
       "logging": "Logging",
+      "manage_recommendation_desc": "Manage content that will be displayed on homepage",
       "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes",
@@ -300,7 +302,8 @@
     "library": {
       "exclusions": "Exclusions",
       "gallery_and_image_options": "Gallery and Image options",
-      "media_content_extensions": "Media content extensions"
+      "media_content_extensions": "Media content extensions",
+      "manage_recommendation": "Manage Recommendations"
     },
     "logs": {
       "log_level": "Log Level"

@@ -1,13 +1,7 @@
+import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { defineMessages, useIntl } from "react-intl";
-import React from "react";
-import {
-  useFindScenes,
-  useFindMovies,
-  useFindStudios,
-  useFindGalleries,
-  useFindPerformers,
-} from "src/core/StashService";
+import { useFindRecommendationFilters } from "src/core/StashService";
 import { SceneRecommendationRow } from "src/components/Scenes/SceneRecommendationRow";
 import { StudioRecommendationRow } from "src/components/Studios/StudioRecommendationRow";
 import { MovieRecommendationRow } from "src/components/Movies/MovieRecommendationRow";
@@ -22,44 +16,34 @@ const Recommendations: React.FC = () => {
     return "ontouchstart" in window || navigator.maxTouchPoints > 0;
   }
 
+  // function emptyServer(hasResults: boolean[]) {
+  //   // user defined recommendations
+  //   if (hasResults.length == 0) {
+  //     return false;
+  //   }
+  //   hasResults.forEach(function (result) {
+  //     if (result) {
+  //       return false;
+  //     }
+  //   });
+  //   return true;
+  // }
+
+  function loading(loadingArr: boolean[]) {
+    // user defined recommendations
+    loadingArr.forEach(function (l) {
+      if (l) {
+        return true;
+      }
+    });
+    return false;
+  }
+
   const isTouch = isTouchEnabled();
 
   const intl = useIntl();
-  const itemsPerPage = 25;
-  const scenefilter = new ListFilterModel(GQL.FilterMode.Scenes);
-  scenefilter.sortBy = "date";
-  scenefilter.sortDirection = GQL.SortDirectionEnum.Desc;
-  scenefilter.itemsPerPage = itemsPerPage;
-  const sceneResult = useFindScenes(scenefilter);
-  const hasScenes = !!sceneResult?.data?.findScenes?.count;
 
-  const studiofilter = new ListFilterModel(GQL.FilterMode.Studios);
-  studiofilter.sortBy = "created_at";
-  studiofilter.sortDirection = GQL.SortDirectionEnum.Desc;
-  studiofilter.itemsPerPage = itemsPerPage;
-  const studioResult = useFindStudios(studiofilter);
-  const hasStudios = !!studioResult?.data?.findStudios?.count;
-
-  const moviefilter = new ListFilterModel(GQL.FilterMode.Movies);
-  moviefilter.sortBy = "date";
-  moviefilter.sortDirection = GQL.SortDirectionEnum.Desc;
-  moviefilter.itemsPerPage = itemsPerPage;
-  const movieResult = useFindMovies(moviefilter);
-  const hasMovies = !!movieResult?.data?.findMovies?.count;
-
-  const performerfilter = new ListFilterModel(GQL.FilterMode.Performers);
-  performerfilter.sortBy = "created_at";
-  performerfilter.sortDirection = GQL.SortDirectionEnum.Desc;
-  performerfilter.itemsPerPage = itemsPerPage;
-  const performerResult = useFindPerformers(performerfilter);
-  const hasPerformers = !!performerResult?.data?.findPerformers?.count;
-
-  const galleryfilter = new ListFilterModel(GQL.FilterMode.Galleries);
-  galleryfilter.sortBy = "date";
-  galleryfilter.sortDirection = GQL.SortDirectionEnum.Desc;
-  galleryfilter.itemsPerPage = itemsPerPage;
-  const galleryResult = useFindGalleries(galleryfilter);
-  const hasGalleries = !!galleryResult?.data?.findGalleries?.count;
+  const userRecommendations = useFindRecommendationFilters();
 
   const messages = defineMessages({
     emptyServer: {
@@ -93,82 +77,146 @@ const Recommendations: React.FC = () => {
     },
   });
 
-  if (
-    sceneResult.loading ||
-    studioResult.loading ||
-    movieResult.loading ||
-    performerResult.loading ||
-    galleryResult.loading
-  ) {
+  const filters: ListFilterModel[] = [];
+  const labels: string[] = [];
+  const hasResultsArr: boolean[] = [];
+  const loadingArr: boolean[] = [];
+  let inProgress = true;
+  if (!userRecommendations.loading) {
+    if (!!userRecommendations?.data?.findRecommendedFilters?.length) {
+      userRecommendations.data.findRecommendedFilters.forEach(function (f) {
+        const newFilter = new ListFilterModel(f.mode);
+        newFilter.currentPage = 1;
+        newFilter.configureFromQueryParameters(JSON.parse(f.filter));
+        newFilter.randomSeed = -1;
+        filters.push(newFilter);
+        labels.push(f.name);
+        hasResultsArr.push(false);
+        loadingArr.push(true);
+      });
+      inProgress = false;
+    } else if (!userRecommendations.loading) {
+      // commented out code to handle default recommendations for now
+      // const itemsPerPage = 25;
+      // const scenefilter = new ListFilterModel(GQL.FilterMode.Scenes);
+      // scenefilter.sortBy = "date";
+      // scenefilter.sortDirection = GQL.SortDirectionEnum.Desc;
+      // scenefilter.itemsPerPage = itemsPerPage;
+      // filters.push(scenefilter);
+      // labels.push(intl.formatMessage(messages.recentlyReleasedScenes));
+      // hasResultsArr.push(false);
+      // loadingArr.push(true);
+      // const studiofilter = new ListFilterModel(GQL.FilterMode.Studios);
+      // studiofilter.sortBy = "created_at";
+      // studiofilter.sortDirection = GQL.SortDirectionEnum.Desc;
+      // studiofilter.itemsPerPage = itemsPerPage;
+      // filters.push(studiofilter);
+      // labels.push(intl.formatMessage(messages.recentlyAddedStudios));
+      // hasResultsArr.push(false);
+      // loadingArr.push(true);
+      // const moviefilter = new ListFilterModel(GQL.FilterMode.Movies);
+      // moviefilter.sortBy = "date";
+      // moviefilter.sortDirection = GQL.SortDirectionEnum.Desc;
+      // moviefilter.itemsPerPage = itemsPerPage;
+      // filters.push(moviefilter);
+      // labels.push(intl.formatMessage(messages.recentlyReleasedMovies));
+      // hasResultsArr.push(false);
+      // loadingArr.push(true);
+      // const performerfilter = new ListFilterModel(GQL.FilterMode.Performers);
+      // performerfilter.sortBy = "created_at";
+      // performerfilter.sortDirection = GQL.SortDirectionEnum.Desc;
+      // performerfilter.itemsPerPage = itemsPerPage;
+      // filters.push(performerfilter);
+      // labels.push(intl.formatMessage(messages.recentlyAddedPerformers));
+      // hasResultsArr.push(false);
+      // loadingArr.push(true);
+      // const galleryfilter = new ListFilterModel(GQL.FilterMode.Galleries);
+      // galleryfilter.sortBy = "date";
+      // galleryfilter.sortDirection = GQL.SortDirectionEnum.Desc;
+      // galleryfilter.itemsPerPage = itemsPerPage;
+      // filters.push(galleryfilter);
+      // labels.push(intl.formatMessage(messages.recentlyReleasedGalleries));
+      // hasResultsArr.push(false);
+      // loadingArr.push(false);
+      // inProgress = true;
+    }
+  }
+  // });
+  if (inProgress || loading(loadingArr)) {
     return <LoadingIndicator />;
-  } else {
-    return (
-      <div className="recommendations-container">
-        {!hasScenes &&
-        !hasStudios &&
-        !hasMovies &&
-        !hasPerformers &&
-        !hasGalleries ? (
-          <div className="no-recommendations">
-            {intl.formatMessage(messages.emptyServer)}
-          </div>
-        ) : (
-          <div>
-            {hasScenes && (
+  }
+
+  return (
+    <div className="recommendations-container">
+      {/* {emptyServer(hasResults) ? (
+        <div className="no-recommendations">
+          {intl.formatMessage(messages.emptyServer)}
+        </div>
+      ) : ( */}
+      <div>
+        {filters.map((filter, index) => {
+          if (filter.mode == GQL.FilterMode.Scenes) {
+            return (
               <SceneRecommendationRow
                 isTouch={isTouch}
-                filter={scenefilter}
-                result={sceneResult}
-                queue={SceneQueue.fromListFilterModel(scenefilter)}
-                header={intl.formatMessage(messages.recentlyReleasedScenes)}
+                filter={filter}
+                queue={SceneQueue.fromListFilterModel(filter)}
+                header={labels.at(index)!}
                 linkText={intl.formatMessage(messages.viewAll)}
+                loadingArr={loadingArr}
+                index={index}
               />
-            )}
-
-            {hasStudios && (
+            );
+          } else if (filter.mode == GQL.FilterMode.Studios) {
+            return (
               <StudioRecommendationRow
                 isTouch={isTouch}
-                filter={studiofilter}
-                result={studioResult}
-                header={intl.formatMessage(messages.recentlyAddedStudios)}
+                filter={filter}
+                header={labels.at(index)!}
                 linkText={intl.formatMessage(messages.viewAll)}
+                loadingArr={loadingArr}
+                index={index}
               />
-            )}
-
-            {hasMovies && (
+            );
+          } else if (filter.mode == GQL.FilterMode.Movies) {
+            return (
               <MovieRecommendationRow
                 isTouch={isTouch}
-                filter={moviefilter}
-                result={movieResult}
-                header={intl.formatMessage(messages.recentlyReleasedMovies)}
+                filter={filter}
+                header={labels.at(index)!}
                 linkText={intl.formatMessage(messages.viewAll)}
+                loadingArr={loadingArr}
+                index={index}
               />
-            )}
-
-            {hasPerformers && (
+            );
+          } else if (filter.mode == GQL.FilterMode.Performers) {
+            return (
               <PerformerRecommendationRow
                 isTouch={isTouch}
-                filter={performerfilter}
-                result={performerResult}
-                header={intl.formatMessage(messages.recentlyAddedPerformers)}
+                filter={filter}
+                header={labels.at(index)!}
                 linkText={intl.formatMessage(messages.viewAll)}
+                loadingArr={loadingArr}
+                index={index}
               />
-            )}
-
-            {hasGalleries && (
+            );
+          } else if (filter.mode == GQL.FilterMode.Galleries) {
+            return (
               <GalleryRecommendationRow
                 isTouch={isTouch}
-                filter={galleryfilter}
-                result={galleryResult}
-                header={intl.formatMessage(messages.recentlyReleasedGalleries)}
+                filter={filter}
+                header={labels.at(index)!}
                 linkText={intl.formatMessage(messages.viewAll)}
+                loadingArr={loadingArr}
+                index={index}
               />
-            )}
-          </div>
-        )}
+            );
+          }
+        })}
       </div>
-    );
-  }
+      {/* )} */}
+    </div>
+  );
 };
 
 export default Recommendations;

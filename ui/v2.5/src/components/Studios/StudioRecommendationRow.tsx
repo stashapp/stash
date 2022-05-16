@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { FindStudiosQueryResult } from "src/core/generated-graphql";
+import { useFindStudios } from "src/core/StashService";
 import Slider from "react-slick";
 import { StudioCard } from "./StudioCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -8,15 +8,18 @@ import { getSlickSliderSettings } from "src/core/recommendations";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  result: FindStudiosQueryResult;
   header: String;
   linkText: String;
+  loadingArr: boolean[];
+  index: number;
 }
 
 export const StudioRecommendationRow: FunctionComponent<IProps> = (
   props: IProps
 ) => {
-  const cardCount = props.result.data?.findStudios.count;
+  const result = useFindStudios(props.filter);
+  const cardCount = result.data?.findStudios.count;
+  props.loadingArr[props.index] = result.loading;
   return (
     <div className="recommendation-row studio-recommendations">
       <div className="recommendation-row-head">
@@ -28,8 +31,8 @@ export const StudioRecommendationRow: FunctionComponent<IProps> = (
         </a>
       </div>
       <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
-        {props.result.data?.findStudios.studios.map((studio) => (
-          <StudioCard key={studio.id} studio={studio} hideParent={true} />
+        {result.data?.findStudios.studios.map((s) => (
+          <StudioCard key={s.id} studio={s} hideParent={true} />
         ))}
       </Slider>
     </div>

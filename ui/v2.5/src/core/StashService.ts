@@ -51,6 +51,9 @@ export const useFindSavedFilters = (mode: GQL.FilterMode) =>
     },
   });
 
+export const useFindRecommendationFilters = () =>
+  GQL.useFindRecommendedFiltersQuery();
+
 export const useFindDefaultFilter = (mode: GQL.FilterMode) =>
   GQL.useFindDefaultFilterQuery({
     variables: {

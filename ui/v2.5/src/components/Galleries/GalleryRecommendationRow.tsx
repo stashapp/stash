@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { FindGalleriesQueryResult } from "src/core/generated-graphql";
+import { useFindGalleries } from "src/core/StashService";
 import Slider from "react-slick";
 import { GalleryCard } from "./GalleryCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -8,15 +8,19 @@ import { getSlickSliderSettings } from "src/core/recommendations";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  result: FindGalleriesQueryResult;
   header: String;
   linkText: String;
+  loadingArr: boolean[];
+  index: number;
 }
 
 export const GalleryRecommendationRow: FunctionComponent<IProps> = (
   props: IProps
 ) => {
-  const cardCount = props.result.data?.findGalleries.count;
+  const result = useFindGalleries(props.filter);
+  const cardCount = result.data?.findGalleries.count;
+  props.loadingArr[props.index] = result.loading;
+
   return (
     <div className="recommendation-row gallery-recommendations">
       <div className="recommendation-row-head">
@@ -28,8 +32,8 @@ export const GalleryRecommendationRow: FunctionComponent<IProps> = (
         </a>
       </div>
       <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
-        {props.result.data?.findGalleries.galleries.map((gallery) => (
-          <GalleryCard key={gallery.id} gallery={gallery} zoomIndex={1} />
+        {result.data?.findGalleries.galleries.map((g) => (
+          <GalleryCard key={g.id} gallery={g} zoomIndex={1} />
         ))}
       </Slider>
     </div>

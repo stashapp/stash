@@ -9,3 +9,9 @@ query FindDefaultFilter($mode: FilterMode!) {
     ...SavedFilterData
   }
 }
+
+query FindRecommendedFilters {
+  findRecommendedFilters {
+    ...SavedFilterData
+  }
+}

@@ -108,3 +108,16 @@ func (qb *savedFilterQueryBuilder) FindDefault(mode models.FilterMode) (*models.
 
 	return nil, nil
 }
+
+func (qb *savedFilterQueryBuilder) FindRecommended() ([]*models.SavedFilter, error) {
+	// exclude empty-named filters - these are the internal default filters
+
+	query := fmt.Sprintf(`SELECT * FROM %s WHERE recommendation_index > -1 ORDER BY recommendation_index ASC`, savedFilterTable)
+
+	var ret models.SavedFilters
+	if err := qb.query(query, []interface{}{}, &ret); err != nil {
+		return nil, err
+	}
+
+	return []*models.SavedFilter(ret), nil
+}
