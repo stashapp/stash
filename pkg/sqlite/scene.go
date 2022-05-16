@@ -1158,6 +1158,17 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		return
 	}
 	sort := findFilter.GetSort("title")
+
+	// translate sort field
+	switch sort {
+	case "bitrate":
+		sort = "bit_rate"
+	case "file_mod_time":
+		sort = "mod_time"
+	case "framerate":
+		sort = "frame_rate"
+	}
+
 	direction := findFilter.GetDirection()
 	switch sort {
 	case "movie_scene_number":
@@ -1167,9 +1178,23 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
 	case "performer_count":
 		query.sortAndPagination += getCountSort(sceneTable, performersScenesTable, sceneIDColumn, direction)
+	case "path":
+		// special handling for path
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY scenes_query.folder_path %s, scenes_query.basename %[1]s", direction)
+	case "phash":
+		// special handling for phash
+		query.addJoins(join{
+			table:    fingerprintTable,
+			as:       "fingerprints_phash",
+			onClause: "scenes_query.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'",
+		})
+
+		query.sortAndPagination += getSort("fingerprints_phash.fingerprint", direction, "scenes_query")
 	default:
-		query.sortAndPagination += getSort(sort, direction, "scenes")
+		query.sortAndPagination += getSort(sort, direction, "scenes_query")
 	}
+
+	query.sortAndPagination += ", scenes_query.bit_rate DESC, scenes_query.frame_rate DESC, scenes.rating DESC, scenes_query.duration DESC"
 }
 
 func (qb *SceneStore) imageRepository() *imageRepository {

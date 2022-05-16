@@ -272,6 +272,7 @@ func TestFolderStore_MarkMissing(t *testing.T) {
 				folderIdxWithParentFolder,
 				folderIdxWithFiles,
 				folderIdxInZip,
+				folderIdxForObjectFiles,
 				folderIdxWithImageFiles,
 				folderIdxWithGalleryFiles,
 				folderIdxWithSceneFiles,

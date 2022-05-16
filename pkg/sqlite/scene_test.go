@@ -3145,40 +3145,107 @@ func TestSceneQueryMovies(t *testing.T) {
 }
 
 func TestSceneQuerySorting(t *testing.T) {
-	sort := titleField
-	direction := models.SortDirectionEnumAsc
-	findFilter := models.FindFilterType{
-		Sort:      &sort,
-		Direction: &direction,
+	tests := []struct {
+		name          string
+		sortBy        string
+		dir           models.SortDirectionEnum
+		firstSceneIdx int // -1 to ignore
+		lastSceneIdx  int
+	}{
+		{
+			"bitrate",
+			"bitrate",
+			models.SortDirectionEnumAsc,
+			-1,
+			-1,
+		},
+		{
+			"duration",
+			"duration",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"file mod time",
+			"file_mod_time",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"file size",
+			"size",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"frame rate",
+			"framerate",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"path",
+			"path",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"phash",
+			"phash",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
 	}
 
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		scenes := queryScene(ctx, t, sqb, nil, &findFilter)
+	qb := db.Scene
 
-		if !assert.Greater(t, len(scenes), 0) {
-			return nil
-		}
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.Query(ctx, models.SceneQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: &models.FindFilterType{
+						Sort:      &tt.sortBy,
+						Direction: &tt.dir,
+					},
+				},
+			})
 
-		// scenes should be in same order as indexes
-		firstScene := scenes[0]
-		lastScene := scenes[len(scenes)-1]
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.TestSceneQuerySorting() error = %v", err)
+				return
+			}
 
-		assert.Equal(t, sceneIDs[0], firstScene.ID)
-		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], lastScene.ID)
+			scenes, err := got.Resolve(ctx)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.TestSceneQuerySorting() error = %v", err)
+				return
+			}
 
-		// sort in descending order
-		direction = models.SortDirectionEnumDesc
+			if !assert.Greater(len(scenes), 0) {
+				return
+			}
 
-		scenes = queryScene(ctx, t, sqb, nil, &findFilter)
-		firstScene = scenes[0]
-		lastScene = scenes[len(scenes)-1]
+			// scenes should be in same order as indexes
+			firstScene := scenes[0]
+			lastScene := scenes[len(scenes)-1]
 
-		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], firstScene.ID)
-		assert.Equal(t, sceneIDs[0], lastScene.ID)
-
-		return nil
-	})
+			if tt.firstSceneIdx != -1 {
+				firstSceneID := sceneIDs[tt.firstSceneIdx]
+				assert.Equal(firstSceneID, firstScene.ID)
+			}
+			if tt.lastSceneIdx != -1 {
+				lastSceneID := sceneIDs[tt.lastSceneIdx]
+				assert.Equal(lastSceneID, lastScene.ID)
+			}
+		})
+	}
 }
 
 func TestSceneQueryPagination(t *testing.T) {

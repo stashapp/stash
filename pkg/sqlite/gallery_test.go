@@ -2126,6 +2126,65 @@ func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCrite
 	})
 }
 
+func TestGalleryQuerySorting(t *testing.T) {
+	tests := []struct {
+		name            string
+		sortBy          string
+		dir             models.SortDirectionEnum
+		firstGalleryIdx int // -1 to ignore
+		lastGalleryIdx  int
+	}{
+		{
+			"file mod time",
+			"file_mod_time",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"path",
+			"path",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, _, err := qb.Query(ctx, nil, &models.FindFilterType{
+				Sort:      &tt.sortBy,
+				Direction: &tt.dir,
+			})
+
+			if err != nil {
+				t.Errorf("GalleryStore.TestGalleryQuerySorting() error = %v", err)
+				return
+			}
+
+			if !assert.Greater(len(got), 0) {
+				return
+			}
+
+			// scenes should be in same order as indexes
+			firstGallery := got[0]
+			lastGallery := got[len(got)-1]
+
+			if tt.firstGalleryIdx != -1 {
+				firstID := galleryIDs[tt.firstGalleryIdx]
+				assert.Equal(firstID, firstGallery.ID)
+			}
+			if tt.lastGalleryIdx != -1 {
+				lastID := galleryIDs[tt.lastGalleryIdx]
+				assert.Equal(lastID, lastGallery.ID)
+			}
+		})
+	}
+}
+
 // TODO Count
 // TODO All
 // TODO Query

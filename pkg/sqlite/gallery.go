@@ -821,11 +821,13 @@ func galleryAverageResolutionCriterionHandler(qb *GalleryStore, resolution *mode
 		if resolution != nil && resolution.Value.IsValid() {
 			qb.imagesRepository().join(f, "images_join", "galleries.id")
 			f.addLeftJoin("images", "", "images_join.image_id = images.id")
+			f.addLeftJoin("images_files", "", "images.id = images_files.image_id")
+			f.addLeftJoin("image_files", "", "images_files.file_id = image_files.file_id")
 
 			min := resolution.Value.GetMinResolution()
 			max := resolution.Value.GetMaxResolution()
 
-			const widthHeight = "avg(MIN(images.width, images.height))"
+			const widthHeight = "avg(MIN(image_files.width, image_files.height))"
 
 			switch resolution.Modifier {
 			case models.CriterionModifierEquals:
@@ -849,6 +851,11 @@ func (qb *GalleryStore) getGallerySort(findFilter *models.FindFilterType) string
 	sort := findFilter.GetSort("path")
 	direction := findFilter.GetDirection()
 
+	// translate sort field
+	if sort == "file_mod_time" {
+		sort = "mod_time"
+	}
+
 	switch sort {
 	case "images_count":
 		return getCountSort(galleryTable, galleriesImagesTable, galleryIDColumn, direction)
@@ -856,8 +863,11 @@ func (qb *GalleryStore) getGallerySort(findFilter *models.FindFilterType) string
 		return getCountSort(galleryTable, galleriesTagsTable, galleryIDColumn, direction)
 	case "performer_count":
 		return getCountSort(galleryTable, performersGalleriesTable, galleryIDColumn, direction)
+	case "path":
+		// special handling for path
+		return fmt.Sprintf(" ORDER BY galleries_query.folder_path %s, galleries_query.basename %[1]s", direction)
 	default:
-		return getSort(sort, direction, "galleries")
+		return getSort(sort, direction, "galleries_query")
 	}
 }
 

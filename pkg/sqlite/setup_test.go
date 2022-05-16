@@ -887,7 +887,7 @@ func getOCounter(index int) int {
 }
 
 func getSceneDuration(index int) float64 {
-	duration := (index % 4) + 1
+	duration := index + 1
 	duration = duration * 100
 
 	return float64(duration) + 0.432

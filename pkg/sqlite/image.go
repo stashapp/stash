@@ -814,6 +814,11 @@ func (qb *ImageStore) getImageSort(findFilter *models.FindFilterType) string {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
 
+	// translate sort field
+	if sort == "file_mod_time" {
+		sort = "mod_time"
+	}
+
 	switch sort {
 	case "path":
 		return " ORDER BY images_query.folder_path " + direction + ", images_query.basename " + direction
@@ -822,7 +827,7 @@ func (qb *ImageStore) getImageSort(findFilter *models.FindFilterType) string {
 	case "performer_count":
 		return getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
 	default:
-		return getSort(sort, direction, "images")
+		return getSort(sort, direction, "images_query")
 	}
 }
 

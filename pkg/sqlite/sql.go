@@ -84,20 +84,17 @@ func getSort(sort string, direction string, tableName string) string {
 		return getRandomSort(tableName, direction, randomSortFloat)
 	default:
 		colName := getColumn(tableName, sort)
-		var additional string
-		if tableName == "scenes" {
-			additional = ", scenes_query.bit_rate DESC, scenes_query.frame_rate DESC, scenes.rating DESC, scenes_query.duration DESC"
-		} else if tableName == "scene_markers" {
-			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
+		if strings.Contains(sort, ".") {
+			colName = sort
 		}
 		if strings.Compare(sort, "name") == 0 {
-			return " ORDER BY " + colName + " COLLATE NOCASE " + direction + additional
+			return " ORDER BY " + colName + " COLLATE NOCASE " + direction
 		}
 		if strings.Compare(sort, "title") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CS " + direction + additional
+			return " ORDER BY " + colName + " COLLATE NATURAL_CS " + direction
 		}
 
-		return " ORDER BY " + colName + " " + direction + additional
+		return " ORDER BY " + colName + " " + direction
 	}
 }
 

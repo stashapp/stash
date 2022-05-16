@@ -2194,42 +2194,79 @@ func verifyImagesPerformerCount(t *testing.T, performerCountCriterion models.Int
 }
 
 func TestImageQuerySorting(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sort := titleField
-		direction := models.SortDirectionEnumAsc
-		findFilter := models.FindFilterType{
-			Sort:      &sort,
-			Direction: &direction,
-		}
+	tests := []struct {
+		name     string
+		sortBy   string
+		dir      models.SortDirectionEnum
+		firstIdx int // -1 to ignore
+		lastIdx  int
+	}{
+		{
+			"file mod time",
+			"file_mod_time",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"file size",
+			"size",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"path",
+			"path",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+	}
 
-		sqb := db.Image
-		images, _, err := queryImagesWithCount(ctx, sqb, nil, &findFilter)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
+	qb := db.Image
 
-		// images should be in same order as indexes
-		firstImage := images[0]
-		lastImage := images[len(images)-1]
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.Query(ctx, models.ImageQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: &models.FindFilterType{
+						Sort:      &tt.sortBy,
+						Direction: &tt.dir,
+					},
+				},
+			})
 
-		assert.Equal(t, imageIDs[0], firstImage.ID)
-		assert.Equal(t, imageIDs[len(imageIDs)-1], lastImage.ID)
+			if err != nil {
+				t.Errorf("ImageStore.TestImageQuerySorting() error = %v", err)
+				return
+			}
 
-		// sort in descending order
-		direction = models.SortDirectionEnumDesc
+			images, err := got.Resolve(ctx)
+			if err != nil {
+				t.Errorf("ImageStore.TestImageQuerySorting() error = %v", err)
+				return
+			}
 
-		images, _, err = queryImagesWithCount(ctx, sqb, nil, &findFilter)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
-		firstImage = images[0]
-		lastImage = images[len(images)-1]
+			if !assert.Greater(len(images), 0) {
+				return
+			}
 
-		assert.Equal(t, imageIDs[len(imageIDs)-1], firstImage.ID)
-		assert.Equal(t, imageIDs[0], lastImage.ID)
+			// image should be in same order as indexes
+			first := images[0]
+			last := images[len(images)-1]
 
-		return nil
-	})
+			if tt.firstIdx != -1 {
+				firstID := sceneIDs[tt.firstIdx]
+				assert.Equal(firstID, first.ID)
+			}
+			if tt.lastIdx != -1 {
+				lastID := sceneIDs[tt.lastIdx]
+				assert.Equal(lastID, last.ID)
+			}
+		})
+	}
 }
 
 func TestImageQueryPagination(t *testing.T) {
