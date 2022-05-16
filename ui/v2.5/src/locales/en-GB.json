@@ -270,7 +270,7 @@
       "include_audio_desc": "Includes audio stream when generating previews.",
       "include_audio_head": "Include audio",
       "logging": "Logging",
-      "manage_recommendation_desc": "Manage content that will be displayed on homepage",
+      "manage_recommendation_desc": "Refresh page after updating for changes to take affect.",
       "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes",

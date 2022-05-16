@@ -212,7 +212,7 @@ export const RecommendationsDialog: React.FC<IIdentifyDialogProps> = ({
         text: intl.formatMessage({ id: "actions.cancel" }),
         variant: "secondary",
       }}
-      disabled={editingFilter || saving || filters.length === 0}
+      disabled={editingFilter || saving}
     >
       <Form>
         <FiltersList

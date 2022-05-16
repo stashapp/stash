@@ -77,7 +77,7 @@ export const SettingsLibraryPanel: React.FC = () => {
               <FormattedMessage id="config.library.manage_recommendation" />
             </>
           }
-          subHeadingID="manage_recommendation_desc"
+          subHeadingID="config.general.manage_recommendation_desc"
         >
           <Button
             variant="secondary"
