@@ -55,6 +55,8 @@ export const FilterTags: React.FC<IFilterTagsProps> = ({
   }
 
   return (
-    <div className="d-flex justify-content-center">{renderFilterTags()}</div>
+    <div className="d-flex justify-content-center mb-2 wrap-tags">
+      {renderFilterTags()}
+    </div>
   );
 };

@@ -338,6 +338,19 @@ div.dropdown-menu {
   margin-right: 10px;
 }
 
+.wrap-tags {
+  column-gap: 10px;
+  flex-wrap: wrap;
+  row-gap: 10px;
+
+  /* stylelint-disable */
+  .badge {
+    white-space: normal !important;
+    margin: unset;
+  }
+  /* stylelint-enable */
+}
+
 .tag-item {
   background-color: $muted-gray;
   color: $dark-text;
