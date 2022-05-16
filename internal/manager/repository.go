@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
@@ -29,6 +30,7 @@ type SceneReaderWriter interface {
 type Repository struct {
 	models.TxnManager
 
+	File        file.Store
 	Gallery     GalleryReaderWriter
 	Image       ImageReaderWriter
 	Movie       models.MovieReaderWriter
@@ -50,6 +52,7 @@ func sqliteRepository(d *sqlite.Database) Repository {
 
 	return Repository{
 		TxnManager:  txnRepo,
+		File:        d.File,
 		Gallery:     d.Gallery,
 		Image:       d.Image,
 		Movie:       txnRepo.Movie,

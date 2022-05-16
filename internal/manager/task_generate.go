@@ -343,17 +343,21 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 	}
 
 	if utils.IsTrue(j.input.Phashes) {
-		task := &GeneratePhashTask{
-			Scene:               *scene,
-			fileNamingAlgorithm: j.fileNamingAlgo,
-			txnManager:          j.txnManager,
-			Overwrite:           j.overwrite,
-		}
+		// generate for all files in scene
+		for _, f := range scene.Files {
+			task := &GeneratePhashTask{
+				File:                f,
+				fileNamingAlgorithm: j.fileNamingAlgo,
+				txnManager:          j.txnManager,
+				fileUpdater:         j.txnManager.File,
+				Overwrite:           j.overwrite,
+			}
 
-		if task.shouldGenerate() {
-			totals.phashes++
-			totals.tasks++
-			queue <- task
+			if task.shouldGenerate() {
+				totals.phashes++
+				totals.tasks++
+				queue <- task
+			}
 		}
 	}
 

@@ -4,54 +4,51 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/hash/videophash"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type GeneratePhashTask struct {
-	Scene               models.Scene
+	File                *file.VideoFile
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
-	txnManager          Repository
+	txnManager          txn.Manager
+	fileUpdater         file.Updater
 }
 
 func (t *GeneratePhashTask) GetDescription() string {
-	return fmt.Sprintf("Generating phash for %s", t.Scene.Path())
+	return fmt.Sprintf("Generating phash for %s", t.File.Path)
 }
 
 func (t *GeneratePhashTask) Start(ctx context.Context) {
-	// TODO
+	if !t.shouldGenerate() {
+		return
+	}
 
-	// if !t.shouldGenerate() {
-	// 	return
-	// }
+	hash, err := videophash.Generate(instance.FFMPEG, t.File)
+	if err != nil {
+		logger.Errorf("error generating phash: %s", err.Error())
+		logErrorOutput(err)
+		return
+	}
 
-	// ffprobe := instance.FFProbe
-	// videoFile, err := ffprobe.NewVideoFile(t.Scene.Path())
-	// if err != nil {
-	// 	logger.Errorf("error reading video file: %s", err.Error())
-	// 	return
-	// }
+	if err := txn.WithTxn(ctx, t.txnManager, func(ctx context.Context) error {
+		qb := t.fileUpdater
+		hashValue := int64(*hash)
+		t.File.Fingerprints = t.File.Fingerprints.AppendUnique(file.Fingerprint{
+			Type:        file.FingerprintTypePhash,
+			Fingerprint: hashValue,
+		})
 
-	// hash, err := videophash.Generate(instance.FFMPEG, videoFile)
-	// if err != nil {
-	// 	logger.Errorf("error generating phash: %s", err.Error())
-	// 	logErrorOutput(err)
-	// 	return
-	// }
-
-	// if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-	// 	qb := t.txnManager.Scene
-	// 	hashValue := int64(*hash)
-	// 	scenePartial := models.ScenePartial{
-	// 		Phash: models.NewOptionalInt64(hashValue),
-	// 	}
-	// 	_, err := qb.UpdatePartial(ctx, t.Scene.ID, scenePartial)
-	// 	return err
-	// }); err != nil {
-	// 	logger.Error(err.Error())
-	// }
+		return qb.Update(ctx, t.File)
+	}); err != nil {
+		logger.Error(err.Error())
+	}
 }
 
 func (t *GeneratePhashTask) shouldGenerate() bool {
-	return t.Overwrite || t.Scene.Phash() == 0
+	return t.Overwrite || t.File.Fingerprints.Get(file.FingerprintTypePhash) == nil
 }

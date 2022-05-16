@@ -41,6 +41,8 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		ScanFilters: []file.PathFilter{newScanFilter(instance.Config)},
 	}, progress)
 
+	// FIXME - handle generate jobs after scanning
+
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
 		return
