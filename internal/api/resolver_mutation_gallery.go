@@ -463,11 +463,6 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 			return errors.New("gallery not found")
 		}
 
-		// TODO
-		// if gallery.Zip {
-		// 	return errors.New("cannot modify zip gallery images")
-		// }
-
 		newIDs, err := qb.GetImageIDs(ctx, galleryID)
 		if err != nil {
 			return err
@@ -503,11 +498,6 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 		if gallery == nil {
 			return errors.New("gallery not found")
 		}
-
-		// TODO
-		// if gallery.Zip {
-		// 	return errors.New("cannot modify zip gallery images")
-		// }
 
 		newIDs, err := qb.GetImageIDs(ctx, galleryID)
 		if err != nil {
