@@ -41,7 +41,7 @@ export const GalleryRecommendationRow: FunctionComponent<IProps> = (
     );
   }
 
-  if(cardCount === 0) {
+  if (cardCount === 0) {
     return null;
   }
 
