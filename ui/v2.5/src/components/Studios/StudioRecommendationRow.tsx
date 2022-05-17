@@ -10,7 +10,6 @@ interface IProps {
   filter: ListFilterModel;
   header: String;
   linkText: String;
-  loadingArr: boolean[];
   index: number;
 }
 
@@ -19,7 +18,32 @@ export const StudioRecommendationRow: FunctionComponent<IProps> = (
 ) => {
   const result = useFindStudios(props.filter);
   const cardCount = result.data?.findStudios.count;
-  props.loadingArr[props.index] = result.loading;
+  if (result.loading) {
+    return (
+      <div className="recommendation-row studio-recommendations">
+        <div className="recommendation-row-head">
+          <div>
+            <h2>{props.header}</h2>
+          </div>
+          <a href={`/studios?${props.filter.makeQueryParameters()}`}>
+            {props.linkText}
+          </a>
+        </div>
+        <Slider
+          {...getSlickSliderSettings(props.filter.itemsPerPage!, props.isTouch)}
+        >
+          {[...Array(props.filter.itemsPerPage)].map((i) => (
+            <div key={i} className="studio-skeleton skeleton-card"></div>
+          ))}
+        </Slider>
+      </div>
+    );
+  }
+
+  if(cardCount === 0) {
+    return null;
+  }
+
   return (
     <div className="recommendation-row studio-recommendations">
       <div className="recommendation-row-head">

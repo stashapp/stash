@@ -16,29 +16,6 @@ const Recommendations: React.FC = () => {
     return "ontouchstart" in window || navigator.maxTouchPoints > 0;
   }
 
-  // function emptyServer(hasResults: boolean[]) {
-  //   // user defined recommendations
-  //   if (hasResults.length == 0) {
-  //     return false;
-  //   }
-  //   hasResults.forEach(function (result) {
-  //     if (result) {
-  //       return false;
-  //     }
-  //   });
-  //   return true;
-  // }
-
-  function loading(loadingArr: boolean[]) {
-    // user defined recommendations
-    loadingArr.forEach(function (l) {
-      if (l) {
-        return true;
-      }
-    });
-    return false;
-  }
-
   const isTouch = isTouchEnabled();
 
   const intl = useIntl();
@@ -79,8 +56,6 @@ const Recommendations: React.FC = () => {
 
   const filters: ListFilterModel[] = [];
   const labels: string[] = [];
-  const hasResultsArr: boolean[] = [];
-  const loadingArr: boolean[] = [];
   let inProgress = true;
   if (!userRecommendations.loading) {
     if (!!userRecommendations?.data?.findRecommendedFilters?.length) {
@@ -91,12 +66,9 @@ const Recommendations: React.FC = () => {
         newFilter.randomSeed = -1;
         filters.push(newFilter);
         labels.push(f.name);
-        hasResultsArr.push(false);
-        loadingArr.push(true);
       });
       inProgress = false;
     } else if (!userRecommendations.loading) {
-      // commented out code to handle default recommendations for now
       const itemsPerPage = 25;
       const scenefilter = new ListFilterModel(GQL.FilterMode.Scenes);
       scenefilter.sortBy = "date";
@@ -104,55 +76,40 @@ const Recommendations: React.FC = () => {
       scenefilter.itemsPerPage = itemsPerPage;
       filters.push(scenefilter);
       labels.push(intl.formatMessage(messages.recentlyReleasedScenes));
-      hasResultsArr.push(false);
-      loadingArr.push(true);
       const studiofilter = new ListFilterModel(GQL.FilterMode.Studios);
       studiofilter.sortBy = "created_at";
       studiofilter.sortDirection = GQL.SortDirectionEnum.Desc;
       studiofilter.itemsPerPage = itemsPerPage;
       filters.push(studiofilter);
       labels.push(intl.formatMessage(messages.recentlyAddedStudios));
-      hasResultsArr.push(false);
-      loadingArr.push(true);
       const moviefilter = new ListFilterModel(GQL.FilterMode.Movies);
       moviefilter.sortBy = "date";
       moviefilter.sortDirection = GQL.SortDirectionEnum.Desc;
       moviefilter.itemsPerPage = itemsPerPage;
       filters.push(moviefilter);
       labels.push(intl.formatMessage(messages.recentlyReleasedMovies));
-      hasResultsArr.push(false);
-      loadingArr.push(true);
       const performerfilter = new ListFilterModel(GQL.FilterMode.Performers);
       performerfilter.sortBy = "created_at";
       performerfilter.sortDirection = GQL.SortDirectionEnum.Desc;
       performerfilter.itemsPerPage = itemsPerPage;
       filters.push(performerfilter);
       labels.push(intl.formatMessage(messages.recentlyAddedPerformers));
-      hasResultsArr.push(false);
-      loadingArr.push(true);
       const galleryfilter = new ListFilterModel(GQL.FilterMode.Galleries);
       galleryfilter.sortBy = "date";
       galleryfilter.sortDirection = GQL.SortDirectionEnum.Desc;
       galleryfilter.itemsPerPage = itemsPerPage;
       filters.push(galleryfilter);
       labels.push(intl.formatMessage(messages.recentlyReleasedGalleries));
-      hasResultsArr.push(false);
-      loadingArr.push(false);
       inProgress = false;
     }
   }
-  // });
-  if (inProgress || loading(loadingArr)) {
+
+  if (inProgress) {
     return <LoadingIndicator />;
   }
 
   return (
     <div className="recommendations-container">
-      {/* {emptyServer(hasResults) ? (
-        <div className="no-recommendations">
-          {intl.formatMessage(messages.emptyServer)}
-        </div>
-      ) : ( */}
       <div>
         {filters.map((filter, index) => {
           if (filter.mode == GQL.FilterMode.Scenes) {
@@ -163,7 +120,6 @@ const Recommendations: React.FC = () => {
                 queue={SceneQueue.fromListFilterModel(filter)}
                 header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
-                loadingArr={loadingArr}
                 index={index}
               />
             );
@@ -174,7 +130,6 @@ const Recommendations: React.FC = () => {
                 filter={filter}
                 header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
-                loadingArr={loadingArr}
                 index={index}
               />
             );
@@ -185,7 +140,6 @@ const Recommendations: React.FC = () => {
                 filter={filter}
                 header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
-                loadingArr={loadingArr}
                 index={index}
               />
             );
@@ -196,7 +150,6 @@ const Recommendations: React.FC = () => {
                 filter={filter}
                 header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
-                loadingArr={loadingArr}
                 index={index}
               />
             );
@@ -207,14 +160,12 @@ const Recommendations: React.FC = () => {
                 filter={filter}
                 header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
-                loadingArr={loadingArr}
                 index={index}
               />
             );
           }
         })}
       </div>
-      {/* )} */}
     </div>
   );
 };
