@@ -31,7 +31,7 @@ services:
       ## Keep configs, scrapers, and plugins here.
       - ./config:/root/.stash
       ## Point this at your collection.
-      - ./data:/data
+      - ./data:/volume1/Howdy/
       ## This is where your stash's metadata lives
       - ./metadata:/metadata
       ## Any other cache content.
