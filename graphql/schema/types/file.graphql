@@ -74,3 +74,23 @@ type ImageFile implements BaseFile {
     created_at: Time!
     updated_at: Time!
 }
+
+type GalleryFile implements BaseFile {
+    id: ID!
+    path: String!
+    basename: String!
+
+    parent_folder_id: ID!
+    zip_file_id: ID
+
+    mod_time: Time!
+    size: Int!
+
+    fingerprints: [Fingerprint!]!
+
+    missing_since: Time
+    last_scanned: Time!
+
+    created_at: Time!
+    updated_at: Time!
+}

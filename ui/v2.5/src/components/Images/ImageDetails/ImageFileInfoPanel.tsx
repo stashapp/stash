@@ -36,7 +36,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
     );
   }
 
-  const checksum = props.file.fingerprints.find((f) => f.type === "checksum");
+  const checksum = props.file.fingerprints.find((f) => f.type === "md5");
 
   return (
     <dl className="container image-file-info details-list">

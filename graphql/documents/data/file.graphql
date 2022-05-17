@@ -24,3 +24,12 @@ fragment ImageFileData on ImageFile {
     value
   }
 }
+
+fragment GalleryFileData on GalleryFile {
+  path
+  size
+  fingerprints {
+    type
+    value
+  }
+}

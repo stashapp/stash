@@ -8,6 +8,9 @@ fragment SlimGalleryData on Gallery {
   details
   rating
   organized
+  files {
+    ...GalleryFileData
+  }
   image_count
   cover {
     files {

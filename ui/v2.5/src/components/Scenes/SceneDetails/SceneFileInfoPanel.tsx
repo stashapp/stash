@@ -37,7 +37,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   // TODO - generalise fingerprints
   const oshash = props.file.fingerprints.find((f) => f.type === "oshash");
   const phash = props.file.fingerprints.find((f) => f.type === "phash");
-  const checksum = props.file.fingerprints.find((f) => f.type === "checksum");
+  const checksum = props.file.fingerprints.find((f) => f.type === "md5");
 
   return (
     <dl className="container scene-file-info details-list">

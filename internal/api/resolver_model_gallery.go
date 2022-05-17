@@ -2,11 +2,40 @@ package api
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*GalleryFile, error) {
+	ret := make([]*GalleryFile, len(obj.Files))
+
+	for i, f := range obj.Files {
+		base := f.Base()
+		ret[i] = &GalleryFile{
+			ID:             strconv.Itoa(int(base.ID)),
+			Path:           base.Path,
+			Basename:       base.Basename,
+			ParentFolderID: strconv.Itoa(int(base.ParentFolderID)),
+			ModTime:        base.ModTime,
+			MissingSince:   base.MissingSince,
+			LastScanned:    base.LastScanned,
+			Size:           int(base.Size),
+			CreatedAt:      base.CreatedAt,
+			UpdatedAt:      base.UpdatedAt,
+			Fingerprints:   resolveFingerprints(base),
+		}
+
+		if base.ZipFileID != nil {
+			zipFileID := strconv.Itoa(int(*base.ZipFileID))
+			ret[i].ZipFileID = &zipFileID
+		}
+	}
+
+	return ret, nil
+}
 
 func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
 	f := obj.PrimaryFile()

@@ -237,6 +237,15 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 		return err
 	}
 
+	fileIDs := make([]file.ID, len(updatedObject.Files))
+	for i, f := range updatedObject.Files {
+		fileIDs[i] = f.Base().ID
+	}
+
+	if err := galleriesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
+		return err
+	}
+
 	return nil
 }
 
