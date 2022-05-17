@@ -33,8 +33,8 @@ services:
       ## Point this at your collection.
       - ./data:/volume1/Howdy/
       ## This is where your stash's metadata lives
-      - ./metadata:/metadata
+      - ./metadata:/root/.stash/metadata/
       ## Any other cache content.
-      - ./cache:/cache
+      - ./cache:/root/.stash/cache
       ## Where to store generated content (screenshots,previews,transcodes,sprites)
-      - ./generated:/generated
+      - ./generated:/root/.stash/generated
