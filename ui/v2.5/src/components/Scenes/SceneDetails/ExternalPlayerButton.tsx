@@ -4,7 +4,6 @@ import { Button } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import Icon from "src/components/Shared/Icon";
 import { SceneDataFragment } from "src/core/generated-graphql";
-import TextUtils from "src/utils/text";
 import { sceneTitle } from "src/core/scenes";
 
 export interface IExternalPlayerButtonProps {

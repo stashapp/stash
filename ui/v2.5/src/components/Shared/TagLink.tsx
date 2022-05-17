@@ -13,6 +13,7 @@ import {
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { sceneTitle } from "src/core/scenes";
+import { galleryTitle } from "src/core/galleries";
 
 interface IProps {
   tag?: Partial<TagDataFragment>;
@@ -58,9 +59,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     } - ${TextUtils.secondsToTimestamp(props.marker.seconds || 0)}`;
   } else if (props.gallery) {
     link = `/galleries/${props.gallery.id}`;
-    title = props.gallery.title
-      ? props.gallery.title
-      : TextUtils.fileNameFromPath(props.gallery.path ?? "");
+    title = galleryTitle(props.gallery);
   } else if (props.scene) {
     link = `/scenes/${props.scene.id}`;
     title = sceneTitle(props.scene);

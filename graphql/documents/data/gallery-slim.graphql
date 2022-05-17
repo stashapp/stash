@@ -1,6 +1,5 @@
 fragment SlimGalleryData on Gallery {
   id
-  path
   title
   date
   url

@@ -15,7 +15,6 @@ import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { TaggerStateContext } from "../context";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import { TextUtils } from "src/utils";
 import { scenePath, sceneTitle } from "src/core/scenes";
 
 interface ITaggerSceneDetails {

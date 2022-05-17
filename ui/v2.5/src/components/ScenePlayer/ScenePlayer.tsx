@@ -493,7 +493,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.on("loadedmetadata", loadedmetadata);
 
     // don't re-initialise the player unless the scene has changed
-    if (!scene|| !file || scene.id === sceneId.current) return;
+    if (!scene || !file || scene.id === sceneId.current) return;
     sceneId.current = scene.id;
 
     // always stop the interactive client on initialisation
@@ -505,10 +505,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
     else player.poster("");
 
-    const isLandscape =
-      file.height &&
-      file.width &&
-      file.width > file.height;
+    const isLandscape = file.height && file.width && file.width > file.height;
 
     if (isLandscape) {
       (player as any).landscapeFullscreen({
