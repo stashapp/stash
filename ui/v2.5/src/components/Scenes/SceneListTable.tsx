@@ -7,6 +7,7 @@ import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { FormattedMessage } from "react-intl";
+import { sceneTitle } from "src/core/scenes";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -50,7 +51,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
     const file = scene.files.length > 0 ? scene.files[0] : undefined;
 
-    const title = scene.title || TextUtils.fileNameFromPath(scene.path);
+    const title = sceneTitle(scene);
     return (
       <tr key={scene.id}>
         <td>

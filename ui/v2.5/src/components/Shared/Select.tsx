@@ -26,6 +26,7 @@ import { TextUtils } from "src/utils";
 import { SelectComponents } from "react-select/src/components";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
+import { sceneTitle } from "src/core/scenes";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -328,7 +329,7 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
 
   const scenes = data?.findScenes.scenes ?? [];
   const items = scenes.map((s) => ({
-    label: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
+    label: sceneTitle(s),
     value: s.id,
   }));
 

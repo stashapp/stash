@@ -8,6 +8,7 @@ import TruncatedText from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
 import { RatingStars } from "./RatingStars";
+import { sceneTitle } from "src/core/scenes";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -86,12 +87,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         <div className={`${sceneDetailsWidth} col-xl-12 scene-details`}>
           <div className="scene-header d-xl-none">
             <h3>
-              <TruncatedText
-                text={
-                  props.scene.title ??
-                  TextUtils.fileNameFromPath(props.scene.path)
-                }
-              />
+              <TruncatedText text={sceneTitle(props.scene)} />
             </h3>
           </div>
           {props.scene.date ? (

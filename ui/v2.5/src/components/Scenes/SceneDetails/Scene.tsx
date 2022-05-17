@@ -21,7 +21,6 @@ import Icon from "src/components/Shared/Icon";
 import { useToast } from "src/hooks";
 import SceneQueue from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import TextUtils from "src/utils/text";
 import Mousetrap from "mousetrap";
 import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
@@ -51,6 +50,7 @@ const SceneGalleriesPanel = lazy(() => import("./SceneGalleriesPanel"));
 const DeleteScenesDialog = lazy(() => import("../DeleteScenesDialog"));
 const GenerateDialog = lazy(() => import("../../Dialogs/GenerateDialog"));
 const SceneVideoFilterPanel = lazy(() => import("./SceneVideoFilterPanel"));
+import { scenePath, sceneTitle } from "src/core/scenes";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -185,7 +185,7 @@ const ScenePage: React.FC<IProps> = ({
 
   async function onRescan() {
     await mutateMetadataScan({
-      paths: [scene.path],
+      paths: [scenePath(scene)],
     });
 
     Toast.success({
@@ -452,7 +452,7 @@ const ScenePage: React.FC<IProps> = ({
     return collapsed ? ">" : "<";
   }
 
-  const title = scene.title || TextUtils.fileNameFromPath(scene.path);
+  const title = sceneTitle(scene);
 
   return (
     <>

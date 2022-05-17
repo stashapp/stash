@@ -37,8 +37,6 @@ fragment SlimGalleryData on Gallery {
     image_path
   }
   scenes {
-    id
-    title
-    path
+    ...SlimSceneData
   }
 }

@@ -12,6 +12,7 @@ import {
 } from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
+import { sceneTitle } from "src/core/scenes";
 
 interface IProps {
   tag?: Partial<TagDataFragment>;
@@ -19,7 +20,7 @@ interface IProps {
   performer?: Partial<PerformerDataFragment>;
   marker?: Partial<SceneMarkerDataFragment>;
   movie?: Partial<MovieDataFragment>;
-  scene?: Partial<SceneDataFragment>;
+  scene?: Partial<Pick<SceneDataFragment, "id" | "title" | "files">>;
   gallery?: Partial<GalleryDataFragment>;
   className?: string;
 }
@@ -62,9 +63,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
       : TextUtils.fileNameFromPath(props.gallery.path ?? "");
   } else if (props.scene) {
     link = `/scenes/${props.scene.id}`;
-    title = props.scene.title
-      ? props.scene.title
-      : TextUtils.fileNameFromPath(props.scene.path ?? "");
+    title = sceneTitle(props.scene);
   }
   return (
     <Badge className={cx("tag-item", props.className)} variant="secondary">
