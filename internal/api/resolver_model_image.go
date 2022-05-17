@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -23,6 +24,35 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 		Width:  width,
 		Height: height,
 	}, nil
+}
+
+func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageFile, error) {
+	ret := make([]*ImageFile, len(obj.Files))
+
+	for i, f := range obj.Files {
+		ret[i] = &ImageFile{
+			ID:             strconv.Itoa(int(f.ID)),
+			Path:           f.Path,
+			Basename:       f.Basename,
+			ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
+			ModTime:        f.ModTime,
+			MissingSince:   f.MissingSince,
+			LastScanned:    f.LastScanned,
+			Size:           int(f.Size),
+			Width:          f.Width,
+			Height:         f.Height,
+			CreatedAt:      f.CreatedAt,
+			UpdatedAt:      f.UpdatedAt,
+			Fingerprints:   resolveFingerprints(f.Base()),
+		}
+
+		if f.ZipFileID != nil {
+			zipFileID := strconv.Itoa(int(*f.ZipFileID))
+			ret[i].ZipFileID = &zipFileID
+		}
+	}
+
+	return ret, nil
 }
 
 func (r *imageResolver) FileModTime(ctx context.Context, obj *models.Image) (*time.Time, error) {

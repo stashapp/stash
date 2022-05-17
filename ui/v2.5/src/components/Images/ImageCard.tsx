@@ -1,4 +1,4 @@
-import React, { MouseEvent } from "react";
+import React, { MouseEvent, useMemo } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
@@ -26,6 +26,11 @@ interface IImageCardProps {
 export const ImageCard: React.FC<IImageCardProps> = (
   props: IImageCardProps
 ) => {
+  const file = useMemo(
+    () => (props.image.files.length > 0 ? props.image.files[0] : undefined),
+    [props.image]
+  );
+
   function maybeRenderTagPopoverButton() {
     if (props.image.tags.length <= 0) return;
 
@@ -125,9 +130,8 @@ export const ImageCard: React.FC<IImageCardProps> = (
   }
 
   function isPortrait() {
-    const { file } = props.image;
-    const width = file.width ? file.width : 0;
-    const height = file.height ? file.height : 0;
+    const width = file?.width ? file.width : 0;
+    const height = file?.height ? file.height : 0;
     return height > width;
   }
 

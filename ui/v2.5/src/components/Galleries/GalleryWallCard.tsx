@@ -19,8 +19,12 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
   const showLightbox = useGalleryLightbox(gallery.id);
 
+  const coverFile = gallery?.cover?.files.length
+    ? gallery.cover.files[0]
+    : undefined;
+
   const orientation =
-    (gallery?.cover?.file.width ?? 0) > (gallery.cover?.file.height ?? 0)
+    (coverFile?.width ?? 0) > (coverFile?.height ?? 0)
       ? "landscape"
       : "portrait";
   const cover = gallery?.cover?.paths.thumbnail ?? "";

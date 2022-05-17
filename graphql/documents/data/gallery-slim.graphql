@@ -10,10 +10,8 @@ fragment SlimGalleryData on Gallery {
   organized
   image_count
   cover {
-    file {
-      size
-      width
-      height
+    files {
+      ...ImageFileData
     }
     
     paths {

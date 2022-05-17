@@ -7,10 +7,8 @@ fragment SlimImageData on Image {
   o_counter
   path
 
-  file {
-    size
-    width
-    height
+  files {
+    ...ImageFileData
   }
 
   paths {

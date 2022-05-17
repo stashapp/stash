@@ -268,6 +268,15 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 		return err
 	}
 
+	fileIDs := make([]file.ID, len(updatedObject.Files))
+	for i, f := range updatedObject.Files {
+		fileIDs[i] = f.ID
+	}
+
+	if err := imagesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
+		return err
+	}
+
 	return nil
 }
 

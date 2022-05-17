@@ -13,3 +13,14 @@ fragment VideoFileData on VideoFile {
     value
   }
 }
+
+fragment ImageFileData on ImageFile {
+  path
+  size
+  width
+  height
+  fingerprints {
+    type
+    value
+  }
+}

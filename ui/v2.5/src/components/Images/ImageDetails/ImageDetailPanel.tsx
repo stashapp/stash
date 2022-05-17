@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
@@ -14,6 +14,11 @@ interface IImageDetailProps {
 
 export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   const intl = useIntl();
+
+  const file = useMemo(
+    () => (props.image.files.length > 0 ? props.image.files[0] : undefined),
+    [props.image]
+  );
 
   function renderTags() {
     if (props.image.tags.length === 0) return;
@@ -99,13 +104,10 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
             ""
           )}
           {renderGalleries()}
-          {props.image.file.width && props.image.file.height ? (
+          {file?.width && file?.height ? (
             <h6>
               <FormattedMessage id="resolution" />:{" "}
-              {TextUtils.resolution(
-                props.image.file.width,
-                props.image.file.height
-              )}
+              {TextUtils.resolution(file.width, file.height)}
             </h6>
           ) : (
             ""
