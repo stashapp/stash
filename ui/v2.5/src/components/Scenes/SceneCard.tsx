@@ -25,7 +25,7 @@ import {
   faMapMarkerAlt,
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
-import { scenePath, sceneTitle } from "src/core/scenes";
+import { objectPath, objectTitle } from "src/core/files";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -375,7 +375,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     <GridCard
       className={`scene-card ${zoomIndex()}`}
       url={sceneLink}
-      title={sceneTitle(props.scene)}
+      title={objectTitle(props.scene)}
       linkClassName="scene-card-link"
       thumbnailSectionClassName="video-section"
       interactiveHeatmap={
@@ -401,7 +401,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         <div className="scene-card__details">
           <span className="scene-card__date">{props.scene.date}</span>
           <span className="file-path extra-scene-info">
-            {scenePath(props.scene)}
+            {objectPath(props.scene)}
           </span>
           <TruncatedText
             className="scene-card__description"

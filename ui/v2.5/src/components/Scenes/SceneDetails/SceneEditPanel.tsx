@@ -44,7 +44,7 @@ import {
   faSyncAlt,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { galleryTitle } from "src/core/galleries";
+import { objectTitle } from "src/core/files";
 
 const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
@@ -66,7 +66,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     scene.galleries.map((g) => ({
       id: g.id,
-      title: galleryTitle(g),
+      title: objectTitle(g),
     }))
   );
 

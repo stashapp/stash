@@ -7,7 +7,7 @@ import { useToast } from "src/hooks";
 import { ConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-import { scenePath } from "src/core/scenes";
+import { objectPath } from "src/core/files";
 
 interface IDeleteSceneDialogProps {
   selected: GQL.SlimSceneDataFragment[];
@@ -90,7 +90,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
       const paths = s.files.map((f) => f.path);
       deletedFiles.push(...paths);
       if (s.interactive && s.files.length) {
-        deletedFiles.push(funscriptPath(scenePath(s)));
+        deletedFiles.push(funscriptPath(objectPath(s)));
       }
     });
 

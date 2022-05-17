@@ -5,7 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { RatingStars, TruncatedText } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useGalleryLightbox } from "src/hooks";
-import { galleryTitle } from "src/core/galleries";
+import { objectTitle } from "src/core/files";
 
 const CLASSNAME = "GalleryWallCard";
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;
@@ -29,7 +29,7 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
       ? "landscape"
       : "portrait";
   const cover = gallery?.cover?.paths.thumbnail ?? "";
-  const title = galleryTitle(gallery);
+  const title = objectTitle(gallery);
   const performerNames = gallery.performers.map((p) => p.name);
   const performers =
     performerNames.length >= 2

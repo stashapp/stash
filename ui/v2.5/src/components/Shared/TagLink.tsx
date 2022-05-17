@@ -12,8 +12,7 @@ import {
 } from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
-import { sceneTitle } from "src/core/scenes";
-import { galleryTitle } from "src/core/galleries";
+import { objectTitle } from "src/core/files";
 
 interface IProps {
   tag?: Partial<TagDataFragment>;
@@ -59,10 +58,10 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     } - ${TextUtils.secondsToTimestamp(props.marker.seconds || 0)}`;
   } else if (props.gallery) {
     link = `/galleries/${props.gallery.id}`;
-    title = galleryTitle(props.gallery);
+    title = objectTitle(props.gallery);
   } else if (props.scene) {
     link = `/scenes/${props.scene.id}`;
-    title = sceneTitle(props.scene);
+    title = objectTitle(props.scene);
   }
   return (
     <Badge className={cx("tag-item", props.className)} variant="secondary">

@@ -15,7 +15,7 @@ import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { TaggerStateContext } from "../context";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import { scenePath, sceneTitle } from "src/core/scenes";
+import { objectPath, objectTitle } from "src/core/files";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;
@@ -30,7 +30,7 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
       <Collapse in={open}>
         <div className="row">
           <div className="col col-lg-6">
-            <h4>{sceneTitle(scene)}</h4>
+            <h4>{objectTitle(scene)}</h4>
             <h5>
               {scene.studio?.name}
               {scene.studio?.name && scene.date && ` • `}
@@ -101,7 +101,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   const [queryString, setQueryString] = useState<string>("");
   const [queryLoading, setQueryLoading] = useState(false);
 
-  const { paths, file: basename } = parsePath(scenePath(scene));
+  const { paths, file: basename } = parsePath(objectPath(scene));
   const defaultQueryString = prepareQueryString(
     scene,
     paths,
@@ -203,7 +203,7 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
             </Link>
           </div>
           <Link to={url} className="scene-link overflow-hidden">
-            <TruncatedText text={sceneTitle(scene)} lineCount={2} />
+            <TruncatedText text={objectTitle(scene)} lineCount={2} />
           </Link>
         </div>
         <div className="col-md-6 my-1">

@@ -4,7 +4,6 @@ fragment SlimImageData on Image {
   rating
   organized
   o_counter
-  path
 
   files {
     ...ImageFileData

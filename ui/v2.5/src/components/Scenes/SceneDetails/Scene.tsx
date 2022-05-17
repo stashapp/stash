@@ -50,7 +50,7 @@ const SceneGalleriesPanel = lazy(() => import("./SceneGalleriesPanel"));
 const DeleteScenesDialog = lazy(() => import("../DeleteScenesDialog"));
 const GenerateDialog = lazy(() => import("../../Dialogs/GenerateDialog"));
 const SceneVideoFilterPanel = lazy(() => import("./SceneVideoFilterPanel"));
-import { scenePath, sceneTitle } from "src/core/scenes";
+import { objectPath, objectTitle } from "src/core/files";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -185,7 +185,7 @@ const ScenePage: React.FC<IProps> = ({
 
   async function onRescan() {
     await mutateMetadataScan({
-      paths: [scenePath(scene)],
+      paths: [objectPath(scene)],
     });
 
     Toast.success({
@@ -452,7 +452,7 @@ const ScenePage: React.FC<IProps> = ({
     return collapsed ? ">" : "<";
   }
 
-  const title = sceneTitle(scene);
+  const title = objectTitle(scene);
 
   return (
     <>

@@ -4,7 +4,6 @@ fragment ImageData on Image {
   rating
   organized
   o_counter
-  path
   created_at
   updated_at
 

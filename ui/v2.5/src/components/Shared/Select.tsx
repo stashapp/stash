@@ -25,8 +25,7 @@ import { useToast } from "src/hooks";
 import { SelectComponents } from "react-select/src/components";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
-import { sceneTitle } from "src/core/scenes";
-import { galleryTitle } from "src/core/galleries";
+import { objectTitle } from "src/core/files";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -278,7 +277,7 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
 
   const galleries = data?.findGalleries.galleries ?? [];
   const items = galleries.map((g) => ({
-    label: galleryTitle(g),
+    label: objectTitle(g),
     value: g.id,
   }));
 
@@ -329,7 +328,7 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
 
   const scenes = data?.findScenes.scenes ?? [];
   const items = scenes.map((s) => ({
-    label: sceneTitle(s),
+    label: objectTitle(s),
     value: s.id,
   }));
 

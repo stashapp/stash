@@ -3,7 +3,6 @@ import { Button, ButtonGroup } from "react-bootstrap";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
-import { TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
@@ -13,6 +12,7 @@ import {
   faSearch,
   faTag,
 } from "@fortawesome/free-solid-svg-icons";
+import { objectTitle } from "src/core/files";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -139,11 +139,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
     <GridCard
       className={`image-card zoom-${props.zoomIndex}`}
       url={`/images/${props.image.id}`}
-      title={
-        props.image.title
-          ? props.image.title
-          : TextUtils.fileNameFromPath(props.image.path)
-      }
+      title={objectTitle(props.image)}
       linkClassName="image-card-link"
       image={
         <>

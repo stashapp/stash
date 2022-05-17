@@ -8,7 +8,7 @@ import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { useToast } from "src/hooks";
 import { useIntl } from "react-intl";
 import { faMinus } from "@fortawesome/free-solid-svg-icons";
-import { galleryTitle } from "src/core/galleries";
+import { objectTitle } from "src/core/files";
 
 interface IGalleryDetailsProps {
   gallery: GQL.GalleryDataFragment;
@@ -23,7 +23,7 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
   function filterHook(filter: ListFilterModel) {
     const galleryValue = {
       id: gallery.id!,
-      label: galleryTitle(gallery),
+      label: objectTitle(gallery),
     };
     // if galleries is already present, then we modify it, otherwise add
     let galleryCriterion = filter.criteria.find((c) => {

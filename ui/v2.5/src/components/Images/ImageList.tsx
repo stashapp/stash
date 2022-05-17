@@ -10,7 +10,6 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import { queryFindImages } from "src/core/StashService";
 import { useImagesList, useLightbox } from "src/hooks";
-import { TextUtils } from "src/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import {
@@ -24,6 +23,7 @@ import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
 import { ExportDialog } from "../Shared/ExportDialog";
+import { objectTitle } from "src/core/files";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -46,7 +46,7 @@ const ImageWall: React.FC<IImageWallProps> = ({ images, handleImageOpen }) => {
         src={image.paths.thumbnail ?? ""}
         loading="lazy"
         className="gallery-image"
-        alt={image.title ?? TextUtils.fileNameFromPath(image.path)}
+        alt={objectTitle(image)}
       />
     </div>
   ));

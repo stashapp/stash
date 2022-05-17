@@ -7,6 +7,7 @@ import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { sortPerformers } from "src/core/performers";
 import { FormattedMessage, useIntl } from "react-intl";
+import { objectTitle } from "src/core/files";
 
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
@@ -87,12 +88,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         <div className={`${imageDetailsWidth} col-xl-12 image-details`}>
           <div className="image-header d-xl-none">
             <h3>
-              <TruncatedText
-                text={
-                  props.image.title ??
-                  TextUtils.fileNameFromPath(props.image.path)
-                }
-              />
+              <TruncatedText text={objectTitle(props.image)} />
             </h3>
           </div>
           {props.image.rating ? (

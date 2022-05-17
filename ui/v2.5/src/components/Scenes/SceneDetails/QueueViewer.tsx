@@ -12,7 +12,7 @@ import {
   faStepBackward,
   faStepForward,
 } from "@fortawesome/free-solid-svg-icons";
-import { sceneTitle } from "src/core/scenes";
+import { objectTitle } from "src/core/files";
 
 export interface IPlaylistViewer {
   scenes?: GQL.SlimSceneDataFragment[];
@@ -92,7 +92,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
             </div>
             <div>
               <span className="align-middle text-break">
-                {sceneTitle(scene)}
+                {objectTitle(scene)}
               </span>
             </div>
           </div>

@@ -13,7 +13,6 @@ import {
 } from "src/core/StashService";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
@@ -22,6 +21,7 @@ import { ImageEditPanel } from "./ImageEditPanel";
 import { ImageDetailPanel } from "./ImageDetailPanel";
 import { DeleteImagesDialog } from "../DeleteImagesDialog";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { objectPath, objectTitle } from "src/core/files";
 
 interface IImageParams {
   id?: string;
@@ -48,12 +48,12 @@ export const Image: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   async function onRescan() {
-    if (!image) {
+    if (!image || !image.files.length) {
       return;
     }
 
     await mutateMetadataScan({
-      paths: [image.path],
+      paths: [objectPath(image)],
     });
 
     Toast.success({
@@ -251,7 +251,7 @@ export const Image: React.FC = () => {
     return <ErrorMessage error={`No image found with id ${id}.`} />;
   }
 
-  const title = image.title || TextUtils.fileNameFromPath(image.path);
+  const title = objectTitle(image);
 
   return (
     <div className="row">

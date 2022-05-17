@@ -12,7 +12,7 @@ import {
   StudioSelect,
 } from "src/components/Shared";
 import cx from "classnames";
-import { sceneTitle } from "src/core/scenes";
+import { objectTitle } from "src/core/files";
 
 class ParserResult<T> {
   public value?: T;
@@ -51,7 +51,7 @@ export class SceneParserResult {
     this.scene = result.scene;
 
     this.id = this.scene.id;
-    this.filename = sceneTitle(this.scene);
+    this.filename = objectTitle(this.scene);
     this.title.setOriginalValue(this.scene.title ?? undefined);
     this.date.setOriginalValue(this.scene.date ?? undefined);
     this.rating.setOriginalValue(this.scene.rating ?? undefined);

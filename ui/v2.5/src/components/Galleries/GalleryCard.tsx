@@ -15,7 +15,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
-import { galleryTitle } from "src/core/galleries";
+import { objectTitle } from "src/core/files";
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -149,7 +149,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
       url={`/galleries/${props.gallery.id}`}
-      title={galleryTitle(props.gallery)}
+      title={objectTitle(props.gallery)}
       linkClassName="gallery-card-header"
       image={
         <>
