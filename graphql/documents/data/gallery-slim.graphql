@@ -1,6 +1,5 @@
 fragment SlimGalleryData on Gallery {
   id
-  checksum
   path
   title
   date

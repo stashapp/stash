@@ -1,6 +1,5 @@
 fragment SlimImageData on Image {
   id
-  checksum
   title
   rating
   organized

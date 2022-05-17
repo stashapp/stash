@@ -302,11 +302,15 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   }
 
   function maybeRenderDupeCopies() {
-    if (props.scene.phash) {
+    const phash = file
+      ? file.fingerprints.find((fp) => fp.type === "phash")
+      : undefined;
+
+    if (phash) {
       return (
         <div className="other-copies extra-scene-info">
           <Button
-            href={NavUtils.makeScenesPHashMatchUrl(props.scene.phash)}
+            href={NavUtils.makeScenesPHashMatchUrl(phash.value)}
             className="minimal"
           >
             <Icon icon={faCopy} />

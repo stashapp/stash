@@ -1,7 +1,5 @@
 fragment SlimSceneData on Scene {
   id
-  checksum
-  oshash
   title
   details
   url
@@ -10,7 +8,6 @@ fragment SlimSceneData on Scene {
   o_counter
   organized
   path
-  phash
   interactive
   interactive_speed
   captions {

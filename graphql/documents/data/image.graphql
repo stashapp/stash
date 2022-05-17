@@ -1,6 +1,5 @@
 fragment ImageData on Image {
   id
-  checksum
   title
   rating
   organized
