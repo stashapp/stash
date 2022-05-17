@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -26,6 +28,7 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 	return nil, nil
 }
 
+// File is deprecated
 func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
 	f := obj.PrimaryFile()
 	if f == nil {
@@ -45,6 +48,54 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 		Framerate:  handleFloat64(f.FrameRate),
 		Bitrate:    &bitrate,
 	}, nil
+}
+
+func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoFile, error) {
+	ret := make([]*VideoFile, len(obj.Files))
+
+	for i, f := range obj.Files {
+		ret[i] = &VideoFile{
+			ID:             strconv.Itoa(int(f.ID)),
+			Path:           f.Path,
+			Basename:       f.Basename,
+			ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
+			ModTime:        f.ModTime,
+			MissingSince:   f.MissingSince,
+			LastScanned:    f.LastScanned,
+			Format:         f.Format,
+			Size:           int(f.Size),
+			Duration:       handleFloat64Value(f.Duration),
+			VideoCodec:     f.VideoCodec,
+			AudioCodec:     f.AudioCodec,
+			Width:          f.Width,
+			Height:         f.Height,
+			FrameRate:      handleFloat64Value(f.FrameRate),
+			BitRate:        int(f.BitRate),
+			CreatedAt:      f.CreatedAt,
+			UpdatedAt:      f.UpdatedAt,
+			Fingerprints:   resolveFingerprints(f.Base()),
+		}
+
+		if f.ZipFileID != nil {
+			zipFileID := strconv.Itoa(int(*f.ZipFileID))
+			ret[i].ZipFileID = &zipFileID
+		}
+	}
+
+	return ret, nil
+}
+
+func resolveFingerprints(f *file.BaseFile) []*Fingerprint {
+	ret := make([]*Fingerprint, len(f.Fingerprints))
+
+	for i, fp := range f.Fingerprints {
+		ret[i] = &Fingerprint{
+			Type:  fp.Type,
+			Value: fmt.Sprintf("%v", fp.Fingerprint),
+		}
+	}
+
+	return ret
 }
 
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePathsType, error) {

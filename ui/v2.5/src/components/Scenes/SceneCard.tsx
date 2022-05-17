@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
@@ -92,6 +92,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 ) => {
   const { configuration } = React.useContext(ConfigurationContext);
 
+  const file = useMemo(
+    () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
+    [props.scene]
+  );
+
   // studio image is missing if it uses the default
   const missingStudioImage = props.scene.studio?.image_path?.endsWith(
     "?default=true"
@@ -101,8 +106,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   function maybeRenderSceneSpecsOverlay() {
     let sizeObj = null;
-    if (props.scene.file.size) {
-      sizeObj = TextUtils.fileSize(parseInt(props.scene.file.size));
+    if (file?.size) {
+      sizeObj = TextUtils.fileSize(file.size);
     }
     return (
       <div className="scene-specs-overlay">
@@ -119,19 +124,16 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         ) : (
           ""
         )}
-        {props.scene.file.width && props.scene.file.height ? (
+        {file?.width && file?.height ? (
           <span className="overlay-resolution">
             {" "}
-            {TextUtils.resolution(
-              props.scene.file.width,
-              props.scene.file.height
-            )}
+            {TextUtils.resolution(file?.width, file?.height)}
           </span>
         ) : (
           ""
         )}
-        {(props.scene.file.duration ?? 0) >= 1
-          ? TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)
+        {(file?.duration ?? 0) >= 1
+          ? TextUtils.secondsToTimestamp(file?.duration ?? 0)
           : ""}
       </div>
     );
@@ -344,9 +346,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   }
 
   function isPortrait() {
-    const { file } = props.scene;
-    const width = file.width ? file.width : 0;
-    const height = file.height ? file.height : 0;
+    const width = file?.width ? file.width : 0;
+    const height = file?.height ? file.height : 0;
     return height > width;
   }
 

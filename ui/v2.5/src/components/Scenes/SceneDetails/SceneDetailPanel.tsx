@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
@@ -15,6 +15,11 @@ interface ISceneDetailProps {
 
 export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   const intl = useIntl();
+
+  const file = useMemo(
+    () => (props.scene.files.length > 0 ? props.scene.files[0] : undefined),
+    [props.scene]
+  );
 
   function renderDetails() {
     if (!props.scene.details || props.scene.details === "") return;
@@ -106,13 +111,10 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           ) : (
             ""
           )}
-          {props.scene.file.width && props.scene.file.height && (
+          {file?.width && file?.height && (
             <h6>
               <FormattedMessage id="resolution" />:{" "}
-              {TextUtils.resolution(
-                props.scene.file.width,
-                props.scene.file.height
-              )}
+              {TextUtils.resolution(file.width, file.height)}
             </h6>
           )}
           <h6>

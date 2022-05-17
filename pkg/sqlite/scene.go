@@ -371,6 +371,15 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 		return err
 	}
 
+	fileIDs := make([]file.ID, len(updatedObject.Files))
+	for i, f := range updatedObject.Files {
+		fileIDs[i] = f.ID
+	}
+
+	if err := scenesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
+		return err
+	}
+
 	return nil
 }
 

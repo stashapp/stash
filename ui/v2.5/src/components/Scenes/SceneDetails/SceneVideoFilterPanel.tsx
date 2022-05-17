@@ -505,9 +505,12 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       setRotateValue(3);
     }
 
+    const file =
+      props.scene.files.length > 0 ? props.scene.files[0] : undefined;
+
     // Calculate Required Scaling.
-    const sceneWidth = props.scene.file.width ?? 1;
-    const sceneHeight = props.scene.file.height ?? 1;
+    const sceneWidth = file?.width ?? 1;
+    const sceneHeight = file?.height ?? 1;
     const sceneAspectRatio = sceneWidth / sceneHeight;
     const sceneNewAspectRatio = sceneHeight / sceneWidth;
 

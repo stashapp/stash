@@ -20,15 +20,8 @@ fragment SceneData on Scene {
   created_at
   updated_at
 
-  file {
-    size
-    duration
-    video_codec
-    audio_codec
-    width
-    height
-    framerate
-    bitrate
+  files {
+    ...VideoFileData
   }
 
   paths {

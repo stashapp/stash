@@ -18,15 +18,20 @@ fragment SlimSceneData on Scene {
     caption_type
   }
 
-  file {
+  files {
+    path
     size
     duration
     video_codec
     audio_codec
     width
     height
-    framerate
-    bitrate
+    frame_rate
+    bit_rate
+    fingerprints {
+      type
+      value
+    }
   }
 
   paths {

@@ -504,14 +504,14 @@ func (t *relatedFilesTable) insertJoins(ctx context.Context, id int, firstPrimar
 	return nil
 }
 
-// func (t *scenesFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []file.ID) error {
-// 	if err := t.destroy(ctx, []int{id}); err != nil {
-// 		return err
-// 	}
+func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []file.ID) error {
+	if err := t.destroy(ctx, []int{id}); err != nil {
+		return err
+	}
 
-// 	const firstPrimary = true
-// 	return t.insertJoins(ctx, id, firstPrimary, fileIDs)
-// }
+	const firstPrimary = true
+	return t.insertJoins(ctx, id, firstPrimary, fileIDs)
+}
 
 type sqler interface {
 	ToSQL() (sql string, params []interface{}, err error)

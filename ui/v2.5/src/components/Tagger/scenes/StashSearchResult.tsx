@@ -624,6 +624,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     return <LoadingIndicator card />;
   }
 
+  const stashSceneFile =
+    stashScene.files.length > 0 ? stashScene.files[0] : undefined;
+
   return (
     <>
       <div className={isActive ? "col-lg-6" : ""}>
@@ -640,7 +643,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             )}
 
             {maybeRenderDateField()}
-            {getDurationStatus(scene, stashScene.file?.duration)}
+            {getDurationStatus(scene, stashSceneFile?.duration)}
             {getFingerprintStatus(scene, stashScene)}
           </div>
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useContext, PropsWithChildren } from "react";
+import React, { useState, useContext, PropsWithChildren, useMemo } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { Link } from "react-router-dom";
 import { Button, Collapse, Form, InputGroup } from "react-bootstrap";
@@ -100,17 +100,22 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   const [queryString, setQueryString] = useState<string>("");
   const [queryLoading, setQueryLoading] = useState(false);
 
-  const { paths, file } = parsePath(scene.path);
+  const { paths, file: basename } = parsePath(scene.path);
   const defaultQueryString = prepareQueryString(
     scene,
     paths,
-    file,
+    basename,
     config.mode,
     config.blacklist
   );
 
-  const width = scene.file.width ? scene.file.width : 0;
-  const height = scene.file.height ? scene.file.height : 0;
+  const file = useMemo(
+    () => (scene.files.length > 0 ? scene.files[0] : undefined),
+    [scene]
+  );
+
+  const width = file?.width ? file.width : 0;
+  const height = file?.height ? file.height : 0;
   const isPortrait = height > width;
 
   async function query() {
