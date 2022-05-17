@@ -122,10 +122,10 @@ export const FiltersList: React.FC<IFiltersList> = ({
 
   function onDragOver(event: React.DragEvent<HTMLElement>, index?: number) {
     if (dragIndex !== undefined && index !== undefined && index !== dragIndex) {
-      const newSources = [...tempFilters];
-      const moved = newSources.splice(dragIndex, 1);
-      newSources.splice(index, 0, moved[0]);
-      setTempFilters(newSources);
+      const newFilters = [...tempFilters];
+      const moved = newFilters.splice(dragIndex, 1);
+      newFilters.splice(index, 0, moved[0]);
+      setTempFilters(newFilters);
       setDragIndex(index);
     }
 
@@ -139,7 +139,7 @@ export const FiltersList: React.FC<IFiltersList> = ({
   }
 
   function onDrop() {
-    // assume we've already set the temp source list
+    // assume we've already set the temp filter list
     // feed it up
     setFilters(tempFilters!);
     setDragIndex(undefined);
