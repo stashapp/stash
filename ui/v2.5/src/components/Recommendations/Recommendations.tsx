@@ -161,7 +161,7 @@ const Recommendations: React.FC = () => {
                 isTouch={isTouch}
                 filter={filter}
                 queue={SceneQueue.fromListFilterModel(filter)}
-                header={labels.at(index)!}
+                header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
                 loadingArr={loadingArr}
                 index={index}
@@ -172,7 +172,7 @@ const Recommendations: React.FC = () => {
               <StudioRecommendationRow
                 isTouch={isTouch}
                 filter={filter}
-                header={labels.at(index)!}
+                header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
                 loadingArr={loadingArr}
                 index={index}
@@ -183,7 +183,7 @@ const Recommendations: React.FC = () => {
               <MovieRecommendationRow
                 isTouch={isTouch}
                 filter={filter}
-                header={labels.at(index)!}
+                header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
                 loadingArr={loadingArr}
                 index={index}
@@ -194,7 +194,7 @@ const Recommendations: React.FC = () => {
               <PerformerRecommendationRow
                 isTouch={isTouch}
                 filter={filter}
-                header={labels.at(index)!}
+                header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
                 loadingArr={loadingArr}
                 index={index}
@@ -205,7 +205,7 @@ const Recommendations: React.FC = () => {
               <GalleryRecommendationRow
                 isTouch={isTouch}
                 filter={filter}
-                header={labels.at(index)!}
+                header={labels[index]!}
                 linkText={intl.formatMessage(messages.viewAll)}
                 loadingArr={loadingArr}
                 index={index}

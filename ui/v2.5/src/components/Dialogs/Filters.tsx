@@ -24,7 +24,7 @@ export const FiltersEditor: React.FC<IFilterEditor> = ({
   const headerMsgId = isNew ? "actions.add" : "dialogs.edit_entity_title";
   const acceptMsgId = isNew ? "actions.add" : "actions.confirm";
 
-  function handleSourceSelect(e: React.ChangeEvent<HTMLSelectElement>) {
+  function handleFilterSelect(e: React.ChangeEvent<HTMLSelectElement>) {
     const selectedFilter = availableFilters.find(
       (s) => s.id === e.currentTarget.value
     );
@@ -73,7 +73,7 @@ export const FiltersEditor: React.FC<IFilterEditor> = ({
               as="select"
               value={filter.id}
               className="input-control"
-              onChange={handleSourceSelect}
+              onChange={handleFilterSelect}
             >
               {availableFilters.map((i) => (
                 <option value={i.id} key={i.id}>
