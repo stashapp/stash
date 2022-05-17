@@ -35,6 +35,6 @@ services:
       ## This is where your stash's metadata lives
       - ./metadata:/root/.stash/metadata/
       ## Any other cache content.
-      - ./cache:/root/.stash/cache
+      - ./cache:/root/.stash/cache/
       ## Where to store generated content (screenshots,previews,transcodes,sprites)
-      - ./generated:/root/.stash/generated
+      - ./generated:/root/.stash/generated/
