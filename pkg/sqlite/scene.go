@@ -679,7 +679,8 @@ func (qb *SceneStore) Wall(ctx context.Context, q *string) ([]*models.Scene, err
 
 func (qb *SceneStore) All(ctx context.Context) ([]*models.Scene, error) {
 	return qb.getMany(ctx, qb.selectDataset().Order(
-		qb.queryTable().Col("path").Asc(),
+		qb.queryTable().Col("folder_path").Asc(),
+		qb.queryTable().Col("basename").Asc(),
 		qb.queryTable().Col("date").Asc(),
 	))
 }

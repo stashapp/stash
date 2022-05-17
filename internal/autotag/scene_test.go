@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -177,8 +178,14 @@ func TestScenePerformers(t *testing.T) {
 		mockPerformerReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		scene := models.Scene{
-			ID:   sceneID,
-			Path: test.Path,
+			ID: sceneID,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: test.Path,
+					},
+				},
+			},
 		}
 
 		if test.Matches {
@@ -231,8 +238,14 @@ func TestSceneStudios(t *testing.T) {
 		}
 
 		scene := models.Scene{
-			ID:   sceneID,
-			Path: test.Path,
+			ID: sceneID,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: test.Path,
+					},
+				},
+			},
 		}
 		err := SceneStudios(testCtx, &scene, mockSceneReader, mockStudioReader, nil)
 
@@ -304,8 +317,14 @@ func TestSceneTags(t *testing.T) {
 		}
 
 		scene := models.Scene{
-			ID:   sceneID,
-			Path: test.Path,
+			ID: sceneID,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: test.Path,
+					},
+				},
+			},
 		}
 		err := SceneTags(testCtx, &scene, mockSceneReader, mockTagReader, nil)
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -53,8 +54,12 @@ func TestGalleryPerformers(t *testing.T) {
 		}
 
 		gallery := models.Gallery{
-			ID:   galleryID,
-			Path: &test.Path,
+			ID: galleryID,
+			Files: []file.File{
+				&file.BaseFile{
+					Path: test.Path,
+				},
+			},
 		}
 		err := GalleryPerformers(testCtx, &gallery, mockGalleryReader, mockPerformerReader, nil)
 
@@ -95,8 +100,12 @@ func TestGalleryStudios(t *testing.T) {
 		}
 
 		gallery := models.Gallery{
-			ID:   galleryID,
-			Path: &test.Path,
+			ID: galleryID,
+			Files: []file.File{
+				&file.BaseFile{
+					Path: test.Path,
+				},
+			},
 		}
 		err := GalleryStudios(testCtx, &gallery, mockGalleryReader, mockStudioReader, nil)
 
@@ -168,8 +177,12 @@ func TestGalleryTags(t *testing.T) {
 		}
 
 		gallery := models.Gallery{
-			ID:   galleryID,
-			Path: &test.Path,
+			ID: galleryID,
+			Files: []file.File{
+				&file.BaseFile{
+					Path: test.Path,
+				},
+			},
 		}
 		err := GalleryTags(testCtx, &gallery, mockGalleryReader, mockTagReader, nil)
 

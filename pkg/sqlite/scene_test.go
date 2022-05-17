@@ -3641,6 +3641,21 @@ func TestSceneQueryQTrim(t *testing.T) {
 	}
 }
 
+func TestSceneStore_All(t *testing.T) {
+	qb := db.Scene
+
+	withRollbackTxn(func(ctx context.Context) error {
+		got, err := qb.All(ctx)
+		if err != nil {
+			t.Errorf("SceneStore.All() error = %v", err)
+			return nil
+		}
+
+		assert.Equal(t, len(sceneIDs), len(got))
+
+		return nil
+	})
+}
+
 // TODO Count
 // TODO SizeCount
-// TODO All

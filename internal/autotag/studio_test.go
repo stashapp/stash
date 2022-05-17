@@ -88,8 +88,14 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 	var scenes []*models.Scene
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID:   i + 1,
-			Path: p,
+			ID: i + 1,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: p,
+					},
+				},
+			},
 		})
 	}
 
@@ -269,8 +275,12 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	for i, p := range append(matchingPaths, falsePaths...) {
 		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID:   i + 1,
-			Path: &v,
+			ID: i + 1,
+			Files: []file.File{
+				&file.BaseFile{
+					Path: v,
+				},
+			},
 		})
 	}
 
