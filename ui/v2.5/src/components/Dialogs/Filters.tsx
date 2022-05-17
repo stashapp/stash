@@ -41,7 +41,7 @@ export const FiltersEditor: React.FC<IFilterEditor> = ({
 
   return (
     <Modal
-      dialogClassName="identify-source-editor"
+      dialogClassName="identify-filter-editor"
       modalProps={{ animation: false, size: "lg" }}
       show
       icon={isNew ? "plus" : "pencil-alt"}
@@ -184,7 +184,7 @@ export const FiltersList: React.FC<IFiltersList> = ({
       {canAdd && (
         <div className="text-right">
           <Button
-            className="minimal add-scraper-source-button"
+            className="minimal add-scraper-filter-button"
             onClick={() => editFilter()}
           >
             <Icon icon="plus" />
