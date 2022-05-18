@@ -47,10 +47,10 @@
 
 /* skeletons */
 .skeleton-card {
-  -webkit-animation: flickerAnimation 2s infinite;
-  -moz-animation: flickerAnimation 2s infinite;
-  -o-animation: flickerAnimation 2s infinite;
-  animation: flickerAnimation 2s infinite;
+  -webkit-animation: flickerAnimation 2s infinite ease-in-out;
+  -moz-animation: flickerAnimation 2s infinite ease-in-out;
+  -o-animation: flickerAnimation 2sinfinite ease-in-out;
+  animation: flickerAnimation 2s infinite ease-in-out;
   background-clip: border-box;
   background-color: #30404d;
   border: 1px solid rgba(0, 0, 0, 0.13);
@@ -67,12 +67,8 @@
 
 @keyframes flickerAnimation {
   50% {
-    opacity: 0.5;
-  }
-
-  100% {
-    opacity: 1;
-  }
+    opacity: .5
+}
 }
 
 .scene-skeleton {
