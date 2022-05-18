@@ -11,4 +11,7 @@ type VideoFile struct {
 	AudioCodec string  `json:"audio_codec"`
 	FrameRate  float64 `json:"frame_rate"`
 	BitRate    int64   `json:"bitrate"`
+
+	Interactive      bool `json:"interactive"`
+	InteractiveSpeed *int `json:"interactive_speed"`
 }

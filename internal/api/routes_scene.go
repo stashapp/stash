@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -300,7 +301,7 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
-	funscript := scene.GetFunscriptPath(s.Path())
+	funscript := video.GetFunscriptPath(s.Path())
 	serveFileNoCache(w, r, funscript)
 }
 

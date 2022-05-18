@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
@@ -143,7 +144,7 @@ func Destroy(ctx context.Context, scene *models.Scene, qb Destroyer, mqb MarkerD
 			return err
 		}
 
-		funscriptPath := GetFunscriptPath(scene.Path())
+		funscriptPath := video.GetFunscriptPath(scene.Path())
 		funscriptExists, _ := fsutil.FileExists(funscriptPath)
 		if funscriptExists {
 			if err := fileDeleter.Files([]string{funscriptPath}); err != nil {

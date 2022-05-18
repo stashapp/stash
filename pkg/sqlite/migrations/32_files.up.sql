@@ -55,6 +55,8 @@ CREATE TABLE `video_files` (
 	`height` tinyint NOT NULL,
 	`frame_rate` float NOT NULL,
 	`bit_rate` integer NOT NULL,
+  `interactive` boolean not null default '0',
+  `interactive_speed` int,
   foreign key(`file_id`) references `files`(`id`) on delete CASCADE
 );
 
@@ -218,8 +220,8 @@ CREATE TABLE `scenes_new` (
   `o_counter` tinyint not null default 0,
   -- REMOVED: `format` varchar(255),
   `organized` boolean not null default '0',
-  `interactive` boolean not null default '0',
-  `interactive_speed` int,
+  -- REMOVED: `interactive` boolean not null default '0',
+  -- REMOVED: `interactive_speed` int,
   `created_at` datetime not null,
   `updated_at` datetime not null,
   -- REMOVED: `file_mod_time` datetime,
@@ -239,8 +241,6 @@ INSERT INTO `scenes_new`
     `studio_id`,
     `o_counter`,
     `organized`,
-    `interactive`,
-    `interactive_speed`,
     `created_at`,
     `updated_at`
   )
@@ -254,8 +254,6 @@ INSERT INTO `scenes_new`
     `studio_id`,
     `o_counter`,
     `organized`,
-    `interactive`,
-    `interactive_speed`,
     `created_at`,
     `updated_at`
   FROM `scenes`;
@@ -362,8 +360,6 @@ CREATE VIEW `scenes_query` AS
     `scenes`.`studio_id`,
     `scenes`.`o_counter`,
     `scenes`.`organized`,
-    `scenes`.`interactive`,
-    `scenes`.`interactive_speed`,
     `scenes`.`created_at`,
     `scenes`.`updated_at`,
     `scenes_tags`.`tag_id`,
@@ -381,6 +377,8 @@ CREATE VIEW `scenes_query` AS
     `video_files`.`audio_codec`,
     `video_files`.`frame_rate`,
     `video_files`.`bit_rate`,
+    `video_files`.`interactive`,
+    `video_files`.`interactive_speed`,
     `files`.`id` as `file_id`,
     `files`.`basename`,
     `files`.`size`,

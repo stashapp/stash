@@ -23,10 +23,8 @@ type Scene struct {
 	// transient - not persisted
 	Files []*file.VideoFile
 
-	Interactive      bool      `json:"interactive"`
-	InteractiveSpeed *int      `json:"interactive_speed"`
-	CreatedAt        time.Time `json:"created_at"`
-	UpdatedAt        time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	GalleryIDs   []int          `json:"gallery_ids"`
 	TagIDs       []int          `json:"tag_ids"`
@@ -118,18 +116,16 @@ func (s Scene) AudioCodec() string {
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry.
 type ScenePartial struct {
-	Title            OptionalString
-	Details          OptionalString
-	URL              OptionalString
-	Date             OptionalDate
-	Rating           OptionalInt
-	Organized        OptionalBool
-	OCounter         OptionalInt
-	StudioID         OptionalInt
-	Interactive      OptionalBool
-	InteractiveSpeed OptionalInt
-	CreatedAt        OptionalTime
-	UpdatedAt        OptionalTime
+	Title     OptionalString
+	Details   OptionalString
+	URL       OptionalString
+	Date      OptionalDate
+	Rating    OptionalInt
+	Organized OptionalBool
+	OCounter  OptionalInt
+	StudioID  OptionalInt
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
 
 	GalleryIDs   *UpdateIDs
 	TagIDs       *UpdateIDs

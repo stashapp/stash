@@ -23,21 +23,19 @@ import (
 
 func Test_sceneQueryBuilder_Create(t *testing.T) {
 	var (
-		title            = "title"
-		details          = "details"
-		url              = "url"
-		rating           = 3
-		ocounter         = 5
-		createdAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		interactive      = true
-		interactiveSpeed = 100
-		sceneIndex       = 123
-		sceneIndex2      = 234
-		endpoint1        = "endpoint1"
-		endpoint2        = "endpoint2"
-		stashID1         = "stashid1"
-		stashID2         = "stashid2"
+		title       = "title"
+		details     = "details"
+		url         = "url"
+		rating      = 3
+		ocounter    = 5
+		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex  = 123
+		sceneIndex2 = 234
+		endpoint1   = "endpoint1"
+		endpoint2   = "endpoint2"
+		stashID1    = "stashid1"
+		stashID2    = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 
@@ -52,21 +50,19 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		{
 			"full",
 			models.Scene{
-				Title:            title,
-				Details:          details,
-				URL:              url,
-				Date:             &date,
-				Rating:           &rating,
-				Organized:        true,
-				OCounter:         ocounter,
-				StudioID:         &studioIDs[studioIdxWithScene],
-				CreatedAt:        createdAt,
-				UpdatedAt:        updatedAt,
-				Interactive:      interactive,
-				InteractiveSpeed: &interactiveSpeed,
-				GalleryIDs:       []int{galleryIDs[galleryIdxWithScene]},
-				TagIDs:           []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs:     []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+				Title:        title,
+				Details:      details,
+				URL:          url,
+				Date:         &date,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
 				Movies: []models.MoviesScenes{
 					{
 						MovieID:    movieIDs[movieIdxWithScene],
@@ -104,13 +100,11 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				Files: []*file.VideoFile{
 					videoFile.(*file.VideoFile),
 				},
-				CreatedAt:        createdAt,
-				UpdatedAt:        updatedAt,
-				Interactive:      interactive,
-				InteractiveSpeed: &interactiveSpeed,
-				GalleryIDs:       []int{galleryIDs[galleryIdxWithScene]},
-				TagIDs:           []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs:     []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
 				Movies: []models.MoviesScenes{
 					{
 						MovieID:    movieIDs[movieIdxWithScene],
@@ -234,21 +228,19 @@ func makeSceneFileWithID(i int) *file.VideoFile {
 
 func Test_sceneQueryBuilder_Update(t *testing.T) {
 	var (
-		title            = "title"
-		details          = "details"
-		url              = "url"
-		rating           = 3
-		ocounter         = 5
-		createdAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		interactive      = true
-		interactiveSpeed = 100
-		sceneIndex       = 123
-		sceneIndex2      = 234
-		endpoint1        = "endpoint1"
-		endpoint2        = "endpoint2"
-		stashID1         = "stashid1"
-		stashID2         = "stashid2"
+		title       = "title"
+		details     = "details"
+		url         = "url"
+		rating      = 3
+		ocounter    = 5
+		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex  = 123
+		sceneIndex2 = 234
+		endpoint1   = "endpoint1"
+		endpoint2   = "endpoint2"
+		stashID1    = "stashid1"
+		stashID2    = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 	)
@@ -265,21 +257,19 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithGallery),
 				},
-				Title:            title,
-				Details:          details,
-				URL:              url,
-				Date:             &date,
-				Rating:           &rating,
-				Organized:        true,
-				OCounter:         ocounter,
-				StudioID:         &studioIDs[studioIdxWithScene],
-				CreatedAt:        createdAt,
-				UpdatedAt:        updatedAt,
-				Interactive:      interactive,
-				InteractiveSpeed: &interactiveSpeed,
-				GalleryIDs:       []int{galleryIDs[galleryIdxWithScene]},
-				TagIDs:           []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs:     []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+				Title:        title,
+				Details:      details,
+				URL:          url,
+				Date:         &date,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
 				Movies: []models.MoviesScenes{
 					{
 						MovieID:    movieIDs[movieIdxWithScene],
@@ -443,37 +433,34 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 func clearScenePartial() models.ScenePartial {
 	// leave mandatory fields
 	return models.ScenePartial{
-		Title:            models.OptionalString{Set: true, Null: true},
-		Details:          models.OptionalString{Set: true, Null: true},
-		URL:              models.OptionalString{Set: true, Null: true},
-		Date:             models.OptionalDate{Set: true, Null: true},
-		Rating:           models.OptionalInt{Set: true, Null: true},
-		StudioID:         models.OptionalInt{Set: true, Null: true},
-		InteractiveSpeed: models.OptionalInt{Set: true, Null: true},
-		GalleryIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
-		TagIDs:           &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
-		PerformerIDs:     &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
-		StashIDs:         &models.UpdateStashIDs{Mode: models.RelationshipUpdateModeSet},
+		Title:        models.OptionalString{Set: true, Null: true},
+		Details:      models.OptionalString{Set: true, Null: true},
+		URL:          models.OptionalString{Set: true, Null: true},
+		Date:         models.OptionalDate{Set: true, Null: true},
+		Rating:       models.OptionalInt{Set: true, Null: true},
+		StudioID:     models.OptionalInt{Set: true, Null: true},
+		GalleryIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		StashIDs:     &models.UpdateStashIDs{Mode: models.RelationshipUpdateModeSet},
 	}
 }
 
 func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		title            = "title"
-		details          = "details"
-		url              = "url"
-		rating           = 3
-		ocounter         = 5
-		createdAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt        = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		interactive      = true
-		interactiveSpeed = 100
-		sceneIndex       = 123
-		sceneIndex2      = 234
-		endpoint1        = "endpoint1"
-		endpoint2        = "endpoint2"
-		stashID1         = "stashid1"
-		stashID2         = "stashid2"
+		title       = "title"
+		details     = "details"
+		url         = "url"
+		rating      = 3
+		ocounter    = 5
+		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex  = 123
+		sceneIndex2 = 234
+		endpoint1   = "endpoint1"
+		endpoint2   = "endpoint2"
+		stashID1    = "stashid1"
+		stashID2    = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 	)
@@ -489,18 +476,16 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			"full",
 			sceneIDs[sceneIdxWithSpacedName],
 			models.ScenePartial{
-				Title:            models.NewOptionalString(title),
-				Details:          models.NewOptionalString(details),
-				URL:              models.NewOptionalString(url),
-				Date:             models.NewOptionalDate(date),
-				Rating:           models.NewOptionalInt(rating),
-				Organized:        models.NewOptionalBool(true),
-				OCounter:         models.NewOptionalInt(ocounter),
-				StudioID:         models.NewOptionalInt(studioIDs[studioIdxWithScene]),
-				CreatedAt:        models.NewOptionalTime(createdAt),
-				UpdatedAt:        models.NewOptionalTime(updatedAt),
-				Interactive:      models.NewOptionalBool(interactive),
-				InteractiveSpeed: models.NewOptionalInt(interactiveSpeed),
+				Title:     models.NewOptionalString(title),
+				Details:   models.NewOptionalString(details),
+				URL:       models.NewOptionalString(url),
+				Date:      models.NewOptionalDate(date),
+				Rating:    models.NewOptionalInt(rating),
+				Organized: models.NewOptionalBool(true),
+				OCounter:  models.NewOptionalInt(ocounter),
+				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithScene]),
+				CreatedAt: models.NewOptionalTime(createdAt),
+				UpdatedAt: models.NewOptionalTime(updatedAt),
 				GalleryIDs: &models.UpdateIDs{
 					IDs:  []int{galleryIDs[galleryIdxWithScene]},
 					Mode: models.RelationshipUpdateModeSet,
@@ -545,21 +530,19 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				},
-				Title:            title,
-				Details:          details,
-				URL:              url,
-				Date:             &date,
-				Rating:           &rating,
-				Organized:        true,
-				OCounter:         ocounter,
-				StudioID:         &studioIDs[studioIdxWithScene],
-				CreatedAt:        createdAt,
-				UpdatedAt:        updatedAt,
-				Interactive:      interactive,
-				InteractiveSpeed: &interactiveSpeed,
-				GalleryIDs:       []int{galleryIDs[galleryIdxWithScene]},
-				TagIDs:           []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs:     []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+				Title:        title,
+				Details:      details,
+				URL:          url,
+				Date:         &date,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
 				Movies: []models.MoviesScenes{
 					{
 						MovieID:    movieIDs[movieIdxWithScene],

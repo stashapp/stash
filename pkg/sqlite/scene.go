@@ -54,19 +54,17 @@ ORDER BY size DESC
 `
 
 type sceneRow struct {
-	ID               int               `db:"id" goqu:"skipinsert"`
-	Title            zero.String       `db:"title"`
-	Details          zero.String       `db:"details"`
-	URL              zero.String       `db:"url"`
-	Date             models.SQLiteDate `db:"date"`
-	Rating           null.Int          `db:"rating"`
-	Organized        bool              `db:"organized"`
-	OCounter         int               `db:"o_counter"`
-	StudioID         null.Int          `db:"studio_id,omitempty"`
-	Interactive      bool              `db:"interactive"`
-	InteractiveSpeed null.Int          `db:"interactive_speed"`
-	CreatedAt        time.Time         `db:"created_at"`
-	UpdatedAt        time.Time         `db:"updated_at"`
+	ID        int               `db:"id" goqu:"skipinsert"`
+	Title     zero.String       `db:"title"`
+	Details   zero.String       `db:"details"`
+	URL       zero.String       `db:"url"`
+	Date      models.SQLiteDate `db:"date"`
+	Rating    null.Int          `db:"rating"`
+	Organized bool              `db:"organized"`
+	OCounter  int               `db:"o_counter"`
+	StudioID  null.Int          `db:"studio_id,omitempty"`
+	CreatedAt time.Time         `db:"created_at"`
+	UpdatedAt time.Time         `db:"updated_at"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -83,8 +81,6 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.StudioID = intFromPtr(o.StudioID)
 	r.CreatedAt = o.CreatedAt
 	r.UpdatedAt = o.UpdatedAt
-	r.Interactive = o.Interactive
-	r.InteractiveSpeed = intFromPtr(o.InteractiveSpeed)
 }
 
 type sceneRowRecord struct {
@@ -102,8 +98,6 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullInt("studio_id", o.StudioID)
 	r.setTime("created_at", o.CreatedAt)
 	r.setTime("updated_at", o.UpdatedAt)
-	r.setBool("interactive", o.Interactive)
-	r.setNullInt("interactive_speed", o.InteractiveSpeed)
 }
 
 type sceneQueryRow struct {
@@ -121,19 +115,17 @@ type sceneQueryRow struct {
 
 func (r *sceneQueryRow) resolve() *models.Scene {
 	ret := &models.Scene{
-		ID:               r.ID,
-		Title:            r.Title.String,
-		Details:          r.Details.String,
-		URL:              r.URL.String,
-		Date:             r.Date.DatePtr(),
-		Rating:           nullIntPtr(r.Rating),
-		Organized:        r.Organized,
-		OCounter:         r.OCounter,
-		StudioID:         nullIntPtr(r.StudioID),
-		CreatedAt:        r.CreatedAt,
-		UpdatedAt:        r.UpdatedAt,
-		Interactive:      r.Interactive,
-		InteractiveSpeed: nullIntPtr(r.InteractiveSpeed),
+		ID:        r.ID,
+		Title:     r.Title.String,
+		Details:   r.Details.String,
+		URL:       r.URL.String,
+		Date:      r.Date.DatePtr(),
+		Rating:    nullIntPtr(r.Rating),
+		Organized: r.Organized,
+		OCounter:  r.OCounter,
+		StudioID:  nullIntPtr(r.StudioID),
+		CreatedAt: r.CreatedAt,
+		UpdatedAt: r.UpdatedAt,
 	}
 
 	r.appendRelationships(ret)

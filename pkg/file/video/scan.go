@@ -36,15 +36,22 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 		return f, fmt.Errorf("matching container for %q: %w", base.Path, err)
 	}
 
+	// check if there is a funscript file
+	interactive := false
+	if _, err := fs.Lstat(GetFunscriptPath(base.Path)); err == nil {
+		interactive = true
+	}
+
 	return &file.VideoFile{
-		BaseFile:   base,
-		Format:     string(container),
-		VideoCodec: videoFile.VideoCodec,
-		AudioCodec: videoFile.AudioCodec,
-		Width:      videoFile.Width,
-		Height:     videoFile.Height,
-		Duration:   videoFile.Duration,
-		FrameRate:  videoFile.FrameRate,
-		BitRate:    videoFile.Bitrate,
+		BaseFile:    base,
+		Format:      string(container),
+		VideoCodec:  videoFile.VideoCodec,
+		AudioCodec:  videoFile.AudioCodec,
+		Width:       videoFile.Width,
+		Height:      videoFile.Height,
+		Duration:    videoFile.Duration,
+		FrameRate:   videoFile.FrameRate,
+		BitRate:     videoFile.Bitrate,
+		Interactive: interactive,
 	}, nil
 }

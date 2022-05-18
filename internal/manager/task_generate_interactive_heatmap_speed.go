@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 )
 
 type GenerateInteractiveHeatmapSpeedTask struct {
@@ -27,7 +27,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	}
 
 	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
-	funscriptPath := scene.GetFunscriptPath(t.Scene.Path())
+	funscriptPath := video.GetFunscriptPath(t.Scene.Path())
 	heatmapPath := instance.Paths.Scene.GetInteractiveHeatmapPath(videoChecksum)
 
 	generator := NewInteractiveHeatmapSpeedGenerator(funscriptPath, heatmapPath)
@@ -42,12 +42,10 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	median := generator.InteractiveSpeed
 
 	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
-		qb := t.TxnManager.Scene
-		scenePartial := models.ScenePartial{
-			InteractiveSpeed: models.NewOptionalInt(median),
-		}
-		_, err := qb.UpdatePartial(ctx, t.Scene.ID, scenePartial)
-		return err
+		primaryFile := t.Scene.PrimaryFile()
+		primaryFile.InteractiveSpeed = &median
+		qb := t.TxnManager.File
+		return qb.Update(ctx, primaryFile)
 	}); err != nil {
 		logger.Error(err.Error())
 	}
@@ -55,7 +53,8 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) shouldGenerate() bool {
-	if !t.Scene.Interactive {
+	primaryFile := t.Scene.PrimaryFile()
+	if primaryFile == nil || !primaryFile.Interactive {
 		return false
 	}
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)

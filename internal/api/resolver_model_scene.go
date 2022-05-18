@@ -241,3 +241,21 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 
 	return manager.GetSceneStreamPaths(obj, builder.GetStreamURL(), config.GetMaxStreamingTranscodeSize())
 }
+
+func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (bool, error) {
+	primaryFile := obj.PrimaryFile()
+	if primaryFile == nil {
+		return false, nil
+	}
+
+	return primaryFile.Interactive, nil
+}
+
+func (r *sceneResolver) InteractiveSpeed(ctx context.Context, obj *models.Scene) (*int, error) {
+	primaryFile := obj.PrimaryFile()
+	if primaryFile == nil {
+		return nil, nil
+	}
+
+	return primaryFile.InteractiveSpeed, nil
+}

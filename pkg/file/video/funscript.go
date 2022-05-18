@@ -1,4 +1,4 @@
-package scene
+package video
 
 import (
 	"path/filepath"
