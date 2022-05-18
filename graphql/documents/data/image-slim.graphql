@@ -16,8 +16,10 @@ fragment SlimImageData on Image {
 
   galleries {
     id
-    path
     title
+    files {
+      path
+    }
   }
 
   studio {
