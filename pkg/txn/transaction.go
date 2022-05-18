@@ -13,6 +13,9 @@ type TxnFunc func(ctx context.Context) error
 func WithTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 	var err error
 	ctx, err = m.Begin(ctx)
+	if err != nil {
+		return err
+	}
 
 	defer func() {
 		if p := recover(); p != nil {
