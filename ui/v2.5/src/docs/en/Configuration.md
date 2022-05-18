@@ -6,6 +6,12 @@ This section allows you to add and remove directories from your library list. Fi
 
 > **⚠️ Note:** Don't forget to click `Save` after updating these directories!
 
+## Recommendations
+
+This section allows you to customize the recommendations on the home page. The selectable filters are based on the existing filters you have created on each content type page.
+
+> **⚠️ Note:** Don't forget to refresh the browser after updating the recommended filters!
+
 ## Excluded Patterns
 
 Given a valid [regex](https://github.com/google/re2/wiki/Syntax), files that match even partially are excluded during the Scan process and are not entered in the database. Also during the Clean task if these files exist in the DB they are removed from it and their generated files get deleted.
