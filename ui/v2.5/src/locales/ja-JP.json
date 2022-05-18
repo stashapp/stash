@@ -107,6 +107,7 @@
     },
     "temp_disable": "一時的に無効…",
     "temp_enable": "一時的に有効…",
+    "unset": "未設定",
     "use_default": "デフォルトを使用",
     "view_random": "ランダムで表示"
   },
@@ -120,6 +121,7 @@
   "birth_year": "誕生年",
   "birthdate": "誕生日",
   "bitrate": "ビットレート",
+  "captions": "字幕",
   "career_length": "キャリア歴",
   "component_tagger": {
     "config": {
@@ -448,6 +450,16 @@
         "description": "インタラクティブスクリプトの実行までのオフセットをミリ秒で指定できます。",
         "heading": "Funscriptオフセット (ms)"
       },
+      "handy_connection": {
+        "connect": "接続",
+        "server_offset": {
+          "heading": "サーバーのオフセット"
+        },
+        "status": {
+          "heading": "Handy接続状況"
+        },
+        "sync": "同期"
+      },
       "handy_connection_key": {
         "description": "Handy connection keyは、インタラクティブなシーンで使用されます。このキーを設定すると、Stashが現在のシーン情報をhandyfeeling.comと共有することを許可します",
         "heading": "Handy Connection Key"
@@ -521,9 +533,13 @@
           "toggle_sound": "音声を有効にする"
         }
       },
+      "scroll_attempts_before_change": {
+        "description": "前後のアイテムに移動する前にスクロールを試行する回数を指定できます。Y座標のスクロールモードにのみ適用されます。",
+        "heading": "遷移前のスクロール試行"
+      },
       "slideshow_delay": {
         "description": "ウォールビューモードの際にギャラリーのスライドショーが利用できます",
-        "heading": "スライドショーの遅延時間"
+        "heading": "スライドショーの遅延時間 (秒)"
       },
       "title": "ユーザーインターフェース"
     }
@@ -700,7 +716,9 @@
     "scale": "スケール",
     "warmth": "暖かさ"
   },
+  "empty_server": "このページでおすすめを表示するためには、サーバーにいくつかシーンを追加してみましょう。",
   "ethnicity": "民族性",
+  "existing_value": "存在する値",
   "eye_color": "瞳の色",
   "fake_tits": "偽乳",
   "false": "無効",
@@ -728,9 +746,19 @@
     "TRANSGENDER_MALE": "トランスジェンダーの男性"
   },
   "hair_color": "髪の色",
+  "handy_connection_status": {
+    "connecting": "接続中",
+    "disconnected": "切断済み",
+    "error": "Handyに接続中にエラーが発生しました",
+    "missing": "ありません",
+    "ready": "準備完了",
+    "syncing": "サーバーと同期中",
+    "uploading": "スクリプトをアップロード中"
+  },
   "hasMarkers": "マーカーあり？",
   "height": "身長",
   "help": "ヘルプ",
+  "ignore_auto_tag": "自動タグを無視する",
   "image": "画像",
   "image_count": "画像数",
   "images": "画像",
@@ -832,6 +860,11 @@
   "queue": "キュー",
   "random": "ランダム",
   "rating": "評価",
+  "recently_added_performers": "最近追加された出演者",
+  "recently_added_studios": "最近追加されたスタジオ",
+  "recently_released_galleries": "最近リリースされたギャラリー",
+  "recently_released_movies": "最近リリースされた映画",
+  "recently_released_scenes": "最近リリースされたシーン",
   "resolution": "解像度",
   "scene": "シーン",
   "sceneTagger": "シーン一括タグ付け",
@@ -935,6 +968,7 @@
     "submission_failed": "送信に失敗しました",
     "submission_successful": "送信完了しました"
   },
+  "statistics": "統計",
   "stats": {
     "image_size": "画像サイズ",
     "scenes_duration": "シーンの再生時間",
@@ -976,6 +1010,7 @@
   "updated_at": "更新日:",
   "url": "URL",
   "videos": "動画",
+  "view_all": "全て表示",
   "weight": "幅",
   "years_old": "歳"
 }
