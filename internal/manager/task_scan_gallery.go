@@ -25,7 +25,7 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 		var err error
 		g, err = r.Gallery().FindByPath(path)
 
-		if g != nil && err != nil {
+		if g != nil && err == nil {
 			images, err = r.Image().CountByGalleryID(g.ID)
 			if err != nil {
 				return fmt.Errorf("error getting images for zip gallery %s: %s", path, err.Error())
