@@ -32,11 +32,6 @@ const (
 	moviesScenesTable     = "movies_scenes"
 )
 
-const sceneCaptionsTable = "scene_captions"
-const sceneCaptionCodeColumn = "language_code"
-const sceneCaptionFilenameColumn = "filename"
-const sceneCaptionTypeColumn = "caption_type"
-
 var findExactDuplicateQuery = `
 SELECT GROUP_CONCAT(id) as ids
 FROM scenes
@@ -997,10 +992,10 @@ func (qb *SceneStore) getMultiCriterionHandlerBuilder(foreignTable, joinTable, f
 
 func sceneCaptionCriterionHandler(qb *SceneStore, captions *models.StringCriterionInput) criterionHandlerFunc {
 	h := stringListCriterionHandlerBuilder{
-		joinTable:    sceneCaptionsTable,
-		stringColumn: sceneCaptionCodeColumn,
+		joinTable:    videoCaptionsTable,
+		stringColumn: captionCodeColumn,
 		addJoinTable: func(f *filterBuilder) {
-			qb.captionRepository().join(f, "", "scenes.id")
+			f.addLeftJoin(videoCaptionsTable, "", "video_captions.file_id = scenes_query.file_id")
 		},
 	}
 
@@ -1271,24 +1266,6 @@ func (qb *SceneStore) stashIDRepository() *stashIDRepository {
 			idColumn:  sceneIDColumn,
 		},
 	}
-}
-
-func (qb *SceneStore) captionRepository() *captionRepository {
-	return &captionRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: sceneCaptionsTable,
-			idColumn:  sceneIDColumn,
-		},
-	}
-}
-
-func (qb *SceneStore) GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error) {
-	return qb.captionRepository().get(ctx, sceneID)
-}
-
-func (qb *SceneStore) UpdateCaptions(ctx context.Context, sceneID int, captions []*models.SceneCaption) error {
-	return qb.captionRepository().replace(ctx, sceneID, captions)
 }
 
 func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {

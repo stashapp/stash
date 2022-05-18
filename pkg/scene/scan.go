@@ -24,10 +24,6 @@ type CreatorUpdater interface {
 	Create(ctx context.Context, newScene *models.Scene, fileIDs []file.ID) error
 	Update(ctx context.Context, updatedScene *models.Scene) error
 	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
-
-	// FIXME
-	GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error)
-	UpdateCaptions(ctx context.Context, id int, captions []*models.SceneCaption) error
 }
 
 type ScanHandler struct {

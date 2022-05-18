@@ -146,7 +146,6 @@ type SceneReader interface {
 	Wall(ctx context.Context, q *string) ([]*Scene, error)
 	All(ctx context.Context) ([]*Scene, error)
 	Query(ctx context.Context, options SceneQueryOptions) (*SceneQueryResult, error)
-	GetCaptions(ctx context.Context, sceneID int) ([]*SceneCaption, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 }
 
@@ -158,7 +157,6 @@ type SceneWriter interface {
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)
 	Destroy(ctx context.Context, id int) error
-	UpdateCaptions(ctx context.Context, id int, captions []*SceneCaption) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 	DestroyCover(ctx context.Context, sceneID int) error
 }

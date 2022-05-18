@@ -262,12 +262,12 @@ func (s *Scenes) New() interface{} {
 	return &Scene{}
 }
 
-type SceneCaption struct {
+type VideoCaption struct {
 	LanguageCode string `json:"language_code"`
 	Filename     string `json:"filename"`
 	CaptionType  string `json:"caption_type"`
 }
 
-func (c SceneCaption) Path(scenePath string) string {
-	return filepath.Join(filepath.Dir(scenePath), c.Filename)
+func (c VideoCaption) Path(filePath string) string {
+	return filepath.Join(filepath.Dir(filePath), c.Filename)
 }

@@ -60,6 +60,15 @@ CREATE TABLE `video_files` (
   foreign key(`file_id`) references `files`(`id`) on delete CASCADE
 );
 
+CREATE TABLE `video_captions` (
+  `file_id` integer NOT NULL,
+  `language_code` varchar(255) NOT NULL,
+  `filename` varchar(255) NOT NULL,
+  `caption_type` varchar(255) NOT NULL,
+  primary key (`file_id`, `language_code`, `caption_type`),
+  foreign key(`file_id`) references `video_files`(`file_id`) on delete CASCADE
+);
+
 CREATE TABLE `image_files` (
   `file_id` integer NOT NULL primary key,
   `format` varchar(255) NOT NULL,
@@ -259,6 +268,7 @@ INSERT INTO `scenes_new`
   FROM `scenes`;
 
 -- TODO - transfer fingerprint information
+-- TODO - transfer captions
 
 DROP TABLE `scenes`;
 

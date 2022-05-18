@@ -10,6 +10,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -355,9 +356,9 @@ type captionRepository struct {
 	repository
 }
 
-func (r *captionRepository) get(ctx context.Context, id int) ([]*models.SceneCaption, error) {
-	query := fmt.Sprintf("SELECT %s, %s, %s from %s WHERE %s = ?", sceneCaptionCodeColumn, sceneCaptionFilenameColumn, sceneCaptionTypeColumn, r.tableName, r.idColumn)
-	var ret []*models.SceneCaption
+func (r *captionRepository) get(ctx context.Context, id file.ID) ([]*models.VideoCaption, error) {
+	query := fmt.Sprintf("SELECT %s, %s, %s from %s WHERE %s = ?", captionCodeColumn, captionFilenameColumn, captionTypeColumn, r.tableName, r.idColumn)
+	var ret []*models.VideoCaption
 	err := r.queryFunc(ctx, query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
 		var captionCode string
 		var captionFilename string
@@ -367,7 +368,7 @@ func (r *captionRepository) get(ctx context.Context, id int) ([]*models.SceneCap
 			return err
 		}
 
-		caption := &models.SceneCaption{
+		caption := &models.VideoCaption{
 			LanguageCode: captionCode,
 			Filename:     captionFilename,
 			CaptionType:  captionType,
@@ -378,13 +379,13 @@ func (r *captionRepository) get(ctx context.Context, id int) ([]*models.SceneCap
 	return ret, err
 }
 
-func (r *captionRepository) insert(ctx context.Context, id int, caption *models.SceneCaption) (sql.Result, error) {
-	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)", r.tableName, r.idColumn, sceneCaptionCodeColumn, sceneCaptionFilenameColumn, sceneCaptionTypeColumn)
+func (r *captionRepository) insert(ctx context.Context, id file.ID, caption *models.VideoCaption) (sql.Result, error) {
+	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)", r.tableName, r.idColumn, captionCodeColumn, captionFilenameColumn, captionTypeColumn)
 	return r.tx.Exec(ctx, stmt, id, caption.LanguageCode, caption.Filename, caption.CaptionType)
 }
 
-func (r *captionRepository) replace(ctx context.Context, id int, captions []*models.SceneCaption) error {
-	if err := r.destroy(ctx, []int{id}); err != nil {
+func (r *captionRepository) replace(ctx context.Context, id file.ID, captions []*models.VideoCaption) error {
+	if err := r.destroy(ctx, []int{int(id)}); err != nil {
 		return err
 	}
 

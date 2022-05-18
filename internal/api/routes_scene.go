@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
@@ -26,7 +27,6 @@ type SceneFinder interface {
 	scene.IDFinder
 	FindByChecksum(ctx context.Context, checksum string) ([]*models.Scene, error)
 	FindByOSHash(ctx context.Context, oshash string) ([]*models.Scene, error)
-	GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error)
 }
 
 type SceneMarkerFinder interface {
@@ -34,9 +34,14 @@ type SceneMarkerFinder interface {
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
 }
 
+type CaptionFinder interface {
+	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
+}
+
 type sceneRoutes struct {
 	txnManager        txn.Manager
 	sceneFinder       SceneFinder
+	captionFinder     CaptionFinder
 	sceneMarkerFinder SceneMarkerFinder
 	tagFinder         scene.MarkerTagFinder
 }
@@ -317,10 +322,15 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 
 	if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
-		captions, err := rs.sceneFinder.GetCaptions(ctx, s.ID)
+		primaryFile := s.PrimaryFile()
+		if primaryFile == nil {
+			return nil
+		}
+
+		captions, err := rs.captionFinder.GetCaptions(ctx, primaryFile.Base().ID)
 		for _, caption := range captions {
 			if lang == caption.LanguageCode && ext == caption.CaptionType {
-				sub, err := scene.ReadSubs(caption.Path(s.Path()))
+				sub, err := video.ReadSubs(caption.Path(s.Path()))
 				if err == nil {
 					var b bytes.Buffer
 					err = sub.WriteToWebVTT(&b)

@@ -125,6 +125,7 @@ func Start() error {
 	r.Mount("/scene", sceneRoutes{
 		txnManager:        txnManager,
 		sceneFinder:       txnManager.Scene,
+		captionFinder:     txnManager.File,
 		sceneMarkerFinder: txnManager.SceneMarker,
 		tagFinder:         txnManager.Tag,
 	}.Routes())

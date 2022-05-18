@@ -6,12 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/models"
 	"gopkg.in/guregu/null.v4"
 )
 
@@ -20,6 +22,11 @@ const (
 	videoFileTable = "video_files"
 	imageFileTable = "image_files"
 	fileIDColumn   = "file_id"
+
+	videoCaptionsTable    = "video_captions"
+	captionCodeColumn     = "language_code"
+	captionFilenameColumn = "filename"
+	captionTypeColumn     = "caption_type"
 )
 
 type basicFileRow struct {
@@ -527,17 +534,24 @@ func (qb *FileStore) Find(ctx context.Context, id file.ID) (file.File, error) {
 	return ret, nil
 }
 
+// FindByPath returns the first file that matches the given path. Wilcard characters are supported.
 func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error) {
 	// separate basename from path
 	basename := filepath.Base(p)
-	dir, _ := path(filepath.Dir(p)).Value()
+	dirName := filepath.Dir(p)
+
+	// replace wildcards
+	basename = strings.ReplaceAll(basename, "*", "%")
+	dirName = strings.ReplaceAll(dirName, "*", "%")
+
+	dir, _ := path(dirName).Value()
 
 	table := qb.table()
 	folderTable := folderTableMgr.table
 
 	q := qb.selectDataset().Prepared(true).Where(
-		folderTable.Col("path").Eq(dir),
-		table.Col("basename").Eq(basename),
+		folderTable.Col("path").Like(dir),
+		table.Col("basename").Like(basename),
 	)
 
 	ret, err := qb.get(ctx, q)
@@ -636,4 +650,22 @@ func (qb *FileStore) MarkMissing(ctx context.Context, scanStartTime time.Time, s
 
 	n, _ := r.RowsAffected()
 	return int(n), nil
+}
+
+func (qb *FileStore) captionRepository() *captionRepository {
+	return &captionRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: videoCaptionsTable,
+			idColumn:  fileIDColumn,
+		},
+	}
+}
+
+func (qb *FileStore) GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error) {
+	return qb.captionRepository().get(ctx, fileID)
+}
+
+func (qb *FileStore) UpdateCaptions(ctx context.Context, fileID file.ID, captions []*models.VideoCaption) error {
+	return qb.captionRepository().replace(ctx, fileID, captions)
 }

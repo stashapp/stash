@@ -27,10 +27,15 @@ type SceneReaderWriter interface {
 	scene.CreatorUpdater
 }
 
+type FileReaderWriter interface {
+	file.Store
+	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
+}
+
 type Repository struct {
 	models.TxnManager
 
-	File        file.Store
+	File        FileReaderWriter
 	Gallery     GalleryReaderWriter
 	Image       ImageReaderWriter
 	Movie       models.MovieReaderWriter

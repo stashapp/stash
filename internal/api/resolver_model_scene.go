@@ -139,9 +139,14 @@ func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (re
 	return ret, nil
 }
 
-func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []*models.SceneCaption, err error) {
+func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []*models.VideoCaption, err error) {
+	primaryFile := obj.PrimaryFile()
+	if primaryFile == nil {
+		return nil, nil
+	}
+
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Scene.GetCaptions(ctx, obj.ID)
+		ret, err = r.repository.File.GetCaptions(ctx, primaryFile.Base().ID)
 		return err
 	}); err != nil {
 		return nil, err

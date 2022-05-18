@@ -264,7 +264,7 @@ func newScanFilter(c *config.Instance) *scanFilter {
 	}
 }
 
-func (f *scanFilter) Accept(path string, info fs.FileInfo) bool {
+func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
 	if fsutil.IsPathInDir(f.generatedPath, path) {
 		return false
 	}
@@ -272,6 +272,15 @@ func (f *scanFilter) Accept(path string, info fs.FileInfo) bool {
 	isVideoFile := fsutil.MatchExtension(path, f.vidExt)
 	isImageFile := fsutil.MatchExtension(path, f.imgExt)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
+
+	// handle caption files
+	if fsutil.MatchExtension(path, video.CaptionExts) {
+		// we don't include caption files in the file scan, but we do need
+		// to handle them
+		video.AssociateCaptions(ctx, path, instance.Repository, instance.Database.File, instance.Database.File)
+
+		return false
+	}
 
 	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile {
 		return false

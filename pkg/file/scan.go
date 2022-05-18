@@ -188,7 +188,7 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 			return fmt.Errorf("reading info for %q: %w", path, err)
 		}
 
-		if !s.acceptEntry(path, info) {
+		if !s.acceptEntry(ctx, path, info) {
 			if info.IsDir() {
 				return fs.SkipDir
 			}
@@ -242,12 +242,12 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 	}
 }
 
-func (s *scanJob) acceptEntry(path string, info fs.FileInfo) bool {
+func (s *scanJob) acceptEntry(ctx context.Context, path string, info fs.FileInfo) bool {
 	// always accept if there's no filters
 	accept := len(s.options.ScanFilters) == 0
 	for _, filter := range s.options.ScanFilters {
 		// accept if any filter accepts the file
-		if filter.Accept(path, info) {
+		if filter.Accept(ctx, path, info) {
 			accept = true
 			break
 		}

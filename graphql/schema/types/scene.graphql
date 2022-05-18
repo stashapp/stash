@@ -27,7 +27,7 @@ type SceneMovie {
   scene_index: Int
 }
 
-type SceneCaption {
+type VideoCaption {
   language_code: String!
   caption_type: String!
 }
@@ -47,7 +47,7 @@ type Scene {
   phash: String @deprecated(reason: "Use files.fingerprints")
   interactive: Boolean!
   interactive_speed: Int
-  captions: [SceneCaption!]
+  captions: [VideoCaption!]
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time
