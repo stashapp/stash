@@ -428,6 +428,9 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 	videoFileTable := videoFileTableMgr.table
 	imageFileTable := imageFileTableMgr.table
 
+	zipFileTable := table.As("zip_files")
+	zipFolderTable := folderTable.As("zip_files_folders")
+
 	cols := []interface{}{
 		table.Col("id").As("file_id"),
 		table.Col("basename"),
@@ -442,6 +445,8 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 		folderTable.Col("path").As("folder_path"),
 		fingerprintTable.Col("type").As("fingerprint_type"),
 		fingerprintTable.Col("fingerprint"),
+		zipFileTable.Col("basename").As("zip_basename"),
+		zipFolderTable.Col("path").As("zip_folder_path"),
 	}
 
 	cols = append(cols, videoFileQueryColumns()...)
@@ -461,6 +466,12 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 	).LeftJoin(
 		imageFileTable,
 		goqu.On(table.Col(idColumn).Eq(imageFileTable.Col(fileIDColumn))),
+	).LeftJoin(
+		zipFileTable,
+		goqu.On(table.Col("zip_file_id").Eq(zipFileTable.Col("id"))),
+	).LeftJoin(
+		zipFolderTable,
+		goqu.On(zipFileTable.Col("parent_folder_id").Eq(zipFolderTable.Col(idColumn))),
 	)
 }
 

@@ -25,7 +25,35 @@ type Repository struct {
 }
 
 // Scanner scans files into the database.
-// TODO - explain the scanning process
+//
+// The scan process works using two goroutines. The first walks through the provided paths
+// in the filesystem. It runs each directory entry through the provided ScanFilters. If none
+// of the filter Accept methods return true, then the file/directory is ignored.
+// Any folders found are handled immediately. Files inside zip files are also handled immediately.
+// All other files encountered are sent to the second goroutine queue.
+//
+// Folders are handled by checking if the folder exists in the database, by its full path.
+// If a folder entry already exists, then its mod time is updated (if applicable), the lastScanned
+// field is updated and the missing flag is nulled as needed. If the folder does not exist in the
+// database, then a new folder entry its created.
+//
+// Files are handled by first querying for the file by its path. If the file entry exists in the
+// database, then the mod time is compared to the value in the database. If the mod time is different
+// then file is marked as updated - it recalculates any fingerprints and fires decorators, then
+// the file entry is updated and any applicable handlers are fired. Regardless of whether the file
+// is marked as updated, the lastScanned field is updated and the missing flag is nulled as needed.
+//
+// If the file entry does not exist in the database, then fingerprints are calculated for the file.
+// It then determines if the file is a rename of an existing file by querying for file entries with
+// the same fingerprint. If any are found, it checks each to see if any are missing in the file
+// system. If one is, then the file is treated as renamed and its path is updated. If none are missing,
+// or many are, then the file is treated as a new file.
+//
+// If the file is not a renamed file, then the decorators are fired and the file is created, then
+// the applicable handlers are fired.
+//
+// At the end of the scan process, the database is queried for files and folders in the database
+// in the provided paths that were not seen during the scan. Theses are marked as missing.
 type Scanner struct {
 	FS                    FS
 	Repository            Repository
@@ -589,6 +617,25 @@ func appendFileUnique(v []File, toAdd []File) []File {
 	return v
 }
 
+func (s *scanJob) getFileFS(f *BaseFile) (FS, error) {
+	if f.ZipFile == nil {
+		return s.FS, nil
+	}
+
+	fs, err := s.getFileFS(f.ZipFile.Base())
+	if err != nil {
+		return nil, err
+	}
+
+	zipPath := f.ZipFile.Base().Path
+	info, err := fs.Lstat(zipPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return newZipFS(fs, zipPath, info)
+}
+
 func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp []Fingerprint) (File, error) {
 	var others []File
 
@@ -605,8 +652,12 @@ func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp []Fingerprin
 
 	for _, other := range others {
 		// if file does not exist, then update it to the new path
-		// TODO - this could be in a zip file
-		if _, err := s.FS.Lstat(other.Base().Path); err != nil {
+		fs, err := s.getFileFS(other.Base())
+		if err != nil {
+			return nil, fmt.Errorf("getting FS for %q: %w", other.Base().Path, err)
+		}
+
+		if _, err := fs.Lstat(other.Base().Path); err != nil {
 			missing = append(missing, other)
 		}
 	}
@@ -638,6 +689,7 @@ func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp []Fingerprin
 	return nil, nil
 }
 
+// returns a file only if it was updated
 func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File) (File, error) {
 	base := existing.Base()
 	path := base.Path
@@ -672,7 +724,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	}
 
 	if !updated {
-		return existing, nil
+		return nil, nil
 	}
 
 	if err := s.fireHandlers(ctx, f.fs, existing); err != nil {

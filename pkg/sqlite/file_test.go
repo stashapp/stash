@@ -17,6 +17,16 @@ func getFilePath(folderIdx int, basename string) string {
 	return filepath.Join(folderPaths[folderIdx], basename)
 }
 
+func makeZipFileWithID(index int) file.File {
+	f := makeFile(index)
+
+	return &file.BaseFile{
+		ID:       fileIDs[index],
+		Basename: f.Base().Basename,
+		Path:     getFilePath(fileFolders[index], getFileBaseName(index)),
+	}
+}
+
 func Test_fileFileStore_Create(t *testing.T) {
 	var (
 		basename               = "basename"
@@ -49,6 +59,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 			&file.BaseFile{
 				DirEntry: file.DirEntry{
 					ZipFileID:    &fileIDs[fileIdxZip],
+					ZipFile:      makeZipFileWithID(fileIdxZip),
 					ModTime:      fileModTime,
 					MissingSince: &missingSince,
 					LastScanned:  lastScanned,
@@ -74,6 +85,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 				BaseFile: &file.BaseFile{
 					DirEntry: file.DirEntry{
 						ZipFileID:    &fileIDs[fileIdxZip],
+						ZipFile:      makeZipFileWithID(fileIdxZip),
 						ModTime:      fileModTime,
 						MissingSince: &missingSince,
 						LastScanned:  lastScanned,
@@ -108,6 +120,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 				BaseFile: &file.BaseFile{
 					DirEntry: file.DirEntry{
 						ZipFileID:    &fileIDs[fileIdxZip],
+						ZipFile:      makeZipFileWithID(fileIdxZip),
 						ModTime:      fileModTime,
 						MissingSince: &missingSince,
 						LastScanned:  lastScanned,
@@ -270,6 +283,7 @@ func Test_fileStore_Update(t *testing.T) {
 				ID: fileIDs[fileIdxInZip],
 				DirEntry: file.DirEntry{
 					ZipFileID:    &fileIDs[fileIdxZip],
+					ZipFile:      makeZipFileWithID(fileIdxZip),
 					ModTime:      fileModTime,
 					MissingSince: &missingSince,
 					LastScanned:  lastScanned,
@@ -295,7 +309,8 @@ func Test_fileStore_Update(t *testing.T) {
 				BaseFile: &file.BaseFile{
 					ID: fileIDs[fileIdxStartVideoFiles],
 					DirEntry: file.DirEntry{
-						ZipFileID:    &fileIDs[fileIdxStartVideoFiles],
+						ZipFileID:    &fileIDs[fileIdxZip],
+						ZipFile:      makeZipFileWithID(fileIdxZip),
 						ModTime:      fileModTime,
 						MissingSince: &missingSince,
 						LastScanned:  lastScanned,
@@ -330,7 +345,8 @@ func Test_fileStore_Update(t *testing.T) {
 				BaseFile: &file.BaseFile{
 					ID: fileIDs[fileIdxStartImageFiles],
 					DirEntry: file.DirEntry{
-						ZipFileID:    &fileIDs[fileIdxStartImageFiles],
+						ZipFileID:    &fileIDs[fileIdxZip],
+						ZipFile:      makeZipFileWithID(fileIdxZip),
 						ModTime:      fileModTime,
 						MissingSince: &missingSince,
 						LastScanned:  lastScanned,
