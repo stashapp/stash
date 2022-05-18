@@ -47,6 +47,10 @@
 
 /* skeletons */
 .skeleton-card {
+  -webkit-animation: flickerAnimation 2s infinite;
+  -moz-animation: flickerAnimation 2s infinite;
+  -o-animation: flickerAnimation 2s infinite;
+  animation: flickerAnimation 2s infinite;
   background-clip: border-box;
   background-color: #30404d;
   border: 1px solid rgba(0, 0, 0, 0.13);
@@ -59,6 +63,16 @@
   padding: 0;
   position: relative;
   word-wrap: break-word;
+}
+
+@keyframes flickerAnimation {
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .scene-skeleton {
