@@ -47,10 +47,10 @@
 
 /* skeletons */
 .skeleton-card {
-  -webkit-animation: flickerAnimation 2s infinite ease-in-out;
-  -moz-animation: flickerAnimation 2s infinite ease-in-out;
-  -o-animation: flickerAnimation 2sinfinite ease-in-out;
-  animation: flickerAnimation 2s infinite ease-in-out;
+  -webkit-animation: cardLoadingAnimation 2s infinite ease-in-out;
+  -moz-animation: cardLoadingAnimation 2s infinite ease-in-out;
+  -o-animation: cardLoadingAnimation 2s infinite ease-in-out;
+  animation: cardLoadingAnimation 2s infinite ease-in-out;
   background-clip: border-box;
   background-color: #30404d;
   border: 1px solid rgba(0, 0, 0, 0.13);
@@ -65,7 +65,7 @@
   word-wrap: break-word;
 }
 
-@keyframes flickerAnimation {
+@keyframes cardLoadingAnimation {
   50% {
     opacity: 0.5;
   }
