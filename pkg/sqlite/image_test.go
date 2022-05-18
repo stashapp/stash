@@ -146,6 +146,12 @@ func clearImageFileIDs(image *models.Image) {
 	}
 }
 
+func makeImageFileWithID(i int) *file.ImageFile {
+	ret := makeImageFile(i)
+	ret.ID = imageFileIDs[i]
+	return ret
+}
+
 func Test_imageQueryBuilder_Update(t *testing.T) {
 	var (
 		title     = "title"
@@ -170,7 +176,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
 				Files: []*file.ImageFile{
-					makeImageFile(imageIdxWithGallery),
+					makeImageFileWithID(imageIdxWithGallery),
 				},
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -185,7 +191,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID: imageIDs[imageIdxWithGallery],
 				Files: []*file.ImageFile{
-					makeImageFile(imageIdxWithGallery),
+					makeImageFileWithID(imageIdxWithGallery),
 				},
 				Organized: true,
 				CreatedAt: createdAt,
@@ -198,7 +204,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID: imageIDs[imageIdxWithGallery],
 				Files: []*file.ImageFile{
-					makeImageFile(imageIdxWithGallery),
+					makeImageFileWithID(imageIdxWithGallery),
 				},
 				Organized: true,
 				CreatedAt: createdAt,
@@ -211,7 +217,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID: imageIDs[imageIdxWithTag],
 				Files: []*file.ImageFile{
-					makeImageFile(imageIdxWithTag),
+					makeImageFileWithID(imageIdxWithTag),
 				},
 				Organized: true,
 				CreatedAt: createdAt,
@@ -224,7 +230,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID: imageIDs[imageIdxWithPerformer],
 				Files: []*file.ImageFile{
-					makeImageFile(imageIdxWithPerformer),
+					makeImageFileWithID(imageIdxWithPerformer),
 				},
 				Organized: true,
 				CreatedAt: createdAt,
@@ -237,7 +243,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID: imageIDs[imageIdxWithGallery],
 				Files: []*file.ImageFile{
-					makeImageFile(imageIdxWithGallery),
+					makeImageFileWithID(imageIdxWithGallery),
 				},
 				Organized: true,
 				StudioID:  &invalidID,
@@ -251,7 +257,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID: imageIDs[imageIdxWithGallery],
 				Files: []*file.ImageFile{
-					makeImageFile(imageIdxWithGallery),
+					makeImageFileWithID(imageIdxWithGallery),
 				},
 				Organized:  true,
 				GalleryIDs: []int{invalidID},
@@ -265,7 +271,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID: imageIDs[imageIdxWithGallery],
 				Files: []*file.ImageFile{
-					makeImageFile(imageIdxWithGallery),
+					makeImageFileWithID(imageIdxWithGallery),
 				},
 				Organized: true,
 				TagIDs:    []int{invalidID},
@@ -279,7 +285,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			&models.Image{
 				ID: imageIDs[imageIdxWithGallery],
 				Files: []*file.ImageFile{
-					makeImageFile(imageIdxWithGallery),
+					makeImageFileWithID(imageIdxWithGallery),
 				},
 				Organized:    true,
 				PerformerIDs: []int{invalidID},
@@ -310,8 +316,6 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				t.Errorf("imageQueryBuilder.Find() error = %v", err)
 			}
 
-			// ignore file ids
-			clearImageFileIDs(s)
 			assert.Equal(copy, *s)
 
 			return

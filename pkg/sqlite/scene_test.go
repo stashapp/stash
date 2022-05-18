@@ -226,6 +226,12 @@ func clearSceneFileIDs(scene *models.Scene) {
 	}
 }
 
+func makeSceneFileWithID(i int) *file.VideoFile {
+	ret := makeSceneFile(i)
+	ret.ID = sceneFileIDs[i]
+	return ret
+}
+
 func Test_sceneQueryBuilder_Update(t *testing.T) {
 	var (
 		title            = "title"
@@ -257,7 +263,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithGallery],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithGallery),
+					makeSceneFileWithID(sceneIdxWithGallery),
 				},
 				Title:            title,
 				Details:          details,
@@ -302,7 +308,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithSpacedName],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithSpacedName),
+					makeSceneFileWithID(sceneIdxWithSpacedName),
 				},
 			},
 			false,
@@ -312,7 +318,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithGallery],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithGallery),
+					makeSceneFileWithID(sceneIdxWithGallery),
 				},
 			},
 			false,
@@ -322,7 +328,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithTag],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithTag),
+					makeSceneFileWithID(sceneIdxWithTag),
 				},
 			},
 			false,
@@ -332,7 +338,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithPerformer],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithPerformer),
+					makeSceneFileWithID(sceneIdxWithPerformer),
 				},
 			},
 			false,
@@ -342,7 +348,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithMovie],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithMovie),
+					makeSceneFileWithID(sceneIdxWithMovie),
 				},
 			},
 			false,
@@ -352,7 +358,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithGallery],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithGallery),
+					makeSceneFileWithID(sceneIdxWithGallery),
 				},
 				StudioID: &invalidID,
 			},
@@ -363,7 +369,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithGallery],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithGallery),
+					makeSceneFileWithID(sceneIdxWithGallery),
 				},
 				GalleryIDs: []int{invalidID},
 			},
@@ -374,7 +380,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithGallery],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithGallery),
+					makeSceneFileWithID(sceneIdxWithGallery),
 				},
 				TagIDs: []int{invalidID},
 			},
@@ -385,7 +391,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithGallery],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithGallery),
+					makeSceneFileWithID(sceneIdxWithGallery),
 				},
 				PerformerIDs: []int{invalidID},
 			},
@@ -396,7 +402,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID: sceneIDs[sceneIdxWithSpacedName],
 				Files: []*file.VideoFile{
-					makeSceneFile(sceneIdxWithSpacedName),
+					makeSceneFileWithID(sceneIdxWithSpacedName),
 				},
 				Movies: []models.MoviesScenes{
 					{
@@ -428,9 +434,6 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			if err != nil {
 				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
 			}
-
-			// ignore file ids
-			clearSceneFileIDs(s)
 
 			assert.Equal(copy, *s)
 		})
@@ -3651,7 +3654,8 @@ func TestSceneStore_All(t *testing.T) {
 			return nil
 		}
 
-		assert.Equal(t, len(sceneIDs), len(got))
+		// it's possible that other tests have created scenes
+		assert.GreaterOrEqual(t, len(got), len(sceneIDs))
 
 		return nil
 	})

@@ -252,8 +252,11 @@ const (
 )
 
 var (
-	folderIDs []file.FolderID
-	fileIDs   []file.ID
+	folderIDs      []file.FolderID
+	fileIDs        []file.ID
+	sceneFileIDs   []file.ID
+	imageFileIDs   []file.ID
+	galleryFileIDs []file.ID
 
 	sceneIDs       []int
 	imageIDs       []int
@@ -1010,6 +1013,7 @@ func createScenes(ctx context.Context, n int) error {
 		if err := fqb.Create(ctx, f); err != nil {
 			return fmt.Errorf("creating scene file: %w", err)
 		}
+		sceneFileIDs = append(sceneFileIDs, f.ID)
 
 		scene := makeScene(i)
 
@@ -1081,6 +1085,7 @@ func createImages(ctx context.Context, n int) error {
 		if err := fqb.Create(ctx, f); err != nil {
 			return fmt.Errorf("creating image file: %w", err)
 		}
+		imageFileIDs = append(imageFileIDs, f.ID)
 
 		image := makeImage(i)
 
@@ -1165,6 +1170,7 @@ func createGalleries(ctx context.Context, n int) error {
 		if err := fqb.Create(ctx, f); err != nil {
 			return fmt.Errorf("creating gallery file: %w", err)
 		}
+		galleryFileIDs = append(galleryFileIDs, f.ID)
 
 		// scene relationship will be created with scenes
 		const includeScenes = false

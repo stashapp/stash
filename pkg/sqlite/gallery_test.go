@@ -150,6 +150,12 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 	}
 }
 
+func makeGalleryFileWithID(i int) *file.BaseFile {
+	ret := makeGalleryFile(i)
+	ret.ID = galleryFileIDs[i]
+	return ret
+}
+
 func Test_galleryQueryBuilder_Update(t *testing.T) {
 	var (
 		title     = "title"
@@ -179,7 +185,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithScene],
 				Files: []file.File{
-					makeGalleryFile(galleryIdxWithScene),
+					makeGalleryFileWithID(galleryIdxWithScene),
 				},
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -194,7 +200,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID: galleryIDs[galleryIdxWithImage],
 				Files: []file.File{
-					makeGalleryFile(galleryIdxWithImage),
+					makeGalleryFileWithID(galleryIdxWithImage),
 				},
 				Organized: true,
 				CreatedAt: createdAt,
@@ -207,7 +213,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID: galleryIDs[galleryIdxWithScene],
 				Files: []file.File{
-					makeGalleryFile(galleryIdxWithScene),
+					makeGalleryFileWithID(galleryIdxWithScene),
 				},
 				Organized: true,
 				CreatedAt: createdAt,
@@ -220,7 +226,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID: galleryIDs[galleryIdxWithTag],
 				Files: []file.File{
-					makeGalleryFile(galleryIdxWithTag),
+					makeGalleryFileWithID(galleryIdxWithTag),
 				},
 				Organized: true,
 				CreatedAt: createdAt,
@@ -233,7 +239,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID: galleryIDs[galleryIdxWithPerformer],
 				Files: []file.File{
-					makeGalleryFile(galleryIdxWithPerformer),
+					makeGalleryFileWithID(galleryIdxWithPerformer),
 				},
 				Organized: true,
 				CreatedAt: createdAt,
@@ -246,7 +252,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID: galleryIDs[galleryIdxWithImage],
 				Files: []file.File{
-					makeGalleryFile(galleryIdxWithImage),
+					makeGalleryFileWithID(galleryIdxWithImage),
 				},
 				Organized: true,
 				StudioID:  &invalidID,
@@ -260,7 +266,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID: galleryIDs[galleryIdxWithImage],
 				Files: []file.File{
-					makeGalleryFile(galleryIdxWithImage),
+					makeGalleryFileWithID(galleryIdxWithImage),
 				},
 				Organized: true,
 				SceneIDs:  []int{invalidID},
@@ -274,7 +280,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID: galleryIDs[galleryIdxWithImage],
 				Files: []file.File{
-					makeGalleryFile(galleryIdxWithImage),
+					makeGalleryFileWithID(galleryIdxWithImage),
 				},
 				Organized: true,
 				TagIDs:    []int{invalidID},
@@ -288,7 +294,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			&models.Gallery{
 				ID: galleryIDs[galleryIdxWithImage],
 				Files: []file.File{
-					makeGalleryFile(galleryIdxWithImage),
+					makeGalleryFileWithID(galleryIdxWithImage),
 				},
 				Organized:    true,
 				PerformerIDs: []int{invalidID},
@@ -318,9 +324,6 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			if err != nil {
 				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
 			}
-
-			// ignore file ids
-			clearGalleryFileIDs(s)
 
 			assert.Equal(copy, *s)
 
