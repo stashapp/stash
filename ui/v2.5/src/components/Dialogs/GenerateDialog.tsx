@@ -205,3 +205,5 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
     </Modal>
   );
 };
+
+export default GenerateDialog;

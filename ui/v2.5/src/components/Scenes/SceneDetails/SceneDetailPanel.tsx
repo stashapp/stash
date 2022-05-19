@@ -145,3 +145,5 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     </>
   );
 };
+
+export default SceneDetailPanel;

@@ -14,7 +14,7 @@ import Mousetrap from "mousetrap";
 import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { ConfigurationContext } from "src/hooks/Config";
-import { ManualStateContext } from "./Help/Manual";
+import { ManualStateContext } from "./Help/context";
 import { SettingsButton } from "./SettingsButton";
 
 interface IMenuItem {

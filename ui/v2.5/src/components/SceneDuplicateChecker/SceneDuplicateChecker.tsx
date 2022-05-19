@@ -550,3 +550,5 @@ export const SceneDuplicateChecker: React.FC = () => {
     </Card>
   );
 };
+
+export default SceneDuplicateChecker;

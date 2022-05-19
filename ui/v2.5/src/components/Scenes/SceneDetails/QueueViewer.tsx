@@ -166,3 +166,5 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     </div>
   );
 };
+
+export default QueueViewer;

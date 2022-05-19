@@ -640,3 +640,5 @@ export const Setup: React.FC = () => {
     </Container>
   );
 };
+
+export default Setup;

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { IntlProvider, CustomFormats } from "react-intl";
 import { Helmet } from "react-helmet";
@@ -15,27 +15,36 @@ import { flattenMessages } from "src/utils";
 import Mousetrap from "mousetrap";
 import MousetrapPause from "mousetrap-pause";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import Galleries from "./components/Galleries/Galleries";
 import { MainNavbar } from "./components/MainNavbar";
 import { PageNotFound } from "./components/PageNotFound";
-import Performers from "./components/Performers/Performers";
-import Recommendations from "./components/Recommendations/Recommendations";
-import Scenes from "./components/Scenes/Scenes";
-import { Settings } from "./components/Settings/Settings";
-import { Stats } from "./components/Stats";
-import Studios from "./components/Studios/Studios";
-import { SceneFilenameParser } from "./components/SceneFilenameParser/SceneFilenameParser";
-import { SceneDuplicateChecker } from "./components/SceneDuplicateChecker/SceneDuplicateChecker";
-import Movies from "./components/Movies/Movies";
-import Tags from "./components/Tags/Tags";
-import Images from "./components/Images/Images";
-import { Setup } from "./components/Setup/Setup";
-import { Migrate } from "./components/Setup/Migrate";
 import * as GQL from "./core/generated-graphql";
 import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
 import { ConfigurationProvider } from "./hooks/Config";
-import { ManualProvider } from "./components/Help/Manual";
+import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
+
+const Performers = lazy(() => import("./components/Performers/Performers"));
+const Recommendations = lazy(
+  () => import("./components/Recommendations/Recommendations")
+);
+const Scenes = lazy(() => import("./components/Scenes/Scenes"));
+const Settings = lazy(() => import("./components/Settings/Settings"));
+const Stats = lazy(() => import("./components/Stats"));
+const Studios = lazy(() => import("./components/Studios/Studios"));
+const Galleries = lazy(() => import("./components/Galleries/Galleries"));
+
+const Movies = lazy(() => import("./components/Movies/Movies"));
+const Tags = lazy(() => import("./components/Tags/Tags"));
+const Images = lazy(() => import("./components/Images/Images"));
+const Setup = lazy(() => import("./components/Setup/Setup"));
+const Migrate = lazy(() => import("./components/Setup/Migrate"));
+
+const SceneFilenameParser = lazy(
+  () => import("./components/SceneFilenameParser/SceneFilenameParser")
+);
+const SceneDuplicateChecker = lazy(
+  () => import("./components/SceneDuplicateChecker/SceneDuplicateChecker")
+);
 
 initPolyfills();
 
@@ -118,26 +127,28 @@ export const App: React.FC = () => {
     }
 
     return (
-      <Switch>
-        <Route exact path="/" component={Recommendations} />
-        <Route path="/scenes" component={Scenes} />
-        <Route path="/images" component={Images} />
-        <Route path="/galleries" component={Galleries} />
-        <Route path="/performers" component={Performers} />
-        <Route path="/tags" component={Tags} />
-        <Route path="/studios" component={Studios} />
-        <Route path="/movies" component={Movies} />
-        <Route path="/stats" component={Stats} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
-        <Route
-          path="/sceneDuplicateChecker"
-          component={SceneDuplicateChecker}
-        />
-        <Route path="/setup" component={Setup} />
-        <Route path="/migrate" component={Migrate} />
-        <Route component={PageNotFound} />
-      </Switch>
+      <Suspense fallback={<LoadingIndicator />}>
+        <Switch>
+          <Route exact path="/" component={Recommendations} />
+          <Route path="/scenes" component={Scenes} />
+          <Route path="/images" component={Images} />
+          <Route path="/galleries" component={Galleries} />
+          <Route path="/performers" component={Performers} />
+          <Route path="/tags" component={Tags} />
+          <Route path="/studios" component={Studios} />
+          <Route path="/movies" component={Movies} />
+          <Route path="/stats" component={Stats} />
+          <Route path="/settings" component={Settings} />
+          <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
+          <Route
+            path="/sceneDuplicateChecker"
+            component={SceneDuplicateChecker}
+          />
+          <Route path="/setup" component={Setup} />
+          <Route path="/migrate" component={Migrate} />
+          <Route component={PageNotFound} />
+        </Switch>
+      </Suspense>
     );
   }
 
@@ -149,18 +160,22 @@ export const App: React.FC = () => {
           loading={config.loading}
         >
           <ToastProvider>
-            <LightboxProvider>
-              <ManualProvider>
-                <InteractiveProvider>
-                  <Helmet
-                    titleTemplate={`%s ${TITLE_SUFFIX}`}
-                    defaultTitle="Stash"
-                  />
-                  {maybeRenderNavbar()}
-                  <div className="main container-fluid">{renderContent()}</div>
-                </InteractiveProvider>
-              </ManualProvider>
-            </LightboxProvider>
+            <Suspense fallback={<LoadingIndicator />}>
+              <LightboxProvider>
+                <ManualProvider>
+                  <InteractiveProvider>
+                    <Helmet
+                      titleTemplate={`%s ${TITLE_SUFFIX}`}
+                      defaultTitle="Stash"
+                    />
+                    {maybeRenderNavbar()}
+                    <div className="main container-fluid">
+                      {renderContent()}
+                    </div>
+                  </InteractiveProvider>
+                </ManualProvider>
+              </LightboxProvider>
+            </Suspense>
           </ToastProvider>
         </ConfigurationProvider>
       </IntlProvider>

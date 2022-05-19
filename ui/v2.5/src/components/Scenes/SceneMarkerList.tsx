@@ -98,3 +98,5 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
     </>
   );
 };
+
+export default SceneMarkerList;

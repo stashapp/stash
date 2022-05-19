@@ -124,3 +124,5 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
     </Modal>
   );
 };
+
+export default SubmitStashBoxDraft;

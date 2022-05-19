@@ -13,7 +13,7 @@ import {
   TagSelect,
   MarkerTitleSuggest,
 } from "src/components/Shared";
-import { getPlayerPosition } from "src/components/ScenePlayer";
+import { getPlayerPosition } from "src/components/ScenePlayer/util";
 import { useToast } from "src/hooks";
 
 interface IFormFields {

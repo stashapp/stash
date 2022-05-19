@@ -54,3 +54,5 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
     </Button>
   );
 };
+
+export default ExternalPlayerButton;

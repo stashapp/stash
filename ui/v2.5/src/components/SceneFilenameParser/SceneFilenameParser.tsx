@@ -423,3 +423,5 @@ export const SceneFilenameParser: React.FC = () => {
     </Card>
   );
 };
+
+export default SceneFilenameParser;

@@ -300,3 +300,5 @@ export const SceneList: React.FC<ISceneList> = ({
 
   return <TaggerContext>{listData.template}</TaggerContext>;
 };
+
+export default SceneList;

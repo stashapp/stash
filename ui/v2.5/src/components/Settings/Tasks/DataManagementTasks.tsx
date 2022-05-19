@@ -15,7 +15,7 @@ import { ImportDialog } from "./ImportDialog";
 import * as GQL from "src/core/generated-graphql";
 import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting } from "../Inputs";
-import { ManualLink } from "src/components/Help/Manual";
+import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared";
 import { ConfigurationContext } from "src/hooks/Config";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";

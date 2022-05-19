@@ -904,3 +904,5 @@ export const SceneEditPanel: React.FC<IProps> = ({
     </div>
   );
 };
+
+export default SceneEditPanel;

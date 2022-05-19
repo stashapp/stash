@@ -17,7 +17,7 @@ import { useToast } from "src/hooks";
 import { GenerateOptions } from "./GenerateOptions";
 import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
-import { ManualLink } from "src/components/Help/Manual";
+import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared";
 
 interface IAutoTagOptions {

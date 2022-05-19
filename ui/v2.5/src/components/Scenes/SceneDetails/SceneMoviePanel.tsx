@@ -23,3 +23,5 @@ export const SceneMoviePanel: FunctionComponent<ISceneMoviePanelProps> = (
     </>
   );
 };
+
+export default SceneMoviePanel;

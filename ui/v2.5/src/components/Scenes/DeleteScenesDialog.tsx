@@ -162,3 +162,5 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
     </Modal>
   );
 };
+
+export default DeleteScenesDialog;

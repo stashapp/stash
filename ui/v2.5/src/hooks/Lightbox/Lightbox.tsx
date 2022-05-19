@@ -29,6 +29,7 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
 import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
+import { ILightboxImage } from "./types";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -52,18 +53,6 @@ const CLASSNAME_NAVSELECTED = `${CLASSNAME_NAV}-selected`;
 const DEFAULT_SLIDESHOW_DELAY = 5000;
 const SECONDS_TO_MS = 1000;
 const MIN_VALID_INTERVAL_SECONDS = 1;
-
-interface IImagePaths {
-  image?: GQL.Maybe<string>;
-  thumbnail?: GQL.Maybe<string>;
-}
-export interface ILightboxImage {
-  id?: string;
-  title?: GQL.Maybe<string>;
-  rating?: GQL.Maybe<number>;
-  o_counter?: GQL.Maybe<number>;
-  paths: IImagePaths;
-}
 
 interface IProps {
   images: ILightboxImage[];
@@ -813,3 +802,5 @@ export const LightboxComponent: React.FC<IProps> = ({
     </div>
   );
 };
+
+export default LightboxComponent;

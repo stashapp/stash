@@ -1,5 +1,7 @@
-import React, { useCallback, useState } from "react";
-import { ILightboxImage, LightboxComponent } from "./Lightbox";
+import React, { lazy, Suspense, useCallback, useState } from "react";
+import { ILightboxImage } from "./types";
+
+const LightboxComponent = lazy(() => import("./Lightbox"));
 
 export interface IState {
   images: ILightboxImage[];
@@ -48,9 +50,11 @@ const Lightbox: React.FC = ({ children }) => {
   return (
     <LightboxContext.Provider value={{ setLightboxState: setPartialState }}>
       {children}
-      {lightboxState.isVisible && (
-        <LightboxComponent {...lightboxState} hide={onHide} />
-      )}
+      <Suspense fallback={<></>}>
+        {lightboxState.isVisible && (
+          <LightboxComponent {...lightboxState} hide={onHide} />
+        )}
+      </Suspense>
     </LightboxContext.Provider>
   );
 };
