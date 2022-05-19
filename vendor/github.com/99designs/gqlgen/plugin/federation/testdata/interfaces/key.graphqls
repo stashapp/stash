@@ -1,4 +1,0 @@
-extend interface Hello @key(fields: "name") {
-    name: String!
-    secondary: String!
-}

@@ -1,6 +1,0 @@
-schema:
-  - "testdata/interfaces/key.graphqls"
-exec:
-  filename: testdata/interfaces/generated/exec.go
-federation:
-  filename: testdata/interfaces/generated/federation.go
