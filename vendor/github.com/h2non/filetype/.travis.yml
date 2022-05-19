@@ -1,0 +1,16 @@
+language: go
+arch:
+  - AMD64
+  - ppc64le
+go:
+  - "1.13"
+  - "1.14"
+
+before_install:
+  - go get -u -v golang.org/x/lint/golint
+
+script:
+  - diff -u <(echo -n) <(gofmt -s -d ./)
+  - diff -u <(echo -n) <(go vet ./...)
+  - diff -u <(echo -n) <(golint)
+  - go test -v -race ./...

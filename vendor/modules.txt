@@ -13,7 +13,6 @@ github.com/99designs/gqlgen/graphql/handler
 github.com/99designs/gqlgen/graphql/handler/extension
 github.com/99designs/gqlgen/graphql/handler/lru
 github.com/99designs/gqlgen/graphql/handler/transport
-github.com/99designs/gqlgen/graphql/introspection
 github.com/99designs/gqlgen/graphql/playground
 github.com/99designs/gqlgen/internal/code
 github.com/99designs/gqlgen/internal/imports
@@ -187,6 +186,12 @@ github.com/gorilla/sessions
 # github.com/gorilla/websocket v1.4.2
 ## explicit; go 1.12
 github.com/gorilla/websocket
+# github.com/h2non/filetype v1.1.3
+## explicit; go 1.13
+github.com/h2non/filetype
+github.com/h2non/filetype/matchers
+github.com/h2non/filetype/matchers/isobmff
+github.com/h2non/filetype/types
 # github.com/hashicorp/errwrap v1.0.0
 ## explicit
 github.com/hashicorp/errwrap
