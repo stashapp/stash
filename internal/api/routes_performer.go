@@ -6,22 +6,28 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
-	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type PerformerFinder interface {
+	Find(ctx context.Context, id int) (*models.Performer, error)
+	GetImage(ctx context.Context, performerID int) ([]byte, error)
+}
+
 type performerRoutes struct {
-	txnManager models.TransactionManager
+	txnManager      txn.Manager
+	performerFinder PerformerFinder
 }
 
 func (rs performerRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Route("/{performerId}", func(r chi.Router) {
-		r.Use(PerformerCtx)
+		r.Use(rs.PerformerCtx)
 		r.Get("/image", rs.Image)
 	})
 
@@ -34,8 +40,8 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
-			image, _ = repo.Performer().GetImage(performer.ID)
+		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+			image, _ = rs.performerFinder.GetImage(ctx, performer.ID)
 			return nil
 		})
 		if readTxnErr != nil {
@@ -52,7 +58,7 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func PerformerCtx(next http.Handler) http.Handler {
+func (rs performerRoutes) PerformerCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		performerID, err := strconv.Atoi(chi.URLParam(r, "performerId"))
 		if err != nil {
@@ -61,9 +67,9 @@ func PerformerCtx(next http.Handler) http.Handler {
 		}
 
 		var performer *models.Performer
-		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			var err error
-			performer, err = repo.Performer().Find(performerID)
+			performer, err = rs.performerFinder.Find(ctx, performerID)
 			return err
 		}); err != nil {
 			http.Error(w, http.StatusText(404), 404)

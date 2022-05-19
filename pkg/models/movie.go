@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type MovieFilterType struct {
 	Name     *StringCriterionInput `json:"name"`
 	Director *StringCriterionInput `json:"director"`
@@ -19,29 +21,29 @@ type MovieFilterType struct {
 }
 
 type MovieReader interface {
-	Find(id int) (*Movie, error)
-	FindMany(ids []int) ([]*Movie, error)
+	Find(ctx context.Context, id int) (*Movie, error)
+	FindMany(ctx context.Context, ids []int) ([]*Movie, error)
 	// FindBySceneID(sceneID int) ([]*Movie, error)
-	FindByName(name string, nocase bool) (*Movie, error)
-	FindByNames(names []string, nocase bool) ([]*Movie, error)
-	All() ([]*Movie, error)
-	Count() (int, error)
-	Query(movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int, error)
-	GetFrontImage(movieID int) ([]byte, error)
-	GetBackImage(movieID int) ([]byte, error)
-	FindByPerformerID(performerID int) ([]*Movie, error)
-	CountByPerformerID(performerID int) (int, error)
-	FindByStudioID(studioID int) ([]*Movie, error)
-	CountByStudioID(studioID int) (int, error)
+	FindByName(ctx context.Context, name string, nocase bool) (*Movie, error)
+	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Movie, error)
+	All(ctx context.Context) ([]*Movie, error)
+	Count(ctx context.Context) (int, error)
+	Query(ctx context.Context, movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int, error)
+	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
+	GetBackImage(ctx context.Context, movieID int) ([]byte, error)
+	FindByPerformerID(ctx context.Context, performerID int) ([]*Movie, error)
+	CountByPerformerID(ctx context.Context, performerID int) (int, error)
+	FindByStudioID(ctx context.Context, studioID int) ([]*Movie, error)
+	CountByStudioID(ctx context.Context, studioID int) (int, error)
 }
 
 type MovieWriter interface {
-	Create(newMovie Movie) (*Movie, error)
-	Update(updatedMovie MoviePartial) (*Movie, error)
-	UpdateFull(updatedMovie Movie) (*Movie, error)
-	Destroy(id int) error
-	UpdateImages(movieID int, frontImage []byte, backImage []byte) error
-	DestroyImages(movieID int) error
+	Create(ctx context.Context, newMovie Movie) (*Movie, error)
+	Update(ctx context.Context, updatedMovie MoviePartial) (*Movie, error)
+	UpdateFull(ctx context.Context, updatedMovie Movie) (*Movie, error)
+	Destroy(ctx context.Context, id int) error
+	UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error
+	DestroyImages(ctx context.Context, movieID int) error
 }
 
 type MovieReaderWriter interface {

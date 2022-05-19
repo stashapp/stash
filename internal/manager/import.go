@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -52,22 +53,22 @@ func (e ImportDuplicateEnum) MarshalGQL(w io.Writer) {
 }
 
 type importer interface {
-	PreImport() error
-	PostImport(id int) error
+	PreImport(ctx context.Context) error
+	PostImport(ctx context.Context, id int) error
 	Name() string
-	FindExistingID() (*int, error)
-	Create() (*int, error)
-	Update(id int) error
+	FindExistingID(ctx context.Context) (*int, error)
+	Create(ctx context.Context) (*int, error)
+	Update(ctx context.Context, id int) error
 }
 
-func performImport(i importer, duplicateBehaviour ImportDuplicateEnum) error {
-	if err := i.PreImport(); err != nil {
+func performImport(ctx context.Context, i importer, duplicateBehaviour ImportDuplicateEnum) error {
+	if err := i.PreImport(ctx); err != nil {
 		return err
 	}
 
 	// try to find an existing object with the same name
 	name := i.Name()
-	existing, err := i.FindExistingID()
+	existing, err := i.FindExistingID(ctx)
 	if err != nil {
 		return fmt.Errorf("error finding existing objects: %v", err)
 	}
@@ -84,12 +85,12 @@ func performImport(i importer, duplicateBehaviour ImportDuplicateEnum) error {
 
 		// must be overwriting
 		id = *existing
-		if err := i.Update(id); err != nil {
+		if err := i.Update(ctx, id); err != nil {
 			return fmt.Errorf("error updating existing object: %v", err)
 		}
 	} else {
 		// creating
-		createdID, err := i.Create()
+		createdID, err := i.Create(ctx)
 		if err != nil {
 			return fmt.Errorf("error creating object: %v", err)
 		}
@@ -97,7 +98,7 @@ func performImport(i importer, duplicateBehaviour ImportDuplicateEnum) error {
 		id = *createdID
 	}
 
-	if err := i.PostImport(id); err != nil {
+	if err := i.PostImport(ctx, id); err != nil {
 		return err
 	}
 

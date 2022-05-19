@@ -12,10 +12,18 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 const mutexType = "image"
+
+type FinderCreatorUpdater interface {
+	FindByChecksum(ctx context.Context, checksum string) (*models.Image, error)
+	Create(ctx context.Context, newImage models.Image) (*models.Image, error)
+	UpdateFull(ctx context.Context, updatedImage models.Image) (*models.Image, error)
+	Update(ctx context.Context, updatedImage models.ImagePartial) (*models.Image, error)
+}
 
 type Scanner struct {
 	file.Scanner
@@ -23,7 +31,8 @@ type Scanner struct {
 	StripFileExtension bool
 
 	CaseSensitiveFs bool
-	TxnManager      models.TransactionManager
+	TxnManager      txn.Manager
+	CreatorUpdater  FinderCreatorUpdater
 	Paths           *paths.Paths
 	PluginCache     *plugin.Cache
 	MutexManager    *utils.MutexManager
@@ -71,20 +80,20 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 		done := make(chan struct{})
 		scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
 
-		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
+		if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
 			// free the mutex once transaction is complete
 			defer close(done)
 			var err error
 
 			// ensure no clashes of hashes
 			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
-				dupe, _ := r.Image().FindByChecksum(i.Checksum)
+				dupe, _ := scanner.CreatorUpdater.FindByChecksum(ctx, i.Checksum)
 				if dupe != nil {
 					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, dupe.Path)
 				}
 			}
 
-			retImage, err = r.Image().UpdateFull(*i)
+			retImage, err = scanner.CreatorUpdater.UpdateFull(ctx, *i)
 			return err
 		}); err != nil {
 			return nil, err
@@ -121,9 +130,9 @@ func (scanner *Scanner) ScanNew(ctx context.Context, f file.SourceFile) (retImag
 
 	// check for image by checksum
 	var existingImage *models.Image
-	if err := scanner.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
 		var err error
-		existingImage, err = r.Image().FindByChecksum(checksum)
+		existingImage, err = scanner.CreatorUpdater.FindByChecksum(ctx, checksum)
 		return err
 	}); err != nil {
 		return nil, err
@@ -151,8 +160,8 @@ func (scanner *Scanner) ScanNew(ctx context.Context, f file.SourceFile) (retImag
 				Path: &path,
 			}
 
-			if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-				retImage, err = r.Image().Update(imagePartial)
+			if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
+				retImage, err = scanner.CreatorUpdater.Update(ctx, imagePartial)
 				return err
 			}); err != nil {
 				return nil, err
@@ -176,9 +185,9 @@ func (scanner *Scanner) ScanNew(ctx context.Context, f file.SourceFile) (retImag
 			return nil, err
 		}
 
-		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
+		if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
 			var err error
-			retImage, err = r.Image().Create(newImage)
+			retImage, err = scanner.CreatorUpdater.Create(ctx, newImage)
 			return err
 		}); err != nil {
 			return nil, err

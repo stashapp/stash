@@ -1,6 +1,7 @@
 package identify
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"time"
@@ -9,14 +10,19 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func createMissingStudio(endpoint string, repo models.Repository, studio *models.ScrapedStudio) (*int64, error) {
-	created, err := repo.Studio().Create(scrapedToStudioInput(studio))
+type StudioCreator interface {
+	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
+	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error
+}
+
+func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, studio *models.ScrapedStudio) (*int64, error) {
+	created, err := w.Create(ctx, scrapedToStudioInput(studio))
 	if err != nil {
 		return nil, fmt.Errorf("error creating studio: %w", err)
 	}
 
 	if endpoint != "" && studio.RemoteSiteID != nil {
-		if err := repo.Studio().UpdateStashIDs(created.ID, []models.StashID{
+		if err := w.UpdateStashIDs(ctx, created.ID, []models.StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *studio.RemoteSiteID,

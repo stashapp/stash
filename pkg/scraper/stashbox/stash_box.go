@@ -25,18 +25,52 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/tag"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+type SceneReader interface {
+	Find(ctx context.Context, id int) (*models.Scene, error)
+	GetStashIDs(ctx context.Context, sceneID int) ([]*models.StashID, error)
+}
+
+type PerformerReader interface {
+	match.PerformerFinder
+	Find(ctx context.Context, id int) (*models.Performer, error)
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
+	GetStashIDs(ctx context.Context, performerID int) ([]*models.StashID, error)
+	GetImage(ctx context.Context, performerID int) ([]byte, error)
+}
+
+type StudioReader interface {
+	match.StudioFinder
+	studio.Finder
+	GetStashIDs(ctx context.Context, studioID int) ([]*models.StashID, error)
+}
+type TagFinder interface {
+	tag.Queryer
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Tag, error)
+}
+
+type Repository struct {
+	Scene     SceneReader
+	Performer PerformerReader
+	Tag       TagFinder
+	Studio    StudioReader
+}
 
 // Client represents the client interface to a stash-box server instance.
 type Client struct {
 	client     *graphql.Client
-	txnManager models.TransactionManager
+	txnManager txn.Manager
+	repository Repository
 	box        models.StashBox
 }
 
 // NewClient returns a new instance of a stash-box client.
-func NewClient(box models.StashBox, txnManager models.TransactionManager) *Client {
+func NewClient(box models.StashBox, txnManager txn.Manager, repo Repository) *Client {
 	authHeader := func(req *http.Request) {
 		req.Header.Set("ApiKey", box.APIKey)
 	}
@@ -48,6 +82,7 @@ func NewClient(box models.StashBox, txnManager models.TransactionManager) *Clien
 	return &Client{
 		client:     client,
 		txnManager: txnManager,
+		repository: repo,
 		box:        box,
 	}
 }
@@ -93,11 +128,11 @@ func (c Client) FindStashBoxSceneByFingerprints(ctx context.Context, sceneID int
 func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int) ([][]*scraper.ScrapedScene, error) {
 	var fingerprints [][]*graphql.FingerprintQueryInput
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		qb := r.Scene()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		qb := c.repository.Scene
 
 		for _, sceneID := range ids {
-			scene, err := qb.Find(sceneID)
+			scene, err := qb.Find(ctx, sceneID)
 			if err != nil {
 				return err
 			}
@@ -178,11 +213,11 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 
 	var fingerprints []graphql.FingerprintSubmission
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		qb := r.Scene()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		qb := c.repository.Scene
 
 		for _, sceneID := range ids {
-			scene, err := qb.Find(sceneID)
+			scene, err := qb.Find(ctx, sceneID)
 			if err != nil {
 				return err
 			}
@@ -191,7 +226,7 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 				continue
 			}
 
-			stashIDs, err := qb.GetStashIDs(sceneID)
+			stashIDs, err := qb.GetStashIDs(ctx, sceneID)
 			if err != nil {
 				return err
 			}
@@ -308,11 +343,11 @@ func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs 
 
 	var performers []*models.Performer
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		qb := r.Performer()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		qb := c.repository.Performer
 
 		for _, performerID := range ids {
-			performer, err := qb.Find(performerID)
+			performer, err := qb.Find(ctx, performerID)
 			if err != nil {
 				return err
 			}
@@ -342,11 +377,11 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 
 	var performers []*models.Performer
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		qb := r.Performer()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		qb := c.repository.Performer
 
 		for _, performerID := range ids {
-			performer, err := qb.Find(performerID)
+			performer, err := qb.Find(ctx, performerID)
 			if err != nil {
 				return err
 			}
@@ -623,9 +658,9 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		ss.Image = getFirstImage(ctx, c.getHTTPClient(), s.Images)
 	}
 
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		pqb := r.Performer()
-		tqb := r.Tag()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		pqb := c.repository.Performer
+		tqb := c.repository.Tag
 
 		if s.Studio != nil {
 			studioID := s.Studio.ID
@@ -635,7 +670,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 				RemoteSiteID: &studioID,
 			}
 
-			err := match.ScrapedStudio(r.Studio(), ss.Studio, &c.box.Endpoint)
+			err := match.ScrapedStudio(ctx, c.repository.Studio, ss.Studio, &c.box.Endpoint)
 			if err != nil {
 				return err
 			}
@@ -644,7 +679,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 		for _, p := range s.Performers {
 			sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-			err := match.ScrapedPerformer(pqb, sp, &c.box.Endpoint)
+			err := match.ScrapedPerformer(ctx, pqb, sp, &c.box.Endpoint)
 			if err != nil {
 				return err
 			}
@@ -657,7 +692,7 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 				Name: t.Name,
 			}
 
-			err := match.ScrapedTag(tqb, st)
+			err := match.ScrapedTag(ctx, tqb, st)
 			if err != nil {
 				return err
 			}
@@ -706,12 +741,13 @@ func (c Client) GetUser(ctx context.Context) (*graphql.Me, error) {
 func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint string, imagePath string) (*string, error) {
 	draft := graphql.SceneDraftInput{}
 	var image *os.File
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		qb := r.Scene()
-		pqb := r.Performer()
-		sqb := r.Studio()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		r := c.repository
+		qb := r.Scene
+		pqb := r.Performer
+		sqb := r.Studio
 
-		scene, err := qb.Find(sceneID)
+		scene, err := qb.Find(ctx, sceneID)
 		if err != nil {
 			return err
 		}
@@ -731,7 +767,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		}
 
 		if scene.StudioID.Valid {
-			studio, err := sqb.Find(int(scene.StudioID.Int64))
+			studio, err := sqb.Find(ctx, int(scene.StudioID.Int64))
 			if err != nil {
 				return err
 			}
@@ -739,7 +775,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 				Name: studio.Name.String,
 			}
 
-			stashIDs, err := sqb.GetStashIDs(studio.ID)
+			stashIDs, err := sqb.GetStashIDs(ctx, studio.ID)
 			if err != nil {
 				return err
 			}
@@ -781,7 +817,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		}
 		draft.Fingerprints = fingerprints
 
-		scenePerformers, err := pqb.FindBySceneID(sceneID)
+		scenePerformers, err := pqb.FindBySceneID(ctx, sceneID)
 		if err != nil {
 			return err
 		}
@@ -792,7 +828,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 				Name: p.Name.String,
 			}
 
-			stashIDs, err := pqb.GetStashIDs(p.ID)
+			stashIDs, err := pqb.GetStashIDs(ctx, p.ID)
 			if err != nil {
 				return err
 			}
@@ -809,7 +845,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		draft.Performers = performers
 
 		var tags []*graphql.DraftEntityInput
-		sceneTags, err := r.Tag().FindBySceneID(scene.ID)
+		sceneTags, err := r.Tag.FindBySceneID(ctx, scene.ID)
 		if err != nil {
 			return err
 		}
@@ -826,7 +862,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 			}
 		}
 
-		stashIDs, err := qb.GetStashIDs(sceneID)
+		stashIDs, err := qb.GetStashIDs(ctx, sceneID)
 		if err != nil {
 			return err
 		}
@@ -863,9 +899,9 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, endpoint string) (*string, error) {
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		pqb := r.Performer()
-		img, _ := pqb.GetImage(performer.ID)
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		pqb := c.repository.Performer
+		img, _ := pqb.GetImage(ctx, performer.ID)
 		if img != nil {
 			image = bytes.NewReader(img)
 		}
@@ -924,7 +960,7 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 			draft.Urls = urls
 		}
 
-		stashIDs, err := pqb.GetStashIDs(performer.ID)
+		stashIDs, err := pqb.GetStashIDs(ctx, performer.ID)
 		if err != nil {
 			return err
 		}

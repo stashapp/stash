@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -29,45 +30,42 @@ type imageQueryBuilder struct {
 	repository
 }
 
-func NewImageReaderWriter(tx dbi) *imageQueryBuilder {
-	return &imageQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: imageTable,
-			idColumn:  idColumn,
-		},
-	}
+var ImageReaderWriter = &imageQueryBuilder{
+	repository{
+		tableName: imageTable,
+		idColumn:  idColumn,
+	},
 }
 
-func (qb *imageQueryBuilder) Create(newObject models.Image) (*models.Image, error) {
+func (qb *imageQueryBuilder) Create(ctx context.Context, newObject models.Image) (*models.Image, error) {
 	var ret models.Image
-	if err := qb.insertObject(newObject, &ret); err != nil {
+	if err := qb.insertObject(ctx, newObject, &ret); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
 }
 
-func (qb *imageQueryBuilder) Update(updatedObject models.ImagePartial) (*models.Image, error) {
+func (qb *imageQueryBuilder) Update(ctx context.Context, updatedObject models.ImagePartial) (*models.Image, error) {
 	const partial = true
-	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.find(updatedObject.ID)
+	return qb.find(ctx, updatedObject.ID)
 }
 
-func (qb *imageQueryBuilder) UpdateFull(updatedObject models.Image) (*models.Image, error) {
+func (qb *imageQueryBuilder) UpdateFull(ctx context.Context, updatedObject models.Image) (*models.Image, error) {
 	const partial = false
-	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.find(updatedObject.ID)
+	return qb.find(ctx, updatedObject.ID)
 }
 
-func (qb *imageQueryBuilder) IncrementOCounter(id int) (int, error) {
-	_, err := qb.tx.Exec(
+func (qb *imageQueryBuilder) IncrementOCounter(ctx context.Context, id int) (int, error) {
+	_, err := qb.tx.Exec(ctx,
 		`UPDATE `+imageTable+` SET o_counter = o_counter + 1 WHERE `+imageTable+`.id = ?`,
 		id,
 	)
@@ -75,7 +73,7 @@ func (qb *imageQueryBuilder) IncrementOCounter(id int) (int, error) {
 		return 0, err
 	}
 
-	image, err := qb.find(id)
+	image, err := qb.find(ctx, id)
 	if err != nil {
 		return 0, err
 	}
@@ -83,8 +81,8 @@ func (qb *imageQueryBuilder) IncrementOCounter(id int) (int, error) {
 	return image.OCounter, nil
 }
 
-func (qb *imageQueryBuilder) DecrementOCounter(id int) (int, error) {
-	_, err := qb.tx.Exec(
+func (qb *imageQueryBuilder) DecrementOCounter(ctx context.Context, id int) (int, error) {
+	_, err := qb.tx.Exec(ctx,
 		`UPDATE `+imageTable+` SET o_counter = o_counter - 1 WHERE `+imageTable+`.id = ? and `+imageTable+`.o_counter > 0`,
 		id,
 	)
@@ -92,7 +90,7 @@ func (qb *imageQueryBuilder) DecrementOCounter(id int) (int, error) {
 		return 0, err
 	}
 
-	image, err := qb.find(id)
+	image, err := qb.find(ctx, id)
 	if err != nil {
 		return 0, err
 	}
@@ -100,8 +98,8 @@ func (qb *imageQueryBuilder) DecrementOCounter(id int) (int, error) {
 	return image.OCounter, nil
 }
 
-func (qb *imageQueryBuilder) ResetOCounter(id int) (int, error) {
-	_, err := qb.tx.Exec(
+func (qb *imageQueryBuilder) ResetOCounter(ctx context.Context, id int) (int, error) {
+	_, err := qb.tx.Exec(ctx,
 		`UPDATE `+imageTable+` SET o_counter = 0 WHERE `+imageTable+`.id = ?`,
 		id,
 	)
@@ -109,7 +107,7 @@ func (qb *imageQueryBuilder) ResetOCounter(id int) (int, error) {
 		return 0, err
 	}
 
-	image, err := qb.find(id)
+	image, err := qb.find(ctx, id)
 	if err != nil {
 		return 0, err
 	}
@@ -117,18 +115,18 @@ func (qb *imageQueryBuilder) ResetOCounter(id int) (int, error) {
 	return image.OCounter, nil
 }
 
-func (qb *imageQueryBuilder) Destroy(id int) error {
-	return qb.destroyExisting([]int{id})
+func (qb *imageQueryBuilder) Destroy(ctx context.Context, id int) error {
+	return qb.destroyExisting(ctx, []int{id})
 }
 
-func (qb *imageQueryBuilder) Find(id int) (*models.Image, error) {
-	return qb.find(id)
+func (qb *imageQueryBuilder) Find(ctx context.Context, id int) (*models.Image, error) {
+	return qb.find(ctx, id)
 }
 
-func (qb *imageQueryBuilder) FindMany(ids []int) ([]*models.Image, error) {
+func (qb *imageQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Image, error) {
 	var images []*models.Image
 	for _, id := range ids {
-		image, err := qb.Find(id)
+		image, err := qb.Find(ctx, id)
 		if err != nil {
 			return nil, err
 		}
@@ -143,9 +141,9 @@ func (qb *imageQueryBuilder) FindMany(ids []int) ([]*models.Image, error) {
 	return images, nil
 }
 
-func (qb *imageQueryBuilder) find(id int) (*models.Image, error) {
+func (qb *imageQueryBuilder) find(ctx context.Context, id int) (*models.Image, error) {
 	var ret models.Image
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(ctx, id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -154,43 +152,43 @@ func (qb *imageQueryBuilder) find(id int) (*models.Image, error) {
 	return &ret, nil
 }
 
-func (qb *imageQueryBuilder) FindByChecksum(checksum string) (*models.Image, error) {
+func (qb *imageQueryBuilder) FindByChecksum(ctx context.Context, checksum string) (*models.Image, error) {
 	query := "SELECT * FROM images WHERE checksum = ? LIMIT 1"
 	args := []interface{}{checksum}
-	return qb.queryImage(query, args)
+	return qb.queryImage(ctx, query, args)
 }
 
-func (qb *imageQueryBuilder) FindByPath(path string) (*models.Image, error) {
+func (qb *imageQueryBuilder) FindByPath(ctx context.Context, path string) (*models.Image, error) {
 	query := selectAll(imageTable) + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
-	return qb.queryImage(query, args)
+	return qb.queryImage(ctx, query, args)
 }
 
-func (qb *imageQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Image, error) {
+func (qb *imageQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Image, error) {
 	args := []interface{}{galleryID}
 	sort := "path"
 	sortDir := models.SortDirectionEnumAsc
-	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(&models.FindFilterType{
+	return qb.queryImages(ctx, imagesForGalleryQuery+qb.getImageSort(&models.FindFilterType{
 		Sort:      &sort,
 		Direction: &sortDir,
 	}), args)
 }
 
-func (qb *imageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
+func (qb *imageQueryBuilder) CountByGalleryID(ctx context.Context, galleryID int) (int, error) {
 	args := []interface{}{galleryID}
-	return qb.runCountQuery(qb.buildCountQuery(countImagesForGalleryQuery), args)
+	return qb.runCountQuery(ctx, qb.buildCountQuery(countImagesForGalleryQuery), args)
 }
 
-func (qb *imageQueryBuilder) Count() (int, error) {
-	return qb.runCountQuery(qb.buildCountQuery("SELECT images.id FROM images"), nil)
+func (qb *imageQueryBuilder) Count(ctx context.Context) (int, error) {
+	return qb.runCountQuery(ctx, qb.buildCountQuery("SELECT images.id FROM images"), nil)
 }
 
-func (qb *imageQueryBuilder) Size() (float64, error) {
-	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM images", nil)
+func (qb *imageQueryBuilder) Size(ctx context.Context) (float64, error) {
+	return qb.runSumQuery(ctx, "SELECT SUM(cast(size as double)) as sum FROM images", nil)
 }
 
-func (qb *imageQueryBuilder) All() ([]*models.Image, error) {
-	return qb.queryImages(selectAll(imageTable)+qb.getImageSort(nil), nil)
+func (qb *imageQueryBuilder) All(ctx context.Context) ([]*models.Image, error) {
+	return qb.queryImages(ctx, selectAll(imageTable)+qb.getImageSort(nil), nil)
 }
 
 func (qb *imageQueryBuilder) validateFilter(imageFilter *models.ImageFilterType) error {
@@ -224,41 +222,41 @@ func (qb *imageQueryBuilder) validateFilter(imageFilter *models.ImageFilterType)
 	return nil
 }
 
-func (qb *imageQueryBuilder) makeFilter(imageFilter *models.ImageFilterType) *filterBuilder {
+func (qb *imageQueryBuilder) makeFilter(ctx context.Context, imageFilter *models.ImageFilterType) *filterBuilder {
 	query := &filterBuilder{}
 
 	if imageFilter.And != nil {
-		query.and(qb.makeFilter(imageFilter.And))
+		query.and(qb.makeFilter(ctx, imageFilter.And))
 	}
 	if imageFilter.Or != nil {
-		query.or(qb.makeFilter(imageFilter.Or))
+		query.or(qb.makeFilter(ctx, imageFilter.Or))
 	}
 	if imageFilter.Not != nil {
-		query.not(qb.makeFilter(imageFilter.Not))
+		query.not(qb.makeFilter(ctx, imageFilter.Not))
 	}
 
-	query.handleCriterion(stringCriterionHandler(imageFilter.Checksum, "images.checksum"))
-	query.handleCriterion(stringCriterionHandler(imageFilter.Title, "images.title"))
-	query.handleCriterion(stringCriterionHandler(imageFilter.Path, "images.path"))
-	query.handleCriterion(intCriterionHandler(imageFilter.Rating, "images.rating"))
-	query.handleCriterion(intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
-	query.handleCriterion(boolCriterionHandler(imageFilter.Organized, "images.organized"))
-	query.handleCriterion(resolutionCriterionHandler(imageFilter.Resolution, "images.height", "images.width"))
-	query.handleCriterion(imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Checksum, "images.checksum"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Path, "images.path"))
+	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating"))
+	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
+	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized"))
+	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "images.height", "images.width"))
+	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
 
-	query.handleCriterion(imageTagsCriterionHandler(qb, imageFilter.Tags))
-	query.handleCriterion(imageTagCountCriterionHandler(qb, imageFilter.TagCount))
-	query.handleCriterion(imageGalleriesCriterionHandler(qb, imageFilter.Galleries))
-	query.handleCriterion(imagePerformersCriterionHandler(qb, imageFilter.Performers))
-	query.handleCriterion(imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
-	query.handleCriterion(imageStudioCriterionHandler(qb, imageFilter.Studios))
-	query.handleCriterion(imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
-	query.handleCriterion(imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
+	query.handleCriterion(ctx, imageTagsCriterionHandler(qb, imageFilter.Tags))
+	query.handleCriterion(ctx, imageTagCountCriterionHandler(qb, imageFilter.TagCount))
+	query.handleCriterion(ctx, imageGalleriesCriterionHandler(qb, imageFilter.Galleries))
+	query.handleCriterion(ctx, imagePerformersCriterionHandler(qb, imageFilter.Performers))
+	query.handleCriterion(ctx, imagePerformerCountCriterionHandler(qb, imageFilter.PerformerCount))
+	query.handleCriterion(ctx, imageStudioCriterionHandler(qb, imageFilter.Studios))
+	query.handleCriterion(ctx, imagePerformerTagsCriterionHandler(qb, imageFilter.PerformerTags))
+	query.handleCriterion(ctx, imagePerformerFavoriteCriterionHandler(imageFilter.PerformerFavorite))
 
 	return query
 }
 
-func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
+func (qb *imageQueryBuilder) makeQuery(ctx context.Context, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if imageFilter == nil {
 		imageFilter = &models.ImageFilterType{}
 	}
@@ -277,7 +275,7 @@ func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, find
 	if err := qb.validateFilter(imageFilter); err != nil {
 		return nil, err
 	}
-	filter := qb.makeFilter(imageFilter)
+	filter := qb.makeFilter(ctx, imageFilter)
 
 	query.addFilter(filter)
 
@@ -286,18 +284,18 @@ func (qb *imageQueryBuilder) makeQuery(imageFilter *models.ImageFilterType, find
 	return &query, nil
 }
 
-func (qb *imageQueryBuilder) Query(options models.ImageQueryOptions) (*models.ImageQueryResult, error) {
-	query, err := qb.makeQuery(options.ImageFilter, options.FindFilter)
+func (qb *imageQueryBuilder) Query(ctx context.Context, options models.ImageQueryOptions) (*models.ImageQueryResult, error) {
+	query, err := qb.makeQuery(ctx, options.ImageFilter, options.FindFilter)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := qb.queryGroupedFields(options, *query)
+	result, err := qb.queryGroupedFields(ctx, options, *query)
 	if err != nil {
 		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
 	}
 
-	idsResult, err := query.findIDs()
+	idsResult, err := query.findIDs(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error finding IDs: %w", err)
 	}
@@ -306,7 +304,7 @@ func (qb *imageQueryBuilder) Query(options models.ImageQueryOptions) (*models.Im
 	return result, nil
 }
 
-func (qb *imageQueryBuilder) queryGroupedFields(options models.ImageQueryOptions, query queryBuilder) (*models.ImageQueryResult, error) {
+func (qb *imageQueryBuilder) queryGroupedFields(ctx context.Context, options models.ImageQueryOptions, query queryBuilder) (*models.ImageQueryResult, error) {
 	if !options.Count && !options.Megapixels && !options.TotalSize {
 		// nothing to do - return empty result
 		return models.NewImageQueryResult(qb), nil
@@ -336,7 +334,7 @@ func (qb *imageQueryBuilder) queryGroupedFields(options models.ImageQueryOptions
 		Megapixels float64
 		Size       float64
 	}{}
-	if err := qb.repository.queryStruct(aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
 		return nil, err
 	}
 
@@ -347,17 +345,17 @@ func (qb *imageQueryBuilder) queryGroupedFields(options models.ImageQueryOptions
 	return ret, nil
 }
 
-func (qb *imageQueryBuilder) QueryCount(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error) {
-	query, err := qb.makeQuery(imageFilter, findFilter)
+func (qb *imageQueryBuilder) QueryCount(ctx context.Context, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error) {
+	query, err := qb.makeQuery(ctx, imageFilter, findFilter)
 	if err != nil {
 		return 0, err
 	}
 
-	return query.executeCount()
+	return query.executeCount(ctx)
 }
 
 func imageIsMissingCriterionHandler(qb *imageQueryBuilder, isMissing *string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "studio":
@@ -453,7 +451,7 @@ func imagePerformerCountCriterionHandler(qb *imageQueryBuilder, performerCount *
 }
 
 func imagePerformerFavoriteCriterionHandler(performerfavorite *bool) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if performerfavorite != nil {
 			f.addLeftJoin("performers_images", "", "images.id = performers_images.image_id")
 
@@ -487,7 +485,7 @@ func imageStudioCriterionHandler(qb *imageQueryBuilder, studios *models.Hierarch
 }
 
 func imagePerformerTagsCriterionHandler(qb *imageQueryBuilder, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if tags != nil {
 			if tags.Modifier == models.CriterionModifierIsNull || tags.Modifier == models.CriterionModifierNotNull {
 				var notClause string
@@ -506,7 +504,7 @@ func imagePerformerTagsCriterionHandler(qb *imageQueryBuilder, tags *models.Hier
 				return
 			}
 
-			valuesClause := getHierarchicalValues(qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
+			valuesClause := getHierarchicalValues(ctx, qb.tx, tags.Value, tagTable, "tags_relations", "", tags.Depth)
 
 			f.addWith(`performer_tags AS (
 SELECT pi.image_id, t.column1 AS root_tag_id FROM performers_images pi
@@ -538,17 +536,17 @@ func (qb *imageQueryBuilder) getImageSort(findFilter *models.FindFilterType) str
 	}
 }
 
-func (qb *imageQueryBuilder) queryImage(query string, args []interface{}) (*models.Image, error) {
-	results, err := qb.queryImages(query, args)
+func (qb *imageQueryBuilder) queryImage(ctx context.Context, query string, args []interface{}) (*models.Image, error) {
+	results, err := qb.queryImages(ctx, query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *imageQueryBuilder) queryImages(query string, args []interface{}) ([]*models.Image, error) {
+func (qb *imageQueryBuilder) queryImages(ctx context.Context, query string, args []interface{}) ([]*models.Image, error) {
 	var ret models.Images
-	if err := qb.query(query, args, &ret); err != nil {
+	if err := qb.query(ctx, query, args, &ret); err != nil {
 		return nil, err
 	}
 
@@ -566,13 +564,13 @@ func (qb *imageQueryBuilder) galleriesRepository() *joinRepository {
 	}
 }
 
-func (qb *imageQueryBuilder) GetGalleryIDs(imageID int) ([]int, error) {
-	return qb.galleriesRepository().getIDs(imageID)
+func (qb *imageQueryBuilder) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
+	return qb.galleriesRepository().getIDs(ctx, imageID)
 }
 
-func (qb *imageQueryBuilder) UpdateGalleries(imageID int, galleryIDs []int) error {
+func (qb *imageQueryBuilder) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.galleriesRepository().replace(imageID, galleryIDs)
+	return qb.galleriesRepository().replace(ctx, imageID, galleryIDs)
 }
 
 func (qb *imageQueryBuilder) performersRepository() *joinRepository {
@@ -586,13 +584,13 @@ func (qb *imageQueryBuilder) performersRepository() *joinRepository {
 	}
 }
 
-func (qb *imageQueryBuilder) GetPerformerIDs(imageID int) ([]int, error) {
-	return qb.performersRepository().getIDs(imageID)
+func (qb *imageQueryBuilder) GetPerformerIDs(ctx context.Context, imageID int) ([]int, error) {
+	return qb.performersRepository().getIDs(ctx, imageID)
 }
 
-func (qb *imageQueryBuilder) UpdatePerformers(imageID int, performerIDs []int) error {
+func (qb *imageQueryBuilder) UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.performersRepository().replace(imageID, performerIDs)
+	return qb.performersRepository().replace(ctx, imageID, performerIDs)
 }
 
 func (qb *imageQueryBuilder) tagsRepository() *joinRepository {
@@ -606,11 +604,11 @@ func (qb *imageQueryBuilder) tagsRepository() *joinRepository {
 	}
 }
 
-func (qb *imageQueryBuilder) GetTagIDs(imageID int) ([]int, error) {
-	return qb.tagsRepository().getIDs(imageID)
+func (qb *imageQueryBuilder) GetTagIDs(ctx context.Context, imageID int) ([]int, error) {
+	return qb.tagsRepository().getIDs(ctx, imageID)
 }
 
-func (qb *imageQueryBuilder) UpdateTags(imageID int, tagIDs []int) error {
+func (qb *imageQueryBuilder) UpdateTags(ctx context.Context, imageID int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.tagsRepository().replace(imageID, tagIDs)
+	return qb.tagsRepository().replace(ctx, imageID, tagIDs)
 }

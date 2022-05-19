@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type GalleryFilterType struct {
 	And     *GalleryFilterType    `json:"AND"`
 	Or      *GalleryFilterType    `json:"OR"`
@@ -67,33 +69,33 @@ type GalleryDestroyInput struct {
 }
 
 type GalleryReader interface {
-	Find(id int) (*Gallery, error)
-	FindMany(ids []int) ([]*Gallery, error)
-	FindByChecksum(checksum string) (*Gallery, error)
-	FindByChecksums(checksums []string) ([]*Gallery, error)
-	FindByPath(path string) (*Gallery, error)
-	FindBySceneID(sceneID int) ([]*Gallery, error)
-	FindByImageID(imageID int) ([]*Gallery, error)
-	Count() (int, error)
-	All() ([]*Gallery, error)
-	Query(galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int, error)
-	QueryCount(galleryFilter *GalleryFilterType, findFilter *FindFilterType) (int, error)
-	GetPerformerIDs(galleryID int) ([]int, error)
-	GetTagIDs(galleryID int) ([]int, error)
-	GetSceneIDs(galleryID int) ([]int, error)
-	GetImageIDs(galleryID int) ([]int, error)
+	Find(ctx context.Context, id int) (*Gallery, error)
+	FindMany(ctx context.Context, ids []int) ([]*Gallery, error)
+	FindByChecksum(ctx context.Context, checksum string) (*Gallery, error)
+	FindByChecksums(ctx context.Context, checksums []string) ([]*Gallery, error)
+	FindByPath(ctx context.Context, path string) (*Gallery, error)
+	FindBySceneID(ctx context.Context, sceneID int) ([]*Gallery, error)
+	FindByImageID(ctx context.Context, imageID int) ([]*Gallery, error)
+	Count(ctx context.Context) (int, error)
+	All(ctx context.Context) ([]*Gallery, error)
+	Query(ctx context.Context, galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int, error)
+	QueryCount(ctx context.Context, galleryFilter *GalleryFilterType, findFilter *FindFilterType) (int, error)
+	GetPerformerIDs(ctx context.Context, galleryID int) ([]int, error)
+	GetTagIDs(ctx context.Context, galleryID int) ([]int, error)
+	GetSceneIDs(ctx context.Context, galleryID int) ([]int, error)
+	GetImageIDs(ctx context.Context, galleryID int) ([]int, error)
 }
 
 type GalleryWriter interface {
-	Create(newGallery Gallery) (*Gallery, error)
-	Update(updatedGallery Gallery) (*Gallery, error)
-	UpdatePartial(updatedGallery GalleryPartial) (*Gallery, error)
-	UpdateFileModTime(id int, modTime NullSQLiteTimestamp) error
-	Destroy(id int) error
-	UpdatePerformers(galleryID int, performerIDs []int) error
-	UpdateTags(galleryID int, tagIDs []int) error
-	UpdateScenes(galleryID int, sceneIDs []int) error
-	UpdateImages(galleryID int, imageIDs []int) error
+	Create(ctx context.Context, newGallery Gallery) (*Gallery, error)
+	Update(ctx context.Context, updatedGallery Gallery) (*Gallery, error)
+	UpdatePartial(ctx context.Context, updatedGallery GalleryPartial) (*Gallery, error)
+	UpdateFileModTime(ctx context.Context, id int, modTime NullSQLiteTimestamp) error
+	Destroy(ctx context.Context, id int) error
+	UpdatePerformers(ctx context.Context, galleryID int, performerIDs []int) error
+	UpdateTags(ctx context.Context, galleryID int, tagIDs []int) error
+	UpdateScenes(ctx context.Context, galleryID int, sceneIDs []int) error
+	UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error
 }
 
 type GalleryReaderWriter interface {

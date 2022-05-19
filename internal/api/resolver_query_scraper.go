@@ -234,7 +234,7 @@ func (r *queryResolver) getStashBoxClient(index int) (*stashbox.Client, error) {
 		return nil, fmt.Errorf("%w: invalid stash_box_index %d", ErrInput, index)
 	}
 
-	return stashbox.NewClient(*boxes[index], r.txnManager), nil
+	return stashbox.NewClient(*boxes[index], r.txnManager, r.stashboxRepository()), nil
 }
 
 func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source scraper.Source, input ScrapeSingleSceneInput) ([]*scraper.ScrapedScene, error) {

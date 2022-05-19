@@ -1,20 +1,30 @@
 package gallery
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/tag"
 )
 
+type FullCreatorUpdater interface {
+	FinderCreatorUpdater
+	UpdatePerformers(ctx context.Context, galleryID int, performerIDs []int) error
+	UpdateTags(ctx context.Context, galleryID int, tagIDs []int) error
+}
+
 type Importer struct {
-	ReaderWriter        models.GalleryReaderWriter
-	StudioWriter        models.StudioReaderWriter
-	PerformerWriter     models.PerformerReaderWriter
-	TagWriter           models.TagReaderWriter
+	ReaderWriter        FullCreatorUpdater
+	StudioWriter        studio.NameFinderCreator
+	PerformerWriter     performer.NameFinderCreator
+	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -23,18 +33,18 @@ type Importer struct {
 	tags       []*models.Tag
 }
 
-func (i *Importer) PreImport() error {
+func (i *Importer) PreImport(ctx context.Context) error {
 	i.gallery = i.galleryJSONToGallery(i.Input)
 
-	if err := i.populateStudio(); err != nil {
+	if err := i.populateStudio(ctx); err != nil {
 		return err
 	}
 
-	if err := i.populatePerformers(); err != nil {
+	if err := i.populatePerformers(ctx); err != nil {
 		return err
 	}
 
-	if err := i.populateTags(); err != nil {
+	if err := i.populateTags(ctx); err != nil {
 		return err
 	}
 
@@ -74,9 +84,9 @@ func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.G
 	return newGallery
 }
 
-func (i *Importer) populateStudio() error {
+func (i *Importer) populateStudio(ctx context.Context) error {
 	if i.Input.Studio != "" {
-		studio, err := i.StudioWriter.FindByName(i.Input.Studio, false)
+		studio, err := i.StudioWriter.FindByName(ctx, i.Input.Studio, false)
 		if err != nil {
 			return fmt.Errorf("error finding studio by name: %v", err)
 		}
@@ -91,7 +101,7 @@ func (i *Importer) populateStudio() error {
 			}
 
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
-				studioID, err := i.createStudio(i.Input.Studio)
+				studioID, err := i.createStudio(ctx, i.Input.Studio)
 				if err != nil {
 					return err
 				}
@@ -108,10 +118,10 @@ func (i *Importer) populateStudio() error {
 	return nil
 }
 
-func (i *Importer) createStudio(name string) (int, error) {
+func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	newStudio := *models.NewStudio(name)
 
-	created, err := i.StudioWriter.Create(newStudio)
+	created, err := i.StudioWriter.Create(ctx, newStudio)
 	if err != nil {
 		return 0, err
 	}
@@ -119,10 +129,10 @@ func (i *Importer) createStudio(name string) (int, error) {
 	return created.ID, nil
 }
 
-func (i *Importer) populatePerformers() error {
+func (i *Importer) populatePerformers(ctx context.Context) error {
 	if len(i.Input.Performers) > 0 {
 		names := i.Input.Performers
-		performers, err := i.PerformerWriter.FindByNames(names, false)
+		performers, err := i.PerformerWriter.FindByNames(ctx, names, false)
 		if err != nil {
 			return err
 		}
@@ -145,7 +155,7 @@ func (i *Importer) populatePerformers() error {
 			}
 
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
-				createdPerformers, err := i.createPerformers(missingPerformers)
+				createdPerformers, err := i.createPerformers(ctx, missingPerformers)
 				if err != nil {
 					return fmt.Errorf("error creating gallery performers: %v", err)
 				}
@@ -162,12 +172,12 @@ func (i *Importer) populatePerformers() error {
 	return nil
 }
 
-func (i *Importer) createPerformers(names []string) ([]*models.Performer, error) {
+func (i *Importer) createPerformers(ctx context.Context, names []string) ([]*models.Performer, error) {
 	var ret []*models.Performer
 	for _, name := range names {
 		newPerformer := *models.NewPerformer(name)
 
-		created, err := i.PerformerWriter.Create(newPerformer)
+		created, err := i.PerformerWriter.Create(ctx, newPerformer)
 		if err != nil {
 			return nil, err
 		}
@@ -178,10 +188,10 @@ func (i *Importer) createPerformers(names []string) ([]*models.Performer, error)
 	return ret, nil
 }
 
-func (i *Importer) populateTags() error {
+func (i *Importer) populateTags(ctx context.Context) error {
 	if len(i.Input.Tags) > 0 {
 		names := i.Input.Tags
-		tags, err := i.TagWriter.FindByNames(names, false)
+		tags, err := i.TagWriter.FindByNames(ctx, names, false)
 		if err != nil {
 			return err
 		}
@@ -201,7 +211,7 @@ func (i *Importer) populateTags() error {
 			}
 
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
-				createdTags, err := i.createTags(missingTags)
+				createdTags, err := i.createTags(ctx, missingTags)
 				if err != nil {
 					return fmt.Errorf("error creating gallery tags: %v", err)
 				}
@@ -218,12 +228,12 @@ func (i *Importer) populateTags() error {
 	return nil
 }
 
-func (i *Importer) createTags(names []string) ([]*models.Tag, error) {
+func (i *Importer) createTags(ctx context.Context, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
 		newTag := *models.NewTag(name)
 
-		created, err := i.TagWriter.Create(newTag)
+		created, err := i.TagWriter.Create(ctx, newTag)
 		if err != nil {
 			return nil, err
 		}
@@ -234,14 +244,14 @@ func (i *Importer) createTags(names []string) ([]*models.Tag, error) {
 	return ret, nil
 }
 
-func (i *Importer) PostImport(id int) error {
+func (i *Importer) PostImport(ctx context.Context, id int) error {
 	if len(i.performers) > 0 {
 		var performerIDs []int
 		for _, performer := range i.performers {
 			performerIDs = append(performerIDs, performer.ID)
 		}
 
-		if err := i.ReaderWriter.UpdatePerformers(id, performerIDs); err != nil {
+		if err := i.ReaderWriter.UpdatePerformers(ctx, id, performerIDs); err != nil {
 			return fmt.Errorf("failed to associate performers: %v", err)
 		}
 	}
@@ -251,7 +261,7 @@ func (i *Importer) PostImport(id int) error {
 		for _, t := range i.tags {
 			tagIDs = append(tagIDs, t.ID)
 		}
-		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
+		if err := i.ReaderWriter.UpdateTags(ctx, id, tagIDs); err != nil {
 			return fmt.Errorf("failed to associate tags: %v", err)
 		}
 	}
@@ -263,8 +273,8 @@ func (i *Importer) Name() string {
 	return i.Input.Path
 }
 
-func (i *Importer) FindExistingID() (*int, error) {
-	existing, err := i.ReaderWriter.FindByChecksum(i.Input.Checksum)
+func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
+	existing, err := i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
 	if err != nil {
 		return nil, err
 	}
@@ -277,8 +287,8 @@ func (i *Importer) FindExistingID() (*int, error) {
 	return nil, nil
 }
 
-func (i *Importer) Create() (*int, error) {
-	created, err := i.ReaderWriter.Create(i.gallery)
+func (i *Importer) Create(ctx context.Context) (*int, error) {
+	created, err := i.ReaderWriter.Create(ctx, i.gallery)
 	if err != nil {
 		return nil, fmt.Errorf("error creating gallery: %v", err)
 	}
@@ -287,10 +297,10 @@ func (i *Importer) Create() (*int, error) {
 	return &id, nil
 }
 
-func (i *Importer) Update(id int) error {
+func (i *Importer) Update(ctx context.Context, id int) error {
 	gallery := i.gallery
 	gallery.ID = id
-	_, err := i.ReaderWriter.Update(gallery)
+	_, err := i.ReaderWriter.Update(ctx, gallery)
 	if err != nil {
 		return fmt.Errorf("error updating existing gallery: %v", err)
 	}

@@ -12,7 +12,6 @@ import (
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 )
@@ -111,6 +110,7 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatab
 	// if download is true, then backup to temporary file and return a link
 	download := input.Download != nil && *input.Download
 	mgr := manager.GetInstance()
+	database := mgr.Database
 	var backupPath string
 	if download {
 		if err := fsutil.EnsureDir(mgr.Paths.Generated.Downloads); err != nil {
@@ -127,7 +127,7 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatab
 		backupPath = database.DatabaseBackupPath()
 	}
 
-	err := database.Backup(database.DB, backupPath)
+	err := database.Backup(backupPath)
 	if err != nil {
 		return nil, err
 	}

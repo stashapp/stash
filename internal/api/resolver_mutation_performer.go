@@ -16,8 +16,8 @@ import (
 )
 
 func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *models.Performer, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Performer().Find(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Performer.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -129,23 +129,23 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 
 	// Start the transaction and save the performer
 	var performer *models.Performer
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Performer()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Performer
 
-		performer, err = qb.Create(newPerformer)
+		performer, err = qb.Create(ctx, newPerformer)
 		if err != nil {
 			return err
 		}
 
 		if len(input.TagIds) > 0 {
-			if err := r.updatePerformerTags(qb, performer.ID, input.TagIds); err != nil {
+			if err := r.updatePerformerTags(ctx, performer.ID, input.TagIds); err != nil {
 				return err
 			}
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(performer.ID, imageData); err != nil {
+			if err := qb.UpdateImage(ctx, performer.ID, imageData); err != nil {
 				return err
 			}
 		}
@@ -153,7 +153,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 		// Save the stash_ids
 		if input.StashIds != nil {
 			stashIDJoins := models.StashIDsFromInput(input.StashIds)
-			if err := qb.UpdateStashIDs(performer.ID, stashIDJoins); err != nil {
+			if err := qb.UpdateStashIDs(ctx, performer.ID, stashIDJoins); err != nil {
 				return err
 			}
 		}
@@ -230,11 +230,11 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 
 	// Start the transaction and save the p
 	var p *models.Performer
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Performer()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Performer
 
 		// need to get existing performer
-		existing, err := qb.Find(updatedPerformer.ID)
+		existing, err := qb.Find(ctx, updatedPerformer.ID)
 		if err != nil {
 			return err
 		}
@@ -249,26 +249,26 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 			}
 		}
 
-		p, err = qb.Update(updatedPerformer)
+		p, err = qb.Update(ctx, updatedPerformer)
 		if err != nil {
 			return err
 		}
 
 		// Save the tags
 		if translator.hasField("tag_ids") {
-			if err := r.updatePerformerTags(qb, p.ID, input.TagIds); err != nil {
+			if err := r.updatePerformerTags(ctx, p.ID, input.TagIds); err != nil {
 				return err
 			}
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(p.ID, imageData); err != nil {
+			if err := qb.UpdateImage(ctx, p.ID, imageData); err != nil {
 				return err
 			}
 		} else if imageIncluded {
 			// must be unsetting
-			if err := qb.DestroyImage(p.ID); err != nil {
+			if err := qb.DestroyImage(ctx, p.ID); err != nil {
 				return err
 			}
 		}
@@ -276,7 +276,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 		// Save the stash_ids
 		if translator.hasField("stash_ids") {
 			stashIDJoins := models.StashIDsFromInput(input.StashIds)
-			if err := qb.UpdateStashIDs(performerID, stashIDJoins); err != nil {
+			if err := qb.UpdateStashIDs(ctx, performerID, stashIDJoins); err != nil {
 				return err
 			}
 		}
@@ -290,12 +290,12 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	return r.getPerformer(ctx, p.ID)
 }
 
-func (r *mutationResolver) updatePerformerTags(qb models.PerformerReaderWriter, performerID int, tagsIDs []string) error {
+func (r *mutationResolver) updatePerformerTags(ctx context.Context, performerID int, tagsIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(tagsIDs)
 	if err != nil {
 		return err
 	}
-	return qb.UpdateTags(performerID, ids)
+	return r.repository.Performer.UpdateTags(ctx, performerID, ids)
 }
 
 func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPerformerUpdateInput) ([]*models.Performer, error) {
@@ -348,14 +348,14 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	ret := []*models.Performer{}
 
 	// Start the transaction and save the scene marker
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Performer()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Performer
 
 		for _, performerID := range performerIDs {
 			updatedPerformer.ID = performerID
 
 			// need to get existing performer
-			existing, err := qb.Find(performerID)
+			existing, err := qb.Find(ctx, performerID)
 			if err != nil {
 				return err
 			}
@@ -368,7 +368,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 				return err
 			}
 
-			performer, err := qb.Update(updatedPerformer)
+			performer, err := qb.Update(ctx, updatedPerformer)
 			if err != nil {
 				return err
 			}
@@ -377,12 +377,12 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 			// Save the tags
 			if translator.hasField("tag_ids") {
-				tagIDs, err := adjustTagIDs(qb, performerID, *input.TagIds)
+				tagIDs, err := adjustTagIDs(ctx, qb, performerID, *input.TagIds)
 				if err != nil {
 					return err
 				}
 
-				if err := qb.UpdateTags(performerID, tagIDs); err != nil {
+				if err := qb.UpdateTags(ctx, performerID, tagIDs); err != nil {
 					return err
 				}
 			}
@@ -415,8 +415,8 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input Performer
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		return repo.Performer().Destroy(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.repository.Performer.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -432,10 +432,10 @@ func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs [
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Performer()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Performer
 		for _, id := range ids {
-			if err := qb.Destroy(id); err != nil {
+			if err := qb.Destroy(ctx, id); err != nil {
 				return err
 			}
 		}

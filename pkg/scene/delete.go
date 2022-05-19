@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"context"
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -114,19 +115,25 @@ func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
 	return d.Files(files)
 }
 
+type Destroyer interface {
+	Destroy(ctx context.Context, id int) error
+}
+
+type MarkerDestroyer interface {
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
+	Destroy(ctx context.Context, id int) error
+}
+
 // Destroy deletes a scene and its associated relationships from the
 // database.
-func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
-	qb := repo.Scene()
-	mqb := repo.SceneMarker()
-
-	markers, err := mqb.FindBySceneID(scene.ID)
+func Destroy(ctx context.Context, scene *models.Scene, qb Destroyer, mqb MarkerDestroyer, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+	markers, err := mqb.FindBySceneID(ctx, scene.ID)
 	if err != nil {
 		return err
 	}
 
 	for _, m := range markers {
-		if err := DestroyMarker(scene, m, mqb, fileDeleter); err != nil {
+		if err := DestroyMarker(ctx, scene, m, mqb, fileDeleter); err != nil {
 			return err
 		}
 	}
@@ -151,7 +158,7 @@ func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDelet
 		}
 	}
 
-	if err := qb.Destroy(scene.ID); err != nil {
+	if err := qb.Destroy(ctx, scene.ID); err != nil {
 		return err
 	}
 
@@ -161,8 +168,8 @@ func Destroy(scene *models.Scene, repo models.Repository, fileDeleter *FileDelet
 // DestroyMarker deletes the scene marker from the database and returns a
 // function that removes the generated files, to be executed after the
 // transaction is successfully committed.
-func DestroyMarker(scene *models.Scene, sceneMarker *models.SceneMarker, qb models.SceneMarkerWriter, fileDeleter *FileDeleter) error {
-	if err := qb.Destroy(sceneMarker.ID); err != nil {
+func DestroyMarker(ctx context.Context, scene *models.Scene, sceneMarker *models.SceneMarker, qb MarkerDestroyer, fileDeleter *FileDeleter) error {
+	if err := qb.Destroy(ctx, sceneMarker.ID); err != nil {
 		return err
 	}
 

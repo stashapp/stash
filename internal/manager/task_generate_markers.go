@@ -13,7 +13,7 @@ import (
 )
 
 type GenerateMarkersTask struct {
-	TxnManager          models.TransactionManager
+	TxnManager          models.Repository
 	Scene               *models.Scene
 	Marker              *models.SceneMarker
 	Overwrite           bool
@@ -42,9 +42,9 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 
 	if t.Marker != nil {
 		var scene *models.Scene
-		if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 			var err error
-			scene, err = r.Scene().Find(int(t.Marker.SceneID.Int64))
+			scene, err = t.TxnManager.Scene.Find(ctx, int(t.Marker.SceneID.Int64))
 			return err
 		}); err != nil {
 			logger.Errorf("error finding scene for marker: %s", err.Error())
@@ -69,9 +69,9 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 
 func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		sceneMarkers, err = r.SceneMarker().FindBySceneID(t.Scene.ID)
+		sceneMarkers, err = t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
 		return err
 	}); err != nil {
 		logger.Errorf("error getting scene markers: %s", err.Error())
@@ -134,9 +134,9 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 func (t *GenerateMarkersTask) markersNeeded(ctx context.Context) int {
 	markers := 0
 	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		sceneMarkers, err = r.SceneMarker().FindBySceneID(t.Scene.ID)
+		sceneMarkers, err = t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
 		return err
 	}); err != nil {
 		logger.Errorf("errror finding scene markers: %s", err.Error())

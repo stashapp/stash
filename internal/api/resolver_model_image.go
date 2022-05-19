@@ -45,9 +45,9 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*ImagePat
 }
 
 func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret []*models.Gallery, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = repo.Gallery().FindByImageID(obj.ID)
+		ret, err = r.repository.Gallery.FindByImageID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -61,8 +61,8 @@ func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *mod
 		return nil, nil
 	}
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Studio().Find(int(obj.StudioID.Int64))
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Studio.Find(ctx, int(obj.StudioID.Int64))
 		return err
 	}); err != nil {
 		return nil, err
@@ -72,8 +72,8 @@ func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *mod
 }
 
 func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*models.Tag, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Tag().FindByImageID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Tag.FindByImageID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -83,8 +83,8 @@ func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*mod
 }
 
 func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) (ret []*models.Performer, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Performer().FindByImageID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Performer.FindByImageID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

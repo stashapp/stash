@@ -24,7 +24,7 @@ import (
 const scanQueueSize = 200000
 
 type ScanJob struct {
-	txnManager    models.TransactionManager
+	txnManager    models.Repository
 	input         ScanMetadataInput
 	subscriptions *subscriptionManager
 }
@@ -220,20 +220,21 @@ func (j *ScanJob) doesPathExist(ctx context.Context, path string) bool {
 	gExt := config.GetGalleryExtensions()
 
 	ret := false
-	txnErr := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	txnErr := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		r := j.txnManager
 		switch {
 		case fsutil.MatchExtension(path, gExt):
-			g, _ := r.Gallery().FindByPath(path)
+			g, _ := r.Gallery.FindByPath(ctx, path)
 			if g != nil {
 				ret = true
 			}
 		case fsutil.MatchExtension(path, vidExt):
-			s, _ := r.Scene().FindByPath(path)
+			s, _ := r.Scene.FindByPath(ctx, path)
 			if s != nil {
 				ret = true
 			}
 		case fsutil.MatchExtension(path, imgExt):
-			i, _ := r.Image().FindByPath(path)
+			i, _ := r.Image.FindByPath(ctx, path)
 			if i != nil {
 				ret = true
 			}
@@ -249,7 +250,7 @@ func (j *ScanJob) doesPathExist(ctx context.Context, path string) bool {
 }
 
 type ScanTask struct {
-	TxnManager           models.TransactionManager
+	TxnManager           models.Repository
 	file                 file.SourceFile
 	UseFileMetadata      bool
 	StripFileExtension   bool
