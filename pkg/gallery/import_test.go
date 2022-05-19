@@ -1,6 +1,7 @@
 package gallery
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -40,6 +41,8 @@ const (
 	errChecksum     = "errChecksum"
 )
 
+var testCtx = context.Background()
+
 var (
 	createdAt = time.Date(2001, time.January, 2, 1, 2, 3, 4, time.Local)
 	updatedAt = time.Date(2002, time.January, 2, 1, 2, 3, 4, time.Local)
@@ -75,7 +78,7 @@ func TestImporterPreImport(t *testing.T) {
 		},
 	}
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
 
 	expectedGallery := models.Gallery{
@@ -112,17 +115,17 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 		},
 	}
 
-	studioReaderWriter.On("FindByName", existingStudioName, false).Return(&models.Studio{
+	studioReaderWriter.On("FindByName", testCtx, existingStudioName, false).Return(&models.Studio{
 		ID: existingStudioID,
 	}, nil).Once()
-	studioReaderWriter.On("FindByName", existingStudioErr, false).Return(nil, errors.New("FindByName error")).Once()
+	studioReaderWriter.On("FindByName", testCtx, existingStudioErr, false).Return(nil, errors.New("FindByName error")).Once()
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(existingStudioID), i.gallery.StudioID.Int64)
 
 	i.Input.Studio = existingStudioErr
-	err = i.PreImport()
+	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
 	studioReaderWriter.AssertExpectations(t)
@@ -140,20 +143,20 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	studioReaderWriter.On("FindByName", missingStudioName, false).Return(nil, nil).Times(3)
-	studioReaderWriter.On("Create", mock.AnythingOfType("models.Studio")).Return(&models.Studio{
+	studioReaderWriter.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Times(3)
+	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Studio")).Return(&models.Studio{
 		ID: existingStudioID,
 	}, nil)
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
-	err = i.PreImport()
+	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
-	err = i.PreImport()
+	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(existingStudioID), i.gallery.StudioID.Int64)
 
@@ -172,10 +175,10 @@ func TestImporterPreImportWithMissingStudioCreateErr(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
 	}
 
-	studioReaderWriter.On("FindByName", missingStudioName, false).Return(nil, nil).Once()
-	studioReaderWriter.On("Create", mock.AnythingOfType("models.Studio")).Return(nil, errors.New("Create error"))
+	studioReaderWriter.On("FindByName", testCtx, missingStudioName, false).Return(nil, nil).Once()
+	studioReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Studio")).Return(nil, errors.New("Create error"))
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
 }
 
@@ -193,20 +196,20 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 		},
 	}
 
-	performerReaderWriter.On("FindByNames", []string{existingPerformerName}, false).Return([]*models.Performer{
+	performerReaderWriter.On("FindByNames", testCtx, []string{existingPerformerName}, false).Return([]*models.Performer{
 		{
 			ID:   existingPerformerID,
 			Name: models.NullString(existingPerformerName),
 		},
 	}, nil).Once()
-	performerReaderWriter.On("FindByNames", []string{existingPerformerErr}, false).Return(nil, errors.New("FindByNames error")).Once()
+	performerReaderWriter.On("FindByNames", testCtx, []string{existingPerformerErr}, false).Return(nil, errors.New("FindByNames error")).Once()
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
 	assert.Equal(t, existingPerformerID, i.performers[0].ID)
 
 	i.Input.Performers = []string{existingPerformerErr}
-	err = i.PreImport()
+	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
 	performerReaderWriter.AssertExpectations(t)
@@ -226,20 +229,20 @@ func TestImporterPreImportWithMissingPerformer(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	performerReaderWriter.On("FindByNames", []string{missingPerformerName}, false).Return(nil, nil).Times(3)
-	performerReaderWriter.On("Create", mock.AnythingOfType("models.Performer")).Return(&models.Performer{
+	performerReaderWriter.On("FindByNames", testCtx, []string{missingPerformerName}, false).Return(nil, nil).Times(3)
+	performerReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Performer")).Return(&models.Performer{
 		ID: existingPerformerID,
 	}, nil)
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
-	err = i.PreImport()
+	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
-	err = i.PreImport()
+	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
 	assert.Equal(t, existingPerformerID, i.performers[0].ID)
 
@@ -260,10 +263,10 @@ func TestImporterPreImportWithMissingPerformerCreateErr(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
 	}
 
-	performerReaderWriter.On("FindByNames", []string{missingPerformerName}, false).Return(nil, nil).Once()
-	performerReaderWriter.On("Create", mock.AnythingOfType("models.Performer")).Return(nil, errors.New("Create error"))
+	performerReaderWriter.On("FindByNames", testCtx, []string{missingPerformerName}, false).Return(nil, nil).Once()
+	performerReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Performer")).Return(nil, errors.New("Create error"))
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
 }
 
@@ -281,20 +284,20 @@ func TestImporterPreImportWithTag(t *testing.T) {
 		},
 	}
 
-	tagReaderWriter.On("FindByNames", []string{existingTagName}, false).Return([]*models.Tag{
+	tagReaderWriter.On("FindByNames", testCtx, []string{existingTagName}, false).Return([]*models.Tag{
 		{
 			ID:   existingTagID,
 			Name: existingTagName,
 		},
 	}, nil).Once()
-	tagReaderWriter.On("FindByNames", []string{existingTagErr}, false).Return(nil, errors.New("FindByNames error")).Once()
+	tagReaderWriter.On("FindByNames", testCtx, []string{existingTagErr}, false).Return(nil, errors.New("FindByNames error")).Once()
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
 	assert.Equal(t, existingTagID, i.tags[0].ID)
 
 	i.Input.Tags = []string{existingTagErr}
-	err = i.PreImport()
+	err = i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
 	tagReaderWriter.AssertExpectations(t)
@@ -314,20 +317,20 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	tagReaderWriter.On("FindByNames", []string{missingTagName}, false).Return(nil, nil).Times(3)
-	tagReaderWriter.On("Create", mock.AnythingOfType("models.Tag")).Return(&models.Tag{
+	tagReaderWriter.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Times(3)
+	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(&models.Tag{
 		ID: existingTagID,
 	}, nil)
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
-	err = i.PreImport()
+	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
-	err = i.PreImport()
+	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
 	assert.Equal(t, existingTagID, i.tags[0].ID)
 
@@ -348,10 +351,10 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
 	}
 
-	tagReaderWriter.On("FindByNames", []string{missingTagName}, false).Return(nil, nil).Once()
-	tagReaderWriter.On("Create", mock.AnythingOfType("models.Tag")).Return(nil, errors.New("Create error"))
+	tagReaderWriter.On("FindByNames", testCtx, []string{missingTagName}, false).Return(nil, nil).Once()
+	tagReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(nil, errors.New("Create error"))
 
-	err := i.PreImport()
+	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
 }
 
@@ -369,13 +372,13 @@ func TestImporterPostImportUpdatePerformers(t *testing.T) {
 
 	updateErr := errors.New("UpdatePerformers error")
 
-	galleryReaderWriter.On("UpdatePerformers", galleryID, []int{existingPerformerID}).Return(nil).Once()
-	galleryReaderWriter.On("UpdatePerformers", errPerformersID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
+	galleryReaderWriter.On("UpdatePerformers", testCtx, galleryID, []int{existingPerformerID}).Return(nil).Once()
+	galleryReaderWriter.On("UpdatePerformers", testCtx, errPerformersID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
-	err := i.PostImport(galleryID)
+	err := i.PostImport(testCtx, galleryID)
 	assert.Nil(t, err)
 
-	err = i.PostImport(errPerformersID)
+	err = i.PostImport(testCtx, errPerformersID)
 	assert.NotNil(t, err)
 
 	galleryReaderWriter.AssertExpectations(t)
@@ -395,13 +398,13 @@ func TestImporterPostImportUpdateTags(t *testing.T) {
 
 	updateErr := errors.New("UpdateTags error")
 
-	galleryReaderWriter.On("UpdateTags", galleryID, []int{existingTagID}).Return(nil).Once()
-	galleryReaderWriter.On("UpdateTags", errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
+	galleryReaderWriter.On("UpdateTags", testCtx, galleryID, []int{existingTagID}).Return(nil).Once()
+	galleryReaderWriter.On("UpdateTags", testCtx, errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
-	err := i.PostImport(galleryID)
+	err := i.PostImport(testCtx, galleryID)
 	assert.Nil(t, err)
 
-	err = i.PostImport(errTagsID)
+	err = i.PostImport(testCtx, errTagsID)
 	assert.NotNil(t, err)
 
 	galleryReaderWriter.AssertExpectations(t)
@@ -419,23 +422,23 @@ func TestImporterFindExistingID(t *testing.T) {
 	}
 
 	expectedErr := errors.New("FindBy* error")
-	readerWriter.On("FindByChecksum", missingChecksum).Return(nil, nil).Once()
-	readerWriter.On("FindByChecksum", checksum).Return(&models.Gallery{
+	readerWriter.On("FindByChecksum", testCtx, missingChecksum).Return(nil, nil).Once()
+	readerWriter.On("FindByChecksum", testCtx, checksum).Return(&models.Gallery{
 		ID: existingGalleryID,
 	}, nil).Once()
-	readerWriter.On("FindByChecksum", errChecksum).Return(nil, expectedErr).Once()
+	readerWriter.On("FindByChecksum", testCtx, errChecksum).Return(nil, expectedErr).Once()
 
-	id, err := i.FindExistingID()
+	id, err := i.FindExistingID(testCtx)
 	assert.Nil(t, id)
 	assert.Nil(t, err)
 
 	i.Input.Checksum = checksum
-	id, err = i.FindExistingID()
+	id, err = i.FindExistingID(testCtx)
 	assert.Equal(t, existingGalleryID, *id)
 	assert.Nil(t, err)
 
 	i.Input.Checksum = errChecksum
-	id, err = i.FindExistingID()
+	id, err = i.FindExistingID(testCtx)
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
@@ -459,17 +462,17 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", gallery).Return(&models.Gallery{
+	readerWriter.On("Create", testCtx, gallery).Return(&models.Gallery{
 		ID: galleryID,
 	}, nil).Once()
-	readerWriter.On("Create", galleryErr).Return(nil, errCreate).Once()
+	readerWriter.On("Create", testCtx, galleryErr).Return(nil, errCreate).Once()
 
-	id, err := i.Create()
+	id, err := i.Create(testCtx)
 	assert.Equal(t, galleryID, *id)
 	assert.Nil(t, err)
 
 	i.gallery = galleryErr
-	id, err = i.Create()
+	id, err = i.Create(testCtx)
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
@@ -490,9 +493,9 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	gallery.ID = galleryID
-	readerWriter.On("Update", gallery).Return(nil, nil).Once()
+	readerWriter.On("Update", testCtx, gallery).Return(nil, nil).Once()
 
-	err := i.Update(galleryID)
+	err := i.Update(testCtx, galleryID)
 	assert.Nil(t, err)
 
 	readerWriter.AssertExpectations(t)

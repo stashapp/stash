@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -18,57 +19,54 @@ type studioQueryBuilder struct {
 	repository
 }
 
-func NewStudioReaderWriter(tx dbi) *studioQueryBuilder {
-	return &studioQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: studioTable,
-			idColumn:  idColumn,
-		},
-	}
+var StudioReaderWriter = &studioQueryBuilder{
+	repository{
+		tableName: studioTable,
+		idColumn:  idColumn,
+	},
 }
 
-func (qb *studioQueryBuilder) Create(newObject models.Studio) (*models.Studio, error) {
+func (qb *studioQueryBuilder) Create(ctx context.Context, newObject models.Studio) (*models.Studio, error) {
 	var ret models.Studio
-	if err := qb.insertObject(newObject, &ret); err != nil {
+	if err := qb.insertObject(ctx, newObject, &ret); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
 }
 
-func (qb *studioQueryBuilder) Update(updatedObject models.StudioPartial) (*models.Studio, error) {
+func (qb *studioQueryBuilder) Update(ctx context.Context, updatedObject models.StudioPartial) (*models.Studio, error) {
 	const partial = true
-	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedObject.ID)
+	return qb.Find(ctx, updatedObject.ID)
 }
 
-func (qb *studioQueryBuilder) UpdateFull(updatedObject models.Studio) (*models.Studio, error) {
+func (qb *studioQueryBuilder) UpdateFull(ctx context.Context, updatedObject models.Studio) (*models.Studio, error) {
 	const partial = false
-	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedObject.ID)
+	return qb.Find(ctx, updatedObject.ID)
 }
 
-func (qb *studioQueryBuilder) Destroy(id int) error {
+func (qb *studioQueryBuilder) Destroy(ctx context.Context, id int) error {
 	// TODO - set null on foreign key in scraped items
 	// remove studio from scraped items
-	_, err := qb.tx.Exec("UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
+	_, err := qb.tx.Exec(ctx, "UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
 	if err != nil {
 		return err
 	}
 
-	return qb.destroyExisting([]int{id})
+	return qb.destroyExisting(ctx, []int{id})
 }
 
-func (qb *studioQueryBuilder) Find(id int) (*models.Studio, error) {
+func (qb *studioQueryBuilder) Find(ctx context.Context, id int) (*models.Studio, error) {
 	var ret models.Studio
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(ctx, id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -77,10 +75,10 @@ func (qb *studioQueryBuilder) Find(id int) (*models.Studio, error) {
 	return &ret, nil
 }
 
-func (qb *studioQueryBuilder) FindMany(ids []int) ([]*models.Studio, error) {
+func (qb *studioQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Studio, error) {
 	var studios []*models.Studio
 	for _, id := range ids {
-		studio, err := qb.Find(id)
+		studio, err := qb.Find(ctx, id)
 		if err != nil {
 			return nil, err
 		}
@@ -95,47 +93,47 @@ func (qb *studioQueryBuilder) FindMany(ids []int) ([]*models.Studio, error) {
 	return studios, nil
 }
 
-func (qb *studioQueryBuilder) FindChildren(id int) ([]*models.Studio, error) {
+func (qb *studioQueryBuilder) FindChildren(ctx context.Context, id int) ([]*models.Studio, error) {
 	query := "SELECT studios.* FROM studios WHERE studios.parent_id = ?"
 	args := []interface{}{id}
-	return qb.queryStudios(query, args)
+	return qb.queryStudios(ctx, query, args)
 }
 
-func (qb *studioQueryBuilder) FindBySceneID(sceneID int) (*models.Studio, error) {
+func (qb *studioQueryBuilder) FindBySceneID(ctx context.Context, sceneID int) (*models.Studio, error) {
 	query := "SELECT studios.* FROM studios JOIN scenes ON studios.id = scenes.studio_id WHERE scenes.id = ? LIMIT 1"
 	args := []interface{}{sceneID}
-	return qb.queryStudio(query, args)
+	return qb.queryStudio(ctx, query, args)
 }
 
-func (qb *studioQueryBuilder) FindByName(name string, nocase bool) (*models.Studio, error) {
+func (qb *studioQueryBuilder) FindByName(ctx context.Context, name string, nocase bool) (*models.Studio, error) {
 	query := "SELECT * FROM studios WHERE name = ?"
 	if nocase {
 		query += " COLLATE NOCASE"
 	}
 	query += " LIMIT 1"
 	args := []interface{}{name}
-	return qb.queryStudio(query, args)
+	return qb.queryStudio(ctx, query, args)
 }
 
-func (qb *studioQueryBuilder) FindByStashID(stashID models.StashID) ([]*models.Studio, error) {
+func (qb *studioQueryBuilder) FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Studio, error) {
 	query := selectAll("studios") + `
 		LEFT JOIN studio_stash_ids on studio_stash_ids.studio_id = studios.id
 		WHERE studio_stash_ids.stash_id = ?
 		AND studio_stash_ids.endpoint = ?
 	`
 	args := []interface{}{stashID.StashID, stashID.Endpoint}
-	return qb.queryStudios(query, args)
+	return qb.queryStudios(ctx, query, args)
 }
 
-func (qb *studioQueryBuilder) Count() (int, error) {
-	return qb.runCountQuery(qb.buildCountQuery("SELECT studios.id FROM studios"), nil)
+func (qb *studioQueryBuilder) Count(ctx context.Context) (int, error) {
+	return qb.runCountQuery(ctx, qb.buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
-func (qb *studioQueryBuilder) All() ([]*models.Studio, error) {
-	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil)
+func (qb *studioQueryBuilder) All(ctx context.Context) ([]*models.Studio, error) {
+	return qb.queryStudios(ctx, selectAll("studios")+qb.getStudioSort(nil), nil)
 }
 
-func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio, error) {
+func (qb *studioQueryBuilder) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Studio, error) {
 	// TODO - Query needs to be changed to support queries of this type, and
 	// this method should be removed
 	query := selectAll(studioTable)
@@ -159,7 +157,7 @@ func (qb *studioQueryBuilder) QueryForAutoTag(words []string) ([]*models.Studio,
 		"studios.ignore_auto_tag = 0",
 		whereOr,
 	}, " AND ")
-	return qb.queryStudios(query+" WHERE "+where, args)
+	return qb.queryStudios(ctx, query+" WHERE "+where, args)
 }
 
 func (qb *studioQueryBuilder) validateFilter(filter *models.StudioFilterType) error {
@@ -193,43 +191,43 @@ func (qb *studioQueryBuilder) validateFilter(filter *models.StudioFilterType) er
 	return nil
 }
 
-func (qb *studioQueryBuilder) makeFilter(studioFilter *models.StudioFilterType) *filterBuilder {
+func (qb *studioQueryBuilder) makeFilter(ctx context.Context, studioFilter *models.StudioFilterType) *filterBuilder {
 	query := &filterBuilder{}
 
 	if studioFilter.And != nil {
-		query.and(qb.makeFilter(studioFilter.And))
+		query.and(qb.makeFilter(ctx, studioFilter.And))
 	}
 	if studioFilter.Or != nil {
-		query.or(qb.makeFilter(studioFilter.Or))
+		query.or(qb.makeFilter(ctx, studioFilter.Or))
 	}
 	if studioFilter.Not != nil {
-		query.not(qb.makeFilter(studioFilter.Not))
+		query.not(qb.makeFilter(ctx, studioFilter.Not))
 	}
 
-	query.handleCriterion(stringCriterionHandler(studioFilter.Name, studioTable+".name"))
-	query.handleCriterion(stringCriterionHandler(studioFilter.Details, studioTable+".details"))
-	query.handleCriterion(stringCriterionHandler(studioFilter.URL, studioTable+".url"))
-	query.handleCriterion(intCriterionHandler(studioFilter.Rating, studioTable+".rating"))
-	query.handleCriterion(boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag"))
+	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Name, studioTable+".name"))
+	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Details, studioTable+".details"))
+	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.URL, studioTable+".url"))
+	query.handleCriterion(ctx, intCriterionHandler(studioFilter.Rating, studioTable+".rating"))
+	query.handleCriterion(ctx, boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag"))
 
-	query.handleCriterion(criterionHandlerFunc(func(f *filterBuilder) {
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if studioFilter.StashID != nil {
 			qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
-			stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(f)
+			stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
 		}
 	}))
 
-	query.handleCriterion(studioIsMissingCriterionHandler(qb, studioFilter.IsMissing))
-	query.handleCriterion(studioSceneCountCriterionHandler(qb, studioFilter.SceneCount))
-	query.handleCriterion(studioImageCountCriterionHandler(qb, studioFilter.ImageCount))
-	query.handleCriterion(studioGalleryCountCriterionHandler(qb, studioFilter.GalleryCount))
-	query.handleCriterion(studioParentCriterionHandler(qb, studioFilter.Parents))
-	query.handleCriterion(studioAliasCriterionHandler(qb, studioFilter.Aliases))
+	query.handleCriterion(ctx, studioIsMissingCriterionHandler(qb, studioFilter.IsMissing))
+	query.handleCriterion(ctx, studioSceneCountCriterionHandler(qb, studioFilter.SceneCount))
+	query.handleCriterion(ctx, studioImageCountCriterionHandler(qb, studioFilter.ImageCount))
+	query.handleCriterion(ctx, studioGalleryCountCriterionHandler(qb, studioFilter.GalleryCount))
+	query.handleCriterion(ctx, studioParentCriterionHandler(qb, studioFilter.Parents))
+	query.handleCriterion(ctx, studioAliasCriterionHandler(qb, studioFilter.Aliases))
 
 	return query
 }
 
-func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {
+func (qb *studioQueryBuilder) Query(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {
 	if studioFilter == nil {
 		studioFilter = &models.StudioFilterType{}
 	}
@@ -250,19 +248,19 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	if err := qb.validateFilter(studioFilter); err != nil {
 		return nil, 0, err
 	}
-	filter := qb.makeFilter(studioFilter)
+	filter := qb.makeFilter(ctx, studioFilter)
 
 	query.addFilter(filter)
 
 	query.sortAndPagination = qb.getStudioSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult, err := query.executeFind()
+	idsResult, countResult, err := query.executeFind(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	var studios []*models.Studio
 	for _, id := range idsResult {
-		studio, err := qb.Find(id)
+		studio, err := qb.Find(ctx, id)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -274,7 +272,7 @@ func (qb *studioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 }
 
 func studioIsMissingCriterionHandler(qb *studioQueryBuilder, isMissing *string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "image":
@@ -291,7 +289,7 @@ func studioIsMissingCriterionHandler(qb *studioQueryBuilder, isMissing *string) 
 }
 
 func studioSceneCountCriterionHandler(qb *studioQueryBuilder, sceneCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if sceneCount != nil {
 			f.addLeftJoin("scenes", "", "scenes.studio_id = studios.id")
 			clause, args := getIntCriterionWhereClause("count(distinct scenes.id)", *sceneCount)
@@ -302,7 +300,7 @@ func studioSceneCountCriterionHandler(qb *studioQueryBuilder, sceneCount *models
 }
 
 func studioImageCountCriterionHandler(qb *studioQueryBuilder, imageCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if imageCount != nil {
 			f.addLeftJoin("images", "", "images.studio_id = studios.id")
 			clause, args := getIntCriterionWhereClause("count(distinct images.id)", *imageCount)
@@ -313,7 +311,7 @@ func studioImageCountCriterionHandler(qb *studioQueryBuilder, imageCount *models
 }
 
 func studioGalleryCountCriterionHandler(qb *studioQueryBuilder, galleryCount *models.IntCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if galleryCount != nil {
 			f.addLeftJoin("galleries", "", "galleries.studio_id = studios.id")
 			clause, args := getIntCriterionWhereClause("count(distinct galleries.id)", *galleryCount)
@@ -373,17 +371,17 @@ func (qb *studioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) s
 	}
 }
 
-func (qb *studioQueryBuilder) queryStudio(query string, args []interface{}) (*models.Studio, error) {
-	results, err := qb.queryStudios(query, args)
+func (qb *studioQueryBuilder) queryStudio(ctx context.Context, query string, args []interface{}) (*models.Studio, error) {
+	results, err := qb.queryStudios(ctx, query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *studioQueryBuilder) queryStudios(query string, args []interface{}) ([]*models.Studio, error) {
+func (qb *studioQueryBuilder) queryStudios(ctx context.Context, query string, args []interface{}) ([]*models.Studio, error) {
 	var ret models.Studios
-	if err := qb.query(query, args, &ret); err != nil {
+	if err := qb.query(ctx, query, args, &ret); err != nil {
 		return nil, err
 	}
 
@@ -401,20 +399,20 @@ func (qb *studioQueryBuilder) imageRepository() *imageRepository {
 	}
 }
 
-func (qb *studioQueryBuilder) GetImage(studioID int) ([]byte, error) {
-	return qb.imageRepository().get(studioID)
+func (qb *studioQueryBuilder) GetImage(ctx context.Context, studioID int) ([]byte, error) {
+	return qb.imageRepository().get(ctx, studioID)
 }
 
-func (qb *studioQueryBuilder) HasImage(studioID int) (bool, error) {
-	return qb.imageRepository().exists(studioID)
+func (qb *studioQueryBuilder) HasImage(ctx context.Context, studioID int) (bool, error) {
+	return qb.imageRepository().exists(ctx, studioID)
 }
 
-func (qb *studioQueryBuilder) UpdateImage(studioID int, image []byte) error {
-	return qb.imageRepository().replace(studioID, image)
+func (qb *studioQueryBuilder) UpdateImage(ctx context.Context, studioID int, image []byte) error {
+	return qb.imageRepository().replace(ctx, studioID, image)
 }
 
-func (qb *studioQueryBuilder) DestroyImage(studioID int) error {
-	return qb.imageRepository().destroy([]int{studioID})
+func (qb *studioQueryBuilder) DestroyImage(ctx context.Context, studioID int) error {
+	return qb.imageRepository().destroy(ctx, []int{studioID})
 }
 
 func (qb *studioQueryBuilder) stashIDRepository() *stashIDRepository {
@@ -427,12 +425,12 @@ func (qb *studioQueryBuilder) stashIDRepository() *stashIDRepository {
 	}
 }
 
-func (qb *studioQueryBuilder) GetStashIDs(studioID int) ([]*models.StashID, error) {
-	return qb.stashIDRepository().get(studioID)
+func (qb *studioQueryBuilder) GetStashIDs(ctx context.Context, studioID int) ([]*models.StashID, error) {
+	return qb.stashIDRepository().get(ctx, studioID)
 }
 
-func (qb *studioQueryBuilder) UpdateStashIDs(studioID int, stashIDs []models.StashID) error {
-	return qb.stashIDRepository().replace(studioID, stashIDs)
+func (qb *studioQueryBuilder) UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error {
+	return qb.stashIDRepository().replace(ctx, studioID, stashIDs)
 }
 
 func (qb *studioQueryBuilder) aliasRepository() *stringRepository {
@@ -446,10 +444,10 @@ func (qb *studioQueryBuilder) aliasRepository() *stringRepository {
 	}
 }
 
-func (qb *studioQueryBuilder) GetAliases(studioID int) ([]string, error) {
-	return qb.aliasRepository().get(studioID)
+func (qb *studioQueryBuilder) GetAliases(ctx context.Context, studioID int) ([]string, error) {
+	return qb.aliasRepository().get(ctx, studioID)
 }
 
-func (qb *studioQueryBuilder) UpdateAliases(studioID int, aliases []string) error {
-	return qb.aliasRepository().replace(studioID, aliases)
+func (qb *studioQueryBuilder) UpdateAliases(ctx context.Context, studioID int, aliases []string) error {
+	return qb.aliasRepository().replace(ctx, studioID, aliases)
 }

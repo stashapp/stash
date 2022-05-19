@@ -4,6 +4,7 @@
 package sqlite_test
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"math"
@@ -16,14 +17,15 @@ import (
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func TestPerformerFindBySceneID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		pqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		pqb := sqlite.PerformerReaderWriter
 		sceneID := sceneIDs[sceneIdxWithPerformer]
 
-		performers, err := pqb.FindBySceneID(sceneID)
+		performers, err := pqb.FindBySceneID(ctx, sceneID)
 
 		if err != nil {
 			t.Errorf("Error finding performer: %s", err.Error())
@@ -34,7 +36,7 @@ func TestPerformerFindBySceneID(t *testing.T) {
 
 		assert.Equal(t, getPerformerStringValue(performerIdxWithScene, "Name"), performer.Name.String)
 
-		performers, err = pqb.FindBySceneID(0)
+		performers, err = pqb.FindBySceneID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("Error finding performer: %s", err.Error())
@@ -55,21 +57,21 @@ func TestPerformerFindByNames(t *testing.T) {
 		return ret
 	}
 
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		var names []string
 
-		pqb := r.Performer()
+		pqb := sqlite.PerformerReaderWriter
 
 		names = append(names, performerNames[performerIdxWithScene]) // find performers by names
 
-		performers, err := pqb.FindByNames(names, false)
+		performers, err := pqb.FindByNames(ctx, names, false)
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())
 		}
 		assert.Len(t, performers, 1)
 		assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
 
-		performers, err = pqb.FindByNames(names, true) // find performers by names nocase
+		performers, err = pqb.FindByNames(ctx, names, true) // find performers by names nocase
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())
 		}
@@ -79,14 +81,14 @@ func TestPerformerFindByNames(t *testing.T) {
 
 		names = append(names, performerNames[performerIdx1WithScene]) // find performers by names ( 2 names )
 
-		performers, err = pqb.FindByNames(names, false)
+		performers, err = pqb.FindByNames(ctx, names, false)
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())
 		}
 		retNames := getNames(performers)
 		assert.Equal(t, names, retNames)
 
-		performers, err = pqb.FindByNames(names, true) // find performers by names ( 2 names nocase)
+		performers, err = pqb.FindByNames(ctx, names, true) // find performers by names ( 2 names nocase)
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())
 		}
@@ -122,10 +124,10 @@ func TestPerformerQueryEthnicityOr(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 
 		assert.Len(t, performers, 2)
 		assert.Equal(t, performer1Eth, performers[0].Ethnicity.String)
@@ -153,10 +155,10 @@ func TestPerformerQueryEthnicityAndRating(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 
 		assert.Len(t, performers, 1)
 		assert.Equal(t, performerEth, performers[0].Ethnicity.String)
@@ -188,10 +190,10 @@ func TestPerformerQueryEthnicityNotRating(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 
 		for _, performer := range performers {
 			verifyString(t, performer.Ethnicity.String, ethCriterion)
@@ -219,20 +221,20 @@ func TestPerformerIllegalQuery(t *testing.T) {
 		Or:  &subFilter,
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 
-		_, _, err := sqb.Query(performerFilter, nil)
+		_, _, err := sqb.Query(ctx, performerFilter, nil)
 		assert.NotNil(err)
 
 		performerFilter.Or = nil
 		performerFilter.Not = &subFilter
-		_, _, err = sqb.Query(performerFilter, nil)
+		_, _, err = sqb.Query(ctx, performerFilter, nil)
 		assert.NotNil(err)
 
 		performerFilter.And = nil
 		performerFilter.Or = &subFilter
-		_, _, err = sqb.Query(performerFilter, nil)
+		_, _, err = sqb.Query(ctx, performerFilter, nil)
 		assert.NotNil(err)
 
 		return nil
@@ -240,15 +242,15 @@ func TestPerformerIllegalQuery(t *testing.T) {
 }
 
 func TestPerformerQueryIgnoreAutoTag(t *testing.T) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		ignoreAutoTag := true
 		performerFilter := models.PerformerFilterType{
 			IgnoreAutoTag: &ignoreAutoTag,
 		}
 
-		sqb := r.Performer()
+		sqb := sqlite.PerformerReaderWriter
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 
 		assert.Len(t, performers, int(math.Ceil(float64(totalPerformers)/5)))
 		for _, p := range performers {
@@ -260,12 +262,12 @@ func TestPerformerQueryIgnoreAutoTag(t *testing.T) {
 }
 
 func TestPerformerQueryForAutoTag(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		tqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		tqb := sqlite.PerformerReaderWriter
 
 		name := performerNames[performerIdx1WithScene] // find a performer by name
 
-		performers, err := tqb.QueryForAutoTag([]string{name})
+		performers, err := tqb.QueryForAutoTag(ctx, []string{name})
 
 		if err != nil {
 			t.Errorf("Error finding performers: %s", err.Error())
@@ -280,8 +282,8 @@ func TestPerformerQueryForAutoTag(t *testing.T) {
 }
 
 func TestPerformerUpdatePerformerImage(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Performer()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.PerformerReaderWriter
 
 		// create performer to test against
 		const name = "TestPerformerUpdatePerformerImage"
@@ -290,26 +292,26 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 			Checksum: md5.FromString(name),
 			Favorite: sql.NullBool{Bool: false, Valid: true},
 		}
-		created, err := qb.Create(performer)
+		created, err := qb.Create(ctx, performer)
 		if err != nil {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
 
 		image := []byte("image")
-		err = qb.UpdateImage(created.ID, image)
+		err = qb.UpdateImage(ctx, created.ID, image)
 		if err != nil {
 			return fmt.Errorf("Error updating performer image: %s", err.Error())
 		}
 
 		// ensure image set
-		storedImage, err := qb.GetImage(created.ID)
+		storedImage, err := qb.GetImage(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
 		assert.Equal(t, storedImage, image)
 
 		// set nil image
-		err = qb.UpdateImage(created.ID, nil)
+		err = qb.UpdateImage(ctx, created.ID, nil)
 		if err == nil {
 			return fmt.Errorf("Expected error setting nil image")
 		}
@@ -321,8 +323,8 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 }
 
 func TestPerformerDestroyPerformerImage(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Performer()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.PerformerReaderWriter
 
 		// create performer to test against
 		const name = "TestPerformerDestroyPerformerImage"
@@ -331,24 +333,24 @@ func TestPerformerDestroyPerformerImage(t *testing.T) {
 			Checksum: md5.FromString(name),
 			Favorite: sql.NullBool{Bool: false, Valid: true},
 		}
-		created, err := qb.Create(performer)
+		created, err := qb.Create(ctx, performer)
 		if err != nil {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
 
 		image := []byte("image")
-		err = qb.UpdateImage(created.ID, image)
+		err = qb.UpdateImage(ctx, created.ID, image)
 		if err != nil {
 			return fmt.Errorf("Error updating performer image: %s", err.Error())
 		}
 
-		err = qb.DestroyImage(created.ID)
+		err = qb.DestroyImage(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error destroying performer image: %s", err.Error())
 		}
 
 		// image should be nil
-		storedImage, err := qb.GetImage(created.ID)
+		storedImage, err := qb.GetImage(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
@@ -380,13 +382,13 @@ func TestPerformerQueryAge(t *testing.T) {
 }
 
 func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.PerformerReaderWriter
 		performerFilter := models.PerformerFilterType{
 			Age: &ageCriterion,
 		}
 
-		performers, _, err := qb.Query(&performerFilter, nil)
+		performers, _, err := qb.Query(ctx, &performerFilter, nil)
 		if err != nil {
 			t.Errorf("Error querying performer: %s", err.Error())
 		}
@@ -433,13 +435,13 @@ func TestPerformerQueryCareerLength(t *testing.T) {
 }
 
 func verifyPerformerCareerLength(t *testing.T, criterion models.StringCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.PerformerReaderWriter
 		performerFilter := models.PerformerFilterType{
 			CareerLength: &criterion,
 		}
 
-		performers, _, err := qb.Query(&performerFilter, nil)
+		performers, _, err := qb.Query(ctx, &performerFilter, nil)
 		if err != nil {
 			t.Errorf("Error querying performer: %s", err.Error())
 		}
@@ -492,11 +494,11 @@ func TestPerformerQueryURL(t *testing.T) {
 }
 
 func verifyPerformerQuery(t *testing.T, filter models.PerformerFilterType, verifyFn func(s *models.Performer)) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := r.Performer()
+		sqb := sqlite.PerformerReaderWriter
 
-		performers := queryPerformers(t, sqb, &filter, nil)
+		performers := queryPerformers(ctx, t, sqb, &filter, nil)
 
 		// assume it should find at least one
 		assert.Greater(t, len(performers), 0)
@@ -509,8 +511,8 @@ func verifyPerformerQuery(t *testing.T, filter models.PerformerFilterType, verif
 	})
 }
 
-func queryPerformers(t *testing.T, qb models.PerformerReader, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) []*models.Performer {
-	performers, _, err := qb.Query(performerFilter, findFilter)
+func queryPerformers(ctx context.Context, t *testing.T, qb models.PerformerReader, performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) []*models.Performer {
+	performers, _, err := qb.Query(ctx, performerFilter, findFilter)
 	if err != nil {
 		t.Errorf("Error querying performers: %s", err.Error())
 	}
@@ -519,8 +521,8 @@ func queryPerformers(t *testing.T, qb models.PerformerReader, performerFilter *m
 }
 
 func TestPerformerQueryTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
@@ -534,7 +536,7 @@ func TestPerformerQueryTags(t *testing.T) {
 		}
 
 		// ensure ids are correct
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 		assert.Len(t, performers, 2)
 		for _, performer := range performers {
 			assert.True(t, performer.ID == performerIDs[performerIdxWithTag] || performer.ID == performerIDs[performerIdxWithTwoTags])
@@ -548,7 +550,7 @@ func TestPerformerQueryTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		performers = queryPerformers(t, sqb, &performerFilter, nil)
+		performers = queryPerformers(ctx, t, sqb, &performerFilter, nil)
 
 		assert.Len(t, performers, 1)
 		assert.Equal(t, sceneIDs[performerIdxWithTwoTags], performers[0].ID)
@@ -565,7 +567,7 @@ func TestPerformerQueryTags(t *testing.T) {
 			Q: &q,
 		}
 
-		performers = queryPerformers(t, sqb, &performerFilter, &findFilter)
+		performers = queryPerformers(ctx, t, sqb, &performerFilter, &findFilter)
 		assert.Len(t, performers, 0)
 
 		return nil
@@ -592,17 +594,17 @@ func TestPerformerQueryTagCount(t *testing.T) {
 }
 
 func verifyPerformersTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 		performerFilter := models.PerformerFilterType{
 			TagCount: &tagCountCriterion,
 		}
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 		assert.Greater(t, len(performers), 0)
 
 		for _, performer := range performers {
-			ids, err := sqb.GetTagIDs(performer.ID)
+			ids, err := sqb.GetTagIDs(ctx, performer.ID)
 			if err != nil {
 				return err
 			}
@@ -633,17 +635,17 @@ func TestPerformerQuerySceneCount(t *testing.T) {
 }
 
 func verifyPerformersSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 		performerFilter := models.PerformerFilterType{
 			SceneCount: &sceneCountCriterion,
 		}
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 		assert.Greater(t, len(performers), 0)
 
 		for _, performer := range performers {
-			ids, err := r.Scene().FindByPerformerID(performer.ID)
+			ids, err := sqlite.SceneReaderWriter.FindByPerformerID(ctx, performer.ID)
 			if err != nil {
 				return err
 			}
@@ -674,19 +676,19 @@ func TestPerformerQueryImageCount(t *testing.T) {
 }
 
 func verifyPerformersImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 		performerFilter := models.PerformerFilterType{
 			ImageCount: &imageCountCriterion,
 		}
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 		assert.Greater(t, len(performers), 0)
 
 		for _, performer := range performers {
 			pp := 0
 
-			result, err := r.Image().Query(models.ImageQueryOptions{
+			result, err := sqlite.ImageReaderWriter.Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: &models.FindFilterType{
 						PerPage: &pp,
@@ -730,19 +732,19 @@ func TestPerformerQueryGalleryCount(t *testing.T) {
 }
 
 func verifyPerformersGalleryCount(t *testing.T, galleryCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 		performerFilter := models.PerformerFilterType{
 			GalleryCount: &galleryCountCriterion,
 		}
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 		assert.Greater(t, len(performers), 0)
 
 		for _, performer := range performers {
 			pp := 0
 
-			_, count, err := r.Gallery().Query(&models.GalleryFilterType{
+			_, count, err := sqlite.GalleryReaderWriter.Query(ctx, &models.GalleryFilterType{
 				Performers: &models.MultiCriterionInput{
 					Value:    []string{strconv.Itoa(performer.ID)},
 					Modifier: models.CriterionModifierIncludes,
@@ -761,7 +763,7 @@ func verifyPerformersGalleryCount(t *testing.T, galleryCountCriterion models.Int
 }
 
 func TestPerformerQueryStudio(t *testing.T) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		testCases := []struct {
 			studioIndex    int
 			performerIndex int
@@ -771,7 +773,7 @@ func TestPerformerQueryStudio(t *testing.T) {
 			{studioIndex: studioIdxWithGalleryPerformer, performerIndex: performerIdxWithGalleryStudio},
 		}
 
-		sqb := r.Performer()
+		sqb := sqlite.PerformerReaderWriter
 
 		for _, tc := range testCases {
 			studioCriterion := models.HierarchicalMultiCriterionInput{
@@ -785,7 +787,7 @@ func TestPerformerQueryStudio(t *testing.T) {
 				Studios: &studioCriterion,
 			}
 
-			performers := queryPerformers(t, sqb, &performerFilter, nil)
+			performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 
 			assert.Len(t, performers, 1)
 
@@ -804,7 +806,7 @@ func TestPerformerQueryStudio(t *testing.T) {
 				Q: &q,
 			}
 
-			performers = queryPerformers(t, sqb, &performerFilter, &findFilter)
+			performers = queryPerformers(ctx, t, sqb, &performerFilter, &findFilter)
 			assert.Len(t, performers, 0)
 		}
 
@@ -819,21 +821,21 @@ func TestPerformerQueryStudio(t *testing.T) {
 			Q: &q,
 		}
 
-		performers := queryPerformers(t, sqb, performerFilter, findFilter)
+		performers := queryPerformers(ctx, t, sqb, performerFilter, findFilter)
 		assert.Len(t, performers, 1)
 		assert.Equal(t, imageIDs[performerIdx1WithImage], performers[0].ID)
 
 		q = getPerformerStringValue(performerIdxWithSceneStudio, "Name")
-		performers = queryPerformers(t, sqb, performerFilter, findFilter)
+		performers = queryPerformers(ctx, t, sqb, performerFilter, findFilter)
 		assert.Len(t, performers, 0)
 
 		performerFilter.Studios.Modifier = models.CriterionModifierNotNull
-		performers = queryPerformers(t, sqb, performerFilter, findFilter)
+		performers = queryPerformers(ctx, t, sqb, performerFilter, findFilter)
 		assert.Len(t, performers, 1)
 		assert.Equal(t, imageIDs[performerIdxWithSceneStudio], performers[0].ID)
 
 		q = getPerformerStringValue(performerIdx1WithImage, "Name")
-		performers = queryPerformers(t, sqb, performerFilter, findFilter)
+		performers = queryPerformers(ctx, t, sqb, performerFilter, findFilter)
 		assert.Len(t, performers, 0)
 
 		return nil
@@ -841,8 +843,8 @@ func TestPerformerQueryStudio(t *testing.T) {
 }
 
 func TestPerformerStashIDs(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Performer()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.PerformerReaderWriter
 
 		// create performer to test against
 		const name = "TestStashIDs"
@@ -851,12 +853,12 @@ func TestPerformerStashIDs(t *testing.T) {
 			Checksum: md5.FromString(name),
 			Favorite: sql.NullBool{Bool: false, Valid: true},
 		}
-		created, err := qb.Create(performer)
+		created, err := qb.Create(ctx, performer)
 		if err != nil {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
 
-		testStashIDReaderWriter(t, qb, created.ID)
+		testStashIDReaderWriter(ctx, t, qb, created.ID)
 		return nil
 	}); err != nil {
 		t.Error(err.Error())
@@ -888,13 +890,13 @@ func TestPerformerQueryRating(t *testing.T) {
 }
 
 func verifyPerformersRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 		performerFilter := models.PerformerFilterType{
 			Rating: &ratingCriterion,
 		}
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 
 		for _, performer := range performers {
 			verifyInt64(t, performer.Rating, ratingCriterion)
@@ -905,14 +907,14 @@ func verifyPerformersRating(t *testing.T, ratingCriterion models.IntCriterionInp
 }
 
 func TestPerformerQueryIsMissingRating(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Performer()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.PerformerReaderWriter
 		isMissing := "rating"
 		performerFilter := models.PerformerFilterType{
 			IsMissing: &isMissing,
 		}
 
-		performers := queryPerformers(t, sqb, &performerFilter, nil)
+		performers := queryPerformers(ctx, t, sqb, &performerFilter, nil)
 
 		assert.True(t, len(performers) > 0)
 
@@ -925,14 +927,14 @@ func TestPerformerQueryIsMissingRating(t *testing.T) {
 }
 
 func TestPerformerQueryIsMissingImage(t *testing.T) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		isMissing := "image"
 		performerFilter := &models.PerformerFilterType{
 			IsMissing: &isMissing,
 		}
 
 		// ensure query does not error
-		performers, _, err := r.Performer().Query(performerFilter, nil)
+		performers, _, err := sqlite.PerformerReaderWriter.Query(ctx, performerFilter, nil)
 		if err != nil {
 			t.Errorf("Error querying performers: %s", err.Error())
 		}
@@ -940,7 +942,7 @@ func TestPerformerQueryIsMissingImage(t *testing.T) {
 		assert.True(t, len(performers) > 0)
 
 		for _, performer := range performers {
-			img, err := r.Performer().GetImage(performer.ID)
+			img, err := sqlite.PerformerReaderWriter.GetImage(ctx, performer.ID)
 			if err != nil {
 				t.Errorf("error getting performer image: %s", err.Error())
 			}
@@ -959,9 +961,9 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		Direction: &direction,
 	}
 
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		// just ensure it queries without error
-		performers, _, err := r.Performer().Query(nil, findFilter)
+		performers, _, err := sqlite.PerformerReaderWriter.Query(ctx, nil, findFilter)
 		if err != nil {
 			t.Errorf("Error querying performers: %s", err.Error())
 		}
@@ -976,7 +978,7 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 		// sort in ascending order
 		direction = models.SortDirectionEnumAsc
 
-		performers, _, err = r.Performer().Query(nil, findFilter)
+		performers, _, err = sqlite.PerformerReaderWriter.Query(ctx, nil, findFilter)
 		if err != nil {
 			t.Errorf("Error querying performers: %s", err.Error())
 		}

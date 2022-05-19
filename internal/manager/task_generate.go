@@ -54,7 +54,7 @@ type GeneratePreviewOptionsInput struct {
 const generateQueueSize = 200000
 
 type GenerateJob struct {
-	txnManager models.TransactionManager
+	txnManager models.Repository
 	input      GenerateMetadataInput
 
 	overwrite      bool
@@ -110,20 +110,20 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			Overwrite:   j.overwrite,
 		}
 
-		if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			qb := r.Scene()
+		if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+			qb := j.txnManager.Scene
 			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 {
 				totals = j.queueTasks(ctx, g, queue)
 			} else {
 				if len(j.input.SceneIDs) > 0 {
-					scenes, err = qb.FindMany(sceneIDs)
+					scenes, err = qb.FindMany(ctx, sceneIDs)
 					for _, s := range scenes {
 						j.queueSceneJobs(ctx, g, s, queue, &totals)
 					}
 				}
 
 				if len(j.input.MarkerIDs) > 0 {
-					markers, err = r.SceneMarker().FindMany(markerIDs)
+					markers, err = j.txnManager.SceneMarker.FindMany(ctx, markerIDs)
 					if err != nil {
 						return err
 					}
@@ -192,13 +192,13 @@ func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, que
 
 	findFilter := models.BatchFindFilter(batchSize)
 
-	if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 		for more := true; more; {
 			if job.IsCancelled(ctx) {
 				return context.Canceled
 			}
 
-			scenes, err := scene.Query(r.Scene(), nil, findFilter)
+			scenes, err := scene.Query(ctx, j.txnManager.Scene, nil, findFilter)
 			if err != nil {
 				return err
 			}

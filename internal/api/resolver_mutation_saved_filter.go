@@ -23,17 +23,17 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input SaveFilterInput
 		id = &idv
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		f := models.SavedFilter{
 			Mode:   input.Mode,
 			Name:   input.Name,
 			Filter: input.Filter,
 		}
 		if id == nil {
-			ret, err = repo.SavedFilter().Create(f)
+			ret, err = r.repository.SavedFilter.Create(ctx, f)
 		} else {
 			f.ID = *id
-			ret, err = repo.SavedFilter().Update(f)
+			ret, err = r.repository.SavedFilter.Update(ctx, f)
 		}
 		return err
 	}); err != nil {
@@ -48,8 +48,8 @@ func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input Destroy
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		return repo.SavedFilter().Destroy(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.repository.SavedFilter.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -58,24 +58,24 @@ func (r *mutationResolver) DestroySavedFilter(ctx context.Context, input Destroy
 }
 
 func (r *mutationResolver) SetDefaultFilter(ctx context.Context, input SetDefaultFilterInput) (bool, error) {
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.SavedFilter()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.SavedFilter
 
 		if input.Filter == nil {
 			// clearing
-			def, err := qb.FindDefault(input.Mode)
+			def, err := qb.FindDefault(ctx, input.Mode)
 			if err != nil {
 				return err
 			}
 
 			if def != nil {
-				return qb.Destroy(def.ID)
+				return qb.Destroy(ctx, def.ID)
 			}
 
 			return nil
 		}
 
-		_, err := qb.SetDefault(models.SavedFilter{
+		_, err := qb.SetDefault(ctx, models.SavedFilter{
 			Mode:   input.Mode,
 			Filter: *input.Filter,
 		})

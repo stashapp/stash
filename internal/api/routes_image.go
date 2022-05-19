@@ -13,17 +13,24 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
+type ImageFinder interface {
+	Find(ctx context.Context, id int) (*models.Image, error)
+	FindByChecksum(ctx context.Context, checksum string) (*models.Image, error)
+}
+
 type imageRoutes struct {
-	txnManager models.TransactionManager
+	txnManager  txn.Manager
+	imageFinder ImageFinder
 }
 
 func (rs imageRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Route("/{imageId}", func(r chi.Router) {
-		r.Use(ImageCtx)
+		r.Use(rs.ImageCtx)
 
 		r.Get("/image", rs.Image)
 		r.Get("/thumbnail", rs.Thumbnail)
@@ -85,18 +92,18 @@ func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 // endregion
 
-func ImageCtx(next http.Handler) http.Handler {
+func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		imageIdentifierQueryParam := chi.URLParam(r, "imageId")
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		readTxnErr := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
-			qb := repo.Image()
+		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+			qb := rs.imageFinder
 			if imageID == 0 {
-				image, _ = qb.FindByChecksum(imageIdentifierQueryParam)
+				image, _ = qb.FindByChecksum(ctx, imageIdentifierQueryParam)
 			} else {
-				image, _ = qb.Find(imageID)
+				image, _ = qb.Find(ctx, imageID)
 			}
 
 			return nil

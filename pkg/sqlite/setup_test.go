@@ -13,13 +13,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 const (
@@ -386,20 +386,21 @@ var (
 	}
 )
 
+var db *sqlite.Database
+
 func TestMain(m *testing.M) {
 	ret := runTests(m)
 	os.Exit(ret)
 }
 
-func withTxn(f func(r models.Repository) error) error {
-	t := sqlite.NewTransactionManager()
-	return t.WithTxn(context.TODO(), f)
+func withTxn(f func(ctx context.Context) error) error {
+	return txn.WithTxn(context.Background(), db, f)
 }
 
-func withRollbackTxn(f func(r models.Repository) error) error {
+func withRollbackTxn(f func(ctx context.Context) error) error {
 	var ret error
-	withTxn(func(repo models.Repository) error {
-		ret = f(repo)
+	withTxn(func(ctx context.Context) error {
+		ret = f(ctx)
 		return errors.New("fake error for rollback")
 	})
 
@@ -407,7 +408,7 @@ func withRollbackTxn(f func(r models.Repository) error) error {
 }
 
 func testTeardown(databaseFile string) {
-	err := database.DB.Close()
+	err := db.Close()
 
 	if err != nil {
 		panic(err)
@@ -428,7 +429,9 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	if err := database.Initialize(databaseFile); err != nil {
+	db = &sqlite.Database{}
+
+	if err := db.Open(databaseFile); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
 
@@ -445,109 +448,109 @@ func runTests(m *testing.M) int {
 }
 
 func populateDB() error {
-	if err := withTxn(func(r models.Repository) error {
-		if err := createScenes(r.Scene(), totalScenes); err != nil {
+	if err := withTxn(func(ctx context.Context) error {
+		if err := createScenes(ctx, sqlite.SceneReaderWriter, totalScenes); err != nil {
 			return fmt.Errorf("error creating scenes: %s", err.Error())
 		}
 
-		if err := createImages(r.Image(), totalImages); err != nil {
+		if err := createImages(ctx, sqlite.ImageReaderWriter, totalImages); err != nil {
 			return fmt.Errorf("error creating images: %s", err.Error())
 		}
 
-		if err := createGalleries(r.Gallery(), totalGalleries); err != nil {
+		if err := createGalleries(ctx, sqlite.GalleryReaderWriter, totalGalleries); err != nil {
 			return fmt.Errorf("error creating galleries: %s", err.Error())
 		}
 
-		if err := createMovies(r.Movie(), moviesNameCase, moviesNameNoCase); err != nil {
+		if err := createMovies(ctx, sqlite.MovieReaderWriter, moviesNameCase, moviesNameNoCase); err != nil {
 			return fmt.Errorf("error creating movies: %s", err.Error())
 		}
 
-		if err := createPerformers(r.Performer(), performersNameCase, performersNameNoCase); err != nil {
+		if err := createPerformers(ctx, sqlite.PerformerReaderWriter, performersNameCase, performersNameNoCase); err != nil {
 			return fmt.Errorf("error creating performers: %s", err.Error())
 		}
 
-		if err := createTags(r.Tag(), tagsNameCase, tagsNameNoCase); err != nil {
+		if err := createTags(ctx, sqlite.TagReaderWriter, tagsNameCase, tagsNameNoCase); err != nil {
 			return fmt.Errorf("error creating tags: %s", err.Error())
 		}
 
-		if err := addTagImage(r.Tag(), tagIdxWithCoverImage); err != nil {
+		if err := addTagImage(ctx, sqlite.TagReaderWriter, tagIdxWithCoverImage); err != nil {
 			return fmt.Errorf("error adding tag image: %s", err.Error())
 		}
 
-		if err := createStudios(r.Studio(), studiosNameCase, studiosNameNoCase); err != nil {
+		if err := createStudios(ctx, sqlite.StudioReaderWriter, studiosNameCase, studiosNameNoCase); err != nil {
 			return fmt.Errorf("error creating studios: %s", err.Error())
 		}
 
-		if err := createSavedFilters(r.SavedFilter(), totalSavedFilters); err != nil {
+		if err := createSavedFilters(ctx, sqlite.SavedFilterReaderWriter, totalSavedFilters); err != nil {
 			return fmt.Errorf("error creating saved filters: %s", err.Error())
 		}
 
-		if err := linkPerformerTags(r.Performer()); err != nil {
+		if err := linkPerformerTags(ctx, sqlite.PerformerReaderWriter); err != nil {
 			return fmt.Errorf("error linking performer tags: %s", err.Error())
 		}
 
-		if err := linkSceneGalleries(r.Scene()); err != nil {
+		if err := linkSceneGalleries(ctx, sqlite.SceneReaderWriter); err != nil {
 			return fmt.Errorf("error linking scenes to galleries: %s", err.Error())
 		}
 
-		if err := linkSceneMovies(r.Scene()); err != nil {
+		if err := linkSceneMovies(ctx, sqlite.SceneReaderWriter); err != nil {
 			return fmt.Errorf("error linking scenes to movies: %s", err.Error())
 		}
 
-		if err := linkScenePerformers(r.Scene()); err != nil {
+		if err := linkScenePerformers(ctx, sqlite.SceneReaderWriter); err != nil {
 			return fmt.Errorf("error linking scene performers: %s", err.Error())
 		}
 
-		if err := linkSceneTags(r.Scene()); err != nil {
+		if err := linkSceneTags(ctx, sqlite.SceneReaderWriter); err != nil {
 			return fmt.Errorf("error linking scene tags: %s", err.Error())
 		}
 
-		if err := linkSceneStudios(r.Scene()); err != nil {
+		if err := linkSceneStudios(ctx, sqlite.SceneReaderWriter); err != nil {
 			return fmt.Errorf("error linking scene studios: %s", err.Error())
 		}
 
-		if err := linkImageGalleries(r.Gallery()); err != nil {
+		if err := linkImageGalleries(ctx, sqlite.GalleryReaderWriter); err != nil {
 			return fmt.Errorf("error linking gallery images: %s", err.Error())
 		}
 
-		if err := linkImagePerformers(r.Image()); err != nil {
+		if err := linkImagePerformers(ctx, sqlite.ImageReaderWriter); err != nil {
 			return fmt.Errorf("error linking image performers: %s", err.Error())
 		}
 
-		if err := linkImageTags(r.Image()); err != nil {
+		if err := linkImageTags(ctx, sqlite.ImageReaderWriter); err != nil {
 			return fmt.Errorf("error linking image tags: %s", err.Error())
 		}
 
-		if err := linkImageStudios(r.Image()); err != nil {
+		if err := linkImageStudios(ctx, sqlite.ImageReaderWriter); err != nil {
 			return fmt.Errorf("error linking image studio: %s", err.Error())
 		}
 
-		if err := linkMovieStudios(r.Movie()); err != nil {
+		if err := linkMovieStudios(ctx, sqlite.MovieReaderWriter); err != nil {
 			return fmt.Errorf("error linking movie studios: %s", err.Error())
 		}
 
-		if err := linkStudiosParent(r.Studio()); err != nil {
+		if err := linkStudiosParent(ctx, sqlite.StudioReaderWriter); err != nil {
 			return fmt.Errorf("error linking studios parent: %s", err.Error())
 		}
 
-		if err := linkGalleryPerformers(r.Gallery()); err != nil {
+		if err := linkGalleryPerformers(ctx, sqlite.GalleryReaderWriter); err != nil {
 			return fmt.Errorf("error linking gallery performers: %s", err.Error())
 		}
 
-		if err := linkGalleryTags(r.Gallery()); err != nil {
+		if err := linkGalleryTags(ctx, sqlite.GalleryReaderWriter); err != nil {
 			return fmt.Errorf("error linking gallery tags: %s", err.Error())
 		}
 
-		if err := linkGalleryStudios(r.Gallery()); err != nil {
+		if err := linkGalleryStudios(ctx, sqlite.GalleryReaderWriter); err != nil {
 			return fmt.Errorf("error linking gallery studios: %s", err.Error())
 		}
 
-		if err := linkTagsParent(r.Tag()); err != nil {
+		if err := linkTagsParent(ctx, sqlite.TagReaderWriter); err != nil {
 			return fmt.Errorf("error linking tags parent: %s", err.Error())
 		}
 
 		for _, ms := range markerSpecs {
-			if err := createMarker(r.SceneMarker(), ms); err != nil {
+			if err := createMarker(ctx, sqlite.SceneMarkerReaderWriter, ms); err != nil {
 				return fmt.Errorf("error creating scene marker: %s", err.Error())
 			}
 		}
@@ -642,7 +645,7 @@ func getObjectDate(index int) models.SQLiteDate {
 	}
 }
 
-func createScenes(sqb models.SceneReaderWriter, n int) error {
+func createScenes(ctx context.Context, sqb models.SceneReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		scene := models.Scene{
 			Path:     getSceneStringValue(i, pathField),
@@ -658,7 +661,7 @@ func createScenes(sqb models.SceneReaderWriter, n int) error {
 			Date:     getObjectDate(i),
 		}
 
-		created, err := sqb.Create(scene)
+		created, err := sqb.Create(ctx, scene)
 
 		if err != nil {
 			return fmt.Errorf("Error creating scene %v+: %s", scene, err.Error())
@@ -683,7 +686,7 @@ func getImagePath(index int) string {
 	return getImageStringValue(index, pathField)
 }
 
-func createImages(qb models.ImageReaderWriter, n int) error {
+func createImages(ctx context.Context, qb models.ImageReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		image := models.Image{
 			Path:     getImagePath(i),
@@ -695,7 +698,7 @@ func createImages(qb models.ImageReaderWriter, n int) error {
 			Width:    getWidth(i),
 		}
 
-		created, err := qb.Create(image)
+		created, err := qb.Create(ctx, image)
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())
@@ -715,7 +718,7 @@ func getGalleryNullStringValue(index int, field string) sql.NullString {
 	return getPrefixedNullStringValue("gallery", index, field)
 }
 
-func createGalleries(gqb models.GalleryReaderWriter, n int) error {
+func createGalleries(ctx context.Context, gqb models.GalleryReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		gallery := models.Gallery{
 			Path:     models.NullString(getGalleryStringValue(i, pathField)),
@@ -726,7 +729,7 @@ func createGalleries(gqb models.GalleryReaderWriter, n int) error {
 			Date:     getObjectDate(i),
 		}
 
-		created, err := gqb.Create(gallery)
+		created, err := gqb.Create(ctx, gallery)
 
 		if err != nil {
 			return fmt.Errorf("Error creating gallery %v+: %s", gallery, err.Error())
@@ -747,7 +750,7 @@ func getMovieNullStringValue(index int, field string) sql.NullString {
 }
 
 // createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
-func createMovies(mqb models.MovieReaderWriter, n int, o int) error {
+func createMovies(ctx context.Context, mqb models.MovieReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -768,7 +771,7 @@ func createMovies(mqb models.MovieReaderWriter, n int, o int) error {
 			Checksum: md5.FromString(name),
 		}
 
-		created, err := mqb.Create(movie)
+		created, err := mqb.Create(ctx, movie)
 
 		if err != nil {
 			return fmt.Errorf("Error creating movie [%d] %v+: %s", i, movie, err.Error())
@@ -828,7 +831,7 @@ func getIgnoreAutoTag(index int) bool {
 }
 
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
-func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
+func createPerformers(ctx context.Context, pqb models.PerformerReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -864,7 +867,7 @@ func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 			performer.CareerLength = models.NullString(*careerLength)
 		}
 
-		created, err := pqb.Create(performer)
+		created, err := pqb.Create(ctx, performer)
 
 		if err != nil {
 			return fmt.Errorf("Error creating performer %v+: %s", performer, err.Error())
@@ -942,7 +945,7 @@ func getTagChildCount(id int) int {
 }
 
 //createTags creates n tags with plain Name and o tags with camel cased NaMe included
-func createTags(tqb models.TagReaderWriter, n int, o int) error {
+func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -962,7 +965,7 @@ func createTags(tqb models.TagReaderWriter, n int, o int) error {
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 
-		created, err := tqb.Create(tag)
+		created, err := tqb.Create(ctx, tag)
 
 		if err != nil {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())
@@ -970,7 +973,7 @@ func createTags(tqb models.TagReaderWriter, n int, o int) error {
 
 		// add alias
 		alias := getTagStringValue(i, "Alias")
-		if err := tqb.UpdateAliases(created.ID, []string{alias}); err != nil {
+		if err := tqb.UpdateAliases(ctx, created.ID, []string{alias}); err != nil {
 			return fmt.Errorf("error setting tag alias: %s", err.Error())
 		}
 
@@ -989,7 +992,7 @@ func getStudioNullStringValue(index int, field string) sql.NullString {
 	return getPrefixedNullStringValue("studio", index, field)
 }
 
-func createStudio(sqb models.StudioReaderWriter, name string, parentID *int64) (*models.Studio, error) {
+func createStudio(ctx context.Context, sqb models.StudioReaderWriter, name string, parentID *int64) (*models.Studio, error) {
 	studio := models.Studio{
 		Name:     sql.NullString{String: name, Valid: true},
 		Checksum: md5.FromString(name),
@@ -999,11 +1002,11 @@ func createStudio(sqb models.StudioReaderWriter, name string, parentID *int64) (
 		studio.ParentID = sql.NullInt64{Int64: *parentID, Valid: true}
 	}
 
-	return createStudioFromModel(sqb, studio)
+	return createStudioFromModel(ctx, sqb, studio)
 }
 
-func createStudioFromModel(sqb models.StudioReaderWriter, studio models.Studio) (*models.Studio, error) {
-	created, err := sqb.Create(studio)
+func createStudioFromModel(ctx context.Context, sqb models.StudioReaderWriter, studio models.Studio) (*models.Studio, error) {
+	created, err := sqb.Create(ctx, studio)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
@@ -1013,7 +1016,7 @@ func createStudioFromModel(sqb models.StudioReaderWriter, studio models.Studio) 
 }
 
 // createStudios creates n studios with plain Name and o studios with camel cased NaMe included
-func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
+func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -1034,7 +1037,7 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 			URL:           getStudioNullStringValue(index, urlField),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
-		created, err := createStudioFromModel(sqb, studio)
+		created, err := createStudioFromModel(ctx, sqb, studio)
 
 		if err != nil {
 			return err
@@ -1042,7 +1045,7 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 
 		// add alias
 		alias := getStudioStringValue(i, "Alias")
-		if err := sqb.UpdateAliases(created.ID, []string{alias}); err != nil {
+		if err := sqb.UpdateAliases(ctx, created.ID, []string{alias}); err != nil {
 			return fmt.Errorf("error setting studio alias: %s", err.Error())
 		}
 
@@ -1053,13 +1056,13 @@ func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 	return nil
 }
 
-func createMarker(mqb models.SceneMarkerReaderWriter, markerSpec markerSpec) error {
+func createMarker(ctx context.Context, mqb models.SceneMarkerReaderWriter, markerSpec markerSpec) error {
 	marker := models.SceneMarker{
 		SceneID:      sql.NullInt64{Int64: int64(sceneIDs[markerSpec.sceneIdx]), Valid: true},
 		PrimaryTagID: tagIDs[markerSpec.primaryTagIdx],
 	}
 
-	created, err := mqb.Create(marker)
+	created, err := mqb.Create(ctx, marker)
 
 	if err != nil {
 		return fmt.Errorf("error creating marker %v+: %w", marker, err)
@@ -1074,7 +1077,7 @@ func createMarker(mqb models.SceneMarkerReaderWriter, markerSpec markerSpec) err
 			newTagIDs = append(newTagIDs, tagIDs[tagIdx])
 		}
 
-		if err := mqb.UpdateTags(created.ID, newTagIDs); err != nil {
+		if err := mqb.UpdateTags(ctx, created.ID, newTagIDs); err != nil {
 			return fmt.Errorf("error creating marker/tag join: %w", err)
 		}
 	}
@@ -1107,7 +1110,7 @@ func getSavedFilterName(index int) string {
 	return getPrefixedStringValue("savedFilter", index, "Name")
 }
 
-func createSavedFilters(qb models.SavedFilterReaderWriter, n int) error {
+func createSavedFilters(ctx context.Context, qb models.SavedFilterReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		savedFilter := models.SavedFilter{
 			Mode:   getSavedFilterMode(i),
@@ -1115,7 +1118,7 @@ func createSavedFilters(qb models.SavedFilterReaderWriter, n int) error {
 			Filter: getPrefixedStringValue("savedFilter", i, "Filter"),
 		}
 
-		created, err := qb.Create(savedFilter)
+		created, err := qb.Create(ctx, savedFilter)
 
 		if err != nil {
 			return fmt.Errorf("Error creating saved filter %v+: %s", savedFilter, err.Error())
@@ -1137,25 +1140,25 @@ func doLinks(links [][2]int, fn func(idx1, idx2 int) error) error {
 	return nil
 }
 
-func linkPerformerTags(qb models.PerformerReaderWriter) error {
+func linkPerformerTags(ctx context.Context, qb models.PerformerReaderWriter) error {
 	return doLinks(performerTagLinks, func(performerIndex, tagIndex int) error {
 		performerID := performerIDs[performerIndex]
 		tagID := tagIDs[tagIndex]
-		tagIDs, err := qb.GetTagIDs(performerID)
+		tagIDs, err := qb.GetTagIDs(ctx, performerID)
 		if err != nil {
 			return err
 		}
 
 		tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
 
-		return qb.UpdateTags(performerID, tagIDs)
+		return qb.UpdateTags(ctx, performerID, tagIDs)
 	})
 }
 
-func linkSceneMovies(qb models.SceneReaderWriter) error {
+func linkSceneMovies(ctx context.Context, qb models.SceneReaderWriter) error {
 	return doLinks(sceneMovieLinks, func(sceneIndex, movieIndex int) error {
 		sceneID := sceneIDs[sceneIndex]
-		movies, err := qb.GetMovies(sceneID)
+		movies, err := qb.GetMovies(ctx, sceneID)
 		if err != nil {
 			return err
 		}
@@ -1164,157 +1167,157 @@ func linkSceneMovies(qb models.SceneReaderWriter) error {
 			MovieID: movieIDs[movieIndex],
 			SceneID: sceneID,
 		})
-		return qb.UpdateMovies(sceneID, movies)
+		return qb.UpdateMovies(ctx, sceneID, movies)
 	})
 }
 
-func linkScenePerformers(qb models.SceneReaderWriter) error {
+func linkScenePerformers(ctx context.Context, qb models.SceneReaderWriter) error {
 	return doLinks(scenePerformerLinks, func(sceneIndex, performerIndex int) error {
-		_, err := scene.AddPerformer(qb, sceneIDs[sceneIndex], performerIDs[performerIndex])
+		_, err := scene.AddPerformer(ctx, qb, sceneIDs[sceneIndex], performerIDs[performerIndex])
 		return err
 	})
 }
 
-func linkSceneGalleries(qb models.SceneReaderWriter) error {
+func linkSceneGalleries(ctx context.Context, qb models.SceneReaderWriter) error {
 	return doLinks(sceneGalleryLinks, func(sceneIndex, galleryIndex int) error {
-		_, err := scene.AddGallery(qb, sceneIDs[sceneIndex], galleryIDs[galleryIndex])
+		_, err := scene.AddGallery(ctx, qb, sceneIDs[sceneIndex], galleryIDs[galleryIndex])
 		return err
 	})
 }
 
-func linkSceneTags(qb models.SceneReaderWriter) error {
+func linkSceneTags(ctx context.Context, qb models.SceneReaderWriter) error {
 	return doLinks(sceneTagLinks, func(sceneIndex, tagIndex int) error {
-		_, err := scene.AddTag(qb, sceneIDs[sceneIndex], tagIDs[tagIndex])
+		_, err := scene.AddTag(ctx, qb, sceneIDs[sceneIndex], tagIDs[tagIndex])
 		return err
 	})
 }
 
-func linkSceneStudios(sqb models.SceneWriter) error {
+func linkSceneStudios(ctx context.Context, sqb models.SceneWriter) error {
 	return doLinks(sceneStudioLinks, func(sceneIndex, studioIndex int) error {
 		scene := models.ScenePartial{
 			ID:       sceneIDs[sceneIndex],
 			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
 		}
-		_, err := sqb.Update(scene)
+		_, err := sqb.Update(ctx, scene)
 
 		return err
 	})
 }
 
-func linkImageGalleries(gqb models.GalleryReaderWriter) error {
+func linkImageGalleries(ctx context.Context, gqb models.GalleryReaderWriter) error {
 	return doLinks(imageGalleryLinks, func(imageIndex, galleryIndex int) error {
-		return gallery.AddImage(gqb, galleryIDs[galleryIndex], imageIDs[imageIndex])
+		return gallery.AddImage(ctx, gqb, galleryIDs[galleryIndex], imageIDs[imageIndex])
 	})
 }
 
-func linkImageTags(iqb models.ImageReaderWriter) error {
+func linkImageTags(ctx context.Context, iqb models.ImageReaderWriter) error {
 	return doLinks(imageTagLinks, func(imageIndex, tagIndex int) error {
 		imageID := imageIDs[imageIndex]
-		tags, err := iqb.GetTagIDs(imageID)
+		tags, err := iqb.GetTagIDs(ctx, imageID)
 		if err != nil {
 			return err
 		}
 
 		tags = append(tags, tagIDs[tagIndex])
 
-		return iqb.UpdateTags(imageID, tags)
+		return iqb.UpdateTags(ctx, imageID, tags)
 	})
 }
 
-func linkImageStudios(qb models.ImageWriter) error {
+func linkImageStudios(ctx context.Context, qb models.ImageWriter) error {
 	return doLinks(imageStudioLinks, func(imageIndex, studioIndex int) error {
 		image := models.ImagePartial{
 			ID:       imageIDs[imageIndex],
 			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
 		}
-		_, err := qb.Update(image)
+		_, err := qb.Update(ctx, image)
 
 		return err
 	})
 }
 
-func linkImagePerformers(qb models.ImageReaderWriter) error {
+func linkImagePerformers(ctx context.Context, qb models.ImageReaderWriter) error {
 	return doLinks(imagePerformerLinks, func(imageIndex, performerIndex int) error {
 		imageID := imageIDs[imageIndex]
-		performers, err := qb.GetPerformerIDs(imageID)
+		performers, err := qb.GetPerformerIDs(ctx, imageID)
 		if err != nil {
 			return err
 		}
 
 		performers = append(performers, performerIDs[performerIndex])
 
-		return qb.UpdatePerformers(imageID, performers)
+		return qb.UpdatePerformers(ctx, imageID, performers)
 	})
 }
 
-func linkGalleryPerformers(qb models.GalleryReaderWriter) error {
+func linkGalleryPerformers(ctx context.Context, qb models.GalleryReaderWriter) error {
 	return doLinks(galleryPerformerLinks, func(galleryIndex, performerIndex int) error {
 		galleryID := galleryIDs[galleryIndex]
-		performers, err := qb.GetPerformerIDs(galleryID)
+		performers, err := qb.GetPerformerIDs(ctx, galleryID)
 		if err != nil {
 			return err
 		}
 
 		performers = append(performers, performerIDs[performerIndex])
 
-		return qb.UpdatePerformers(galleryID, performers)
+		return qb.UpdatePerformers(ctx, galleryID, performers)
 	})
 }
 
-func linkGalleryStudios(qb models.GalleryReaderWriter) error {
+func linkGalleryStudios(ctx context.Context, qb models.GalleryReaderWriter) error {
 	return doLinks(galleryStudioLinks, func(galleryIndex, studioIndex int) error {
 		gallery := models.GalleryPartial{
 			ID:       galleryIDs[galleryIndex],
 			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
 		}
-		_, err := qb.UpdatePartial(gallery)
+		_, err := qb.UpdatePartial(ctx, gallery)
 
 		return err
 	})
 }
 
-func linkGalleryTags(qb models.GalleryReaderWriter) error {
+func linkGalleryTags(ctx context.Context, qb models.GalleryReaderWriter) error {
 	return doLinks(galleryTagLinks, func(galleryIndex, tagIndex int) error {
 		galleryID := galleryIDs[galleryIndex]
-		tags, err := qb.GetTagIDs(galleryID)
+		tags, err := qb.GetTagIDs(ctx, galleryID)
 		if err != nil {
 			return err
 		}
 
 		tags = append(tags, tagIDs[tagIndex])
 
-		return qb.UpdateTags(galleryID, tags)
+		return qb.UpdateTags(ctx, galleryID, tags)
 	})
 }
 
-func linkMovieStudios(mqb models.MovieWriter) error {
+func linkMovieStudios(ctx context.Context, mqb models.MovieWriter) error {
 	return doLinks(movieStudioLinks, func(movieIndex, studioIndex int) error {
 		movie := models.MoviePartial{
 			ID:       movieIDs[movieIndex],
 			StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
 		}
-		_, err := mqb.Update(movie)
+		_, err := mqb.Update(ctx, movie)
 
 		return err
 	})
 }
 
-func linkStudiosParent(qb models.StudioWriter) error {
+func linkStudiosParent(ctx context.Context, qb models.StudioWriter) error {
 	return doLinks(studioParentLinks, func(parentIndex, childIndex int) error {
 		studio := models.StudioPartial{
 			ID:       studioIDs[childIndex],
 			ParentID: &sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true},
 		}
-		_, err := qb.Update(studio)
+		_, err := qb.Update(ctx, studio)
 
 		return err
 	})
 }
 
-func linkTagsParent(qb models.TagReaderWriter) error {
+func linkTagsParent(ctx context.Context, qb models.TagReaderWriter) error {
 	return doLinks(tagParentLinks, func(parentIndex, childIndex int) error {
 		tagID := tagIDs[childIndex]
-		parentTags, err := qb.FindByChildTagID(tagID)
+		parentTags, err := qb.FindByChildTagID(ctx, tagID)
 		if err != nil {
 			return err
 		}
@@ -1326,10 +1329,10 @@ func linkTagsParent(qb models.TagReaderWriter) error {
 
 		parentIDs = append(parentIDs, tagIDs[parentIndex])
 
-		return qb.UpdateParentTags(tagID, parentIDs)
+		return qb.UpdateParentTags(ctx, tagID, parentIDs)
 	})
 }
 
-func addTagImage(qb models.TagWriter, tagIndex int) error {
-	return qb.UpdateImage(tagIDs[tagIndex], models.DefaultTagImage)
+func addTagImage(ctx context.Context, qb models.TagWriter, tagIndex int) error {
+	return qb.UpdateImage(ctx, tagIDs[tagIndex], models.DefaultTagImage)
 }

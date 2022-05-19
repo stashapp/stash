@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	models "github.com/stashapp/stash/pkg/models"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -12,13 +14,13 @@ type StudioReaderWriter struct {
 	mock.Mock
 }
 
-// All provides a mock function with given fields:
-func (_m *StudioReaderWriter) All() ([]*models.Studio, error) {
-	ret := _m.Called()
+// All provides a mock function with given fields: ctx
+func (_m *StudioReaderWriter) All(ctx context.Context) ([]*models.Studio, error) {
+	ret := _m.Called(ctx)
 
 	var r0 []*models.Studio
-	if rf, ok := ret.Get(0).(func() []*models.Studio); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) []*models.Studio); ok {
+		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Studio)
@@ -26,8 +28,8 @@ func (_m *StudioReaderWriter) All() ([]*models.Studio, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -35,20 +37,20 @@ func (_m *StudioReaderWriter) All() ([]*models.Studio, error) {
 	return r0, r1
 }
 
-// Count provides a mock function with given fields:
-func (_m *StudioReaderWriter) Count() (int, error) {
-	ret := _m.Called()
+// Count provides a mock function with given fields: ctx
+func (_m *StudioReaderWriter) Count(ctx context.Context) (int, error) {
+	ret := _m.Called(ctx)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
+		r0 = rf(ctx)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,13 +58,13 @@ func (_m *StudioReaderWriter) Count() (int, error) {
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: newStudio
-func (_m *StudioReaderWriter) Create(newStudio models.Studio) (*models.Studio, error) {
-	ret := _m.Called(newStudio)
+// Create provides a mock function with given fields: ctx, newStudio
+func (_m *StudioReaderWriter) Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error) {
+	ret := _m.Called(ctx, newStudio)
 
 	var r0 *models.Studio
-	if rf, ok := ret.Get(0).(func(models.Studio) *models.Studio); ok {
-		r0 = rf(newStudio)
+	if rf, ok := ret.Get(0).(func(context.Context, models.Studio) *models.Studio); ok {
+		r0 = rf(ctx, newStudio)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Studio)
@@ -70,8 +72,8 @@ func (_m *StudioReaderWriter) Create(newStudio models.Studio) (*models.Studio, e
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.Studio) error); ok {
-		r1 = rf(newStudio)
+	if rf, ok := ret.Get(1).(func(context.Context, models.Studio) error); ok {
+		r1 = rf(ctx, newStudio)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -79,13 +81,13 @@ func (_m *StudioReaderWriter) Create(newStudio models.Studio) (*models.Studio, e
 	return r0, r1
 }
 
-// Destroy provides a mock function with given fields: id
-func (_m *StudioReaderWriter) Destroy(id int) error {
-	ret := _m.Called(id)
+// Destroy provides a mock function with given fields: ctx, id
+func (_m *StudioReaderWriter) Destroy(ctx context.Context, id int) error {
+	ret := _m.Called(ctx, id)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -93,13 +95,13 @@ func (_m *StudioReaderWriter) Destroy(id int) error {
 	return r0
 }
 
-// DestroyImage provides a mock function with given fields: studioID
-func (_m *StudioReaderWriter) DestroyImage(studioID int) error {
-	ret := _m.Called(studioID)
+// DestroyImage provides a mock function with given fields: ctx, studioID
+func (_m *StudioReaderWriter) DestroyImage(ctx context.Context, studioID int) error {
+	ret := _m.Called(ctx, studioID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, studioID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -107,13 +109,13 @@ func (_m *StudioReaderWriter) DestroyImage(studioID int) error {
 	return r0
 }
 
-// Find provides a mock function with given fields: id
-func (_m *StudioReaderWriter) Find(id int) (*models.Studio, error) {
-	ret := _m.Called(id)
+// Find provides a mock function with given fields: ctx, id
+func (_m *StudioReaderWriter) Find(ctx context.Context, id int) (*models.Studio, error) {
+	ret := _m.Called(ctx, id)
 
 	var r0 *models.Studio
-	if rf, ok := ret.Get(0).(func(int) *models.Studio); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) *models.Studio); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Studio)
@@ -121,8 +123,8 @@ func (_m *StudioReaderWriter) Find(id int) (*models.Studio, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -130,13 +132,13 @@ func (_m *StudioReaderWriter) Find(id int) (*models.Studio, error) {
 	return r0, r1
 }
 
-// FindByName provides a mock function with given fields: name, nocase
-func (_m *StudioReaderWriter) FindByName(name string, nocase bool) (*models.Studio, error) {
-	ret := _m.Called(name, nocase)
+// FindByName provides a mock function with given fields: ctx, name, nocase
+func (_m *StudioReaderWriter) FindByName(ctx context.Context, name string, nocase bool) (*models.Studio, error) {
+	ret := _m.Called(ctx, name, nocase)
 
 	var r0 *models.Studio
-	if rf, ok := ret.Get(0).(func(string, bool) *models.Studio); ok {
-		r0 = rf(name, nocase)
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) *models.Studio); ok {
+		r0 = rf(ctx, name, nocase)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Studio)
@@ -144,8 +146,8 @@ func (_m *StudioReaderWriter) FindByName(name string, nocase bool) (*models.Stud
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
-		r1 = rf(name, nocase)
+	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
+		r1 = rf(ctx, name, nocase)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -153,13 +155,13 @@ func (_m *StudioReaderWriter) FindByName(name string, nocase bool) (*models.Stud
 	return r0, r1
 }
 
-// FindByStashID provides a mock function with given fields: stashID
-func (_m *StudioReaderWriter) FindByStashID(stashID models.StashID) ([]*models.Studio, error) {
-	ret := _m.Called(stashID)
+// FindByStashID provides a mock function with given fields: ctx, stashID
+func (_m *StudioReaderWriter) FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Studio, error) {
+	ret := _m.Called(ctx, stashID)
 
 	var r0 []*models.Studio
-	if rf, ok := ret.Get(0).(func(models.StashID) []*models.Studio); ok {
-		r0 = rf(stashID)
+	if rf, ok := ret.Get(0).(func(context.Context, models.StashID) []*models.Studio); ok {
+		r0 = rf(ctx, stashID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Studio)
@@ -167,8 +169,8 @@ func (_m *StudioReaderWriter) FindByStashID(stashID models.StashID) ([]*models.S
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.StashID) error); ok {
-		r1 = rf(stashID)
+	if rf, ok := ret.Get(1).(func(context.Context, models.StashID) error); ok {
+		r1 = rf(ctx, stashID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -176,13 +178,13 @@ func (_m *StudioReaderWriter) FindByStashID(stashID models.StashID) ([]*models.S
 	return r0, r1
 }
 
-// FindChildren provides a mock function with given fields: id
-func (_m *StudioReaderWriter) FindChildren(id int) ([]*models.Studio, error) {
-	ret := _m.Called(id)
+// FindChildren provides a mock function with given fields: ctx, id
+func (_m *StudioReaderWriter) FindChildren(ctx context.Context, id int) ([]*models.Studio, error) {
+	ret := _m.Called(ctx, id)
 
 	var r0 []*models.Studio
-	if rf, ok := ret.Get(0).(func(int) []*models.Studio); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Studio); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Studio)
@@ -190,8 +192,8 @@ func (_m *StudioReaderWriter) FindChildren(id int) ([]*models.Studio, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -199,13 +201,13 @@ func (_m *StudioReaderWriter) FindChildren(id int) ([]*models.Studio, error) {
 	return r0, r1
 }
 
-// FindMany provides a mock function with given fields: ids
-func (_m *StudioReaderWriter) FindMany(ids []int) ([]*models.Studio, error) {
-	ret := _m.Called(ids)
+// FindMany provides a mock function with given fields: ctx, ids
+func (_m *StudioReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.Studio, error) {
+	ret := _m.Called(ctx, ids)
 
 	var r0 []*models.Studio
-	if rf, ok := ret.Get(0).(func([]int) []*models.Studio); ok {
-		r0 = rf(ids)
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []*models.Studio); ok {
+		r0 = rf(ctx, ids)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Studio)
@@ -213,8 +215,8 @@ func (_m *StudioReaderWriter) FindMany(ids []int) ([]*models.Studio, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]int) error); ok {
-		r1 = rf(ids)
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -222,13 +224,13 @@ func (_m *StudioReaderWriter) FindMany(ids []int) ([]*models.Studio, error) {
 	return r0, r1
 }
 
-// GetAliases provides a mock function with given fields: studioID
-func (_m *StudioReaderWriter) GetAliases(studioID int) ([]string, error) {
-	ret := _m.Called(studioID)
+// GetAliases provides a mock function with given fields: ctx, studioID
+func (_m *StudioReaderWriter) GetAliases(ctx context.Context, studioID int) ([]string, error) {
+	ret := _m.Called(ctx, studioID)
 
 	var r0 []string
-	if rf, ok := ret.Get(0).(func(int) []string); ok {
-		r0 = rf(studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []string); ok {
+		r0 = rf(ctx, studioID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -236,8 +238,8 @@ func (_m *StudioReaderWriter) GetAliases(studioID int) ([]string, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(studioID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, studioID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -245,13 +247,13 @@ func (_m *StudioReaderWriter) GetAliases(studioID int) ([]string, error) {
 	return r0, r1
 }
 
-// GetImage provides a mock function with given fields: studioID
-func (_m *StudioReaderWriter) GetImage(studioID int) ([]byte, error) {
-	ret := _m.Called(studioID)
+// GetImage provides a mock function with given fields: ctx, studioID
+func (_m *StudioReaderWriter) GetImage(ctx context.Context, studioID int) ([]byte, error) {
+	ret := _m.Called(ctx, studioID)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(int) []byte); ok {
-		r0 = rf(studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []byte); ok {
+		r0 = rf(ctx, studioID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -259,8 +261,8 @@ func (_m *StudioReaderWriter) GetImage(studioID int) ([]byte, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(studioID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, studioID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -268,13 +270,13 @@ func (_m *StudioReaderWriter) GetImage(studioID int) ([]byte, error) {
 	return r0, r1
 }
 
-// GetStashIDs provides a mock function with given fields: studioID
-func (_m *StudioReaderWriter) GetStashIDs(studioID int) ([]*models.StashID, error) {
-	ret := _m.Called(studioID)
+// GetStashIDs provides a mock function with given fields: ctx, studioID
+func (_m *StudioReaderWriter) GetStashIDs(ctx context.Context, studioID int) ([]*models.StashID, error) {
+	ret := _m.Called(ctx, studioID)
 
 	var r0 []*models.StashID
-	if rf, ok := ret.Get(0).(func(int) []*models.StashID); ok {
-		r0 = rf(studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.StashID); ok {
+		r0 = rf(ctx, studioID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.StashID)
@@ -282,8 +284,8 @@ func (_m *StudioReaderWriter) GetStashIDs(studioID int) ([]*models.StashID, erro
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(studioID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, studioID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -291,20 +293,20 @@ func (_m *StudioReaderWriter) GetStashIDs(studioID int) ([]*models.StashID, erro
 	return r0, r1
 }
 
-// HasImage provides a mock function with given fields: studioID
-func (_m *StudioReaderWriter) HasImage(studioID int) (bool, error) {
-	ret := _m.Called(studioID)
+// HasImage provides a mock function with given fields: ctx, studioID
+func (_m *StudioReaderWriter) HasImage(ctx context.Context, studioID int) (bool, error) {
+	ret := _m.Called(ctx, studioID)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(int) bool); ok {
-		r0 = rf(studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) bool); ok {
+		r0 = rf(ctx, studioID)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(studioID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, studioID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -312,13 +314,13 @@ func (_m *StudioReaderWriter) HasImage(studioID int) (bool, error) {
 	return r0, r1
 }
 
-// Query provides a mock function with given fields: studioFilter, findFilter
-func (_m *StudioReaderWriter) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {
-	ret := _m.Called(studioFilter, findFilter)
+// Query provides a mock function with given fields: ctx, studioFilter, findFilter
+func (_m *StudioReaderWriter) Query(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {
+	ret := _m.Called(ctx, studioFilter, findFilter)
 
 	var r0 []*models.Studio
-	if rf, ok := ret.Get(0).(func(*models.StudioFilterType, *models.FindFilterType) []*models.Studio); ok {
-		r0 = rf(studioFilter, findFilter)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.StudioFilterType, *models.FindFilterType) []*models.Studio); ok {
+		r0 = rf(ctx, studioFilter, findFilter)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Studio)
@@ -326,15 +328,15 @@ func (_m *StudioReaderWriter) Query(studioFilter *models.StudioFilterType, findF
 	}
 
 	var r1 int
-	if rf, ok := ret.Get(1).(func(*models.StudioFilterType, *models.FindFilterType) int); ok {
-		r1 = rf(studioFilter, findFilter)
+	if rf, ok := ret.Get(1).(func(context.Context, *models.StudioFilterType, *models.FindFilterType) int); ok {
+		r1 = rf(ctx, studioFilter, findFilter)
 	} else {
 		r1 = ret.Get(1).(int)
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(*models.StudioFilterType, *models.FindFilterType) error); ok {
-		r2 = rf(studioFilter, findFilter)
+	if rf, ok := ret.Get(2).(func(context.Context, *models.StudioFilterType, *models.FindFilterType) error); ok {
+		r2 = rf(ctx, studioFilter, findFilter)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -342,13 +344,13 @@ func (_m *StudioReaderWriter) Query(studioFilter *models.StudioFilterType, findF
 	return r0, r1, r2
 }
 
-// QueryForAutoTag provides a mock function with given fields: words
-func (_m *StudioReaderWriter) QueryForAutoTag(words []string) ([]*models.Studio, error) {
-	ret := _m.Called(words)
+// QueryForAutoTag provides a mock function with given fields: ctx, words
+func (_m *StudioReaderWriter) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Studio, error) {
+	ret := _m.Called(ctx, words)
 
 	var r0 []*models.Studio
-	if rf, ok := ret.Get(0).(func([]string) []*models.Studio); ok {
-		r0 = rf(words)
+	if rf, ok := ret.Get(0).(func(context.Context, []string) []*models.Studio); ok {
+		r0 = rf(ctx, words)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Studio)
@@ -356,8 +358,8 @@ func (_m *StudioReaderWriter) QueryForAutoTag(words []string) ([]*models.Studio,
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]string) error); ok {
-		r1 = rf(words)
+	if rf, ok := ret.Get(1).(func(context.Context, []string) error); ok {
+		r1 = rf(ctx, words)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -365,13 +367,13 @@ func (_m *StudioReaderWriter) QueryForAutoTag(words []string) ([]*models.Studio,
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: updatedStudio
-func (_m *StudioReaderWriter) Update(updatedStudio models.StudioPartial) (*models.Studio, error) {
-	ret := _m.Called(updatedStudio)
+// Update provides a mock function with given fields: ctx, updatedStudio
+func (_m *StudioReaderWriter) Update(ctx context.Context, updatedStudio models.StudioPartial) (*models.Studio, error) {
+	ret := _m.Called(ctx, updatedStudio)
 
 	var r0 *models.Studio
-	if rf, ok := ret.Get(0).(func(models.StudioPartial) *models.Studio); ok {
-		r0 = rf(updatedStudio)
+	if rf, ok := ret.Get(0).(func(context.Context, models.StudioPartial) *models.Studio); ok {
+		r0 = rf(ctx, updatedStudio)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Studio)
@@ -379,8 +381,8 @@ func (_m *StudioReaderWriter) Update(updatedStudio models.StudioPartial) (*model
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.StudioPartial) error); ok {
-		r1 = rf(updatedStudio)
+	if rf, ok := ret.Get(1).(func(context.Context, models.StudioPartial) error); ok {
+		r1 = rf(ctx, updatedStudio)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -388,13 +390,13 @@ func (_m *StudioReaderWriter) Update(updatedStudio models.StudioPartial) (*model
 	return r0, r1
 }
 
-// UpdateAliases provides a mock function with given fields: studioID, aliases
-func (_m *StudioReaderWriter) UpdateAliases(studioID int, aliases []string) error {
-	ret := _m.Called(studioID, aliases)
+// UpdateAliases provides a mock function with given fields: ctx, studioID, aliases
+func (_m *StudioReaderWriter) UpdateAliases(ctx context.Context, studioID int, aliases []string) error {
+	ret := _m.Called(ctx, studioID, aliases)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, []string) error); ok {
-		r0 = rf(studioID, aliases)
+	if rf, ok := ret.Get(0).(func(context.Context, int, []string) error); ok {
+		r0 = rf(ctx, studioID, aliases)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -402,13 +404,13 @@ func (_m *StudioReaderWriter) UpdateAliases(studioID int, aliases []string) erro
 	return r0
 }
 
-// UpdateFull provides a mock function with given fields: updatedStudio
-func (_m *StudioReaderWriter) UpdateFull(updatedStudio models.Studio) (*models.Studio, error) {
-	ret := _m.Called(updatedStudio)
+// UpdateFull provides a mock function with given fields: ctx, updatedStudio
+func (_m *StudioReaderWriter) UpdateFull(ctx context.Context, updatedStudio models.Studio) (*models.Studio, error) {
+	ret := _m.Called(ctx, updatedStudio)
 
 	var r0 *models.Studio
-	if rf, ok := ret.Get(0).(func(models.Studio) *models.Studio); ok {
-		r0 = rf(updatedStudio)
+	if rf, ok := ret.Get(0).(func(context.Context, models.Studio) *models.Studio); ok {
+		r0 = rf(ctx, updatedStudio)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Studio)
@@ -416,8 +418,8 @@ func (_m *StudioReaderWriter) UpdateFull(updatedStudio models.Studio) (*models.S
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.Studio) error); ok {
-		r1 = rf(updatedStudio)
+	if rf, ok := ret.Get(1).(func(context.Context, models.Studio) error); ok {
+		r1 = rf(ctx, updatedStudio)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -425,13 +427,13 @@ func (_m *StudioReaderWriter) UpdateFull(updatedStudio models.Studio) (*models.S
 	return r0, r1
 }
 
-// UpdateImage provides a mock function with given fields: studioID, image
-func (_m *StudioReaderWriter) UpdateImage(studioID int, image []byte) error {
-	ret := _m.Called(studioID, image)
+// UpdateImage provides a mock function with given fields: ctx, studioID, image
+func (_m *StudioReaderWriter) UpdateImage(ctx context.Context, studioID int, image []byte) error {
+	ret := _m.Called(ctx, studioID, image)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, []byte) error); ok {
-		r0 = rf(studioID, image)
+	if rf, ok := ret.Get(0).(func(context.Context, int, []byte) error); ok {
+		r0 = rf(ctx, studioID, image)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -439,13 +441,13 @@ func (_m *StudioReaderWriter) UpdateImage(studioID int, image []byte) error {
 	return r0
 }
 
-// UpdateStashIDs provides a mock function with given fields: studioID, stashIDs
-func (_m *StudioReaderWriter) UpdateStashIDs(studioID int, stashIDs []models.StashID) error {
-	ret := _m.Called(studioID, stashIDs)
+// UpdateStashIDs provides a mock function with given fields: ctx, studioID, stashIDs
+func (_m *StudioReaderWriter) UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error {
+	ret := _m.Called(ctx, studioID, stashIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, []models.StashID) error); ok {
-		r0 = rf(studioID, stashIDs)
+	if rf, ok := ret.Get(0).(func(context.Context, int, []models.StashID) error); ok {
+		r0 = rf(ctx, studioID, stashIDs)
 	} else {
 		r0 = ret.Error(0)
 	}

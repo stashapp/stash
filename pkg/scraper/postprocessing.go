@@ -6,6 +6,8 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/tag"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 // postScrape handles post-processing of scraped content. If the content
@@ -45,10 +47,10 @@ func (c Cache) postScrape(ctx context.Context, content ScrapedContent) (ScrapedC
 }
 
 func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerformer) (ScrapedContent, error) {
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		tqb := r.Tag()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		tqb := c.repository.TagFinder
 
-		tags, err := postProcessTags(tqb, p.Tags)
+		tags, err := postProcessTags(ctx, tqb, p.Tags)
 		if err != nil {
 			return err
 		}
@@ -69,8 +71,8 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 
 func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (ScrapedContent, error) {
 	if m.Studio != nil {
-		if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			return match.ScrapedStudio(r.Studio(), m.Studio, nil)
+		if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+			return match.ScrapedStudio(ctx, c.repository.StudioFinder, m.Studio, nil)
 		}); err != nil {
 			return nil, err
 		}
@@ -88,10 +90,10 @@ func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (Scra
 }
 
 func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPerformer) error {
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		tqb := r.Tag()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		tqb := c.repository.TagFinder
 
-		tags, err := postProcessTags(tqb, p.Tags)
+		tags, err := postProcessTags(ctx, tqb, p.Tags)
 		if err != nil {
 			return err
 		}
@@ -106,11 +108,11 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 }
 
 func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (ScrapedContent, error) {
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		pqb := r.Performer()
-		mqb := r.Movie()
-		tqb := r.Tag()
-		sqb := r.Studio()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		pqb := c.repository.PerformerFinder
+		mqb := c.repository.MovieFinder
+		tqb := c.repository.TagFinder
+		sqb := c.repository.StudioFinder
 
 		for _, p := range scene.Performers {
 			if p == nil {
@@ -121,26 +123,26 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (Scraped
 				return err
 			}
 
-			if err := match.ScrapedPerformer(pqb, p, nil); err != nil {
+			if err := match.ScrapedPerformer(ctx, pqb, p, nil); err != nil {
 				return err
 			}
 		}
 
 		for _, p := range scene.Movies {
-			err := match.ScrapedMovie(mqb, p)
+			err := match.ScrapedMovie(ctx, mqb, p)
 			if err != nil {
 				return err
 			}
 		}
 
-		tags, err := postProcessTags(tqb, scene.Tags)
+		tags, err := postProcessTags(ctx, tqb, scene.Tags)
 		if err != nil {
 			return err
 		}
 		scene.Tags = tags
 
 		if scene.Studio != nil {
-			err := match.ScrapedStudio(sqb, scene.Studio, nil)
+			err := match.ScrapedStudio(ctx, sqb, scene.Studio, nil)
 			if err != nil {
 				return err
 			}
@@ -160,26 +162,26 @@ func (c Cache) postScrapeScene(ctx context.Context, scene ScrapedScene) (Scraped
 }
 
 func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (ScrapedContent, error) {
-	if err := c.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		pqb := r.Performer()
-		tqb := r.Tag()
-		sqb := r.Studio()
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		pqb := c.repository.PerformerFinder
+		tqb := c.repository.TagFinder
+		sqb := c.repository.StudioFinder
 
 		for _, p := range g.Performers {
-			err := match.ScrapedPerformer(pqb, p, nil)
+			err := match.ScrapedPerformer(ctx, pqb, p, nil)
 			if err != nil {
 				return err
 			}
 		}
 
-		tags, err := postProcessTags(tqb, g.Tags)
+		tags, err := postProcessTags(ctx, tqb, g.Tags)
 		if err != nil {
 			return err
 		}
 		g.Tags = tags
 
 		if g.Studio != nil {
-			err := match.ScrapedStudio(sqb, g.Studio, nil)
+			err := match.ScrapedStudio(ctx, sqb, g.Studio, nil)
 			if err != nil {
 				return err
 			}
@@ -193,11 +195,11 @@ func (c Cache) postScrapeGallery(ctx context.Context, g ScrapedGallery) (Scraped
 	return g, nil
 }
 
-func postProcessTags(tqb models.TagReader, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
+func postProcessTags(ctx context.Context, tqb tag.Queryer, scrapedTags []*models.ScrapedTag) ([]*models.ScrapedTag, error) {
 	var ret []*models.ScrapedTag
 
 	for _, t := range scrapedTags {
-		err := match.ScrapedTag(tqb, t)
+		err := match.ScrapedTag(ctx, tqb, t)
 		if err != nil {
 			return nil, err
 		}

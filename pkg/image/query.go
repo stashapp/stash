@@ -1,13 +1,18 @@
 package image
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 )
 
 type Queryer interface {
-	Query(options models.ImageQueryOptions) (*models.ImageQueryResult, error)
+	Query(ctx context.Context, options models.ImageQueryOptions) (*models.ImageQueryResult, error)
+}
+
+type CountQueryer interface {
+	QueryCount(ctx context.Context, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (int, error)
 }
 
 // QueryOptions returns a ImageQueryResult populated with the provided filters.
@@ -22,13 +27,13 @@ func QueryOptions(imageFilter *models.ImageFilterType, findFilter *models.FindFi
 }
 
 // Query queries for images using the provided filters.
-func Query(qb Queryer, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, error) {
-	result, err := qb.Query(QueryOptions(imageFilter, findFilter, false))
+func Query(ctx context.Context, qb Queryer, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, error) {
+	result, err := qb.Query(ctx, QueryOptions(imageFilter, findFilter, false))
 	if err != nil {
 		return nil, err
 	}
 
-	images, err := result.Resolve()
+	images, err := result.Resolve(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +41,7 @@ func Query(qb Queryer, imageFilter *models.ImageFilterType, findFilter *models.F
 	return images, nil
 }
 
-func CountByPerformerID(r models.ImageReader, id int) (int, error) {
+func CountByPerformerID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.ImageFilterType{
 		Performers: &models.MultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -44,10 +49,10 @@ func CountByPerformerID(r models.ImageReader, id int) (int, error) {
 		},
 	}
 
-	return r.QueryCount(filter, nil)
+	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByStudioID(r models.ImageReader, id int) (int, error) {
+func CountByStudioID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.ImageFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -55,10 +60,10 @@ func CountByStudioID(r models.ImageReader, id int) (int, error) {
 		},
 	}
 
-	return r.QueryCount(filter, nil)
+	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByTagID(r models.ImageReader, id int) (int, error) {
+func CountByTagID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.ImageFilterType{
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -66,10 +71,10 @@ func CountByTagID(r models.ImageReader, id int) (int, error) {
 		},
 	}
 
-	return r.QueryCount(filter, nil)
+	return r.QueryCount(ctx, filter, nil)
 }
 
-func FindByGalleryID(r models.ImageReader, galleryID int, sortBy string, sortDir models.SortDirectionEnum) ([]*models.Image, error) {
+func FindByGalleryID(ctx context.Context, r Queryer, galleryID int, sortBy string, sortDir models.SortDirectionEnum) ([]*models.Image, error) {
 	perPage := -1
 
 	findFilter := models.FindFilterType{
@@ -84,7 +89,7 @@ func FindByGalleryID(r models.ImageReader, galleryID int, sortBy string, sortDir
 		findFilter.Direction = &sortDir
 	}
 
-	return Query(r, &models.ImageFilterType{
+	return Query(ctx, r, &models.ImageFilterType{
 		Galleries: &models.MultiCriterionInput{
 			Value:    []string{strconv.Itoa(galleryID)},
 			Modifier: models.CriterionModifierIncludes,

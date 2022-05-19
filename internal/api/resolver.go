@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 var (
@@ -30,7 +31,9 @@ type hookExecutor interface {
 }
 
 type Resolver struct {
-	txnManager   models.TransactionManager
+	txnManager txn.Manager
+	repository models.Repository
+
 	hookExecutor hookExecutor
 }
 
@@ -85,17 +88,13 @@ type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
 
-func (r *Resolver) withTxn(ctx context.Context, fn func(r models.Repository) error) error {
-	return r.txnManager.WithTxn(ctx, fn)
-}
-
-func (r *Resolver) withReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
-	return r.txnManager.WithReadTxn(ctx, fn)
+func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
+	return txn.WithTxn(ctx, r.txnManager, fn)
 }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*models.SceneMarker, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.SceneMarker().Wall(q)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.SceneMarker.Wall(ctx, q)
 		return err
 	}); err != nil {
 		return nil, err
@@ -104,8 +103,8 @@ func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*model
 }
 
 func (r *queryResolver) SceneWall(ctx context.Context, q *string) (ret []*models.Scene, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Scene().Wall(q)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Scene.Wall(ctx, q)
 		return err
 	}); err != nil {
 		return nil, err
@@ -115,8 +114,8 @@ func (r *queryResolver) SceneWall(ctx context.Context, q *string) (ret []*models
 }
 
 func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *string) (ret []*models.MarkerStringsResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.SceneMarker().GetMarkerStrings(q, sort)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.SceneMarker.GetMarkerStrings(ctx, q, sort)
 		return err
 	}); err != nil {
 		return nil, err
@@ -127,24 +126,25 @@ func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *stri
 
 func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 	var ret StatsResultType
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		scenesQB := repo.Scene()
-		imageQB := repo.Image()
-		galleryQB := repo.Gallery()
-		studiosQB := repo.Studio()
-		performersQB := repo.Performer()
-		moviesQB := repo.Movie()
-		tagsQB := repo.Tag()
-		scenesCount, _ := scenesQB.Count()
-		scenesSize, _ := scenesQB.Size()
-		scenesDuration, _ := scenesQB.Duration()
-		imageCount, _ := imageQB.Count()
-		imageSize, _ := imageQB.Size()
-		galleryCount, _ := galleryQB.Count()
-		performersCount, _ := performersQB.Count()
-		studiosCount, _ := studiosQB.Count()
-		moviesCount, _ := moviesQB.Count()
-		tagsCount, _ := tagsQB.Count()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		repo := r.repository
+		scenesQB := repo.Scene
+		imageQB := repo.Image
+		galleryQB := repo.Gallery
+		studiosQB := repo.Studio
+		performersQB := repo.Performer
+		moviesQB := repo.Movie
+		tagsQB := repo.Tag
+		scenesCount, _ := scenesQB.Count(ctx)
+		scenesSize, _ := scenesQB.Size(ctx)
+		scenesDuration, _ := scenesQB.Duration(ctx)
+		imageCount, _ := imageQB.Count(ctx)
+		imageSize, _ := imageQB.Size(ctx)
+		galleryCount, _ := galleryQB.Count(ctx)
+		performersCount, _ := performersQB.Count(ctx)
+		studiosCount, _ := studiosQB.Count(ctx)
+		moviesCount, _ := moviesQB.Count(ctx)
+		tagsCount, _ := tagsQB.Count(ctx)
 
 		ret = StatsResultType{
 			SceneCount:     scenesCount,
@@ -202,15 +202,15 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 	var keys []int
 	tags := make(map[int]*SceneMarkerTag)
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		sceneMarkers, err := repo.SceneMarker().FindBySceneID(sceneID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		sceneMarkers, err := r.repository.SceneMarker.FindBySceneID(ctx, sceneID)
 		if err != nil {
 			return err
 		}
 
-		tqb := repo.Tag()
+		tqb := r.repository.Tag
 		for _, sceneMarker := range sceneMarkers {
-			markerPrimaryTag, err := tqb.Find(sceneMarker.PrimaryTagID)
+			markerPrimaryTag, err := tqb.Find(ctx, sceneMarker.PrimaryTagID)
 			if err != nil {
 				return err
 			}

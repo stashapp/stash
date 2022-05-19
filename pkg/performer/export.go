@@ -1,6 +1,7 @@
 package performer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -9,8 +10,13 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type ImageStashIDGetter interface {
+	GetImage(ctx context.Context, performerID int) ([]byte, error)
+	GetStashIDs(ctx context.Context, performerID int) ([]*models.StashID, error)
+}
+
 // ToJSON converts a Performer object into its JSON equivalent.
-func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonschema.Performer, error) {
+func ToJSON(ctx context.Context, reader ImageStashIDGetter, performer *models.Performer) (*jsonschema.Performer, error) {
 	newPerformerJSON := jsonschema.Performer{
 		IgnoreAutoTag: performer.IgnoreAutoTag,
 		CreatedAt:     json.JSONTime{Time: performer.CreatedAt.Timestamp},
@@ -84,7 +90,7 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 		newPerformerJSON.Weight = int(performer.Weight.Int64)
 	}
 
-	image, err := reader.GetImage(performer.ID)
+	image, err := reader.GetImage(ctx, performer.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting performers image: %v", err)
 	}
@@ -93,7 +99,7 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 		newPerformerJSON.Image = utils.GetBase64StringFromData(image)
 	}
 
-	stashIDs, _ := reader.GetStashIDs(performer.ID)
+	stashIDs, _ := reader.GetStashIDs(ctx, performer.ID)
 	var ret []models.StashID
 	for _, stashID := range stashIDs {
 		newJoin := models.StashID{

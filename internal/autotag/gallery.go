@@ -1,6 +1,8 @@
 package autotag
 
 import (
+	"context"
+
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -21,18 +23,18 @@ func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 }
 
 // GalleryPerformers tags the provided gallery with performers whose name matches the gallery's path.
-func GalleryPerformers(s *models.Gallery, rw models.GalleryReaderWriter, performerReader models.PerformerReader, cache *match.Cache) error {
+func GalleryPerformers(ctx context.Context, s *models.Gallery, rw gallery.PerformerUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
 	t := getGalleryFileTagger(s, cache)
 
-	return t.tagPerformers(performerReader, func(subjectID, otherID int) (bool, error) {
-		return gallery.AddPerformer(rw, subjectID, otherID)
+	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
+		return gallery.AddPerformer(ctx, rw, subjectID, otherID)
 	})
 }
 
 // GalleryStudios tags the provided gallery with the first studio whose name matches the gallery's path.
 //
 // Gallerys will not be tagged if studio is already set.
-func GalleryStudios(s *models.Gallery, rw models.GalleryReaderWriter, studioReader models.StudioReader, cache *match.Cache) error {
+func GalleryStudios(ctx context.Context, s *models.Gallery, rw GalleryFinderUpdater, studioReader match.StudioAutoTagQueryer, cache *match.Cache) error {
 	if s.StudioID.Valid {
 		// don't modify
 		return nil
@@ -40,16 +42,16 @@ func GalleryStudios(s *models.Gallery, rw models.GalleryReaderWriter, studioRead
 
 	t := getGalleryFileTagger(s, cache)
 
-	return t.tagStudios(studioReader, func(subjectID, otherID int) (bool, error) {
-		return addGalleryStudio(rw, subjectID, otherID)
+	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {
+		return addGalleryStudio(ctx, rw, subjectID, otherID)
 	})
 }
 
 // GalleryTags tags the provided gallery with tags whose name matches the gallery's path.
-func GalleryTags(s *models.Gallery, rw models.GalleryReaderWriter, tagReader models.TagReader, cache *match.Cache) error {
+func GalleryTags(ctx context.Context, s *models.Gallery, rw gallery.TagUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
 	t := getGalleryFileTagger(s, cache)
 
-	return t.tagTags(tagReader, func(subjectID, otherID int) (bool, error) {
-		return gallery.AddTag(rw, subjectID, otherID)
+	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
+		return gallery.AddTag(ctx, rw, subjectID, otherID)
 	})
 }

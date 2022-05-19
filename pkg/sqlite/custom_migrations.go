@@ -1,27 +1,33 @@
-package database
+package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
-func runCustomMigrations() error {
-	if err := createImagesChecksumIndex(); err != nil {
+func (db *Database) runCustomMigrations() error {
+	if err := db.createImagesChecksumIndex(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func createImagesChecksumIndex() error {
-	return WithTxn(func(tx *sqlx.Tx) error {
+func (db *Database) createImagesChecksumIndex() error {
+	return txn.WithTxn(context.Background(), db, func(ctx context.Context) error {
+		tx, err := getTx(ctx)
+		if err != nil {
+			return err
+		}
+
 		row := tx.QueryRow("SELECT 1 AS found FROM sqlite_master WHERE type = 'index' AND name = 'images_checksum_unique'")
-		err := row.Err()
+		err = row.Err()
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return err
 		}
