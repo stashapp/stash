@@ -21,12 +21,12 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 	images := 0
 	scanImages := false
 
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		g, err = r.Gallery().FindByPath(path)
+		g, err = t.TxnManager.Gallery.FindByPath(ctx, path)
 
 		if g != nil && err == nil {
-			images, err = r.Image().CountByGalleryID(g.ID)
+			images, err = t.TxnManager.Image.CountByGalleryID(ctx, g.ID)
 			if err != nil {
 				return fmt.Errorf("error getting images for zip gallery %s: %s", path, err.Error())
 			}
@@ -43,7 +43,7 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 		ImageExtensions:    instance.Config.GetImageExtensions(),
 		StripFileExtension: t.StripFileExtension,
 		CaseSensitiveFs:    t.CaseSensitiveFs,
-		TxnManager:         t.TxnManager,
+		CreatorUpdater:     t.TxnManager.Gallery,
 		Paths:              instance.Paths,
 		PluginCache:        instance.PluginCache,
 		MutexManager:       t.mutexManager,
@@ -79,10 +79,11 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 // associates a gallery to a scene with the same basename
 func (t *ScanTask) associateGallery(ctx context.Context, wg *sizedwaitgroup.SizedWaitGroup) {
 	path := t.file.Path()
-	if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-		qb := r.Gallery()
-		sqb := r.Scene()
-		g, err := qb.FindByPath(path)
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		r := t.TxnManager
+		qb := r.Gallery
+		sqb := r.Scene
+		g, err := qb.FindByPath(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -106,10 +107,10 @@ func (t *ScanTask) associateGallery(ctx context.Context, wg *sizedwaitgroup.Size
 			}
 		}
 		for _, scenePath := range relatedFiles {
-			scene, _ := sqb.FindByPath(scenePath)
+			scene, _ := sqb.FindByPath(ctx, scenePath)
 			// found related Scene
 			if scene != nil {
-				sceneGalleries, _ := sqb.FindByGalleryID(g.ID) // check if gallery is already associated to the scene
+				sceneGalleries, _ := sqb.FindByGalleryID(ctx, g.ID) // check if gallery is already associated to the scene
 				isAssoc := false
 				for _, sg := range sceneGalleries {
 					if scene.ID == sg.ID {
@@ -119,7 +120,7 @@ func (t *ScanTask) associateGallery(ctx context.Context, wg *sizedwaitgroup.Size
 				}
 				if !isAssoc {
 					logger.Infof("associate: Gallery %s is related to scene: %d", path, scene.ID)
-					if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
+					if err := sqb.UpdateGalleries(ctx, scene.ID, []int{g.ID}); err != nil {
 						return err
 					}
 				}
@@ -152,11 +153,11 @@ func (t *ScanTask) scanZipImages(ctx context.Context, zipGallery *models.Gallery
 
 func (t *ScanTask) regenerateZipImages(ctx context.Context, zipGallery *models.Gallery) {
 	var images []*models.Image
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		iqb := r.Image()
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		iqb := t.TxnManager.Image
 
 		var err error
-		images, err = iqb.FindByGalleryID(zipGallery.ID)
+		images, err = iqb.FindByGalleryID(ctx, zipGallery.ID)
 		return err
 	}); err != nil {
 		logger.Warnf("failed to find gallery images: %s", err.Error())

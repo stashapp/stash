@@ -15,8 +15,8 @@ import (
 )
 
 func (r *mutationResolver) getTag(ctx context.Context, id int) (ret *models.Tag, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Tag().Find(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Tag.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -68,44 +68,44 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 
 	// Start the transaction and save the tag
 	var t *models.Tag
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Tag()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Tag
 
 		// ensure name is unique
-		if err := tag.EnsureTagNameUnique(0, newTag.Name, qb); err != nil {
+		if err := tag.EnsureTagNameUnique(ctx, 0, newTag.Name, qb); err != nil {
 			return err
 		}
 
-		t, err = qb.Create(newTag)
+		t, err = qb.Create(ctx, newTag)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(t.ID, imageData); err != nil {
+			if err := qb.UpdateImage(ctx, t.ID, imageData); err != nil {
 				return err
 			}
 		}
 
 		if len(input.Aliases) > 0 {
-			if err := tag.EnsureAliasesUnique(t.ID, input.Aliases, qb); err != nil {
+			if err := tag.EnsureAliasesUnique(ctx, t.ID, input.Aliases, qb); err != nil {
 				return err
 			}
 
-			if err := qb.UpdateAliases(t.ID, input.Aliases); err != nil {
+			if err := qb.UpdateAliases(ctx, t.ID, input.Aliases); err != nil {
 				return err
 			}
 		}
 
 		if len(parentIDs) > 0 {
-			if err := qb.UpdateParentTags(t.ID, parentIDs); err != nil {
+			if err := qb.UpdateParentTags(ctx, t.ID, parentIDs); err != nil {
 				return err
 			}
 		}
 
 		if len(childIDs) > 0 {
-			if err := qb.UpdateChildTags(t.ID, childIDs); err != nil {
+			if err := qb.UpdateChildTags(ctx, t.ID, childIDs); err != nil {
 				return err
 			}
 		}
@@ -113,7 +113,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 		// FIXME: This should be called before any changes are made, but
 		// requires a rewrite of ValidateHierarchy.
 		if len(parentIDs) > 0 || len(childIDs) > 0 {
-			if err := tag.ValidateHierarchy(t, parentIDs, childIDs, qb); err != nil {
+			if err := tag.ValidateHierarchy(ctx, t, parentIDs, childIDs, qb); err != nil {
 				return err
 			}
 		}
@@ -168,11 +168,11 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 
 	// Start the transaction and save the tag
 	var t *models.Tag
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Tag()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Tag
 
 		// ensure name is unique
-		t, err = qb.Find(tagID)
+		t, err = qb.Find(ctx, tagID)
 		if err != nil {
 			return err
 		}
@@ -188,48 +188,48 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 		}
 
 		if input.Name != nil && t.Name != *input.Name {
-			if err := tag.EnsureTagNameUnique(tagID, *input.Name, qb); err != nil {
+			if err := tag.EnsureTagNameUnique(ctx, tagID, *input.Name, qb); err != nil {
 				return err
 			}
 
 			updatedTag.Name = input.Name
 		}
 
-		t, err = qb.Update(updatedTag)
+		t, err = qb.Update(ctx, updatedTag)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(tagID, imageData); err != nil {
+			if err := qb.UpdateImage(ctx, tagID, imageData); err != nil {
 				return err
 			}
 		} else if imageIncluded {
 			// must be unsetting
-			if err := qb.DestroyImage(tagID); err != nil {
+			if err := qb.DestroyImage(ctx, tagID); err != nil {
 				return err
 			}
 		}
 
 		if translator.hasField("aliases") {
-			if err := tag.EnsureAliasesUnique(tagID, input.Aliases, qb); err != nil {
+			if err := tag.EnsureAliasesUnique(ctx, tagID, input.Aliases, qb); err != nil {
 				return err
 			}
 
-			if err := qb.UpdateAliases(tagID, input.Aliases); err != nil {
+			if err := qb.UpdateAliases(ctx, tagID, input.Aliases); err != nil {
 				return err
 			}
 		}
 
 		if parentIDs != nil {
-			if err := qb.UpdateParentTags(tagID, parentIDs); err != nil {
+			if err := qb.UpdateParentTags(ctx, tagID, parentIDs); err != nil {
 				return err
 			}
 		}
 
 		if childIDs != nil {
-			if err := qb.UpdateChildTags(tagID, childIDs); err != nil {
+			if err := qb.UpdateChildTags(ctx, tagID, childIDs); err != nil {
 				return err
 			}
 		}
@@ -237,7 +237,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 		// FIXME: This should be called before any changes are made, but
 		// requires a rewrite of ValidateHierarchy.
 		if parentIDs != nil || childIDs != nil {
-			if err := tag.ValidateHierarchy(t, parentIDs, childIDs, qb); err != nil {
+			if err := tag.ValidateHierarchy(ctx, t, parentIDs, childIDs, qb); err != nil {
 				logger.Errorf("Error saving tag: %s", err)
 				return err
 			}
@@ -258,8 +258,8 @@ func (r *mutationResolver) TagDestroy(ctx context.Context, input TagDestroyInput
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		return repo.Tag().Destroy(tagID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.repository.Tag.Destroy(ctx, tagID)
 	}); err != nil {
 		return false, err
 	}
@@ -275,10 +275,10 @@ func (r *mutationResolver) TagsDestroy(ctx context.Context, tagIDs []string) (bo
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Tag()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Tag
 		for _, id := range ids {
-			if err := qb.Destroy(id); err != nil {
+			if err := qb.Destroy(ctx, id); err != nil {
 				return err
 			}
 		}
@@ -311,11 +311,11 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) 
 	}
 
 	var t *models.Tag
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Tag()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Tag
 
 		var err error
-		t, err = qb.Find(destination)
+		t, err = qb.Find(ctx, destination)
 		if err != nil {
 			return err
 		}
@@ -324,25 +324,25 @@ func (r *mutationResolver) TagsMerge(ctx context.Context, input TagsMergeInput) 
 			return fmt.Errorf("Tag with ID %d not found", destination)
 		}
 
-		parents, children, err := tag.MergeHierarchy(destination, source, qb)
+		parents, children, err := tag.MergeHierarchy(ctx, destination, source, qb)
 		if err != nil {
 			return err
 		}
 
-		if err = qb.Merge(source, destination); err != nil {
+		if err = qb.Merge(ctx, source, destination); err != nil {
 			return err
 		}
 
-		err = qb.UpdateParentTags(destination, parents)
+		err = qb.UpdateParentTags(ctx, destination, parents)
 		if err != nil {
 			return err
 		}
-		err = qb.UpdateChildTags(destination, children)
+		err = qb.UpdateChildTags(ctx, destination, children)
 		if err != nil {
 			return err
 		}
 
-		err = tag.ValidateHierarchy(t, parents, children, qb)
+		err = tag.ValidateHierarchy(ctx, t, parents, children, qb)
 		if err != nil {
 			logger.Errorf("Error merging tag: %s", err)
 			return err

@@ -14,10 +14,10 @@ import (
 func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manager.SceneStreamEndpoint, error) {
 	// find the scene
 	var scene *models.Scene
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		idInt, _ := strconv.Atoi(*id)
 		var err error
-		scene, err = repo.Scene().Find(idInt)
+		scene, err = r.repository.Scene.Find(ctx, idInt)
 		return err
 	}); err != nil {
 		return nil, err

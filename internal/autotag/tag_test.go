@@ -113,7 +113,7 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockSceneReader.On("Query", scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
+	onNameQuery := mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
 	if aliasName == "" {
 		onNameQuery.Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	} else {
@@ -127,17 +127,17 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockSceneReader.On("Query", scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("GetTagIDs", sceneID).Return(nil, nil).Once()
-		mockSceneReader.On("UpdateTags", sceneID, []int{tagID}).Return(nil).Once()
+		mockSceneReader.On("GetTagIDs", testCtx, sceneID).Return(nil, nil).Once()
+		mockSceneReader.On("UpdateTags", testCtx, sceneID, []int{tagID}).Return(nil).Once()
 	}
 
-	err := TagScenes(&tag, nil, aliases, mockSceneReader, nil)
+	err := TagScenes(testCtx, &tag, nil, aliases, mockSceneReader, nil)
 
 	assert := assert.New(t)
 
@@ -201,7 +201,7 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockImageReader.On("Query", image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
+	onNameQuery := mockImageReader.On("Query", testCtx, image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
 	if aliasName == "" {
 		onNameQuery.Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	} else {
@@ -215,17 +215,17 @@ func testTagImages(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockImageReader.On("Query", image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockImageReader.On("Query", testCtx, image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("GetTagIDs", imageID).Return(nil, nil).Once()
-		mockImageReader.On("UpdateTags", imageID, []int{tagID}).Return(nil).Once()
+		mockImageReader.On("GetTagIDs", testCtx, imageID).Return(nil, nil).Once()
+		mockImageReader.On("UpdateTags", testCtx, imageID, []int{tagID}).Return(nil).Once()
 	}
 
-	err := TagImages(&tag, nil, aliases, mockImageReader, nil)
+	err := TagImages(testCtx, &tag, nil, aliases, mockImageReader, nil)
 
 	assert := assert.New(t)
 
@@ -289,7 +289,7 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockGalleryReader.On("Query", expectedGalleryFilter, expectedFindFilter)
+	onNameQuery := mockGalleryReader.On("Query", testCtx, expectedGalleryFilter, expectedFindFilter)
 	if aliasName == "" {
 		onNameQuery.Return(galleries, len(galleries), nil).Once()
 	} else {
@@ -303,16 +303,16 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockGalleryReader.On("Query", expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+		mockGalleryReader.On("Query", testCtx, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("GetTagIDs", galleryID).Return(nil, nil).Once()
-		mockGalleryReader.On("UpdateTags", galleryID, []int{tagID}).Return(nil).Once()
+		mockGalleryReader.On("GetTagIDs", testCtx, galleryID).Return(nil, nil).Once()
+		mockGalleryReader.On("UpdateTags", testCtx, galleryID, []int{tagID}).Return(nil).Once()
 	}
 
-	err := TagGalleries(&tag, nil, aliases, mockGalleryReader, nil)
+	err := TagGalleries(testCtx, &tag, nil, aliases, mockGalleryReader, nil)
 
 	assert := assert.New(t)
 

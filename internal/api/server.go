@@ -73,10 +73,11 @@ func Start() error {
 		return errors.New(message)
 	}
 
-	txnManager := manager.GetInstance().TxnManager
+	txnManager := manager.GetInstance().Repository
 	pluginCache := manager.GetInstance().PluginCache
 	resolver := &Resolver{
 		txnManager:   txnManager,
+		repository:   txnManager,
 		hookExecutor: pluginCache,
 	}
 
@@ -118,22 +119,30 @@ func Start() error {
 	r.Get(loginEndPoint, getLoginHandler(loginUIBox))
 
 	r.Mount("/performer", performerRoutes{
-		txnManager: txnManager,
+		txnManager:      txnManager,
+		performerFinder: txnManager.Performer,
 	}.Routes())
 	r.Mount("/scene", sceneRoutes{
-		txnManager: txnManager,
+		txnManager:        txnManager,
+		sceneFinder:       txnManager.Scene,
+		sceneMarkerFinder: txnManager.SceneMarker,
+		tagFinder:         txnManager.Tag,
 	}.Routes())
 	r.Mount("/image", imageRoutes{
-		txnManager: txnManager,
+		txnManager:  txnManager,
+		imageFinder: txnManager.Image,
 	}.Routes())
 	r.Mount("/studio", studioRoutes{
-		txnManager: txnManager,
+		txnManager:   txnManager,
+		studioFinder: txnManager.Studio,
 	}.Routes())
 	r.Mount("/movie", movieRoutes{
-		txnManager: txnManager,
+		txnManager:  txnManager,
+		movieFinder: txnManager.Movie,
 	}.Routes())
 	r.Mount("/tag", tagRoutes{
 		txnManager: txnManager,
+		tagFinder:  txnManager.Tag,
 	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
 

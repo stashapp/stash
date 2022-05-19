@@ -1,6 +1,8 @@
 package autotag
 
 import (
+	"context"
+
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
@@ -17,18 +19,18 @@ func getSceneFileTagger(s *models.Scene, cache *match.Cache) tagger {
 }
 
 // ScenePerformers tags the provided scene with performers whose name matches the scene's path.
-func ScenePerformers(s *models.Scene, rw models.SceneReaderWriter, performerReader models.PerformerReader, cache *match.Cache) error {
+func ScenePerformers(ctx context.Context, s *models.Scene, rw scene.PerformerUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
 	t := getSceneFileTagger(s, cache)
 
-	return t.tagPerformers(performerReader, func(subjectID, otherID int) (bool, error) {
-		return scene.AddPerformer(rw, subjectID, otherID)
+	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
+		return scene.AddPerformer(ctx, rw, subjectID, otherID)
 	})
 }
 
 // SceneStudios tags the provided scene with the first studio whose name matches the scene's path.
 //
 // Scenes will not be tagged if studio is already set.
-func SceneStudios(s *models.Scene, rw models.SceneReaderWriter, studioReader models.StudioReader, cache *match.Cache) error {
+func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, studioReader match.StudioAutoTagQueryer, cache *match.Cache) error {
 	if s.StudioID.Valid {
 		// don't modify
 		return nil
@@ -36,16 +38,16 @@ func SceneStudios(s *models.Scene, rw models.SceneReaderWriter, studioReader mod
 
 	t := getSceneFileTagger(s, cache)
 
-	return t.tagStudios(studioReader, func(subjectID, otherID int) (bool, error) {
-		return addSceneStudio(rw, subjectID, otherID)
+	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {
+		return addSceneStudio(ctx, rw, subjectID, otherID)
 	})
 }
 
 // SceneTags tags the provided scene with tags whose name matches the scene's path.
-func SceneTags(s *models.Scene, rw models.SceneReaderWriter, tagReader models.TagReader, cache *match.Cache) error {
+func SceneTags(ctx context.Context, s *models.Scene, rw scene.TagUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
 	t := getSceneFileTagger(s, cache)
 
-	return t.tagTags(tagReader, func(subjectID, otherID int) (bool, error) {
-		return scene.AddTag(rw, subjectID, otherID)
+	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
+		return scene.AddTag(ctx, rw, subjectID, otherID)
 	})
 }

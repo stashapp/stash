@@ -4,6 +4,7 @@
 package sqlite_test
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"math"
@@ -12,16 +13,17 @@ import (
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMarkerFindBySceneMarkerID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		tqb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		tqb := sqlite.TagReaderWriter
 
 		markerID := markerIDs[markerIdxWithTag]
 
-		tags, err := tqb.FindBySceneMarkerID(markerID)
+		tags, err := tqb.FindBySceneMarkerID(ctx, markerID)
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
@@ -30,7 +32,7 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 		assert.Len(t, tags, 1)
 		assert.Equal(t, tagIDs[tagIdxWithMarkers], tags[0].ID)
 
-		tags, err = tqb.FindBySceneMarkerID(0)
+		tags, err = tqb.FindBySceneMarkerID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
@@ -43,12 +45,12 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 }
 
 func TestTagFindByName(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		tqb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		tqb := sqlite.TagReaderWriter
 
 		name := tagNames[tagIdxWithScene] // find a tag by name
 
-		tag, err := tqb.FindByName(name, false)
+		tag, err := tqb.FindByName(ctx, name, false)
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
@@ -58,7 +60,7 @@ func TestTagFindByName(t *testing.T) {
 
 		name = tagNames[tagIdxWithDupName] // find a tag by name nocase
 
-		tag, err = tqb.FindByName(name, true)
+		tag, err = tqb.FindByName(ctx, name, true)
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
@@ -74,15 +76,15 @@ func TestTagFindByName(t *testing.T) {
 }
 
 func TestTagQueryIgnoreAutoTag(t *testing.T) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		ignoreAutoTag := true
 		tagFilter := models.TagFilterType{
 			IgnoreAutoTag: &ignoreAutoTag,
 		}
 
-		sqb := r.Tag()
+		sqb := sqlite.TagReaderWriter
 
-		tags := queryTags(t, sqb, &tagFilter, nil)
+		tags := queryTags(ctx, t, sqb, &tagFilter, nil)
 
 		assert.Len(t, tags, int(math.Ceil(float64(totalTags)/5)))
 		for _, s := range tags {
@@ -94,12 +96,12 @@ func TestTagQueryIgnoreAutoTag(t *testing.T) {
 }
 
 func TestTagQueryForAutoTag(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		tqb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		tqb := sqlite.TagReaderWriter
 
 		name := tagNames[tagIdx1WithScene] // find a tag by name
 
-		tags, err := tqb.QueryForAutoTag([]string{name})
+		tags, err := tqb.QueryForAutoTag(ctx, []string{name})
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
@@ -112,7 +114,7 @@ func TestTagQueryForAutoTag(t *testing.T) {
 
 		// find by alias
 		name = getTagStringValue(tagIdx1WithScene, "Alias")
-		tags, err = tqb.QueryForAutoTag([]string{name})
+		tags, err = tqb.QueryForAutoTag(ctx, []string{name})
 
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
@@ -128,19 +130,19 @@ func TestTagQueryForAutoTag(t *testing.T) {
 func TestTagFindByNames(t *testing.T) {
 	var names []string
 
-	withTxn(func(r models.Repository) error {
-		tqb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		tqb := sqlite.TagReaderWriter
 
 		names = append(names, tagNames[tagIdxWithScene]) // find tags by names
 
-		tags, err := tqb.FindByNames(names, false)
+		tags, err := tqb.FindByNames(ctx, names, false)
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
 		}
 		assert.Len(t, tags, 1)
 		assert.Equal(t, tagNames[tagIdxWithScene], tags[0].Name)
 
-		tags, err = tqb.FindByNames(names, true) // find tags by names nocase
+		tags, err = tqb.FindByNames(ctx, names, true) // find tags by names nocase
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
 		}
@@ -150,7 +152,7 @@ func TestTagFindByNames(t *testing.T) {
 
 		names = append(names, tagNames[tagIdx1WithScene]) // find tags by names ( 2 names )
 
-		tags, err = tqb.FindByNames(names, false)
+		tags, err = tqb.FindByNames(ctx, names, false)
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
 		}
@@ -158,7 +160,7 @@ func TestTagFindByNames(t *testing.T) {
 		assert.Equal(t, tagNames[tagIdxWithScene], tags[0].Name)
 		assert.Equal(t, tagNames[tagIdx1WithScene], tags[1].Name)
 
-		tags, err = tqb.FindByNames(names, true) // find tags by names ( 2 names nocase)
+		tags, err = tqb.FindByNames(ctx, names, true) // find tags by names ( 2 names nocase)
 		if err != nil {
 			t.Errorf("Error finding tags: %s", err.Error())
 		}
@@ -173,8 +175,8 @@ func TestTagFindByNames(t *testing.T) {
 }
 
 func TestTagQuerySort(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.TagReaderWriter
 
 		sortBy := "scenes_count"
 		dir := models.SortDirectionEnumDesc
@@ -183,24 +185,24 @@ func TestTagQuerySort(t *testing.T) {
 			Direction: &dir,
 		}
 
-		tags := queryTags(t, sqb, nil, findFilter)
+		tags := queryTags(ctx, t, sqb, nil, findFilter)
 		assert := assert.New(t)
 		assert.Equal(tagIDs[tagIdxWithScene], tags[0].ID)
 
 		sortBy = "scene_markers_count"
-		tags = queryTags(t, sqb, nil, findFilter)
+		tags = queryTags(ctx, t, sqb, nil, findFilter)
 		assert.Equal(tagIDs[tagIdxWithMarkers], tags[0].ID)
 
 		sortBy = "images_count"
-		tags = queryTags(t, sqb, nil, findFilter)
+		tags = queryTags(ctx, t, sqb, nil, findFilter)
 		assert.Equal(tagIDs[tagIdxWithImage], tags[0].ID)
 
 		sortBy = "galleries_count"
-		tags = queryTags(t, sqb, nil, findFilter)
+		tags = queryTags(ctx, t, sqb, nil, findFilter)
 		assert.Equal(tagIDs[tagIdxWithGallery], tags[0].ID)
 
 		sortBy = "performers_count"
-		tags = queryTags(t, sqb, nil, findFilter)
+		tags = queryTags(ctx, t, sqb, nil, findFilter)
 		assert.Equal(tagIDs[tagIdxWithPerformer], tags[0].ID)
 
 		return nil
@@ -220,7 +222,7 @@ func TestTagQueryName(t *testing.T) {
 		Name: nameCriterion,
 	}
 
-	verifyFn := func(tag *models.Tag, r models.Repository) {
+	verifyFn := func(ctx context.Context, tag *models.Tag) {
 		verifyString(t, tag.Name, *nameCriterion)
 	}
 
@@ -250,8 +252,8 @@ func TestTagQueryAlias(t *testing.T) {
 		Aliases: aliasCriterion,
 	}
 
-	verifyFn := func(tag *models.Tag, r models.Repository) {
-		aliases, err := r.Tag().GetAliases(tag.ID)
+	verifyFn := func(ctx context.Context, tag *models.Tag) {
+		aliases, err := sqlite.TagReaderWriter.GetAliases(ctx, tag.ID)
 		if err != nil {
 			t.Errorf("Error querying tags: %s", err.Error())
 		}
@@ -277,23 +279,23 @@ func TestTagQueryAlias(t *testing.T) {
 	verifyTagQuery(t, tagFilter, nil, verifyFn)
 }
 
-func verifyTagQuery(t *testing.T, tagFilter *models.TagFilterType, findFilter *models.FindFilterType, verifyFn func(t *models.Tag, r models.Repository)) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Tag()
+func verifyTagQuery(t *testing.T, tagFilter *models.TagFilterType, findFilter *models.FindFilterType, verifyFn func(ctx context.Context, t *models.Tag)) {
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.TagReaderWriter
 
-		tags := queryTags(t, sqb, tagFilter, findFilter)
+		tags := queryTags(ctx, t, sqb, tagFilter, findFilter)
 
 		for _, tag := range tags {
-			verifyFn(tag, r)
+			verifyFn(ctx, tag)
 		}
 
 		return nil
 	})
 }
 
-func queryTags(t *testing.T, qb models.TagReader, tagFilter *models.TagFilterType, findFilter *models.FindFilterType) []*models.Tag {
+func queryTags(ctx context.Context, t *testing.T, qb models.TagReader, tagFilter *models.TagFilterType, findFilter *models.FindFilterType) []*models.Tag {
 	t.Helper()
-	tags, _, err := qb.Query(tagFilter, findFilter)
+	tags, _, err := qb.Query(ctx, tagFilter, findFilter)
 	if err != nil {
 		t.Errorf("Error querying tags: %s", err.Error())
 	}
@@ -302,8 +304,8 @@ func queryTags(t *testing.T, qb models.TagReader, tagFilter *models.TagFilterTyp
 }
 
 func TestTagQueryIsMissingImage(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 		isMissing := "image"
 		tagFilter := models.TagFilterType{
 			IsMissing: &isMissing,
@@ -314,7 +316,7 @@ func TestTagQueryIsMissingImage(t *testing.T) {
 			Q: &q,
 		}
 
-		tags, _, err := qb.Query(&tagFilter, &findFilter)
+		tags, _, err := qb.Query(ctx, &tagFilter, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying tag: %s", err.Error())
 		}
@@ -322,7 +324,7 @@ func TestTagQueryIsMissingImage(t *testing.T) {
 		assert.Len(t, tags, 0)
 
 		findFilter.Q = nil
-		tags, _, err = qb.Query(&tagFilter, &findFilter)
+		tags, _, err = qb.Query(ctx, &tagFilter, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying tag: %s", err.Error())
 		}
@@ -356,13 +358,13 @@ func TestTagQuerySceneCount(t *testing.T) {
 }
 
 func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 		tagFilter := models.TagFilterType{
 			SceneCount: &sceneCountCriterion,
 		}
 
-		tags, _, err := qb.Query(&tagFilter, nil)
+		tags, _, err := qb.Query(ctx, &tagFilter, nil)
 		if err != nil {
 			t.Errorf("Error querying tag: %s", err.Error())
 		}
@@ -398,13 +400,13 @@ func TestTagQueryMarkerCount(t *testing.T) {
 }
 
 func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 		tagFilter := models.TagFilterType{
 			MarkerCount: &markerCountCriterion,
 		}
 
-		tags, _, err := qb.Query(&tagFilter, nil)
+		tags, _, err := qb.Query(ctx, &tagFilter, nil)
 		if err != nil {
 			t.Errorf("Error querying tag: %s", err.Error())
 		}
@@ -440,13 +442,13 @@ func TestTagQueryImageCount(t *testing.T) {
 }
 
 func verifyTagImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 		tagFilter := models.TagFilterType{
 			ImageCount: &imageCountCriterion,
 		}
 
-		tags, _, err := qb.Query(&tagFilter, nil)
+		tags, _, err := qb.Query(ctx, &tagFilter, nil)
 		if err != nil {
 			t.Errorf("Error querying tag: %s", err.Error())
 		}
@@ -482,13 +484,13 @@ func TestTagQueryGalleryCount(t *testing.T) {
 }
 
 func verifyTagGalleryCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 		tagFilter := models.TagFilterType{
 			GalleryCount: &imageCountCriterion,
 		}
 
-		tags, _, err := qb.Query(&tagFilter, nil)
+		tags, _, err := qb.Query(ctx, &tagFilter, nil)
 		if err != nil {
 			t.Errorf("Error querying tag: %s", err.Error())
 		}
@@ -524,13 +526,13 @@ func TestTagQueryPerformerCount(t *testing.T) {
 }
 
 func verifyTagPerformerCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 		tagFilter := models.TagFilterType{
 			PerformerCount: &imageCountCriterion,
 		}
 
-		tags, _, err := qb.Query(&tagFilter, nil)
+		tags, _, err := qb.Query(ctx, &tagFilter, nil)
 		if err != nil {
 			t.Errorf("Error querying tag: %s", err.Error())
 		}
@@ -566,13 +568,13 @@ func TestTagQueryParentCount(t *testing.T) {
 }
 
 func verifyTagParentCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 		tagFilter := models.TagFilterType{
 			ParentCount: &sceneCountCriterion,
 		}
 
-		tags := queryTags(t, qb, &tagFilter, nil)
+		tags := queryTags(ctx, t, qb, &tagFilter, nil)
 
 		if len(tags) == 0 {
 			t.Error("Expected at least one tag")
@@ -609,13 +611,13 @@ func TestTagQueryChildCount(t *testing.T) {
 }
 
 func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 		tagFilter := models.TagFilterType{
 			ChildCount: &sceneCountCriterion,
 		}
 
-		tags := queryTags(t, qb, &tagFilter, nil)
+		tags := queryTags(ctx, t, qb, &tagFilter, nil)
 
 		if len(tags) == 0 {
 			t.Error("Expected at least one tag")
@@ -633,9 +635,9 @@ func verifyTagChildCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 }
 
 func TestTagQueryParent(t *testing.T) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		const nameField = "Name"
-		sqb := r.Tag()
+		sqb := sqlite.TagReaderWriter
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithChildTag]),
@@ -647,7 +649,7 @@ func TestTagQueryParent(t *testing.T) {
 			Parents: &tagCriterion,
 		}
 
-		tags := queryTags(t, sqb, &tagFilter, nil)
+		tags := queryTags(ctx, t, sqb, &tagFilter, nil)
 
 		assert.Len(t, tags, 1)
 
@@ -661,7 +663,7 @@ func TestTagQueryParent(t *testing.T) {
 			Q: &q,
 		}
 
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 0)
 
 		depth := -1
@@ -674,12 +676,12 @@ func TestTagQueryParent(t *testing.T) {
 			Depth:    &depth,
 		}
 
-		tags = queryTags(t, sqb, &tagFilter, nil)
+		tags = queryTags(ctx, t, sqb, &tagFilter, nil)
 		assert.Len(t, tags, 2)
 
 		depth = 1
 
-		tags = queryTags(t, sqb, &tagFilter, nil)
+		tags = queryTags(ctx, t, sqb, &tagFilter, nil)
 		assert.Len(t, tags, 2)
 
 		tagCriterion = models.HierarchicalMultiCriterionInput{
@@ -687,22 +689,22 @@ func TestTagQueryParent(t *testing.T) {
 		}
 		q = getTagStringValue(tagIdxWithGallery, nameField)
 
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 1)
 		assert.Equal(t, tagIDs[tagIdxWithGallery], tags[0].ID)
 
 		q = getTagStringValue(tagIdxWithParentTag, nameField)
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 0)
 
 		tagCriterion.Modifier = models.CriterionModifierNotNull
 
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 1)
 		assert.Equal(t, tagIDs[tagIdxWithParentTag], tags[0].ID)
 
 		q = getTagStringValue(tagIdxWithGallery, nameField)
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 0)
 
 		return nil
@@ -710,10 +712,10 @@ func TestTagQueryParent(t *testing.T) {
 }
 
 func TestTagQueryChild(t *testing.T) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		const nameField = "Name"
 
-		sqb := r.Tag()
+		sqb := sqlite.TagReaderWriter
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithParentTag]),
@@ -725,7 +727,7 @@ func TestTagQueryChild(t *testing.T) {
 			Children: &tagCriterion,
 		}
 
-		tags := queryTags(t, sqb, &tagFilter, nil)
+		tags := queryTags(ctx, t, sqb, &tagFilter, nil)
 
 		assert.Len(t, tags, 1)
 
@@ -739,7 +741,7 @@ func TestTagQueryChild(t *testing.T) {
 			Q: &q,
 		}
 
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 0)
 
 		depth := -1
@@ -752,12 +754,12 @@ func TestTagQueryChild(t *testing.T) {
 			Depth:    &depth,
 		}
 
-		tags = queryTags(t, sqb, &tagFilter, nil)
+		tags = queryTags(ctx, t, sqb, &tagFilter, nil)
 		assert.Len(t, tags, 2)
 
 		depth = 1
 
-		tags = queryTags(t, sqb, &tagFilter, nil)
+		tags = queryTags(ctx, t, sqb, &tagFilter, nil)
 		assert.Len(t, tags, 2)
 
 		tagCriterion = models.HierarchicalMultiCriterionInput{
@@ -765,22 +767,22 @@ func TestTagQueryChild(t *testing.T) {
 		}
 		q = getTagStringValue(tagIdxWithGallery, nameField)
 
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 1)
 		assert.Equal(t, tagIDs[tagIdxWithGallery], tags[0].ID)
 
 		q = getTagStringValue(tagIdxWithChildTag, nameField)
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 0)
 
 		tagCriterion.Modifier = models.CriterionModifierNotNull
 
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 1)
 		assert.Equal(t, tagIDs[tagIdxWithChildTag], tags[0].ID)
 
 		q = getTagStringValue(tagIdxWithGallery, nameField)
-		tags = queryTags(t, sqb, &tagFilter, &findFilter)
+		tags = queryTags(ctx, t, sqb, &tagFilter, &findFilter)
 		assert.Len(t, tags, 0)
 
 		return nil
@@ -788,34 +790,34 @@ func TestTagQueryChild(t *testing.T) {
 }
 
 func TestTagUpdateTagImage(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 
 		// create tag to test against
 		const name = "TestTagUpdateTagImage"
 		tag := models.Tag{
 			Name: name,
 		}
-		created, err := qb.Create(tag)
+		created, err := qb.Create(ctx, tag)
 		if err != nil {
 			return fmt.Errorf("Error creating tag: %s", err.Error())
 		}
 
 		image := []byte("image")
-		err = qb.UpdateImage(created.ID, image)
+		err = qb.UpdateImage(ctx, created.ID, image)
 		if err != nil {
 			return fmt.Errorf("Error updating studio image: %s", err.Error())
 		}
 
 		// ensure image set
-		storedImage, err := qb.GetImage(created.ID)
+		storedImage, err := qb.GetImage(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
 		assert.Equal(t, storedImage, image)
 
 		// set nil image
-		err = qb.UpdateImage(created.ID, nil)
+		err = qb.UpdateImage(ctx, created.ID, nil)
 		if err == nil {
 			return fmt.Errorf("Expected error setting nil image")
 		}
@@ -827,32 +829,32 @@ func TestTagUpdateTagImage(t *testing.T) {
 }
 
 func TestTagDestroyTagImage(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 
 		// create performer to test against
 		const name = "TestTagDestroyTagImage"
 		tag := models.Tag{
 			Name: name,
 		}
-		created, err := qb.Create(tag)
+		created, err := qb.Create(ctx, tag)
 		if err != nil {
 			return fmt.Errorf("Error creating tag: %s", err.Error())
 		}
 
 		image := []byte("image")
-		err = qb.UpdateImage(created.ID, image)
+		err = qb.UpdateImage(ctx, created.ID, image)
 		if err != nil {
 			return fmt.Errorf("Error updating studio image: %s", err.Error())
 		}
 
-		err = qb.DestroyImage(created.ID)
+		err = qb.DestroyImage(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error destroying studio image: %s", err.Error())
 		}
 
 		// image should be nil
-		storedImage, err := qb.GetImage(created.ID)
+		storedImage, err := qb.GetImage(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
@@ -865,27 +867,27 @@ func TestTagDestroyTagImage(t *testing.T) {
 }
 
 func TestTagUpdateAlias(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 
 		// create tag to test against
 		const name = "TestTagUpdateAlias"
 		tag := models.Tag{
 			Name: name,
 		}
-		created, err := qb.Create(tag)
+		created, err := qb.Create(ctx, tag)
 		if err != nil {
 			return fmt.Errorf("Error creating tag: %s", err.Error())
 		}
 
 		aliases := []string{"alias1", "alias2"}
-		err = qb.UpdateAliases(created.ID, aliases)
+		err = qb.UpdateAliases(ctx, created.ID, aliases)
 		if err != nil {
 			return fmt.Errorf("Error updating tag aliases: %s", err.Error())
 		}
 
 		// ensure aliases set
-		storedAliases, err := qb.GetAliases(created.ID)
+		storedAliases, err := qb.GetAliases(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting aliases: %s", err.Error())
 		}
@@ -901,11 +903,11 @@ func TestTagMerge(t *testing.T) {
 	assert := assert.New(t)
 
 	// merge tests - perform these in a transaction that we'll rollback
-	if err := withRollbackTxn(func(r models.Repository) error {
-		qb := r.Tag()
+	if err := withRollbackTxn(func(ctx context.Context) error {
+		qb := sqlite.TagReaderWriter
 
 		// try merging into same tag
-		err := qb.Merge([]int{tagIDs[tagIdx1WithScene]}, tagIDs[tagIdx1WithScene])
+		err := qb.Merge(ctx, []int{tagIDs[tagIdx1WithScene]}, tagIDs[tagIdx1WithScene])
 		assert.NotNil(err)
 
 		// merge everything into tagIdxWithScene
@@ -931,13 +933,13 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		destID := tagIDs[tagIdxWithScene]
-		if err = qb.Merge(srcIDs, destID); err != nil {
+		if err = qb.Merge(ctx, srcIDs, destID); err != nil {
 			return err
 		}
 
 		// ensure other tags are deleted
 		for _, tagId := range srcIDs {
-			t, err := qb.Find(tagId)
+			t, err := qb.Find(ctx, tagId)
 			if err != nil {
 				return err
 			}
@@ -946,7 +948,7 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		// ensure aliases are set on the destination
-		destAliases, err := qb.GetAliases(destID)
+		destAliases, err := qb.GetAliases(ctx, destID)
 		if err != nil {
 			return err
 		}
@@ -955,7 +957,7 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		// ensure scene points to new tag
-		sceneTagIDs, err := r.Scene().GetTagIDs(sceneIDs[sceneIdxWithTwoTags])
+		sceneTagIDs, err := sqlite.SceneReaderWriter.GetTagIDs(ctx, sceneIDs[sceneIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
@@ -963,14 +965,14 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(sceneTagIDs, destID)
 
 		// ensure marker points to new tag
-		marker, err := r.SceneMarker().Find(markerIDs[markerIdxWithTag])
+		marker, err := sqlite.SceneMarkerReaderWriter.Find(ctx, markerIDs[markerIdxWithTag])
 		if err != nil {
 			return err
 		}
 
 		assert.Equal(destID, marker.PrimaryTagID)
 
-		markerTagIDs, err := r.SceneMarker().GetTagIDs(marker.ID)
+		markerTagIDs, err := sqlite.SceneMarkerReaderWriter.GetTagIDs(ctx, marker.ID)
 		if err != nil {
 			return err
 		}
@@ -978,7 +980,7 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(markerTagIDs, destID)
 
 		// ensure image points to new tag
-		imageTagIDs, err := r.Image().GetTagIDs(imageIDs[imageIdxWithTwoTags])
+		imageTagIDs, err := sqlite.ImageReaderWriter.GetTagIDs(ctx, imageIDs[imageIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
@@ -986,7 +988,7 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(imageTagIDs, destID)
 
 		// ensure gallery points to new tag
-		galleryTagIDs, err := r.Gallery().GetTagIDs(galleryIDs[galleryIdxWithTwoTags])
+		galleryTagIDs, err := sqlite.GalleryReaderWriter.GetTagIDs(ctx, galleryIDs[galleryIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
@@ -994,7 +996,7 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(galleryTagIDs, destID)
 
 		// ensure performer points to new tag
-		performerTagIDs, err := r.Gallery().GetTagIDs(performerIDs[performerIdxWithTwoTags])
+		performerTagIDs, err := sqlite.GalleryReaderWriter.GetTagIDs(ctx, performerIDs[performerIdxWithTwoTags])
 		if err != nil {
 			return err
 		}

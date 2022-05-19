@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"context"
 	"errors"
 	"strconv"
 	"testing"
@@ -104,6 +105,8 @@ func TestUpdater_Update(t *testing.T) {
 		tagID
 	)
 
+	ctx := context.Background()
+
 	performerIDs := []int{performerID}
 	tagIDs := []int{tagID}
 	stashID := "stashID"
@@ -123,22 +126,22 @@ func TestUpdater_Update(t *testing.T) {
 	updateErr := errors.New("error updating")
 
 	qb := mocks.SceneReaderWriter{}
-	qb.On("Update", mock.MatchedBy(func(s models.ScenePartial) bool {
+	qb.On("Update", ctx, mock.MatchedBy(func(s models.ScenePartial) bool {
 		return s.ID != badUpdateID
 	})).Return(validScene, nil)
-	qb.On("Update", mock.MatchedBy(func(s models.ScenePartial) bool {
+	qb.On("Update", ctx, mock.MatchedBy(func(s models.ScenePartial) bool {
 		return s.ID == badUpdateID
 	})).Return(nil, updateErr)
 
-	qb.On("UpdatePerformers", sceneID, performerIDs).Return(nil).Once()
-	qb.On("UpdateTags", sceneID, tagIDs).Return(nil).Once()
-	qb.On("UpdateStashIDs", sceneID, stashIDs).Return(nil).Once()
-	qb.On("UpdateCover", sceneID, cover).Return(nil).Once()
+	qb.On("UpdatePerformers", ctx, sceneID, performerIDs).Return(nil).Once()
+	qb.On("UpdateTags", ctx, sceneID, tagIDs).Return(nil).Once()
+	qb.On("UpdateStashIDs", ctx, sceneID, stashIDs).Return(nil).Once()
+	qb.On("UpdateCover", ctx, sceneID, cover).Return(nil).Once()
 
-	qb.On("UpdatePerformers", badPerformersID, performerIDs).Return(updateErr).Once()
-	qb.On("UpdateTags", badTagsID, tagIDs).Return(updateErr).Once()
-	qb.On("UpdateStashIDs", badStashIDsID, stashIDs).Return(updateErr).Once()
-	qb.On("UpdateCover", badCoverID, cover).Return(updateErr).Once()
+	qb.On("UpdatePerformers", ctx, badPerformersID, performerIDs).Return(updateErr).Once()
+	qb.On("UpdateTags", ctx, badTagsID, tagIDs).Return(updateErr).Once()
+	qb.On("UpdateStashIDs", ctx, badStashIDsID, stashIDs).Return(updateErr).Once()
+	qb.On("UpdateCover", ctx, badCoverID, cover).Return(updateErr).Once()
 
 	tests := []struct {
 		name    string
@@ -232,7 +235,7 @@ func TestUpdater_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.u.Update(&qb, &mockScreenshotSetter{})
+			got, err := tt.u.Update(ctx, &qb, &mockScreenshotSetter{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Updater.Update() error = %v, wantErr %v", err, tt.wantErr)
 				return

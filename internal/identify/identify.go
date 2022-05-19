@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -28,13 +29,18 @@ type ScraperSource struct {
 }
 
 type SceneIdentifier struct {
+	SceneReaderUpdater SceneReaderUpdater
+	StudioCreator      StudioCreator
+	PerformerCreator   PerformerCreator
+	TagCreator         TagCreator
+
 	DefaultOptions              *MetadataOptions
 	Sources                     []ScraperSource
 	ScreenshotSetter            scene.ScreenshotSetter
 	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
 }
 
-func (t *SceneIdentifier) Identify(ctx context.Context, txnManager models.TransactionManager, scene *models.Scene) error {
+func (t *SceneIdentifier) Identify(ctx context.Context, txnManager txn.Manager, scene *models.Scene) error {
 	result, err := t.scrapeScene(ctx, scene)
 	if err != nil {
 		return err
@@ -80,7 +86,7 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) 
 	return nil, nil
 }
 
-func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult, repo models.Repository) (*scene.UpdateSet, error) {
+func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult) (*scene.UpdateSet, error) {
 	ret := &scene.UpdateSet{
 		ID: s.ID,
 	}
@@ -106,15 +112,18 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	scraped := result.result
 
 	rel := sceneRelationships{
-		repo:         repo,
-		scene:        s,
-		result:       result,
-		fieldOptions: fieldOptions,
+		sceneReader:      t.SceneReaderUpdater,
+		studioCreator:    t.StudioCreator,
+		performerCreator: t.PerformerCreator,
+		tagCreator:       t.TagCreator,
+		scene:            s,
+		result:           result,
+		fieldOptions:     fieldOptions,
 	}
 
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
-	studioID, err := rel.studio()
+	studioID, err := rel.studio(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error getting studio: %w", err)
 	}
@@ -134,17 +143,17 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	ret.PerformerIDs, err = rel.performers(ignoreMale)
+	ret.PerformerIDs, err = rel.performers(ctx, ignoreMale)
 	if err != nil {
 		return nil, err
 	}
 
-	ret.TagIDs, err = rel.tags()
+	ret.TagIDs, err = rel.tags(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ret.StashIDs, err = rel.stashIDs()
+	ret.StashIDs, err = rel.stashIDs(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -167,11 +176,11 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	return ret, nil
 }
 
-func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.TransactionManager, s *models.Scene, result *scrapeResult) error {
+func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manager, s *models.Scene, result *scrapeResult) error {
 	var updater *scene.UpdateSet
-	if err := txnManager.WithTxn(ctx, func(repo models.Repository) error {
+	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
 		var err error
-		updater, err = t.getSceneUpdater(ctx, s, result, repo)
+		updater, err = t.getSceneUpdater(ctx, s, result)
 		if err != nil {
 			return err
 		}
@@ -182,7 +191,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.Tra
 			return nil
 		}
 
-		_, err = updater.Update(repo.Scene(), t.ScreenshotSetter)
+		_, err = updater.Update(ctx, t.SceneReaderUpdater, t.ScreenshotSetter)
 		if err != nil {
 			return fmt.Errorf("error updating scene: %w", err)
 		}

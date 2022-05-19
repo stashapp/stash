@@ -113,7 +113,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockSceneReader.On("Query", scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
+	onNameQuery := mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
 
 	if aliasName == "" {
 		onNameQuery.Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
@@ -128,21 +128,21 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 			},
 		}
 
-		mockSceneReader.On("Query", scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("Find", sceneID).Return(&models.Scene{}, nil).Once()
+		mockSceneReader.On("Find", testCtx, sceneID).Return(&models.Scene{}, nil).Once()
 		expectedStudioID := models.NullInt64(studioID)
-		mockSceneReader.On("Update", models.ScenePartial{
+		mockSceneReader.On("Update", testCtx, models.ScenePartial{
 			ID:       sceneID,
 			StudioID: &expectedStudioID,
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioScenes(&studio, nil, aliases, mockSceneReader, nil)
+	err := StudioScenes(testCtx, &studio, nil, aliases, mockSceneReader, nil)
 
 	assert := assert.New(t)
 
@@ -206,7 +206,7 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockImageReader.On("Query", image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
+	onNameQuery := mockImageReader.On("Query", testCtx, image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
 	if aliasName == "" {
 		onNameQuery.Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	} else {
@@ -220,21 +220,21 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 			},
 		}
 
-		mockImageReader.On("Query", image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockImageReader.On("Query", testCtx, image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("Find", imageID).Return(&models.Image{}, nil).Once()
+		mockImageReader.On("Find", testCtx, imageID).Return(&models.Image{}, nil).Once()
 		expectedStudioID := models.NullInt64(studioID)
-		mockImageReader.On("Update", models.ImagePartial{
+		mockImageReader.On("Update", testCtx, models.ImagePartial{
 			ID:       imageID,
 			StudioID: &expectedStudioID,
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioImages(&studio, nil, aliases, mockImageReader, nil)
+	err := StudioImages(testCtx, &studio, nil, aliases, mockImageReader, nil)
 
 	assert := assert.New(t)
 
@@ -297,7 +297,7 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockGalleryReader.On("Query", expectedGalleryFilter, expectedFindFilter)
+	onNameQuery := mockGalleryReader.On("Query", testCtx, expectedGalleryFilter, expectedFindFilter)
 	if aliasName == "" {
 		onNameQuery.Return(galleries, len(galleries), nil).Once()
 	} else {
@@ -311,20 +311,20 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 			},
 		}
 
-		mockGalleryReader.On("Query", expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+		mockGalleryReader.On("Query", testCtx, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("Find", galleryID).Return(&models.Gallery{}, nil).Once()
+		mockGalleryReader.On("Find", testCtx, galleryID).Return(&models.Gallery{}, nil).Once()
 		expectedStudioID := models.NullInt64(studioID)
-		mockGalleryReader.On("UpdatePartial", models.GalleryPartial{
+		mockGalleryReader.On("UpdatePartial", testCtx, models.GalleryPartial{
 			ID:       galleryID,
 			StudioID: &expectedStudioID,
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioGalleries(&studio, nil, aliases, mockGalleryReader, nil)
+	err := StudioGalleries(testCtx, &studio, nil, aliases, mockGalleryReader, nil)
 
 	assert := assert.New(t)
 

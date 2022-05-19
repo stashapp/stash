@@ -1,6 +1,8 @@
 package image
 
 import (
+	"context"
+
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
@@ -8,7 +10,7 @@ import (
 )
 
 type Destroyer interface {
-	Destroy(id int) error
+	Destroy(ctx context.Context, id int) error
 }
 
 // FileDeleter is an extension of file.Deleter that handles deletion of image files.
@@ -30,7 +32,7 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 }
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.
-func Destroy(i *models.Image, destroyer Destroyer, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+func Destroy(ctx context.Context, i *models.Image, destroyer Destroyer, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
 	// don't try to delete if the image is in a zip file
 	if deleteFile && !file.IsZipPath(i.Path) {
 		if err := fileDeleter.Files([]string{i.Path}); err != nil {
@@ -44,5 +46,5 @@ func Destroy(i *models.Image, destroyer Destroyer, fileDeleter *FileDeleter, del
 		}
 	}
 
-	return destroyer.Destroy(i.ID)
+	return destroyer.Destroy(ctx, i.ID)
 }

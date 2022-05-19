@@ -23,9 +23,9 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 	var i *models.Image
 	path := t.file.Path()
 
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		i, err = r.Image().FindByPath(path)
+		i, err = t.TxnManager.Image.FindByPath(ctx, path)
 		return err
 	}); err != nil {
 		logger.Error(err.Error())
@@ -36,6 +36,8 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 		Scanner:            image.FileScanner(&file.FSHasher{}),
 		StripFileExtension: t.StripFileExtension,
 		TxnManager:         t.TxnManager,
+		CreatorUpdater:     t.TxnManager.Image,
+		CaseSensitiveFs:    t.CaseSensitiveFs,
 		Paths:              GetInstance().Paths,
 		PluginCache:        instance.PluginCache,
 		MutexManager:       t.mutexManager,
@@ -58,8 +60,8 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 		if i != nil {
 			if t.zipGallery != nil {
 				// associate with gallery
-				if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-					return gallery.AddImage(r.Gallery(), t.zipGallery.ID, i.ID)
+				if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+					return gallery.AddImage(ctx, t.TxnManager.Gallery, t.zipGallery.ID, i.ID)
 				}); err != nil {
 					logger.Error(err.Error())
 					return
@@ -69,9 +71,9 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 				logger.Infof("Associating image %s with folder gallery", i.Path)
 				var galleryID int
 				var isNewGallery bool
-				if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
+				if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 					var err error
-					galleryID, isNewGallery, err = t.associateImageWithFolderGallery(i.ID, r.Gallery())
+					galleryID, isNewGallery, err = t.associateImageWithFolderGallery(ctx, i.ID, t.TxnManager.Gallery)
 					return err
 				}); err != nil {
 					logger.Error(err.Error())
@@ -90,11 +92,17 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 	}
 }
 
-func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.GalleryReaderWriter) (galleryID int, isNew bool, err error) {
+type GalleryImageAssociator interface {
+	FindByPath(ctx context.Context, path string) (*models.Gallery, error)
+	Create(ctx context.Context, newGallery models.Gallery) (*models.Gallery, error)
+	gallery.ImageUpdater
+}
+
+func (t *ScanTask) associateImageWithFolderGallery(ctx context.Context, imageID int, qb GalleryImageAssociator) (galleryID int, isNew bool, err error) {
 	// find a gallery with the path specified
 	path := filepath.Dir(t.file.Path())
 	var g *models.Gallery
-	g, err = qb.FindByPath(path)
+	g, err = qb.FindByPath(ctx, path)
 	if err != nil {
 		return
 	}
@@ -120,7 +128,7 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 		}
 
 		logger.Infof("Creating gallery for folder %s", path)
-		g, err = qb.Create(newGallery)
+		g, err = qb.Create(ctx, newGallery)
 		if err != nil {
 			return 0, false, err
 		}
@@ -129,7 +137,7 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, qb models.Galler
 	}
 
 	// associate image with gallery
-	err = gallery.AddImage(qb, g.ID, imageID)
+	err = gallery.AddImage(ctx, qb, g.ID, imageID)
 	galleryID = g.ID
 	return
 }

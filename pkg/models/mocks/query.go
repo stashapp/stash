@@ -1,16 +1,20 @@
 package mocks
 
-import "github.com/stashapp/stash/pkg/models"
+import (
+	context "context"
+
+	"github.com/stashapp/stash/pkg/models"
+)
 
 type sceneResolver struct {
 	scenes []*models.Scene
 }
 
-func (s *sceneResolver) Find(id int) (*models.Scene, error) {
+func (s *sceneResolver) Find(ctx context.Context, id int) (*models.Scene, error) {
 	panic("not implemented")
 }
 
-func (s *sceneResolver) FindMany(ids []int) ([]*models.Scene, error) {
+func (s *sceneResolver) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
 	return s.scenes, nil
 }
 
@@ -27,7 +31,7 @@ type imageResolver struct {
 	images []*models.Image
 }
 
-func (s *imageResolver) FindMany(ids []int) ([]*models.Image, error) {
+func (s *imageResolver) FindMany(ctx context.Context, ids []int) ([]*models.Image, error) {
 	return s.images, nil
 }
 

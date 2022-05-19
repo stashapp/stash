@@ -18,16 +18,14 @@ type stashScraper struct {
 	config       config
 	globalConfig GlobalConfig
 	client       *http.Client
-	txnManager   models.TransactionManager
 }
 
-func newStashScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *stashScraper {
+func newStashScraper(scraper scraperTypeConfig, client *http.Client, config config, globalConfig GlobalConfig) *stashScraper {
 	return &stashScraper{
 		scraper:      scraper,
 		config:       config,
 		client:       client,
 		globalConfig: globalConfig,
-		txnManager:   txnManager,
 	}
 }
 
@@ -308,18 +306,6 @@ func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ ScrapeContentT
 	return nil, ErrNotSupported
 }
 
-func getScene(ctx context.Context, sceneID int, txnManager models.TransactionManager) (*models.Scene, error) {
-	var ret *models.Scene
-	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		var err error
-		ret, err = r.Scene().Find(sceneID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-	return ret, nil
-}
-
 func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 	toStringPtr := func(s sql.NullString) *string {
 		if s.Valid {
@@ -344,18 +330,6 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 		URL:     toStringPtr(scene.URL),
 		Date:    dateToStringPtr(scene.Date),
 	}
-}
-
-func getGallery(ctx context.Context, galleryID int, txnManager models.TransactionManager) (*models.Gallery, error) {
-	var ret *models.Gallery
-	if err := txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		var err error
-		ret, err = r.Gallery().Find(galleryID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-	return ret, nil
 }
 
 func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {

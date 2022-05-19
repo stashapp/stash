@@ -4,6 +4,7 @@
 package sqlite_test
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"math"
@@ -15,16 +16,17 @@ import (
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func TestSceneFind(t *testing.T) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		// assume that the first scene is sceneWithGalleryPath
-		sqb := r.Scene()
+		sqb := sqlite.SceneReaderWriter
 
 		const sceneIdx = 0
 		sceneID := sceneIDs[sceneIdx]
-		scene, err := sqb.Find(sceneID)
+		scene, err := sqb.Find(ctx, sceneID)
 
 		if err != nil {
 			t.Errorf("Error finding scene: %s", err.Error())
@@ -33,7 +35,7 @@ func TestSceneFind(t *testing.T) {
 		assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
 
 		sceneID = 0
-		scene, err = sqb.Find(sceneID)
+		scene, err = sqb.Find(ctx, sceneID)
 
 		if err != nil {
 			t.Errorf("Error finding scene: %s", err.Error())
@@ -46,12 +48,12 @@ func TestSceneFind(t *testing.T) {
 }
 
 func TestSceneFindByPath(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
 		const sceneIdx = 1
 		scenePath := getSceneStringValue(sceneIdx, "Path")
-		scene, err := sqb.FindByPath(scenePath)
+		scene, err := sqb.FindByPath(ctx, scenePath)
 
 		if err != nil {
 			t.Errorf("Error finding scene: %s", err.Error())
@@ -61,7 +63,7 @@ func TestSceneFindByPath(t *testing.T) {
 		assert.Equal(t, scenePath, scene.Path)
 
 		scenePath = "not exist"
-		scene, err = sqb.FindByPath(scenePath)
+		scene, err = sqb.FindByPath(ctx, scenePath)
 
 		if err != nil {
 			t.Errorf("Error finding scene: %s", err.Error())
@@ -74,9 +76,9 @@ func TestSceneFindByPath(t *testing.T) {
 }
 
 func TestSceneCountByPerformerID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
-		count, err := sqb.CountByPerformerID(performerIDs[performerIdxWithScene])
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
+		count, err := sqb.CountByPerformerID(ctx, performerIDs[performerIdxWithScene])
 
 		if err != nil {
 			t.Errorf("Error counting scenes: %s", err.Error())
@@ -84,7 +86,7 @@ func TestSceneCountByPerformerID(t *testing.T) {
 
 		assert.Equal(t, 1, count)
 
-		count, err = sqb.CountByPerformerID(0)
+		count, err = sqb.CountByPerformerID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("Error counting scenes: %s", err.Error())
@@ -97,12 +99,12 @@ func TestSceneCountByPerformerID(t *testing.T) {
 }
 
 func TestSceneWall(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
 		const sceneIdx = 2
 		wallQuery := getSceneStringValue(sceneIdx, "Details")
-		scenes, err := sqb.Wall(&wallQuery)
+		scenes, err := sqb.Wall(ctx, &wallQuery)
 
 		if err != nil {
 			t.Errorf("Error finding scenes: %s", err.Error())
@@ -114,7 +116,7 @@ func TestSceneWall(t *testing.T) {
 		assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
 
 		wallQuery = "not exist"
-		scenes, err = sqb.Wall(&wallQuery)
+		scenes, err = sqb.Wall(ctx, &wallQuery)
 
 		if err != nil {
 			t.Errorf("Error finding scene: %s", err.Error())
@@ -131,18 +133,18 @@ func TestSceneQueryQ(t *testing.T) {
 
 	q := getSceneStringValue(sceneIdx, titleField)
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
-		sceneQueryQ(t, sqb, q, sceneIdx)
+		sceneQueryQ(ctx, t, sqb, q, sceneIdx)
 
 		return nil
 	})
 }
 
-func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) []*models.Scene {
+func queryScene(ctx context.Context, t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) []*models.Scene {
 	t.Helper()
-	result, err := sqb.Query(models.SceneQueryOptions{
+	result, err := sqb.Query(ctx, models.SceneQueryOptions{
 		QueryOptions: models.QueryOptions{
 			FindFilter: findFilter,
 		},
@@ -152,7 +154,7 @@ func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneF
 		t.Errorf("Error querying scene: %v", err)
 	}
 
-	scenes, err := result.Resolve()
+	scenes, err := result.Resolve(ctx)
 	if err != nil {
 		t.Errorf("Error resolving scenes: %v", err)
 	}
@@ -160,11 +162,11 @@ func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneF
 	return scenes
 }
 
-func sceneQueryQ(t *testing.T, sqb models.SceneReader, q string, expectedSceneIdx int) {
+func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q string, expectedSceneIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,
 	}
-	scenes := queryScene(t, sqb, nil, &filter)
+	scenes := queryScene(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, scenes, 1)
 	scene := scenes[0]
@@ -172,7 +174,7 @@ func sceneQueryQ(t *testing.T, sqb models.SceneReader, q string, expectedSceneId
 
 	// no Q should return all results
 	filter.Q = nil
-	scenes = queryScene(t, sqb, nil, &filter)
+	scenes = queryScene(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, scenes, totalScenes)
 }
@@ -257,10 +259,10 @@ func TestSceneQueryPathOr(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 2)
 		assert.Equal(t, scene1Path, scenes[0].Path)
@@ -288,10 +290,10 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, scenePath, scenes[0].Path)
@@ -323,10 +325,10 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
 			verifyString(t, scene.Path, pathCriterion)
@@ -354,24 +356,24 @@ func TestSceneIllegalQuery(t *testing.T) {
 		Or:  &subFilter,
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
 		queryOptions := models.SceneQueryOptions{
 			SceneFilter: sceneFilter,
 		}
 
-		_, err := sqb.Query(queryOptions)
+		_, err := sqb.Query(ctx, queryOptions)
 		assert.NotNil(err)
 
 		sceneFilter.Or = nil
 		sceneFilter.Not = &subFilter
-		_, err = sqb.Query(queryOptions)
+		_, err = sqb.Query(ctx, queryOptions)
 		assert.NotNil(err)
 
 		sceneFilter.And = nil
 		sceneFilter.Or = &subFilter
-		_, err = sqb.Query(queryOptions)
+		_, err = sqb.Query(ctx, queryOptions)
 		assert.NotNil(err)
 
 		return nil
@@ -379,11 +381,11 @@ func TestSceneIllegalQuery(t *testing.T) {
 }
 
 func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func(s *models.Scene)) {
-	withTxn(func(r models.Repository) error {
+	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := r.Scene()
+		sqb := sqlite.SceneReaderWriter
 
-		scenes := queryScene(t, sqb, &filter, nil)
+		scenes := queryScene(ctx, t, sqb, &filter, nil)
 
 		// assume it should find at least one
 		assert.Greater(t, len(scenes), 0)
@@ -397,13 +399,13 @@ func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func
 }
 
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		sceneFilter := models.SceneFilterType{
 			Path: &pathCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
 			verifyString(t, scene.Path, pathCriterion)
@@ -489,13 +491,13 @@ func TestSceneQueryRating(t *testing.T) {
 }
 
 func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		sceneFilter := models.SceneFilterType{
 			Rating: &ratingCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
 			verifyInt64(t, scene.Rating, ratingCriterion)
@@ -548,13 +550,13 @@ func TestSceneQueryOCounter(t *testing.T) {
 }
 
 func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		sceneFilter := models.SceneFilterType{
 			OCounter: &oCounterCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
 			verifyInt(t, scene.OCounter, oCounterCriterion)
@@ -607,13 +609,13 @@ func TestSceneQueryDuration(t *testing.T) {
 }
 
 func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		sceneFilter := models.SceneFilterType{
 			Duration: &durationCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
 			if durationCriterion.Modifier == models.CriterionModifierEquals {
@@ -661,8 +663,8 @@ func TestSceneQueryResolution(t *testing.T) {
 }
 
 func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		sceneFilter := models.SceneFilterType{
 			Resolution: &models.ResolutionCriterionInput{
 				Value:    resolution,
@@ -670,7 +672,7 @@ func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
 			},
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
 			verifySceneResolution(t, scene.Height, resolution)
@@ -706,20 +708,20 @@ func TestAllResolutionsHaveResolutionRange(t *testing.T) {
 }
 
 func TestSceneQueryResolutionModifiers(t *testing.T) {
-	if err := withRollbackTxn(func(r models.Repository) error {
-		qb := r.Scene()
-		sceneNoResolution, _ := createScene(qb, 0, 0)
-		firstScene540P, _ := createScene(qb, 960, 540)
-		secondScene540P, _ := createScene(qb, 1280, 719)
-		firstScene720P, _ := createScene(qb, 1280, 720)
-		secondScene720P, _ := createScene(qb, 1280, 721)
-		thirdScene720P, _ := createScene(qb, 1920, 1079)
-		scene1080P, _ := createScene(qb, 1920, 1080)
+	if err := withRollbackTxn(func(ctx context.Context) error {
+		qb := sqlite.SceneReaderWriter
+		sceneNoResolution, _ := createScene(ctx, qb, 0, 0)
+		firstScene540P, _ := createScene(ctx, qb, 960, 540)
+		secondScene540P, _ := createScene(ctx, qb, 1280, 719)
+		firstScene720P, _ := createScene(ctx, qb, 1280, 720)
+		secondScene720P, _ := createScene(ctx, qb, 1280, 721)
+		thirdScene720P, _ := createScene(ctx, qb, 1920, 1079)
+		scene1080P, _ := createScene(ctx, qb, 1920, 1080)
 
-		scenesEqualTo720P := queryScenes(t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierEquals)
-		scenesNotEqualTo720P := queryScenes(t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierNotEquals)
-		scenesGreaterThan720P := queryScenes(t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierGreaterThan)
-		scenesLessThan720P := queryScenes(t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierLessThan)
+		scenesEqualTo720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierEquals)
+		scenesNotEqualTo720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierNotEquals)
+		scenesGreaterThan720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierGreaterThan)
+		scenesLessThan720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierLessThan)
 
 		assert.Subset(t, scenesEqualTo720P, []*models.Scene{firstScene720P, secondScene720P, thirdScene720P})
 		assert.NotSubset(t, scenesEqualTo720P, []*models.Scene{sceneNoResolution, firstScene540P, secondScene540P, scene1080P})
@@ -739,7 +741,7 @@ func TestSceneQueryResolutionModifiers(t *testing.T) {
 	}
 }
 
-func queryScenes(t *testing.T, queryBuilder models.SceneReaderWriter, resolution models.ResolutionEnum, modifier models.CriterionModifier) []*models.Scene {
+func queryScenes(ctx context.Context, t *testing.T, queryBuilder models.SceneReaderWriter, resolution models.ResolutionEnum, modifier models.CriterionModifier) []*models.Scene {
 	sceneFilter := models.SceneFilterType{
 		Resolution: &models.ResolutionCriterionInput{
 			Value:    resolution,
@@ -747,10 +749,10 @@ func queryScenes(t *testing.T, queryBuilder models.SceneReaderWriter, resolution
 		},
 	}
 
-	return queryScene(t, queryBuilder, &sceneFilter, nil)
+	return queryScene(ctx, t, queryBuilder, &sceneFilter, nil)
 }
 
-func createScene(queryBuilder models.SceneReaderWriter, width int64, height int64) (*models.Scene, error) {
+func createScene(ctx context.Context, queryBuilder models.SceneReaderWriter, width int64, height int64) (*models.Scene, error) {
 	name := fmt.Sprintf("TestSceneQueryResolutionModifiers %d %d", width, height)
 	scene := models.Scene{
 		Path: name,
@@ -765,12 +767,12 @@ func createScene(queryBuilder models.SceneReaderWriter, width int64, height int6
 		Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
 	}
 
-	return queryBuilder.Create(scene)
+	return queryBuilder.Create(ctx, scene)
 }
 
 func TestSceneQueryHasMarkers(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		hasMarkers := "true"
 		sceneFilter := models.SceneFilterType{
 			HasMarkers: &hasMarkers,
@@ -781,17 +783,17 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithMarkers], scenes[0].ID)
 
 		hasMarkers = "false"
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.NotEqual(t, 0, len(scenes))
 
@@ -805,8 +807,8 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingGallery(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		isMissing := "galleries"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -817,12 +819,12 @@ func TestSceneQueryIsMissingGallery(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		// ensure non of the ids equal the one with gallery
 		for _, scene := range scenes {
@@ -834,8 +836,8 @@ func TestSceneQueryIsMissingGallery(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingStudio(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		isMissing := "studio"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -846,12 +848,12 @@ func TestSceneQueryIsMissingStudio(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		// ensure non of the ids equal the one with studio
 		for _, scene := range scenes {
@@ -863,8 +865,8 @@ func TestSceneQueryIsMissingStudio(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingMovies(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		isMissing := "movie"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -875,12 +877,12 @@ func TestSceneQueryIsMissingMovies(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		// ensure non of the ids equal the one with movies
 		for _, scene := range scenes {
@@ -892,8 +894,8 @@ func TestSceneQueryIsMissingMovies(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingPerformers(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		isMissing := "performers"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -904,12 +906,12 @@ func TestSceneQueryIsMissingPerformers(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.True(t, len(scenes) > 0)
 
@@ -923,14 +925,14 @@ func TestSceneQueryIsMissingPerformers(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingDate(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		isMissing := "date"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		// three in four scenes have no date
 		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4*3)))
@@ -945,8 +947,8 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		isMissing := "tags"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -957,12 +959,12 @@ func TestSceneQueryIsMissingTags(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.True(t, len(scenes) > 0)
 
@@ -971,14 +973,14 @@ func TestSceneQueryIsMissingTags(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingRating(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		isMissing := "rating"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.True(t, len(scenes) > 0)
 
@@ -992,8 +994,8 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 }
 
 func TestSceneQueryPerformers(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		performerCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(performerIDs[performerIdxWithScene]),
@@ -1006,7 +1008,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 			Performers: &performerCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 2)
 
@@ -1023,7 +1025,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithTwoPerformers], scenes[0].ID)
@@ -1040,7 +1042,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1048,8 +1050,8 @@ func TestSceneQueryPerformers(t *testing.T) {
 }
 
 func TestSceneQueryTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithScene]),
@@ -1062,7 +1064,7 @@ func TestSceneQueryTags(t *testing.T) {
 			Tags: &tagCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 2)
 
 		// ensure ids are correct
@@ -1078,7 +1080,7 @@ func TestSceneQueryTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithTwoTags], scenes[0].ID)
@@ -1095,7 +1097,7 @@ func TestSceneQueryTags(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1103,8 +1105,8 @@ func TestSceneQueryTags(t *testing.T) {
 }
 
 func TestSceneQueryPerformerTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
@@ -1117,7 +1119,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			PerformerTags: &tagCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 2)
 
 		// ensure ids are correct
@@ -1133,7 +1135,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTwoTags], scenes[0].ID)
@@ -1150,7 +1152,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		tagCriterion = models.HierarchicalMultiCriterionInput{
@@ -1158,22 +1160,22 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 		}
 		q = getSceneStringValue(sceneIdx1WithPerformer, titleField)
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdx1WithPerformer], scenes[0].ID)
 
 		q = getSceneStringValue(sceneIdxWithPerformerTag, titleField)
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		tagCriterion.Modifier = models.CriterionModifierNotNull
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTag], scenes[0].ID)
 
 		q = getSceneStringValue(sceneIdx1WithPerformer, titleField)
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1181,8 +1183,8 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 }
 
 func TestSceneQueryStudio(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithScene]),
@@ -1194,7 +1196,7 @@ func TestSceneQueryStudio(t *testing.T) {
 			Studios: &studioCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 
@@ -1213,7 +1215,7 @@ func TestSceneQueryStudio(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1221,8 +1223,8 @@ func TestSceneQueryStudio(t *testing.T) {
 }
 
 func TestSceneQueryStudioDepth(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -1236,16 +1238,16 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 			Studios: &studioCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 1)
 
 		depth = 1
 
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 0)
 
 		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 1)
 
 		// ensure id is correct
@@ -1265,15 +1267,15 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		depth = 1
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 1)
 
 		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1281,8 +1283,8 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 }
 
 func TestSceneQueryMovies(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		movieCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(movieIDs[movieIdxWithScene]),
@@ -1294,7 +1296,7 @@ func TestSceneQueryMovies(t *testing.T) {
 			Movies: &movieCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 
@@ -1313,7 +1315,7 @@ func TestSceneQueryMovies(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1328,9 +1330,9 @@ func TestSceneQuerySorting(t *testing.T) {
 		Direction: &direction,
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
-		scenes := queryScene(t, sqb, nil, &findFilter)
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
+		scenes := queryScene(ctx, t, sqb, nil, &findFilter)
 
 		// scenes should be in same order as indexes
 		firstScene := scenes[0]
@@ -1342,7 +1344,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		// sort in descending order
 		direction = models.SortDirectionEnumDesc
 
-		scenes = queryScene(t, sqb, nil, &findFilter)
+		scenes = queryScene(ctx, t, sqb, nil, &findFilter)
 		firstScene = scenes[0]
 		lastScene = scenes[len(scenes)-1]
 
@@ -1359,9 +1361,9 @@ func TestSceneQueryPagination(t *testing.T) {
 		PerPage: &perPage,
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
-		scenes := queryScene(t, sqb, nil, &findFilter)
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
+		scenes := queryScene(ctx, t, sqb, nil, &findFilter)
 
 		assert.Len(t, scenes, 1)
 
@@ -1369,7 +1371,7 @@ func TestSceneQueryPagination(t *testing.T) {
 
 		page := 2
 		findFilter.Page = &page
-		scenes = queryScene(t, sqb, nil, &findFilter)
+		scenes = queryScene(ctx, t, sqb, nil, &findFilter)
 
 		assert.Len(t, scenes, 1)
 		secondID := scenes[0].ID
@@ -1378,7 +1380,7 @@ func TestSceneQueryPagination(t *testing.T) {
 		perPage = 2
 		page = 1
 
-		scenes = queryScene(t, sqb, nil, &findFilter)
+		scenes = queryScene(ctx, t, sqb, nil, &findFilter)
 		assert.Len(t, scenes, 2)
 		assert.Equal(t, firstID, scenes[0].ID)
 		assert.Equal(t, secondID, scenes[1].ID)
@@ -1407,17 +1409,17 @@ func TestSceneQueryTagCount(t *testing.T) {
 }
 
 func verifyScenesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		sceneFilter := models.SceneFilterType{
 			TagCount: &tagCountCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Greater(t, len(scenes), 0)
 
 		for _, scene := range scenes {
-			ids, err := sqb.GetTagIDs(scene.ID)
+			ids, err := sqb.GetTagIDs(ctx, scene.ID)
 			if err != nil {
 				return err
 			}
@@ -1448,17 +1450,17 @@ func TestSceneQueryPerformerCount(t *testing.T) {
 }
 
 func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 		sceneFilter := models.SceneFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Greater(t, len(scenes), 0)
 
 		for _, scene := range scenes {
-			ids, err := sqb.GetPerformerIDs(scene.ID)
+			ids, err := sqb.GetPerformerIDs(ctx, scene.ID)
 			if err != nil {
 				return err
 			}
@@ -1470,10 +1472,10 @@ func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.Int
 }
 
 func TestSceneCountByTagID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
-		sceneCount, err := sqb.CountByTagID(tagIDs[tagIdxWithScene])
+		sceneCount, err := sqb.CountByTagID(ctx, tagIDs[tagIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling CountByTagID: %s", err.Error())
@@ -1481,7 +1483,7 @@ func TestSceneCountByTagID(t *testing.T) {
 
 		assert.Equal(t, 1, sceneCount)
 
-		sceneCount, err = sqb.CountByTagID(0)
+		sceneCount, err = sqb.CountByTagID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling CountByTagID: %s", err.Error())
@@ -1494,10 +1496,10 @@ func TestSceneCountByTagID(t *testing.T) {
 }
 
 func TestSceneCountByMovieID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
-		sceneCount, err := sqb.CountByMovieID(movieIDs[movieIdxWithScene])
+		sceneCount, err := sqb.CountByMovieID(ctx, movieIDs[movieIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling CountByMovieID: %s", err.Error())
@@ -1505,7 +1507,7 @@ func TestSceneCountByMovieID(t *testing.T) {
 
 		assert.Equal(t, 1, sceneCount)
 
-		sceneCount, err = sqb.CountByMovieID(0)
+		sceneCount, err = sqb.CountByMovieID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling CountByMovieID: %s", err.Error())
@@ -1518,10 +1520,10 @@ func TestSceneCountByMovieID(t *testing.T) {
 }
 
 func TestSceneCountByStudioID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
-		sceneCount, err := sqb.CountByStudioID(studioIDs[studioIdxWithScene])
+		sceneCount, err := sqb.CountByStudioID(ctx, studioIDs[studioIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling CountByStudioID: %s", err.Error())
@@ -1529,7 +1531,7 @@ func TestSceneCountByStudioID(t *testing.T) {
 
 		assert.Equal(t, 1, sceneCount)
 
-		sceneCount, err = sqb.CountByStudioID(0)
+		sceneCount, err = sqb.CountByStudioID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling CountByStudioID: %s", err.Error())
@@ -1542,10 +1544,10 @@ func TestSceneCountByStudioID(t *testing.T) {
 }
 
 func TestFindByMovieID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
-		scenes, err := sqb.FindByMovieID(movieIDs[movieIdxWithScene])
+		scenes, err := sqb.FindByMovieID(ctx, movieIDs[movieIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling FindByMovieID: %s", err.Error())
@@ -1554,7 +1556,7 @@ func TestFindByMovieID(t *testing.T) {
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
 
-		scenes, err = sqb.FindByMovieID(0)
+		scenes, err = sqb.FindByMovieID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling FindByMovieID: %s", err.Error())
@@ -1567,10 +1569,10 @@ func TestFindByMovieID(t *testing.T) {
 }
 
 func TestFindByPerformerID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := sqlite.SceneReaderWriter
 
-		scenes, err := sqb.FindByPerformerID(performerIDs[performerIdxWithScene])
+		scenes, err := sqb.FindByPerformerID(ctx, performerIDs[performerIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling FindByPerformerID: %s", err.Error())
@@ -1579,7 +1581,7 @@ func TestFindByPerformerID(t *testing.T) {
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithPerformer], scenes[0].ID)
 
-		scenes, err = sqb.FindByPerformerID(0)
+		scenes, err = sqb.FindByPerformerID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling FindByPerformerID: %s", err.Error())
@@ -1592,8 +1594,8 @@ func TestFindByPerformerID(t *testing.T) {
 }
 
 func TestSceneUpdateSceneCover(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Scene()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.SceneReaderWriter
 
 		// create performer to test against
 		const name = "TestSceneUpdateSceneCover"
@@ -1601,26 +1603,26 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 			Path:     name,
 			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
 		}
-		created, err := qb.Create(scene)
+		created, err := qb.Create(ctx, scene)
 		if err != nil {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
 		image := []byte("image")
-		err = qb.UpdateCover(created.ID, image)
+		err = qb.UpdateCover(ctx, created.ID, image)
 		if err != nil {
 			return fmt.Errorf("Error updating scene cover: %s", err.Error())
 		}
 
 		// ensure image set
-		storedImage, err := qb.GetCover(created.ID)
+		storedImage, err := qb.GetCover(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
 		assert.Equal(t, storedImage, image)
 
 		// set nil image
-		err = qb.UpdateCover(created.ID, nil)
+		err = qb.UpdateCover(ctx, created.ID, nil)
 		if err == nil {
 			return fmt.Errorf("Expected error setting nil image")
 		}
@@ -1632,8 +1634,8 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 }
 
 func TestSceneDestroySceneCover(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Scene()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.SceneReaderWriter
 
 		// create performer to test against
 		const name = "TestSceneDestroySceneCover"
@@ -1641,24 +1643,24 @@ func TestSceneDestroySceneCover(t *testing.T) {
 			Path:     name,
 			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
 		}
-		created, err := qb.Create(scene)
+		created, err := qb.Create(ctx, scene)
 		if err != nil {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
 		image := []byte("image")
-		err = qb.UpdateCover(created.ID, image)
+		err = qb.UpdateCover(ctx, created.ID, image)
 		if err != nil {
 			return fmt.Errorf("Error updating scene image: %s", err.Error())
 		}
 
-		err = qb.DestroyCover(created.ID)
+		err = qb.DestroyCover(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error destroying scene cover: %s", err.Error())
 		}
 
 		// image should be nil
-		storedImage, err := qb.GetCover(created.ID)
+		storedImage, err := qb.GetCover(ctx, created.ID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
@@ -1671,8 +1673,8 @@ func TestSceneDestroySceneCover(t *testing.T) {
 }
 
 func TestSceneStashIDs(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Scene()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.SceneReaderWriter
 
 		// create scene to test against
 		const name = "TestSceneStashIDs"
@@ -1680,12 +1682,12 @@ func TestSceneStashIDs(t *testing.T) {
 			Path:     name,
 			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
 		}
-		created, err := qb.Create(scene)
+		created, err := qb.Create(ctx, scene)
 		if err != nil {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
-		testStashIDReaderWriter(t, qb, created.ID)
+		testStashIDReaderWriter(ctx, t, qb, created.ID)
 		return nil
 	}); err != nil {
 		t.Error(err.Error())
@@ -1693,8 +1695,8 @@ func TestSceneStashIDs(t *testing.T) {
 }
 
 func TestSceneQueryQTrim(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Scene()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := sqlite.SceneReaderWriter
 
 		expectedID := sceneIDs[sceneIdxWithSpacedName]
 
@@ -1717,7 +1719,7 @@ func TestSceneQueryQTrim(t *testing.T) {
 			f := models.FindFilterType{
 				Q: &tst.query,
 			}
-			scenes := queryScene(t, qb, nil, &f)
+			scenes := queryScene(ctx, t, qb, nil, &f)
 
 			assert.Len(t, scenes, tst.count)
 			if len(scenes) > 0 {
@@ -1726,7 +1728,7 @@ func TestSceneQueryQTrim(t *testing.T) {
 		}
 
 		findFilter := models.FindFilterType{}
-		scenes := queryScene(t, qb, nil, &findFilter)
+		scenes := queryScene(ctx, t, qb, nil, &findFilter)
 		assert.NotEqual(t, 0, len(scenes))
 
 		return nil

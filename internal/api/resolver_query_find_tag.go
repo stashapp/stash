@@ -13,8 +13,8 @@ func (r *queryResolver) FindTag(ctx context.Context, id string) (ret *models.Tag
 		return nil, err
 	}
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Tag().Find(idInt)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Tag.Find(ctx, idInt)
 		return err
 	}); err != nil {
 		return nil, err
@@ -24,8 +24,8 @@ func (r *queryResolver) FindTag(ctx context.Context, id string) (ret *models.Tag
 }
 
 func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.FindFilterType) (ret *FindTagsResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		tags, total, err := repo.Tag().Query(tagFilter, filter)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		tags, total, err := r.repository.Tag.Query(ctx, tagFilter, filter)
 		if err != nil {
 			return err
 		}
@@ -44,8 +44,8 @@ func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilte
 }
 
 func (r *queryResolver) AllTags(ctx context.Context) (ret []*models.Tag, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Tag().All()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Tag.All(ctx)
 		return err
 	}); err != nil {
 		return nil, err

@@ -1,6 +1,8 @@
 package autotag
 
 import (
+	"context"
+
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
@@ -17,18 +19,18 @@ func getImageFileTagger(s *models.Image, cache *match.Cache) tagger {
 }
 
 // ImagePerformers tags the provided image with performers whose name matches the image's path.
-func ImagePerformers(s *models.Image, rw models.ImageReaderWriter, performerReader models.PerformerReader, cache *match.Cache) error {
+func ImagePerformers(ctx context.Context, s *models.Image, rw image.PerformerUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
 	t := getImageFileTagger(s, cache)
 
-	return t.tagPerformers(performerReader, func(subjectID, otherID int) (bool, error) {
-		return image.AddPerformer(rw, subjectID, otherID)
+	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
+		return image.AddPerformer(ctx, rw, subjectID, otherID)
 	})
 }
 
 // ImageStudios tags the provided image with the first studio whose name matches the image's path.
 //
 // Images will not be tagged if studio is already set.
-func ImageStudios(s *models.Image, rw models.ImageReaderWriter, studioReader models.StudioReader, cache *match.Cache) error {
+func ImageStudios(ctx context.Context, s *models.Image, rw ImageFinderUpdater, studioReader match.StudioAutoTagQueryer, cache *match.Cache) error {
 	if s.StudioID.Valid {
 		// don't modify
 		return nil
@@ -36,16 +38,16 @@ func ImageStudios(s *models.Image, rw models.ImageReaderWriter, studioReader mod
 
 	t := getImageFileTagger(s, cache)
 
-	return t.tagStudios(studioReader, func(subjectID, otherID int) (bool, error) {
-		return addImageStudio(rw, subjectID, otherID)
+	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {
+		return addImageStudio(ctx, rw, subjectID, otherID)
 	})
 }
 
 // ImageTags tags the provided image with tags whose name matches the image's path.
-func ImageTags(s *models.Image, rw models.ImageReaderWriter, tagReader models.TagReader, cache *match.Cache) error {
+func ImageTags(ctx context.Context, s *models.Image, rw image.TagUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
 	t := getImageFileTagger(s, cache)
 
-	return t.tagTags(tagReader, func(subjectID, otherID int) (bool, error) {
-		return image.AddTag(rw, subjectID, otherID)
+	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
+		return image.AddTag(ctx, rw, subjectID, otherID)
 	})
 }

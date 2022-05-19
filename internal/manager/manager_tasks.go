@@ -84,7 +84,7 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 	}
 
 	scanJob := ScanJob{
-		txnManager:    s.TxnManager,
+		txnManager:    s.Repository,
 		input:         input,
 		subscriptions: s.scanSubs,
 	}
@@ -101,7 +101,7 @@ func (s *Manager) Import(ctx context.Context) (int, error) {
 
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		task := ImportTask{
-			txnManager:          s.TxnManager,
+			txnManager:          s.Repository,
 			BaseDir:             metadataPath,
 			Reset:               true,
 			DuplicateBehaviour:  ImportDuplicateEnumFail,
@@ -125,7 +125,7 @@ func (s *Manager) Export(ctx context.Context) (int, error) {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		task := ExportTask{
-			txnManager:          s.TxnManager,
+			txnManager:          s.Repository,
 			full:                true,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
@@ -156,7 +156,7 @@ func (s *Manager) Generate(ctx context.Context, input GenerateMetadataInput) (in
 	}
 
 	j := &GenerateJob{
-		txnManager: s.TxnManager,
+		txnManager: s.Repository,
 		input:      input,
 	}
 
@@ -185,9 +185,9 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 		}
 
 		var scene *models.Scene
-		if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
 			var err error
-			scene, err = r.Scene().Find(sceneIdInt)
+			scene, err = s.Repository.Scene.Find(ctx, sceneIdInt)
 			return err
 		}); err != nil || scene == nil {
 			logger.Errorf("failed to get scene for generate: %s", err.Error())
@@ -195,7 +195,7 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 		}
 
 		task := GenerateScreenshotTask{
-			txnManager:          s.TxnManager,
+			txnManager:          s.Repository,
 			Scene:               *scene,
 			ScreenshotAt:        at,
 			fileNamingAlgorithm: config.GetInstance().GetVideoFileNamingAlgorithm(),
@@ -222,7 +222,7 @@ type AutoTagMetadataInput struct {
 
 func (s *Manager) AutoTag(ctx context.Context, input AutoTagMetadataInput) int {
 	j := autoTagJob{
-		txnManager: s.TxnManager,
+		txnManager: s.Repository,
 		input:      input,
 	}
 
@@ -237,7 +237,7 @@ type CleanMetadataInput struct {
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	j := cleanJob{
-		txnManager: s.TxnManager,
+		txnManager: s.Repository,
 		input:      input,
 		scanSubs:   s.scanSubs,
 	}
@@ -251,9 +251,9 @@ func (s *Manager) MigrateHash(ctx context.Context) int {
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
 		var scenes []*models.Scene
-		if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
 			var err error
-			scenes, err = r.Scene().All()
+			scenes, err = s.Repository.Scene.All(ctx)
 			return err
 		}); err != nil {
 			logger.Errorf("failed to fetch list of scenes for migration: %s", err.Error())
@@ -327,15 +327,14 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 		// This is why we mark this section nolint. In principle, we should look to
 		// rewrite the section at some point, to avoid the linter warning.
 		if len(input.PerformerIds) > 0 { //nolint:gocritic
-			if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-				performerQuery := r.Performer()
+			if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
+				performerQuery := s.Repository.Performer
 
 				for _, performerID := range input.PerformerIds {
 					if id, err := strconv.Atoi(performerID); err == nil {
-						performer, err := performerQuery.Find(id)
+						performer, err := performerQuery.Find(ctx, id)
 						if err == nil {
 							tasks = append(tasks, StashBoxPerformerTagTask{
-								txnManager:      s.TxnManager,
 								performer:       performer,
 								refresh:         input.Refresh,
 								box:             box,
@@ -354,7 +353,6 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 			for i := range input.PerformerNames {
 				if len(input.PerformerNames[i]) > 0 {
 					tasks = append(tasks, StashBoxPerformerTagTask{
-						txnManager:      s.TxnManager,
 						name:            &input.PerformerNames[i],
 						refresh:         input.Refresh,
 						box:             box,
@@ -367,14 +365,14 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 			// However, this doesn't really help with readability of the current section. Mark it
 			// as nolint for now. In the future we'd like to rewrite this code by factoring some of
 			// this into separate functions.
-			if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-				performerQuery := r.Performer()
+			if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
+				performerQuery := s.Repository.Performer
 				var performers []*models.Performer
 				var err error
 				if input.Refresh {
-					performers, err = performerQuery.FindByStashIDStatus(true, box.Endpoint)
+					performers, err = performerQuery.FindByStashIDStatus(ctx, true, box.Endpoint)
 				} else {
-					performers, err = performerQuery.FindByStashIDStatus(false, box.Endpoint)
+					performers, err = performerQuery.FindByStashIDStatus(ctx, false, box.Endpoint)
 				}
 				if err != nil {
 					return fmt.Errorf("error querying performers: %v", err)
@@ -382,7 +380,6 @@ func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input StashBoxB
 
 				for _, performer := range performers {
 					tasks = append(tasks, StashBoxPerformerTagTask{
-						txnManager:      s.TxnManager,
 						performer:       performer,
 						refresh:         input.Refresh,
 						box:             box,

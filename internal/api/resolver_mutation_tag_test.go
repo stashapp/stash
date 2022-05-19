@@ -16,17 +16,23 @@ import (
 // TODO - move this into a common area
 func newResolver() *Resolver {
 	return &Resolver{
-		txnManager:   mocks.NewTransactionManager(),
+		txnManager:   &mocks.TxnManager{},
+		repository:   mocks.NewTxnRepository(),
 		hookExecutor: &mockHookExecutor{},
 	}
 }
 
-const tagName = "tagName"
-const errTagName = "errTagName"
+const (
+	tagName    = "tagName"
+	errTagName = "errTagName"
 
-const existingTagID = 1
-const existingTagName = "existingTagName"
-const newTagID = 2
+	existingTagID   = 1
+	existingTagName = "existingTagName"
+
+	newTagID = 2
+)
+
+var testCtx = context.Background()
 
 type mockHookExecutor struct{}
 
@@ -36,7 +42,7 @@ func (*mockHookExecutor) ExecutePostHooks(ctx context.Context, id int, hookType 
 func TestTagCreate(t *testing.T) {
 	r := newResolver()
 
-	tagRW := r.txnManager.(*mocks.TransactionManager).Tag().(*mocks.TagReaderWriter)
+	tagRW := r.repository.Tag.(*mocks.TagReaderWriter)
 
 	pp := 1
 	findFilter := &models.FindFilterType{
@@ -61,25 +67,25 @@ func TestTagCreate(t *testing.T) {
 		}
 	}
 
-	tagRW.On("Query", tagFilterForName(existingTagName), findFilter).Return([]*models.Tag{
+	tagRW.On("Query", testCtx, tagFilterForName(existingTagName), findFilter).Return([]*models.Tag{
 		{
 			ID:   existingTagID,
 			Name: existingTagName,
 		},
 	}, 1, nil).Once()
-	tagRW.On("Query", tagFilterForName(errTagName), findFilter).Return(nil, 0, nil).Once()
-	tagRW.On("Query", tagFilterForAlias(errTagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", testCtx, tagFilterForName(errTagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", testCtx, tagFilterForAlias(errTagName), findFilter).Return(nil, 0, nil).Once()
 
 	expectedErr := errors.New("TagCreate error")
-	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(nil, expectedErr)
+	tagRW.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(nil, expectedErr)
 
-	_, err := r.Mutation().TagCreate(context.TODO(), TagCreateInput{
+	_, err := r.Mutation().TagCreate(testCtx, TagCreateInput{
 		Name: existingTagName,
 	})
 
 	assert.NotNil(t, err)
 
-	_, err = r.Mutation().TagCreate(context.TODO(), TagCreateInput{
+	_, err = r.Mutation().TagCreate(testCtx, TagCreateInput{
 		Name: errTagName,
 	})
 
@@ -87,18 +93,18 @@ func TestTagCreate(t *testing.T) {
 	tagRW.AssertExpectations(t)
 
 	r = newResolver()
-	tagRW = r.txnManager.(*mocks.TransactionManager).Tag().(*mocks.TagReaderWriter)
+	tagRW = r.repository.Tag.(*mocks.TagReaderWriter)
 
-	tagRW.On("Query", tagFilterForName(tagName), findFilter).Return(nil, 0, nil).Once()
-	tagRW.On("Query", tagFilterForAlias(tagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", testCtx, tagFilterForName(tagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", testCtx, tagFilterForAlias(tagName), findFilter).Return(nil, 0, nil).Once()
 	newTag := &models.Tag{
 		ID:   newTagID,
 		Name: tagName,
 	}
-	tagRW.On("Create", mock.AnythingOfType("models.Tag")).Return(newTag, nil)
-	tagRW.On("Find", newTagID).Return(newTag, nil)
+	tagRW.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(newTag, nil)
+	tagRW.On("Find", testCtx, newTagID).Return(newTag, nil)
 
-	tag, err := r.Mutation().TagCreate(context.TODO(), TagCreateInput{
+	tag, err := r.Mutation().TagCreate(testCtx, TagCreateInput{
 		Name: tagName,
 	})
 

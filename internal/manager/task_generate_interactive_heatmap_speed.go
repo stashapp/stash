@@ -15,7 +15,7 @@ type GenerateInteractiveHeatmapSpeedTask struct {
 	Scene               models.Scene
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
-	TxnManager          models.TransactionManager
+	TxnManager          models.Repository
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) GetDescription() string {
@@ -47,22 +47,22 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 
 	var s *models.Scene
 
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		s, err = r.Scene().FindByPath(t.Scene.Path)
+		s, err = t.TxnManager.Scene.FindByPath(ctx, t.Scene.Path)
 		return err
 	}); err != nil {
 		logger.Error(err.Error())
 		return
 	}
 
-	if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-		qb := r.Scene()
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		qb := t.TxnManager.Scene
 		scenePartial := models.ScenePartial{
 			ID:               s.ID,
 			InteractiveSpeed: &median,
 		}
-		_, err := qb.Update(scenePartial)
+		_, err := qb.Update(ctx, scenePartial)
 		return err
 	}); err != nil {
 		logger.Error(err.Error())
