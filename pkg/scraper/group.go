@@ -11,14 +11,12 @@ import (
 type group struct {
 	config config
 
-	txnManager models.TransactionManager
 	globalConf GlobalConfig
 }
 
-func newGroupScraper(c config, txnManager models.TransactionManager, globalConfig GlobalConfig) scraper {
+func newGroupScraper(c config, globalConfig GlobalConfig) scraper {
 	return group{
 		config:     c,
-		txnManager: txnManager,
 		globalConf: globalConfig,
 	}
 }
@@ -55,7 +53,7 @@ func (g group) viaFragment(ctx context.Context, client *http.Client, input Input
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*stc, client, g.txnManager, g.globalConf)
+	s := g.config.getScraper(*stc, client, g.globalConf)
 	return s.scrapeByFragment(ctx, input)
 }
 
@@ -64,7 +62,7 @@ func (g group) viaScene(ctx context.Context, client *http.Client, scene *models.
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*g.config.SceneByFragment, client, g.txnManager, g.globalConf)
+	s := g.config.getScraper(*g.config.SceneByFragment, client, g.globalConf)
 	return s.scrapeSceneByScene(ctx, scene)
 }
 
@@ -73,7 +71,7 @@ func (g group) viaGallery(ctx context.Context, client *http.Client, gallery *mod
 		return nil, ErrNotSupported
 	}
 
-	s := g.config.getScraper(*g.config.GalleryByFragment, client, g.txnManager, g.globalConf)
+	s := g.config.getScraper(*g.config.GalleryByFragment, client, g.globalConf)
 	return s.scrapeGalleryByGallery(ctx, gallery)
 }
 
@@ -96,7 +94,7 @@ func (g group) viaURL(ctx context.Context, client *http.Client, url string, ty S
 	candidates := loadUrlCandidates(g.config, ty)
 	for _, scraper := range candidates {
 		if scraper.matchesURL(url) {
-			s := g.config.getScraper(scraper.scraperTypeConfig, client, g.txnManager, g.globalConf)
+			s := g.config.getScraper(scraper.scraperTypeConfig, client, g.globalConf)
 			ret, err := s.scrapeByURL(ctx, url, ty)
 			if err != nil {
 				return nil, err
@@ -118,14 +116,14 @@ func (g group) viaName(ctx context.Context, client *http.Client, name string, ty
 			break
 		}
 
-		s := g.config.getScraper(*g.config.PerformerByName, client, g.txnManager, g.globalConf)
+		s := g.config.getScraper(*g.config.PerformerByName, client, g.globalConf)
 		return s.scrapeByName(ctx, name, ty)
 	case ScrapeContentTypeScene:
 		if g.config.SceneByName == nil {
 			break
 		}
 
-		s := g.config.getScraper(*g.config.SceneByName, client, g.txnManager, g.globalConf)
+		s := g.config.getScraper(*g.config.SceneByName, client, g.globalConf)
 		return s.scrapeByName(ctx, name, ty)
 	}
 

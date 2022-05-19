@@ -72,16 +72,16 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockSceneReader.On("Query", scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false)).
+	mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false)).
 		Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("GetPerformerIDs", sceneID).Return(nil, nil).Once()
-		mockSceneReader.On("UpdatePerformers", sceneID, []int{performerID}).Return(nil).Once()
+		mockSceneReader.On("GetPerformerIDs", testCtx, sceneID).Return(nil, nil).Once()
+		mockSceneReader.On("UpdatePerformers", testCtx, sceneID, []int{performerID}).Return(nil).Once()
 	}
 
-	err := PerformerScenes(&performer, nil, mockSceneReader, nil)
+	err := PerformerScenes(testCtx, &performer, nil, mockSceneReader, nil)
 
 	assert := assert.New(t)
 
@@ -147,16 +147,16 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockImageReader.On("Query", image.QueryOptions(expectedImageFilter, expectedFindFilter, false)).
+	mockImageReader.On("Query", testCtx, image.QueryOptions(expectedImageFilter, expectedFindFilter, false)).
 		Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("GetPerformerIDs", imageID).Return(nil, nil).Once()
-		mockImageReader.On("UpdatePerformers", imageID, []int{performerID}).Return(nil).Once()
+		mockImageReader.On("GetPerformerIDs", testCtx, imageID).Return(nil, nil).Once()
+		mockImageReader.On("UpdatePerformers", testCtx, imageID, []int{performerID}).Return(nil).Once()
 	}
 
-	err := PerformerImages(&performer, nil, mockImageReader, nil)
+	err := PerformerImages(testCtx, &performer, nil, mockImageReader, nil)
 
 	assert := assert.New(t)
 
@@ -222,15 +222,15 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 		PerPage: &perPage,
 	}
 
-	mockGalleryReader.On("Query", expectedGalleryFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+	mockGalleryReader.On("Query", testCtx, expectedGalleryFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("GetPerformerIDs", galleryID).Return(nil, nil).Once()
-		mockGalleryReader.On("UpdatePerformers", galleryID, []int{performerID}).Return(nil).Once()
+		mockGalleryReader.On("GetPerformerIDs", testCtx, galleryID).Return(nil, nil).Once()
+		mockGalleryReader.On("UpdatePerformers", testCtx, galleryID, []int{performerID}).Return(nil).Once()
 	}
 
-	err := PerformerGalleries(&performer, nil, mockGalleryReader, nil)
+	err := PerformerGalleries(testCtx, &performer, nil, mockGalleryReader, nil)
 
 	assert := assert.New(t)
 

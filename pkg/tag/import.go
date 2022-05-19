@@ -1,12 +1,22 @@
 package tag
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+type NameFinderCreatorUpdater interface {
+	FindByName(ctx context.Context, name string, nocase bool) (*models.Tag, error)
+	Create(ctx context.Context, newTag models.Tag) (*models.Tag, error)
+	UpdateFull(ctx context.Context, updatedTag models.Tag) (*models.Tag, error)
+	UpdateImage(ctx context.Context, tagID int, image []byte) error
+	UpdateAliases(ctx context.Context, tagID int, aliases []string) error
+	UpdateParentTags(ctx context.Context, tagID int, parentIDs []int) error
+}
 
 type ParentTagNotExistError struct {
 	missingParent string
@@ -21,7 +31,7 @@ func (e ParentTagNotExistError) MissingParent() string {
 }
 
 type Importer struct {
-	ReaderWriter        models.TagReaderWriter
+	ReaderWriter        NameFinderCreatorUpdater
 	Input               jsonschema.Tag
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -29,7 +39,7 @@ type Importer struct {
 	imageData []byte
 }
 
-func (i *Importer) PreImport() error {
+func (i *Importer) PreImport(ctx context.Context) error {
 	i.tag = models.Tag{
 		Name:          i.Input.Name,
 		IgnoreAutoTag: i.Input.IgnoreAutoTag,
@@ -48,23 +58,23 @@ func (i *Importer) PreImport() error {
 	return nil
 }
 
-func (i *Importer) PostImport(id int) error {
+func (i *Importer) PostImport(ctx context.Context, id int) error {
 	if len(i.imageData) > 0 {
-		if err := i.ReaderWriter.UpdateImage(id, i.imageData); err != nil {
+		if err := i.ReaderWriter.UpdateImage(ctx, id, i.imageData); err != nil {
 			return fmt.Errorf("error setting tag image: %v", err)
 		}
 	}
 
-	if err := i.ReaderWriter.UpdateAliases(id, i.Input.Aliases); err != nil {
+	if err := i.ReaderWriter.UpdateAliases(ctx, id, i.Input.Aliases); err != nil {
 		return fmt.Errorf("error setting tag aliases: %v", err)
 	}
 
-	parents, err := i.getParents()
+	parents, err := i.getParents(ctx)
 	if err != nil {
 		return err
 	}
 
-	if err := i.ReaderWriter.UpdateParentTags(id, parents); err != nil {
+	if err := i.ReaderWriter.UpdateParentTags(ctx, id, parents); err != nil {
 		return fmt.Errorf("error setting parents: %v", err)
 	}
 
@@ -75,9 +85,9 @@ func (i *Importer) Name() string {
 	return i.Input.Name
 }
 
-func (i *Importer) FindExistingID() (*int, error) {
+func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	const nocase = false
-	existing, err := i.ReaderWriter.FindByName(i.Name(), nocase)
+	existing, err := i.ReaderWriter.FindByName(ctx, i.Name(), nocase)
 	if err != nil {
 		return nil, err
 	}
@@ -90,8 +100,8 @@ func (i *Importer) FindExistingID() (*int, error) {
 	return nil, nil
 }
 
-func (i *Importer) Create() (*int, error) {
-	created, err := i.ReaderWriter.Create(i.tag)
+func (i *Importer) Create(ctx context.Context) (*int, error) {
+	created, err := i.ReaderWriter.Create(ctx, i.tag)
 	if err != nil {
 		return nil, fmt.Errorf("error creating tag: %v", err)
 	}
@@ -100,10 +110,10 @@ func (i *Importer) Create() (*int, error) {
 	return &id, nil
 }
 
-func (i *Importer) Update(id int) error {
+func (i *Importer) Update(ctx context.Context, id int) error {
 	tag := i.tag
 	tag.ID = id
-	_, err := i.ReaderWriter.UpdateFull(tag)
+	_, err := i.ReaderWriter.UpdateFull(ctx, tag)
 	if err != nil {
 		return fmt.Errorf("error updating existing tag: %v", err)
 	}
@@ -111,10 +121,10 @@ func (i *Importer) Update(id int) error {
 	return nil
 }
 
-func (i *Importer) getParents() ([]int, error) {
+func (i *Importer) getParents(ctx context.Context) ([]int, error) {
 	var parents []int
 	for _, parent := range i.Input.Parents {
-		tag, err := i.ReaderWriter.FindByName(parent, false)
+		tag, err := i.ReaderWriter.FindByName(ctx, parent, false)
 		if err != nil {
 			return nil, fmt.Errorf("error finding parent by name: %v", err)
 		}
@@ -129,7 +139,7 @@ func (i *Importer) getParents() ([]int, error) {
 			}
 
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
-				parentID, err := i.createParent(parent)
+				parentID, err := i.createParent(ctx, parent)
 				if err != nil {
 					return nil, err
 				}
@@ -143,10 +153,10 @@ func (i *Importer) getParents() ([]int, error) {
 	return parents, nil
 }
 
-func (i *Importer) createParent(name string) (int, error) {
+func (i *Importer) createParent(ctx context.Context, name string) (int, error) {
 	newTag := *models.NewTag(name)
 
-	created, err := i.ReaderWriter.Create(newTag)
+	created, err := i.ReaderWriter.Create(ctx, newTag)
 	if err != nil {
 		return 0, err
 	}

@@ -116,8 +116,8 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePat
 }
 
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (ret []*models.SceneMarker, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.SceneMarker().FindBySceneID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.SceneMarker.FindBySceneID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -127,8 +127,8 @@ func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (re
 }
 
 func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []*models.SceneCaption, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Scene().GetCaptions(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Scene.GetCaptions(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -138,8 +138,8 @@ func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []
 }
 
 func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) (ret []*models.Gallery, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Gallery().FindBySceneID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Gallery.FindBySceneID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -153,8 +153,8 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 		return nil, nil
 	}
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Studio().Find(int(obj.StudioID.Int64))
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Studio.Find(ctx, int(obj.StudioID.Int64))
 		return err
 	}); err != nil {
 		return nil, err
@@ -164,17 +164,17 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		qb := repo.Scene()
-		mqb := repo.Movie()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+		mqb := r.repository.Movie
 
-		sceneMovies, err := qb.GetMovies(obj.ID)
+		sceneMovies, err := qb.GetMovies(ctx, obj.ID)
 		if err != nil {
 			return err
 		}
 
 		for _, sm := range sceneMovies {
-			movie, err := mqb.Find(sm.MovieID)
+			movie, err := mqb.Find(ctx, sm.MovieID)
 			if err != nil {
 				return err
 			}
@@ -200,8 +200,8 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*S
 }
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*models.Tag, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Tag().FindBySceneID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Tag.FindBySceneID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -211,8 +211,8 @@ func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*mod
 }
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret []*models.Performer, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Performer().FindBySceneID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Performer.FindBySceneID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -222,8 +222,8 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret 
 }
 
 func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []*models.StashID, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Scene().GetStashIDs(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Scene.GetStashIDs(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

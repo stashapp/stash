@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -225,8 +226,8 @@ func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterio
 	return getIntCriterionWhereClause(lhs, criterion)
 }
 
-func getImage(tx dbi, query string, args ...interface{}) ([]byte, error) {
-	rows, err := tx.Queryx(query, args...)
+func getImage(ctx context.Context, tx dbi, query string, args ...interface{}) ([]byte, error) {
+	rows, err := tx.Queryx(ctx, query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err

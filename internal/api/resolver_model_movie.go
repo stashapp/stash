@@ -56,8 +56,8 @@ func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, er
 
 func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (ret *models.Studio, err error) {
 	if obj.StudioID.Valid {
-		if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-			ret, err = repo.Studio().Find(int(obj.StudioID.Int64))
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			ret, err = r.repository.Studio.Find(ctx, int(obj.StudioID.Int64))
 			return err
 		}); err != nil {
 			return nil, err
@@ -92,9 +92,9 @@ func (r *movieResolver) FrontImagePath(ctx context.Context, obj *models.Movie) (
 func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*string, error) {
 	// don't return any thing if there is no back image
 	var img []byte
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		img, err = repo.Movie().GetBackImage(obj.ID)
+		img, err = r.repository.Movie.GetBackImage(ctx, obj.ID)
 		if err != nil {
 			return err
 		}
@@ -115,8 +115,8 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*
 
 func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (ret *int, err error) {
 	var res int
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		res, err = repo.Scene().CountByMovieID(obj.ID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		res, err = r.repository.Scene.CountByMovieID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -126,9 +126,9 @@ func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (ret 
 }
 
 func (r *movieResolver) Scenes(ctx context.Context, obj *models.Movie) (ret []*models.Scene, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = repo.Scene().FindByMovieID(obj.ID)
+		ret, err = r.repository.Scene.FindByMovieID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

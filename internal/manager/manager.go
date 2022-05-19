@@ -17,7 +17,6 @@ import (
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/job"
@@ -115,7 +114,8 @@ type Manager struct {
 
 	DLNAService *dlna.Service
 
-	TxnManager models.TransactionManager
+	Database   *sqlite.Database
+	Repository models.Repository
 
 	scanSubs *subscriptionManager
 }
@@ -150,6 +150,8 @@ func initialize() error {
 	l := initLog()
 	initProfiling(cfg.GetCPUProfilePath())
 
+	db := &sqlite.Database{}
+
 	instance = &Manager{
 		Config:          cfg,
 		Logger:          l,
@@ -157,7 +159,20 @@ func initialize() error {
 		DownloadStore:   NewDownloadStore(),
 		PluginCache:     plugin.NewCache(cfg),
 
-		TxnManager: sqlite.NewTransactionManager(),
+		Database: db,
+		Repository: models.Repository{
+			TxnManager:  db,
+			Gallery:     sqlite.GalleryReaderWriter,
+			Image:       sqlite.ImageReaderWriter,
+			Movie:       sqlite.MovieReaderWriter,
+			Performer:   sqlite.PerformerReaderWriter,
+			Scene:       sqlite.SceneReaderWriter,
+			SceneMarker: sqlite.SceneMarkerReaderWriter,
+			ScrapedItem: sqlite.ScrapedItemReaderWriter,
+			Studio:      sqlite.StudioReaderWriter,
+			Tag:         sqlite.TagReaderWriter,
+			SavedFilter: sqlite.SavedFilterReaderWriter,
+		},
 
 		scanSubs: &subscriptionManager{},
 	}
@@ -165,9 +180,17 @@ func initialize() error {
 	instance.JobManager = initJobManager()
 
 	sceneServer := SceneServer{
-		TXNManager: instance.TxnManager,
+		TxnManager:       instance.Repository,
+		SceneCoverGetter: instance.Repository.Scene,
 	}
-	instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
+
+	instance.DLNAService = dlna.NewService(instance.Repository, dlna.Repository{
+		SceneFinder:     instance.Repository.Scene,
+		StudioFinder:    instance.Repository.Studio,
+		TagFinder:       instance.Repository.Tag,
+		PerformerFinder: instance.Repository.Performer,
+		MovieFinder:     instance.Repository.Movie,
+	}, instance.Config, &sceneServer)
 
 	if !cfg.IsNewSystem() {
 		logger.Infof("using config file: %s", cfg.GetConfigFile())
@@ -177,9 +200,14 @@ func initialize() error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("error initializing configuration: %w", err)
+			panic(fmt.Sprintf("error initializing configuration: %s", err.Error()))
 		} else if err := instance.PostInit(ctx); err != nil {
-			return err
+			var migrationNeededErr *sqlite.MigrationNeededError
+			if errors.As(err, &migrationNeededErr) {
+				logger.Warn(err.Error())
+			} else {
+				panic(err)
+			}
 		}
 
 		initSecurity(cfg)
@@ -352,7 +380,8 @@ func (s *Manager) PostInit(ctx context.Context) error {
 		})
 	}
 
-	if err := database.Initialize(s.Config.GetDatabasePath()); err != nil {
+	database := s.Database
+	if err := database.Open(s.Config.GetDatabasePath()); err != nil {
 		return err
 	}
 
@@ -377,7 +406,14 @@ func writeStashIcon() {
 
 // initScraperCache initializes a new scraper cache and returns it.
 func (s *Manager) initScraperCache() *scraper.Cache {
-	ret, err := scraper.NewCache(config.GetInstance(), s.TxnManager)
+	ret, err := scraper.NewCache(config.GetInstance(), s.Repository, scraper.Repository{
+		SceneFinder:     s.Repository.Scene,
+		GalleryFinder:   s.Repository.Gallery,
+		TagFinder:       s.Repository.Tag,
+		PerformerFinder: s.Repository.Performer,
+		MovieFinder:     s.Repository.Movie,
+		StudioFinder:    s.Repository.Studio,
+	})
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
@@ -476,7 +512,12 @@ func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 
 	// initialise the database
 	if err := s.PostInit(ctx); err != nil {
-		return fmt.Errorf("error initializing the database: %v", err)
+		var migrationNeededErr *sqlite.MigrationNeededError
+		if errors.As(err, &migrationNeededErr) {
+			logger.Warn(err.Error())
+		} else {
+			return fmt.Errorf("error initializing the database: %v", err)
+		}
 	}
 
 	s.Config.FinalizeSetup()
@@ -501,6 +542,8 @@ type MigrateInput struct {
 }
 
 func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
+	database := s.Database
+
 	// always backup so that we can roll back to the previous version if
 	// migration fails
 	backupPath := input.BackupPath
@@ -509,7 +552,7 @@ func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
 	}
 
 	// perform database backup
-	if err := database.Backup(database.DB, backupPath); err != nil {
+	if err := database.Backup(backupPath); err != nil {
 		return fmt.Errorf("error backing up database: %s", err)
 	}
 
@@ -541,6 +584,7 @@ func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
 }
 
 func (s *Manager) GetSystemStatus() *SystemStatus {
+	database := s.Database
 	status := SystemStatusEnumOk
 	dbSchema := int(database.Version())
 	dbPath := database.DatabasePath()
@@ -569,7 +613,7 @@ func (s *Manager) Shutdown(code int) {
 
 	// TODO: Each part of the manager needs to gracefully stop at some point
 	// for now, we just close the database.
-	err := database.Close()
+	err := s.Database.Close()
 	if err != nil {
 		logger.Errorf("Error closing database: %s", err)
 		if code == 0 {

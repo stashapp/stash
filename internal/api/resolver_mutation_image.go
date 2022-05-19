@@ -16,8 +16,8 @@ import (
 )
 
 func (r *mutationResolver) getImage(ctx context.Context, id int) (ret *models.Image, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Image().Find(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Image.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -32,8 +32,8 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input ImageUpdateInp
 	}
 
 	// Start the transaction and save the image
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		ret, err = r.imageUpdate(input, translator, repo)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.imageUpdate(ctx, input, translator)
 		return err
 	}); err != nil {
 		return nil, err
@@ -48,13 +48,13 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdat
 	inputMaps := getUpdateInputMaps(ctx)
 
 	// Start the transaction and save the image
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		for i, image := range input {
 			translator := changesetTranslator{
 				inputMap: inputMaps[i],
 			}
 
-			thisImage, err := r.imageUpdate(*image, translator, repo)
+			thisImage, err := r.imageUpdate(ctx, *image, translator)
 			if err != nil {
 				return err
 			}
@@ -86,7 +86,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdat
 	return newRet, nil
 }
 
-func (r *mutationResolver) imageUpdate(input ImageUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Image, error) {
+func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInput, translator changesetTranslator) (*models.Image, error) {
 	// Populate image from the input
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -104,28 +104,28 @@ func (r *mutationResolver) imageUpdate(input ImageUpdateInput, translator change
 	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedImage.Organized = input.Organized
 
-	qb := repo.Image()
-	image, err := qb.Update(updatedImage)
+	qb := r.repository.Image
+	image, err := qb.Update(ctx, updatedImage)
 	if err != nil {
 		return nil, err
 	}
 
 	if translator.hasField("gallery_ids") {
-		if err := r.updateImageGalleries(qb, imageID, input.GalleryIds); err != nil {
+		if err := r.updateImageGalleries(ctx, imageID, input.GalleryIds); err != nil {
 			return nil, err
 		}
 	}
 
 	// Save the performers
 	if translator.hasField("performer_ids") {
-		if err := r.updateImagePerformers(qb, imageID, input.PerformerIds); err != nil {
+		if err := r.updateImagePerformers(ctx, imageID, input.PerformerIds); err != nil {
 			return nil, err
 		}
 	}
 
 	// Save the tags
 	if translator.hasField("tag_ids") {
-		if err := r.updateImageTags(qb, imageID, input.TagIds); err != nil {
+		if err := r.updateImageTags(ctx, imageID, input.TagIds); err != nil {
 			return nil, err
 		}
 	}
@@ -133,28 +133,28 @@ func (r *mutationResolver) imageUpdate(input ImageUpdateInput, translator change
 	return image, nil
 }
 
-func (r *mutationResolver) updateImageGalleries(qb models.ImageReaderWriter, imageID int, galleryIDs []string) error {
+func (r *mutationResolver) updateImageGalleries(ctx context.Context, imageID int, galleryIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(galleryIDs)
 	if err != nil {
 		return err
 	}
-	return qb.UpdateGalleries(imageID, ids)
+	return r.repository.Image.UpdateGalleries(ctx, imageID, ids)
 }
 
-func (r *mutationResolver) updateImagePerformers(qb models.ImageReaderWriter, imageID int, performerIDs []string) error {
+func (r *mutationResolver) updateImagePerformers(ctx context.Context, imageID int, performerIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
 	if err != nil {
 		return err
 	}
-	return qb.UpdatePerformers(imageID, ids)
+	return r.repository.Image.UpdatePerformers(ctx, imageID, ids)
 }
 
-func (r *mutationResolver) updateImageTags(qb models.ImageReaderWriter, imageID int, tagsIDs []string) error {
+func (r *mutationResolver) updateImageTags(ctx context.Context, imageID int, tagsIDs []string) error {
 	ids, err := stringslice.StringSliceToIntSlice(tagsIDs)
 	if err != nil {
 		return err
 	}
-	return qb.UpdateTags(imageID, ids)
+	return r.repository.Image.UpdateTags(ctx, imageID, ids)
 }
 
 func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageUpdateInput) (ret []*models.Image, err error) {
@@ -180,13 +180,13 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	updatedImage.Organized = input.Organized
 
 	// Start the transaction and save the image marker
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
 		for _, imageID := range imageIDs {
 			updatedImage.ID = imageID
 
-			image, err := qb.Update(updatedImage)
+			image, err := qb.Update(ctx, updatedImage)
 			if err != nil {
 				return err
 			}
@@ -195,36 +195,36 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 
 			// Save the galleries
 			if translator.hasField("gallery_ids") {
-				galleryIDs, err := adjustImageGalleryIDs(qb, imageID, *input.GalleryIds)
+				galleryIDs, err := r.adjustImageGalleryIDs(ctx, imageID, *input.GalleryIds)
 				if err != nil {
 					return err
 				}
 
-				if err := qb.UpdateGalleries(imageID, galleryIDs); err != nil {
+				if err := qb.UpdateGalleries(ctx, imageID, galleryIDs); err != nil {
 					return err
 				}
 			}
 
 			// Save the performers
 			if translator.hasField("performer_ids") {
-				performerIDs, err := adjustImagePerformerIDs(qb, imageID, *input.PerformerIds)
+				performerIDs, err := r.adjustImagePerformerIDs(ctx, imageID, *input.PerformerIds)
 				if err != nil {
 					return err
 				}
 
-				if err := qb.UpdatePerformers(imageID, performerIDs); err != nil {
+				if err := qb.UpdatePerformers(ctx, imageID, performerIDs); err != nil {
 					return err
 				}
 			}
 
 			// Save the tags
 			if translator.hasField("tag_ids") {
-				tagIDs, err := adjustImageTagIDs(qb, imageID, *input.TagIds)
+				tagIDs, err := r.adjustImageTagIDs(ctx, imageID, *input.TagIds)
 				if err != nil {
 					return err
 				}
 
-				if err := qb.UpdateTags(imageID, tagIDs); err != nil {
+				if err := qb.UpdateTags(ctx, imageID, tagIDs); err != nil {
 					return err
 				}
 			}
@@ -251,8 +251,8 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	return newRet, nil
 }
 
-func adjustImageGalleryIDs(qb models.ImageReader, imageID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetGalleryIDs(imageID)
+func (r *mutationResolver) adjustImageGalleryIDs(ctx context.Context, imageID int, ids BulkUpdateIds) (ret []int, err error) {
+	ret, err = r.repository.Image.GetGalleryIDs(ctx, imageID)
 	if err != nil {
 		return nil, err
 	}
@@ -260,8 +260,8 @@ func adjustImageGalleryIDs(qb models.ImageReader, imageID int, ids BulkUpdateIds
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustImagePerformerIDs(qb models.ImageReader, imageID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetPerformerIDs(imageID)
+func (r *mutationResolver) adjustImagePerformerIDs(ctx context.Context, imageID int, ids BulkUpdateIds) (ret []int, err error) {
+	ret, err = r.repository.Image.GetPerformerIDs(ctx, imageID)
 	if err != nil {
 		return nil, err
 	}
@@ -269,8 +269,8 @@ func adjustImagePerformerIDs(qb models.ImageReader, imageID int, ids BulkUpdateI
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustImageTagIDs(qb models.ImageReader, imageID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetTagIDs(imageID)
+func (r *mutationResolver) adjustImageTagIDs(ctx context.Context, imageID int, ids BulkUpdateIds) (ret []int, err error) {
+	ret, err = r.repository.Image.GetTagIDs(ctx, imageID)
 	if err != nil {
 		return nil, err
 	}
@@ -289,10 +289,10 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 		Deleter: *file.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
-		i, err = qb.Find(imageID)
+		i, err = r.repository.Image.Find(ctx, imageID)
 		if err != nil {
 			return err
 		}
@@ -301,7 +301,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 			return fmt.Errorf("image with id %d not found", imageID)
 		}
 
-		return image.Destroy(i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile))
+		return image.Destroy(ctx, i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile))
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
@@ -331,12 +331,12 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 		Deleter: *file.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
 		for _, imageID := range imageIDs {
 
-			i, err := qb.Find(imageID)
+			i, err := qb.Find(ctx, imageID)
 			if err != nil {
 				return err
 			}
@@ -347,7 +347,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 			images = append(images, i)
 
-			if err := image.Destroy(i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile)); err != nil {
+			if err := image.Destroy(ctx, i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile)); err != nil {
 				return err
 			}
 		}
@@ -379,10 +379,10 @@ func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (ret 
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
-		ret, err = qb.IncrementOCounter(imageID)
+		ret, err = qb.IncrementOCounter(ctx, imageID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -397,10 +397,10 @@ func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (ret 
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
-		ret, err = qb.DecrementOCounter(imageID)
+		ret, err = qb.DecrementOCounter(ctx, imageID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -415,10 +415,10 @@ func (r *mutationResolver) ImageResetO(ctx context.Context, id string) (ret int,
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
-		ret, err = qb.ResetOCounter(imageID)
+		ret, err = qb.ResetOCounter(ctx, imageID)
 		return err
 	}); err != nil {
 		return 0, err

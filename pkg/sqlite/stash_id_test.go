@@ -4,6 +4,7 @@
 package sqlite_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -11,16 +12,16 @@ import (
 )
 
 type stashIDReaderWriter interface {
-	GetStashIDs(performerID int) ([]*models.StashID, error)
-	UpdateStashIDs(performerID int, stashIDs []models.StashID) error
+	GetStashIDs(ctx context.Context, performerID int) ([]*models.StashID, error)
+	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
 }
 
-func testStashIDReaderWriter(t *testing.T, r stashIDReaderWriter, id int) {
+func testStashIDReaderWriter(ctx context.Context, t *testing.T, r stashIDReaderWriter, id int) {
 	// ensure no stash IDs to begin with
-	testNoStashIDs(t, r, id)
+	testNoStashIDs(ctx, t, r, id)
 
 	// ensure GetStashIDs with non-existing also returns none
-	testNoStashIDs(t, r, -1)
+	testNoStashIDs(ctx, t, r, -1)
 
 	// add stash ids
 	const stashIDStr = "stashID"
@@ -31,28 +32,28 @@ func testStashIDReaderWriter(t *testing.T, r stashIDReaderWriter, id int) {
 	}
 
 	// update stash ids and ensure was updated
-	if err := r.UpdateStashIDs(id, []models.StashID{stashID}); err != nil {
+	if err := r.UpdateStashIDs(ctx, id, []models.StashID{stashID}); err != nil {
 		t.Error(err.Error())
 	}
 
-	testStashIDs(t, r, id, []*models.StashID{&stashID})
+	testStashIDs(ctx, t, r, id, []*models.StashID{&stashID})
 
 	// update non-existing id - should return error
-	if err := r.UpdateStashIDs(-1, []models.StashID{stashID}); err == nil {
+	if err := r.UpdateStashIDs(ctx, -1, []models.StashID{stashID}); err == nil {
 		t.Error("expected error when updating non-existing id")
 	}
 
 	// remove stash ids and ensure was updated
-	if err := r.UpdateStashIDs(id, []models.StashID{}); err != nil {
+	if err := r.UpdateStashIDs(ctx, id, []models.StashID{}); err != nil {
 		t.Error(err.Error())
 	}
 
-	testNoStashIDs(t, r, id)
+	testNoStashIDs(ctx, t, r, id)
 }
 
-func testNoStashIDs(t *testing.T, r stashIDReaderWriter, id int) {
+func testNoStashIDs(ctx context.Context, t *testing.T, r stashIDReaderWriter, id int) {
 	t.Helper()
-	stashIDs, err := r.GetStashIDs(id)
+	stashIDs, err := r.GetStashIDs(ctx, id)
 	if err != nil {
 		t.Error(err.Error())
 		return
@@ -61,9 +62,9 @@ func testNoStashIDs(t *testing.T, r stashIDReaderWriter, id int) {
 	assert.Len(t, stashIDs, 0)
 }
 
-func testStashIDs(t *testing.T, r stashIDReaderWriter, id int, expected []*models.StashID) {
+func testStashIDs(ctx context.Context, t *testing.T, r stashIDReaderWriter, id int, expected []*models.StashID) {
 	t.Helper()
-	stashIDs, err := r.GetStashIDs(id)
+	stashIDs, err := r.GetStashIDs(ctx, id)
 	if err != nil {
 		t.Error(err.Error())
 		return

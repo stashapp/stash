@@ -24,14 +24,14 @@ func Test_sceneRelationships_studio(t *testing.T) {
 		Strategy: FieldStrategyMerge,
 	}
 
-	repo := mocks.NewTransactionManager()
-	repo.StudioMock().On("Create", mock.Anything).Return(&models.Studio{
+	mockStudioReaderWriter := &mocks.StudioReaderWriter{}
+	mockStudioReaderWriter.On("Create", testCtx, mock.Anything).Return(&models.Studio{
 		ID: int(validStoredIDInt),
 	}, nil)
 
 	tr := sceneRelationships{
-		repo:         repo,
-		fieldOptions: make(map[string]*FieldOptions),
+		studioCreator: mockStudioReaderWriter,
+		fieldOptions:  make(map[string]*FieldOptions),
 	}
 
 	tests := []struct {
@@ -124,7 +124,7 @@ func Test_sceneRelationships_studio(t *testing.T) {
 				},
 			}
 
-			got, err := tr.studio()
+			got, err := tr.studio(testCtx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.studio() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -156,13 +156,13 @@ func Test_sceneRelationships_performers(t *testing.T) {
 		Strategy: FieldStrategyMerge,
 	}
 
-	repo := mocks.NewTransactionManager()
-	repo.SceneMock().On("GetPerformerIDs", sceneID).Return(nil, nil)
-	repo.SceneMock().On("GetPerformerIDs", sceneWithPerformerID).Return([]int{existingPerformerID}, nil)
-	repo.SceneMock().On("GetPerformerIDs", errSceneID).Return(nil, errors.New("error getting IDs"))
+	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+	mockSceneReaderWriter.On("GetPerformerIDs", testCtx, sceneID).Return(nil, nil)
+	mockSceneReaderWriter.On("GetPerformerIDs", testCtx, sceneWithPerformerID).Return([]int{existingPerformerID}, nil)
+	mockSceneReaderWriter.On("GetPerformerIDs", testCtx, errSceneID).Return(nil, errors.New("error getting IDs"))
 
 	tr := sceneRelationships{
-		repo:         repo,
+		sceneReader:  mockSceneReaderWriter,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -316,7 +316,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 				},
 			}
 
-			got, err := tr.performers(tt.ignoreMale)
+			got, err := tr.performers(testCtx, tt.ignoreMale)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.performers() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -347,22 +347,24 @@ func Test_sceneRelationships_tags(t *testing.T) {
 		Strategy: FieldStrategyMerge,
 	}
 
-	repo := mocks.NewTransactionManager()
-	repo.SceneMock().On("GetTagIDs", sceneID).Return(nil, nil)
-	repo.SceneMock().On("GetTagIDs", sceneWithTagID).Return([]int{existingID}, nil)
-	repo.SceneMock().On("GetTagIDs", errSceneID).Return(nil, errors.New("error getting IDs"))
+	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+	mockTagReaderWriter := &mocks.TagReaderWriter{}
+	mockSceneReaderWriter.On("GetTagIDs", testCtx, sceneID).Return(nil, nil)
+	mockSceneReaderWriter.On("GetTagIDs", testCtx, sceneWithTagID).Return([]int{existingID}, nil)
+	mockSceneReaderWriter.On("GetTagIDs", testCtx, errSceneID).Return(nil, errors.New("error getting IDs"))
 
-	repo.TagMock().On("Create", mock.MatchedBy(func(p models.Tag) bool {
+	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Tag) bool {
 		return p.Name == validName
 	})).Return(&models.Tag{
 		ID: validStoredIDInt,
 	}, nil)
-	repo.TagMock().On("Create", mock.MatchedBy(func(p models.Tag) bool {
+	mockTagReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Tag) bool {
 		return p.Name == invalidName
 	})).Return(nil, errors.New("error creating tag"))
 
 	tr := sceneRelationships{
-		repo:         repo,
+		sceneReader:  mockSceneReaderWriter,
+		tagCreator:   mockTagReaderWriter,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -505,7 +507,7 @@ func Test_sceneRelationships_tags(t *testing.T) {
 				},
 			}
 
-			got, err := tr.tags()
+			got, err := tr.tags(testCtx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.tags() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -534,18 +536,18 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 		Strategy: FieldStrategyMerge,
 	}
 
-	repo := mocks.NewTransactionManager()
-	repo.SceneMock().On("GetStashIDs", sceneID).Return(nil, nil)
-	repo.SceneMock().On("GetStashIDs", sceneWithStashID).Return([]*models.StashID{
+	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+	mockSceneReaderWriter.On("GetStashIDs", testCtx, sceneID).Return(nil, nil)
+	mockSceneReaderWriter.On("GetStashIDs", testCtx, sceneWithStashID).Return([]*models.StashID{
 		{
 			StashID:  remoteSiteID,
 			Endpoint: existingEndpoint,
 		},
 	}, nil)
-	repo.SceneMock().On("GetStashIDs", errSceneID).Return(nil, errors.New("error getting IDs"))
+	mockSceneReaderWriter.On("GetStashIDs", testCtx, errSceneID).Return(nil, errors.New("error getting IDs"))
 
 	tr := sceneRelationships{
-		repo:         repo,
+		sceneReader:  mockSceneReaderWriter,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 
@@ -680,7 +682,7 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 				},
 			}
 
-			got, err := tr.stashIDs()
+			got, err := tr.stashIDs(testCtx)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sceneRelationships.stashIDs() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -707,12 +709,12 @@ func Test_sceneRelationships_cover(t *testing.T) {
 	newDataEncoded := base64Prefix + utils.GetBase64StringFromData(newData)
 	invalidData := newDataEncoded + "!!!"
 
-	repo := mocks.NewTransactionManager()
-	repo.SceneMock().On("GetCover", sceneID).Return(existingData, nil)
-	repo.SceneMock().On("GetCover", errSceneID).Return(nil, errors.New("error getting cover"))
+	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+	mockSceneReaderWriter.On("GetCover", testCtx, sceneID).Return(existingData, nil)
+	mockSceneReaderWriter.On("GetCover", testCtx, errSceneID).Return(nil, errors.New("error getting cover"))
 
 	tr := sceneRelationships{
-		repo:         repo,
+		sceneReader:  mockSceneReaderWriter,
 		fieldOptions: make(map[string]*FieldOptions),
 	}
 

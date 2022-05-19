@@ -14,7 +14,7 @@ type GeneratePhashTask struct {
 	Scene               models.Scene
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
-	txnManager          models.TransactionManager
+	txnManager          models.Repository
 }
 
 func (t *GeneratePhashTask) GetDescription() string {
@@ -40,14 +40,14 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 		return
 	}
 
-	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
-		qb := r.Scene()
+	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		qb := t.txnManager.Scene
 		hashValue := sql.NullInt64{Int64: int64(*hash), Valid: true}
 		scenePartial := models.ScenePartial{
 			ID:    t.Scene.ID,
 			Phash: &hashValue,
 		}
-		_, err := qb.Update(scenePartial)
+		_, err := qb.Update(ctx, scenePartial)
 		return err
 	}); err != nil {
 		logger.Error(err.Error())

@@ -14,12 +14,12 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 var ErrInput = errors.New("invalid request input")
 
 type IdentifyJob struct {
-	txnManager       models.TransactionManager
 	postHookExecutor identify.SceneUpdatePostHookExecutor
 	input            identify.Options
 
@@ -29,7 +29,6 @@ type IdentifyJob struct {
 
 func CreateIdentifyJob(input identify.Options) *IdentifyJob {
 	return &IdentifyJob{
-		txnManager:       instance.TxnManager,
 		postHookExecutor: instance.PluginCache,
 		input:            input,
 		stashBoxes:       instance.Config.GetStashBoxes(),
@@ -52,9 +51,9 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	// if scene ids provided, use those
 	// otherwise, batch query for all scenes - ordering by path
-	if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
 		if len(j.input.SceneIDs) == 0 {
-			return j.identifyAllScenes(ctx, r, sources)
+			return j.identifyAllScenes(ctx, sources)
 		}
 
 		sceneIDs, err := stringslice.StringSliceToIntSlice(j.input.SceneIDs)
@@ -70,7 +69,7 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 
 			// find the scene
 			var err error
-			scene, err := r.Scene().Find(id)
+			scene, err := instance.Repository.Scene.Find(ctx, id)
 			if err != nil {
 				return fmt.Errorf("error finding scene with id %d: %w", id, err)
 			}
@@ -88,7 +87,7 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 }
 
-func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepository, sources []identify.ScraperSource) error {
+func (j *IdentifyJob) identifyAllScenes(ctx context.Context, sources []identify.ScraperSource) error {
 	// exclude organised
 	organised := false
 	sceneFilter := scene.FilterFromPaths(j.input.Paths)
@@ -102,7 +101,7 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepo
 	// get the count
 	pp := 0
 	findFilter.PerPage = &pp
-	countResult, err := r.Scene().Query(models.SceneQueryOptions{
+	countResult, err := instance.Repository.Scene.Query(ctx, models.SceneQueryOptions{
 		QueryOptions: models.QueryOptions{
 			FindFilter: findFilter,
 			Count:      true,
@@ -115,7 +114,7 @@ func (j *IdentifyJob) identifyAllScenes(ctx context.Context, r models.ReaderRepo
 
 	j.progress.SetTotal(countResult.Count)
 
-	return scene.BatchProcess(ctx, r.Scene(), sceneFilter, findFilter, func(scene *models.Scene) error {
+	return scene.BatchProcess(ctx, instance.Repository.Scene, sceneFilter, findFilter, func(scene *models.Scene) error {
 		if job.IsCancelled(ctx) {
 			return nil
 		}
@@ -133,6 +132,11 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 	var taskError error
 	j.progress.ExecuteTask("Identifying "+s.Path, func() {
 		task := identify.SceneIdentifier{
+			SceneReaderUpdater: instance.Repository.Scene,
+			StudioCreator:      instance.Repository.Studio,
+			PerformerCreator:   instance.Repository.Performer,
+			TagCreator:         instance.Repository.Tag,
+
 			DefaultOptions: j.input.Options,
 			Sources:        sources,
 			ScreenshotSetter: &scene.PathsScreenshotSetter{
@@ -142,7 +146,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 			SceneUpdatePostHookExecutor: j.postHookExecutor,
 		}
 
-		taskError = task.Identify(ctx, j.txnManager, s)
+		taskError = task.Identify(ctx, instance.Repository, s)
 	})
 
 	if taskError != nil {
@@ -166,7 +170,12 @@ func (j *IdentifyJob) getSources() ([]identify.ScraperSource, error) {
 			src = identify.ScraperSource{
 				Name: "stash-box: " + stashBox.Endpoint,
 				Scraper: stashboxSource{
-					stashbox.NewClient(*stashBox, j.txnManager),
+					stashbox.NewClient(*stashBox, instance.Repository, stashbox.Repository{
+						Scene:     instance.Repository.Scene,
+						Performer: instance.Repository.Performer,
+						Tag:       instance.Repository.Tag,
+						Studio:    instance.Repository.Studio,
+					}),
 					stashBox.Endpoint,
 				},
 				RemoteSite: stashBox.Endpoint,

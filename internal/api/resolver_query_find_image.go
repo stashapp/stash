@@ -12,8 +12,8 @@ import (
 func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *string) (*models.Image, error) {
 	var image *models.Image
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 		var err error
 
 		if id != nil {
@@ -22,12 +22,12 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 				return err
 			}
 
-			image, err = qb.Find(idInt)
+			image, err = qb.Find(ctx, idInt)
 			if err != nil {
 				return err
 			}
 		} else if checksum != nil {
-			image, err = qb.FindByChecksum(*checksum)
+			image, err = qb.FindByChecksum(ctx, *checksum)
 		}
 
 		return err
@@ -39,12 +39,12 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 }
 
 func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.ImageFilterType, imageIds []int, filter *models.FindFilterType) (ret *FindImagesResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
 		fields := graphql.CollectAllFields(ctx)
 
-		result, err := qb.Query(models.ImageQueryOptions{
+		result, err := qb.Query(ctx, models.ImageQueryOptions{
 			QueryOptions: models.QueryOptions{
 				FindFilter: filter,
 				Count:      stringslice.StrInclude(fields, "count"),
@@ -57,7 +57,7 @@ func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.Imag
 			return err
 		}
 
-		images, err := result.Resolve()
+		images, err := result.Resolve(ctx)
 		if err != nil {
 			return err
 		}

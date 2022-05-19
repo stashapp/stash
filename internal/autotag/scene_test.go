@@ -173,19 +173,19 @@ func TestScenePerformers(t *testing.T) {
 		mockPerformerReader := &mocks.PerformerReaderWriter{}
 		mockSceneReader := &mocks.SceneReaderWriter{}
 
-		mockPerformerReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
-		mockPerformerReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
+		mockPerformerReader.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
+		mockPerformerReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		if test.Matches {
-			mockSceneReader.On("GetPerformerIDs", sceneID).Return(nil, nil).Once()
-			mockSceneReader.On("UpdatePerformers", sceneID, []int{performerID}).Return(nil).Once()
+			mockSceneReader.On("GetPerformerIDs", testCtx, sceneID).Return(nil, nil).Once()
+			mockSceneReader.On("UpdatePerformers", testCtx, sceneID, []int{performerID}).Return(nil).Once()
 		}
 
 		scene := models.Scene{
 			ID:   sceneID,
 			Path: test.Path,
 		}
-		err := ScenePerformers(&scene, mockSceneReader, mockPerformerReader, nil)
+		err := ScenePerformers(testCtx, &scene, mockSceneReader, mockPerformerReader, nil)
 
 		assert.Nil(err)
 		mockPerformerReader.AssertExpectations(t)
@@ -217,9 +217,9 @@ func TestSceneStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockSceneReader.On("Find", sceneID).Return(&models.Scene{}, nil).Once()
+			mockSceneReader.On("Find", testCtx, sceneID).Return(&models.Scene{}, nil).Once()
 			expectedStudioID := models.NullInt64(studioID)
-			mockSceneReader.On("Update", models.ScenePartial{
+			mockSceneReader.On("Update", testCtx, models.ScenePartial{
 				ID:       sceneID,
 				StudioID: &expectedStudioID,
 			}).Return(nil, nil).Once()
@@ -229,7 +229,7 @@ func TestSceneStudios(t *testing.T) {
 			ID:   sceneID,
 			Path: test.Path,
 		}
-		err := SceneStudios(&scene, mockSceneReader, mockStudioReader, nil)
+		err := SceneStudios(testCtx, &scene, mockSceneReader, mockStudioReader, nil)
 
 		assert.Nil(err)
 		mockStudioReader.AssertExpectations(t)
@@ -240,9 +240,9 @@ func TestSceneStudios(t *testing.T) {
 		mockStudioReader := &mocks.StudioReaderWriter{}
 		mockSceneReader := &mocks.SceneReaderWriter{}
 
-		mockStudioReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
-		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
-		mockStudioReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
+		mockStudioReader.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
+		mockStudioReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		mockStudioReader.On("GetAliases", testCtx, mock.Anything).Return([]string{}, nil).Maybe()
 
 		doTest(mockStudioReader, mockSceneReader, test)
 	}
@@ -255,12 +255,12 @@ func TestSceneStudios(t *testing.T) {
 		mockStudioReader := &mocks.StudioReaderWriter{}
 		mockSceneReader := &mocks.SceneReaderWriter{}
 
-		mockStudioReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
-		mockStudioReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
-		mockStudioReader.On("GetAliases", studioID).Return([]string{
+		mockStudioReader.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
+		mockStudioReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Studio{&studio, &reversedStudio}, nil).Once()
+		mockStudioReader.On("GetAliases", testCtx, studioID).Return([]string{
 			studioName,
 		}, nil).Once()
-		mockStudioReader.On("GetAliases", reversedStudioID).Return([]string{}, nil).Once()
+		mockStudioReader.On("GetAliases", testCtx, reversedStudioID).Return([]string{}, nil).Once()
 
 		doTest(mockStudioReader, mockSceneReader, test)
 	}
@@ -290,15 +290,15 @@ func TestSceneTags(t *testing.T) {
 
 	doTest := func(mockTagReader *mocks.TagReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockSceneReader.On("GetTagIDs", sceneID).Return(nil, nil).Once()
-			mockSceneReader.On("UpdateTags", sceneID, []int{tagID}).Return(nil).Once()
+			mockSceneReader.On("GetTagIDs", testCtx, sceneID).Return(nil, nil).Once()
+			mockSceneReader.On("UpdateTags", testCtx, sceneID, []int{tagID}).Return(nil).Once()
 		}
 
 		scene := models.Scene{
 			ID:   sceneID,
 			Path: test.Path,
 		}
-		err := SceneTags(&scene, mockSceneReader, mockTagReader, nil)
+		err := SceneTags(testCtx, &scene, mockSceneReader, mockTagReader, nil)
 
 		assert.Nil(err)
 		mockTagReader.AssertExpectations(t)
@@ -309,9 +309,9 @@ func TestSceneTags(t *testing.T) {
 		mockTagReader := &mocks.TagReaderWriter{}
 		mockSceneReader := &mocks.SceneReaderWriter{}
 
-		mockTagReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
-		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
-		mockTagReader.On("GetAliases", mock.Anything).Return([]string{}, nil).Maybe()
+		mockTagReader.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
+		mockTagReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		mockTagReader.On("GetAliases", testCtx, mock.Anything).Return([]string{}, nil).Maybe()
 
 		doTest(mockTagReader, mockSceneReader, test)
 	}
@@ -324,12 +324,12 @@ func TestSceneTags(t *testing.T) {
 		mockTagReader := &mocks.TagReaderWriter{}
 		mockSceneReader := &mocks.SceneReaderWriter{}
 
-		mockTagReader.On("Query", mock.Anything, mock.Anything).Return(nil, 0, nil)
-		mockTagReader.On("QueryForAutoTag", mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
-		mockTagReader.On("GetAliases", tagID).Return([]string{
+		mockTagReader.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
+		mockTagReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Tag{&tag, &reversedTag}, nil).Once()
+		mockTagReader.On("GetAliases", testCtx, tagID).Return([]string{
 			tagName,
 		}, nil).Once()
-		mockTagReader.On("GetAliases", reversedTagID).Return([]string{}, nil).Once()
+		mockTagReader.On("GetAliases", testCtx, reversedTagID).Return([]string{}, nil).Once()
 
 		doTest(mockTagReader, mockSceneReader, test)
 	}

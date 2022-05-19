@@ -23,16 +23,14 @@ type xpathScraper struct {
 	config       config
 	globalConfig GlobalConfig
 	client       *http.Client
-	txnManager   models.TransactionManager
 }
 
-func newXpathScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *xpathScraper {
+func newXpathScraper(scraper scraperTypeConfig, client *http.Client, config config, globalConfig GlobalConfig) *xpathScraper {
 	return &xpathScraper{
 		scraper:      scraper,
 		config:       config,
 		globalConfig: globalConfig,
 		client:       client,
-		txnManager:   txnManager,
 	}
 }
 

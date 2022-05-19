@@ -18,7 +18,7 @@ import (
 )
 
 type cleanJob struct {
-	txnManager models.TransactionManager
+	txnManager models.Repository
 	input      CleanMetadataInput
 	scanSubs   *subscriptionManager
 }
@@ -29,8 +29,10 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 		logger.Infof("Running in Dry Mode")
 	}
 
-	if err := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		total, err := j.getCount(r)
+	r := j.txnManager
+
+	if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		total, err := j.getCount(ctx, r)
 		if err != nil {
 			return fmt.Errorf("error getting count: %w", err)
 		}
@@ -41,13 +43,13 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 			return nil
 		}
 
-		if err := j.processScenes(ctx, progress, r.Scene()); err != nil {
+		if err := j.processScenes(ctx, progress, r.Scene); err != nil {
 			return fmt.Errorf("error cleaning scenes: %w", err)
 		}
-		if err := j.processImages(ctx, progress, r.Image()); err != nil {
+		if err := j.processImages(ctx, progress, r.Image); err != nil {
 			return fmt.Errorf("error cleaning images: %w", err)
 		}
-		if err := j.processGalleries(ctx, progress, r.Gallery(), r.Image()); err != nil {
+		if err := j.processGalleries(ctx, progress, r.Gallery, r.Image); err != nil {
 			return fmt.Errorf("error cleaning galleries: %w", err)
 		}
 
@@ -66,9 +68,9 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 	logger.Info("Finished Cleaning")
 }
 
-func (j *cleanJob) getCount(r models.ReaderRepository) (int, error) {
+func (j *cleanJob) getCount(ctx context.Context, r models.Repository) (int, error) {
 	sceneFilter := scene.PathsFilter(j.input.Paths)
-	sceneResult, err := r.Scene().Query(models.SceneQueryOptions{
+	sceneResult, err := r.Scene.Query(ctx, models.SceneQueryOptions{
 		QueryOptions: models.QueryOptions{
 			Count: true,
 		},
@@ -78,12 +80,12 @@ func (j *cleanJob) getCount(r models.ReaderRepository) (int, error) {
 		return 0, err
 	}
 
-	imageCount, err := r.Image().QueryCount(image.PathsFilter(j.input.Paths), nil)
+	imageCount, err := r.Image.QueryCount(ctx, image.PathsFilter(j.input.Paths), nil)
 	if err != nil {
 		return 0, err
 	}
 
-	galleryCount, err := r.Gallery().QueryCount(gallery.PathsFilter(j.input.Paths), nil)
+	galleryCount, err := r.Gallery.QueryCount(ctx, gallery.PathsFilter(j.input.Paths), nil)
 	if err != nil {
 		return 0, err
 	}
@@ -91,7 +93,7 @@ func (j *cleanJob) getCount(r models.ReaderRepository) (int, error) {
 	return sceneResult.Count + imageCount + galleryCount, nil
 }
 
-func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb models.SceneReader) error {
+func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb scene.Queryer) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
@@ -107,7 +109,7 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 			return nil
 		}
 
-		scenes, err := scene.Query(qb, sceneFilter, findFilter)
+		scenes, err := scene.Query(ctx, qb, sceneFilter, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for scenes: %w", err)
 		}
@@ -154,7 +156,7 @@ func (j *cleanJob) processScenes(ctx context.Context, progress *job.Progress, qb
 	return nil
 }
 
-func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress, qb models.GalleryReader, iqb models.ImageReader) error {
+func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress, qb gallery.Queryer, iqb models.ImageReader) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
@@ -170,14 +172,14 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 			return nil
 		}
 
-		galleries, _, err := qb.Query(galleryFilter, findFilter)
+		galleries, _, err := qb.Query(ctx, galleryFilter, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for galleries: %w", err)
 		}
 
 		for _, gallery := range galleries {
 			progress.ExecuteTask(fmt.Sprintf("Assessing gallery %s for clean", gallery.GetTitle()), func() {
-				if j.shouldCleanGallery(gallery, iqb) {
+				if j.shouldCleanGallery(ctx, gallery, iqb) {
 					toDelete = append(toDelete, gallery.ID)
 				} else {
 					// increment progress, no further processing
@@ -215,7 +217,7 @@ func (j *cleanJob) processGalleries(ctx context.Context, progress *job.Progress,
 	return nil
 }
 
-func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb models.ImageReader) error {
+func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb image.Queryer) error {
 	batchSize := 1000
 
 	findFilter := models.BatchFindFilter(batchSize)
@@ -234,7 +236,7 @@ func (j *cleanJob) processImages(ctx context.Context, progress *job.Progress, qb
 			return nil
 		}
 
-		images, err := image.Query(qb, imageFilter, findFilter)
+		images, err := image.Query(ctx, qb, imageFilter, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for images: %w", err)
 		}
@@ -318,7 +320,7 @@ func (j *cleanJob) shouldCleanScene(s *models.Scene) bool {
 	return false
 }
 
-func (j *cleanJob) shouldCleanGallery(g *models.Gallery, qb models.ImageReader) bool {
+func (j *cleanJob) shouldCleanGallery(ctx context.Context, g *models.Gallery, qb models.ImageReader) bool {
 	// never clean manually created galleries
 	if !g.Path.Valid {
 		return false
@@ -348,7 +350,7 @@ func (j *cleanJob) shouldCleanGallery(g *models.Gallery, qb models.ImageReader) 
 		}
 	} else {
 		// folder-based - delete if it has no images
-		count, err := qb.CountByGalleryID(g.ID)
+		count, err := qb.CountByGalleryID(ctx, g.ID)
 		if err != nil {
 			logger.Warnf("Error trying to count gallery images for %q: %v", path, err)
 			return false
@@ -401,16 +403,17 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 		Paths:          GetInstance().Paths,
 	}
 	var s *models.Scene
-	if err := j.txnManager.WithTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Scene()
+	if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		repo := j.txnManager
+		qb := repo.Scene
 
 		var err error
-		s, err = qb.Find(sceneID)
+		s, err = qb.Find(ctx, sceneID)
 		if err != nil {
 			return err
 		}
 
-		return scene.Destroy(s, repo, fileDeleter, true, false)
+		return scene.Destroy(ctx, s, repo.Scene, repo.SceneMarker, fileDeleter, true, false)
 	}); err != nil {
 		fileDeleter.Rollback()
 
@@ -431,16 +434,16 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
 	var g *models.Gallery
 
-	if err := j.txnManager.WithTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Gallery()
+	if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		qb := j.txnManager.Gallery
 
 		var err error
-		g, err = qb.Find(galleryID)
+		g, err = qb.Find(ctx, galleryID)
 		if err != nil {
 			return err
 		}
 
-		return qb.Destroy(galleryID)
+		return qb.Destroy(ctx, galleryID)
 	}); err != nil {
 		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		return
@@ -459,11 +462,11 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 	}
 
 	var i *models.Image
-	if err := j.txnManager.WithTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		qb := j.txnManager.Image
 
 		var err error
-		i, err = qb.Find(imageID)
+		i, err = qb.Find(ctx, imageID)
 		if err != nil {
 			return err
 		}
@@ -472,7 +475,7 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 			return fmt.Errorf("image not found: %d", imageID)
 		}
 
-		return image.Destroy(i, qb, fileDeleter, true, false)
+		return image.Destroy(ctx, i, qb, fileDeleter, true, false)
 	}); err != nil {
 		fileDeleter.Rollback()
 

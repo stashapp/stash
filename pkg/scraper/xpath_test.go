@@ -885,7 +885,7 @@ xPathScrapers:
 
 	client := &http.Client{}
 	ctx := context.Background()
-	s := newGroupScraper(*c, nil, globalConfig)
+	s := newGroupScraper(*c, globalConfig)
 	us, ok := s.(urlScraper)
 	if !ok {
 		t.Error("couldn't convert scraper into url scraper")
