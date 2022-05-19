@@ -40,6 +40,12 @@ func (gp *generatedPaths) GetTmpPath(fileName string) string {
 	return filepath.Join(gp.Tmp, fileName)
 }
 
+// TempFile creates a temporary file using os.CreateTemp.
+// It is the equivalent of calling os.CreateTemp using Tmp and pattern.
+func (gp *generatedPaths) TempFile(pattern string) (*os.File, error) {
+	return os.CreateTemp(gp.Tmp, pattern)
+}
+
 func (gp *generatedPaths) EnsureTmpDir() error {
 	return fsutil.EnsureDir(gp.Tmp)
 }

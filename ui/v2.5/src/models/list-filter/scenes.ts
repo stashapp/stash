@@ -23,6 +23,7 @@ import {
   PhashCriterionOption,
 } from "./criteria/phash";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
+import { CaptionsCriterionOption } from "./criteria/captions";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -78,6 +79,7 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
   InteractiveCriterionOption,
+  CaptionsCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),
 ];
 

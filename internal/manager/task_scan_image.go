@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -158,6 +159,11 @@ func (t *ScanTask) generateThumbnail(i *models.Image) {
 			// don't log for animated images
 			if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
 				logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
+
+				var exitErr *exec.ExitError
+				if errors.As(err, &exitErr) {
+					logger.Errorf("stderr: %s", string(exitErr.Stderr))
+				}
 			}
 			return
 		}

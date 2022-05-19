@@ -44,3 +44,6 @@ models:
     model: github.com/stashapp/stash/pkg/models.SavedFilter
   StashID:
     model: github.com/stashapp/stash/pkg/models.StashID
+  SceneCaption:
+    model: github.com/stashapp/stash/pkg/models.SceneCaption
+

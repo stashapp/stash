@@ -2,6 +2,7 @@ package gallery
 
 import (
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -12,8 +13,8 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	newGalleryJSON := jsonschema.Gallery{
 		Checksum:  gallery.Checksum,
 		Zip:       gallery.Zip,
-		CreatedAt: models.JSONTime{Time: gallery.CreatedAt.Timestamp},
-		UpdatedAt: models.JSONTime{Time: gallery.UpdatedAt.Timestamp},
+		CreatedAt: json.JSONTime{Time: gallery.CreatedAt.Timestamp},
+		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt.Timestamp},
 	}
 
 	if gallery.Path.Valid {
@@ -21,7 +22,7 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	}
 
 	if gallery.FileModTime.Valid {
-		newGalleryJSON.FileModTime = models.JSONTime{Time: gallery.FileModTime.Timestamp}
+		newGalleryJSON.FileModTime = json.JSONTime{Time: gallery.FileModTime.Timestamp}
 	}
 
 	if gallery.Title.Valid {

@@ -2,6 +2,7 @@ package image
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"image"
@@ -10,19 +11,24 @@ import (
 	"sync"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+const ffmpegImageQuality = 5
 
 var vipsPath string
 var once sync.Once
 
 var (
+	ErrUnsupportedImageFormat = errors.New("unsupported image format")
+
 	// ErrNotSupportedForThumbnail is returned if the image format is not supported for thumbnail generation
 	ErrNotSupportedForThumbnail = errors.New("unsupported image format for thumbnail")
 )
 
 type ThumbnailEncoder struct {
-	ffmpeg ffmpeg.Encoder
+	ffmpeg ffmpeg.FFMpeg
 	vips   *vipsEncoder
 }
 
@@ -33,7 +39,7 @@ func GetVipsPath() string {
 	return vipsPath
 }
 
-func NewThumbnailEncoder(ffmpegEncoder ffmpeg.Encoder) ThumbnailEncoder {
+func NewThumbnailEncoder(ffmpegEncoder ffmpeg.FFMpeg) ThumbnailEncoder {
 	ret := ThumbnailEncoder{
 		ffmpeg: ffmpegEncoder,
 	}
@@ -86,6 +92,30 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 	if e.vips != nil && runtime.GOOS != "windows" {
 		return e.vips.ImageThumbnail(buf, maxSize)
 	} else {
-		return e.ffmpeg.ImageThumbnail(buf, format, maxSize, img.Path)
+		return e.ffmpegImageThumbnail(buf, format, maxSize)
 	}
+}
+
+func (e *ThumbnailEncoder) ffmpegImageThumbnail(image *bytes.Buffer, format string, maxSize int) ([]byte, error) {
+	var ffmpegFormat ffmpeg.ImageFormat
+
+	switch format {
+	case "jpeg":
+		ffmpegFormat = ffmpeg.ImageFormatJpeg
+	case "png":
+		ffmpegFormat = ffmpeg.ImageFormatPng
+	case "webp":
+		ffmpegFormat = ffmpeg.ImageFormatWebp
+	default:
+		return nil, ErrUnsupportedImageFormat
+	}
+
+	args := transcoder.ImageThumbnail("-", transcoder.ImageThumbnailOptions{
+		InputFormat:   ffmpegFormat,
+		OutputPath:    "-",
+		MaxDimensions: maxSize,
+		Quality:       ffmpegImageQuality,
+	})
+
+	return e.ffmpeg.GenerateOutput(context.TODO(), args, image)
 }

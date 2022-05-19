@@ -107,6 +107,7 @@
     },
     "temp_disable": "Wyłącz tymczasowo…",
     "temp_enable": "Włącz tymczasowo…",
+    "unset": "Nieustawiony",
     "use_default": "Użyj domyślnych",
     "view_random": "Pokaż losowe"
   },
@@ -120,6 +121,7 @@
   "birth_year": "Rok urodzenia",
   "birthdate": "Data urodzenia",
   "bitrate": "Szybkość transmisji",
+  "captions": "Napisy",
   "career_length": "Długość kariery",
   "component_tagger": {
     "config": {
@@ -448,9 +450,22 @@
         "description": "Przesunięcie czasowe w milisekundach dla odtwarzania skryptów interaktywnych.",
         "heading": "Przesunięcie Funscript (ms)"
       },
+      "handy_connection": {
+        "connect": "Połącz",
+        "server_offset": {
+          "heading": "Przesunięcie serwera"
+        },
+        "status": {
+          "heading": "Stan podłączenia Handy"
+        },
+        "sync": "Synchronizuj"
+      },
       "handy_connection_key": {
         "description": "Klucz połączenia Handy używany w scenach interaktywnych. Ustawienie tego klucza umożliwi Stash udostępnianie informacji o bieżącej scenie w witrynie handyfeeling.com",
         "heading": "Klucz połączenia Handy"
+      },
+      "image_lightbox": {
+        "heading": "Pole podglądu obrazu"
       },
       "images": {
         "heading": "Zdjęcia",
@@ -517,6 +532,10 @@
           "display_title": "Wyświetl tytuł i tagi",
           "toggle_sound": "Włącz dźwięk"
         }
+      },
+      "scroll_attempts_before_change": {
+        "description": "Ilość prób przewijania przed przejściem do następnej/poprzedniej pozycji. Ma zastosowanie tylko w trybie Pan Y.",
+        "heading": "Próby przewijania przed przejściem"
       },
       "slideshow_delay": {
         "description": "Pokaz slajdów jest dostępny w galeriach w trybie widoku ściany",
@@ -697,6 +716,7 @@
     "scale": "Skala",
     "warmth": "Ciepło"
   },
+  "empty_server": "Aby zobaczyć rekomendacje na tej stronie dodaj sceny do serwera.",
   "ethnicity": "Pochodzenie etniczne",
   "existing_value": "istniejąca wartość",
   "eye_color": "Kolor oczu",
@@ -726,6 +746,15 @@
     "TRANSGENDER_MALE": "Transgenderowy mężczyzna"
   },
   "hair_color": "Kolor włosów",
+  "handy_connection_status": {
+    "connecting": "Podłączanie",
+    "disconnected": "Rozłączono",
+    "error": "Błąd połączenia z Handy",
+    "missing": "Brak",
+    "ready": "Podłączono",
+    "syncing": "Synchronizacja z serwerem",
+    "uploading": "Wgrywanie skryptu"
+  },
   "hasMarkers": "Ma znaczniki",
   "height": "Wzrost",
   "help": "Help",
@@ -831,6 +860,11 @@
   "queue": "Kolejka",
   "random": "Losowo",
   "rating": "Ocena",
+  "recently_added_performers": "Niedawno Dodani Wykonawcy",
+  "recently_added_studios": "Niedawno Dodane Studia",
+  "recently_released_galleries": "Niedawno Dodane Galerie",
+  "recently_released_movies": "Niedawno Dodane Filmy",
+  "recently_released_scenes": "Niedawno Dodane Sceny",
   "resolution": "Rozdzielczość",
   "scene": "Scena",
   "sceneTagger": "Otagowywacz scen",
@@ -934,6 +968,7 @@
     "submission_failed": "Zgłoszenie nie powiodło się",
     "submission_successful": "Zgłoszenie przesłano sukcesem"
   },
+  "statistics": "Statystyki",
   "stats": {
     "image_size": "Rozmiar obrazów",
     "scenes_duration": "Czas trwania scen",
@@ -975,6 +1010,7 @@
   "updated_at": "Zaktualizowano",
   "url": "URL",
   "videos": "Filmy wideo",
+  "view_all": "Pokaż Wszystko",
   "weight": "Waga",
   "years_old": "lat(a)"
 }

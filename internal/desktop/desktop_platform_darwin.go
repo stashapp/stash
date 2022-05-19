@@ -34,3 +34,11 @@ func sendNotification(notificationTitle string, notificationText string) {
 func revealInFileManager(path string) {
 	exec.Command(`open`, `-R`, path)
 }
+
+func isDoubleClickLaunched() bool {
+	return false
+}
+
+func hideConsole() {
+
+}

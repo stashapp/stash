@@ -6,6 +6,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -142,10 +143,10 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		Piercings:    piercings,
 		Tattoos:      tattoos,
 		Twitter:      twitter,
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 		Rating:    rating,
@@ -163,10 +164,10 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 
 func createEmptyJSONPerformer() *jsonschema.Performer {
 	return &jsonschema.Performer{
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 	}

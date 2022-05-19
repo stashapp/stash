@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/apenwarr/fixconsole"
 	"github.com/stashapp/stash/internal/api"
 	"github.com/stashapp/stash/internal/desktop"
 	"github.com/stashapp/stash/internal/manager"
@@ -17,22 +16,42 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func init() {
-	// On Windows, attach to parent shell
-	err := fixconsole.FixConsoleIfNeeded()
-	if err != nil {
-		fmt.Printf("FixConsoleOutput: %v\n", err)
-	}
-}
-
 func main() {
-	manager.Initialize()
-	api.Start()
+	defer recoverPanic()
+
+	_, err := manager.Initialize()
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		defer recoverPanic()
+		if err := api.Start(); err != nil {
+			handleError(err)
+		} else {
+			manager.GetInstance().Shutdown(0)
+		}
+	}()
 
 	go handleSignals()
 	desktop.Start(manager.GetInstance(), &manager.FaviconProvider{UIBox: ui.UIBox})
 
 	blockForever()
+}
+
+func recoverPanic() {
+	if p := recover(); p != nil {
+		handleError(fmt.Errorf("Panic: %v", p))
+	}
+}
+
+func handleError(err error) {
+	if desktop.IsDesktop() {
+		desktop.FatalError(err)
+		manager.GetInstance().Shutdown(0)
+	} else {
+		panic(err)
+	}
 }
 
 func handleSignals() {

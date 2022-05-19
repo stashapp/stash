@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -22,7 +23,7 @@ import (
 const mutexType = "scene"
 
 type videoFileCreator interface {
-	NewVideoFile(path string, stripFileExtension bool) (*ffmpeg.VideoFile, error)
+	NewVideoFile(path string) (*ffmpeg.VideoFile, error)
 }
 
 type Scanner struct {
@@ -70,12 +71,14 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 
 		s.SetFile(*scanned.New)
 
-		videoFile, err = scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
+		videoFile, err = scanner.VideoFileCreator.NewVideoFile(path)
 		if err != nil {
 			return err
 		}
 
-		videoFileToScene(s, videoFile)
+		if err := videoFileToScene(s, videoFile); err != nil {
+			return err
+		}
 		changed = true
 	} else if scanned.FileUpdated() || s.Interactive != interactive {
 		logger.Infof("Updated scene file %s", path)
@@ -88,15 +91,39 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 	// check for container
 	if !s.Format.Valid {
 		if videoFile == nil {
-			videoFile, err = scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
+			videoFile, err = scanner.VideoFileCreator.NewVideoFile(path)
 			if err != nil {
 				return err
 			}
 		}
-		container := ffmpeg.MatchContainer(videoFile.Container, path)
+		container, err := ffmpeg.MatchContainer(videoFile.Container, path)
+		if err != nil {
+			return fmt.Errorf("getting container for %s: %w", path, err)
+		}
 		logger.Infof("Adding container %s to file %s", container, path)
 		s.Format = models.NullString(string(container))
 		changed = true
+	}
+
+	if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		var err error
+		sqb := r.Scene()
+
+		captions, er := sqb.GetCaptions(s.ID)
+		if er == nil {
+			if len(captions) > 0 {
+				clean, altered := CleanCaptions(s.Path, captions)
+				if altered {
+					er = sqb.UpdateCaptions(s.ID, clean)
+					if er == nil {
+						logger.Debugf("Captions for %s cleaned: %s -> %s", path, captions, clean)
+					}
+				}
+			}
+		}
+		return err
+	}); err != nil {
+		logger.Error(err.Error())
 	}
 
 	if changed {
@@ -233,14 +260,18 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 		logger.Infof("%s doesn't exist. Creating new item...", path)
 		currentTime := time.Now()
 
-		videoFile, err := scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
+		videoFile, err := scanner.VideoFileCreator.NewVideoFile(path)
 		if err != nil {
 			return nil, err
 		}
 
-		// Override title to be filename if UseFileMetadata is false
-		if !scanner.UseFileMetadata {
-			videoFile.SetTitleFromPath(scanner.StripFileExtension)
+		title := filepath.Base(path)
+		if scanner.StripFileExtension {
+			title = stripExtension(title)
+		}
+
+		if scanner.UseFileMetadata && videoFile.Title != "" {
+			title = videoFile.Title
 		}
 
 		newScene := models.Scene{
@@ -251,13 +282,15 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 				Timestamp: scanned.FileModTime,
 				Valid:     true,
 			},
-			Title:       sql.NullString{String: videoFile.Title, Valid: true},
+			Title:       sql.NullString{String: title, Valid: true},
 			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
 			Interactive: interactive,
 		}
 
-		videoFileToScene(&newScene, videoFile)
+		if err := videoFileToScene(&newScene, videoFile); err != nil {
+			return nil, err
+		}
 
 		if scanner.UseFileMetadata {
 			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
@@ -279,8 +312,16 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retS
 	return retScene, nil
 }
 
-func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
-	container := ffmpeg.MatchContainer(videoFile.Container, s.Path)
+func stripExtension(path string) string {
+	ext := filepath.Ext(path)
+	return strings.TrimSuffix(path, ext)
+}
+
+func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) error {
+	container, err := ffmpeg.MatchContainer(videoFile.Container, s.Path)
+	if err != nil {
+		return fmt.Errorf("matching container: %w", err)
+	}
 
 	s.Duration = sql.NullFloat64{Float64: videoFile.Duration, Valid: true}
 	s.VideoCodec = sql.NullString{String: videoFile.VideoCodec, Valid: true}
@@ -291,6 +332,8 @@ func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) {
 	s.Framerate = sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true}
 	s.Bitrate = sql.NullInt64{Int64: videoFile.Bitrate, Valid: true}
 	s.Size = sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true}
+
+	return nil
 }
 
 func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, checksum string) {
@@ -306,7 +349,7 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 
 	if probeResult == nil {
 		var err error
-		probeResult, err = scanner.VideoFileCreator.NewVideoFile(path, scanner.StripFileExtension)
+		probeResult, err = scanner.VideoFileCreator.NewVideoFile(path)
 
 		if err != nil {
 			logger.Error(err.Error())
@@ -315,16 +358,18 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 		logger.Infof("Regenerating images for %s", path)
 	}
 
-	at := float64(probeResult.Duration) * 0.2
-
 	if !thumbExists {
 		logger.Debugf("Creating thumbnail for %s", path)
-		makeScreenshot(scanner.Screenshotter, *probeResult, thumbPath, 5, 320, at)
+		if err := scanner.Screenshotter.GenerateThumbnail(context.TODO(), probeResult, checksum); err != nil {
+			logger.Errorf("Error creating thumbnail for %s: %v", err)
+		}
 	}
 
 	if !normalExists {
 		logger.Debugf("Creating screenshot for %s", path)
-		makeScreenshot(scanner.Screenshotter, *probeResult, normalPath, 2, probeResult.Width, at)
+		if err := scanner.Screenshotter.GenerateScreenshot(context.TODO(), probeResult, checksum); err != nil {
+			logger.Errorf("Error creating screenshot for %s: %v", err)
+		}
 	}
 }
 

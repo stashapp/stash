@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -12,8 +13,8 @@ import (
 func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonschema.Performer, error) {
 	newPerformerJSON := jsonschema.Performer{
 		IgnoreAutoTag: performer.IgnoreAutoTag,
-		CreatedAt:     models.JSONTime{Time: performer.CreatedAt.Timestamp},
-		UpdatedAt:     models.JSONTime{Time: performer.UpdatedAt.Timestamp},
+		CreatedAt:     json.JSONTime{Time: performer.CreatedAt.Timestamp},
+		UpdatedAt:     json.JSONTime{Time: performer.UpdatedAt.Timestamp},
 	}
 
 	if performer.Name.Valid {

@@ -6,28 +6,29 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 )
 
 type SceneMarker struct {
-	Title      string          `json:"title,omitempty"`
-	Seconds    string          `json:"seconds,omitempty"`
-	PrimaryTag string          `json:"primary_tag,omitempty"`
-	Tags       []string        `json:"tags,omitempty"`
-	CreatedAt  models.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt  models.JSONTime `json:"updated_at,omitempty"`
+	Title      string        `json:"title,omitempty"`
+	Seconds    string        `json:"seconds,omitempty"`
+	PrimaryTag string        `json:"primary_tag,omitempty"`
+	Tags       []string      `json:"tags,omitempty"`
+	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
 }
 
 type SceneFile struct {
-	ModTime    models.JSONTime `json:"mod_time,omitempty"`
-	Size       string          `json:"size"`
-	Duration   string          `json:"duration"`
-	VideoCodec string          `json:"video_codec"`
-	AudioCodec string          `json:"audio_codec"`
-	Format     string          `json:"format"`
-	Width      int             `json:"width"`
-	Height     int             `json:"height"`
-	Framerate  string          `json:"framerate"`
-	Bitrate    int             `json:"bitrate"`
+	ModTime    json.JSONTime `json:"mod_time,omitempty"`
+	Size       string        `json:"size"`
+	Duration   string        `json:"duration"`
+	VideoCodec string        `json:"video_codec"`
+	AudioCodec string        `json:"audio_codec"`
+	Format     string        `json:"format"`
+	Width      int           `json:"width"`
+	Height     int           `json:"height"`
+	Framerate  string        `json:"framerate"`
+	Bitrate    int           `json:"bitrate"`
 }
 
 type SceneMovie struct {
@@ -54,8 +55,8 @@ type Scene struct {
 	Markers    []SceneMarker    `json:"markers,omitempty"`
 	File       *SceneFile       `json:"file,omitempty"`
 	Cover      string           `json:"cover,omitempty"`
-	CreatedAt  models.JSONTime  `json:"created_at,omitempty"`
-	UpdatedAt  models.JSONTime  `json:"updated_at,omitempty"`
+	CreatedAt  json.JSONTime    `json:"created_at,omitempty"`
+	UpdatedAt  json.JSONTime    `json:"updated_at,omitempty"`
 	StashIDs   []models.StashID `json:"stash_ids,omitempty"`
 }
 

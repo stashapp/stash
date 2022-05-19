@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -118,10 +119,10 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Movie
 		Studio:     studio,
 		FrontImage: frontImage,
 		BackImage:  backImage,
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 	}
@@ -129,10 +130,10 @@ func createFullJSONMovie(studio, frontImage, backImage string) *jsonschema.Movie
 
 func createEmptyJSONMovie() *jsonschema.Movie {
 	return &jsonschema.Movie{
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 	}

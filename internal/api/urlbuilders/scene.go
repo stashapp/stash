@@ -75,6 +75,10 @@ func (b SceneURLBuilder) GetFunscriptURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/funscript"
 }
 
+func (b SceneURLBuilder) GetCaptionURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/caption"
+}
+
 func (b SceneURLBuilder) GetOrgFunscriptURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/stream.org.funscript"
 }

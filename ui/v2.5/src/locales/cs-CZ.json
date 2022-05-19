@@ -1,0 +1,8 @@
+{
+  "actions": {
+    "add": "Přidat",
+    "add_directory": "Přidat adresář",
+    "allow": "Povolit",
+    "allow_temporarily": "Povolit dočasně"
+  }
+}

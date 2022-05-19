@@ -16,6 +16,8 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -276,6 +278,8 @@ func (t *ScanTask) Start(ctx context.Context) {
 			s = t.scanScene(ctx)
 		case isImage(path):
 			t.scanImage(ctx)
+		case isCaptions(path):
+			t.associateCaptions(ctx)
 		}
 	})
 
@@ -318,28 +322,24 @@ func (t *ScanTask) Start(ctx context.Context) {
 		iwg.Add()
 
 		go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", path), func() {
-			config := config.GetInstance()
-			var previewSegmentDuration = config.GetPreviewSegmentDuration()
-			var previewSegments = config.GetPreviewSegments()
-			var previewExcludeStart = config.GetPreviewExcludeStart()
-			var previewExcludeEnd = config.GetPreviewExcludeEnd()
-			var previewPresent = config.GetPreviewPreset()
+			options := getGeneratePreviewOptions(models.GeneratePreviewOptionsInput{})
+			const overwrite = false
 
-			// NOTE: the reuse of this model like this is painful.
-			previewOptions := models.GeneratePreviewOptionsInput{
-				PreviewSegments:        &previewSegments,
-				PreviewSegmentDuration: &previewSegmentDuration,
-				PreviewExcludeStart:    &previewExcludeStart,
-				PreviewExcludeEnd:      &previewExcludeEnd,
-				PreviewPreset:          &previewPresent,
+			g := &generate.Generator{
+				Encoder:     instance.FFMPEG,
+				LockManager: instance.ReadLockManager,
+				MarkerPaths: instance.Paths.SceneMarkers,
+				ScenePaths:  instance.Paths.Scene,
+				Overwrite:   overwrite,
 			}
 
 			taskPreview := GeneratePreviewTask{
 				Scene:               *s,
 				ImagePreview:        t.GenerateImagePreview,
-				Options:             previewOptions,
-				Overwrite:           false,
+				Options:             options,
+				Overwrite:           overwrite,
 				fileNamingAlgorithm: t.fileNamingAlgorithm,
+				generator:           g,
 			}
 			taskPreview.Start(ctx)
 			iwg.Done()
@@ -354,6 +354,7 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
+	capExt := scene.CaptionExts
 	excludeVidRegex := generateRegexps(config.GetExcludes())
 	excludeImgRegex := generateRegexps(config.GetImageExcludes())
 
@@ -395,6 +396,10 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 			if (fsutil.MatchExtension(path, imgExt) || fsutil.MatchExtension(path, gExt)) && !matchFileRegex(path, excludeImgRegex) {
 				return f(path, info, err)
 			}
+		}
+
+		if fsutil.MatchExtension(path, capExt) {
+			return f(path, info, err)
 		}
 
 		return nil

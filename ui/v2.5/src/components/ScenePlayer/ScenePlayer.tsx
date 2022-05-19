@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
@@ -15,7 +21,12 @@ import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { ConfigurationContext } from "src/hooks/Config";
-import { Interactive } from "src/utils/interactive";
+import {
+  ConnectionState,
+  InteractiveContext,
+} from "src/hooks/Interactive/context";
+import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
+import { languageMap } from "src/utils/caption";
 
 export const VIDEO_PLAYER_ID = "VideoJsPlayer";
 
@@ -116,11 +127,18 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const [time, setTime] = useState(0);
 
-  const [interactiveClient] = useState(
-    new Interactive(config?.handyKey || "", config?.funscriptOffset || 0)
-  );
+  const {
+    interactive: interactiveClient,
+    uploadScript,
+    currentScript,
+    initialised: interactiveInitialised,
+    state: interactiveState,
+  } = React.useContext(InteractiveContext);
 
   const [initialTimestamp] = useState(timestamp);
+  const [ready, setReady] = useState(false);
+  const started = useRef(false);
+  const interactiveReady = useRef(false);
 
   const maxLoopDuration = config?.maximumLoopDuration ?? 0;
 
@@ -147,7 +165,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         chaptersButton: false,
       },
       nativeControlsForTouch: false,
-      playbackRates: [0.75, 1, 1.5, 2, 3, 4],
+      playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
       inactivityTimeout: 2000,
       preload: "none",
       userActions: {
@@ -159,6 +177,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     };
 
     const player = VideoJS(videoElement, options);
+
+    const settings = (player as any).textTrackSettings;
+    settings.setValues({
+      backgroundColor: "#000",
+      backgroundOpacity: "0.5",
+    });
+    settings.updateDisplay();
 
     (player as any).landscapeFullscreen({
       fullscreen: {
@@ -180,10 +205,18 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
 
   useEffect(() => {
-    if (scene?.interactive) {
-      interactiveClient.uploadScript(scene.paths.funscript || "");
+    if (scene?.interactive && interactiveInitialised) {
+      interactiveReady.current = false;
+      uploadScript(scene.paths.funscript || "").then(() => {
+        interactiveReady.current = true;
+      });
     }
-  }, [interactiveClient, scene?.interactive, scene?.paths.funscript]);
+  }, [
+    uploadScript,
+    interactiveInitialised,
+    scene?.interactive,
+    scene?.paths.funscript,
+  ]);
 
   useEffect(() => {
     if (skipButtonsRef.current) {
@@ -214,7 +247,57 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     };
   }, []);
 
+  const start = useCallback(() => {
+    const player = playerRef.current;
+    if (player && scene) {
+      started.current = true;
+
+      player
+        .play()
+        ?.then(() => {
+          if (initialTimestamp > 0) {
+            player.currentTime(initialTimestamp);
+          }
+        })
+        .catch(() => {
+          if (scene.paths.screenshot) player.poster(scene.paths.screenshot);
+        });
+    }
+  }, [scene, initialTimestamp]);
+
   useEffect(() => {
+    let prevCaptionOffset = 0;
+
+    function addCaptionOffset(player: VideoJsPlayer, offset: number) {
+      const tracks = player.remoteTextTracks();
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        const { cues } = track;
+        if (cues) {
+          for (let j = 0; j < cues.length; j++) {
+            const cue = cues[j];
+            cue.startTime = cue.startTime + offset;
+            cue.endTime = cue.endTime + offset;
+          }
+        }
+      }
+    }
+
+    function removeCaptionOffset(player: VideoJsPlayer, offset: number) {
+      const tracks = player.remoteTextTracks();
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        const { cues } = track;
+        if (cues) {
+          for (let j = 0; j < cues.length; j++) {
+            const cue = cues[j];
+            cue.startTime = cue.startTime + prevCaptionOffset - offset;
+            cue.endTime = cue.endTime + prevCaptionOffset - offset;
+          }
+        }
+      }
+    }
+
     function handleOffset(player: VideoJsPlayer) {
       if (!scene) return;
 
@@ -222,10 +305,24 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
       const isDirect =
         currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
+
+      const curTime = player.currentTime();
       if (!isDirect) {
         (player as any).setOffsetDuration(scene.file.duration);
       } else {
         (player as any).clearOffsetDuration();
+      }
+
+      if (curTime != prevCaptionOffset) {
+        if (!isDirect) {
+          removeCaptionOffset(player, curTime);
+          prevCaptionOffset = curTime;
+        } else {
+          if (prevCaptionOffset != 0) {
+            addCaptionOffset(player, prevCaptionOffset);
+            prevCaptionOffset = 0;
+          }
+        }
       }
     }
 
@@ -268,6 +365,62 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       return false;
     }
 
+    function getDefaultLanguageCode() {
+      var languageCode = window.navigator.language;
+
+      if (languageCode.indexOf("-") !== -1) {
+        languageCode = languageCode.split("-")[0];
+      }
+
+      if (languageCode.indexOf("_") !== -1) {
+        languageCode = languageCode.split("_")[0];
+      }
+
+      return languageCode;
+    }
+
+    function loadCaptions(player: VideoJsPlayer) {
+      if (!scene) return;
+
+      if (scene.captions) {
+        var languageCode = getDefaultLanguageCode();
+        var hasDefault = false;
+
+        for (let caption of scene.captions) {
+          var lang = caption.language_code;
+          var label = lang;
+          if (languageMap.has(lang)) {
+            label = languageMap.get(lang)!;
+          }
+
+          label = label + " (" + caption.caption_type + ")";
+          var setAsDefault = !hasDefault && languageCode == lang;
+          if (!hasDefault && setAsDefault) {
+            hasDefault = true;
+          }
+          player.addRemoteTextTrack(
+            {
+              src:
+                scene.paths.caption +
+                "?lang=" +
+                lang +
+                "&type=" +
+                caption.caption_type,
+              kind: "captions",
+              srclang: lang,
+              label: label,
+              default: setAsDefault,
+            },
+            true
+          );
+        }
+      }
+    }
+
+    // always stop the interactive client on initialisation
+    interactiveClient.pause();
+    interactiveReady.current = false;
+
     if (!scene || scene.id === sceneId.current) return;
     sceneId.current = scene.id;
 
@@ -285,8 +438,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     (player as any).clearOffsetDuration();
 
     const tracks = player.remoteTextTracks();
-    if (tracks.length > 0) {
-      player.removeRemoteTextTrack(tracks[0] as any);
+    for (let i = 0; i < tracks.length; i++) {
+      player.removeRemoteTextTrack(tracks[i] as any);
     }
 
     player.src(
@@ -308,77 +461,80 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       );
     }
 
+    if (scene.captions?.length! > 0) {
+      loadCaptions(player);
+    }
+
     player.currentTime(0);
 
-    player.loop(
+    const looping =
       !!scene.file.duration &&
-        maxLoopDuration !== 0 &&
-        scene.file.duration < maxLoopDuration
-    );
+      maxLoopDuration !== 0 &&
+      scene.file.duration < maxLoopDuration;
+    player.loop(looping);
+    interactiveClient.setLooping(looping);
 
-    player.on("loadstart", function (this: VideoJsPlayer) {
+    function loadstart(this: VideoJsPlayer) {
       // handle offset after loading so that we get the correct current source
       handleOffset(this);
-    });
+    }
 
-    player.on("play", function (this: VideoJsPlayer) {
-      player.poster("");
-      if (scene.interactive) {
+    player.on("loadstart", loadstart);
+
+    function onPlay(this: VideoJsPlayer) {
+      this.poster("");
+      if (scene?.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
       }
-    });
+    }
+    player.on("play", onPlay);
 
-    player.on("pause", () => {
-      if (scene.interactive) {
-        interactiveClient.pause();
-      }
-    });
+    function pause() {
+      interactiveClient.pause();
+    }
+    player.on("pause", pause);
 
-    player.on("timeupdate", function (this: VideoJsPlayer) {
-      if (scene.interactive) {
+    function timeupdate(this: VideoJsPlayer) {
+      if (scene?.interactive && interactiveReady.current) {
         interactiveClient.ensurePlaying(this.currentTime());
       }
-
       setTime(this.currentTime());
-    });
+    }
+    player.on("timeupdate", timeupdate);
 
-    player.on("seeking", function (this: VideoJsPlayer) {
-      // backwards compatibility - may want to remove this in future
+    function seeking(this: VideoJsPlayer) {
       this.play();
-    });
+    }
+    player.on("seeking", seeking);
 
-    player.on("error", () => {
+    function error() {
       handleError(true);
-    });
+    }
+    player.on("error", error);
 
-    player.on("loadedmetadata", () => {
-      if (!player.videoWidth() && !player.videoHeight()) {
+    // changing source (eg when seeking) resets the playback rate
+    // so set the default in addition to the current rate
+    function ratechange(this: VideoJsPlayer) {
+      this.defaultPlaybackRate(this.playbackRate());
+    }
+    player.on("ratechange", ratechange);
+
+    function loadedmetadata(this: VideoJsPlayer) {
+      if (!this.videoWidth() && !this.videoHeight()) {
         // Occurs during preload when videos with supported audio/unsupported video are preloaded.
         // Treat this as a decoding error and try the next source without playing.
         // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
-        const currentFile = player.currentSrc();
+        const currentFile = this.currentSrc();
         if (currentFile != null && !currentFile.includes("m3u8")) {
           // const play = !player.paused();
           // handleError(play);
-          player.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+          this.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
         }
       }
-    });
+    }
+    player.on("loadedmetadata", loadedmetadata);
 
     player.load();
-
-    if (auto) {
-      player
-        .play()
-        ?.then(() => {
-          if (initialTimestamp > 0) {
-            player.currentTime(initialTimestamp);
-          }
-        })
-        .catch(() => {
-          if (scene.paths.screenshot) player.poster(scene.paths.screenshot);
-        });
-    }
 
     if ((player as any).vttThumbnails?.src)
       (player as any).vttThumbnails?.src(scene?.paths.vtt);
@@ -387,6 +543,25 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         src: scene?.paths.vtt,
         showTimestamp: true,
       });
+
+    setReady(true);
+    started.current = false;
+
+    return () => {
+      setReady(false);
+
+      // stop the interactive client
+      interactiveClient.pause();
+
+      player.off("loadstart", loadstart);
+      player.off("play", onPlay);
+      player.off("pause", pause);
+      player.off("timeupdate", timeupdate);
+      player.off("seeking", seeking);
+      player.off("error", error);
+      player.off("ratechange", ratechange);
+      player.off("loadedmetadata", loadedmetadata);
+    };
   }, [
     scene,
     config?.autostartVideo,
@@ -394,6 +569,35 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     initialTimestamp,
     autoplay,
     interactiveClient,
+    start,
+  ]);
+
+  useEffect(() => {
+    if (!ready || started.current) {
+      return;
+    }
+
+    const auto =
+      autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
+
+    // check if we're waiting for the interactive client
+    const interactiveWaiting =
+      scene?.interactive &&
+      interactiveClient.handyKey &&
+      currentScript !== scene.paths.funscript;
+
+    if (scene && auto && !interactiveWaiting) {
+      start();
+    }
+  }, [
+    config?.autostartVideo,
+    initialTimestamp,
+    scene,
+    ready,
+    interactiveClient,
+    currentScript,
+    autoplay,
+    start,
   ]);
 
   useEffect(() => {
@@ -412,7 +616,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     playerRef.current?.pause();
   };
   const onScrubberSeek = (seconds: number) => {
-    playerRef.current?.currentTime(seconds);
+    const player = playerRef.current;
+    if (player) {
+      player.play()?.then(() => {
+        player.currentTime(seconds);
+      });
+    }
   };
 
   const isPortrait =
@@ -431,6 +640,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           className="video-js vjs-big-play-centered"
         />
       </div>
+      {scene?.interactive &&
+        (interactiveState !== ConnectionState.Ready ||
+          playerRef.current?.paused()) && <SceneInteractiveStatus />}
       {scene && (
         <ScenePlayerScrubber
           scene={scene}

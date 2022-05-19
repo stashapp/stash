@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os/exec"
 	"strconv"
 
 	"github.com/go-chi/chi"
@@ -50,6 +51,11 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			// don't log for unsupported image format
 			if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
 				logger.Errorf("error generating thumbnail for image: %s", err.Error())
+
+				var exitErr *exec.ExitError
+				if errors.As(err, &exitErr) {
+					logger.Errorf("stderr: %s", string(exitErr.Stderr))
+				}
 			}
 
 			// backwards compatibility - fallback to original image instead

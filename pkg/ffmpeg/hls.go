@@ -8,15 +8,14 @@ import (
 
 const hlsSegmentLength = 10.0
 
-func WriteHLSPlaylist(probeResult VideoFile, baseUrl string, w io.Writer) {
+// WriteHLSPlaylist writes a HLS playlist to w using baseUrl as the base URL for TS streams.
+func WriteHLSPlaylist(duration float64, baseUrl string, w io.Writer) {
 	fmt.Fprint(w, "#EXTM3U\n")
 	fmt.Fprint(w, "#EXT-X-VERSION:3\n")
 	fmt.Fprint(w, "#EXT-X-MEDIA-SEQUENCE:0\n")
 	fmt.Fprint(w, "#EXT-X-ALLOW-CACHE:YES\n")
 	fmt.Fprintf(w, "#EXT-X-TARGETDURATION:%d\n", int(hlsSegmentLength))
 	fmt.Fprint(w, "#EXT-X-PLAYLIST-TYPE:VOD\n")
-
-	duration := probeResult.Duration
 
 	leftover := duration
 	upTo := 0.0

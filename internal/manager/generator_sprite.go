@@ -1,25 +1,22 @@
 package manager
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"image"
-	"image/color"
 	"math"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/disintegration/imaging"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
 type SpriteGenerator struct {
-	Info *GeneratorInfo
+	Info *generatorInfo
 
 	VideoChecksum   string
 	ImageOutputPath string
@@ -29,6 +26,8 @@ type SpriteGenerator struct {
 	SlowSeek        bool // use alternate seek function, very slow!
 
 	Overwrite bool
+
+	g *generate.Generator
 }
 
 func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageOutputPath string, vttOutputPath string, rows int, cols int) (*SpriteGenerator, error) {
@@ -49,7 +48,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 		slowSeek = true
 		// do an actual frame count of the file ( number of frames = read frames)
 		ffprobe := GetInstance().FFProbe
-		fc, err := ffprobe.GetReadFrameCount(&videoFile)
+		fc, err := ffprobe.GetReadFrameCount(videoFile.Path)
 		if err == nil {
 			if fc != videoFile.FrameCount {
 				logger.Warnf("[generator] updating framecount (%d) for %s with read frames count (%d)", videoFile.FrameCount, videoFile.Path, fc)
@@ -75,22 +74,25 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, imageO
 		Rows:            rows,
 		SlowSeek:        slowSeek,
 		Columns:         cols,
+		g: &generate.Generator{
+			Encoder:     instance.FFMPEG,
+			LockManager: instance.ReadLockManager,
+			ScenePaths:  instance.Paths.Scene,
+		},
 	}, nil
 }
 
 func (g *SpriteGenerator) Generate() error {
-	encoder := instance.FFMPEG
-
-	if err := g.generateSpriteImage(&encoder); err != nil {
+	if err := g.generateSpriteImage(); err != nil {
 		return err
 	}
-	if err := g.generateSpriteVTT(&encoder); err != nil {
+	if err := g.generateSpriteVTT(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
+func (g *SpriteGenerator) generateSpriteImage() error {
 	if !g.Overwrite && g.imageExists() {
 		return nil
 	}
@@ -105,13 +107,7 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 		for i := 0; i < g.Info.ChunkCount; i++ {
 			time := float64(i) * stepSize
 
-			options := ffmpeg.SpriteScreenshotOptions{
-				Time:  time,
-				Width: 160,
-			}
-
-			img, err := encoder.SpriteScreenshot(g.Info.VideoFile, options)
-
+			img, err := g.g.SpriteScreenshot(context.TODO(), g.Info.VideoFile.Path, time)
 			if err != nil {
 				return err
 			}
@@ -128,11 +124,8 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 			if frame >= math.MaxInt || frame <= math.MinInt {
 				return errors.New("invalid frame number conversion")
 			}
-			options := ffmpeg.SpriteScreenshotOptions{
-				Frame: int(frame),
-				Width: 160,
-			}
-			img, err := encoder.SpriteScreenshotSlow(g.Info.VideoFile, options)
+
+			img, err := g.g.SpriteScreenshotSlow(context.TODO(), g.Info.VideoFile.Path, int(frame))
 			if err != nil {
 				return err
 			}
@@ -144,40 +137,15 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 	if len(images) == 0 {
 		return fmt.Errorf("images slice is empty, failed to generate sprite images for %s", g.Info.VideoFile.Path)
 	}
-	// Combine all of the thumbnails into a sprite image
-	width := images[0].Bounds().Size().X
-	height := images[0].Bounds().Size().Y
-	canvasWidth := width * g.Columns
-	canvasHeight := height * g.Rows
-	montage := imaging.New(canvasWidth, canvasHeight, color.NRGBA{})
-	for index := 0; index < len(images); index++ {
-		x := width * (index % g.Columns)
-		y := height * int(math.Floor(float64(index)/float64(g.Rows)))
-		img := images[index]
-		montage = imaging.Paste(montage, img, image.Pt(x, y))
-	}
 
-	return imaging.Save(montage, g.ImageOutputPath)
+	return imaging.Save(g.g.CombineSpriteImages(images), g.ImageOutputPath)
 }
 
-func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
+func (g *SpriteGenerator) generateSpriteVTT() error {
 	if !g.Overwrite && g.vttExists() {
 		return nil
 	}
 	logger.Infof("[generator] generating sprite vtt for %s", g.Info.VideoFile.Path)
-
-	spriteImage, err := os.Open(g.ImageOutputPath)
-	if err != nil {
-		return err
-	}
-	defer spriteImage.Close()
-	spriteImageName := filepath.Base(g.ImageOutputPath)
-	image, _, err := image.DecodeConfig(spriteImage)
-	if err != nil {
-		return err
-	}
-	width := image.Width / g.Columns
-	height := image.Height / g.Rows
 
 	var stepSize float64
 	if !g.SlowSeek {
@@ -189,20 +157,7 @@ func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
 		stepSize /= g.Info.FrameRate
 	}
 
-	vttLines := []string{"WEBVTT", ""}
-	for index := 0; index < g.Info.ChunkCount; index++ {
-		x := width * (index % g.Columns)
-		y := height * int(math.Floor(float64(index)/float64(g.Rows)))
-		startTime := utils.GetVTTTime(float64(index) * stepSize)
-		endTime := utils.GetVTTTime(float64(index+1) * stepSize)
-
-		vttLines = append(vttLines, startTime+" --> "+endTime)
-		vttLines = append(vttLines, fmt.Sprintf("%s#xywh=%d,%d,%d,%d", spriteImageName, x, y, width, height))
-		vttLines = append(vttLines, "")
-	}
-	vtt := strings.Join(vttLines, "\n")
-
-	return os.WriteFile(g.VTTOutputPath, []byte(vtt), 0644)
+	return g.g.SpriteVTT(context.TODO(), g.VTTOutputPath, g.ImageOutputPath, stepSize)
 }
 
 func (g *SpriteGenerator) imageExists() bool {

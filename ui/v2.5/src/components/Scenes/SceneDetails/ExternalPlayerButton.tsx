@@ -12,8 +12,10 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
 }) => {
   const isAndroid = /(android)/i.test(navigator.userAgent);
   const isAppleDevice = /(ipod|iphone|ipad)/i.test(navigator.userAgent);
+  const { paths, path, title } = scene;
+  const { stream, stream_org } = paths;
+  const sceneTitle = title ?? TextUtils.fileNameFromPath(path);
   const scenePath = scene.path;
-  const sceneTitle = scene.title ?? TextUtils.fileNameFromPath(scenePath);
   const sceneStream = scene.paths.stream ?? "";
   const sceneStream_org = scene.paths.stream_org ?? "";
 
@@ -44,13 +46,11 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   }
 
   return (
-    <div className="btn-group btn" title={prompt}>
-      <a href={url} target="_self">
-        <span>
-          <Icon icon="external-link-alt" color="white" />
-        </span>
-        <span className="ml-2">Launch / Drag Me</span>
-      </a>
-    </div>
+        <div className="minimal px-0 px-sm-2" title="Click here if you're using Android/iOS/DeoVR/HereSphere.&#10;In Windows or MacOS, drag me to an external media player, e.g. VLC, MPV.">
+          <a href={url} target="_self">
+              <span><Icon icon="external-link-alt" color="white" /></span>
+              <span className="ml-2">Launch &#47; Drag Me</span>
+          </a>
+        </div>
   );
 };
