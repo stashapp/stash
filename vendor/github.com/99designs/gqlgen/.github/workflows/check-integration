@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -euo pipefail
+
+cd integration
+
+go run ./server/server.go &
+
+sleep 2
+
+echo "### running jest integration spec"
+./node_modules/.bin/jest --color
+
+
+echo "### validating introspected schema"
+./node_modules/.bin/graphql-codegen
+
+if ! diff <(tail -n +3 schema-expected.graphql) <(tail -n +3 schema-fetched.graphql) ; then
+    echo "The expected schema has changed, you need to update schema-expected.graphql with any expected changes"
+    exit 1
+fi

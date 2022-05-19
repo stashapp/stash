@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "Project Name": {
+      "schemaPath": "schema-fetched.graphql",
+      "extensions": {
+        "endpoints": {
+          "dev":  {
+            "url": "${env:SERVER_URL}"
+          }
+        }
+      }
+    }
+  }
+}

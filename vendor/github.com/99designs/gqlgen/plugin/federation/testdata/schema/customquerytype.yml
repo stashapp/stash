@@ -1,0 +1,9 @@
+schema:
+  - "testdata/schema/customquerytype.graphql"
+exec:
+  filename: testdata/schema/generated/exec.go
+federation:
+  filename: testdata/schema/generated/federation.go
+
+autobind:
+  - "github.com/99designs/gqlgen/plugin/federation/test_data/model"

@@ -1,0 +1,4 @@
+type User {
+    name: String!
+    likes: [String!]!
+}

@@ -1,0 +1,12 @@
+extend type Query {
+    vOkCaseValue: VOkCaseValue
+    vOkCaseNil: VOkCaseNil
+}
+
+type VOkCaseValue @goModel(model:"singlefile.VOkCaseValue") {
+  value: String
+}
+
+type VOkCaseNil @goModel(model:"singlefile.VOkCaseNil") {
+  value: String
+}

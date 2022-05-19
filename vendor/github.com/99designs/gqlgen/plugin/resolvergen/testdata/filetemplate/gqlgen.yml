@@ -1,0 +1,16 @@
+schema:
+  - "testdata/schema.graphql"
+
+exec:
+  filename: testdata/singlefile/out/ignored.go
+model:
+  filename: testdata/singlefile/out/generated.go
+resolver:
+  type: CustomResolverType
+  layout: follow-schema
+  dir: testdata/filetemplate/out
+  filename_template: "{name}.custom.go"
+
+models:
+  Resolver:
+    model: github.com/99designs/gqlgen/plugin/resolvergen/testdata/singlefile/out.Resolver

@@ -1,0 +1,13 @@
+extend type Mutation {
+    updateSomething(input: SpecialInput!): String!
+}
+
+scalar Email
+
+input SpecialInput {
+    nesting: NestedInput!
+}
+
+input NestedInput {
+    field: Email!
+}

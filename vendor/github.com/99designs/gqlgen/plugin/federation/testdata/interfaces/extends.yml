@@ -1,0 +1,6 @@
+schema:
+  - "testdata/interfaces/extends.graphqls"
+exec:
+  filename: testdata/interfaces/generated/exec.go
+federation:
+  filename: testdata/interfaces/generated/federation.go

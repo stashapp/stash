@@ -1,0 +1,54 @@
+directive @length(min: Int!, max: Int, message: String) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+directive @range(min: Int = 0, max: Int) on ARGUMENT_DEFINITION
+directive @custom on ARGUMENT_DEFINITION
+directive @logged(id: UUID!) on FIELD
+directive @toNull on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+directive @directive1 on FIELD_DEFINITION
+directive @directive2 on FIELD_DEFINITION
+directive @directive3 on INPUT_OBJECT
+directive @unimplemented on FIELD_DEFINITION
+directive @order1(location: String!) repeatable on FIELD_DEFINITION | OBJECT
+directive @order2(location: String!) on OBJECT
+
+extend type Query {
+    directiveArg(arg: String! @length(min:1, max: 255, message: "invalid length")): String
+    directiveNullableArg(arg: Int @range(min:0), arg2: Int @range, arg3: String @toNull): String
+    directiveInputNullable(arg: InputDirectives): String
+    directiveInput(arg: InputDirectives!): String
+    directiveInputType(arg: InnerInput! @custom): String
+    directiveObject: ObjectDirectives @order1(location: "Query_field")
+    directiveObjectWithCustomGoModel: ObjectDirectivesWithCustomGoModel
+    directiveFieldDef(ret: String!): String! @length(min: 1, message: "not valid")
+    directiveField: String
+    directiveDouble: String @directive1 @directive2
+    directiveUnimplemented: String @unimplemented
+}
+
+extend type Subscription {
+    directiveArg(arg: String! @length(min:1, max: 255, message: "invalid length")): String
+    directiveNullableArg(arg: Int @range(min:0), arg2: Int @range, arg3: String @toNull): String
+    directiveDouble: String @directive1 @directive2
+    directiveUnimplemented: String @unimplemented
+}
+
+input InputDirectives @directive3 {
+    text: String! @length(min: 0, max: 7, message: "not valid")
+    nullableText: String @toNull
+    inner: InnerDirectives!
+    innerNullable: InnerDirectives
+    thirdParty: ThirdParty @length(min: 0, max: 7)
+}
+
+input InnerDirectives {
+    message: String! @length(min: 1, message: "not valid")
+}
+
+type ObjectDirectives @order1(location: "order1_1") @order1(location: "order1_2") @order2(location: "order2_1") {
+    text: String! @length(min: 0, max: 7, message: "not valid")
+    nullableText: String @toNull
+    order: [String!]!
+}
+
+type ObjectDirectivesWithCustomGoModel {
+    nullableText: String @toNull
+}

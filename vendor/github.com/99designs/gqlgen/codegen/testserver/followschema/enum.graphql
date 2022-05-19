@@ -1,0 +1,12 @@
+enum EnumTest {
+    OK
+    NG
+}
+
+input InputWithEnumValue {
+    enum: EnumTest!
+}
+
+extend type Query {
+    enumInInput(input: InputWithEnumValue): EnumTest!
+}

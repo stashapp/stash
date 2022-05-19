@@ -1,0 +1,6 @@
+schema:
+  - "testdata/schema.graphql"
+
+models:
+  Resolver:
+    model: github.com/99designs/invalid/invalid/invalid/nope.Resolver

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -euo pipefail
+
+cd _examples/federation
+
+./start.sh &
+
+sleep 10
+
+echo "### running jest integration spec"
+./node_modules/.bin/jest --color
+

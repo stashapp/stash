@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -euo pipefail
+
+gqlgen_dir=$(pwd)
+cd $(mktemp -d)
+go mod init inittest
+printf '// +build tools\npackage tools\nimport _ "github.com/99designs/gqlgen"' | gofmt > tools.go
+go mod tidy
+go mod edit -replace=github.com/99designs/gqlgen="$gqlgen_dir"
+go mod tidy
+
+if ! go run github.com/99designs/gqlgen init ; then
+    echo "gqlgen init failed"
+    exit 125
+fi
+
+if ! go run github.com/99designs/gqlgen generate ; then
+    echo "gqlgen generate failed"
+    exit 125
+fi

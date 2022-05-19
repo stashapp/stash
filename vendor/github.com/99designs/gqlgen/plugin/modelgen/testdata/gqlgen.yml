@@ -1,0 +1,22 @@
+schema:
+  - "testdata/schema.graphql"
+
+exec:
+  filename: out/ignored.go
+model:
+  filename: out/generated.go
+
+models:
+  ExistingModel:
+    model: github.com/99designs/gqlgen/plugin/modelgen/out.ExistingModel
+  ExistingInput:
+    model: github.com/99designs/gqlgen/plugin/modelgen/out.ExistingInput
+  ExistingEnum:
+    model: github.com/99designs/gqlgen/plugin/modelgen/out.ExistingEnum
+  ExistingInterface:
+    model: github.com/99designs/gqlgen/plugin/modelgen/out.ExistingInterface
+  ExistingUnion:
+    model: github.com/99designs/gqlgen/plugin/modelgen/out.ExistingUnion
+  ExistingType:
+    model: github.com/99designs/gqlgen/plugin/modelgen/out.ExistingType
+

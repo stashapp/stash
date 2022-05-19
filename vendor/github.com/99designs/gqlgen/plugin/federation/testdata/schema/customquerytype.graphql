@@ -1,0 +1,12 @@
+schema {
+    query: CustomQuery
+}
+
+type Hello {
+  name: String!
+}
+
+type CustomQuery {
+  hello: Hello!
+}
+

@@ -1,0 +1,7 @@
+type PtrToSliceContainer {
+    ptrToSlice: [String!]
+}
+
+extend type Query {
+    ptrToSliceContainer: PtrToSliceContainer!
+}

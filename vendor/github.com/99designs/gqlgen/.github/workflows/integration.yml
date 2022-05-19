@@ -1,0 +1,32 @@
+name: Integration
+on: [push, pull_request]
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    container: golang:1.16-alpine
+    steps:
+      - uses: actions/checkout@v2
+      - run: apk add --no-cache --no-progress nodejs npm git bash
+      - run: go mod download
+      - run: cd integration ; npm install
+      - run: .github/workflows/check-integration
+
+  federation:
+    runs-on: ubuntu-latest
+    container: golang:1.16-alpine
+    steps:
+      - uses: actions/checkout@v2
+      - run: apk add --no-cache --no-progress nodejs npm git bash
+      - run: go mod download
+      - run: cd _examples/federation ; npm install
+      - run: .github/workflows/check-federation
+
+  init:
+    runs-on: ubuntu-latest
+    container: golang:1.17-alpine
+    steps:
+      - uses: actions/checkout@v2
+      - run: apk add --no-cache --no-progress alpine-sdk bash
+      - run: .github/workflows/check-init

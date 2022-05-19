@@ -1,0 +1,7 @@
+type LoopA {
+    b: LoopB!
+}
+
+type LoopB {
+    a: LoopA!
+}

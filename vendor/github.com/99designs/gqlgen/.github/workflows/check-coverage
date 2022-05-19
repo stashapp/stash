@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -euo pipefail
+GO111MODULE=off go get github.com/mattn/goveralls
+
+go test -covermode atomic -coverprofile=/tmp/coverage.out -coverpkg=./... $(go list github.com/99designs/gqlgen/... | grep -v _examples)
+goveralls -coverprofile=/tmp/coverage.out -service=github -ignore='_examples/*/*,_examples/*/*/*,integration/*,integration/*/*,codegen/testserver/*/*,plugin/federation/testdata/*/*/*,*/generated.go,*/*/generated.go,*/*/*/generated.go,graphql/executable_schema_mock.go'

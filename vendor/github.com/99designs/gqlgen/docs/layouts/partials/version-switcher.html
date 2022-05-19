@@ -1,0 +1,15 @@
+{{ $VersionString := getenv "VERSIONS" }}
+{{ $Versions := split $VersionString "," }}
+{{ $currentVersion := getenv "CURRENT_VERSION" }}
+
+<div class="version-switcher">
+	<span>{{ $currentVersion }}</span>
+	<div class="version-switcher-options">
+		<a class="version-switcher-option">{{$currentVersion}}</a>
+		{{ range $i, $version := $Versions }}
+			{{ if not (eq $currentVersion $version) }}
+				<a href="https://gqlgen.com/{{$version}}/" class="version-switcher-option">{{$version}}</a>
+			{{ end }}
+		{{ end }}
+	</div>
+</div>

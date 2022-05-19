@@ -1,0 +1,18 @@
+# This example should build stable output. If the file content starts
+# alternating nondeterministically between two outputs, then see
+# https://github.com/99designs/gqlgen/issues/896.
+
+extend schema {
+  query: Query
+  subscription: Subscription
+}
+
+type CheckIssue896 {id: Int}
+
+extend type Query {
+  issue896a: [CheckIssue896!] # Note the "!" or lack thereof.
+}
+
+extend type Subscription {
+  issue896b: [CheckIssue896] # Note the "!" or lack thereof.
+}

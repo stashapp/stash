@@ -1,0 +1,70 @@
+extend type Query {
+    shapes: [Shape]
+    noShape: Shape @makeNil
+    node: Node!
+    noShapeTypedNil: Shape @makeTypedNil
+    animal: Animal @makeTypedNil
+    notAnInterface: BackedByInterface
+}
+
+interface Animal {
+    species: String!
+}
+
+type BackedByInterface {
+    id: String!
+    thisShouldBind: String!
+    thisShouldBindWithError: String!
+}
+
+type Dog implements Animal {
+    species: String!
+    dogBreed: String!
+}
+
+type Cat implements Animal {
+    species: String!
+    catBreed: String!
+}
+
+type Coordinates {
+    x: Float!
+    y: Float!
+}
+interface Shape {
+    area: Float
+    coordinates: Coordinates
+}
+
+type Circle implements Shape {
+    radius: Float
+    area: Float
+    coordinates: Coordinates
+}
+type Rectangle implements Shape {
+    length: Float
+    width: Float
+    area: Float
+    coordinates: Coordinates
+}
+union ShapeUnion @goModel(model: "singlefile.ShapeUnion") = Circle | Rectangle
+
+directive @makeNil on FIELD_DEFINITION
+directive @makeTypedNil on FIELD_DEFINITION
+
+interface Node {
+    id: ID!
+    child: Node!
+}
+
+type ConcreteNodeA implements Node {
+    id: ID!
+    child: Node!
+    name: String!
+}
+
+" Implements the Node interface with another interface "
+type ConcreteNodeInterface implements Node {
+    id: ID!
+    child: Node!
+}

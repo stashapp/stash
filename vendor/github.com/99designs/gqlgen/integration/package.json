@@ -1,0 +1,25 @@
+{
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.4",
+    "@graphql-codegen/cli": "^2.6.2",
+    "@graphql-codegen/schema-ast": "^2.4.1",
+    "apollo-cache-inmemory": "^1.6.6",
+    "apollo-client": "^2.6.10",
+    "apollo-link-http": "^1.5.17",
+    "apollo-link-persisted-queries": "^0.2.2",
+    "apollo-link-ws": "^1.0.20",
+    "babel-jest": "^24.9.0",
+    "graphql": "^16.3.0",
+    "graphql-tag": "^2.12.6",
+    "jest": "^24.9.0",
+    "node-fetch": "^2.6.7",
+    "subscriptions-transport-ws": "^0.9.18",
+    "ws": "^7.4.6"
+  },
+  "dependencies": {
+    "@babel/preset-env": "^7.11.0"
+  }
+}

@@ -1,0 +1,6 @@
+schema: http://localhost:8080/query
+overwrite: true
+generates:
+  ./schema-fetched.graphql:
+    plugins:
+    - schema-ast

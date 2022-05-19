@@ -1,0 +1,8 @@
+extend type Query {
+    infinity: Float!
+    stringFromContextInterface: StringFromContextInterface!
+    stringFromContextFunction: StringFromContextFunction!
+}
+
+scalar StringFromContextInterface
+scalar StringFromContextFunction

@@ -1,0 +1,56 @@
+{{ reserveImport "context"  }}
+{{ reserveImport "fmt"  }}
+{{ reserveImport "io"  }}
+{{ reserveImport "strconv"  }}
+{{ reserveImport "time"  }}
+{{ reserveImport "sync"  }}
+{{ reserveImport "errors"  }}
+{{ reserveImport "bytes"  }}
+
+{{ reserveImport "github.com/vektah/gqlparser/v2" }}
+{{ reserveImport "github.com/vektah/gqlparser/v2/ast" }}
+{{ reserveImport "github.com/99designs/gqlgen/graphql" }}
+{{ reserveImport "github.com/99designs/gqlgen/graphql/introspection" }}
+
+{{ $root := . }}
+
+type {{$root.TypeName}} struct {
+	{{ range $object := .Objects }}
+		{{- if $object.HasResolvers }}
+			{{$object.Name}}Resolver struct {
+				{{- range $field := $object.Fields }}
+					{{- if $field.IsResolver }}
+						{{- $field.GoFieldName}} func{{ $field.ShortResolverDeclaration }}
+					{{ end }}
+				{{- end }}
+			}
+		{{- end }}
+	{{- end }}
+}
+
+{{ range $object := .Objects -}}
+	{{- if $object.HasResolvers -}}
+		func (r *{{$.TypeName}}) {{$object.Name}}() {{ $object.ResolverInterface | ref }} {
+			return &{{lcFirst $root.TypeName}}{{$object.Name}}{r}
+		}
+	{{ end -}}
+{{ end }}
+
+{{ range $object := .Objects -}}
+	{{- if $object.HasResolvers -}}
+		type {{lcFirst $root.TypeName}}{{$object.Name}} struct { *{{$root.TypeName}}  }
+
+		{{ range $field := $object.Fields -}}
+			{{- if $field.IsResolver -}}
+				func (r *{{lcFirst $root.TypeName}}{{$object.Name}}) {{$field.GoFieldName}}{{ $field.ShortResolverDeclaration }} {
+					return r.{{$object.Name}}Resolver.{{$field.GoFieldName}}(ctx,
+						{{- if not $object.Root }}obj,{{end -}}
+						{{- range $arg := $field.Args}}
+							{{- $arg.VarName}},
+						{{- end }}
+					)
+				}
+			{{ end -}}
+		{{ end -}}
+	{{ end -}}
+{{ end }}

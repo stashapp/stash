@@ -1,0 +1,105 @@
+directive @goModel(
+    model: String
+    models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+directive @goField(
+    forceResolver: Boolean
+    name: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+type Query {
+    invalidIdentifier: InvalidIdentifier
+    collision: It
+    mapInput(input: Changes): Boolean
+    recursive(input: RecursiveInputSlice): Boolean
+    nestedInputs(input: [[OuterInput]] = [[{ inner: { id: 1 } }]]): Boolean
+    nestedOutputs: [[OuterObject]]
+    modelMethods: ModelMethods
+    user(id: Int!): User!
+    nullableArg(arg: Int = 123): String
+    inputSlice(arg: [String!]!): Boolean!
+    inputNullableSlice(arg: [String!]): Boolean!
+    shapeUnion: ShapeUnion!
+    autobind: Autobind
+    deprecatedField: String! @deprecated(reason: "test deprecated directive")
+}
+
+type Subscription {
+    updated: String!
+    initPayload: String!
+}
+
+type User {
+    id: Int!
+    friends: [User!]! @goField(forceResolver: true)
+    created: Time!
+    updated: Time
+}
+
+type Autobind {
+    int: Int!
+    int32: Int!
+    int64: Int!
+
+    idStr: ID!
+    idInt: ID!
+}
+
+type ModelMethods {
+    resolverField: Boolean!
+    noContext: Boolean!
+    withContext: Boolean!
+}
+
+type InvalidIdentifier {
+    id: Int!
+}
+
+type It {
+    id: ID!
+}
+
+input Changes @goModel(model: "map[string]interface{}") {
+    a: Int
+    b: Int
+}
+
+input RecursiveInputSlice {
+    self: [RecursiveInputSlice!]
+}
+
+input InnerInput {
+    id: Int!
+}
+
+input OuterInput {
+    inner: InnerInput!
+}
+
+scalar ThirdParty @goModel(model:"singlefile.ThirdParty")
+
+type OuterObject {
+    inner: InnerObject!
+}
+
+type InnerObject {
+    id: Int!
+}
+
+type ForcedResolver {
+    field: Circle @goField(forceResolver: true)
+}
+
+type EmbeddedPointer @goModel(model:"singlefile.EmbeddedPointerModel") {
+    ID: String
+    Title: String
+}
+
+scalar UUID
+
+enum Status {
+    OK
+    ERROR
+}
+
+scalar Time

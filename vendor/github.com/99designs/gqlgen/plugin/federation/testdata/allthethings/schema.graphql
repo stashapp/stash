@@ -1,0 +1,40 @@
+type Hello @key(fields: "name") {
+    name: String!
+    secondary: String!
+}
+
+type World @key(fields: " foo   ") @key(fields: "bar") {
+    foo: String!
+    bar: Int!
+}
+
+extend type ExternalExtension @key(fields: "  upc    ") {
+    upc: String! @external
+    reviews: [World]
+}
+
+extend type NestedKey @key(fields: "id hello { name}") {
+    id: String! @external
+    hello: Hello
+}
+
+extend type MoreNesting @key(fields: "id") {
+    id: String! @external
+    world: World! @external
+}
+
+extend type VeryNestedKey
+    @key(
+        fields: "id hello { name} world {foo } world{bar}  more { world { foo }}"
+    ) {
+    id: String! @external
+    hello: Hello
+    world: World
+    nested: NestedKey @requires(fields: "id hello {secondary }")
+    more: MoreNesting
+}
+
+type Query {
+    hello: Hello!
+    world: World!
+}

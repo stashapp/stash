@@ -1,0 +1,18 @@
+style: github
+template: CHANGELOG-full-history.tpl.md
+info:
+  title: CHANGELOG
+  repository_url: https://github.com/99designs/gqlgen
+options:
+  commits:
+    # filters:
+    #   Type: []
+  commit_groups:
+    # title_maps: []
+  header:
+    pattern: "^(.*)$"
+    pattern_maps:
+      - Subject
+  notes:
+    keywords:
+      - BREAKING CHANGE

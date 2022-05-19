@@ -1,0 +1,20 @@
+extend type Query {
+    defaultParameters(
+        falsyBoolean: Boolean = false
+        truthyBoolean: Boolean = true
+    ): DefaultParametersMirror!
+}
+
+extend type Mutation {
+    defaultInput(input: DefaultInput!): DefaultParametersMirror!
+}
+
+input DefaultInput {
+    falsyBoolean: Boolean = false
+    truthyBoolean: Boolean = true
+}
+
+type DefaultParametersMirror {
+    falsyBoolean: Boolean
+    truthyBoolean: Boolean
+}

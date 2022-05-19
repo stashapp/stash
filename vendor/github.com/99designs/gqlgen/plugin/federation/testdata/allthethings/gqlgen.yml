@@ -1,0 +1,9 @@
+schema:
+  - "testdata/allthethings/schema.graphql"
+exec:
+  filename: testdata/allthethings/generated/exec.go
+federation:
+  filename: testdata/allthethings/generated/federation.go
+
+autobind:
+  - "github.com/99designs/gqlgen/plugin/federation/testdata/allthethings/model"

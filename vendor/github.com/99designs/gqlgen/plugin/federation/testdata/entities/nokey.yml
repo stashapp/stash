@@ -1,0 +1,9 @@
+schema:
+  - "testdata/entities/nokey.graphql"
+exec:
+  filename: testdata/entities/generated/exec.go
+federation:
+  filename: testdata/entities/generated/federation.go
+
+autobind:
+  - "github.com/99designs/gqlgen/plugin/federation/test_data/model"

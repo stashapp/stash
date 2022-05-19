@@ -1,0 +1,12 @@
+extend type Query {
+    panics: Panics
+}
+
+type Panics {
+    fieldScalarMarshal: [MarshalPanic!]!
+    fieldFuncMarshal(u: [MarshalPanic!]!): [MarshalPanic!]!
+    argUnmarshal(u: [MarshalPanic!]!): Boolean!
+
+}
+
+scalar MarshalPanic

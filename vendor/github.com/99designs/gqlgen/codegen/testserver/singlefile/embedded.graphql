@@ -1,0 +1,17 @@
+extend type Query {
+    embeddedCase1: EmbeddedCase1
+    embeddedCase2: EmbeddedCase2
+    embeddedCase3: EmbeddedCase3
+}
+
+type EmbeddedCase1 @goModel(model:"singlefile.EmbeddedCase1") {
+    exportedEmbeddedPointerExportedMethod: String!
+}
+
+type EmbeddedCase2 @goModel(model:"singlefile.EmbeddedCase2") {
+    unexportedEmbeddedPointerExportedMethod: String!
+}
+
+type EmbeddedCase3 @goModel(model:"singlefile.EmbeddedCase3") {
+    unexportedEmbeddedInterfaceExportedMethod: String!
+}

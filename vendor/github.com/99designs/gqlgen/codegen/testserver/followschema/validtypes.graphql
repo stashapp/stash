@@ -1,0 +1,78 @@
+extend type Query {
+    validType: ValidType
+}
+
+""" These things are all valid, but without care generate invalid go code """
+type ValidType {
+    differentCase: String!
+    different_case: String! @goField(name:"DifferentCaseOld")
+    validInputKeywords(input: ValidInput): Boolean!
+    validArgs(
+        break:       String!,
+        default:     String!,
+        func:        String!,
+        interface:   String!,
+        select:      String!,
+        case:        String!,
+        defer:       String!,
+        go:          String!,
+        map:         String!,
+        struct:      String!,
+        chan:        String!,
+        else:        String!,
+        goto:        String!,
+        package:     String!,
+        switch:      String!,
+        const:       String!,
+        fallthrough: String!,
+        if:          String!,
+        range:       String!,
+        type:        String!,
+        continue:    String!,
+        for:         String!,
+        import:      String!,
+        return:      String!,
+        var:         String!,
+        _:           String!,
+    ): Boolean!
+}
+
+input ValidInput {
+    break:       String!
+    default:     String!
+    func:        String!
+    interface:   String!
+    select:      String!
+    case:        String!
+    defer:       String!
+    go:          String!
+    map:         String!
+    struct:      String!
+    chan:        String!
+    else:        String!
+    goto:        String!
+    package:     String!
+    switch:      String!
+    const:       String!
+    fallthrough: String!
+    if:          String!
+    range:       String!
+    type:        String!
+    continue:    String!
+    for:         String!
+    import:      String!
+    return:      String!
+    var:         String!
+    _:           String! @goField(name: "Underscore")
+}
+
+# see https://github.com/99designs/gqlgen/issues/694
+type Content_User {
+  foo: String
+}
+
+type Content_Post {
+  foo: String
+}
+
+union Content_Child = Content_User | Content_Post

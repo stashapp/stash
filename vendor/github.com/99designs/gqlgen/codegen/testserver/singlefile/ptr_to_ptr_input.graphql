@@ -1,0 +1,25 @@
+type PtrToPtrOuter {
+    name: String!
+    inner: PtrToPtrInner
+    stupidInner: PtrToPtrInner
+}
+
+type PtrToPtrInner {
+    key: String!
+    value: String!
+}
+
+input UpdatePtrToPtrOuter {
+    name: String
+    inner: UpdatePtrToPtrInner
+    stupidInner: UpdatePtrToPtrInner
+}
+
+input UpdatePtrToPtrInner {
+    key: String
+    value: String
+}
+
+extend type Mutation {
+    updatePtrToPtr(input: UpdatePtrToPtrOuter!): PtrToPtrOuter!
+}

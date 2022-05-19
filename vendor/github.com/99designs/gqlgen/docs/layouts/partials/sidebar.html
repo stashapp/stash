@@ -1,0 +1,44 @@
+<div class="layout--logo">
+	<a class="logo" href="http://github.com/99designs/gqlgen">
+		{{ partial "gqlgen.svg" }}
+		<span class="logo--name">gqlgen</span>
+	</a>
+</div>
+
+<nav>
+	<input class="hamburger-toggle" type="checkbox" />
+
+	<div class="hamburger">
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
+
+	<ul class="menu">
+	{{ $currentPage := . }}
+	{{- range .Site.Menus.main }}
+		<li class="{{ if $currentPage.IsMenuCurrent "main" . }}active{{ end }}">
+			{{ if .URL }}
+				<a class="menu-item" href="{{ .URL }}">{{ .Name }}</a>
+			{{ else }}
+				<span class="menu-item submenu-heading">{{ .Name }}</span>
+			{{ end }}
+		{{- if .HasChildren }}
+			<ul class="submenu">
+			{{- range .Children.ByWeight }}
+				<li class="{{ if $currentPage.IsMenuCurrent "main" . }}active{{ end }}">
+					{{ if .URL }}
+						<a class="menu-item" href="{{ .URL }}">
+							{{ .Name | safeHTML }}
+						</a>
+					{{ else }}
+						<span class="menu-item">{{ .Name }}</span>
+					{{ end }}
+				</li>
+			{{- end }}
+			</ul>
+		{{- end }}
+		</li>
+	{{- end}}
+	</ul>
+</nav>

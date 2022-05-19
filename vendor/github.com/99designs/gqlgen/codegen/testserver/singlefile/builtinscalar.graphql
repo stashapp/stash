@@ -1,0 +1,8 @@
+
+"""
+Since gqlgen defines default implementation for a Map scalar, this tests that the builtin is _not_
+added to the TypeMap
+"""
+type Map {
+    id: ID!
+}

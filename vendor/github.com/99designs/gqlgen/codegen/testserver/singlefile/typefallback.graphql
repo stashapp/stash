@@ -1,0 +1,9 @@
+extend type Query {
+    fallback(arg: FallbackToStringEncoding!): FallbackToStringEncoding!
+}
+
+enum FallbackToStringEncoding {
+    A
+    B
+    C
+}

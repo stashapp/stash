@@ -1,0 +1,15 @@
+extend type Query {
+    primitiveObject: [Primitive!]!
+    primitiveStringObject: [PrimitiveString!]!
+}
+
+type Primitive {
+    value: Int!
+    squared: Int!
+}
+
+type PrimitiveString {
+    value: String!
+    doubled: String!
+    len: Int!
+}

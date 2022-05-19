@@ -1,0 +1,48 @@
+#!/bin/bash
+
+set -eu
+
+if ! [ $# -eq 1 ] ; then
+    echo "usage: ./bin/release [version]"
+    exit 1
+fi
+
+VERSION=$1
+
+if ! git diff-index --quiet HEAD -- ; then
+    echo "uncommited changes on HEAD, aborting"
+    exit 1
+fi
+
+if [[ ${VERSION:0:1} != "v" ]] ; then
+    echo "version strings must start with v"
+    exit 1
+fi
+
+git fetch origin
+git checkout origin/master
+
+cat > graphql/version.go <<EOF
+package graphql
+
+const Version = "$VERSION"
+EOF
+
+git add .
+git commit -m "release $VERSION"
+git tag $VERSION
+git push origin $VERSION
+git push origin HEAD:master
+
+cat > graphql/version.go <<EOF
+package graphql
+
+const Version = "$VERSION-dev"
+EOF
+
+git add .
+git commit -m "$VERSION postrelease bump"
+git push origin HEAD:master
+
+
+echo "Now go write some release notes! https://github.com/99designs/gqlgen/releases"

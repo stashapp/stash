@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -euo pipefail
+
+go generate ./...
+cd _examples && go generate ./...
+if [[ $(git --no-pager diff) ]] ; then
+    echo "you need to run "go generate ./..." and commit the changes"
+    git --no-pager diff
+    exit 1
+fi

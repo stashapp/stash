@@ -1,0 +1,22 @@
+schema:
+  - "schema.graphql"
+  - "user.graphql"
+
+exec:
+  filename: generated.go
+model:
+  filename: models-go/generated.go
+resolver:
+  filename: resolver.go
+  type: Resolver
+
+models:
+  Element:
+    model: github.com/99designs/gqlgen/integration/models-go.Element
+  Viewer:
+    model: github.com/99designs/gqlgen/integration/models-go.Viewer
+  User:
+    model: github.com/99designs/gqlgen/integration/remote_api.User
+    fields:
+      likes:
+        resolver: true

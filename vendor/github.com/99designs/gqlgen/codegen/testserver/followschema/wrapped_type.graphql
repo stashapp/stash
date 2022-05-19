@@ -1,0 +1,13 @@
+# regression test for https://github.com/99designs/gqlgen/issues/721
+
+extend type Query {
+    wrappedStruct: WrappedStruct!
+    wrappedScalar: WrappedScalar!
+    wrappedMap: WrappedMap!
+    wrappedSlice: WrappedSlice!
+}
+
+type WrappedStruct { name: WrappedScalar!, desc: WrappedScalar }
+scalar WrappedScalar
+type WrappedMap { get(key: String!): String! }
+type WrappedSlice { get(idx: Int!): String! }

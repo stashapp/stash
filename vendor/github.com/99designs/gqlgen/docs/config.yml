@@ -1,0 +1,33 @@
+baseurl: https://gqlgen.com/
+metadataformat: yaml
+title: gqlgen
+enableGitInfo: true
+pygmentsCodeFences: true
+pygmentsUseClasses: true
+canonifyURLs: true
+
+params:
+  name: gqlgen
+  description: graphql servers the easy way
+
+menu:
+  main:
+    - name: Introduction
+      url: /
+      weight: -10
+    - name: Reference
+      identifier: reference
+      weight: 5
+    - name: Recipes
+      identifier: recipes
+      weight: 10
+    - name: pkg.go.dev →
+      parent: reference
+      url: https://pkg.go.dev/github.com/99designs/gqlgen
+
+security:
+  funcs:
+    getenv:
+    - '^HUGO_'
+    - 'VERSIONS'
+    - 'CURRENT_VERSION'

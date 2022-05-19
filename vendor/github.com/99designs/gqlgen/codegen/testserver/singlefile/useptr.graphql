@@ -1,0 +1,13 @@
+type A {
+    id: ID!
+}
+
+type B {
+    id: ID!
+}
+
+union TestUnion = A | B
+
+extend type Query {
+    optionalUnion: TestUnion
+}

@@ -1,0 +1,22 @@
+extend type Query {
+    errorBubble: Error
+    errorBubbleList: [Error!]
+    errorList: [Error]
+    errors: Errors
+    valid: String!
+}
+
+type Errors {
+    a: Error!
+    b: Error!
+    c: Error!
+    d: Error!
+    e: Error!
+}
+
+type Error {
+    id: ID!
+    errorOnNonRequiredField: String
+    errorOnRequiredField: String!
+    nilOnRequiredField: String!
+}

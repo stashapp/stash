@@ -1,0 +1,13 @@
+schema:
+  - "testdata/entityresolver/schema.graphql"
+exec:
+  filename: testdata/entityresolver/generated/exec.go
+federation:
+  filename: testdata/entityresolver/generated/federation.go
+model:
+  filename: testdata/entityresolver/generated/models.go
+resolver:
+  filename: testdata/entityresolver/resolver.go
+  layout: follow-schema
+  dir: testdata/entityresolver
+  package: entityresolver

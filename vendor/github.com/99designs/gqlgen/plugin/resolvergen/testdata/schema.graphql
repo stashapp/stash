@@ -1,0 +1,7 @@
+type Query {
+    resolver: Resolver!
+}
+
+type Resolver {
+    name: String!
+}

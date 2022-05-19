@@ -1,0 +1,11 @@
+interface Hello @extends {
+    name: String!
+    secondary: String!
+}
+
+extend type World implements Hello @key(fields: "name") {
+    name: String! @external
+    secondary: String!
+
+    tertiary: String!
+}

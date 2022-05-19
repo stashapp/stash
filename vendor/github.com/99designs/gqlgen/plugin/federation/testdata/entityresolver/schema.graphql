@@ -1,0 +1,77 @@
+directive @entityResolver(multi: Boolean) on OBJECT
+
+type Hello @key(fields: "name") {
+    name: String!
+    secondary: String!
+}
+
+type World @key(fields: "hello { name } foo   ") {
+    foo: String!
+    bar: Int!
+    hello: Hello
+}
+
+type WorldWithMultipleKeys @key(fields: "hello { name } foo   ") @key(fields: "bar") {
+    foo: String!
+    bar: Int!
+    hello: Hello
+}
+
+type WorldName @key(fields: "name") {
+    name: String!
+}
+
+type HelloWithErrors @key(fields: "name") {
+    name: String!
+}
+
+type PlanetRequires @key(fields: "name") {
+    name: String!
+    size: Int! @requires(fields: "diameter")
+    diameter: Int!
+}
+
+type PlanetMultipleRequires @key(fields: "name") {
+    name: String! @external
+    diameter: Int! @external
+    density: Int! @external
+    weight: Int! @requires(fields: "diameter density")
+}
+
+type PlanetRequiresNested @key(fields: "name") {
+    name: String! @external
+    world: World! @external
+    size: Int! @requires(fields: "world{ foo }")
+}
+
+type MultiPlanetRequiresNested @key(fields: "name") @entityResolver(multi: true) {
+    name: String! @external
+    world: World! @external
+    size: Int! @requires(fields: "world{ foo }")
+}
+
+type MultiHello @key(fields: "name") @entityResolver(multi: true) {
+    name: String!
+}
+
+type MultiHelloWithError @key(fields: "name") @entityResolver(multi: true) {
+    name: String!
+}
+
+type HelloMultiSingleKeys @key(fields: "key1 key2") {
+    key1: String!
+    key2: String!
+}
+
+type MultiHelloRequires @key(fields: "name") @entityResolver(multi: true) {
+    name: String! @external
+    key1: String! @external
+    key2: String! @requires(fields: "key1")
+}
+
+type MultiHelloMultipleRequires @key(fields: "name") @entityResolver(multi: true) {
+    name: String! @external
+    key1: String! @external
+    key2: String! @external
+    key3: String! @requires(fields: "key1 key2")
+}
