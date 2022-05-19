@@ -332,6 +332,10 @@ func (s *scanJob) getZipFileID(ctx context.Context, zipFile *scanFile) (*ID, err
 		return nil, nil
 	}
 
+	if zipFile.ID != 0 {
+		return &zipFile.ID, nil
+	}
+
 	path := zipFile.Path
 
 	// check the folder cache first
@@ -401,7 +405,7 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 	}
 
 	if zipFileID != nil {
-		file.ZipFileID = zipFileID
+		toCreate.ZipFileID = zipFileID
 	}
 
 	dir := filepath.Dir(file.Path)
@@ -725,6 +729,13 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	}
 
 	if !updated {
+		// if file is a zip file, mark its children as scanned
+		if s.isZipFile(f.info) {
+			if err := s.scannedZip(ctx, base.ID); err != nil {
+				return nil, err
+			}
+		}
+
 		return nil, nil
 	}
 
@@ -733,6 +744,34 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	}
 
 	return existing, nil
+}
+
+func (s *scanJob) scannedZip(ctx context.Context, zipFileID ID) error {
+	folders, err := s.Repository.FolderStore.FindByZipFileID(ctx, zipFileID)
+	if err != nil {
+		return fmt.Errorf("finding folders by zip file id: %w", err)
+	}
+
+	for _, folder := range folders {
+		folder.scanned()
+		if err := s.Repository.FolderStore.Update(ctx, folder); err != nil {
+			return fmt.Errorf("updating folder %q: %w", folder.Path, err)
+		}
+	}
+
+	files, err := s.Repository.FindByZipFileID(ctx, zipFileID)
+	if err != nil {
+		return fmt.Errorf("finding files by zip file id: %w", err)
+	}
+
+	for _, file := range files {
+		file.Base().scanned()
+		if err := s.Repository.Update(ctx, file); err != nil {
+			return fmt.Errorf("updating file %q: %w", file.Base().Path, err)
+		}
+	}
+
+	return nil
 }
 
 func (s *scanJob) markMissingFiles(ctx context.Context) {
@@ -782,7 +821,7 @@ func (s *scanJob) logMissingFiles(ctx context.Context) error {
 		}
 
 		for _, f := range missing {
-			logger.Infof("Marking %s as missing", f.Base().Path)
+			logger.Infof("Marking file %s as missing", f.Base().Path)
 		}
 
 		page++
@@ -805,7 +844,7 @@ func (s *scanJob) logMissingFolders(ctx context.Context) error {
 		}
 
 		for _, f := range missing {
-			logger.Infof("Marking %s as missing", f.Path)
+			logger.Infof("Marking folder %s as missing", f.Path)
 		}
 
 		page++

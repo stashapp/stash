@@ -587,6 +587,16 @@ func (qb *FileStore) FindByFingerprint(ctx context.Context, fp file.Fingerprint)
 	return qb.findBySubquery(ctx, sq)
 }
 
+func (qb *FileStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]file.File, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col("zip_file_id").Eq(zipFileID),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
 func (qb *FileStore) FindMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string, page uint, limit uint) ([]file.File, error) {
 	table := qb.table()
 	folderTable := folderTableMgr.table

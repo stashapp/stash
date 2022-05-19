@@ -147,6 +147,7 @@ func (f *BaseFile) Serve(w http.ResponseWriter, r *http.Request) {
 type Getter interface {
 	FindByPath(ctx context.Context, path string) (File, error)
 	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
+	FindByZipFileID(ctx context.Context, zipFileID ID) ([]File, error)
 }
 
 // Creator provides methods to create Files.

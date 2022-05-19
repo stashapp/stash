@@ -28,6 +28,7 @@ type Folder struct {
 // FolderGetter provides methods to find Folders.
 type FolderGetter interface {
 	FindByPath(ctx context.Context, path string) (*Folder, error)
+	FindByZipFileID(ctx context.Context, zipFileID ID) ([]*Folder, error)
 }
 
 // FolderCreator provides methods to create Folders.

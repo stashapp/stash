@@ -216,6 +216,16 @@ func (qb *FolderStore) findBySubquery(ctx context.Context, sq *goqu.SelectDatase
 	return qb.getMany(ctx, q)
 }
 
+func (qb *FolderStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*file.Folder, error) {
+	table := qb.table()
+
+	q := qb.selectDataset().Prepared(true).Where(
+		table.Col("zip_file_id").Eq(zipFileID),
+	)
+
+	return qb.getMany(ctx, q)
+}
+
 func (qb *FolderStore) FindMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string, page uint, limit uint) ([]*file.Folder, error) {
 	table := qb.table()
 	folderTable := folderTableMgr.table
