@@ -25,6 +25,7 @@ var matcher = language.NewMatcher([]language.Tag{
 	language.MustParse("tr-TR"),
 	language.MustParse("da-DK"),
 	language.MustParse("pl-PL"),
+	language.MustParse("ko-KR"),
 })
 
 // newCollator parses a locale into a collator
