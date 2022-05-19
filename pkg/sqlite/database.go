@@ -308,10 +308,38 @@ func (db *Database) RunMigrations() error {
 	stepNumber := appSchemaVersion - databaseSchemaVersion
 	if stepNumber != 0 {
 		logger.Infof("Migrating database from version %d to %d", databaseSchemaVersion, appSchemaVersion)
-		err = m.Steps(int(stepNumber))
-		if err != nil {
-			// migration failed
-			return err
+
+		// run each migration individually, and run custom migrations as needed
+		var i uint = 1
+		for ; i <= stepNumber; i++ {
+			err = m.Steps(1)
+			if err != nil {
+				// migration failed
+				return err
+			}
+
+			newVersion := databaseSchemaVersion + i
+
+			// run custom migrations as needed
+			fns := customMigrations[newVersion]
+			for _, fn := range fns {
+				if err := func() error {
+					const disableForeignKeys = false
+					db, err := db.open(disableForeignKeys)
+					if err != nil {
+						return err
+					}
+
+					defer db.Close()
+					if err := fn(db); err != nil {
+						return fmt.Errorf("running custom migration for schema version %d: %w", newVersion, err)
+					}
+
+					return nil
+				}(); err != nil {
+					return err
+				}
+			}
 		}
 	}
 

@@ -39,6 +39,9 @@ import (
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stashapp/stash/ui"
+
+	// register custom migrations
+	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
 )
 
 type SystemStatus struct {

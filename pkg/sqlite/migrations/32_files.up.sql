@@ -152,6 +152,68 @@ INSERT INTO `images_new`
     `updated_at`
   FROM `images`;
 
+-- create temporary placeholder folder
+INSERT INTO `folders` (`path`, `mod_time`, `last_scanned`, `created_at`, `updated_at`) VALUES ('', '1970-01-01 00:00:00', '1970-01-01 00:00:00', '1970-01-01 00:00:00', '1970-01-01 00:00:00');
+
+-- insert image files - we will fix these up in the post-migration
+INSERT INTO `files`
+  (
+    `basename`,
+    `parent_folder_id`,
+    `size`,
+    `mod_time`,
+    `last_scanned`,
+    `created_at`,
+    `updated_at`
+  )
+  SELECT
+    `path`,
+    1,
+    `size`,
+    `file_mod_time`,
+    `updated_at`,
+    `created_at`,
+    `updated_at`
+  FROM `images`;
+
+INSERT INTO `image_files`
+  (
+    `file_id`,
+    `format`,
+    `width`,
+    `height`
+  )
+  SELECT
+    `files`.`id`,
+    '',
+    `images`.`width`,
+    `images`.`height`
+  FROM `images` INNER JOIN `files` ON `images`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
+
+INSERT INTO `images_files`
+  (
+    `image_id`,
+    `file_id`,
+    `primary`
+  )
+  SELECT
+    `images`.`id`,
+    `files`.`id`,
+    1
+  FROM `images` INNER JOIN `files` ON `images`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
+
+INSERT INTO `files_fingerprints`
+  (
+    `file_id`,
+    `type`,
+    `fingerprint`
+  )
+  SELECT
+    `files`.`id`,
+    'md5',
+    `images`.`checksum`
+  FROM `images` INNER JOIN `files` ON `images`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
+
 DROP TABLE `images`;
 ALTER TABLE `images_new` rename to `images`;
 
@@ -203,6 +265,95 @@ INSERT INTO `galleries_new`
     `created_at`,
     `updated_at`
   FROM `galleries`;
+
+-- insert gallery files - we will fix these up in the post-migration
+INSERT INTO `files`
+  (
+    `basename`,
+    `parent_folder_id`,
+    `size`,
+    `mod_time`,
+    `last_scanned`,
+    `created_at`,
+    `updated_at`
+  )
+  SELECT
+    `path`,
+    1,
+    '0',
+    '1970-01-01 00:00:00', -- set to placeholder so that size is updated
+    `updated_at`,
+    `created_at`,
+    `updated_at`
+  FROM `galleries`
+  WHERE `galleries`.`path` IS NOT NULL AND `galleries`.`zip` = '1';
+
+-- insert gallery zip folders - we will fix these up in the post-migration
+INSERT INTO `folders`
+  (
+    `path`,
+    `zip_file_id`,
+    `mod_time`,
+    `last_scanned`,
+    `created_at`,
+    `updated_at`
+  )
+  SELECT
+    `galleries`.`path`,
+    `files`.`id`,
+    '1970-01-01 00:00:00',
+    `galleries`.`updated_at`,
+    `galleries`.`created_at`,
+    `galleries`.`updated_at`
+  FROM `galleries` 
+  INNER JOIN `files` ON `galleries`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1
+  WHERE `galleries`.`path` IS NOT NULL AND `galleries`.`zip` = '1';
+
+-- insert gallery folders - we will fix these up in the post-migration
+INSERT INTO `folders`
+  (
+    `path`,
+    `mod_time`,
+    `last_scanned`,
+    `created_at`,
+    `updated_at`
+  )
+  SELECT
+    `path`,
+    '1970-01-01 00:00:00',
+    `updated_at`,
+    `created_at`,
+    `updated_at`
+  FROM `galleries`
+  WHERE `galleries`.`path` IS NOT NULL AND `galleries`.`zip` = '0';
+
+UPDATE `galleries_new` SET `folder_id` = (
+  SELECT `folders`.`id` FROM `folders` INNER JOIN `galleries` ON `galleries_new`.`id` = `galleries`.`id` WHERE `folders`.`path` = `galleries`.`path` AND `galleries`.`zip` = '0'
+);
+
+INSERT INTO `galleries_files`
+  (
+    `gallery_id`,
+    `file_id`,
+    `primary`
+  )
+  SELECT
+    `galleries`.`id`,
+    `files`.`id`,
+    1
+  FROM `galleries` INNER JOIN `files` ON `galleries`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
+
+INSERT INTO `files_fingerprints`
+  (
+    `file_id`,
+    `type`,
+    `fingerprint`
+  )
+  SELECT
+    `files`.`id`,
+    'md5',
+    `galleries`.`checksum`
+  FROM `galleries` INNER JOIN `files` ON `galleries`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
 
 DROP TABLE `galleries`;
 ALTER TABLE `galleries_new` rename to `galleries`;
@@ -271,10 +422,124 @@ INSERT INTO `scenes_new`
     `updated_at`
   FROM `scenes`;
 
--- TODO - transfer fingerprint information
--- TODO - transfer captions
+-- insert scene files - we will fix these up in the post-migration
+INSERT INTO `files`
+  (
+    `basename`,
+    `parent_folder_id`,
+    `size`,
+    `mod_time`,
+    `last_scanned`,
+    `created_at`,
+    `updated_at`
+  )
+  SELECT
+    `path`,
+    1,
+    `size`,
+    `file_mod_time`,
+    `updated_at`,
+    `created_at`,
+    `updated_at`
+  FROM `scenes`;
+
+INSERT INTO `video_files`
+  (
+    `file_id`,
+    `duration`,
+    `video_codec`,
+    `format`,
+    `audio_codec`,
+    `width`,
+    `height`,
+    `frame_rate`,
+    `bit_rate`,
+    `interactive`,
+    `interactive_speed`
+  )
+  SELECT
+    `files`.`id`,
+    `scenes`.`duration`,
+    `scenes`.`video_codec`,
+    `scenes`.`format`,
+    `scenes`.`audio_codec`,
+    `scenes`.`width`,
+    `scenes`.`height`,
+    `scenes`.`framerate`,
+    `scenes`.`bitrate`,
+    `scenes`.`interactive`,
+    `scenes`.`interactive_speed`
+  FROM `scenes` INNER JOIN `files` ON `scenes`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
+
+INSERT INTO `scenes_files`
+  (
+    `scene_id`,
+    `file_id`,
+    `primary`
+  )
+  SELECT
+    `scenes`.`id`,
+    `files`.`id`,
+    1
+  FROM `scenes` INNER JOIN `files` ON `scenes`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
+
+INSERT INTO `files_fingerprints`
+  (
+    `file_id`,
+    `type`,
+    `fingerprint`
+  )
+  SELECT
+    `files`.`id`,
+    'md5',
+    `scenes`.`checksum`
+  FROM `scenes` INNER JOIN `files` ON `scenes`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1
+  WHERE `scenes`.`checksum` is not null;
+
+INSERT INTO `files_fingerprints`
+  (
+    `file_id`,
+    `type`,
+    `fingerprint`
+  )
+  SELECT
+    `files`.`id`,
+    'oshash',
+    `scenes`.`oshash`
+  FROM `scenes` INNER JOIN `files` ON `scenes`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1
+  WHERE `scenes`.`oshash` is not null;
+
+INSERT INTO `files_fingerprints`
+  (
+    `file_id`,
+    `type`,
+    `fingerprint`
+  )
+  SELECT
+    `files`.`id`,
+    'phash',
+    `scenes`.`phash`
+  FROM `scenes` INNER JOIN `files` ON `scenes`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1
+  WHERE `scenes`.`phash` is not null;
+
+INSERT INTO `video_captions`
+  (
+    `file_id`,
+    `language_code`,
+    `filename`,
+    `caption_type`
+  )
+  SELECT
+    `files`.`id`,
+    `scene_captions`.`language_code`,
+    `scene_captions`.`filename`,
+    `scene_captions`.`caption_type`
+  FROM `scene_captions` 
+  INNER JOIN `scenes` ON `scene_captions`.`scene_id` = `scenes`.`id`
+  INNER JOIN `files` ON `scenes`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
 
 DROP TABLE `scenes`;
+DROP TABLE `scene_captions`;
 
 ALTER TABLE `scenes_new` rename to `scenes`;
 CREATE INDEX `index_scenes_on_studio_id` on `scenes` (`studio_id`);
