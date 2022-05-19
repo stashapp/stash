@@ -7,7 +7,7 @@ import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { sortPerformers } from "src/core/performers";
-import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
 
 interface IGalleryDetailProps {
   gallery: GQL.GalleryDataFragment;
@@ -76,7 +76,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
 
   // filename should use entire row if there is no studio
   const galleryDetailsWidth = gallery.studio ? "col-9" : "col-12";
-  const title = objectTitle(gallery);
+  const title = galleryTitle(gallery);
 
   return (
     <>

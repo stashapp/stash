@@ -360,6 +360,7 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 				Handler: &image.ScanHandler{
 					CreatorUpdater: db.Image,
 					GalleryFinder:  db.Gallery,
+					ScanConfig:     instance.Config,
 					PluginCache:    pluginCache,
 				},
 			},

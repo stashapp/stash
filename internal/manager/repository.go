@@ -32,10 +32,16 @@ type FileReaderWriter interface {
 	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
 }
 
+type FolderReaderWriter interface {
+	file.FolderStore
+	Find(ctx context.Context, id file.FolderID) (*file.Folder, error)
+}
+
 type Repository struct {
 	models.TxnManager
 
 	File        FileReaderWriter
+	Folder      FolderReaderWriter
 	Gallery     GalleryReaderWriter
 	Image       ImageReaderWriter
 	Movie       models.MovieReaderWriter
@@ -58,6 +64,7 @@ func sqliteRepository(d *sqlite.Database) Repository {
 	return Repository{
 		TxnManager:  txnRepo,
 		File:        d.File,
+		Folder:      d.Folder,
 		Gallery:     d.Gallery,
 		Image:       d.Image,
 		Movie:       txnRepo.Movie,

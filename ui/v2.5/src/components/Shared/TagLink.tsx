@@ -13,6 +13,18 @@ import {
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
 import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
+import * as GQL from "src/core/generated-graphql";
+
+interface IFile {
+  path: string;
+}
+interface IGallery {
+  id: string;
+  files: IFile[];
+  folder?: GQL.Maybe<IFile>;
+  title: GQL.Maybe<string>;
+}
 
 interface IProps {
   tag?: Partial<TagDataFragment>;
@@ -21,7 +33,7 @@ interface IProps {
   marker?: Partial<SceneMarkerDataFragment>;
   movie?: Partial<MovieDataFragment>;
   scene?: Partial<Pick<SceneDataFragment, "id" | "title" | "files">>;
-  gallery?: Partial<GalleryDataFragment>;
+  gallery?: Partial<IGallery>;
   className?: string;
 }
 
@@ -58,7 +70,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     } - ${TextUtils.secondsToTimestamp(props.marker.seconds || 0)}`;
   } else if (props.gallery) {
     link = `/galleries/${props.gallery.id}`;
-    title = objectTitle(props.gallery);
+    title = galleryTitle(props.gallery);
   } else if (props.scene) {
     link = `/scenes/${props.scene.id}`;
     title = objectTitle(props.scene);

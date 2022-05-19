@@ -38,6 +38,7 @@ type galleryRow struct {
 	Rating    null.Int          `db:"rating"`
 	Organized bool              `db:"organized"`
 	StudioID  null.Int          `db:"studio_id,omitempty"`
+	FolderID  null.Int          `db:"folder_id,omitempty"`
 	CreatedAt time.Time         `db:"created_at"`
 	UpdatedAt time.Time         `db:"updated_at"`
 }
@@ -53,6 +54,7 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
+	r.FolderID = nullIntFromFolderIDPtr(o.FolderID)
 	r.CreatedAt = o.CreatedAt
 	r.UpdatedAt = o.UpdatedAt
 }
@@ -78,6 +80,8 @@ type galleryQueryRow struct {
 
 	relatedFileQueryRow
 
+	FolderPath null.String `db:"folder_path"`
+
 	SceneID     null.Int `db:"scene_id"`
 	TagID       null.Int `db:"tag_id"`
 	PerformerID null.Int `db:"performer_id"`
@@ -85,16 +89,18 @@ type galleryQueryRow struct {
 
 func (r *galleryQueryRow) resolve() *models.Gallery {
 	ret := &models.Gallery{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		URL:       r.URL.String,
-		Date:      r.Date.DatePtr(),
-		Details:   r.Details.String,
-		Rating:    nullIntPtr(r.Rating),
-		Organized: r.Organized,
-		StudioID:  nullIntPtr(r.StudioID),
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
+		ID:         r.ID,
+		Title:      r.Title.String,
+		URL:        r.URL.String,
+		Date:       r.Date.DatePtr(),
+		Details:    r.Details.String,
+		Rating:     nullIntPtr(r.Rating),
+		Organized:  r.Organized,
+		StudioID:   nullIntPtr(r.StudioID),
+		FolderID:   nullIntFolderIDPtr(r.FolderID),
+		FolderPath: r.FolderPath.String,
+		CreatedAt:  r.CreatedAt,
+		UpdatedAt:  r.UpdatedAt,
 	}
 
 	r.appendRelationships(ret)
@@ -436,15 +442,36 @@ func (qb *GalleryStore) FindByPath(ctx context.Context, p string) ([]*models.Gal
 	table := galleriesQueryTable
 	basename := filepath.Base(p)
 	dir, _ := path(filepath.Dir(p)).Value()
+	pp, _ := path(p).Value()
 
 	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("folder_path").Eq(dir),
-		table.Col("basename").Eq(basename),
+		goqu.Or(
+			goqu.And(
+				table.Col("parent_folder_path").Eq(dir),
+				table.Col("basename").Eq(basename),
+			),
+			table.Col("folder_path").Eq(pp),
+		),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("getting gallery by path %s: %w", p, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *GalleryStore) FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Gallery, error) {
+	table := galleriesQueryTable
+
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
+		table.Col("folder_id").Eq(folderID),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting galleries for folder %d: %w", folderID, err)
 	}
 
 	return ret, nil
@@ -564,7 +591,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 		}
 	}))
 
-	query.handleCriterion(ctx, pathCriterionHandler(galleryFilter.Path, "galleries_query.folder_path", "galleries_query.basename"))
+	query.handleCriterion(ctx, pathCriterionHandler(galleryFilter.Path, "galleries_query.parent_folder_path", "galleries_query.basename"))
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating, "galleries.rating"))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))
 	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized"))
@@ -603,7 +630,7 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		// add joins for files and checksum
-		searchColumns := []string{"galleries.title", "galleries_query.folder_path", "galleries_query.basename", "galleries_query.fingerprint"}
+		searchColumns := []string{"galleries.title", "galleries_query.parent_folder_path", "galleries_query.basename", "galleries_query.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -874,7 +901,7 @@ func (qb *GalleryStore) getGallerySort(findFilter *models.FindFilterType) string
 		return getCountSort(galleryTable, performersGalleriesTable, galleryIDColumn, direction)
 	case "path":
 		// special handling for path
-		return fmt.Sprintf(" ORDER BY galleries_query.folder_path %s, galleries_query.basename %[1]s", direction)
+		return fmt.Sprintf(" ORDER BY galleries_query.parent_folder_path %s, galleries_query.basename %[1]s", direction)
 	default:
 		return getSort(sort, direction, "galleries_query")
 	}

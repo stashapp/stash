@@ -26,6 +26,7 @@ import { SelectComponents } from "react-select/src/components";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -277,7 +278,7 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
 
   const galleries = data?.findGalleries.galleries ?? [];
   const items = galleries.map((g) => ({
-    label: objectTitle(g),
+    label: galleryTitle(g),
     value: g.id,
   }));
 

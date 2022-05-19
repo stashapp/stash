@@ -3,6 +3,22 @@ type Fingerprint {
     value: String!
 }
 
+type Folder {
+    id: ID!
+    path: String!
+
+    parent_folder_id: ID!
+    zip_file_id: ID
+
+    mod_time: Time!
+
+    missing_since: Time
+    last_scanned: Time!
+
+    created_at: Time!
+    updated_at: Time!
+}
+
 interface BaseFile {
     id: ID!
     path: String!

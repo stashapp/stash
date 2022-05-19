@@ -185,7 +185,7 @@ type fileQueryRow struct {
 	ZipBasename   null.String `db:"zip_basename"`
 	ZipFolderPath null.String `db:"zip_folder_path"`
 
-	FolderPath null.String `db:"folder_path"`
+	FolderPath null.String `db:"parent_folder_path"`
 	fingerprintQueryRow
 	videoFileQueryRow
 	imageFileQueryRow
@@ -459,7 +459,7 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 		table.Col("last_scanned"),
 		table.Col("created_at"),
 		table.Col("updated_at"),
-		folderTable.Col("path").As("folder_path"),
+		folderTable.Col("path").As("parent_folder_path"),
 		fingerprintTable.Col("type").As("fingerprint_type"),
 		fingerprintTable.Col("fingerprint"),
 		zipFileTable.Col("basename").As("zip_basename"),

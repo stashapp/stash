@@ -9,6 +9,9 @@ fragment SlimGalleryData on Gallery {
   files {
     ...GalleryFileData
   }
+  folder {
+    ...FolderData
+  }
   image_count
   cover {
     files {

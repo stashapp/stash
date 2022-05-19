@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -35,6 +36,49 @@ func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*Ga
 	}
 
 	return ret, nil
+}
+
+func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*Folder, error) {
+	if obj.FolderID == nil {
+		return nil, nil
+	}
+
+	var ret *file.Folder
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
+
+		ret, err = r.repository.Folder.Find(ctx, *obj.FolderID)
+		if err != nil {
+			return err
+		}
+
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	if ret == nil {
+		return nil, nil
+	}
+
+	rr := &Folder{
+		ID:             ret.ID.String(),
+		Path:           ret.Path,
+		ModTime:        ret.ModTime,
+		ParentFolderID: ret.ParentFolderID.String(),
+		MissingSince:   ret.MissingSince,
+		LastScanned:    ret.LastScanned,
+		CreatedAt:      ret.CreatedAt,
+		UpdatedAt:      ret.UpdatedAt,
+	}
+
+	if ret.ZipFileID != nil {
+		zfidStr := ret.ZipFileID.String()
+		rr.ZipFileID = &zfidStr
+	}
+
+	return rr, nil
 }
 
 func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {

@@ -27,6 +27,11 @@ type Gallery struct {
 	// transient - not persisted
 	Files []file.File
 
+	FolderID *file.FolderID `json:"folder_id"`
+
+	// transient - not persisted
+	FolderPath string `json:"folder_path"`
+
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
@@ -48,7 +53,7 @@ func (g Gallery) Path() string {
 		return p.Base().Path
 	}
 
-	return ""
+	return g.FolderPath
 }
 
 func (g Gallery) Checksum() string {

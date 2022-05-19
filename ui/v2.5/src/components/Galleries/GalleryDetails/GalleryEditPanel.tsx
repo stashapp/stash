@@ -35,7 +35,7 @@ import { FormUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
-import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
 
 interface IProps {
   isVisible: boolean;
@@ -61,7 +61,7 @@ export const GalleryEditPanel: React.FC<
   const [scenes, setScenes] = useState<{ id: string; title: string }[]>(
     (gallery?.scenes ?? []).map((s) => ({
       id: s.id,
-      title: objectTitle(s),
+      title: galleryTitle(s),
     }))
   );
 

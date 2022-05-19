@@ -12,6 +12,9 @@ fragment GalleryData on Gallery {
   files {
     ...GalleryFileData
   }
+  folder {
+    ...FolderData
+  }
 
   images {
     ...SlimImageData

@@ -21,7 +21,7 @@ import { GalleryAddPanel } from "./GalleryAddPanel";
 import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
 import { GalleryScenesPanel } from "./GalleryScenesPanel";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import { objectPath, objectTitle } from "src/core/files";
+import { galleryPath, galleryTitle } from "src/core/galleries";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -46,7 +46,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
     }
   };
 
-  const path = useMemo(() => objectPath(gallery), [gallery]);
+  const path = useMemo(() => galleryPath(gallery), [gallery]);
 
   const [updateGallery] = useGalleryUpdate();
 
@@ -272,7 +272,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
     };
   });
 
-  const title = objectTitle(gallery);
+  const title = galleryTitle(gallery);
 
   return (
     <div className="row">

@@ -163,6 +163,7 @@ CREATE TABLE `galleries_new` (
   -- REMOVED: `path` varchar(510),
   -- REMOVED: `checksum` varchar(255) not null,
   -- REMOVED: `zip` boolean not null default '0',
+  `folder_id` integer,
   `title` varchar(255),
   `url` varchar(255),
   `date` date,
@@ -173,7 +174,8 @@ CREATE TABLE `galleries_new` (
   `organized` boolean not null default '0',
   `created_at` datetime not null,
   `updated_at` datetime not null,
-  foreign key(`studio_id`) references `studios`(`id`) on delete SET NULL
+  foreign key(`studio_id`) references `studios`(`id`) on delete SET NULL,
+  foreign key(`folder_id`) references `folders`(`id`) on delete SET NULL
 );
 
 INSERT INTO `galleries_new`
@@ -206,6 +208,8 @@ DROP TABLE `galleries`;
 ALTER TABLE `galleries_new` rename to `galleries`;
 
 CREATE INDEX `index_galleries_on_studio_id` on `galleries` (`studio_id`);
+-- should only be possible to create a single gallery per folder
+CREATE UNIQUE INDEX `index_galleries_on_folder_id_unique` on `galleries` (`folder_id`);
 
 CREATE TABLE `scenes_new` (
   `id` integer not null primary key autoincrement,
@@ -303,7 +307,7 @@ CREATE VIEW `images_query` AS
     `files`.`last_scanned`,
     `files`.`zip_file_id`,
     `folders`.`id` as `parent_folder_id`,
-    `folders`.`path` as `folder_path`,
+    `folders`.`path` as `parent_folder_path`,
     `zip_files`.`basename` as `zip_basename`,
     `zip_files_folders`.`path` as `zip_folder_path`,
     `files_fingerprints`.`type` as `fingerprint_type`,
@@ -335,6 +339,8 @@ CREATE VIEW `galleries_query` AS
     `galleries_tags`.`tag_id`,
     `scenes_galleries`.`scene_id`,
     `performers_galleries`.`performer_id`,
+    `galleries_folders`.`id` as `folder_id`,
+    `galleries_folders`.`path` as `folder_path`,
     `files`.`id` as `file_id`,
     `files`.`basename`,
     `files`.`size`,
@@ -342,8 +348,8 @@ CREATE VIEW `galleries_query` AS
     `files`.`missing_since`,
     `files`.`last_scanned`,
     `files`.`zip_file_id`,
-    `folders`.`id` as `parent_folder_id`,
-    `folders`.`path` as `folder_path`,
+    `parent_folders`.`id` as `parent_folder_id`,
+    `parent_folders`.`path` as `parent_folder_path`,
     `zip_files`.`basename` as `zip_basename`,
     `zip_files_folders`.`path` as `zip_folder_path`,
     `files_fingerprints`.`type` as `fingerprint_type`,
@@ -352,9 +358,10 @@ CREATE VIEW `galleries_query` AS
   LEFT JOIN `performers_galleries` ON (`galleries`.`id` = `performers_galleries`.`gallery_id`) 
   LEFT JOIN `galleries_tags` ON (`galleries`.`id` = `galleries_tags`.`gallery_id`)
   LEFT JOIN `scenes_galleries` ON (`galleries`.`id` = `scenes_galleries`.`gallery_id`) 
+  LEFT JOIN `folders` AS `galleries_folders` ON (`galleries`.`folder_id` = `galleries_folders`.`id`) 
   LEFT JOIN `galleries_files` ON (`galleries`.`id` = `galleries_files`.`gallery_id`) 
   LEFT JOIN `files` ON (`galleries_files`.`file_id` = `files`.`id`) 
-  LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
+  LEFT JOIN `folders` AS `parent_folders` ON (`files`.`parent_folder_id` = `parent_folders`.`id`) 
   LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
   LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
   LEFT JOIN `files_fingerprints` ON (`galleries_files`.`file_id` = `files_fingerprints`.`file_id`);
@@ -397,7 +404,7 @@ CREATE VIEW `scenes_query` AS
     `files`.`last_scanned`,
     `files`.`zip_file_id`,
     `folders`.`id` as `parent_folder_id`,
-    `folders`.`path` as `folder_path`,
+    `folders`.`path` as `parent_folder_path`,
     `zip_files`.`basename` as `zip_basename`,
     `zip_files_folders`.`path` as `zip_folder_path`,
     `files_fingerprints`.`type` as `fingerprint_type`,

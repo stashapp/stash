@@ -526,7 +526,7 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 	dir, _ := path(filepath.Dir(p)).Value()
 
 	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("folder_path").Eq(dir),
+		table.Col("parent_folder_path").Eq(dir),
 		table.Col("basename").Eq(basename),
 	)
 
@@ -675,7 +675,7 @@ func (qb *SceneStore) Wall(ctx context.Context, q *string) ([]*models.Scene, err
 
 func (qb *SceneStore) All(ctx context.Context) ([]*models.Scene, error) {
 	return qb.getMany(ctx, qb.selectDataset().Order(
-		qb.queryTable().Col("folder_path").Asc(),
+		qb.queryTable().Col("parent_folder_path").Asc(),
 		qb.queryTable().Col("basename").Asc(),
 		qb.queryTable().Col("date").Asc(),
 	))
@@ -729,7 +729,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 		query.not(qb.makeFilter(ctx, sceneFilter.Not))
 	}
 
-	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "scenes_query.folder_path", "scenes_query.basename"))
+	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "scenes_query.parent_folder_path", "scenes_query.basename"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Title, "scenes.title"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Details, "scenes.details"))
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
@@ -821,7 +821,7 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 	if q := findFilter.Q; q != nil && *q != "" {
 		query.join("scene_markers", "", "scene_markers.scene_id = scenes.id")
 
-		searchColumns := []string{"scenes.title", "scenes.details", "scenes_query.folder_path", "scenes_query.basename", "scenes_query.fingerprint", "scene_markers.title"}
+		searchColumns := []string{"scenes.title", "scenes.details", "scenes_query.parent_folder_path", "scenes_query.basename", "scenes_query.fingerprint", "scene_markers.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -1177,7 +1177,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		query.sortAndPagination += getCountSort(sceneTable, performersScenesTable, sceneIDColumn, direction)
 	case "path":
 		// special handling for path
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY scenes_query.folder_path %s, scenes_query.basename %[1]s", direction)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY scenes_query.parent_folder_path %s, scenes_query.basename %[1]s", direction)
 	case "phash":
 		// special handling for phash
 		query.addJoins(join{

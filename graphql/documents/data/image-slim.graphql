@@ -20,6 +20,9 @@ fragment SlimImageData on Image {
     files {
       path
     }
+    folder {
+      path
+    }
   }
 
   studio {

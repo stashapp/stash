@@ -652,6 +652,7 @@ func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp []Fingerprin
 
 	for _, other := range others {
 		// if file does not exist, then update it to the new path
+		// TODO - handle #1426 scenario
 		fs, err := s.getFileFS(other.Base())
 		if err != nil {
 			return nil, fmt.Errorf("getting FS for %q: %w", other.Base().Path, err)

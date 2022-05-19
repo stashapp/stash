@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 var (
@@ -25,13 +26,21 @@ type FinderCreatorUpdater interface {
 	Update(ctx context.Context, updatedImage *models.Image) error
 }
 
-type GalleryFinder interface {
+type GalleryFinderCreator interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
+	FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Gallery, error)
+	Create(ctx context.Context, newObject *models.Gallery, fileIDs []file.ID) error
+}
+
+type ScanConfig interface {
+	GetCreateGalleriesFromFolders() bool
 }
 
 type ScanHandler struct {
 	CreatorUpdater FinderCreatorUpdater
-	GalleryFinder  GalleryFinder
+	GalleryFinder  GalleryFinderCreator
+
+	ScanConfig ScanConfig
 
 	PluginCache *plugin.Cache
 }
@@ -42,6 +51,9 @@ func (h *ScanHandler) validate() error {
 	}
 	if h.GalleryFinder == nil {
 		return errors.New("GalleryFinder is required")
+	}
+	if h.ScanConfig == nil {
+		return errors.New("ScanConfig is required")
 	}
 
 	return nil
@@ -93,6 +105,10 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 			for _, gg := range g {
 				newImage.GalleryIDs = append(newImage.GalleryIDs, gg.ID)
 			}
+		} else if h.ScanConfig.GetCreateGalleriesFromFolders() {
+			if err := h.associateFolderBasedGallery(ctx, newImage, imageFile); err != nil {
+				return err
+			}
 		}
 
 		if err := h.CreatorUpdater.Create(ctx, &models.ImageCreateInput{
@@ -123,11 +139,59 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 		if !found {
 			logger.Infof("Adding %s to image %s", f.Path, i.GetTitle())
 			i.Files = append(i.Files, f)
-		}
 
-		if err := h.CreatorUpdater.Update(ctx, i); err != nil {
-			return fmt.Errorf("updating image: %w", err)
+			// associate with folder-based gallery if applicable
+			if h.ScanConfig.GetCreateGalleriesFromFolders() {
+				if err := h.associateFolderBasedGallery(ctx, i, f); err != nil {
+					return err
+				}
+			}
+
+			if err := h.CreatorUpdater.Update(ctx, i); err != nil {
+				return fmt.Errorf("updating image: %w", err)
+			}
 		}
+	}
+
+	return nil
+}
+
+func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f file.File) (*models.Gallery, error) {
+	folderID := f.Base().ParentFolderID
+	g, err := h.GalleryFinder.FindByFolderID(ctx, folderID)
+	if err != nil {
+		return nil, fmt.Errorf("finding folder based gallery: %w", err)
+	}
+
+	if len(g) > 0 {
+		gg := g[0]
+		return gg, nil
+	}
+
+	// create a new folder-based gallery
+	now := time.Now()
+	newGallery := &models.Gallery{
+		FolderID:  &folderID,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	if err := h.GalleryFinder.Create(ctx, newGallery, nil); err != nil {
+		return nil, fmt.Errorf("creating folder based gallery: %w", err)
+	}
+
+	return newGallery, nil
+}
+
+func (h *ScanHandler) associateFolderBasedGallery(ctx context.Context, newImage *models.Image, f file.File) error {
+	g, err := h.getOrCreateFolderBasedGallery(ctx, f)
+	if err != nil {
+		return err
+	}
+
+	if g != nil && !intslice.IntInclude(newImage.GalleryIDs, g.ID) {
+		newImage.GalleryIDs = append(newImage.GalleryIDs, g.ID)
+		logger.Infof("Adding %s to folder-based gallery %s", newImage.GetTitle(), g.Path())
 	}
 
 	return nil

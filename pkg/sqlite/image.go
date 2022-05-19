@@ -419,7 +419,7 @@ func (qb *ImageStore) FindByPath(ctx context.Context, p string) ([]*models.Image
 	dir, _ := path(filepath.Dir(p)).Value()
 
 	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("folder_path").Eq(dir),
+		table.Col("parent_folder_path").Eq(dir),
 		table.Col("basename").Eq(basename),
 	)
 
@@ -436,7 +436,7 @@ func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mo
 
 	q := qb.selectDataset().Where(
 		table.Col("gallery_id").Eq(galleryID),
-	).GroupBy(table.Col(idColumn)).Order(table.Col("folder_path").Asc(), table.Col("basename").Asc())
+	).GroupBy(table.Col(idColumn)).Order(table.Col("parent_folder_path").Asc(), table.Col("basename").Asc())
 
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -525,7 +525,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
 
-	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "images_query.folder_path", "images_query.basename"))
+	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "images_query.parent_folder_path", "images_query.basename"))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating"))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized"))
@@ -564,7 +564,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 	})
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"images.title", "images_query.folder_path", "images_query.basename", "images_query.fingerprint"}
+		searchColumns := []string{"images.title", "images_query.parent_folder_path", "images_query.basename", "images_query.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -830,7 +830,7 @@ func (qb *ImageStore) getImageSort(findFilter *models.FindFilterType) string {
 
 	switch sort {
 	case "path":
-		return " ORDER BY images_query.folder_path " + direction + ", images_query.basename " + direction
+		return " ORDER BY images_query.parent_folder_path " + direction + ", images_query.basename " + direction
 	case "tag_count":
 		return getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
 	case "performer_count":

@@ -323,6 +323,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 			s, err := qb.Find(ctx, tt.updatedObject.ID)
 			if err != nil {
 				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
+				return
 			}
 
 			assert.Equal(copy, *s)

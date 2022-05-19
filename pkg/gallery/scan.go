@@ -48,7 +48,7 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 			return err
 		}
 	} else {
-		// create a new image
+		// create a new gallery
 		now := time.Now()
 		newGallery := &models.Gallery{
 			CreatedAt: now,
