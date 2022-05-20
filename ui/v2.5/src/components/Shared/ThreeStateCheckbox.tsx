@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "react-bootstrap";
-import { Icon } from ".";
+import Icon from "./Icon";
 
 interface IThreeStateCheckbox {
   value: boolean | undefined;

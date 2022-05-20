@@ -156,10 +156,7 @@ library.add(
   faUser,
   faUserClock,
   faVideo,
-  faVenus,
+  faVenus
 );
 
-library.add(
-  farCheckCircle,
-  farStar,
-)
+library.add(farCheckCircle, farStar);

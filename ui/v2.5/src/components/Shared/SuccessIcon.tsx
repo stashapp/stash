@@ -1,5 +1,5 @@
 import React from "react";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 
 interface ISuccessIconProps {
   className?: string;

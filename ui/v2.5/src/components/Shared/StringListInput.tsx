@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 
 interface IStringListInputProps {
   value: string[];

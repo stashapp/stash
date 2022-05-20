@@ -1,8 +1,8 @@
-import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { IntlProvider, CustomFormats } from "react-intl";
 import { Helmet } from "react-helmet";
-import { assign, clone, cloneDeep, mergeWith } from "lodash";
+import { cloneDeep, mergeWith } from "lodash";
 import { ToastProvider } from "src/hooks/Toast";
 import LightboxProvider from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
@@ -17,6 +17,7 @@ import { MainNavbar } from "./components/MainNavbar";
 import { PageNotFound } from "./components/PageNotFound";
 import * as GQL from "./core/generated-graphql";
 import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
+
 import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
@@ -58,41 +59,36 @@ const intlFormats: CustomFormats = {
 
 const defaultLocale = "en-GB";
 
+function languageMessageString(language: string) {
+  return language.replace(/-/, "");
+}
+
 export const App: React.FC = () => {
   const config = useConfiguration();
   const { data: systemStatusData } = useSystemStatus();
-  
+
   const language =
     config.data?.configuration?.interface?.language ?? defaultLocale;
 
   // use en-GB as default messages if any messages aren't found in the chosen language
   const [messages, setMessages] = useState<{}>();
-  
-  
+
   useEffect(() => {
     const setLocale = async () => {
-      function languageMessageString(language: string) {
-        return language.replace(/-/, "");
-      }
-
       const defaultMessageLanguage = languageMessageString(defaultLocale);
       const messageLanguage = languageMessageString(language);
 
       const defaultMessages = await locales[defaultMessageLanguage]();
       const mergedMessages = cloneDeep(defaultMessages);
       const chosenMessages = await locales[messageLanguage]();
-      mergeWith(
-        mergedMessages,
-        chosenMessages,
-        (objVal, srcVal) => {
-          if (srcVal === "") {
-            return objVal;
-          }
+      mergeWith(mergedMessages, chosenMessages, (objVal, srcVal) => {
+        if (srcVal === "") {
+          return objVal;
         }
-      );
+      });
 
       setMessages(flattenMessages(mergedMessages));
-    }
+    };
 
     setLocale();
   }, [language]);
@@ -165,8 +161,12 @@ export const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      {messages ? 
-        <IntlProvider locale={language} messages={messages} formats={intlFormats}>
+      {messages ? (
+        <IntlProvider
+          locale={language}
+          messages={messages}
+          formats={intlFormats}
+        >
           <ConfigurationProvider
             configuration={config.data?.configuration}
             loading={config.loading}
@@ -191,7 +191,7 @@ export const App: React.FC = () => {
             </ToastProvider>
           </ConfigurationProvider>
         </IntlProvider>
-      : null}
+      ) : null}
     </ErrorBoundary>
   );
 };

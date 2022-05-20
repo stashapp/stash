@@ -8,7 +8,7 @@ import {
   Row,
 } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { Modal } from ".";
+import Modal from "./Modal";
 import Icon from "./Icon";
 
 interface IImageInput {

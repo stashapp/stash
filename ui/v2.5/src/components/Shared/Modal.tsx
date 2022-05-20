@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Modal, Spinner, ModalProps } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { FormattedMessage } from "react-intl";
 

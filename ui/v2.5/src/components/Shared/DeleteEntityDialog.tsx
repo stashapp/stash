@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 import { FetchResult } from "@apollo/client";
 
-import { Modal } from "src/components/Shared";
+import Modal from "src/components/Shared/Modal";
 import { useToast } from "src/hooks";
 
 interface IDeletionEntity {

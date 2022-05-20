@@ -8,7 +8,9 @@ import {
   FormControl,
   Badge,
 } from "react-bootstrap";
-import { CollapseButton, Icon, Modal } from "src/components/Shared";
+import { CollapseButton } from "src/components/Shared/CollapseButton";
+import Icon from "src/components/Shared/Icon";
+import Modal from "src/components/Shared/Modal";
 import _ from "lodash";
 import { FormattedMessage, useIntl } from "react-intl";
 
