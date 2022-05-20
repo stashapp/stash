@@ -1,7 +1,7 @@
 import React from "react";
 import cx from "classnames";
 import { Button, Spinner } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 import { defineMessages, useIntl } from "react-intl";
 
 export interface IOrganizedButtonProps {

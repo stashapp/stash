@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 
 export interface IRatingStarsProps {
   value?: number;

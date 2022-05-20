@@ -1,9 +1,9 @@
 import React from "react";
 import { Button } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 import { SceneDataFragment } from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 
 export interface IExternalPlayerButtonProps {
   scene: SceneDataFragment;

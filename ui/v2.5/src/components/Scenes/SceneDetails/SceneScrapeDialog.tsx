@@ -18,8 +18,8 @@ import {
   useTagCreate,
   makePerformerCreateInput,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
-import { DurationUtils } from "src/utils";
+import useToast from "src/hooks/Toast";
+import DurationUtils from "src/utils/duration";
 import { useIntl } from "react-intl";
 
 function renderScrapedStudio(
@@ -634,3 +634,5 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     />
   );
 };
+
+export default SceneScrapeDialog;

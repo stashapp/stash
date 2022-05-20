@@ -17,11 +17,11 @@ import {
   queryFindScenesByID,
 } from "src/core/StashService";
 
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 import { useToast } from "src/hooks";
 import SceneQueue from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import Mousetrap from "mousetrap";
 import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";

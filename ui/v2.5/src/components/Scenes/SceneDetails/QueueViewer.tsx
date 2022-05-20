@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { Button, Form, Spinner } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 import { useIntl } from "react-intl";
 
 export interface IPlaylistViewer {

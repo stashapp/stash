@@ -10,7 +10,7 @@ import {
   Icon,
 } from "src/components/Shared";
 import { queryScrapeSceneQuery } from "src/core/StashService";
-import { useToast } from "src/hooks";
+import useToast from "src/hooks/Toast";
 
 interface ISceneSearchResultDetailsProps {
   scene: GQL.ScrapedSceneDataFragment;
@@ -235,3 +235,5 @@ export const SceneQueryModal: React.FC<IProps> = ({
     </Modal>
   );
 };
+
+export default SceneQueryModal;
