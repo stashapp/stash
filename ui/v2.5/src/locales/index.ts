@@ -14,6 +14,9 @@ import nlNL from "./nl-NL.json";
 import ruRU from "./ru-RU.json";
 import trTR from "./tr-TR.json";
 import jaJP from "./ja-JP.json";
+import plPL from "./pl-PL.json";
+import daDK from "./da-DK.json";
+import koKR from "./ko-KR.json";
 
 export default {
   deDE,
@@ -32,4 +35,7 @@ export default {
   ruRU,
   trTR,
   jaJP,
+  plPL,
+  daDK,
+  koKR,
 };

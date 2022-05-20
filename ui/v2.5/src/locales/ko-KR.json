@@ -1,0 +1,728 @@
+{
+  "actions": {
+    "add": "추가",
+    "add_directory": "경로 추가",
+    "add_entity": "{entityType} 추가",
+    "add_to_entity": "{entityType}에 추가",
+    "allow": "허용",
+    "allow_temporarily": "임시 허용",
+    "apply": "적용",
+    "auto_tag": "자동 태깅",
+    "backup": "백업",
+    "browse_for_image": "이미지 가져오기…",
+    "cancel": "취소",
+    "clean": "데이터베이스 정리",
+    "clear": "삭제",
+    "clear_back_image": "이전 이미지 삭제",
+    "clear_front_image": "처음 이미지 삭제",
+    "clear_image": "이미지 삭제",
+    "close": "닫기",
+    "confirm": "확인",
+    "continue": "계속하기",
+    "create": "생성",
+    "create_entity": "{entityType} 생성",
+    "create_marker": "마커 생성",
+    "created_entity": "{entity_type}을 생성했습니다. ({entity_name})",
+    "delete": "삭제",
+    "delete_entity": "{entityType} 삭제",
+    "delete_file": "파일 삭제",
+    "delete_file_and_funscript": "파일 삭제 (funscript 포함)",
+    "delete_generated_supporting_files": "생성된 추가 파일들까지 삭제",
+    "delete_stashid": "StashID 삭제",
+    "disallow": "금지",
+    "download": "다운로드",
+    "download_backup": "백업 다운로드",
+    "edit": "수정",
+    "edit_entity": "{entityType} 수정",
+    "export": "내보내기…",
+    "export_all": "모두 내보내기…",
+    "find": "찾기",
+    "finish": "완료",
+    "from_file": "파일로 불러오기…",
+    "from_url": "URL로 불러오기…",
+    "full_export": "전부 내보내기",
+    "full_import": "전부 불러오기",
+    "generate": "만들기",
+    "generate_thumb_default": "기본 썸네일 만들기",
+    "generate_thumb_from_current": "현재 화면으로 썸네일 만들기",
+    "hide": "숨기기",
+    "hide_configuration": "설정 숨기기",
+    "ignore": "무시",
+    "import": "불러오기…",
+    "import_from_file": "파일 불러오기",
+    "logout": "로그아웃",
+    "merge": "합치기",
+    "next_action": "다음",
+    "not_running": "실행 중이 아님",
+    "open_in_external_player": "외부 플레이어에서 열기",
+    "open_random": "랜덤 작품 열기",
+    "overwrite": "덮어쓰기",
+    "play_random": "랜덤 영상 재생",
+    "play_selected": "선택된 영상 재생",
+    "preview": "미리보기",
+    "previous_action": "뒤로",
+    "refresh": "새로고침",
+    "reload_plugins": "플러그인 새로고침",
+    "reload_scrapers": "스크레이퍼 다시 불러오기",
+    "remove": "삭제",
+    "remove_from_gallery": "갤러리에서 삭제",
+    "rename_gen_files": "생성된 파일 이름 바꾸기",
+    "rescan": "재스캔",
+    "reshuffle": "다시 섞기",
+    "running": "실행 중",
+    "save": "저장",
+    "save_delete_settings": "삭제할 때 이 설정을 기본값으로 사용",
+    "save_filter": "필터 저장",
+    "scan": "스캔",
+    "scrape": "스크레이핑하기",
+    "scrape_query": "스크레이핑 쿼리",
+    "search": "검색",
+    "select_all": "모두 검색",
+    "select_entity": "{entityType} 선택",
+    "select_folders": "폴더 선택",
+    "set_as_default": "기본값으로 설정",
+    "set_back_image": "이전 사진…",
+    "set_front_image": "처음 사진…",
+    "set_image": "사진 설정…",
+    "show": "보여주기",
+    "show_configuration": "설정 보여주기",
+    "skip": "건너뛰기",
+    "stop": "정지",
+    "submit": "제출",
+    "submit_stash_box": "Stash-Box에 제출하기",
+    "tasks": {
+      "import_warning": "정말 불러오기를 하시겠습니까? 데이터베이스를 삭제하고 불러온 메타데이터로 덮어쓰게 됩니다."
+    },
+    "temp_disable": "임시 비활성화…",
+    "temp_enable": "임시 활성화…",
+    "use_default": "기본값 사용",
+    "view_random": "랜덤 보기"
+  },
+  "actions_name": "액션",
+  "age": "나이",
+  "aliases": "별명",
+  "all": "모두",
+  "also_known_as": "별명",
+  "ascending": "오름차순",
+  "average_resolution": "평균 해상도",
+  "birth_year": "태어난 년도",
+  "birthdate": "생일",
+  "bitrate": "비트레이트",
+  "captions": "자막",
+  "career_length": "배우 경력",
+  "component_tagger": {
+    "config": {
+      "active_instance": "stash-box 개체 활성화:",
+      "blacklist_desc": "블랙리스트에 있는 아이템들은 쿼리에서 제외됩니다. (주의: 아이템들은 정규 표현식으로 적혀 있어야 하며 대소문자를 구별합니다. 다음 문자들의 앞에는 백슬래쉬(\\)를 넣어주어야 합니다: {chars_require_escape})",
+      "blacklist_label": "블랙리스트",
+      "query_mode_auto": "자동",
+      "query_mode_dir": "디렉토리",
+      "query_mode_dir_desc": "비디오 파일의 상위 경로만 사용",
+      "query_mode_filename": "파일 이름",
+      "query_mode_filename_desc": "파일 이름만 사용",
+      "query_mode_label": "쿼리 모드",
+      "query_mode_metadata": "메타데이터",
+      "query_mode_metadata_desc": "메타데이터만 사용",
+      "query_mode_path": "경로",
+      "query_mode_path_desc": "전체 파일 경로 사용",
+      "set_cover_label": "영상 커버 이미지 설정",
+      "set_tag_label": "태그 설정",
+      "show_male_label": "남성 배우 보여주기"
+    },
+    "noun_query": "쿼리",
+    "results": {
+      "match_failed_already_tagged": "이미 태깅된 영상",
+      "match_failed_no_result": "결과 없음",
+      "match_success": "영상 태깅 성공",
+      "unnamed": "이름 없음"
+    },
+    "verb_scrape_all": "모두 스크레이핑하기"
+  },
+  "config": {
+    "about": {
+      "check_for_new_version": "새로운 버전 체크",
+      "latest_version": "최신 버전",
+      "latest_version_build_hash": "최신 버전 빌드 해쉬:",
+      "stash_discord": "디스코드: {url}",
+      "stash_home": "깃허브: {url}",
+      "stash_open_collective": "후원: {url}",
+      "stash_wiki": "Stash 위키: {url}",
+      "version": "버전"
+    },
+    "application_paths": {
+      "heading": "앱 경로"
+    },
+    "categories": {
+      "interface": "인터페이스",
+      "logs": "로그",
+      "metadata_providers": "메타데이터",
+      "plugins": "플러그인",
+      "scraping": "스크레이핑",
+      "security": "보안",
+      "services": "서비스",
+      "system": "시스템",
+      "tasks": "작업",
+      "tools": "도구"
+    },
+    "dlna": {
+      "allow_temp_ip": "{tempIP} 허용",
+      "allowed_ip_addresses": "허용된 IP 주소",
+      "default_ip_whitelist": "IP 화이트리스트 기본값",
+      "disallowed_ip": "금지된 IP",
+      "network_interfaces": "인터페이스",
+      "recent_ip_addresses": "최근 IP 주소"
+    },
+    "general": {
+      "auth": {
+        "api_key": "API 키",
+        "authentication": "인증",
+        "clear_api_key": "API 키 삭제",
+        "credentials": {
+          "heading": "자격증명서"
+        },
+        "generate_api_key": "API 키 생성",
+        "log_file": "로그 파일",
+        "log_file_desc": "로그 파일 경로입니다. 파일 로깅을 하지 않으려면 빈 칸으로 두십시오. 설정 변경 후 재시작해야 합니다.",
+        "log_http": "HTTP 접근 로그",
+        "log_http_desc": "HTTP 접근을 터미널에 로깅합니다. 설정 변경 후 재시작해야 합니다.",
+        "log_to_terminal": "터미널에 로깅하기",
+        "log_to_terminal_desc": "파일뿐만 아니라 터미널에도 로깅을 합니다. 파일 로깅이 비활성화되어있다면 이 기능이 항상 켜집니다. 설정 변경 후 재시작해야 합니다.",
+        "maximum_session_age": "최대 접속 시간",
+        "maximum_session_age_desc": "사용되지 않을 때 자동으로 로그아웃되기까지의 시간입니다 (단위: 초).",
+        "password": "비밀번호",
+        "password_desc": "Stash에 접속하기 위한 비밀번호입니다. 로그인 과정을 생략하려면 빈 칸으로 두십시오",
+        "username": "아이디",
+        "username_desc": "Stash에 접속하기 위한 아이디입니다. 로그인을 생략하려면 빈 칸으로 두십시오"
+      },
+      "cache_location": "캐시 폴더 경로",
+      "cache_path_head": "캐쉬 경로",
+      "chrome_cdp_path": "Chrome CDP 경로",
+      "create_galleries_from_folders_label": "이미지가 들어있는 폴더로부터 갤러리 생성",
+      "db_path_head": "데이터베이스 경로",
+      "generated_files_location": "생성된 파일들의 폴더 위치 (영상 마커, 영상 미리보기, 스프라이트 등등)",
+      "generated_path_head": "생성된 파일 경로",
+      "hashing": "해싱",
+      "image_ext_head": "이미지 확장 프로그램",
+      "include_audio_head": "소리 포함",
+      "logging": "로깅",
+      "metadata_path": {
+        "description": "전체 내보내기 또는 전체 불러오기를 실행할 때 사용되는 폴더 위치",
+        "heading": "메타데이터 경로"
+      },
+      "parallel_scan_head": "병렬 스캔/생성",
+      "preview_generation": "생성 미리보기",
+      "python_path": {
+        "heading": "Python 경로"
+      },
+      "scrapers_path": {
+        "description": "스크레이퍼 설정 파일의 폴더 위치",
+        "heading": "스크레이퍼 경로"
+      },
+      "scraping": "스크레이핑",
+      "sqlite_location": "SQLite 데이터베이스의 파일 위치 (설정 변경 후 재시작이 필요합니다)",
+      "video_ext_desc": "비디오로 인식되는 파일 확장자들의 목록입니다 (쉼표(,)로 구분).",
+      "video_ext_head": "비디오 확장 프로그램",
+      "video_head": "비디오"
+    },
+    "library": {
+      "exclusions": "제외",
+      "gallery_and_image_options": "갤러리와 이미지 옵션",
+      "media_content_extensions": "미디어 컨텐츠 확장 프로그램"
+    },
+    "logs": {
+      "log_level": "로그 수준"
+    },
+    "scraping": {
+      "entity_metadata": "{entityType} 메타데이터",
+      "entity_scrapers": "{entityType} 스크레이퍼",
+      "scraper": "스크레이퍼",
+      "scrapers": "스크레이퍼",
+      "search_by_name": "이름으로 찾기",
+      "supported_types": "지원되는 형식",
+      "supported_urls": "URL"
+    },
+    "stashbox": {
+      "add_instance": "stash-box 인스턴스 추가",
+      "api_key": "API 키",
+      "name": "이름"
+    },
+    "tasks": {
+      "added_job_to_queue": "작업 대기열에 {operation_name}을 추가했습니다",
+      "auto_tag_based_on_filenames": "파일 이름을 통해 컨텐츠에 자동으로 태깅합니다.",
+      "auto_tagging": "자동 태깅",
+      "backing_up_database": "데이터베이스 백업 중",
+      "backup_and_download": "데이터베이스를 백업하고 결과 파일을 다운로드합니다.",
+      "backup_database": "데이터베이스가 있는 폴더에 {filename_format}의 파일 이름 형식으로 데이터베이스를 백업합니다",
+      "cleanup_desc": "있어야 할 곳에 없는 파일이 있는지 검사한 후, 데이터베이스에서 삭제합니다. 데이터베이스의 일부 내용이 삭제될 수 있습니다.",
+      "data_management": "데이터 관리",
+      "defaults_set": "기본값이 설정되었습니다. '작업' 페이지의 {action} 버튼을 클릭할 때 사용됩니다.",
+      "dont_include_file_extension_as_part_of_the_title": "제목에 파일 확장자 포함하지 않기",
+      "empty_queue": "실행 중인 작업이 없습니다.",
+      "export_to_json": "메타데이터 폴더에 데이터베이스 컨텐츠를 JSON 형식으로 내보냅니다.",
+      "generate_phashes_during_scan": "컨텐츠 해쉬 값 생성",
+      "generate_phashes_during_scan_tooltip": "중복된 파일 확인과 영상 식별에 사용됩니다.",
+      "generate_previews_during_scan": "움직이는 이미지 미리보기 생성",
+      "generate_thumbnails_during_scan": "이미지 썸네일 생성",
+      "generate_video_previews_during_scan": "미리보기 생성",
+      "generate_video_previews_during_scan_tooltip": "마우스를 위에 올려놓았을 때 재생되는 비디오 미리보기 생성",
+      "generated_content": "생성된 컨텐츠",
+      "identify": {
+        "default_options": "기본값 옵션",
+        "field_options": "항목 옵션",
+        "include_male_performers": "남성 배우 포함",
+        "set_cover_images": "커버 이미지 설정"
+      },
+      "job_queue": "작업 대기열",
+      "maintenance": "관리",
+      "only_dry_run": "체크만 합니다. 아무 것도 삭제하지 않습니다",
+      "scan": {
+        "scanning_all_paths": "모든 경로 스캔 중"
+      },
+      "scan_for_content_desc": "새로운 컨텐츠를 스캔하고 데이터베이스에 추가합니다.",
+      "set_name_date_details_from_metadata_if_present": "파일 속성을 통해 이름, 날짜, 세부 사항들을 설정합니다"
+    },
+    "tools": {
+      "scene_duplicate_checker": "영상 중복 체크 도구",
+      "scene_filename_parser": {
+        "add_field": "항목 추가",
+        "capitalize_title": "제목 앞 글자를 대문자로",
+        "display_fields": "항목 표시하기",
+        "filename": "파일 이름",
+        "filename_pattern": "파일 이름 패턴",
+        "ignored_words": "무시된 단어들",
+        "whitespace_chars": "공백 문자",
+        "whitespace_chars_desc": "이 문자들은 제목에서 공백으로 대체됩니다"
+      },
+      "scene_tools": "영상 도구"
+    },
+    "ui": {
+      "basic_settings": "기초 설정",
+      "custom_css": {
+        "description": "변화된 사항을 확인하려면 페이지를 새로고침해야 합니다.",
+        "heading": "커스텀 CSS",
+        "option_label": "커스텀 CSS 활성화"
+      },
+      "delete_options": {
+        "description": "이미지, 갤러리, 영상을 삭제할 때의 설정 기본값입니다.",
+        "heading": "옵션 삭제"
+      },
+      "desktop_integration": {
+        "notifications_enabled": "알림 활성화",
+        "send_desktop_notifications_for_events": "이벤트가 발생했을 때 데스크탑 알림을 보냅니다",
+        "skip_opening_browser": "브라우저 자동 열기 해제",
+        "skip_opening_browser_on_startup": "Stash를 시작할 때 자동으로 브라우저를 열지 않습니다"
+      },
+      "editing": {
+        "disable_dropdown_create": {
+          "description": "dropdown selector에서 새로운 오브젝트를 추가하지 않습니다",
+          "heading": "Dropdown 생성 비활성화"
+        },
+        "heading": "수정하기"
+      },
+      "funscript_offset": {
+        "heading": "Funscript 오프셋 (단위: 밀리초)"
+      },
+      "handy_connection": {
+        "connect": "접속",
+        "server_offset": {
+          "heading": "서버 오프셋"
+        },
+        "sync": "동기화"
+      },
+      "images": {
+        "heading": "이미지"
+      },
+      "language": {
+        "heading": "언어"
+      },
+      "menu_items": {
+        "description": "탐색 바에 여러 종류의 컨텐츠들이 보여지게 하거나 숨깁니다",
+        "heading": "메뉴 항목"
+      },
+      "performers": {
+        "options": {
+          "image_location": {
+            "heading": "커스텀 배우 이미지 경로"
+          }
+        }
+      },
+      "preview_type": {
+        "description": "미리보기를 설정합니다",
+        "heading": "미리보기 형식",
+        "options": {
+          "animated": "움직이는 이미지",
+          "static": "일반 이미지",
+          "video": "비디오"
+        }
+      },
+      "scene_list": {
+        "heading": "영상 목록",
+        "options": {
+          "show_studio_as_text": "스튜디오를 텍스트로 보여주기"
+        }
+      },
+      "scene_player": {
+        "heading": "영상 플레이어",
+        "options": {
+          "auto_start_video": "비디오 자동 재생",
+          "continue_playlist_default": {
+            "description": "비디오가 끝나면 대기열에 있는 다음 영상을 재생합니다",
+            "heading": "플레이리스트 이어보기"
+          }
+        }
+      },
+      "scene_wall": {
+        "heading": "영상 / 마커 미리보기",
+        "options": {
+          "display_title": "제목과 태그 표시",
+          "toggle_sound": "소리 켜기"
+        }
+      },
+      "slideshow_delay": {
+        "heading": "슬라이드쇼 딜레이 (단위: 초)"
+      },
+      "title": "UI"
+    }
+  },
+  "configuration": "설정",
+  "country": "국적",
+  "cover_image": "커버 이미지",
+  "created_at": "만든 날짜",
+  "criterion": {
+    "greater_than": "초과",
+    "less_than": "미만",
+    "value": "값"
+  },
+  "criterion_modifier": {
+    "between": "구간",
+    "equals": "같음",
+    "excludes": "포함하지 않음",
+    "format_string": "{criterion} {modifierString} {valueString}",
+    "greater_than": "초과",
+    "includes": "포함",
+    "includes_all": "모두 포함",
+    "is_null": "값 없음",
+    "less_than": "미만",
+    "matches_regex": "정규표현식 일치",
+    "not_between": "구간 밖",
+    "not_equals": "같지 않음",
+    "not_matches_regex": "정규표현식 불일치",
+    "not_null": "값 존재함"
+  },
+  "custom": "커스텀",
+  "date": "날짜",
+  "death_date": "사망 날짜",
+  "death_year": "사망 년도",
+  "descending": "내림차순",
+  "detail": "세부사항",
+  "details": "세부사항",
+  "developmentVersion": "개발 버전",
+  "dialogs": {
+    "delete_confirm": "정말 {entityName}을 삭제하시겠습니까?",
+    "export_title": "내보내기",
+    "lightbox": {
+      "delay": "딜레이 (단위: 초)",
+      "display_mode": {
+        "fit_horizontally": "가로로 맞추기",
+        "fit_to_screen": "스크린 크기에 맞추기",
+        "label": "표시 모드"
+      },
+      "options": "옵션",
+      "scroll_mode": {
+        "description": "임시로 다른 모드를 사용하려면 Shift 키를 누르세요.",
+        "label": "스크롤 모드",
+        "zoom": "확대"
+      }
+    },
+    "scene_gen": {
+      "image_previews": "움직이는 이미지 미리보기",
+      "marker_image_previews": "마커 움직이는 이미지 미리보기",
+      "marker_screenshots": "마커 스크린샷",
+      "markers": "마커 미리보기",
+      "overwrite": "이미 생성된 파일들 덮어쓰기",
+      "phash": "해쉬 (중복 방지용)",
+      "preview_options": "옵션 미리보기",
+      "preview_preset_head": "인코딩 프리셋 미리보기"
+    },
+    "set_image_url_title": "이미지 URL",
+    "unsaved_changes": "저장되지 않은 변경 사항들이 있습니다. 그래도 나가겠습니까?"
+  },
+  "display_mode": {
+    "grid": "격자",
+    "list": "목록",
+    "unknown": "알 수 없음"
+  },
+  "donate": "후원",
+  "dupe_check": {
+    "description": "'정확' 이하의 수준에서는 계산이 오래 걸릴 수 있습니다. 낮은 정밀도 수준에서는 부정확한 결과가 함께 나올 수 있습니다.",
+    "options": {
+      "exact": "정확",
+      "high": "높음",
+      "low": "낮음",
+      "medium": "중간"
+    },
+    "search_accuracy_label": "검색 정밀도",
+    "title": "중복된 영상"
+  },
+  "duration": "길이",
+  "effect_filters": {
+    "blue": "청색",
+    "blur": "흐리게",
+    "brightness": "밝기",
+    "contrast": "대비",
+    "gamma": "감마",
+    "green": "녹색",
+    "hue": "색상",
+    "name": "필터",
+    "name_transforms": "변형",
+    "red": "적색",
+    "reset_filters": "필터 초기화",
+    "reset_transforms": "변형 초기화",
+    "rotate": "회전",
+    "rotate_left_and_scale": "왼쪽으로 회전 후 크기 조정",
+    "rotate_right_and_scale": "오른쪽으로 회전 후 크기 조정",
+    "saturation": "채도",
+    "scale": "크기",
+    "warmth": "따뜻함"
+  },
+  "ethnicity": "인종",
+  "eye_color": "눈동자 색",
+  "favourite": "즐겨찾기",
+  "file": "파일",
+  "file_info": "파일 정보",
+  "file_mod_time": "파일 변경 시간",
+  "files": "파일",
+  "filesize": "파일 크기",
+  "filter": "필터",
+  "filter_name": "필터 이름",
+  "filters": "필터",
+  "framerate": "프레임 레이트",
+  "frames_per_second": "초당 프레임: {value}",
+  "galleries": "갤러리",
+  "gallery": "갤러리",
+  "gallery_count": "갤러리 개수",
+  "gender": "성",
+  "gender_types": {
+    "FEMALE": "여성",
+    "INTERSEX": "인터섹스",
+    "MALE": "남성",
+    "NON_BINARY": "논바이너리",
+    "TRANSGENDER_FEMALE": "트랜스젠더 여성",
+    "TRANSGENDER_MALE": "트랜스젠더 남성"
+  },
+  "hair_color": "머리카락 색",
+  "handy_connection_status": {
+    "connecting": "접속 중",
+    "disconnected": "접속 끊김",
+    "ready": "준비됨",
+    "syncing": "서버와 동기화 중",
+    "uploading": "스크립트 업로드 중"
+  },
+  "height": "키",
+  "help": "도움말",
+  "ignore_auto_tag": "자동 태깅 무시하기",
+  "image": "이미지",
+  "image_count": "이미지 개수",
+  "images": "이미지",
+  "include_parent_tags": "상위 태그 포함",
+  "include_sub_studios": "자회사 스튜디오 포함",
+  "include_sub_tags": "하위 태그 포함",
+  "instagram": "인스타그램",
+  "library": "라이브러리",
+  "loading": {
+    "generic": "로드 중…"
+  },
+  "marker_count": "마커 개수",
+  "markers": "마커",
+  "media_info": {
+    "audio_codec": "오디오 코덱",
+    "checksum": "체크섬",
+    "downloaded_from": "다운로드 출처",
+    "hash": "해쉬",
+    "performer_card": {
+      "age_context": "작품에서 {age} {years_old}"
+    },
+    "stream": "스트림",
+    "video_codec": "비디오 코덱"
+  },
+  "megabits_per_second": "초당 {value} 메가비트",
+  "metadata": "메타데이터",
+  "movie": "영화",
+  "movies": "영화",
+  "name": "이름",
+  "o_counter": "싼 횟수",
+  "pagination": {
+    "first": "처음",
+    "last": "마지막",
+    "next": "다음",
+    "previous": "이전"
+  },
+  "parent_studios": "모회사 스튜디오",
+  "parent_tag_count": "상위 태그 개수",
+  "parent_tags": "상위 태그",
+  "path": "경로",
+  "performer": "배우",
+  "performerTags": "배우 태그",
+  "performer_age": "배우 나이",
+  "performer_count": "배우 수",
+  "performer_favorite": "즐겨찾기한 배우",
+  "performer_image": "배우 이미지",
+  "performer_tagger": {
+    "add_new_performers": "새 배우 추가",
+    "config": {
+      "active_stash-box_instance": "stash-box 인스턴스 활성화:",
+      "edit_excluded_fields": "제외된 항목 수정",
+      "excluded_fields": "제외된 항목:",
+      "no_fields_are_excluded": "제외된 항목 없음",
+      "no_instances_found": "인스턴스 없음",
+      "these_fields_will_not_be_changed_when_updating_performers": "배우 데이터를 수정할 때 이 항목들은 변경되지 않습니다."
+    },
+    "current_page": "현재 페이지",
+    "failed_to_save_performer": "\"{performer}\" 배우를 저장하는 데에 실패했습니다",
+    "name_already_exists": "이름이 이미 존재합니다",
+    "network_error": "네트워크 오류",
+    "no_results_found": "결과가 없습니다.",
+    "performer_names_separated_by_comma": "배우 이름 (,으로 구분)",
+    "performer_successfully_tagged": "배우 태깅에 성공했습니다:",
+    "query_all_performers_in_the_database": "데이터베이스의 모든 배우",
+    "refresh_tagged_performers": "태그된 배우 새로고침",
+    "status_tagging_job_queued": "상태: 태그 작업 대기열 추가됨",
+    "status_tagging_performers": "상태: 배우 태그 중",
+    "tag_status": "태그 상태",
+    "to_use_the_performer_tagger": "배우 태거를 사용하기 위해서는 stash-box 인스턴스가 설정되어야 합니다.",
+    "untagged_performers": "태그되지 않은 배우",
+    "update_performer": "배우 수정",
+    "update_performers": "배우 수정"
+  },
+  "performers": "배우",
+  "piercings": "피어싱",
+  "queue": "대기열",
+  "random": "랜덤",
+  "rating": "별점",
+  "recently_added_performers": "최근에 추가된 배우",
+  "recently_added_studios": "최근에 추가된 스튜디오",
+  "recently_released_galleries": "최근에 만들어진 갤러리",
+  "recently_released_movies": "최근에 만들어진 영화",
+  "recently_released_scenes": "최근에 만들어진 영상",
+  "resolution": "해상도",
+  "scene": "영상",
+  "sceneTags": "영상 태그",
+  "scene_count": "영상 개수",
+  "scene_id": "영상 ID",
+  "scenes": "영상",
+  "scenes_updated_at": "영상 업데이트 날짜",
+  "search_filter": {
+    "add_filter": "필터 추가",
+    "name": "필터",
+    "saved_filters": "저장된 필터",
+    "update_filter": "필터 업데이트"
+  },
+  "seconds": "초",
+  "settings": "설정",
+  "setup": {
+    "confirm": {
+      "almost_ready": "거의 설정을 완료했습니다. 아래 설정들을 확인해주세요. 틀린 내용이 있다면 이전으로 돌아가 변경할 수 있습니다. 내용이 모두 맞다면, '확인'을 눌러 시스템을 만드세요.",
+      "configuration_file_location": "설정 파일 위치:",
+      "database_file_path": "데이터베이스 파일 경로",
+      "default_db_location": "<설정 파일이 들어 있는 경로>/stash-go.sqlite",
+      "default_generated_content_location": "<설정 파일이 들어있는 경로>/generated",
+      "generated_directory": "생성된 폴더",
+      "nearly_there": "거의 끝났습니다!",
+      "stash_library_directories": "Stash 라이브러리 폴더"
+    },
+    "creating": {
+      "creating_your_system": "시스템 생성 중",
+      "ffmpeg_notice": "설정한 경로에 <code>ffmpeg</code>가 아직 없다면, 다운로드될 때까지 기다려 주세요. 다운로드 진행 과정을 보려면 콘솔 출력을 확인하세요."
+    },
+    "errors": {
+      "something_went_wrong": "오류가 발생했습니다!",
+      "something_went_wrong_description": "작성했던 내용에 문제가 있는 것 같다면, 뒤로 가서 수정해주세요. 그렇지 않다면, {githubLink}에 버그를 제보하거나 {discordLink}에서 해결 방법을 찾아보세요.",
+      "something_went_wrong_while_setting_up_your_system": "시스템을 설정하던 도중 오류가 발생했습니다. 오류 내용은 다음과 같습니다: {error}"
+    },
+    "folder": {
+      "file_path": "파일 경로",
+      "up_dir": "상위 폴더로"
+    },
+    "github_repository": "깃허브 저장소",
+    "migrate": {
+      "backup_database_path_leave_empty_to_disable_backup": "백업 데이터베이스 경로 (백업을 하지 않으려면 빈 칸으로 두세요):",
+      "migrating_database": "데이터베이스 마이그레이션 중",
+      "migration_failed": "마이그레이션 실패",
+      "migration_failed_error": "데이터베이스를 마이그레이션 하는 동안 다음 에러가 발생했습니다:",
+      "perform_schema_migration": "스키마 마이그레이션 실행"
+    },
+    "paths": {
+      "database_filename_empty_for_default": "데이터베이스 파일 이름 (빈 칸으로 두면 기본값을 사용합니다)",
+      "description": "다음으로, 야동 위치와 Stash 데이터베이스의 위치, 생성 파일의 위치를 정해야 합니다. 이 설정은 나중에 필요할 때 언제든 바꿀 수 있습니다.",
+      "path_to_generated_directory_empty_for_default": "생성되는 파일들을 저장할 폴더 경로 (빈 칸으로 두면 기본값을 사용합니다)",
+      "set_up_your_paths": "경로를 설정하세요",
+      "stash_alert": "라이브러리 경로가 선택되지 않았습니다. Stash에 아무 것도 스캔되지 않을 것입니다. 계속 진행하겠습니까?",
+      "where_can_stash_store_its_database": "어디에 Stash 데이터베이스를 저장할까요?",
+      "where_can_stash_store_its_database_description": "Stash는 야동 메타데이터를 저장할 때 sqlite 데이터베이스를 사용합니다. 기본값으로, 데이터베이스 파일은 <code>stash-go.sqlite</code>라는 이름으로 설정 파일이 포함된 폴더 안에 생성될 것입니다. 데이터베이스 파일 이름을 바꾸고 싶다면, 절대 경로 또는 상대 경로(현재 경로 기준)를 입력하세요.",
+      "where_can_stash_store_its_generated_content": "생성된 컨텐츠를 어디에 저장할까요?",
+      "where_is_your_porn_located": "야동이 있는 위치가 어딘가요?",
+      "where_is_your_porn_located_description": "야동 폴더를 추가하세요. 비디오와 이미지를 스캐닝할 때 사용됩니다."
+    },
+    "stash_setup_wizard": "Stash 설정 마법사",
+    "success": {
+      "help_links": "문제가 발생하거나 질문, 제안할 점이 있다면, {githubLink}에 이슈를 만들거나, {discordLink}의 커뮤니티를 방문하세요.",
+      "in_app_manual_explained": "상단 우측에 있는 아이콘({icon})을 통해 매뉴얼을 확인해보세요",
+      "support_us": "후원",
+      "thanks_for_trying_stash": "Stash를 사용해주셔서 감사합니다!",
+      "your_system_has_been_created": "성공했습니다! 시스템이 생성되었습니다!"
+    },
+    "welcome": {
+      "store_stash_config": "어디에 Stash 설정 파일을 저장할까요?",
+      "unable_to_locate_config": "이 화면이 나온다면, 설정 파일을 찾는 데에 실패한 것입니다. 새로운 설정 파일을 만드는 과정을 거쳐야 합니다.",
+      "unexpected_explained": "예상치 못하게 이 화면이 나온다면, 올바른 폴더에서 Stash를 재실행하거나, 터미널의 경우 <code>-c</code> 플래그와 함께 실행해보세요."
+    },
+    "welcome_specific_config": {
+      "config_path": "Stash에서 다음 설정 파일 경로를 사용합니다: <code>{path}</code>",
+      "next_step": "새로운 시스템을 설정할 준비가 되었다면, '다음'을 누르세요."
+    },
+    "welcome_to_stash": "Stash에 오신 것을 환영합니다"
+  },
+  "stash_id": "Stash ID",
+  "stash_ids": "Stash IDs",
+  "statistics": "통계",
+  "stats": {
+    "image_size": "전체 이미지 크기",
+    "scenes_duration": "전체 영상 길이",
+    "scenes_size": "전체 영상 크기"
+  },
+  "status": "상태: {statusText}",
+  "studio": "스튜디오",
+  "studio_depth": "수준 (빈 칸으로 두면 전체 선택)",
+  "studios": "스튜디오",
+  "sub_tag_count": "하위 태그 개수",
+  "sub_tag_of": "{parent}의 하위 태그",
+  "sub_tags": "하위 태그",
+  "subsidiary_studios": "자회사 스튜디오",
+  "synopsis": "개요",
+  "tag": "태그",
+  "tag_count": "태그 개수",
+  "tags": "태그",
+  "tattoos": "문신",
+  "title": "제목",
+  "toast": {
+    "added_entity": "{entity}를 추가했습니다",
+    "added_generation_job_to_queue": "생성 작업을 대기열에 추가했습니다",
+    "created_entity": "{entity}를 생성했습니다",
+    "default_filter_set": "기본 필터 셋",
+    "generating_screenshot": "스크린샷을 생성하는 중…",
+    "saved_entity": "{entity}를 저장했습니다",
+    "started_auto_tagging": "자동 태깅을 시작했습니다",
+    "started_generating": "생성을 시작했습니다",
+    "started_importing": "불러오기를 시작했습니다",
+    "updated_entity": "{entity}를 수정했습니다"
+  },
+  "total": "전체",
+  "true": "참",
+  "twitter": "트위터",
+  "updated_at": "수정 날짜",
+  "url": "URL",
+  "videos": "비디오",
+  "view_all": "모두 보기",
+  "weight": "무게",
+  "years_old": "살"
+}

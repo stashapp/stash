@@ -770,10 +770,6 @@
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",
   "isMissing": "Is Missing",
-  "latest_galleries": "Latest Galleries",
-  "latest_movies": "Latest Movies",
-  "latest_performers": "Latest Performers",
-  "latest_scenes": "Latest Scenes",
   "library": "Library",
   "loading": {
     "generic": "Loading…"
@@ -797,7 +793,6 @@
   },
   "megabits_per_second": "{value} megabits per second",
   "metadata": "Metadata",
-  "most_active_studios": "Most Active Studios",
   "movie": "Movie",
   "movie_scene_number": "Movie Scene Number",
   "movies": "Movies",
@@ -831,6 +826,11 @@
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",
+  "recently_added_performers": "Recently Added Performers",
+  "recently_added_studios": "Recently Added Studios",
+  "recently_released_galleries": "Recently Released Galleries",
+  "recently_released_movies": "Recently Released Movies",
+  "recently_released_scenes": "Recently Released Scenes",
   "resolution": "Resolution",
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
@@ -970,6 +970,7 @@
   "updated_at": "Updated At",
   "url": "URL",
   "videos": "Videos",
+  "view_all": "View All",
   "weight": "Weight",
   "years_old": "years old",
   "stashbox": {

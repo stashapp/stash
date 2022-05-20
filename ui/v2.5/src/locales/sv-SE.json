@@ -121,6 +121,7 @@
   "birth_year": "Födelseår",
   "birthdate": "Födelsedatum",
   "bitrate": "Bithastighet",
+  "captions": "Undertexter",
   "career_length": "Karriärlängd",
   "component_tagger": {
     "config": {
@@ -449,6 +450,16 @@
         "description": "Tidsfördröjning i millisekunder för interaktiva skripter.",
         "heading": "Funscript fördröjning (ms)"
       },
+      "handy_connection": {
+        "connect": "Koppla ihop",
+        "server_offset": {
+          "heading": "Serverförskjutning"
+        },
+        "status": {
+          "heading": "Handy Uppkopplingsstatus"
+        },
+        "sync": "Synka"
+      },
       "handy_connection_key": {
         "description": "Handy anslutningsnyckel för interaktiva scener. Denna nyckel kommer låta Stash dela din nuvarande sceninformation med handyfeeling.com",
         "heading": "Handy Uppkopplingsnyckel"
@@ -521,6 +532,10 @@
           "display_title": "Visa titel och taggar",
           "toggle_sound": "Aktivera ljud"
         }
+      },
+      "scroll_attempts_before_change": {
+        "description": "Antal gånger att försöka bläddra innan flytt till nästa/tidigare objekt. Används bara för Pan Y-läget.",
+        "heading": "Bläddringsförsök innan flytt"
       },
       "slideshow_delay": {
         "description": "Bildspel är tillgängligt för gallerier i väggvisningsläge",
@@ -701,6 +716,7 @@
     "scale": "Skala",
     "warmth": "Värme"
   },
+  "empty_server": "Lägg till några scener i Stash för att se rekommendationer på denna sida.",
   "ethnicity": "Etnicitet",
   "existing_value": "existerande värde",
   "eye_color": "Ögonfärg",
@@ -730,6 +746,15 @@
     "TRANSGENDER_MALE": "Trans Man"
   },
   "hair_color": "Hårfärg",
+  "handy_connection_status": {
+    "connecting": "Kopplar ihop",
+    "disconnected": "Kopplad isär",
+    "error": "Fel vid koppling till Handy",
+    "missing": "Saknas",
+    "ready": "Redo",
+    "syncing": "Synkar med server",
+    "uploading": "Laddar upp skript"
+  },
   "hasMarkers": "Har markörer",
   "height": "Längd",
   "help": "Hjälp",
@@ -835,6 +860,11 @@
   "queue": "Kö",
   "random": "Slumpad",
   "rating": "Betyg",
+  "recently_added_performers": "Nyligen Tillagda Stjärnor",
+  "recently_added_studios": "Nyligen Tillagda Studior",
+  "recently_released_galleries": "Nyligen Släppta Gallerier",
+  "recently_released_movies": "Nyligen Släppta Filmer",
+  "recently_released_scenes": "Nyligen Släppta Scener",
   "resolution": "Upplösning",
   "scene": "Scen",
   "sceneTagger": "Scentaggaren",
@@ -938,6 +968,7 @@
     "submission_failed": "Misslyckad inskickning",
     "submission_successful": "Lyckad inskickning"
   },
+  "statistics": "Statistik",
   "stats": {
     "image_size": "Storlek på bilder",
     "scenes_duration": "Total speltid",
@@ -979,6 +1010,7 @@
   "updated_at": "Uppdaterad vid",
   "url": "URL",
   "videos": "Videor",
+  "view_all": "Visa Allt",
   "weight": "Vikt",
   "years_old": "år gammal"
 }
