@@ -1,8 +1,8 @@
-import React, { lazy, Suspense, useEffect } from "react";
+import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { IntlProvider, CustomFormats } from "react-intl";
 import { Helmet } from "react-helmet";
-import { mergeWith } from "lodash";
+import { assign, clone, cloneDeep, mergeWith } from "lodash";
 import { ToastProvider } from "src/hooks/Toast";
 import LightboxProvider from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
@@ -56,32 +56,46 @@ const intlFormats: CustomFormats = {
   },
 };
 
-function languageMessageString(language: string) {
-  return language.replace(/-/, "");
-}
+const defaultLocale = "en-GB";
 
 export const App: React.FC = () => {
   const config = useConfiguration();
   const { data: systemStatusData } = useSystemStatus();
-  const defaultLocale = "en-GB";
+  
   const language =
     config.data?.configuration?.interface?.language ?? defaultLocale;
-  const defaultMessageLanguage = languageMessageString(defaultLocale);
-  const messageLanguage = languageMessageString(language);
 
   // use en-GB as default messages if any messages aren't found in the chosen language
-  const mergedMessages = mergeWith(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (locales as any)[defaultMessageLanguage],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (locales as any)[messageLanguage],
-    (objVal, srcVal) => {
-      if (srcVal === "") {
-        return objVal;
+  const [messages, setMessages] = useState<{}>();
+  
+  
+  useEffect(() => {
+    const setLocale = async () => {
+      function languageMessageString(language: string) {
+        return language.replace(/-/, "");
       }
+
+      const defaultMessageLanguage = languageMessageString(defaultLocale);
+      const messageLanguage = languageMessageString(language);
+
+      const defaultMessages = await locales[defaultMessageLanguage]();
+      const mergedMessages = cloneDeep(defaultMessages);
+      const chosenMessages = await locales[messageLanguage]();
+      mergeWith(
+        mergedMessages,
+        chosenMessages,
+        (objVal, srcVal) => {
+          if (srcVal === "") {
+            return objVal;
+          }
+        }
+      );
+
+      setMessages(flattenMessages(mergedMessages));
     }
-  );
-  const messages = flattenMessages(mergedMessages);
+
+    setLocale();
+  }, [language]);
 
   const setupMatch = useRouteMatch(["/setup", "/migrate"]);
 
@@ -151,31 +165,33 @@ export const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <IntlProvider locale={language} messages={messages} formats={intlFormats}>
-        <ConfigurationProvider
-          configuration={config.data?.configuration}
-          loading={config.loading}
-        >
-          <ToastProvider>
-            <Suspense fallback={<LoadingIndicator />}>
-              <LightboxProvider>
-                <ManualProvider>
-                  <InteractiveProvider>
-                    <Helmet
-                      titleTemplate={`%s ${TITLE_SUFFIX}`}
-                      defaultTitle="Stash"
-                    />
-                    {maybeRenderNavbar()}
-                    <div className="main container-fluid">
-                      {renderContent()}
-                    </div>
-                  </InteractiveProvider>
-                </ManualProvider>
-              </LightboxProvider>
-            </Suspense>
-          </ToastProvider>
-        </ConfigurationProvider>
-      </IntlProvider>
+      {messages ? 
+        <IntlProvider locale={language} messages={messages} formats={intlFormats}>
+          <ConfigurationProvider
+            configuration={config.data?.configuration}
+            loading={config.loading}
+          >
+            <ToastProvider>
+              <Suspense fallback={<LoadingIndicator />}>
+                <LightboxProvider>
+                  <ManualProvider>
+                    <InteractiveProvider>
+                      <Helmet
+                        titleTemplate={`%s ${TITLE_SUFFIX}`}
+                        defaultTitle="Stash"
+                      />
+                      {maybeRenderNavbar()}
+                      <div className="main container-fluid">
+                        {renderContent()}
+                      </div>
+                    </InteractiveProvider>
+                  </ManualProvider>
+                </LightboxProvider>
+              </Suspense>
+            </ToastProvider>
+          </ConfigurationProvider>
+        </IntlProvider>
+      : null}
     </ErrorBoundary>
   );
 };
