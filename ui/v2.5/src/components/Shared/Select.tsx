@@ -382,6 +382,16 @@ export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
     value: item?.title ?? "",
   }));
   const initialIds = props.initialMarkerTitle ? [props.initialMarkerTitle] : [];
+
+  // add initial value to items if still loading, to ensure existing value
+  // is populated
+  if (loading && initialIds.length > 0) {
+    items.push({
+      label: initialIds[0],
+      value: initialIds[0],
+    });
+  }
+
   return (
     <SelectComponent
       isMulti={false}

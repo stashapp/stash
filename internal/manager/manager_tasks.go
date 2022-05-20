@@ -12,11 +12,16 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 func isGallery(pathname string) bool {
 	gExt := config.GetInstance().GetGalleryExtensions()
 	return fsutil.MatchExtension(pathname, gExt)
+}
+
+func isCaptions(pathname string) bool {
+	return fsutil.MatchExtension(pathname, scene.CaptionExts)
 }
 
 func isVideo(pathname string) bool {
@@ -53,11 +58,11 @@ func getScanPaths(inputPaths []string) []*models.StashConfig {
 
 // ScanSubscribe subscribes to a notification that is triggered when a
 // scan or clean is complete.
-func (s *singleton) ScanSubscribe(ctx context.Context) <-chan bool {
+func (s *Manager) ScanSubscribe(ctx context.Context) <-chan bool {
 	return s.scanSubs.subscribe(ctx)
 }
 
-func (s *singleton) Scan(ctx context.Context, input models.ScanMetadataInput) (int, error) {
+func (s *Manager) Scan(ctx context.Context, input models.ScanMetadataInput) (int, error) {
 	if err := s.validateFFMPEG(); err != nil {
 		return 0, err
 	}
@@ -71,7 +76,7 @@ func (s *singleton) Scan(ctx context.Context, input models.ScanMetadataInput) (i
 	return s.JobManager.Add(ctx, "Scanning...", &scanJob), nil
 }
 
-func (s *singleton) Import(ctx context.Context) (int, error) {
+func (s *Manager) Import(ctx context.Context) (int, error) {
 	config := config.GetInstance()
 	metadataPath := config.GetMetadataPath()
 	if metadataPath == "" {
@@ -93,7 +98,7 @@ func (s *singleton) Import(ctx context.Context) (int, error) {
 	return s.JobManager.Add(ctx, "Importing...", j), nil
 }
 
-func (s *singleton) Export(ctx context.Context) (int, error) {
+func (s *Manager) Export(ctx context.Context) (int, error) {
 	config := config.GetInstance()
 	metadataPath := config.GetMetadataPath()
 	if metadataPath == "" {
@@ -108,13 +113,13 @@ func (s *singleton) Export(ctx context.Context) (int, error) {
 			full:                true,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
-		task.Start(&wg)
+		task.Start(ctx, &wg)
 	})
 
 	return s.JobManager.Add(ctx, "Exporting...", j), nil
 }
 
-func (s *singleton) RunSingleTask(ctx context.Context, t Task) int {
+func (s *Manager) RunSingleTask(ctx context.Context, t Task) int {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -126,35 +131,7 @@ func (s *singleton) RunSingleTask(ctx context.Context, t Task) int {
 	return s.JobManager.Add(ctx, t.GetDescription(), j)
 }
 
-func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsInput) {
-	config := config.GetInstance()
-	if optionsInput.PreviewSegments == nil {
-		val := config.GetPreviewSegments()
-		optionsInput.PreviewSegments = &val
-	}
-
-	if optionsInput.PreviewSegmentDuration == nil {
-		val := config.GetPreviewSegmentDuration()
-		optionsInput.PreviewSegmentDuration = &val
-	}
-
-	if optionsInput.PreviewExcludeStart == nil {
-		val := config.GetPreviewExcludeStart()
-		optionsInput.PreviewExcludeStart = &val
-	}
-
-	if optionsInput.PreviewExcludeEnd == nil {
-		val := config.GetPreviewExcludeEnd()
-		optionsInput.PreviewExcludeEnd = &val
-	}
-
-	if optionsInput.PreviewPreset == nil {
-		val := config.GetPreviewPreset()
-		optionsInput.PreviewPreset = &val
-	}
-}
-
-func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataInput) (int, error) {
+func (s *Manager) Generate(ctx context.Context, input models.GenerateMetadataInput) (int, error) {
 	if err := s.validateFFMPEG(); err != nil {
 		return 0, err
 	}
@@ -170,16 +147,16 @@ func (s *singleton) Generate(ctx context.Context, input models.GenerateMetadataI
 	return s.JobManager.Add(ctx, "Generating...", j), nil
 }
 
-func (s *singleton) GenerateDefaultScreenshot(ctx context.Context, sceneId string) int {
+func (s *Manager) GenerateDefaultScreenshot(ctx context.Context, sceneId string) int {
 	return s.generateScreenshot(ctx, sceneId, nil)
 }
 
-func (s *singleton) GenerateScreenshot(ctx context.Context, sceneId string, at float64) int {
+func (s *Manager) GenerateScreenshot(ctx context.Context, sceneId string, at float64) int {
 	return s.generateScreenshot(ctx, sceneId, &at)
 }
 
 // generate default screenshot if at is nil
-func (s *singleton) generateScreenshot(ctx context.Context, sceneId string, at *float64) int {
+func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *float64) int {
 	if err := instance.Paths.Generated.EnsureTmpDir(); err != nil {
 		logger.Warnf("failure generating screenshot: %v", err)
 	}
@@ -192,7 +169,7 @@ func (s *singleton) generateScreenshot(ctx context.Context, sceneId string, at *
 		}
 
 		var scene *models.Scene
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			var err error
 			scene, err = r.Scene().Find(sceneIdInt)
 			return err
@@ -216,7 +193,7 @@ func (s *singleton) generateScreenshot(ctx context.Context, sceneId string, at *
 	return s.JobManager.Add(ctx, fmt.Sprintf("Generating screenshot for scene id %s", sceneId), j)
 }
 
-func (s *singleton) AutoTag(ctx context.Context, input models.AutoTagMetadataInput) int {
+func (s *Manager) AutoTag(ctx context.Context, input models.AutoTagMetadataInput) int {
 	j := autoTagJob{
 		txnManager: s.TxnManager,
 		input:      input,
@@ -225,7 +202,7 @@ func (s *singleton) AutoTag(ctx context.Context, input models.AutoTagMetadataInp
 	return s.JobManager.Add(ctx, "Auto-tagging...", &j)
 }
 
-func (s *singleton) Clean(ctx context.Context, input models.CleanMetadataInput) int {
+func (s *Manager) Clean(ctx context.Context, input models.CleanMetadataInput) int {
 	j := cleanJob{
 		txnManager: s.TxnManager,
 		input:      input,
@@ -235,13 +212,13 @@ func (s *singleton) Clean(ctx context.Context, input models.CleanMetadataInput) 
 	return s.JobManager.Add(ctx, "Cleaning...", &j)
 }
 
-func (s *singleton) MigrateHash(ctx context.Context) int {
+func (s *Manager) MigrateHash(ctx context.Context) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
 		var scenes []*models.Scene
-		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 			var err error
 			scenes, err = r.Scene().All()
 			return err
@@ -283,7 +260,7 @@ func (s *singleton) MigrateHash(ctx context.Context) int {
 	return s.JobManager.Add(ctx, "Migrating scene hashes...", j)
 }
 
-func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.StashBoxBatchPerformerTagInput) int {
+func (s *Manager) StashBoxBatchPerformerTag(ctx context.Context, input models.StashBoxBatchPerformerTagInput) int {
 	j := job.MakeJobExec(func(ctx context.Context, progress *job.Progress) {
 		logger.Infof("Initiating stash-box batch performer tag")
 
@@ -303,7 +280,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 		// This is why we mark this section nolint. In principle, we should look to
 		// rewrite the section at some point, to avoid the linter warning.
 		if len(input.PerformerIds) > 0 { //nolint:gocritic
-			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 
 				for _, performerID := range input.PerformerIds {
@@ -343,7 +320,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 			// However, this doesn't really help with readability of the current section. Mark it
 			// as nolint for now. In the future we'd like to rewrite this code by factoring some of
 			// this into separate functions.
-			if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			if err := s.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 				performerQuery := r.Performer()
 				var performers []*models.Performer
 				var err error
@@ -384,7 +361,7 @@ func (s *singleton) StashBoxBatchPerformerTag(ctx context.Context, input models.
 		for _, task := range tasks {
 			wg.Add(1)
 			progress.ExecuteTask(task.Description(), func() {
-				task.Start()
+				task.Start(ctx)
 				wg.Done()
 			})
 

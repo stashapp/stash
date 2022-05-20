@@ -5,29 +5,29 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 )
 
 type ImageFile struct {
-	ModTime models.JSONTime `json:"mod_time,omitempty"`
-	Size    int             `json:"size"`
-	Width   int             `json:"width"`
-	Height  int             `json:"height"`
+	ModTime json.JSONTime `json:"mod_time,omitempty"`
+	Size    int           `json:"size"`
+	Width   int           `json:"width"`
+	Height  int           `json:"height"`
 }
 
 type Image struct {
-	Title      string          `json:"title,omitempty"`
-	Checksum   string          `json:"checksum,omitempty"`
-	Studio     string          `json:"studio,omitempty"`
-	Rating     int             `json:"rating,omitempty"`
-	Organized  bool            `json:"organized,omitempty"`
-	OCounter   int             `json:"o_counter,omitempty"`
-	Galleries  []string        `json:"galleries,omitempty"`
-	Performers []string        `json:"performers,omitempty"`
-	Tags       []string        `json:"tags,omitempty"`
-	File       *ImageFile      `json:"file,omitempty"`
-	CreatedAt  models.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt  models.JSONTime `json:"updated_at,omitempty"`
+	Title      string        `json:"title,omitempty"`
+	Checksum   string        `json:"checksum,omitempty"`
+	Studio     string        `json:"studio,omitempty"`
+	Rating     int           `json:"rating,omitempty"`
+	Organized  bool          `json:"organized,omitempty"`
+	OCounter   int           `json:"o_counter,omitempty"`
+	Galleries  []string      `json:"galleries,omitempty"`
+	Performers []string      `json:"performers,omitempty"`
+	Tags       []string      `json:"tags,omitempty"`
+	File       *ImageFile    `json:"file,omitempty"`
+	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
 }
 
 func LoadImageFile(filePath string) (*Image, error) {

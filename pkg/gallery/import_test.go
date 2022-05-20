@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -65,10 +66,10 @@ func TestImporterPreImport(t *testing.T) {
 			Rating:    rating,
 			Organized: organized,
 			URL:       url,
-			CreatedAt: models.JSONTime{
+			CreatedAt: json.JSONTime{
 				Time: createdAt,
 			},
-			UpdatedAt: models.JSONTime{
+			UpdatedAt: json.JSONTime{
 				Time: updatedAt,
 			},
 		},

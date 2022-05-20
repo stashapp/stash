@@ -7,6 +7,8 @@ client:
 models:
   Date:
     model: github.com/99designs/gqlgen/graphql.String
+  SceneDraftInput:
+    model: github.com/stashapp/stash/pkg/scraper/stashbox/graphql.SceneDraftInput
 endpoint:
   # This points to stashdb.org currently, but can be directed at any stash-box 
   # instance. It is used for generation only.

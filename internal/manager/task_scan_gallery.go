@@ -25,7 +25,7 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 		var err error
 		g, err = r.Gallery().FindByPath(path)
 
-		if g != nil && err != nil {
+		if g != nil && err == nil {
 			images, err = r.Image().CountByGalleryID(g.ID)
 			if err != nil {
 				return fmt.Errorf("error getting images for zip gallery %s: %s", path, err.Error())
@@ -42,7 +42,6 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 		Scanner:            gallery.FileScanner(&file.FSHasher{}),
 		ImageExtensions:    instance.Config.GetImageExtensions(),
 		StripFileExtension: t.StripFileExtension,
-		Ctx:                t.ctx,
 		CaseSensitiveFs:    t.CaseSensitiveFs,
 		TxnManager:         t.TxnManager,
 		Paths:              instance.Paths,
@@ -52,7 +51,7 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 
 	var err error
 	if g != nil {
-		g, scanImages, err = scanner.ScanExisting(g, t.file)
+		g, scanImages, err = scanner.ScanExisting(ctx, g, t.file)
 		if err != nil {
 			logger.Error(err.Error())
 			return
@@ -61,7 +60,7 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 		// scan the zip files if the gallery has no images
 		scanImages = scanImages || images == 0
 	} else {
-		g, scanImages, err = scanner.ScanNew(t.file)
+		g, scanImages, err = scanner.ScanNew(ctx, t.file)
 		if err != nil {
 			logger.Error(err.Error())
 		}
@@ -69,18 +68,18 @@ func (t *ScanTask) scanGallery(ctx context.Context) {
 
 	if g != nil {
 		if scanImages {
-			t.scanZipImages(g)
+			t.scanZipImages(ctx, g)
 		} else {
 			// in case thumbnails have been deleted, regenerate them
-			t.regenerateZipImages(g)
+			t.regenerateZipImages(ctx, g)
 		}
 	}
 }
 
 // associates a gallery to a scene with the same basename
-func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
+func (t *ScanTask) associateGallery(ctx context.Context, wg *sizedwaitgroup.SizedWaitGroup) {
 	path := t.file.Path()
-	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 		qb := r.Gallery()
 		sqb := r.Scene()
 		g, err := qb.FindByPath(path)
@@ -133,7 +132,7 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 	wg.Done()
 }
 
-func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
+func (t *ScanTask) scanZipImages(ctx context.Context, zipGallery *models.Gallery) {
 	err := walkGalleryZip(zipGallery.Path.String, func(f *zip.File) error {
 		// copy this task and change the filename
 		subTask := *t
@@ -143,7 +142,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
-		subTask.Start(context.TODO())
+		subTask.Start(ctx)
 		return nil
 	})
 	if err != nil {
@@ -151,9 +150,9 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 	}
 }
 
-func (t *ScanTask) regenerateZipImages(zipGallery *models.Gallery) {
+func (t *ScanTask) regenerateZipImages(ctx context.Context, zipGallery *models.Gallery) {
 	var images []*models.Image
-	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		iqb := r.Image()
 
 		var err error

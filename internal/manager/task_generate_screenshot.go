@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
 type GenerateScreenshotTask struct {
@@ -22,7 +23,7 @@ type GenerateScreenshotTask struct {
 func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	scenePath := t.Scene.Path
 	ffprobe := instance.FFProbe
-	probeResult, err := ffprobe.NewVideoFile(scenePath, false)
+	probeResult, err := ffprobe.NewVideoFile(scenePath)
 
 	if err != nil {
 		logger.Error(err.Error())
@@ -44,7 +45,21 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	// which also generates the thumbnail
 
 	logger.Debugf("Creating screenshot for %s", scenePath)
-	makeScreenshot(*probeResult, normalPath, 2, probeResult.Width, at)
+
+	g := generate.Generator{
+		Encoder:     instance.FFMPEG,
+		LockManager: instance.ReadLockManager,
+		ScenePaths:  instance.Paths.Scene,
+		Overwrite:   true,
+	}
+
+	if err := g.Screenshot(context.TODO(), probeResult.Path, checksum, probeResult.Width, probeResult.Duration, generate.ScreenshotOptions{
+		At: &at,
+	}); err != nil {
+		logger.Errorf("Error generating screenshot: %v", err)
+		logErrorOutput(err)
+		return
+	}
 
 	f, err := os.Open(normalPath)
 	if err != nil {
@@ -59,7 +74,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		return
 	}
 
-	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 		qb := r.Scene()
 		updatedTime := time.Now()
 		updatedScene := models.ScenePartial{

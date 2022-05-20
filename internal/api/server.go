@@ -41,7 +41,7 @@ var githash string
 var uiBox = ui.UIBox
 var loginUIBox = ui.LoginUIBox
 
-func Start() {
+func Start() error {
 	initialiseImages()
 
 	r := chi.NewRouter()
@@ -263,16 +263,18 @@ func Start() {
 		displayAddress = "http://" + displayAddress + "/"
 	}
 
-	go func() {
-		if tlsConfig != nil {
-			logger.Infof("stash is running at " + displayAddress)
-			logger.Error(server.ListenAndServeTLS("", ""))
-		} else {
-			logger.Infof("stash is running at " + displayAddress)
-			logger.Error(server.ListenAndServe())
-		}
-		manager.GetInstance().Shutdown(0)
-	}()
+	logger.Infof("stash is running at " + displayAddress)
+	if tlsConfig != nil {
+		err = server.ListenAndServeTLS("", "")
+	} else {
+		err = server.ListenAndServe()
+	}
+
+	if !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	return nil
 }
 
 func printVersion() {
@@ -357,7 +359,7 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 		}
 		connectableOrigins += "; "
 
-		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src-elem 'self' https://cdn.jsdelivr.net 'unsafe-inline' ; media-src 'self' blob:; child-src 'none'; object-src 'none'; form-action 'self'"
+		cspDirectives := "default-src data: 'self' 'unsafe-inline';" + connectableOrigins + "img-src data: *; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src-elem 'self' https://cdn.jsdelivr.net 'unsafe-inline'; media-src 'self' blob:; child-src 'none'; object-src 'none'; form-action 'self'"
 
 		w.Header().Set("Referrer-Policy", "same-origin")
 		w.Header().Set("X-Content-Type-Options", "nosniff")

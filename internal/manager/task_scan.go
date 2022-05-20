@@ -16,6 +16,8 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -97,7 +99,6 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 			GenerateThumbnails:   utils.IsTrue(input.ScanGenerateThumbnails),
 			progress:             progress,
 			CaseSensitiveFs:      f.caseSensitiveFs,
-			ctx:                  ctx,
 			mutexManager:         mutexManager,
 		}
 
@@ -135,7 +136,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 				UseFileMetadata: false,
 			}
 
-			go task.associateGallery(&wg)
+			go task.associateGallery(ctx, &wg)
 			wg.Wait()
 		}
 		logger.Info("Finished gallery association")
@@ -187,7 +188,7 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, s
 				}
 
 				total++
-				if !j.doesPathExist(path) {
+				if !j.doesPathExist(ctx, path) {
 					newFiles++
 				}
 
@@ -212,14 +213,14 @@ func (j *ScanJob) queueFiles(ctx context.Context, paths []*models.StashConfig, s
 	return
 }
 
-func (j *ScanJob) doesPathExist(path string) bool {
+func (j *ScanJob) doesPathExist(ctx context.Context, path string) bool {
 	config := config.GetInstance()
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
 
 	ret := false
-	txnErr := j.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	txnErr := j.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		switch {
 		case fsutil.MatchExtension(path, gExt):
 			g, _ := r.Gallery().FindByPath(path)
@@ -248,7 +249,6 @@ func (j *ScanJob) doesPathExist(path string) bool {
 }
 
 type ScanTask struct {
-	ctx                  context.Context
 	TxnManager           models.TransactionManager
 	file                 file.SourceFile
 	UseFileMetadata      bool
@@ -275,9 +275,11 @@ func (t *ScanTask) Start(ctx context.Context) {
 		case isGallery(path):
 			t.scanGallery(ctx)
 		case isVideo(path):
-			s = t.scanScene()
+			s = t.scanScene(ctx)
 		case isImage(path):
-			t.scanImage()
+			t.scanImage(ctx)
+		case isCaptions(path):
+			t.associateCaptions(ctx)
 		}
 	})
 
@@ -320,28 +322,24 @@ func (t *ScanTask) Start(ctx context.Context) {
 		iwg.Add()
 
 		go t.progress.ExecuteTask(fmt.Sprintf("Generating preview for %s", path), func() {
-			config := config.GetInstance()
-			var previewSegmentDuration = config.GetPreviewSegmentDuration()
-			var previewSegments = config.GetPreviewSegments()
-			var previewExcludeStart = config.GetPreviewExcludeStart()
-			var previewExcludeEnd = config.GetPreviewExcludeEnd()
-			var previewPresent = config.GetPreviewPreset()
+			options := getGeneratePreviewOptions(models.GeneratePreviewOptionsInput{})
+			const overwrite = false
 
-			// NOTE: the reuse of this model like this is painful.
-			previewOptions := models.GeneratePreviewOptionsInput{
-				PreviewSegments:        &previewSegments,
-				PreviewSegmentDuration: &previewSegmentDuration,
-				PreviewExcludeStart:    &previewExcludeStart,
-				PreviewExcludeEnd:      &previewExcludeEnd,
-				PreviewPreset:          &previewPresent,
+			g := &generate.Generator{
+				Encoder:     instance.FFMPEG,
+				LockManager: instance.ReadLockManager,
+				MarkerPaths: instance.Paths.SceneMarkers,
+				ScenePaths:  instance.Paths.Scene,
+				Overwrite:   overwrite,
 			}
 
 			taskPreview := GeneratePreviewTask{
 				Scene:               *s,
 				ImagePreview:        t.GenerateImagePreview,
-				Options:             previewOptions,
-				Overwrite:           false,
+				Options:             options,
+				Overwrite:           overwrite,
 				fileNamingAlgorithm: t.fileNamingAlgorithm,
+				generator:           g,
 			}
 			taskPreview.Start(ctx)
 			iwg.Done()
@@ -356,6 +354,7 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
+	capExt := scene.CaptionExts
 	excludeVidRegex := generateRegexps(config.GetExcludes())
 	excludeImgRegex := generateRegexps(config.GetImageExcludes())
 
@@ -397,6 +396,10 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 			if (fsutil.MatchExtension(path, imgExt) || fsutil.MatchExtension(path, gExt)) && !matchFileRegex(path, excludeImgRegex) {
 				return f(path, info, err)
 			}
+		}
+
+		if fsutil.MatchExtension(path, capExt) {
+			return f(path, info, err)
 		}
 
 		return nil

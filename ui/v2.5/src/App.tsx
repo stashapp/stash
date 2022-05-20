@@ -19,6 +19,7 @@ import Galleries from "./components/Galleries/Galleries";
 import { MainNavbar } from "./components/MainNavbar";
 import { PageNotFound } from "./components/PageNotFound";
 import Performers from "./components/Performers/Performers";
+import Recommendations from "./components/Recommendations/Recommendations";
 import Scenes from "./components/Scenes/Scenes";
 import { Settings } from "./components/Settings/Settings";
 import { Stats } from "./components/Stats";
@@ -34,6 +35,7 @@ import * as GQL from "./core/generated-graphql";
 import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
 import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/Manual";
+import { InteractiveProvider } from "./hooks/Interactive/context";
 
 initPolyfills();
 
@@ -117,7 +119,7 @@ export const App: React.FC = () => {
 
     return (
       <Switch>
-        <Route exact path="/" component={Stats} />
+        <Route exact path="/" component={Recommendations} />
         <Route path="/scenes" component={Scenes} />
         <Route path="/images" component={Images} />
         <Route path="/galleries" component={Galleries} />
@@ -125,6 +127,7 @@ export const App: React.FC = () => {
         <Route path="/tags" component={Tags} />
         <Route path="/studios" component={Studios} />
         <Route path="/movies" component={Movies} />
+        <Route path="/stats" component={Stats} />
         <Route path="/settings" component={Settings} />
         <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
         <Route
@@ -148,12 +151,14 @@ export const App: React.FC = () => {
           <ToastProvider>
             <LightboxProvider>
               <ManualProvider>
-                <Helmet
-                  titleTemplate={`%s ${TITLE_SUFFIX}`}
-                  defaultTitle="Stash"
-                />
-                {maybeRenderNavbar()}
-                <div className="main container-fluid">{renderContent()}</div>
+                <InteractiveProvider>
+                  <Helmet
+                    titleTemplate={`%s ${TITLE_SUFFIX}`}
+                    defaultTitle="Stash"
+                  />
+                  {maybeRenderNavbar()}
+                  <div className="main container-fluid">{renderContent()}</div>
+                </InteractiveProvider>
               </ManualProvider>
             </LightboxProvider>
           </ToastProvider>

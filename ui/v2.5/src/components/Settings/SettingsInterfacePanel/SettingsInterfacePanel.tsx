@@ -1,6 +1,6 @@
 import React from "react";
-import { Form } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { Button, Form } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 import { DurationInput, LoadingIndicator } from "src/components/Shared";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { SettingSection } from "../SettingSection";
@@ -19,6 +19,11 @@ import {
   imageLightboxScrollModeIntlMap,
 } from "src/core/enums";
 import { useInterfaceLocalForage } from "src/hooks";
+import {
+  ConnectionState,
+  connectionStateLabel,
+  InteractiveContext,
+} from "src/hooks/Interactive/context";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -37,6 +42,16 @@ export const SettingsInterfacePanel: React.FC = () => {
   const { interface: iface, saveInterface, loading, error } = React.useContext(
     SettingStateContext
   );
+
+  const {
+    interactive,
+    state: interactiveState,
+    error: interactiveError,
+    serverOffset: interactiveServerOffset,
+    initialised: interactiveInitialised,
+    initialise: initialiseInteractive,
+    sync: interactiveSync,
+  } = React.useContext(InteractiveContext);
 
   const [, setInterfaceLocalForage] = useInterfaceLocalForage();
 
@@ -63,6 +78,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
+  // https://en.wikipedia.org/wiki/List_of_language_names
   return (
     <>
       <SettingSection headingID="config.ui.basic_settings">
@@ -72,6 +88,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.language ?? undefined}
           onChange={(v) => saveInterface({ language: v })}
         >
+          <option value="da-DK">Dansk (Danmark)</option>
           <option value="de-DE">Deutsch (Deutschland)</option>
           <option value="en-GB">English (United Kingdom)</option>
           <option value="en-US">English (United States)</option>
@@ -81,7 +98,9 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="hr-HR">Hrvatski (Preview)</option>
           <option value="it-IT">Italiano</option>
           <option value="ja-JP">日本語 (日本)</option>
+          <option value="ko-KR">한국어 (대한민국) (Preview)</option>
           <option value="nl-NL">Nederlands (Nederland)</option>
+          <option value="pl-PL">Polski</option>
           <option value="pt-BR">Português (Brasil)</option>
           <option value="ru-RU">Русский (Россия) (Preview)</option>
           <option value="sv-SE">Svenska</option>
@@ -289,6 +308,15 @@ export const SettingsInterfacePanel: React.FC = () => {
             </option>
           ))}
         </SelectSetting>
+
+        <NumberSetting
+          headingID="config.ui.scroll_attempts_before_change.heading"
+          subHeadingID="config.ui.scroll_attempts_before_change.description"
+          value={iface.imageLightbox?.scrollAttemptsBeforeChange ?? 0}
+          onChange={(v) =>
+            saveLightboxSettings({ scrollAttemptsBeforeChange: v })
+          }
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.editing.heading">
@@ -388,6 +416,70 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={iface.handyKey ?? undefined}
           onChange={(v) => saveInterface({ handyKey: v })}
         />
+        {interactive.handyKey && (
+          <>
+            <div className="setting" id="handy-status">
+              <div>
+                <h3>
+                  {intl.formatMessage({
+                    id: "config.ui.handy_connection.status.heading",
+                  })}
+                </h3>
+
+                <div className="value">
+                  <FormattedMessage
+                    id={connectionStateLabel(interactiveState)}
+                  />
+                  {interactiveError && <span>: {interactiveError}</span>}
+                </div>
+              </div>
+              <div>
+                {!interactiveInitialised && (
+                  <Button
+                    disabled={
+                      interactiveState === ConnectionState.Connecting ||
+                      interactiveState === ConnectionState.Syncing
+                    }
+                    onClick={() => initialiseInteractive()}
+                  >
+                    {intl.formatMessage({
+                      id: "config.ui.handy_connection.connect",
+                    })}
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="setting" id="handy-server-offset">
+              <div>
+                <h3>
+                  {intl.formatMessage({
+                    id: "config.ui.handy_connection.server_offset.heading",
+                  })}
+                </h3>
+
+                <div className="value">
+                  {interactiveServerOffset.toFixed()}ms
+                </div>
+              </div>
+              <div>
+                {interactiveInitialised && (
+                  <Button
+                    disabled={
+                      !interactiveInitialised ||
+                      interactiveState === ConnectionState.Syncing
+                    }
+                    onClick={() => interactiveSync()}
+                  >
+                    {intl.formatMessage({
+                      id: "config.ui.handy_connection.sync",
+                    })}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
         <NumberSetting
           headingID="config.ui.funscript_offset.heading"
           subHeadingID="config.ui.funscript_offset.description"

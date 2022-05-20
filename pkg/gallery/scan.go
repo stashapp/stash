@@ -24,7 +24,6 @@ type Scanner struct {
 
 	ImageExtensions    []string
 	StripFileExtension bool
-	Ctx                context.Context
 	CaseSensitiveFs    bool
 	TxnManager         models.TransactionManager
 	Paths              *paths.Paths
@@ -39,7 +38,7 @@ func FileScanner(hasher file.Hasher) file.Scanner {
 	}
 }
 
-func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFile) (retGallery *models.Gallery, scanImages bool, err error) {
+func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBased, file file.SourceFile) (retGallery *models.Gallery, scanImages bool, err error) {
 	scanned, err := scanner.Scanner.ScanExisting(existing, file)
 	if err != nil {
 		return nil, false, err
@@ -76,7 +75,7 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 		done := make(chan struct{})
 		scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
 
-		if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 			// free the mutex once transaction is complete
 			defer close(done)
 
@@ -94,13 +93,13 @@ func (scanner *Scanner) ScanExisting(existing file.FileBased, file file.SourceFi
 			return nil, false, err
 		}
 
-		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, retGallery.ID, plugin.GalleryUpdatePost, nil, nil)
+		scanner.PluginCache.ExecutePostHooks(ctx, retGallery.ID, plugin.GalleryUpdatePost, nil, nil)
 	}
 
 	return
 }
 
-func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Gallery, scanImages bool, err error) {
+func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retGallery *models.Gallery, scanImages bool, err error) {
 	scanned, err := scanner.Scanner.ScanNew(file)
 	if err != nil {
 		return nil, false, err
@@ -117,7 +116,7 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 	scanner.MutexManager.Claim(mutexType, checksum, done)
 	defer close(done)
 
-	if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+	if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
 		qb := r.Gallery()
 
 		g, _ = qb.FindByChecksum(checksum)
@@ -183,9 +182,9 @@ func (scanner *Scanner) ScanNew(file file.SourceFile) (retGallery *models.Galler
 	}
 
 	if isNewGallery {
-		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
+		scanner.PluginCache.ExecutePostHooks(ctx, g.ID, plugin.GalleryCreatePost, nil, nil)
 	} else if isUpdatedGallery {
-		scanner.PluginCache.ExecutePostHooks(scanner.Ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
+		scanner.PluginCache.ExecutePostHooks(ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
 	}
 
 	scanImages = isNewGallery

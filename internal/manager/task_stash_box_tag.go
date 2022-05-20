@@ -22,8 +22,8 @@ type StashBoxPerformerTagTask struct {
 	excluded_fields []string
 }
 
-func (t *StashBoxPerformerTagTask) Start() {
-	t.stashBoxPerformerTag(context.TODO())
+func (t *StashBoxPerformerTagTask) Start(ctx context.Context) {
+	t.stashBoxPerformerTag(ctx)
 }
 
 func (t *StashBoxPerformerTagTask) Description() string {
@@ -156,7 +156,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				partial.URL = &value
 			}
 
-			txnErr := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			txnErr := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 				_, err := r.Performer().Update(partial)
 
 				if !t.refresh {
@@ -218,7 +218,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				URL:          getNullString(performer.URL),
 				UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 			}
-			err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
 				createdPerformer, err := r.Performer().Create(newPerformer)
 				if err != nil {
 					return err
