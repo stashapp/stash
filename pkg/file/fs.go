@@ -24,6 +24,7 @@ func (o *fsOpener) Open() (io.ReadCloser, error) {
 type FS interface {
 	Lstat(name string) (fs.FileInfo, error)
 	Open(name string) (fs.ReadDirFile, error)
+	OpenZip(name string) (*ZipFS, error)
 }
 
 // OsFS is a file system backed by the OS.
@@ -35,4 +36,13 @@ func (f *OsFS) Lstat(name string) (fs.FileInfo, error) {
 
 func (f *OsFS) Open(name string) (fs.ReadDirFile, error) {
 	return os.Open(name)
+}
+
+func (f *OsFS) OpenZip(name string) (*ZipFS, error) {
+	info, err := f.Lstat(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return newZipFS(f, name, info)
 }

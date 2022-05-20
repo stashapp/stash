@@ -93,6 +93,10 @@ type scanJob struct {
 type ScanOptions struct {
 	Paths []string
 
+	// ZipFileExtensions is a list of file extensions that are considered zip files.
+	// Extension does not include the . character.
+	ZipFileExtensions []string
+
 	// ScanFilters are used to determine if a file should be scanned.
 	ScanFilters []PathFilter
 }
@@ -257,7 +261,7 @@ func (s *scanJob) acceptEntry(ctx context.Context, path string, info fs.FileInfo
 }
 
 func (s *scanJob) scanZipFile(ctx context.Context, f scanFile) error {
-	zipFS, err := newZipFS(f.fs, f.Path, f.info)
+	zipFS, err := f.fs.OpenZip(f.Path)
 	if err != nil {
 		if errors.Is(err, errNotReaderAt) {
 			// can't walk the zip file
@@ -486,8 +490,14 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 }
 
 func (s *scanJob) isZipFile(entry fs.FileInfo) bool {
-	// TODO - this should be configurable
-	return strings.HasSuffix(entry.Name(), ".zip")
+	fExt := filepath.Ext(entry.Name())
+	for _, ext := range s.options.ZipFileExtensions {
+		if strings.EqualFold(fExt, "."+ext) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
@@ -630,12 +640,7 @@ func (s *scanJob) getFileFS(f *BaseFile) (FS, error) {
 	}
 
 	zipPath := f.ZipFile.Base().Path
-	info, err := fs.Lstat(zipPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return newZipFS(fs, zipPath, info)
+	return fs.OpenZip(zipPath)
 }
 
 func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp []Fingerprint) (File, error) {

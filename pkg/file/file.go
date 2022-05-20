@@ -94,12 +94,7 @@ func (f *BaseFile) Open() (io.ReadCloser, error) {
 		fs := &OsFS{}
 
 		zipPath := f.ZipFile.Base().Path
-		info, err := fs.Lstat(zipPath)
-		if err != nil {
-			return nil, err
-		}
-
-		zfs, err := newZipFS(fs, zipPath, info)
+		zfs, err := fs.OpenZip(zipPath)
 		if err != nil {
 			return nil, err
 		}

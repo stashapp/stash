@@ -37,8 +37,9 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	start := time.Now()
 
 	j.scanner.Scan(ctx, file.ScanOptions{
-		Paths:       paths,
-		ScanFilters: []file.PathFilter{newScanFilter(instance.Config)},
+		Paths:             paths,
+		ScanFilters:       []file.PathFilter{newScanFilter(instance.Config)},
+		ZipFileExtensions: instance.Config.GetGalleryExtensions(),
 	}, progress)
 
 	// FIXME - handle generate jobs after scanning

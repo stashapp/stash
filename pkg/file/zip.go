@@ -10,7 +10,10 @@ import (
 	"path/filepath"
 )
 
-var errNotReaderAt = errors.New("not a ReaderAt")
+var (
+	errNotReaderAt  = errors.New("not a ReaderAt")
+	errZipFSOpenZip = errors.New("cannot open zip file inside zip file")
+)
 
 // ZipFS is a file system backed by a zip file.
 type ZipFS struct {
@@ -83,6 +86,10 @@ func (f *ZipFS) Lstat(name string) (fs.FileInfo, error) {
 	}
 
 	return nil, os.ErrNotExist
+}
+
+func (f *ZipFS) OpenZip(name string) (*ZipFS, error) {
+	return nil, errZipFSOpenZip
 }
 
 type zipReadDirFile struct {
