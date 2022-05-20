@@ -93,7 +93,7 @@ const (
 	imageIdx1WithStudio
 	imageIdx2WithStudio
 	imageIdxWithStudioPerformer
-	imageIdxInZip // TODO - not implemented
+	imageIdxInZip
 	imageIdxWithPerformerTag
 	imageIdxWithPerformerTwoTags
 	imageIdxWithGrandChildStudio
@@ -1082,6 +1082,10 @@ func createImages(ctx context.Context, n int) error {
 
 	for i := 0; i < n; i++ {
 		f := makeImageFile(i)
+		if i == imageIdxInZip {
+			f.ZipFileID = &fileIDs[fileIdxZip]
+		}
+
 		if err := fqb.Create(ctx, f); err != nil {
 			return fmt.Errorf("creating image file: %w", err)
 		}

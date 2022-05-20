@@ -31,10 +31,11 @@ type hookExecutor interface {
 }
 
 type Resolver struct {
-	txnManager   txn.Manager
-	repository   manager.Repository
-	sceneService manager.SceneService
-	imageService manager.ImageService
+	txnManager     txn.Manager
+	repository     manager.Repository
+	sceneService   manager.SceneService
+	imageService   manager.ImageService
+	galleryService manager.GalleryService
 
 	hookExecutor hookExecutor
 }

@@ -130,8 +130,9 @@ type Manager struct {
 	Database   *sqlite.Database
 	Repository Repository
 
-	SceneService SceneService
-	ImageService ImageService
+	SceneService   SceneService
+	ImageService   ImageService
+	GalleryService GalleryService
 
 	Scanner *file.Scanner
 
@@ -192,6 +193,12 @@ func initialize() error {
 	instance.ImageService = &image.Service{
 		File:       db.File,
 		Repository: db.Image,
+	}
+
+	instance.GalleryService = &gallery.Service{
+		Repository:   db.Gallery,
+		ImageFinder:  db.Image,
+		ImageService: instance.ImageService,
 	}
 
 	instance.JobManager = initJobManager()

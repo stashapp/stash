@@ -77,12 +77,14 @@ func Start() error {
 	pluginCache := manager.GetInstance().PluginCache
 	sceneService := manager.GetInstance().SceneService
 	imageService := manager.GetInstance().ImageService
+	galleryService := manager.GetInstance().GalleryService
 	resolver := &Resolver{
-		txnManager:   txnManager,
-		repository:   txnManager,
-		sceneService: sceneService,
-		imageService: imageService,
-		hookExecutor: pluginCache,
+		txnManager:     txnManager,
+		repository:     txnManager,
+		sceneService:   sceneService,
+		imageService:   imageService,
+		galleryService: galleryService,
+		hookExecutor:   pluginCache,
 	}
 
 	gqlSrv := gqlHandler.New(NewExecutableSchema(Config{Resolvers: resolver}))

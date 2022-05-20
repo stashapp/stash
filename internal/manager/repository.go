@@ -85,3 +85,7 @@ type SceneService interface {
 type ImageService interface {
 	Destroy(ctx context.Context, image *models.Image, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) error
 }
+
+type GalleryService interface {
+	Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error)
+}

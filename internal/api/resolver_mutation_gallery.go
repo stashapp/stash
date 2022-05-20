@@ -320,12 +320,11 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 		Paths:   manager.GetInstance().Paths,
 	}
 
-	// deleteGenerated := utils.IsTrue(input.DeleteGenerated)
-	// deleteFile := utils.IsTrue(input.DeleteFile)
+	deleteGenerated := utils.IsTrue(input.DeleteGenerated)
+	deleteFile := utils.IsTrue(input.DeleteFile)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Gallery
-		// iqb := r.repository.Image
 
 		for _, id := range galleryIDs {
 			gallery, err := qb.Find(ctx, id)
@@ -339,54 +338,8 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 			galleries = append(galleries, gallery)
 
-			// if this is a zip-based gallery, delete the images as well first
-			// TODO
-			// if gallery.Path() {
-			// 	imgs, err := iqb.FindByGalleryID(ctx, id)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-
-			// 	for _, img := range imgs {
-			// 		if err := image.Destroy(ctx, img, iqb, fileDeleter, deleteGenerated, false); err != nil {
-			// 			return err
-			// 		}
-
-			// 		imgsDestroyed = append(imgsDestroyed, img)
-			// 	}
-
-			// 	if deleteFile {
-			// 		if err := fileDeleter.Files([]string{*gallery.Path}); err != nil {
-			// 			return err
-			// 		}
-			// 	}
-			// } else if deleteFile {
-			// 	// Delete image if it is only attached to this gallery
-			// 	imgs, err := iqb.FindByGalleryID(ctx, id)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-
-			// 	for _, img := range imgs {
-			// 		imgGalleries, err := qb.FindByImageID(ctx, img.ID)
-			// 		if err != nil {
-			// 			return err
-			// 		}
-
-			// 		if len(imgGalleries) == 1 {
-			// 			if err := image.Destroy(ctx, img, iqb, fileDeleter, deleteGenerated, deleteFile); err != nil {
-			// 				return err
-			// 			}
-
-			// 			imgsDestroyed = append(imgsDestroyed, img)
-			// 		}
-			// 	}
-
-			// 	// we only want to delete a folder-based gallery if it is empty.
-			// 	// don't do this with the file deleter
-			// }
-
-			if err := qb.Destroy(ctx, id); err != nil {
+			imgsDestroyed, err = r.galleryService.Destroy(ctx, gallery, fileDeleter, deleteGenerated, deleteFile)
+			if err != nil {
 				return err
 			}
 		}

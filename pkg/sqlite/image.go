@@ -453,6 +453,30 @@ func (qb *ImageStore) CountByGalleryID(ctx context.Context, galleryID int) (int,
 	return count(ctx, q)
 }
 
+func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Image, error) {
+	table := qb.queryTable()
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(table.Col("parent_folder_id").Eq(folderID))
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting image by folder: %w", err)
+	}
+
+	return ret, nil
+}
+
+func (qb *ImageStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*models.Image, error) {
+	table := qb.queryTable()
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(table.Col("zip_file_id").Eq(zipFileID))
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting image by zip file: %w", err)
+	}
+
+	return ret, nil
+}
+
 func (qb *ImageStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)

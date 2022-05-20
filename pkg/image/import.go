@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/performer"
@@ -14,10 +13,14 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
+type GalleryChecksumsFinder interface {
+	FindByChecksums(ctx context.Context, checksums []string) ([]*models.Gallery, error)
+}
+
 type Importer struct {
 	ReaderWriter        FinderCreatorUpdater
 	StudioWriter        studio.NameFinderCreator
-	GalleryWriter       gallery.ChecksumsFinder
+	GalleryWriter       GalleryChecksumsFinder
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Image

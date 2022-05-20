@@ -1169,6 +1169,119 @@ func Test_imageQueryBuilder_CountByGalleryID(t *testing.T) {
 	}
 }
 
+func imagesToIDs(i []*models.Image) []int {
+	var ret []int
+	for _, ii := range i {
+		ret = append(ret, ii.ID)
+	}
+
+	return ret
+}
+
+func Test_imageStore_FindByFolderID(t *testing.T) {
+	tests := []struct {
+		name     string
+		folderID file.FolderID
+		include  []int
+		exclude  []int
+	}{
+		{
+			"valid",
+			folderIDs[folderIdxWithImageFiles],
+			[]int{imageIdxWithGallery},
+			nil,
+		},
+		{
+			"invalid",
+			invalidFolderID,
+			nil,
+			[]int{imageIdxWithGallery},
+		},
+		{
+			"parent folder",
+			folderIDs[folderIdxForObjectFiles],
+			nil,
+			[]int{imageIdxWithGallery},
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByFolderID(ctx, tt.folderID)
+			if err != nil {
+				t.Errorf("ImageStore.FindByFolderID() error = %v", err)
+				return
+			}
+			for _, f := range got {
+				clearImageFileIDs(f)
+			}
+
+			ids := imagesToIDs(got)
+			include := indexesToIDs(imageIDs, tt.include)
+			exclude := indexesToIDs(imageIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
+func Test_imageStore_FindByZipFileID(t *testing.T) {
+	tests := []struct {
+		name      string
+		zipFileID file.ID
+		include   []int
+		exclude   []int
+	}{
+		{
+			"valid",
+			fileIDs[fileIdxZip],
+			[]int{imageIdxInZip},
+			nil,
+		},
+		{
+			"invalid",
+			invalidFileID,
+			nil,
+			[]int{imageIdxInZip},
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByZipFileID(ctx, tt.zipFileID)
+			if err != nil {
+				t.Errorf("ImageStore.FindByZipFileID() error = %v", err)
+				return
+			}
+			for _, f := range got {
+				clearImageFileIDs(f)
+			}
+
+			ids := imagesToIDs(got)
+			include := indexesToIDs(imageIDs, tt.include)
+			exclude := indexesToIDs(imageIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 func TestImageQueryQ(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		const imageIdx = 2
