@@ -232,9 +232,10 @@ type CleanMetadataInput struct {
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	j := cleanJob{
-		txnManager: s.Repository,
-		input:      input,
-		scanSubs:   s.scanSubs,
+		txnManager:   s.Repository,
+		sceneService: s.SceneService,
+		input:        input,
+		scanSubs:     s.scanSubs,
 	}
 
 	return s.JobManager.Add(ctx, "Cleaning...", &j)

@@ -375,6 +375,10 @@ func (qb *FileStore) Update(ctx context.Context, f file.File) error {
 	return nil
 }
 
+func (qb *FileStore) Destroy(ctx context.Context, id file.ID) error {
+	return qb.tableMgr.destroyExisting(ctx, []int{int(id)})
+}
+
 func (qb *FileStore) createVideoFile(ctx context.Context, id file.ID, f file.VideoFile) error {
 	var r videoFileRow
 	r.fromVideoFile(f)

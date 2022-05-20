@@ -130,6 +130,8 @@ type Manager struct {
 	Database   *sqlite.Database
 	Repository Repository
 
+	SceneService SceneService
+
 	Scanner *file.Scanner
 
 	scanSubs *subscriptionManager
@@ -178,6 +180,12 @@ func initialize() error {
 		Repository: sqliteRepository(db),
 
 		scanSubs: &subscriptionManager{},
+	}
+
+	instance.SceneService = &scene.Service{
+		File:            db.File,
+		Repository:      db.Scene,
+		MarkerDestroyer: instance.Repository.SceneMarker,
 	}
 
 	instance.JobManager = initJobManager()

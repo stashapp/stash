@@ -455,8 +455,6 @@ func modTime(info fs.FileInfo) time.Time {
 }
 
 func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
-	// TODO - ensure file should be included
-
 	var ff File
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
 		// determine if file already exists in data store

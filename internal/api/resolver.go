@@ -31,8 +31,9 @@ type hookExecutor interface {
 }
 
 type Resolver struct {
-	txnManager txn.Manager
-	repository manager.Repository
+	txnManager   txn.Manager
+	repository   manager.Repository
+	sceneService manager.SceneService
 
 	hookExecutor hookExecutor
 }

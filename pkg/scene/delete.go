@@ -127,7 +127,8 @@ type MarkerDestroyer interface {
 
 // Destroy deletes a scene and its associated relationships from the
 // database.
-func Destroy(ctx context.Context, scene *models.Scene, qb Destroyer, mqb MarkerDestroyer, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+	mqb := s.MarkerDestroyer
 	markers, err := mqb.FindBySceneID(ctx, scene.ID)
 	if err != nil {
 		return err
@@ -140,16 +141,8 @@ func Destroy(ctx context.Context, scene *models.Scene, qb Destroyer, mqb MarkerD
 	}
 
 	if deleteFile {
-		if err := fileDeleter.Files([]string{scene.Path()}); err != nil {
+		if err := s.deleteFiles(ctx, scene, fileDeleter); err != nil {
 			return err
-		}
-
-		funscriptPath := video.GetFunscriptPath(scene.Path())
-		funscriptExists, _ := fsutil.FileExists(funscriptPath)
-		if funscriptExists {
-			if err := fileDeleter.Files([]string{funscriptPath}); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -159,8 +152,38 @@ func Destroy(ctx context.Context, scene *models.Scene, qb Destroyer, mqb MarkerD
 		}
 	}
 
-	if err := qb.Destroy(ctx, scene.ID); err != nil {
+	if err := s.Repository.Destroy(ctx, scene.ID); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter) error {
+	for _, f := range scene.Files {
+		// only delete files where there is no other associated scene
+		otherScenes, err := s.Repository.FindByFileID(ctx, f.ID)
+		if err != nil {
+			return err
+		}
+
+		if len(otherScenes) > 1 {
+			// other scenes associated, don't remove
+			continue
+		}
+
+		const deleteFile = true
+		if err := file.Destroy(ctx, s.File, f, &fileDeleter.Deleter, deleteFile); err != nil {
+			return err
+		}
+
+		funscriptPath := video.GetFunscriptPath(f.Path)
+		funscriptExists, _ := fsutil.FileExists(funscriptPath)
+		if funscriptExists {
+			if err := fileDeleter.Files([]string{funscriptPath}); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

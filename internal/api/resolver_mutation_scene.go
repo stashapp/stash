@@ -354,7 +354,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		// kill any running encoders
 		manager.KillRunningStreams(s, fileNamingAlgo)
 
-		return scene.Destroy(ctx, s, r.repository.Scene, r.repository.SceneMarker, fileDeleter, deleteGenerated, deleteFile)
+		return r.sceneService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile)
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
@@ -404,7 +404,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			// kill any running encoders
 			manager.KillRunningStreams(s, fileNamingAlgo)
 
-			if err := scene.Destroy(ctx, s, r.repository.Scene, r.repository.SceneMarker, fileDeleter, deleteGenerated, deleteFile); err != nil {
+			if err := r.sceneService.Destroy(ctx, s, fileDeleter, deleteGenerated, deleteFile); err != nil {
 				return err
 			}
 		}

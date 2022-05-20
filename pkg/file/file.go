@@ -160,11 +160,16 @@ type Updater interface {
 	Update(ctx context.Context, f File) error
 }
 
+type Destroyer interface {
+	Destroy(ctx context.Context, id ID) error
+}
+
 // Store provides methods to find, create and update Files.
 type Store interface {
 	Getter
 	Creator
 	Updater
+	Destroyer
 	MissingMarker
 }
 

@@ -1,6 +1,7 @@
 package file
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -158,4 +159,18 @@ func (d *Deleter) renameForDelete(path string) error {
 
 func (d *Deleter) renameForRestore(path string) error {
 	return d.RenamerRemover.Rename(path+deleteFileSuffix, path)
+}
+
+func Destroy(ctx context.Context, destroyer Destroyer, f File, fileDeleter *Deleter, deleteFile bool) error {
+	if err := destroyer.Destroy(ctx, f.Base().ID); err != nil {
+		return err
+	}
+
+	if deleteFile {
+		if err := fileDeleter.Files([]string{f.Base().Path}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

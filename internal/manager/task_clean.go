@@ -18,9 +18,10 @@ import (
 )
 
 type cleanJob struct {
-	txnManager Repository
-	input      CleanMetadataInput
-	scanSubs   *subscriptionManager
+	txnManager   Repository
+	input        CleanMetadataInput
+	sceneService SceneService
+	scanSubs     *subscriptionManager
 }
 
 func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
@@ -415,7 +416,7 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 			return err
 		}
 
-		return scene.Destroy(ctx, s, repo.Scene, repo.SceneMarker, fileDeleter, true, false)
+		return j.sceneService.Destroy(ctx, s, fileDeleter, true, false)
 	}); err != nil {
 		fileDeleter.Rollback()
 

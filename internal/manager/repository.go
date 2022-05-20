@@ -77,3 +77,7 @@ func sqliteRepository(d *sqlite.Database) Repository {
 		SavedFilter: txnRepo.SavedFilter,
 	}
 }
+
+type SceneService interface {
+	Destroy(ctx context.Context, scene *models.Scene, fileDeleter *scene.FileDeleter, deleteGenerated, deleteFile bool) error
+}
