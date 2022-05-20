@@ -5,8 +5,6 @@ import { Helmet } from "react-helmet";
 import { mergeWith } from "lodash";
 import { ToastProvider } from "src/hooks/Toast";
 import LightboxProvider from "src/hooks/Lightbox/context";
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { fas } from "@fortawesome/free-solid-svg-icons";
 import { initPolyfills } from "src/polyfills";
 
 import locales from "src/locales";
@@ -22,6 +20,8 @@ import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
 import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
+
+import "./icons";
 
 const Performers = lazy(() => import("./components/Performers/Performers"));
 const Recommendations = lazy(
@@ -49,9 +49,6 @@ const SceneDuplicateChecker = lazy(
 initPolyfills();
 
 MousetrapPause(Mousetrap);
-
-// Set fontawesome/free-solid-svg as default fontawesome icons
-library.add(fas);
 
 const intlFormats: CustomFormats = {
   date: {
