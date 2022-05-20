@@ -70,6 +70,8 @@ import {
   faChevronUp,
   faCaretUp,
   faChevronLeft,
+  faCheckCircle,
+  faTimesCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
@@ -95,6 +97,7 @@ library.add(
   faCaretUp,
   faChartBar,
   faCheck,
+  faCheckCircle,
   faChevronLeft,
   faChevronDown,
   faChevronRight,
@@ -146,6 +149,7 @@ library.add(
   faTags,
   faThLarge,
   faTimes,
+  faTimesCircle,
   faTransgenderAlt,
   faTrash,
   faTrashAlt,
