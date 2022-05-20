@@ -34,6 +34,7 @@ type Resolver struct {
 	txnManager   txn.Manager
 	repository   manager.Repository
 	sceneService manager.SceneService
+	imageService manager.ImageService
 
 	hookExecutor hookExecutor
 }

@@ -81,3 +81,7 @@ func sqliteRepository(d *sqlite.Database) Repository {
 type SceneService interface {
 	Destroy(ctx context.Context, scene *models.Scene, fileDeleter *scene.FileDeleter, deleteGenerated, deleteFile bool) error
 }
+
+type ImageService interface {
+	Destroy(ctx context.Context, image *models.Image, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) error
+}

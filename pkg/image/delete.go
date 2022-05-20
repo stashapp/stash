@@ -32,13 +32,12 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 }
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.
-func Destroy(ctx context.Context, i *models.Image, destroyer Destroyer, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
-	// don't try to delete if the image is in a zip file
-	// if deleteFile && !file.IsZipPath(i.Path) {
-	// 	if err := fileDeleter.Files([]string{i.Path}); err != nil {
-	// 		return err
-	// 	}
-	// }
+func (s *Service) Destroy(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+	if deleteFile {
+		if err := s.deleteFiles(ctx, i, fileDeleter); err != nil {
+			return err
+		}
+	}
 
 	if deleteGenerated {
 		if err := fileDeleter.MarkGeneratedFiles(i); err != nil {
@@ -46,5 +45,32 @@ func Destroy(ctx context.Context, i *models.Image, destroyer Destroyer, fileDele
 		}
 	}
 
-	return destroyer.Destroy(ctx, i.ID)
+	return s.Repository.Destroy(ctx, i.ID)
+}
+
+func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter *FileDeleter) error {
+	for _, f := range i.Files {
+		// don't delete files in zip archives
+		if f.ZipFileID != nil {
+			continue
+		}
+
+		// only delete files where there is no other associated image
+		otherImages, err := s.Repository.FindByFileID(ctx, f.ID)
+		if err != nil {
+			return err
+		}
+
+		if len(otherImages) > 1 {
+			// other image associated, don't remove
+			continue
+		}
+
+		const deleteFile = true
+		if err := file.Destroy(ctx, s.File, f, &fileDeleter.Deleter, deleteFile); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

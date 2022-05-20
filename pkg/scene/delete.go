@@ -161,6 +161,11 @@ func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter 
 
 func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter) error {
 	for _, f := range scene.Files {
+		// don't delete files in zip archives
+		if f.ZipFileID != nil {
+			continue
+		}
+
 		// only delete files where there is no other associated scene
 		otherScenes, err := s.Repository.FindByFileID(ctx, f.ID)
 		if err != nil {

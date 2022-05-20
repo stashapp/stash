@@ -219,8 +219,6 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 		Paths:   manager.GetInstance().Paths,
 	}
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		qb := r.repository.Image
-
 		i, err = r.repository.Image.Find(ctx, imageID)
 		if err != nil {
 			return err
@@ -230,7 +228,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 			return fmt.Errorf("image with id %d not found", imageID)
 		}
 
-		return image.Destroy(ctx, i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile))
+		return r.imageService.Destroy(ctx, i, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile))
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
@@ -264,7 +262,6 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 		qb := r.repository.Image
 
 		for _, imageID := range imageIDs {
-
 			i, err := qb.Find(ctx, imageID)
 			if err != nil {
 				return err
@@ -276,7 +273,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 			images = append(images, i)
 
-			if err := image.Destroy(ctx, i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile)); err != nil {
+			if err := r.imageService.Destroy(ctx, i, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile)); err != nil {
 				return err
 			}
 		}

@@ -131,6 +131,7 @@ type Manager struct {
 	Repository Repository
 
 	SceneService SceneService
+	ImageService ImageService
 
 	Scanner *file.Scanner
 
@@ -186,6 +187,11 @@ func initialize() error {
 		File:            db.File,
 		Repository:      db.Scene,
 		MarkerDestroyer: instance.Repository.SceneMarker,
+	}
+
+	instance.ImageService = &image.Service{
+		File:       db.File,
+		Repository: db.Image,
 	}
 
 	instance.JobManager = initJobManager()

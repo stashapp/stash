@@ -76,10 +76,12 @@ func Start() error {
 	txnManager := manager.GetInstance().Repository
 	pluginCache := manager.GetInstance().PluginCache
 	sceneService := manager.GetInstance().SceneService
+	imageService := manager.GetInstance().ImageService
 	resolver := &Resolver{
 		txnManager:   txnManager,
 		repository:   txnManager,
 		sceneService: sceneService,
+		imageService: imageService,
 		hookExecutor: pluginCache,
 	}
 

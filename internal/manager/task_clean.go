@@ -21,6 +21,7 @@ type cleanJob struct {
 	txnManager   Repository
 	input        CleanMetadataInput
 	sceneService SceneService
+	imageService ImageService
 	scanSubs     *subscriptionManager
 }
 
@@ -481,7 +482,7 @@ func (j *cleanJob) deleteImage(ctx context.Context, imageID int) {
 			return fmt.Errorf("image not found: %d", imageID)
 		}
 
-		return image.Destroy(ctx, i, qb, fileDeleter, true, false)
+		return j.imageService.Destroy(ctx, i, fileDeleter, true, false)
 	}); err != nil {
 		fileDeleter.Rollback()
 

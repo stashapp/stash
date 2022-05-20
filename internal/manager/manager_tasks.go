@@ -234,6 +234,7 @@ func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	j := cleanJob{
 		txnManager:   s.Repository,
 		sceneService: s.SceneService,
+		imageService: s.ImageService,
 		input:        input,
 		scanSubs:     s.scanSubs,
 	}
