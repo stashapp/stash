@@ -40,12 +40,8 @@ import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
 
-const SceneScrapeDialog = lazy(
-  () => import("./SceneScrapeDialog")
-);
-const SceneQueryModal = lazy(
-  () => import("./SceneQueryModal")
-);
+const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
+const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
 
 interface IProps {
   scene: GQL.SceneDataFragment;
