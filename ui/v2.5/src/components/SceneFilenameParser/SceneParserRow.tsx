@@ -1,5 +1,6 @@
 import React from "react";
-import _ from "lodash";
+import isEqual from "lodash-es/isEqual";
+import clone from "lodash-es/clone";
 import { Form } from "react-bootstrap";
 import {
   ParseSceneFilenamesQuery,
@@ -26,7 +27,7 @@ class ParserResult<T> {
   public setValue(value?: T) {
     if (value) {
       this.value = value;
-      this.isSet = !_.isEqual(this.value, this.originalValue);
+      this.isSet = !isEqual(this.value, this.originalValue);
     }
   }
 }
@@ -332,44 +333,44 @@ interface ISceneParserRowProps {
 
 export const SceneParserRow = (props: ISceneParserRowProps) => {
   function changeParser<T>(result: ParserResult<T>, isSet: boolean, value?: T) {
-    const newParser = _.clone(result);
+    const newParser = clone(result);
     newParser.isSet = isSet;
     newParser.value = value;
     return newParser;
   }
 
   function onTitleChanged(set: boolean, value: string) {
-    const newResult = _.clone(props.scene);
+    const newResult = clone(props.scene);
     newResult.title = changeParser(newResult.title, set, value);
     props.onChange(newResult);
   }
 
   function onDateChanged(set: boolean, value: string) {
-    const newResult = _.clone(props.scene);
+    const newResult = clone(props.scene);
     newResult.date = changeParser(newResult.date, set, value);
     props.onChange(newResult);
   }
 
   function onRatingChanged(set: boolean, value?: number) {
-    const newResult = _.clone(props.scene);
+    const newResult = clone(props.scene);
     newResult.rating = changeParser(newResult.rating, set, value);
     props.onChange(newResult);
   }
 
   function onPerformerIdsChanged(set: boolean, value: string[]) {
-    const newResult = _.clone(props.scene);
+    const newResult = clone(props.scene);
     newResult.performers = changeParser(newResult.performers, set, value);
     props.onChange(newResult);
   }
 
   function onTagIdsChanged(set: boolean, value: string[]) {
-    const newResult = _.clone(props.scene);
+    const newResult = clone(props.scene);
     newResult.tags = changeParser(newResult.tags, set, value);
     props.onChange(newResult);
   }
 
   function onStudioIdChanged(set: boolean, value: string) {
-    const newResult = _.clone(props.scene);
+    const newResult = clone(props.scene);
     newResult.studio = changeParser(newResult.studio, set, value);
     props.onChange(newResult);
   }

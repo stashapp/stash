@@ -13,7 +13,7 @@ import { useTagCreate } from "src/core/StashService";
 import { Form } from "react-bootstrap";
 import { TagSelect } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import _ from "lodash";
+import clone from "lodash-es/clone";
 import {
   genderStrings,
   genderToString,
@@ -285,7 +285,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
       return;
     }
 
-    const ret = _.clone(idList);
+    const ret = clone(idList);
     // sort by id numerically
     ret.sort((a, b) => {
       return parseInt(a, 10) - parseInt(b, 10);

@@ -11,7 +11,8 @@ import {
 import { CollapseButton } from "src/components/Shared/CollapseButton";
 import Icon from "src/components/Shared/Icon";
 import Modal from "src/components/Shared/Modal";
-import _ from "lodash";
+import isEqual from "lodash-es/isEqual";
+import clone from "lodash-es/clone";
 import { FormattedMessage, useIntl } from "react-intl";
 
 export class ScrapeResult<T> {
@@ -24,7 +25,7 @@ export class ScrapeResult<T> {
     this.originalValue = originalValue ?? undefined;
     this.newValue = newValue ?? undefined;
 
-    const valuesEqual = _.isEqual(originalValue, newValue);
+    const valuesEqual = isEqual(originalValue, newValue);
     this.useNewValue = !!this.newValue && !valuesEqual;
     this.scraped = this.useNewValue;
   }
@@ -35,10 +36,10 @@ export class ScrapeResult<T> {
   }
 
   public cloneWithValue(value?: T) {
-    const ret = _.clone(this);
+    const ret = clone(this);
 
     ret.newValue = value;
-    ret.useNewValue = !_.isEqual(ret.newValue, ret.originalValue);
+    ret.useNewValue = isEqual(ret.newValue, ret.originalValue);
     ret.scraped = ret.useNewValue;
 
     return ret;
@@ -84,7 +85,7 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
   props: IScrapedRowProps<T, V>
 ) => {
   function handleSelectClick(isNew: boolean) {
-    const ret = _.clone(props.result);
+    const ret = clone(props.result);
     ret.useNewValue = isNew;
     props.onChange(ret);
   }

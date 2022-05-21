@@ -1,5 +1,5 @@
 import { ApolloError } from "@apollo/client/errors";
-import { debounce } from "lodash";
+import debounce from "lodash-es/debounce";
 import React, {
   useState,
   useEffect,

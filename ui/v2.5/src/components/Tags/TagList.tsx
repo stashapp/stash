@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import _ from "lodash";
+import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import { FindTagsQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -82,7 +82,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
       const { count } = result.data.findTags;
 
       const index = Math.floor(Math.random() * count);
-      const filterCopy = _.cloneDeep(filter);
+      const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindTags(filterCopy);

@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useMemo, MouseEvent } from "react";
 import { useIntl } from "react-intl";
-import _ from "lodash";
+import cloneDeep from "lodash-es/cloneDeep";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 import {
@@ -253,7 +253,7 @@ export const ImageList: React.FC<IImageList> = ({
       const { count } = result.data.findImages;
 
       const index = Math.floor(Math.random() * count);
-      const filterCopy = _.cloneDeep(filter);
+      const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindImages(filterCopy);

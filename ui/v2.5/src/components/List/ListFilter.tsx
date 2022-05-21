@@ -1,4 +1,5 @@
-import _, { debounce } from "lodash";
+import debounce from "lodash-es/debounce";
+import cloneDeep from "lodash-es/cloneDeep";
 import React, { HTMLAttributes, useEffect, useRef, useState } from "react";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -53,7 +54,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   const [perPageInput, perPageFocus] = useFocus();
 
   const searchCallback = debounce((value: string) => {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.searchTerm = value;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
@@ -101,7 +102,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       pp = maxPageSize;
     }
 
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.itemsPerPage = pp;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
@@ -120,7 +121,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onChangeSortDirection() {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     if (filter.sortDirection === SortDirectionEnum.Asc) {
       newFilter.sortDirection = SortDirectionEnum.Desc;
     } else {
@@ -131,14 +132,14 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onChangeSortBy(eventKey: string | null) {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.sortBy = eventKey ?? undefined;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
   }
 
   function onReshuffleRandomSort() {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.currentPage = 1;
     newFilter.randomSeed = -1;
     onFilterUpdate(newFilter);

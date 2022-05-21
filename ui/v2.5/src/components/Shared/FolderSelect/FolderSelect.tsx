@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, InputGroup, Form } from "react-bootstrap";
-import { debounce } from "lodash";
+import debounce from "lodash-es/debounce";
 import Icon from "src/components/Shared/Icon";
 import LoadingIndicator from "src/components/Shared/LoadingIndicator";
 import { useDirectory } from "src/core/StashService";

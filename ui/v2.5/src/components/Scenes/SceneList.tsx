@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import _ from "lodash";
+import cloneDeep from "lodash-es/cloneDeep";
 import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -137,7 +137,7 @@ export const SceneList: React.FC<ISceneList> = ({
       const indexMax =
         filter.itemsPerPage < count ? filter.itemsPerPage : count;
       const index = Math.floor(Math.random() * indexMax);
-      const filterCopy = _.cloneDeep(filter);
+      const filterCopy = cloneDeep(filter);
       filterCopy.currentPage = page;
       filterCopy.sortBy = "random";
       const queryResults = await queryFindScenes(filterCopy);

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import cx from "classnames";
 import { Badge, Button, Col, Form, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { uniq } from "lodash";
+import uniq from "lodash-es/uniq";
 import { blobToBase64 } from "base64-blob";
 import { distance } from "src/utils/hamming";
 
