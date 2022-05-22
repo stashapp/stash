@@ -8,7 +8,7 @@ import Select, {
   OptionsType,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
-import debounce from "lodash/debounce";
+import debounce from "lodash-es/debounce";
 
 import * as GQL from "src/core/generated-graphql";
 import {

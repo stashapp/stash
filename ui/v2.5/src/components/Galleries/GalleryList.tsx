@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
-import cloneDeep from "lodash/cloneDeep";
+import cloneDeep from "lodash-es/cloneDeep";
 import { Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";

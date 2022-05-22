@@ -1,4 +1,4 @@
-import cloneDeep from "lodash/cloneDeep";
+import cloneDeep from "lodash-es/cloneDeep";
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
