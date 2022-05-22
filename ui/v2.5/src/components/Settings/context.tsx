@@ -1,4 +1,8 @@
 import { ApolloError } from "@apollo/client/errors";
+import {
+  faCheckCircle,
+  faTimesCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import debounce from "lodash-es/debounce";
 import React, {
   useState,
@@ -391,7 +395,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     if (updateSuccess === false) {
       return (
         <div className="loading-indicator failed">
-          <Icon icon="times-circle" className="fa-fw" />
+          <Icon icon={faTimesCircle} className="fa-fw" />
         </div>
       );
     }
@@ -415,7 +419,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     if (updateSuccess) {
       return (
         <div className="loading-indicator success">
-          <Icon icon="check-circle" className="fa-fw" />
+          <Icon icon={faCheckCircle} className="fa-fw" />
         </div>
       );
     }

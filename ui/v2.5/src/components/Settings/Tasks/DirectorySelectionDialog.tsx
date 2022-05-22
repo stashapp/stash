@@ -1,3 +1,8 @@
+import {
+  faMinus,
+  faPencilAlt,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useIntl } from "react-intl";
@@ -41,7 +46,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
       show
       modalProps={{ animation }}
       disabled={!allowEmpty && paths.length === 0}
-      icon="pencil-alt"
+      icon={faPencilAlt}
       header={intl.formatMessage({ id: "actions.select_folders" })}
       accept={{
         onClick: () => {
@@ -69,7 +74,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
                 title={intl.formatMessage({ id: "actions.delete" })}
                 onClick={() => removePath(p)}
               >
-                <Icon icon="minus" />
+                <Icon icon={faMinus} />
               </Button>
             </Col>
           </Row>
@@ -84,7 +89,7 @@ export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> 
               variant="secondary"
               onClick={() => addPath(currentDirectory)}
             >
-              <Icon icon="plus" />
+              <Icon icon={faPlus} />
             </Button>
           }
         />

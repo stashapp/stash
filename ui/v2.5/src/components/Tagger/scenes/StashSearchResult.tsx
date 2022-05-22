@@ -24,6 +24,7 @@ import { SceneTaggerModalsState } from "./sceneTaggerModals";
 import PerformerResult from "./PerformerResult";
 import StudioResult from "./StudioResult";
 import { useInitialState } from "src/hooks/state";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 const getDurationStatus = (
   scene: IScrapedScene,
@@ -612,7 +613,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           >
             {t.name}
             <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon="plus" />
+              <Icon className="fa-fw" icon={faPlus} />
             </Button>
           </Badge>
         ))}

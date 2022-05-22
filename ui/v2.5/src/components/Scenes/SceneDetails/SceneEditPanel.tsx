@@ -39,6 +39,11 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
+import {
+  faSearch,
+  faSyncAlt,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
 
 const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
@@ -398,7 +403,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return (
       <Dropdown title={intl.formatMessage({ id: "actions.scrape_query" })}>
         <Dropdown.Toggle variant="secondary">
-          <Icon icon="search" />
+          <Icon icon={faSearch} />
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
@@ -425,7 +430,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
           ))}
           <Dropdown.Item onClick={() => onReloadScrapers()}>
             <span className="fa-icon">
-              <Icon icon="sync-alt" />
+              <Icon icon={faSyncAlt} />
             </span>
             <span>
               <FormattedMessage id="actions.reload_scrapers" />
@@ -497,7 +502,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         ))}
         <Dropdown.Item onClick={() => onReloadScrapers()}>
           <span className="fa-icon">
-            <Icon icon="sync-alt" />
+            <Icon icon={faSyncAlt} />
           </span>
           <span>
             <FormattedMessage id="actions.reload_scrapers" />
@@ -854,7 +859,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                           )}
                           onClick={() => removeStashID(stashID)}
                         >
-                          <Icon icon="trash-alt" />
+                          <Icon icon={faTrashAlt} />
                         </Button>
                         {link}
                       </li>

@@ -1,3 +1,4 @@
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
@@ -35,7 +36,7 @@ export const SceneInteractiveStatus: React.FC = ({}) => {
 
   return (
     <div className={`scene-interactive-status ${getStateClass()}`}>
-      <FontAwesomeIcon pulse icon="circle" size="xs" />
+      <FontAwesomeIcon pulse icon={faCircle} size="xs" />
       <span className="status-text">
         <FormattedMessage id={connectionStateLabel(state)} />
         {error && <span>: {error}</span>}

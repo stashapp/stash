@@ -18,6 +18,7 @@ import {
   getAggregateStudioId,
   getAggregateTagIds,
 } from "src/utils/bulkUpdate";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
@@ -244,7 +245,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     return (
       <Modal
         show
-        icon="pencil-alt"
+        icon={faPencilAlt}
         header={intl.formatMessage(
           { id: "dialogs.edit_entity_title" },
           {

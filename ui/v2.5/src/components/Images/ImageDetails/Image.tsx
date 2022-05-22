@@ -21,6 +21,7 @@ import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
 import { ImageEditPanel } from "./ImageEditPanel";
 import { ImageDetailPanel } from "./ImageDetailPanel";
 import { DeleteImagesDialog } from "../DeleteImagesDialog";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 
 interface IImageParams {
   id?: string;
@@ -132,7 +133,7 @@ export const Image: React.FC = () => {
           className="minimal"
           title="Operations"
         >
-          <Icon icon="ellipsis-v" />
+          <Icon icon={faEllipsisV} />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
           <Dropdown.Item

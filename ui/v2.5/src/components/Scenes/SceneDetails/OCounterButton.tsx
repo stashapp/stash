@@ -1,3 +1,4 @@
+import { faBan, faMinus } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, ButtonGroup, Dropdown, DropdownButton } from "react-bootstrap";
 import { useIntl } from "react-intl";
@@ -58,11 +59,11 @@ export const OCounterButton: React.FC<IOCounterButtonProps> = (
           className="pl-0 show-carat"
         >
           <Dropdown.Item onClick={decrement}>
-            <Icon icon="minus" />
+            <Icon icon={faMinus} />
             <span>Decrement</span>
           </Dropdown.Item>
           <Dropdown.Item onClick={reset}>
-            <Icon icon="ban" />
+            <Icon icon={faBan} />
             <span>Reset</span>
           </Dropdown.Item>
         </DropdownButton>

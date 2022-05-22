@@ -12,6 +12,7 @@ import {
   getAggregateRating,
   getAggregateStudioId,
 } from "src/utils/bulkUpdate";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IListOperationProps {
   selected: GQL.MovieDataFragment[];
@@ -101,7 +102,7 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
     return (
       <Modal
         show
-        icon="pencil-alt"
+        icon={faPencilAlt}
         header={intl.formatMessage(
           { id: "actions.edit_entity" },
           { entityType: intl.formatMessage({ id: "movies" }) }

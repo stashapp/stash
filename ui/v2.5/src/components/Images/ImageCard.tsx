@@ -7,6 +7,12 @@ import { TextUtils } from "src/utils";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
+import {
+  faBox,
+  faImages,
+  faSearch,
+  faTag,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
@@ -34,7 +40,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
         content={popoverContent}
       >
         <Button className="minimal">
-          <Icon icon="tag" />
+          <Icon icon={faTag} />
           <span>{props.image.tags.length}</span>
         </Button>
       </HoverPopover>
@@ -76,7 +82,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
         content={popoverContent}
       >
         <Button className="minimal">
-          <Icon icon="images" />
+          <Icon icon={faImages} />
           <span>{props.image.galleries.length}</span>
         </Button>
       </HoverPopover>
@@ -88,7 +94,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
       return (
         <div className="organized">
           <Button className="minimal">
-            <Icon icon="box" />
+            <Icon icon={faBox} />
           </Button>
         </div>
       );
@@ -146,7 +152,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
             {props.onPreview ? (
               <div className="preview-button">
                 <Button onClick={props.onPreview}>
-                  <Icon icon="search" />
+                  <Icon icon={faSearch} />
                 </Button>
               </div>
             ) : undefined}

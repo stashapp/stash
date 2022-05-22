@@ -1,3 +1,4 @@
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import React, { useRef, useContext } from "react";
 import {
   Badge,
@@ -205,7 +206,7 @@ const Config: React.FC<IConfigProps> = ({ show }) => {
                   className="minimal ml-2"
                   onClick={() => removeBlacklist(index)}
                 >
-                  <Icon icon="times" />
+                  <Icon icon={faTimes} />
                 </Button>
               </Badge>
             ))}

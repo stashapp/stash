@@ -1,3 +1,4 @@
+import { faBan } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button, Form, FormControlProps, InputGroup } from "react-bootstrap";
 import { useIntl } from "react-intl";
@@ -37,7 +38,7 @@ export const BulkUpdateTextInput: React.FC<IBulkUpdateTextInputProps> = ({
           onClick={() => valueChanged(undefined)}
           title={intl.formatMessage({ id: "actions.unset" })}
         >
-          <Icon icon="ban" />
+          <Icon icon={faBan} />
         </Button>
       ) : undefined}
     </InputGroup>

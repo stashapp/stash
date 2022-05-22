@@ -23,8 +23,6 @@ import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
 
-import "./icons";
-
 const Performers = lazy(() => import("./components/Performers/Performers"));
 const Recommendations = lazy(
   () => import("./components/Recommendations/Recommendations")

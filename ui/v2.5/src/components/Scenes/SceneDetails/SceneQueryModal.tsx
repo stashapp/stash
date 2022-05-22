@@ -11,6 +11,7 @@ import {
 } from "src/components/Shared";
 import { queryScrapeSceneQuery } from "src/core/StashService";
 import useToast from "src/hooks/Toast";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
 interface ISceneSearchResultDetailsProps {
   scene: GQL.ScrapedSceneDataFragment;
@@ -219,7 +220,7 @@ export const SceneQueryModal: React.FC<IProps> = ({
               variant="primary"
               title={intl.formatMessage({ id: "actions.search" })}
             >
-              <Icon icon="search" />
+              <Icon icon={faSearch} />
             </Button>
           </InputGroup.Append>
         </InputGroup>

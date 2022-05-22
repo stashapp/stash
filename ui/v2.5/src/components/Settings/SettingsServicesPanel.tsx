@@ -13,6 +13,11 @@ import { DurationInput, Icon, LoadingIndicator, Modal } from "../Shared";
 import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { SettingStateContext } from "./context";
+import {
+  faClock,
+  faTimes,
+  faUserClock,
+} from "@fortawesome/free-solid-svg-icons";
 
 export const SettingsServicesPanel: React.FC = () => {
   const intl = useIntl();
@@ -231,7 +236,7 @@ export const SettingsServicesPanel: React.FC = () => {
       <Modal
         show={enableDisable !== undefined}
         header={capitalised}
-        icon="clock"
+        icon={faClock}
         accept={{
           text: capitalised,
           variant: "primary",
@@ -273,7 +278,7 @@ export const SettingsServicesPanel: React.FC = () => {
           { id: "config.dlna.allow_temp_ip" },
           { tempIP }
         )}
-        icon="clock"
+        icon={faClock}
         accept={{
           text: intl.formatMessage({ id: "actions.allow" }),
           variant: "primary",
@@ -335,7 +340,7 @@ export const SettingsServicesPanel: React.FC = () => {
                   variant="danger"
                   onClick={() => onDisallowTempIP(a.ipAddress)}
                 >
-                  <Icon icon="times" />
+                  <Icon icon={faTimes} />
                 </Button>
               </div>
             </li>
@@ -364,7 +369,7 @@ export const SettingsServicesPanel: React.FC = () => {
                 title={intl.formatMessage({ id: "actions.allow_temporarily" })}
                 onClick={() => setTempIP(a)}
               >
-                <Icon icon="user-clock" />
+                <Icon icon={faUserClock} />
               </Button>
             </div>
           </li>
@@ -386,7 +391,7 @@ export const SettingsServicesPanel: React.FC = () => {
               onClick={() => setTempIP(ipEntry)}
               disabled={!ipEntry}
             >
-              <Icon icon="user-clock" />
+              <Icon icon={faUserClock} />
             </Button>
           </div>
         </li>

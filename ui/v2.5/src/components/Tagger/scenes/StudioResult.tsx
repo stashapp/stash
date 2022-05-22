@@ -12,6 +12,7 @@ import {
 import * as GQL from "src/core/generated-graphql";
 
 import { OptionalField } from "../IncludeButton";
+import { faSave } from "@fortawesome/free-solid-svg-icons";
 
 interface IStudioResultProps {
   studio: GQL.ScrapedStudio;
@@ -89,7 +90,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({
           operation={onLink}
           hideChildrenWhenLoading
         >
-          <Icon icon="save" />
+          <Icon icon={faSave} />
         </OperationButton>
       );
     }

@@ -14,6 +14,12 @@ import Modal from "src/components/Shared/Modal";
 import isEqual from "lodash-es/isEqual";
 import clone from "lodash-es/clone";
 import { FormattedMessage, useIntl } from "react-intl";
+import {
+  faCheck,
+  faPencilAlt,
+  faPlus,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 export class ScrapeResult<T> {
   public newValue?: T;
@@ -76,7 +82,7 @@ function renderButtonIcon(selected: boolean) {
   return (
     <Icon
       className={`fa-fw ${className}`}
-      icon={selected ? "check" : "times"}
+      icon={selected ? faCheck : faTimes}
     />
   );
 }
@@ -114,7 +120,7 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
           >
             {t.name}
             <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon="plus" />
+              <Icon className="fa-fw" icon={faPlus} />
             </Button>
           </Badge>
         ))}
@@ -347,7 +353,7 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
   return (
     <Modal
       show
-      icon="pencil-alt"
+      icon={faPencilAlt}
       header={props.title}
       accept={{
         onClick: () => {

@@ -10,7 +10,7 @@ import {
 } from "react-bootstrap";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
-import debounce from "lodash/debounce";
+import debounce from "lodash-es/debounce";
 
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useInterval, usePageVisibility, useToast } from "src/hooks";
@@ -30,6 +30,18 @@ import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
 import { imageLightboxDisplayModeIntlMap } from "src/core/enums";
 import { ILightboxImage } from "./types";
+import {
+  faArrowLeft,
+  faArrowRight,
+  faChevronLeft,
+  faChevronRight,
+  faCog,
+  faExpand,
+  faPause,
+  faPlay,
+  faSearchMinus,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -632,7 +644,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                 })}
                 onClick={() => setShowOptions(!showOptions)}
               >
-                <Icon icon="cog" />
+                <Icon icon={faCog} />
               </Button>
               <Overlay
                 target={overlayTarget.current}
@@ -668,7 +680,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               onClick={toggleSlideshow}
               title="Toggle Slideshow"
             >
-              <Icon icon={slideshowInterval !== null ? "pause" : "play"} />
+              <Icon icon={slideshowInterval !== null ? faPause : faPlay} />
             </Button>
           )}
           {zoom !== 1 && (
@@ -680,7 +692,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               }}
               title="Reset zoom"
             >
-              <Icon icon="search-minus" />
+              <Icon icon={faSearchMinus} />
             </Button>
           )}
           {document.fullscreenEnabled && (
@@ -689,11 +701,11 @@ export const LightboxComponent: React.FC<IProps> = ({
               onClick={toggleFullscreen}
               title="Toggle Fullscreen"
             >
-              <Icon icon="expand" />
+              <Icon icon={faExpand} />
             </Button>
           )}
           <Button variant="link" onClick={() => close()} title="Close Lightbox">
-            <Icon icon="times" />
+            <Icon icon={faTimes} />
           </Button>
         </div>
       </div>
@@ -704,7 +716,7 @@ export const LightboxComponent: React.FC<IProps> = ({
             onClick={handleLeft}
             className={`${CLASSNAME_NAVBUTTON} d-none d-lg-block`}
           >
-            <Icon icon="chevron-left" />
+            <Icon icon={faChevronLeft} />
           </Button>
         )}
 
@@ -746,7 +758,7 @@ export const LightboxComponent: React.FC<IProps> = ({
             onClick={handleRight}
             className={`${CLASSNAME_NAVBUTTON} d-none d-lg-block`}
           >
-            <Icon icon="chevron-right" />
+            <Icon icon={faChevronRight} />
           </Button>
         )}
       </div>
@@ -757,7 +769,7 @@ export const LightboxComponent: React.FC<IProps> = ({
             onClick={() => setIndex(images.length - 1)}
             className={CLASSNAME_NAVBUTTON}
           >
-            <Icon icon="arrow-left" className="mr-4" />
+            <Icon icon={faArrowLeft} className="mr-4" />
           </Button>
           {navItems}
           <Button
@@ -765,7 +777,7 @@ export const LightboxComponent: React.FC<IProps> = ({
             onClick={() => setIndex(0)}
             className={CLASSNAME_NAVBUTTON}
           >
-            <Icon icon="arrow-right" className="ml-4" />
+            <Icon icon={faArrowRight} className="ml-4" />
           </Button>
         </div>
       )}

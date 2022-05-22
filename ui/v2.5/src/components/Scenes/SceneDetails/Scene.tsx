@@ -27,6 +27,7 @@ import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
 import { getPlayerPosition } from "src/components/ScenePlayer/util";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 
 const SubmitStashBoxDraft = lazy(
   () => import("src/components/Dialogs/SubmitDraft")
@@ -248,7 +249,7 @@ const ScenePage: React.FC<IProps> = ({
         className="minimal"
         title={intl.formatMessage({ id: "operations" })}
       >
-        <Icon icon="ellipsis-v" />
+        <Icon icon={faEllipsisV} />
       </Dropdown.Toggle>
       <Dropdown.Menu className="bg-secondary text-white">
         <Dropdown.Item

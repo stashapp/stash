@@ -11,7 +11,7 @@ import React, {
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
@@ -100,7 +100,7 @@ export interface IListHookOperation<T> {
     selectedIds: Set<string>
   ) => boolean;
   postRefetch?: boolean;
-  icon?: IconProp;
+  icon?: IconDefinition;
   buttonVariant?: string;
 }
 

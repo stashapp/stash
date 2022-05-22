@@ -1,9 +1,9 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp, SizeProp } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition, SizeProp } from "@fortawesome/fontawesome-svg-core";
 
 interface IIcon {
-  icon: IconProp;
+  icon: IconDefinition;
   className?: string;
   color?: string;
   size?: SizeProp;

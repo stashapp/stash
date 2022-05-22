@@ -16,6 +16,7 @@ import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { SettingStateContext } from "./context";
 import { StashBoxSetting } from "./StashBoxConfiguration";
+import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IURLList {
   urls: string[];
@@ -361,7 +362,7 @@ export const SettingsScrapingPanel: React.FC = () => {
         <div className="content">
           <Button onClick={() => onReloadScrapers()}>
             <span className="fa-icon">
-              <Icon icon="sync-alt" />
+              <Icon icon={faSyncAlt} />
             </span>
             <span>
               <FormattedMessage id="actions.reload_scrapers" />

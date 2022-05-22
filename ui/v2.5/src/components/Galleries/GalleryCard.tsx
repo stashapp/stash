@@ -14,6 +14,7 @@ import { NavUtils, TextUtils } from "src/utils";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { RatingBanner } from "../Shared/RatingBanner";
+import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -41,7 +42,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
         content={popoverContent}
       >
         <Button className="minimal">
-          <Icon icon="play-circle" />
+          <Icon icon={faPlayCircle} />
           <span>{props.gallery.scenes.length}</span>
         </Button>
       </HoverPopover>
@@ -62,7 +63,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
         content={popoverContent}
       >
         <Button className="minimal">
-          <Icon icon="tag" />
+          <Icon icon={faTag} />
           <span>{props.gallery.tags.length}</span>
         </Button>
       </HoverPopover>
@@ -113,7 +114,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       return (
         <div className="organized">
           <Button className="minimal">
-            <Icon icon="box" />
+            <Icon icon={faBox} />
           </Button>
         </div>
       );

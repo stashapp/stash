@@ -1,3 +1,7 @@
+import {
+  faChevronDown,
+  faChevronRight,
+} from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Collapse } from "react-bootstrap";
 import Icon from "src/components/Shared/Icon";
@@ -17,7 +21,7 @@ export const CollapseButton: React.FC<React.PropsWithChildren<IProps>> = (
         onClick={() => setOpen(!open)}
         className="minimal collapse-button"
       >
-        <Icon icon={open ? "chevron-down" : "chevron-right"} />
+        <Icon icon={open ? faChevronDown : faChevronRight} />
         <span>{props.text}</span>
       </Button>
       <Collapse in={open}>

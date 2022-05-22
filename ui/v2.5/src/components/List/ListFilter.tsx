@@ -24,6 +24,15 @@ import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PersistanceLevel } from "src/hooks/ListHook";
 import { SavedFilterList } from "./SavedFilterList";
+import {
+  faBookmark,
+  faCaretDown,
+  faCaretUp,
+  faCheck,
+  faFilter,
+  faRandom,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 const maxPageSize = 1000;
 interface IListFilterProps {
@@ -221,7 +230,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                   }
                 >
                   <Dropdown.Toggle variant="secondary">
-                    <Icon icon="bookmark" />
+                    <Icon icon={faBookmark} />
                   </Dropdown.Toggle>
                 </OverlayTrigger>
                 <Dropdown.Menu
@@ -246,7 +255,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                 queryClearShowing ? "" : "d-none"
               )}
             >
-              <Icon icon="times" />
+              <Icon icon={faTimes} />
             </Button>
             <InputGroup.Append>
               <OverlayTrigger
@@ -262,7 +271,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                   onClick={() => openFilterDialog()}
                   active={filterDialogOpen}
                 >
-                  <Icon icon="filter" />
+                  <Icon icon={faFilter} />
                 </Button>
               </OverlayTrigger>
             </InputGroup.Append>
@@ -293,8 +302,8 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               <Icon
                 icon={
                   filter.sortDirection === SortDirectionEnum.Asc
-                    ? "caret-up"
-                    : "caret-down"
+                    ? faCaretUp
+                    : faCaretDown
                 }
               />
             </Button>
@@ -308,7 +317,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               }
             >
               <Button variant="secondary" onClick={onReshuffleRandomSort}>
-                <Icon icon="random" />
+                <Icon icon={faRandom} />
               </Button>
             </OverlayTrigger>
           )}
@@ -364,7 +373,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                         )
                       }
                     >
-                      <Icon icon="check" />
+                      <Icon icon={faCheck} />
                     </Button>
                   </InputGroup.Append>
                 </InputGroup>
