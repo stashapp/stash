@@ -45,13 +45,17 @@
     "generate": "만들기",
     "generate_thumb_default": "기본 썸네일 만들기",
     "generate_thumb_from_current": "현재 화면으로 썸네일 만들기",
+    "hash_migration": "해쉬 값 마이그레이션",
     "hide": "숨기기",
     "hide_configuration": "설정 숨기기",
+    "identify": "인증",
     "ignore": "무시",
     "import": "불러오기…",
     "import_from_file": "파일 불러오기",
     "logout": "로그아웃",
     "merge": "합치기",
+    "merge_from": "...에서 합치기",
+    "merge_into": "...로 합치기",
     "next_action": "다음",
     "not_running": "실행 중이 아님",
     "open_in_external_player": "외부 플레이어에서 열기",
@@ -76,10 +80,15 @@
     "scan": "스캔",
     "scrape": "스크레이핑하기",
     "scrape_query": "스크레이핑 쿼리",
+    "scrape_with": "스크레이핑하기…",
     "search": "검색",
     "select_all": "모두 검색",
     "select_entity": "{entityType} 선택",
     "select_folders": "폴더 선택",
+    "select_none": "선택하지 않음",
+    "selective_auto_tag": "선택적 자동 태깅",
+    "selective_clean": "선택적 데이터베이스 정리",
+    "selective_scan": "선택적 스캔",
     "set_as_default": "기본값으로 설정",
     "set_back_image": "이전 사진…",
     "set_front_image": "처음 사진…",
@@ -91,10 +100,13 @@
     "submit": "제출",
     "submit_stash_box": "Stash-Box에 제출하기",
     "tasks": {
+      "clean_confirm_message": "정말로 데이터베이스 정리를 하시겠습니까? 파일 시스템에 존재하지 않는 파일의 데이터베이스 정보와 컨텐츠가 삭제될 것입니다.",
+      "dry_mode_selected": "삭제하지 않기 모드가 선택되었습니다. 삭제를 진행하지 않고, 로깅만 할 것입니다.",
       "import_warning": "정말 불러오기를 하시겠습니까? 데이터베이스를 삭제하고 불러온 메타데이터로 덮어쓰게 됩니다."
     },
     "temp_disable": "임시 비활성화…",
     "temp_enable": "임시 활성화…",
+    "unset": "설정 해제",
     "use_default": "기본값 사용",
     "view_random": "랜덤 보기"
   },
@@ -116,6 +128,7 @@
       "blacklist_desc": "블랙리스트에 있는 아이템들은 쿼리에서 제외됩니다. (주의: 아이템들은 정규 표현식으로 적혀 있어야 하며 대소문자를 구별합니다. 다음 문자들의 앞에는 백슬래쉬(\\)를 넣어주어야 합니다: {chars_require_escape})",
       "blacklist_label": "블랙리스트",
       "query_mode_auto": "자동",
+      "query_mode_auto_desc": "메타데이터가 있다면 사용하고, 그렇지 않다면 파일 이름을 사용합니다",
       "query_mode_dir": "디렉토리",
       "query_mode_dir_desc": "비디오 파일의 상위 경로만 사용",
       "query_mode_filename": "파일 이름",
@@ -125,24 +138,34 @@
       "query_mode_metadata_desc": "메타데이터만 사용",
       "query_mode_path": "경로",
       "query_mode_path_desc": "전체 파일 경로 사용",
+      "set_cover_desc": "영상 커버가 있다면 그 이미지로 교체합니다.",
       "set_cover_label": "영상 커버 이미지 설정",
+      "set_tag_desc": "영상에 이미 존재하는 태그들을 덮어쓰기/합치기 함으로써 태그를 영상에 추가합니다.",
       "set_tag_label": "태그 설정",
+      "show_male_desc": "남성 배우들의 태그 가능 여부 설정을 켜거나 끕니다.",
       "show_male_label": "남성 배우 보여주기"
     },
     "noun_query": "쿼리",
     "results": {
+      "duration_unknown": "영상 길이 알 수 없음",
       "match_failed_already_tagged": "이미 태깅된 영상",
       "match_failed_no_result": "결과 없음",
       "match_success": "영상 태깅 성공",
       "unnamed": "이름 없음"
     },
-    "verb_scrape_all": "모두 스크레이핑하기"
+    "verb_matched": "일치함",
+    "verb_scrape_all": "모두 스크레이핑하기",
+    "verb_toggle_config": "{configuration} {toggle}",
+    "verb_toggle_unmatched": "일치하지 않는 영상 {toggle}"
   },
   "config": {
     "about": {
+      "build_hash": "빌드 해쉬 값:",
+      "build_time": "빌드된 시간:",
       "check_for_new_version": "새로운 버전 체크",
       "latest_version": "최신 버전",
       "latest_version_build_hash": "최신 버전 빌드 해쉬:",
+      "new_version_notice": "[새 버전]",
       "stash_discord": "디스코드: {url}",
       "stash_home": "깃허브: {url}",
       "stash_open_collective": "후원: {url}",
@@ -153,6 +176,7 @@
       "heading": "앱 경로"
     },
     "categories": {
+      "about": "프로그램 정보",
       "interface": "인터페이스",
       "logs": "로그",
       "metadata_providers": "메타데이터",
@@ -167,17 +191,27 @@
     "dlna": {
       "allow_temp_ip": "{tempIP} 허용",
       "allowed_ip_addresses": "허용된 IP 주소",
+      "allowed_ip_temporarily": "임시로 허용된 IP",
       "default_ip_whitelist": "IP 화이트리스트 기본값",
+      "default_ip_whitelist_desc": "기본 IP 주소들은 DLNA에 접근할 수 있습니다. 모든 IP 주소들을 허용하려면 {wildcard} 문자를 사용하세요.",
+      "disabled_dlna_temporarily": "임시로 DNLA를 비활성화했습니다",
       "disallowed_ip": "금지된 IP",
+      "enabled_by_default": "기본값으로 활성화됨",
+      "enabled_dlna_temporarily": "임시로 DLNA를 활성화함",
       "network_interfaces": "인터페이스",
-      "recent_ip_addresses": "최근 IP 주소"
+      "recent_ip_addresses": "최근 IP 주소",
+      "server_display_name": "서버 이름 (display name)",
+      "server_display_name_desc": "DLNA 서버를 위한 이름(display name)입니다. 빈 칸으로 두면 기본값으로 {server_name}를 사용합니다.",
+      "successfully_cancelled_temporary_behaviour": "임시 설정을 취소하는 데에 성공했습니다"
     },
     "general": {
       "auth": {
         "api_key": "API 키",
+        "api_key_desc": "외부 시스템을 위한 API 키입니다. 아이디/비밀번호가 설정되었을 때에만 필요합니다. 아이디는 API 키 생성 전에 저장되어야만 합니다.",
         "authentication": "인증",
         "clear_api_key": "API 키 삭제",
         "credentials": {
+          "description": "Stash로의 접속을 제한하기 위한 자격 요건입니다.",
           "heading": "자격증명서"
         },
         "generate_api_key": "API 키 생성",
@@ -191,18 +225,31 @@
         "maximum_session_age_desc": "사용되지 않을 때 자동으로 로그아웃되기까지의 시간입니다 (단위: 초).",
         "password": "비밀번호",
         "password_desc": "Stash에 접속하기 위한 비밀번호입니다. 로그인 과정을 생략하려면 빈 칸으로 두십시오",
+        "stash-box_integration": "Stash-box 통합",
         "username": "아이디",
         "username_desc": "Stash에 접속하기 위한 아이디입니다. 로그인을 생략하려면 빈 칸으로 두십시오"
       },
       "cache_location": "캐시 폴더 경로",
       "cache_path_head": "캐쉬 경로",
+      "check_for_insecure_certificates": "안전하지 않은 자격증명을 검사",
       "chrome_cdp_path": "Chrome CDP 경로",
+      "create_galleries_from_folders_desc": "체크하면, 이미지를 포함한 폴더들로부터 갤러리를 생성합니다.",
       "create_galleries_from_folders_label": "이미지가 들어있는 폴더로부터 갤러리 생성",
       "db_path_head": "데이터베이스 경로",
+      "directory_locations_to_your_content": "컨텐츠가 있는 폴더 위치",
+      "excluded_image_gallery_patterns_desc": "스캔과 데이터베이스 정리에서 제외할 이미지와 갤러리 파일/경로의 정규표현식",
+      "excluded_image_gallery_patterns_head": "제외된 이미지/갤러리 패턴",
+      "excluded_video_patterns_desc": "스캔과 데이터베이스 정리에서 제외할 비디오 파일/경로의 정규표현식",
+      "excluded_video_patterns_head": "제외된 비디오 패턴",
+      "gallery_ext_desc": "갤러리 zip 파일로 인식될 파일 확장자입니다. (쉼표로 구분합니다)",
+      "gallery_ext_head": "갤러리 zip 확장자",
+      "generated_file_naming_hash_head": "생성된 파일 이름 해쉬",
       "generated_files_location": "생성된 파일들의 폴더 위치 (영상 마커, 영상 미리보기, 스프라이트 등등)",
       "generated_path_head": "생성된 파일 경로",
       "hashing": "해싱",
+      "image_ext_desc": "이미지로 인식될 파일 확장자입니다. (쉼표로 구분합니다)",
       "image_ext_head": "이미지 확장 프로그램",
+      "include_audio_desc": "미리보기를 생성할 때 소리를 포함합니다.",
       "include_audio_head": "소리 포함",
       "logging": "로깅",
       "metadata_path": {
@@ -212,8 +259,10 @@
       "parallel_scan_head": "병렬 스캔/생성",
       "preview_generation": "생성 미리보기",
       "python_path": {
+        "description": "파이썬 실행 파일의 위치입니다. 스크립트 스크레이퍼와 플러그인의 실행에 사용됩니다. 빈 칸으로 두면, 시스템 환경 설정으로부터 위치를 받아 옵니다",
         "heading": "Python 경로"
       },
+      "scraper_user_agent": "스크레이퍼 사용자 에이전트",
       "scrapers_path": {
         "description": "스크레이퍼 설정 파일의 폴더 위치",
         "heading": "스크레이퍼 경로"
@@ -235,6 +284,8 @@
     "scraping": {
       "entity_metadata": "{entityType} 메타데이터",
       "entity_scrapers": "{entityType} 스크레이퍼",
+      "excluded_tag_patterns_desc": "스크레이핑 결과에서 제외할 태그 이름의 정규표현식",
+      "excluded_tag_patterns_head": "제외된 태그 패턴",
       "scraper": "스크레이퍼",
       "scrapers": "스크레이퍼",
       "search_by_name": "이름으로 찾기",
@@ -244,10 +295,20 @@
     "stashbox": {
       "add_instance": "stash-box 인스턴스 추가",
       "api_key": "API 키",
-      "name": "이름"
+      "endpoint": "엔드포인트",
+      "graphql_endpoint": "GraphQL 엔드포인트",
+      "name": "이름",
+      "title": "Stash-box 엔드포인트"
+    },
+    "system": {
+      "transcoding": "트랜스코딩"
     },
     "tasks": {
       "added_job_to_queue": "작업 대기열에 {operation_name}을 추가했습니다",
+      "auto_tag": {
+        "auto_tagging_all_paths": "모든 경로 자동 태깅 중",
+        "auto_tagging_paths": "다음 경로 자동 태깅 중"
+      },
       "auto_tag_based_on_filenames": "파일 이름을 통해 컨텐츠에 자동으로 태깅합니다.",
       "auto_tagging": "자동 태깅",
       "backing_up_database": "데이터베이스 백업 중",
@@ -259,6 +320,11 @@
       "dont_include_file_extension_as_part_of_the_title": "제목에 파일 확장자 포함하지 않기",
       "empty_queue": "실행 중인 작업이 없습니다.",
       "export_to_json": "메타데이터 폴더에 데이터베이스 컨텐츠를 JSON 형식으로 내보냅니다.",
+      "generate": {
+        "generating_from_paths": "다음 경로에서 영상 생성 중",
+        "generating_scenes": "{num}개의 {scene} 생성 중"
+      },
+      "generate_desc": "이미지, 스프라이트, 비디오, vtt 등 파일을 생성합니다.",
       "generate_phashes_during_scan": "컨텐츠 해쉬 값 생성",
       "generate_phashes_during_scan_tooltip": "중복된 파일 확인과 영상 식별에 사용됩니다.",
       "generate_previews_during_scan": "움직이는 이미지 미리보기 생성",
@@ -274,6 +340,7 @@
       },
       "job_queue": "작업 대기열",
       "maintenance": "관리",
+      "migrations": "마이그레이션",
       "only_dry_run": "체크만 합니다. 아무 것도 삭제하지 않습니다",
       "scan": {
         "scanning_all_paths": "모든 경로 스캔 중"
@@ -418,6 +485,7 @@
   "details": "세부사항",
   "developmentVersion": "개발 버전",
   "dialogs": {
+    "aliases_must_be_unique": "별칭은 유일해야 합니다",
     "delete_confirm": "정말 {entityName}을 삭제하시겠습니까?",
     "export_title": "내보내기",
     "lightbox": {
@@ -425,14 +493,20 @@
       "display_mode": {
         "fit_horizontally": "가로로 맞추기",
         "fit_to_screen": "스크린 크기에 맞추기",
-        "label": "표시 모드"
+        "label": "표시 모드",
+        "original": "기본 모드"
       },
       "options": "옵션",
       "scroll_mode": {
         "description": "임시로 다른 모드를 사용하려면 Shift 키를 누르세요.",
         "label": "스크롤 모드",
+        "pan_y": "수직 스크롤 모드",
         "zoom": "확대"
       }
+    },
+    "merge_tags": {
+      "destination": "다른 태그와 합쳐질 태그",
+      "source": "다른 태그로 합쳐질 태그"
     },
     "scene_gen": {
       "image_previews": "움직이는 이미지 미리보기",
@@ -485,6 +559,7 @@
     "scale": "크기",
     "warmth": "따뜻함"
   },
+  "empty_server": "이 페이지에서 추천 영상들을 확인하려면 영상을 추가하세요.",
   "ethnicity": "인종",
   "eye_color": "눈동자 색",
   "favourite": "즐겨찾기",
@@ -514,6 +589,7 @@
   "handy_connection_status": {
     "connecting": "접속 중",
     "disconnected": "접속 끊김",
+    "error": "Handy에 접속 중 오류 발생",
     "ready": "준비됨",
     "syncing": "서버와 동기화 중",
     "uploading": "스크립트 업로드 중"
@@ -557,9 +633,11 @@
     "next": "다음",
     "previous": "이전"
   },
+  "parent_of": "{children}의 상위 태그",
   "parent_studios": "모회사 스튜디오",
   "parent_tag_count": "상위 태그 개수",
   "parent_tags": "상위 태그",
+  "part_of": "{parent}의 하위 태그",
   "path": "경로",
   "performer": "배우",
   "performerTags": "배우 태그",
@@ -569,6 +647,8 @@
   "performer_image": "배우 이미지",
   "performer_tagger": {
     "add_new_performers": "새 배우 추가",
+    "batch_add_performers": "배우 일괄 추가",
+    "batch_update_performers": "배우 일괄 수정",
     "config": {
       "active_stash-box_instance": "stash-box 인스턴스 활성화:",
       "edit_excluded_fields": "제외된 항목 수정",
