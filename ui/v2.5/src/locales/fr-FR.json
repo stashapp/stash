@@ -26,7 +26,7 @@
     "delete": "Supprimer",
     "delete_entity": "Supprimer {entityType}",
     "delete_file": "Supprimer le fichier",
-    "delete_generated_supporting_files": "Supprimer les fichiers associés générés",
+    "delete_generated_supporting_files": "Supprimer les fichiers générés associés",
     "delete_stashid": "Effacer StashID",
     "disallow": "Refuser",
     "download": "Télécharger",
