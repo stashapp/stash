@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, IntlShape, useIntl } from "react-intl";
 import {
   useFindFrontPageFiltersQuery,
@@ -44,8 +44,8 @@ const AddSavedFilterModal: React.FC<IAddSavedFilterModalProps> = ({
 
   const [value, setValue] = useState("");
 
-  function renderSelect() {
-    const options = [
+  const options = useMemo(() => {
+    const ret = [
       {
         value: "",
         text: "",
@@ -67,6 +67,14 @@ const AddSavedFilterModal: React.FC<IAddSavedFilterModalProps> = ({
         })
     );
 
+    ret.sort((a, b) => {
+      return a.text.localeCompare(b.text);
+    });
+
+    return ret;
+  }, [candidates, existingSavedFilterIDs, intl]);
+
+  function renderSelect() {
     return (
       <Form.Group controlId="filter">
         <Form.Label>
