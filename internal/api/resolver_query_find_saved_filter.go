@@ -26,7 +26,7 @@ func (r *queryResolver) FindDefaultFilter(ctx context.Context, mode models.Filte
 	return ret, err
 }
 
-func (r *queryResolver) FindRecommendedFilters(ctx context.Context) (ret []*models.SavedFilter, err error) {
+func (r *queryResolver) FindFrontPageFilters(ctx context.Context) (ret []*models.SavedFilter, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		ret, err = repo.SavedFilter().FindRecommended()
 		return err

@@ -426,7 +426,6 @@ type SavedFilter {
   name: String!
   """JSON-encoded filter string"""
   filter: String!
-  recommendation_index: Int!
 }
 
 input SaveFilterInput {
@@ -436,7 +435,6 @@ input SaveFilterInput {
   name: String!
   """JSON-encoded filter string"""
   filter: String!
-  recommendation_index: Int
 }
 
 input DestroyFilterInput {

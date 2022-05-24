@@ -501,3 +501,7 @@ func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.Gene
 
 	return newAPIKey, nil
 }
+
+func (r *mutationResolver) ConfigureFrontPage(ctx context.Context, input models.ConfigFrontPageInput) (*models.ConfigFrontPageResult, error) {
+	panic("not implemented")
+}

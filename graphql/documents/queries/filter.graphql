@@ -10,8 +10,8 @@ query FindDefaultFilter($mode: FilterMode!) {
   }
 }
 
-query FindRecommendedFilters {
-  findRecommendedFilters {
+query FindFrontPageFilters {
+  findFrontPageFilters {
     ...SavedFilterData
   }
 }
