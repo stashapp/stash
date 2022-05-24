@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -27,5 +28,19 @@ func (r *queryResolver) FindDefaultFilter(ctx context.Context, mode models.Filte
 }
 
 func (r *queryResolver) FindFrontPageFilters(ctx context.Context) (ret []*models.SavedFilter, err error) {
-	panic("not implemented")
+	c := config.GetInstance()
+
+	ids := c.GetFrontPageSavedFilterIDs()
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		const ignoreNotFound = true
+		ret, err = repo.SavedFilter().FindMany(ids, ignoreNotFound)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	return ret, err
 }

@@ -81,6 +81,24 @@ func (qb *savedFilterQueryBuilder) Find(id int) (*models.SavedFilter, error) {
 	return &ret, nil
 }
 
+func (qb *savedFilterQueryBuilder) FindMany(ids []int, ignoreNotFound bool) ([]*models.SavedFilter, error) {
+	var filters []*models.SavedFilter
+	for _, id := range ids {
+		filter, err := qb.Find(id)
+		if err != nil {
+			return nil, err
+		}
+
+		if filter == nil && !ignoreNotFound {
+			return nil, fmt.Errorf("filter with id %d not found", id)
+		}
+
+		filters = append(filters, filter)
+	}
+
+	return filters, nil
+}
+
 func (qb *savedFilterQueryBuilder) FindByMode(mode models.FilterMode) ([]*models.SavedFilter, error) {
 	// exclude empty-named filters - these are the internal default filters
 
