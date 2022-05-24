@@ -301,8 +301,7 @@
     "library": {
       "exclusions": "Exclusions",
       "gallery_and_image_options": "Gallery and Image options",
-      "media_content_extensions": "Media content extensions",
-      "manage_recommendation": "Manage Recommendations"
+      "media_content_extensions": "Media content extensions"
     },
     "logs": {
       "log_level": "Log Level"
