@@ -5,8 +5,7 @@ type SavedFilter struct {
 	Mode FilterMode `db:"mode" json:"mode"`
 	Name string     `db:"name" json:"name"`
 	// JSON-encoded filter string
-	Filter              string `db:"filter" json:"filter"`
-	RecommendationIndex int    `db:"recommendation_index" json:"recommendation_index"`
+	Filter string `db:"filter" json:"filter"`
 }
 
 type SavedFilters []*SavedFilter
