@@ -157,7 +157,7 @@ const Recommendations: React.FC = () => {
   }, [loading, data, intl]);
 
   const rows = useMemo(() => {
-    function renderRow(rowSpec: IRowSpec, index: number) {
+    function renderRow(rowSpec: IRowSpec) {
       if (rowSpec.filter.mode == GQL.FilterMode.Scenes) {
         return (
           <SceneRecommendationRow
@@ -165,8 +165,6 @@ const Recommendations: React.FC = () => {
             filter={rowSpec.filter}
             queue={SceneQueue.fromListFilterModel(rowSpec.filter)}
             header={rowSpec.header}
-            linkText={intl.formatMessage(messages.viewAll)}
-            index={index}
           />
         );
       } else if (rowSpec.filter.mode == GQL.FilterMode.Studios) {
@@ -175,8 +173,6 @@ const Recommendations: React.FC = () => {
             isTouch={isTouch}
             filter={rowSpec.filter}
             header={rowSpec.header}
-            linkText={intl.formatMessage(messages.viewAll)}
-            index={index}
           />
         );
       } else if (rowSpec.filter.mode == GQL.FilterMode.Movies) {
@@ -185,8 +181,6 @@ const Recommendations: React.FC = () => {
             isTouch={isTouch}
             filter={rowSpec.filter}
             header={rowSpec.header}
-            linkText={intl.formatMessage(messages.viewAll)}
-            index={index}
           />
         );
       } else if (rowSpec.filter.mode == GQL.FilterMode.Performers) {
@@ -195,8 +189,6 @@ const Recommendations: React.FC = () => {
             isTouch={isTouch}
             filter={rowSpec.filter}
             header={rowSpec.header}
-            linkText={intl.formatMessage(messages.viewAll)}
-            index={index}
           />
         );
       } else if (rowSpec.filter.mode == GQL.FilterMode.Galleries) {
@@ -205,15 +197,13 @@ const Recommendations: React.FC = () => {
             isTouch={isTouch}
             filter={rowSpec.filter}
             header={rowSpec.header}
-            linkText={intl.formatMessage(messages.viewAll)}
-            index={index}
           />
         );
       }
     }
 
-    return filters.map((filter, index) => renderRow(filter, index));
-  }, [isTouch, filters, intl]);
+    return filters.map((filter) => renderRow(filter));
+  }, [isTouch, filters]);
 
   if (loading || saving) {
     return <LoadingIndicator />;
