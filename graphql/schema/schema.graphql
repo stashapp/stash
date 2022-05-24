@@ -1,7 +1,7 @@
 """The query root for this schema"""
 type Query {
   # Filters
-  findSavedFilters(mode: FilterMode!): [SavedFilter!]!
+  findSavedFilters(mode: FilterMode): [SavedFilter!]!
   findDefaultFilter(mode: FilterMode!): SavedFilter
   """Filters will be returned in the order to be displayed"""
   findFrontPageFilters: [SavedFilter!]!

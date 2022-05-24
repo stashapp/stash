@@ -44,15 +44,15 @@ const deleteCache = (queries: DocumentNode[]) => {
     });
 };
 
-export const useFindSavedFilters = (mode: GQL.FilterMode) =>
+export const useFindSavedFilters = (mode?: GQL.FilterMode) =>
   GQL.useFindSavedFiltersQuery({
     variables: {
       mode,
     },
   });
 
-export const useFindRecommendationFilters = () =>
-  GQL.useFindRecommendedFiltersQuery();
+export const useFindFrontPageFiltersQuery = () =>
+  GQL.useFindFrontPageFiltersQuery();
 
 export const useFindDefaultFilter = (mode: GQL.FilterMode) =>
   GQL.useFindDefaultFilterQuery({
@@ -838,6 +838,12 @@ export const useConfigureScraping = () =>
   GQL.useConfigureScrapingMutation({
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
+export const useConfigureFrontPage = () =>
+  GQL.useConfigureFrontPageMutation({
+    refetchQueries: getQueryNames([GQL.FindFrontPageFiltersDocument]),
+    update: deleteCache([GQL.FindFrontPageFiltersDocument]),
   });
 
 export const querySystemStatus = () =>

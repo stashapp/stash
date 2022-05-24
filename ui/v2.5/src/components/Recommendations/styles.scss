@@ -6,6 +6,16 @@
     padding-left: 0;
     padding-right: 0;
   }
+
+  .recommendations-footer {
+    display: flex;
+    justify-content: right;
+    margin-bottom: 1em;
+
+    button:not(:last-child) {
+      margin-right: 10px;
+    }
+  }
 }
 
 .no-recommendations {
@@ -22,6 +32,25 @@
   display: flex;
   justify-content: space-between;
   padding: 15px 0;
+}
+
+.recommendations-container-edit {
+  .recommendation-row {
+    background-color: $secondary;
+    margin-bottom: 10px;
+
+    &:not(.recommendation-row-add) {
+      cursor: grab;
+    }
+  }
+
+  .recommendation-row-add .recommendation-row-head {
+    justify-content: center;
+  }
+
+  .recommendation-row-head {
+    padding: 15px 10px;
+  }
 }
 
 .recommendation-row-head h2 {
@@ -396,7 +425,6 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  position: absolute;
   text-align: center;
   width: 100%;
 }

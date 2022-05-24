@@ -10,7 +10,6 @@ import {
   StringListSetting,
   StringSetting,
 } from "./Inputs";
-import { RecommendationsDialog } from "../Dialogs/RecommendationsDialog";
 import { SettingStateContext } from "./context";
 
 export const SettingsLibraryPanel: React.FC = () => {
@@ -36,16 +35,6 @@ export const SettingsLibraryPanel: React.FC = () => {
     });
   }
 
-  function maybeRenderRecommendationsDialog() {
-    if (!dialogOpen.recommendations) return;
-
-    return (
-      <RecommendationsDialog
-        onClose={() => setDialogOpen({ recommendations: false })}
-      />
-    );
-  }
-
   function commaDelimitedToList(value: string | undefined) {
     if (value) {
       return value.split(",").map((s) => s.trim());
@@ -63,8 +52,6 @@ export const SettingsLibraryPanel: React.FC = () => {
 
   return (
     <Form.Group>
-      {maybeRenderRecommendationsDialog()}
-
       <StashSetting
         value={general.stashes ?? []}
         onChange={(v) => saveGeneral({ stashes: v })}

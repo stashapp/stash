@@ -22,6 +22,7 @@
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
     "created_entity": "Created {entity_type}: {entity_name}",
+    "customise": "Customise",
     "delete": "Delete",
     "delete_entity": "Delete {entityType}",
     "delete_file": "Delete file",

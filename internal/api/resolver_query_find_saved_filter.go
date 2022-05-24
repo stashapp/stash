@@ -7,9 +7,13 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *queryResolver) FindSavedFilters(ctx context.Context, mode models.FilterMode) (ret []*models.SavedFilter, err error) {
+func (r *queryResolver) FindSavedFilters(ctx context.Context, mode *models.FilterMode) (ret []*models.SavedFilter, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.SavedFilter().FindByMode(mode)
+		if mode != nil {
+			ret, err = repo.SavedFilter().FindByMode(*mode)
+		} else {
+			ret, err = repo.SavedFilter().All()
+		}
 		return err
 	}); err != nil {
 		return nil, err

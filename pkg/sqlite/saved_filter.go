@@ -126,3 +126,12 @@ func (qb *savedFilterQueryBuilder) FindDefault(mode models.FilterMode) (*models.
 
 	return nil, nil
 }
+
+func (qb *savedFilterQueryBuilder) All() ([]*models.SavedFilter, error) {
+	var ret models.SavedFilters
+	if err := qb.query(selectAll(savedFilterTable), nil, &ret); err != nil {
+		return nil, err
+	}
+
+	return []*models.SavedFilter(ret), nil
+}
