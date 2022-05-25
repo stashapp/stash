@@ -153,6 +153,8 @@ const (
 	ImageLightboxScrollMode                 = "image_lightbox.scroll_mode"
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
 
+	FrontPageSavedFilterIDs = "front_page.saved_filter_ids"
+
 	defaultImageLightboxSlideshowDelay = 5000
 
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
@@ -408,6 +410,13 @@ func (i *Instance) getStringSlice(key string) []string {
 	defer i.RUnlock()
 
 	return i.viper(key).GetStringSlice(key)
+}
+
+func (i *Instance) getIntSlice(key string) []int {
+	i.RLock()
+	defer i.RUnlock()
+
+	return i.viper(key).GetIntSlice(key)
 }
 
 func (i *Instance) getString(key string) string {
@@ -961,6 +970,10 @@ func (i *Instance) GetImageLightboxOptions() models.ConfigImageLightboxResult {
 	}
 
 	return ret
+}
+
+func (i *Instance) GetFrontPageSavedFilterIDs() []int {
+	return i.getIntSlice(FrontPageSavedFilterIDs)
 }
 
 func (i *Instance) GetDisableDropdownCreate() *models.ConfigDisableDropdownCreate {

@@ -1,11 +1,9 @@
-.identify-filter-editor,
 .identify-source-editor {
   .default-value {
     color: #bfccd6;
   }
 }
 
-.scraper-filter-list,
 .scraper-source-list {
   .list-group-item {
     background-color: $textfield-bg;
@@ -29,9 +27,7 @@
   }
 }
 
-.scraper-filters,
 .scraper-sources {
-  .add-scraper-filters-button,
   .add-scraper-source-button {
     margin-right: 0.25em;
   }

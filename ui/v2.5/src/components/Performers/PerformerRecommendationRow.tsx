@@ -4,59 +4,49 @@ import Slider from "react-slick";
 import { PerformerCard } from "./PerformerCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
+import { RecommendationRow } from "../FrontPage/RecommendationRow";
+import { FormattedMessage } from "react-intl";
 
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
   header: String;
-  linkText: String;
-  index: number;
 }
 
 export const PerformerRecommendationRow: FunctionComponent<IProps> = (
   props: IProps
 ) => {
-  function buildRow(slider: JSX.Element) {
-    return (
-      <div className="recommendation-row performer-recommendations">
-        <div className="recommendation-row-head">
-          <div>
-            <h2>{props.header}</h2>
-          </div>
-          <a href={`/performers?${props.filter.makeQueryParameters()}`}>
-            {props.linkText}
-          </a>
-        </div>
-        {slider}
-      </div>
-    );
-  }
-
   const result = useFindPerformers(props.filter);
   const cardCount = result.data?.findPerformers.count;
-  if (result.loading) {
-    const slider = (
-      <Slider
-        {...getSlickSliderSettings(props.filter.itemsPerPage!, props.isTouch)}
-      >
-        {[...Array(props.filter.itemsPerPage)].map((i) => (
-          <div key={i} className="performer-skeleton skeleton-card"></div>
-        ))}
-      </Slider>
-    );
-    return buildRow(slider);
-  }
 
-  if (cardCount === 0) {
+  if (!result.loading && !cardCount) {
     return null;
   }
 
-  const slider = (
-    <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
-      {result.data?.findPerformers.performers.map((p) => (
-        <PerformerCard key={p.id} performer={p} />
-      ))}
-    </Slider>
+  return (
+    <RecommendationRow
+      className="performer-recommendations"
+      header={props.header}
+      link={
+        <a href={`/performers?${props.filter.makeQueryParameters()}`}>
+          <FormattedMessage id="view_all" />
+        </a>
+      }
+    >
+      <Slider
+        {...getSlickSliderSettings(
+          cardCount ? cardCount : props.filter.itemsPerPage,
+          props.isTouch
+        )}
+      >
+        {result.loading
+          ? [...Array(props.filter.itemsPerPage)].map((i) => (
+              <div key={i} className="performer-skeleton skeleton-card"></div>
+            ))
+          : result.data?.findPerformers.performers.map((p) => (
+              <PerformerCard key={p.id} performer={p} />
+            ))}
+      </Slider>
+    </RecommendationRow>
   );
-  return buildRow(slider);
 };

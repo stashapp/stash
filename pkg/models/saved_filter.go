@@ -1,10 +1,11 @@
 package models
 
 type SavedFilterReader interface {
+	All() ([]*SavedFilter, error)
 	Find(id int) (*SavedFilter, error)
+	FindMany(ids []int, ignoreNotFound bool) ([]*SavedFilter, error)
 	FindByMode(mode FilterMode) ([]*SavedFilter, error)
 	FindDefault(mode FilterMode) (*SavedFilter, error)
-	FindRecommended() ([]*SavedFilter, error)
 }
 
 type SavedFilterWriter interface {

@@ -3,5 +3,4 @@ fragment SavedFilterData on SavedFilter {
   mode
   name
   filter
-  recommendation_index
 }

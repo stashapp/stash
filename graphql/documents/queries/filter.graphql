@@ -1,4 +1,4 @@
-query FindSavedFilters($mode: FilterMode!) {
+query FindSavedFilters($mode: FilterMode) {
   findSavedFilters(mode: $mode) {
     ...SavedFilterData
   }
@@ -10,8 +10,8 @@ query FindDefaultFilter($mode: FilterMode!) {
   }
 }
 
-query FindRecommendedFilters {
-  findRecommendedFilters {
+query FindFrontPageFilters {
+  findFrontPageFilters {
     ...SavedFilterData
   }
 }

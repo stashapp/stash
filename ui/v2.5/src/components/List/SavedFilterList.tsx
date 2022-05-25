@@ -76,7 +76,6 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
             mode: filter.mode,
             name,
             filter: JSON.stringify(filterCopy.getSavedQueryParameters()),
-            recommendation_index: -1,
           },
         },
       });

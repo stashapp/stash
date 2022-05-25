@@ -1,17 +1,10 @@
-import React, { useState } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
-import { Button, Form } from "react-bootstrap";
+import React from "react";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { StashSetting } from "./StashConfiguration";
 import { SettingSection } from "./SettingSection";
-import {
-  BooleanSetting,
-  Setting,
-  StringListSetting,
-  StringSetting,
-} from "./Inputs";
-import { RecommendationsDialog } from "../Dialogs/RecommendationsDialog";
+import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { SettingStateContext } from "./context";
+import { useIntl } from "react-intl";
 
 export const SettingsLibraryPanel: React.FC = () => {
   const intl = useIntl();
@@ -23,28 +16,6 @@ export const SettingsLibraryPanel: React.FC = () => {
     defaults,
     saveDefaults,
   } = React.useContext(SettingStateContext);
-
-  type DialogOpenState = typeof dialogOpen;
-
-  const [dialogOpen, setDialogOpenState] = useState({
-    recommendations: false,
-  });
-
-  function setDialogOpen(s: Partial<DialogOpenState>) {
-    setDialogOpenState((v) => {
-      return { ...v, ...s };
-    });
-  }
-
-  function maybeRenderRecommendationsDialog() {
-    if (!dialogOpen.recommendations) return;
-
-    return (
-      <RecommendationsDialog
-        onClose={() => setDialogOpen({ recommendations: false })}
-      />
-    );
-  }
 
   function commaDelimitedToList(value: string | undefined) {
     if (value) {
@@ -62,32 +33,11 @@ export const SettingsLibraryPanel: React.FC = () => {
   if (loading) return <LoadingIndicator />;
 
   return (
-    <Form.Group>
-      {maybeRenderRecommendationsDialog()}
-
+    <>
       <StashSetting
         value={general.stashes ?? []}
         onChange={(v) => saveGeneral({ stashes: v })}
       />
-
-      <SettingSection>
-        <Setting
-          heading={
-            <>
-              <FormattedMessage id="config.library.manage_recommendation" />
-            </>
-          }
-          subHeadingID="config.general.manage_recommendation_desc"
-        >
-          <Button
-            variant="secondary"
-            type="submit"
-            onClick={() => setDialogOpen({ recommendations: true })}
-          >
-            <FormattedMessage id="Manage" />…
-          </Button>
-        </Setting>
-      </SettingSection>
 
       <SettingSection headingID="config.library.media_content_extensions">
         <StringSetting
@@ -204,6 +154,6 @@ export const SettingsLibraryPanel: React.FC = () => {
           }}
         />
       </SettingSection>
-    </Form.Group>
+    </>
   );
 };

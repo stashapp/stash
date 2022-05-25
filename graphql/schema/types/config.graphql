@@ -443,3 +443,11 @@ type StashBoxValidationResult {
   valid: Boolean!
   status: String!
 }
+
+input ConfigFrontPageInput {
+  savedFilterIDs: [ID!]
+}
+
+type ConfigFrontPageResult {
+  savedFilterIDs: [ID!]!
+}

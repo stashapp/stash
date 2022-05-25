@@ -22,6 +22,7 @@
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
     "created_entity": "Created {entity_type}: {entity_name}",
+    "customise": "Customise",
     "delete": "Delete",
     "delete_entity": "Delete {entityType}",
     "delete_file": "Delete file",
@@ -50,7 +51,6 @@
     "ignore": "Ignore",
     "import": "Import…",
     "import_from_file": "Import from file",
-    "manage_recommendations": "Manage Recommendations",
     "merge": "Merge",
     "merge_from": "Merge from",
     "merge_into": "Merge into",
@@ -270,7 +270,6 @@
       "include_audio_desc": "Includes audio stream when generating previews.",
       "include_audio_head": "Include audio",
       "logging": "Logging",
-      "manage_recommendation_desc": "Refresh page after updating for changes to take affect.",
       "maximum_streaming_transcode_size_desc": "Maximum size for transcoded streams",
       "maximum_streaming_transcode_size_head": "Maximum streaming transcode size",
       "maximum_transcode_size_desc": "Maximum size for generated transcodes",
@@ -302,8 +301,7 @@
     "library": {
       "exclusions": "Exclusions",
       "gallery_and_image_options": "Gallery and Image options",
-      "media_content_extensions": "Media content extensions",
-      "manage_recommendation": "Manage Recommendations"
+      "media_content_extensions": "Media content extensions"
     },
     "logs": {
       "log_level": "Log Level"

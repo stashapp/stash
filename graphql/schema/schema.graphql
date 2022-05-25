@@ -1,9 +1,10 @@
 """The query root for this schema"""
 type Query {
   # Filters
-  findSavedFilters(mode: FilterMode!): [SavedFilter!]!
+  findSavedFilters(mode: FilterMode): [SavedFilter!]!
   findDefaultFilter(mode: FilterMode!): SavedFilter
-  findRecommendedFilters: [SavedFilter!]!
+  """Filters will be returned in the order to be displayed"""
+  findFrontPageFilters: [SavedFilter!]!
 
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene
@@ -244,6 +245,7 @@ type Mutation {
   configureDLNA(input: ConfigDLNAInput!): ConfigDLNAResult!
   configureScraping(input: ConfigScrapingInput!): ConfigScrapingResult!
   configureDefaults(input: ConfigDefaultSettingsInput!): ConfigDefaultSettingsResult!
+  configureFrontPage(input: ConfigFrontPageInput!): ConfigFrontPageResult!
 
   """Generate and set (or clear) API key"""
   generateAPIKey(input: GenerateAPIKeyInput!): String!

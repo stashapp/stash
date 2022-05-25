@@ -25,10 +25,9 @@ func (r *mutationResolver) SaveFilter(ctx context.Context, input models.SaveFilt
 
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		f := models.SavedFilter{
-			Mode:                input.Mode,
-			Name:                input.Name,
-			Filter:              input.Filter,
-			RecommendationIndex: *input.RecommendationIndex,
+			Mode:   input.Mode,
+			Name:   input.Name,
+			Filter: input.Filter,
 		}
 		if id == nil {
 			ret, err = repo.SavedFilter().Create(f)

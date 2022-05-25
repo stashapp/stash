@@ -1,62 +1,50 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
 import { useFindMovies } from "src/core/StashService";
 import Slider from "react-slick";
 import { MovieCard } from "./MovieCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
+import { RecommendationRow } from "../FrontPage/RecommendationRow";
+import { FormattedMessage } from "react-intl";
 
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
   header: String;
-  linkText: String;
-  index: number;
 }
 
-export const MovieRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
-  function buildRow(slider: JSX.Element) {
-    return (
-      <div className="recommendation-row movie-recommendations">
-        <div className="recommendation-row-head">
-          <div>
-            <h2>{props.header}</h2>
-          </div>
-          <a href={`/movies?${props.filter.makeQueryParameters()}`}>
-            {props.linkText}
-          </a>
-        </div>
-        {slider}
-      </div>
-    );
-  }
-
+export const MovieRecommendationRow: React.FC<IProps> = (props: IProps) => {
   const result = useFindMovies(props.filter);
   const cardCount = result.data?.findMovies.count;
-  if (result.loading) {
-    const slider = (
-      <Slider
-        {...getSlickSliderSettings(props.filter.itemsPerPage!, props.isTouch)}
-      >
-        {[...Array(props.filter.itemsPerPage)].map((i) => (
-          <div key={i} className="movie-skeleton skeleton-card"></div>
-        ))}
-      </Slider>
-    );
-    return buildRow(slider);
-  }
 
-  if (cardCount === 0) {
+  if (!result.loading && !cardCount) {
     return null;
   }
 
-  const slider = (
-    <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
-      {result.data?.findMovies.movies.map((m) => (
-        <MovieCard key={m.id} movie={m} />
-      ))}
-    </Slider>
+  return (
+    <RecommendationRow
+      className="movie-recommendations"
+      header={props.header}
+      link={
+        <a href={`/movies?${props.filter.makeQueryParameters()}`}>
+          <FormattedMessage id="view_all" />
+        </a>
+      }
+    >
+      <Slider
+        {...getSlickSliderSettings(
+          cardCount ? cardCount : props.filter.itemsPerPage,
+          props.isTouch
+        )}
+      >
+        {result.loading
+          ? [...Array(props.filter.itemsPerPage)].map((i) => (
+              <div key={i} className="movie-skeleton skeleton-card"></div>
+            ))
+          : result.data?.findMovies.movies.map((m) => (
+              <MovieCard key={m.id} movie={m} />
+            ))}
+      </Slider>
+    </RecommendationRow>
   );
-  return buildRow(slider);
 };
