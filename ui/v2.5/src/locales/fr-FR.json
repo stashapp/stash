@@ -247,7 +247,7 @@
       "calculate_md5_and_ohash_label": "Calculer le MD5 pour les vidéos",
       "check_for_insecure_certificates": "Vérifier les certificats non sécurisés",
       "check_for_insecure_certificates_desc": "Certains sites Web utilisent des certificats SSL non sécurisés. Lorsque cette option est décochée, le Scraper ignore la vérification des certificats non sécurisés et permet le Scraping de ces sites. Si vous obtenez une erreur de certificat lors du Scraping, décochez cette option.",
-      "chrome_cdp_path": "Chrome CDP",
+      "chrome_cdp_path": "Chemin Chrome CDP (Chrome Debugging Protocol)",
       "chrome_cdp_path_desc": "Chemin vers l'exécutable Chrome, ou une adresse distante (commençant par http:// ou https://, par exemple http://localhost:9222/json/version) vers une instance Chrome.",
       "create_galleries_from_folders_desc": "Si coché, crée des Galeries à partir des dossiers contenant des images.",
       "create_galleries_from_folders_label": "Créer des Galeries à partir des dossiers contenant des fichiers images",
