@@ -12,6 +12,29 @@ type SavedFilterReaderWriter struct {
 	mock.Mock
 }
 
+// All provides a mock function with given fields:
+func (_m *SavedFilterReaderWriter) All() ([]*models.SavedFilter, error) {
+	ret := _m.Called()
+
+	var r0 []*models.SavedFilter
+	if rf, ok := ret.Get(0).(func() []*models.SavedFilter); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.SavedFilter)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: obj
 func (_m *SavedFilterReaderWriter) Create(obj models.SavedFilter) (*models.SavedFilter, error) {
 	ret := _m.Called(obj)
@@ -118,6 +141,29 @@ func (_m *SavedFilterReaderWriter) FindDefault(mode models.FilterMode) (*models.
 	return r0, r1
 }
 
+// FindMany provides a mock function with given fields: ids, ignoreNotFound
+func (_m *SavedFilterReaderWriter) FindMany(ids []int, ignoreNotFound bool) ([]*models.SavedFilter, error) {
+	ret := _m.Called(ids, ignoreNotFound)
+
+	var r0 []*models.SavedFilter
+	if rf, ok := ret.Get(0).(func([]int, bool) []*models.SavedFilter); ok {
+		r0 = rf(ids, ignoreNotFound)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.SavedFilter)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]int, bool) error); ok {
+		r1 = rf(ids, ignoreNotFound)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // SetDefault provides a mock function with given fields: obj
 func (_m *SavedFilterReaderWriter) SetDefault(obj models.SavedFilter) (*models.SavedFilter, error) {
 	ret := _m.Called(obj)
@@ -157,29 +203,6 @@ func (_m *SavedFilterReaderWriter) Update(obj models.SavedFilter) (*models.Saved
 	var r1 error
 	if rf, ok := ret.Get(1).(func(models.SavedFilter) error); ok {
 		r1 = rf(obj)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// FindRecommended provides a mock function with given fields: mode
-func (_m *SavedFilterReaderWriter) FindRecommended() ([]*models.SavedFilter, error) {
-	ret := _m.Called()
-
-	var r0 []*models.SavedFilter
-	if rf, ok := ret.Get(0).(func() []*models.SavedFilter); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.SavedFilter)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
 	} else {
 		r1 = ret.Error(1)
 	}
