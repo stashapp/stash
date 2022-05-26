@@ -252,7 +252,7 @@
       "create_galleries_from_folders_desc": "Coché, crée des galeries à partir de dossiers contenant des images.",
       "create_galleries_from_folders_label": "Créer des galeries à partir de dossiers contenant des images",
       "db_path_head": "Chemin de la base de données",
-      "directory_locations_to_your_content": "Emplacements vers votre contenu",
+      "directory_locations_to_your_content": "Emplacements du répertoire de votre contenu",
       "excluded_image_gallery_patterns_desc": "Expression régulière de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
       "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclués",
       "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
@@ -261,40 +261,40 @@
       "gallery_ext_head": "Extensions zip de la galerie",
       "generated_file_naming_hash_desc": "Utilisez MD5 ou oshash pour le nommage des fichiers générés. Le modifier exige que toutes les scènes soient renseignées avec une valeur MD5/oshash appropriée. Après avoir modifié cette valeur, les fichiers générés existants devront être migrés ou régénérés. Voir la page Tâches pour la migration.",
       "generated_file_naming_hash_head": "Algorithme de hachage pour le nommage des fichiers générés",
-      "generated_files_location": "Emplacement pour les fichiers générés (marqueurs, apercus, sprites, etc)",
-      "generated_path_head": "Emplacement des fichiers générés",
+      "generated_files_location": "Emplacement du répertoire des fichiers générés (marqueurs de scène, aperçus de scène, sprites, etc.)",
+      "generated_path_head": "Chemin des fichiers générés",
       "hashing": "Hachage",
-      "image_ext_desc": "Liste des extensions de fichiers Images.",
-      "image_ext_head": "Extensions de fichiers Images",
-      "include_audio_desc": "Inclure l'audio dans la génération des aperçus.",
+      "image_ext_desc": "Liste délimitée par des virgules des extensions de fichiers qui seront reconnues comme des images.",
+      "image_ext_head": "Extensions des images",
+      "include_audio_desc": "Inclure le flux audio lors de la génération des aperçus.",
       "include_audio_head": "Inclure l'audio",
       "logging": "Journalisation",
-      "maximum_streaming_transcode_size_desc": "Résolution maximum pour la conversions des stream",
-      "maximum_streaming_transcode_size_head": "Résolution maximum de conversion pour les stream",
-      "maximum_transcode_size_desc": "Résolution maximum pour la conversions des fichiers",
-      "maximum_transcode_size_head": "Résolution maximum de conversion",
+      "maximum_streaming_transcode_size_desc": "Résolution maximale pour les flux transcodés",
+      "maximum_streaming_transcode_size_head": "Résolution maximale du flux transcodé",
+      "maximum_transcode_size_desc": "Résolution maximale pour les transcodes générés",
+      "maximum_transcode_size_head": "Résolution maximale de transcodage",
       "metadata_path": {
-        "description": "Emplacement du répertoire qui sera utilisé pour un export ou un import de métadonnées",
-        "heading": "Emplacement des fichiers de Métadonnées"
+        "description": "Emplacement du répertoire utilisé lors d'une exportation ou d'une importation complète",
+        "heading": "Chemin des métadonnées"
       },
-      "number_of_parallel_task_for_scan_generation_desc": "0 pour détection automatique. Attention : une valeur trop élevée peut réduire les performances et causer d'autres problèmes.",
-      "number_of_parallel_task_for_scan_generation_head": "Nombre de tâches en parallèles pour le scan et la génération",
-      "parallel_scan_head": "Scan/Génération en parallèle",
-      "preview_generation": "Générer les aperçus",
+      "number_of_parallel_task_for_scan_generation_desc": "Définissez à 0 pour une détection automatique. Avertissement exécuter plus de tâches que ce qui est nécessaire pour atteindre une utilisation à 100% du processeur diminuera les performances et pourra causer d'autres problèmes.",
+      "number_of_parallel_task_for_scan_generation_head": "Nombre de tâches parallèles pour l'analyse et la génération",
+      "parallel_scan_head": "Analyse ou génération en parallèle",
+      "preview_generation": "Génération d'aperçu",
       "python_path": {
         "description": "Emplacement de l'exécutable python. Utilisé par les scrapers et les plugins. Si vide, python sera résolu à partir de l'environnement",
         "heading": "Chemin de Python"
       },
       "scraper_user_agent": "User-Agent pour les Scraper",
-      "scraper_user_agent_desc": "Chaîne User-Agent utilisée dans les requêtes http lors du Scraping.",
+      "scraper_user_agent_desc": "Chaîne User-Agent utilisée dans les requêtes http lors du Scraping",
       "scrapers_path": {
-        "description": "Emplacement du répertoire des fichiers de configuration scraper",
+        "description": "Emplacement du répertoire des fichiers de configuration du scraper",
         "heading": "Chemin des scrapers"
       },
       "scraping": "Scraping",
       "sqlite_location": "Emplacement du fichier de base de données SQLite (nécessite un redémarrage)",
-      "video_ext_desc": "Liste des extensions de fichiers Vidéos.",
-      "video_ext_head": "Extensions de fichiers Vidéo",
+      "video_ext_desc": "Liste délimitée par des virgules des extensions de fichiers qui seront reconnus comme des vidéos.",
+      "video_ext_head": "Extensions de fichiers vidéo",
       "video_head": "Vidéo"
     },
     "library": {
@@ -312,8 +312,8 @@
     "scraping": {
       "entity_metadata": "{entityType} Métadonnées",
       "entity_scrapers": "{entityType} scrapers",
-      "excluded_tag_patterns_desc": "Expressions régulières pour l'exclusion de certains Tags des résultats de Scraping",
-      "excluded_tag_patterns_head": "Exclusion de Tags",
+      "excluded_tag_patterns_desc": "Expressions régulières de noms d'étiquettes à exclure des résultats de scraping",
+      "excluded_tag_patterns_head": "Modèles d'étiquette excluse",
       "scraper": "Scraper",
       "scrapers": "Scrapers",
       "search_by_name": "Recherche par nom",
@@ -321,13 +321,13 @@
       "supported_urls": "URLs"
     },
     "stashbox": {
-      "add_instance": "Ajouter une instance stash-box",
+      "add_instance": "Ajouter une instance Stash-Box",
       "api_key": "Clé API",
-      "description": "Stash-box facilite le taggage automatique des vidéos et des acteur.trice.s en se basant sur l'empreinte et le nom des fichiers. Le Endpoint et la Clé API peuvent être trouvé dans votre compte stash-box. Si vous spécifiez plusieurs instances stash-box, le nom est requis.",
-      "endpoint": "Endpoint",
-      "graphql_endpoint": "Endpoint GraphQL",
+      "description": "Stash-Box simplifie l'étiquetage automatique des scènes et des performeurs en se basant sur les empreintes digitales et les noms de fichiers.\nLe point de connexion et la clé API se trouvent sur la page de votre compte de l'instance de stash-box. Les noms sont requis lorsque plusieurs instances sont ajoutées.",
+      "endpoint": "Point de connexion",
+      "graphql_endpoint": "Point de connexion GraphQL",
       "name": "Nom",
-      "title": "Endpoints Stash-box"
+      "title": "Points de connexion Stash-Box"
     },
     "system": {
       "transcoding": "Transcodage"
@@ -335,49 +335,49 @@
     "tasks": {
       "added_job_to_queue": "{operation_name} ajouté(e) à la liste des tâches",
       "auto_tag": {
-        "auto_tagging_all_paths": "Marquage automatique de tous les chemins",
-        "auto_tagging_paths": "Marquage automatique des chemins suivants"
+        "auto_tagging_all_paths": "Étiquetage automatique de tous les chemins",
+        "auto_tagging_paths": "Étiquetage automatique des chemins suivants"
       },
-      "auto_tag_based_on_filenames": "Taggage automatique basé sur le nom des fichiers.",
-      "auto_tagging": "Taggage automatique",
-      "backing_up_database": "Sauvegarder la base de données",
-      "backup_and_download": "Sauvegarde la base de données et télécharge le fichier de sauvegarde.",
-      "backup_database": "Sauvegarde la base de données au même emplacement que le fichier de base de données. Le fichier se sauvegarde aura le format suivant : {filename_format}",
-      "cleanup_desc": "Cherche et supprime les fichiers orphelins de la base de données. Cette action est destructive.",
+      "auto_tag_based_on_filenames": "Étiquetage automatique du contenu en se basant sur les noms de fichiers.",
+      "auto_tagging": "Étiquetage automatique",
+      "backing_up_database": "Sauvegarde de la base de données",
+      "backup_and_download": "Effectue une sauvegarde de la base de données et télécharge le fichier résultant.",
+      "backup_database": "Effectue une sauvegarde de la base de données dans le même répertoire que celle-ci, avec le format de nom de fichier {filename_format}",
+      "cleanup_desc": "Vérifier les fichiers manquants et les supprimer de la base de données. Cette action est destructive.",
       "data_management": "Gestion des données",
-      "defaults_set": "Les valeurs par défaut ont été définies et seront utilisées lorsque vous cliquerez sur le bouton {action} sur la page Tâches.",
+      "defaults_set": "Les valeurs par défaut ont été définies et seront utilisées en cliquant sur le bouton {action} de la page Tâches.",
       "dont_include_file_extension_as_part_of_the_title": "Ne pas inclure l'extension du fichier dans le titre",
       "empty_queue": "Aucune tâche n'est en cours d'exécution.",
-      "export_to_json": "Exporte la base de données au format JSON dans le dossier metadata.",
+      "export_to_json": "Exporte le contenu de la base de données au format JSON dans le répertoire des métadonnées.",
       "generate": {
-        "generating_from_paths": "Génération pour les scènes des chemins suivants",
+        "generating_from_paths": "Génération pour les scènes à partir des chemins suivants",
         "generating_scenes": "Génération pour {num} {scene}"
       },
-      "generate_desc": "Génère les fichiers images, sprite, vidéo, vtt autres fichiers.",
+      "generate_desc": "Générer les images associées, images animées, vidéos, vtt et autres fichiers.",
       "generate_phashes_during_scan": "Générer des hachages perceptuels",
       "generate_phashes_during_scan_tooltip": "Pour la déduplication et l'identification de scènes.",
       "generate_previews_during_scan": "Générer des aperçus d'images animées",
       "generate_previews_during_scan_tooltip": "Générez des aperçus WebP animés (requis uniquement si le type d'aperçu est défini sur Image animée).",
-      "generate_sprites_during_scan": "Générer les sprites de progression",
-      "generate_thumbnails_during_scan": "Générer les miniatures pour les images",
+      "generate_sprites_during_scan": "Générer les images animées de progression",
+      "generate_thumbnails_during_scan": "Générer des vignettes pour les images",
       "generate_video_previews_during_scan": "Générer les aperçus",
-      "generate_video_previews_during_scan_tooltip": "Générez des aperçus vidéo qui s'activent lorsque vous survolez une scène",
+      "generate_video_previews_during_scan_tooltip": "Générer des aperçus vidéo joués lors du survol d'une scène",
       "generated_content": "Contenu généré",
       "identify": {
-        "and_create_missing": "et créer si manquant",
-        "create_missing": "Créer si manquant",
+        "and_create_missing": "et créer les manquants",
+        "create_missing": "Créer les manquants",
         "default_options": "Options par défaut",
-        "description": "Associe automatiquement les métadonnées aux Vidéos en utilisant stash-box et les Scrapers.",
-        "explicit_set_description": "Ces options seront utilisées par défaut à moins qu'une Source ne les définissent autrement.",
+        "description": "Définissez automatiquement les métadonnées de la scène en utilisant les sources Stash-Box et scraper.",
+        "explicit_set_description": "Les options suivantes seront utilisées si elles ne sont pas remplacées par les options spécifiques à la source.",
         "field": "Champ",
         "field_behaviour": "{strategy} {field}",
-        "field_options": "options pour les champs",
+        "field_options": "Options de champ",
         "heading": "Identifier",
-        "identifying_from_paths": "Identifier les vidéos à partir des emplacements suivants",
+        "identifying_from_paths": "Identifier des scènes à partir des chemins suivants",
         "identifying_scenes": "Identifier {num} {scene}",
-        "include_male_performers": "Inclure les acteurs hommes",
-        "set_cover_images": "Enregistrer l'image de couverture",
-        "set_organized": "Marquer comme Organisé",
+        "include_male_performers": "Inclure les performeurs masculins",
+        "set_cover_images": "Définir les images de couverture",
+        "set_organized": "Définir le drapeau organisé",
         "source": "Source",
         "source_options": "Options pour {source}",
         "sources": "Sources",
@@ -387,67 +387,67 @@
       "incremental_import": "Importation incrémentielle à partir d'un fichier zip d'exportation fourni.",
       "job_queue": "File d'attente des tâches",
       "maintenance": "Maintenance",
-      "migrate_hash_files": "A utiliser si vous avez modifié l'algorithme de hachage pour le nommage des fichiers générés. Renomme les fichiers générés en fonction de l'algorithme de hachage sélectionné.",
+      "migrate_hash_files": "Utilisé après modification du hachage des fichiers générés pour renommer les existants au nouveau format.",
       "migrations": "Migrations",
-      "only_dry_run": "Effectuer un essai à blanc. Ne supprime rien du tout.",
-      "plugin_tasks": "Tâches des Plugins",
+      "only_dry_run": "Effectuer un essai à blanc. Ne supprime rien",
+      "plugin_tasks": "Tâches de Plugin",
       "scan": {
-        "scanning_all_paths": "Scanner tous les chemins",
-        "scanning_paths": "Scanner les chemins suivants"
+        "scanning_all_paths": "Analyse tous les chemins",
+        "scanning_paths": "Analyse les chemins suivants"
       },
-      "scan_for_content_desc": "Scanner pour des nouveaux contenus et les ajouter à la base de données.",
-      "set_name_date_details_from_metadata_if_present": "Définissez le titre, la date et d'autres détails à partir des métadonnées du fichier (si présentes)"
+      "scan_for_content_desc": "Analyser le nouveau contenu et l'ajouter à la base de données.",
+      "set_name_date_details_from_metadata_if_present": "Définir le nom, date, détails à partir des métadonnées intégrées au fichier"
     },
     "tools": {
-      "scene_duplicate_checker": "Vérificateur de doublons Vidéos",
+      "scene_duplicate_checker": "Vérificateur de doublons de scènes",
       "scene_filename_parser": {
         "add_field": "Ajouter un champ",
         "capitalize_title": "Titre en majuscule",
         "display_fields": "Afficher les champs",
-        "escape_chars": "Utilisez \\ pour échapper les caractères littéraux",
-        "filename": "Nom du fichier",
-        "filename_pattern": "Pattern des noms de fichier",
-        "ignore_organized": "Ignorer les Vidéos déjà Organisées",
-        "ignored_words": "Mots à ignorer",
+        "escape_chars": "Utiliser \\ pour échapper les caractères littéraux",
+        "filename": "Nom de fichier",
+        "filename_pattern": "Modèle de nom de fichier",
+        "ignore_organized": "Ignorer les scènes organisées",
+        "ignored_words": "Mots ignorés",
         "matches_with": "Correspond à {i}",
-        "select_parser_recipe": "Sélectionner une recette d'analyse",
-        "title": "Analyseur de nom de fichier Vidéos",
-        "whitespace_chars": "Espaces",
+        "select_parser_recipe": "Sélectionner une formule d'analyse",
+        "title": "Analyseur de noms de fichiers de scènes",
+        "whitespace_chars": "Caractères d'espacement",
         "whitespace_chars_desc": "Ces caractères seront remplacés par un espace dans le titre"
       },
-      "scene_tools": "Outils Vidéos"
+      "scene_tools": "Outils de scène"
     },
     "ui": {
       "basic_settings": "Paramètres de base",
       "custom_css": {
         "description": "La page doit être rafraichie pour que les changements prennent effet.",
-        "heading": "CSS personalisé",
-        "option_label": "Activer le CSS personalisé"
+        "heading": "CSS personnalisé",
+        "option_label": "Activer le CSS personnalisé"
       },
       "delete_options": {
-        "description": "Réglages par défaut lors de la suppression des Vidéo, Images et Galeries.",
+        "description": "Réglages par défaut lors de la suppression d'images, galeries, et scènes.",
         "heading": "Options de suppression",
         "options": {
-          "delete_file": "Par défaut, effacer les fichiers",
-          "delete_generated_supporting_files": "Par défaut, effacer les fichiers générés"
+          "delete_file": "Supprimer le fichier par défaut",
+          "delete_generated_supporting_files": "Supprimer par défaut les fichiers associés générés"
         }
       },
       "desktop_integration": {
-        "desktop_integration": "Intégration avec le Bureau",
+        "desktop_integration": "Intégration au bureau",
         "notifications_enabled": "Activer les notifications",
-        "send_desktop_notifications_for_events": "Envoyer des notifications bureau pour les événements",
+        "send_desktop_notifications_for_events": "Envoyer des notifications au bureau en cas d'événements",
         "skip_opening_browser": "Ne pas ouvrir de navigateur",
-        "skip_opening_browser_on_startup": "ne pas ouvrir de navigateur au démarrage de l'application"
+        "skip_opening_browser_on_startup": "Ignorer l'ouverture automatique du navigateur lors du démarrage"
       },
       "editing": {
         "disable_dropdown_create": {
-          "description": "Désactive la possibilité de créer des nouveaux Actrices/Acteurs, Studio et Tags depuis la liste déroulante.",
-          "heading": "Désactiver la création depuis la liste déroulante."
+          "description": "Supprimer la possibilité de créer de nouveaux objets à partir des sélecteurs de liste déroulante",
+          "heading": "Désactiver la création depuis la liste déroulante"
         },
-        "heading": "Edition"
+        "heading": "Édition"
       },
       "funscript_offset": {
-        "description": "Décalage temporel (en millisecondes) à appliquer lors de la lecture des scripts interactifs.",
+        "description": "Décalage temporel en millisecondes pour la lecture des scripts interactifs.",
         "heading": "Décalage Funscript (ms)"
       },
       "handy_connection": {
@@ -455,18 +455,24 @@
         "server_offset": {
           "heading": "Offset serveur"
         },
+        "status": {
+          "heading": "Statut de connexion Handy"
+        },
         "sync": "Synchroniser"
       },
       "handy_connection_key": {
-        "description": "Clé de connexion Handy pour les Vidéos interactives. Définir cette clé permettra à Stash de partager les informations de votre scène actuelle avec handyfeeling.com",
+        "description": "Clé de connexion Handy à utiliser pour les scènes interactives. En définissant cette clé, vous permettez à Stash de partager les informations de votre scène actuelle avec handyfeeling.com",
         "heading": "Clé de connexion Handy"
+      },
+      "image_lightbox": {
+        "heading": "Visionneuse d'images"
       },
       "images": {
         "heading": "Images",
         "options": {
           "write_image_thumbnails": {
-            "description": "Écrire les miniatures des images sur le disque lorsqu'elles sont générées à la volée",
-            "heading": "Enregistrer les miniatures des images"
+            "description": "Écrire les vignettes des images sur le disque lorsqu'elles sont générées à la volée",
+            "heading": "Enregistrer les vignettes des images"
           }
         }
       },
@@ -475,8 +481,8 @@
         "heading": "Langue"
       },
       "max_loop_duration": {
-        "description": "Durée maximum de la vidéo pendant laquelle le lecteur rebouclera la vidéo - 0 pour désactiver",
-        "heading": "Durée maximum de rebouclage"
+        "description": "Durée maximale de la scène pendant laquelle le lecteur bouclera la vidéo - 0 pour désactiver",
+        "heading": "Durée maximale de la boucle"
       },
       "menu_items": {
         "description": "Afficher ou masquer différents types de contenus dans la barre de navigation",
@@ -485,13 +491,13 @@
       "performers": {
         "options": {
           "image_location": {
-            "description": "Chemin vers l'image à utiliser pour les Actrices/Acteurs qui n'ont pas d'image. Laissez vide pour utiliser l'image par défaut de Stash.",
-            "heading": "Image par défaut personalisée pour les actrices/acteurs"
+            "description": "Chemin personnalisé pour les images par défaut de performeur. Laisser vide pour utiliser les valeurs par défaut intégrées",
+            "heading": "Chemin de l'image du performeur personnalisé"
           }
         }
       },
       "preview_type": {
-        "description": "Configuration des éléments du Mur",
+        "description": "Configuration des éléments du mur",
         "heading": "Type d'aperçu",
         "options": {
           "animated": "Image animée",
@@ -500,28 +506,30 @@
         }
       },
       "scene_list": {
-        "heading": "Liste Vidéo",
+        "heading": "Liste de scène",
         "options": {
-          "show_studio_as_text": "Afficher les Studios en tant que texte"
+          "show_studio_as_text": "Afficher les studios sous format texte"
         }
       },
       "scene_player": {
-        "heading": "Lecteur Vidéo",
+        "heading": "Lecteur de scène",
         "options": {
-          "auto_start_video": "Lecture automatique",
+          "auto_start_video": "Démarrer automatiquement la vidéo",
           "auto_start_video_on_play_selected": {
-            "description": "Lancer automatiquement la lecture de la vidéo de la scène lorsque « lecture » est sélectionné ou qu'une scène aléatoire est sélectionnée à partir de la page de la scène",
-            "heading": "Démarrer automatiquement la vidéo lorsque \"play\" est sélectionné"
+            "description": "Démarrer automatiquement les scènes vidéo lorsque lecture est sélectionnée ou aléatoire à partir de la page Scènes",
+            "heading": "Démarrer automatiquement la vidéo lorsque lecture est sélectionnée"
           },
           "continue_playlist_default": {
-            "description": "Lire la scène suivante dans la file d'attente lorsque la vidéo est terminée",
+            "description": "Lire la scène suivante dans la file d'attente lorsque la vidéo se termine",
             "heading": "Continuer la liste de lecture par défaut"
-          }
+          },
+          "show_scrubber": "Montrer la barre de progression"
         }
       },
       "scene_wall": {
+        "heading": "Mur de scènes et marqueurs",
         "options": {
-          "display_title": "Afficher le titre et les tags",
+          "display_title": "Afficher le titre et étiquettes",
           "toggle_sound": "Activer le son"
         }
       },
@@ -794,26 +802,26 @@
   "path": "Chemin",
   "performer": "Actrice/Acteur",
   "performerTags": "Tags d'Actrice/Acteur",
-  "performer_age": "Âge de l'artiste",
+  "performer_age": "Âge du performeur",
   "performer_count": "Nombre d'Actrices/Acteurs",
-  "performer_favorite": "Artiste favori",
+  "performer_favorite": "Performeur favori",
   "performer_image": "Photo",
   "performer_tagger": {
     "current_page": "Page actuelle",
     "name_already_exists": "Le nom existe déjà",
     "network_error": "Erreur réseau",
     "no_results_found": "Aucun résultat trouvé.",
-    "performer_already_tagged": "Artiste déjà étiqueté",
-    "performer_successfully_tagged": "Artiste étiqueté avec succès :",
-    "update_performer": "Mise à jour de l'artiste",
-    "update_performers": "Mise à jour des artistes"
+    "performer_already_tagged": "Performeur déjà étiqueté",
+    "performer_successfully_tagged": "Performeur étiqueté avec succès :",
+    "update_performer": "Mise à jour du performeur",
+    "update_performers": "Mise à jour des performeurs"
   },
   "performers": "Actrices/Acteurs",
   "piercings": "Piercings",
   "queue": "File de lecture",
   "random": "Aléatoire",
   "rating": "Note",
-  "recently_added_performers": "Artistes récemment ajoutés",
+  "recently_added_performers": "Performeurs récemment ajoutés",
   "recently_added_studios": "Studios récemment ajoutés",
   "recently_released_galleries": "Galeries récemment publiées",
   "recently_released_movies": "Films récemment sortis",
