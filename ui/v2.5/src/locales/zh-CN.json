@@ -191,7 +191,7 @@
       "metadata_providers": "元数据提供者",
       "plugins": "插件",
       "scraping": "挖掘",
-      "security": "安保",
+      "security": "安全性",
       "services": "服务",
       "system": "系统",
       "tasks": "任务",
@@ -448,6 +448,10 @@
       "funscript_offset": {
         "description": "交互式脚本播放的时间偏移量（以毫秒为单位）。",
         "heading": "Funscript偏移量（毫秒）"
+      },
+      "handy_connection": {
+        "connect": "连接",
+        "sync": "同步"
       },
       "handy_connection_key": {
         "description": "用于互动场景的快速连接密钥。设定此密匙会允许Stash分享你当前的短片资料到handyfeeling.com",
@@ -730,6 +734,11 @@
     "TRANSGENDER_MALE": "跨性别男性"
   },
   "hair_color": "头发颜色",
+  "handy_connection_status": {
+    "connecting": "连接中",
+    "disconnected": "连接已断开",
+    "syncing": "正在和服务器同步"
+  },
   "hasMarkers": "含有章节标记",
   "height": "身高",
   "help": "说明",
@@ -835,6 +844,11 @@
   "queue": "序列",
   "random": "随机",
   "rating": "评分",
+  "recently_added_performers": "最近新增的演员",
+  "recently_added_studios": "最近新增的工作室",
+  "recently_released_galleries": "最近新增的图片",
+  "recently_released_movies": "最近新增的电影",
+  "recently_released_scenes": "最近新增的短片",
   "resolution": "分辨率",
   "scene": "短片",
   "sceneTagger": "短片标记器",
@@ -938,6 +952,7 @@
     "submission_failed": "提交失败",
     "submission_successful": "成功提交"
   },
+  "statistics": "统计",
   "stats": {
     "image_size": "图片大小",
     "scenes_duration": "短片长度",
@@ -979,6 +994,7 @@
   "updated_at": "更新时间",
   "url": "链接",
   "videos": "视频",
+  "view_all": "查看全部",
   "weight": "体重",
   "years_old": "岁"
 }
