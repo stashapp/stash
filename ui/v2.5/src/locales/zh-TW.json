@@ -121,6 +121,7 @@
   "birth_year": "出生年分",
   "birthdate": "出生日期",
   "bitrate": "位元率",
+  "captions": "字幕",
   "career_length": "活躍年代",
   "component_tagger": {
     "config": {
@@ -449,6 +450,16 @@
         "description": "互動式腳本的時間偏移量 (毫秒)。",
         "heading": "Funscript 偏移量 (毫秒)"
       },
+      "handy_connection": {
+        "connect": "連接",
+        "server_offset": {
+          "heading": "伺服器誤差值"
+        },
+        "status": {
+          "heading": "Handy 連線狀態"
+        },
+        "sync": "同步"
+      },
       "handy_connection_key": {
         "description": "播放支援互動性的短片時所用的 Handy 連線金鑰。設定此金鑰後，Stash 將可把當前短片中的對應資訊分享至 handyfeeling.com",
         "heading": "Handy 連線金鑰"
@@ -521,6 +532,10 @@
           "display_title": "顯示影片標題及標籤",
           "toggle_sound": "播放聲音"
         }
+      },
+      "scroll_attempts_before_change": {
+        "description": "在移動到下一項/上一項之前嘗試滑動的次數。僅適用於『Y軸滑動』模式。",
+        "heading": "場景變換滑動嘗試次數"
       },
       "slideshow_delay": {
         "description": "幻燈片功能僅適用於「圖庫」種類下的預覽牆模式",
@@ -701,6 +716,7 @@
     "scale": "大小",
     "warmth": "暖度"
   },
+  "empty_server": "若要啟用影片推薦，請先於伺服器中新增一些短片。",
   "ethnicity": "人種",
   "existing_value": "現有值",
   "eye_color": "眼睛顏色",
@@ -730,6 +746,15 @@
     "TRANSGENDER_MALE": "跨型別男性"
   },
   "hair_color": "頭髮顏色",
+  "handy_connection_status": {
+    "connecting": "連接中",
+    "disconnected": "已斷線",
+    "error": "連接至 Handy 時出錯",
+    "missing": "遺失",
+    "ready": "已準備",
+    "syncing": "與伺服器同步中",
+    "uploading": "上傳腳本中"
+  },
   "hasMarkers": "含有章節標記",
   "height": "身高",
   "help": "說明",
@@ -835,6 +860,11 @@
   "queue": "佇列",
   "random": "隨機",
   "rating": "評比",
+  "recently_added_performers": "最近新增的演員",
+  "recently_added_studios": "最近新增的工作室",
+  "recently_released_galleries": "最近釋出的圖庫",
+  "recently_released_movies": "最近釋出的電影",
+  "recently_released_scenes": "最近釋出的短片",
   "resolution": "解析度",
   "scene": "短片",
   "sceneTagger": "短片標籤器",
@@ -938,6 +968,7 @@
     "submission_failed": "提交失敗",
     "submission_successful": "提交成功"
   },
+  "statistics": "統計資訊",
   "stats": {
     "image_size": "圖片大小",
     "scenes_duration": "短片長度",
@@ -979,6 +1010,7 @@
   "updated_at": "更新於",
   "url": "連結",
   "videos": "影片",
+  "view_all": "檢視所有",
   "weight": "體重",
   "years_old": "歲"
 }
