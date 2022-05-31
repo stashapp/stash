@@ -154,6 +154,7 @@ const (
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
 
 	FrontPageSavedFilterIDs = "front_page.saved_filter_ids"
+	UI                      = "ui"
 
 	defaultImageLightboxSlideshowDelay = 5000
 
@@ -982,6 +983,13 @@ func (i *Instance) GetDisableDropdownCreate() *models.ConfigDisableDropdownCreat
 		Studio:    i.getBool(DisableDropdownCreateStudio),
 		Tag:       i.getBool(DisableDropdownCreateTag),
 	}
+}
+
+func (i *Instance) GetUIConfiguration() map[string]interface{} {
+	i.RLock()
+	defer i.RUnlock()
+
+	return i.viper(UI).GetStringMap(UI)
 }
 
 func (i *Instance) GetCSSPath() string {
