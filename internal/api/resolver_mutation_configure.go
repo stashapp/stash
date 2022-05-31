@@ -522,7 +522,7 @@ func (r *mutationResolver) ConfigureFrontPage(ctx context.Context, input models.
 
 func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
 	c := config.GetInstance()
-	c.Set(config.UI, input)
+	c.SetUIConfiguration(input)
 
 	if err := c.Write(); err != nil {
 		return c.GetUIConfiguration(), err

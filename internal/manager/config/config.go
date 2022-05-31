@@ -989,7 +989,20 @@ func (i *Instance) GetUIConfiguration() map[string]interface{} {
 	i.RLock()
 	defer i.RUnlock()
 
-	return i.viper(UI).GetStringMap(UI)
+	// HACK: viper changes map keys to case insensitive values, so the workaround is to
+	// convert map keys to snake case for storage
+	v := i.viper(UI).GetStringMap(UI)
+
+	return fromSnakeCaseMap(v)
+}
+
+func (i *Instance) SetUIConfiguration(v map[string]interface{}) {
+	i.RLock()
+	defer i.RUnlock()
+
+	// HACK: viper changes map keys to case insensitive values, so the workaround is to
+	// convert map keys to snake case for storage
+	i.viper(UI).Set(UI, toSnakeCaseMap(v))
 }
 
 func (i *Instance) GetCSSPath() string {
