@@ -64,6 +64,7 @@ export function generatePremadeFrontPageContent() {
     recentlyAdded(FilterMode.Scenes, "scenes"),
     recentlyReleased(FilterMode.Galleries, "galleries"),
     recentlyAdded(FilterMode.Galleries, "galleries"),
+    recentlyAdded(FilterMode.Images, "images"),
     recentlyReleased(FilterMode.Movies, "movies"),
     recentlyAdded(FilterMode.Movies, "movies"),
     recentlyAdded(FilterMode.Studios, "studios"),

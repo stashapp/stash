@@ -9,6 +9,7 @@ import * as GQL from "src/core/generated-graphql";
 import { useFindSavedFilter } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { GalleryRecommendationRow } from "../Galleries/GalleryRecommendationRow";
+import { ImageRecommendationRow } from "../Images/ImageRecommendationRow";
 import { MovieRecommendationRow } from "../Movies/MovieRecommendationRow";
 import { PerformerRecommendationRow } from "../Performers/PerformerRecommendationRow";
 import { SceneRecommendationRow } from "../Scenes/SceneRecommendationRow";
@@ -63,6 +64,14 @@ const RecommendationRow: React.FC<IFilter> = ({ mode, filter, header }) => {
     case GQL.FilterMode.Galleries:
       return (
         <GalleryRecommendationRow
+          isTouch={isTouch}
+          filter={filter}
+          header={header}
+        />
+      );
+    case GQL.FilterMode.Images:
+      return (
+        <ImageRecommendationRow
           isTouch={isTouch}
           filter={filter}
           header={header}
