@@ -1,9 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, IntlShape, useIntl } from "react-intl";
-import {
-  useFindFrontPageFiltersQuery,
-  useFindSavedFilters,
-} from "src/core/StashService";
+import { useFindSavedFilters } from "src/core/StashService";
 import { LoadingIndicator } from "src/components/Shared";
 import { Button, Form, Modal } from "react-bootstrap";
 import {
@@ -11,9 +8,17 @@ import {
   FindSavedFiltersQuery,
   SavedFilter,
 } from "src/core/generated-graphql";
+import { ConfigurationContext } from "src/hooks/Config";
+import {
+  IUIConfig,
+  ISavedFilterRow,
+  ICustomFilter,
+  FrontPageContent,
+  generatePremadeFrontPageContent,
+} from "src/core/config";
 
 interface IAddSavedFilterModalProps {
-  onClose: (id?: string) => void;
+  onClose: (content?: FrontPageContent) => void;
   existingSavedFilterIDs: string[];
   candidates: FindSavedFiltersQuery;
 }
@@ -35,16 +40,53 @@ function filterTitle(intl: IntlShape, f: Pick<SavedFilter, "mode" | "name">) {
   }`;
 }
 
-const AddSavedFilterModal: React.FC<IAddSavedFilterModalProps> = ({
+const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
   onClose,
   existingSavedFilterIDs,
   candidates,
 }) => {
   const intl = useIntl();
 
-  const [value, setValue] = useState("");
+  const premadeFilterOptions = useMemo(
+    () => generatePremadeFrontPageContent(),
+    []
+  );
 
-  const options = useMemo(() => {
+  const [contentType, setContentType] = useState(
+    "front_page.types.premade_filter"
+  );
+  const [premadeFilterIndex, setPremadeFilterIndex] = useState<
+    number | undefined
+  >();
+  const [savedFilter, setSavedFilter] = useState<string | undefined>();
+
+  function onTypeSelected(t: string) {
+    setContentType(t);
+
+    switch (t) {
+      case "front_page.types.premade_filter":
+        setPremadeFilterIndex(0);
+        setSavedFilter(undefined);
+        break;
+      case "front_page.types.saved_filter":
+        setPremadeFilterIndex(undefined);
+        setSavedFilter(undefined);
+        break;
+    }
+  }
+
+  function isValid() {
+    switch (contentType) {
+      case "front_page.types.premade_filter":
+        return premadeFilterIndex !== undefined;
+      case "front_page.types.saved_filter":
+        return savedFilter !== undefined;
+    }
+
+    return false;
+  }
+
+  const savedFilterOptions = useMemo(() => {
     const ret = [
       {
         value: "",
@@ -74,7 +116,58 @@ const AddSavedFilterModal: React.FC<IAddSavedFilterModalProps> = ({
     return ret;
   }, [candidates, existingSavedFilterIDs, intl]);
 
-  function renderSelect() {
+  function renderTypeSelect() {
+    const options = [
+      "front_page.types.premade_filter",
+      "front_page.types.saved_filter",
+    ];
+    return (
+      <Form.Group controlId="filter">
+        <Form.Label>
+          <FormattedMessage id="type" />
+        </Form.Label>
+        <Form.Control
+          as="select"
+          value={contentType}
+          onChange={(e) => onTypeSelected(e.target.value)}
+          className="btn-secondary"
+        >
+          {options.map((c) => (
+            <option key={c} value={c}>
+              {intl.formatMessage({ id: c })}
+            </option>
+          ))}
+        </Form.Control>
+      </Form.Group>
+    );
+  }
+
+  function maybeRenderPremadeFiltersSelect() {
+    if (contentType !== "front_page.types.premade_filter") return;
+
+    return (
+      <Form.Group controlId="premade-filter">
+        <Form.Label>
+          <FormattedMessage id="front_page.types.premade_filter" />
+        </Form.Label>
+        <Form.Control
+          as="select"
+          value={premadeFilterIndex}
+          onChange={(e) => setPremadeFilterIndex(parseInt(e.target.value))}
+          className="btn-secondary"
+        >
+          {premadeFilterOptions.map((c, i) => (
+            <option key={i} value={i}>
+              {intl.formatMessage({ id: c.message!.id }, c.message!.values)}
+            </option>
+          ))}
+        </Form.Control>
+      </Form.Group>
+    );
+  }
+
+  function maybeRenderSavedFiltersSelect() {
+    if (contentType !== "front_page.types.saved_filter") return;
     return (
       <Form.Group controlId="filter">
         <Form.Label>
@@ -82,11 +175,11 @@ const AddSavedFilterModal: React.FC<IAddSavedFilterModalProps> = ({
         </Form.Label>
         <Form.Control
           as="select"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
+          value={savedFilter}
+          onChange={(e) => setSavedFilter(e.target.value)}
           className="btn-secondary"
         >
-          {options.map((c) => (
+          {savedFilterOptions.map((c) => (
             <option key={c.value} value={c.value}>
               {c.text}
             </option>
@@ -96,19 +189,39 @@ const AddSavedFilterModal: React.FC<IAddSavedFilterModalProps> = ({
     );
   }
 
+  function doAdd() {
+    switch (contentType) {
+      case "front_page.types.premade_filter":
+        onClose(premadeFilterOptions[premadeFilterIndex!]);
+        return;
+      case "front_page.types.saved_filter":
+        onClose({
+          __typename: "SavedFilter",
+          savedFilterId: parseInt(savedFilter!),
+        });
+        return;
+    }
+
+    onClose();
+  }
+
   return (
     <Modal show onHide={() => onClose()}>
       <Modal.Header>
         <FormattedMessage id="actions.add" />
       </Modal.Header>
       <Modal.Body>
-        <div className="dialog-content">{renderSelect()}</div>
+        <div className="dialog-content">
+          {renderTypeSelect()}
+          {maybeRenderSavedFiltersSelect()}
+          {maybeRenderPremadeFiltersSelect()}
+        </div>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={() => onClose()}>
           <FormattedMessage id="actions.cancel" />
         </Button>
-        <Button onClick={() => onClose(value)} disabled={value === ""}>
+        <Button onClick={() => doAdd()} disabled={!isValid()}>
           <FormattedMessage id="actions.add" />
         </Button>
       </Modal.Footer>
@@ -117,20 +230,39 @@ const AddSavedFilterModal: React.FC<IAddSavedFilterModalProps> = ({
 };
 
 interface IFilterRowProps {
-  filterID: string;
-  header: String;
-  index: number;
+  content: FrontPageContent;
+  allSavedFilters: Pick<SavedFilter, "id" | "mode" | "name">[];
   onDelete: () => void;
 }
 
-const FilterRow: React.FC<IFilterRowProps> = (props: IFilterRowProps) => {
+const ContentRow: React.FC<IFilterRowProps> = (props: IFilterRowProps) => {
   const intl = useIntl();
+
+  function title() {
+    switch (props.content.__typename) {
+      case "SavedFilter":
+        const savedFilter = props.allSavedFilters.find(
+          (f) =>
+            f.id === (props.content as ISavedFilterRow).savedFilterId.toString()
+        );
+        if (!savedFilter) return "";
+        return filterTitle(intl, savedFilter);
+      case "CustomFilter":
+        const asCustomFilter = props.content as ICustomFilter;
+        if (asCustomFilter.message)
+          return intl.formatMessage(
+            { id: asCustomFilter.message.id },
+            asCustomFilter.message.values
+          );
+        return asCustomFilter.title ?? "";
+    }
+  }
 
   return (
     <div className="recommendation-row">
       <div className="recommendation-row-head">
         <div>
-          <h2>{props.header}</h2>
+          <h2>{title()}</h2>
         </div>
         <Button
           variant="danger"
@@ -145,28 +277,31 @@ const FilterRow: React.FC<IFilterRowProps> = (props: IFilterRowProps) => {
 };
 
 interface IFrontPageConfigProps {
-  onClose: (filterIDs?: string[]) => void;
+  onClose: (content?: FrontPageContent[]) => void;
 }
 
 export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
   onClose,
 }) => {
-  const intl = useIntl();
+  const { configuration, loading } = React.useContext(ConfigurationContext);
 
-  const { loading, data } = useFindFrontPageFiltersQuery();
-  const { data: foo, loading: loading2 } = useFindSavedFilters();
+  const ui = configuration?.ui as IUIConfig;
+
+  const { data: allFilters, loading: loading2 } = useFindSavedFilters();
 
   const [isAdd, setIsAdd] = useState(false);
-  const [currentFilters, setCurrentFilters] = useState<
-    Pick<SavedFilter, "id" | "mode" | "name">[]
-  >([]);
+  const [currentContent, setCurrentContent] = useState<FrontPageContent[]>([]);
   const [dragIndex, setDragIndex] = useState<number | undefined>();
 
   useEffect(() => {
-    if (data && data.findFrontPageFilters) {
-      setCurrentFilters(data?.findFrontPageFilters);
+    if (!allFilters?.findSavedFilters) {
+      return;
     }
-  }, [data]);
+
+    if (ui?.frontPageContent) {
+      setCurrentContent(ui.frontPageContent);
+    }
+  }, [allFilters, ui]);
 
   function onDragStart(event: React.DragEvent<HTMLElement>, index: number) {
     event.dataTransfer.effectAllowed = "move";
@@ -175,10 +310,10 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
 
   function onDragOver(event: React.DragEvent<HTMLElement>, index?: number) {
     if (dragIndex !== undefined && index !== undefined && index !== dragIndex) {
-      const newFilters = [...currentFilters];
+      const newFilters = [...currentContent];
       const moved = newFilters.splice(dragIndex, 1);
       newFilters.splice(index, 0, moved[0]);
-      setCurrentFilters(newFilters);
+      setCurrentContent(newFilters);
       setDragIndex(index);
     }
 
@@ -197,41 +332,40 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
     setDragIndex(undefined);
   }
 
-  if (loading || loading2 || !data) {
+  if (loading || loading2) {
     return <LoadingIndicator />;
   }
 
-  const existingSavedFilterIDs = currentFilters.map((f) => f.id);
+  const existingSavedFilterIDs = currentContent
+    .filter((f) => f.__typename === "SavedFilter")
+    .map((f) => (f as ISavedFilterRow).savedFilterId.toString());
 
-  function addSavedFilter(id?: string) {
+  function addSavedFilter(content?: FrontPageContent) {
     setIsAdd(false);
 
-    if (!id) {
+    if (!content) {
       return;
     }
 
-    const newFilter = foo?.findSavedFilters.find((f) => f.id === id);
-    if (newFilter) {
-      setCurrentFilters([...currentFilters, newFilter]);
-    }
+    setCurrentContent([...currentContent, content]);
   }
 
   function deleteSavedFilter(index: number) {
-    setCurrentFilters(currentFilters.filter((f, i) => i !== index));
+    setCurrentContent(currentContent.filter((f, i) => i !== index));
   }
 
   return (
     <>
-      {isAdd && foo && (
-        <AddSavedFilterModal
-          candidates={foo}
+      {isAdd && allFilters && (
+        <AddContentModal
+          candidates={allFilters}
           existingSavedFilterIDs={existingSavedFilterIDs}
           onClose={addSavedFilter}
         />
       )}
       <div className="recommendations-container recommendations-container-edit">
         <div onDragOver={onDragOverDefault}>
-          {currentFilters.map((filter, index) => (
+          {currentContent.map((content, index) => (
             <div
               key={index}
               draggable
@@ -239,11 +373,10 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
               onDragEnter={(e) => onDragOver(e, index)}
               onDrop={() => onDrop()}
             >
-              <FilterRow
+              <ContentRow
                 key={index}
-                filterID={filter.id}
-                header={filterTitle(intl, filter)}
-                index={index}
+                allSavedFilters={allFilters!.findSavedFilters}
+                content={content}
                 onDelete={() => deleteSavedFilter(index)}
               />
             </div>
@@ -264,7 +397,7 @@ export const FrontPageConfig: React.FC<IFrontPageConfigProps> = ({
           <Button onClick={() => onClose()} variant="secondary">
             <FormattedMessage id={"actions.cancel"} />
           </Button>
-          <Button onClick={() => onClose(currentFilters.map((f) => f.id))}>
+          <Button onClick={() => onClose(currentContent)}>
             <FormattedMessage id={"actions.save"} />
           </Button>
         </div>
