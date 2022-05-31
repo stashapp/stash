@@ -11,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 var ErrOverriddenConfig = errors.New("cannot set overridden value")
@@ -501,23 +500,6 @@ func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.Gene
 	}
 
 	return newAPIKey, nil
-}
-
-func (r *mutationResolver) ConfigureFrontPage(ctx context.Context, input models.ConfigFrontPageInput) (*models.ConfigFrontPageResult, error) {
-	ids, err := stringslice.StringSliceToIntSlice(input.SavedFilterIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	c := config.GetInstance()
-	c.Set(config.FrontPageSavedFilterIDs, ids)
-	if err := c.Write(); err != nil {
-		return nil, err
-	}
-
-	return &models.ConfigFrontPageResult{
-		SavedFilterIDs: input.SavedFilterIDs,
-	}, nil
 }
 
 func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {

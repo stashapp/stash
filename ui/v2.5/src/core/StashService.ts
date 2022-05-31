@@ -58,9 +58,6 @@ export const useFindSavedFilters = (mode?: GQL.FilterMode) =>
     },
   });
 
-export const useFindFrontPageFiltersQuery = () =>
-  GQL.useFindFrontPageFiltersQuery();
-
 export const useFindDefaultFilter = (mode: GQL.FilterMode) =>
   GQL.useFindDefaultFilterQuery({
     variables: {
@@ -851,12 +848,6 @@ export const useConfigureScraping = () =>
   GQL.useConfigureScrapingMutation({
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
-  });
-
-export const useConfigureFrontPage = () =>
-  GQL.useConfigureFrontPageMutation({
-    refetchQueries: getQueryNames([GQL.FindFrontPageFiltersDocument]),
-    update: deleteCache([GQL.FindFrontPageFiltersDocument]),
   });
 
 export const querySystemStatus = () =>

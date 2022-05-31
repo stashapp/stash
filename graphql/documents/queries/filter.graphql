@@ -15,9 +15,3 @@ query FindDefaultFilter($mode: FilterMode!) {
     ...SavedFilterData
   }
 }
-
-query FindFrontPageFilters {
-  findFrontPageFilters {
-    ...SavedFilterData
-  }
-}

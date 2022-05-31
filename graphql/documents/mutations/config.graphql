@@ -40,12 +40,6 @@ mutation ConfigureUI($input: Map!) {
   configureUI(input: $input)
 }
 
-mutation ConfigureFrontPage($input: ConfigFrontPageInput!) {
-  configureFrontPage(input: $input) {
-    savedFilterIDs
-  }
-}
-
 mutation GenerateAPIKey($input: GenerateAPIKeyInput!) {
   generateAPIKey(input: $input)
 }
