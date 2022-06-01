@@ -251,6 +251,7 @@ const sceneMarkerMutationImpactedQueries = [
   GQL.FindScenesDocument,
   GQL.FindSceneMarkersDocument,
   GQL.MarkerStringsDocument,
+  GQL.FindSceneMarkerTagsDocument,
 ];
 
 export const useSceneMarkerCreate = () =>

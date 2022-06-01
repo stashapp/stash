@@ -88,8 +88,8 @@ type DraftEntity struct {
 	ID   *string `json:"id,omitempty"`
 }
 
-func (DraftEntity) IsSceneDraftPerformer() {}
 func (DraftEntity) IsSceneDraftStudio()    {}
+func (DraftEntity) IsSceneDraftPerformer() {}
 func (DraftEntity) IsSceneDraftTag()       {}
 
 type DraftEntityInput struct {
@@ -130,7 +130,9 @@ type Edit struct {
 	Status      VoteStatusEnum `json:"status"`
 	Applied     bool           `json:"applied"`
 	Created     time.Time      `json:"created"`
-	Updated     time.Time      `json:"updated"`
+	Updated     *time.Time     `json:"updated,omitempty"`
+	Closed      *time.Time     `json:"closed,omitempty"`
+	Expires     *time.Time     `json:"expires,omitempty"`
 }
 
 type EditComment struct {
@@ -149,8 +151,6 @@ type EditInput struct {
 	// Not required for create type
 	ID        *string       `json:"id,omitempty"`
 	Operation OperationEnum `json:"operation"`
-	// Required for amending an existing edit
-	EditID *string `json:"edit_id,omitempty"`
 	// Only required for merge type
 	MergeSourceIds []string `json:"merge_source_ids,omitempty"`
 	Comment        *string  `json:"comment,omitempty"`
@@ -239,11 +239,6 @@ type FuzzyDate struct {
 	Accuracy DateAccuracyEnum `json:"accuracy"`
 }
 
-type FuzzyDateInput struct {
-	Date     string           `json:"date"`
-	Accuracy DateAccuracyEnum `json:"accuracy"`
-}
-
 type GrantInviteInput struct {
 	UserID string `json:"user_id"`
 	Amount int    `json:"amount"`
@@ -292,13 +287,6 @@ type Measurements struct {
 	Hip      *int    `json:"hip,omitempty"`
 }
 
-type MeasurementsInput struct {
-	CupSize  *string `json:"cup_size,omitempty"`
-	BandSize *int    `json:"band_size,omitempty"`
-	Waist    *int    `json:"waist,omitempty"`
-	Hip      *int    `json:"hip,omitempty"`
-}
-
 type MultiIDCriterionInput struct {
 	Value    []string          `json:"value,omitempty"`
 	Modifier CriterionModifier `json:"modifier"`
@@ -322,6 +310,7 @@ type Performer struct {
 	Gender         *GenderEnum    `json:"gender,omitempty"`
 	Urls           []*URL         `json:"urls,omitempty"`
 	Birthdate      *FuzzyDate     `json:"birthdate,omitempty"`
+	BirthDate      *string        `json:"birth_date,omitempty"`
 	Age            *int           `json:"age,omitempty"`
 	Ethnicity      *EthnicityEnum `json:"ethnicity,omitempty"`
 	Country        *string        `json:"country,omitempty"`
@@ -330,6 +319,10 @@ type Performer struct {
 	// Height in cm
 	Height          *int                `json:"height,omitempty"`
 	Measurements    *Measurements       `json:"measurements,omitempty"`
+	CupSize         *string             `json:"cup_size,omitempty"`
+	BandSize        *int                `json:"band_size,omitempty"`
+	WaistSize       *int                `json:"waist_size,omitempty"`
+	HipSize         *int                `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum     `json:"breast_type,omitempty"`
 	CareerStartYear *int                `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                `json:"career_end_year,omitempty"`
@@ -346,8 +339,8 @@ type Performer struct {
 	Updated         time.Time           `json:"updated"`
 }
 
-func (Performer) IsSceneDraftPerformer() {}
 func (Performer) IsEditTarget()          {}
+func (Performer) IsSceneDraftPerformer() {}
 
 type PerformerAppearance struct {
 	Performer *Performer `json:"performer,omitempty"`
@@ -367,13 +360,16 @@ type PerformerCreateInput struct {
 	Aliases         []string                 `json:"aliases,omitempty"`
 	Gender          *GenderEnum              `json:"gender,omitempty"`
 	Urls            []*URLInput              `json:"urls,omitempty"`
-	Birthdate       *FuzzyDateInput          `json:"birthdate,omitempty"`
+	Birthdate       *string                  `json:"birthdate,omitempty"`
 	Ethnicity       *EthnicityEnum           `json:"ethnicity,omitempty"`
 	Country         *string                  `json:"country,omitempty"`
 	EyeColor        *EyeColorEnum            `json:"eye_color,omitempty"`
 	HairColor       *HairColorEnum           `json:"hair_color,omitempty"`
 	Height          *int                     `json:"height,omitempty"`
-	Measurements    *MeasurementsInput       `json:"measurements,omitempty"`
+	CupSize         *string                  `json:"cup_size,omitempty"`
+	BandSize        *int                     `json:"band_size,omitempty"`
+	WaistSize       *int                     `json:"waist_size,omitempty"`
+	HipSize         *int                     `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum          `json:"breast_type,omitempty"`
 	CareerStartYear *int                     `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                     `json:"career_end_year,omitempty"`
@@ -388,6 +384,7 @@ type PerformerDestroyInput struct {
 }
 
 type PerformerDraft struct {
+	ID              *string  `json:"id,omitempty"`
 	Name            string   `json:"name"`
 	Aliases         *string  `json:"aliases,omitempty"`
 	Gender          *string  `json:"gender,omitempty"`
@@ -410,6 +407,7 @@ type PerformerDraft struct {
 func (PerformerDraft) IsDraftData() {}
 
 type PerformerDraftInput struct {
+	ID              *string         `json:"id,omitempty"`
 	Name            string          `json:"name"`
 	Aliases         *string         `json:"aliases,omitempty"`
 	Gender          *string         `json:"gender,omitempty"`
@@ -430,19 +428,18 @@ type PerformerDraftInput struct {
 }
 
 type PerformerEdit struct {
-	Name              *string        `json:"name,omitempty"`
-	Disambiguation    *string        `json:"disambiguation,omitempty"`
-	AddedAliases      []string       `json:"added_aliases,omitempty"`
-	RemovedAliases    []string       `json:"removed_aliases,omitempty"`
-	Gender            *GenderEnum    `json:"gender,omitempty"`
-	AddedUrls         []*URL         `json:"added_urls,omitempty"`
-	RemovedUrls       []*URL         `json:"removed_urls,omitempty"`
-	Birthdate         *string        `json:"birthdate,omitempty"`
-	BirthdateAccuracy *string        `json:"birthdate_accuracy,omitempty"`
-	Ethnicity         *EthnicityEnum `json:"ethnicity,omitempty"`
-	Country           *string        `json:"country,omitempty"`
-	EyeColor          *EyeColorEnum  `json:"eye_color,omitempty"`
-	HairColor         *HairColorEnum `json:"hair_color,omitempty"`
+	Name           *string        `json:"name,omitempty"`
+	Disambiguation *string        `json:"disambiguation,omitempty"`
+	AddedAliases   []string       `json:"added_aliases,omitempty"`
+	RemovedAliases []string       `json:"removed_aliases,omitempty"`
+	Gender         *GenderEnum    `json:"gender,omitempty"`
+	AddedUrls      []*URL         `json:"added_urls,omitempty"`
+	RemovedUrls    []*URL         `json:"removed_urls,omitempty"`
+	Birthdate      *string        `json:"birthdate,omitempty"`
+	Ethnicity      *EthnicityEnum `json:"ethnicity,omitempty"`
+	Country        *string        `json:"country,omitempty"`
+	EyeColor       *EyeColorEnum  `json:"eye_color,omitempty"`
+	HairColor      *HairColorEnum `json:"hair_color,omitempty"`
 	// Height in cm
 	Height           *int                `json:"height,omitempty"`
 	CupSize          *string             `json:"cup_size,omitempty"`
@@ -459,6 +456,11 @@ type PerformerEdit struct {
 	AddedImages      []*Image            `json:"added_images,omitempty"`
 	RemovedImages    []*Image            `json:"removed_images,omitempty"`
 	DraftID          *string             `json:"draft_id,omitempty"`
+	Aliases          []string            `json:"aliases,omitempty"`
+	Urls             []*URL              `json:"urls,omitempty"`
+	Images           []*Image            `json:"images,omitempty"`
+	Tattoos          []*BodyModification `json:"tattoos,omitempty"`
+	Piercings        []*BodyModification `json:"piercings,omitempty"`
 }
 
 func (PerformerEdit) IsEditDetails() {}
@@ -469,13 +471,16 @@ type PerformerEditDetailsInput struct {
 	Aliases         []string                 `json:"aliases,omitempty"`
 	Gender          *GenderEnum              `json:"gender,omitempty"`
 	Urls            []*URLInput              `json:"urls,omitempty"`
-	Birthdate       *FuzzyDateInput          `json:"birthdate,omitempty"`
+	Birthdate       *string                  `json:"birthdate,omitempty"`
 	Ethnicity       *EthnicityEnum           `json:"ethnicity,omitempty"`
 	Country         *string                  `json:"country,omitempty"`
 	EyeColor        *EyeColorEnum            `json:"eye_color,omitempty"`
 	HairColor       *HairColorEnum           `json:"hair_color,omitempty"`
 	Height          *int                     `json:"height,omitempty"`
-	Measurements    *MeasurementsInput       `json:"measurements,omitempty"`
+	CupSize         *string                  `json:"cup_size,omitempty"`
+	BandSize        *int                     `json:"band_size,omitempty"`
+	WaistSize       *int                     `json:"waist_size,omitempty"`
+	HipSize         *int                     `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum          `json:"breast_type,omitempty"`
 	CareerStartYear *int                     `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                     `json:"career_end_year,omitempty"`
@@ -508,7 +513,7 @@ type PerformerEditOptionsInput struct {
 }
 
 type PerformerQueryInput struct {
-	// Searches name and aliases - assumes like query unless quoted
+	// Searches name and disambiguation - assumes like query unless quoted
 	Names *string `json:"names,omitempty"`
 	// Searches name only - assumes like query unless quoted
 	Name *string `json:"name,omitempty"`
@@ -555,13 +560,16 @@ type PerformerUpdateInput struct {
 	Aliases         []string                 `json:"aliases,omitempty"`
 	Gender          *GenderEnum              `json:"gender,omitempty"`
 	Urls            []*URLInput              `json:"urls,omitempty"`
-	Birthdate       *FuzzyDateInput          `json:"birthdate,omitempty"`
+	Birthdate       *string                  `json:"birthdate,omitempty"`
 	Ethnicity       *EthnicityEnum           `json:"ethnicity,omitempty"`
 	Country         *string                  `json:"country,omitempty"`
 	EyeColor        *EyeColorEnum            `json:"eye_color,omitempty"`
 	HairColor       *HairColorEnum           `json:"hair_color,omitempty"`
 	Height          *int                     `json:"height,omitempty"`
-	Measurements    *MeasurementsInput       `json:"measurements,omitempty"`
+	CupSize         *string                  `json:"cup_size,omitempty"`
+	BandSize        *int                     `json:"band_size,omitempty"`
+	WaistSize       *int                     `json:"waist_size,omitempty"`
+	HipSize         *int                     `json:"hip_size,omitempty"`
 	BreastType      *BreastTypeEnum          `json:"breast_type,omitempty"`
 	CareerStartYear *int                     `json:"career_start_year,omitempty"`
 	CareerEndYear   *int                     `json:"career_end_year,omitempty"`
@@ -629,6 +637,7 @@ type Scene struct {
 	Title        *string                `json:"title,omitempty"`
 	Details      *string                `json:"details,omitempty"`
 	Date         *string                `json:"date,omitempty"`
+	ReleaseDate  *string                `json:"release_date,omitempty"`
 	Urls         []*URL                 `json:"urls,omitempty"`
 	Studio       *Studio                `json:"studio,omitempty"`
 	Tags         []*Tag                 `json:"tags,omitempty"`
@@ -650,7 +659,7 @@ type SceneCreateInput struct {
 	Title        *string                     `json:"title,omitempty"`
 	Details      *string                     `json:"details,omitempty"`
 	Urls         []*URLInput                 `json:"urls,omitempty"`
-	Date         *string                     `json:"date,omitempty"`
+	Date         string                      `json:"date"`
 	StudioID     *string                     `json:"studio_id,omitempty"`
 	Performers   []*PerformerAppearanceInput `json:"performers,omitempty"`
 	TagIds       []string                    `json:"tag_ids,omitempty"`
@@ -666,6 +675,7 @@ type SceneDestroyInput struct {
 }
 
 type SceneDraft struct {
+	ID           *string               `json:"id,omitempty"`
 	Title        *string               `json:"title,omitempty"`
 	Details      *string               `json:"details,omitempty"`
 	URL          *URL                  `json:"url,omitempty"`
@@ -678,18 +688,6 @@ type SceneDraft struct {
 }
 
 func (SceneDraft) IsDraftData() {}
-
-type SceneDraftInput struct {
-	Title        *string             `json:"title,omitempty"`
-	Details      *string             `json:"details,omitempty"`
-	URL          *string             `json:"url,omitempty"`
-	Date         *string             `json:"date,omitempty"`
-	Studio       *DraftEntityInput   `json:"studio,omitempty"`
-	Performers   []*DraftEntityInput `json:"performers,omitempty"`
-	Tags         []*DraftEntityInput `json:"tags,omitempty"`
-	Image        *graphql.Upload     `json:"image,omitempty"`
-	Fingerprints []*FingerprintInput `json:"fingerprints,omitempty"`
-}
 
 type SceneEdit struct {
 	Title       *string `json:"title,omitempty"`
@@ -711,6 +709,11 @@ type SceneEdit struct {
 	Director            *string                `json:"director,omitempty"`
 	Code                *string                `json:"code,omitempty"`
 	DraftID             *string                `json:"draft_id,omitempty"`
+	Urls                []*URL                 `json:"urls,omitempty"`
+	Performers          []*PerformerAppearance `json:"performers,omitempty"`
+	Tags                []*Tag                 `json:"tags,omitempty"`
+	Images              []*Image               `json:"images,omitempty"`
+	Fingerprints        []*Fingerprint         `json:"fingerprints,omitempty"`
 }
 
 func (SceneEdit) IsEditDetails() {}
@@ -865,6 +868,8 @@ type StudioEdit struct {
 	Parent        *Studio  `json:"parent,omitempty"`
 	AddedImages   []*Image `json:"added_images,omitempty"`
 	RemovedImages []*Image `json:"removed_images,omitempty"`
+	Images        []*Image `json:"images,omitempty"`
+	Urls          []*URL   `json:"urls,omitempty"`
 }
 
 func (StudioEdit) IsEditDetails() {}
@@ -963,6 +968,7 @@ type TagEdit struct {
 	AddedAliases   []string     `json:"added_aliases,omitempty"`
 	RemovedAliases []string     `json:"removed_aliases,omitempty"`
 	Category       *TagCategory `json:"category,omitempty"`
+	Aliases        []string     `json:"aliases,omitempty"`
 }
 
 func (TagEdit) IsEditDetails() {}
@@ -1266,16 +1272,18 @@ type EditSortEnum string
 const (
 	EditSortEnumCreatedAt EditSortEnum = "CREATED_AT"
 	EditSortEnumUpdatedAt EditSortEnum = "UPDATED_AT"
+	EditSortEnumClosedAt  EditSortEnum = "CLOSED_AT"
 )
 
 var AllEditSortEnum = []EditSortEnum{
 	EditSortEnumCreatedAt,
 	EditSortEnumUpdatedAt,
+	EditSortEnumClosedAt,
 }
 
 func (e EditSortEnum) IsValid() bool {
 	switch e {
-	case EditSortEnumCreatedAt, EditSortEnumUpdatedAt:
+	case EditSortEnumCreatedAt, EditSortEnumUpdatedAt, EditSortEnumClosedAt:
 		return true
 	}
 	return false

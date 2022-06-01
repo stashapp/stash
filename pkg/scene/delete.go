@@ -48,13 +48,13 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 		files = append(files, normalPath)
 	}
 
-	streamPreviewPath := d.Paths.Scene.GetStreamPreviewPath(sceneHash)
+	streamPreviewPath := d.Paths.Scene.GetVideoPreviewPath(sceneHash)
 	exists, _ = fsutil.FileExists(streamPreviewPath)
 	if exists {
 		files = append(files, streamPreviewPath)
 	}
 
-	streamPreviewImagePath := d.Paths.Scene.GetStreamPreviewImagePath(sceneHash)
+	streamPreviewImagePath := d.Paths.Scene.GetWebpPreviewPath(sceneHash)
 	exists, _ = fsutil.FileExists(streamPreviewImagePath)
 	if exists {
 		files = append(files, streamPreviewImagePath)
@@ -90,9 +90,9 @@ func (d *FileDeleter) MarkGeneratedFiles(scene *models.Scene) error {
 // MarkMarkerFiles deletes generated files for a scene marker with the
 // provided scene and timestamp.
 func (d *FileDeleter) MarkMarkerFiles(scene *models.Scene, seconds int) error {
-	videoPath := d.Paths.SceneMarkers.GetStreamPath(scene.GetHash(d.FileNamingAlgo), seconds)
-	imagePath := d.Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(d.FileNamingAlgo), seconds)
-	screenshotPath := d.Paths.SceneMarkers.GetStreamScreenshotPath(scene.GetHash(d.FileNamingAlgo), seconds)
+	videoPath := d.Paths.SceneMarkers.GetVideoPreviewPath(scene.GetHash(d.FileNamingAlgo), seconds)
+	imagePath := d.Paths.SceneMarkers.GetWebpPreviewPath(scene.GetHash(d.FileNamingAlgo), seconds)
+	screenshotPath := d.Paths.SceneMarkers.GetScreenshotPath(scene.GetHash(d.FileNamingAlgo), seconds)
 
 	var files []string
 

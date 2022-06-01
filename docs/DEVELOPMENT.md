@@ -15,12 +15,12 @@ NOTE: You may need to run the `go get` commands outside the project directory to
 ### Windows
 
 1. Download and install [Go for Windows](https://golang.org/dl/)
-2. Download and install [MingW](https://sourceforge.net/projects/mingw-w64/)
+2. Download and extract [MingW64](https://sourceforge.net/projects/mingw-w64/files/) (scroll down and select x86_64-posix-seh, dont use the autoinstaller it doesnt work)
 3. Search for "advanced system settings" and open the system properties dialog.
     1. Click the `Environment Variables` button
-    2. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
+    2. Under system variables find the `Path`.  Edit and add `C:\MinGW\bin` (replace with the correct path to where you extracted MingW64).
 
-NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
+NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For example `make pre-ui` will be `mingw32-make pre-ui`
 
 ### macOS
 

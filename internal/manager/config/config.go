@@ -145,12 +145,13 @@ const (
 	defaultWallPlayback = "video"
 
 	// Image lightbox options
-	legacyImageLightboxSlideshowDelay = "slideshow_delay"
-	ImageLightboxSlideshowDelay       = "image_lightbox.slideshow_delay"
-	ImageLightboxDisplayMode          = "image_lightbox.display_mode"
-	ImageLightboxScaleUp              = "image_lightbox.scale_up"
-	ImageLightboxResetZoomOnNav       = "image_lightbox.reset_zoom_on_nav"
-	ImageLightboxScrollMode           = "image_lightbox.scroll_mode"
+	legacyImageLightboxSlideshowDelay       = "slideshow_delay"
+	ImageLightboxSlideshowDelay             = "image_lightbox.slideshow_delay"
+	ImageLightboxDisplayMode                = "image_lightbox.display_mode"
+	ImageLightboxScaleUp                    = "image_lightbox.scale_up"
+	ImageLightboxResetZoomOnNav             = "image_lightbox.reset_zoom_on_nav"
+	ImageLightboxScrollMode                 = "image_lightbox.scroll_mode"
+	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
 
 	defaultImageLightboxSlideshowDelay = 5000
 
@@ -954,6 +955,9 @@ func (i *Instance) GetImageLightboxOptions() models.ConfigImageLightboxResult {
 	if v := i.viperWith(ImageLightboxScrollMode); v != nil {
 		mode := models.ImageLightboxScrollMode(v.GetString(ImageLightboxScrollMode))
 		ret.ScrollMode = &mode
+	}
+	if v := i.viperWith(ImageLightboxScrollAttemptsBeforeChange); v != nil {
+		ret.ScrollAttemptsBeforeChange = v.GetInt(ImageLightboxScrollAttemptsBeforeChange)
 	}
 
 	return ret

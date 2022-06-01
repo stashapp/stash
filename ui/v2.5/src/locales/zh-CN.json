@@ -107,6 +107,7 @@
     },
     "temp_disable": "暂时关闭…",
     "temp_enable": "暂时启用…",
+    "unset": "重设",
     "use_default": "使用默认",
     "view_random": "随机查看"
   },
@@ -190,7 +191,7 @@
       "metadata_providers": "元数据提供者",
       "plugins": "插件",
       "scraping": "挖掘",
-      "security": "安保",
+      "security": "安全性",
       "services": "服务",
       "system": "系统",
       "tasks": "任务",
@@ -279,6 +280,10 @@
       "number_of_parallel_task_for_scan_generation_head": "扫描/生成的并行任务数量",
       "parallel_scan_head": "并行扫描/生成",
       "preview_generation": "生成预览",
+      "python_path": {
+        "description": "Python 执行程序的位置。给网页挖掘器和插件的源文件使用。如果没有，python会从环境变量找到",
+        "heading": "Python 路径"
+      },
       "scraper_user_agent": "挖掘器用户代理(User Agent)",
       "scraper_user_agent_desc": "挖掘器运行时的用户代理名(User Agent)",
       "scrapers_path": {
@@ -444,9 +449,16 @@
         "description": "交互式脚本播放的时间偏移量（以毫秒为单位）。",
         "heading": "Funscript偏移量（毫秒）"
       },
+      "handy_connection": {
+        "connect": "连接",
+        "sync": "同步"
+      },
       "handy_connection_key": {
         "description": "用于互动场景的快速连接密钥。设定此密匙会允许Stash分享你当前的短片资料到handyfeeling.com",
         "heading": "快速连接密钥"
+      },
+      "image_lightbox": {
+        "heading": "图片灯箱"
       },
       "images": {
         "heading": "图片",
@@ -516,7 +528,7 @@
       },
       "slideshow_delay": {
         "description": "在影音墙模式下，图库可用幻灯片功能",
-        "heading": "幻灯片延迟"
+        "heading": "幻灯片延迟（秒）"
       },
       "title": "用户界面"
     }
@@ -694,6 +706,7 @@
     "warmth": "色温"
   },
   "ethnicity": "人种",
+  "existing_value": "现值",
   "eye_color": "瞳孔颜色",
   "fake_tits": "假奶",
   "false": "假",
@@ -721,9 +734,15 @@
     "TRANSGENDER_MALE": "跨性别男性"
   },
   "hair_color": "头发颜色",
+  "handy_connection_status": {
+    "connecting": "连接中",
+    "disconnected": "连接已断开",
+    "syncing": "正在和服务器同步"
+  },
   "hasMarkers": "含有章节标记",
   "height": "身高",
   "help": "说明",
+  "ignore_auto_tag": "忽略自动标签",
   "image": "图片",
   "image_count": "图片数量",
   "images": "图片",
@@ -825,6 +844,11 @@
   "queue": "序列",
   "random": "随机",
   "rating": "评分",
+  "recently_added_performers": "最近新增的演员",
+  "recently_added_studios": "最近新增的工作室",
+  "recently_released_galleries": "最近新增的图片",
+  "recently_released_movies": "最近新增的电影",
+  "recently_released_scenes": "最近新增的短片",
   "resolution": "分辨率",
   "scene": "短片",
   "sceneTagger": "短片标记器",
@@ -928,6 +952,7 @@
     "submission_failed": "提交失败",
     "submission_successful": "成功提交"
   },
+  "statistics": "统计",
   "stats": {
     "image_size": "图片大小",
     "scenes_duration": "短片长度",
@@ -969,6 +994,7 @@
   "updated_at": "更新时间",
   "url": "链接",
   "videos": "视频",
+  "view_all": "查看全部",
   "weight": "体重",
   "years_old": "岁"
 }

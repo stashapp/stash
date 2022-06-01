@@ -57,40 +57,39 @@ $sceneTabWidth: 450px;
     }
   }
 
-  .vjs-touch-enabled {
-    margin: 0 -15px;
-    width: 100vw;
+  @media (pointer: coarse) {
+    .vjs-touch-enabled {
+      &.vjs-has-started .vjs-big-button-group {
+        display: flex;
+        opacity: 1;
+        visibility: visible;
+      }
 
-    &.vjs-has-started .vjs-big-button-group {
-      display: flex;
-      opacity: 1;
-      visibility: visible;
-    }
+      &.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group {
+        opacity: 0;
+        pointer-events: none;
+        transition: visibility 1s, opacity 1s;
+        visibility: visible;
+      }
 
-    &.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group {
-      opacity: 0;
-      pointer-events: none;
-      transition: visibility 1s, opacity 1s;
-      visibility: visible;
-    }
+      .vjs-big-play-pause-button .vjs-icon-placeholder::before {
+        content: "\f101";
+        font-family: VideoJS;
+      }
 
-    .vjs-big-play-pause-button .vjs-icon-placeholder::before {
-      content: "\f101";
-      font-family: VideoJS;
-    }
+      &.vjs-playing .vjs-big-play-pause-button .vjs-icon-placeholder::before {
+        content: "\f103";
+      }
 
-    &.vjs-playing .vjs-big-play-pause-button .vjs-icon-placeholder::before {
-      content: "\f103";
-    }
+      // hide the regular play/pause button on touch screens
+      .vjs-play-control {
+        display: none;
+      }
 
-    // hide the regular play/pause button on touch screens
-    .vjs-play-control {
-      display: none;
-    }
-
-    // hide the regular seek buttons on touch screens
-    .vjs-control-bar .vjs-seek-button {
-      display: none;
+      // hide the regular seek buttons on touch screens
+      .vjs-control-bar .vjs-seek-button {
+        display: none;
+      }
     }
   }
 
@@ -215,6 +214,11 @@ $sceneTabWidth: 450px;
 @media (max-width: 1199px) {
   .scene-tabs {
     padding-right: 15px;
+  }
+
+  .scene-player-container {
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 @media (min-width: 1200px) {
@@ -486,6 +490,10 @@ $sceneTabWidth: 450px;
   top: -5.4em;
   width: 160px;
   z-index: 1;
+}
+
+.vjs-text-track-settings select {
+  background: #fff;
 }
 
 .VideoPlayer

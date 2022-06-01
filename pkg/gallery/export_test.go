@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -79,10 +80,10 @@ func createFullJSONGallery() *jsonschema.Gallery {
 		Rating:    rating,
 		Organized: organized,
 		URL:       url,
-		CreatedAt: models.JSONTime{
+		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
-		UpdatedAt: models.JSONTime{
+		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
 	}

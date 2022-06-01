@@ -6,23 +6,24 @@ import (
 )
 
 type sceneMarkerPaths struct {
-	generated generatedPaths
+	generatedPaths
 }
 
 func newSceneMarkerPaths(p Paths) *sceneMarkerPaths {
-	sp := sceneMarkerPaths{}
-	sp.generated = *p.Generated
+	sp := sceneMarkerPaths{
+		generatedPaths: *p.Generated,
+	}
 	return &sp
 }
 
-func (sp *sceneMarkerPaths) GetStreamPath(checksum string, seconds int) string {
-	return filepath.Join(sp.generated.Markers, checksum, strconv.Itoa(seconds)+".mp4")
+func (sp *sceneMarkerPaths) GetVideoPreviewPath(checksum string, seconds int) string {
+	return filepath.Join(sp.Markers, checksum, strconv.Itoa(seconds)+".mp4")
 }
 
-func (sp *sceneMarkerPaths) GetStreamPreviewImagePath(checksum string, seconds int) string {
-	return filepath.Join(sp.generated.Markers, checksum, strconv.Itoa(seconds)+".webp")
+func (sp *sceneMarkerPaths) GetWebpPreviewPath(checksum string, seconds int) string {
+	return filepath.Join(sp.Markers, checksum, strconv.Itoa(seconds)+".webp")
 }
 
-func (sp *sceneMarkerPaths) GetStreamScreenshotPath(checksum string, seconds int) string {
-	return filepath.Join(sp.generated.Markers, checksum, strconv.Itoa(seconds)+".jpg")
+func (sp *sceneMarkerPaths) GetScreenshotPath(checksum string, seconds int) string {
+	return filepath.Join(sp.Markers, checksum, strconv.Itoa(seconds)+".jpg")
 }

@@ -1,0 +1,35 @@
+div.scene-interactive-status {
+  opacity: 0.75;
+  padding: 0.75rem;
+  position: absolute;
+
+  &.interactive-status-disconnected,
+  &.interactive-status-error svg {
+    color: $danger;
+  }
+
+  &.interactive-status-connecting svg,
+  &.interactive-status-syncing svg,
+  &.interactive-status-uploading svg {
+    animation: 1s ease 0s infinite alternate fadepulse;
+    color: $warning;
+  }
+
+  &.interactive-status-ready svg {
+    color: $success;
+  }
+
+  .status-text {
+    margin-left: 0.5rem;
+  }
+}
+
+@keyframes fadepulse {
+  0% {
+    opacity: 0.4;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}

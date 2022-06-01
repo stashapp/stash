@@ -18,6 +18,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/movie"
@@ -613,7 +614,7 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 
 var currentLocation = time.Now().Location()
 
-func (t *ImportTask) getTimeFromJSONTime(jsonTime models.JSONTime) time.Time {
+func (t *ImportTask) getTimeFromJSONTime(jsonTime json.JSONTime) time.Time {
 	if currentLocation != nil {
 		if jsonTime.IsZero() {
 			return time.Now().In(currentLocation)

@@ -121,6 +121,7 @@
   "birth_year": "Birth Year",
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
+  "captions": "Captions",
   "career_length": "Career Length",
   "component_tagger": {
     "config": {
@@ -453,6 +454,16 @@
         "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com",
         "heading": "Handy Connection Key"
       },
+      "handy_connection": {
+        "connect": "Connect",
+        "server_offset": {
+          "heading": "Server Offset"
+        },
+        "status": {
+          "heading": "Handy Connection Status"
+        },
+        "sync": "Sync"
+      },
       "images": {
         "heading": "Images",
         "options": {
@@ -521,6 +532,10 @@
           "display_title": "Display title and tags",
           "toggle_sound": "Enable sound"
         }
+      },
+      "scroll_attempts_before_change": {
+        "description": "Number of times to attempt to scroll before moving to the next/previous item. Only applies for Pan Y scroll mode.",
+        "heading": "Scroll attempts before transition"
       },
       "slideshow_delay": {
         "description": "Slideshow is available in galleries when in wall view mode",
@@ -701,6 +716,7 @@
     "scale": "Scale",
     "warmth": "Warmth"
   },
+  "empty_server": "Add some scenes to your server to view recommendations on this page.",
   "ethnicity": "Ethnicity",
   "existing_value": "existing value",
   "eye_color": "Eye Colour",
@@ -730,6 +746,15 @@
     "NON_BINARY": "Non-Binary"
   },
   "hair_color": "Hair Colour",
+  "handy_connection_status": {
+    "connecting": "Connecting",
+    "disconnected": "Disconnected",
+    "error": "Error connecting to Handy",
+    "missing": "Missing",
+    "ready": "Ready",
+    "syncing": "Syncing with server",
+    "uploading": "Uploading script"
+  },
   "hasMarkers": "Has Markers",
   "height": "Height",
   "help": "Help",
@@ -800,6 +825,11 @@
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",
+  "recently_added_performers": "Recently Added Performers",
+  "recently_added_studios": "Recently Added Studios",
+  "recently_released_galleries": "Recently Released Galleries",
+  "recently_released_movies": "Recently Released Movies",
+  "recently_released_scenes": "Recently Released Scenes",
   "resolution": "Resolution",
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
@@ -897,6 +927,7 @@
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
+  "statistics": "Statistics",
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
@@ -938,6 +969,7 @@
   "updated_at": "Updated At",
   "url": "URL",
   "videos": "Videos",
+  "view_all": "View All",
   "weight": "Weight",
   "years_old": "years old",
   "stashbox": {

@@ -1,6 +1,8 @@
 package scene
 
 import (
+	"bytes"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -23,25 +25,26 @@ func MigrateHash(p *paths.Paths, oldHash string, newHash string) {
 	newPath = scenePaths.GetScreenshotPath(newHash)
 	migrateSceneFiles(oldPath, newPath)
 
-	oldPath = scenePaths.GetStreamPreviewPath(oldHash)
-	newPath = scenePaths.GetStreamPreviewPath(newHash)
+	oldPath = scenePaths.GetVideoPreviewPath(oldHash)
+	newPath = scenePaths.GetVideoPreviewPath(newHash)
 	migrateSceneFiles(oldPath, newPath)
 
-	oldPath = scenePaths.GetStreamPreviewImagePath(oldHash)
-	newPath = scenePaths.GetStreamPreviewImagePath(newHash)
+	oldPath = scenePaths.GetWebpPreviewPath(oldHash)
+	newPath = scenePaths.GetWebpPreviewPath(newHash)
 	migrateSceneFiles(oldPath, newPath)
 
 	oldPath = scenePaths.GetTranscodePath(oldHash)
 	newPath = scenePaths.GetTranscodePath(newHash)
 	migrateSceneFiles(oldPath, newPath)
 
-	oldPath = scenePaths.GetSpriteVttFilePath(oldHash)
-	newPath = scenePaths.GetSpriteVttFilePath(newHash)
-	migrateSceneFiles(oldPath, newPath)
+	oldVttPath := scenePaths.GetSpriteVttFilePath(oldHash)
+	newVttPath := scenePaths.GetSpriteVttFilePath(newHash)
+	migrateSceneFiles(oldVttPath, newVttPath)
 
 	oldPath = scenePaths.GetSpriteImageFilePath(oldHash)
 	newPath = scenePaths.GetSpriteImageFilePath(newHash)
 	migrateSceneFiles(oldPath, newPath)
+	migrateVttFile(newVttPath, oldPath, newPath)
 
 	oldPath = scenePaths.GetInteractiveHeatmapPath(oldHash)
 	newPath = scenePaths.GetInteractiveHeatmapPath(newHash)
@@ -60,5 +63,24 @@ func migrateSceneFiles(oldName, newName string) {
 		if err := os.Rename(oldName, newName); err != nil {
 			logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
 		}
+	}
+}
+
+// #2481: migrate vtt file contents in addition to renaming
+func migrateVttFile(vttPath, oldSpritePath, newSpritePath string) {
+	contents, err := ioutil.ReadFile(vttPath)
+	if err != nil {
+		logger.Errorf("Error reading %s for vtt migration: %v", vttPath, err)
+		return
+	}
+
+	oldSpriteBasename := filepath.Base(oldSpritePath)
+	newSpriteBasename := filepath.Base(newSpritePath)
+
+	contents = bytes.ReplaceAll(contents, []byte(oldSpriteBasename), []byte(newSpriteBasename))
+
+	if err := ioutil.WriteFile(vttPath, contents, 0644); err != nil {
+		logger.Errorf("Error writing %s for vtt migration: %v", vttPath, err)
+		return
 	}
 }

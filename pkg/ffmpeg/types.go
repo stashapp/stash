@@ -1,9 +1,10 @@
 package ffmpeg
 
 import (
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/json"
 )
 
+// FFProbeJSON is the JSON output of ffprobe.
 type FFProbeJSON struct {
 	Format struct {
 		BitRate        string `json:"bit_rate"`
@@ -17,13 +18,13 @@ type FFProbeJSON struct {
 		Size           string `json:"size"`
 		StartTime      string `json:"start_time"`
 		Tags           struct {
-			CompatibleBrands string          `json:"compatible_brands"`
-			CreationTime     models.JSONTime `json:"creation_time"`
-			Encoder          string          `json:"encoder"`
-			MajorBrand       string          `json:"major_brand"`
-			MinorVersion     string          `json:"minor_version"`
-			Title            string          `json:"title"`
-			Comment          string          `json:"comment"`
+			CompatibleBrands string        `json:"compatible_brands"`
+			CreationTime     json.JSONTime `json:"creation_time"`
+			Encoder          string        `json:"encoder"`
+			MajorBrand       string        `json:"major_brand"`
+			MinorVersion     string        `json:"minor_version"`
+			Title            string        `json:"title"`
+			Comment          string        `json:"comment"`
 		} `json:"tags"`
 	} `json:"format"`
 	Streams []FFProbeStream `json:"streams"`
@@ -33,6 +34,7 @@ type FFProbeJSON struct {
 	} `json:"error"`
 }
 
+// FFProbeStream is a JSON representation of an ffmpeg stream.
 type FFProbeStream struct {
 	AvgFrameRate       string `json:"avg_frame_rate"`
 	BitRate            string `json:"bit_rate"`
@@ -79,10 +81,10 @@ type FFProbeStream struct {
 	StartPts          int    `json:"start_pts"`
 	StartTime         string `json:"start_time"`
 	Tags              struct {
-		CreationTime models.JSONTime `json:"creation_time"`
-		HandlerName  string          `json:"handler_name"`
-		Language     string          `json:"language"`
-		Rotate       string          `json:"rotate"`
+		CreationTime json.JSONTime `json:"creation_time"`
+		HandlerName  string        `json:"handler_name"`
+		Language     string        `json:"language"`
+		Rotate       string        `json:"rotate"`
 	} `json:"tags"`
 	TimeBase      string `json:"time_base"`
 	Width         int    `json:"width,omitempty"`

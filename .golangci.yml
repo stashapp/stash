@@ -20,7 +20,7 @@ linters:
     # Linters added by the stash project.
     # - contextcheck
     - dogsled
-    # - errchkjson
+    - errchkjson
     - errorlint
     # - exhaustive
     - exportloopref
