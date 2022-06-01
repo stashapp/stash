@@ -129,6 +129,12 @@ query FindScenesByFullFingerprints($fingerprints: [FingerprintQueryInput!]!) {
   }
 }
 
+query FindScenesBySceneFingerprints($fingerprints: [[FingerprintQueryInput!]!]!) {
+  findScenesBySceneFingerprints(fingerprints: $fingerprints) {
+    ...SceneFragment
+  }
+}
+
 query SearchScene($term: String!) {
   searchScene(term: $term) {
     ...SceneFragment
