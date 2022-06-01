@@ -28,10 +28,12 @@
     "delete_file": "Apagar arquivo",
     "delete_file_and_funscript": "Deletar arquivo (e funscript)",
     "delete_generated_supporting_files": "Apagar arquivos gerados de suporte",
+    "delete_stashid": "Deletar StashID",
     "disallow": "Não permitir",
     "download": "Download",
     "download_backup": "Download backup",
     "edit": "Editar",
+    "edit_entity": "Editar {entityType}",
     "export": "Exportar…",
     "export_all": "Exportar tudo…",
     "find": "Encontrar",
@@ -50,11 +52,13 @@
     "ignore": "Ignorar",
     "import": "Importar…",
     "import_from_file": "Importar do arquivo",
+    "logout": "Sair",
     "merge": "Unir",
     "merge_from": "Unir do",
     "merge_into": "Unir em",
     "next_action": "Próximo",
     "not_running": "não realizado",
+    "open_in_external_player": "Abrir em um reprodutor externo",
     "open_random": "Abrir aleatório",
     "overwrite": "Sobrescrever",
     "play_random": "Tocar aleatório",
@@ -65,6 +69,7 @@
     "reload_plugins": "Recarregar plugins",
     "reload_scrapers": "Recarregar scrapers",
     "remove": "Remover",
+    "remove_from_gallery": "Remover da galeria",
     "rename_gen_files": "Renomear arquivos gerados",
     "rescan": "Reescanear",
     "reshuffle": "Reembaralhar",
@@ -79,6 +84,7 @@
     "scrape_with": "Scrape com…",
     "search": "Buscar",
     "select_all": "Selecionar todos",
+    "select_entity": "Selecionar {entityType}",
     "select_folders": "Selecionar pastas",
     "select_none": "Selecionar nenhum",
     "selective_auto_tag": "Auto Tag seletivo",
@@ -94,6 +100,7 @@
     "stop": "Parar",
     "submit": "Enviar",
     "submit_stash_box": "Enviar para o Stash-Box",
+    "submit_update": "Enviar atualização",
     "tasks": {
       "clean_confirm_message": "Tem certeza de que quer limpar? Isto irá apagar as informações do banco de dados e conteúdos gerados de todas as cenas e galerias que não são mais encontradas no sistema.",
       "dry_mode_selected": "Modo não destrutivo. Nenhum arquivo será apagado, apenas será logado.",
@@ -114,6 +121,7 @@
   "birth_year": "Ano de nascimento",
   "birthdate": "Data de nascimento",
   "bitrate": "Taxa de bits",
+  "captions": "Legendas",
   "career_length": "Duração da carreira",
   "component_tagger": {
     "config": {
@@ -193,14 +201,19 @@
     "dlna": {
       "allow_temp_ip": "Permitir {tempIP}",
       "allowed_ip_addresses": "Endereços de IP permitidos",
+      "allowed_ip_temporarily": "IP permitido temporariamente",
       "default_ip_whitelist": "Whitelist de IP padrão",
       "default_ip_whitelist_desc": "Endereços IP padrão permitidos a acessar DLNA. Use {wildcard} para permitir todos endereços de IP.",
+      "disabled_dlna_temporarily": "DLNA desativado temporariamente",
+      "disallowed_ip": "IP não permitido",
       "enabled_by_default": "Ativado por padrão",
+      "enabled_dlna_temporarily": "DLNA ativado temporariamente",
       "network_interfaces": "Interfaces",
       "network_interfaces_desc": "Interfaces para expor servidor DLNA ativo. Uma lista vazia resulta em execução em todas as interfaces. Requer DLNA ser reiniciado depois de alterar.",
       "recent_ip_addresses": "Endereços de IP recentes",
       "server_display_name": "Nome de exibição do servidor",
       "server_display_name_desc": "Nome de exibição do servidor DLNA. Padrão de {server_name} se vazio.",
+      "successfully_cancelled_temporary_behaviour": "Comportamento temporário cancelado com sucesso",
       "until_restart": "até reiniciar"
     },
     "general": {
@@ -268,6 +281,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Número de tarefas paralelas para varredura/geração",
       "parallel_scan_head": "Varredura/Geração paralela",
       "preview_generation": "Pré visualizar a geração",
+      "python_path": {
+        "description": "Caminho do executável do Python. Utilizado para scripts de scrape e plugins. Se em branco, o caminho do Python será resolvido a partir do ambiente",
+        "heading": "Caminho do Python"
+      },
       "scraper_user_agent": "Scraper User Agent",
       "scraper_user_agent_desc": "User-Agent string usado durante solicitações http do scrape",
       "scrapers_path": {
@@ -433,6 +450,13 @@
         "description": "Compensação de tempo em milissegundos para a reprodução de scripts interativos.",
         "heading": "Compensação de tempo Funscript (ms)"
       },
+      "handy_connection": {
+        "connect": "Conectar",
+        "status": {
+          "heading": "Estado da conexão do Handy"
+        },
+        "sync": "Sincronizar"
+      },
       "handy_connection_key": {
         "description": "Chave de conexão para usar em cenas interativas. Ativar esta chave permitirá o Stash a compartilhar as informações da cena atual com handyfeeling.com",
         "heading": "Chave de conexão"
@@ -502,6 +526,9 @@
           "display_title": "Exibir título e tags",
           "toggle_sound": "Habilitar som"
         }
+      },
+      "scroll_attempts_before_change": {
+        "heading": "Tentativas de rolagem antes da transição"
       },
       "slideshow_delay": {
         "description": "Slideshow está disponível em galerias quando no modo de exibição de paredão",
@@ -681,6 +708,7 @@
     "warmth": "Calor"
   },
   "ethnicity": "Etnicidade",
+  "existing_value": "valor existente",
   "eye_color": "Cor dos olhos",
   "fake_tits": "Peitos falsos",
   "false": "Falso",
@@ -708,9 +736,18 @@
     "TRANSGENDER_MALE": "Transgênero Masculino"
   },
   "hair_color": "Cor do cabelo",
+  "handy_connection_status": {
+    "connecting": "Conectando",
+    "disconnected": "Desconectado",
+    "error": "Erro conectando ao Handy",
+    "missing": "Faltando",
+    "ready": "Pronto",
+    "syncing": "Sincronizando com o servidor"
+  },
   "hasMarkers": "Possui marcadores",
   "height": "Altura",
   "help": "Ajuda",
+  "ignore_auto_tag": "Ignorar Auto Tag",
   "image": "Imagem",
   "image_count": "Contagem de imagem",
   "images": "Imagens",
@@ -812,6 +849,10 @@
   "queue": "Fila",
   "random": "Aleatória",
   "rating": "Avaliação",
+  "recently_added_performers": "Artistas recentemente adicionados",
+  "recently_released_galleries": "Galerias recentemente lançadas",
+  "recently_released_movies": "Filmes recentemente lançados",
+  "recently_released_scenes": "Cenas recentemente lançadas",
   "resolution": "Resolução",
   "scene": "Cena",
   "sceneTagger": "Tagger de cena",
@@ -847,6 +888,10 @@
       "something_went_wrong": "Ah não! Algo deu errado!",
       "something_went_wrong_description": "Se isso parece um problema com os dados fornecidos, clique no em Voltar para corrigi-los. Caso contrário, reporte um bug em {githubLink} ou busque ajuda em {discordLink}.",
       "something_went_wrong_while_setting_up_your_system": "Algo deu errado enquanto configurávamos seu sistema. Aqui está o erro que recebemos: {error}"
+    },
+    "folder": {
+      "file_path": "Caminho do arquivo",
+      "up_dir": "Subir um diretório"
     },
     "github_repository": "Repositório do Github",
     "migrate": {
@@ -901,10 +946,7 @@
       "next_step": "Quando estiver pronto para prosseguir com a criação do novo sistema, clique Próximo.",
       "unable_to_locate_specified_config": "Se está lendo isto, então o Stash não pôde encontrar o arquivo de configuração especificado na linha de comando ou no ambiente. Este assistente irá te guiar durante o processo de criação de uma nova configuração."
     },
-    "welcome_to_stash": "Bem-vindo ao Stash",
-    "folder": {
-      "up_dir": "Subir um diretório"
-    }
+    "welcome_to_stash": "Bem-vindo ao Stash"
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -912,8 +954,10 @@
     "go_review_draft": "Vá para {endpoint_name} para revisar rascunho.",
     "selected_stash_box": "Endpoint do Stash-Box selecionado",
     "submission_failed": "Falha no envio",
-    "submission_successful": "Envio bem-sucedido"
+    "submission_successful": "Envio bem-sucedido",
+    "submit_update": "Já existe no {endpoint_name}"
   },
+  "statistics": "Estatísticas",
   "stats": {
     "image_size": "Tamanho das imagens",
     "scenes_duration": "Duração das cenas",
@@ -955,6 +999,7 @@
   "updated_at": "Atualizado em",
   "url": "URL",
   "videos": "Vídeos",
+  "view_all": "Ver todos",
   "weight": "Peso",
   "years_old": "anos"
 }
