@@ -100,6 +100,7 @@
     "stop": "Stopp",
     "submit": "Einreichen",
     "submit_stash_box": "Zu Stash-Box übermitteln",
+    "submit_update": "Aktualisierung übermitteln",
     "tasks": {
       "clean_confirm_message": "Wollen Sie wirklich die Datenbank aufräumen? Dies wird alle Informationen und Hilfsdaten für Szenen und Galerien löschen, die nicht mehr auf dem Dateisystem vorhanden sind.",
       "dry_mode_selected": "Trockenmodus ausgewählt. Es findet keine Löschung der Daten statt, lediglich Protokollierung.",
@@ -821,6 +822,7 @@
   "performer_favorite": "Darsteller favorisiert",
   "performer_image": "Darsteller-Bild",
   "performer_tagger": {
+    "add_new_performers": "Neue Darsteller hinzufügen",
     "current_page": "Aktuelle Seite",
     "failed_to_save_performer": "Fehler beim Speichern der Darsteller \"{performer}\"",
     "name_already_exists": "Name bereits vergeben",
@@ -829,10 +831,13 @@
     "performer_already_tagged": "Darsteller bereits getagged",
     "performer_successfully_tagged": "Darsteller erfolgreich getagged:",
     "query_all_performers_in_the_database": "Alle Darsteller in der Datenbank",
+    "refresh_tagged_performers": "Aktualisieren getaggter Darsteller",
+    "refreshing_will_update_the_data": "Bei der Aktualisierung werden die Metadaten aller getaggten Darsteller über die stash-box-Instanz aktualisiert.",
     "tag_status": "Tag Status",
     "untagged_performers": "Nicht getaggte Darsteller",
     "update_performer": "Darsteller aktualisieren",
-    "update_performers": "Darsteller aktualisieren"
+    "update_performers": "Darsteller aktualisieren",
+    "updating_untagged_performers_description": "Bei der Aktualisierung von nicht getaggten Darstellern wird versucht die Metadaten alle Darsteller, welche keine StashID haben, zu aktualisieren."
   },
   "performers": "Darsteller",
   "piercings": "Piercings",
@@ -945,7 +950,8 @@
     "go_review_draft": "Gehe zu {endpoint_name}, um Entwurf zu begutachten.",
     "selected_stash_box": "Ausgewählter Stash-Box Endpunkt",
     "submission_failed": "Einreichen fehlgeschlagen",
-    "submission_successful": "Einreichen erfolgreich"
+    "submission_successful": "Einreichen erfolgreich",
+    "submit_update": "Existiert bereits in {endpoint_name}"
   },
   "statistics": "Statistiken",
   "stats": {
