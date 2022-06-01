@@ -240,6 +240,15 @@ func (r *queryResolver) getStashBoxClient(index int) (*stashbox.Client, error) {
 func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.ScraperSourceInput, input models.ScrapeSingleSceneInput) ([]*models.ScrapedScene, error) {
 	var ret []*models.ScrapedScene
 
+	var sceneID int
+	if input.SceneID != nil {
+		var err error
+		sceneID, err = strconv.Atoi(*input.SceneID)
+		if err != nil {
+			return nil, fmt.Errorf("%w: sceneID is not an integer: '%s'", ErrInput, *input.SceneID)
+		}
+	}
+
 	switch {
 	case source.ScraperID != nil:
 		var err error
@@ -248,7 +257,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 
 		switch {
 		case input.SceneID != nil:
-			c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, *input.SceneID, models.ScrapeContentTypeScene)
+			c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, sceneID, models.ScrapeContentTypeScene)
 			if c != nil {
 				content = []models.ScrapedContent{c}
 			}
@@ -279,7 +288,7 @@ func (r *queryResolver) ScrapeSingleScene(ctx context.Context, source models.Scr
 
 		switch {
 		case input.SceneID != nil:
-			ret, err = client.FindStashBoxSceneByFingerprints(ctx, *input.SceneID)
+			ret, err = client.FindStashBoxSceneByFingerprints(ctx, sceneID)
 		case input.Query != nil:
 			ret, err = client.QueryStashBoxScene(ctx, *input.Query)
 		default:
@@ -307,7 +316,12 @@ func (r *queryResolver) ScrapeMultiScenes(ctx context.Context, source models.Scr
 			return nil, err
 		}
 
-		return client.FindStashBoxScenesByFingerprints(ctx, input.SceneIds)
+		sceneIDs, err := stringslice.StringSliceToIntSlice(input.SceneIds)
+		if err != nil {
+			return nil, err
+		}
+
+		return client.FindStashBoxScenesByFingerprints(ctx, sceneIDs)
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")

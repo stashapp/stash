@@ -133,14 +133,14 @@ input ScrapeSingleSceneInput {
   """Instructs to query by string"""
   query: String
   """Instructs to query by scene fingerprints"""
-  scene_id: Int
+  scene_id: ID
   """Instructs to query by scene fragment"""
   scene_input: ScrapedSceneInput
 }
 
 input ScrapeMultiScenesInput {
   """Instructs to query by scene fingerprints"""
-  scene_ids: [Int!]
+  scene_ids: [ID!]
 }
 
 input ScrapeSinglePerformerInput {
