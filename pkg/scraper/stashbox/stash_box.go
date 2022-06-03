@@ -143,7 +143,7 @@ func (c Client) FindStashBoxScenesByFingerprints(ctx context.Context, ids []int)
 func (c Client) findStashBoxScenesByFingerprints(ctx context.Context, scenes [][]*graphql.FingerprintQueryInput) ([][]*models.ScrapedScene, error) {
 	var ret [][]*models.ScrapedScene
 	for i := 0; i < len(scenes); i += 40 {
-		end := i + 100
+		end := i + 40
 		if end > len(scenes) {
 			end = len(scenes)
 		}
