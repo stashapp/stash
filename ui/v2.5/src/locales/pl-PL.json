@@ -100,6 +100,7 @@
     "stop": "Zatrzymaj",
     "submit": "Wyślij",
     "submit_stash_box": "Wyślij do Stash-Box",
+    "submit_update": "Prześlij aktualizację",
     "tasks": {
       "clean_confirm_message": "Czy na pewno chcesz przeprowadzić oczyszczanie? Spowoduje to usunięcie informacji o bazie danych i wygenerowanej zawartości dla wszystkich scen i galerii, które nie znajdują się już w systemie plików.",
       "dry_mode_selected": "Wybrano tryb próby na sucho. Nie nastąpi faktyczne usunięcie, a jedynie zapisanie w dzienniku.",
@@ -966,7 +967,8 @@
     "go_review_draft": "Przejdź do {endpoint_name}, aby zapoznać się z projektem.",
     "selected_stash_box": "Wybrany punkt końcowy Stash-Box",
     "submission_failed": "Zgłoszenie nie powiodło się",
-    "submission_successful": "Zgłoszenie przesłano sukcesem"
+    "submission_successful": "Zgłoszenie przesłano sukcesem",
+    "submit_update": "Już istnieje w {endpoint_name}"
   },
   "statistics": "Statystyki",
   "stats": {

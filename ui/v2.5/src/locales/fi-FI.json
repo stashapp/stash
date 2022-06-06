@@ -100,6 +100,7 @@
     "stop": "Pysäytä",
     "submit": "Lähetä",
     "submit_stash_box": "Lähetä Stash-Boxiin",
+    "submit_update": "Lähetä päivitys",
     "tasks": {
       "clean_confirm_message": "Haluatko varmasti puhdistaa? Tämä poistaa tietokannan tiedot ja poistaa kaikki generoidut tukitiedostot kaikista kohtauksista ja gallerioista, eikä niitä enää ole löydettävissä levyltä.",
       "dry_mode_selected": "Kuivatila käytössä. Poistoa ei oikeasti tehdä, vain lokikirjaus.",
@@ -120,6 +121,7 @@
   "birth_year": "Syntymävuosi",
   "birthdate": "Syntymäpäivä",
   "bitrate": "Bittinopeus",
+  "captions": "Tekstitykset",
   "career_length": "Uran pituus",
   "component_tagger": {
     "config": {
@@ -705,7 +707,9 @@
     "disconnected": "Ei yhdistetty",
     "error": "Virhe yhdistettäessä Handyyn",
     "missing": "Puuttuu",
-    "ready": "Valmis"
+    "ready": "Valmis",
+    "syncing": "Synkronoidaan palvelimelle",
+    "uploading": "Ladataan skriptiä"
   },
   "hasMarkers": "On merkki",
   "height": "Pituus",
@@ -846,6 +850,7 @@
       "something_went_wrong_while_setting_up_your_system": "Järjestelmän asettamisessa meni jotain vikaan. Tässä on virhe jonka saimme: {error}"
     },
     "folder": {
+      "file_path": "Tiedostopolku",
       "up_dir": "Ylös"
     },
     "github_repository": "Github repository",
@@ -899,7 +904,8 @@
   "stashbox": {
     "go_review_draft": "Mene {endpoint_name} katsoaksesi luonnosta.",
     "submission_failed": "Lähettäminen ei onnistunut",
-    "submission_successful": "Lähettäminen onnistui"
+    "submission_successful": "Lähettäminen onnistui",
+    "submit_update": "On jo kohteessa {endpoint_name}"
   },
   "statistics": "Tilastot",
   "stats": {
