@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/stashapp/stash/internal/identify"
 	"github.com/stashapp/stash/pkg/job"
@@ -212,7 +211,7 @@ type stashboxSource struct {
 }
 
 func (s stashboxSource) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
-	results, err := s.FindStashBoxScenesByFingerprintsFlat(ctx, []string{strconv.Itoa(sceneID)})
+	results, err := s.FindStashBoxSceneByFingerprints(ctx, sceneID)
 	if err != nil {
 		return nil, fmt.Errorf("error querying stash-box using scene ID %d: %w", sceneID, err)
 	}

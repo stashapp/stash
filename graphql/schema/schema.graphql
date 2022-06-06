@@ -114,12 +114,6 @@ type Query {
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]! @deprecated(reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones")
 
-  """Query StashBox for scenes"""
-  queryStashBoxScene(input: StashBoxSceneQueryInput!): [ScrapedScene!]! @deprecated(reason: "use scrapeSingleScene or scrapeMultiScenes")
-  """Query StashBox for performers"""
-  queryStashBoxPerformer(input: StashBoxPerformerQueryInput!): [StashBoxPerformerQueryResult!]! @deprecated(reason: "use scrapeSinglePerformer or scrapeMultiPerformers")
-  # === end deprecated methods ===
-
   # Plugins
   """List loaded plugins"""
   plugins: [Plugin!]
