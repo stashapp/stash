@@ -100,6 +100,7 @@
     "stop": "Stoppa",
     "submit": "Skicka",
     "submit_stash_box": "Skicka till Stash-Box",
+    "submit_update": "Skicka uppdatering",
     "tasks": {
       "clean_confirm_message": "Är du säker att du vill rensa? Detta kommer radera databasinformation och genererade filer för alla scener och gallerier som inte längre finns på filsystemet.",
       "dry_mode_selected": "Torrt läge valt. Inget kommer raderas utan bara loggning kommer ske.",
@@ -966,7 +967,8 @@
     "go_review_draft": "Gå till {endpoint_name} för att granska utkast.",
     "selected_stash_box": "Vald stash-box adress",
     "submission_failed": "Misslyckad inskickning",
-    "submission_successful": "Lyckad inskickning"
+    "submission_successful": "Lyckad inskickning",
+    "submit_update": "Existerar redan i {endpoint_name}"
   },
   "statistics": "Statistik",
   "stats": {
