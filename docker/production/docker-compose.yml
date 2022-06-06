@@ -31,10 +31,10 @@ services:
       ## Keep configs, scrapers, and plugins here.
       - ./config:/root/.stash
       ## Point this at your collection.
-      - ./data:/data
+      - ./data:/volume1/Howdy
       ## This is where your stash's metadata lives
-      - ./metadata:/metadata
+      - ./metadata:volume1/docker/stash/metadata
       ## Any other cache content.
-      - ./cache:/cache
+      - ./cache:volume1/docker/stash/cache
       ## Where to store generated content (screenshots,previews,transcodes,sprites)
-      - ./generated:/generated
+      - ./generated:volume1/docker/stash/generated
