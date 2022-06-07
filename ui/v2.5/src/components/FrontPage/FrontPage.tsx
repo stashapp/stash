@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useConfigureUI } from "src/core/StashService";
 import { LoadingIndicator } from "src/components/Shared";
 import { Button } from "react-bootstrap";
@@ -14,6 +14,7 @@ import {
 } from "src/core/config";
 
 const FrontPage: React.FC = () => {
+  const intl = useIntl();
   const Toast = useToast();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -56,7 +57,7 @@ const FrontPage: React.FC = () => {
   const ui = (configuration?.ui ?? {}) as IUIConfig;
 
   if (!ui.frontPageContent) {
-    const defaultContent = generateDefaultFrontPageContent();
+    const defaultContent = generateDefaultFrontPageContent(intl);
     onUpdateConfig(defaultContent);
   }
 

@@ -48,8 +48,8 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
   const intl = useIntl();
 
   const premadeFilterOptions = useMemo(
-    () => generatePremadeFrontPageContent(),
-    []
+    () => generatePremadeFrontPageContent(intl),
+    [intl]
   );
 
   const [contentType, setContentType] = useState(

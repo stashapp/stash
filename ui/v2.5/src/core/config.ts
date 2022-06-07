@@ -1,3 +1,4 @@
+import { IntlShape } from "react-intl";
 import { ITypename } from "src/utils";
 import { FilterMode, SortDirectionEnum } from "./generated-graphql";
 
@@ -28,46 +29,60 @@ export interface IUIConfig {
   frontPageContent?: FrontPageContent[];
 }
 
-function recentlyReleased(mode: FilterMode, objects: string): ICustomFilter {
+function recentlyReleased(
+  intl: IntlShape,
+  mode: FilterMode,
+  objectsID: string
+): ICustomFilter {
   return {
     __typename: "CustomFilter",
-    message: { id: "recently_released_objects", values: { objects } },
+    message: {
+      id: "recently_released_objects",
+      values: { objects: intl.formatMessage({ id: objectsID }) },
+    },
     mode,
     sortBy: "date",
     direction: SortDirectionEnum.Desc,
   };
 }
 
-function recentlyAdded(mode: FilterMode, objects: string): ICustomFilter {
+function recentlyAdded(
+  intl: IntlShape,
+  mode: FilterMode,
+  objectsID: string
+): ICustomFilter {
   return {
     __typename: "CustomFilter",
-    message: { id: "recently_added_objects", values: { objects } },
+    message: {
+      id: "recently_added_objects",
+      values: { objects: intl.formatMessage({ id: objectsID }) },
+    },
     mode,
     sortBy: "created_at",
     direction: SortDirectionEnum.Desc,
   };
 }
 
-export function generateDefaultFrontPageContent() {
+export function generateDefaultFrontPageContent(intl: IntlShape) {
   return [
-    recentlyReleased(FilterMode.Scenes, "scenes"),
-    recentlyAdded(FilterMode.Studios, "studios"),
-    recentlyReleased(FilterMode.Movies, "movies"),
-    recentlyAdded(FilterMode.Performers, "performers"),
-    recentlyReleased(FilterMode.Galleries, "galleries"),
+    recentlyReleased(intl, FilterMode.Scenes, "scenes"),
+    recentlyAdded(intl, FilterMode.Studios, "studios"),
+    recentlyReleased(intl, FilterMode.Movies, "movies"),
+    recentlyAdded(intl, FilterMode.Performers, "performers"),
+    recentlyReleased(intl, FilterMode.Galleries, "galleries"),
   ];
 }
 
-export function generatePremadeFrontPageContent() {
+export function generatePremadeFrontPageContent(intl: IntlShape) {
   return [
-    recentlyReleased(FilterMode.Scenes, "scenes"),
-    recentlyAdded(FilterMode.Scenes, "scenes"),
-    recentlyReleased(FilterMode.Galleries, "galleries"),
-    recentlyAdded(FilterMode.Galleries, "galleries"),
-    recentlyAdded(FilterMode.Images, "images"),
-    recentlyReleased(FilterMode.Movies, "movies"),
-    recentlyAdded(FilterMode.Movies, "movies"),
-    recentlyAdded(FilterMode.Studios, "studios"),
-    recentlyAdded(FilterMode.Performers, "performers"),
+    recentlyReleased(intl, FilterMode.Scenes, "scenes"),
+    recentlyAdded(intl, FilterMode.Scenes, "scenes"),
+    recentlyReleased(intl, FilterMode.Galleries, "galleries"),
+    recentlyAdded(intl, FilterMode.Galleries, "galleries"),
+    recentlyAdded(intl, FilterMode.Images, "images"),
+    recentlyReleased(intl, FilterMode.Movies, "movies"),
+    recentlyAdded(intl, FilterMode.Movies, "movies"),
+    recentlyAdded(intl, FilterMode.Studios, "studios"),
+    recentlyAdded(intl, FilterMode.Performers, "performers"),
   ];
 }
