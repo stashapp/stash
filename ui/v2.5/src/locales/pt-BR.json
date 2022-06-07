@@ -171,7 +171,7 @@
   },
   "config": {
     "about": {
-      "build_hash": "Build hash:",
+      "build_hash": "Criar hash:",
       "build_time": "Tempo de build:",
       "check_for_new_version": "Verificar se há uma nova versão",
       "latest_version": "Última versão",
@@ -189,10 +189,10 @@
     "categories": {
       "about": "Sobre",
       "interface": "Interface",
-      "logs": "Logs",
+      "logs": "Registros",
       "metadata_providers": "Provedores de Meta-dados",
       "plugins": "Plugins",
-      "scraping": "Scraping",
+      "scraping": "Extração",
       "security": "Segurança",
       "services": "Serviços",
       "system": "Sistema",
@@ -264,12 +264,12 @@
       "generated_file_naming_hash_head": "Hash de nomeação de arquivo gerado",
       "generated_files_location": "Local de diretório para os arquivos gerados (marcadores de cena, pré visualizações de cena, sprites, etc)",
       "generated_path_head": "Caminho gerado",
-      "hashing": "Hashing",
+      "hashing": "Criação de Hash",
       "image_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como imagens.",
       "image_ext_head": "Extensões de imagem",
       "include_audio_desc": "Inclui stream de áudio quando gerar pré-visualizações.",
       "include_audio_head": "Incluir áudio",
-      "logging": "Logging",
+      "logging": "Registro",
       "maximum_streaming_transcode_size_desc": "Tamanho máximo para streams transcodificadas",
       "maximum_streaming_transcode_size_head": "Tamanho máximo de transcodação de streaming",
       "maximum_transcode_size_desc": "Tamanho máximo para transcodificações geradas",
@@ -286,13 +286,13 @@
         "description": "Caminho do executável do Python. Utilizado para scripts de scrape e plugins. Se em branco, o caminho do Python será resolvido a partir do ambiente",
         "heading": "Caminho do Python"
       },
-      "scraper_user_agent": "Scraper User Agent",
+      "scraper_user_agent": "Agente de Usuário do Extrator",
       "scraper_user_agent_desc": "User-Agent string usado durante solicitações http do scrape",
       "scrapers_path": {
         "description": "Caminho para o diretório para os arquivos de configuração de scrapers",
         "heading": "Caminho dos scrapers"
       },
-      "scraping": "Scraping",
+      "scraping": "Extração",
       "sqlite_location": "Localização do arquivo para o banco de dados SQLite (requer reinicialização)",
       "video_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como vídeos.",
       "video_ext_head": "Extensões de vídeo",
@@ -307,7 +307,7 @@
       "log_level": "Nível de log"
     },
     "plugins": {
-      "hooks": "Hooks",
+      "hooks": "Ganchos",
       "triggers_on": "Triggers on"
     },
     "scraping": {
@@ -315,8 +315,8 @@
       "entity_scrapers": "Scrapers de {entityType}",
       "excluded_tag_patterns_desc": "Expressões regulares de etiquetas para excluir dos resultados da busca",
       "excluded_tag_patterns_head": "Padrões de etiqueta excluídos",
-      "scraper": "Scraper",
-      "scrapers": "Scrapers",
+      "scraper": "Extrator",
+      "scrapers": "Extratores",
       "search_by_name": "Buscar por nome",
       "supported_types": "Tipos suportados",
       "supported_urls": "URLs"
@@ -325,7 +325,7 @@
       "add_instance": "Adicionar uma instância stash-box",
       "api_key": "Chave de API",
       "description": "Stash-box facilita o etiquetamento automático de cenas e artistas baseados em 'impressões digitais' e nomes de arquivos.\nEndpoint e chave de API pode ser encontrado na sua página de conta na instancia stash-box. Os nomes são necessários quando mais de uma instância são adicionados.",
-      "endpoint": "Endpoint",
+      "endpoint": "Ponto Final",
       "graphql_endpoint": "Endpoint GraphQL",
       "name": "Nome",
       "title": "Endpoints do Stash-box"
@@ -453,6 +453,9 @@
       },
       "handy_connection": {
         "connect": "Conectar",
+        "server_offset": {
+          "heading": "Compensação do Servidor"
+        },
         "status": {
           "heading": "Estado da conexão do Handy"
         },
@@ -782,7 +785,7 @@
       "age_context": "{age} {years_old} nesta cena"
     },
     "phash": "PHash",
-    "stream": "Stream",
+    "stream": "Transmissão",
     "video_codec": "Codec de vídeo"
   },
   "megabits_per_second": "{value} megabits por segundo",
