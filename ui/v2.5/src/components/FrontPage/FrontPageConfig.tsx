@@ -57,7 +57,7 @@ const AddContentModal: React.FC<IAddSavedFilterModalProps> = ({
   );
   const [premadeFilterIndex, setPremadeFilterIndex] = useState<
     number | undefined
-  >();
+  >(0);
   const [savedFilter, setSavedFilter] = useState<string | undefined>();
 
   function onTypeSelected(t: string) {
