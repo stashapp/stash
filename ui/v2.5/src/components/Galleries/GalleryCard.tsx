@@ -170,7 +170,11 @@ export const GalleryCard: React.FC<IProps> = (props) => {
         <div className="gallery-card__details">
           <span className="gallery-card__date">{props.gallery.date}</span>
           <p>
-            <TruncatedText className="gallery-card__description" text={props.gallery.details} lineCount={3} />
+            <TruncatedText
+              className="gallery-card__description"
+              text={props.gallery.details}
+              lineCount={3}
+            />
           </p>
         </div>
       }
