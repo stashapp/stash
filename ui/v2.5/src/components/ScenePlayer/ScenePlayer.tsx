@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import "videojs-vr";
 import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
 import "videojs-landscape-fullscreen";
@@ -350,6 +351,21 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
     }
 
+    function hasVrTag() {
+      let hasVrTag = false;
+      scene?.tags.map((tag) => {
+        // search for known stashdb vr tag and aliases
+        if (
+          tag.name == "Virtual Reality" ||
+          tag.name == "VR" ||
+          tag.name == "VR Porn"
+        ) {
+          hasVrTag = true;
+        }
+      });
+      return hasVrTag;
+    }
+
     function tryNextStream() {
       const player = playerRef.current;
       if (!player) return;
@@ -464,6 +480,31 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (scene.captions?.length! > 0) {
       loadCaptions(player);
     }
+
+    if (!(player as any).mediainfo) {
+      (player as any).mediainfo = {};
+    }
+
+    if (!(player as any).mediainfo.projection) {
+      let userAgent = navigator.userAgent;
+      let isVRDevice = false;
+      let projection = "NONE";
+
+      if (userAgent.match(/oculusbrowser|\svr\s/i)) {
+        isVRDevice = true;
+      }
+
+      // video.js-vr does not work well on devices that already provide their own vr playback options so disable on vr devices
+      if (hasVrTag() && !isVRDevice) {
+        // video.js-vr currently only support 360. Using other projection options from my testing just displays a black screen
+        // 360 still works with 180 videos.
+        projection = "360";
+      }
+
+      (player as any).mediainfo.projection = projection;
+    }
+
+    (player as any).vr();
 
     player.currentTime(0);
 
