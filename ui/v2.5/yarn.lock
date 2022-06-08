@@ -8122,8 +8122,15 @@ videojs-seek-buttons@^2.2.0:
     video.js "^6 || ^7"
 
 videojs-vr@^1.8.0:
+  version "1.8.0"
   resolved "https://registry.npmjs.org/videojs-vr/-/videojs-vr-1.8.0.tgz"
   integrity sha512-776gXqt8g6/rLeV56nn/aUcO0sRy+mgFITCw8cIqzTzl93SE1PEK/QE3YNqtppUfU5igayrx7WKsWhDOpsXMpw==
+  dependencies:
+    @babel/runtime "^7.14.5"
+    global "^4.4.0"
+    three "0.93.0"
+    video.js "^6 || ^7"
+    webvr-polyfill "0.10.12"
 
 videojs-vtt-thumbnails-freetube@^0.0.15:
   version "0.0.15"
@@ -8133,10 +8140,6 @@ videojs-vtt-thumbnails-freetube@^0.0.15:
     global "^4.4.0"
     request "^2.88.2"
     video.js "^7.2.0 || ^6.6.0"
-
-    three "0.93.0"
-    .js "^6 || ^7"
-    webvr-polyfill "0.10.12"
 
 videojs-vtt.js@^0.15.3:
   version "0.15.3"
