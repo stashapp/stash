@@ -153,7 +153,7 @@ const (
 	ImageLightboxScrollMode                 = "image_lightbox.scroll_mode"
 	ImageLightboxScrollAttemptsBeforeChange = "image_lightbox.scroll_attempts_before_change"
 
-	FrontPageSavedFilterIDs = "front_page.saved_filter_ids"
+	UI = "ui"
 
 	defaultImageLightboxSlideshowDelay = 5000
 
@@ -410,13 +410,6 @@ func (i *Instance) getStringSlice(key string) []string {
 	defer i.RUnlock()
 
 	return i.viper(key).GetStringSlice(key)
-}
-
-func (i *Instance) getIntSlice(key string) []int {
-	i.RLock()
-	defer i.RUnlock()
-
-	return i.viper(key).GetIntSlice(key)
 }
 
 func (i *Instance) getString(key string) string {
@@ -972,16 +965,32 @@ func (i *Instance) GetImageLightboxOptions() models.ConfigImageLightboxResult {
 	return ret
 }
 
-func (i *Instance) GetFrontPageSavedFilterIDs() []int {
-	return i.getIntSlice(FrontPageSavedFilterIDs)
-}
-
 func (i *Instance) GetDisableDropdownCreate() *models.ConfigDisableDropdownCreate {
 	return &models.ConfigDisableDropdownCreate{
 		Performer: i.getBool(DisableDropdownCreatePerformer),
 		Studio:    i.getBool(DisableDropdownCreateStudio),
 		Tag:       i.getBool(DisableDropdownCreateTag),
 	}
+}
+
+func (i *Instance) GetUIConfiguration() map[string]interface{} {
+	i.RLock()
+	defer i.RUnlock()
+
+	// HACK: viper changes map keys to case insensitive values, so the workaround is to
+	// convert map keys to snake case for storage
+	v := i.viper(UI).GetStringMap(UI)
+
+	return fromSnakeCaseMap(v)
+}
+
+func (i *Instance) SetUIConfiguration(v map[string]interface{}) {
+	i.RLock()
+	defer i.RUnlock()
+
+	// HACK: viper changes map keys to case insensitive values, so the workaround is to
+	// convert map keys to snake case for storage
+	i.viper(UI).Set(UI, toSnakeCaseMap(v))
 }
 
 func (i *Instance) GetCSSPath() string {

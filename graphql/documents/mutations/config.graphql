@@ -36,10 +36,8 @@ mutation ConfigureDefaults($input: ConfigDefaultSettingsInput!) {
   }
 }
 
-mutation ConfigureFrontPage($input: ConfigFrontPageInput!) {
-  configureFrontPage(input: $input) {
-    savedFilterIDs
-  }
+mutation ConfigureUI($input: Map!) {
+  configureUI(input: $input)
 }
 
 mutation GenerateAPIKey($input: GenerateAPIKeyInput!) {

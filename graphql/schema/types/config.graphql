@@ -413,6 +413,7 @@ type ConfigResult {
   dlna: ConfigDLNAResult!
   scraping: ConfigScrapingResult!
   defaults: ConfigDefaultSettingsResult!
+  ui: Map!
 }
 
 """Directory structure of a path"""
@@ -442,12 +443,4 @@ input GenerateAPIKeyInput {
 type StashBoxValidationResult {
   valid: Boolean!
   status: String!
-}
-
-input ConfigFrontPageInput {
-  savedFilterIDs: [ID!]
-}
-
-type ConfigFrontPageResult {
-  savedFilterIDs: [ID!]!
 }

@@ -1,3 +1,9 @@
+query FindSavedFilter($id: ID!) {
+  findSavedFilter(id: $id) {
+    ...SavedFilterData
+  }
+}
+
 query FindSavedFilters($mode: FilterMode) {
   findSavedFilters(mode: $mode) {
     ...SavedFilterData
@@ -6,12 +12,6 @@ query FindSavedFilters($mode: FilterMode) {
 
 query FindDefaultFilter($mode: FilterMode!) {
   findDefaultFilter(mode: $mode) {
-    ...SavedFilterData
-  }
-}
-
-query FindFrontPageFilters {
-  findFrontPageFilters {
     ...SavedFilterData
   }
 }

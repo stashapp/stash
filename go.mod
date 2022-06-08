@@ -53,6 +53,7 @@ require (
 	github.com/kermieisinthehouse/gosx-notifier v0.1.1
 	github.com/kermieisinthehouse/systray v1.2.4
 	github.com/lucasb-eyer/go-colorful v1.2.0
+	github.com/spf13/cast v1.4.1
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/gqlparser/v2 v2.4.1
 )
@@ -90,7 +91,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/zerolog v1.26.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/cobra v1.4.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect

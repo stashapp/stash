@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useMemo } from "react";
 import { useFindScenes } from "src/core/StashService";
 import Slider from "react-slick";
 import { SceneCard } from "./SceneCard";
@@ -11,7 +11,6 @@ import { FormattedMessage } from "react-intl";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  queue: SceneQueue;
   header: String;
 }
 
@@ -20,6 +19,10 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
 ) => {
   const result = useFindScenes(props.filter);
   const cardCount = result.data?.findScenes.count;
+
+  const queue = useMemo(() => {
+    return SceneQueue.fromListFilterModel(props.filter);
+  }, [props.filter]);
 
   if (!result.loading && !cardCount) {
     return null;
@@ -49,7 +52,7 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
               <SceneCard
                 key={scene.id}
                 scene={scene}
-                queue={props.queue}
+                queue={queue}
                 index={index}
                 zoomIndex={1}
               />
