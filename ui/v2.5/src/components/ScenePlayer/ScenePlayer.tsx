@@ -352,7 +352,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     function hasVrTag() {
-      let hasVrTag = false;
+      let foundTag = false;
       scene?.tags.map((tag) => {
         // search for known stashdb vr tag and aliases
         let lowerCaseName = tag.name.toLowerCase();
@@ -361,10 +361,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           lowerCaseName == "vr" ||
           lowerCaseName == "vr porn"
         ) {
-          hasVrTag = true;
+          foundTag = true;
         }
       });
-      return hasVrTag;
+      return foundTag;
     }
 
     function tryNextStream() {
