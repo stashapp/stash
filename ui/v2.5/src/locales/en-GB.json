@@ -107,6 +107,7 @@
     "view_random": "View Random",
     "continue": "Continue",
     "submit": "Submit",
+    "submit_update": "Submit update",
     "logout": "Log out",
     "remove_from_gallery": "Remove from Gallery",
     "delete_stashid": "Delete StashID",
@@ -981,7 +982,8 @@
     "selected_stash_box": "Selected Stash-Box endpoint",
     "submission_successful": "Submission successful",
     "submission_failed": "Submission failed",
-    "go_review_draft": "Go to {endpoint_name} to review draft."
+    "go_review_draft": "Go to {endpoint_name} to review draft.",
+    "submit_update": "Already exists in {endpoint_name}"
   },
   "performer_tagger": {
     "network_error": "Network Error",

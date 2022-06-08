@@ -15,6 +15,7 @@ const fuzzyDict: Record<string, string> = {
   "Slovak Republic": "SK",
   Iran: "IR",
   Moldova: "MD",
+  Laos: "LA",
 };
 
 const getISOCountry = (country: string | null | undefined) => {

@@ -7,12 +7,16 @@ import (
 )
 
 func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
+	// only trim the extension if gallery is file-based
+	trimExt := s.Zip
+
 	return tagger{
-		ID:    s.ID,
-		Type:  "gallery",
-		Name:  s.GetTitle(),
-		Path:  s.Path.String,
-		cache: cache,
+		ID:      s.ID,
+		Type:    "gallery",
+		Name:    s.GetTitle(),
+		Path:    s.Path.String,
+		trimExt: trimExt,
+		cache:   cache,
 	}
 }
 
