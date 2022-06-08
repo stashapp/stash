@@ -355,7 +355,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       let hasVrTag = false;
       scene?.tags.map((tag) => {
         // search for known stashdb vr tag and aliases
-        let lowerCaseName = tag.name.toLowerCase()
+        let lowerCaseName = tag.name.toLowerCase();
         if (
           lowerCaseName == "virtual reality" ||
           lowerCaseName == "vr" ||
@@ -487,11 +487,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     if (!(player as any).mediainfo.projection) {
-      let userAgent = navigator.userAgent;
       let isVRDevice = false;
       let projection = "NONE";
 
-      if (userAgent.match(/oculusbrowser|\svr\s/i)) {
+      if (navigator.userAgent.match(/oculusbrowser|\svr\s/i)) {
         isVRDevice = true;
       }
 
