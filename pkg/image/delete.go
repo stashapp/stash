@@ -15,7 +15,7 @@ type Destroyer interface {
 
 // FileDeleter is an extension of file.Deleter that handles deletion of image files.
 type FileDeleter struct {
-	file.Deleter
+	*file.Deleter
 
 	Paths *paths.Paths
 }
@@ -67,7 +67,7 @@ func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter 
 		}
 
 		const deleteFile = true
-		if err := file.Destroy(ctx, s.File, f, &fileDeleter.Deleter, deleteFile); err != nil {
+		if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 			return err
 		}
 	}

@@ -331,7 +331,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 
 	var s *models.Scene
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *file.NewDeleter(),
+		Deleter:        file.NewDeleter(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
@@ -379,7 +379,7 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *file.NewDeleter(),
+		Deleter:        file.NewDeleter(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
@@ -529,7 +529,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *file.NewDeleter(),
+		Deleter:        file.NewDeleter(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}
@@ -575,7 +575,7 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 	fileNamingAlgo := manager.GetInstance().Config.GetVideoFileNamingAlgorithm()
 
 	fileDeleter := &scene.FileDeleter{
-		Deleter:        *file.NewDeleter(),
+		Deleter:        file.NewDeleter(),
 		FileNamingAlgo: fileNamingAlgo,
 		Paths:          manager.GetInstance().Paths,
 	}

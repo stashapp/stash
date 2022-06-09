@@ -688,7 +688,7 @@ func TestFileStore_MarkMissing(t *testing.T) {
 					return
 				}
 
-				assert.NotNil(f.Base().MissingSince, "file marked missing")
+				assert.NotNil(f[0].Base().MissingSince, "file marked missing")
 			}
 		})
 	}

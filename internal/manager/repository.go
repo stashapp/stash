@@ -29,6 +29,8 @@ type SceneReaderWriter interface {
 
 type FileReaderWriter interface {
 	file.Store
+	file.Finder
+	Query(ctx context.Context, options models.FileQueryOptions) (*models.FileQueryResult, error)
 	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
 }
 

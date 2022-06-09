@@ -527,7 +527,25 @@ func (qb *FileStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]file
 	return rows.resolve(), nil
 }
 
-func (qb *FileStore) Find(ctx context.Context, id file.ID) (file.File, error) {
+func (qb *FileStore) Find(ctx context.Context, ids ...file.ID) ([]file.File, error) {
+	var files []file.File
+	for _, id := range ids {
+		file, err := qb.find(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+
+		if file == nil {
+			return nil, fmt.Errorf("file with id %d not found", id)
+		}
+
+		files = append(files, file)
+	}
+
+	return files, nil
+}
+
+func (qb *FileStore) find(ctx context.Context, id file.ID) (file.File, error) {
 	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
@@ -664,6 +682,148 @@ func (qb *FileStore) MarkMissing(ctx context.Context, scanStartTime time.Time, s
 
 	n, _ := r.RowsAffected()
 	return int(n), nil
+}
+
+func (qb *FileStore) validateFilter(fileFilter *models.FileFilterType) error {
+	const and = "AND"
+	const or = "OR"
+	const not = "NOT"
+
+	if fileFilter.And != nil {
+		if fileFilter.Or != nil {
+			return illegalFilterCombination(and, or)
+		}
+		if fileFilter.Not != nil {
+			return illegalFilterCombination(and, not)
+		}
+
+		return qb.validateFilter(fileFilter.And)
+	}
+
+	if fileFilter.Or != nil {
+		if fileFilter.Not != nil {
+			return illegalFilterCombination(or, not)
+		}
+
+		return qb.validateFilter(fileFilter.Or)
+	}
+
+	if fileFilter.Not != nil {
+		return qb.validateFilter(fileFilter.Not)
+	}
+
+	return nil
+}
+
+func (qb *FileStore) makeFilter(ctx context.Context, fileFilter *models.FileFilterType) *filterBuilder {
+	query := &filterBuilder{}
+
+	if fileFilter.And != nil {
+		query.and(qb.makeFilter(ctx, fileFilter.And))
+	}
+	if fileFilter.Or != nil {
+		query.or(qb.makeFilter(ctx, fileFilter.Or))
+	}
+	if fileFilter.Not != nil {
+		query.not(qb.makeFilter(ctx, fileFilter.Not))
+	}
+
+	query.handleCriterion(ctx, pathCriterionHandler(fileFilter.Path, "folders.path", "files.basename"))
+
+	return query
+}
+
+func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions) (*models.FileQueryResult, error) {
+	fileFilter := options.FileFilter
+	findFilter := options.FindFilter
+
+	if fileFilter == nil {
+		fileFilter = &models.FileFilterType{}
+	}
+	if findFilter == nil {
+		findFilter = &models.FindFilterType{}
+	}
+
+	query := qb.newQuery()
+	query.join(folderTable, "", "files.parent_folder_id = folders.id")
+
+	distinctIDs(&query, fileTable)
+
+	if q := findFilter.Q; q != nil && *q != "" {
+		searchColumns := []string{"folders.path", "files.basename"}
+		query.parseQueryString(searchColumns, *q)
+	}
+
+	if err := qb.validateFilter(fileFilter); err != nil {
+		return nil, err
+	}
+	filter := qb.makeFilter(ctx, fileFilter)
+
+	query.addFilter(filter)
+
+	qb.setQuerySort(&query, findFilter)
+	query.sortAndPagination += getPagination(findFilter)
+
+	result, err := qb.queryGroupedFields(ctx, options, query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying aggregate fields: %w", err)
+	}
+
+	idsResult, err := query.findIDs(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error finding IDs: %w", err)
+	}
+
+	result.IDs = make([]file.ID, len(idsResult))
+	for i, id := range idsResult {
+		result.IDs[i] = file.ID(id)
+	}
+
+	return result, nil
+}
+
+func (qb *FileStore) queryGroupedFields(ctx context.Context, options models.FileQueryOptions, query queryBuilder) (*models.FileQueryResult, error) {
+	if !options.Count {
+		// nothing to do - return empty result
+		return models.NewFileQueryResult(qb), nil
+	}
+
+	aggregateQuery := qb.newQuery()
+
+	if options.Count {
+		aggregateQuery.addColumn("COUNT(temp.id) as total")
+	}
+
+	const includeSortPagination = false
+	aggregateQuery.from = fmt.Sprintf("(%s) as temp", query.toSQL(includeSortPagination))
+
+	out := struct {
+		Total int
+	}{}
+	if err := qb.repository.queryStruct(ctx, aggregateQuery.toSQL(includeSortPagination), query.args, &out); err != nil {
+		return nil, err
+	}
+
+	ret := models.NewFileQueryResult(qb)
+	ret.Count = out.Total
+
+	return ret, nil
+}
+
+func (qb *FileStore) setQuerySort(query *queryBuilder, findFilter *models.FindFilterType) {
+	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
+		return
+	}
+	sort := findFilter.GetSort("path")
+
+	direction := findFilter.GetDirection()
+	switch sort {
+	case "path":
+		// special handling for path
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
+	default:
+		query.sortAndPagination += getSort(sort, direction, "files")
+	}
 }
 
 func (qb *FileStore) captionRepository() *captionRepository {

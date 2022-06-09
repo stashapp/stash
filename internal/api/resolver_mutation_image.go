@@ -215,7 +215,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 
 	var i *models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *file.NewDeleter(),
+		Deleter: file.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
@@ -255,7 +255,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 	var images []*models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *file.NewDeleter(),
+		Deleter: file.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
 	if err := r.withTxn(ctx, func(ctx context.Context) error {

@@ -316,7 +316,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	var galleries []*models.Gallery
 	var imgsDestroyed []*models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *file.NewDeleter(),
+		Deleter: file.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
 

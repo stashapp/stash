@@ -13,7 +13,7 @@ import (
 
 // FileDeleter is an extension of file.Deleter that handles deletion of scene files.
 type FileDeleter struct {
-	file.Deleter
+	*file.Deleter
 
 	FileNamingAlgo models.HashAlgorithm
 	Paths          *paths.Paths
@@ -178,7 +178,7 @@ func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDele
 		}
 
 		const deleteFile = true
-		if err := file.Destroy(ctx, s.File, f, &fileDeleter.Deleter, deleteFile); err != nil {
+		if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 			return err
 		}
 

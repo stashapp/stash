@@ -89,6 +89,23 @@ func (f *BaseFile) Base() *BaseFile {
 	return f
 }
 
+func (f *BaseFile) Exists() (bool, error) {
+	var fs FS = &OsFS{}
+	if f.ZipFile != nil {
+		zipPath := f.ZipFile.Base().Path
+		zfs, err := fs.OpenZip(zipPath)
+		if err != nil {
+			return false, err
+		}
+		defer zfs.Close()
+		fs = zfs
+	}
+	// else assume os file
+
+	_, err := fs.Lstat(f.Path)
+	return err == nil, err
+}
+
 func (f *BaseFile) Open() (io.ReadCloser, error) {
 	if f.ZipFile != nil {
 		fs := &OsFS{}
@@ -136,6 +153,10 @@ func (f *BaseFile) Serve(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.ServeContent(w, r, f.Basename, f.ModTime, rsc)
+}
+
+type Finder interface {
+	Find(ctx context.Context, id ...ID) ([]File, error)
 }
 
 // Getter provides methods to find Files.
