@@ -185,26 +185,17 @@ func (_m *SceneReaderWriter) CountMissingOSHash(ctx context.Context) (int, error
 }
 
 // Create provides a mock function with given fields: ctx, newScene
-func (_m *SceneReaderWriter) Create(ctx context.Context, newScene models.Scene) (*models.Scene, error) {
+func (_m *SceneReaderWriter) Create(ctx context.Context, newScene *models.Scene) error {
 	ret := _m.Called(ctx, newScene)
 
-	var r0 *models.Scene
-	if rf, ok := ret.Get(0).(func(context.Context, models.Scene) *models.Scene); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Scene) error); ok {
 		r0 = rf(ctx, newScene)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Scene)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.Scene) error); ok {
-		r1 = rf(ctx, newScene)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // DecrementOCounter provides a mock function with given fields: ctx, id
@@ -530,121 +521,6 @@ func (_m *SceneReaderWriter) GetCover(ctx context.Context, sceneID int) ([]byte,
 	return r0, r1
 }
 
-// GetGalleryIDs provides a mock function with given fields: ctx, sceneID
-func (_m *SceneReaderWriter) GetGalleryIDs(ctx context.Context, sceneID int) ([]int, error) {
-	ret := _m.Called(ctx, sceneID)
-
-	var r0 []int
-	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
-		r0 = rf(ctx, sceneID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, sceneID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetMovies provides a mock function with given fields: ctx, sceneID
-func (_m *SceneReaderWriter) GetMovies(ctx context.Context, sceneID int) ([]models.MoviesScenes, error) {
-	ret := _m.Called(ctx, sceneID)
-
-	var r0 []models.MoviesScenes
-	if rf, ok := ret.Get(0).(func(context.Context, int) []models.MoviesScenes); ok {
-		r0 = rf(ctx, sceneID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]models.MoviesScenes)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, sceneID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetPerformerIDs provides a mock function with given fields: ctx, sceneID
-func (_m *SceneReaderWriter) GetPerformerIDs(ctx context.Context, sceneID int) ([]int, error) {
-	ret := _m.Called(ctx, sceneID)
-
-	var r0 []int
-	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
-		r0 = rf(ctx, sceneID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, sceneID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetStashIDs provides a mock function with given fields: ctx, sceneID
-func (_m *SceneReaderWriter) GetStashIDs(ctx context.Context, sceneID int) ([]*models.StashID, error) {
-	ret := _m.Called(ctx, sceneID)
-
-	var r0 []*models.StashID
-	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.StashID); ok {
-		r0 = rf(ctx, sceneID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.StashID)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, sceneID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetTagIDs provides a mock function with given fields: ctx, sceneID
-func (_m *SceneReaderWriter) GetTagIDs(ctx context.Context, sceneID int) ([]int, error) {
-	ret := _m.Called(ctx, sceneID)
-
-	var r0 []int
-	if rf, ok := ret.Get(0).(func(context.Context, int) []int); ok {
-		r0 = rf(ctx, sceneID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]int)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, sceneID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // IncrementOCounter provides a mock function with given fields: ctx, id
 func (_m *SceneReaderWriter) IncrementOCounter(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)
@@ -732,26 +608,17 @@ func (_m *SceneReaderWriter) Size(ctx context.Context) (float64, error) {
 }
 
 // Update provides a mock function with given fields: ctx, updatedScene
-func (_m *SceneReaderWriter) Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error) {
+func (_m *SceneReaderWriter) Update(ctx context.Context, updatedScene *models.Scene) error {
 	ret := _m.Called(ctx, updatedScene)
 
-	var r0 *models.Scene
-	if rf, ok := ret.Get(0).(func(context.Context, models.ScenePartial) *models.Scene); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.Scene) error); ok {
 		r0 = rf(ctx, updatedScene)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Scene)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.ScenePartial) error); ok {
-		r1 = rf(ctx, updatedScene)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // UpdateCaptions provides a mock function with given fields: ctx, id, captions
@@ -782,27 +649,13 @@ func (_m *SceneReaderWriter) UpdateCover(ctx context.Context, sceneID int, cover
 	return r0
 }
 
-// UpdateFileModTime provides a mock function with given fields: ctx, id, modTime
-func (_m *SceneReaderWriter) UpdateFileModTime(ctx context.Context, id int, modTime models.NullSQLiteTimestamp) error {
-	ret := _m.Called(ctx, id, modTime)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, models.NullSQLiteTimestamp) error); ok {
-		r0 = rf(ctx, id, modTime)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// UpdateFull provides a mock function with given fields: ctx, updatedScene
-func (_m *SceneReaderWriter) UpdateFull(ctx context.Context, updatedScene models.Scene) (*models.Scene, error) {
-	ret := _m.Called(ctx, updatedScene)
+// UpdatePartial provides a mock function with given fields: ctx, id, updatedScene
+func (_m *SceneReaderWriter) UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error) {
+	ret := _m.Called(ctx, id, updatedScene)
 
 	var r0 *models.Scene
-	if rf, ok := ret.Get(0).(func(context.Context, models.Scene) *models.Scene); ok {
-		r0 = rf(ctx, updatedScene)
+	if rf, ok := ret.Get(0).(func(context.Context, int, models.ScenePartial) *models.Scene); ok {
+		r0 = rf(ctx, id, updatedScene)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Scene)
@@ -810,83 +663,13 @@ func (_m *SceneReaderWriter) UpdateFull(ctx context.Context, updatedScene models
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, models.Scene) error); ok {
-		r1 = rf(ctx, updatedScene)
+	if rf, ok := ret.Get(1).(func(context.Context, int, models.ScenePartial) error); ok {
+		r1 = rf(ctx, id, updatedScene)
 	} else {
 		r1 = ret.Error(1)
 	}
 
 	return r0, r1
-}
-
-// UpdateGalleries provides a mock function with given fields: ctx, sceneID, galleryIDs
-func (_m *SceneReaderWriter) UpdateGalleries(ctx context.Context, sceneID int, galleryIDs []int) error {
-	ret := _m.Called(ctx, sceneID, galleryIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
-		r0 = rf(ctx, sceneID, galleryIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// UpdateMovies provides a mock function with given fields: ctx, sceneID, movies
-func (_m *SceneReaderWriter) UpdateMovies(ctx context.Context, sceneID int, movies []models.MoviesScenes) error {
-	ret := _m.Called(ctx, sceneID, movies)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []models.MoviesScenes) error); ok {
-		r0 = rf(ctx, sceneID, movies)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// UpdatePerformers provides a mock function with given fields: ctx, sceneID, performerIDs
-func (_m *SceneReaderWriter) UpdatePerformers(ctx context.Context, sceneID int, performerIDs []int) error {
-	ret := _m.Called(ctx, sceneID, performerIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
-		r0 = rf(ctx, sceneID, performerIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// UpdateStashIDs provides a mock function with given fields: ctx, sceneID, stashIDs
-func (_m *SceneReaderWriter) UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []models.StashID) error {
-	ret := _m.Called(ctx, sceneID, stashIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []models.StashID) error); ok {
-		r0 = rf(ctx, sceneID, stashIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// UpdateTags provides a mock function with given fields: ctx, sceneID, tagIDs
-func (_m *SceneReaderWriter) UpdateTags(ctx context.Context, sceneID int, tagIDs []int) error {
-	ret := _m.Called(ctx, sceneID, tagIDs)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []int) error); ok {
-		r0 = rf(ctx, sceneID, tagIDs)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }
 
 // Wall provides a mock function with given fields: ctx, q

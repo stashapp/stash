@@ -96,33 +96,21 @@ type ImageReader interface {
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Image, error)
 	CountByGalleryID(ctx context.Context, galleryID int) (int, error)
 	FindByPath(ctx context.Context, path string) (*Image, error)
-	// FindByPerformerID(performerID int) ([]*Image, error)
-	// CountByPerformerID(performerID int) (int, error)
-	// FindByStudioID(studioID int) ([]*Image, error)
 	Count(ctx context.Context) (int, error)
 	Size(ctx context.Context) (float64, error)
-	// SizeCount() (string, error)
-	// CountByStudioID(studioID int) (int, error)
-	// CountByTagID(tagID int) (int, error)
 	All(ctx context.Context) ([]*Image, error)
 	Query(ctx context.Context, options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(ctx context.Context, imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
-	GetGalleryIDs(ctx context.Context, imageID int) ([]int, error)
-	GetTagIDs(ctx context.Context, imageID int) ([]int, error)
-	GetPerformerIDs(ctx context.Context, imageID int) ([]int, error)
 }
 
 type ImageWriter interface {
-	Create(ctx context.Context, newImage Image) (*Image, error)
-	Update(ctx context.Context, updatedImage ImagePartial) (*Image, error)
-	UpdateFull(ctx context.Context, updatedImage Image) (*Image, error)
+	Create(ctx context.Context, newImage *Image) error
+	Update(ctx context.Context, updatedImage *Image) error
+	UpdatePartial(ctx context.Context, id int, partial ImagePartial) (*Image, error)
 	IncrementOCounter(ctx context.Context, id int) (int, error)
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)
 	Destroy(ctx context.Context, id int) error
-	UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error
-	UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error
-	UpdateTags(ctx context.Context, imageID int, tagIDs []int) error
 }
 
 type ImageReaderWriter interface {

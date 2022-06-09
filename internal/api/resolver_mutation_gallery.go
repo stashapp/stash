@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
@@ -44,63 +42,47 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	// Populate a new performer from the input
 	currentTime := time.Now()
 	newGallery := models.Gallery{
-		Title: sql.NullString{
-			String: input.Title,
-			Valid:  true,
-		},
+		Title:     input.Title,
 		Checksum:  checksum,
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
 	if input.URL != nil {
-		newGallery.URL = sql.NullString{String: *input.URL, Valid: true}
+		newGallery.URL = *input.URL
 	}
 	if input.Details != nil {
-		newGallery.Details = sql.NullString{String: *input.Details, Valid: true}
-	}
-	if input.URL != nil {
-		newGallery.URL = sql.NullString{String: *input.URL, Valid: true}
-	}
-	if input.Date != nil {
-		newGallery.Date = models.SQLiteDate{String: *input.Date, Valid: true}
-	}
-	if input.Rating != nil {
-		newGallery.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
-	} else {
-		// rating must be nullable
-		newGallery.Rating = sql.NullInt64{Valid: false}
+		newGallery.Details = *input.Details
 	}
 
+	if input.Date != nil {
+		d := models.NewDate(*input.Date)
+		newGallery.Date = &d
+	}
+	newGallery.Rating = input.Rating
+
 	if input.StudioID != nil {
-		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		newGallery.StudioID = sql.NullInt64{Int64: studioID, Valid: true}
-	} else {
-		// studio must be nullable
-		newGallery.StudioID = sql.NullInt64{Valid: false}
+		studioID, _ := strconv.Atoi(*input.StudioID)
+		newGallery.StudioID = &studioID
+	}
+
+	var err error
+	newGallery.PerformerIDs, err = stringslice.StringSliceToIntSlice(input.PerformerIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting performer ids: %w", err)
+	}
+	newGallery.TagIDs, err = stringslice.StringSliceToIntSlice(input.TagIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+	newGallery.SceneIDs, err = stringslice.StringSliceToIntSlice(input.SceneIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting scene ids: %w", err)
 	}
 
 	// Start the transaction and save the gallery
-	var gallery *models.Gallery
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Gallery
-		var err error
-		gallery, err = qb.Create(ctx, newGallery)
-		if err != nil {
-			return err
-		}
-
-		// Save the performers
-		if err := r.updateGalleryPerformers(ctx, qb, gallery.ID, input.PerformerIds); err != nil {
-			return err
-		}
-
-		// Save the tags
-		if err := r.updateGalleryTags(ctx, qb, gallery.ID, input.TagIds); err != nil {
-			return err
-		}
-
-		// Save the scenes
-		if err := r.updateGalleryScenes(ctx, qb, gallery.ID, input.SceneIds); err != nil {
+		if err := qb.Create(ctx, &newGallery); err != nil {
 			return err
 		}
 
@@ -109,36 +91,12 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, gallery.ID, plugin.GalleryCreatePost, input, nil)
-	return r.getGallery(ctx, gallery.ID)
-}
-
-func (r *mutationResolver) updateGalleryPerformers(ctx context.Context, qb gallery.PerformerUpdater, galleryID int, performerIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
-	if err != nil {
-		return err
-	}
-	return qb.UpdatePerformers(ctx, galleryID, ids)
-}
-
-func (r *mutationResolver) updateGalleryTags(ctx context.Context, qb gallery.TagUpdater, galleryID int, tagIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(tagIDs)
-	if err != nil {
-		return err
-	}
-	return qb.UpdateTags(ctx, galleryID, ids)
+	r.hookExecutor.ExecutePostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, input, nil)
+	return r.getGallery(ctx, newGallery.ID)
 }
 
 type GallerySceneUpdater interface {
 	UpdateScenes(ctx context.Context, galleryID int, sceneIDs []int) error
-}
-
-func (r *mutationResolver) updateGalleryScenes(ctx context.Context, qb GallerySceneUpdater, galleryID int, sceneIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(sceneIDs)
-	if err != nil {
-		return err
-	}
-	return qb.UpdateScenes(ctx, galleryID, ids)
 }
 
 func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.GalleryUpdateInput) (ret *models.Gallery, err error) {
@@ -219,11 +177,7 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		return nil, errors.New("not found")
 	}
 
-	updatedTime := time.Now()
-	updatedGallery := models.GalleryPartial{
-		ID:        galleryID,
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
-	}
+	updatedGallery := models.NewGalleryPartial()
 
 	if input.Title != nil {
 		// ensure title is not empty
@@ -232,47 +186,50 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		}
 
 		// if gallery is not zip-based, then generate the checksum from the title
-		if !originalGallery.Path.Valid {
+		if originalGallery.Path != nil {
 			checksum := md5.FromString(*input.Title)
-			updatedGallery.Checksum = &checksum
+			updatedGallery.Checksum = models.NewOptionalString(checksum)
 		}
 
-		updatedGallery.Title = &sql.NullString{String: *input.Title, Valid: true}
+		updatedGallery.Title = models.NewOptionalString(*input.Title)
 	}
 
-	updatedGallery.Details = translator.nullString(input.Details, "details")
-	updatedGallery.URL = translator.nullString(input.URL, "url")
-	updatedGallery.Date = translator.sqliteDate(input.Date, "date")
-	updatedGallery.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedGallery.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedGallery.Organized = input.Organized
+	updatedGallery.Details = translator.optionalString(input.Details, "details")
+	updatedGallery.URL = translator.optionalString(input.URL, "url")
+	updatedGallery.Date = translator.optionalDate(input.Date, "date")
+	updatedGallery.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("performer_ids") {
+		updatedGallery.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
+		}
+	}
+
+	if translator.hasField("tag_ids") {
+		updatedGallery.TagIDs, err = translateUpdateIDs(input.TagIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
+
+	if translator.hasField("scene_ids") {
+		updatedGallery.SceneIDs, err = translateUpdateIDs(input.SceneIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting scene ids: %w", err)
+		}
+	}
 
 	// gallery scene is set from the scene only
 
-	gallery, err := qb.UpdatePartial(ctx, updatedGallery)
+	gallery, err := qb.UpdatePartial(ctx, galleryID, updatedGallery)
 	if err != nil {
 		return nil, err
-	}
-
-	// Save the performers
-	if translator.hasField("performer_ids") {
-		if err := r.updateGalleryPerformers(ctx, qb, galleryID, input.PerformerIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the tags
-	if translator.hasField("tag_ids") {
-		if err := r.updateGalleryTags(ctx, qb, galleryID, input.TagIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the scenes
-	if translator.hasField("scene_ids") {
-		if err := r.updateGalleryScenes(ctx, qb, galleryID, input.SceneIds); err != nil {
-			return nil, err
-		}
 	}
 
 	return gallery, nil
@@ -280,22 +237,44 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 
 func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGalleryUpdateInput) ([]*models.Gallery, error) {
 	// Populate gallery from the input
-	updatedTime := time.Now()
-
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	updatedGallery := models.GalleryPartial{
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+	updatedGallery := models.NewGalleryPartial()
+
+	updatedGallery.Details = translator.optionalString(input.Details, "details")
+	updatedGallery.URL = translator.optionalString(input.URL, "url")
+	updatedGallery.Date = translator.optionalDate(input.Date, "date")
+	updatedGallery.Rating = translator.optionalInt(input.Rating, "rating")
+
+	var err error
+	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("performer_ids") {
+		updatedGallery.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
+		}
 	}
 
-	updatedGallery.Details = translator.nullString(input.Details, "details")
-	updatedGallery.URL = translator.nullString(input.URL, "url")
-	updatedGallery.Date = translator.sqliteDate(input.Date, "date")
-	updatedGallery.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedGallery.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedGallery.Organized = input.Organized
+	if translator.hasField("tag_ids") {
+		updatedGallery.TagIDs, err = translateUpdateIDs(input.TagIds.Ids, input.TagIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
+
+	if translator.hasField("scene_ids") {
+		updatedGallery.SceneIDs, err = translateUpdateIDs(input.SceneIds.Ids, input.SceneIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting scene ids: %w", err)
+		}
+	}
 
 	ret := []*models.Gallery{}
 
@@ -305,50 +284,13 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 
 		for _, galleryIDStr := range input.Ids {
 			galleryID, _ := strconv.Atoi(galleryIDStr)
-			updatedGallery.ID = galleryID
 
-			gallery, err := qb.UpdatePartial(ctx, updatedGallery)
+			gallery, err := qb.UpdatePartial(ctx, galleryID, updatedGallery)
 			if err != nil {
 				return err
 			}
 
 			ret = append(ret, gallery)
-
-			// Save the performers
-			if translator.hasField("performer_ids") {
-				performerIDs, err := adjustGalleryPerformerIDs(ctx, qb, galleryID, *input.PerformerIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdatePerformers(ctx, galleryID, performerIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the tags
-			if translator.hasField("tag_ids") {
-				tagIDs, err := adjustGalleryTagIDs(ctx, qb, galleryID, *input.TagIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateTags(ctx, galleryID, tagIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the scenes
-			if translator.hasField("scene_ids") {
-				sceneIDs, err := adjustGallerySceneIDs(ctx, qb, galleryID, *input.SceneIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateScenes(ctx, galleryID, sceneIDs); err != nil {
-					return err
-				}
-			}
 		}
 
 		return nil
@@ -372,43 +314,8 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	return newRet, nil
 }
 
-type GalleryPerformerGetter interface {
-	GetPerformerIDs(ctx context.Context, galleryID int) ([]int, error)
-}
-
-type GalleryTagGetter interface {
-	GetTagIDs(ctx context.Context, galleryID int) ([]int, error)
-}
-
 type GallerySceneGetter interface {
 	GetSceneIDs(ctx context.Context, galleryID int) ([]int, error)
-}
-
-func adjustGalleryPerformerIDs(ctx context.Context, qb GalleryPerformerGetter, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetPerformerIDs(ctx, galleryID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func adjustGalleryTagIDs(ctx context.Context, qb GalleryTagGetter, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetTagIDs(ctx, galleryID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func adjustGallerySceneIDs(ctx context.Context, qb GallerySceneGetter, galleryID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetSceneIDs(ctx, galleryID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
 }
 
 func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.GalleryDestroyInput) (bool, error) {
@@ -459,7 +366,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				}
 
 				if deleteFile {
-					if err := fileDeleter.Files([]string{gallery.Path.String}); err != nil {
+					if err := fileDeleter.Files([]string{*gallery.Path}); err != nil {
 						return err
 					}
 				}
@@ -505,10 +412,10 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 	for _, gallery := range galleries {
 		// don't delete stash library paths
-		if utils.IsTrue(input.DeleteFile) && !gallery.Zip && gallery.Path.Valid && !isStashPath(gallery.Path.String) {
+		if utils.IsTrue(input.DeleteFile) && !gallery.Zip && gallery.Path != nil && !isStashPath(*gallery.Path) {
 			// try to remove the folder - it is possible that it is not empty
 			// so swallow the error if present
-			_ = os.Remove(gallery.Path.String)
+			_ = os.Remove(*gallery.Path)
 		}
 	}
 
@@ -517,7 +424,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 		r.hookExecutor.ExecutePostHooks(ctx, gallery.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			GalleryDestroyInput: input,
 			Checksum:            gallery.Checksum,
-			Path:                gallery.Path.String,
+			Path:                *gallery.Path,
 		}, nil)
 	}
 

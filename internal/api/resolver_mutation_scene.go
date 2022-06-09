@@ -98,19 +98,55 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	var coverImageData []byte
 
-	updatedTime := time.Now()
-	updatedScene := models.ScenePartial{
-		ID:        sceneID,
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+	updatedScene := models.NewScenePartial()
+	updatedScene.Title = translator.optionalString(input.Title, "title")
+	updatedScene.Details = translator.optionalString(input.Details, "details")
+	updatedScene.URL = translator.optionalString(input.URL, "url")
+	updatedScene.Date = translator.optionalDate(input.Date, "date")
+	updatedScene.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	updatedScene.Title = translator.nullString(input.Title, "title")
-	updatedScene.Details = translator.nullString(input.Details, "details")
-	updatedScene.URL = translator.nullString(input.URL, "url")
-	updatedScene.Date = translator.sqliteDate(input.Date, "date")
-	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedScene.Organized = input.Organized
+	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("performer_ids") {
+		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
+		}
+	}
+
+	if translator.hasField("tag_ids") {
+		updatedScene.TagIDs, err = translateUpdateIDs(input.TagIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
+
+	if translator.hasField("gallery_ids") {
+		updatedScene.GalleryIDs, err = translateUpdateIDs(input.GalleryIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting gallery ids: %w", err)
+		}
+	}
+
+	// Save the movies
+	if translator.hasField("movies") {
+		updatedScene.MovieIDs, err = models.UpdateMovieIDsFromInput(input.Movies)
+		if err != nil {
+			return nil, fmt.Errorf("converting movie ids: %w", err)
+		}
+	}
+
+	// Save the stash_ids
+	if translator.hasField("stash_ids") {
+		updatedScene.StashIDs = &models.UpdateStashIDs{
+			StashIDs: input.StashIds,
+			Mode:     models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
@@ -123,7 +159,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	qb := r.repository.Scene
-	s, err := qb.Update(ctx, updatedScene)
+	s, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
 	if err != nil {
 		return nil, err
 	}
@@ -131,42 +167,6 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	// update cover table
 	if len(coverImageData) > 0 {
 		if err := qb.UpdateCover(ctx, sceneID, coverImageData); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the performers
-	if translator.hasField("performer_ids") {
-		if err := r.updateScenePerformers(ctx, sceneID, input.PerformerIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the movies
-	if translator.hasField("movies") {
-		if err := r.updateSceneMovies(ctx, sceneID, input.Movies); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the tags
-	if translator.hasField("tag_ids") {
-		if err := r.updateSceneTags(ctx, sceneID, input.TagIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the galleries
-	if translator.hasField("gallery_ids") {
-		if err := r.updateSceneGalleries(ctx, sceneID, input.GalleryIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the stash_ids
-	if translator.hasField("stash_ids") {
-		stashIDJoins := models.StashIDsFromInput(input.StashIds)
-		if err := qb.UpdateStashIDs(ctx, sceneID, stashIDJoins); err != nil {
 			return nil, err
 		}
 	}
@@ -182,56 +182,6 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	return s, nil
 }
 
-func (r *mutationResolver) updateScenePerformers(ctx context.Context, sceneID int, performerIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
-	if err != nil {
-		return err
-	}
-	return r.repository.Scene.UpdatePerformers(ctx, sceneID, ids)
-}
-
-func (r *mutationResolver) updateSceneMovies(ctx context.Context, sceneID int, movies []*models.SceneMovieInput) error {
-	var movieJoins []models.MoviesScenes
-
-	for _, movie := range movies {
-		movieID, err := strconv.Atoi(movie.MovieID)
-		if err != nil {
-			return err
-		}
-
-		movieJoin := models.MoviesScenes{
-			MovieID: movieID,
-		}
-
-		if movie.SceneIndex != nil {
-			movieJoin.SceneIndex = sql.NullInt64{
-				Int64: int64(*movie.SceneIndex),
-				Valid: true,
-			}
-		}
-
-		movieJoins = append(movieJoins, movieJoin)
-	}
-
-	return r.repository.Scene.UpdateMovies(ctx, sceneID, movieJoins)
-}
-
-func (r *mutationResolver) updateSceneTags(ctx context.Context, sceneID int, tagsIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(tagsIDs)
-	if err != nil {
-		return err
-	}
-	return r.repository.Scene.UpdateTags(ctx, sceneID, ids)
-}
-
-func (r *mutationResolver) updateSceneGalleries(ctx context.Context, sceneID int, galleryIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(galleryIDs)
-	if err != nil {
-		return err
-	}
-	return r.repository.Scene.UpdateGalleries(ctx, sceneID, ids)
-}
-
 func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneUpdateInput) ([]*models.Scene, error) {
 	sceneIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
@@ -239,23 +189,51 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	}
 
 	// Populate scene from the input
-	updatedTime := time.Now()
-
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	updatedScene := models.ScenePartial{
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+	updatedScene := models.NewScenePartial()
+	updatedScene.Title = translator.optionalString(input.Title, "title")
+	updatedScene.Details = translator.optionalString(input.Details, "details")
+	updatedScene.URL = translator.optionalString(input.URL, "url")
+	updatedScene.Date = translator.optionalDate(input.Date, "date")
+	updatedScene.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 
-	updatedScene.Title = translator.nullString(input.Title, "title")
-	updatedScene.Details = translator.nullString(input.Details, "details")
-	updatedScene.URL = translator.nullString(input.URL, "url")
-	updatedScene.Date = translator.sqliteDate(input.Date, "date")
-	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedScene.Organized = input.Organized
+	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("performer_ids") {
+		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
+		}
+	}
+
+	if translator.hasField("tag_ids") {
+		updatedScene.TagIDs, err = translateUpdateIDs(input.TagIds.Ids, input.TagIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
+
+	if translator.hasField("gallery_ids") {
+		updatedScene.GalleryIDs, err = translateUpdateIDs(input.GalleryIds.Ids, input.GalleryIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting gallery ids: %w", err)
+		}
+	}
+
+	// Save the movies
+	if translator.hasField("movies") {
+		updatedScene.MovieIDs, err = translateSceneMovieIDs(*input.MovieIds)
+		if err != nil {
+			return nil, fmt.Errorf("converting movie ids: %w", err)
+		}
+	}
 
 	ret := []*models.Scene{}
 
@@ -264,62 +242,12 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 		qb := r.repository.Scene
 
 		for _, sceneID := range sceneIDs {
-			updatedScene.ID = sceneID
-
-			scene, err := qb.Update(ctx, updatedScene)
+			scene, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
 			if err != nil {
 				return err
 			}
 
 			ret = append(ret, scene)
-
-			// Save the performers
-			if translator.hasField("performer_ids") {
-				performerIDs, err := r.adjustScenePerformerIDs(ctx, sceneID, *input.PerformerIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdatePerformers(ctx, sceneID, performerIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the tags
-			if translator.hasField("tag_ids") {
-				tagIDs, err := adjustTagIDs(ctx, qb, sceneID, *input.TagIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateTags(ctx, sceneID, tagIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the galleries
-			if translator.hasField("gallery_ids") {
-				galleryIDs, err := r.adjustSceneGalleryIDs(ctx, sceneID, *input.GalleryIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateGalleries(ctx, sceneID, galleryIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the movies
-			if translator.hasField("movie_ids") {
-				movies, err := r.adjustSceneMovieIDs(ctx, sceneID, *input.MovieIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateMovies(ctx, sceneID, movies); err != nil {
-					return err
-				}
-			}
 		}
 
 		return nil
@@ -345,7 +273,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 
 func adjustIDs(existingIDs []int, updateIDs BulkUpdateIds) []int {
 	// if we are setting the ids, just return the ids
-	if updateIDs.Mode == BulkUpdateIDModeSet {
+	if updateIDs.Mode == models.RelationshipUpdateModeSet {
 		existingIDs = []int{}
 		for _, idStr := range updateIDs.Ids {
 			id, _ := strconv.Atoi(idStr)
@@ -362,7 +290,7 @@ func adjustIDs(existingIDs []int, updateIDs BulkUpdateIds) []int {
 		foundExisting := false
 		for idx, existingID := range existingIDs {
 			if existingID == id {
-				if updateIDs.Mode == BulkUpdateIDModeRemove {
+				if updateIDs.Mode == models.RelationshipUpdateModeRemove {
 					// remove from the list
 					existingIDs = append(existingIDs[:idx], existingIDs[idx+1:]...)
 				}
@@ -372,21 +300,12 @@ func adjustIDs(existingIDs []int, updateIDs BulkUpdateIds) []int {
 			}
 		}
 
-		if !foundExisting && updateIDs.Mode != BulkUpdateIDModeRemove {
+		if !foundExisting && updateIDs.Mode != models.RelationshipUpdateModeRemove {
 			existingIDs = append(existingIDs, id)
 		}
 	}
 
 	return existingIDs
-}
-
-func (r *mutationResolver) adjustScenePerformerIDs(ctx context.Context, sceneID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = r.repository.Scene.GetPerformerIDs(ctx, sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
 }
 
 type tagIDsGetter interface {
@@ -400,57 +319,6 @@ func adjustTagIDs(ctx context.Context, qb tagIDsGetter, sceneID int, ids BulkUpd
 	}
 
 	return adjustIDs(ret, ids), nil
-}
-
-func (r *mutationResolver) adjustSceneGalleryIDs(ctx context.Context, sceneID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = r.repository.Scene.GetGalleryIDs(ctx, sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func (r *mutationResolver) adjustSceneMovieIDs(ctx context.Context, sceneID int, updateIDs BulkUpdateIds) ([]models.MoviesScenes, error) {
-	existingMovies, err := r.repository.Scene.GetMovies(ctx, sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	// if we are setting the ids, just return the ids
-	if updateIDs.Mode == BulkUpdateIDModeSet {
-		existingMovies = []models.MoviesScenes{}
-		for _, idStr := range updateIDs.Ids {
-			id, _ := strconv.Atoi(idStr)
-			existingMovies = append(existingMovies, models.MoviesScenes{MovieID: id})
-		}
-
-		return existingMovies, nil
-	}
-
-	for _, idStr := range updateIDs.Ids {
-		id, _ := strconv.Atoi(idStr)
-
-		// look for the id in the list
-		foundExisting := false
-		for idx, existingMovie := range existingMovies {
-			if existingMovie.MovieID == id {
-				if updateIDs.Mode == BulkUpdateIDModeRemove {
-					// remove from the list
-					existingMovies = append(existingMovies[:idx], existingMovies[idx+1:]...)
-				}
-
-				foundExisting = true
-				break
-			}
-		}
-
-		if !foundExisting && updateIDs.Mode != BulkUpdateIDModeRemove {
-			existingMovies = append(existingMovies, models.MoviesScenes{MovieID: id})
-		}
-	}
-
-	return existingMovies, err
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {
@@ -498,8 +366,8 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	// call post hook after performing the other actions
 	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
 		SceneDestroyInput: input,
-		Checksum:          s.Checksum.String,
-		OSHash:            s.OSHash.String,
+		Checksum:          stringPtrToString(s.Checksum),
+		OSHash:            stringPtrToString(s.OSHash),
 		Path:              s.Path,
 	}, nil)
 
@@ -554,8 +422,8 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 		// call post hook after performing the other actions
 		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.ScenesDestroyInput{
 			ScenesDestroyInput: input,
-			Checksum:           scene.Checksum.String,
-			OSHash:             scene.OSHash.String,
+			Checksum:           stringPtrToString(scene.Checksum),
+			OSHash:             stringPtrToString(scene.OSHash),
 			Path:               scene.Path,
 		}, nil)
 	}

@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const (
+var (
 	path = "path"
 
 	imageNameErr = "imageNameErr"
@@ -40,9 +40,6 @@ const (
 	existingTagName = "existingTagName"
 	existingTagErr  = "existingTagErr"
 	missingTagName  = "missingTagName"
-
-	errPerformersID = 200
-	errGalleriesID  = 201
 
 	missingChecksum = "missingChecksum"
 	errChecksum     = "errChecksum"
@@ -86,7 +83,7 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.image.StudioID.Int64)
+	assert.Equal(t, existingStudioID, *i.image.StudioID)
 
 	i.Input.Studio = existingStudioErr
 	err = i.PreImport(testCtx)
@@ -122,7 +119,7 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.image.StudioID.Int64)
+	assert.Equal(t, existingStudioID, *i.image.StudioID)
 
 	studioReaderWriter.AssertExpectations(t)
 }
@@ -166,7 +163,7 @@ func TestImporterPreImportWithGallery(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingGalleryID, i.galleries[0].ID)
+	assert.Equal(t, existingGalleryID, i.image.GalleryIDs[0])
 
 	i.Input.Galleries = []string{
 		existingGalleryErr,
@@ -200,12 +197,12 @@ func TestImporterPreImportWithMissingGallery(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Nil(t, i.galleries)
+	assert.Nil(t, i.image.GalleryIDs)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Nil(t, i.galleries)
+	assert.Nil(t, i.image.GalleryIDs)
 
 	galleryReaderWriter.AssertExpectations(t)
 }
@@ -234,7 +231,7 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingPerformerID, i.performers[0].ID)
+	assert.Equal(t, []int{existingPerformerID}, i.image.PerformerIDs)
 
 	i.Input.Performers = []string{existingPerformerErr}
 	err = i.PreImport(testCtx)
@@ -272,7 +269,7 @@ func TestImporterPreImportWithMissingPerformer(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingPerformerID, i.performers[0].ID)
+	assert.Equal(t, []int{existingPerformerID}, i.image.PerformerIDs)
 
 	performerReaderWriter.AssertExpectations(t)
 }
@@ -322,7 +319,7 @@ func TestImporterPreImportWithTag(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingTagID, i.tags[0].ID)
+	assert.Equal(t, []int{existingTagID}, i.image.TagIDs)
 
 	i.Input.Tags = []string{existingTagErr}
 	err = i.PreImport(testCtx)
@@ -360,7 +357,7 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingTagID, i.tags[0].ID)
+	assert.Equal(t, []int{existingTagID}, i.image.TagIDs)
 
 	tagReaderWriter.AssertExpectations(t)
 }
@@ -384,84 +381,6 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
-}
-
-func TestImporterPostImportUpdateGallery(t *testing.T) {
-	readerWriter := &mocks.ImageReaderWriter{}
-
-	i := Importer{
-		ReaderWriter: readerWriter,
-		galleries: []*models.Gallery{
-			{
-				ID: existingGalleryID,
-			},
-		},
-	}
-
-	updateErr := errors.New("UpdateGalleries error")
-
-	readerWriter.On("UpdateGalleries", testCtx, imageID, []int{existingGalleryID}).Return(nil).Once()
-	readerWriter.On("UpdateGalleries", testCtx, errGalleriesID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
-
-	err := i.PostImport(testCtx, imageID)
-	assert.Nil(t, err)
-
-	err = i.PostImport(testCtx, errGalleriesID)
-	assert.NotNil(t, err)
-
-	readerWriter.AssertExpectations(t)
-}
-
-func TestImporterPostImportUpdatePerformers(t *testing.T) {
-	readerWriter := &mocks.ImageReaderWriter{}
-
-	i := Importer{
-		ReaderWriter: readerWriter,
-		performers: []*models.Performer{
-			{
-				ID: existingPerformerID,
-			},
-		},
-	}
-
-	updateErr := errors.New("UpdatePerformers error")
-
-	readerWriter.On("UpdatePerformers", testCtx, imageID, []int{existingPerformerID}).Return(nil).Once()
-	readerWriter.On("UpdatePerformers", testCtx, errPerformersID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
-
-	err := i.PostImport(testCtx, imageID)
-	assert.Nil(t, err)
-
-	err = i.PostImport(testCtx, errPerformersID)
-	assert.NotNil(t, err)
-
-	readerWriter.AssertExpectations(t)
-}
-
-func TestImporterPostImportUpdateTags(t *testing.T) {
-	readerWriter := &mocks.ImageReaderWriter{}
-
-	i := Importer{
-		ReaderWriter: readerWriter,
-		tags: []*models.Tag{
-			{
-				ID: existingTagID,
-			},
-		},
-	}
-
-	updateErr := errors.New("UpdateTags error")
-
-	readerWriter.On("UpdateTags", testCtx, imageID, []int{existingTagID}).Return(nil).Once()
-	readerWriter.On("UpdateTags", testCtx, errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
-
-	err := i.PostImport(testCtx, imageID)
-	assert.Nil(t, err)
-
-	err = i.PostImport(testCtx, errTagsID)
-	assert.NotNil(t, err)
-
-	readerWriter.AssertExpectations(t)
 }
 
 func TestImporterFindExistingID(t *testing.T) {
@@ -503,11 +422,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.ImageReaderWriter{}
 
 	image := models.Image{
-		Title: models.NullString(title),
+		Title: title,
 	}
 
 	imageErr := models.Image{
-		Title: models.NullString(imageNameErr),
+		Title: imageNameErr,
 	}
 
 	i := Importer{
@@ -516,10 +435,10 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", testCtx, image).Return(&models.Image{
-		ID: imageID,
-	}, nil).Once()
-	readerWriter.On("Create", testCtx, imageErr).Return(nil, errCreate).Once()
+	readerWriter.On("Create", testCtx, &image).Run(func(args mock.Arguments) {
+		args.Get(1).(*models.Image).ID = imageID
+	}).Return(nil).Once()
+	readerWriter.On("Create", testCtx, &imageErr).Return(errCreate).Once()
 
 	id, err := i.Create(testCtx)
 	assert.Equal(t, imageID, *id)
@@ -538,11 +457,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.ImageReaderWriter{}
 
 	image := models.Image{
-		Title: models.NullString(title),
+		Title: title,
 	}
 
 	imageErr := models.Image{
-		Title: models.NullString(imageNameErr),
+		Title: imageNameErr,
 	}
 
 	i := Importer{
@@ -554,7 +473,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	image.ID = imageID
-	readerWriter.On("UpdateFull", testCtx, image).Return(nil, nil).Once()
+	readerWriter.On("Update", testCtx, &image).Return(nil).Once()
 
 	err := i.Update(testCtx, imageID)
 	assert.Nil(t, err)
@@ -564,7 +483,7 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	imageErr.ID = errImageID
-	readerWriter.On("UpdateFull", testCtx, imageErr).Return(nil, errUpdate).Once()
+	readerWriter.On("Update", testCtx, &imageErr).Return(errUpdate).Once()
 
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)

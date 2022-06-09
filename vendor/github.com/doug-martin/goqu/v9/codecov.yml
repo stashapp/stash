@@ -1,0 +1,3 @@
+ignore:
+  - "**/mocks/**"         # glob accepted
+  - "mocks/**"         # glob accepted

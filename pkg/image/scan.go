@@ -20,9 +20,8 @@ const mutexType = "image"
 
 type FinderCreatorUpdater interface {
 	FindByChecksum(ctx context.Context, checksum string) (*models.Image, error)
-	Create(ctx context.Context, newImage models.Image) (*models.Image, error)
-	UpdateFull(ctx context.Context, updatedImage models.Image) (*models.Image, error)
-	Update(ctx context.Context, updatedImage models.ImagePartial) (*models.Image, error)
+	Create(ctx context.Context, newImage *models.Image) error
+	Update(ctx context.Context, updatedImage *models.Image) error
 }
 
 type Scanner struct {
@@ -74,7 +73,7 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 
 	if changed {
 		i.SetFile(*scanned.New)
-		i.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		i.UpdatedAt = time.Now()
 
 		// we are operating on a checksum now, so grab a mutex on the checksum
 		done := make(chan struct{})
@@ -93,11 +92,13 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 				}
 			}
 
-			retImage, err = scanner.CreatorUpdater.UpdateFull(ctx, *i)
+			err = scanner.CreatorUpdater.Update(ctx, i)
 			return err
 		}); err != nil {
 			return nil, err
 		}
+
+		retImage = i
 
 		// remove the old thumbnail if the checksum changed - we'll regenerate it
 		if oldChecksum != scanned.New.Checksum {
@@ -155,43 +156,41 @@ func (scanner *Scanner) ScanNew(ctx context.Context, f file.SourceFile) (retImag
 			return nil, nil
 		} else {
 			logger.Infof("%s already exists. Updating path...", pathDisplayName)
-			imagePartial := models.ImagePartial{
-				ID:   existingImage.ID,
-				Path: &path,
-			}
 
+			existingImage.Path = path
 			if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
-				retImage, err = scanner.CreatorUpdater.Update(ctx, imagePartial)
-				return err
+				return scanner.CreatorUpdater.Update(ctx, existingImage)
 			}); err != nil {
 				return nil, err
 			}
+
+			retImage = existingImage
 
 			scanner.PluginCache.ExecutePostHooks(ctx, existingImage.ID, plugin.ImageUpdatePost, nil, nil)
 		}
 	} else {
 		logger.Infof("%s doesn't exist. Creating new item...", pathDisplayName)
 		currentTime := time.Now()
-		newImage := models.Image{
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		newImage := &models.Image{
+			CreatedAt: currentTime,
+			UpdatedAt: currentTime,
 		}
 		newImage.SetFile(*scanned)
-		newImage.Title.String = GetFilename(&newImage, scanner.StripFileExtension)
-		newImage.Title.Valid = true
+		fn := GetFilename(newImage, scanner.StripFileExtension)
+		newImage.Title = fn
 
-		if err := SetFileDetails(&newImage); err != nil {
+		if err := SetFileDetails(newImage); err != nil {
 			logger.Error(err.Error())
 			return nil, err
 		}
 
 		if err := txn.WithTxn(ctx, scanner.TxnManager, func(ctx context.Context) error {
-			var err error
-			retImage, err = scanner.CreatorUpdater.Create(ctx, newImage)
-			return err
+			return scanner.CreatorUpdater.Create(ctx, newImage)
 		}); err != nil {
 			return nil, err
 		}
+
+		retImage = newImage
 
 		scanner.PluginCache.ExecutePostHooks(ctx, retImage.ID, plugin.ImageCreatePost, nil, nil)
 	}

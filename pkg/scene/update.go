@@ -2,7 +2,6 @@ package scene
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -14,29 +13,11 @@ import (
 
 type Updater interface {
 	PartialUpdater
-	UpdatePerformers(ctx context.Context, sceneID int, performerIDs []int) error
-	UpdateTags(ctx context.Context, sceneID int, tagIDs []int) error
-	UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []models.StashID) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 }
 
 type PartialUpdater interface {
-	Update(ctx context.Context, updatedScene models.ScenePartial) (*models.Scene, error)
-}
-
-type PerformerUpdater interface {
-	GetPerformerIDs(ctx context.Context, sceneID int) ([]int, error)
-	UpdatePerformers(ctx context.Context, sceneID int, performerIDs []int) error
-}
-
-type TagUpdater interface {
-	GetTagIDs(ctx context.Context, sceneID int) ([]int, error)
-	UpdateTags(ctx context.Context, sceneID int, tagIDs []int) error
-}
-
-type GalleryUpdater interface {
-	GetGalleryIDs(ctx context.Context, sceneID int) ([]int, error)
-	UpdateGalleries(ctx context.Context, sceneID int, galleryIDs []int) error
+	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
 }
 
 var ErrEmptyUpdater = errors.New("no fields have been set")
@@ -50,12 +31,6 @@ type UpdateSet struct {
 	// in future these could be moved into a separate struct and reused
 	// for a Creator struct
 
-	// Not set if nil. Set to []int{} to clear existing
-	PerformerIDs []int
-	// Not set if nil. Set to []int{} to clear existing
-	TagIDs []int
-	// Not set if nil. Set to []int{} to clear existing
-	StashIDs []models.StashID
 	// Not set if nil. Set to []byte{} to clear existing
 	CoverImage []byte
 }
@@ -63,12 +38,8 @@ type UpdateSet struct {
 // IsEmpty returns true if there is nothing to update.
 func (u *UpdateSet) IsEmpty() bool {
 	withoutID := u.Partial
-	withoutID.ID = 0
 
 	return withoutID == models.ScenePartial{} &&
-		u.PerformerIDs == nil &&
-		u.TagIDs == nil &&
-		u.StashIDs == nil &&
 		u.CoverImage == nil
 }
 
@@ -81,32 +52,12 @@ func (u *UpdateSet) Update(ctx context.Context, qb Updater, screenshotSetter Scr
 	}
 
 	partial := u.Partial
-	partial.ID = u.ID
-	partial.UpdatedAt = &models.SQLiteTimestamp{
-		Timestamp: time.Now(),
-	}
+	updatedAt := time.Now()
+	partial.UpdatedAt = models.NewOptionalTime(updatedAt)
 
-	ret, err := qb.Update(ctx, partial)
+	ret, err := qb.UpdatePartial(ctx, u.ID, partial)
 	if err != nil {
 		return nil, fmt.Errorf("error updating scene: %w", err)
-	}
-
-	if u.PerformerIDs != nil {
-		if err := qb.UpdatePerformers(ctx, u.ID, u.PerformerIDs); err != nil {
-			return nil, fmt.Errorf("error updating scene performers: %w", err)
-		}
-	}
-
-	if u.TagIDs != nil {
-		if err := qb.UpdateTags(ctx, u.ID, u.TagIDs); err != nil {
-			return nil, fmt.Errorf("error updating scene tags: %w", err)
-		}
-	}
-
-	if u.StashIDs != nil {
-		if err := qb.UpdateStashIDs(ctx, u.ID, u.StashIDs); err != nil {
-			return nil, fmt.Errorf("error updating scene stash_ids: %w", err)
-		}
 	}
 
 	if u.CoverImage != nil {
@@ -125,23 +76,7 @@ func (u *UpdateSet) Update(ctx context.Context, qb Updater, screenshotSetter Scr
 // UpdateInput converts the UpdateSet into SceneUpdateInput for hook firing purposes.
 func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	// ensure the partial ID is set
-	u.Partial.ID = u.ID
-	ret := u.Partial.UpdateInput()
-
-	if u.PerformerIDs != nil {
-		ret.PerformerIds = intslice.IntSliceToStringSlice(u.PerformerIDs)
-	}
-
-	if u.TagIDs != nil {
-		ret.TagIds = intslice.IntSliceToStringSlice(u.TagIDs)
-	}
-
-	if u.StashIDs != nil {
-		for _, s := range u.StashIDs {
-			ss := s.StashIDInput()
-			ret.StashIds = append(ret.StashIds, &ss)
-		}
-	}
+	ret := u.Partial.UpdateInput(u.ID)
 
 	if u.CoverImage != nil {
 		// convert back to base64
@@ -153,53 +88,43 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 }
 
 func UpdateFormat(ctx context.Context, qb PartialUpdater, id int, format string) (*models.Scene, error) {
-	return qb.Update(ctx, models.ScenePartial{
-		ID: id,
-		Format: &sql.NullString{
-			String: format,
-			Valid:  true,
-		},
+	v := format
+	return qb.UpdatePartial(ctx, id, models.ScenePartial{
+		Format: models.NewOptionalString(v),
 	})
 }
 
 func UpdateOSHash(ctx context.Context, qb PartialUpdater, id int, oshash string) (*models.Scene, error) {
-	return qb.Update(ctx, models.ScenePartial{
-		ID: id,
-		OSHash: &sql.NullString{
-			String: oshash,
-			Valid:  true,
-		},
+	v := oshash
+
+	return qb.UpdatePartial(ctx, id, models.ScenePartial{
+		OSHash: models.NewOptionalString(v),
 	})
 }
 
 func UpdateChecksum(ctx context.Context, qb PartialUpdater, id int, checksum string) (*models.Scene, error) {
-	return qb.Update(ctx, models.ScenePartial{
-		ID: id,
-		Checksum: &sql.NullString{
-			String: checksum,
-			Valid:  true,
-		},
+	v := checksum
+
+	return qb.UpdatePartial(ctx, id, models.ScenePartial{
+		Checksum: models.NewOptionalString(v),
 	})
 }
 
-func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime models.NullSQLiteTimestamp) (*models.Scene, error) {
-	return qb.Update(ctx, models.ScenePartial{
-		ID:          id,
-		FileModTime: &modTime,
+func UpdateFileModTime(ctx context.Context, qb PartialUpdater, id int, modTime time.Time) (*models.Scene, error) {
+	v := modTime
+	return qb.UpdatePartial(ctx, id, models.ScenePartial{
+		FileModTime: models.NewOptionalTime(v),
 	})
 }
 
-func AddPerformer(ctx context.Context, qb PerformerUpdater, id int, performerID int) (bool, error) {
-	performerIDs, err := qb.GetPerformerIDs(ctx, id)
-	if err != nil {
-		return false, err
-	}
-
-	oldLen := len(performerIDs)
-	performerIDs = intslice.IntAppendUnique(performerIDs, performerID)
-
-	if len(performerIDs) != oldLen {
-		if err := qb.UpdatePerformers(ctx, id, performerIDs); err != nil {
+func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Scene, performerID int) (bool, error) {
+	if !intslice.IntInclude(o.PerformerIDs, performerID) {
+		if _, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}); err != nil {
 			return false, err
 		}
 
@@ -209,17 +134,14 @@ func AddPerformer(ctx context.Context, qb PerformerUpdater, id int, performerID 
 	return false, nil
 }
 
-func AddTag(ctx context.Context, qb TagUpdater, id int, tagID int) (bool, error) {
-	tagIDs, err := qb.GetTagIDs(ctx, id)
-	if err != nil {
-		return false, err
-	}
-
-	oldLen := len(tagIDs)
-	tagIDs = intslice.IntAppendUnique(tagIDs, tagID)
-
-	if len(tagIDs) != oldLen {
-		if err := qb.UpdateTags(ctx, id, tagIDs); err != nil {
+func AddTag(ctx context.Context, qb PartialUpdater, o *models.Scene, tagID int) (bool, error) {
+	if !intslice.IntInclude(o.TagIDs, tagID) {
+		if _, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}); err != nil {
 			return false, err
 		}
 
@@ -229,17 +151,14 @@ func AddTag(ctx context.Context, qb TagUpdater, id int, tagID int) (bool, error)
 	return false, nil
 }
 
-func AddGallery(ctx context.Context, qb GalleryUpdater, id int, galleryID int) (bool, error) {
-	galleryIDs, err := qb.GetGalleryIDs(ctx, id)
-	if err != nil {
-		return false, err
-	}
-
-	oldLen := len(galleryIDs)
-	galleryIDs = intslice.IntAppendUnique(galleryIDs, galleryID)
-
-	if len(galleryIDs) != oldLen {
-		if err := qb.UpdateGalleries(ctx, id, galleryIDs); err != nil {
+func AddGallery(ctx context.Context, qb PartialUpdater, o *models.Scene, galleryID int) (bool, error) {
+	if !intslice.IntInclude(o.GalleryIDs, galleryID) {
+		if _, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{galleryID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}); err != nil {
 			return false, err
 		}
 

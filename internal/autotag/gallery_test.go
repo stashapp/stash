@@ -44,13 +44,17 @@ func TestGalleryPerformers(t *testing.T) {
 		mockPerformerReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		if test.Matches {
-			mockGalleryReader.On("GetPerformerIDs", testCtx, galleryID).Return(nil, nil).Once()
-			mockGalleryReader.On("UpdatePerformers", testCtx, galleryID, []int{performerID}).Return(nil).Once()
+			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}).Return(nil, nil).Once()
 		}
 
 		gallery := models.Gallery{
 			ID:   galleryID,
-			Path: models.NullString(test.Path),
+			Path: &test.Path,
 		}
 		err := GalleryPerformers(testCtx, &gallery, mockGalleryReader, mockPerformerReader, nil)
 
@@ -65,7 +69,7 @@ func TestGalleryStudios(t *testing.T) {
 
 	const galleryID = 1
 	const studioName = "studio name"
-	const studioID = 2
+	var studioID = 2
 	studio := models.Studio{
 		ID:   studioID,
 		Name: models.NullString(studioName),
@@ -84,17 +88,15 @@ func TestGalleryStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockGalleryReader *mocks.GalleryReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockGalleryReader.On("Find", testCtx, galleryID).Return(&models.Gallery{}, nil).Once()
-			expectedStudioID := models.NullInt64(studioID)
-			mockGalleryReader.On("UpdatePartial", testCtx, models.GalleryPartial{
-				ID:       galleryID,
-				StudioID: &expectedStudioID,
+			expectedStudioID := studioID
+			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+				StudioID: models.NewOptionalInt(expectedStudioID),
 			}).Return(nil, nil).Once()
 		}
 
 		gallery := models.Gallery{
 			ID:   galleryID,
-			Path: models.NullString(test.Path),
+			Path: &test.Path,
 		}
 		err := GalleryStudios(testCtx, &gallery, mockGalleryReader, mockStudioReader, nil)
 
@@ -157,13 +159,17 @@ func TestGalleryTags(t *testing.T) {
 
 	doTest := func(mockTagReader *mocks.TagReaderWriter, mockGalleryReader *mocks.GalleryReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockGalleryReader.On("GetTagIDs", testCtx, galleryID).Return(nil, nil).Once()
-			mockGalleryReader.On("UpdateTags", testCtx, galleryID, []int{tagID}).Return(nil).Once()
+			mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}).Return(nil, nil).Once()
 		}
 
 		gallery := models.Gallery{
 			ID:   galleryID,
-			Path: models.NullString(test.Path),
+			Path: &test.Path,
 		}
 		err := GalleryTags(testCtx, &gallery, mockGalleryReader, mockTagReader, nil)
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
@@ -93,68 +92,43 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		return nil, err
 	}
 
-	updatedTime := time.Now()
-	updatedImage := models.ImagePartial{
-		ID:        imageID,
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+	updatedImage := models.NewImagePartial()
+	updatedImage.Title = translator.optionalString(input.Title, "title")
+	updatedImage.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("gallery_ids") {
+		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting gallery ids: %w", err)
+		}
 	}
 
-	updatedImage.Title = translator.nullString(input.Title, "title")
-	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedImage.Organized = input.Organized
+	if translator.hasField("performer_ids") {
+		updatedImage.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
+		}
+	}
+
+	if translator.hasField("tag_ids") {
+		updatedImage.TagIDs, err = translateUpdateIDs(input.TagIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
 
 	qb := r.repository.Image
-	image, err := qb.Update(ctx, updatedImage)
+	image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
 	if err != nil {
 		return nil, err
 	}
 
-	if translator.hasField("gallery_ids") {
-		if err := r.updateImageGalleries(ctx, imageID, input.GalleryIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the performers
-	if translator.hasField("performer_ids") {
-		if err := r.updateImagePerformers(ctx, imageID, input.PerformerIds); err != nil {
-			return nil, err
-		}
-	}
-
-	// Save the tags
-	if translator.hasField("tag_ids") {
-		if err := r.updateImageTags(ctx, imageID, input.TagIds); err != nil {
-			return nil, err
-		}
-	}
-
 	return image, nil
-}
-
-func (r *mutationResolver) updateImageGalleries(ctx context.Context, imageID int, galleryIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(galleryIDs)
-	if err != nil {
-		return err
-	}
-	return r.repository.Image.UpdateGalleries(ctx, imageID, ids)
-}
-
-func (r *mutationResolver) updateImagePerformers(ctx context.Context, imageID int, performerIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
-	if err != nil {
-		return err
-	}
-	return r.repository.Image.UpdatePerformers(ctx, imageID, ids)
-}
-
-func (r *mutationResolver) updateImageTags(ctx context.Context, imageID int, tagsIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(tagsIDs)
-	if err != nil {
-		return err
-	}
-	return r.repository.Image.UpdateTags(ctx, imageID, ids)
 }
 
 func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageUpdateInput) (ret []*models.Image, err error) {
@@ -164,70 +138,52 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	}
 
 	// Populate image from the input
-	updatedTime := time.Now()
-
-	updatedImage := models.ImagePartial{
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
-	}
+	updatedImage := models.NewImagePartial()
 
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	updatedImage.Title = translator.nullString(input.Title, "title")
-	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedImage.Organized = input.Organized
+	updatedImage.Title = translator.optionalString(input.Title, "title")
+	updatedImage.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("gallery_ids") {
+		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds.Ids, input.GalleryIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting gallery ids: %w", err)
+		}
+	}
+
+	if translator.hasField("performer_ids") {
+		updatedImage.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
+		}
+	}
+
+	if translator.hasField("tag_ids") {
+		updatedImage.TagIDs, err = translateUpdateIDs(input.TagIds.Ids, input.TagIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
 
 	// Start the transaction and save the image marker
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Image
 
 		for _, imageID := range imageIDs {
-			updatedImage.ID = imageID
-
-			image, err := qb.Update(ctx, updatedImage)
+			image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
 			if err != nil {
 				return err
 			}
 
 			ret = append(ret, image)
-
-			// Save the galleries
-			if translator.hasField("gallery_ids") {
-				galleryIDs, err := r.adjustImageGalleryIDs(ctx, imageID, *input.GalleryIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateGalleries(ctx, imageID, galleryIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the performers
-			if translator.hasField("performer_ids") {
-				performerIDs, err := r.adjustImagePerformerIDs(ctx, imageID, *input.PerformerIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdatePerformers(ctx, imageID, performerIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the tags
-			if translator.hasField("tag_ids") {
-				tagIDs, err := r.adjustImageTagIDs(ctx, imageID, *input.TagIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateTags(ctx, imageID, tagIDs); err != nil {
-					return err
-				}
-			}
 		}
 
 		return nil
@@ -249,33 +205,6 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 	}
 
 	return newRet, nil
-}
-
-func (r *mutationResolver) adjustImageGalleryIDs(ctx context.Context, imageID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = r.repository.Image.GetGalleryIDs(ctx, imageID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func (r *mutationResolver) adjustImagePerformerIDs(ctx context.Context, imageID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = r.repository.Image.GetPerformerIDs(ctx, imageID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func (r *mutationResolver) adjustImageTagIDs(ctx context.Context, imageID int, ids BulkUpdateIds) (ret []int, err error) {
-	ret, err = r.repository.Image.GetTagIDs(ctx, imageID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
 }
 
 func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageDestroyInput) (ret bool, err error) {

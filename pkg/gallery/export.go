@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/studio"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 // ToBasicJSON converts a gallery object into its JSON object equivalent. It
@@ -15,40 +14,31 @@ import (
 func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	newGalleryJSON := jsonschema.Gallery{
 		Checksum:  gallery.Checksum,
+		Title:     gallery.Title,
+		URL:       gallery.URL,
+		Details:   gallery.Details,
 		Zip:       gallery.Zip,
-		CreatedAt: json.JSONTime{Time: gallery.CreatedAt.Timestamp},
-		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt.Timestamp},
+		CreatedAt: json.JSONTime{Time: gallery.CreatedAt},
+		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt},
 	}
 
-	if gallery.Path.Valid {
-		newGalleryJSON.Path = gallery.Path.String
+	if gallery.Path != nil {
+		newGalleryJSON.Path = *gallery.Path
 	}
 
-	if gallery.FileModTime.Valid {
-		newGalleryJSON.FileModTime = json.JSONTime{Time: gallery.FileModTime.Timestamp}
+	if gallery.FileModTime != nil {
+		newGalleryJSON.FileModTime = json.JSONTime{Time: *gallery.FileModTime}
 	}
 
-	if gallery.Title.Valid {
-		newGalleryJSON.Title = gallery.Title.String
+	if gallery.Date != nil {
+		newGalleryJSON.Date = gallery.Date.String()
 	}
 
-	if gallery.URL.Valid {
-		newGalleryJSON.URL = gallery.URL.String
-	}
-
-	if gallery.Date.Valid {
-		newGalleryJSON.Date = utils.GetYMDFromDatabaseDate(gallery.Date.String)
-	}
-
-	if gallery.Rating.Valid {
-		newGalleryJSON.Rating = int(gallery.Rating.Int64)
+	if gallery.Rating != nil {
+		newGalleryJSON.Rating = *gallery.Rating
 	}
 
 	newGalleryJSON.Organized = gallery.Organized
-
-	if gallery.Details.Valid {
-		newGalleryJSON.Details = gallery.Details.String
-	}
 
 	return &newGalleryJSON, nil
 }
@@ -56,8 +46,8 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 // GetStudioName returns the name of the provided gallery's studio. It returns an
 // empty string if there is no studio assigned to the gallery.
 func GetStudioName(ctx context.Context, reader studio.Finder, gallery *models.Gallery) (string, error) {
-	if gallery.StudioID.Valid {
-		studio, err := reader.Find(ctx, int(gallery.StudioID.Int64))
+	if gallery.StudioID != nil {
+		studio, err := reader.Find(ctx, *gallery.StudioID)
 		if err != nil {
 			return "", err
 		}

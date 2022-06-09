@@ -12,17 +12,17 @@ import (
 
 type SceneQueryPerformerUpdater interface {
 	scene.Queryer
-	scene.PerformerUpdater
+	scene.PartialUpdater
 }
 
 type ImageQueryPerformerUpdater interface {
 	image.Queryer
-	image.PerformerUpdater
+	image.PartialUpdater
 }
 
 type GalleryQueryPerformerUpdater interface {
 	gallery.Queryer
-	gallery.PerformerUpdater
+	gallery.PartialUpdater
 }
 
 func getPerformerTagger(p *models.Performer, cache *match.Cache) tagger {
@@ -38,8 +38,8 @@ func getPerformerTagger(p *models.Performer, cache *match.Cache) tagger {
 func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, rw SceneQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
-	return t.tagScenes(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-		return scene.AddPerformer(ctx, rw, otherID, subjectID)
+	return t.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
+		return scene.AddPerformer(ctx, rw, o, p.ID)
 	})
 }
 
@@ -47,8 +47,8 @@ func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, r
 func PerformerImages(ctx context.Context, p *models.Performer, paths []string, rw ImageQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
-	return t.tagImages(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-		return image.AddPerformer(ctx, rw, otherID, subjectID)
+	return t.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
+		return image.AddPerformer(ctx, rw, i, p.ID)
 	})
 }
 
@@ -56,7 +56,7 @@ func PerformerImages(ctx context.Context, p *models.Performer, paths []string, r
 func PerformerGalleries(ctx context.Context, p *models.Performer, paths []string, rw GalleryQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
-	return t.tagGalleries(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-		return gallery.AddPerformer(ctx, rw, otherID, subjectID)
+	return t.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
+		return gallery.AddPerformer(ctx, rw, o, p.ID)
 	})
 }

@@ -146,7 +146,7 @@ func createScenes(ctx context.Context, sqb models.SceneReaderWriter) error {
 
 	// create scene with existing studio io
 	studioScene := makeScene(existingStudioSceneName, true)
-	studioScene.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
+	studioScene.StudioID = &existingStudioID
 	err := createScene(ctx, sqb, studioScene)
 	if err != nil {
 		return err
@@ -156,21 +156,22 @@ func createScenes(ctx context.Context, sqb models.SceneReaderWriter) error {
 }
 
 func makeScene(name string, expectedResult bool) *models.Scene {
+	checksum := md5.FromString(name)
 	scene := &models.Scene{
-		Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
+		Checksum: &checksum,
 		Path:     name,
 	}
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		scene.Title = sql.NullString{Valid: true, String: name}
+		scene.Title = name
 	}
 
 	return scene
 }
 
 func createScene(ctx context.Context, sqb models.SceneWriter, scene *models.Scene) error {
-	_, err := sqb.Create(ctx, *scene)
+	err := sqb.Create(ctx, scene)
 
 	if err != nil {
 		return fmt.Errorf("Failed to create scene with name '%s': %s", scene.Path, err.Error())
@@ -208,7 +209,7 @@ func createImages(ctx context.Context, sqb models.ImageReaderWriter) error {
 
 	// create image with existing studio io
 	studioImage := makeImage(existingStudioImageName, true)
-	studioImage.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
+	studioImage.StudioID = &existingStudioID
 	err := createImage(ctx, sqb, studioImage)
 	if err != nil {
 		return err
@@ -225,16 +226,14 @@ func makeImage(name string, expectedResult bool) *models.Image {
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		image.Title = sql.NullString{Valid: true, String: name}
+		image.Title = name
 	}
 
 	return image
 }
 
 func createImage(ctx context.Context, sqb models.ImageWriter, image *models.Image) error {
-	_, err := sqb.Create(ctx, *image)
-
-	if err != nil {
+	if err := sqb.Create(ctx, image); err != nil {
 		return fmt.Errorf("Failed to create image with name '%s': %s", image.Path, err.Error())
 	}
 
@@ -270,7 +269,7 @@ func createGalleries(ctx context.Context, sqb models.GalleryReaderWriter) error 
 
 	// create gallery with existing studio io
 	studioGallery := makeGallery(existingStudioGalleryName, true)
-	studioGallery.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
+	studioGallery.StudioID = &existingStudioID
 	err := createGallery(ctx, sqb, studioGallery)
 	if err != nil {
 		return err
@@ -282,22 +281,22 @@ func createGalleries(ctx context.Context, sqb models.GalleryReaderWriter) error 
 func makeGallery(name string, expectedResult bool) *models.Gallery {
 	gallery := &models.Gallery{
 		Checksum: md5.FromString(name),
-		Path:     models.NullString(name),
+		Path:     &name,
 	}
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		gallery.Title = sql.NullString{Valid: true, String: name}
+		gallery.Title = name
 	}
 
 	return gallery
 }
 
 func createGallery(ctx context.Context, sqb models.GalleryWriter, gallery *models.Gallery) error {
-	_, err := sqb.Create(ctx, *gallery)
+	err := sqb.Create(ctx, gallery)
 
 	if err != nil {
-		return fmt.Errorf("Failed to create gallery with name '%s': %s", gallery.Path.String, err.Error())
+		return fmt.Errorf("Failed to create gallery with name '%s': %s", *gallery.Path, err.Error())
 	}
 
 	return nil
@@ -391,9 +390,9 @@ func TestParsePerformerScenes(t *testing.T) {
 			}
 
 			// title is only set on scenes where we expect performer to be set
-			if scene.Title.String == scene.Path && len(performers) == 0 {
+			if scene.Title == scene.Path && len(performers) == 0 {
 				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path)
-			} else if scene.Title.String != scene.Path && len(performers) > 0 {
+			} else if scene.Title != scene.Path && len(performers) > 0 {
 				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path)
 			}
 		}
@@ -436,19 +435,19 @@ func TestParseStudioScenes(t *testing.T) {
 		for _, scene := range scenes {
 			// check for existing studio id scene first
 			if scene.Path == existingStudioSceneName {
-				if scene.StudioID.Int64 != int64(existingStudioID) {
+				if scene.StudioID == nil || *scene.StudioID != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for scene with existing studio ID")
 				}
 			} else {
 				// title is only set on scenes where we expect studio to be set
-				if scene.Title.String == scene.Path {
-					if !scene.StudioID.Valid {
+				if scene.Title == scene.Path {
+					if scene.StudioID == nil {
 						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
-					} else if scene.StudioID.Int64 != int64(studios[1].ID) {
-						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID.Int64, scene.Path)
+					} else if scene.StudioID != nil && *scene.StudioID != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID, scene.Path)
 					}
 
-				} else if scene.Title.String != scene.Path && scene.StudioID.Int64 == int64(studios[1].ID) {
+				} else if scene.Title != scene.Path && scene.StudioID != nil && *scene.StudioID == studios[1].ID {
 					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
 				}
 			}
@@ -499,9 +498,9 @@ func TestParseTagScenes(t *testing.T) {
 			}
 
 			// title is only set on scenes where we expect tag to be set
-			if scene.Title.String == scene.Path && len(tags) == 0 {
+			if scene.Title == scene.Path && len(tags) == 0 {
 				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path)
-			} else if scene.Title.String != scene.Path && len(tags) > 0 {
+			} else if (scene.Title != scene.Path) && len(tags) > 0 {
 				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path)
 			}
 		}
@@ -546,9 +545,9 @@ func TestParsePerformerImages(t *testing.T) {
 			}
 
 			// title is only set on images where we expect performer to be set
-			if image.Title.String == image.Path && len(performers) == 0 {
+			if image.Title == image.Path && len(performers) == 0 {
 				t.Errorf("Did not set performer '%s' for path '%s'", testName, image.Path)
-			} else if image.Title.String != image.Path && len(performers) > 0 {
+			} else if image.Title != image.Path && len(performers) > 0 {
 				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, image.Path)
 			}
 		}
@@ -591,19 +590,19 @@ func TestParseStudioImages(t *testing.T) {
 		for _, image := range images {
 			// check for existing studio id image first
 			if image.Path == existingStudioImageName {
-				if image.StudioID.Int64 != int64(existingStudioID) {
+				if *image.StudioID != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for image with existing studio ID")
 				}
 			} else {
 				// title is only set on images where we expect studio to be set
-				if image.Title.String == image.Path {
-					if !image.StudioID.Valid {
+				if image.Title == image.Path {
+					if image.StudioID == nil {
 						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path)
-					} else if image.StudioID.Int64 != int64(studios[1].ID) {
-						t.Errorf("Incorrect studio id %d set for path '%s'", image.StudioID.Int64, image.Path)
+					} else if *image.StudioID != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", *image.StudioID, image.Path)
 					}
 
-				} else if image.Title.String != image.Path && image.StudioID.Int64 == int64(studios[1].ID) {
+				} else if image.Title != image.Path && image.StudioID != nil && *image.StudioID == studios[1].ID {
 					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path)
 				}
 			}
@@ -654,9 +653,9 @@ func TestParseTagImages(t *testing.T) {
 			}
 
 			// title is only set on images where we expect performer to be set
-			if image.Title.String == image.Path && len(tags) == 0 {
+			if image.Title == image.Path && len(tags) == 0 {
 				t.Errorf("Did not set tag '%s' for path '%s'", testName, image.Path)
-			} else if image.Title.String != image.Path && len(tags) > 0 {
+			} else if image.Title != image.Path && len(tags) > 0 {
 				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, image.Path)
 			}
 		}
@@ -701,10 +700,10 @@ func TestParsePerformerGalleries(t *testing.T) {
 			}
 
 			// title is only set on galleries where we expect performer to be set
-			if gallery.Title.String == gallery.Path.String && len(performers) == 0 {
-				t.Errorf("Did not set performer '%s' for path '%s'", testName, gallery.Path.String)
-			} else if gallery.Title.String != gallery.Path.String && len(performers) > 0 {
-				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, gallery.Path.String)
+			if gallery.Title == *gallery.Path && len(performers) == 0 {
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, *gallery.Path)
+			} else if gallery.Title != *gallery.Path && len(performers) > 0 {
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, *gallery.Path)
 			}
 		}
 
@@ -745,21 +744,21 @@ func TestParseStudioGalleries(t *testing.T) {
 
 		for _, gallery := range galleries {
 			// check for existing studio id gallery first
-			if gallery.Path.String == existingStudioGalleryName {
-				if gallery.StudioID.Int64 != int64(existingStudioID) {
+			if gallery.Path != nil && *gallery.Path == existingStudioGalleryName {
+				if *gallery.StudioID != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for gallery with existing studio ID")
 				}
 			} else {
 				// title is only set on galleries where we expect studio to be set
-				if gallery.Title.String == gallery.Path.String {
-					if !gallery.StudioID.Valid {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, gallery.Path.String)
-					} else if gallery.StudioID.Int64 != int64(studios[1].ID) {
-						t.Errorf("Incorrect studio id %d set for path '%s'", gallery.StudioID.Int64, gallery.Path.String)
+				if gallery.Title == *gallery.Path {
+					if gallery.StudioID == nil {
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, *gallery.Path)
+					} else if *gallery.StudioID != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", *gallery.StudioID, *gallery.Path)
 					}
 
-				} else if gallery.Title.String != gallery.Path.String && gallery.StudioID.Int64 == int64(studios[1].ID) {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, gallery.Path.String)
+				} else if gallery.Title != *gallery.Path && (gallery.StudioID != nil && *gallery.StudioID == studios[1].ID) {
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, *gallery.Path)
 				}
 			}
 		}
@@ -809,10 +808,10 @@ func TestParseTagGalleries(t *testing.T) {
 			}
 
 			// title is only set on galleries where we expect performer to be set
-			if gallery.Title.String == gallery.Path.String && len(tags) == 0 {
-				t.Errorf("Did not set tag '%s' for path '%s'", testName, gallery.Path.String)
-			} else if gallery.Title.String != gallery.Path.String && len(tags) > 0 {
-				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, gallery.Path.String)
+			if gallery.Title == *gallery.Path && len(tags) == 0 {
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, *gallery.Path)
+			} else if gallery.Title != *gallery.Path && len(tags) > 0 {
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, *gallery.Path)
 			}
 		}
 

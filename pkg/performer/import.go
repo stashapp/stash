@@ -19,7 +19,7 @@ type NameFinderCreatorUpdater interface {
 	UpdateFull(ctx context.Context, updatedPerformer models.Performer) (*models.Performer, error)
 	UpdateTags(ctx context.Context, performerID int, tagIDs []int) error
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
-	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
+	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []*models.StashID) error
 }
 
 type Importer struct {

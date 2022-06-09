@@ -2,7 +2,6 @@ package identify
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -129,10 +128,7 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	}
 
 	if studioID != nil {
-		ret.Partial.StudioID = &sql.NullInt64{
-			Int64: *studioID,
-			Valid: true,
-		}
+		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
 	}
 
 	ignoreMale := false
@@ -143,19 +139,37 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	ret.PerformerIDs, err = rel.performers(ctx, ignoreMale)
+	performerIDs, err := rel.performers(ctx, ignoreMale)
 	if err != nil {
 		return nil, err
 	}
+	if performerIDs != nil {
+		ret.Partial.PerformerIDs = &models.UpdateIDs{
+			IDs:  performerIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	}
 
-	ret.TagIDs, err = rel.tags(ctx)
+	tagIDs, err := rel.tags(ctx)
 	if err != nil {
 		return nil, err
 	}
+	if tagIDs != nil {
+		ret.Partial.TagIDs = &models.UpdateIDs{
+			IDs:  tagIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	}
 
-	ret.StashIDs, err = rel.stashIDs(ctx)
+	stashIDs, err := rel.stashIDs(ctx)
 	if err != nil {
 		return nil, err
+	}
+	if stashIDs != nil {
+		ret.Partial.StashIDs = &models.UpdateStashIDs{
+			StashIDs: stashIDs,
+			Mode:     models.RelationshipUpdateModeSet,
+		}
 	}
 
 	setCoverImage := false
@@ -198,8 +212,8 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 
 		as := ""
 		title := updater.Partial.Title
-		if title != nil {
-			as = fmt.Sprintf(" as %s", title.String)
+		if title.Ptr() != nil {
+			as = fmt.Sprintf(" as %s", title.Value)
 		}
 		logger.Infof("Successfully identified %s%s using %s", s.Path, as, result.source.Name)
 
@@ -233,37 +247,33 @@ func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 }
 
 func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
-	partial := models.ScenePartial{
-		ID: scene.ID,
-	}
+	partial := models.ScenePartial{}
 
-	if scraped.Title != nil && scene.Title.String != *scraped.Title {
-		if shouldSetSingleValueField(fieldOptions["title"], scene.Title.String != "") {
-			partial.Title = models.NullStringPtr(*scraped.Title)
+	if scraped.Title != nil && (scene.Title != *scraped.Title) {
+		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != "") {
+			partial.Title = models.NewOptionalString(*scraped.Title)
 		}
 	}
-	if scraped.Date != nil && scene.Date.String != *scraped.Date {
-		if shouldSetSingleValueField(fieldOptions["date"], scene.Date.Valid) {
-			partial.Date = &models.SQLiteDate{
-				String: *scraped.Date,
-				Valid:  true,
-			}
+	if scraped.Date != nil && (scene.Date == nil || scene.Date.String() != *scraped.Date) {
+		if shouldSetSingleValueField(fieldOptions["date"], scene.Date != nil) {
+			d := models.NewDate(*scraped.Date)
+			partial.Date = models.NewOptionalDate(d)
 		}
 	}
-	if scraped.Details != nil && scene.Details.String != *scraped.Details {
-		if shouldSetSingleValueField(fieldOptions["details"], scene.Details.String != "") {
-			partial.Details = models.NullStringPtr(*scraped.Details)
+	if scraped.Details != nil && (scene.Details != *scraped.Details) {
+		if shouldSetSingleValueField(fieldOptions["details"], scene.Details != "") {
+			partial.Details = models.NewOptionalString(*scraped.Details)
 		}
 	}
-	if scraped.URL != nil && scene.URL.String != *scraped.URL {
-		if shouldSetSingleValueField(fieldOptions["url"], scene.URL.String != "") {
-			partial.URL = models.NullStringPtr(*scraped.URL)
+	if scraped.URL != nil && (scene.URL != *scraped.URL) {
+		if shouldSetSingleValueField(fieldOptions["url"], scene.URL != "") {
+			partial.URL = models.NewOptionalString(*scraped.URL)
 		}
 	}
 
 	if setOrganized && !scene.Organized {
 		// just reuse the boolean since we know it's true
-		partial.Organized = &setOrganized
+		partial.Organized = models.NewOptionalBool(setOrganized)
 	}
 
 	return partial

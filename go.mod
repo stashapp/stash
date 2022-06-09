@@ -19,7 +19,7 @@ require (
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/json-iterator/go v1.1.12
-	github.com/mattn/go-sqlite3 v1.14.6
+	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/remeh/sizedwaitgroup v1.0.0
@@ -47,6 +47,7 @@ require (
 
 require (
 	github.com/asticode/go-astisub v0.20.0
+	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/go-chi/httplog v0.2.1
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 	github.com/hashicorp/golang-lru v0.5.4
@@ -56,6 +57,7 @@ require (
 	github.com/spf13/cast v1.4.1
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/gqlparser/v2 v2.4.1
+	gopkg.in/guregu/null.v4 v4.0.0
 )
 
 require (

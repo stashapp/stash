@@ -19,11 +19,11 @@ func getSceneFileTagger(s *models.Scene, cache *match.Cache) tagger {
 }
 
 // ScenePerformers tags the provided scene with performers whose name matches the scene's path.
-func ScenePerformers(ctx context.Context, s *models.Scene, rw scene.PerformerUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
+func ScenePerformers(ctx context.Context, s *models.Scene, rw scene.PartialUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
-		return scene.AddPerformer(ctx, rw, subjectID, otherID)
+		return scene.AddPerformer(ctx, rw, s, otherID)
 	})
 }
 
@@ -31,7 +31,7 @@ func ScenePerformers(ctx context.Context, s *models.Scene, rw scene.PerformerUpd
 //
 // Scenes will not be tagged if studio is already set.
 func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, studioReader match.StudioAutoTagQueryer, cache *match.Cache) error {
-	if s.StudioID.Valid {
+	if s.StudioID != nil {
 		// don't modify
 		return nil
 	}
@@ -39,15 +39,15 @@ func SceneStudios(ctx context.Context, s *models.Scene, rw SceneFinderUpdater, s
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {
-		return addSceneStudio(ctx, rw, subjectID, otherID)
+		return addSceneStudio(ctx, rw, s, otherID)
 	})
 }
 
 // SceneTags tags the provided scene with tags whose name matches the scene's path.
-func SceneTags(ctx context.Context, s *models.Scene, rw scene.TagUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
+func SceneTags(ctx context.Context, s *models.Scene, rw scene.PartialUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
 	t := getSceneFileTagger(s, cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
-		return scene.AddTag(ctx, rw, subjectID, otherID)
+		return scene.AddTag(ctx, rw, s, otherID)
 	})
 }

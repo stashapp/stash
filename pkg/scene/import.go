@@ -2,7 +2,6 @@ package scene
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -21,8 +20,6 @@ import (
 type FullCreatorUpdater interface {
 	CreatorUpdater
 	Updater
-	UpdateGalleries(ctx context.Context, sceneID int, galleryIDs []int) error
-	UpdateMovies(ctx context.Context, sceneID int, movies []models.MoviesScenes) error
 }
 
 type Importer struct {
@@ -39,10 +36,6 @@ type Importer struct {
 
 	ID             int
 	scene          models.Scene
-	galleries      []*models.Gallery
-	performers     []*models.Performer
-	movies         []models.MoviesScenes
-	tags           []*models.Tag
 	coverImageData []byte
 }
 
@@ -82,68 +75,74 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
-		Checksum: sql.NullString{String: sceneJSON.Checksum, Valid: sceneJSON.Checksum != ""},
-		OSHash:   sql.NullString{String: sceneJSON.OSHash, Valid: sceneJSON.OSHash != ""},
-		Path:     i.Path,
+		Path:    i.Path,
+		Title:   sceneJSON.Title,
+		Details: sceneJSON.Details,
+		URL:     sceneJSON.URL,
+	}
+
+	if sceneJSON.Checksum != "" {
+		newScene.Checksum = &sceneJSON.Checksum
+	}
+	if sceneJSON.OSHash != "" {
+		newScene.OSHash = &sceneJSON.OSHash
 	}
 
 	if sceneJSON.Phash != "" {
 		hash, err := strconv.ParseUint(sceneJSON.Phash, 16, 64)
-		newScene.Phash = sql.NullInt64{Int64: int64(hash), Valid: err == nil}
+		if err == nil {
+			v := int64(hash)
+			newScene.Phash = &v
+		}
 	}
 
-	if sceneJSON.Title != "" {
-		newScene.Title = sql.NullString{String: sceneJSON.Title, Valid: true}
-	}
-	if sceneJSON.Details != "" {
-		newScene.Details = sql.NullString{String: sceneJSON.Details, Valid: true}
-	}
-	if sceneJSON.URL != "" {
-		newScene.URL = sql.NullString{String: sceneJSON.URL, Valid: true}
-	}
 	if sceneJSON.Date != "" {
-		newScene.Date = models.SQLiteDate{String: sceneJSON.Date, Valid: true}
+		d := models.NewDate(sceneJSON.Date)
+		newScene.Date = &d
 	}
 	if sceneJSON.Rating != 0 {
-		newScene.Rating = sql.NullInt64{Int64: int64(sceneJSON.Rating), Valid: true}
+		newScene.Rating = &sceneJSON.Rating
 	}
 
 	newScene.Organized = sceneJSON.Organized
 	newScene.OCounter = sceneJSON.OCounter
-	newScene.CreatedAt = models.SQLiteTimestamp{Timestamp: sceneJSON.CreatedAt.GetTime()}
-	newScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: sceneJSON.UpdatedAt.GetTime()}
+	newScene.CreatedAt = sceneJSON.CreatedAt.GetTime()
+	newScene.UpdatedAt = sceneJSON.UpdatedAt.GetTime()
 
 	if sceneJSON.File != nil {
 		if sceneJSON.File.Size != "" {
-			newScene.Size = sql.NullString{String: sceneJSON.File.Size, Valid: true}
+			newScene.Size = &sceneJSON.File.Size
 		}
 		if sceneJSON.File.Duration != "" {
 			duration, _ := strconv.ParseFloat(sceneJSON.File.Duration, 64)
-			newScene.Duration = sql.NullFloat64{Float64: duration, Valid: true}
+			newScene.Duration = &duration
 		}
 		if sceneJSON.File.VideoCodec != "" {
-			newScene.VideoCodec = sql.NullString{String: sceneJSON.File.VideoCodec, Valid: true}
+			newScene.VideoCodec = &sceneJSON.File.VideoCodec
 		}
 		if sceneJSON.File.AudioCodec != "" {
-			newScene.AudioCodec = sql.NullString{String: sceneJSON.File.AudioCodec, Valid: true}
+			newScene.AudioCodec = &sceneJSON.File.AudioCodec
 		}
 		if sceneJSON.File.Format != "" {
-			newScene.Format = sql.NullString{String: sceneJSON.File.Format, Valid: true}
+			newScene.Format = &sceneJSON.File.Format
 		}
 		if sceneJSON.File.Width != 0 {
-			newScene.Width = sql.NullInt64{Int64: int64(sceneJSON.File.Width), Valid: true}
+			newScene.Width = &sceneJSON.File.Width
 		}
 		if sceneJSON.File.Height != 0 {
-			newScene.Height = sql.NullInt64{Int64: int64(sceneJSON.File.Height), Valid: true}
+			newScene.Height = &sceneJSON.File.Height
 		}
 		if sceneJSON.File.Framerate != "" {
 			framerate, _ := strconv.ParseFloat(sceneJSON.File.Framerate, 64)
-			newScene.Framerate = sql.NullFloat64{Float64: framerate, Valid: true}
+			newScene.Framerate = &framerate
 		}
 		if sceneJSON.File.Bitrate != 0 {
-			newScene.Bitrate = sql.NullInt64{Int64: int64(sceneJSON.File.Bitrate), Valid: true}
+			v := int64(sceneJSON.File.Bitrate)
+			newScene.Bitrate = &v
 		}
 	}
+
+	newScene.StashIDs = append(newScene.StashIDs, i.Input.StashIDs...)
 
 	return newScene
 }
@@ -169,13 +168,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
-				i.scene.StudioID = sql.NullInt64{
-					Int64: int64(studioID),
-					Valid: true,
-				}
+				i.scene.StudioID = &studioID
 			}
 		} else {
-			i.scene.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			i.scene.StudioID = &studio.ID
 		}
 	}
 
@@ -218,7 +214,9 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 			// we don't create galleries - just ignore
 		}
 
-		i.galleries = galleries
+		for _, o := range galleries {
+			i.scene.GalleryIDs = append(i.scene.GalleryIDs, o.ID)
+		}
 	}
 
 	return nil
@@ -261,7 +259,9 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 			// ignore if MissingRefBehaviour set to Ignore
 		}
 
-		i.performers = performers
+		for _, p := range performers {
+			i.scene.PerformerIDs = append(i.scene.PerformerIDs, p.ID)
+		}
 	}
 
 	return nil
@@ -314,13 +314,11 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 			}
 
 			if inputMovie.SceneIndex != 0 {
-				toAdd.SceneIndex = sql.NullInt64{
-					Int64: int64(inputMovie.SceneIndex),
-					Valid: true,
-				}
+				index := inputMovie.SceneIndex
+				toAdd.SceneIndex = &index
 			}
 
-			i.movies = append(i.movies, toAdd)
+			i.scene.Movies = append(i.scene.Movies, toAdd)
 		}
 	}
 
@@ -346,7 +344,9 @@ func (i *Importer) populateTags(ctx context.Context) error {
 			return err
 		}
 
-		i.tags = tags
+		for _, p := range tags {
+			i.scene.TagIDs = append(i.scene.TagIDs, p.ID)
+		}
 	}
 
 	return nil
@@ -356,53 +356,6 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 	if len(i.coverImageData) > 0 {
 		if err := i.ReaderWriter.UpdateCover(ctx, id, i.coverImageData); err != nil {
 			return fmt.Errorf("error setting scene images: %v", err)
-		}
-	}
-
-	if len(i.galleries) > 0 {
-		var galleryIDs []int
-		for _, gallery := range i.galleries {
-			galleryIDs = append(galleryIDs, gallery.ID)
-		}
-
-		if err := i.ReaderWriter.UpdateGalleries(ctx, id, galleryIDs); err != nil {
-			return fmt.Errorf("failed to associate galleries: %v", err)
-		}
-	}
-
-	if len(i.performers) > 0 {
-		var performerIDs []int
-		for _, performer := range i.performers {
-			performerIDs = append(performerIDs, performer.ID)
-		}
-
-		if err := i.ReaderWriter.UpdatePerformers(ctx, id, performerIDs); err != nil {
-			return fmt.Errorf("failed to associate performers: %v", err)
-		}
-	}
-
-	if len(i.movies) > 0 {
-		for index := range i.movies {
-			i.movies[index].SceneID = id
-		}
-		if err := i.ReaderWriter.UpdateMovies(ctx, id, i.movies); err != nil {
-			return fmt.Errorf("failed to associate movies: %v", err)
-		}
-	}
-
-	if len(i.tags) > 0 {
-		var tagIDs []int
-		for _, t := range i.tags {
-			tagIDs = append(tagIDs, t.ID)
-		}
-		if err := i.ReaderWriter.UpdateTags(ctx, id, tagIDs); err != nil {
-			return fmt.Errorf("failed to associate tags: %v", err)
-		}
-	}
-
-	if len(i.Input.StashIDs) > 0 {
-		if err := i.ReaderWriter.UpdateStashIDs(ctx, id, i.Input.StashIDs); err != nil {
-			return fmt.Errorf("error setting stash id: %v", err)
 		}
 	}
 
@@ -439,12 +392,11 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.scene)
-	if err != nil {
+	if err := i.ReaderWriter.Create(ctx, &i.scene); err != nil {
 		return nil, fmt.Errorf("error creating scene: %v", err)
 	}
 
-	id := created.ID
+	id := i.scene.ID
 	i.ID = id
 	return &id, nil
 }
@@ -453,8 +405,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	scene := i.scene
 	scene.ID = id
 	i.ID = id
-	_, err := i.ReaderWriter.UpdateFull(ctx, scene)
-	if err != nil {
+	if err := i.ReaderWriter.Update(ctx, &scene); err != nil {
 		return fmt.Errorf("error updating existing scene: %v", err)
 	}
 

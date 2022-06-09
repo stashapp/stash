@@ -18,7 +18,6 @@ func Test_createMissingStudio(t *testing.T) {
 	validName := "validName"
 	invalidName := "invalidName"
 	createdID := 1
-	createdID64 := int64(createdID)
 
 	repo := mocks.NewTxnRepository()
 	mockStudioReaderWriter := repo.Studio.(*mocks.StudioReaderWriter)
@@ -31,13 +30,13 @@ func Test_createMissingStudio(t *testing.T) {
 		return p.Name.String == invalidName
 	})).Return(nil, errors.New("error creating performer"))
 
-	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
+	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []*models.StashID{
 		{
 			Endpoint: invalidEndpoint,
 			StashID:  remoteSiteID,
 		},
 	}).Return(errors.New("error updating stash ids"))
-	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
+	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []*models.StashID{
 		{
 			Endpoint: validEndpoint,
 			StashID:  remoteSiteID,
@@ -51,7 +50,7 @@ func Test_createMissingStudio(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *int64
+		want    *int
 		wantErr bool
 	}{
 		{
@@ -62,7 +61,7 @@ func Test_createMissingStudio(t *testing.T) {
 					Name: validName,
 				},
 			},
-			&createdID64,
+			&createdID,
 			false,
 		},
 		{
@@ -85,7 +84,7 @@ func Test_createMissingStudio(t *testing.T) {
 					RemoteSiteID: &remoteSiteID,
 				},
 			},
-			&createdID64,
+			&createdID,
 			false,
 		},
 		{
@@ -109,7 +108,7 @@ func Test_createMissingStudio(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("createMissingStudio() = %v, want %v", got, tt.want)
+				t.Errorf("createMissingStudio() = %d, want %d", got, tt.want)
 			}
 		})
 	}

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -9,33 +8,39 @@ import (
 
 // Scene stores the metadata for a single video scene.
 type Scene struct {
-	ID               int                 `db:"id" json:"id"`
-	Checksum         sql.NullString      `db:"checksum" json:"checksum"`
-	OSHash           sql.NullString      `db:"oshash" json:"oshash"`
-	Path             string              `db:"path" json:"path"`
-	Title            sql.NullString      `db:"title" json:"title"`
-	Details          sql.NullString      `db:"details" json:"details"`
-	URL              sql.NullString      `db:"url" json:"url"`
-	Date             SQLiteDate          `db:"date" json:"date"`
-	Rating           sql.NullInt64       `db:"rating" json:"rating"`
-	Organized        bool                `db:"organized" json:"organized"`
-	OCounter         int                 `db:"o_counter" json:"o_counter"`
-	Size             sql.NullString      `db:"size" json:"size"`
-	Duration         sql.NullFloat64     `db:"duration" json:"duration"`
-	VideoCodec       sql.NullString      `db:"video_codec" json:"video_codec"`
-	Format           sql.NullString      `db:"format" json:"format_name"`
-	AudioCodec       sql.NullString      `db:"audio_codec" json:"audio_codec"`
-	Width            sql.NullInt64       `db:"width" json:"width"`
-	Height           sql.NullInt64       `db:"height" json:"height"`
-	Framerate        sql.NullFloat64     `db:"framerate" json:"framerate"`
-	Bitrate          sql.NullInt64       `db:"bitrate" json:"bitrate"`
-	StudioID         sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime      NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	Phash            sql.NullInt64       `db:"phash,omitempty" json:"phash"`
-	CreatedAt        SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt        SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
-	Interactive      bool                `db:"interactive" json:"interactive"`
-	InteractiveSpeed sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
+	ID               int        `json:"id"`
+	Checksum         *string    `json:"checksum"`
+	OSHash           *string    `json:"oshash"`
+	Path             string     `json:"path"`
+	Title            string     `json:"title"`
+	Details          string     `json:"details"`
+	URL              string     `json:"url"`
+	Date             *Date      `json:"date"`
+	Rating           *int       `json:"rating"`
+	Organized        bool       `json:"organized"`
+	OCounter         int        `json:"o_counter"`
+	Size             *string    `json:"size"`
+	Duration         *float64   `json:"duration"`
+	VideoCodec       *string    `json:"video_codec"`
+	Format           *string    `json:"format_name"`
+	AudioCodec       *string    `json:"audio_codec"`
+	Width            *int       `json:"width"`
+	Height           *int       `json:"height"`
+	Framerate        *float64   `json:"framerate"`
+	Bitrate          *int64     `json:"bitrate"`
+	StudioID         *int       `json:"studio_id"`
+	FileModTime      *time.Time `json:"file_mod_time"`
+	Phash            *int64     `json:"phash"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
+	Interactive      bool       `json:"interactive"`
+	InteractiveSpeed *int       `json:"interactive_speed"`
+
+	GalleryIDs   []int          `json:"gallery_ids"`
+	TagIDs       []int          `json:"tag_ids"`
+	PerformerIDs []int          `json:"performer_ids"`
+	Movies       []MoviesScenes `json:"movies"`
+	StashIDs     []StashID      `json:"stash_ids"`
 }
 
 func (s *Scene) File() File {
@@ -43,17 +48,17 @@ func (s *Scene) File() File {
 		Path: s.Path,
 	}
 
-	if s.Checksum.Valid {
-		ret.Checksum = s.Checksum.String
+	if s.Checksum != nil {
+		ret.Checksum = *s.Checksum
 	}
-	if s.OSHash.Valid {
-		ret.OSHash = s.OSHash.String
+	if s.OSHash != nil {
+		ret.OSHash = *s.OSHash
 	}
-	if s.FileModTime.Valid {
-		ret.FileModTime = s.FileModTime.Timestamp
+	if s.FileModTime != nil {
+		ret.FileModTime = *s.FileModTime
 	}
-	if s.Size.Valid {
-		ret.Size = s.Size.String
+	if s.Size != nil {
+		ret.Size = *s.Size
 	}
 
 	return ret
@@ -64,62 +69,62 @@ func (s *Scene) SetFile(f File) {
 	s.Path = path
 
 	if f.Checksum != "" {
-		s.Checksum = sql.NullString{
-			String: f.Checksum,
-			Valid:  true,
-		}
+		s.Checksum = &f.Checksum
 	}
 	if f.OSHash != "" {
-		s.OSHash = sql.NullString{
-			String: f.OSHash,
-			Valid:  true,
-		}
+		s.OSHash = &f.OSHash
 	}
 	zeroTime := time.Time{}
 	if f.FileModTime != zeroTime {
-		s.FileModTime = NullSQLiteTimestamp{
-			Timestamp: f.FileModTime,
-			Valid:     true,
-		}
+		s.FileModTime = &f.FileModTime
 	}
 	if f.Size != "" {
-		s.Size = sql.NullString{
-			String: f.Size,
-			Valid:  true,
-		}
+		s.Size = &f.Size
 	}
 }
 
 // ScenePartial represents part of a Scene object. It is used to update
-// the database entry. Only non-nil fields will be updated.
+// the database entry.
 type ScenePartial struct {
-	ID               int                  `db:"id" json:"id"`
-	Checksum         *sql.NullString      `db:"checksum" json:"checksum"`
-	OSHash           *sql.NullString      `db:"oshash" json:"oshash"`
-	Path             *string              `db:"path" json:"path"`
-	Title            *sql.NullString      `db:"title" json:"title"`
-	Details          *sql.NullString      `db:"details" json:"details"`
-	URL              *sql.NullString      `db:"url" json:"url"`
-	Date             *SQLiteDate          `db:"date" json:"date"`
-	Rating           *sql.NullInt64       `db:"rating" json:"rating"`
-	Organized        *bool                `db:"organized" json:"organized"`
-	Size             *sql.NullString      `db:"size" json:"size"`
-	Duration         *sql.NullFloat64     `db:"duration" json:"duration"`
-	VideoCodec       *sql.NullString      `db:"video_codec" json:"video_codec"`
-	Format           *sql.NullString      `db:"format" json:"format_name"`
-	AudioCodec       *sql.NullString      `db:"audio_codec" json:"audio_codec"`
-	Width            *sql.NullInt64       `db:"width" json:"width"`
-	Height           *sql.NullInt64       `db:"height" json:"height"`
-	Framerate        *sql.NullFloat64     `db:"framerate" json:"framerate"`
-	Bitrate          *sql.NullInt64       `db:"bitrate" json:"bitrate"`
-	StudioID         *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	MovieID          *sql.NullInt64       `db:"movie_id,omitempty" json:"movie_id"`
-	FileModTime      *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	Phash            *sql.NullInt64       `db:"phash,omitempty" json:"phash"`
-	CreatedAt        *SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt        *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
-	Interactive      *bool                `db:"interactive" json:"interactive"`
-	InteractiveSpeed *sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
+	Checksum         OptionalString
+	OSHash           OptionalString
+	Path             OptionalString
+	Title            OptionalString
+	Details          OptionalString
+	URL              OptionalString
+	Date             OptionalDate
+	Rating           OptionalInt
+	Organized        OptionalBool
+	OCounter         OptionalInt
+	Size             OptionalString
+	Duration         OptionalFloat64
+	VideoCodec       OptionalString
+	Format           OptionalString
+	AudioCodec       OptionalString
+	Width            OptionalInt
+	Height           OptionalInt
+	Framerate        OptionalFloat64
+	Bitrate          OptionalInt64
+	StudioID         OptionalInt
+	FileModTime      OptionalTime
+	Phash            OptionalInt64
+	CreatedAt        OptionalTime
+	UpdatedAt        OptionalTime
+	Interactive      OptionalBool
+	InteractiveSpeed OptionalInt
+
+	GalleryIDs   *UpdateIDs
+	TagIDs       *UpdateIDs
+	PerformerIDs *UpdateIDs
+	MovieIDs     *UpdateMovieIDs
+	StashIDs     *UpdateStashIDs
+}
+
+func NewScenePartial() ScenePartial {
+	updatedTime := time.Now()
+	return ScenePartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
+	}
 }
 
 type SceneMovieInput struct {
@@ -142,69 +147,64 @@ type SceneUpdateInput struct {
 	Movies           []*SceneMovieInput `json:"movies"`
 	TagIds           []string           `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage *string         `json:"cover_image"`
-	StashIds   []*StashIDInput `json:"stash_ids"`
+	CoverImage *string   `json:"cover_image"`
+	StashIds   []StashID `json:"stash_ids"`
 }
 
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
-func (s ScenePartial) UpdateInput() SceneUpdateInput {
-	boolPtrCopy := func(v *bool) *bool {
-		if v == nil {
-			return nil
-		}
+func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
+	var dateStr *string
+	if s.Date.Set {
+		d := s.Date.Value
+		v := d.String()
+		dateStr = &v
+	}
 
-		vv := *v
-		return &vv
+	var stashIDs []StashID
+	if s.StashIDs != nil {
+		stashIDs = s.StashIDs.StashIDs
 	}
 
 	return SceneUpdateInput{
-		ID:        strconv.Itoa(s.ID),
-		Title:     nullStringPtrToStringPtr(s.Title),
-		Details:   nullStringPtrToStringPtr(s.Details),
-		URL:       nullStringPtrToStringPtr(s.URL),
-		Date:      s.Date.StringPtr(),
-		Rating:    nullInt64PtrToIntPtr(s.Rating),
-		Organized: boolPtrCopy(s.Organized),
-		StudioID:  nullInt64PtrToStringPtr(s.StudioID),
+		ID:           strconv.Itoa(id),
+		Title:        s.Title.Ptr(),
+		Details:      s.Details.Ptr(),
+		URL:          s.URL.Ptr(),
+		Date:         dateStr,
+		Rating:       s.Rating.Ptr(),
+		Organized:    s.Organized.Ptr(),
+		StudioID:     s.StudioID.StringPtr(),
+		GalleryIds:   s.GalleryIDs.IDStrings(),
+		PerformerIds: s.PerformerIDs.IDStrings(),
+		Movies:       s.MovieIDs.SceneMovieInputs(),
+		TagIds:       s.TagIDs.IDStrings(),
+		StashIds:     stashIDs,
 	}
 }
 
 func (s *ScenePartial) SetFile(f File) {
-	path := f.Path
-	s.Path = &path
+	s.Path = NewOptionalString(f.Path)
 
 	if f.Checksum != "" {
-		s.Checksum = &sql.NullString{
-			String: f.Checksum,
-			Valid:  true,
-		}
+		s.Checksum = NewOptionalString(f.Checksum)
 	}
 	if f.OSHash != "" {
-		s.OSHash = &sql.NullString{
-			String: f.OSHash,
-			Valid:  true,
-		}
+		s.OSHash = NewOptionalString(f.OSHash)
 	}
 	zeroTime := time.Time{}
 	if f.FileModTime != zeroTime {
-		s.FileModTime = &NullSQLiteTimestamp{
-			Timestamp: f.FileModTime,
-			Valid:     true,
-		}
+		s.FileModTime = NewOptionalTime(f.FileModTime)
 	}
 	if f.Size != "" {
-		s.Size = &sql.NullString{
-			String: f.Size,
-			Valid:  true,
-		}
+		s.Size = NewOptionalString(f.Size)
 	}
 }
 
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
 func (s Scene) GetTitle() string {
-	if s.Title.String != "" {
-		return s.Title.String
+	if s.Title != "" {
+		return s.Title
 	}
 
 	return filepath.Base(s.Path)
@@ -216,12 +216,19 @@ func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
 	return s.File().GetHash(hashAlgorithm)
 }
 
-func (s Scene) GetMinResolution() int64 {
-	if s.Width.Int64 < s.Height.Int64 {
-		return s.Width.Int64
+func (s Scene) GetMinResolution() int {
+	var w, h int
+	if s.Width != nil {
+		w = *s.Width
+	}
+	if s.Height != nil {
+		h = *s.Height
+	}
+	if w < h {
+		return w
 	}
 
-	return s.Height.Int64
+	return h
 }
 
 // SceneFileType represents the file metadata for a scene.

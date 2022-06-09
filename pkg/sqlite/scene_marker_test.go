@@ -152,10 +152,12 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 
 	withTxn(func(ctx context.Context) error {
 		testTags := func(m *models.SceneMarker, markerFilter *models.SceneMarkerFilterType) {
-			tagIDs, err := sqlite.SceneReaderWriter.GetTagIDs(ctx, int(m.SceneID.Int64))
+			s, err := sqlite.SceneReaderWriter.Find(ctx, int(m.SceneID.Int64))
 			if err != nil {
 				t.Errorf("error getting marker tag ids: %v", err)
+				return
 			}
+			tagIDs := s.TagIDs
 			if markerFilter.SceneTags.Modifier == models.CriterionModifierIsNull && len(tagIDs) > 0 {
 				t.Errorf("expected marker %d to have no scene tags - found %d", m.ID, len(tagIDs))
 			}

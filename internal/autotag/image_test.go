@@ -41,8 +41,12 @@ func TestImagePerformers(t *testing.T) {
 		mockPerformerReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		if test.Matches {
-			mockImageReader.On("GetPerformerIDs", testCtx, imageID).Return(nil, nil).Once()
-			mockImageReader.On("UpdatePerformers", testCtx, imageID, []int{performerID}).Return(nil).Once()
+			mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}).Return(nil, nil).Once()
 		}
 
 		image := models.Image{
@@ -62,7 +66,7 @@ func TestImageStudios(t *testing.T) {
 
 	const imageID = 1
 	const studioName = "studio name"
-	const studioID = 2
+	var studioID = 2
 	studio := models.Studio{
 		ID:   studioID,
 		Name: models.NullString(studioName),
@@ -81,11 +85,9 @@ func TestImageStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockImageReader *mocks.ImageReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockImageReader.On("Find", testCtx, imageID).Return(&models.Image{}, nil).Once()
-			expectedStudioID := models.NullInt64(studioID)
-			mockImageReader.On("Update", testCtx, models.ImagePartial{
-				ID:       imageID,
-				StudioID: &expectedStudioID,
+			expectedStudioID := studioID
+			mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+				StudioID: models.NewOptionalInt(expectedStudioID),
 			}).Return(nil, nil).Once()
 		}
 
@@ -154,8 +156,12 @@ func TestImageTags(t *testing.T) {
 
 	doTest := func(mockTagReader *mocks.TagReaderWriter, mockImageReader *mocks.ImageReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockImageReader.On("GetTagIDs", testCtx, imageID).Return(nil, nil).Once()
-			mockImageReader.On("UpdateTags", testCtx, imageID, []int{tagID}).Return(nil).Once()
+			mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}).Return(nil, nil).Once()
 		}
 
 		image := models.Image{

@@ -14,7 +14,7 @@ import (
 
 const invalidImage = "aW1hZ2VCeXRlcw&&"
 
-const (
+var (
 	path = "path"
 
 	sceneNameErr = "sceneNameErr"
@@ -46,9 +46,6 @@ const (
 	existingTagName = "existingTagName"
 	existingTagErr  = "existingTagErr"
 	missingTagName  = "missingTagName"
-
-	errPerformersID = 200
-	errGalleriesID  = 201
 
 	missingChecksum = "missingChecksum"
 	missingOSHash   = "missingOSHash"
@@ -103,7 +100,7 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.scene.StudioID.Int64)
+	assert.Equal(t, existingStudioID, *i.scene.StudioID)
 
 	i.Input.Studio = existingStudioErr
 	err = i.PreImport(testCtx)
@@ -139,7 +136,7 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.scene.StudioID.Int64)
+	assert.Equal(t, existingStudioID, *i.scene.StudioID)
 
 	studioReaderWriter.AssertExpectations(t)
 }
@@ -188,7 +185,7 @@ func TestImporterPreImportWithGallery(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingGalleryID, i.galleries[0].ID)
+	assert.Equal(t, []int{existingGalleryID}, i.scene.GalleryIDs)
 
 	i.Input.Galleries = []string{existingGalleryErr}
 	err = i.PreImport(testCtx)
@@ -251,7 +248,7 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingPerformerID, i.performers[0].ID)
+	assert.Equal(t, []int{existingPerformerID}, i.scene.PerformerIDs)
 
 	i.Input.Performers = []string{existingPerformerErr}
 	err = i.PreImport(testCtx)
@@ -289,7 +286,7 @@ func TestImporterPreImportWithMissingPerformer(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingPerformerID, i.performers[0].ID)
+	assert.Equal(t, []int{existingPerformerID}, i.scene.PerformerIDs)
 
 	performerReaderWriter.AssertExpectations(t)
 }
@@ -341,7 +338,7 @@ func TestImporterPreImportWithMovie(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingMovieID, i.movies[0].MovieID)
+	assert.Equal(t, existingMovieID, i.scene.Movies[0].MovieID)
 
 	i.Input.Movies[0].MovieName = existingMovieErr
 	err = i.PreImport(testCtx)
@@ -382,7 +379,7 @@ func TestImporterPreImportWithMissingMovie(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingMovieID, i.movies[0].MovieID)
+	assert.Equal(t, existingMovieID, i.scene.Movies[0].MovieID)
 
 	movieReaderWriter.AssertExpectations(t)
 }
@@ -434,7 +431,7 @@ func TestImporterPreImportWithTag(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingTagID, i.tags[0].ID)
+	assert.Equal(t, []int{existingTagID}, i.scene.TagIDs)
 
 	i.Input.Tags = []string{existingTagErr}
 	err = i.PreImport(testCtx)
@@ -472,7 +469,7 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingTagID, i.tags[0].ID)
+	assert.Equal(t, []int{existingTagID}, i.scene.TagIDs)
 
 	tagReaderWriter.AssertExpectations(t)
 }
@@ -518,115 +515,6 @@ func TestImporterPostImport(t *testing.T) {
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)
-}
-
-func TestImporterPostImportUpdateGalleries(t *testing.T) {
-	sceneReaderWriter := &mocks.SceneReaderWriter{}
-
-	i := Importer{
-		ReaderWriter: sceneReaderWriter,
-		galleries: []*models.Gallery{
-			{
-				ID: existingGalleryID,
-			},
-		},
-	}
-
-	updateErr := errors.New("UpdateGalleries error")
-
-	sceneReaderWriter.On("UpdateGalleries", testCtx, sceneID, []int{existingGalleryID}).Return(nil).Once()
-	sceneReaderWriter.On("UpdateGalleries", testCtx, errGalleriesID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
-
-	err := i.PostImport(testCtx, sceneID)
-	assert.Nil(t, err)
-
-	err = i.PostImport(testCtx, errGalleriesID)
-	assert.NotNil(t, err)
-
-	sceneReaderWriter.AssertExpectations(t)
-}
-
-func TestImporterPostImportUpdatePerformers(t *testing.T) {
-	sceneReaderWriter := &mocks.SceneReaderWriter{}
-
-	i := Importer{
-		ReaderWriter: sceneReaderWriter,
-		performers: []*models.Performer{
-			{
-				ID: existingPerformerID,
-			},
-		},
-	}
-
-	updateErr := errors.New("UpdatePerformers error")
-
-	sceneReaderWriter.On("UpdatePerformers", testCtx, sceneID, []int{existingPerformerID}).Return(nil).Once()
-	sceneReaderWriter.On("UpdatePerformers", testCtx, errPerformersID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
-
-	err := i.PostImport(testCtx, sceneID)
-	assert.Nil(t, err)
-
-	err = i.PostImport(testCtx, errPerformersID)
-	assert.NotNil(t, err)
-
-	sceneReaderWriter.AssertExpectations(t)
-}
-
-func TestImporterPostImportUpdateMovies(t *testing.T) {
-	sceneReaderWriter := &mocks.SceneReaderWriter{}
-
-	i := Importer{
-		ReaderWriter: sceneReaderWriter,
-		movies: []models.MoviesScenes{
-			{
-				MovieID: existingMovieID,
-			},
-		},
-	}
-
-	updateErr := errors.New("UpdateMovies error")
-
-	sceneReaderWriter.On("UpdateMovies", testCtx, sceneID, []models.MoviesScenes{
-		{
-			MovieID: existingMovieID,
-			SceneID: sceneID,
-		},
-	}).Return(nil).Once()
-	sceneReaderWriter.On("UpdateMovies", testCtx, errMoviesID, mock.AnythingOfType("[]models.MoviesScenes")).Return(updateErr).Once()
-
-	err := i.PostImport(testCtx, sceneID)
-	assert.Nil(t, err)
-
-	err = i.PostImport(testCtx, errMoviesID)
-	assert.NotNil(t, err)
-
-	sceneReaderWriter.AssertExpectations(t)
-}
-
-func TestImporterPostImportUpdateTags(t *testing.T) {
-	sceneReaderWriter := &mocks.SceneReaderWriter{}
-
-	i := Importer{
-		ReaderWriter: sceneReaderWriter,
-		tags: []*models.Tag{
-			{
-				ID: existingTagID,
-			},
-		},
-	}
-
-	updateErr := errors.New("UpdateTags error")
-
-	sceneReaderWriter.On("UpdateTags", testCtx, sceneID, []int{existingTagID}).Return(nil).Once()
-	sceneReaderWriter.On("UpdateTags", testCtx, errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
-
-	err := i.PostImport(testCtx, sceneID)
-	assert.Nil(t, err)
-
-	err = i.PostImport(testCtx, errTagsID)
-	assert.NotNil(t, err)
-
-	sceneReaderWriter.AssertExpectations(t)
 }
 
 func TestImporterFindExistingID(t *testing.T) {
@@ -691,11 +579,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.SceneReaderWriter{}
 
 	scene := models.Scene{
-		Title: models.NullString(title),
+		Title: title,
 	}
 
 	sceneErr := models.Scene{
-		Title: models.NullString(sceneNameErr),
+		Title: sceneNameErr,
 	}
 
 	i := Importer{
@@ -704,10 +592,10 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", testCtx, scene).Return(&models.Scene{
-		ID: sceneID,
-	}, nil).Once()
-	readerWriter.On("Create", testCtx, sceneErr).Return(nil, errCreate).Once()
+	readerWriter.On("Create", testCtx, &scene).Run(func(args mock.Arguments) {
+		args.Get(1).(*models.Scene).ID = sceneID
+	}).Return(nil).Once()
+	readerWriter.On("Create", testCtx, &sceneErr).Return(errCreate).Once()
 
 	id, err := i.Create(testCtx)
 	assert.Equal(t, sceneID, *id)
@@ -726,11 +614,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.SceneReaderWriter{}
 
 	scene := models.Scene{
-		Title: models.NullString(title),
+		Title: title,
 	}
 
 	sceneErr := models.Scene{
-		Title: models.NullString(sceneNameErr),
+		Title: sceneNameErr,
 	}
 
 	i := Importer{
@@ -742,7 +630,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	scene.ID = sceneID
-	readerWriter.On("UpdateFull", testCtx, scene).Return(nil, nil).Once()
+	readerWriter.On("Update", testCtx, &scene).Return(nil).Once()
 
 	err := i.Update(testCtx, sceneID)
 	assert.Nil(t, err)
@@ -752,7 +640,7 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	sceneErr.ID = errImageID
-	readerWriter.On("UpdateFull", testCtx, sceneErr).Return(nil, errUpdate).Once()
+	readerWriter.On("Update", testCtx, &sceneErr).Return(errUpdate).Once()
 
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)

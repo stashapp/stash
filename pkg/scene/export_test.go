@@ -1,7 +1,6 @@
 package scene
 
 import (
-	"database/sql"
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -31,7 +30,6 @@ const (
 	errTagsID = 12
 
 	noMoviesID     = 13
-	errMoviesID    = 14
 	errFindMovieID = 15
 
 	noMarkersID         = 16
@@ -40,31 +38,32 @@ const (
 	errFindByMarkerID   = 19
 )
 
-const (
-	url          = "url"
-	checksum     = "checksum"
-	oshash       = "oshash"
-	title        = "title"
-	phash        = -3846826108889195
-	date         = "2001-01-01"
-	rating       = 5
-	ocounter     = 2
-	organized    = true
-	details      = "details"
-	size         = "size"
-	duration     = 1.23
-	durationStr  = "1.23"
-	videoCodec   = "videoCodec"
-	audioCodec   = "audioCodec"
-	format       = "format"
-	width        = 100
-	height       = 100
-	framerate    = 3.21
-	framerateStr = "3.21"
-	bitrate      = 1
+var (
+	url                = "url"
+	checksum           = "checksum"
+	oshash             = "oshash"
+	title              = "title"
+	phash        int64 = -3846826108889195
+	date               = "2001-01-01"
+	dateObj            = models.NewDate(date)
+	rating             = 5
+	ocounter           = 2
+	organized          = true
+	details            = "details"
+	size               = "size"
+	duration           = 1.23
+	durationStr        = "1.23"
+	videoCodec         = "videoCodec"
+	audioCodec         = "audioCodec"
+	format             = "format"
+	width              = 100
+	height             = 100
+	framerate          = 3.21
+	framerateStr       = "3.21"
+	bitrate      int64 = 1
 )
 
-const (
+var (
 	studioName = "studioName"
 	// galleryChecksum = "galleryChecksum"
 
@@ -90,9 +89,6 @@ var stashID = models.StashID{
 	StashID:  "StashID",
 	Endpoint: "Endpoint",
 }
-var stashIDs = []*models.StashID{
-	&stashID,
-}
 
 const imageBase64 = "aW1hZ2VCeXRlcw=="
 
@@ -104,52 +100,38 @@ var (
 func createFullScene(id int) models.Scene {
 	return models.Scene{
 		ID:         id,
-		Title:      models.NullString(title),
-		AudioCodec: models.NullString(audioCodec),
-		Bitrate:    models.NullInt64(bitrate),
-		Checksum:   models.NullString(checksum),
-		Date: models.SQLiteDate{
-			String: date,
-			Valid:  true,
-		},
-		Details: models.NullString(details),
-		Duration: sql.NullFloat64{
-			Float64: duration,
-			Valid:   true,
-		},
-		Format: models.NullString(format),
-		Framerate: sql.NullFloat64{
-			Float64: framerate,
-			Valid:   true,
-		},
-		Height:     models.NullInt64(height),
+		Title:      title,
+		AudioCodec: &audioCodec,
+		Bitrate:    &bitrate,
+		Checksum:   &checksum,
+		Date:       &dateObj,
+		Details:    details,
+		Duration:   &duration,
+		Format:     &format,
+		Framerate:  &framerate,
+		Height:     &height,
 		OCounter:   ocounter,
-		OSHash:     models.NullString(oshash),
-		Phash:      models.NullInt64(phash),
-		Rating:     models.NullInt64(rating),
+		OSHash:     &oshash,
+		Phash:      &phash,
+		Rating:     &rating,
 		Organized:  organized,
-		Size:       models.NullString(size),
-		VideoCodec: models.NullString(videoCodec),
-		Width:      models.NullInt64(width),
-		URL:        models.NullString(url),
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
+		Size:       &size,
+		VideoCodec: &videoCodec,
+		Width:      &width,
+		URL:        url,
+		StashIDs: []models.StashID{
+			stashID,
 		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
 func createEmptyScene(id int) models.Scene {
 	return models.Scene{
-		ID: id,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		ID:        id,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
@@ -167,7 +149,7 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 		URL:       url,
 		File: &jsonschema.SceneFile{
 			AudioCodec: audioCodec,
-			Bitrate:    bitrate,
+			Bitrate:    int(bitrate),
 			Duration:   durationStr,
 			Format:     format,
 			Framerate:  framerateStr,
@@ -234,9 +216,6 @@ func TestToJSON(t *testing.T) {
 	mockSceneReader.On("GetCover", testCtx, noImageID).Return(nil, nil).Once()
 	mockSceneReader.On("GetCover", testCtx, errImageID).Return(nil, imageErr).Once()
 
-	mockSceneReader.On("GetStashIDs", testCtx, sceneID).Return(stashIDs, nil).Once()
-	mockSceneReader.On("GetStashIDs", testCtx, noImageID).Return(nil, nil).Once()
-
 	for i, s := range scenarios {
 		scene := s.input
 		json, err := ToBasicJSON(testCtx, mockSceneReader, &scene)
@@ -256,7 +235,7 @@ func TestToJSON(t *testing.T) {
 
 func createStudioScene(studioID int) models.Scene {
 	return models.Scene{
-		StudioID: models.NullInt64(int64(studioID)),
+		StudioID: &studioID,
 	}
 }
 
@@ -379,9 +358,30 @@ type sceneMoviesTestScenario struct {
 	err      bool
 }
 
+var validMovies = []models.MoviesScenes{
+	{
+		MovieID:    validMovie1,
+		SceneIndex: &movie1Scene,
+	},
+	{
+		MovieID:    validMovie2,
+		SceneIndex: &movie2Scene,
+	},
+}
+
+var invalidMovies = []models.MoviesScenes{
+	{
+		MovieID:    invalidMovie,
+		SceneIndex: &movie1Scene,
+	},
+}
+
 var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
 	{
-		createEmptyScene(sceneID),
+		models.Scene{
+			ID:     sceneID,
+			Movies: validMovies,
+		},
 		[]jsonschema.SceneMovie{
 			{
 				MovieName:  movie1Name,
@@ -395,51 +395,25 @@ var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
 		false,
 	},
 	{
-		createEmptyScene(noMoviesID),
+		models.Scene{
+			ID: noMoviesID,
+		},
 		nil,
 		false,
 	},
 	{
-		createEmptyScene(errMoviesID),
+		models.Scene{
+			ID:     errFindMovieID,
+			Movies: invalidMovies,
+		},
 		nil,
 		true,
-	},
-	{
-		createEmptyScene(errFindMovieID),
-		nil,
-		true,
-	},
-}
-
-var validMovies = []models.MoviesScenes{
-	{
-		MovieID:    validMovie1,
-		SceneIndex: models.NullInt64(movie1Scene),
-	},
-	{
-		MovieID:    validMovie2,
-		SceneIndex: models.NullInt64(movie2Scene),
-	},
-}
-
-var invalidMovies = []models.MoviesScenes{
-	{
-		MovieID:    invalidMovie,
-		SceneIndex: models.NullInt64(movie1Scene),
 	},
 }
 
 func TestGetSceneMoviesJSON(t *testing.T) {
 	mockMovieReader := &mocks.MovieReaderWriter{}
-	mockSceneReader := &mocks.SceneReaderWriter{}
-
-	joinErr := errors.New("error getting scene movies")
 	movieErr := errors.New("error getting movie")
-
-	mockSceneReader.On("GetMovies", testCtx, sceneID).Return(validMovies, nil).Once()
-	mockSceneReader.On("GetMovies", testCtx, noMoviesID).Return(nil, nil).Once()
-	mockSceneReader.On("GetMovies", testCtx, errMoviesID).Return(nil, joinErr).Once()
-	mockSceneReader.On("GetMovies", testCtx, errFindMovieID).Return(invalidMovies, nil).Once()
 
 	mockMovieReader.On("Find", testCtx, validMovie1).Return(&models.Movie{
 		Name: models.NullString(movie1Name),
@@ -451,7 +425,7 @@ func TestGetSceneMoviesJSON(t *testing.T) {
 
 	for i, s := range getSceneMoviesJSONScenarios {
 		scene := s.input
-		json, err := GetSceneMoviesJSON(testCtx, mockMovieReader, mockSceneReader, &scene)
+		json, err := GetSceneMoviesJSON(testCtx, mockMovieReader, &scene)
 
 		switch {
 		case !s.err && err != nil:

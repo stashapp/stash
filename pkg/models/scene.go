@@ -144,30 +144,19 @@ type SceneReader interface {
 	Query(ctx context.Context, options SceneQueryOptions) (*SceneQueryResult, error)
 	GetCaptions(ctx context.Context, sceneID int) ([]*SceneCaption, error)
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
-	GetMovies(ctx context.Context, sceneID int) ([]MoviesScenes, error)
-	GetTagIDs(ctx context.Context, sceneID int) ([]int, error)
-	GetGalleryIDs(ctx context.Context, sceneID int) ([]int, error)
-	GetPerformerIDs(ctx context.Context, sceneID int) ([]int, error)
-	GetStashIDs(ctx context.Context, sceneID int) ([]*StashID, error)
 }
 
 type SceneWriter interface {
-	Create(ctx context.Context, newScene Scene) (*Scene, error)
-	Update(ctx context.Context, updatedScene ScenePartial) (*Scene, error)
-	UpdateFull(ctx context.Context, updatedScene Scene) (*Scene, error)
+	Create(ctx context.Context, newScene *Scene) error
+	Update(ctx context.Context, updatedScene *Scene) error
+	UpdatePartial(ctx context.Context, id int, updatedScene ScenePartial) (*Scene, error)
 	IncrementOCounter(ctx context.Context, id int) (int, error)
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)
-	UpdateFileModTime(ctx context.Context, id int, modTime NullSQLiteTimestamp) error
 	Destroy(ctx context.Context, id int) error
 	UpdateCaptions(ctx context.Context, id int, captions []*SceneCaption) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 	DestroyCover(ctx context.Context, sceneID int) error
-	UpdatePerformers(ctx context.Context, sceneID int, performerIDs []int) error
-	UpdateTags(ctx context.Context, sceneID int, tagIDs []int) error
-	UpdateGalleries(ctx context.Context, sceneID int, galleryIDs []int) error
-	UpdateMovies(ctx context.Context, sceneID int, movies []MoviesScenes) error
-	UpdateStashIDs(ctx context.Context, sceneID int, stashIDs []StashID) error
 }
 
 type SceneReaderWriter interface {

@@ -15,16 +15,13 @@ import (
 func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON := jsonschema.Image{
 		Checksum:  image.Checksum,
-		CreatedAt: json.JSONTime{Time: image.CreatedAt.Timestamp},
-		UpdatedAt: json.JSONTime{Time: image.UpdatedAt.Timestamp},
+		Title:     image.Title,
+		CreatedAt: json.JSONTime{Time: image.CreatedAt},
+		UpdatedAt: json.JSONTime{Time: image.UpdatedAt},
 	}
 
-	if image.Title.Valid {
-		newImageJSON.Title = image.Title.String
-	}
-
-	if image.Rating.Valid {
-		newImageJSON.Rating = int(image.Rating.Int64)
+	if image.Rating != nil {
+		newImageJSON.Rating = *image.Rating
 	}
 
 	newImageJSON.Organized = image.Organized
@@ -38,20 +35,20 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
 	ret := &jsonschema.ImageFile{}
 
-	if image.FileModTime.Valid {
-		ret.ModTime = json.JSONTime{Time: image.FileModTime.Timestamp}
+	if image.FileModTime != nil {
+		ret.ModTime = json.JSONTime{Time: *image.FileModTime}
 	}
 
-	if image.Size.Valid {
-		ret.Size = int(image.Size.Int64)
+	if image.Size != nil {
+		ret.Size = *image.Size
 	}
 
-	if image.Width.Valid {
-		ret.Width = int(image.Width.Int64)
+	if image.Width != nil {
+		ret.Width = *image.Width
 	}
 
-	if image.Height.Valid {
-		ret.Height = int(image.Height.Int64)
+	if image.Height != nil {
+		ret.Height = *image.Height
 	}
 
 	return ret
@@ -60,8 +57,8 @@ func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
 // GetStudioName returns the name of the provided image's studio. It returns an
 // empty string if there is no studio assigned to the image.
 func GetStudioName(ctx context.Context, reader studio.Finder, image *models.Image) (string, error) {
-	if image.StudioID.Valid {
-		studio, err := reader.Find(ctx, int(image.StudioID.Int64))
+	if image.StudioID != nil {
+		studio, err := reader.Find(ctx, *image.StudioID)
 		if err != nil {
 			return "", err
 		}

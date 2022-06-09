@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -40,10 +39,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 		return
 	}
 
-	median := sql.NullInt64{
-		Int64: generator.InteractiveSpeed,
-		Valid: true,
-	}
+	median := generator.InteractiveSpeed
 
 	var s *models.Scene
 
@@ -59,10 +55,9 @@ func (t *GenerateInteractiveHeatmapSpeedTask) Start(ctx context.Context) {
 	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		qb := t.TxnManager.Scene
 		scenePartial := models.ScenePartial{
-			ID:               s.ID,
-			InteractiveSpeed: &median,
+			InteractiveSpeed: models.NewOptionalInt(median),
 		}
-		_, err := qb.Update(ctx, scenePartial)
+		_, err := qb.UpdatePartial(ctx, s.ID, scenePartial)
 		return err
 	}); err != nil {
 		logger.Error(err.Error())

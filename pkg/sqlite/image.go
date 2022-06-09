@@ -5,118 +5,252 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"gopkg.in/guregu/null.v4"
+	"gopkg.in/guregu/null.v4/zero"
+
+	"github.com/doug-martin/goqu/v9"
+	"github.com/doug-martin/goqu/v9/exp"
 )
 
-const imageTable = "images"
+var imageTable = "images"
+
 const imageIDColumn = "image_id"
 const performersImagesTable = "performers_images"
 const imagesTagsTable = "images_tags"
 
-var imagesForGalleryQuery = selectAll(imageTable) + `
-INNER JOIN galleries_images as galleries_join on galleries_join.image_id = images.id
-WHERE galleries_join.gallery_id = ?
-GROUP BY images.id
-`
+type imageRow struct {
+	ID          int         `db:"id" goqu:"skipinsert"`
+	Checksum    string      `db:"checksum"`
+	Path        string      `db:"path"`
+	Title       zero.String `db:"title"`
+	Rating      null.Int    `db:"rating"`
+	Organized   bool        `db:"organized"`
+	OCounter    int         `db:"o_counter"`
+	Size        null.Int    `db:"size"`
+	Width       null.Int    `db:"width"`
+	Height      null.Int    `db:"height"`
+	StudioID    null.Int    `db:"studio_id,omitempty"`
+	FileModTime null.Time   `db:"file_mod_time"`
+	CreatedAt   time.Time   `db:"created_at"`
+	UpdatedAt   time.Time   `db:"updated_at"`
+}
 
-var countImagesForGalleryQuery = `
-SELECT gallery_id FROM galleries_images
-WHERE gallery_id = ?
-GROUP BY image_id
-`
+func (r *imageRow) fromImage(i models.Image) {
+	r.ID = i.ID
+	r.Checksum = i.Checksum
+	r.Path = i.Path
+	r.Title = zero.StringFrom(i.Title)
+	r.Rating = intFromPtr(i.Rating)
+	r.Organized = i.Organized
+	r.OCounter = i.OCounter
+	r.Size = null.IntFromPtr(i.Size)
+	r.Width = intFromPtr(i.Width)
+	r.Height = intFromPtr(i.Height)
+	r.StudioID = intFromPtr(i.StudioID)
+	r.FileModTime = null.TimeFromPtr(i.FileModTime)
+	r.CreatedAt = i.CreatedAt
+	r.UpdatedAt = i.UpdatedAt
+}
+
+type imageRowRecord struct {
+	updateRecord
+}
+
+func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
+	r.setString("checksum", i.Checksum)
+	r.setString("path", i.Path)
+	r.setNullString("title", i.Title)
+	r.setNullInt("rating", i.Rating)
+	r.setBool("organized", i.Organized)
+	r.setInt("o_counter", i.OCounter)
+	r.setNullInt64("size", i.Size)
+	r.setNullInt("width", i.Width)
+	r.setNullInt("height", i.Height)
+	r.setNullInt("studio_id", i.StudioID)
+	r.setNullTime("file_mod_time", i.FileModTime)
+	r.setTime("created_at", i.CreatedAt)
+	r.setTime("updated_at", i.UpdatedAt)
+}
+
+type imageQueryRow struct {
+	imageRow
+
+	GalleryID   null.Int `db:"gallery_id"`
+	TagID       null.Int `db:"tag_id"`
+	PerformerID null.Int `db:"performer_id"`
+}
+
+func (r *imageQueryRow) resolve() *models.Image {
+	ret := &models.Image{
+		ID:          r.ID,
+		Checksum:    r.Checksum,
+		Path:        r.Path,
+		Title:       r.Title.String,
+		Rating:      nullIntPtr(r.Rating),
+		Organized:   r.Organized,
+		OCounter:    r.OCounter,
+		Size:        r.Size.Ptr(),
+		Width:       nullIntPtr(r.Width),
+		Height:      nullIntPtr(r.Height),
+		StudioID:    nullIntPtr(r.StudioID),
+		FileModTime: r.FileModTime.Ptr(),
+		CreatedAt:   r.CreatedAt,
+		UpdatedAt:   r.UpdatedAt,
+	}
+
+	r.appendRelationships(ret)
+
+	return ret
+}
+
+func (r *imageQueryRow) appendRelationships(i *models.Image) {
+	if r.GalleryID.Valid {
+		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, int(r.GalleryID.Int64))
+	}
+	if r.TagID.Valid {
+		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, int(r.TagID.Int64))
+	}
+	if r.PerformerID.Valid {
+		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, int(r.PerformerID.Int64))
+	}
+}
+
+type imageQueryRows []imageQueryRow
+
+func (r imageQueryRows) resolve() []*models.Image {
+	var ret []*models.Image
+	var last *models.Image
+	var lastID int
+
+	for _, row := range r {
+		if last == nil || lastID != row.ID {
+			f := row.resolve()
+			last = f
+			lastID = row.ID
+			ret = append(ret, last)
+			continue
+		}
+
+		// must be merging with previous row
+		row.appendRelationships(last)
+	}
+
+	return ret
+}
 
 type imageQueryBuilder struct {
 	repository
+
+	tableMgr *table
+	oCounterManager
 }
 
 var ImageReaderWriter = &imageQueryBuilder{
-	repository{
+	repository: repository{
 		tableName: imageTable,
 		idColumn:  idColumn,
 	},
+	tableMgr:        imageTableMgr,
+	oCounterManager: oCounterManager{imageTableMgr},
 }
 
-func (qb *imageQueryBuilder) Create(ctx context.Context, newObject models.Image) (*models.Image, error) {
-	var ret models.Image
-	if err := qb.insertObject(ctx, newObject, &ret); err != nil {
-		return nil, err
-	}
-
-	return &ret, nil
+func (qb *imageQueryBuilder) table() exp.IdentifierExpression {
+	return qb.tableMgr.table
 }
 
-func (qb *imageQueryBuilder) Update(ctx context.Context, updatedObject models.ImagePartial) (*models.Image, error) {
-	const partial = true
-	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
-		return nil, err
+func (qb *imageQueryBuilder) Create(ctx context.Context, newObject *models.Image) error {
+	var r imageRow
+	r.fromImage(*newObject)
+
+	id, err := qb.tableMgr.insertID(ctx, r)
+	if err != nil {
+		return err
 	}
 
-	return qb.find(ctx, updatedObject.ID)
+	if len(newObject.GalleryIDs) > 0 {
+		if err := imageGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs); err != nil {
+			return err
+		}
+	}
+	if len(newObject.PerformerIDs) > 0 {
+		if err := imagesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
+			return err
+		}
+	}
+	if len(newObject.TagIDs) > 0 {
+		if err := imagesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs); err != nil {
+			return err
+		}
+	}
+
+	// only assign id once we are successful
+	newObject.ID = id
+
+	return nil
 }
 
-func (qb *imageQueryBuilder) UpdateFull(ctx context.Context, updatedObject models.Image) (*models.Image, error) {
-	const partial = false
-	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
-		return nil, err
+func (qb *imageQueryBuilder) UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error) {
+	r := imageRowRecord{
+		updateRecord{
+			Record: make(exp.Record),
+		},
 	}
 
-	return qb.find(ctx, updatedObject.ID)
+	r.fromPartial(partial)
+
+	if len(r.Record) > 0 {
+		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.GalleryIDs != nil {
+		if err := imageGalleriesTableMgr.modifyJoins(ctx, id, partial.GalleryIDs.IDs, partial.GalleryIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+	if partial.PerformerIDs != nil {
+		if err := imagesPerformersTableMgr.modifyJoins(ctx, id, partial.PerformerIDs.IDs, partial.PerformerIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+	if partial.TagIDs != nil {
+		if err := imagesTagsTableMgr.modifyJoins(ctx, id, partial.TagIDs.IDs, partial.TagIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+
+	return qb.find(ctx, id)
 }
 
-func (qb *imageQueryBuilder) IncrementOCounter(ctx context.Context, id int) (int, error) {
-	_, err := qb.tx.Exec(ctx,
-		`UPDATE `+imageTable+` SET o_counter = o_counter + 1 WHERE `+imageTable+`.id = ?`,
-		id,
-	)
-	if err != nil {
-		return 0, err
+func (qb *imageQueryBuilder) Update(ctx context.Context, updatedObject *models.Image) error {
+	var r imageRow
+	r.fromImage(*updatedObject)
+
+	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
+		return err
 	}
 
-	image, err := qb.find(ctx, id)
-	if err != nil {
-		return 0, err
+	if err := imageGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs); err != nil {
+		return err
+	}
+	if err := imagesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs); err != nil {
+		return err
+	}
+	if err := imagesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
+		return err
 	}
 
-	return image.OCounter, nil
-}
-
-func (qb *imageQueryBuilder) DecrementOCounter(ctx context.Context, id int) (int, error) {
-	_, err := qb.tx.Exec(ctx,
-		`UPDATE `+imageTable+` SET o_counter = o_counter - 1 WHERE `+imageTable+`.id = ? and `+imageTable+`.o_counter > 0`,
-		id,
-	)
-	if err != nil {
-		return 0, err
-	}
-
-	image, err := qb.find(ctx, id)
-	if err != nil {
-		return 0, err
-	}
-
-	return image.OCounter, nil
-}
-
-func (qb *imageQueryBuilder) ResetOCounter(ctx context.Context, id int) (int, error) {
-	_, err := qb.tx.Exec(ctx,
-		`UPDATE `+imageTable+` SET o_counter = 0 WHERE `+imageTable+`.id = ?`,
-		id,
-	)
-	if err != nil {
-		return 0, err
-	}
-
-	image, err := qb.find(ctx, id)
-	if err != nil {
-		return 0, err
-	}
-
-	return image.OCounter, nil
+	return nil
 }
 
 func (qb *imageQueryBuilder) Destroy(ctx context.Context, id int) error {
-	return qb.destroyExisting(ctx, []int{id})
+	return qb.tableMgr.destroyExisting(ctx, []int{id})
 }
 
 func (qb *imageQueryBuilder) Find(ctx context.Context, id int) (*models.Image, error) {
@@ -131,64 +265,135 @@ func (qb *imageQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models
 			return nil, err
 		}
 
-		if image == nil {
-			return nil, fmt.Errorf("image with id %d not found", id)
-		}
-
 		images = append(images, image)
 	}
 
 	return images, nil
 }
 
-func (qb *imageQueryBuilder) find(ctx context.Context, id int) (*models.Image, error) {
-	var ret models.Image
-	if err := qb.getByID(ctx, id, &ret); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
+func (qb *imageQueryBuilder) selectDataset() *goqu.SelectDataset {
+	table := qb.table()
+
+	return dialect.From(table).Select(
+		table.All(),
+		galleriesImagesJoinTable.Col("gallery_id"),
+		imagesTagsJoinTable.Col("tag_id"),
+		performersImagesJoinTable.Col("performer_id"),
+	).LeftJoin(
+		galleriesImagesJoinTable,
+		goqu.On(table.Col(idColumn).Eq(galleriesImagesJoinTable.Col("image_id"))),
+	).LeftJoin(
+		imagesTagsJoinTable,
+		goqu.On(table.Col(idColumn).Eq(imagesTagsJoinTable.Col("image_id"))),
+	).LeftJoin(
+		performersImagesJoinTable,
+		goqu.On(table.Col(idColumn).Eq(performersImagesJoinTable.Col("image_id"))),
+	)
+}
+
+func (qb *imageQueryBuilder) get(ctx context.Context, q *goqu.SelectDataset) (*models.Image, error) {
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
 		return nil, err
 	}
-	return &ret, nil
+
+	if len(ret) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	return ret[0], nil
+}
+
+func (qb *imageQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Image, error) {
+	const single = false
+	var rows imageQueryRows
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var f imageQueryRow
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		rows = append(rows, f)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return rows.resolve(), nil
+}
+
+func (qb *imageQueryBuilder) find(ctx context.Context, id int) (*models.Image, error) {
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting image by id %d: %w", id, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *imageQueryBuilder) FindByChecksum(ctx context.Context, checksum string) (*models.Image, error) {
-	query := "SELECT * FROM images WHERE checksum = ? LIMIT 1"
-	args := []interface{}{checksum}
-	return qb.queryImage(ctx, query, args)
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("checksum").Eq(checksum))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting image by checksum %s: %w", checksum, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *imageQueryBuilder) FindByPath(ctx context.Context, path string) (*models.Image, error) {
-	query := selectAll(imageTable) + "WHERE path = ? LIMIT 1"
-	args := []interface{}{path}
-	return qb.queryImage(ctx, query, args)
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(path))
+
+	ret, err := qb.get(ctx, q)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting image by path %s: %w", path, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *imageQueryBuilder) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Image, error) {
-	args := []interface{}{galleryID}
-	sort := "path"
-	sortDir := models.SortDirectionEnumAsc
-	return qb.queryImages(ctx, imagesForGalleryQuery+qb.getImageSort(&models.FindFilterType{
-		Sort:      &sort,
-		Direction: &sortDir,
-	}), args)
+	table := qb.table()
+
+	q := qb.selectDataset().Where(
+		galleriesImagesJoinTable.Col("gallery_id").Eq(galleryID),
+	).GroupBy(table.Col(idColumn)).Order(table.Col("path").Asc())
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting images for gallery %d: %w", galleryID, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *imageQueryBuilder) CountByGalleryID(ctx context.Context, galleryID int) (int, error) {
-	args := []interface{}{galleryID}
-	return qb.runCountQuery(ctx, qb.buildCountQuery(countImagesForGalleryQuery), args)
+	joinTable := goqu.T(galleriesImagesTable)
+
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col("gallery_id").Eq(galleryID))
+	return count(ctx, q)
 }
 
 func (qb *imageQueryBuilder) Count(ctx context.Context) (int, error) {
-	return qb.runCountQuery(ctx, qb.buildCountQuery("SELECT images.id FROM images"), nil)
+	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
+	return count(ctx, q)
 }
 
 func (qb *imageQueryBuilder) Size(ctx context.Context) (float64, error) {
-	return qb.runSumQuery(ctx, "SELECT SUM(cast(size as double)) as sum FROM images", nil)
+	q := dialect.Select(goqu.SUM(qb.table().Col("size").Cast("double"))).From(qb.table())
+	var ret float64
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }
 
 func (qb *imageQueryBuilder) All(ctx context.Context) ([]*models.Image, error) {
-	return qb.queryImages(ctx, selectAll(imageTable)+qb.getImageSort(nil), nil)
+	return qb.getMany(ctx, qb.selectDataset())
 }
 
 func (qb *imageQueryBuilder) validateFilter(imageFilter *models.ImageFilterType) error {
@@ -536,23 +741,6 @@ func (qb *imageQueryBuilder) getImageSort(findFilter *models.FindFilterType) str
 	}
 }
 
-func (qb *imageQueryBuilder) queryImage(ctx context.Context, query string, args []interface{}) (*models.Image, error) {
-	results, err := qb.queryImages(ctx, query, args)
-	if err != nil || len(results) < 1 {
-		return nil, err
-	}
-	return results[0], nil
-}
-
-func (qb *imageQueryBuilder) queryImages(ctx context.Context, query string, args []interface{}) ([]*models.Image, error) {
-	var ret models.Images
-	if err := qb.query(ctx, query, args, &ret); err != nil {
-		return nil, err
-	}
-
-	return []*models.Image(ret), nil
-}
-
 func (qb *imageQueryBuilder) galleriesRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
@@ -564,14 +752,14 @@ func (qb *imageQueryBuilder) galleriesRepository() *joinRepository {
 	}
 }
 
-func (qb *imageQueryBuilder) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
-	return qb.galleriesRepository().getIDs(ctx, imageID)
-}
+// func (qb *imageQueryBuilder) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
+// 	return qb.galleriesRepository().getIDs(ctx, imageID)
+// }
 
-func (qb *imageQueryBuilder) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
-	// Delete the existing joins and then create new ones
-	return qb.galleriesRepository().replace(ctx, imageID, galleryIDs)
-}
+// func (qb *imageQueryBuilder) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
+// 	// Delete the existing joins and then create new ones
+// 	return qb.galleriesRepository().replace(ctx, imageID, galleryIDs)
+// }
 
 func (qb *imageQueryBuilder) performersRepository() *joinRepository {
 	return &joinRepository{

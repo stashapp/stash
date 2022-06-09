@@ -14,13 +14,13 @@ type MigrateHashTask struct {
 
 // Start starts the task.
 func (t *MigrateHashTask) Start() {
-	if !t.Scene.OSHash.Valid || !t.Scene.Checksum.Valid {
+	if t.Scene.OSHash == nil || t.Scene.Checksum == nil {
 		// nothing to do
 		return
 	}
 
-	oshash := t.Scene.OSHash.String
-	checksum := t.Scene.Checksum.String
+	oshash := *t.Scene.OSHash
+	checksum := *t.Scene.Checksum
 
 	oldHash := oshash
 	newHash := checksum

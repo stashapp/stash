@@ -3,7 +3,6 @@ package gallery
 import (
 	"archive/zip"
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
@@ -22,8 +21,8 @@ const mutexType = "gallery"
 
 type FinderCreatorUpdater interface {
 	FindByChecksum(ctx context.Context, checksum string) (*models.Gallery, error)
-	Create(ctx context.Context, newGallery models.Gallery) (*models.Gallery, error)
-	Update(ctx context.Context, updatedGallery models.Gallery) (*models.Gallery, error)
+	Create(ctx context.Context, newGallery *models.Gallery) error
+	Update(ctx context.Context, updatedGallery *models.Gallery) error
 }
 
 type Scanner struct {
@@ -77,7 +76,7 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 		scanImages = true
 		logger.Infof("%s has been updated: rescanning", path)
 
-		retGallery.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
+		retGallery.UpdatedAt = time.Now()
 
 		// we are operating on a checksum now, so grab a mutex on the checksum
 		done := make(chan struct{})
@@ -91,12 +90,11 @@ func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBase
 			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
 				dupe, _ := scanner.CreatorUpdater.FindByChecksum(ctx, retGallery.Checksum)
 				if dupe != nil {
-					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, dupe.Path.String)
+					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, *dupe.Path)
 				}
 			}
 
-			retGallery, err = scanner.CreatorUpdater.Update(ctx, *retGallery)
-			return err
+			return scanner.CreatorUpdater.Update(ctx, retGallery)
 		}); err != nil {
 			return nil, false, err
 		}
@@ -129,24 +127,21 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retG
 
 		g, _ = qb.FindByChecksum(ctx, checksum)
 		if g != nil {
-			exists, _ := fsutil.FileExists(g.Path.String)
+			exists, _ := fsutil.FileExists(*g.Path)
 			if !scanner.CaseSensitiveFs {
 				// #1426 - if file exists but is a case-insensitive match for the
 				// original filename, then treat it as a move
-				if exists && strings.EqualFold(path, g.Path.String) {
+				if exists && strings.EqualFold(path, *g.Path) {
 					exists = false
 				}
 			}
 
 			if exists {
-				logger.Infof("%s already exists.  Duplicate of %s ", path, g.Path.String)
+				logger.Infof("%s already exists.  Duplicate of %s ", path, *g.Path)
 			} else {
 				logger.Infof("%s already exists.  Updating path...", path)
-				g.Path = sql.NullString{
-					String: path,
-					Valid:  true,
-				}
-				g, err = qb.Update(ctx, *g)
+				g.Path = &path
+				err = qb.Update(ctx, g)
 				if err != nil {
 					return err
 				}
@@ -156,14 +151,12 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retG
 		} else if scanner.hasImages(path) { // don't create gallery if it has no images
 			currentTime := time.Now()
 
+			title := fsutil.GetNameFromPath(path, scanner.StripFileExtension)
 			g = &models.Gallery{
-				Zip: true,
-				Title: sql.NullString{
-					String: fsutil.GetNameFromPath(path, scanner.StripFileExtension),
-					Valid:  true,
-				},
-				CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-				UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+				Zip:       true,
+				Title:     title,
+				CreatedAt: currentTime,
+				UpdatedAt: currentTime,
 			}
 
 			g.SetFile(*scanned)
@@ -175,7 +168,7 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retG
 			}
 
 			logger.Infof("%s doesn't exist.  Creating new item...", path)
-			g, err = qb.Create(ctx, *g)
+			err = qb.Create(ctx, g)
 			if err != nil {
 				return err
 			}

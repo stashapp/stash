@@ -32,11 +32,6 @@ func (r *repository) getByID(ctx context.Context, id int, dest interface{}) erro
 	return r.tx.Get(ctx, dest, stmt, id)
 }
 
-func (r *repository) getAll(ctx context.Context, id int, f func(rows *sqlx.Rows) error) error {
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", r.tableName, r.idColumn)
-	return r.queryFunc(ctx, stmt, []interface{}{id}, false, f)
-}
-
 func (r *repository) insert(ctx context.Context, obj interface{}) (sql.Result, error) {
 	stmt := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", r.tableName, listKeys(obj, false), listKeys(obj, true))
 	return r.tx.NamedExec(ctx, stmt, obj)
@@ -70,21 +65,21 @@ func (r *repository) update(ctx context.Context, id int, obj interface{}, partia
 	return err
 }
 
-func (r *repository) updateMap(ctx context.Context, id int, m map[string]interface{}) error {
-	exists, err := r.exists(ctx, id)
-	if err != nil {
-		return err
-	}
+// func (r *repository) updateMap(ctx context.Context, id int, m map[string]interface{}) error {
+// 	exists, err := r.exists(ctx, id)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if !exists {
-		return fmt.Errorf("%s %d does not exist in %s", r.idColumn, id, r.tableName)
-	}
+// 	if !exists {
+// 		return fmt.Errorf("%s %d does not exist in %s", r.idColumn, id, r.tableName)
+// 	}
 
-	stmt := fmt.Sprintf("UPDATE %s SET %s WHERE %s.%s = :id", r.tableName, updateSetMap(m), r.tableName, r.idColumn)
-	_, err = r.tx.NamedExec(ctx, stmt, m)
+// 	stmt := fmt.Sprintf("UPDATE %s SET %s WHERE %s.%s = :id", r.tableName, updateSetMap(m), r.tableName, r.idColumn)
+// 	_, err = r.tx.NamedExec(ctx, stmt, m)
 
-	return err
-}
+// 	return err
+// }
 
 func (r *repository) destroyExisting(ctx context.Context, ids []int) error {
 	for _, id := range ids {
@@ -155,20 +150,6 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 		vsm[i] = v.Int
 	}
 	return vsm, nil
-}
-
-func (r *repository) runSumQuery(ctx context.Context, query string, args []interface{}) (float64, error) {
-	// Perform query and fetch result
-	result := struct {
-		Float64 float64 `db:"sum"`
-	}{0}
-
-	// Perform query and fetch result
-	if err := r.tx.Get(ctx, &result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return 0, err
-	}
-
-	return result.Float64, nil
 }
 
 func (r *repository) queryFunc(ctx context.Context, query string, args []interface{}, single bool, f func(rows *sqlx.Rows) error) error {
@@ -472,7 +453,7 @@ func (r *stashIDRepository) get(ctx context.Context, id int) ([]*models.StashID,
 	return []*models.StashID(ret), err
 }
 
-func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []models.StashID) error {
+func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []*models.StashID) error {
 	if err := r.destroy(ctx, []int{id}); err != nil {
 		return err
 	}
@@ -529,10 +510,10 @@ func updateSet(i interface{}, partial bool) string {
 	return strings.Join(query, ", ")
 }
 
-func updateSetMap(m map[string]interface{}) string {
-	var query []string
-	for k := range m {
-		query = append(query, fmt.Sprintf("%s=:%s", k, k))
-	}
-	return strings.Join(query, ", ")
-}
+// func updateSetMap(m map[string]interface{}) string {
+// 	var query []string
+// 	for k := range m {
+// 		query = append(query, fmt.Sprintf("%s=:%s", k, k))
+// 	}
+// 	return strings.Join(query, ", ")
+// }

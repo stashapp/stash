@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"os/exec"
 	"path/filepath"
@@ -94,7 +93,7 @@ func (t *ScanTask) scanImage(ctx context.Context) {
 
 type GalleryImageAssociator interface {
 	FindByPath(ctx context.Context, path string) (*models.Gallery, error)
-	Create(ctx context.Context, newGallery models.Gallery) (*models.Gallery, error)
+	Create(ctx context.Context, newGallery *models.Gallery) error
 	gallery.ImageUpdater
 }
 
@@ -113,22 +112,18 @@ func (t *ScanTask) associateImageWithFolderGallery(ctx context.Context, imageID 
 		// create the gallery
 		currentTime := time.Now()
 
-		newGallery := models.Gallery{
-			Checksum: checksum,
-			Path: sql.NullString{
-				String: path,
-				Valid:  true,
-			},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			Title: sql.NullString{
-				String: fsutil.GetNameFromPath(path, false),
-				Valid:  true,
-			},
+		title := fsutil.GetNameFromPath(path, false)
+
+		g = &models.Gallery{
+			Checksum:  checksum,
+			Path:      &path,
+			CreatedAt: currentTime,
+			UpdatedAt: currentTime,
+			Title:     title,
 		}
 
 		logger.Infof("Creating gallery for folder %s", path)
-		g, err = qb.Create(ctx, newGallery)
+		err = qb.Create(ctx, g)
 		if err != nil {
 			return 0, false, err
 		}

@@ -322,11 +322,11 @@ func (j *cleanJob) shouldCleanScene(s *models.Scene) bool {
 
 func (j *cleanJob) shouldCleanGallery(ctx context.Context, g *models.Gallery, qb models.ImageReader) bool {
 	// never clean manually created galleries
-	if !g.Path.Valid {
+	if g.Path == nil {
 		return false
 	}
 
-	path := g.Path.String
+	path := *g.Path
 	if j.shouldClean(path) {
 		return true
 	}
@@ -424,9 +424,19 @@ func (j *cleanJob) deleteScene(ctx context.Context, fileNamingAlgorithm models.H
 	// perform the post-commit actions
 	fileDeleter.Commit()
 
+	var checksum string
+	var oshash string
+
+	if s.Checksum != nil {
+		checksum = *s.Checksum
+	}
+	if s.OSHash != nil {
+		oshash = *s.OSHash
+	}
+
 	GetInstance().PluginCache.ExecutePostHooks(ctx, sceneID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
-		Checksum: s.Checksum.String,
-		OSHash:   s.OSHash.String,
+		Checksum: checksum,
+		OSHash:   oshash,
 		Path:     s.Path,
 	}, nil)
 }
@@ -451,7 +461,7 @@ func (j *cleanJob) deleteGallery(ctx context.Context, galleryID int) {
 
 	GetInstance().PluginCache.ExecutePostHooks(ctx, galleryID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 		Checksum: g.Checksum,
-		Path:     g.Path.String,
+		Path:     *g.Path,
 	}, nil)
 }
 

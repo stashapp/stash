@@ -120,7 +120,12 @@ func (t *ScanTask) associateGallery(ctx context.Context, wg *sizedwaitgroup.Size
 				}
 				if !isAssoc {
 					logger.Infof("associate: Gallery %s is related to scene: %d", path, scene.ID)
-					if err := sqb.UpdateGalleries(ctx, scene.ID, []int{g.ID}); err != nil {
+					if _, err := sqb.UpdatePartial(ctx, scene.ID, models.ScenePartial{
+						GalleryIDs: &models.UpdateIDs{
+							IDs:  []int{g.ID},
+							Mode: models.RelationshipUpdateModeAdd,
+						},
+					}); err != nil {
 						return err
 					}
 				}
@@ -134,12 +139,12 @@ func (t *ScanTask) associateGallery(ctx context.Context, wg *sizedwaitgroup.Size
 }
 
 func (t *ScanTask) scanZipImages(ctx context.Context, zipGallery *models.Gallery) {
-	err := walkGalleryZip(zipGallery.Path.String, func(f *zip.File) error {
+	err := walkGalleryZip(*zipGallery.Path, func(f *zip.File) error {
 		// copy this task and change the filename
 		subTask := *t
 
 		// filepath is the zip file and the internal file name, separated by a null byte
-		subTask.file = file.ZipFile(zipGallery.Path.String, f)
+		subTask.file = file.ZipFile(*zipGallery.Path, f)
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
@@ -147,7 +152,7 @@ func (t *ScanTask) scanZipImages(ctx context.Context, zipGallery *models.Gallery
 		return nil
 	})
 	if err != nil {
-		logger.Warnf("failed to scan zip file images for %s: %s", zipGallery.Path.String, err.Error())
+		logger.Warnf("failed to scan zip file images for %s: %s", *zipGallery.Path, err.Error())
 	}
 }
 

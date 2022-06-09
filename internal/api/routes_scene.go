@@ -162,8 +162,20 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	requestedSize := r.Form.Get("resolution")
 
 	audioCodec := ffmpeg.MissingUnsupported
-	if scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.ProbeAudioCodec(scene.AudioCodec.String)
+	if scene.AudioCodec != nil {
+		audioCodec = ffmpeg.ProbeAudioCodec(*scene.AudioCodec)
+	}
+
+	var (
+		width  int
+		height int
+	)
+
+	if scene.Width != nil {
+		width = *scene.Width
+	}
+	if scene.Height != nil {
+		height = *scene.Height
 	}
 
 	options := ffmpeg.TranscodeStreamOptions{
@@ -171,8 +183,8 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 		Codec:     streamFormat,
 		VideoOnly: audioCodec == ffmpeg.MissingUnsupported,
 
-		VideoWidth:  int(scene.Width.Int64),
-		VideoHeight: int(scene.Height.Int64),
+		VideoWidth:  width,
+		VideoHeight: height,
 
 		StartTime:        ss,
 		MaxTranscodeSize: config.GetInstance().GetMaxStreamingTranscodeSize().GetMaxResolution(),

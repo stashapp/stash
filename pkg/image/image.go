@@ -2,7 +2,6 @@ package image
 
 import (
 	"archive/zip"
-	"database/sql"
 	"fmt"
 	"image"
 	"io"
@@ -147,20 +146,12 @@ func SetFileDetails(i *models.Image) error {
 	config, _, err := DecodeSourceImage(i)
 
 	if err == nil {
-		i.Width = sql.NullInt64{
-			Int64: int64(config.Width),
-			Valid: true,
-		}
-		i.Height = sql.NullInt64{
-			Int64: int64(config.Height),
-			Valid: true,
-		}
+		i.Width = &config.Width
+		i.Height = &config.Height
 	}
 
-	i.Size = sql.NullInt64{
-		Int64: int64(f.Size()),
-		Valid: true,
-	}
+	s := f.Size()
+	i.Size = &s
 
 	return nil
 }
@@ -234,8 +225,8 @@ func IsCover(img *models.Image) bool {
 }
 
 func GetTitle(s *models.Image) string {
-	if s.Title.String != "" {
-		return s.Title.String
+	if s.Title != "" {
+		return s.Title
 	}
 
 	_, fn := file.ZipFilePath(s.Path)

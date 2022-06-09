@@ -21,16 +21,16 @@ const (
 	errStudioID     = 6
 
 	// noTagsID  = 11
-	errTagsID = 12
 )
 
-const (
+var (
 	path      = "path"
 	isZip     = true
 	url       = "url"
 	checksum  = "checksum"
 	title     = "title"
 	date      = "2001-01-01"
+	dateObj   = models.NewDate(date)
 	rating    = 5
 	organized = true
 	details   = "details"
@@ -47,25 +47,18 @@ var (
 
 func createFullGallery(id int) models.Gallery {
 	return models.Gallery{
-		ID:       id,
-		Path:     models.NullString(path),
-		Zip:      isZip,
-		Title:    models.NullString(title),
-		Checksum: checksum,
-		Date: models.SQLiteDate{
-			String: date,
-			Valid:  true,
-		},
-		Details:   models.NullString(details),
-		Rating:    models.NullInt64(rating),
+		ID:        id,
+		Path:      &path,
+		Zip:       isZip,
+		Title:     title,
+		Checksum:  checksum,
+		Date:      &dateObj,
+		Details:   details,
+		Rating:    &rating,
 		Organized: organized,
-		URL:       models.NullString(url),
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		URL:       url,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
@@ -121,7 +114,7 @@ func TestToJSON(t *testing.T) {
 
 func createStudioGallery(studioID int) models.Gallery {
 	return models.Gallery{
-		StudioID: models.NullInt64(int64(studioID)),
+		StudioID: &studioID,
 	}
 }
 

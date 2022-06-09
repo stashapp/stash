@@ -2,7 +2,6 @@ package gallery
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 
@@ -14,23 +13,15 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
-type FullCreatorUpdater interface {
-	FinderCreatorUpdater
-	UpdatePerformers(ctx context.Context, galleryID int, performerIDs []int) error
-	UpdateTags(ctx context.Context, galleryID int, tagIDs []int) error
-}
-
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
+	ReaderWriter        FinderCreatorUpdater
 	StudioWriter        studio.NameFinderCreator
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	gallery    models.Gallery
-	performers []*models.Performer
-	tags       []*models.Tag
+	gallery models.Gallery
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -58,28 +49,29 @@ func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.G
 	}
 
 	if galleryJSON.Path != "" {
-		newGallery.Path = sql.NullString{String: galleryJSON.Path, Valid: true}
+		newGallery.Path = &galleryJSON.Path
 	}
 
 	if galleryJSON.Title != "" {
-		newGallery.Title = sql.NullString{String: galleryJSON.Title, Valid: true}
+		newGallery.Title = galleryJSON.Title
 	}
 	if galleryJSON.Details != "" {
-		newGallery.Details = sql.NullString{String: galleryJSON.Details, Valid: true}
+		newGallery.Details = galleryJSON.Details
 	}
 	if galleryJSON.URL != "" {
-		newGallery.URL = sql.NullString{String: galleryJSON.URL, Valid: true}
+		newGallery.URL = galleryJSON.URL
 	}
 	if galleryJSON.Date != "" {
-		newGallery.Date = models.SQLiteDate{String: galleryJSON.Date, Valid: true}
+		d := models.NewDate(galleryJSON.Date)
+		newGallery.Date = &d
 	}
 	if galleryJSON.Rating != 0 {
-		newGallery.Rating = sql.NullInt64{Int64: int64(galleryJSON.Rating), Valid: true}
+		newGallery.Rating = &galleryJSON.Rating
 	}
 
 	newGallery.Organized = galleryJSON.Organized
-	newGallery.CreatedAt = models.SQLiteTimestamp{Timestamp: galleryJSON.CreatedAt.GetTime()}
-	newGallery.UpdatedAt = models.SQLiteTimestamp{Timestamp: galleryJSON.UpdatedAt.GetTime()}
+	newGallery.CreatedAt = galleryJSON.CreatedAt.GetTime()
+	newGallery.UpdatedAt = galleryJSON.UpdatedAt.GetTime()
 
 	return newGallery
 }
@@ -105,13 +97,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
-				i.gallery.StudioID = sql.NullInt64{
-					Int64: int64(studioID),
-					Valid: true,
-				}
+				i.gallery.StudioID = &studioID
 			}
 		} else {
-			i.gallery.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			i.gallery.StudioID = &studio.ID
 		}
 	}
 
@@ -166,7 +155,9 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 			// ignore if MissingRefBehaviour set to Ignore
 		}
 
-		i.performers = performers
+		for _, p := range performers {
+			i.gallery.PerformerIDs = append(i.gallery.PerformerIDs, p.ID)
+		}
 	}
 
 	return nil
@@ -222,7 +213,9 @@ func (i *Importer) populateTags(ctx context.Context) error {
 			// ignore if MissingRefBehaviour set to Ignore
 		}
 
-		i.tags = tags
+		for _, t := range tags {
+			i.gallery.TagIDs = append(i.gallery.TagIDs, t.ID)
+		}
 	}
 
 	return nil
@@ -245,27 +238,6 @@ func (i *Importer) createTags(ctx context.Context, names []string) ([]*models.Ta
 }
 
 func (i *Importer) PostImport(ctx context.Context, id int) error {
-	if len(i.performers) > 0 {
-		var performerIDs []int
-		for _, performer := range i.performers {
-			performerIDs = append(performerIDs, performer.ID)
-		}
-
-		if err := i.ReaderWriter.UpdatePerformers(ctx, id, performerIDs); err != nil {
-			return fmt.Errorf("failed to associate performers: %v", err)
-		}
-	}
-
-	if len(i.tags) > 0 {
-		var tagIDs []int
-		for _, t := range i.tags {
-			tagIDs = append(tagIDs, t.ID)
-		}
-		if err := i.ReaderWriter.UpdateTags(ctx, id, tagIDs); err != nil {
-			return fmt.Errorf("failed to associate tags: %v", err)
-		}
-	}
-
 	return nil
 }
 
@@ -288,19 +260,19 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.gallery)
+	err := i.ReaderWriter.Create(ctx, &i.gallery)
 	if err != nil {
 		return nil, fmt.Errorf("error creating gallery: %v", err)
 	}
 
-	id := created.ID
+	id := i.gallery.ID
 	return &id, nil
 }
 
 func (i *Importer) Update(ctx context.Context, id int) error {
 	gallery := i.gallery
 	gallery.ID = id
-	_, err := i.ReaderWriter.Update(ctx, gallery)
+	err := i.ReaderWriter.Update(ctx, &gallery)
 	if err != nil {
 		return fmt.Errorf("error updating existing gallery: %v", err)
 	}

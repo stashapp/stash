@@ -443,15 +443,15 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 			continue
 		}
 
-		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(ctx, movieReader, sceneReader, s)
+		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(ctx, movieReader, s)
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene movies JSON: %s", sceneHash, err.Error())
 			continue
 		}
 
 		if t.includeDependencies {
-			if s.StudioID.Valid {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
+			if s.StudioID != nil {
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *s.StudioID)
 			}
 
 			t.galleries.IDs = intslice.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
@@ -463,7 +463,7 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 			}
 			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tagIDs)
 
-			movieIDs, err := scene.GetDependentMovieIDs(ctx, sceneReader, s)
+			movieIDs, err := scene.GetDependentMovieIDs(ctx, s)
 			if err != nil {
 				logger.Errorf("[scenes] <%s> error getting scene movies: %s", sceneHash, err.Error())
 				continue
@@ -572,8 +572,8 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 		newImageJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
-			if s.StudioID.Valid {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
+			if s.StudioID != nil {
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *s.StudioID)
 			}
 
 			t.galleries.IDs = intslice.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))
@@ -634,9 +634,15 @@ func (t *ExportTask) ExportGalleries(ctx context.Context, workers int, repo mode
 			logger.Progressf("[galleries] %d of %d", index, len(galleries))
 		}
 
+		var path string
+		title := gallery.Title
+		if gallery.Path != nil {
+			path = *gallery.Path
+		}
+
 		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathNameMapping{
-			Path:     gallery.Path.String,
-			Name:     gallery.Title.String,
+			Path:     path,
+			Name:     title,
 			Checksum: gallery.Checksum,
 		})
 		jobCh <- gallery
@@ -686,8 +692,8 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 		newGalleryJSON.Tags = tag.GetNames(tags)
 
 		if t.includeDependencies {
-			if g.StudioID.Valid {
-				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, int(g.StudioID.Int64))
+			if g.StudioID != nil {
+				t.studios.IDs = intslice.IntAppendUnique(t.studios.IDs, *g.StudioID)
 			}
 
 			t.tags.IDs = intslice.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
