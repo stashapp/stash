@@ -862,7 +862,8 @@ func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint stri
 		var stashID *string
 		for _, v := range stashIDs {
 			if v.Endpoint == endpoint {
-				stashID = &v.StashID
+				vv := v.StashID
+				stashID = &vv
 				break
 			}
 		}
