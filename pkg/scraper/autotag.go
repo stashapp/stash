@@ -134,7 +134,7 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 	}
 
 	// only trim extension if gallery is file-based
-	trimExt := gallery.Zip
+	trimExt := gallery.PrimaryFile() != nil
 
 	var ret *ScrapedGallery
 

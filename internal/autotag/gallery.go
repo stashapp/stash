@@ -15,7 +15,7 @@ func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 	}
 
 	// only trim the extension if gallery is file-based
-	trimExt := s.Zip
+	trimExt := s.PrimaryFile() != nil
 
 	return tagger{
 		ID:      s.ID,
