@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import VideoJS from "video.js";
+import "videojs-vr";
 import { Button, Form } from "react-bootstrap";
 import { TruncatedText } from "src/components/Shared";
 import { VIDEO_PLAYER_ID } from "src/components/ScenePlayer";
@@ -116,7 +118,13 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       videoElements.length > 0 ? videoElements[0] : null;
 
     if (playerVideoElement != null) {
-      let styleString = "filter:";
+      const player = VideoJS.getPlayer(VIDEO_PLAYER_ID);
+      let styleString = "";
+      if ((player as any).mediainfo.projection == "360") {
+        styleString += "z-index: -1; opacity: 0; "
+      }
+      
+      styleString += "filter:";
       let style = playerVideoElement.attributes.getNamedItem("style");
 
       if (style == null) {
