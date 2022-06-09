@@ -325,8 +325,9 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 			&file.FilteredHandler{
 				Filter: file.FilterFunc(galleryFileFilter),
 				Handler: &gallery.ScanHandler{
-					CreatorUpdater: db.Gallery,
-					PluginCache:    pluginCache,
+					CreatorUpdater:     db.Gallery,
+					SceneFinderUpdater: db.Scene,
+					PluginCache:        pluginCache,
 				},
 			},
 			&file.FilteredHandler{

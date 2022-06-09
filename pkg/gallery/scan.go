@@ -3,12 +3,15 @@ package gallery
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 // const mutexType = "gallery"
@@ -20,8 +23,14 @@ type FinderCreatorUpdater interface {
 	Update(ctx context.Context, updatedGallery *models.Gallery) error
 }
 
+type SceneFinderUpdater interface {
+	FindByPath(ctx context.Context, p string) ([]*models.Scene, error)
+	Update(ctx context.Context, updatedScene *models.Scene) error
+}
+
 type ScanHandler struct {
-	CreatorUpdater FinderCreatorUpdater
+	CreatorUpdater     FinderCreatorUpdater
+	SceneFinderUpdater SceneFinderUpdater
 
 	PluginCache *plugin.Cache
 }
@@ -60,6 +69,12 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		}
 
 		h.PluginCache.ExecutePostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
+
+		existing = []*models.Gallery{newGallery}
+	}
+
+	if err := h.associateScene(ctx, existing, f); err != nil {
+		return err
 	}
 
 	// TODO - generate thumbnails
@@ -84,6 +99,36 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 		if err := h.CreatorUpdater.Update(ctx, i); err != nil {
 			return fmt.Errorf("updating gallery: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (t *ScanHandler) associateScene(ctx context.Context, existing []*models.Gallery, f file.File) error {
+	galleryIDs := make([]int, len(existing))
+	for i, g := range existing {
+		galleryIDs[i] = g.ID
+	}
+
+	path := f.Base().Path
+	withoutExt := strings.TrimSuffix(path, filepath.Ext(path))
+
+	// find scenes with a file that matches
+	scenes, err := t.SceneFinderUpdater.FindByPath(ctx, withoutExt)
+	if err != nil {
+		return err
+	}
+
+	for _, scene := range scenes {
+		// found related Scene
+		newIDs := intslice.IntAppendUniques(scene.GalleryIDs, galleryIDs)
+		if len(newIDs) > len(scene.GalleryIDs) {
+			logger.Infof("associate: Gallery %s is related to scene: %s", f.Base().Path, scene.GetTitle())
+			scene.GalleryIDs = newIDs
+			if err := t.SceneFinderUpdater.Update(ctx, scene); err != nil {
+				return err
+			}
 		}
 	}
 

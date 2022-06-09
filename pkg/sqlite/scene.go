@@ -523,11 +523,17 @@ func (qb *SceneStore) FindByOSHash(ctx context.Context, oshash string) ([]*model
 func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene, error) {
 	table := scenesQueryTable
 	basename := filepath.Base(p)
-	dir, _ := path(filepath.Dir(p)).Value()
+	dirStr := filepath.Dir(p)
+
+	// replace wildcards
+	basename = strings.ReplaceAll(basename, "*", "%")
+	dirStr = strings.ReplaceAll(dirStr, "*", "%")
+
+	dir, _ := path(dirStr).Value()
 
 	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("parent_folder_path").Eq(dir),
-		table.Col("basename").Eq(basename),
+		table.Col("parent_folder_path").Like(dir),
+		table.Col("basename").Like(basename),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
