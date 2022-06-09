@@ -111,17 +111,24 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   );
 
   function updateVideoStyle() {
+    const player = VideoJS.getPlayer(VIDEO_PLAYER_ID);
     const playerVideoContainer = document.getElementById(VIDEO_PLAYER_ID);
+    let elementToModify = ""
+    if ((player as any)?.mediainfo?.projection == "360") {
+      elementToModify = "canvas";
+    } else {
+      elementToModify = "video";
+    }
     const videoElements =
-      playerVideoContainer?.getElementsByTagName("video") ?? [];
+      playerVideoContainer?.getElementsByTagName(elementToModify) ?? [];
     const playerVideoElement =
       videoElements.length > 0 ? videoElements[0] : null;
 
     if (playerVideoElement != null) {
       const player = VideoJS.getPlayer(VIDEO_PLAYER_ID);
       let styleString = "";
-      if ((player as any).mediainfo.projection == "360") {
-        styleString += "z-index: -1; opacity: 0; "
+      if (elementToModify == "canvas") {
+        styleString += "width: 100%;height: 100%;position: absolute; top:0; "
       }
       
       styleString += "filter:";
