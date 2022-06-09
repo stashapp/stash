@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import VideoJS from "video.js";
