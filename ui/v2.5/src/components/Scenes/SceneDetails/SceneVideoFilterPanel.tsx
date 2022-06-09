@@ -125,7 +125,6 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       videoElements.length > 0 ? videoElements[0] : null;
 
     if (playerVideoElement != null) {
-      const player = VideoJS.getPlayer(VIDEO_PLAYER_ID);
       let styleString = "";
       if (elementToModify == "canvas") {
         styleString += "width: 100%;height: 100%;position: absolute; top:0; ";
