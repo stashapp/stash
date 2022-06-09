@@ -6,6 +6,9 @@ type Manager interface {
 	Begin(ctx context.Context) (context.Context, error)
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
+
+	AddPostCommitHook(ctx context.Context, hook TxnFunc)
+	AddPostRollbackHook(ctx context.Context, hook TxnFunc)
 }
 
 type TxnFunc func(ctx context.Context) error
