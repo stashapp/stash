@@ -355,13 +355,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       let foundTag = false;
       scene?.tags.map((tag) => {
         // search for known stashdb vr tag and aliases
-        let lowerCaseName = tag.name.toLowerCase();
+        let tagText = tag.name
+          .toLowerCase()
+          .replace(/[^a-z\s]/gi, "")
+          .trim();
         if (
-          lowerCaseName == "virtual reality" ||
-          lowerCaseName == "vr" ||
-          lowerCaseName == "vr porn"
+          tagText == "virtual reality" ||
+          tagText == "vr" ||
+          tagText == "vr porn"
         ) {
           foundTag = true;
+          return;
         }
       });
       return foundTag;
