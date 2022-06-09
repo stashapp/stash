@@ -104,6 +104,22 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
 
+	if translator.hasField("projection") {
+		if input.Projection != nil {
+			updatedScene.Projection = &sql.NullString{String: input.Projection.String(), Valid: true}
+		} else {
+			updatedScene.Projection = &sql.NullString{String: "", Valid: false}
+		}
+	}
+
+	if translator.hasField("stereo_mode") {
+		if input.StereoMode != nil {
+			updatedScene.StereoMode = &sql.NullString{String: input.StereoMode.String(), Valid: true}
+		} else {
+			updatedScene.StereoMode = &sql.NullString{String: "", Valid: false}
+		}
+	}
+
 	updatedScene.Title = translator.nullString(input.Title, "title")
 	updatedScene.Details = translator.nullString(input.Details, "details")
 	updatedScene.URL = translator.nullString(input.URL, "url")

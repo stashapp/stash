@@ -15,6 +15,7 @@ import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
 import "./markers";
+import "./vrmode";
 import "./big-buttons";
 import cx from "classnames";
 
@@ -465,6 +466,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       loadCaptions(player);
     }
 
+    if (scene) {
+      player.vrmode(scene);
+    }
+
     player.currentTime(0);
 
     const looping =
@@ -638,6 +643,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           ref={videoRef}
           id={VIDEO_PLAYER_ID}
           className="video-js vjs-big-play-centered"
+          crossOrigin="anonymous"
         />
       </div>
       {scene?.interactive &&

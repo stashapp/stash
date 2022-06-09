@@ -41,6 +41,8 @@ import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
 import { SceneScrapeDialog } from "./SceneScrapeDialog";
 import { SceneQueryModal } from "./SceneQueryModal";
+import { projectionStrings } from "../../../utils/projection";
+import { stereoModeStrings } from "../../../utils/stereoMode";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -90,6 +92,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const [updateScene] = useSceneUpdate();
 
+  const projectionOptions = projectionStrings;
+
+  const stereoModeOptions = stereoModeStrings;
+
   const schema = yup.object({
     title: yup.string().optional().nullable(),
     details: yup.string().optional().nullable(),
@@ -99,6 +105,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
     gallery_ids: yup.array(yup.string().required()).optional().nullable(),
     studio_id: yup.string().optional().nullable(),
     performer_ids: yup.array(yup.string().required()).optional().nullable(),
+    projection: yup.string().optional().oneOf(projectionOptions),
+    stereo_mode: yup.string().optional().oneOf(stereoModeOptions),
     movies: yup
       .object({
         movie_id: yup.string().required(),
@@ -121,6 +129,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
+      projection: scene.projection ?? undefined,
+      stereo_mode: scene.stereo_mode ?? undefined,
       movies: (scene.movies ?? []).map((m) => {
         return { movie_id: m.movie.id, scene_index: m.scene_index };
       }),
@@ -900,6 +910,48 @@ export const SceneEditPanel: React.FC<IProps> = ({
                   onImageChange={onCoverImageChange}
                   onImageURL={onImageLoad}
                 />
+              </Form.Group>
+            </div>
+            <div>
+              <Form.Group controlId="projection">
+                <Form.Label>
+                  <FormattedMessage id="projection.label" />
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  className="input-control"
+                  {...formik.getFieldProps("projection")}
+                >
+                  {projectionOptions.map((opt) => (
+                    <option value={opt} key={opt}>
+                      {opt
+                        ? intl.formatMessage({
+                            id: "projection." + opt.toLowerCase(),
+                          })
+                        : ""}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+              <Form.Group controlId="stereo_mode">
+                <Form.Label>
+                  <FormattedMessage id="stereo_mode.label" />
+                </Form.Label>
+                <Form.Control
+                  as="select"
+                  className="input-control"
+                  {...formik.getFieldProps("stereo_mode")}
+                >
+                  {stereoModeOptions.map((opt) => (
+                    <option value={opt} key={opt}>
+                      {opt
+                        ? intl.formatMessage({
+                            id: "stereo_mode." + opt.toLowerCase(),
+                          })
+                        : ""}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
             </div>
           </div>

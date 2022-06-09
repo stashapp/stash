@@ -22,6 +22,21 @@ type ScenePathsType {
   caption: String # Resolver
 }
 
+enum ProjectionEnum {
+  FLAT
+  DOME
+  SPHERE
+  FISHEYE
+  MKX200
+  RF52
+}
+
+enum StereoModeEnum {
+  MONO
+  TOP_BOTTOM
+  LEFT_RIGHT
+}
+
 type SceneMovie {
   movie: Movie!
   scene_index: Int
@@ -51,6 +66,9 @@ type Scene {
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time
+
+  projection: ProjectionEnum
+  stereo_mode: StereoModeEnum
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver
@@ -84,6 +102,8 @@ input SceneUpdateInput {
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]
+  projection: ProjectionEnum
+  stereo_mode: StereoModeEnum
   movies: [SceneMovieInput!]
   tag_ids: [ID!]
   """This should be a URL or a base64 encoded data URL"""

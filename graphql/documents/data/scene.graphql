@@ -20,6 +20,9 @@ fragment SceneData on Scene {
   created_at
   updated_at
 
+  projection
+  stereo_mode
+
   file {
     size
     duration

@@ -823,6 +823,15 @@
   "performer_image": "Performer Image",
   "performers": "Performers",
   "piercings": "Piercings",
+  "projection":{
+    "label": "Projection",
+    "flat": "Flat",
+    "dome": "Dome",
+    "sphere": "Sphere",
+    "fisheye": "Fisheye",
+    "mkx200": "MKX200",
+    "rf52": "RF52"
+  },
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",
@@ -935,6 +944,12 @@
     "scenes_size": "Scenes size"
   },
   "status": "Status: {statusText}",
+  "stereo_mode":{
+    "label": "Stereo mode",
+    "mono": "Mono",
+    "top_bottom": "Top bottom",
+    "left_right": "Left right"
+  },
   "studio": "Studio",
   "studio_depth": "Levels (empty for all)",
   "studios": "Studios",

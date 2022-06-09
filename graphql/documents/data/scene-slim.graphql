@@ -18,6 +18,9 @@ fragment SlimSceneData on Scene {
     caption_type
   }
 
+  projection
+  stereo_mode
+
   file {
     size
     duration

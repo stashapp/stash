@@ -34,6 +34,8 @@ type Scene struct {
 	Phash            sql.NullInt64       `db:"phash,omitempty" json:"phash"`
 	CreatedAt        SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt        SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	Projection       sql.NullString      `db:"projection" json:"projection"`
+	StereoMode       sql.NullString      `db:"stereo_mode" json:"stereo_mode"`
 	Interactive      bool                `db:"interactive" json:"interactive"`
 	InteractiveSpeed sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
 }
@@ -101,6 +103,8 @@ type ScenePartial struct {
 	Details          *sql.NullString      `db:"details" json:"details"`
 	URL              *sql.NullString      `db:"url" json:"url"`
 	Date             *SQLiteDate          `db:"date" json:"date"`
+	Projection       *sql.NullString      `db:"projection" json:"projection"`
+	StereoMode       *sql.NullString      `db:"stereo_mode" json:"stereo_mode"`
 	Rating           *sql.NullInt64       `db:"rating" json:"rating"`
 	Organized        *bool                `db:"organized" json:"organized"`
 	Size             *sql.NullString      `db:"size" json:"size"`

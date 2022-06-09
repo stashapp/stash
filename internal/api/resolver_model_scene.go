@@ -69,6 +69,32 @@ func (r *sceneResolver) InteractiveSpeed(ctx context.Context, obj *models.Scene)
 	return nil, nil
 }
 
+func (r *sceneResolver) Projection(ctx context.Context, obj *models.Scene) (*models.ProjectionEnum, error) {
+	var ret models.ProjectionEnum
+
+	if obj.Projection.Valid {
+		ret = models.ProjectionEnum(obj.Projection.String)
+		if ret.IsValid() {
+			return &ret, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func (r *sceneResolver) StereoMode(ctx context.Context, obj *models.Scene) (*models.StereoModeEnum, error) {
+	var ret models.StereoModeEnum
+
+	if obj.StereoMode.Valid {
+		ret = models.StereoModeEnum(obj.StereoMode.String)
+		if ret.IsValid() {
+			return &ret, nil
+		}
+	}
+
+	return nil, nil
+}
+
 func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
 	width := int(obj.Width.Int64)
 	height := int(obj.Height.Int64)
