@@ -2,6 +2,7 @@ package file
 
 import (
 	"context"
+	"io/fs"
 	"strconv"
 	"time"
 )
@@ -25,10 +26,16 @@ type Folder struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+func (f *Folder) Info(fs FS) (fs.FileInfo, error) {
+	return f.info(fs, f.Path)
+}
+
 // FolderGetter provides methods to find Folders.
 type FolderGetter interface {
 	FindByPath(ctx context.Context, path string) (*Folder, error)
 	FindByZipFileID(ctx context.Context, zipFileID ID) ([]*Folder, error)
+	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*Folder, error)
+	FindByParentFolderID(ctx context.Context, parentFolderID FolderID) ([]*Folder, error)
 }
 
 // FolderCreator provides methods to create Folders.
@@ -39,6 +46,10 @@ type FolderCreator interface {
 // FolderUpdater provides methods to update Folders.
 type FolderUpdater interface {
 	Update(ctx context.Context, f *Folder) error
+}
+
+type FolderDestroyer interface {
+	Destroy(ctx context.Context, id FolderID) error
 }
 
 // MissingMarker wraps the MarkMissing method.
@@ -52,5 +63,6 @@ type FolderStore interface {
 	FolderGetter
 	FolderCreator
 	FolderUpdater
+	FolderDestroyer
 	FolderMissingMarker
 }

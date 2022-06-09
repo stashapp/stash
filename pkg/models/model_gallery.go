@@ -108,6 +108,10 @@ func (g Gallery) GetTitle() string {
 		return filepath.Base(g.Path())
 	}
 
+	if g.FolderPath != "" {
+		return g.FolderPath
+	}
+
 	return ""
 }
 

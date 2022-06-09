@@ -7,7 +7,7 @@ type Folder {
     id: ID!
     path: String!
 
-    parent_folder_id: ID!
+    parent_folder_id: ID
     zip_file_id: ID
 
     mod_time: Time!

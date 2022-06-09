@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -80,7 +81,9 @@ func (f *ZipFS) Lstat(name string) (fs.FileInfo, error) {
 	}
 
 	for _, ff := range f.File {
-		if ff.Name == relName {
+		// folders are stored with a trailing slash
+		fn := strings.TrimSuffix(ff.Name, "/")
+		if fn == relName {
 			return ff.FileInfo(), nil
 		}
 	}

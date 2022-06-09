@@ -32,6 +32,22 @@ type DirEntry struct {
 	LastScanned time.Time `json:"last_scanned"`
 }
 
+func (e *DirEntry) info(fs FS, path string) (fs.FileInfo, error) {
+	if e.ZipFile != nil {
+		zipPath := e.ZipFile.Base().Path
+		zfs, err := fs.OpenZip(zipPath)
+		if err != nil {
+			return nil, err
+		}
+		defer zfs.Close()
+		fs = zfs
+	}
+	// else assume os file
+
+	ret, err := fs.Lstat(path)
+	return ret, err
+}
+
 func (e *DirEntry) scanned() {
 	e.LastScanned = time.Now()
 	e.MissingSince = nil
@@ -109,19 +125,7 @@ func (f *BaseFile) Open() (io.ReadCloser, error) {
 }
 
 func (f *BaseFile) Info(fs FS) (fs.FileInfo, error) {
-	if f.ZipFile != nil {
-		zipPath := f.ZipFile.Base().Path
-		zfs, err := fs.OpenZip(zipPath)
-		if err != nil {
-			return nil, err
-		}
-		defer zfs.Close()
-		fs = zfs
-	}
-	// else assume os file
-
-	ret, err := fs.Lstat(f.Path)
-	return ret, err
+	return f.info(fs, f.Path)
 }
 
 func (f *BaseFile) Serve(w http.ResponseWriter, r *http.Request) {
@@ -164,7 +168,7 @@ type Getter interface {
 	FindByPath(ctx context.Context, path string) (File, error)
 	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
 	FindByZipFileID(ctx context.Context, zipFileID ID) ([]File, error)
-	FindAllByPaths(ctx context.Context, p []string, limit, offset int) ([]File, error)
+	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]File, error)
 }
 
 // Creator provides methods to create Files.

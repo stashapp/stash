@@ -66,6 +66,9 @@ func (r *folderRow) fromFolder(o file.Folder) {
 
 type folderQueryRow struct {
 	folderRow
+
+	ZipBasename   null.String `db:"zip_basename"`
+	ZipFolderPath null.String `db:"zip_folder_path"`
 }
 
 func (r *folderQueryRow) resolve() *file.Folder {
@@ -81,6 +84,14 @@ func (r *folderQueryRow) resolve() *file.Folder {
 		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
 		CreatedAt:      r.CreatedAt,
 		UpdatedAt:      r.UpdatedAt,
+	}
+
+	if ret.ZipFileID != nil && r.ZipFolderPath.Valid && r.ZipBasename.Valid {
+		ret.ZipFile = &file.BaseFile{
+			ID:       *ret.ZipFileID,
+			Path:     filepath.Join(r.ZipFolderPath.String, r.ZipBasename.String),
+			Basename: r.ZipBasename.String,
+		}
 	}
 
 	return ret
@@ -142,13 +153,44 @@ func (qb *FolderStore) Update(ctx context.Context, updatedObject *file.Folder) e
 	return nil
 }
 
+func (qb *FolderStore) Destroy(ctx context.Context, id file.FolderID) error {
+	return qb.tableMgr.destroyExisting(ctx, []int{int(id)})
+}
+
 func (qb *FolderStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
 func (qb *FolderStore) selectDataset() *goqu.SelectDataset {
 	table := qb.table()
-	return dialect.From(table)
+	fileTable := fileTableMgr.table
+
+	zipFileTable := fileTable.As("zip_files")
+	zipFolderTable := table.As("zip_files_folders")
+
+	cols := []interface{}{
+		table.Col("id"),
+		table.Col("path"),
+		table.Col("zip_file_id"),
+		table.Col("parent_folder_id"),
+		table.Col("mod_time"),
+		table.Col("missing_since"),
+		table.Col("last_scanned"),
+		table.Col("created_at"),
+		table.Col("updated_at"),
+		zipFileTable.Col("basename").As("zip_basename"),
+		zipFolderTable.Col("path").As("zip_folder_path"),
+	}
+
+	ret := dialect.From(table).Select(cols...)
+
+	return ret.LeftJoin(
+		zipFileTable,
+		goqu.On(table.Col("zip_file_id").Eq(zipFileTable.Col("id"))),
+	).LeftJoin(
+		zipFolderTable,
+		goqu.On(zipFileTable.Col("parent_folder_id").Eq(zipFolderTable.Col(idColumn))),
+	)
 }
 
 func (qb *FolderStore) get(ctx context.Context, q *goqu.SelectDataset) (*file.Folder, error) {
@@ -199,6 +241,49 @@ func (qb *FolderStore) FindByPath(ctx context.Context, path string) (*file.Folde
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("getting folder by path %s: %w", path, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *FolderStore) FindByParentFolderID(ctx context.Context, parentFolderID file.FolderID) ([]*file.Folder, error) {
+	q := qb.selectDataset().Where(qb.table().Col("parent_folder_id").Eq(int(parentFolderID)))
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("getting folders by parent folder id %d: %w", parentFolderID, err)
+	}
+
+	return ret, nil
+}
+
+// FindAllInPaths returns the all folders that are or are within any of the given paths.
+// Returns all if limit is < 0.
+// Returns all folders if p is empty.
+func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*file.Folder, error) {
+	table := qb.table()
+
+	var conds []exp.Expression
+	for _, pp := range p {
+		dir, _ := path(pp).Value()
+		dirWildcard, _ := path(pp + string(filepath.Separator) + "%").Value()
+
+		conds = append(conds, table.Col("path").Eq(dir), table.Col("path").Like(dirWildcard))
+	}
+
+	q := qb.selectDataset().Prepared(true).Where(
+		goqu.Or(conds...),
+	)
+
+	if limit > -1 {
+		q = q.Limit(uint(limit))
+	}
+
+	q = q.Offset(uint(offset))
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting folders in path %s: %w", p, err)
 	}
 
 	return ret, nil

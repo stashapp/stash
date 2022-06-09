@@ -2,8 +2,10 @@ package manager
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
 	"path/filepath"
+	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
@@ -30,6 +32,7 @@ type cleanJob struct {
 
 func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 	logger.Infof("Starting cleaning of tracked files")
+	start := time.Now()
 	if j.input.DryRun {
 		logger.Infof("Running in Dry Mode")
 	}
@@ -46,7 +49,8 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	j.scanSubs.notify()
-	logger.Info("Finished Cleaning")
+	elapsed := time.Since(start)
+	logger.Info(fmt.Sprintf("Finished Cleaning (%s)", elapsed))
 }
 
 type cleanFilter struct {
@@ -70,30 +74,60 @@ func newCleanFilter(c *config.Instance) *cleanFilter {
 func (f *cleanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
 	//  #1102 - clean anything in generated path
 	generatedPath := f.generatedPath
-	if getStashFromPath(f.stashPaths, path) == nil || fsutil.IsPathInDir(generatedPath, path) {
-		logger.Infof("File not found. Marking to clean: \"%s\"", path)
+
+	var stash *config.StashConfig
+	fileOrFolder := "File"
+
+	if info.IsDir() {
+		fileOrFolder = "Folder"
+		stash = getStashFromDirPath(f.stashPaths, path)
+	} else {
+		stash = getStashFromPath(f.stashPaths, path)
+	}
+
+	if stash == nil {
+		logger.Infof("%s not in any stash library directories. Marking to clean: \"%s\"", fileOrFolder, path)
 		return false
 	}
 
-	return !f.shouldCleanFile(path)
+	if fsutil.IsPathInDir(generatedPath, path) {
+		logger.Infof("%s is in generated path. Marking to clean: \"%s\"", fileOrFolder, path)
+		return false
+	}
+
+	if info.IsDir() {
+		return !f.shouldCleanFolder(path, stash)
+	}
+
+	return !f.shouldCleanFile(path, info, stash)
 }
 
-func (f *cleanFilter) shouldCleanFile(path string) bool {
+func (f *cleanFilter) shouldCleanFolder(path string, s *config.StashConfig) bool {
+	// only delete folders where it is excluded from everything
+	pathExcludeTest := path + string(filepath.Separator)
+	if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
+		logger.Infof("Folder is excluded from both video and image. Marking to clean: \"%s\"", path)
+		return true
+	}
+
+	return false
+}
+
+func (f *cleanFilter) shouldCleanFile(path string, info fs.FileInfo, stash *config.StashConfig) bool {
 	switch {
+	case info.IsDir() || fsutil.MatchExtension(path, f.zipExt):
+		return f.shouldCleanGallery(path, stash)
 	case fsutil.MatchExtension(path, f.vidExt):
-		return f.shouldCleanVideoFile(path)
+		return f.shouldCleanVideoFile(path, stash)
 	case fsutil.MatchExtension(path, f.imgExt):
-		return f.shouldCleanImage(path)
-	case fsutil.MatchExtension(path, f.zipExt):
-		return f.shouldCleanGallery(path)
+		return f.shouldCleanImage(path, stash)
 	default:
 		logger.Infof("File extension does not any media extensions. Marking to clean: \"%s\"", path)
 		return true
 	}
 }
 
-func (f *cleanFilter) shouldCleanVideoFile(path string) bool {
-	stash := getStashFromPath(f.stashPaths, path)
+func (f *cleanFilter) shouldCleanVideoFile(path string, stash *config.StashConfig) bool {
 	if stash.ExcludeVideo {
 		logger.Infof("File in stash library that excludes video. Marking to clean: \"%s\"", path)
 		return true
@@ -107,8 +141,7 @@ func (f *cleanFilter) shouldCleanVideoFile(path string) bool {
 	return false
 }
 
-func (f *cleanFilter) shouldCleanGallery(path string) bool {
-	stash := getStashFromPath(f.stashPaths, path)
+func (f *cleanFilter) shouldCleanGallery(path string, stash *config.StashConfig) bool {
 	if stash.ExcludeImage {
 		logger.Infof("File in stash library that excludes images. Marking to clean: \"%s\"", path)
 		return true
@@ -122,8 +155,7 @@ func (f *cleanFilter) shouldCleanGallery(path string) bool {
 	return false
 }
 
-func (f *cleanFilter) shouldCleanImage(path string) bool {
-	stash := getStashFromPath(f.stashPaths, path)
+func (f *cleanFilter) shouldCleanImage(path string, stash *config.StashConfig) bool {
 	if stash.ExcludeImage {
 		logger.Infof("File in stash library that excludes images. Marking to clean: \"%s\"", path)
 		return true
@@ -141,7 +173,7 @@ type cleanHandler struct {
 	PluginCache *plugin.Cache
 }
 
-func (h *cleanHandler) Handle(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
 	if err := h.deleteRelatedScenes(ctx, fileDeleter, fileID); err != nil {
 		return err
 	}
@@ -153,6 +185,10 @@ func (h *cleanHandler) Handle(ctx context.Context, fileDeleter *file.Deleter, fi
 	}
 
 	return nil
+}
+
+func (h *cleanHandler) HandleFolder(ctx context.Context, fileDeleter *file.Deleter, folderID file.FolderID) error {
+	return h.deleteRelatedFolderGalleries(ctx, folderID)
 }
 
 func (h *cleanHandler) deleteRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
@@ -219,6 +255,29 @@ func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.I
 	return nil
 }
 
+func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderID file.FolderID) error {
+	mgr := GetInstance()
+	qb := mgr.Database.Gallery
+	galleries, err := qb.FindByFolderID(ctx, folderID)
+	if err != nil {
+		return err
+	}
+
+	for _, g := range galleries {
+		logger.Infof("Deleting folder-based gallery %q since the folder no longer exists", g.GetTitle())
+		if err := qb.Destroy(ctx, g.ID); err != nil {
+			return err
+		}
+
+		mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+			Checksum: g.Checksum(),
+			Path:     g.Path(),
+		}, nil)
+	}
+
+	return nil
+}
+
 func (h *cleanHandler) deleteRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
 	mgr := GetInstance()
 	imageQB := mgr.Database.Image
@@ -258,8 +317,8 @@ func getStashFromPath(stashes []*config.StashConfig, pathToCheck string) *config
 	return nil
 }
 
-func getStashFromDirPath(pathToCheck string) *config.StashConfig {
-	for _, f := range config.GetInstance().GetStashPaths() {
+func getStashFromDirPath(stashes []*config.StashConfig, pathToCheck string) *config.StashConfig {
+	for _, f := range stashes {
 		if fsutil.IsPathInDir(f.Path, pathToCheck) {
 			return f
 		}

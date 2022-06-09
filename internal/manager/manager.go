@@ -349,7 +349,7 @@ func makeCleaner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Cleaner {
 			Store:       db.File,
 			FolderStore: db.Folder,
 		},
-		CleanHandlers: []file.CleanHandler{
+		Handlers: []file.CleanHandler{
 			&cleanHandler{},
 		},
 	}

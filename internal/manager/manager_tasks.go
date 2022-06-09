@@ -31,13 +31,15 @@ func isImage(pathname string) bool {
 }
 
 func getScanPaths(inputPaths []string) []*config.StashConfig {
+	stashPaths := config.GetInstance().GetStashPaths()
+
 	if len(inputPaths) == 0 {
-		return config.GetInstance().GetStashPaths()
+		return stashPaths
 	}
 
 	var ret []*config.StashConfig
 	for _, p := range inputPaths {
-		s := getStashFromDirPath(p)
+		s := getStashFromDirPath(stashPaths, p)
 		if s == nil {
 			logger.Warnf("%s is not in the configured stash paths", p)
 			continue

@@ -141,9 +141,31 @@ func (m *schema32Migrator) migrateFiles() error {
 }
 
 func (m *schema32Migrator) deletePlaceholderFolder() error {
-	// _, err := m.db.Exec("DELETE FROM `folders` WHERE `id` = 1")
-	// return err
-	return nil
+	// only delete the placeholder folder if no files/folders are attached to it
+	result := struct {
+		Count int `db:"count"`
+	}{0}
+
+	if err := m.db.Get(&result, "SELECT COUNT(*) AS count FROM `files` WHERE `parent_folder_id` = 1"); err != nil {
+		return err
+	}
+
+	if result.Count > 0 {
+		return fmt.Errorf("not deleting placeholder folder because it has %d files", result.Count)
+	}
+
+	result.Count = 0
+
+	if err := m.db.Get(&result, "SELECT COUNT(*) AS count FROM `folders` WHERE `parent_folder_id` = 1"); err != nil {
+		return err
+	}
+
+	if result.Count > 0 {
+		return fmt.Errorf("not deleting placeholder folder because it has %d folders", result.Count)
+	}
+
+	_, err := m.db.Exec("DELETE FROM `folders` WHERE `id` = 1")
+	return err
 }
 
 func (m *schema32Migrator) createFolderHierarchy(p string) (*int, sql.NullInt64, error) {

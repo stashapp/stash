@@ -219,8 +219,12 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 		return err
 	}
 
-	// only assign id once we are successful
-	newObject.ID = id
+	updated, err := qb.Find(ctx, id)
+	if err != nil {
+		return fmt.Errorf("finding after create: %w", err)
+	}
+
+	*newObject = *updated
 
 	return nil
 }

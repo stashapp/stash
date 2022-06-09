@@ -105,7 +105,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
-	s := getStashFromDirPath(path)
+	s := getStashFromDirPath(f.stashPaths, path)
 
 	if s == nil {
 		return false
@@ -120,7 +120,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 
 	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
 		return false
-	} else if !isVideoFile && s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex) {
+	} else if (isImageFile || isZipFile) && s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex) {
 		return false
 	}
 

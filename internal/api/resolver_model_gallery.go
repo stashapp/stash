@@ -63,14 +63,18 @@ func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*Fol
 	}
 
 	rr := &Folder{
-		ID:             ret.ID.String(),
-		Path:           ret.Path,
-		ModTime:        ret.ModTime,
-		ParentFolderID: ret.ParentFolderID.String(),
-		MissingSince:   ret.MissingSince,
-		LastScanned:    ret.LastScanned,
-		CreatedAt:      ret.CreatedAt,
-		UpdatedAt:      ret.UpdatedAt,
+		ID:           ret.ID.String(),
+		Path:         ret.Path,
+		ModTime:      ret.ModTime,
+		MissingSince: ret.MissingSince,
+		LastScanned:  ret.LastScanned,
+		CreatedAt:    ret.CreatedAt,
+		UpdatedAt:    ret.UpdatedAt,
+	}
+
+	if ret.ParentFolderID != nil {
+		pfidStr := ret.ParentFolderID.String()
+		rr.ParentFolderID = &pfidStr
 	}
 
 	if ret.ZipFileID != nil {

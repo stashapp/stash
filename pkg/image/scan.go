@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -157,6 +158,11 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 }
 
 func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f file.File) (*models.Gallery, error) {
+	// don't create folder-based galleries for files in zip file
+	if f.Base().ZipFileID != nil {
+		return nil, nil
+	}
+
 	folderID := f.Base().ParentFolderID
 	g, err := h.GalleryFinder.FindByFolderID(ctx, folderID)
 	if err != nil {
@@ -176,6 +182,7 @@ func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f file.
 		UpdatedAt: now,
 	}
 
+	logger.Infof("Creating folder-based gallery for %s", filepath.Dir(f.Base().Path))
 	if err := h.GalleryFinder.Create(ctx, newGallery, nil); err != nil {
 		return nil, fmt.Errorf("creating folder based gallery: %w", err)
 	}
@@ -191,7 +198,7 @@ func (h *ScanHandler) associateFolderBasedGallery(ctx context.Context, newImage 
 
 	if g != nil && !intslice.IntInclude(newImage.GalleryIDs, g.ID) {
 		newImage.GalleryIDs = append(newImage.GalleryIDs, g.ID)
-		logger.Infof("Adding %s to folder-based gallery %s", newImage.GetTitle(), g.Path())
+		logger.Infof("Adding %s to folder-based gallery %s", f.Base().Path, g.Path())
 	}
 
 	return nil

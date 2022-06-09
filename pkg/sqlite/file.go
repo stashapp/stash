@@ -584,29 +584,18 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 	return ret, nil
 }
 
-// FindByPath returns the all files that matches any of the given paths. Wildcard characters are supported.
+// FindAllByPaths returns the all files that are within any of the given paths.
 // Returns all if limit is < 0.
 // Returns all files if p is empty.
-func (qb *FileStore) FindAllByPaths(ctx context.Context, p []string, limit, offset int) ([]file.File, error) {
-	table := qb.table()
+func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]file.File, error) {
 	folderTable := folderTableMgr.table
 
 	var conds []exp.Expression
 	for _, pp := range p {
-		// separate basename from path
-		basename := filepath.Base(pp)
-		dirName := filepath.Dir(pp)
+		dir, _ := path(pp).Value()
+		dirWildcard, _ := path(pp + string(filepath.Separator) + "%").Value()
 
-		// replace wildcards
-		basename = strings.ReplaceAll(basename, "*", "%")
-		dirName = strings.ReplaceAll(dirName, "*", "%")
-
-		dir, _ := path(dirName).Value()
-
-		conds = append(conds, goqu.And(
-			folderTable.Col("path").Like(dir),
-			table.Col("basename").Like(basename),
-		))
+		conds = append(conds, folderTable.Col("path").Eq(dir), folderTable.Col("path").Like(dirWildcard))
 	}
 
 	q := qb.selectDataset().Prepared(true).Where(

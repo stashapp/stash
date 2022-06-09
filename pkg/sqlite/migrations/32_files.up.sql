@@ -1,3 +1,4 @@
+-- folders may be deleted independently. Don't cascade
 CREATE TABLE `folders` (
   `id` integer not null primary key autoincrement,
   `path` varchar(255) NOT NULL,
@@ -7,11 +8,12 @@ CREATE TABLE `folders` (
   `last_scanned` datetime not null,
   `created_at` datetime not null,
   `updated_at` datetime not null,
-  foreign key(`parent_folder_id`) references `folders`(`id`) on delete CASCADE
+  foreign key(`parent_folder_id`) references `folders`(`id`) on delete SET NULL
 );
 
 CREATE INDEX `index_folders_on_parent_folder_id` on `folders` (`parent_folder_id`);
 
+-- require reference folders/zip files to be deleted manually first
 CREATE TABLE `files` (
   `id` integer not null primary key autoincrement,
   `basename` varchar(255) NOT NULL,
@@ -23,8 +25,8 @@ CREATE TABLE `files` (
   `last_scanned` datetime not null,
   `created_at` datetime not null,
   `updated_at` datetime not null,
-  foreign key(`parent_folder_id`) references `folders`(`id`) on delete CASCADE,
-  foreign key(`zip_file_id`) references `files`(`id`) on delete CASCADE,
+  foreign key(`parent_folder_id`) references `folders`(`id`),
+  foreign key(`zip_file_id`) references `files`(`id`),
   CHECK (`basename` != '')
 );
 
@@ -32,7 +34,7 @@ CREATE UNIQUE INDEX `index_files_zip_basename_unique` ON `files` (`zip_file_id`,
 CREATE INDEX `index_files_on_parent_folder_id_basename` on `files` (`parent_folder_id`, `basename`);
 CREATE INDEX `index_files_on_basename` on `files` (`basename`);
 
-ALTER TABLE `folders` ADD COLUMN `zip_file_id` integer REFERENCES `files`(`id`) ON DELETE CASCADE;
+ALTER TABLE `folders` ADD COLUMN `zip_file_id` integer REFERENCES `files`(`id`);
 CREATE UNIQUE INDEX `index_folders_path_unique` on `folders` (`zip_file_id`, `path`);
 
 CREATE TABLE `files_fingerprints` (
