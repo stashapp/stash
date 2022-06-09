@@ -45,3 +45,8 @@ func (h *FilteredHandler) Handle(ctx context.Context, fs FS, f File) error {
 	}
 	return nil
 }
+
+// CleanHandler provides a handler for cleaning Files.
+type CleanHandler interface {
+	Handle(ctx context.Context, fileDeleter *Deleter, fileID ID) error
+}

@@ -66,8 +66,8 @@ type Scanner struct {
 	Handlers []Handler
 }
 
-// ScanProgressReporter is used to report progress of the scan.
-type ScanProgressReporter interface {
+// ProgressReporter is used to report progress of the scan.
+type ProgressReporter interface {
 	SetTotal(total int)
 	Increment()
 }
@@ -75,7 +75,7 @@ type ScanProgressReporter interface {
 type scanJob struct {
 	*Scanner
 
-	ProgressReports ScanProgressReporter
+	ProgressReports ProgressReporter
 	options         ScanOptions
 
 	startTime      time.Time
@@ -102,7 +102,7 @@ type ScanOptions struct {
 }
 
 // Scan starts the scanning process.
-func (s *Scanner) Scan(ctx context.Context, options ScanOptions, progressReporter ScanProgressReporter) {
+func (s *Scanner) Scan(ctx context.Context, options ScanOptions, progressReporter ProgressReporter) {
 	job := &scanJob{
 		Scanner:         s,
 		ProgressReports: progressReporter,

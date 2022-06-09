@@ -3,6 +3,7 @@ package file
 import (
 	"context"
 	"io"
+	"io/fs"
 	"net/http"
 	"strconv"
 	"time"
@@ -89,23 +90,6 @@ func (f *BaseFile) Base() *BaseFile {
 	return f
 }
 
-func (f *BaseFile) Exists() (bool, error) {
-	var fs FS = &OsFS{}
-	if f.ZipFile != nil {
-		zipPath := f.ZipFile.Base().Path
-		zfs, err := fs.OpenZip(zipPath)
-		if err != nil {
-			return false, err
-		}
-		defer zfs.Close()
-		fs = zfs
-	}
-	// else assume os file
-
-	_, err := fs.Lstat(f.Path)
-	return err == nil, err
-}
-
 func (f *BaseFile) Open() (io.ReadCloser, error) {
 	if f.ZipFile != nil {
 		fs := &OsFS{}
@@ -122,6 +106,22 @@ func (f *BaseFile) Open() (io.ReadCloser, error) {
 	// assume os file
 	fs := &OsFS{}
 	return fs.Open(f.Path)
+}
+
+func (f *BaseFile) Info(fs FS) (fs.FileInfo, error) {
+	if f.ZipFile != nil {
+		zipPath := f.ZipFile.Base().Path
+		zfs, err := fs.OpenZip(zipPath)
+		if err != nil {
+			return nil, err
+		}
+		defer zfs.Close()
+		fs = zfs
+	}
+	// else assume os file
+
+	ret, err := fs.Lstat(f.Path)
+	return ret, err
 }
 
 func (f *BaseFile) Serve(w http.ResponseWriter, r *http.Request) {
@@ -164,6 +164,7 @@ type Getter interface {
 	FindByPath(ctx context.Context, path string) (File, error)
 	FindByFingerprint(ctx context.Context, fp Fingerprint) ([]File, error)
 	FindByZipFileID(ctx context.Context, zipFileID ID) ([]File, error)
+	FindAllByPaths(ctx context.Context, p []string, limit, offset int) ([]File, error)
 }
 
 // Creator provides methods to create Files.

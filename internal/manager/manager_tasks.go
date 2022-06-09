@@ -232,6 +232,7 @@ type CleanMetadataInput struct {
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	j := cleanJob{
+		cleaner:      s.Cleaner,
 		txnManager:   s.Repository,
 		sceneService: s.SceneService,
 		imageService: s.ImageService,

@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 const deleteFileSuffix = ".delete"
@@ -65,6 +66,19 @@ func NewDeleter() *Deleter {
 			StatFn:      os.Stat,
 		},
 	}
+}
+
+// RegisterHooks registers post-commit and post-rollback hooks.
+func (d *Deleter) RegisterHooks(ctx context.Context, mgr txn.Manager) {
+	mgr.AddPostCommitHook(ctx, func(ctx context.Context) error {
+		d.Commit()
+		return nil
+	})
+
+	mgr.AddPostRollbackHook(ctx, func(ctx context.Context) error {
+		d.Rollback()
+		return nil
+	})
 }
 
 // Files designates files to be deleted. Each file marked will be renamed to add

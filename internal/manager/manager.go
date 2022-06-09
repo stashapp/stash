@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
 	"runtime/pprof"
 	"strconv"
 	"strings"
@@ -135,6 +133,7 @@ type Manager struct {
 	GalleryService GalleryService
 
 	Scanner *file.Scanner
+	Cleaner *file.Cleaner
 
 	scanSubs *subscriptionManager
 }
@@ -255,6 +254,7 @@ func initialize() error {
 	}
 
 	instance.Scanner = makeScanner(db, instance.PluginCache)
+	instance.Cleaner = makeCleaner(db, instance.PluginCache)
 
 	// if DLNA is enabled, start it now
 	if instance.Config.GetDLNADefaultEnabled() {
@@ -264,72 +264,6 @@ func initialize() error {
 	}
 
 	return nil
-}
-
-type scanFilter struct {
-	stashPaths        []*config.StashConfig
-	generatedPath     string
-	vidExt            []string
-	imgExt            []string
-	zipExt            []string
-	videoExcludeRegex []*regexp.Regexp
-	imageExcludeRegex []*regexp.Regexp
-}
-
-func newScanFilter(c *config.Instance) *scanFilter {
-	return &scanFilter{
-		stashPaths:        c.GetStashPaths(),
-		generatedPath:     c.GetGeneratedPath(),
-		vidExt:            c.GetVideoExtensions(),
-		imgExt:            c.GetImageExtensions(),
-		zipExt:            c.GetGalleryExtensions(),
-		videoExcludeRegex: generateRegexps(c.GetExcludes()),
-		imageExcludeRegex: generateRegexps(c.GetImageExcludes()),
-	}
-}
-
-func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
-	if fsutil.IsPathInDir(f.generatedPath, path) {
-		return false
-	}
-
-	isVideoFile := fsutil.MatchExtension(path, f.vidExt)
-	isImageFile := fsutil.MatchExtension(path, f.imgExt)
-	isZipFile := fsutil.MatchExtension(path, f.zipExt)
-
-	// handle caption files
-	if fsutil.MatchExtension(path, video.CaptionExts) {
-		// we don't include caption files in the file scan, but we do need
-		// to handle them
-		video.AssociateCaptions(ctx, path, instance.Repository, instance.Database.File, instance.Database.File)
-
-		return false
-	}
-
-	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile {
-		return false
-	}
-
-	s := getStashFromDirPath(path)
-
-	if s == nil {
-		return false
-	}
-
-	// shortcut: skip the directory entirely if it matches both exclusion patterns
-	// add a trailing separator so that it correctly matches against patterns like path/.*
-	pathExcludeTest := path + string(filepath.Separator)
-	if (s.ExcludeVideo || matchFileRegex(pathExcludeTest, f.videoExcludeRegex)) && (s.ExcludeImage || matchFileRegex(pathExcludeTest, f.imageExcludeRegex)) {
-		return false
-	}
-
-	if isVideoFile && (s.ExcludeVideo || matchFileRegex(path, f.videoExcludeRegex)) {
-		return false
-	} else if !isVideoFile && s.ExcludeImage || matchFileRegex(path, f.imageExcludeRegex) {
-		return false
-	}
-
-	return true
 }
 
 func videoFileFilter(f file.File) bool {
@@ -403,6 +337,20 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 					CoverGenerator: &coverGenerator{},
 				},
 			},
+		},
+	}
+}
+
+func makeCleaner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Cleaner {
+	return &file.Cleaner{
+		FS: &file.OsFS{},
+		Repository: file.Repository{
+			Manager:     db,
+			Store:       db.File,
+			FolderStore: db.Folder,
+		},
+		CleanHandlers: []file.CleanHandler{
+			&cleanHandler{},
 		},
 	}
 }

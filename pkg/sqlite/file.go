@@ -556,7 +556,7 @@ func (qb *FileStore) find(ctx context.Context, id file.ID) (file.File, error) {
 	return ret, nil
 }
 
-// FindByPath returns the first file that matches the given path. Wilcard characters are supported.
+// FindByPath returns the first file that matches the given path. Wildcard characters are supported.
 func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error) {
 	// separate basename from path
 	basename := filepath.Base(p)
@@ -578,7 +578,50 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("getting folder by path %s: %w", p, err)
+		return nil, fmt.Errorf("getting file by path %s: %w", p, err)
+	}
+
+	return ret, nil
+}
+
+// FindByPath returns the all files that matches any of the given paths. Wildcard characters are supported.
+// Returns all if limit is < 0.
+// Returns all files if p is empty.
+func (qb *FileStore) FindAllByPaths(ctx context.Context, p []string, limit, offset int) ([]file.File, error) {
+	table := qb.table()
+	folderTable := folderTableMgr.table
+
+	var conds []exp.Expression
+	for _, pp := range p {
+		// separate basename from path
+		basename := filepath.Base(pp)
+		dirName := filepath.Dir(pp)
+
+		// replace wildcards
+		basename = strings.ReplaceAll(basename, "*", "%")
+		dirName = strings.ReplaceAll(dirName, "*", "%")
+
+		dir, _ := path(dirName).Value()
+
+		conds = append(conds, goqu.And(
+			folderTable.Col("path").Like(dir),
+			table.Col("basename").Like(basename),
+		))
+	}
+
+	q := qb.selectDataset().Prepared(true).Where(
+		goqu.Or(conds...),
+	)
+
+	if limit > -1 {
+		q = q.Limit(uint(limit))
+	}
+
+	q = q.Offset(uint(offset))
+
+	ret, err := qb.getMany(ctx, q)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("getting files by path %s: %w", p, err)
 	}
 
 	return ret, nil
