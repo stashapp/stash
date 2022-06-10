@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -52,8 +53,16 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	if exists {
 		http.ServeFile(w, r, filepath)
 	} else {
+		// don't return anything if there is no file
+		f := img.PrimaryFile()
+		if f == nil {
+			// TODO - probably want to return a placeholder
+			http.Error(w, http.StatusText(404), 404)
+			return
+		}
+
 		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG)
-		data, err := encoder.GetThumbnail(img, models.DefaultGthumbWidth)
+		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {
 			// don't log for unsupported image format
 			if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
@@ -93,7 +102,7 @@ func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i.Files[0].Serve(w, r)
+	i.Files[0].Serve(&file.OsFS{}, w, r)
 }
 
 // endregion

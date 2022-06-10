@@ -312,33 +312,6 @@ func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 		},
 		FingerprintCalculator: &fingerprintCalculator{instance.Config},
 		FS:                    &file.OsFS{},
-		Handlers: []file.Handler{
-			&file.FilteredHandler{
-				Filter: file.FilterFunc(imageFileFilter),
-				Handler: &image.ScanHandler{
-					CreatorUpdater: db.Image,
-					GalleryFinder:  db.Gallery,
-					ScanConfig:     instance.Config,
-					PluginCache:    pluginCache,
-				},
-			},
-			&file.FilteredHandler{
-				Filter: file.FilterFunc(galleryFileFilter),
-				Handler: &gallery.ScanHandler{
-					CreatorUpdater:     db.Gallery,
-					SceneFinderUpdater: db.Scene,
-					PluginCache:        pluginCache,
-				},
-			},
-			&file.FilteredHandler{
-				Filter: file.FilterFunc(videoFileFilter),
-				Handler: &scene.ScanHandler{
-					CreatorUpdater: db.Scene,
-					PluginCache:    pluginCache,
-					CoverGenerator: &coverGenerator{},
-				},
-			},
-		},
 	}
 }
 

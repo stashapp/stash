@@ -57,7 +57,7 @@ func (e *DirEntry) scanned() {
 type File interface {
 	Base() *BaseFile
 	SetFingerprints(fp []Fingerprint)
-	Open() (io.ReadCloser, error)
+	Open(fs FS) (io.ReadCloser, error)
 }
 
 // BaseFile represents a file in the file system.
@@ -106,10 +106,8 @@ func (f *BaseFile) Base() *BaseFile {
 	return f
 }
 
-func (f *BaseFile) Open() (io.ReadCloser, error) {
+func (f *BaseFile) Open(fs FS) (io.ReadCloser, error) {
 	if f.ZipFile != nil {
-		fs := &OsFS{}
-
 		zipPath := f.ZipFile.Base().Path
 		zfs, err := fs.OpenZip(zipPath)
 		if err != nil {
@@ -119,8 +117,6 @@ func (f *BaseFile) Open() (io.ReadCloser, error) {
 		return zfs.OpenOnly(f.Path)
 	}
 
-	// assume os file
-	fs := &OsFS{}
 	return fs.Open(f.Path)
 }
 
@@ -128,10 +124,10 @@ func (f *BaseFile) Info(fs FS) (fs.FileInfo, error) {
 	return f.info(fs, f.Path)
 }
 
-func (f *BaseFile) Serve(w http.ResponseWriter, r *http.Request) {
+func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week
 
-	reader, err := f.Open()
+	reader, err := f.Open(fs)
 	if err != nil {
 		// assume not found
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)

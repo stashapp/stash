@@ -35,11 +35,14 @@ type GalleryFinderCreator interface {
 
 type ScanConfig interface {
 	GetCreateGalleriesFromFolders() bool
+	IsGenerateThumbnails() bool
 }
 
 type ScanHandler struct {
 	CreatorUpdater FinderCreatorUpdater
 	GalleryFinder  GalleryFinderCreator
+
+	ThumbnailGenerator ThumbnailGenerator
 
 	ScanConfig ScanConfig
 
@@ -120,9 +123,18 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		}
 
 		h.PluginCache.ExecutePostHooks(ctx, newImage.ID, plugin.ImageCreatePost, nil, nil)
+
+		existing = []*models.Image{newImage}
 	}
 
-	// TODO - generate thumbnails
+	if h.ScanConfig.IsGenerateThumbnails() {
+		for _, s := range existing {
+			if err := h.ThumbnailGenerator.GenerateThumbnail(ctx, s, imageFile); err != nil {
+				// just log if cover generation fails. We can try again on rescan
+				logger.Errorf("Error generating thumbnail for %s: %v", imageFile.Path, err)
+			}
+		}
+	}
 
 	return nil
 }

@@ -340,8 +340,13 @@ func (qb *FileStore) Create(ctx context.Context, f file.File) error {
 		return err
 	}
 
-	// only assign id once we are successful
-	f.Base().ID = fileID
+	updated, err := qb.Find(ctx, fileID)
+	if err != nil {
+		return fmt.Errorf("finding after create: %w", err)
+	}
+
+	base := f.Base()
+	*base = *updated[0].Base()
 
 	return nil
 }

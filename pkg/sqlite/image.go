@@ -210,8 +210,12 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateI
 		}
 	}
 
-	// only assign id once we are successful
-	newObject.ID = id
+	updated, err := qb.Find(ctx, id)
+	if err != nil {
+		return fmt.Errorf("finding after create: %w", err)
+	}
+
+	*newObject.Image = *updated
 
 	return nil
 }

@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -12,12 +13,16 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type scanner interface {
-	Scan(ctx context.Context, options file.ScanOptions, progressReporter file.ProgressReporter)
+	Scan(ctx context.Context, handlers []file.Handler, options file.ScanOptions, progressReporter file.ProgressReporter)
 }
 
 type ScanJob struct {
@@ -42,7 +47,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	start := time.Now()
 
-	j.scanner.Scan(ctx, file.ScanOptions{
+	j.scanner.Scan(ctx, getScanHandlers(j.input), file.ScanOptions{
 		Paths:             paths,
 		ScanFilters:       []file.PathFilter{newScanFilter(instance.Config)},
 		ZipFileExtensions: instance.Config.GetGalleryExtensions(),
@@ -125,4 +130,86 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	}
 
 	return true
+}
+
+type scanConfig struct {
+	isGenerateThumbnails bool
+}
+
+func (c *scanConfig) GetCreateGalleriesFromFolders() bool {
+	return instance.Config.GetCreateGalleriesFromFolders()
+}
+
+func (c *scanConfig) IsGenerateThumbnails() bool {
+	return c.isGenerateThumbnails
+}
+
+func getScanHandlers(options ScanMetadataInput) []file.Handler {
+	db := instance.Database
+	pluginCache := instance.PluginCache
+
+	return []file.Handler{
+		&file.FilteredHandler{
+			Filter: file.FilterFunc(imageFileFilter),
+			Handler: &image.ScanHandler{
+				CreatorUpdater:     db.Image,
+				GalleryFinder:      db.Gallery,
+				ThumbnailGenerator: &imageThumbnailGenerator{},
+				ScanConfig: &scanConfig{
+					isGenerateThumbnails: options.ScanGenerateThumbnails,
+				},
+				PluginCache: pluginCache,
+			},
+		},
+		&file.FilteredHandler{
+			Filter: file.FilterFunc(galleryFileFilter),
+			Handler: &gallery.ScanHandler{
+				CreatorUpdater:     db.Gallery,
+				SceneFinderUpdater: db.Scene,
+				PluginCache:        pluginCache,
+			},
+		},
+		&file.FilteredHandler{
+			Filter: file.FilterFunc(videoFileFilter),
+			Handler: &scene.ScanHandler{
+				CreatorUpdater: db.Scene,
+				PluginCache:    pluginCache,
+				CoverGenerator: &coverGenerator{},
+			},
+		},
+	}
+}
+
+type imageThumbnailGenerator struct{}
+
+func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *models.Image, f *file.ImageFile) error {
+	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum(), models.DefaultGthumbWidth)
+	exists, _ := fsutil.FileExists(thumbPath)
+	if exists {
+		return nil
+	}
+
+	if f.Height <= models.DefaultGthumbWidth && f.Width <= models.DefaultGthumbWidth {
+		return nil
+	}
+
+	logger.Debugf("Generating thumbnail for %s", f.Path)
+
+	encoder := image.NewThumbnailEncoder(instance.FFMPEG)
+	data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
+
+	if err != nil {
+		// don't log for animated images
+		if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
+			return fmt.Errorf("getting thumbnail for image %s: %w", f.Path, err)
+		}
+		return nil
+	}
+
+	err = fsutil.WriteFile(thumbPath, data)
+	if err != nil {
+		return fmt.Errorf("writing thumbnail for image %s: %w", f.Path, err)
+	}
+
+	return nil
 }

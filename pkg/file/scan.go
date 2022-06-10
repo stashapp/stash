@@ -61,9 +61,6 @@ type Scanner struct {
 
 	// FileDecorators are applied to files as they are scanned.
 	FileDecorators []Decorator
-
-	// Handlers are called after a file has been scanned.
-	Handlers []Handler
 }
 
 // ProgressReporter is used to report progress of the scan.
@@ -74,6 +71,9 @@ type ProgressReporter interface {
 
 type scanJob struct {
 	*Scanner
+
+	// handlers are called after a file has been scanned.
+	handlers []Handler
 
 	ProgressReports ProgressReporter
 	options         ScanOptions
@@ -102,9 +102,10 @@ type ScanOptions struct {
 }
 
 // Scan starts the scanning process.
-func (s *Scanner) Scan(ctx context.Context, options ScanOptions, progressReporter ProgressReporter) {
+func (s *Scanner) Scan(ctx context.Context, handlers []Handler, options ScanOptions, progressReporter ProgressReporter) {
 	job := &scanJob{
 		Scanner:         s,
+		handlers:        handlers,
 		ProgressReports: progressReporter,
 		options:         options,
 	}
@@ -586,7 +587,7 @@ func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, erro
 }
 
 func (s *scanJob) fireHandlers(ctx context.Context, fs FS, f File) error {
-	for _, h := range s.Handlers {
+	for _, h := range s.handlers {
 		if err := h.Handle(ctx, fs, f); err != nil {
 			return err
 		}
