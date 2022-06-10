@@ -8,7 +8,6 @@ import {
   TagDataFragment,
   MovieDataFragment,
   SceneDataFragment,
-  GalleryDataFragment,
 } from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";

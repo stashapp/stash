@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -15,9 +16,13 @@ import (
 
 // TODO - move this into a common area
 func newResolver() *Resolver {
+	txnMgr := &mocks.TxnManager{}
 	return &Resolver{
-		txnManager:   &mocks.TxnManager{},
-		repository:   mocks.NewTxnRepository(),
+		txnManager: txnMgr,
+		repository: manager.Repository{
+			TxnManager: txnMgr,
+			Tag:        &mocks.TagReaderWriter{},
+		},
 		hookExecutor: &mockHookExecutor{},
 	}
 }

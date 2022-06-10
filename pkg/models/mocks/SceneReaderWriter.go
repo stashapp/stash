@@ -477,29 +477,6 @@ func (_m *SceneReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models
 	return r0, r1
 }
 
-// GetCaptions provides a mock function with given fields: ctx, sceneID
-func (_m *SceneReaderWriter) GetCaptions(ctx context.Context, sceneID int) ([]*models.VideoCaption, error) {
-	ret := _m.Called(ctx, sceneID)
-
-	var r0 []*models.VideoCaption
-	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.VideoCaption); ok {
-		r0 = rf(ctx, sceneID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.VideoCaption)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, sceneID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetCover provides a mock function with given fields: ctx, sceneID
 func (_m *SceneReaderWriter) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
 	ret := _m.Called(ctx, sceneID)
@@ -616,20 +593,6 @@ func (_m *SceneReaderWriter) Update(ctx context.Context, updatedScene *models.Sc
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, *models.Scene) error); ok {
 		r0 = rf(ctx, updatedScene)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// UpdateCaptions provides a mock function with given fields: ctx, id, captions
-func (_m *SceneReaderWriter) UpdateCaptions(ctx context.Context, id int, captions []*models.VideoCaption) error {
-	ret := _m.Called(ctx, id, captions)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []*models.VideoCaption) error); ok {
-		r0 = rf(ctx, id, captions)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -24,13 +24,6 @@ func handleFloat64(v float64) *float64 {
 	return &v
 }
 
-func handleFloat64Ptr(v *float64) *float64 {
-	if v == nil {
-		return nil
-	}
-	return handleFloat64(*v)
-}
-
 func handleFloat64Value(v float64) float64 {
 	if math.IsInf(v, 0) || math.IsNaN(v) {
 		return 0
@@ -67,18 +60,4 @@ func translateSceneMovieIDs(input BulkUpdateIds) (*models.UpdateMovieIDs, error)
 	}
 
 	return ret, nil
-}
-
-func stringPtrToString(str *string) string {
-	if str == nil {
-		return ""
-	}
-	return *str
-}
-
-func float64PtrToFloat64(v *float64) float64 {
-	if v == nil {
-		return 0
-	}
-	return *v
 }

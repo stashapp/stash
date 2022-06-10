@@ -77,8 +77,6 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		return err
 	}
 
-	// TODO - generate thumbnails
-
 	return nil
 }
 
@@ -105,7 +103,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 	return nil
 }
 
-func (t *ScanHandler) associateScene(ctx context.Context, existing []*models.Gallery, f file.File) error {
+func (h *ScanHandler) associateScene(ctx context.Context, existing []*models.Gallery, f file.File) error {
 	galleryIDs := make([]int, len(existing))
 	for i, g := range existing {
 		galleryIDs[i] = g.ID
@@ -115,7 +113,7 @@ func (t *ScanHandler) associateScene(ctx context.Context, existing []*models.Gal
 	withoutExt := strings.TrimSuffix(path, filepath.Ext(path))
 
 	// find scenes with a file that matches
-	scenes, err := t.SceneFinderUpdater.FindByPath(ctx, withoutExt)
+	scenes, err := h.SceneFinderUpdater.FindByPath(ctx, withoutExt)
 	if err != nil {
 		return err
 	}
@@ -126,7 +124,7 @@ func (t *ScanHandler) associateScene(ctx context.Context, existing []*models.Gal
 		if len(newIDs) > len(scene.GalleryIDs) {
 			logger.Infof("associate: Gallery %s is related to scene: %s", f.Base().Path, scene.GetTitle())
 			scene.GalleryIDs = newIDs
-			if err := t.SceneFinderUpdater.Update(ctx, scene); err != nil {
+			if err := h.SceneFinderUpdater.Update(ctx, scene); err != nil {
 				return err
 			}
 		}

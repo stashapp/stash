@@ -104,7 +104,6 @@ func (j *cleanJob) execute(ctx context.Context) error {
 
 	toDelete := newDeleteSet()
 
-	// TODO - get count for progress meter
 	var (
 		fileCount   int
 		folderCount int

@@ -51,14 +51,15 @@ func (p *Progress) Definite() {
 	p.calculatePercent()
 }
 
-// SetTotal sets the total number of work units and calls Definite(). This is used to calculate the
-// progress percentage.
+// SetTotal sets the total number of work units and sets definite to true.
+// This is used to calculate the progress percentage.
 func (p *Progress) SetTotal(total int) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
 	p.total = total
-	p.Definite()
+	p.defined = true
+	p.calculatePercent()
 }
 
 // AddTotal adds to the total number of work units. This is used to calculate the

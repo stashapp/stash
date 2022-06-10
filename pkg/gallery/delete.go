@@ -22,7 +22,8 @@ func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *i
 			return nil, err
 		}
 
-		imgsDestroyed = append(zipImgsDestroyed, folderImgsDestroyed...)
+		imgsDestroyed = zipImgsDestroyed
+		imgsDestroyed = append(imgsDestroyed, folderImgsDestroyed...)
 
 		// we only want to delete a folder-based gallery if it is empty.
 		// this has to be done post-transaction

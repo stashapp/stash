@@ -11,7 +11,7 @@ interface IGallery {
 }
 
 interface IGalleryWithTitle extends IGallery {
-    title: GQL.Maybe<string>;
+  title: GQL.Maybe<string>;
 }
 
 export function galleryTitle(s: Partial<IGalleryWithTitle>) {
