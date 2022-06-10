@@ -357,7 +357,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         // search for known stashdb vr tag and aliases
         let tagText = tag.name
           .toLowerCase()
-          .replace(/[^a-z\s]/gi, "")
+          .replace(/[a-z]*[^a-z\s][a-z]*/gi, "")
           .trim();
         if (
           tagText == "virtual reality" ||
