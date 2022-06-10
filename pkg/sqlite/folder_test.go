@@ -36,6 +36,7 @@ func Test_FolderStore_Create(t *testing.T) {
 			file.Folder{
 				DirEntry: file.DirEntry{
 					ZipFileID:    &fileIDs[fileIdxZip],
+					ZipFile:      makeZipFileWithID(fileIdxZip),
 					ModTime:      fileModTime,
 					MissingSince: &updatedAt,
 					LastScanned:  createdAt,
@@ -119,6 +120,7 @@ func Test_FolderStore_Update(t *testing.T) {
 				ID: folderIDs[folderIdxIsMissing],
 				DirEntry: file.DirEntry{
 					ZipFileID:    &fileIDs[fileIdxZip],
+					ZipFile:      makeZipFileWithID(fileIdxZip),
 					ModTime:      fileModTime,
 					MissingSince: &updatedAt,
 					LastScanned:  createdAt,
@@ -310,6 +312,7 @@ func TestFolderStore_MarkMissing(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
+
 			n, err := qb.MarkMissing(ctx, tt.scanStartTime, tt.scanPaths)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FolderStore.MarkMissing() error = %v, wantErr %v", err, tt.wantErr)

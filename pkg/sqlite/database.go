@@ -140,10 +140,6 @@ func (db *Database) Open(dbPath string) error {
 		}
 	}
 
-	if err := db.runCustomMigrations(); err != nil {
-		return err
-	}
-
 	return nil
 }
 

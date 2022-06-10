@@ -20,6 +20,9 @@ import (
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
+
+	// necessary to register custom migrations
+	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
 )
 
 const (

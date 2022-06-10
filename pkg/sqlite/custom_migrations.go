@@ -11,7 +11,3 @@ func RegisterCustomMigration(schemaVersion uint, fn customMigrationFunc) {
 }
 
 var customMigrations = make(map[uint][]customMigrationFunc)
-
-func (db *Database) runCustomMigrations() error {
-	return nil
-}

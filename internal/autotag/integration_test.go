@@ -18,6 +18,9 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	// necessary to register custom migrations
+	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
 )
 
 const testName = "Foo's Bar"

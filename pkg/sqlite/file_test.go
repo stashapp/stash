@@ -243,7 +243,11 @@ func Test_fileFileStore_Create(t *testing.T) {
 				t.Errorf("fileStore.Find() error = %v", err)
 			}
 
-			assert.Equal(copy, found)
+			if !assert.Len(found, 1) {
+				return
+			}
+
+			assert.Equal(copy, found[0])
 
 			return
 		})
@@ -465,7 +469,11 @@ func Test_fileStore_Update(t *testing.T) {
 				t.Errorf("FileStore.Find() error = %v", err)
 			}
 
-			assert.Equal(copy, s)
+			if !assert.Len(s, 1) {
+				return
+			}
+
+			assert.Equal(copy, s[0])
 
 			return
 		})
@@ -524,7 +532,16 @@ func Test_fileStore_Find(t *testing.T) {
 				return
 			}
 
-			assert.Equal(tt.want, got)
+			if tt.want == nil {
+				assert.Len(got, 0)
+				return
+			}
+
+			if !assert.Len(got, 1) {
+				return
+			}
+
+			assert.Equal(tt.want, got[0])
 		})
 	}
 }
