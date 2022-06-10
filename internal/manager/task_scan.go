@@ -19,6 +19,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scene/generate"
 )
 
 type scanner interface {
@@ -47,13 +48,16 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	start := time.Now()
 
-	j.scanner.Scan(ctx, getScanHandlers(j.input), file.ScanOptions{
+	const taskQueueSize = 200000
+	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, instance.Config.GetParallelTasksWithAutoDetection())
+
+	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
 		Paths:             paths,
 		ScanFilters:       []file.PathFilter{newScanFilter(instance.Config)},
 		ZipFileExtensions: instance.Config.GetGalleryExtensions(),
 	}, progress)
 
-	// FIXME - handle generate jobs after scanning
+	taskQueue.Close()
 
 	if job.IsCancelled(ctx) {
 		logger.Info("Stopping due to user request")
@@ -144,7 +148,7 @@ func (c *scanConfig) IsGenerateThumbnails() bool {
 	return c.isGenerateThumbnails
 }
 
-func getScanHandlers(options ScanMetadataInput) []file.Handler {
+func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progress *job.Progress) []file.Handler {
 	db := instance.Database
 	pluginCache := instance.PluginCache
 
@@ -175,6 +179,11 @@ func getScanHandlers(options ScanMetadataInput) []file.Handler {
 				CreatorUpdater: db.Scene,
 				PluginCache:    pluginCache,
 				CoverGenerator: &coverGenerator{},
+				ScanGenerator: &sceneGenerators{
+					input:     options,
+					taskQueue: taskQueue,
+					progress:  progress,
+				},
 			},
 		},
 	}
@@ -209,6 +218,78 @@ func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *mode
 	err = fsutil.WriteFile(thumbPath, data)
 	if err != nil {
 		return fmt.Errorf("writing thumbnail for image %s: %w", f.Path, err)
+	}
+
+	return nil
+}
+
+type sceneGenerators struct {
+	input     ScanMetadataInput
+	taskQueue *job.TaskQueue
+	progress  *job.Progress
+}
+
+func (g *sceneGenerators) Generate(ctx context.Context, s *models.Scene, f *file.VideoFile) error {
+	const overwrite = false
+
+	progress := g.progress
+	t := g.input
+	path := f.Path
+	config := instance.Config
+	fileNamingAlgorithm := config.GetVideoFileNamingAlgorithm()
+
+	if t.ScanGenerateSprites {
+		progress.AddTotal(1)
+		g.taskQueue.Add(fmt.Sprintf("Generating sprites for %s", path), func(ctx context.Context) {
+			taskSprite := GenerateSpriteTask{
+				Scene:               *s,
+				Overwrite:           overwrite,
+				fileNamingAlgorithm: fileNamingAlgorithm,
+			}
+			taskSprite.Start(ctx)
+			progress.Increment()
+		})
+	}
+
+	if t.ScanGeneratePhashes {
+		progress.AddTotal(1)
+		g.taskQueue.Add(fmt.Sprintf("Generating phash for %s", path), func(ctx context.Context) {
+			taskPhash := GeneratePhashTask{
+				File:                f,
+				fileNamingAlgorithm: fileNamingAlgorithm,
+				txnManager:          instance.Database,
+				fileUpdater:         instance.Database.File,
+				Overwrite:           overwrite,
+			}
+			taskPhash.Start(ctx)
+			progress.Increment()
+		})
+	}
+
+	if t.ScanGeneratePreviews {
+		progress.AddTotal(1)
+		g.taskQueue.Add(fmt.Sprintf("Generating preview for %s", path), func(ctx context.Context) {
+			options := getGeneratePreviewOptions(GeneratePreviewOptionsInput{})
+
+			g := &generate.Generator{
+				Encoder:     instance.FFMPEG,
+				LockManager: instance.ReadLockManager,
+				MarkerPaths: instance.Paths.SceneMarkers,
+				ScenePaths:  instance.Paths.Scene,
+				Overwrite:   overwrite,
+			}
+
+			taskPreview := GeneratePreviewTask{
+				Scene:               *s,
+				ImagePreview:        t.ScanGenerateImagePreviews,
+				Options:             options,
+				Overwrite:           overwrite,
+				fileNamingAlgorithm: fileNamingAlgorithm,
+				generator:           g,
+			}
+			taskPreview.Start(ctx)
+			progress.Increment()
+		})
 	}
 
 	return nil

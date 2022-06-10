@@ -65,8 +65,10 @@ type Scanner struct {
 
 // ProgressReporter is used to report progress of the scan.
 type ProgressReporter interface {
-	SetTotal(total int)
+	AddTotal(total int)
 	Increment()
+	Definite()
+	ExecuteTask(description string, fn func())
 }
 
 type scanJob struct {
@@ -162,20 +164,23 @@ func (s *scanJob) execute(ctx context.Context) {
 
 func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
 	var err error
-	for _, p := range paths {
-		err = symWalk(s.FS, p, s.queueFileFunc(ctx, s.FS, nil))
-	}
+	s.ProgressReports.ExecuteTask("Walking directory tree", func() {
+		for _, p := range paths {
+			err = symWalk(s.FS, p, s.queueFileFunc(ctx, s.FS, nil))
+			if err != nil {
+				return
+			}
+		}
+	})
+
 	close(s.fileQueue)
 
-	if err != nil {
-		return err
-	}
-
 	if s.ProgressReports != nil {
-		s.ProgressReports.SetTotal(s.count)
+		s.ProgressReports.AddTotal(s.count)
+		s.ProgressReports.Definite()
 	}
 
-	return nil
+	return err
 }
 
 func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs.WalkDirFunc {
@@ -285,6 +290,9 @@ func (s *scanJob) processQueue(ctx context.Context) error {
 		}
 
 		s.processQueueItem(ctx, f)
+		if s.ProgressReports != nil {
+			s.ProgressReports.Increment()
+		}
 	}
 
 	s.retrying = true
@@ -300,16 +308,18 @@ func (s *scanJob) processQueue(ctx context.Context) error {
 }
 
 func (s *scanJob) processQueueItem(ctx context.Context, f scanFile) {
-	var err error
-	if f.info.IsDir() {
-		err = s.handleFolder(ctx, f)
-	} else {
-		err = s.handleFile(ctx, f)
-	}
+	s.ProgressReports.ExecuteTask("Scanning "+f.Path, func() {
+		var err error
+		if f.info.IsDir() {
+			err = s.handleFolder(ctx, f)
+		} else {
+			err = s.handleFile(ctx, f)
+		}
 
-	if err != nil {
-		logger.Errorf("error processing %q: %v", f.Path, err)
-	}
+		if err != nil {
+			logger.Errorf("error processing %q: %v", f.Path, err)
+		}
+	})
 }
 
 func (s *scanJob) getFolderID(ctx context.Context, path string) (*FolderID, error) {

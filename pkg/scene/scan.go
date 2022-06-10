@@ -26,10 +26,15 @@ type CreatorUpdater interface {
 	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
 }
 
+type ScanGenerator interface {
+	Generate(ctx context.Context, s *models.Scene, f *file.VideoFile) error
+}
+
 type ScanHandler struct {
 	CreatorUpdater CreatorUpdater
 
 	CoverGenerator CoverGenerator
+	ScanGenerator  ScanGenerator
 	PluginCache    *plugin.Cache
 }
 
@@ -39,6 +44,9 @@ func (h *ScanHandler) validate() error {
 	}
 	if h.CoverGenerator == nil {
 		return errors.New("CoverGenerator is required")
+	}
+	if h.ScanGenerator == nil {
+		return errors.New("ScanGenerator is required")
 	}
 
 	return nil
@@ -93,6 +101,11 @@ func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error
 		if err := h.CoverGenerator.GenerateCover(ctx, s, videoFile); err != nil {
 			// just log if cover generation fails. We can try again on rescan
 			logger.Errorf("Error generating cover for %s: %v", videoFile.Path, err)
+		}
+
+		if err := h.ScanGenerator.Generate(ctx, s, videoFile); err != nil {
+			// just log if cover generation fails. We can try again on rescan
+			logger.Errorf("Error generating content for %s: %v", videoFile.Path, err)
 		}
 	}
 
