@@ -38,6 +38,10 @@ type FolderGetter interface {
 	FindByParentFolderID(ctx context.Context, parentFolderID FolderID) ([]*Folder, error)
 }
 
+type FolderCounter interface {
+	CountAllInPaths(ctx context.Context, p []string) (int, error)
+}
+
 // FolderCreator provides methods to create Folders.
 type FolderCreator interface {
 	Create(ctx context.Context, f *Folder) error
@@ -61,6 +65,7 @@ type FolderMissingMarker interface {
 // FolderStore provides methods to find, create and update Folders.
 type FolderStore interface {
 	FolderGetter
+	FolderCounter
 	FolderCreator
 	FolderUpdater
 	FolderDestroyer

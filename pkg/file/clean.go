@@ -105,6 +105,30 @@ func (j *cleanJob) execute(ctx context.Context) error {
 	toDelete := newDeleteSet()
 
 	// TODO - get count for progress meter
+	var (
+		fileCount   int
+		folderCount int
+	)
+
+	if err := txn.WithTxn(ctx, j.Repository, func(ctx context.Context) error {
+		var err error
+		fileCount, err = j.Repository.CountAllInPaths(ctx, j.options.Paths)
+		if err != nil {
+			return err
+		}
+
+		folderCount, err = j.Repository.FolderStore.CountAllInPaths(ctx, j.options.Paths)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	progress.AddTotal(fileCount + folderCount)
+	progress.Definite()
 
 	if err := j.assessFiles(ctx, &toDelete); err != nil {
 		return err

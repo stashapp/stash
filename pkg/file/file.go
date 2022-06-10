@@ -167,6 +167,10 @@ type Getter interface {
 	FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]File, error)
 }
 
+type Counter interface {
+	CountAllInPaths(ctx context.Context, p []string) (int, error)
+}
+
 // Creator provides methods to create Files.
 type Creator interface {
 	Create(ctx context.Context, f File) error
@@ -184,6 +188,7 @@ type Destroyer interface {
 // Store provides methods to find, create and update Files.
 type Store interface {
 	Getter
+	Counter
 	Creator
 	Updater
 	Destroyer

@@ -501,6 +501,40 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
+func (qb *FileStore) countDataset() *goqu.SelectDataset {
+	table := qb.table()
+
+	folderTable := folderTableMgr.table
+	fingerprintTable := fingerprintTableMgr.table
+	videoFileTable := videoFileTableMgr.table
+	imageFileTable := imageFileTableMgr.table
+
+	zipFileTable := table.As("zip_files")
+	zipFolderTable := folderTable.As("zip_files_folders")
+
+	ret := dialect.From(table).Select(goqu.COUNT(goqu.DISTINCT(table.Col("id"))))
+
+	return ret.InnerJoin(
+		folderTable,
+		goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
+	).LeftJoin(
+		fingerprintTable,
+		goqu.On(table.Col(idColumn).Eq(fingerprintTable.Col(fileIDColumn))),
+	).LeftJoin(
+		videoFileTable,
+		goqu.On(table.Col(idColumn).Eq(videoFileTable.Col(fileIDColumn))),
+	).LeftJoin(
+		imageFileTable,
+		goqu.On(table.Col(idColumn).Eq(imageFileTable.Col(fileIDColumn))),
+	).LeftJoin(
+		zipFileTable,
+		goqu.On(table.Col("zip_file_id").Eq(zipFileTable.Col("id"))),
+	).LeftJoin(
+		zipFolderTable,
+		goqu.On(zipFileTable.Col("parent_folder_id").Eq(zipFolderTable.Col(idColumn))),
+	)
+}
+
 func (qb *FileStore) get(ctx context.Context, q *goqu.SelectDataset) (file.File, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -589,10 +623,7 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 	return ret, nil
 }
 
-// FindAllByPaths returns the all files that are within any of the given paths.
-// Returns all if limit is < 0.
-// Returns all files if p is empty.
-func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]file.File, error) {
+func (qb *FileStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.SelectDataset {
 	folderTable := folderTableMgr.table
 
 	var conds []exp.Expression
@@ -603,9 +634,17 @@ func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offs
 		conds = append(conds, folderTable.Col("path").Eq(dir), folderTable.Col("path").Like(dirWildcard))
 	}
 
-	q := qb.selectDataset().Prepared(true).Where(
+	return q.Where(
 		goqu.Or(conds...),
 	)
+}
+
+// FindAllByPaths returns the all files that are within any of the given paths.
+// Returns all if limit is < 0.
+// Returns all files if p is empty.
+func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]file.File, error) {
+	q := qb.selectDataset().Prepared(true)
+	q = qb.allInPaths(q, p)
 
 	if limit > -1 {
 		q = q.Limit(uint(limit))
@@ -619,6 +658,15 @@ func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offs
 	}
 
 	return ret, nil
+}
+
+// CountAllInPaths returns a count of all files that are within any of the given paths.
+// Returns count of all files if p is empty.
+func (qb *FileStore) CountAllInPaths(ctx context.Context, p []string) (int, error) {
+	q := qb.countDataset().Prepared(true)
+	q = qb.allInPaths(q, p)
+
+	return count(ctx, q)
 }
 
 func (qb *FileStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]file.File, error) {

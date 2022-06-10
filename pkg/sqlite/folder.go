@@ -193,6 +193,24 @@ func (qb *FolderStore) selectDataset() *goqu.SelectDataset {
 	)
 }
 
+func (qb *FolderStore) countDataset() *goqu.SelectDataset {
+	table := qb.table()
+	fileTable := fileTableMgr.table
+
+	zipFileTable := fileTable.As("zip_files")
+	zipFolderTable := table.As("zip_files_folders")
+
+	ret := dialect.From(table).Select(goqu.COUNT(goqu.DISTINCT(table.Col("id"))))
+
+	return ret.LeftJoin(
+		zipFileTable,
+		goqu.On(table.Col("zip_file_id").Eq(zipFileTable.Col("id"))),
+	).LeftJoin(
+		zipFolderTable,
+		goqu.On(zipFileTable.Col("parent_folder_id").Eq(zipFolderTable.Col(idColumn))),
+	)
+}
+
 func (qb *FolderStore) get(ctx context.Context, q *goqu.SelectDataset) (*file.Folder, error) {
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -257,10 +275,7 @@ func (qb *FolderStore) FindByParentFolderID(ctx context.Context, parentFolderID 
 	return ret, nil
 }
 
-// FindAllInPaths returns the all folders that are or are within any of the given paths.
-// Returns all if limit is < 0.
-// Returns all folders if p is empty.
-func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*file.Folder, error) {
+func (qb *FolderStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.SelectDataset {
 	table := qb.table()
 
 	var conds []exp.Expression
@@ -271,9 +286,17 @@ func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, limit, of
 		conds = append(conds, table.Col("path").Eq(dir), table.Col("path").Like(dirWildcard))
 	}
 
-	q := qb.selectDataset().Prepared(true).Where(
+	return q.Where(
 		goqu.Or(conds...),
 	)
+}
+
+// FindAllInPaths returns the all folders that are or are within any of the given paths.
+// Returns all if limit is < 0.
+// Returns all folders if p is empty.
+func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]*file.Folder, error) {
+	q := qb.selectDataset().Prepared(true)
+	q = qb.allInPaths(q, p)
 
 	if limit > -1 {
 		q = q.Limit(uint(limit))
@@ -287,6 +310,15 @@ func (qb *FolderStore) FindAllInPaths(ctx context.Context, p []string, limit, of
 	}
 
 	return ret, nil
+}
+
+// CountAllInPaths returns a count of all folders that are within any of the given paths.
+// Returns count of all folders if p is empty.
+func (qb *FolderStore) CountAllInPaths(ctx context.Context, p []string) (int, error) {
+	q := qb.countDataset().Prepared(true)
+	q = qb.allInPaths(q, p)
+
+	return count(ctx, q)
 }
 
 func (qb *FolderStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*file.Folder, error) {
