@@ -185,15 +185,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
     settings.updateDisplay();
 
-    (player as any).landscapeFullscreen({
-      fullscreen: {
-        enterOnRotate: true,
-        exitOnRotate: true,
-        alwaysInLandscapeMode: true,
-        iOS: false,
-      },
-    });
-
     (player as any).markers();
     (player as any).offset();
     (player as any).sourceSelector();
@@ -203,6 +194,31 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.focus();
     playerRef.current = player;
   }, []);
+  
+  useEffect(() => {
+    if (!scene)
+      return;
+
+    const player = playerRef.current;
+    if (!player)
+      return;
+
+    const isLandscape =
+    scene.file.height &&
+    scene.file.width &&
+    scene.file.width > scene.file.height;
+
+    if (isLandscape) {
+      (player as any).landscapeFullscreen({
+        fullscreen: {
+          enterOnRotate: true,
+          exitOnRotate: true,
+          alwaysInLandscapeMode: true,
+          iOS: false,
+        },
+      });
+    }
+  }, [scene]);
 
   useEffect(() => {
     if (scene?.interactive && interactiveInitialised) {
