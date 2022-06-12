@@ -194,19 +194,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.focus();
     playerRef.current = player;
   }, []);
-  
+
   useEffect(() => {
-    if (!scene)
-      return;
+    if (!scene) return;
 
     const player = playerRef.current;
-    if (!player)
-      return;
+    if (!player) return;
 
     const isLandscape =
-    scene.file.height &&
-    scene.file.width &&
-    scene.file.width > scene.file.height;
+      scene.file.height &&
+      scene.file.width &&
+      scene.file.width > scene.file.height;
 
     if (isLandscape) {
       (player as any).landscapeFullscreen({
