@@ -15,7 +15,7 @@ type Movie struct {
 	Date       string        `json:"date,omitempty"`
 	Rating     int           `json:"rating,omitempty"`
 	Director   string        `json:"director,omitempty"`
-	Synopsis   string        `json:"sypnopsis,omitempty"`
+	Synopsis   string        `json:"synopsis,omitempty"`
 	FrontImage string        `json:"front_image,omitempty"`
 	BackImage  string        `json:"back_image,omitempty"`
 	URL        string        `json:"url,omitempty"`
