@@ -196,29 +196,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!scene) return;
-
-    const player = playerRef.current;
-    if (!player) return;
-
-    const isLandscape =
-      scene.file.height &&
-      scene.file.width &&
-      scene.file.width > scene.file.height;
-
-    if (isLandscape) {
-      (player as any).landscapeFullscreen({
-        fullscreen: {
-          enterOnRotate: true,
-          exitOnRotate: true,
-          alwaysInLandscapeMode: true,
-          iOS: false,
-        },
-      });
-    }
-  }, [scene]);
-
-  useEffect(() => {
     if (scene?.interactive && interactiveInitialised) {
       interactiveReady.current = false;
       uploadScript(scene.paths.funscript || "").then(() => {
@@ -508,6 +485,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
     if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
     else player.poster("");
+
+    const isLandscape =
+      scene.file.height &&
+      scene.file.width &&
+      scene.file.width > scene.file.height;
+
+    if (isLandscape) {
+      (player as any).landscapeFullscreen({
+        fullscreen: {
+          enterOnRotate: true,
+          exitOnRotate: true,
+          alwaysInLandscapeMode: true,
+          iOS: false,
+        },
+      });
+    }
 
     // clear the offset before loading anything new.
     // otherwise, the offset will be applied to the next file when
