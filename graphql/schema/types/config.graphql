@@ -413,6 +413,7 @@ type ConfigResult {
   dlna: ConfigDLNAResult!
   scraping: ConfigScrapingResult!
   defaults: ConfigDefaultSettingsResult!
+  ui: Map!
 }
 
 """Directory structure of a path"""

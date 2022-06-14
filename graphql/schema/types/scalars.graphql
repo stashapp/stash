@@ -5,3 +5,8 @@ It can be input as a RFC3339 string, or as "<4h" for "4 hours in the past" or ">
 for "5 minutes in the future"
 """
 scalar Timestamp
+
+# generic JSON object
+scalar Map
+
+scalar Any

@@ -185,15 +185,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
     settings.updateDisplay();
 
-    (player as any).landscapeFullscreen({
-      fullscreen: {
-        enterOnRotate: true,
-        exitOnRotate: true,
-        alwaysInLandscapeMode: true,
-        iOS: false,
-      },
-    });
-
     (player as any).markers();
     (player as any).offset();
     (player as any).sourceSelector();
@@ -417,20 +408,99 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       }
     }
 
-    // always stop the interactive client on initialisation
-    interactiveClient.pause();
-    interactiveReady.current = false;
+    function loadstart(this: VideoJsPlayer) {
+      // handle offset after loading so that we get the correct current source
+      handleOffset(this);
+    }
 
-    if (!scene || scene.id === sceneId.current) return;
-    sceneId.current = scene.id;
+    function onPlay(this: VideoJsPlayer) {
+      this.poster("");
+      if (scene?.interactive && interactiveReady.current) {
+        interactiveClient.play(this.currentTime());
+      }
+    }
+
+    function pause() {
+      interactiveClient.pause();
+    }
+
+    function timeupdate(this: VideoJsPlayer) {
+      if (scene?.interactive && interactiveReady.current) {
+        interactiveClient.ensurePlaying(this.currentTime());
+      }
+      setTime(this.currentTime());
+    }
+
+    function seeking(this: VideoJsPlayer) {
+      this.play();
+    }
+
+    function error() {
+      handleError(true);
+    }
+
+    // changing source (eg when seeking) resets the playback rate
+    // so set the default in addition to the current rate
+    function ratechange(this: VideoJsPlayer) {
+      this.defaultPlaybackRate(this.playbackRate());
+    }
+
+    function loadedmetadata(this: VideoJsPlayer) {
+      if (!this.videoWidth() && !this.videoHeight()) {
+        // Occurs during preload when videos with supported audio/unsupported video are preloaded.
+        // Treat this as a decoding error and try the next source without playing.
+        // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
+        const currentFile = this.currentSrc();
+        if (currentFile != null && !currentFile.includes("m3u8")) {
+          // const play = !player.paused();
+          // handleError(play);
+          this.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+        }
+      }
+    }
 
     const player = playerRef.current;
     if (!player) return;
+
+    // always initialise event handlers since these are destroyed when the
+    // component is destroyed
+    player.on("loadstart", loadstart);
+    player.on("play", onPlay);
+    player.on("pause", pause);
+    player.on("timeupdate", timeupdate);
+    player.on("seeking", seeking);
+    player.on("error", error);
+    player.on("ratechange", ratechange);
+    player.on("loadedmetadata", loadedmetadata);
+
+    // don't re-initialise the player unless the scene has changed
+    if (!scene || scene.id === sceneId.current) return;
+    sceneId.current = scene.id;
+
+    // always stop the interactive client on initialisation
+    interactiveClient.pause();
+    interactiveReady.current = false;
 
     const auto =
       autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
     if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
     else player.poster("");
+
+    const isLandscape =
+      scene.file.height &&
+      scene.file.width &&
+      scene.file.width > scene.file.height;
+
+    if (isLandscape) {
+      (player as any).landscapeFullscreen({
+        fullscreen: {
+          enterOnRotate: true,
+          exitOnRotate: true,
+          alwaysInLandscapeMode: true,
+          iOS: false,
+        },
+      });
+    }
 
     // clear the offset before loading anything new.
     // otherwise, the offset will be applied to the next file when
@@ -473,66 +543,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       scene.file.duration < maxLoopDuration;
     player.loop(looping);
     interactiveClient.setLooping(looping);
-
-    function loadstart(this: VideoJsPlayer) {
-      // handle offset after loading so that we get the correct current source
-      handleOffset(this);
-    }
-
-    player.on("loadstart", loadstart);
-
-    function onPlay(this: VideoJsPlayer) {
-      this.poster("");
-      if (scene?.interactive && interactiveReady.current) {
-        interactiveClient.play(this.currentTime());
-      }
-    }
-    player.on("play", onPlay);
-
-    function pause() {
-      interactiveClient.pause();
-    }
-    player.on("pause", pause);
-
-    function timeupdate(this: VideoJsPlayer) {
-      if (scene?.interactive && interactiveReady.current) {
-        interactiveClient.ensurePlaying(this.currentTime());
-      }
-      setTime(this.currentTime());
-    }
-    player.on("timeupdate", timeupdate);
-
-    function seeking(this: VideoJsPlayer) {
-      this.play();
-    }
-    player.on("seeking", seeking);
-
-    function error() {
-      handleError(true);
-    }
-    player.on("error", error);
-
-    // changing source (eg when seeking) resets the playback rate
-    // so set the default in addition to the current rate
-    function ratechange(this: VideoJsPlayer) {
-      this.defaultPlaybackRate(this.playbackRate());
-    }
-    player.on("ratechange", ratechange);
-
-    function loadedmetadata(this: VideoJsPlayer) {
-      if (!this.videoWidth() && !this.videoHeight()) {
-        // Occurs during preload when videos with supported audio/unsupported video are preloaded.
-        // Treat this as a decoding error and try the next source without playing.
-        // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
-        const currentFile = this.currentSrc();
-        if (currentFile != null && !currentFile.includes("m3u8")) {
-          // const play = !player.paused();
-          // handleError(play);
-          this.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
-        }
-      }
-    }
-    player.on("loadedmetadata", loadedmetadata);
 
     player.load();
 

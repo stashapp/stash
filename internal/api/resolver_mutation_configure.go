@@ -501,3 +501,23 @@ func (r *mutationResolver) GenerateAPIKey(ctx context.Context, input models.Gene
 
 	return newAPIKey, nil
 }
+
+func (r *mutationResolver) ConfigureUI(ctx context.Context, input map[string]interface{}) (map[string]interface{}, error) {
+	c := config.GetInstance()
+	c.SetUIConfiguration(input)
+
+	if err := c.Write(); err != nil {
+		return c.GetUIConfiguration(), err
+	}
+
+	return c.GetUIConfiguration(), nil
+}
+
+func (r *mutationResolver) ConfigureUISetting(ctx context.Context, key string, value interface{}) (map[string]interface{}, error) {
+	c := config.GetInstance()
+
+	cfg := c.GetUIConfiguration()
+	cfg[key] = value
+
+	return r.ConfigureUI(ctx, cfg)
+}
