@@ -800,6 +800,12 @@ div.dropdown-menu {
   }
 }
 
+// workaround for dropdown button in button group
+.btn-group > .dropdown:not(:last-child) > .btn {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+
 dl.details-list {
   display: grid;
   grid-column-gap: 10px;
