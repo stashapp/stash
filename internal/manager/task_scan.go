@@ -97,6 +97,11 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 		return false
 	}
 
+	// #1756 - skip zero length files
+	if !info.IsDir() && info.Size() == 0 {
+		return false
+	}
+
 	isVideoFile := fsutil.MatchExtension(path, f.vidExt)
 	isImageFile := fsutil.MatchExtension(path, f.imgExt)
 	isZipFile := fsutil.MatchExtension(path, f.zipExt)
@@ -111,6 +116,7 @@ func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) 
 	}
 
 	if !info.IsDir() && !isVideoFile && !isImageFile && !isZipFile {
+		logger.Infof("Skipping zero-length file: %s", path)
 		return false
 	}
 

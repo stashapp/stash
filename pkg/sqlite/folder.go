@@ -253,12 +253,14 @@ func (qb *FolderStore) Find(ctx context.Context, id file.FolderID) (*file.Folder
 	return ret, nil
 }
 
-func (qb *FolderStore) FindByPath(ctx context.Context, path string) (*file.Folder, error) {
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(path))
+func (qb *FolderStore) FindByPath(ctx context.Context, p string) (*file.Folder, error) {
+	dir, _ := path(p).Value()
+
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(dir))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("getting folder by path %s: %w", path, err)
+		return nil, fmt.Errorf("getting folder by path %s: %w", p, err)
 	}
 
 	return ret, nil

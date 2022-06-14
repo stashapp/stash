@@ -172,7 +172,8 @@ INSERT INTO `files`
     `path`,
     1,
     `size`,
-    `file_mod_time`,
+    -- set mod time to epoch so that it the format is calculated on scan
+    '1970-01-01 00:00:00',
     `updated_at`,
     `created_at`,
     `updated_at`

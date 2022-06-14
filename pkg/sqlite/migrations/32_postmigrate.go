@@ -40,8 +40,8 @@ type schema32Migrator struct {
 	db *sqlx.DB
 }
 
-func (m *schema32Migrator) migrateFolders() error {
-	const query = "SELECT `folders`.`id`, `folders`.`path` FROM `folders` INNER JOIN `galleries` ON `galleries`.`folder_id` = `folders`.`id`"
+func (m *schema32Migrator) migrateFolderSlashes() error {
+	const query = "SELECT `folders`.`id`, `folders`.`path` FROM `folders`"
 
 	rows, err := m.db.Query(query)
 	if err != nil {
@@ -59,13 +59,49 @@ func (m *schema32Migrator) migrateFolders() error {
 		}
 
 		convertedPath := filepath.ToSlash(p)
-		parent := path.Dir(convertedPath)
+
+		_, err = m.db.Exec("UPDATE `folders` SET `path` = ? WHERE `id` = ?", convertedPath, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *schema32Migrator) migrateFolders() error {
+	if err := m.migrateFolderSlashes(); err != nil {
+		return err
+	}
+
+	const query = "SELECT `folders`.`id`, `folders`.`path` FROM `folders` INNER JOIN `galleries` ON `galleries`.`folder_id` = `folders`.`id`"
+
+	rows, err := m.db.Query(query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var p string
+
+		err := rows.Scan(&id, &p)
+		if err != nil {
+			return err
+		}
+
+		parent := path.Dir(p)
 		parentID, zipFileID, err := m.createFolderHierarchy(parent)
 		if err != nil {
 			return err
 		}
 
-		_, err = m.db.Exec("UPDATE `folders` SET `parent_folder_id` = ?, `zip_file_id` = ?, `path` = ? WHERE `id` = ?", parentID, zipFileID, convertedPath, id)
+		_, err = m.db.Exec("UPDATE `folders` SET `parent_folder_id` = ?, `zip_file_id` = ? WHERE `id` = ?", parentID, zipFileID, id)
 		if err != nil {
 			return err
 		}

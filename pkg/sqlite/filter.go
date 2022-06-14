@@ -468,7 +468,7 @@ func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not
 	// directory plus basename
 	hasSlashes := strings.Contains(p, string(filepath.Separator))
 	trailingSlash := hasSlashes && p[len(p)-1] == filepath.Separator
-	emptyDir := string(filepath.Separator)
+	const emptyDir = "/"
 
 	// possible values:
 	// dir/basename
@@ -479,6 +479,7 @@ func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not
 
 	basename := filepath.Base(p)
 	dir := path(filepath.Dir(p)).String()
+	p = path(p).String()
 
 	if addWildcards {
 		p = "%" + p + "%"

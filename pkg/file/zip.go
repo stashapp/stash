@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"os"
 	"path/filepath"
-	"strings"
 )
 
 var (
@@ -32,11 +30,13 @@ func newZipFS(fs FS, path string, info fs.FileInfo) (*ZipFS, error) {
 
 	asReaderAt, _ := reader.(io.ReaderAt)
 	if asReaderAt == nil {
+		reader.Close()
 		return nil, errNotReaderAt
 	}
 
 	zipReader, err := zip.NewReader(asReaderAt, info.Size())
 	if err != nil {
+		reader.Close()
 		return nil, err
 	}
 
@@ -48,13 +48,6 @@ func newZipFS(fs FS, path string, info fs.FileInfo) (*ZipFS, error) {
 	}, nil
 }
 
-// zipDirEntry is a special FileInfo that returns the zip file as a directory.
-type zipDirEntry struct {
-	fs.FileInfo
-}
-
-func (d *zipDirEntry) IsDir() bool { return true }
-
 func (f *ZipFS) rel(name string) (string, error) {
 	if f.zipPath == name {
 		return ".", nil
@@ -65,30 +58,21 @@ func (f *ZipFS) rel(name string) (string, error) {
 		return "", fmt.Errorf("internal error getting relative path: %w", err)
 	}
 
+	// convert relName to use slash, since zip files do so regardless
+	// of os
+	relName = filepath.ToSlash(relName)
+
 	return relName, nil
 }
 
 func (f *ZipFS) Lstat(name string) (fs.FileInfo, error) {
-	if f.zipPath == name {
-		return &zipDirEntry{
-			FileInfo: f.zipInfo,
-		}, nil
-	}
-
-	relName, err := f.rel(name)
+	reader, err := f.Open(name)
 	if err != nil {
 		return nil, err
 	}
+	defer reader.Close()
 
-	for _, ff := range f.File {
-		// folders are stored with a trailing slash
-		fn := strings.TrimSuffix(ff.Name, "/")
-		if fn == relName {
-			return ff.FileInfo(), nil
-		}
-	}
-
-	return nil, os.ErrNotExist
+	return reader.Stat()
 }
 
 func (f *ZipFS) OpenZip(name string) (*ZipFS, error) {

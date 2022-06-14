@@ -648,24 +648,30 @@ func (qb *SceneStore) CountByTagID(ctx context.Context, tagID int) (int, error) 
 	return count(ctx, q)
 }
 
+func (qb *SceneStore) countMissingFingerprints(ctx context.Context, fpType string) (int, error) {
+	table := qb.queryTable()
+	fpTable := fingerprintTableMgr.table.As("fingerprints_temp")
+
+	q := dialect.Select(goqu.COUNT(goqu.DISTINCT(table.Col(idColumn)))).From(table).LeftJoin(
+		fpTable,
+		goqu.On(
+			table.Col("file_id").Eq(fpTable.Col("file_id")),
+			fpTable.Col("type").Eq(fpType),
+		),
+	)
+
+	q.Where(fpTable.Col("fingerprint").IsNull())
+	return count(ctx, q)
+}
+
 // CountMissingChecksum returns the number of scenes missing a checksum value.
 func (qb *SceneStore) CountMissingChecksum(ctx context.Context) (int, error) {
-	// TODO
-	panic("not implemented")
-	// table := qb.queryTable()
-
-	// q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("checksum").IsNull())
-	// return count(ctx, q)
+	return qb.countMissingFingerprints(ctx, "md5")
 }
 
 // CountMissingOSHash returns the number of scenes missing an oshash value.
 func (qb *SceneStore) CountMissingOSHash(ctx context.Context) (int, error) {
-	// TODO
-	panic("not implemented")
-	// table := qb.table()
-
-	// q := dialect.Select(goqu.COUNT("*")).From(table).Where(table.Col("oshash").IsNull())
-	// return count(ctx, q)
+	return qb.countMissingFingerprints(ctx, "oshash")
 }
 
 func (qb *SceneStore) Wall(ctx context.Context, q *string) ([]*models.Scene, error) {
