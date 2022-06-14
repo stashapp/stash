@@ -91,11 +91,20 @@ func resolveFingerprints(f *file.BaseFile) []*Fingerprint {
 	for i, fp := range f.Fingerprints {
 		ret[i] = &Fingerprint{
 			Type:  fp.Type,
-			Value: fmt.Sprintf("%v", fp.Fingerprint),
+			Value: formatFingerprint(fp.Fingerprint),
 		}
 	}
 
 	return ret
+}
+
+func formatFingerprint(fp interface{}) string {
+	switch v := fp.(type) {
+	case int64:
+		return strconv.FormatUint(uint64(v), 16)
+	default:
+		return fmt.Sprintf("%v", fp)
+	}
 }
 
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePathsType, error) {
