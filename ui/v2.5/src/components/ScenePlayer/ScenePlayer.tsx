@@ -185,15 +185,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
     settings.updateDisplay();
 
-    (player as any).landscapeFullscreen({
-      fullscreen: {
-        enterOnRotate: true,
-        exitOnRotate: true,
-        alwaysInLandscapeMode: true,
-        iOS: false,
-      },
-    });
-
     (player as any).markers();
     (player as any).offset();
     (player as any).sourceSelector();
@@ -494,6 +485,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       autoplay || (config?.autostartVideo ?? false) || initialTimestamp > 0;
     if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
     else player.poster("");
+
+    const isLandscape =
+      scene.file.height &&
+      scene.file.width &&
+      scene.file.width > scene.file.height;
+
+    if (isLandscape) {
+      (player as any).landscapeFullscreen({
+        fullscreen: {
+          enterOnRotate: true,
+          exitOnRotate: true,
+          alwaysInLandscapeMode: true,
+          iOS: false,
+        },
+      });
+    }
 
     // clear the offset before loading anything new.
     // otherwise, the offset will be applied to the next file when
