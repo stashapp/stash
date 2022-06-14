@@ -158,8 +158,8 @@ func (s *scanJob) execute(ctx context.Context) {
 		return
 	}
 
-	// now mark any files not seen as missing
-	s.markMissingFiles(ctx)
+	// TODO - now mark any files not seen as missing
+	// s.markMissingFiles(ctx)
 }
 
 func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
@@ -788,81 +788,81 @@ func (s *scanJob) scannedZip(ctx context.Context, zipFileID ID) error {
 	return nil
 }
 
-func (s *scanJob) markMissingFiles(ctx context.Context) {
-	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.logMissingFolders(ctx); err != nil {
-			return err
-		}
-		if err := s.logMissingFiles(ctx); err != nil {
-			return err
-		}
+// func (s *scanJob) markMissingFiles(ctx context.Context) {
+// 	if err := s.withTxn(ctx, func(ctx context.Context) error {
+// 		if err := s.logMissingFolders(ctx); err != nil {
+// 			return err
+// 		}
+// 		if err := s.logMissingFiles(ctx); err != nil {
+// 			return err
+// 		}
 
-		n, err := s.Repository.FolderStore.MarkMissing(ctx, s.startTime, s.options.Paths)
-		if err != nil {
-			return nil
-		}
+// 		n, err := s.Repository.FolderStore.MarkMissing(ctx, s.startTime, s.options.Paths)
+// 		if err != nil {
+// 			return nil
+// 		}
 
-		if n > 0 {
-			logger.Infof("Marked %d folders as missing", n)
-		}
+// 		if n > 0 {
+// 			logger.Infof("Marked %d folders as missing", n)
+// 		}
 
-		n, err = s.Repository.MarkMissing(ctx, s.startTime, s.options.Paths)
-		if err != nil {
-			return err
-		}
+// 		n, err = s.Repository.MarkMissing(ctx, s.startTime, s.options.Paths)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		if n > 0 {
-			logger.Infof("Marked %d files as missing", n)
-		}
+// 		if n > 0 {
+// 			logger.Infof("Marked %d files as missing", n)
+// 		}
 
-		return nil
-	}); err != nil {
-		logger.Errorf("Error marking missing files and folders: %v", err)
-	}
-}
+// 		return nil
+// 	}); err != nil {
+// 		logger.Errorf("Error marking missing files and folders: %v", err)
+// 	}
+// }
 
-func (s *scanJob) logMissingFiles(ctx context.Context) error {
-	const limit = 1000
-	var page uint = 1
-	for {
-		missing, err := s.Repository.FindMissing(ctx, s.startTime, s.options.Paths, page, limit)
-		if err != nil {
-			return fmt.Errorf("finding missing files: %w", err)
-		}
+// func (s *scanJob) logMissingFiles(ctx context.Context) error {
+// 	const limit = 1000
+// 	var page uint = 1
+// 	for {
+// 		missing, err := s.Repository.FindMissing(ctx, s.startTime, s.options.Paths, page, limit)
+// 		if err != nil {
+// 			return fmt.Errorf("finding missing files: %w", err)
+// 		}
 
-		if len(missing) == 0 {
-			break
-		}
+// 		if len(missing) == 0 {
+// 			break
+// 		}
 
-		for _, f := range missing {
-			logger.Infof("Marking file %s as missing", f.Base().Path)
-		}
+// 		for _, f := range missing {
+// 			logger.Infof("Marking file %s as missing", f.Base().Path)
+// 		}
 
-		page++
-	}
+// 		page++
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (s *scanJob) logMissingFolders(ctx context.Context) error {
-	const limit = 1000
-	var page uint = 1
-	for {
-		missing, err := s.Repository.FolderStore.FindMissing(ctx, s.startTime, s.options.Paths, page, limit)
-		if err != nil {
-			return fmt.Errorf("finding missing folders: %w", err)
-		}
+// func (s *scanJob) logMissingFolders(ctx context.Context) error {
+// 	const limit = 1000
+// 	var page uint = 1
+// 	for {
+// 		missing, err := s.Repository.FolderStore.FindMissing(ctx, s.startTime, s.options.Paths, page, limit)
+// 		if err != nil {
+// 			return fmt.Errorf("finding missing folders: %w", err)
+// 		}
 
-		if len(missing) == 0 {
-			break
-		}
+// 		if len(missing) == 0 {
+// 			break
+// 		}
 
-		for _, f := range missing {
-			logger.Infof("Marking folder %s as missing", f.Path)
-		}
+// 		for _, f := range missing {
+// 			logger.Infof("Marking folder %s as missing", f.Path)
+// 		}
 
-		page++
-	}
+// 		page++
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
