@@ -66,6 +66,7 @@ func makeConfigResult() *models.ConfigResult {
 		Dlna:      makeConfigDLNAResult(),
 		Scraping:  makeConfigScrapingResult(),
 		Defaults:  makeConfigDefaultsResult(),
+		UI:        makeConfigUIResult(),
 	}
 }
 
@@ -214,6 +215,10 @@ func makeConfigDefaultsResult() *models.ConfigDefaultSettingsResult {
 		DeleteFile:      &deleteFileDefault,
 		DeleteGenerated: &deleteGeneratedDefault,
 	}
+}
+
+func makeConfigUIResult() map[string]interface{} {
+	return config.GetInstance().GetUIConfiguration()
 }
 
 func (r *queryResolver) ValidateStashBoxCredentials(ctx context.Context, input models.StashBoxInput) (*models.StashBoxValidationResult, error) {

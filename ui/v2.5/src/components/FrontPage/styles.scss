@@ -6,6 +6,17 @@
     padding-left: 0;
     padding-right: 0;
   }
+
+  .recommendations-footer {
+    display: flex;
+    justify-content: right;
+    margin-bottom: 1em;
+    margin-top: 1em;
+
+    button:not(:last-child) {
+      margin-right: 10px;
+    }
+  }
 }
 
 .no-recommendations {
@@ -22,6 +33,25 @@
   display: flex;
   justify-content: space-between;
   padding: 15px 0;
+}
+
+.recommendations-container-edit {
+  .recommendation-row {
+    background-color: $secondary;
+    margin-bottom: 10px;
+
+    &:not(.recommendation-row-add) {
+      cursor: grab;
+    }
+  }
+
+  .recommendation-row-add .recommendation-row-head {
+    justify-content: center;
+  }
+
+  .recommendation-row-head {
+    padding: 15px 10px;
+  }
 }
 
 .recommendation-row-head h2 {
@@ -41,8 +71,96 @@
 
 .recommendations-container .studio-card hr,
 .recommendations-container .movie-card hr,
-.recommendations-container .gallery-card hr {
+.recommendations-container .gallery-card hr,
+.recommendations-container .image-card hr {
   margin-top: auto;
+}
+
+/* skeletons */
+.skeleton-card {
+  -webkit-animation: cardLoadingAnimation 2s infinite ease-in-out;
+  -moz-animation: cardLoadingAnimation 2s infinite ease-in-out;
+  -o-animation: cardLoadingAnimation 2s infinite ease-in-out;
+  animation: cardLoadingAnimation 2s infinite ease-in-out;
+  background-clip: border-box;
+  background-color: #30404d;
+  border: 1px solid rgba(0, 0, 0, 0.13);
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px #10161a66, 0 0 #10161a00, 0 0 #10161a00;
+  display: flex;
+  flex-direction: column;
+  margin: 5px;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  word-wrap: break-word;
+}
+
+@keyframes cardLoadingAnimation {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.scene-skeleton {
+  max-width: 320px;
+  min-height: 365px;
+  min-width: 320px;
+
+  @media (max-width: 576px) {
+    max-width: 20rem;
+    min-height: 25.2rem;
+    min-width: 20rem;
+  }
+}
+
+.movie-skeleton {
+  max-width: 240px;
+  min-height: 540px;
+  min-width: 240px;
+
+  @media (max-width: 576px) {
+    max-width: 16rem;
+    min-height: 34rem;
+    min-width: 16rem;
+  }
+}
+
+.performer-skeleton {
+  max-width: 20rem;
+  min-height: 39.1rem;
+  min-width: 20rem;
+
+  @media (max-width: 576px) {
+    max-width: 16rem;
+    min-height: 33.1rem;
+    min-width: 16rem;
+  }
+}
+
+.image-skeleton,
+.gallery-skeleton {
+  max-width: 320px;
+  min-height: 403.5px;
+  min-width: 320px;
+
+  @media (max-width: 576px) {
+    max-width: 20rem;
+    min-height: 38.5rem;
+    min-width: 20rem;
+  }
+}
+
+.studio-skeleton {
+  max-width: 360px;
+  min-height: 278px;
+  min-width: 360px;
+
+  @media (max-width: 576px) {
+    max-width: 20rem;
+    min-height: 19.8rem;
+    min-width: 20rem;
+  }
 }
 
 /* Slider */
@@ -310,7 +428,6 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  position: absolute;
   text-align: center;
   width: 100%;
 }

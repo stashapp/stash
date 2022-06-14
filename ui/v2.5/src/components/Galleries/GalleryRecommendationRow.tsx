@@ -1,37 +1,52 @@
 import React, { FunctionComponent } from "react";
-import { FindGalleriesQueryResult } from "src/core/generated-graphql";
+import { useFindGalleries } from "src/core/StashService";
 import Slider from "react-slick";
 import { GalleryCard } from "./GalleryCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
+import { RecommendationRow } from "../FrontPage/RecommendationRow";
+import { FormattedMessage } from "react-intl";
 
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  result: FindGalleriesQueryResult;
   header: String;
-  linkText: String;
 }
 
 export const GalleryRecommendationRow: FunctionComponent<IProps> = (
   props: IProps
 ) => {
-  const cardCount = props.result.data?.findGalleries.count;
+  const result = useFindGalleries(props.filter);
+  const cardCount = result.data?.findGalleries.count;
+
+  if (!result.loading && !cardCount) {
+    return null;
+  }
+
   return (
-    <div className="recommendation-row gallery-recommendations">
-      <div className="recommendation-row-head">
-        <div>
-          <h2>{props.header}</h2>
-        </div>
+    <RecommendationRow
+      className="gallery-recommendations"
+      header={props.header}
+      link={
         <a href={`/galleries?${props.filter.makeQueryParameters()}`}>
-          {props.linkText}
+          <FormattedMessage id="view_all" />
         </a>
-      </div>
-      <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
-        {props.result.data?.findGalleries.galleries.map((gallery) => (
-          <GalleryCard key={gallery.id} gallery={gallery} zoomIndex={1} />
-        ))}
+      }
+    >
+      <Slider
+        {...getSlickSliderSettings(
+          cardCount ? cardCount : props.filter.itemsPerPage,
+          props.isTouch
+        )}
+      >
+        {result.loading
+          ? [...Array(props.filter.itemsPerPage)].map((i) => (
+              <div key={i} className="gallery-skeleton skeleton-card"></div>
+            ))
+          : result.data?.findGalleries.galleries.map((g) => (
+              <GalleryCard key={g.id} gallery={g} zoomIndex={1} />
+            ))}
       </Slider>
-    </div>
+    </RecommendationRow>
   );
 };
