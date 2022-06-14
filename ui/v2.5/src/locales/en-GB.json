@@ -825,12 +825,15 @@
   "piercings": "Piercings",
   "projection":{
     "label": "Projection",
+    "auto": "Auto",
     "flat": "Flat",
     "dome": "Dome",
     "sphere": "Sphere",
     "fisheye": "Fisheye",
     "mkx200": "MKX200",
-    "rf52": "RF52"
+    "rf52": "RF52",
+    "cube": "Cube",
+    "eac": "Equi-angular cubemap"
   },
   "queue": "Queue",
   "random": "Random",
@@ -946,6 +949,7 @@
   "status": "Status: {statusText}",
   "stereo_mode":{
     "label": "Stereo mode",
+    "auto": "Auto",
     "mono": "Mono",
     "top_bottom": "Top bottom",
     "left_right": "Left right"

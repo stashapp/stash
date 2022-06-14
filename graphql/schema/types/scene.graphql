@@ -23,15 +23,19 @@ type ScenePathsType {
 }
 
 enum ProjectionEnum {
+  AUTO
   FLAT
   DOME
   SPHERE
   FISHEYE
   MKX200
   RF52
+  CUBE
+  EAC
 }
 
 enum StereoModeEnum {
+  AUTO
   MONO
   TOP_BOTTOM
   LEFT_RIGHT

@@ -1,12 +1,15 @@
 import * as GQL from "../core/generated-graphql";
 
 export const stringProjectionMap = new Map<string, GQL.ProjectionEnum>([
+  ["AUTO", GQL.ProjectionEnum.Auto],
   ["FLAT", GQL.ProjectionEnum.Flat],
   ["DOME", GQL.ProjectionEnum.Dome],
   ["SPHERE", GQL.ProjectionEnum.Sphere],
   ["FISHEYE", GQL.ProjectionEnum.Fisheye],
   ["MKX200", GQL.ProjectionEnum.Mkx200],
   ["RF52", GQL.ProjectionEnum.Rf52],
+  ["CUBE", GQL.ProjectionEnum.Cube],
+  ["EAC", GQL.ProjectionEnum.Eac],
 ]);
 
 export const projectionToString = (value?: GQL.ProjectionEnum | string) => {

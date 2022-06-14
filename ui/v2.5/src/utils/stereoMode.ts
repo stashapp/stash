@@ -1,6 +1,7 @@
 import * as GQL from "../core/generated-graphql";
 
 export const stringStereoModeMap = new Map<string, GQL.StereoModeEnum>([
+  ["AUTO", GQL.StereoModeEnum.Auto],
   ["MONO", GQL.StereoModeEnum.Mono],
   ["TOP_BOTTOM", GQL.StereoModeEnum.TopBottom],
   ["LEFT_RIGHT", GQL.StereoModeEnum.LeftRight],

@@ -11,7 +11,11 @@ const vrmode = function (this: VideoJsPlayer, scene: GQL.SceneDataFragment) {
   let stereo_mode;
   let lowercaseSceneTags = scene.tags.map((tag) => tag.name.toLowerCase());
 
-  if (scene.projection && projectionStrings.includes(scene.projection)) {
+  if (
+    scene.projection &&
+    scene.projection !== "AUTO" &&
+    projectionStrings.includes(scene.projection)
+  ) {
     ({ projection } = scene);
   } else {
     if (
@@ -35,6 +39,16 @@ const vrmode = function (this: VideoJsPlayer, scene: GQL.SceneDataFragment) {
       ) {
         projection = "MKX200";
       } else if (
+        lowercaseSceneTags.filter((tag) => /^cube$/.exec(tag)).length > 0
+      ) {
+        projection = "CUBE";
+      } else if (
+        lowercaseSceneTags.filter((tag) =>
+          /^eac$|^eac[\-_]|^equi[\-_\s]?angular[\-_\s]?cube[\-_\s]?/.exec(tag)
+        ).length > 0
+      ) {
+        projection = "EAC";
+      } else if (
         lowercaseSceneTags.filter((tag) => /^rf52$/.exec(tag)).length > 0
       ) {
         projection = "RF52";
@@ -44,7 +58,11 @@ const vrmode = function (this: VideoJsPlayer, scene: GQL.SceneDataFragment) {
     }
   }
 
-  if (scene.stereo_mode && stereoModeStrings.includes(scene.stereo_mode)) {
+  if (
+    scene.stereo_mode &&
+    scene.stereo_mode !== "AUTO" &&
+    stereoModeStrings.includes(scene.stereo_mode)
+  ) {
     ({ stereo_mode } = scene);
   } else {
     if (
