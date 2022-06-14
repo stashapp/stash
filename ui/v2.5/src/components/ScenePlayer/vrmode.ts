@@ -52,7 +52,11 @@ const vrmode = function (this: VideoJsPlayer, scene: GQL.SceneDataFragment) {
         lowercaseSceneTags.filter((tag) => /^rf52$/.exec(tag)).length > 0
       ) {
         projection = "RF52";
-      } else {
+      } else if (
+        lowercaseSceneTags.filter((tag) => /^fisheye$/.exec(tag)).length > 0
+      ) {
+        projection = "FISHEYE";
+      }else {
         projection = "DOME";
       }
     }
@@ -114,6 +118,7 @@ const vrmode = function (this: VideoJsPlayer, scene: GQL.SceneDataFragment) {
     case "DOME":
     case "MKX200":
     case "RF52":
+    case "FISHEYE":
       switch (stereo_mode) {
         case "LEFT_RIGHT":
           player.vr({ projection: "180_LR" });
