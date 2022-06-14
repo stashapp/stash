@@ -22,6 +22,7 @@
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
     "created_entity": "Created {entity_type}: {entity_name}",
+    "customise": "Customise",
     "delete": "Delete",
     "delete_entity": "Delete {entityType}",
     "delete_file": "Delete file",
@@ -734,6 +735,12 @@
   "filters": "Filters",
   "framerate": "Frame Rate",
   "frames_per_second": "{value} frames per second",
+  "front_page": {
+    "types": {
+      "premade_filter": "Premade Filter",
+      "saved_filter": "Saved Filter"
+    }
+  },
   "galleries": "Galleries",
   "gallery": "Gallery",
   "gallery_count": "Gallery Count",
@@ -826,11 +833,8 @@
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",
-  "recently_added_performers": "Recently Added Performers",
-  "recently_added_studios": "Recently Added Studios",
-  "recently_released_galleries": "Recently Released Galleries",
-  "recently_released_movies": "Recently Released Movies",
-  "recently_released_scenes": "Recently Released Scenes",
+  "recently_added_objects": "Recently Added {objects}",
+  "recently_released_objects": "Recently Released {objects}",
   "resolution": "Resolution",
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
@@ -967,6 +971,7 @@
   "total": "Total",
   "true": "True",
   "twitter": "Twitter",
+  "type": "Type",
   "updated_at": "Updated At",
   "url": "URL",
   "videos": "Videos",

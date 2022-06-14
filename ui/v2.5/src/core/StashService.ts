@@ -44,7 +44,14 @@ const deleteCache = (queries: DocumentNode[]) => {
     });
 };
 
-export const useFindSavedFilters = (mode: GQL.FilterMode) =>
+export const useFindSavedFilter = (id: string) =>
+  GQL.useFindSavedFilterQuery({
+    variables: {
+      id,
+    },
+  });
+
+export const useFindSavedFilters = (mode?: GQL.FilterMode) =>
   GQL.useFindSavedFiltersQuery({
     variables: {
       mode,
@@ -809,6 +816,12 @@ export const useGenerateAPIKey = () =>
 
 export const useConfigureDefaults = () =>
   GQL.useConfigureDefaultsMutation({
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
+  });
+
+export const useConfigureUI = () =>
+  GQL.useConfigureUiMutation({
     refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });
