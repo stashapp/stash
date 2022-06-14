@@ -633,6 +633,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   return (
     <div className={cx("VideoPlayer", { portrait: isPortrait })}>
       <div data-vjs-player className={cx("video-wrapper", className)}>
+        {isPortrait && scene.paths?.screenshot && (
+          <div
+            className={cx("vjs-poster", "scene-background-blur")}
+            style={{ backgroundImage: "url(" + scene.paths.screenshot + ")" }}
+          />
+        )}
         <video
           playsInline
           ref={videoRef}

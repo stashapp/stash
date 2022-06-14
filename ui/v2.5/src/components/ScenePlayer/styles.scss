@@ -2,6 +2,11 @@ $scrubberHeight: 120px;
 $menuHeight: 4rem;
 $sceneTabWidth: 450px;
 
+.scene-background-blur {
+  filter: blur(7px);
+  background-size: cover;
+}
+
 .VideoPlayer {
   display: flex;
   flex-direction: column;
@@ -24,6 +29,10 @@ $sceneTabWidth: 450px;
 
   &.portrait .video-js {
     height: 177.78vw;
+  }
+
+  &.portrait .vjs-poster {
+    background-color: transparent;
   }
 
   .vjs-button {
