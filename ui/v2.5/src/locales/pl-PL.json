@@ -23,6 +23,7 @@
     "create_entity": "Utwórz {entityType}",
     "create_marker": "Utwórz znacznik",
     "created_entity": "Utworzono {entity_type}: {entity_name}",
+    "customise": "Dostosuj",
     "delete": "Usuń",
     "delete_entity": "Usuń {entityType}",
     "delete_file": "Usuń plik",
@@ -734,6 +735,12 @@
   "filters": "Filtry",
   "framerate": "Liczba klatek na sekundę",
   "frames_per_second": "{value} klatek na sekundę",
+  "front_page": {
+    "types": {
+      "premade_filter": "Gotowy filtr",
+      "saved_filter": "Zapisany filtr"
+    }
+  },
   "galleries": "Galerie",
   "gallery": "Galeria",
   "gallery_count": "Liczba Galerii",
@@ -861,8 +868,9 @@
   "queue": "Kolejka",
   "random": "Losowo",
   "rating": "Ocena",
-  "recently_added_studios": "Niedawno Dodane Studia",
+  "recently_added_objects": "Ostatnio dodane {objects}",
   "recently_released_movies": "Niedawno Dodane Filmy",
+  "recently_released_objects": "Ostatnio wydane {objects}",
   "resolution": "Rozdzielczość",
   "scene": "Scena",
   "sceneTagger": "Otagowywacz scen",
@@ -1006,6 +1014,7 @@
   "total": "Łącznie",
   "true": "Tak",
   "twitter": "Twitter",
+  "type": "Typ",
   "updated_at": "Zaktualizowano",
   "url": "URL",
   "videos": "Filmy wideo",
