@@ -54,7 +54,11 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   return (
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
       {isPortrait && (
-        <img className={cx("scene-card-preview-image", "scene-card-preview-blur")} src={image} alt="" />
+        <img
+          className={cx("scene-card-preview-image", "scene-card-preview-blur")}
+          src={image}
+          alt=""
+        />
       )}
       <img className="scene-card-preview-image" src={image} alt="" />
       <video
