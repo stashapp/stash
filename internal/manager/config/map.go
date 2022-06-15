@@ -54,17 +54,38 @@ func toSnakeCaseMap(m map[string]interface{}) map[string]interface{} {
 
 	for key, val := range m {
 		adjKey := toSnakeCase(key)
-		switch v := val.(type) {
-		case map[interface{}]interface{}:
-			nm[adjKey] = toSnakeCaseMap(cast.ToStringMap(v))
-		case map[string]interface{}:
-			nm[adjKey] = toSnakeCaseMap(v)
-		default:
-			nm[adjKey] = v
-		}
+		nm[adjKey] = val
 	}
 
 	return nm
+}
+
+// convertMapValue converts values into something that can be marshalled in JSON
+// This means converting map[interface{}]interface{} to map[string]interface{} where ever
+// encountered.
+func convertMapValue(val interface{}) interface{} {
+	switch v := val.(type) {
+	case map[interface{}]interface{}:
+		ret := cast.ToStringMap(v)
+		for k, vv := range ret {
+			ret[k] = convertMapValue(vv)
+		}
+		return ret
+	case map[string]interface{}:
+		ret := make(map[string]interface{})
+		for k, vv := range v {
+			ret[k] = convertMapValue(vv)
+		}
+		return ret
+	case []interface{}:
+		ret := make([]interface{}, len(v))
+		for i, vv := range v {
+			ret[i] = convertMapValue(vv)
+		}
+		return ret
+	default:
+		return v
+	}
 }
 
 func fromSnakeCaseMap(m map[string]interface{}) map[string]interface{} {
@@ -72,14 +93,7 @@ func fromSnakeCaseMap(m map[string]interface{}) map[string]interface{} {
 
 	for key, val := range m {
 		adjKey := fromSnakeCase(key)
-		switch v := val.(type) {
-		case map[interface{}]interface{}:
-			nm[adjKey] = fromSnakeCaseMap(cast.ToStringMap(v))
-		case map[string]interface{}:
-			nm[adjKey] = fromSnakeCaseMap(v)
-		default:
-			nm[adjKey] = v
-		}
+		nm[adjKey] = convertMapValue(val)
 	}
 
 	return nm
