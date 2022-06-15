@@ -138,6 +138,13 @@ export const ImageCard: React.FC<IImageCardProps> = (
       image={
         <>
           <div className={cx("image-card-preview", { portrait: isPortrait() })}>
+            {isPortrait() && (
+              <img 
+                className={cx("image-card-preview-image", "image-card-preview-blur")} 
+                alt={props.image.title ?? ""}
+                src={props.image.paths.thumbnail ?? ""}
+              />
+            )}
             <img
               className="image-card-preview-image"
               alt={props.image.title ?? ""}

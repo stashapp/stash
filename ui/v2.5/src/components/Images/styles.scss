@@ -39,6 +39,12 @@
     &.portrait {
       .image-card-preview-image {
         object-fit: contain;
+        position: absolute;
+      }
+
+      .image-card-preview-blur {
+        filter: blur(7px);
+        object-fit: cover;
       }
     }
   }

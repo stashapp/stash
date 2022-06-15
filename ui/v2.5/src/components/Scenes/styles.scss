@@ -208,6 +208,12 @@ textarea.scene-description {
       .scene-card-preview-image,
       .scene-card-preview-video {
         object-fit: contain;
+        position: absolute;
+      }
+
+      .scene-card-preview-blur {
+        filter: blur(7px);
+        object-fit: cover;
       }
     }
   }
