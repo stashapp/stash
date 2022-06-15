@@ -45,6 +45,18 @@
   &-image {
     object-fit: contain;
   }
+
+  .portrait {
+    .gallery-card-image {
+      object-fit: contain;
+      position: absolute;
+    }
+
+    .gallery-card-preview-blur {
+      filter: blur(7px);
+      object-fit: cover;
+    }
+  }
 }
 
 .gallery-tabs {

@@ -1,6 +1,7 @@
 import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
+import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import {
   GridCard,
@@ -143,6 +144,14 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     }
   }
 
+  function isPortrait() {
+    if (!props.gallery.cover) return false;
+    const { file } = props.gallery.cover;
+    const width = file.width ? file.width : 0;
+    const height = file.height ? file.height : 0;
+    return height > width;
+  }
+
   return (
     <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
@@ -155,13 +164,27 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       linkClassName="gallery-card-header"
       image={
         <>
-          {props.gallery.cover ? (
-            <img
-              className="gallery-card-image"
-              alt={props.gallery.title ?? ""}
-              src={`${props.gallery.cover.paths.thumbnail}`}
-            />
-          ) : undefined}
+          <div
+            className={cx("gallery-card-preview", { portrait: isPortrait() })}
+          >
+            {props.gallery.cover && isPortrait() ? (
+              <img
+                className={cx(
+                  "gallery-card-image",
+                  "gallery-card-preview-blur"
+                )}
+                alt={props.gallery.title ?? ""}
+                src={`${props.gallery.cover.paths.thumbnail}`}
+              />
+            ) : undefined}
+            {props.gallery.cover ? (
+              <img
+                className="gallery-card-image"
+                alt={props.gallery.title ?? ""}
+                src={`${props.gallery.cover.paths.thumbnail}`}
+              />
+            ) : undefined}
+          </div>
           <RatingBanner rating={props.gallery.rating} />
         </>
       }
