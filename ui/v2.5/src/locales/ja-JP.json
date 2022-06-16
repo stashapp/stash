@@ -23,6 +23,7 @@
     "create_entity": "{entityType}を作成",
     "create_marker": "マーカーを作成",
     "created_entity": "{entity_type}を作成しました: {entity_name}",
+    "customise": "カスタマイズ",
     "delete": "削除",
     "delete_entity": "{entityType}を削除",
     "delete_file": "ファイルを削除",
@@ -100,6 +101,7 @@
     "stop": "停止",
     "submit": "送信",
     "submit_stash_box": "Stash-Boxに送信",
+    "submit_update": "更新を送信",
     "tasks": {
       "clean_confirm_message": "クリーニングを実行してもよろしいですか？この操作により、ファイルシステムで利用されていないすべてのシーンとギャラリーから生成されたコンテンツとデータベース情報が削除されます。",
       "dry_mode_selected": "ドライモードが選択されています。実際の削除は実施されず、ログ処理だけが実行されます。",
@@ -733,6 +735,12 @@
   "filters": "フィルター",
   "framerate": "フレームレート",
   "frames_per_second": "{value}FPS",
+  "front_page": {
+    "types": {
+      "premade_filter": "既製フィルター",
+      "saved_filter": "保存済みフィルター"
+    }
+  },
   "galleries": "ギャラリー",
   "gallery": "ギャラリー",
   "gallery_count": "ギャラリー数",
@@ -860,7 +868,8 @@
   "queue": "キュー",
   "random": "ランダム",
   "rating": "評価",
-  "recently_released_movies": "最近リリースされた映画",
+  "recently_added_objects": "最近追加された{objects}",
+  "recently_released_objects": "最近リリースされた{objects}",
   "resolution": "解像度",
   "scene": "シーン",
   "sceneTagger": "シーン一括タグ付け",
@@ -962,7 +971,8 @@
     "go_review_draft": "下書きを確認するには、{endpoint_name}に移動してください。",
     "selected_stash_box": "選択済みのStash-Boxエンドポイント",
     "submission_failed": "送信に失敗しました",
-    "submission_successful": "送信完了しました"
+    "submission_successful": "送信完了しました",
+    "submit_update": "{endpoint_name}に既に存在します"
   },
   "statistics": "統計",
   "stats": {
@@ -1003,6 +1013,7 @@
   "total": "合計",
   "true": "有効",
   "twitter": "Twitter",
+  "type": "タイプ",
   "updated_at": "更新日:",
   "url": "URL",
   "videos": "動画",
