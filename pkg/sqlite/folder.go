@@ -46,8 +46,6 @@ type folderRow struct {
 	ZipFileID      null.Int  `db:"zip_file_id"`
 	ParentFolderID null.Int  `db:"parent_folder_id"`
 	ModTime        time.Time `db:"mod_time"`
-	MissingSince   null.Time `db:"missing_since"`
-	LastScanned    time.Time `db:"last_scanned"`
 	CreatedAt      time.Time `db:"created_at"`
 	UpdatedAt      time.Time `db:"updated_at"`
 }
@@ -58,8 +56,6 @@ func (r *folderRow) fromFolder(o file.Folder) {
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
 	r.ModTime = o.ModTime
-	r.MissingSince = null.TimeFromPtr(o.MissingSince)
-	r.LastScanned = o.LastScanned
 	r.CreatedAt = o.CreatedAt
 	r.UpdatedAt = o.UpdatedAt
 }
@@ -75,10 +71,8 @@ func (r *folderQueryRow) resolve() *file.Folder {
 	ret := &file.Folder{
 		ID: r.ID,
 		DirEntry: file.DirEntry{
-			ZipFileID:    nullIntFileIDPtr(r.ZipFileID),
-			ModTime:      r.ModTime,
-			MissingSince: r.MissingSince.Ptr(),
-			LastScanned:  r.LastScanned,
+			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
+			ModTime:   r.ModTime,
 		},
 		Path:           string(r.Path),
 		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
@@ -174,8 +168,6 @@ func (qb *FolderStore) selectDataset() *goqu.SelectDataset {
 		table.Col("zip_file_id"),
 		table.Col("parent_folder_id"),
 		table.Col("mod_time"),
-		table.Col("missing_since"),
-		table.Col("last_scanned"),
 		table.Col("created_at"),
 		table.Col("updated_at"),
 		zipFileTable.Col("basename").As("zip_basename"),
@@ -323,17 +315,17 @@ func (qb *FolderStore) CountAllInPaths(ctx context.Context, p []string) (int, er
 	return count(ctx, q)
 }
 
-func (qb *FolderStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*file.Folder, error) {
-	table := qb.table()
+// func (qb *FolderStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*file.Folder, error) {
+// 	table := qb.table()
 
-	q := qb.selectDataset().Prepared(true).Where(
-		table.Col(idColumn).Eq(
-			sq,
-		),
-	)
+// 	q := qb.selectDataset().Prepared(true).Where(
+// 		table.Col(idColumn).Eq(
+// 			sq,
+// 		),
+// 	)
 
-	return qb.getMany(ctx, q)
-}
+// 	return qb.getMany(ctx, q)
+// }
 
 func (qb *FolderStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*file.Folder, error) {
 	table := qb.table()
@@ -343,50 +335,4 @@ func (qb *FolderStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) (
 	)
 
 	return qb.getMany(ctx, q)
-}
-
-func (qb *FolderStore) FindMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string, page uint, limit uint) ([]*file.Folder, error) {
-	table := qb.table()
-	folderTable := folderTableMgr.table
-
-	var pathEx []exp.Expression
-	for _, p := range scanPaths {
-		pathEx = append(pathEx, folderTable.Col("path").Like(p+"%"))
-	}
-
-	q := dialect.From(table).Prepared(true).Select(table.Col(idColumn)).Where(
-		table.Col("last_scanned").Lt(scanStartTime),
-		table.Col("missing_since").IsNull(),
-		goqu.Or(pathEx...),
-	)
-
-	q = q.Limit(limit).Offset((page - 1) * limit)
-
-	return qb.findBySubquery(ctx, q)
-}
-
-func (qb *FolderStore) MarkMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string) (int, error) {
-	now := time.Now()
-	table := qb.table()
-
-	var pathEx []exp.Expression
-	for _, p := range scanPaths {
-		pathEx = append(pathEx, table.Col("path").Like(p+"%"))
-	}
-
-	q := dialect.Update(table).Prepared(true).Set(exp.Record{
-		"missing_since": now,
-	}).Where(
-		table.Col("last_scanned").Lt(scanStartTime),
-		table.Col("missing_since").IsNull(),
-		goqu.Or(pathEx...),
-	)
-
-	r, err := exec(ctx, q)
-	if err != nil {
-		return 0, fmt.Errorf("marking folders as missing: %w", err)
-	}
-
-	n, _ := r.RowsAffected()
-	return int(n), nil
 }

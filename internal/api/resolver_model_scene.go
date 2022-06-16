@@ -60,8 +60,6 @@ func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoF
 			Basename:       f.Basename,
 			ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
 			ModTime:        f.ModTime,
-			MissingSince:   f.MissingSince,
-			LastScanned:    f.LastScanned,
 			Format:         f.Format,
 			Size:           int(f.Size),
 			Duration:       handleFloat64Value(f.Duration),

@@ -26,10 +26,7 @@ type DirEntry struct {
 	// only guaranteed to have id, path and basename set
 	ZipFile File
 
-	ModTime      time.Time  `json:"mod_time"`
-	MissingSince *time.Time `json:"missing_since"`
-
-	LastScanned time.Time `json:"last_scanned"`
+	ModTime time.Time `json:"mod_time"`
 }
 
 func (e *DirEntry) info(fs FS, path string) (fs.FileInfo, error) {
@@ -46,11 +43,6 @@ func (e *DirEntry) info(fs FS, path string) (fs.FileInfo, error) {
 
 	ret, err := fs.Lstat(path)
 	return ret, err
-}
-
-func (e *DirEntry) scanned() {
-	e.LastScanned = time.Now()
-	e.MissingSince = nil
 }
 
 // File represents a file in the file system.
@@ -192,13 +184,6 @@ type Store interface {
 	Creator
 	Updater
 	Destroyer
-	MissingMarker
-}
-
-// MissingMarker wraps the MarkMissing method.
-type MissingMarker interface {
-	FindMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string, page uint, limit uint) ([]File, error)
-	MarkMissing(ctx context.Context, scanStartTime time.Time, scanPaths []string) (int, error)
 }
 
 // Decorator wraps the Decorate method to add additional functionality while scanning files.

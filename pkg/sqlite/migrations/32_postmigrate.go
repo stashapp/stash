@@ -243,7 +243,7 @@ func (m *schema32Migrator) getOrCreateFolder(path string, parentID *int, zipFile
 		return nil, sql.NullInt64{}, err
 	}
 
-	const insertSQL = "INSERT INTO `folders` (`path`,`parent_folder_id`,`zip_file_id`,`mod_time`,`last_scanned`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?,?)"
+	const insertSQL = "INSERT INTO `folders` (`path`,`parent_folder_id`,`zip_file_id`,`mod_time`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?)"
 
 	var parentFolderID null.Int
 	if parentID != nil {
@@ -251,7 +251,7 @@ func (m *schema32Migrator) getOrCreateFolder(path string, parentID *int, zipFile
 	}
 
 	now := time.Now()
-	result, err := m.db.Exec(insertSQL, path, parentFolderID, zipFileID, time.Time{}, time.Time{}, now, now)
+	result, err := m.db.Exec(insertSQL, path, parentFolderID, zipFileID, time.Time{}, now, now)
 	if err != nil {
 		return nil, sql.NullInt64{}, err
 	}

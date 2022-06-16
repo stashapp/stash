@@ -34,7 +34,6 @@ const (
 	folderIdxWithParentFolder
 	folderIdxWithFiles
 	folderIdxInZip
-	folderIdxIsMissing
 
 	folderIdxForObjectFiles
 	folderIdxWithImageFiles
@@ -46,7 +45,6 @@ const (
 
 const (
 	fileIdxZip = iota
-	fileIdxIsMissing
 	fileIdxInZip
 
 	fileIdxStartVideoFiles
@@ -630,19 +628,6 @@ func getFolderModTime(index int) time.Time {
 	return time.Date(2000, 1, (index%10)+1, 0, 0, 0, 0, time.UTC)
 }
 
-func getFolderMissingSince(index int) *time.Time {
-	if index == folderIdxIsMissing {
-		v := time.Now().Add(-time.Hour)
-		return &v
-	}
-
-	return nil
-}
-
-func getFolderLastScan(index int) time.Time {
-	return getFolderModTime(index)
-}
-
 func makeFolder(i int) file.Folder {
 	var folderID *file.FolderID
 	var folderIdx *int
@@ -656,9 +641,7 @@ func makeFolder(i int) file.Folder {
 		ParentFolderID: folderID,
 		DirEntry: file.DirEntry{
 			// zip files have to be added after creating files
-			ModTime:      getFolderModTime(i),
-			MissingSince: getFolderMissingSince(i),
-			LastScanned:  getFolderLastScan(i),
+			ModTime: getFolderModTime(i),
 		},
 		Path: getFolderPath(i, folderIdx),
 	}
@@ -689,21 +672,8 @@ func getFileStringValue(index int, field string) string {
 	return getPrefixedStringValue("file", index, field)
 }
 
-func getFileLastScan(index int) time.Time {
-	return getFolderLastScan(index)
-}
-
 func getFileModTime(index int) time.Time {
 	return getFolderModTime(index)
-}
-
-func getFileMissingSince(index int) *time.Time {
-	if index == fileIdxIsMissing {
-		v := time.Now().Add(-time.Hour)
-		return &v
-	}
-
-	return nil
 }
 
 func getFileFingerprints(index int) []file.Fingerprint {
@@ -747,10 +717,8 @@ func makeFile(i int) file.File {
 		ParentFolderID: folderID,
 		DirEntry: file.DirEntry{
 			// zip files have to be added after creating files
-			ModTime:      getFileModTime(i),
-			MissingSince: getFileMissingSince(i),
-			LastScanned:  getFileLastScan(i),
-			ZipFileID:    zipFileID,
+			ModTime:   getFileModTime(i),
+			ZipFileID: zipFileID,
 		},
 		Fingerprints: getFileFingerprints(i),
 		Size:         getFileSize(i),

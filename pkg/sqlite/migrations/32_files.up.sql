@@ -4,8 +4,6 @@ CREATE TABLE `folders` (
   `path` varchar(255) NOT NULL,
   `parent_folder_id` integer,
   `mod_time` datetime not null,
-  `missing_since` datetime,
-  `last_scanned` datetime not null,
   `created_at` datetime not null,
   `updated_at` datetime not null,
   foreign key(`parent_folder_id`) references `folders`(`id`) on delete SET NULL
@@ -21,8 +19,6 @@ CREATE TABLE `files` (
   `parent_folder_id` integer not null,
   `size` integer NOT NULL,
   `mod_time` datetime not null,
-  `missing_since` datetime,
-  `last_scanned` datetime not null,
   `created_at` datetime not null,
   `updated_at` datetime not null,
   foreign key(`parent_folder_id`) references `folders`(`id`),
@@ -155,7 +151,7 @@ INSERT INTO `images_new`
   FROM `images`;
 
 -- create temporary placeholder folder
-INSERT INTO `folders` (`path`, `mod_time`, `last_scanned`, `created_at`, `updated_at`) VALUES ('', '1970-01-01 00:00:00', '1970-01-01 00:00:00', '1970-01-01 00:00:00', '1970-01-01 00:00:00');
+INSERT INTO `folders` (`path`, `mod_time`, `created_at`, `updated_at`) VALUES ('', '1970-01-01 00:00:00', '1970-01-01 00:00:00', '1970-01-01 00:00:00');
 
 -- insert image files - we will fix these up in the post-migration
 INSERT INTO `files`
@@ -164,7 +160,6 @@ INSERT INTO `files`
     `parent_folder_id`,
     `size`,
     `mod_time`,
-    `last_scanned`,
     `created_at`,
     `updated_at`
   )
@@ -174,7 +169,6 @@ INSERT INTO `files`
     `size`,
     -- set mod time to epoch so that it the format is calculated on scan
     '1970-01-01 00:00:00',
-    `updated_at`,
     `created_at`,
     `updated_at`
   FROM `images`;
@@ -276,7 +270,6 @@ INSERT INTO `files`
     `parent_folder_id`,
     `size`,
     `mod_time`,
-    `last_scanned`,
     `created_at`,
     `updated_at`
   )
@@ -285,7 +278,6 @@ INSERT INTO `files`
     1,
     '0',
     '1970-01-01 00:00:00', -- set to placeholder so that size is updated
-    `updated_at`,
     `created_at`,
     `updated_at`
   FROM `galleries`
@@ -297,7 +289,6 @@ INSERT INTO `folders`
     `path`,
     `zip_file_id`,
     `mod_time`,
-    `last_scanned`,
     `created_at`,
     `updated_at`
   )
@@ -305,7 +296,6 @@ INSERT INTO `folders`
     `galleries`.`path`,
     `files`.`id`,
     '1970-01-01 00:00:00',
-    `galleries`.`updated_at`,
     `galleries`.`created_at`,
     `galleries`.`updated_at`
   FROM `galleries` 
@@ -317,14 +307,12 @@ INSERT INTO `folders`
   (
     `path`,
     `mod_time`,
-    `last_scanned`,
     `created_at`,
     `updated_at`
   )
   SELECT
     `path`,
     '1970-01-01 00:00:00',
-    `updated_at`,
     `created_at`,
     `updated_at`
   FROM `galleries`
@@ -432,7 +420,6 @@ INSERT INTO `files`
     `parent_folder_id`,
     `size`,
     `mod_time`,
-    `last_scanned`,
     `created_at`,
     `updated_at`
   )
@@ -441,7 +428,6 @@ INSERT INTO `files`
     1,
     `size`,
     `file_mod_time`,
-    `updated_at`,
     `created_at`,
     `updated_at`
   FROM `scenes`;
@@ -571,8 +557,6 @@ CREATE VIEW `images_query` AS
     `files`.`basename`,
     `files`.`size`,
     `files`.`mod_time`,
-    `files`.`missing_since`,
-    `files`.`last_scanned`,
     `files`.`zip_file_id`,
     `folders`.`id` as `parent_folder_id`,
     `folders`.`path` as `parent_folder_path`,
@@ -613,8 +597,6 @@ CREATE VIEW `galleries_query` AS
     `files`.`basename`,
     `files`.`size`,
     `files`.`mod_time`,
-    `files`.`missing_since`,
-    `files`.`last_scanned`,
     `files`.`zip_file_id`,
     `parent_folders`.`id` as `parent_folder_id`,
     `parent_folders`.`path` as `parent_folder_path`,
@@ -668,8 +650,6 @@ CREATE VIEW `scenes_query` AS
     `files`.`basename`,
     `files`.`size`,
     `files`.`mod_time`,
-    `files`.`missing_since`,
-    `files`.`last_scanned`,
     `files`.`zip_file_id`,
     `folders`.`id` as `parent_folder_id`,
     `folders`.`path` as `parent_folder_path`,

@@ -32,11 +32,9 @@ func Test_fileFileStore_Create(t *testing.T) {
 		basename               = "basename"
 		fingerprintType        = "MD5"
 		fingerprintValue       = "checksum"
-		missingSince           = time.Date(2002, 1, 2, 3, 4, 5, 0, time.UTC)
 		fileModTime            = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 		createdAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		lastScanned            = time.Date(2001, 1, 2, 3, 4, 0, 0, time.UTC)
 		size             int64 = 1234
 
 		duration         = 1.234
@@ -58,11 +56,9 @@ func Test_fileFileStore_Create(t *testing.T) {
 			"full",
 			&file.BaseFile{
 				DirEntry: file.DirEntry{
-					ZipFileID:    &fileIDs[fileIdxZip],
-					ZipFile:      makeZipFileWithID(fileIdxZip),
-					ModTime:      fileModTime,
-					MissingSince: &missingSince,
-					LastScanned:  lastScanned,
+					ZipFileID: &fileIDs[fileIdxZip],
+					ZipFile:   makeZipFileWithID(fileIdxZip),
+					ModTime:   fileModTime,
 				},
 				Path:           getFilePath(folderIdxWithFiles, basename),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
@@ -84,11 +80,9 @@ func Test_fileFileStore_Create(t *testing.T) {
 			&file.VideoFile{
 				BaseFile: &file.BaseFile{
 					DirEntry: file.DirEntry{
-						ZipFileID:    &fileIDs[fileIdxZip],
-						ZipFile:      makeZipFileWithID(fileIdxZip),
-						ModTime:      fileModTime,
-						MissingSince: &missingSince,
-						LastScanned:  lastScanned,
+						ZipFileID: &fileIDs[fileIdxZip],
+						ZipFile:   makeZipFileWithID(fileIdxZip),
+						ModTime:   fileModTime,
 					},
 					Path:           getFilePath(folderIdxWithFiles, basename),
 					ParentFolderID: folderIDs[folderIdxWithFiles],
@@ -119,11 +113,9 @@ func Test_fileFileStore_Create(t *testing.T) {
 			&file.ImageFile{
 				BaseFile: &file.BaseFile{
 					DirEntry: file.DirEntry{
-						ZipFileID:    &fileIDs[fileIdxZip],
-						ZipFile:      makeZipFileWithID(fileIdxZip),
-						ModTime:      fileModTime,
-						MissingSince: &missingSince,
-						LastScanned:  lastScanned,
+						ZipFileID: &fileIDs[fileIdxZip],
+						ZipFile:   makeZipFileWithID(fileIdxZip),
+						ModTime:   fileModTime,
 					},
 					Path:           getFilePath(folderIdxWithFiles, basename),
 					ParentFolderID: folderIDs[folderIdxWithFiles],
@@ -148,9 +140,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 			"duplicate path",
 			&file.BaseFile{
 				DirEntry: file.DirEntry{
-					ModTime:      fileModTime,
-					MissingSince: &missingSince,
-					LastScanned:  lastScanned,
+					ModTime: fileModTime,
 				},
 				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
@@ -259,11 +249,9 @@ func Test_fileStore_Update(t *testing.T) {
 		basename               = "basename"
 		fingerprintType        = "MD5"
 		fingerprintValue       = "checksum"
-		missingSince           = time.Date(2002, 1, 2, 3, 4, 5, 0, time.UTC)
 		fileModTime            = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 		createdAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt              = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		lastScanned            = time.Date(2001, 1, 2, 3, 4, 0, 0, time.UTC)
 		size             int64 = 1234
 
 		duration         = 1.234
@@ -286,11 +274,9 @@ func Test_fileStore_Update(t *testing.T) {
 			&file.BaseFile{
 				ID: fileIDs[fileIdxInZip],
 				DirEntry: file.DirEntry{
-					ZipFileID:    &fileIDs[fileIdxZip],
-					ZipFile:      makeZipFileWithID(fileIdxZip),
-					ModTime:      fileModTime,
-					MissingSince: &missingSince,
-					LastScanned:  lastScanned,
+					ZipFileID: &fileIDs[fileIdxZip],
+					ZipFile:   makeZipFileWithID(fileIdxZip),
+					ModTime:   fileModTime,
 				},
 				Path:           getFilePath(folderIdxWithFiles, basename),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
@@ -313,11 +299,9 @@ func Test_fileStore_Update(t *testing.T) {
 				BaseFile: &file.BaseFile{
 					ID: fileIDs[fileIdxStartVideoFiles],
 					DirEntry: file.DirEntry{
-						ZipFileID:    &fileIDs[fileIdxZip],
-						ZipFile:      makeZipFileWithID(fileIdxZip),
-						ModTime:      fileModTime,
-						MissingSince: &missingSince,
-						LastScanned:  lastScanned,
+						ZipFileID: &fileIDs[fileIdxZip],
+						ZipFile:   makeZipFileWithID(fileIdxZip),
+						ModTime:   fileModTime,
 					},
 					Path:           getFilePath(folderIdxWithFiles, basename),
 					ParentFolderID: folderIDs[folderIdxWithFiles],
@@ -349,11 +333,9 @@ func Test_fileStore_Update(t *testing.T) {
 				BaseFile: &file.BaseFile{
 					ID: fileIDs[fileIdxStartImageFiles],
 					DirEntry: file.DirEntry{
-						ZipFileID:    &fileIDs[fileIdxZip],
-						ZipFile:      makeZipFileWithID(fileIdxZip),
-						ModTime:      fileModTime,
-						MissingSince: &missingSince,
-						LastScanned:  lastScanned,
+						ZipFileID: &fileIDs[fileIdxZip],
+						ZipFile:   makeZipFileWithID(fileIdxZip),
+						ModTime:   fileModTime,
 					},
 					Path:           getFilePath(folderIdxWithFiles, basename),
 					ParentFolderID: folderIDs[folderIdxWithFiles],
@@ -379,9 +361,7 @@ func Test_fileStore_Update(t *testing.T) {
 			&file.BaseFile{
 				ID: fileIDs[fileIdxInZip],
 				DirEntry: file.DirEntry{
-					ModTime:      fileModTime,
-					MissingSince: &missingSince,
-					LastScanned:  lastScanned,
+					ModTime: fileModTime,
 				},
 				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
@@ -404,16 +384,6 @@ func Test_fileStore_Update(t *testing.T) {
 				ID:             fileIDs[fileIdxInZip],
 				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
 				Basename:       getFileBaseName(fileIdxZip),
-				ParentFolderID: folderIDs[folderIdxWithFiles],
-			},
-			false,
-		},
-		{
-			"clear missing since",
-			&file.BaseFile{
-				ID:             fileIDs[fileIdxIsMissing],
-				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxIsMissing)),
-				Basename:       getFileBaseName(fileIdxIsMissing),
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 			},
 			false,
@@ -640,73 +610,6 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 			}
 
 			assert.Equal(tt.want, got)
-		})
-	}
-}
-
-func TestFileStore_MarkMissing(t *testing.T) {
-	var (
-		beforeScanned = getFileLastScan(0).Add(-1 * time.Hour)
-		afterScanned  = getFileLastScan(totalFiles).Add(1 * time.Hour)
-	)
-
-	tests := []struct {
-		name           string
-		scanStartTime  time.Time
-		scanPaths      []string
-		missingIndexes []int
-		wantErr        bool
-	}{
-		{
-			"after scan time",
-			afterScanned,
-			[]string{folderPaths[folderIdxInZip]},
-			[]int{
-				fileIdxInZip,
-			},
-			false,
-		},
-		{
-			"before scan time",
-			beforeScanned,
-			[]string{folderPaths[folderIdxInZip]},
-			nil,
-			false,
-		},
-		{
-			"excluded path",
-			afterScanned,
-			[]string{"foo"},
-			nil,
-			false,
-		},
-	}
-
-	qb := db.File
-
-	for _, tt := range tests {
-		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			assert := assert.New(t)
-			n, err := qb.MarkMissing(ctx, tt.scanStartTime, tt.scanPaths)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("FileStore.MarkMissing() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			if tt.wantErr {
-				return
-			}
-
-			assert.Equal(len(tt.missingIndexes), n, "number of files marked missing")
-
-			for _, idx := range tt.missingIndexes {
-				f, err := qb.Find(ctx, fileIDs[idx])
-				if err != nil {
-					t.Errorf("FileStore.Find() error = %v", err)
-					return
-				}
-
-				assert.NotNil(f[0].Base().MissingSince, "file marked missing")
-			}
 		})
 	}
 }

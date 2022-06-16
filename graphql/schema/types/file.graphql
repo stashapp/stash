@@ -12,9 +12,6 @@ type Folder {
 
     mod_time: Time!
 
-    missing_since: Time
-    last_scanned: Time!
-
     created_at: Time!
     updated_at: Time!
 }
@@ -31,9 +28,6 @@ interface BaseFile {
     size: Int!
 
     fingerprints: [Fingerprint!]!
-
-    missing_since: Time
-    last_scanned: Time!
 
     created_at: Time!
     updated_at: Time!
@@ -61,9 +55,6 @@ type VideoFile implements BaseFile {
 	frame_rate: Float!
 	bit_rate: Int!
 
-    missing_since: Time
-    last_scanned: Time!
-
     created_at: Time!
     updated_at: Time!
 }
@@ -84,9 +75,6 @@ type ImageFile implements BaseFile {
     width: Int!
 	height: Int!
 
-    missing_since: Time
-    last_scanned: Time!
-
     created_at: Time!
     updated_at: Time!
 }
@@ -103,9 +91,6 @@ type GalleryFile implements BaseFile {
     size: Int!
 
     fingerprints: [Fingerprint!]!
-
-    missing_since: Time
-    last_scanned: Time!
 
     created_at: Time!
     updated_at: Time!

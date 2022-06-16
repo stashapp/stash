@@ -36,8 +36,6 @@ func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageF
 			Basename:       f.Basename,
 			ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
 			ModTime:        f.ModTime,
-			MissingSince:   f.MissingSince,
-			LastScanned:    f.LastScanned,
 			Size:           int(f.Size),
 			Width:          f.Width,
 			Height:         f.Height,

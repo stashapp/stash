@@ -35,11 +35,9 @@ func Test_FolderStore_Create(t *testing.T) {
 			"full",
 			file.Folder{
 				DirEntry: file.DirEntry{
-					ZipFileID:    &fileIDs[fileIdxZip],
-					ZipFile:      makeZipFileWithID(fileIdxZip),
-					ModTime:      fileModTime,
-					MissingSince: &updatedAt,
-					LastScanned:  createdAt,
+					ZipFileID: &fileIDs[fileIdxZip],
+					ZipFile:   makeZipFileWithID(fileIdxZip),
+					ModTime:   fileModTime,
 				},
 				Path:      path,
 				CreatedAt: createdAt,
@@ -117,13 +115,11 @@ func Test_FolderStore_Update(t *testing.T) {
 		{
 			"full",
 			&file.Folder{
-				ID: folderIDs[folderIdxIsMissing],
+				ID: folderIDs[folderIdxWithParentFolder],
 				DirEntry: file.DirEntry{
-					ZipFileID:    &fileIDs[fileIdxZip],
-					ZipFile:      makeZipFileWithID(fileIdxZip),
-					ModTime:      fileModTime,
-					MissingSince: &updatedAt,
-					LastScanned:  createdAt,
+					ZipFileID: &fileIDs[fileIdxZip],
+					ZipFile:   makeZipFileWithID(fileIdxZip),
+					ModTime:   fileModTime,
 				},
 				Path:      path,
 				CreatedAt: createdAt,
@@ -140,14 +136,6 @@ func Test_FolderStore_Update(t *testing.T) {
 			false,
 		},
 		{
-			"clear missing since",
-			&file.Folder{
-				ID:   folderIDs[folderIdxIsMissing],
-				Path: path,
-			},
-			false,
-		},
-		{
 			"clear folder",
 			&file.Folder{
 				ID:   folderIDs[folderIdxWithParentFolder],
@@ -158,7 +146,7 @@ func Test_FolderStore_Update(t *testing.T) {
 		{
 			"invalid parent folder id",
 			&file.Folder{
-				ID:             folderIDs[folderIdxIsMissing],
+				ID:             folderIDs[folderIdxWithParentFolder],
 				Path:           path,
 				ParentFolderID: &invalidFolderID,
 			},
@@ -167,7 +155,7 @@ func Test_FolderStore_Update(t *testing.T) {
 		{
 			"invalid zip file id",
 			&file.Folder{
-				ID: folderIDs[folderIdxIsMissing],
+				ID: folderIDs[folderIdxWithParentFolder],
 				DirEntry: file.DirEntry{
 					ZipFileID: &invalidFileID,
 				},
@@ -247,91 +235,6 @@ func Test_FolderStore_FindByPath(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FolderStore.FindByPath() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestFolderStore_MarkMissing(t *testing.T) {
-	var (
-		beforeScanned = getFolderLastScan(0).Add(-1 * time.Hour)
-		afterScanned  = getFolderLastScan(totalFolders).Add(1 * time.Hour)
-	)
-
-	tests := []struct {
-		name           string
-		scanStartTime  time.Time
-		scanPaths      []string
-		missingIndexes []int
-		wantErr        bool
-	}{
-		{
-			"after scan time",
-			afterScanned,
-			nil,
-			[]int{
-				folderIdxWithSubFolder,
-				folderIdxWithParentFolder,
-				folderIdxWithFiles,
-				folderIdxInZip,
-				folderIdxForObjectFiles,
-				folderIdxWithImageFiles,
-				folderIdxWithGalleryFiles,
-				folderIdxWithSceneFiles,
-			},
-			false,
-		},
-		{
-			"before scan time",
-			beforeScanned,
-			nil,
-			nil,
-			false,
-		},
-		{
-			"excluded path",
-			afterScanned,
-			[]string{"foo"},
-			nil,
-			false,
-		},
-		{
-			"included path",
-			afterScanned,
-			[]string{folderPaths[folderIdxWithSubFolder]},
-			[]int{
-				folderIdxWithSubFolder,
-				folderIdxWithParentFolder,
-			},
-			false,
-		},
-	}
-
-	qb := db.Folder
-
-	for _, tt := range tests {
-		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			assert := assert.New(t)
-
-			n, err := qb.MarkMissing(ctx, tt.scanStartTime, tt.scanPaths)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("FolderStore.MarkMissing() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			if tt.wantErr {
-				return
-			}
-
-			assert.Equal(len(tt.missingIndexes), n, "number of folders marked missing")
-
-			for _, idx := range tt.missingIndexes {
-				f, err := qb.Find(ctx, folderIDs[idx])
-				if err != nil {
-					t.Errorf("FolderStore.Find() error = %v", err)
-					return
-				}
-
-				assert.NotNil(f.MissingSince, "folder marked missing")
 			}
 		})
 	}

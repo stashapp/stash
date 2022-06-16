@@ -209,8 +209,7 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 		ff := scanFile{
 			BaseFile: &BaseFile{
 				DirEntry: DirEntry{
-					ModTime:     modTime(info),
-					LastScanned: time.Now(),
+					ModTime: modTime(info),
 				},
 				Path:     path,
 				Basename: filepath.Base(path),
@@ -406,8 +405,7 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 
 	toCreate := &Folder{
 		DirEntry: DirEntry{
-			ModTime:     file.ModTime,
-			LastScanned: file.LastScanned,
+			ModTime: file.ModTime,
 		},
 		Path:      file.Path,
 		CreatedAt: now,
@@ -452,13 +450,11 @@ func (s *scanJob) onExistingFolder(ctx context.Context, f scanFile, existing *Fo
 	if !entryModTime.Equal(existing.ModTime) {
 		// update entry in store
 		existing.ModTime = entryModTime
-	}
 
-	existing.scanned()
-
-	var err error
-	if err = s.Repository.FolderStore.Update(ctx, existing); err != nil {
-		return nil, fmt.Errorf("updating folder %q: %w", f.Path, err)
+		var err error
+		if err = s.Repository.FolderStore.Update(ctx, existing); err != nil {
+			return nil, fmt.Errorf("updating folder %q: %w", f.Path, err)
+		}
 	}
 
 	return existing, nil
@@ -713,44 +709,33 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	base := existing.Base()
 	path := base.Path
 
-	base.scanned()
-
 	fileModTime := f.ModTime
 	updated := !fileModTime.Equal(base.ModTime)
 
-	if updated {
-		logger.Infof("%s has been updated: rescanning", path)
-		base.ModTime = fileModTime
-		base.Size = f.Size
-		base.UpdatedAt = time.Now()
+	if !updated {
+		return nil, nil
+	}
 
-		// calculate and update fingerprints for the file
-		fp, err := s.calculateFingerprints(f.fs, base, path)
-		if err != nil {
-			return nil, err
-		}
+	logger.Infof("%s has been updated: rescanning", path)
+	base.ModTime = fileModTime
+	base.Size = f.Size
+	base.UpdatedAt = time.Now()
 
-		existing.SetFingerprints(fp)
+	// calculate and update fingerprints for the file
+	fp, err := s.calculateFingerprints(f.fs, base, path)
+	if err != nil {
+		return nil, err
+	}
 
-		existing, err = s.fireDecorators(ctx, f.fs, existing)
-		if err != nil {
-			return nil, err
-		}
+	existing.SetFingerprints(fp)
+
+	existing, err = s.fireDecorators(ctx, f.fs, existing)
+	if err != nil {
+		return nil, err
 	}
 
 	if err := s.Repository.Update(ctx, existing); err != nil {
 		return nil, fmt.Errorf("updating file %q: %w", path, err)
-	}
-
-	if !updated {
-		// if file is a zip file, mark its children as scanned
-		if s.isZipFile(f.info) {
-			if err := s.scannedZip(ctx, base.ID); err != nil {
-				return nil, err
-			}
-		}
-
-		return nil, nil
 	}
 
 	if err := s.fireHandlers(ctx, f.fs, existing); err != nil {
@@ -759,110 +744,3 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 
 	return existing, nil
 }
-
-func (s *scanJob) scannedZip(ctx context.Context, zipFileID ID) error {
-	folders, err := s.Repository.FolderStore.FindByZipFileID(ctx, zipFileID)
-	if err != nil {
-		return fmt.Errorf("finding folders by zip file id: %w", err)
-	}
-
-	for _, folder := range folders {
-		folder.scanned()
-		if err := s.Repository.FolderStore.Update(ctx, folder); err != nil {
-			return fmt.Errorf("updating folder %q: %w", folder.Path, err)
-		}
-	}
-
-	files, err := s.Repository.FindByZipFileID(ctx, zipFileID)
-	if err != nil {
-		return fmt.Errorf("finding files by zip file id: %w", err)
-	}
-
-	for _, file := range files {
-		file.Base().scanned()
-		if err := s.Repository.Update(ctx, file); err != nil {
-			return fmt.Errorf("updating file %q: %w", file.Base().Path, err)
-		}
-	}
-
-	return nil
-}
-
-// func (s *scanJob) markMissingFiles(ctx context.Context) {
-// 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-// 		if err := s.logMissingFolders(ctx); err != nil {
-// 			return err
-// 		}
-// 		if err := s.logMissingFiles(ctx); err != nil {
-// 			return err
-// 		}
-
-// 		n, err := s.Repository.FolderStore.MarkMissing(ctx, s.startTime, s.options.Paths)
-// 		if err != nil {
-// 			return nil
-// 		}
-
-// 		if n > 0 {
-// 			logger.Infof("Marked %d folders as missing", n)
-// 		}
-
-// 		n, err = s.Repository.MarkMissing(ctx, s.startTime, s.options.Paths)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		if n > 0 {
-// 			logger.Infof("Marked %d files as missing", n)
-// 		}
-
-// 		return nil
-// 	}); err != nil {
-// 		logger.Errorf("Error marking missing files and folders: %v", err)
-// 	}
-// }
-
-// func (s *scanJob) logMissingFiles(ctx context.Context) error {
-// 	const limit = 1000
-// 	var page uint = 1
-// 	for {
-// 		missing, err := s.Repository.FindMissing(ctx, s.startTime, s.options.Paths, page, limit)
-// 		if err != nil {
-// 			return fmt.Errorf("finding missing files: %w", err)
-// 		}
-
-// 		if len(missing) == 0 {
-// 			break
-// 		}
-
-// 		for _, f := range missing {
-// 			logger.Infof("Marking file %s as missing", f.Base().Path)
-// 		}
-
-// 		page++
-// 	}
-
-// 	return nil
-// }
-
-// func (s *scanJob) logMissingFolders(ctx context.Context) error {
-// 	const limit = 1000
-// 	var page uint = 1
-// 	for {
-// 		missing, err := s.Repository.FolderStore.FindMissing(ctx, s.startTime, s.options.Paths, page, limit)
-// 		if err != nil {
-// 			return fmt.Errorf("finding missing folders: %w", err)
-// 		}
-
-// 		if len(missing) == 0 {
-// 			break
-// 		}
-
-// 		for _, f := range missing {
-// 			logger.Infof("Marking folder %s as missing", f.Path)
-// 		}
-
-// 		page++
-// 	}
-
-// 	return nil
-// }

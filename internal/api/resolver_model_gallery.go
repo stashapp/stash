@@ -21,8 +21,6 @@ func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*Ga
 			Basename:       base.Basename,
 			ParentFolderID: strconv.Itoa(int(base.ParentFolderID)),
 			ModTime:        base.ModTime,
-			MissingSince:   base.MissingSince,
-			LastScanned:    base.LastScanned,
 			Size:           int(base.Size),
 			CreatedAt:      base.CreatedAt,
 			UpdatedAt:      base.UpdatedAt,
@@ -63,13 +61,11 @@ func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*Fol
 	}
 
 	rr := &Folder{
-		ID:           ret.ID.String(),
-		Path:         ret.Path,
-		ModTime:      ret.ModTime,
-		MissingSince: ret.MissingSince,
-		LastScanned:  ret.LastScanned,
-		CreatedAt:    ret.CreatedAt,
-		UpdatedAt:    ret.UpdatedAt,
+		ID:        ret.ID.String(),
+		Path:      ret.Path,
+		ModTime:   ret.ModTime,
+		CreatedAt: ret.CreatedAt,
+		UpdatedAt: ret.UpdatedAt,
 	}
 
 	if ret.ParentFolderID != nil {
