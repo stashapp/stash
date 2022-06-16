@@ -487,7 +487,7 @@ func (qb *ImageStore) Count(ctx context.Context) (int, error) {
 }
 
 func (qb *ImageStore) Size(ctx context.Context) (float64, error) {
-	q := dialect.Select(goqu.SUM(qb.table().Col("size").Cast("double"))).From(qb.table())
+	q := dialect.Select(goqu.SUM(qb.queryTable().Col("size"))).From(qb.queryTable())
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err

@@ -615,7 +615,7 @@ func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 }
 
 func (qb *SceneStore) Size(ctx context.Context) (float64, error) {
-	q := dialect.Select(goqu.SUM(qb.queryTable().Col("size").Cast("double"))).From(qb.table())
+	q := dialect.Select(goqu.SUM(qb.queryTable().Col("size"))).From(qb.queryTable())
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
@@ -625,7 +625,7 @@ func (qb *SceneStore) Size(ctx context.Context) (float64, error) {
 }
 
 func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
-	q := dialect.Select(goqu.SUM(qb.queryTable().Col("duration").Cast("double"))).From(qb.table())
+	q := dialect.Select(goqu.SUM(qb.queryTable().Col("duration"))).From(qb.queryTable())
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
