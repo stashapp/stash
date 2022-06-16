@@ -1255,6 +1255,18 @@ func TestGalleryQueryPath(t *testing.T) {
 				Modifier: models.CriterionModifierNotMatchesRegex,
 			},
 		},
+		{
+			"is null",
+			models.StringCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+		},
+		{
+			"not null",
+			models.StringCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+		},
 	}
 
 	qb := db.Gallery

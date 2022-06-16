@@ -165,13 +165,13 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 				if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 					r := j.txnManager
 					if err := autotag.PerformerScenes(ctx, performer, paths, r.Scene, &j.cache); err != nil {
-						return err
+						return fmt.Errorf("processing scenes: %w", err)
 					}
 					if err := autotag.PerformerImages(ctx, performer, paths, r.Image, &j.cache); err != nil {
-						return err
+						return fmt.Errorf("processing images: %w", err)
 					}
 					if err := autotag.PerformerGalleries(ctx, performer, paths, r.Gallery, &j.cache); err != nil {
-						return err
+						return fmt.Errorf("processing galleries: %w", err)
 					}
 
 					return nil
@@ -241,17 +241,17 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 				if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 					aliases, err := r.Studio.GetAliases(ctx, studio.ID)
 					if err != nil {
-						return err
+						return fmt.Errorf("getting studio aliases: %w", err)
 					}
 
 					if err := autotag.StudioScenes(ctx, studio, paths, aliases, r.Scene, &j.cache); err != nil {
-						return err
+						return fmt.Errorf("processing scenes: %w", err)
 					}
 					if err := autotag.StudioImages(ctx, studio, paths, aliases, r.Image, &j.cache); err != nil {
-						return err
+						return fmt.Errorf("processing images: %w", err)
 					}
 					if err := autotag.StudioGalleries(ctx, studio, paths, aliases, r.Gallery, &j.cache); err != nil {
-						return err
+						return fmt.Errorf("processing galleries: %w", err)
 					}
 
 					return nil
@@ -315,17 +315,17 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 				if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 					aliases, err := r.Tag.GetAliases(ctx, tag.ID)
 					if err != nil {
-						return err
+						return fmt.Errorf("getting tag aliases: %w", err)
 					}
 
 					if err := autotag.TagScenes(ctx, tag, paths, aliases, r.Scene, &j.cache); err != nil {
-						return err
+						return fmt.Errorf("processing scenes: %w", err)
 					}
 					if err := autotag.TagImages(ctx, tag, paths, aliases, r.Image, &j.cache); err != nil {
-						return err
+						return fmt.Errorf("processing images: %w", err)
 					}
 					if err := autotag.TagGalleries(ctx, tag, paths, aliases, r.Gallery, &j.cache); err != nil {
-						return err
+						return fmt.Errorf("processing galleries: %w", err)
 					}
 
 					return nil
@@ -445,7 +445,7 @@ func (t *autoTagFilesTask) getCount(ctx context.Context, r Repository) (int, err
 		SceneFilter: t.makeSceneFilter(),
 	})
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("getting scene count: %w", err)
 	}
 
 	sceneCount := sceneResults.Count
@@ -458,14 +458,14 @@ func (t *autoTagFilesTask) getCount(ctx context.Context, r Repository) (int, err
 		ImageFilter: t.makeImageFilter(),
 	})
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("getting image count: %w", err)
 	}
 
 	imageCount := imageResults.Count
 
 	_, galleryCount, err := r.Gallery.Query(ctx, t.makeGalleryFilter(), findFilter)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("getting gallery count: %w", err)
 	}
 
 	return sceneCount + imageCount + galleryCount, nil
@@ -483,9 +483,13 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context, r Repository) erro
 
 	more := true
 	for more {
-		scenes, err := scene.Query(ctx, r.Scene, sceneFilter, findFilter)
-		if err != nil {
+		var scenes []*models.Scene
+		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+			var err error
+			scenes, err = scene.Query(ctx, r.Scene, sceneFilter, findFilter)
 			return err
+		}); err != nil {
+			return fmt.Errorf("querying scenes: %w", err)
 		}
 
 		for _, ss := range scenes {
@@ -536,9 +540,13 @@ func (t *autoTagFilesTask) processImages(ctx context.Context, r Repository) erro
 
 	more := true
 	for more {
-		images, err := image.Query(ctx, r.Image, imageFilter, findFilter)
-		if err != nil {
+		var images []*models.Image
+		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+			var err error
+			images, err = image.Query(ctx, r.Image, imageFilter, findFilter)
 			return err
+		}); err != nil {
+			return fmt.Errorf("querying images: %w", err)
 		}
 
 		for _, ss := range images {
@@ -589,9 +597,13 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context, r Repository) e
 
 	more := true
 	for more {
-		galleries, _, err := r.Gallery.Query(ctx, galleryFilter, findFilter)
-		if err != nil {
+		var galleries []*models.Gallery
+		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+			var err error
+			galleries, _, err = r.Gallery.Query(ctx, galleryFilter, findFilter)
 			return err
+		}); err != nil {
+			return fmt.Errorf("querying galleries: %w", err)
 		}
 
 		for _, ss := range galleries {
@@ -639,31 +651,34 @@ func (t *autoTagFilesTask) process(ctx context.Context) {
 		}
 
 		t.progress.SetTotal(total)
-
 		logger.Infof("Starting autotag of %d files", total)
-
-		logger.Info("Autotagging scenes...")
-		if err := t.processScenes(ctx, r); err != nil {
-			return err
-		}
-
-		logger.Info("Autotagging images...")
-		if err := t.processImages(ctx, r); err != nil {
-			return err
-		}
-
-		logger.Info("Autotagging galleries...")
-		if err := t.processGalleries(ctx, r); err != nil {
-			return err
-		}
-
-		if job.IsCancelled(ctx) {
-			logger.Info("Stopping due to user request")
-		}
 
 		return nil
 	}); err != nil {
-		logger.Error(err.Error())
+		logger.Errorf("error getting count for autotag task: %v", err)
+		return
+	}
+
+	logger.Info("Autotagging scenes...")
+	if err := t.processScenes(ctx, r); err != nil {
+		logger.Errorf("error processing scenes: %w", err)
+		return
+	}
+
+	logger.Info("Autotagging images...")
+	if err := t.processImages(ctx, r); err != nil {
+		logger.Errorf("error processing images: %w", err)
+		return
+	}
+
+	logger.Info("Autotagging galleries...")
+	if err := t.processGalleries(ctx, r); err != nil {
+		logger.Errorf("error processing galleries: %w", err)
+		return
+	}
+
+	if job.IsCancelled(ctx) {
+		logger.Info("Stopping due to user request")
 	}
 }
 

@@ -161,6 +161,7 @@ const (
 	galleryIdxWithPerformerTwoTags
 	galleryIdxWithStudioPerformer
 	galleryIdxWithGrandChildStudio
+	galleryIdxWithoutFile
 	// new indexes above
 	lastGalleryIdx
 
@@ -1141,17 +1142,23 @@ func createGalleries(ctx context.Context, n int) error {
 	fqb := db.File
 
 	for i := 0; i < n; i++ {
-		f := makeGalleryFile(i)
-		if err := fqb.Create(ctx, f); err != nil {
-			return fmt.Errorf("creating gallery file: %w", err)
+		var fileIDs []file.ID
+		if i != galleryIdxWithoutFile {
+			f := makeGalleryFile(i)
+			if err := fqb.Create(ctx, f); err != nil {
+				return fmt.Errorf("creating gallery file: %w", err)
+			}
+			galleryFileIDs = append(galleryFileIDs, f.ID)
+			fileIDs = []file.ID{f.ID}
+		} else {
+			galleryFileIDs = append(galleryFileIDs, 0)
 		}
-		galleryFileIDs = append(galleryFileIDs, f.ID)
 
-		// scene relationship will be created with scenes
+		// gallery relationship will be created with galleries
 		const includeScenes = false
 		gallery := makeGallery(i, includeScenes)
 
-		err := gqb.Create(ctx, gallery, []file.ID{f.ID})
+		err := gqb.Create(ctx, gallery, fileIDs)
 
 		if err != nil {
 			return fmt.Errorf("Error creating gallery %v+: %s", gallery, err.Error())

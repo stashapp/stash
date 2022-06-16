@@ -454,7 +454,7 @@ func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, bas
 				case models.CriterionModifierIsNull:
 					f.addWhere(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = '')", pathColumn, basenameColumn))
 				case models.CriterionModifierNotNull:
-					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '' OR (%s IS NOT NULL AND TRIM(%[2]s) != '')", pathColumn, basenameColumn))
+					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != '')", pathColumn, basenameColumn))
 				default:
 					panic("unsupported string filter modifier")
 				}

@@ -3,8 +3,10 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -17,6 +19,9 @@ const (
 
 func (db *Database) Begin(ctx context.Context) (context.Context, error) {
 	if tx, _ := getTx(ctx); tx != nil {
+		// log the stack trace so we can see
+		logger.Error(string(debug.Stack()))
+
 		return nil, fmt.Errorf("already in transaction")
 	}
 

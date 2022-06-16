@@ -2202,17 +2202,19 @@ func verifyStringPtr(t *testing.T, value *string, criterion models.StringCriteri
 func verifyString(t *testing.T, value string, criterion models.StringCriterionInput) {
 	t.Helper()
 	assert := assert.New(t)
-	if criterion.Modifier == models.CriterionModifierEquals {
+	switch criterion.Modifier {
+	case models.CriterionModifierEquals:
 		assert.Equal(criterion.Value, value)
-	}
-	if criterion.Modifier == models.CriterionModifierNotEquals {
+	case models.CriterionModifierNotEquals:
 		assert.NotEqual(criterion.Value, value)
-	}
-	if criterion.Modifier == models.CriterionModifierMatchesRegex {
+	case models.CriterionModifierMatchesRegex:
 		assert.Regexp(regexp.MustCompile(criterion.Value), value)
-	}
-	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
+	case models.CriterionModifierNotMatchesRegex:
 		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
+	case models.CriterionModifierIsNull:
+		assert.Equal("", value)
+	case models.CriterionModifierNotNull:
+		assert.NotEqual("", value)
 	}
 }
 
