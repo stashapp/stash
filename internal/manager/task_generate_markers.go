@@ -133,13 +133,9 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 
 func (t *GenerateMarkersTask) markersNeeded(ctx context.Context) int {
 	markers := 0
-	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
-		var err error
-		sceneMarkers, err = t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
-		return err
-	}); err != nil {
-		logger.Errorf("errror finding scene markers: %s", err.Error())
+	sceneMarkers, err := t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
+	if err != nil {
+		logger.Errorf("error finding scene markers: %s", err.Error())
 		return 0
 	}
 

@@ -1190,7 +1190,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "path":
 		// special handling for path
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY scenes_query.parent_folder_path %s, scenes_query.basename %[1]s", direction)
-	case "phash":
+	case "perceptual_similarity":
 		// special handling for phash
 		query.addJoins(join{
 			table:    fingerprintTable,
@@ -1198,7 +1198,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 			onClause: "scenes_query.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'",
 		})
 
-		query.sortAndPagination += getSort("fingerprints_phash.fingerprint", direction, "scenes_query")
+		query.sortAndPagination += " ORDER BY fingerprints_phash.fingerprint " + direction + ", scenes_query.size DESC"
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes_query")
 	}

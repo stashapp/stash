@@ -3183,8 +3183,8 @@ func TestSceneQuerySorting(t *testing.T) {
 			-1,
 		},
 		{
-			"phash",
-			"phash",
+			"perceptual_similarity",
+			"perceptual_similarity",
 			models.SortDirectionEnumDesc,
 			-1,
 			-1,
