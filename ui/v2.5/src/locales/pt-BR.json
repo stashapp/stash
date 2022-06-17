@@ -23,6 +23,7 @@
     "create_entity": "Criar {entityType}",
     "create_marker": "Criar marcador",
     "created_entity": "Criar {entity_type}: {entity_name}",
+    "customise": "Customizar",
     "delete": "Apagar",
     "delete_entity": "Apagar {entityType}",
     "delete_file": "Apagar arquivo",
@@ -465,6 +466,9 @@
         "description": "Chave de conexão para usar em cenas interativas. Ativar esta chave permitirá o Stash a compartilhar as informações da cena atual com handyfeeling.com",
         "heading": "Chave de conexão"
       },
+      "image_lightbox": {
+        "heading": "Galeria de imagem"
+      },
       "images": {
         "heading": "Imagens",
         "options": {
@@ -731,6 +735,12 @@
   "filters": "Filtros",
   "framerate": "Taxa de quadros",
   "frames_per_second": "{value} quadros por segundo",
+  "front_page": {
+    "types": {
+      "premade_filter": "Filtro pré-pronto",
+      "saved_filter": "Filtro salvo"
+    }
+  },
   "galleries": "Galerias",
   "gallery": "Galeria",
   "gallery_count": "Contagem de galeria",
@@ -858,7 +868,8 @@
   "queue": "Fila",
   "random": "Aleatória",
   "rating": "Avaliação",
-  "recently_released_movies": "Filmes recentemente lançados",
+  "recently_added_objects": "{objects} Recentemente Adicionados",
+  "recently_released_objects": "{objects} Recentemente Lançados",
   "resolution": "Resolução",
   "scene": "Cena",
   "sceneTagger": "Etiquetador de cena",
@@ -1002,6 +1013,7 @@
   "total": "Total",
   "true": "Verdadeiro",
   "twitter": "Twitter",
+  "type": "Tipo",
   "updated_at": "Atualizado em",
   "url": "URL",
   "videos": "Vídeos",
