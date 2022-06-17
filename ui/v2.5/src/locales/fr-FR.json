@@ -734,6 +734,12 @@
   "filters": "Filtres",
   "framerate": "Fréquence de rafraîchissement",
   "frames_per_second": "{value} images par seconde",
+  "front_page": {
+    "types": {
+      "premade_filter": "Filtre primaire",
+      "saved_filter": "Filtre sauvegardé"
+    }
+  },
   "galleries": "Galeries",
   "gallery": "Galerie",
   "gallery_count": "Nombre de galeries",
@@ -861,6 +867,8 @@
   "queue": "File de lecture",
   "random": "Aléatoire",
   "rating": "Note",
+  "recently_added_objects": "Récemment ajouté {objects}",
+  "recently_released_objects": "Récemment sortis {objects}",
   "resolution": "Résolution",
   "scene": "Scène",
   "sceneTagger": "Étiqueteur de scènes",
@@ -1004,6 +1012,7 @@
   "total": "Total",
   "true": "Vrai",
   "twitter": "Twitter",
+  "type": "Type",
   "updated_at": "Actualisé le",
   "url": "URL",
   "videos": "Vidéos",
