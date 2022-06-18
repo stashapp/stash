@@ -23,6 +23,7 @@
     "create_entity": "Skapa {entityType}",
     "create_marker": "Skapa markör",
     "created_entity": "Skapade {entity_type}: {entity_name}",
+    "customise": "Ändra",
     "delete": "Radera",
     "delete_entity": "Radera {entityType}",
     "delete_file": "Radera fil",
@@ -734,6 +735,12 @@
   "filters": "Filter",
   "framerate": "Bildhastighet",
   "frames_per_second": "{value} bilder per sekund",
+  "front_page": {
+    "types": {
+      "premade_filter": "Förhandsgjorda filter",
+      "saved_filter": "Sparade Filter"
+    }
+  },
   "galleries": "Gallerier",
   "gallery": "Galleri",
   "gallery_count": "Antal Gallerier",
@@ -861,7 +868,8 @@
   "queue": "Kö",
   "random": "Slumpad",
   "rating": "Betyg",
-  "recently_released_movies": "Nyligen Släppta Filmer",
+  "recently_added_objects": "Nyligen Tillagda {objects}",
+  "recently_released_objects": "Nyligen Släppta {objects}",
   "resolution": "Upplösning",
   "scene": "Scen",
   "sceneTagger": "Scentaggaren",
@@ -1005,6 +1013,7 @@
   "total": "Total",
   "true": "Sant",
   "twitter": "Twitter",
+  "type": "Typ",
   "updated_at": "Uppdaterad vid",
   "url": "URL",
   "videos": "Videor",
