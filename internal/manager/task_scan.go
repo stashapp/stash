@@ -377,12 +377,12 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 			if fsutil.IsPathInDir(generatedPath, path) {
 				return filepath.SkipDir
 			}
-	
+
 			ignore_exists, _ := fsutil.FileExists(filepath.Join(path, ".ignore"))
 			if ignore_exists {
 				return filepath.SkipDir
 			}
-			
+
 			// shortcut: skip the directory entirely if it matches both exclusion patterns
 			// add a trailing separator so that it correctly matches against patterns like path/.*
 			pathExcludeTest := path + string(filepath.Separator)
