@@ -378,7 +378,7 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 				return filepath.SkipDir
 			}
 
-			ignore_exists, _ := fsutil.FileExists(filepath.Join(path, ".ignore"))
+			ignore_exists, _ := fsutil.FileExists(filepath.Join(path, ".stashignore"))
 			if ignore_exists {
 				return filepath.SkipDir
 			}
