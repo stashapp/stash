@@ -61,7 +61,7 @@ func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoF
 			ParentFolderID: strconv.Itoa(int(f.ParentFolderID)),
 			ModTime:        f.ModTime,
 			Format:         f.Format,
-			Size:           int(f.Size),
+			Size:           f.Size,
 			Duration:       handleFloat64Value(f.Duration),
 			VideoCodec:     f.VideoCodec,
 			AudioCodec:     f.AudioCodec,

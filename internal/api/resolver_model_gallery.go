@@ -21,7 +21,7 @@ func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*Ga
 			Basename:       base.Basename,
 			ParentFolderID: strconv.Itoa(int(base.ParentFolderID)),
 			ModTime:        base.ModTime,
-			Size:           int(base.Size),
+			Size:           base.Size,
 			CreatedAt:      base.CreatedAt,
 			UpdatedAt:      base.UpdatedAt,
 			Fingerprints:   resolveFingerprints(base),

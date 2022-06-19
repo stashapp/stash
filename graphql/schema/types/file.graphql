@@ -25,7 +25,7 @@ interface BaseFile {
     zip_file_id: ID
 
     mod_time: Time!
-    size: Int!
+    size: Int64!
 
     fingerprints: [Fingerprint!]!
 
@@ -42,7 +42,7 @@ type VideoFile implements BaseFile {
     zip_file_id: ID
 
     mod_time: Time!
-    size: Int!
+    size: Int64!
 
     fingerprints: [Fingerprint!]!
 
@@ -68,7 +68,7 @@ type ImageFile implements BaseFile {
     zip_file_id: ID
 
     mod_time: Time!
-    size: Int!
+    size: Int64!
 
     fingerprints: [Fingerprint!]!
 
@@ -88,7 +88,7 @@ type GalleryFile implements BaseFile {
     zip_file_id: ID
 
     mod_time: Time!
-    size: Int!
+    size: Int64!
 
     fingerprints: [Fingerprint!]!
 

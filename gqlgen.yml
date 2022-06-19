@@ -25,6 +25,8 @@ models:
   # Scalars
   Timestamp:
     model: github.com/stashapp/stash/pkg/models.Timestamp
+  Int64:
+    model: github.com/stashapp/stash/pkg/models.Int64
   # define to force resolvers
   Image:
     model: github.com/stashapp/stash/pkg/models.Image
