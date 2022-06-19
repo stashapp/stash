@@ -122,7 +122,7 @@ func (f *cleanFilter) shouldCleanFile(path string, info fs.FileInfo, stash *conf
 	case fsutil.MatchExtension(path, f.imgExt):
 		return f.shouldCleanImage(path, stash)
 	default:
-		logger.Infof("File extension does not any media extensions. Marking to clean: \"%s\"", path)
+		logger.Infof("File extension does not match any media extensions. Marking to clean: \"%s\"", path)
 		return true
 	}
 }
@@ -238,7 +238,7 @@ func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.I
 	}
 
 	for _, g := range galleries {
-		// only delete if the scene has no other files
+		// only delete if the gallery has no other files
 		if len(g.Files) <= 1 {
 			logger.Infof("Deleting gallery %q since it has no other related files", g.GetTitle())
 			if err := qb.Destroy(ctx, g.ID); err != nil {

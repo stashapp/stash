@@ -28,7 +28,6 @@ func (c *fingerprintCalculator) calculateOshash(f *file.BaseFile, o file.Opener)
 		return nil, errors.New("cannot calculate oshash for non-readcloser")
 	}
 
-	// calculate oshash first
 	hash, err := oshash.FromReader(rc, f.Size)
 	if err != nil {
 		return nil, fmt.Errorf("calculating oshash: %w", err)
@@ -48,10 +47,9 @@ func (c *fingerprintCalculator) calculateMD5(o file.Opener) (*file.Fingerprint, 
 
 	defer r.Close()
 
-	// calculate oshash first
 	hash, err := md5.FromReader(r)
 	if err != nil {
-		return nil, fmt.Errorf("calculating oshash: %w", err)
+		return nil, fmt.Errorf("calculating md5: %w", err)
 	}
 
 	return &file.Fingerprint{
