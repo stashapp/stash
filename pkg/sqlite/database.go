@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"errors"
@@ -294,6 +295,8 @@ func (db *Database) getDatabaseSchemaVersion() (uint, error) {
 
 // Migrate the database
 func (db *Database) RunMigrations() error {
+	ctx := context.Background()
+
 	m, err := db.getMigrate()
 	if err != nil {
 		return err
@@ -327,7 +330,7 @@ func (db *Database) RunMigrations() error {
 					}
 
 					defer db.Close()
-					if err := fn(db); err != nil {
+					if err := fn(ctx, db); err != nil {
 						return fmt.Errorf("running custom migration for schema version %d: %w", newVersion, err)
 					}
 

@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"path"
@@ -16,31 +17,67 @@ import (
 
 const legacyZipSeparator = "\x00"
 
-func post32(db *sqlx.DB) error {
+func post32(ctx context.Context, db *sqlx.DB) error {
 	logger.Info("Running post-migration for schema version 32")
 
-	m := schema32Migrator{db: db}
+	m := schema32Migrator{
+		db:          db,
+		folderCache: make(map[string]folderInfo),
+	}
 
-	if err := m.migrateFolders(); err != nil {
+	if err := m.migrateFolders(ctx); err != nil {
 		return fmt.Errorf("migrating folders: %w", err)
 	}
 
-	if err := m.migrateFiles(); err != nil {
+	if err := m.migrateFiles(ctx); err != nil {
 		return fmt.Errorf("migrating files: %w", err)
 	}
 
-	if err := m.deletePlaceholderFolder(); err != nil {
+	if err := m.deletePlaceholderFolder(ctx); err != nil {
 		return fmt.Errorf("deleting placeholder folder: %w", err)
 	}
 
 	return nil
 }
 
-type schema32Migrator struct {
-	db *sqlx.DB
+type folderInfo struct {
+	id    int
+	zipID sql.NullInt64
 }
 
-func (m *schema32Migrator) migrateFolderSlashes() error {
+type schema32Migrator struct {
+	db          *sqlx.DB
+	folderCache map[string]folderInfo
+}
+
+func (m *schema32Migrator) withTxn(ctx context.Context, fn func(tx *sqlx.Tx) error) error {
+	tx, err := m.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("beginning transaction: %w", err)
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			// a panic occurred, rollback and repanic
+			_ = tx.Rollback()
+			panic(p)
+		}
+
+		if err != nil {
+			// something went wrong, rollback
+			_ = tx.Rollback()
+		} else {
+			// all good, commit
+			err = tx.Commit()
+		}
+	}()
+
+	err = fn(tx)
+	return err
+}
+
+func (m *schema32Migrator) migrateFolderSlashes(ctx context.Context) error {
+	logger.Infof("Migrating folder slashes")
 	const query = "SELECT `folders`.`id`, `folders`.`path` FROM `folders`"
 
 	rows, err := m.db.Query(query)
@@ -73,10 +110,12 @@ func (m *schema32Migrator) migrateFolderSlashes() error {
 	return nil
 }
 
-func (m *schema32Migrator) migrateFolders() error {
-	if err := m.migrateFolderSlashes(); err != nil {
+func (m *schema32Migrator) migrateFolders(ctx context.Context) error {
+	if err := m.migrateFolderSlashes(ctx); err != nil {
 		return err
 	}
+
+	logger.Infof("Migrating folders")
 
 	const query = "SELECT `folders`.`id`, `folders`.`path` FROM `folders` INNER JOIN `galleries` ON `galleries`.`folder_id` = `folders`.`id`"
 
@@ -114,69 +153,89 @@ func (m *schema32Migrator) migrateFolders() error {
 	return nil
 }
 
-func (m *schema32Migrator) migrateFiles() error {
-	const limit = 1000
+func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
+	const (
+		limit    = 1000
+		logEvery = 10000
+	)
 	offset := 0
+
+	result := struct {
+		Count int `db:"count"`
+	}{0}
+
+	if err := m.db.Get(&result, "SELECT COUNT(*) AS count FROM `files`"); err != nil {
+		return err
+	}
+
+	logger.Infof("Migrating %d files...", result.Count)
+
 	for {
-		query := fmt.Sprintf("SELECT `id`, `basename` FROM `files` ORDER BY `id` LIMIT %d OFFSET %d", limit, offset)
-		offset += limit
-
-		rows, err := m.db.Query(query)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-
 		gotSome := false
-		for rows.Next() {
-			gotSome = true
 
-			var id int
-			var p string
+		query := fmt.Sprintf("SELECT `id`, `basename` FROM `files` ORDER BY `id` LIMIT %d OFFSET %d", limit, offset)
 
-			err := rows.Scan(&id, &p)
+		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
+			rows, err := m.db.Query(query)
 			if err != nil {
 				return err
 			}
+			defer rows.Close()
 
-			if strings.Contains(p, legacyZipSeparator) {
-				// if err := m.migrateFileInZip(id, p); err != nil {
-				// 	return err
-				// }
+			for rows.Next() {
+				gotSome = true
 
-				// remove any null characters from the path
-				p = strings.ReplaceAll(p, legacyZipSeparator, string(filepath.Separator))
-			}
+				var id int
+				var p string
 
-			convertedPath := filepath.ToSlash(p)
-			parent := path.Dir(convertedPath)
-			basename := path.Base(convertedPath)
-			if parent != "." {
-				parentID, zipFileID, err := m.createFolderHierarchy(parent)
+				err := rows.Scan(&id, &p)
 				if err != nil {
 					return err
 				}
 
-				_, err = m.db.Exec("UPDATE `files` SET `parent_folder_id` = ?, `zip_file_id` = ?, `basename` = ? WHERE `id` = ?", parentID, zipFileID, basename, id)
-				if err != nil {
-					return err
+				if strings.Contains(p, legacyZipSeparator) {
+					// remove any null characters from the path
+					p = strings.ReplaceAll(p, legacyZipSeparator, string(filepath.Separator))
+				}
+
+				convertedPath := filepath.ToSlash(p)
+				parent := path.Dir(convertedPath)
+				basename := path.Base(convertedPath)
+				if parent != "." {
+					parentID, zipFileID, err := m.createFolderHierarchy(parent)
+					if err != nil {
+						return err
+					}
+
+					_, err = m.db.Exec("UPDATE `files` SET `parent_folder_id` = ?, `zip_file_id` = ?, `basename` = ? WHERE `id` = ?", parentID, zipFileID, basename, id)
+					if err != nil {
+						return err
+					}
 				}
 			}
-		}
 
-		if err := rows.Err(); err != nil {
+			return rows.Err()
+		}); err != nil {
 			return err
 		}
 
 		if !gotSome {
 			break
 		}
+
+		offset += limit
+
+		if offset%logEvery == 0 {
+			logger.Infof("Migrated %d files", offset)
+		}
 	}
+
+	logger.Infof("Finished migrating files")
 
 	return nil
 }
 
-func (m *schema32Migrator) deletePlaceholderFolder() error {
+func (m *schema32Migrator) deletePlaceholderFolder(ctx context.Context) error {
 	// only delete the placeholder folder if no files/folders are attached to it
 	result := struct {
 		Count int `db:"count"`
@@ -221,6 +280,11 @@ func (m *schema32Migrator) createFolderHierarchy(p string) (*int, sql.NullInt64,
 }
 
 func (m *schema32Migrator) getOrCreateFolder(path string, parentID *int, zipFileID sql.NullInt64) (*int, sql.NullInt64, error) {
+	foundEntry, ok := m.folderCache[path]
+	if ok {
+		return &foundEntry.id, foundEntry.zipID, nil
+	}
+
 	const query = "SELECT `id`, `zip_file_id` FROM `folders` WHERE `path` = ?"
 	rows, err := m.db.Query(query, path)
 	if err != nil {
@@ -262,6 +326,9 @@ func (m *schema32Migrator) getOrCreateFolder(path string, parentID *int, zipFile
 	}
 
 	idInt := int(id)
+
+	m.folderCache[path] = folderInfo{id: idInt, zipID: zipFileID}
+
 	return &idInt, zipFileID, nil
 }
 
