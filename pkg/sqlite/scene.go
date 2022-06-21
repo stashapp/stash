@@ -33,19 +33,23 @@ const (
 )
 
 var findExactDuplicateQuery = `
-SELECT GROUP_CONCAT(id) as ids
+SELECT GROUP_CONCAT(scenes.id) as ids
 FROM scenes
-WHERE phash IS NOT NULL
-GROUP BY phash
-HAVING COUNT(phash) > 1
-ORDER BY SUM(size) DESC;
+INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id) 
+INNER JOIN files ON (scenes_files.file_id = files.id) 
+INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
+GROUP BY files_fingerprints.fingerprint
+HAVING COUNT(files_fingerprints.fingerprint) > 1
+ORDER BY SUM(files.size) DESC;
 `
 
 var findAllPhashesQuery = `
-SELECT id, phash
+SELECT scenes.id as id, files_fingerprints.fingerprint as phash
 FROM scenes
-WHERE phash IS NOT NULL
-ORDER BY size DESC
+INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id) 
+INNER JOIN files ON (scenes_files.file_id = files.id) 
+INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
+ORDER BY files.size DESC
 `
 
 type sceneRow struct {

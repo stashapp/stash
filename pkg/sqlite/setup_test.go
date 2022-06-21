@@ -793,8 +793,8 @@ func getSceneStringValue(index int, field string) string {
 	return getPrefixedStringValue("scene", index, field)
 }
 
-func getScenePhash(index int, field string) string {
-	return getPrefixedStringValue("scene", index%(totalScenes-dupeScenePhashes), "phash")
+func getScenePhash(index int, field string) int64 {
+	return int64(index % (totalScenes - dupeScenePhashes) * 1234)
 }
 
 func getSceneStringPtr(index int, field string) *string {
