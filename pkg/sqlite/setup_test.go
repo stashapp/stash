@@ -73,6 +73,7 @@ const (
 	sceneIdxWithSpacedName
 	sceneIdxWithStudioPerformer
 	sceneIdxWithGrandChildStudio
+	sceneIdxMissingPhash
 	// new indexes above
 	lastSceneIdx
 
@@ -916,25 +917,30 @@ func getSceneBasename(index int) string {
 }
 
 func makeSceneFile(i int) *file.VideoFile {
+	fp := []file.Fingerprint{
+		{
+			Type:        file.FingerprintTypeMD5,
+			Fingerprint: getSceneStringValue(i, checksumField),
+		},
+		{
+			Type:        file.FingerprintTypeOshash,
+			Fingerprint: getSceneStringValue(i, "oshash"),
+		},
+	}
+
+	if i != sceneIdxMissingPhash {
+		fp = append(fp, file.Fingerprint{
+			Type:        file.FingerprintTypePhash,
+			Fingerprint: getScenePhash(i, "phash"),
+		})
+	}
+
 	return &file.VideoFile{
 		BaseFile: &file.BaseFile{
 			Path:           getFilePath(folderIdxWithSceneFiles, getSceneBasename(i)),
 			Basename:       getSceneBasename(i),
 			ParentFolderID: folderIDs[folderIdxWithSceneFiles],
-			Fingerprints: []file.Fingerprint{
-				{
-					Type:        file.FingerprintTypeMD5,
-					Fingerprint: getSceneStringValue(i, checksumField),
-				},
-				{
-					Type:        file.FingerprintTypeOshash,
-					Fingerprint: getSceneStringValue(i, "oshash"),
-				},
-				{
-					Type:        file.FingerprintTypePhash,
-					Fingerprint: getScenePhash(i, "phash"),
-				},
-			},
+			Fingerprints:   fp,
 		},
 		Duration: getSceneDuration(i),
 		Height:   getHeight(i),

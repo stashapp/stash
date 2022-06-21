@@ -2803,6 +2803,26 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 	})
 }
 
+func TestSceneQueryIsMissingPhash(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		isMissing := "phash"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
+
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
+
+		if !assert.Len(t, scenes, 1) {
+			return nil
+		}
+
+		assert.Equal(t, sceneIDs[sceneIdxMissingPhash], scenes[0].ID)
+
+		return nil
+	})
+}
+
 func TestSceneQueryPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
@@ -3151,7 +3171,8 @@ func TestSceneQueryPhashDuplicated(t *testing.T) {
 		duplicated = false
 
 		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
-		assert.Len(t, scenes, totalScenes-(dupeScenePhashes*2))
+		// -1 for missing phash
+		assert.Len(t, scenes, totalScenes-(dupeScenePhashes*2)-1)
 
 		return nil
 	})

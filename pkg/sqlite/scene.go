@@ -988,6 +988,9 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 			case "stash_id":
 				qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
 				f.addWhere("scene_stash_ids.scene_id IS NULL")
+			case "phash":
+				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_query.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+				f.addWhere("fingerprints_phash.fingerprint IS NULL")
 			default:
 				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
 			}
