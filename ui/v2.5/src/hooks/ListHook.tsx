@@ -490,7 +490,7 @@ const RenderList = <
 
   const content = (
     <div>
-      <ButtonToolbar className="align-items-center justify-content-center mb-2">
+      <ButtonToolbar className="justify-content-center">
         <ListFilter
           onFilterUpdate={updateQueryParams}
           filter={filter}
