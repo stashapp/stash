@@ -46,7 +46,7 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={i} className="scene-skeleton skeleton-card"></div>
+              <div key={`_${i}`} className="scene-skeleton skeleton-card"></div>
             ))
           : result.data?.findScenes.scenes.map((scene, index) => (
               <SceneCard

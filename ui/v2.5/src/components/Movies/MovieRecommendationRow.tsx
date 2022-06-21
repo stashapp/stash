@@ -39,7 +39,7 @@ export const MovieRecommendationRow: React.FC<IProps> = (props: IProps) => {
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={i} className="movie-skeleton skeleton-card"></div>
+              <div key={`_${i}`} className="movie-skeleton skeleton-card"></div>
             ))
           : result.data?.findMovies.movies.map((m) => (
               <MovieCard key={m.id} movie={m} />

@@ -41,7 +41,10 @@ export const PerformerRecommendationRow: FunctionComponent<IProps> = (
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={i} className="performer-skeleton skeleton-card"></div>
+              <div
+                key={`_${i}`}
+                className="performer-skeleton skeleton-card"
+              ></div>
             ))
           : result.data?.findPerformers.performers.map((p) => (
               <PerformerCard key={p.id} performer={p} />
