@@ -10,7 +10,7 @@ import { ImageCard } from "./ImageCard";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  header: String;
+  header: string;
 }
 
 export const ImageRecommendationRow: FunctionComponent<IProps> = (

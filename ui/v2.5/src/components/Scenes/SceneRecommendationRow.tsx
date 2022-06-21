@@ -11,7 +11,7 @@ import { FormattedMessage } from "react-intl";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  header: String;
+  header: string;
 }
 
 export const SceneRecommendationRow: FunctionComponent<IProps> = (
