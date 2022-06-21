@@ -3132,6 +3132,31 @@ func TestSceneQueryMovies(t *testing.T) {
 	})
 }
 
+func TestSceneQueryPhashDuplicated(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		duplicated := true
+		phashCriterion := models.PHashDuplicationCriterionInput{
+			Duplicated: &duplicated,
+		}
+
+		sceneFilter := models.SceneFilterType{
+			Duplicated: &phashCriterion,
+		}
+
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
+
+		assert.Len(t, scenes, dupeScenePhashes*2)
+
+		duplicated = false
+
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
+		assert.Len(t, scenes, totalScenes-(dupeScenePhashes*2))
+
+		return nil
+	})
+}
+
 func TestSceneQuerySorting(t *testing.T) {
 	tests := []struct {
 		name          string

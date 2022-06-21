@@ -79,6 +79,8 @@ const (
 	totalScenes = lastSceneIdx + 3
 )
 
+const dupeScenePhashes = 2
+
 const (
 	imageIdxWithGallery = iota
 	imageIdx1WithGallery
@@ -791,6 +793,10 @@ func getSceneStringValue(index int, field string) string {
 	return getPrefixedStringValue("scene", index, field)
 }
 
+func getScenePhash(index int, field string) string {
+	return getPrefixedStringValue("scene", index%(totalScenes-dupeScenePhashes), "phash")
+}
+
 func getSceneStringPtr(index int, field string) *string {
 	v := getPrefixedStringValue("scene", index, field)
 	return &v
@@ -923,6 +929,10 @@ func makeSceneFile(i int) *file.VideoFile {
 				{
 					Type:        file.FingerprintTypeOshash,
 					Fingerprint: getSceneStringValue(i, "oshash"),
+				},
+				{
+					Type:        file.FingerprintTypePhash,
+					Fingerprint: getScenePhash(i, "phash"),
 				},
 			},
 		},
