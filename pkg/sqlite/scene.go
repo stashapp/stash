@@ -619,7 +619,17 @@ func (qb *SceneStore) Count(ctx context.Context) (int, error) {
 }
 
 func (qb *SceneStore) Size(ctx context.Context) (float64, error) {
-	q := dialect.Select(goqu.SUM(qb.queryTable().Col("size"))).From(qb.queryTable())
+	table := qb.table()
+	fileTable := fileTableMgr.table
+	q := dialect.Select(
+		goqu.SUM(fileTableMgr.table.Col("size")),
+	).From(table).InnerJoin(
+		scenesFilesJoinTable,
+		goqu.On(table.Col(idColumn).Eq(scenesFilesJoinTable.Col(sceneIDColumn))),
+	).InnerJoin(
+		fileTable,
+		goqu.On(scenesFilesJoinTable.Col(fileIDColumn).Eq(fileTable.Col(idColumn))),
+	)
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
