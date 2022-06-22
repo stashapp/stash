@@ -64,6 +64,9 @@
 | `p n` | Play next scene in queue |
 | `p p` | Play previous scene in queue |
 | `p r` | Play random scene in queue |
+| `{1-9}` | Seek to 10-90% duration |
+| `[` | Scrub backwards 10% duration |
+| `]` | Scrub forwards 10% duration |
 
 ### Scene Markers tab shortcuts
 
