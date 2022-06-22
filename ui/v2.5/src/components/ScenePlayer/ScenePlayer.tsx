@@ -40,7 +40,8 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
   function seekPercentRelative(percent: number) {
     const duration = player.duration();
     const currentTime = player.currentTime();
-    const time = (currentTime + duration * percent) % duration;
+    const time = currentTime + duration * percent;
+    if (time > duration) return;
     player.currentTime(time);
   }
 
