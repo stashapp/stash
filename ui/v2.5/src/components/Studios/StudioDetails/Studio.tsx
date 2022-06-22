@@ -28,6 +28,7 @@ import { StudioPerformersPanel } from "./StudioPerformersPanel";
 import { StudioEditPanel } from "./StudioEditPanel";
 import { StudioDetailsPanel } from "./StudioDetailsPanel";
 import { StudioMoviesPanel } from "./StudioMoviesPanel";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -112,7 +113,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
     return (
       <Modal
         show={isDeleteAlertOpen}
-        icon="trash-alt"
+        icon={faTrashAlt}
         accept={{
           text: intl.formatMessage({ id: "actions.delete" }),
           variant: "danger",

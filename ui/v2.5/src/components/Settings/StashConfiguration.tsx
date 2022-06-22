@@ -1,3 +1,4 @@
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Form, Row, Col, Dropdown } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
@@ -72,7 +73,7 @@ const Stash: React.FC<IStashProps> = ({
             id={`stash-menu-${index}`}
             className="minimal"
           >
-            <Icon icon="ellipsis-v" />
+            <Icon icon={faEllipsisV} />
           </Dropdown.Toggle>
           <Dropdown.Menu className="bg-secondary text-white">
             <Dropdown.Item onClick={() => onEdit()}>

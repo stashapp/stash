@@ -1,8 +1,9 @@
 import React from "react";
 import { useIntl } from "react-intl";
 import { Button, InputGroup, Form } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 import { FormikHandlers } from "formik";
+import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   value: string;
@@ -36,7 +37,7 @@ export const URLField: React.FC<IProps> = (props: IProps) => {
           disabled={!props.value || !props.urlScrapable(props.value)}
           title={intl.formatMessage({ id: "actions.scrape" })}
         >
-          <Icon icon="file-download" />
+          <Icon icon={faFileDownload} />
         </Button>
       </InputGroup.Append>
     </InputGroup>

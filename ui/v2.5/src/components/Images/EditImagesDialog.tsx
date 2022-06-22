@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import _ from "lodash";
+import isEqual from "lodash-es/isEqual";
 import { useBulkImageUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { StudioSelect, Modal } from "src/components/Shared";
@@ -17,6 +17,7 @@ import {
   getAggregateStudioId,
   getAggregateTagIds,
 } from "src/utils/bulkUpdate";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IListOperationProps {
   selected: GQL.SlimImageDataFragment[];
@@ -132,10 +133,10 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         if (imageStudioID !== updateStudioID) {
           updateStudioID = undefined;
         }
-        if (!_.isEqual(imagePerformerIDs, updatePerformerIds)) {
+        if (!isEqual(imagePerformerIDs, updatePerformerIds)) {
           updatePerformerIds = [];
         }
-        if (!_.isEqual(imageTagIDs, updateTagIds)) {
+        if (!isEqual(imageTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
         if (image.organized !== updateOrganized) {
@@ -219,7 +220,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     return (
       <Modal
         show
-        icon="pencil-alt"
+        icon={faPencilAlt}
         header={intl.formatMessage(
           { id: "dialogs.edit_entity_title" },
           {

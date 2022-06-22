@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import _ from "lodash";
+import cloneDeep from "lodash-es/cloneDeep";
 import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   FindScenesQueryResult,
   SlimSceneDataFragment,
@@ -25,6 +24,7 @@ import { SceneCardsGrid } from "./SceneCardsGrid";
 import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { ConfigurationContext } from "src/hooks/Config";
+import { faPlay } from "@fortawesome/free-solid-svg-icons";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -50,7 +50,7 @@ export const SceneList: React.FC<ISceneList> = ({
       text: intl.formatMessage({ id: "actions.play_selected" }),
       onClick: playSelected,
       isDisplayed: showWhenSelected,
-      icon: "play" as IconProp,
+      icon: faPlay,
     },
     {
       text: intl.formatMessage({ id: "actions.play_random" }),
@@ -137,7 +137,7 @@ export const SceneList: React.FC<ISceneList> = ({
       const indexMax =
         filter.itemsPerPage < count ? filter.itemsPerPage : count;
       const index = Math.floor(Math.random() * indexMax);
-      const filterCopy = _.cloneDeep(filter);
+      const filterCopy = cloneDeep(filter);
       filterCopy.currentPage = page;
       filterCopy.sortBy = "random";
       const queryResults = await queryFindScenes(filterCopy);
@@ -300,3 +300,5 @@ export const SceneList: React.FC<ISceneList> = ({
 
   return <TaggerContext>{listData.template}</TaggerContext>;
 };
+
+export default SceneList;

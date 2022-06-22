@@ -4,6 +4,7 @@ import { Button } from "react-bootstrap";
 import { useJobQueue, useJobsSubscribe } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
+import { faCog } from "@fortawesome/free-solid-svg-icons";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -59,7 +60,7 @@ export const SettingsButton: React.FC = () => {
       className="minimal d-flex align-items-center h-100"
       title={intl.formatMessage({ id: "settings" })}
     >
-      <FontAwesomeIcon icon="cog" spin={queue.length > 0} />
+      <FontAwesomeIcon icon={faCog} spin={queue.length > 0} />
     </Button>
   );
 };

@@ -1,3 +1,9 @@
+import {
+  faCheck,
+  faChevronDown,
+  faChevronRight,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Collapse } from "react-bootstrap";
 import { useIntl } from "react-intl";
@@ -26,7 +32,7 @@ export const ShowFields = (props: IShowFieldsProps) => {
         handleClick(label);
       }}
     >
-      <Icon icon={enabled ? "check" : "times"} />
+      <Icon icon={enabled ? faCheck : faTimes} />
       <span>{label}</span>
     </Button>
   ));
@@ -34,7 +40,7 @@ export const ShowFields = (props: IShowFieldsProps) => {
   return (
     <div>
       <Button onClick={() => setOpen(!open)} className="minimal">
-        <Icon icon={open ? "chevron-down" : "chevron-right"} />
+        <Icon icon={open ? faChevronDown : faChevronRight} />
         <span>
           {intl.formatMessage({
             id: "config.tools.scene_filename_parser.display_fields",

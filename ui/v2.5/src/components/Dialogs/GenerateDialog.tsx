@@ -10,6 +10,7 @@ import { Manual } from "../Help/Manual";
 import { withoutTypename } from "src/utils";
 import { GenerateOptions } from "../Settings/Tasks/GenerateOptions";
 import { SettingSection } from "../Settings/SettingSection";
+import { faCogs, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 interface ISceneGenerateDialog {
   selectedIds?: string[];
@@ -171,7 +172,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
     <Modal
       show
       modalProps={{ animation, size: "lg" }}
-      icon="cogs"
+      icon={faCogs}
       header={intl.formatMessage({ id: "actions.generate" })}
       accept={{
         onClick: onGenerate,
@@ -188,7 +189,7 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
           className="minimal help-button"
           onClick={() => onShowManual()}
         >
-          <Icon icon="question-circle" />
+          <Icon icon={faQuestionCircle} />
         </Button>
       }
     >
@@ -205,3 +206,5 @@ export const GenerateDialog: React.FC<ISceneGenerateDialog> = ({
     </Modal>
   );
 };
+
+export default GenerateDialog;

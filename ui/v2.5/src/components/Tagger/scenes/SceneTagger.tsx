@@ -12,6 +12,7 @@ import { TaggerScene } from "./TaggerScene";
 import { SceneTaggerModals } from "./sceneTaggerModals";
 import { SceneSearchResults } from "./StashSearchResult";
 import { ConfigurationContext } from "src/hooks/Config";
+import { faCog } from "@fortawesome/free-solid-svg-icons";
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -83,7 +84,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     return (
       <div className="ml-2">
         <Button onClick={() => setShowConfig(!showConfig)}>
-          <Icon className="fa-fw" icon="cog" />
+          <Icon className="fa-fw" icon={faCog} />
         </Button>
       </div>
     );

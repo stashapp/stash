@@ -27,8 +27,7 @@ import {
 } from "src/hooks/Interactive/context";
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
-
-export const VIDEO_PLAYER_ID = "VideoJsPlayer";
+import { VIDEO_PLAYER_ID } from "./util";
 
 function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
   function seekPercent(percent: number) {
@@ -679,5 +678,4 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   );
 };
 
-export const getPlayerPosition = () =>
-  VideoJS.getPlayer(VIDEO_PLAYER_ID).currentTime();
+export default ScenePlayer;

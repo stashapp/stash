@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import cx from "classnames";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import {
   LoadingIndicator,
@@ -13,6 +13,13 @@ import {
 import * as GQL from "src/core/generated-graphql";
 import { stringToGender } from "src/utils/gender";
 import { getCountryByISO } from "src/utils/country";
+import {
+  faArrowLeft,
+  faArrowRight,
+  faCheck,
+  faExternalLinkAlt,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IPerformerModalProps {
   performer: GQL.ScrapedScenePerformerDataFragment;
@@ -21,7 +28,7 @@ interface IPerformerModalProps {
   onSave: (input: GQL.PerformerCreateInput) => void;
   excludedPerformerFields?: string[];
   header: string;
-  icon: IconName;
+  icon: IconDefinition;
   create?: boolean;
   endpoint?: string;
 }
@@ -91,7 +98,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
               variant="secondary"
               className={excluded[name] ? "text-muted" : "text-success"}
             >
-              <Icon icon={excluded[name] ? "times" : "check"} />
+              <Icon icon={excluded[name] ? faTimes : faCheck} />
             </Button>
           )}
           <strong>
@@ -219,7 +226,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
             <h6 className="mt-2">
               <a href={link} target="_blank" rel="noopener noreferrer">
                 Stash-Box Source
-                <Icon icon="external-link-alt" className="ml-2" />
+                <Icon icon={faExternalLinkAlt} className="ml-2" />
               </a>
             </h6>
           )}
@@ -236,7 +243,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
                     excluded.image ? "text-muted" : "text-success"
                   )}
                 >
-                  <Icon icon={excluded.image ? "times" : "check"} />
+                  <Icon icon={excluded.image ? faTimes : faCheck} />
                 </Button>
               )}
               <img
@@ -257,7 +264,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
             </div>
             <div className="d-flex mt-3">
               <Button onClick={setPrev} disabled={images.length === 1}>
-                <Icon icon="arrow-left" />
+                <Icon icon={faArrowLeft} />
               </Button>
               <h5 className="flex-grow-1">
                 Select performer image
@@ -265,7 +272,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
                 {imageIndex + 1} of {images.length}
               </h5>
               <Button onClick={setNext} disabled={images.length === 1}>
-                <Icon icon="arrow-right" />
+                <Icon icon={faArrowRight} />
               </Button>
             </div>
           </div>

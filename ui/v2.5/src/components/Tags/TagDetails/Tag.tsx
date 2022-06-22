@@ -30,6 +30,11 @@ import { TagGalleriesPanel } from "./TagGalleriesPanel";
 import { TagDetailsPanel } from "./TagDetailsPanel";
 import { TagEditPanel } from "./TagEditPanel";
 import { TagMergeModal } from "./TagMergeDialog";
+import {
+  faSignInAlt,
+  faSignOutAlt,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -165,7 +170,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
     return (
       <Modal
         show={isDeleteAlertOpen}
-        icon="trash-alt"
+        icon={faTrashAlt}
         accept={{
           text: intl.formatMessage({ id: "actions.delete" }),
           variant: "danger",
@@ -219,7 +224,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             className="bg-secondary text-white"
             onClick={() => setMergeType("from")}
           >
-            <Icon icon="sign-in-alt" />
+            <Icon icon={faSignInAlt} />
             <FormattedMessage id="actions.merge_from" />
             ...
           </Dropdown.Item>
@@ -227,7 +232,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
             className="bg-secondary text-white"
             onClick={() => setMergeType("into")}
           >
-            <Icon icon="sign-out-alt" />
+            <Icon icon={faSignOutAlt} />
             <FormattedMessage id="actions.merge_into" />
             ...
           </Dropdown.Item>
