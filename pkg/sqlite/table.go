@@ -552,7 +552,7 @@ func queryFunc(ctx context.Context, query *goqu.SelectDataset, single bool, f fu
 		return err
 	}
 
-	tx, err := getTx(ctx)
+	tx, err := getDBReader(ctx)
 	if err != nil {
 		return err
 	}
@@ -587,7 +587,7 @@ func querySimple(ctx context.Context, query *goqu.SelectDataset, out interface{}
 		return err
 	}
 
-	tx, err := getTx(ctx)
+	tx, err := getDBReader(ctx)
 	if err != nil {
 		return err
 	}

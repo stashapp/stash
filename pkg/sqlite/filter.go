@@ -700,7 +700,7 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 }
 
 type hierarchicalMultiCriterionHandlerBuilder struct {
-	tx dbi
+	tx dbWrapper
 
 	primaryTable string
 	foreignTable string
@@ -711,7 +711,7 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	relationsTable string
 }
 
-func getHierarchicalValues(ctx context.Context, tx dbi, values []string, table, relationsTable, parentFK string, depth *int) string {
+func getHierarchicalValues(ctx context.Context, tx dbWrapper, values []string, table, relationsTable, parentFK string, depth *int) string {
 	var args []interface{}
 
 	depthVal := 0
@@ -837,7 +837,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 }
 
 type joinedHierarchicalMultiCriterionHandlerBuilder struct {
-	tx dbi
+	tx dbWrapper
 
 	primaryTable string
 	foreignTable string

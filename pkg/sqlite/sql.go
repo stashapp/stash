@@ -219,7 +219,7 @@ func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterio
 	return getIntCriterionWhereClause(lhs, criterion)
 }
 
-func getImage(ctx context.Context, tx dbi, query string, args ...interface{}) ([]byte, error) {
+func getImage(ctx context.Context, tx dbWrapper, query string, args ...interface{}) ([]byte, error) {
 	rows, err := tx.Queryx(ctx, query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

@@ -23,7 +23,7 @@ type objectList interface {
 }
 
 type repository struct {
-	tx        dbi
+	tx        dbWrapper
 	tableName string
 	idColumn  string
 }

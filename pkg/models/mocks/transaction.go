@@ -13,6 +13,10 @@ func (*TxnManager) Begin(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
+func (*TxnManager) WithDatabase(ctx context.Context) (context.Context, error) {
+	return ctx, nil
+}
+
 func (*TxnManager) Commit(ctx context.Context) error {
 	return nil
 }

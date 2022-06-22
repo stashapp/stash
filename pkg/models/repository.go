@@ -9,6 +9,7 @@ import (
 
 type TxnManager interface {
 	txn.Manager
+	txn.DatabaseProvider
 	Reset() error
 }
 

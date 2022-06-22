@@ -14,8 +14,18 @@ type key int
 
 const (
 	txnKey key = iota + 1
+	dbKey
 	hookManagerKey
 )
+
+func (db *Database) WithDatabase(ctx context.Context) (context.Context, error) {
+	// if we are already in a transaction or have a database already, just use it
+	if tx, _ := getDBReader(ctx); tx != nil {
+		return ctx, nil
+	}
+
+	return context.WithValue(ctx, dbKey, db.db), nil
+}
 
 func (db *Database) Begin(ctx context.Context) (context.Context, error) {
 	if tx, _ := getTx(ctx); tx != nil {
@@ -72,6 +82,20 @@ func getTx(ctx context.Context) (*sqlx.Tx, error) {
 	tx, ok := ctx.Value(txnKey).(*sqlx.Tx)
 	if !ok || tx == nil {
 		return nil, fmt.Errorf("not in transaction")
+	}
+	return tx, nil
+}
+
+func getDBReader(ctx context.Context) (dbReader, error) {
+	// get transaction first if present
+	tx, ok := ctx.Value(txnKey).(*sqlx.Tx)
+	if !ok || tx == nil {
+		// try to get database if present
+		db, ok := ctx.Value(dbKey).(*sqlx.DB)
+		if !ok || db == nil {
+			return nil, fmt.Errorf("not in transaction")
+		}
+		return db, nil
 	}
 	return tx, nil
 }

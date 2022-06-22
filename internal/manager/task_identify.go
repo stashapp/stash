@@ -51,7 +51,8 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	// if scene ids provided, use those
 	// otherwise, batch query for all scenes - ordering by path
-	if err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+	// don't use a transaction to query scenes
+	if err := txn.WithDatabase(ctx, instance.Repository, func(ctx context.Context) error {
 		if len(j.input.SceneIDs) == 0 {
 			return j.identifyAllScenes(ctx, sources)
 		}
