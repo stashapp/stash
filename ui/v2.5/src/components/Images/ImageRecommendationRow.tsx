@@ -10,7 +10,7 @@ import { ImageCard } from "./ImageCard";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  header: String;
+  header: string;
 }
 
 export const ImageRecommendationRow: FunctionComponent<IProps> = (
@@ -41,7 +41,7 @@ export const ImageRecommendationRow: FunctionComponent<IProps> = (
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={i} className="image-skeleton skeleton-card"></div>
+              <div key={`_${i}`} className="image-skeleton skeleton-card"></div>
             ))
           : result.data?.findImages.images.map((i) => (
               <ImageCard key={i.id} image={i} zoomIndex={1} />

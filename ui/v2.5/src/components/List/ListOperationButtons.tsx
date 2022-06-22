@@ -100,7 +100,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
     if (buttons.length > 0) {
       return (
-        <ButtonGroup className="ml-2 mb-1">
+        <ButtonGroup className="ml-2 mb-2">
           {buttons.map((button) => {
             return (
               <OverlayTrigger
@@ -176,7 +176,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
     if (options.length > 0) {
       return (
-        <Dropdown className="mb-1">
+        <Dropdown>
           <Dropdown.Toggle variant="secondary" id="more-menu">
             <Icon icon={faEllipsisH} />
           </Dropdown.Toggle>
@@ -192,7 +192,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     <>
       {maybeRenderButtons()}
 
-      <div className="mx-2">{renderMore()}</div>
+      <div className="mx-2 mb-2">{renderMore()}</div>
     </>
   );
 };

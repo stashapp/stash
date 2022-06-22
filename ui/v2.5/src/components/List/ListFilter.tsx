@@ -217,8 +217,8 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
     return (
       <>
-        <div className="d-flex mb-1">
-          <div className="mr-2 flex-grow-1 query-text-field-group">
+        <div className="mb-2 mr-2 d-flex">
+          <div className="flex-grow-1 query-text-field-group">
             <FormControl
               ref={queryRef}
               placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
@@ -240,7 +240,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           </div>
         </div>
 
-        <ButtonGroup className="mr-2 mb-1">
+        <ButtonGroup className="mr-2 mb-2">
           <Dropdown>
             <OverlayTrigger
               placement="top"
@@ -277,7 +277,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           </OverlayTrigger>
         </ButtonGroup>
 
-        <Dropdown as={ButtonGroup} className="mr-2 mb-1">
+        <Dropdown as={ButtonGroup} className="mr-2 mb-2">
           <InputGroup.Prepend>
             <Dropdown.Toggle variant="secondary">
               {currentSortBy
@@ -322,13 +322,13 @@ export const ListFilter: React.FC<IListFilterProps> = ({
           )}
         </Dropdown>
 
-        <div>
+        <div className="mb-2">
           <Form.Control
             as="select"
             ref={perPageSelect}
             onChange={(e) => onChangePageSize(e.target.value)}
             value={filter.itemsPerPage.toString()}
-            className="btn-secondary mx-1 mb-1"
+            className="btn-secondary"
           >
             {pageSizeOptions.map((s) => (
               <option value={s.value} key={s.value}>

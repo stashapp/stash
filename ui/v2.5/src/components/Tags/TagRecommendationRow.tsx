@@ -10,7 +10,7 @@ import { FormattedMessage } from "react-intl";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  header: String;
+  header: string;
 }
 
 export const TagRecommendationRow: FunctionComponent<IProps> = (
@@ -41,7 +41,7 @@ export const TagRecommendationRow: FunctionComponent<IProps> = (
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={i} className="tag-skeleton skeleton-card"></div>
+              <div key={`_${i}`} className="tag-skeleton skeleton-card"></div>
             ))
           : result.data?.findTags.tags.map((p) => (
               <TagCard key={p.id} tag={p} zoomIndex={0} />
