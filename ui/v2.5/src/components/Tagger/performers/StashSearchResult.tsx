@@ -4,6 +4,7 @@ import { Button } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { useUpdatePerformer } from "../queries";
 import PerformerModal from "../PerformerModal";
+import { faTags } from "@fortawesome/free-solid-svg-icons";
 
 interface IStashSearchResultProps {
   performer: GQL.SlimPerformerDataFragment;
@@ -78,7 +79,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           modalVisible={modalPerformer !== undefined}
           performer={modalPerformer}
           onSave={handleSave}
-          icon="tags"
+          icon={faTags}
           header="Update Performer"
           excludedPerformerFields={excludedPerformerFields}
           endpoint={endpoint}

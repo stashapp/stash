@@ -7,6 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { Icon } from "../Shared";
 import { GridCard } from "../Shared/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
+import { faMapMarkerAlt, faUser } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -102,7 +103,7 @@ export const TagCard: React.FC<IProps> = ({
     return (
       <Link className="marker-count" to={NavUtils.makeTagSceneMarkersUrl(tag)}>
         <Button className="minimal">
-          <Icon icon="map-marker-alt" />
+          <Icon icon={faMapMarkerAlt} />
           <span>{tag.scene_marker_count}</span>
         </Button>
       </Link>
@@ -141,7 +142,7 @@ export const TagCard: React.FC<IProps> = ({
     return (
       <Link className="performer-count" to={NavUtils.makeTagPerformersUrl(tag)}>
         <Button className="minimal">
-          <Icon icon="user" />
+          <Icon icon={faUser} />
           <span>{tag.performer_count}</span>
         </Button>
       </Link>

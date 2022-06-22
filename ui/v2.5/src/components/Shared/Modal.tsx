@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Modal, Spinner, ModalProps } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import Icon from "src/components/Shared/Icon";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FormattedMessage } from "react-intl";
 
 interface IButton {
@@ -14,7 +14,7 @@ interface IModal {
   show: boolean;
   onHide?: () => void;
   header?: string;
-  icon?: IconName;
+  icon?: IconDefinition;
   cancel?: IButton;
   accept?: IButton;
   isRunning?: boolean;

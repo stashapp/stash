@@ -1,4 +1,5 @@
-import _, { debounce } from "lodash";
+import debounce from "lodash-es/debounce";
+import cloneDeep from "lodash-es/cloneDeep";
 import React, { HTMLAttributes, useEffect, useRef, useState } from "react";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -23,6 +24,15 @@ import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PersistanceLevel } from "src/hooks/ListHook";
 import { SavedFilterList } from "./SavedFilterList";
+import {
+  faBookmark,
+  faCaretDown,
+  faCaretUp,
+  faCheck,
+  faFilter,
+  faRandom,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 const maxPageSize = 1000;
 interface IListFilterProps {
@@ -53,7 +63,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   const [perPageInput, perPageFocus] = useFocus();
 
   const searchCallback = debounce((value: string) => {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.searchTerm = value;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
@@ -101,7 +111,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       pp = maxPageSize;
     }
 
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.itemsPerPage = pp;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
@@ -120,7 +130,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onChangeSortDirection() {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     if (filter.sortDirection === SortDirectionEnum.Asc) {
       newFilter.sortDirection = SortDirectionEnum.Desc;
     } else {
@@ -131,14 +141,14 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onChangeSortBy(eventKey: string | null) {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.sortBy = eventKey ?? undefined;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
   }
 
   function onReshuffleRandomSort() {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.currentPage = 1;
     newFilter.randomSeed = -1;
     onFilterUpdate(newFilter);
@@ -225,7 +235,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                 queryClearShowing ? "" : "d-none"
               )}
             >
-              <Icon icon="times" />
+              <Icon icon={faTimes} />
             </Button>
           </div>
         </div>
@@ -241,7 +251,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               }
             >
               <Dropdown.Toggle variant="secondary">
-                <Icon icon="bookmark" />
+                <Icon icon={faBookmark} />
               </Dropdown.Toggle>
             </OverlayTrigger>
             <Dropdown.Menu
@@ -262,7 +272,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               onClick={() => openFilterDialog()}
               active={filterDialogOpen}
             >
-              <Icon icon="filter" />
+              <Icon icon={faFilter} />
             </Button>
           </OverlayTrigger>
         </ButtonGroup>
@@ -291,8 +301,8 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               <Icon
                 icon={
                   filter.sortDirection === SortDirectionEnum.Asc
-                    ? "caret-up"
-                    : "caret-down"
+                    ? faCaretUp
+                    : faCaretDown
                 }
               />
             </Button>
@@ -306,7 +316,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               }
             >
               <Button variant="secondary" onClick={onReshuffleRandomSort}>
-                <Icon icon="random" />
+                <Icon icon={faRandom} />
               </Button>
             </OverlayTrigger>
           )}
@@ -362,7 +372,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                         )
                       }
                     >
-                      <Icon icon="check" />
+                      <Icon icon={faCheck} />
                     </Button>
                   </InputGroup.Append>
                 </InputGroup>

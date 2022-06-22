@@ -1,9 +1,10 @@
+import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 import { SceneDataFragment } from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 
 export interface IExternalPlayerButtonProps {
   scene: SceneDataFragment;
@@ -49,8 +50,10 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
       title={intl.formatMessage({ id: "actions.open_in_external_player" })}
     >
       <a href={url}>
-        <Icon icon="external-link-alt" color="white" />
+        <Icon icon={faExternalLinkAlt} color="white" />
       </a>
     </Button>
   );
 };
+
+export default ExternalPlayerButton;

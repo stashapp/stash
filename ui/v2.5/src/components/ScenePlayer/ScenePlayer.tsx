@@ -27,13 +27,20 @@ import {
 } from "src/hooks/Interactive/context";
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
-
-export const VIDEO_PLAYER_ID = "VideoJsPlayer";
+import { VIDEO_PLAYER_ID } from "./util";
 
 function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
   function seekPercent(percent: number) {
     const duration = player.duration();
     const time = duration * percent;
+    player.currentTime(time);
+  }
+
+  function seekPercentRelative(percent: number) {
+    const duration = player.duration();
+    const currentTime = player.currentTime();
+    const time = currentTime + duration * percent;
+    if (time > duration) return;
     player.currentTime(time);
   }
 
@@ -95,6 +102,12 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
       break;
     case 57: // 9
       seekPercent(0.9);
+      break;
+    case 221: // ]
+      seekPercentRelative(0.1);
+      break;
+    case 219: // [
+      seekPercentRelative(-0.1);
       break;
   }
 }
@@ -665,5 +678,4 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   );
 };
 
-export const getPlayerPosition = () =>
-  VideoJS.getPlayer(VIDEO_PLAYER_ID).currentTime();
+export default ScenePlayer;

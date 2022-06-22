@@ -10,6 +10,7 @@ import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { StringListInput } from "../../Shared/StringListInput";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IStudioEditPanel {
   studio: Partial<GQL.StudioDataFragment>;
@@ -197,7 +198,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
                     )}
                     onClick={() => removeStashID(stashID)}
                   >
-                    <Icon icon="trash-alt" />
+                    <Icon icon={faTrashAlt} />
                   </Button>
                   {link}
                 </li>

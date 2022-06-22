@@ -5,6 +5,11 @@ import * as GQL from "src/core/generated-graphql";
 import { FormattedMessage, useIntl } from "react-intl";
 import { multiValueSceneFields, SceneField, sceneFields } from "./constants";
 import { ThreeStateBoolean } from "./ThreeStateBoolean";
+import {
+  faCheck,
+  faPencilAlt,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IFieldOptionsEditor {
   options: GQL.IdentifyFieldOptions | undefined;
@@ -148,10 +153,10 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
           return intl.formatMessage({ id: "actions.use_default" });
         }
         if (value) {
-          return <Icon icon="check" className="text-success" />;
+          return <Icon icon={faCheck} className="text-success" />;
         }
 
-        return <Icon icon="times" className="text-danger" />;
+        return <Icon icon={faTimes} className="text-danger" />;
       }
 
       const defaultVal = defaultOptions?.fieldOptions?.find(
@@ -212,7 +217,7 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
               className="minimal text-success"
               onClick={() => onEditOptions()}
             >
-              <Icon icon="check" />
+              <Icon icon={faCheck} />
             </Button>
             <Button
               className="minimal text-danger"
@@ -221,13 +226,13 @@ const FieldOptionsEditor: React.FC<IFieldOptionsEditor> = ({
                 resetOptions();
               }}
             >
-              <Icon icon="times" />
+              <Icon icon={faTimes} />
             </Button>
           </>
         ) : (
           <>
             <Button className="minimal" onClick={() => editField()}>
-              <Icon icon="pencil-alt" />
+              <Icon icon={faPencilAlt} />
             </Button>
           </>
         )}

@@ -17,6 +17,7 @@ import {
 } from "src/models/list-filter/criteria/criterion";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import GenderIcon from "./GenderIcon";
+import { faHeart, faTag } from "@fortawesome/free-solid-svg-icons";
 
 export interface IPerformerCardExtraCriteria {
   scenes: Criterion<CriterionValue>[];
@@ -65,7 +66,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     }
     return (
       <div className="favorite">
-        <Icon icon="heart" size="2x" />
+        <Icon icon={faHeart} size="2x" />
       </div>
     );
   }
@@ -122,7 +123,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal tag-count">
-          <Icon icon="tag" />
+          <Icon icon={faTag} />
           <span>{performer.tags.length}</span>
         </Button>
       </HoverPopover>

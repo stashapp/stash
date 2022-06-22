@@ -1,4 +1,5 @@
-import _ from "lodash";
+import clone from "lodash-es/clone";
+import cloneDeep from "lodash-es/cloneDeep";
 import queryString from "query-string";
 import React, {
   useCallback,
@@ -10,7 +11,7 @@ import React, {
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import Mousetrap from "mousetrap";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
@@ -99,7 +100,7 @@ export interface IListHookOperation<T> {
     selectedIds: Set<string>
   ) => boolean;
   postRefetch?: boolean;
-  icon?: IconProp;
+  icon?: IconDefinition;
   buttonVariant?: string;
 }
 
@@ -268,7 +269,7 @@ const RenderList = <
   function singleSelect(id: string, selected: boolean) {
     setLastClickedId(id);
 
-    const newSelectedIds = _.clone(selectedIds);
+    const newSelectedIds = clone(selectedIds);
     if (selected) {
       newSelectedIds.add(id);
     } else {
@@ -339,7 +340,7 @@ const RenderList = <
   }
 
   function onChangeZoom(newZoomIndex: number) {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.zoomIndex = newZoomIndex;
     updateFilter(newFilter);
   }
@@ -434,7 +435,7 @@ const RenderList = <
   }
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.displayMode = displayMode;
     updateFilter(newFilter);
   }
@@ -443,7 +444,7 @@ const RenderList = <
     criterion: Criterion<CriterionValue>,
     oldId?: string
   ) {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
 
     // Find if we are editing an existing criteria, then modify that.  Or create a new one.
     const existingIndex = newFilter.criteria.findIndex((c) => {
@@ -469,7 +470,7 @@ const RenderList = <
   }
 
   function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.criteria = newFilter.criteria.filter(
       (criterion) => criterion.getId() !== removedCriterion.getId()
     );
@@ -478,7 +479,7 @@ const RenderList = <
   }
 
   function updateCriteria(c: Criterion<CriterionValue>[]) {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.criteria = c.slice();
     setNewCriterion(false);
   }
@@ -724,7 +725,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   const onChangePage = useCallback(
     (page: number) => {
-      const newFilter = _.cloneDeep(filter);
+      const newFilter = cloneDeep(filter);
       newFilter.currentPage = page;
       updateFilter(newFilter);
       window.scrollTo(0, 0);
@@ -733,9 +734,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   );
 
   const renderFilter = useMemo(() => {
-    return !options.filterHook
-      ? filter
-      : options.filterHook(_.cloneDeep(filter));
+    return !options.filterHook ? filter : options.filterHook(cloneDeep(filter));
   }, [filter, options]);
 
   const { contentTemplate, onSelectChange } = RenderList({

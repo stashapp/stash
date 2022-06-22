@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Button } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
+import { faStar as fasStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 
 export interface IRatingStarsProps {
   value?: number;
@@ -33,20 +35,20 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     props.onSetRating(newRating);
   }
 
-  function getIconPrefix(rating: number) {
+  function getIcon(rating: number) {
     if (hoverRating && hoverRating >= rating) {
       if (hoverRating === props.value) {
-        return "far";
+        return farStar;
       }
 
-      return "fas";
+      return fasStar;
     }
 
     if (!hoverRating && props.value && props.value >= rating) {
-      return "fas";
+      return fasStar;
     }
 
-    return "far";
+    return farStar;
   }
 
   function onMouseOver(rating: number) {
@@ -101,10 +103,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
       title={getTooltip(rating)}
       key={`star-${rating}`}
     >
-      <Icon
-        icon={[getIconPrefix(rating), "star"]}
-        className={getClassName(rating)}
-      />
+      <Icon icon={getIcon(rating)} className={getClassName(rating)} />
     </Button>
   );
 

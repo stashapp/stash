@@ -5,6 +5,7 @@ import { SettingSection } from "./SettingSection";
 import { BooleanSetting, StringListSetting, StringSetting } from "./Inputs";
 import { SettingStateContext } from "./context";
 import { useIntl } from "react-intl";
+import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 export const SettingsLibraryPanel: React.FC = () => {
   const intl = useIntl();
@@ -85,7 +86,7 @@ export const SettingsLibraryPanel: React.FC = () => {
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                <Icon icon="question-circle" />
+                <Icon icon={faQuestionCircle} />
               </a>
             </span>
           }
@@ -107,7 +108,7 @@ export const SettingsLibraryPanel: React.FC = () => {
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                <Icon icon="question-circle" />
+                <Icon icon={faQuestionCircle} />
               </a>
             </span>
           }

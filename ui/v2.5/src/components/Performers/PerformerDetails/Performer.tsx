@@ -30,6 +30,12 @@ import { PerformerImagesPanel } from "./PerformerImagesPanel";
 import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
+import {
+  faCamera,
+  faDove,
+  faHeart,
+  faLink,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -325,7 +331,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         )}
         onClick={() => setFavorite(!performer.favorite)}
       >
-        <Icon icon="heart" />
+        <Icon icon={faHeart} />
       </Button>
       {performer.url && (
         <Button className="minimal icon-link">
@@ -335,7 +341,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon="link" />
+            <Icon icon={faLink} />
           </a>
         </Button>
       )}
@@ -350,7 +356,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon="dove" />
+            <Icon icon={faDove} />
           </a>
         </Button>
       )}
@@ -365,7 +371,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon="camera" />
+            <Icon icon={faCamera} />
           </a>
         </Button>
       )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { debounce } from "lodash";
+import debounce from "lodash-es/debounce";
 import { Button, Form } from "react-bootstrap";
 import { useIntl } from "react-intl";
 

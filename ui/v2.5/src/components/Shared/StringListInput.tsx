@@ -1,6 +1,7 @@
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 
 interface IStringListInputProps {
   value: string[];
@@ -49,7 +50,7 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
                   />
                   <InputGroup.Append>
                     <Button variant="danger" onClick={() => removeValue(i)}>
-                      <Icon icon="minus" />
+                      <Icon icon={faMinus} />
                     </Button>
                   </InputGroup.Append>
                 </InputGroup>
@@ -57,7 +58,7 @@ export const StringListInput: React.FC<IStringListInputProps> = (props) => {
           </Form.Group>
         )}
         <Button className="minimal" size="sm" onClick={() => addValue()}>
-          <Icon icon="plus" />
+          <Icon icon={faPlus} />
         </Button>
       </div>
       <div className="invalid-feedback">{props.errors}</div>

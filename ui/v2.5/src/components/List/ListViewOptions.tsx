@@ -10,6 +10,12 @@ import {
 import { DisplayMode } from "src/models/list-filter/types";
 import { useIntl } from "react-intl";
 import { Icon } from "../Shared";
+import {
+  faList,
+  faSquare,
+  faTags,
+  faThLarge,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IListViewOptionsProps {
   zoomIndex?: number;
@@ -71,13 +77,13 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     function getIcon(option: DisplayMode) {
       switch (option) {
         case DisplayMode.Grid:
-          return "th-large";
+          return faThLarge;
         case DisplayMode.List:
-          return "list";
+          return faList;
         case DisplayMode.Wall:
-          return "square";
+          return faSquare;
         case DisplayMode.Tagger:
-          return "tags";
+          return faTags;
       }
     }
     function getLabel(option: DisplayMode) {

@@ -1,3 +1,4 @@
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -36,7 +37,7 @@ export const PerformerPopoverButton: React.FC<IProps> = ({ performers }) => {
       content={popoverContent}
     >
       <Button className="minimal">
-        <Icon icon="user" />
+        <Icon icon={faUser} />
         <span>{performers.length}</span>
       </Button>
     </HoverPopover>

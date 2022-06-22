@@ -1,4 +1,4 @@
-import _ from "lodash";
+import cloneDeep from "lodash-es/cloneDeep";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { CriterionModifier } from "src/core/generated-graphql";
@@ -80,13 +80,13 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
   function onChangedModifierSelect(
     event: React.ChangeEvent<HTMLSelectElement>
   ) {
-    const newCriterion = _.cloneDeep(criterion);
+    const newCriterion = cloneDeep(criterion);
     newCriterion.modifier = event.target.value as CriterionModifier;
     setCriterion(newCriterion);
   }
 
   function onValueChanged(value: CriterionValue) {
-    const newCriterion = _.cloneDeep(criterion);
+    const newCriterion = cloneDeep(criterion);
     newCriterion.value = value;
     setCriterion(newCriterion);
   }

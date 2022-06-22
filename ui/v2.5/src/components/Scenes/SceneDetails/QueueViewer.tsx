@@ -2,10 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import { Button, Form, Spinner } from "react-bootstrap";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 import { useIntl } from "react-intl";
+import {
+  faChevronDown,
+  faChevronUp,
+  faRandom,
+  faStepBackward,
+  faStepForward,
+} from "@fortawesome/free-solid-svg-icons";
 
 export interface IPlaylistViewer {
   scenes?: GQL.SlimSceneDataFragment[];
@@ -113,7 +120,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
               variant="secondary"
               onClick={() => onPrevious()}
             >
-              <Icon icon="step-backward" />
+              <Icon icon={faStepBackward} />
             </Button>
           ) : (
             ""
@@ -124,7 +131,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
               variant="secondary"
               onClick={() => onNext()}
             >
-              <Icon icon="step-forward" />
+              <Icon icon={faStepForward} />
             </Button>
           ) : (
             ""
@@ -134,7 +141,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
             variant="secondary"
             onClick={() => onRandom()}
           >
-            <Icon icon="random" />
+            <Icon icon={faRandom} />
           </Button>
         </div>
       </div>
@@ -143,7 +150,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
           <div className="d-flex justify-content-center">
             <Button onClick={() => lessClicked()} disabled={lessLoading}>
               {!lessLoading ? (
-                <Icon icon="chevron-up" />
+                <Icon icon={faChevronUp} />
               ) : (
                 <Spinner animation="border" role="status" />
               )}
@@ -155,7 +162,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
           <div className="d-flex justify-content-center">
             <Button onClick={() => moreClicked()} disabled={moreLoading}>
               {!moreLoading ? (
-                <Icon icon="chevron-down" />
+                <Icon icon={faChevronDown} />
               ) : (
                 <Spinner animation="border" role="status" />
               )}
@@ -166,3 +173,5 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     </div>
   );
 };
+
+export default QueueViewer;

@@ -1,6 +1,7 @@
+import { faCheck, faMinus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button } from "react-bootstrap";
-import { Icon } from ".";
+import Icon from "./Icon";
 
 interface IThreeStateCheckbox {
   value: boolean | undefined;
@@ -28,7 +29,7 @@ export const ThreeStateCheckbox: React.FC<IThreeStateCheckbox> = ({
     return true;
   }
 
-  const icon = value === undefined ? "minus" : value ? "check" : "times";
+  const icon = value === undefined ? faMinus : value ? faCheck : faTimes;
   const labelClassName =
     value === undefined ? "unset" : value ? "checked" : "not-checked";
 

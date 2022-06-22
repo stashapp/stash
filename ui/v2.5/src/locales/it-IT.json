@@ -23,6 +23,7 @@
     "create_entity": "Crea {entityType}",
     "create_marker": "Crea Marker",
     "created_entity": "Creata/o {entity_type}: {entity_name}",
+    "customise": "Personalizza",
     "delete": "Cancella",
     "delete_entity": "Cancella {entityType}",
     "delete_file": "Cancella file",
@@ -734,6 +735,12 @@
   "filters": "Filtri",
   "framerate": "Frequenza dei Fotogrammi",
   "frames_per_second": "{value} fotogrammi per secondo",
+  "front_page": {
+    "types": {
+      "premade_filter": "Filtro Già Creato",
+      "saved_filter": "Filtro Salvato"
+    }
+  },
   "galleries": "Gallerie",
   "gallery": "Galleria",
   "gallery_count": "Numero Gallerie",
@@ -861,11 +868,8 @@
   "queue": "Coda",
   "random": "Casuale",
   "rating": "Classif.",
-  "recently_added_performers": "Attori Aggiunti Recentemente",
-  "recently_added_studios": "Studio Aggiunti Recentemente",
-  "recently_released_galleries": "Gallerie Distribuite Recentemente",
-  "recently_released_movies": "Film Distribuiti Recentemente",
-  "recently_released_scenes": "Video Distribuiti Recentemente",
+  "recently_added_objects": "{objects} Aggiunto Recentemente",
+  "recently_released_objects": "{objects} Recentemente Distribuito",
   "resolution": "Risoluzione",
   "scene": "Scena",
   "sceneTagger": "Tagger Scena",
@@ -1009,6 +1013,7 @@
   "total": "Totale",
   "true": "Vero",
   "twitter": "Twitter",
+  "type": "Tipo",
   "updated_at": "Aggiornato Al",
   "url": "URL",
   "videos": "Video",

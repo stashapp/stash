@@ -1,5 +1,5 @@
 import * as GQL from "src/core/generated-graphql";
-import _ from "lodash";
+import isEqual from "lodash-es/isEqual";
 
 interface IHasRating {
   rating?: GQL.Maybe<number> | undefined;
@@ -63,7 +63,7 @@ export function getAggregatePerformerIds(state: IHasPerformers[]) {
     } else {
       const perfIds = o.performers ? o.performers.map((p) => p.id).sort() : [];
 
-      if (!_.isEqual(ret, perfIds)) {
+      if (isEqual(ret, perfIds)) {
         ret = [];
       }
     }
@@ -87,7 +87,7 @@ export function getAggregateTagIds(state: IHasTags[]) {
     } else {
       const tIds = o.tags ? o.tags.map((t) => t.id).sort() : [];
 
-      if (!_.isEqual(ret, tIds)) {
+      if (isEqual(ret, tIds)) {
         ret = [];
       }
     }
@@ -115,7 +115,7 @@ export function getAggregateMovieIds(state: IHasMovies[]) {
     } else {
       const mIds = o.movies ? o.movies.map((m) => m.movie.id).sort() : [];
 
-      if (!_.isEqual(ret, mIds)) {
+      if (isEqual(ret, mIds)) {
         ret = [];
       }
     }
@@ -180,7 +180,7 @@ export function getAggregateState<T>(
   newValue: T,
   first: boolean
 ) {
-  if (!first && !_.isEqual(currentValue, newValue)) {
+  if (!first && isEqual(currentValue, newValue)) {
     return undefined;
   }
 

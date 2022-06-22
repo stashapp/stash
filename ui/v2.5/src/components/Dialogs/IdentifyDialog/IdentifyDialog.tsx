@@ -20,6 +20,11 @@ import { Manual } from "src/components/Help/Manual";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
 import { SourcesEditor, SourcesList } from "./Sources";
+import {
+  faCogs,
+  faFolderOpen,
+  faQuestionCircle,
+} from "@fortawesome/free-solid-svg-icons";
 
 const autoTagScraperID = "builtin_autotag";
 
@@ -167,7 +172,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
               title={intl.formatMessage({ id: "actions.select_folders" })}
               onClick={() => onClick()}
             >
-              <Icon icon="folder-open" />
+              <Icon icon={faFolderOpen} />
             </Button>
           </div>
         </div>
@@ -403,7 +408,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
     <Modal
       modalProps={{ animation, size: "lg" }}
       show
-      icon="cogs"
+      icon={faCogs}
       header={intl.formatMessage({ id: "actions.identify" })}
       accept={{
         onClick: onIdentify,
@@ -430,7 +435,7 @@ export const IdentifyDialog: React.FC<IIdentifyDialogProps> = ({
           className="minimal help-button"
           onClick={() => onShowManual()}
         >
-          <Icon icon="question-circle" />
+          <Icon icon={faQuestionCircle} />
         </Button>
       }
     >

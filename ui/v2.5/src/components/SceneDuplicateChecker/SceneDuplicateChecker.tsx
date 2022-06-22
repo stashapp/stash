@@ -28,6 +28,16 @@ import { TextUtils } from "src/utils";
 import { DeleteScenesDialog } from "src/components/Scenes/DeleteScenesDialog";
 import { EditScenesDialog } from "../Scenes/EditScenesDialog";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
+import {
+  faBox,
+  faExclamationTriangle,
+  faFilm,
+  faImages,
+  faMapMarkerAlt,
+  faPencilAlt,
+  faTag,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 
 const CLASSNAME = "duplicate-checker";
 
@@ -144,7 +154,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     if (missingPhashes > 0) {
       return (
         <p className="lead">
-          <Icon icon="exclamation-triangle" className="text-warning" />
+          <Icon icon={faExclamationTriangle} className="text-warning" />
           Missing phashes for {missingPhashes} scenes. Please run the phash
           generation task.
         </p>
@@ -173,7 +183,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal">
-          <Icon icon="tag" />
+          <Icon icon={faTag} />
           <span>{scene.tags.length}</span>
         </Button>
       </HoverPopover>
@@ -216,7 +226,7 @@ export const SceneDuplicateChecker: React.FC = () => {
         className="tag-tooltip"
       >
         <Button className="minimal">
-          <Icon icon="film" />
+          <Icon icon={faFilm} />
           <span>{scene.movies.length}</span>
         </Button>
       </HoverPopover>
@@ -236,7 +246,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal">
-          <Icon icon="map-marker-alt" />
+          <Icon icon={faMapMarkerAlt} />
           <span>{scene.scene_markers.length}</span>
         </Button>
       </HoverPopover>
@@ -268,7 +278,7 @@ export const SceneDuplicateChecker: React.FC = () => {
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal">
-          <Icon icon="images" />
+          <Icon icon={faImages} />
           <span>{scene.galleries.length}</span>
         </Button>
       </HoverPopover>
@@ -280,7 +290,7 @@ export const SceneDuplicateChecker: React.FC = () => {
       return (
         <div>
           <Button className="minimal">
-            <Icon icon="box" />
+            <Icon icon={faBox} />
           </Button>
         </div>
       );
@@ -332,7 +342,7 @@ export const SceneDuplicateChecker: React.FC = () => {
               }
             >
               <Button variant="secondary" onClick={onEdit}>
-                <Icon icon="pencil-alt" />
+                <Icon icon={faPencilAlt} />
               </Button>
             </OverlayTrigger>
             <OverlayTrigger
@@ -343,7 +353,7 @@ export const SceneDuplicateChecker: React.FC = () => {
               }
             >
               <Button variant="danger" onClick={handleDeleteChecked}>
-                <Icon icon="trash" />
+                <Icon icon={faTrash} />
               </Button>
             </OverlayTrigger>
           </ButtonGroup>
@@ -550,3 +560,5 @@ export const SceneDuplicateChecker: React.FC = () => {
     </Card>
   );
 };
+
+export default SceneDuplicateChecker;
