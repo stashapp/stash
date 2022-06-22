@@ -23,7 +23,7 @@
     "create_entity": "Créer {entityType}",
     "create_marker": "Créer un marqueur",
     "created_entity": "Créé {entity_type} : {entity_name}",
-    "customise": "personnaliser",
+    "customise": "Personnaliser",
     "delete": "Supprimer",
     "delete_entity": "Supprimer {entityType}",
     "delete_file": "Supprimer le fichier",
