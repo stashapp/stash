@@ -10,7 +10,7 @@ import { FormattedMessage } from "react-intl";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  header: String;
+  header: string;
 }
 
 export const GalleryRecommendationRow: FunctionComponent<IProps> = (
@@ -41,7 +41,10 @@ export const GalleryRecommendationRow: FunctionComponent<IProps> = (
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={i} className="gallery-skeleton skeleton-card"></div>
+              <div
+                key={`_${i}`}
+                className="gallery-skeleton skeleton-card"
+              ></div>
             ))
           : result.data?.findGalleries.galleries.map((g) => (
               <GalleryCard key={g.id} gallery={g} zoomIndex={1} />

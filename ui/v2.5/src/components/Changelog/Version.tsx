@@ -1,3 +1,4 @@
+import { faAngleDown, faAngleUp } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Card, Collapse } from "react-bootstrap";
 import { FormattedDate, FormattedMessage } from "react-intl";
@@ -33,7 +34,7 @@ const Version: React.FC<IVersionProps> = ({
       <Card.Header>
         <h4 className="changelog-version-header d-flex align-items-center">
           <Button onClick={updateState} variant="link">
-            <Icon icon={open ? "angle-up" : "angle-down"} className="mr-3" />
+            <Icon icon={open ? faAngleUp : faAngleDown} className="mr-3" />
             {version} (
             {date ? (
               <FormattedDate value={date} timeZone="utc" />

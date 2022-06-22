@@ -180,3 +180,5 @@ export const Migrate: React.FC = () => {
     </Container>
   );
 };
+
+export default Migrate;

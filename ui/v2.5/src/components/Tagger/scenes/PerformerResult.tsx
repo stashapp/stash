@@ -11,6 +11,7 @@ import {
   ValidTypes,
 } from "src/components/Shared";
 import { OptionalField } from "../IncludeButton";
+import { faSave } from "@fortawesome/free-solid-svg-icons";
 
 interface IPerformerResultProps {
   performer: GQL.ScrapedPerformer;
@@ -91,7 +92,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
           operation={onLink}
           hideChildrenWhenLoading
         >
-          <Icon icon="save" />
+          <Icon icon={faSave} />
         </OperationButton>
       );
     }

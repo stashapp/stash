@@ -6,6 +6,7 @@ import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IDeleteGalleryDialogProps {
   selected: GQL.SlimGalleryDataFragment[];
@@ -114,7 +115,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
   return (
     <Modal
       show
-      icon="trash-alt"
+      icon={faTrashAlt}
       header={header}
       accept={{
         variant: "danger",

@@ -17,6 +17,14 @@ import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { GridCard } from "../Shared/GridCard";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { FormattedNumber } from "react-intl";
+import {
+  faBox,
+  faCopy,
+  faFilm,
+  faImages,
+  faMapMarkerAlt,
+  faTag,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IScenePreviewProps {
   isPortrait: boolean;
@@ -171,7 +179,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         content={popoverContent}
       >
         <Button className="minimal">
-          <Icon icon="tag" />
+          <Icon icon={faTag} />
           <span>{props.scene.tags.length}</span>
         </Button>
       </HoverPopover>
@@ -214,7 +222,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         className="movie-count tag-tooltip"
       >
         <Button className="minimal">
-          <Icon icon="film" />
+          <Icon icon={faFilm} />
           <span>{props.scene.movies.length}</span>
         </Button>
       </HoverPopover>
@@ -236,7 +244,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         content={popoverContent}
       >
         <Button className="minimal">
-          <Icon icon="map-marker-alt" />
+          <Icon icon={faMapMarkerAlt} />
           <span>{props.scene.scene_markers.length}</span>
         </Button>
       </HoverPopover>
@@ -272,7 +280,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         content={popoverContent}
       >
         <Button className="minimal">
-          <Icon icon="images" />
+          <Icon icon={faImages} />
           <span>{props.scene.galleries.length}</span>
         </Button>
       </HoverPopover>
@@ -284,7 +292,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       return (
         <div className="organized">
           <Button className="minimal">
-            <Icon icon="box" />
+            <Icon icon={faBox} />
           </Button>
         </div>
       );
@@ -299,7 +307,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             href={NavUtils.makeScenesPHashMatchUrl(props.scene.phash)}
             className="minimal"
           >
-            <Icon icon="copy" />
+            <Icon icon={faCopy} />
           </Button>
         </div>
       );

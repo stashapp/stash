@@ -15,10 +15,16 @@ import { ImportDialog } from "./ImportDialog";
 import * as GQL from "src/core/generated-graphql";
 import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting } from "../Inputs";
-import { ManualLink } from "src/components/Help/Manual";
+import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared";
 import { ConfigurationContext } from "src/hooks/Config";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
+import {
+  faMinus,
+  faPlus,
+  faQuestionCircle,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface ICleanDialog {
   pathSelection?: boolean;
@@ -63,7 +69,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
   return (
     <Modal
       show
-      icon="trash-alt"
+      icon={faTrashAlt}
       disabled={pathSelection && paths.length === 0}
       accept={{
         text: intl.formatMessage({ id: "actions.clean" }),
@@ -87,7 +93,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
                   title={intl.formatMessage({ id: "actions.delete" })}
                   onClick={() => removePath(p)}
                 >
-                  <Icon icon="minus" />
+                  <Icon icon={faMinus} />
                 </Button>
               </Col>
             </Row>
@@ -103,7 +109,7 @@ const CleanDialog: React.FC<ICleanDialog> = ({
                   variant="secondary"
                   onClick={() => addPath(currentDirectory)}
                 >
-                  <Icon icon="plus" />
+                  <Icon icon={faPlus} />
                 </Button>
               }
             />
@@ -188,7 +194,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
     return (
       <Modal
         show={dialogOpen.importAlert}
-        icon="trash-alt"
+        icon={faTrashAlt}
         accept={{
           text: intl.formatMessage({ id: "actions.import" }),
           variant: "danger",
@@ -316,7 +322,7 @@ export const DataManagementTasks: React.FC<IDataManagementTasks> = ({
               <>
                 <FormattedMessage id="actions.clean" />
                 <ManualLink tab="Tasks">
-                  <Icon icon="question-circle" />
+                  <Icon icon={faQuestionCircle} />
                 </ManualLink>
               </>
             }

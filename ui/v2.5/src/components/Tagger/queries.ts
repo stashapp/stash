@@ -1,5 +1,5 @@
 import * as GQL from "src/core/generated-graphql";
-import { sortBy } from "lodash";
+import sortBy from "lodash-es/sortBy";
 
 export const useUpdatePerformerStashID = () => {
   const [updatePerformer] = GQL.usePerformerUpdateMutation({

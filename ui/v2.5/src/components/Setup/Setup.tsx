@@ -15,6 +15,11 @@ import { ConfigurationContext } from "src/hooks/Config";
 import StashConfiguration from "../Settings/StashConfiguration";
 import { Icon, LoadingIndicator, Modal } from "../Shared";
 import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
+import {
+  faEllipsisH,
+  faExclamationTriangle,
+  faQuestionCircle,
+} from "@fortawesome/free-solid-svg-icons";
 
 export const Setup: React.FC = () => {
   const { configuration, loading: configLoading } = useContext(
@@ -108,7 +113,7 @@ export const Setup: React.FC = () => {
     return (
       <Modal
         show
-        icon="exclamation-triangle"
+        icon={faExclamationTriangle}
         accept={{
           text: intl.formatMessage({ id: "actions.confirm" }),
           variant: "danger",
@@ -269,7 +274,7 @@ export const Setup: React.FC = () => {
                 className="text-input"
                 onClick={() => setShowGeneratedDialog(true)}
               >
-                <Icon icon="ellipsis-h" />
+                <Icon icon={faEllipsisH} />
               </Button>
             </InputGroup.Append>
           </InputGroup>
@@ -528,7 +533,7 @@ export const Setup: React.FC = () => {
           <p>
             <FormattedMessage
               id="setup.success.in_app_manual_explained"
-              values={{ icon: <Icon icon="question-circle" /> }}
+              values={{ icon: <Icon icon={faQuestionCircle} /> }}
             />
           </p>
           <p>
@@ -640,3 +645,5 @@ export const Setup: React.FC = () => {
     </Container>
   );
 };
+
+export default Setup;

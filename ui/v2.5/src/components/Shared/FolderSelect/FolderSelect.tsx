@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, InputGroup, Form } from "react-bootstrap";
-import { debounce } from "lodash";
-import { Icon, LoadingIndicator } from "src/components/Shared";
+import debounce from "lodash-es/debounce";
+import Icon from "src/components/Shared/Icon";
+import LoadingIndicator from "src/components/Shared/LoadingIndicator";
 import { useDirectory } from "src/core/StashService";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   currentDirectory: string;
@@ -87,7 +89,7 @@ export const FolderSelect: React.FC<IProps> = ({
             {loading ? (
               <LoadingIndicator inline small message="" />
             ) : (
-              <Icon icon="times" color="red" className="ml-3" />
+              <Icon icon={faTimes} color="red" className="ml-3" />
             )}
           </InputGroup.Append>
         ) : undefined}

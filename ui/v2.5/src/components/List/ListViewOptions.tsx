@@ -10,6 +10,12 @@ import {
 import { DisplayMode } from "src/models/list-filter/types";
 import { useIntl } from "react-intl";
 import { Icon } from "../Shared";
+import {
+  faList,
+  faSquare,
+  faTags,
+  faThLarge,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IListViewOptionsProps {
   zoomIndex?: number;
@@ -71,13 +77,13 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     function getIcon(option: DisplayMode) {
       switch (option) {
         case DisplayMode.Grid:
-          return "th-large";
+          return faThLarge;
         case DisplayMode.List:
-          return "list";
+          return faList;
         case DisplayMode.Wall:
-          return "square";
+          return faSquare;
         case DisplayMode.Tagger:
-          return "tags";
+          return faTags;
       }
     }
     function getLabel(option: DisplayMode) {
@@ -104,7 +110,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
     }
 
     return (
-      <ButtonGroup>
+      <ButtonGroup className="mb-2">
         {displayModeOptions.map((option) => (
           <OverlayTrigger
             key={option}
@@ -134,9 +140,9 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
   function maybeRenderZoom() {
     if (onSetZoom && displayMode === DisplayMode.Grid) {
       return (
-        <div className="align-middle">
+        <div className="ml-2 mb-2 d-none d-sm-inline-flex">
           <Form.Control
-            className="zoom-slider d-none d-sm-inline-flex ml-3"
+            className="zoom-slider ml-1"
             type="range"
             min={minZoom}
             max={maxZoom}
@@ -152,7 +158,7 @@ export const ListViewOptions: React.FC<IListViewOptionsProps> = ({
 
   return (
     <>
-      <ButtonGroup>{maybeRenderDisplayModeOptions()}</ButtonGroup>
+      {maybeRenderDisplayModeOptions()}
       {maybeRenderZoom()}
     </>
   );

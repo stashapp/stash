@@ -10,7 +10,7 @@ import { FormattedMessage } from "react-intl";
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  header: String;
+  header: string;
 }
 
 export const StudioRecommendationRow: FunctionComponent<IProps> = (
@@ -41,7 +41,10 @@ export const StudioRecommendationRow: FunctionComponent<IProps> = (
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={i} className="studio-skeleton skeleton-card"></div>
+              <div
+                key={`_${i}`}
+                className="studio-skeleton skeleton-card"
+              ></div>
             ))
           : result.data?.findStudios.studios.map((s) => (
               <StudioCard key={s.id} studio={s} hideParent={true} />

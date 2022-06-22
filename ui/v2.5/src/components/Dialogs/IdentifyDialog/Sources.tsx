@@ -5,6 +5,13 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { IScraperSource } from "./constants";
 import { OptionsEditor } from "./Options";
+import {
+  faCog,
+  faGripVertical,
+  faMinus,
+  faPencilAlt,
+  faPlus,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface ISourceEditor {
   isNew: boolean;
@@ -50,7 +57,7 @@ export const SourcesEditor: React.FC<ISourceEditor> = ({
       dialogClassName="identify-source-editor"
       modalProps={{ animation: false, size: "lg" }}
       show
-      icon={isNew ? "plus" : "pencil-alt"}
+      icon={isNew ? faPlus : faPencilAlt}
       header={intl.formatMessage(
         { id: headerMsgId },
         {
@@ -184,19 +191,19 @@ export const SourcesList: React.FC<ISourcesList> = ({
                 onMouseEnter={() => setMouseOverIndex(index)}
                 onMouseLeave={() => setMouseOverIndex(undefined)}
               >
-                <Icon icon="grip-vertical" />
+                <Icon icon={faGripVertical} />
               </div>
               {s.displayName}
             </div>
             <div>
               <Button className="minimal" onClick={() => editSource(s)}>
-                <Icon icon="cog" />
+                <Icon icon={faCog} />
               </Button>
               <Button
                 className="minimal text-danger"
                 onClick={() => removeSource(index)}
               >
-                <Icon icon="minus" />
+                <Icon icon={faMinus} />
               </Button>
             </div>
           </ListGroup.Item>
@@ -208,7 +215,7 @@ export const SourcesList: React.FC<ISourcesList> = ({
             className="minimal add-scraper-source-button"
             onClick={() => editSource()}
           >
-            <Icon icon="plus" />
+            <Icon icon={faPlus} />
           </Button>
         </div>
       )}

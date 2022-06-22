@@ -175,3 +175,5 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     </dl>
   );
 };
+
+export default SceneFileInfoPanel;

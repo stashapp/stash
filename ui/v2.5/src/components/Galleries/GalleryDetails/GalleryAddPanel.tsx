@@ -8,7 +8,7 @@ import { mutateAddGalleryImages } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { useIntl } from "react-intl";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 interface IGalleryAddProps {
   gallery: GQL.GalleryDataFragment;
@@ -88,7 +88,7 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
       onClick: addImages,
       isDisplayed: showWhenSelected,
       postRefetch: true,
-      icon: "plus" as IconProp,
+      icon: faPlus,
     },
   ];
 

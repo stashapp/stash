@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Overlay, Tooltip } from "react-bootstrap";
 import { Placement } from "react-bootstrap/Overlay";
-import { debounce } from "lodash";
+import debounce from "lodash-es/debounce";
 import cx from "classnames";
 
 const CLASSNAME = "TruncatedText";

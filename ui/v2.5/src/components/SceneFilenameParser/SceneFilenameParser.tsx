@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Button, Card, Form, Table } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import _ from "lodash";
+import clone from "lodash-es/clone";
 import {
   queryParseSceneFilenames,
   useScenesUpdate,
@@ -155,7 +155,7 @@ export const SceneFilenameParser: React.FC = () => {
   }, [parserInput, parseSceneFilenames, prevParserInput]);
 
   function onPageSizeChanged(newSize: number) {
-    const newInput = _.clone(parserInput);
+    const newInput = clone(parserInput);
     newInput.page = 1;
     newInput.pageSize = newSize;
     setParserInput(newInput);
@@ -163,14 +163,14 @@ export const SceneFilenameParser: React.FC = () => {
 
   function onPageChanged(newPage: number) {
     if (newPage !== parserInput.page) {
-      const newInput = _.clone(parserInput);
+      const newInput = clone(parserInput);
       newInput.page = newPage;
       setParserInput(newInput);
     }
   }
 
   function onFindClicked(input: IParserInput) {
-    const newInput = _.clone(input);
+    const newInput = clone(input);
     newInput.page = 1;
     newInput.findClicked = true;
     setParserInput(newInput);
@@ -423,3 +423,5 @@ export const SceneFilenameParser: React.FC = () => {
     </Card>
   );
 };
+
+export default SceneFilenameParser;
