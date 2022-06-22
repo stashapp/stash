@@ -339,6 +339,7 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 
 	return models.SceneUpdateInput{
 		ID:      strconv.Itoa(scene.ID),
+		Path:    &scene.Path,
 		Title:   toStringPtr(scene.Title),
 		Details: toStringPtr(scene.Details),
 		URL:     toStringPtr(scene.URL),

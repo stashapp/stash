@@ -75,6 +75,7 @@ input SceneMovieInput {
 input SceneUpdateInput {
   clientMutationId: String
   id: ID!
+  path: String
   title: String
   details: String
   url: String
