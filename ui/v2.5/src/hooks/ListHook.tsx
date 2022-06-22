@@ -1,5 +1,6 @@
 import clone from "lodash-es/clone";
 import cloneDeep from "lodash-es/cloneDeep";
+import isEqual from "lodash-es/isEqual";
 import queryString from "query-string";
 import React, {
   useCallback,
@@ -715,7 +716,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       newFilter.configureFromQueryParameters(
         queryString.parse(location.search)
       );
-      if (!_.isEqual(newFilter, prevFilter)) {
+      if (!isEqual(newFilter, prevFilter)) {
         return newFilter;
       } else {
         return prevFilter;
