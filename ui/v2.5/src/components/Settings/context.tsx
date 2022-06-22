@@ -12,6 +12,7 @@ import React, {
   useRef,
 } from "react";
 import { Spinner } from "react-bootstrap";
+import { IUIConfig } from "src/core/config";
 import * as GQL from "src/core/generated-graphql";
 import {
   useConfiguration,
@@ -20,6 +21,7 @@ import {
   useConfigureGeneral,
   useConfigureInterface,
   useConfigureScraping,
+  useConfigureUI,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { withoutTypename } from "src/utils";
@@ -33,6 +35,7 @@ export interface ISettingsContextState {
   defaults: GQL.ConfigDefaultSettingsInput;
   scraping: GQL.ConfigScrapingInput;
   dlna: GQL.ConfigDlnaInput;
+  ui: IUIConfig;
 
   // apikey isn't directly settable, so expose it here
   apiKey: string;
@@ -42,6 +45,7 @@ export interface ISettingsContextState {
   saveDefaults: (input: Partial<GQL.ConfigDefaultSettingsInput>) => void;
   saveScraping: (input: Partial<GQL.ConfigScrapingInput>) => void;
   saveDLNA: (input: Partial<GQL.ConfigDlnaInput>) => void;
+  saveUI: (input: IUIConfig) => void;
 }
 
 export const SettingStateContext = React.createContext<ISettingsContextState>({
@@ -52,12 +56,14 @@ export const SettingStateContext = React.createContext<ISettingsContextState>({
   defaults: {},
   scraping: {},
   dlna: {},
+  ui: {},
   apiKey: "",
   saveGeneral: () => {},
   saveInterface: () => {},
   saveDefaults: () => {},
   saveScraping: () => {},
   saveDLNA: () => {},
+  saveUI: () => {},
 });
 
 export const SettingsContext: React.FC = ({ children }) => {
@@ -96,6 +102,10 @@ export const SettingsContext: React.FC = ({ children }) => {
   >();
   const [updateDLNAConfig] = useConfigureDLNA();
 
+  const [ui, setUI] = useState({});
+  const [pendingUI, setPendingUI] = useState<{} | undefined>();
+  const [updateUIConfig] = useConfigureUI();
+
   const [updateSuccess, setUpdateSuccess] = useState<boolean | undefined>();
 
   const [apiKey, setApiKey] = useState("");
@@ -125,6 +135,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     setDefaults({ ...withoutTypename(data.configuration.defaults) });
     setScraping({ ...withoutTypename(data.configuration.scraping) });
     setDLNA({ ...withoutTypename(data.configuration.dlna) });
+    setUI({ ...withoutTypename(data.configuration.ui) });
     setApiKey(data.configuration.general.apiKey);
   }, [data, error]);
 
@@ -391,6 +402,56 @@ export const SettingsContext: React.FC = ({ children }) => {
     });
   }
 
+  // saves the configuration if no further changes are made after a half second
+  const saveUIConfig = useMemo(
+    () =>
+      debounce(async (input: IUIConfig) => {
+        try {
+          setUpdateSuccess(undefined);
+          await updateUIConfig({
+            variables: {
+              input,
+            },
+          });
+
+          setPendingUI(undefined);
+          onSuccess();
+        } catch (e) {
+          setSaveError(e);
+        }
+      }, 500),
+    [updateUIConfig, onSuccess]
+  );
+
+  useEffect(() => {
+    if (!pendingUI) {
+      return;
+    }
+
+    saveUIConfig(pendingUI);
+  }, [pendingUI, saveUIConfig]);
+
+  function saveUI(input: IUIConfig) {
+    if (!ui) {
+      return;
+    }
+
+    setUI({
+      ...ui,
+      ...input,
+    });
+
+    setPendingUI((current) => {
+      if (!current) {
+        return input;
+      }
+      return {
+        ...current,
+        ...input,
+      };
+    });
+  }
+
   function maybeRenderLoadingIndicator() {
     if (updateSuccess === false) {
       return (
@@ -405,7 +466,8 @@ export const SettingsContext: React.FC = ({ children }) => {
       pendingInterface ||
       pendingDefaults ||
       pendingScraping ||
-      pendingDLNA
+      pendingDLNA ||
+      pendingUI
     ) {
       return (
         <div className="loading-indicator">
@@ -436,11 +498,13 @@ export const SettingsContext: React.FC = ({ children }) => {
         defaults,
         scraping,
         dlna,
+        ui,
         saveGeneral,
         saveInterface,
         saveDefaults,
         saveScraping,
         saveDLNA,
+        saveUI,
       }}
     >
       {maybeRenderLoadingIndicator()}

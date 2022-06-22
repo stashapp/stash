@@ -29,6 +29,13 @@ input[type="range"].zoom-slider {
   padding-right: 0;
 }
 
+.query-text-field-group {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+}
+
 .query-text-field {
   border: 0;
   width: 50%;
@@ -41,7 +48,7 @@ input[type="range"].zoom-slider {
   margin: $btn-padding-y $btn-padding-x;
   padding: 0;
   position: absolute;
-  right: 3em;
+  right: 0;
   z-index: 4;
 
   &:hover,

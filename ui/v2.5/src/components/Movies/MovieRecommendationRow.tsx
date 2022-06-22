@@ -1,37 +1,50 @@
-import React, { FunctionComponent } from "react";
-import { FindMoviesQueryResult } from "src/core/generated-graphql";
+import React from "react";
+import { useFindMovies } from "src/core/StashService";
 import Slider from "react-slick";
 import { MovieCard } from "./MovieCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
+import { RecommendationRow } from "../FrontPage/RecommendationRow";
+import { FormattedMessage } from "react-intl";
 
 interface IProps {
   isTouch: boolean;
   filter: ListFilterModel;
-  result: FindMoviesQueryResult;
   header: String;
-  linkText: String;
 }
 
-export const MovieRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
-  const cardCount = props.result.data?.findMovies.count;
+export const MovieRecommendationRow: React.FC<IProps> = (props: IProps) => {
+  const result = useFindMovies(props.filter);
+  const cardCount = result.data?.findMovies.count;
+
+  if (!result.loading && !cardCount) {
+    return null;
+  }
+
   return (
-    <div className="recommendation-row movie-recommendations">
-      <div className="recommendation-row-head">
-        <div>
-          <h2>{props.header}</h2>
-        </div>
+    <RecommendationRow
+      className="movie-recommendations"
+      header={props.header}
+      link={
         <a href={`/movies?${props.filter.makeQueryParameters()}`}>
-          {props.linkText}
+          <FormattedMessage id="view_all" />
         </a>
-      </div>
-      <Slider {...getSlickSliderSettings(cardCount!, props.isTouch)}>
-        {props.result.data?.findMovies.movies.map((p) => (
-          <MovieCard key={p.id} movie={p} />
-        ))}
+      }
+    >
+      <Slider
+        {...getSlickSliderSettings(
+          cardCount ? cardCount : props.filter.itemsPerPage,
+          props.isTouch
+        )}
+      >
+        {result.loading
+          ? [...Array(props.filter.itemsPerPage)].map((i) => (
+              <div key={i} className="movie-skeleton skeleton-card"></div>
+            ))
+          : result.data?.findMovies.movies.map((m) => (
+              <MovieCard key={m.id} movie={m} />
+            ))}
       </Slider>
-    </div>
+    </RecommendationRow>
   );
 };

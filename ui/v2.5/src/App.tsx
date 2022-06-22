@@ -24,9 +24,7 @@ import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
 
 const Performers = lazy(() => import("./components/Performers/Performers"));
-const Recommendations = lazy(
-  () => import("./components/Recommendations/Recommendations")
-);
+const FrontPage = lazy(() => import("./components/FrontPage/FrontPage"));
 const Scenes = lazy(() => import("./components/Scenes/Scenes"));
 const Settings = lazy(() => import("./components/Settings/Settings"));
 const Stats = lazy(() => import("./components/Stats"));
@@ -135,7 +133,7 @@ export const App: React.FC = () => {
     return (
       <Suspense fallback={<LoadingIndicator />}>
         <Switch>
-          <Route exact path="/" component={Recommendations} />
+          <Route exact path="/" component={FrontPage} />
           <Route path="/scenes" component={Scenes} />
           <Route path="/images" component={Images} />
           <Route path="/galleries" component={Galleries} />

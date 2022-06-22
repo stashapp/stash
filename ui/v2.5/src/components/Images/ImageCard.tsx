@@ -17,9 +17,9 @@ import {
 interface IImageCardProps {
   image: GQL.SlimImageDataFragment;
   selecting?: boolean;
-  selected: boolean | undefined;
+  selected?: boolean | undefined;
   zoomIndex: number;
-  onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
   onPreview?: (ev: MouseEvent) => void;
 }
 

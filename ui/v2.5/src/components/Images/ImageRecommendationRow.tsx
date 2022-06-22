@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from "react";
-import { useFindPerformers } from "src/core/StashService";
+import { useFindImages } from "src/core/StashService";
 import Slider from "react-slick";
-import { PerformerCard } from "./PerformerCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
 import { RecommendationRow } from "../FrontPage/RecommendationRow";
 import { FormattedMessage } from "react-intl";
+import { ImageCard } from "./ImageCard";
 
 interface IProps {
   isTouch: boolean;
@@ -13,11 +13,11 @@ interface IProps {
   header: String;
 }
 
-export const PerformerRecommendationRow: FunctionComponent<IProps> = (
+export const ImageRecommendationRow: FunctionComponent<IProps> = (
   props: IProps
 ) => {
-  const result = useFindPerformers(props.filter);
-  const cardCount = result.data?.findPerformers.count;
+  const result = useFindImages(props.filter);
+  const cardCount = result.data?.findImages.count;
 
   if (!result.loading && !cardCount) {
     return null;
@@ -25,10 +25,10 @@ export const PerformerRecommendationRow: FunctionComponent<IProps> = (
 
   return (
     <RecommendationRow
-      className="performer-recommendations"
+      className="images-recommendations"
       header={props.header}
       link={
-        <a href={`/performers?${props.filter.makeQueryParameters()}`}>
+        <a href={`/images?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
         </a>
       }
@@ -41,10 +41,10 @@ export const PerformerRecommendationRow: FunctionComponent<IProps> = (
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={i} className="performer-skeleton skeleton-card"></div>
+              <div key={i} className="image-skeleton skeleton-card"></div>
             ))
-          : result.data?.findPerformers.performers.map((p) => (
-              <PerformerCard key={p.id} performer={p} />
+          : result.data?.findImages.images.map((i) => (
+              <ImageCard key={i.id} image={i} zoomIndex={1} />
             ))}
       </Slider>
     </RecommendationRow>

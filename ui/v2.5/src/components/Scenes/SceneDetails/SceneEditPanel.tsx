@@ -83,7 +83,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const [coverImagePreview, setCoverImagePreview] = useState<
     string | undefined
-  >(scene.paths.screenshot ?? undefined);
+  >();
+
+  useEffect(() => {
+    setCoverImagePreview(scene.paths.screenshot ?? undefined);
+  }, [scene.paths.screenshot]);
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 

@@ -22,10 +22,11 @@ import (
 )
 
 type tagger struct {
-	ID   int
-	Type string
-	Name string
-	Path string
+	ID      int
+	Type    string
+	Name    string
+	Path    string
+	trimExt bool
 
 	cache *match.Cache
 }
@@ -41,7 +42,7 @@ func (t *tagger) addLog(otherType, otherName string) {
 }
 
 func (t *tagger) tagPerformers(performerReader models.PerformerReader, addFunc addLinkFunc) error {
-	others, err := match.PathToPerformers(t.Path, performerReader, t.cache)
+	others, err := match.PathToPerformers(t.Path, performerReader, t.cache, t.trimExt)
 	if err != nil {
 		return err
 	}
@@ -62,7 +63,7 @@ func (t *tagger) tagPerformers(performerReader models.PerformerReader, addFunc a
 }
 
 func (t *tagger) tagStudios(studioReader models.StudioReader, addFunc addLinkFunc) error {
-	studio, err := match.PathToStudio(t.Path, studioReader, t.cache)
+	studio, err := match.PathToStudio(t.Path, studioReader, t.cache, t.trimExt)
 	if err != nil {
 		return err
 	}
@@ -83,7 +84,7 @@ func (t *tagger) tagStudios(studioReader models.StudioReader, addFunc addLinkFun
 }
 
 func (t *tagger) tagTags(tagReader models.TagReader, addFunc addLinkFunc) error {
-	others, err := match.PathToTags(t.Path, tagReader, t.cache)
+	others, err := match.PathToTags(t.Path, tagReader, t.cache, t.trimExt)
 	if err != nil {
 		return err
 	}

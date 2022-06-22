@@ -187,7 +187,8 @@ func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retG
 		scanner.PluginCache.ExecutePostHooks(ctx, g.ID, plugin.GalleryUpdatePost, nil, nil)
 	}
 
-	scanImages = isNewGallery
+	// Also scan images if zip file has been moved (ie updated) as the image paths are no longer valid
+	scanImages = isNewGallery || isUpdatedGallery
 	retGallery = g
 
 	return

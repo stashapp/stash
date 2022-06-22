@@ -100,6 +100,7 @@
     "stop": "Stop",
     "submit": "Invia",
     "submit_stash_box": "Invia a Stash-Box",
+    "submit_update": "Invia aggiornamento",
     "tasks": {
       "clean_confirm_message": "Sei sicuro di voler Pulire? Questa azione cancellerà informazioni e contenuto creato dal database per tutte le scene e gallerie che non si trovano più nel file system.",
       "dry_mode_selected": "Dry Mode selezionato. Nessuna cancellazione avverrà, solo log.",
@@ -966,7 +967,8 @@
     "go_review_draft": "Vai al {endpoint_name} per revisionare la bozza.",
     "selected_stash_box": "Endpoint Stash-Box selezionato",
     "submission_failed": "Invio fallito",
-    "submission_successful": "Invio riuscito"
+    "submission_successful": "Invio riuscito",
+    "submit_update": "Già esistente in {endpoint_name}"
   },
   "statistics": "Statistiche",
   "stats": {

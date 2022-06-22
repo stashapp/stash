@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from "react";
-import { useFindPerformers } from "src/core/StashService";
+import { useFindTags } from "src/core/StashService";
 import Slider from "react-slick";
-import { PerformerCard } from "./PerformerCard";
+import { TagCard } from "./TagCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
 import { RecommendationRow } from "../FrontPage/RecommendationRow";
@@ -13,11 +13,11 @@ interface IProps {
   header: String;
 }
 
-export const PerformerRecommendationRow: FunctionComponent<IProps> = (
+export const TagRecommendationRow: FunctionComponent<IProps> = (
   props: IProps
 ) => {
-  const result = useFindPerformers(props.filter);
-  const cardCount = result.data?.findPerformers.count;
+  const result = useFindTags(props.filter);
+  const cardCount = result.data?.findTags.count;
 
   if (!result.loading && !cardCount) {
     return null;
@@ -25,10 +25,10 @@ export const PerformerRecommendationRow: FunctionComponent<IProps> = (
 
   return (
     <RecommendationRow
-      className="performer-recommendations"
+      className="tag-recommendations"
       header={props.header}
       link={
-        <a href={`/performers?${props.filter.makeQueryParameters()}`}>
+        <a href={`/tags?${props.filter.makeQueryParameters()}`}>
           <FormattedMessage id="view_all" />
         </a>
       }
@@ -41,10 +41,10 @@ export const PerformerRecommendationRow: FunctionComponent<IProps> = (
       >
         {result.loading
           ? [...Array(props.filter.itemsPerPage)].map((i) => (
-              <div key={i} className="performer-skeleton skeleton-card"></div>
+              <div key={i} className="tag-skeleton skeleton-card"></div>
             ))
-          : result.data?.findPerformers.performers.map((p) => (
-              <PerformerCard key={p.id} performer={p} />
+          : result.data?.findTags.tags.map((p) => (
+              <TagCard key={p.id} tag={p} zoomIndex={0} />
             ))}
       </Slider>
     </RecommendationRow>
