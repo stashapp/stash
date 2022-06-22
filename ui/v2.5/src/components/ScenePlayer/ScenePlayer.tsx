@@ -37,6 +37,14 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
     player.currentTime(time);
   }
 
+  function seekPercentRelative(percent: number) {
+    const duration = player.duration();
+    const currentTime = player.currentTime();
+    const time = currentTime + duration * percent;
+    if (time > duration) return;
+    player.currentTime(time);
+  }
+
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
     return;
   }
@@ -95,6 +103,12 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
       break;
     case 57: // 9
       seekPercent(0.9);
+      break;
+    case 221: // ]
+      seekPercentRelative(0.1);
+      break;
+    case 219: // [
+      seekPercentRelative(-0.1);
       break;
   }
 }
