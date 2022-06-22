@@ -23,6 +23,7 @@
     "create_entity": "Skapa {entityType}",
     "create_marker": "Skapa markör",
     "created_entity": "Skapade {entity_type}: {entity_name}",
+    "customise": "Ändra",
     "delete": "Radera",
     "delete_entity": "Radera {entityType}",
     "delete_file": "Radera fil",
@@ -100,6 +101,7 @@
     "stop": "Stoppa",
     "submit": "Skicka",
     "submit_stash_box": "Skicka till Stash-Box",
+    "submit_update": "Skicka uppdatering",
     "tasks": {
       "clean_confirm_message": "Är du säker att du vill rensa? Detta kommer radera databasinformation och genererade filer för alla scener och gallerier som inte längre finns på filsystemet.",
       "dry_mode_selected": "Torrt läge valt. Inget kommer raderas utan bara loggning kommer ske.",
@@ -733,6 +735,12 @@
   "filters": "Filter",
   "framerate": "Bildhastighet",
   "frames_per_second": "{value} bilder per sekund",
+  "front_page": {
+    "types": {
+      "premade_filter": "Förhandsgjorda filter",
+      "saved_filter": "Sparade Filter"
+    }
+  },
   "galleries": "Gallerier",
   "gallery": "Galleri",
   "gallery_count": "Antal Gallerier",
@@ -860,11 +868,8 @@
   "queue": "Kö",
   "random": "Slumpad",
   "rating": "Betyg",
-  "recently_added_performers": "Nyligen Tillagda Stjärnor",
-  "recently_added_studios": "Nyligen Tillagda Studior",
-  "recently_released_galleries": "Nyligen Släppta Gallerier",
-  "recently_released_movies": "Nyligen Släppta Filmer",
-  "recently_released_scenes": "Nyligen Släppta Scener",
+  "recently_added_objects": "Nyligen Tillagda {objects}",
+  "recently_released_objects": "Nyligen Släppta {objects}",
   "resolution": "Upplösning",
   "scene": "Scen",
   "sceneTagger": "Scentaggaren",
@@ -966,7 +971,8 @@
     "go_review_draft": "Gå till {endpoint_name} för att granska utkast.",
     "selected_stash_box": "Vald stash-box adress",
     "submission_failed": "Misslyckad inskickning",
-    "submission_successful": "Lyckad inskickning"
+    "submission_successful": "Lyckad inskickning",
+    "submit_update": "Existerar redan i {endpoint_name}"
   },
   "statistics": "Statistik",
   "stats": {
@@ -1007,6 +1013,7 @@
   "total": "Total",
   "true": "Sant",
   "twitter": "Twitter",
+  "type": "Typ",
   "updated_at": "Uppdaterad vid",
   "url": "URL",
   "videos": "Videor",
