@@ -39,7 +39,7 @@ INNER JOIN scenes_files ON (scenes.id = scenes_files.scene_id)
 INNER JOIN files ON (scenes_files.file_id = files.id) 
 INNER JOIN files_fingerprints ON (scenes_files.file_id = files_fingerprints.file_id AND files_fingerprints.type = 'phash')
 GROUP BY files_fingerprints.fingerprint
-HAVING COUNT(files_fingerprints.fingerprint) > 1
+HAVING COUNT(files_fingerprints.fingerprint) > 1 AND COUNT(DISTINCT scenes.id) > 1
 ORDER BY SUM(files.size) DESC;
 `
 
@@ -1310,10 +1310,13 @@ func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*mo
 			var sceneIds []int
 			for _, strId := range strIds {
 				if intId, err := strconv.Atoi(strId); err == nil {
-					sceneIds = append(sceneIds, intId)
+					sceneIds = intslice.IntAppendUnique(sceneIds, intId)
 				}
 			}
-			dupeIds = append(dupeIds, sceneIds)
+			// filter out
+			if len(sceneIds) > 1 {
+				dupeIds = append(dupeIds, sceneIds)
+			}
 		}
 	} else {
 		var hashes []*utils.Phash
