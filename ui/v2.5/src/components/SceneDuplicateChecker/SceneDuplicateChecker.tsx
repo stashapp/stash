@@ -516,8 +516,9 @@ export const SceneDuplicateChecker: React.FC = () => {
                       <td className="text-left">
                         <p>
                           <Link to={`/scenes/${scene.id}`}>
-                            {scene.title ??
-                              TextUtils.fileNameFromPath(file?.path ?? "")}
+                            {scene.title
+                              ? scene.title
+                              : TextUtils.fileNameFromPath(file?.path ?? "")}
                           </Link>
                         </p>
                         <p className="scene-path">{file?.path ?? ""}</p>
