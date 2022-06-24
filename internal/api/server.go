@@ -227,7 +227,7 @@ func Start() error {
 
 			prefix := getProxyPrefix(r.Header)
 			if prefix != "" {
-				r.URL.Path = strings.Replace(r.URL.Path, prefix, "", 1)
+				r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
 			}
 			r.URL.Path = uiRootDir + r.URL.Path
 
