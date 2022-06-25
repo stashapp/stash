@@ -40,6 +40,7 @@ const PerformerEditPanel = lazy(() => import("./PerformerEditPanel"));
 interface IProps {
   performer: GQL.PerformerDataFragment;
 }
+
 interface IPerformerParams {
   tab?: string;
 }

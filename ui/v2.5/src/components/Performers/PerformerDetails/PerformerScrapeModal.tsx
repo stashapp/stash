@@ -17,8 +17,8 @@ interface IPerformerSearchResultDetailsProps {
 }
 
 const PerformerSearchResultDetails: React.FC<IPerformerSearchResultDetailsProps> = ({
-                                                                                      performer,
-                                                                                    }) => {
+  performer,
+}) => {
   function renderImage() {
     if (performer.images && performer.images.length > 0) {
       return (
@@ -61,7 +61,7 @@ const PerformerSearchResultDetails: React.FC<IPerformerSearchResultDetailsProps>
     }
   }
 
-  let calculated_age = calculateAge()
+  let calculated_age = calculateAge();
 
   return (
     <div className="scene-details">
@@ -70,10 +70,12 @@ const PerformerSearchResultDetails: React.FC<IPerformerSearchResultDetailsProps>
         <div className="col flex-column">
           <h4>{performer.name}{performer.disambiguation && ` (${performer.disambiguation})`}</h4>
           <h5>
-            {performer.gender && (performer.gender[0].toUpperCase() + performer.gender.substring(1).toLowerCase())}
+            {performer.gender &&
+              performer.gender[0].toUpperCase() +
+                performer.gender.substring(1).toLowerCase()}
             {performer.gender && calculated_age && ` • `}
             {calculated_age}
-            {calculated_age && ' '}
+            {calculated_age && " "}
             {calculated_age && <FormattedMessage id="years_old" />}
           </h5>
         </div>
@@ -86,13 +88,15 @@ const PerformerSearchResultDetails: React.FC<IPerformerSearchResultDetailsProps>
       {renderTags()}
     </div>
   );
-}
+};
 
 export interface IPerformerSearchResult {
   performer: GQL.ScrapedPerformerDataFragment;
 }
 
-export const PerformerSearchResult: React.FC<IPerformerSearchResult> = ({ performer }) => {
+export const PerformerSearchResult: React.FC<IPerformerSearchResult> = ({
+  performer,
+}) => {
   return (
     <div className="mt-3 search-item">
       <PerformerSearchResultDetails performer={performer} />
@@ -106,6 +110,7 @@ interface IProps {
   onSelectPerformer: (performer: GQL.ScrapedPerformerDataFragment) => void;
   name?: string;
 }
+
 const PerformerScrapeModal: React.FC<IProps> = ({
   scraper,
   name,
@@ -121,7 +126,9 @@ const PerformerScrapeModal: React.FC<IProps> = ({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [performers, setPerformers] = useState<GQL.ScrapedPerformer[] | undefined>();
+  const [performers, setPerformers] = useState<
+    GQL.ScrapedPerformer[] | undefined
+  >();
   const [error, setError] = useState<Error | undefined>();
 
   const doQuery = useCallback(
@@ -143,7 +150,7 @@ const PerformerScrapeModal: React.FC<IProps> = ({
 
   useEffect(() => inputRef.current?.focus(), []);
   useEffect(() => {
-    doQuery(name ?? "")
+    doQuery(name ?? "");
   }, [doQuery, name]);
   useEffect(() => {
     if (error) {

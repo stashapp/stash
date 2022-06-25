@@ -678,7 +678,7 @@ export const PerformerEditPanel: React.FC<IProps> = ({
         name: fragment.name,
         gender: fragment.gender,
         birthdate: fragment.birthdate,
-        url: fragment.url
+        url: fragment.url,
       };
 
       const result = await queryScrapePerformerQueryFragment(s, input);
@@ -713,7 +713,7 @@ export const PerformerEditPanel: React.FC<IProps> = ({
     if (!isScraperModalOpen || !scraper) return;
 
     return (
-        <PerformerScrapeModal
+      <PerformerScrapeModal
         scraper={scraper}
         onHide={() => setScraper(undefined)}
         onSelectPerformer={(s) => {
