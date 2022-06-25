@@ -6,7 +6,6 @@ import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import {
   useListPerformerScrapers,
-  queryScrapePerformer,
   mutateReloadScrapers,
   usePerformerUpdate,
   usePerformerCreate,
