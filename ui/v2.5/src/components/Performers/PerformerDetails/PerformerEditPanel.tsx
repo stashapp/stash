@@ -33,7 +33,7 @@ import {
 } from "src/utils/gender";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
-import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
+import { IStashBox } from "./PerformerStashBoxModal";
 import cx from "classnames";
 import {
   faPlus,
@@ -66,10 +66,6 @@ export const PerformerEditPanel: React.FC<IProps> = ({
 
   // Editing state
   const [scraper, setScraper] = useState<GQL.ScraperSourceInput | undefined>();
-  const [
-    isScraperQueryModalOpen,
-    setIsScraperQueryModalOpen,
-  ] = useState<boolean>(false);
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
 
@@ -85,7 +81,6 @@ export const PerformerEditPanel: React.FC<IProps> = ({
   const [scrapedPerformer, setScrapedPerformer] = useState<
     GQL.ScrapedPerformer | undefined
   >();
-  const [endpoint, setEndpoint] = useState<string | undefined>();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
@@ -470,8 +465,7 @@ export const PerformerEditPanel: React.FC<IProps> = ({
 
   function onScrapeQueryClicked(s: GQL.ScraperSourceInput) {
     setScraper(s);
-    setEndpoint(s.stash_box_endpoint ?? undefined);
-    setIsScraperQueryModalOpen(true);
+    setIsScraperModalOpen(true);
   }
 
   async function onReloadScrapers() {
@@ -481,42 +475,6 @@ export const PerformerEditPanel: React.FC<IProps> = ({
 
       // reload the performer scrapers
       await Scrapers.refetch();
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function onScrapePerformer(
-    selectedPerformer: GQL.ScrapedPerformerDataFragment,
-    selectedScraper: GQL.Scraper
-  ) {
-    setIsScraperModalOpen(false);
-    try {
-      if (!scraper) return;
-      setIsLoading(true);
-
-      const {
-        __typename,
-        images: _image,
-        tags: _tags,
-        ...ret
-      } = selectedPerformer;
-
-      const result = await queryScrapePerformer(selectedScraper.id, ret);
-      if (!result?.data?.scrapeSinglePerformer?.length) return;
-
-      // assume one result
-      // if this is a new performer, just dump the data
-      if (isNew) {
-        updatePerformerEditStateFromScraper(
-          result.data.scrapeSinglePerformer[0]
-        );
-        setScraper(undefined);
-      } else {
-        setScrapedPerformer(result.data.scrapeSinglePerformer[0]);
-      }
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -545,30 +503,6 @@ export const PerformerEditPanel: React.FC<IProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }
-
-  async function onScrapeStashBox(performerResult: GQL.ScrapedPerformer) {
-    setIsScraperModalOpen(false);
-
-    const result: GQL.ScrapedPerformerDataFragment = {
-      ...performerResult,
-      images: performerResult.images ?? undefined,
-      country: getCountryByISO(performerResult.country),
-      __typename: "ScrapedPerformer",
-    };
-
-    // if this is a new performer, just dump the data
-    if (isNew) {
-      updatePerformerEditStateFromScraper(result);
-      setScraper(undefined);
-    } else {
-      setScrapedPerformer(result);
-    }
-  }
-
-  function onScraperSelected(s: GQL.ScraperSourceInput | undefined) {
-    setScraper(s);
-    setIsScraperModalOpen(true);
   }
 
   function renderScraperMenu() {
@@ -754,14 +688,14 @@ export const PerformerEditPanel: React.FC<IProps> = ({
   }
 
   const renderScrapeModal = () => {
-    if (!isScraperQueryModalOpen || !scraper) return;
+    if (!isScraperModalOpen || !scraper) return;
 
     return (
         <PerformerScrapeModal
         scraper={scraper}
         onHide={() => setScraper(undefined)}
         onSelectPerformer={(s) => {
-          setIsScraperQueryModalOpen(false);
+          setIsScraperModalOpen(false);
           setScraper(undefined);
           onPerformerSelected(s);
         }}

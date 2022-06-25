@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import debounce from "lodash-es/debounce";
 import { Form, InputGroup, Row, Col, Button, Badge } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
 import {Modal, LoadingIndicator, TruncatedText, Icon} from "src/components/Shared";
-import {queryScrapePerformerQuery, useScrapePerformerList} from "src/core/StashService";
+import {queryScrapePerformerQuery} from "src/core/StashService";
 import useToast from "../../../hooks/Toast";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import {TextUtils} from "../../../utils";
@@ -143,7 +142,7 @@ const PerformerScrapeModal: React.FC<IProps> = ({
   useEffect(() => inputRef.current?.focus(), []);
   useEffect(() => {
     doQuery(name ?? "")
-  }, [doQuery]);
+  }, [doQuery, name]);
   useEffect(() => {
     if (error) {
       Toast.error(error);
