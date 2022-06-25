@@ -6,7 +6,6 @@ import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import {
   useListPerformerScrapers,
-  queryScrapePerformer,
   mutateReloadScrapers,
   usePerformerUpdate,
   usePerformerCreate,
@@ -22,7 +21,6 @@ import {
   URLField,
 } from "src/components/Shared";
 import { ImageUtils, getStashIDs } from "src/utils";
-import { getCountryByISO } from "src/utils/country";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
