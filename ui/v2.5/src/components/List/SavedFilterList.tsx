@@ -292,7 +292,9 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       <ul className="saved-filter-list">
         {savedFilters
           .filter(
-            (f) => !filterName || f.name.toLowerCase().includes(filterName)
+            (f) =>
+              !filterName ||
+              f.name.toLowerCase().includes(filterName.toLowerCase())
           )
           .map((f) => (
             <SavedFilterItem key={f.name} item={f} />
