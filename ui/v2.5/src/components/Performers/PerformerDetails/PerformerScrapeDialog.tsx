@@ -122,7 +122,7 @@ function renderScrapedTagsRow(
 interface IPerformerScrapeDialogProps {
   performer: Partial<GQL.PerformerUpdateInput>;
   scraped: GQL.ScrapedPerformer;
-  scraper?: GQL.Scraper | IStashBox;
+  scraper?: GQL.ScraperSourceInput;
 
   onClose: (scrapedPerformer?: GQL.ScrapedPerformer) => void;
 }

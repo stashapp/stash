@@ -146,3 +146,15 @@
 .fa-transgender-alt {
   color: #c8a2c8;
 }
+
+.PerformerScrapeModal-list {
+  list-style: none;
+  max-height: 50vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-inline-start: 0;
+
+  li {
+    cursor: pointer;
+  }
+}

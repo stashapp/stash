@@ -1,22 +1,108 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import debounce from "lodash-es/debounce";
-import { Button, Form } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { Form, InputGroup, Row, Col, Button, Badge } from "react-bootstrap";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
-import { Modal, LoadingIndicator } from "src/components/Shared";
-import { useScrapePerformerList } from "src/core/StashService";
+import {Modal, LoadingIndicator, TruncatedText, Icon} from "src/components/Shared";
+import {queryScrapePerformerQuery, useScrapePerformerList} from "src/core/StashService";
+import useToast from "../../../hooks/Toast";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import {TextUtils} from "../../../utils";
 
-const CLASSNAME = "PerformerScrapeModal";
-const CLASSNAME_LIST = `${CLASSNAME}-list`;
+interface IPerformerSearchResultDetailsProps {
+  performer: GQL.ScrapedPerformerDataFragment;
+}
+
+const PerformerSearchResultDetails: React.FC<IPerformerSearchResultDetailsProps> = ({
+                                                                                      performer,
+                                                                                    }) => {
+  function renderImage() {
+    if (performer.images && performer.images.length > 0) {
+      return (
+        <div className="scene-image-container">
+          <img
+            src={performer.images[0]}
+            alt=""
+            className="align-self-center scene-image"
+          />
+        </div>
+      );
+    }
+  }
+
+  function calculateAge() {
+    if (performer?.birthdate) {
+      // calculate the age from birthdate. In future, this should probably be
+      // provided by the server
+      return TextUtils.age(performer.birthdate, performer.death_date);
+    }
+  }
+
+  function renderTags() {
+    if (performer.tags) {
+      return (
+        <Row>
+          <Col>
+            {performer.tags?.map((tag) => (
+              <Badge
+                className="tag-item"
+                variant="secondary"
+                key={tag.stored_id}
+              >
+                {tag.name}
+              </Badge>
+            ))}
+          </Col>
+        </Row>
+      );
+    }
+  }
+
+  let calculated_age = calculateAge()
+
+  return (
+    <div className="scene-details">
+      <Row>
+        {renderImage()}
+        <div className="col flex-column">
+          <h4>{performer.name}</h4>
+          <h5>
+            {performer.gender && (performer.gender[0].toUpperCase() + performer.gender.substring(1).toLowerCase())}
+            {performer.gender && calculated_age && ` • `}
+            {calculated_age}
+            {calculated_age && ' '}
+            {calculated_age && <FormattedMessage id="years_old" />}
+          </h5>
+        </div>
+      </Row>
+      <Row>
+        <Col>
+          <TruncatedText text={performer.details ?? ""} lineCount={3} />
+        </Col>
+      </Row>
+      {renderTags()}
+    </div>
+  );
+}
+
+
+export interface IPerformerSearchResult {
+  performer: GQL.ScrapedPerformerDataFragment;
+}
+
+export const PerformerSearchResult: React.FC<IPerformerSearchResult> = ({ performer }) => {
+  return (
+    <div className="mt-3 search-item">
+      <PerformerSearchResultDetails performer={performer} />
+    </div>
+  );
+};
 
 interface IProps {
-  scraper: GQL.Scraper;
+  scraper: GQL.ScraperSourceInput;
   onHide: () => void;
-  onSelectPerformer: (
-    performer: GQL.ScrapedPerformerDataFragment,
-    scraper: GQL.Scraper
-  ) => void;
+  onSelectPerformer: (performer: GQL.ScrapedPerformerDataFragment) => void;
   name?: string;
 }
 const PerformerScrapeModal: React.FC<IProps> = ({
@@ -25,24 +111,80 @@ const PerformerScrapeModal: React.FC<IProps> = ({
   onHide,
   onSelectPerformer,
 }) => {
+  const CLASSNAME = "PerformerScrapeModal";
+  const CLASSNAME_LIST = `${CLASSNAME}-list`;
+  const CLASSNAME_LIST_CONTAINER = `${CLASSNAME_LIST}-container`;
+
   const intl = useIntl();
+  const Toast = useToast();
+
   const inputRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState<string>(name ?? "");
-  const { data, loading } = useScrapePerformerList(scraper.id, query);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [performers, setPerformers] = useState<GQL.ScrapedPerformer[] | undefined>();
+  const [error, setError] = useState<Error | undefined>();
 
-  const performers = data?.scrapeSinglePerformer ?? [];
+  const doQuery = useCallback(
+    async (input: string) => {
+      if (!input) return;
 
-  const onInputChange = debounce((input: string) => {
-    setQuery(input);
-  }, 500);
+      setLoading(true);
+      try {
+        const r = await queryScrapePerformerQuery(scraper, input);
+        setPerformers(r.data?.scrapeSinglePerformer);
+      } catch (err) {
+        if (err instanceof Error) setError(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [scraper]
+  );
 
   useEffect(() => inputRef.current?.focus(), []);
+  useEffect(() => {
+    doQuery(name ?? "")
+  }, [doQuery]);
+  useEffect(() => {
+    if (error) {
+      Toast.error(error);
+      setError(undefined);
+    }
+  }, [error, Toast]);
+
+  function renderResults() {
+    if (!performers) {
+      return;
+    }
+
+    return (
+      <div className={CLASSNAME_LIST_CONTAINER}>
+        <div className="mt-1">
+          <FormattedMessage
+            id="dialogs.performers_found"
+            values={{ count: performers.length }}
+          />
+        </div>
+        <ul className={CLASSNAME_LIST}>
+          {performers.map((p, i) => (
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions, react/no-array-index-key
+            <li key={i} onClick={() => onSelectPerformer(p)}>
+              <PerformerSearchResult performer={p} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
 
   return (
     <Modal
       show
       onHide={onHide}
-      header={`Scrape performer from ${scraper.name}`}
+      modalProps={{ size: "lg", dialogClassName: "scrape-query-dialog" }}
+      header={intl.formatMessage(
+        { id: "dialogs.scrape_entity_query" },
+        { entity_type: intl.formatMessage({ id: "performer" }) }
+      )}
       accept={{
         text: intl.formatMessage({ id: "actions.cancel" }),
         onClick: onHide,
@@ -50,30 +192,34 @@ const PerformerScrapeModal: React.FC<IProps> = ({
       }}
     >
       <div className={CLASSNAME}>
-        <Form.Control
-          onChange={(e) => onInputChange(e.currentTarget.value)}
-          defaultValue={name ?? ""}
-          placeholder="Performer name..."
-          className="text-input mb-4"
-          ref={inputRef}
-        />
+        <InputGroup>
+          <Form.Control
+            defaultValue={name ?? ""}
+            placeholder={`${intl.formatMessage({ id: "name" })}...`}
+            className="text-input"
+            ref={inputRef}
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+              e.key === "Enter" && doQuery(inputRef.current?.value ?? "")
+            }
+          />
+          <InputGroup.Append>
+            <Button
+              onClick={() => {
+                doQuery(inputRef.current?.value ?? "");
+              }}
+              variant="primary"
+              title={intl.formatMessage({ id: "actions.search" })}
+            >
+              <Icon icon={faSearch} />
+            </Button>
+          </InputGroup.Append>
+        </InputGroup>
         {loading ? (
           <div className="m-4 text-center">
             <LoadingIndicator inline />
           </div>
         ) : (
-          <ul className={CLASSNAME_LIST}>
-            {performers.map((p) => (
-              <li key={p.url}>
-                <Button
-                  variant="link"
-                  onClick={() => onSelectPerformer(p, scraper)}
-                >
-                  {p.name}
-                </Button>
-              </li>
-            ))}
-          </ul>
+          renderResults()
         )}
       </div>
     </Modal>
