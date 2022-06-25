@@ -1,16 +1,16 @@
-import React, { useEffect, useMemo, useState, lazy } from "react";
-import { Button, Tabs, Tab, Badge, Col, Row } from "react-bootstrap";
+import React, { lazy, useEffect, useMemo, useState } from "react";
+import { Badge, Button, Col, Row, Tab, Tabs } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useParams, useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
-  useFindPerformer,
-  usePerformerUpdate,
-  usePerformerDestroy,
   mutateMetadataAutoTag,
+  useFindPerformer,
+  usePerformerDestroy,
+  usePerformerUpdate,
 } from "src/core/StashService";
 import {
   CountryFlag,
@@ -35,13 +35,14 @@ import {
   faHeart,
   faLink,
 } from "@fortawesome/free-solid-svg-icons";
-import {ConfigurationContext} from "../../../hooks/Config";
+import { ConfigurationContext } from "../../../hooks/Config";
 
 const PerformerEditPanel = lazy(() => import("./PerformerEditPanel"));
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
 }
+
 interface IPerformerParams {
   tab?: string;
 }

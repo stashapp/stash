@@ -1,26 +1,27 @@
-import React, { useEffect, useState, lazy } from "react";
-import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
+import React, { lazy, useEffect, useState } from "react";
+import { Badge, Button, Col, Dropdown, Form, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import * as yup from "yup";
 import {
-  useListPerformerScrapers,
   mutateReloadScrapers,
-  usePerformerUpdate,
+  queryScrapePerformerQueryFragment,
+  queryScrapePerformerURL,
+  useListPerformerScrapers,
   usePerformerCreate,
+  usePerformerUpdate,
   useTagCreate,
-  queryScrapePerformerURL, queryScrapePerformerQueryFragment,
 } from "src/core/StashService";
 import {
+  CollapseButton,
   Icon,
   ImageInput,
   LoadingIndicator,
-  CollapseButton,
   TagSelect,
   URLField,
 } from "src/components/Shared";
-import { ImageUtils, getStashIDs } from "src/utils";
+import { getStashIDs, ImageUtils } from "src/utils";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
@@ -40,6 +41,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
+
 const PerformerScrapeModal = lazy(() => import("./PerformerScrapeModal"));
 
 interface IProps {
@@ -654,7 +656,7 @@ export const PerformerEditPanel: React.FC<IProps> = ({
         name: fragment.name,
         gender: fragment.gender,
         birthdate: fragment.birthdate,
-        url: fragment.url
+        url: fragment.url,
       };
 
       const result = await queryScrapePerformerQueryFragment(s, input);
@@ -689,7 +691,7 @@ export const PerformerEditPanel: React.FC<IProps> = ({
     if (!isScraperModalOpen || !scraper) return;
 
     return (
-        <PerformerScrapeModal
+      <PerformerScrapeModal
         scraper={scraper}
         onHide={() => setScraper(undefined)}
         onSelectPerformer={(s) => {
