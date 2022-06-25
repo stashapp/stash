@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import debounce from "lodash-es/debounce";
 import { Form, InputGroup, Row, Col, Button, Badge } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -145,7 +144,7 @@ const PerformerScrapeModal: React.FC<IProps> = ({
   useEffect(() => inputRef.current?.focus(), []);
   useEffect(() => {
     doQuery(name ?? "")
-  }, [doQuery]);
+  }, [doQuery, name]);
   useEffect(() => {
     if (error) {
       Toast.error(error);
