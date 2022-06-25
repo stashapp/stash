@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, lazy } from "react";
 import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useHistory } from "react-router-dom";
@@ -28,13 +28,14 @@ import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerMoviesPanel } from "./PerformerMoviesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
-import { PerformerEditPanel } from "./PerformerEditPanel";
 import { PerformerSubmitButton } from "./PerformerSubmitButton";
 import GenderIcon from "../GenderIcon";
 import { faHeart, faLink } from "@fortawesome/free-solid-svg-icons";
 import { faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { IUIConfig } from "src/core/config";
 import { useRatingKeybinds } from "src/hooks/keybinds";
+
+const PerformerEditPanel = lazy(() => import("./PerformerEditPanel"));
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -48,6 +49,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const history = useHistory();
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
+  const { configuration } = React.useContext(ConfigurationContext);
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
@@ -429,6 +431,19 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 const PerformerLoader: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const { data, loading, error } = useFindPerformer(id ?? "");
+  const { configuration } = React.useContext(ConfigurationContext);
+  const [showScrubber, setShowScrubber] = useState(
+    configuration?.interface.showScrubber ?? true
+  );
+
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind(".", () => setShowScrubber(!showScrubber));
+
+    return () => {
+      Mousetrap.unbind(".");
+    };
+  });
 
   if (loading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;

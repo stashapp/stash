@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy } from "react";
 import { Button, Form, Col, Row, Badge, Dropdown } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import Mousetrap from "mousetrap";
@@ -11,7 +11,7 @@ import {
   usePerformerUpdate,
   usePerformerCreate,
   useTagCreate,
-  queryScrapePerformerURL,
+  queryScrapePerformerURL, queryScrapePerformerQueryFragment,
 } from "src/core/StashService";
 import { Icon } from "src/components/Shared/Icon";
 import { ImageInput } from "src/components/Shared/ImageInput";
@@ -33,8 +33,7 @@ import {
 } from "src/utils/gender";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
-import PerformerScrapeModal from "./PerformerScrapeModal";
-import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
+import { IStashBox } from "./PerformerStashBoxModal";
 import cx from "classnames";
 import {
   faPlus,
@@ -43,11 +42,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { StringListInput } from "src/components/Shared/StringListInput";
 
-const isScraper = (
-  scraper: GQL.Scraper | GQL.StashBox
-): scraper is GQL.Scraper => (scraper as GQL.Scraper).id !== undefined;
+const PerformerScrapeModal = lazy(() => import("./PerformerScrapeModal"));
 
-interface IPerformerDetails {
+interface IProps {
   performer: Partial<GQL.PerformerDataFragment>;
   isVisible: boolean;
   onImageChange?: (image?: string | null) => void;
@@ -55,7 +52,7 @@ interface IPerformerDetails {
   onCancelEditing?: () => void;
 }
 
-export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
+export const PerformerEditPanel: React.FC<IProps> = ({
   performer,
   isVisible,
   onImageChange,
@@ -67,8 +64,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const isNew = performer.id === undefined;
 
-  // Editing stat
-  const [scraper, setScraper] = useState<GQL.Scraper | IStashBox>();
+  // Editing state
+  const [scraper, setScraper] = useState<GQL.ScraperSourceInput | undefined>();
   const [newTags, setNewTags] = useState<GQL.ScrapedTag[]>();
   const [isScraperModalOpen, setIsScraperModalOpen] = useState<boolean>(false);
 
@@ -84,6 +81,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const [scrapedPerformer, setScrapedPerformer] = useState<
     GQL.ScrapedPerformer | undefined
   >();
+  const [endpoint, setEndpoint] = useState<string | undefined>();
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
@@ -490,6 +488,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     formik.setFieldValue("image", url);
   }
 
+  function onScrapeQueryClicked(s: GQL.ScraperSourceInput) {
+    setScraper(s);
+    setEndpoint(s.stash_box_endpoint ?? undefined);
+    setIsScraperQueryModalOpen(true);
+  }
+
   async function onReloadScrapers() {
     setIsLoading(true);
     try {
@@ -581,7 +585,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  function onScraperSelected(s: GQL.Scraper | IStashBox | undefined) {
+  function onScraperSelected(s: GQL.ScraperSourceInput | undefined) {
     setScraper(s);
     setIsScraperModalOpen(true);
   }
@@ -599,7 +603,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
             as={Button}
             key={s.endpoint}
             className="minimal"
-            onClick={() => onScraperSelected({ ...s, index })}
+            onClick={() =>
+              onScrapeQueryClicked({
+                stash_box_index: index,
+                stash_box_endpoint: s.endpoint,
+              })
+            }
           >
             {stashboxDisplayName(s.name, index)}
           </Dropdown.Item>
@@ -610,7 +619,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                 as={Button}
                 key={s.name}
                 className="minimal"
-                onClick={() => onScraperSelected(s)}
+                onClick={() => onScrapeQueryClicked({ scraper_id: s.id })}
               >
                 {s.name}
               </Dropdown.Item>
@@ -721,24 +730,62 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  const renderScrapeModal = () => {
-    if (!isScraperModalOpen) return;
+  async function scrapeFromQuery(
+    s: GQL.ScraperSourceInput,
+    fragment: GQL.ScrapedPerformerDataFragment
+  ) {
+    setIsLoading(true);
+    try {
+      const input: GQL.ScrapedPerformerInput = {
+        name: fragment.name,
+        gender: fragment.gender,
+        birthdate: fragment.birthdate,
+        url: fragment.url
+      };
 
-    return scraper !== undefined && isScraper(scraper) ? (
-      <PerformerScrapeModal
+      const result = await queryScrapePerformerQueryFragment(s, input);
+      if (!result.data || !result.data?.scrapeSinglePerformer?.length) {
+        Toast.success({
+          content: "No performer found",
+        });
+        return;
+      }
+      // assume one returned scene
+      setScrapedPerformer(result.data?.scrapeSinglePerformer[0]);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function onPerformerSelected(s: GQL.ScrapedPerformerDataFragment) {
+    if (!scraper) return;
+
+    if (scraper?.stash_box_index !== undefined) {
+      // must be stash-box - assume full scene
+      setScrapedPerformer(s);
+    } else {
+      // must be scraper
+      scrapeFromQuery(scraper, s);
+    }
+  }
+
+  const renderScrapeModal = () => {
+    if (!isScraperQueryModalOpen || !scraper) return;
+
+    return (
+        <PerformerScrapeModal
         scraper={scraper}
         onHide={() => setScraper(undefined)}
-        onSelectPerformer={onScrapePerformer}
+        onSelectPerformer={(s) => {
+          setIsScraperQueryModalOpen(false);
+          setScraper(undefined);
+          onPerformerSelected(s);
+        }}
         name={formik.values.name || ""}
       />
-    ) : scraper !== undefined && !isScraper(scraper) ? (
-      <PerformerStashBoxModal
-        instance={scraper}
-        onHide={() => setScraper(undefined)}
-        onSelectPerformer={onScrapeStashBox}
-        name={formik.values.name || ""}
-      />
-    ) : undefined;
+    );
   };
 
   function renderTagsField() {
@@ -1037,3 +1084,5 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     </>
   );
 };
+
+export default PerformerEditPanel;

@@ -786,6 +786,7 @@
       "video_previews_tooltip": "Video previews which play when hovering over a scene"
     },
     "scenes_found": "{count} scenes found",
+    "performers_found": "{count} performers found",
     "scrape_entity_query": "{entity_type} Scrape Query",
     "scrape_entity_title": "{entity_type} Scrape Results",
     "scrape_results_existing": "Existing",

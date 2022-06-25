@@ -1025,6 +1025,37 @@ export const queryScrapePerformerURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
+export const queryScrapePerformerQuery = (
+  source: GQL.ScraperSourceInput,
+  q: string
+) =>
+  client.query<GQL.ScrapeSinglePerformerQuery>({
+    query: GQL.ScrapeSinglePerformerDocument,
+    variables: {
+      source,
+      input: {
+        query: q,
+      },
+    },
+    // skip: q === "",
+    fetchPolicy: "network-only",
+  });
+
+export const queryScrapePerformerQueryFragment = (
+  source: GQL.ScraperSourceInput,
+  input: GQL.ScrapedPerformerInput
+) =>
+  client.query<GQL.ScrapeSinglePerformerQuery>({
+    query: GQL.ScrapeSinglePerformerDocument,
+    variables: {
+      source,
+      input: {
+        performer_input: input,
+      },
+    },
+    fetchPolicy: "network-only",
+  });
+
 export const queryScrapeSceneQuery = (
   source: GQL.ScraperSourceInput,
   q: string

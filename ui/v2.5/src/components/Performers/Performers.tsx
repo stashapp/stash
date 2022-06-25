@@ -4,9 +4,10 @@ import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet";
 import { TITLE_SUFFIX } from "src/components/Shared/constants";
 import { PersistanceLevel } from "src/hooks/ListHook";
-import Performer from "./PerformerDetails/Performer";
 import PerformerCreate from "./PerformerDetails/PerformerCreate";
 import { PerformerList } from "./PerformerList";
+
+const Performer = React.lazy(() => import("./PerformerDetails/Performer"));
 
 const Performers: React.FC = () => {
   const intl = useIntl();
