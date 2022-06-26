@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import _ from "lodash";
+import isEqual from "lodash-es/isEqual";
 import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { StudioSelect, Modal } from "src/components/Shared";
@@ -18,6 +18,7 @@ import {
   getAggregateStudioId,
   getAggregateTagIds,
 } from "src/utils/bulkUpdate";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
@@ -143,13 +144,13 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         if (sceneStudioID !== updateStudioID) {
           updateStudioID = undefined;
         }
-        if (!_.isEqual(scenePerformerIDs, updatePerformerIds)) {
+        if (isEqual(scenePerformerIDs, updatePerformerIds)) {
           updatePerformerIds = [];
         }
-        if (!_.isEqual(sceneTagIDs, updateTagIds)) {
+        if (isEqual(sceneTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
-        if (!_.isEqual(sceneMovieIDs, updateMovieIds)) {
+        if (isEqual(sceneMovieIDs, updateMovieIds)) {
           updateMovieIds = [];
         }
         if (scene.organized !== updateOrganized) {
@@ -244,7 +245,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     return (
       <Modal
         show
-        icon="pencil-alt"
+        icon={faPencilAlt}
         header={intl.formatMessage(
           { id: "dialogs.edit_entity_title" },
           {

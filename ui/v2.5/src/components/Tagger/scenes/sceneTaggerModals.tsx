@@ -5,6 +5,7 @@ import StudioModal from "./StudioModal";
 import PerformerModal from "../PerformerModal";
 import { TaggerStateContext } from "../context";
 import { useIntl } from "react-intl";
+import { faTags } from "@fortawesome/free-solid-svg-icons";
 
 type PerformerModalCallback = (toCreate?: GQL.PerformerCreateInput) => void;
 type StudioModalCallback = (toCreate?: GQL.StudioCreateInput) => void;
@@ -112,7 +113,7 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
           modalVisible
           performer={performerToCreate}
           onSave={handlePerformerSave}
-          icon="tags"
+          icon={faTags}
           header={intl.formatMessage(
             { id: "actions.create_entity" },
             { entityType: intl.formatMessage({ id: "performer" }) }
@@ -127,7 +128,7 @@ export const SceneTaggerModals: React.FC = ({ children }) => {
           modalVisible
           studio={studioToCreate}
           handleStudioCreate={handleStudioSave}
-          icon="tags"
+          icon={faTags}
           header={intl.formatMessage(
             { id: "actions.create_entity" },
             { entityType: intl.formatMessage({ id: "studio" }) }

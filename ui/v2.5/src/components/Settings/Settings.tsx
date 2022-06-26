@@ -148,3 +148,5 @@ export const Settings: React.FC = () => {
     </Tab.Container>
   );
 };
+
+export default Settings;

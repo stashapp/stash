@@ -10,6 +10,7 @@ import {
 } from "src/components/Shared";
 import { FormattedMessage } from "react-intl";
 import { RatingBanner } from "../Shared/RatingBanner";
+import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -47,7 +48,7 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
         content={popoverContent}
       >
         <Button className="minimal">
-          <Icon icon="play-circle" />
+          <Icon icon={faPlayCircle} />
           <span>{props.movie.scenes.length}</span>
         </Button>
       </HoverPopover>

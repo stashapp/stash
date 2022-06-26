@@ -1,4 +1,5 @@
-import _, { debounce } from "lodash";
+import debounce from "lodash-es/debounce";
+import cloneDeep from "lodash-es/cloneDeep";
 import React, { HTMLAttributes, useEffect, useRef, useState } from "react";
 import cx from "classnames";
 import Mousetrap from "mousetrap";
@@ -23,6 +24,15 @@ import { ListFilterOptions } from "src/models/list-filter/filter-options";
 import { FormattedMessage, useIntl } from "react-intl";
 import { PersistanceLevel } from "src/hooks/ListHook";
 import { SavedFilterList } from "./SavedFilterList";
+import {
+  faBookmark,
+  faCaretDown,
+  faCaretUp,
+  faCheck,
+  faFilter,
+  faRandom,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 const maxPageSize = 1000;
 interface IListFilterProps {
@@ -53,7 +63,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   const [perPageInput, perPageFocus] = useFocus();
 
   const searchCallback = debounce((value: string) => {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.searchTerm = value;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
@@ -101,7 +111,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
       pp = maxPageSize;
     }
 
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.itemsPerPage = pp;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
@@ -120,7 +130,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onChangeSortDirection() {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     if (filter.sortDirection === SortDirectionEnum.Asc) {
       newFilter.sortDirection = SortDirectionEnum.Desc;
     } else {
@@ -131,14 +141,14 @@ export const ListFilter: React.FC<IListFilterProps> = ({
   }
 
   function onChangeSortBy(eventKey: string | null) {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.sortBy = eventKey ?? undefined;
     newFilter.currentPage = 1;
     onFilterUpdate(newFilter);
   }
 
   function onReshuffleRandomSort() {
-    const newFilter = _.cloneDeep(filter);
+    const newFilter = cloneDeep(filter);
     newFilter.currentPage = 1;
     newFilter.randomSeed = -1;
     onFilterUpdate(newFilter);
@@ -207,28 +217,8 @@ export const ListFilter: React.FC<IListFilterProps> = ({
 
     return (
       <>
-        <div className="d-flex mb-1">
-          <InputGroup className="mr-2 flex-grow-1">
-            <InputGroup.Prepend>
-              <Dropdown>
-                <OverlayTrigger
-                  placement="top"
-                  overlay={
-                    <Tooltip id="filter-tooltip">
-                      <FormattedMessage id="search_filter.saved_filters" />
-                    </Tooltip>
-                  }
-                >
-                  <Dropdown.Toggle variant="secondary">
-                    <Icon icon="bookmark" />
-                  </Dropdown.Toggle>
-                </OverlayTrigger>
-                <Dropdown.Menu
-                  as={SavedFilterDropdown}
-                  className="saved-filter-list-menu"
-                />
-              </Dropdown>
-            </InputGroup.Prepend>
+        <div className="mb-2 mr-2 d-flex">
+          <div className="flex-grow-1 query-text-field-group">
             <FormControl
               ref={queryRef}
               placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
@@ -245,30 +235,49 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                 queryClearShowing ? "" : "d-none"
               )}
             >
-              <Icon icon="times" />
+              <Icon icon={faTimes} />
             </Button>
-            <InputGroup.Append>
-              <OverlayTrigger
-                placement="top"
-                overlay={
-                  <Tooltip id="filter-tooltip">
-                    <FormattedMessage id="search_filter.name" />
-                  </Tooltip>
-                }
-              >
-                <Button
-                  variant="secondary"
-                  onClick={() => openFilterDialog()}
-                  active={filterDialogOpen}
-                >
-                  <Icon icon="filter" />
-                </Button>
-              </OverlayTrigger>
-            </InputGroup.Append>
-          </InputGroup>
+          </div>
         </div>
 
-        <Dropdown as={ButtonGroup} className="mr-2 mb-1">
+        <ButtonGroup className="mr-2 mb-2">
+          <Dropdown>
+            <OverlayTrigger
+              placement="top"
+              overlay={
+                <Tooltip id="filter-tooltip">
+                  <FormattedMessage id="search_filter.saved_filters" />
+                </Tooltip>
+              }
+            >
+              <Dropdown.Toggle variant="secondary">
+                <Icon icon={faBookmark} />
+              </Dropdown.Toggle>
+            </OverlayTrigger>
+            <Dropdown.Menu
+              as={SavedFilterDropdown}
+              className="saved-filter-list-menu"
+            />
+          </Dropdown>
+          <OverlayTrigger
+            placement="top"
+            overlay={
+              <Tooltip id="filter-tooltip">
+                <FormattedMessage id="search_filter.name" />
+              </Tooltip>
+            }
+          >
+            <Button
+              variant="secondary"
+              onClick={() => openFilterDialog()}
+              active={filterDialogOpen}
+            >
+              <Icon icon={faFilter} />
+            </Button>
+          </OverlayTrigger>
+        </ButtonGroup>
+
+        <Dropdown as={ButtonGroup} className="mr-2 mb-2">
           <InputGroup.Prepend>
             <Dropdown.Toggle variant="secondary">
               {currentSortBy
@@ -292,8 +301,8 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               <Icon
                 icon={
                   filter.sortDirection === SortDirectionEnum.Asc
-                    ? "caret-up"
-                    : "caret-down"
+                    ? faCaretUp
+                    : faCaretDown
                 }
               />
             </Button>
@@ -307,19 +316,19 @@ export const ListFilter: React.FC<IListFilterProps> = ({
               }
             >
               <Button variant="secondary" onClick={onReshuffleRandomSort}>
-                <Icon icon="random" />
+                <Icon icon={faRandom} />
               </Button>
             </OverlayTrigger>
           )}
         </Dropdown>
 
-        <div>
+        <div className="mb-2">
           <Form.Control
             as="select"
             ref={perPageSelect}
             onChange={(e) => onChangePageSize(e.target.value)}
             value={filter.itemsPerPage.toString()}
-            className="btn-secondary mx-1 mb-1"
+            className="btn-secondary"
           >
             {pageSizeOptions.map((s) => (
               <option value={s.value} key={s.value}>
@@ -363,7 +372,7 @@ export const ListFilter: React.FC<IListFilterProps> = ({
                         )
                       }
                     >
-                      <Icon icon="check" />
+                      <Icon icon={faCheck} />
                     </Button>
                   </InputGroup.Append>
                 </InputGroup>

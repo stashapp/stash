@@ -8,8 +8,9 @@ import {
   Row,
 } from "react-bootstrap";
 import { useIntl } from "react-intl";
-import { Modal } from ".";
+import Modal from "./Modal";
 import Icon from "./Icon";
+import { faFile, faLink } from "@fortawesome/free-solid-svg-icons";
 
 interface IImageInput {
   isEditing: boolean;
@@ -100,7 +101,7 @@ export const ImageInput: React.FC<IImageInput> = ({
           <div>
             <Form.Label className="image-input">
               <Button variant="secondary">
-                <Icon icon="file" className="fa-fw" />
+                <Icon icon={faFile} className="fa-fw" />
                 <span>{intl.formatMessage({ id: "actions.from_file" })}</span>
               </Button>
               <Form.Control
@@ -112,7 +113,7 @@ export const ImageInput: React.FC<IImageInput> = ({
           </div>
           <div>
             <Button className="minimal" onClick={() => setIsShowDialog(true)}>
-              <Icon icon="link" className="fa-fw" />
+              <Icon icon={faLink} className="fa-fw" />
               <span>{intl.formatMessage({ id: "actions.from_url" })}</span>
             </Button>
           </div>

@@ -1,3 +1,9 @@
+import {
+  faFilm,
+  faImage,
+  faImages,
+  faPlayCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button } from "react-bootstrap";
 import { useIntl } from "react-intl";
@@ -24,13 +30,13 @@ export const PopoverCountButton: React.FC<IProps> = ({
   function getIcon() {
     switch (type) {
       case "scene":
-        return "play-circle";
+        return faPlayCircle;
       case "image":
-        return "image";
+        return faImage;
       case "gallery":
-        return "images";
+        return faImages;
       case "movie":
-        return "film";
+        return faFilm;
     }
   }
 

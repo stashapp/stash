@@ -36,6 +36,10 @@ mutation ConfigureDefaults($input: ConfigDefaultSettingsInput!) {
   }
 }
 
+mutation ConfigureUI($input: Map!) {
+  configureUI(input: $input)
+}
+
 mutation GenerateAPIKey($input: GenerateAPIKeyInput!) {
   generateAPIKey(input: $input)
 }

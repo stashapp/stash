@@ -129,3 +129,5 @@ export class SceneQueue {
     return `/scenes/${sceneID}${params.length ? "?" + params.join("&") : ""}`;
   }
 }
+
+export default SceneQueue;

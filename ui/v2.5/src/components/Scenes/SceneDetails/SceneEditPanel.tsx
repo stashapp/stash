@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, lazy } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import {
   Button,
@@ -30,7 +30,7 @@ import {
   ImageInput,
   URLField,
 } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import useToast from "src/hooks/Toast";
 import { ImageUtils, FormUtils, TextUtils, getStashIDs } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
@@ -39,10 +39,16 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
-import { SceneScrapeDialog } from "./SceneScrapeDialog";
-import { SceneQueryModal } from "./SceneQueryModal";
 import { projectionStrings } from "../../../utils/projection";
 import { stereoModeStrings } from "../../../utils/stereoMode";
+import {
+  faSearch,
+  faSyncAlt,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
+
+const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
+const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -411,7 +417,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     return (
       <Dropdown title={intl.formatMessage({ id: "actions.scrape_query" })}>
         <Dropdown.Toggle variant="secondary">
-          <Icon icon="search" />
+          <Icon icon={faSearch} />
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
@@ -438,7 +444,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
           ))}
           <Dropdown.Item onClick={() => onReloadScrapers()}>
             <span className="fa-icon">
-              <Icon icon="sync-alt" />
+              <Icon icon={faSyncAlt} />
             </span>
             <span>
               <FormattedMessage id="actions.reload_scrapers" />
@@ -510,7 +516,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         ))}
         <Dropdown.Item onClick={() => onReloadScrapers()}>
           <span className="fa-icon">
-            <Icon icon="sync-alt" />
+            <Icon icon={faSyncAlt} />
           </span>
           <span>
             <FormattedMessage id="actions.reload_scrapers" />
@@ -867,7 +873,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                           )}
                           onClick={() => removeStashID(stashID)}
                         >
-                          <Icon icon="trash-alt" />
+                          <Icon icon={faTrashAlt} />
                         </Button>
                         {link}
                       </li>
@@ -960,3 +966,5 @@ export const SceneEditPanel: React.FC<IProps> = ({
     </div>
   );
 };
+
+export default SceneEditPanel;

@@ -12,5 +12,5 @@ import (
 
 // hideExecShell hides the windows when executing on Windows.
 func hideExecShell(cmd *exec.Cmd) {
-	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: windows.DETACHED_PROCESS}
+	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: windows.DETACHED_PROCESS & windows.CREATE_NO_WINDOW}
 }

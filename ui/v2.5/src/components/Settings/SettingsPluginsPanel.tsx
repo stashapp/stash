@@ -8,6 +8,7 @@ import { TextUtils } from "src/utils";
 import { CollapseButton, Icon, LoadingIndicator } from "src/components/Shared";
 import { SettingSection } from "./SettingSection";
 import { Setting, SettingGroup } from "./Inputs";
+import { faLink, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 
 export const SettingsPluginsPanel: React.FC = () => {
   const Toast = useToast();
@@ -30,7 +31,7 @@ export const SettingsPluginsPanel: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Icon icon="link" />
+              <Icon icon={faLink} />
             </a>
           </Button>
         );
@@ -105,7 +106,7 @@ export const SettingsPluginsPanel: React.FC = () => {
         <Setting headingID="actions.reload_plugins">
           <Button onClick={() => onReloadPlugins()}>
             <span className="fa-icon">
-              <Icon icon="sync-alt" />
+              <Icon icon={faSyncAlt} />
             </span>
             <span>
               <FormattedMessage id="actions.reload_plugins" />

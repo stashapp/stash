@@ -20,6 +20,7 @@ import PerformerConfig from "./Config";
 import { LOCAL_FORAGE_KEY, ITaggerConfig, initialConfig } from "../constants";
 import PerformerModal from "../PerformerModal";
 import { useUpdatePerformer } from "../queries";
+import { faStar, faTags } from "@fortawesome/free-solid-svg-icons";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -352,7 +353,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
               performer={modalPerformer}
               onSave={handlePerformerUpdate}
               excludedPerformerFields={config.excludedPerformerFields}
-              icon="tags"
+              icon={faTags}
               header={intl.formatMessage({
                 id: "performer_tagger.update_performer",
               })}
@@ -381,7 +382,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
     <Card>
       <Modal
         show={showBatchUpdate}
-        icon="tags"
+        icon={faTags}
         header={intl.formatMessage({
           id: "performer_tagger.update_performers",
         })}
@@ -471,7 +472,7 @@ const PerformerTaggerList: React.FC<IPerformerTaggerListProps> = ({
       </Modal>
       <Modal
         show={showBatchAdd}
-        icon="star"
+        icon={faStar}
         header={intl.formatMessage({
           id: "performer_tagger.add_new_performers",
         })}

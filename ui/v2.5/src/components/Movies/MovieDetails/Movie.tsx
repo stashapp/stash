@@ -19,6 +19,7 @@ import { useToast } from "src/hooks";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieDetailsPanel } from "./MovieDetailsPanel";
 import { MovieEditPanel } from "./MovieEditPanel";
+import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -110,7 +111,7 @@ const MoviePage: React.FC<IProps> = ({ movie }) => {
     return (
       <Modal
         show={isDeleteAlertOpen}
-        icon="trash-alt"
+        icon={faTrashAlt}
         accept={{
           text: intl.formatMessage({ id: "actions.delete" }),
           variant: "danger",

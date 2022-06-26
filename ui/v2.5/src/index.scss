@@ -8,7 +8,7 @@
 @import "src/components/List/styles.scss";
 @import "src/components/Movies/styles.scss";
 @import "src/components/Performers/styles.scss";
-@import "src/components/Recommendations/styles.scss";
+@import "src/components/FrontPage/styles.scss";
 @import "src/components/Scenes/styles.scss";
 @import "src/components/SceneDuplicateChecker/styles.scss";
 @import "src/components/SceneFilenameParser/styles.scss";
@@ -798,6 +798,12 @@ div.dropdown-menu {
   .btn:last-child {
     border-bottom-right-radius: 0;
   }
+}
+
+// workaround for dropdown button in button group
+.btn-group > .dropdown:not(:last-child) > .btn {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
 }
 
 dl.details-list {

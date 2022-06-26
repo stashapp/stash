@@ -102,7 +102,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
           {scene.gallery && (
             <Button className="minimal">
               <Link to={`/galleries/${scene.gallery.id}`}>
-                <Icon icon="image" />
+                <Icon icon={faImage} />
               </Link>
             </Button>
           )}

@@ -53,7 +53,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "path":
     case "checksum":
       return new StringCriterion(
-        new MandatoryStringCriterionOption(type, type)
+        new MandatoryStringCriterionOption("media_info.checksum", type, type)
       );
     case "oshash":
       return new StringCriterion(
@@ -134,7 +134,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "sceneChecksum":
     case "galleryChecksum":
       return new StringCriterion(
-        new StringCriterionOption("checksum", type, "checksum")
+        new StringCriterionOption("media_info.checksum", type, "checksum")
       );
     case "phash":
       return new StringCriterion(PhashCriterionOption);

@@ -37,6 +37,11 @@ import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 import PerformerScrapeModal from "./PerformerScrapeModal";
 import PerformerStashBoxModal, { IStashBox } from "./PerformerStashBoxModal";
 import cx from "classnames";
+import {
+  faPlus,
+  faSyncAlt,
+  faTrashAlt,
+} from "@fortawesome/free-solid-svg-icons";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -192,7 +197,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           >
             {t.name}
             <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon="plus" />
+              <Icon className="fa-fw" icon={faPlus} />
             </Button>
           </Badge>
         ))}
@@ -594,7 +599,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           onClick={() => onReloadScrapers()}
         >
           <span className="fa-icon">
-            <Icon icon="sync-alt" />
+            <Icon icon={faSyncAlt} />
           </span>
           <span>
             <FormattedMessage id="actions.reload_scrapers" />
@@ -781,7 +786,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
                     title={intl.formatMessage({ id: "actions.delete_stashid" })}
                     onClick={() => removeStashID(stashID)}
                   >
-                    <Icon icon="trash-alt" />
+                    <Icon icon={faTrashAlt} />
                   </Button>
                   {link}
                 </li>

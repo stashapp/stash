@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
-import _ from "lodash";
+import cloneDeep from "lodash-es/cloneDeep";
 import { Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
@@ -84,7 +84,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
       const { count } = result.data.findGalleries;
 
       const index = Math.floor(Math.random() * count);
-      const filterCopy = _.cloneDeep(filter);
+      const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindGalleries(filterCopy);

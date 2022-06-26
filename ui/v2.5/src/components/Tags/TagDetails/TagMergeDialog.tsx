@@ -7,6 +7,7 @@ import { useTagsMerge } from "src/core/StashService";
 import { useIntl } from "react-intl";
 import { useToast } from "src/hooks";
 import { useHistory } from "react-router-dom";
+import { faSignInAlt, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface ITagMergeModalProps {
   show: boolean;
@@ -74,7 +75,7 @@ export const TagMergeModal: React.FC<ITagMergeModalProps> = ({
     <Modal
       show={show}
       header={title}
-      icon={mergeType === "from" ? "sign-in-alt" : "sign-out-alt"}
+      icon={mergeType === "from" ? faSignInAlt : faSignOutAlt}
       accept={{
         text: intl.formatMessage({ id: "actions.merge" }),
         onClick: () => onMerge(),

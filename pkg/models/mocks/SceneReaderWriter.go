@@ -482,6 +482,7 @@ func (_m *SceneReaderWriter) FindMany(ids []int) ([]*models.Scene, error) {
 	return r0, r1
 }
 
+// GetCaptions provides a mock function with given fields: sceneID
 func (_m *SceneReaderWriter) GetCaptions(sceneID int) ([]*models.SceneCaption, error) {
 	ret := _m.Called(sceneID)
 
@@ -751,13 +752,13 @@ func (_m *SceneReaderWriter) Update(updatedScene models.ScenePartial) (*models.S
 	return r0, r1
 }
 
-// UpdateCaptions provides a mock function with given fields: id, newCaptions
-func (_m *SceneReaderWriter) UpdateCaptions(sceneID int, captions []*models.SceneCaption) error {
-	ret := _m.Called(sceneID, captions)
+// UpdateCaptions provides a mock function with given fields: id, captions
+func (_m *SceneReaderWriter) UpdateCaptions(id int, captions []*models.SceneCaption) error {
+	ret := _m.Called(id, captions)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, []*models.SceneCaption) error); ok {
-		r0 = rf(sceneID, captions)
+		r0 = rf(id, captions)
 	} else {
 		r0 = ret.Error(0)
 	}

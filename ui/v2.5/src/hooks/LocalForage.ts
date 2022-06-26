@@ -1,5 +1,5 @@
 import localForage from "localforage";
-import _ from "lodash";
+import isEqual from "lodash-es/isEqual";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { ConfigImageLightboxInput } from "src/core/generated-graphql";
 
@@ -69,7 +69,7 @@ export function useLocalForage<T>(
   }, [loading, key, defaultValue]);
 
   useEffect(() => {
-    if (!_.isEqual(Cache[key], data)) {
+    if (isEqual(Cache[key], data)) {
       Cache[key] = {
         ...Cache[key],
         ...data,

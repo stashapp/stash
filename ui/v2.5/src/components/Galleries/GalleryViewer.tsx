@@ -38,3 +38,5 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
     </div>
   );
 };
+
+export default GalleryViewer;

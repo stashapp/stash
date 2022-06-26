@@ -34,6 +34,7 @@ import { useFormik } from "formik";
 import { FormUtils, TextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
+import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   isVisible: boolean;
@@ -314,7 +315,7 @@ export const GalleryEditPanel: React.FC<
         ))}
         <Dropdown.Item onClick={() => onReloadScrapers()}>
           <span className="fa-icon">
-            <Icon icon="sync-alt" />
+            <Icon icon={faSyncAlt} />
           </span>
           <span>
             <FormattedMessage id="actions.reload_scrapers" />
