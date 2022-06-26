@@ -100,7 +100,19 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
     return props.newValues && props.newValues.length > 0 && props.onCreateNew;
   }
 
-  if (!props.result.scraped && !hasNewValues()) {
+  function hasChange() {
+    return (
+      ((props.result &&
+        props.result.newValue &&
+        props.result.newValue instanceof Array &&
+        props.result.newValue.length > 0) ||
+        (props.result &&
+          props.result.newValue != props.result.originalValue)) &&
+      props.onCreateNew
+    );
+  }
+
+  if (!props.result.scraped && !hasChange()) {
     return <></>;
   }
 
