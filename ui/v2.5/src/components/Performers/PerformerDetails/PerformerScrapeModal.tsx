@@ -9,6 +9,7 @@ import {
   Modal,
   TruncatedText,
 } from "src/components/Shared";
+import { genderToString, stringToGender } from "src/utils/gender";
 import { queryScrapePerformerQuery } from "src/core/StashService";
 import useToast from "../../../hooks/Toast";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
@@ -73,8 +74,7 @@ const PerformerSearchResultDetails: React.FC<IPerformerSearchResultDetailsProps>
           <h4>{performer.name}</h4>
           <h5>
             {performer.gender &&
-              performer.gender[0].toUpperCase() +
-                performer.gender.substring(1).toLowerCase()}
+              genderToString(stringToGender(performer.gender))}
             {performer.gender && calculated_age && ` • `}
             {calculated_age}
             {calculated_age && " "}
