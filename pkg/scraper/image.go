@@ -12,19 +12,30 @@ import (
 )
 
 func setPerformerImage(ctx context.Context, client *http.Client, p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
-	if p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
-		// nothing to do
-		return nil
+	if p.Images != nil && len(p.Images) > 0 {
+		for i := 0; i < len(p.Images); i++ {
+			if strings.HasPrefix(p.Images[i], "http") {
+				img, err := getImage(ctx, p.Images[i], client, globalConfig)
+				if err != nil {
+					return err
+				}
+
+				p.Images[i] = *img
+				// Image is deprecated. Use images instead
+			}
+		}
 	}
 
-	img, err := getImage(ctx, *p.Image, client, globalConfig)
-	if err != nil {
-		return err
-	}
+	if p.Image != nil && strings.HasPrefix(*p.Image, "http") {
+		img, err := getImage(ctx, *p.Image, client, globalConfig)
+		if err != nil {
+			return err
+		}
 
-	p.Image = img
-	// Image is deprecated. Use images instead
-	p.Images = []string{*img}
+		p.Image = img
+		// Image is deprecated. Use images instead
+		p.Images = append([]string{*img}, p.Images...)
+	}
 
 	return nil
 }

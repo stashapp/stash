@@ -202,7 +202,20 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.Scrap
 		return nil, fmt.Errorf("%w: cannot use scraper %s to scrape by name", ErrNotSupported, id)
 	}
 
-	return ns.viaName(ctx, c.client, query, ty)
+	content, err := ns.viaName(ctx, c.client, query, ty)
+	if err != nil {
+		return nil, fmt.Errorf("error while name scraping with scraper %s: %w", id, err)
+	}
+
+	for i := 0; i < len(content); i++ {
+		postScrape, err := c.postScrape(ctx, content[i])
+		if err != nil {
+			return nil, fmt.Errorf("error while post scraping with scraper %s: %w", id, err)
+		}
+		content[i] = postScrape
+	}
+
+	return content, err
 }
 
 // ScrapeFragment uses the given fragment input to scrape
