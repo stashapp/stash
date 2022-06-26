@@ -747,14 +747,15 @@ func (r mappedResult) apply(dest interface{}) {
 
 		if field.IsValid() {
 			var reflectValue reflect.Value
-			if field.Kind() == reflect.Ptr {
+			switch field.Kind() {
+			case reflect.Ptr:
 				// need to copy the value, otherwise everything is set to the
 				// same pointer
 				localValue := value
 				reflectValue = reflect.ValueOf(&localValue)
-			} else if field.Kind() == reflect.Slice {
+			case reflect.Slice:
 				reflectValue = reflect.ValueOf([]string{value})
-			} else {
+			default:
 				reflectValue = reflect.ValueOf(value)
 			}
 
