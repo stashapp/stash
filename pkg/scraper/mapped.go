@@ -47,9 +47,9 @@ func (s mappedConfig) process(ctx context.Context, q mappedQuery, common commonM
 	for k, attrConfig := range s {
 
 		if attrConfig.Fixed != "" {
-			// TODO - not sure if this needs to set _all_ indexes for the key
-			const i = 0
-			ret = ret.setKey(i, k, attrConfig.Fixed)
+			for i := range ret {
+				ret = ret.setKey(i, k, attrConfig.Fixed)
+			}
 		} else {
 			selector := attrConfig.Selector
 			selector = s.applyCommon(common, selector)
@@ -752,6 +752,8 @@ func (r mappedResult) apply(dest interface{}) {
 				// same pointer
 				localValue := value
 				reflectValue = reflect.ValueOf(&localValue)
+			} else if field.Kind() == reflect.Slice {
+				reflectValue = reflect.ValueOf([]string{value})
 			} else {
 				reflectValue = reflect.ValueOf(value)
 			}
