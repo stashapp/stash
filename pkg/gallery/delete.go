@@ -10,24 +10,30 @@ import (
 func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
-	// if this is a zip-based gallery, delete the images as well first
-	if deleteFile {
-		zipImgsDestroyed, err := s.destroyZipImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
-		if err != nil {
-			return nil, err
-		}
+	// TODO - we currently destroy associated files so that they will be rescanned.
+	// A better way would be to keep the file entries in the database, and recreate
+	// associated objects during the scan process if there are none already.
 
+	// if this is a zip-based gallery, delete the images as well first
+	zipImgsDestroyed, err := s.destroyZipImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
+	if err != nil {
+		return nil, err
+	}
+
+	imgsDestroyed = zipImgsDestroyed
+
+	// only delete folder based gallery images if we're deleting the folder
+	if deleteFile {
 		folderImgsDestroyed, err := s.destroyFolderImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
 		if err != nil {
 			return nil, err
 		}
 
-		imgsDestroyed = zipImgsDestroyed
 		imgsDestroyed = append(imgsDestroyed, folderImgsDestroyed...)
-
-		// we only want to delete a folder-based gallery if it is empty.
-		// this has to be done post-transaction
 	}
+
+	// we only want to delete a folder-based gallery if it is empty.
+	// this has to be done post-transaction
 
 	if err := s.Repository.Destroy(ctx, i.ID); err != nil {
 		return nil, err

@@ -356,7 +356,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	for _, gallery := range galleries {
 		// don't delete stash library paths
 		path := gallery.Path()
-		if utils.IsTrue(input.DeleteFile) && path != "" && !isStashPath(path) {
+		if deleteFile && path != "" && !isStashPath(path) {
 			// try to remove the folder - it is possible that it is not empty
 			// so swallow the error if present
 			_ = os.Remove(path)

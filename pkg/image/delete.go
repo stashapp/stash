@@ -33,10 +33,12 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.
 func (s *Service) Destroy(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
-	if deleteFile {
-		if err := s.deleteFiles(ctx, i, fileDeleter); err != nil {
-			return err
-		}
+	// TODO - we currently destroy associated files so that they will be rescanned.
+	// A better way would be to keep the file entries in the database, and recreate
+	// associated objects during the scan process if there are none already.
+
+	if err := s.destroyFiles(ctx, i, fileDeleter, deleteFile); err != nil {
+		return err
 	}
 
 	if deleteGenerated {
@@ -48,13 +50,8 @@ func (s *Service) Destroy(ctx context.Context, i *models.Image, fileDeleter *Fil
 	return s.Repository.Destroy(ctx, i.ID)
 }
 
-func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter *FileDeleter) error {
+func (s *Service) destroyFiles(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteFile bool) error {
 	for _, f := range i.Files {
-		// don't delete files in zip archives
-		if f.ZipFileID != nil {
-			continue
-		}
-
 		// only delete files where there is no other associated image
 		otherImages, err := s.Repository.FindByFileID(ctx, f.ID)
 		if err != nil {
@@ -66,9 +63,11 @@ func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter 
 			continue
 		}
 
-		const deleteFile = true
-		if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
-			return err
+		// don't delete files in zip archives
+		if deleteFile && f.ZipFileID == nil {
+			if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
+				return err
+			}
 		}
 	}
 
