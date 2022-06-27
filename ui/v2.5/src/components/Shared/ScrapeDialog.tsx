@@ -46,7 +46,10 @@ export class ScrapeResult<T> {
 
     ret.newValue = value;
     ret.useNewValue = isEqual(ret.newValue, ret.originalValue);
-    ret.scraped = ret.useNewValue;
+
+    // #2691 - if we're setting the value, assume it should be treated as
+    // scraped
+    ret.scraped = true;
 
     return ret;
   }
