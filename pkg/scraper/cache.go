@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -227,6 +228,12 @@ func (c Cache) findScraper(scraperID string) scraper {
 	return nil
 }
 
+type PostScrapedItem struct {
+	index int
+	item  ScrapedContent
+	err   error
+}
+
 func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	// find scraper with the provided id
 	s := c.findScraper(id)
@@ -247,12 +254,38 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 		return nil, fmt.Errorf("error while name scraping with scraper %s: %w", id, err)
 	}
 
-	for i := 0; i < len(content); i++ {
-		postScrape, err := c.postScrape(ctx, content[i])
-		if err != nil {
-			return nil, fmt.Errorf("error while post scraping with scraper %s: %w", id, err)
+	// post-scraping items concurrently
+	// post scraping may download images then it would be slow if done single threaded on a big list.
+	// 10 Threads to do post scraping.
+	threads := 10
+	totalPostScraped := 0
+	for totalPostScraped < len(content) {
+		channel := make(chan PostScrapedItem, threads)
+		wg := sync.WaitGroup{}
+		for i := 0; i < threads; i++ {
+			if i+totalPostScraped >= len(content) {
+				break
+			}
+			wg.Add(1)
+			go func(i int, ch chan PostScrapedItem, wg *sync.WaitGroup) {
+				// At the end of the goroutine, tell the WaitGroup
+				//   that another thread has completed.
+				defer wg.Done()
+				postScrape, err := c.postScrape(ctx, content[i])
+				result := PostScrapedItem{index: i, item: postScrape, err: err}
+				ch <- result
+			}(i+totalPostScraped, channel, &wg)
 		}
-		content[i] = postScrape
+		wg.Wait()
+		close(channel)
+		totalPostScraped += len(channel)
+		// Set post-scraped results
+		for postScrapedItem := range channel {
+			if postScrapedItem.err != nil {
+				return nil, fmt.Errorf("error while post scraping with scraper %s: %w", id, err)
+			}
+			content[postScrapedItem.index] = postScrapedItem.item
+		}
 	}
 
 	return content, err
