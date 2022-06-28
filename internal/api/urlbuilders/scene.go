@@ -27,6 +27,14 @@ func (b SceneURLBuilder) GetStreamURL() string {
 	return fmt.Sprintf("%s/scene/%s/stream%s", b.BaseURL, b.SceneID, apiKeyParam)
 }
 
+func (b SceneURLBuilder) GetStreamOrgURL(ext string) string {
+	var apiKeyParam string
+	if b.APIKey != "" {
+		apiKeyParam = fmt.Sprintf("?apikey=%s", b.APIKey)
+	}
+	return fmt.Sprintf("%s/scene/%s/stream.org%s%s", b.BaseURL, b.SceneID, ext, apiKeyParam)
+}
+
 func (b SceneURLBuilder) GetStreamPreviewURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/preview"
 }
@@ -69,6 +77,10 @@ func (b SceneURLBuilder) GetFunscriptURL() string {
 
 func (b SceneURLBuilder) GetCaptionURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/caption"
+}
+
+func (b SceneURLBuilder) GetOrgFunscriptURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/stream.org.funscript"
 }
 
 func (b SceneURLBuilder) GetInteractiveHeatmapURL() string {

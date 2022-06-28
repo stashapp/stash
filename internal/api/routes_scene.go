@@ -31,11 +31,12 @@ func (rs sceneRoutes) Routes() chi.Router {
 		// streaming endpoints
 		r.Get("/stream", rs.StreamDirect)
 		r.Get("/stream.mkv", rs.StreamMKV)
+		r.Get("/stream.org.funscript", rs.Funscript)
+		r.Get("/stream.org.*", rs.StreamDirect)
 		r.Get("/stream.webm", rs.StreamWebM)
 		r.Get("/stream.m3u8", rs.StreamHLS)
 		r.Get("/stream.ts", rs.StreamTS)
 		r.Get("/stream.mp4", rs.StreamMp4)
-
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
@@ -43,7 +44,6 @@ func (rs sceneRoutes) Routes() chi.Router {
 		r.Get("/funscript", rs.Funscript)
 		r.Get("/interactive_heatmap", rs.InteractiveHeatmap)
 		r.Get("/caption", rs.CaptionLang)
-
 		r.Get("/scene_marker/{sceneMarkerId}/stream", rs.SceneMarkerStream)
 		r.Get("/scene_marker/{sceneMarkerId}/preview", rs.SceneMarkerPreview)
 		r.Get("/scene_marker/{sceneMarkerId}/screenshot", rs.SceneMarkerScreenshot)
@@ -58,7 +58,6 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-
 	ss := manager.SceneServer{
 		TXNManager: rs.txnManager,
 	}
@@ -76,21 +75,20 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 
 	if container != ffmpeg.Matroska {
 		w.WriteHeader(http.StatusBadRequest)
-		if _, err := w.Write([]byte("not an mkv file")); err != nil {
+		if _, err := w.Write([]byte("not a mkv file")); err != nil {
 			logger.Warnf("[stream] error writing to stream: %v", err)
 		}
 		return
 	}
-
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatMKVAudio)
+	rs.streamTranscode(w, r, ffmpeg.CodecMKVAudio)
 }
 
 func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatVP9)
+	rs.streamTranscode(w, r, ffmpeg.CodecVP9)
 }
 
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.StreamFormatH264)
+	rs.streamTranscode(w, r, ffmpeg.CodecH264)
 }
 
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {

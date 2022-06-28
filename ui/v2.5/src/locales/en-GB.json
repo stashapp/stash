@@ -796,6 +796,7 @@
     },
     "phash": "PHash",
     "stream": "Stream",
+    "stream_org": "Org. File Stream",
     "video_codec": "Video Codec"
   },
   "megabits_per_second": "{value} megabits per second",

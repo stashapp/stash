@@ -1,5 +1,6 @@
 name: Lint (golangci-lint)
 on:
+  workflow_dispatch:
   push:
     tags:
       - v*
