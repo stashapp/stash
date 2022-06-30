@@ -225,34 +225,44 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.Scrap
 	stashConfig := pkg_config.GetInstance()
 	concurrentGetImages := stashConfig.GetConcurrentGetImagesOrDefault()
 	threads := concurrentGetImages
-	totalPostScraped := 0
-	for totalPostScraped < len(content) {
-		channel := make(chan PostScrapedItem, threads)
-		wg := sync.WaitGroup{}
-		for i := 0; i < threads; i++ {
-			if i+totalPostScraped >= len(content) {
-				break
+	// Check if the Threads is more than total results then set threads to the result's count.
+	if threads > len(content) {
+		threads = len(content)
+	}
+	channelQueue := make(chan PostScrapedItem, len(content))
+	channelResult := make(chan PostScrapedItem, len(content))
+	wg := sync.WaitGroup{}
+	wg.Add(threads)
+	for i := 0; i < threads; i++ {
+		go func(queue chan PostScrapedItem) {
+			for {
+				item, ok := <-queue // Get the queue item and remove it.
+				if !ok {            // if there is nothing to do and the channel has been closed then end the goroutine
+					wg.Done()
+					return
+				}
+				postScrape, err := c.postScrape(ctx, item.item)
+				result := PostScrapedItem{index: item.index, item: postScrape, err: err}
+				channelResult <- result // Add the result to result channel
 			}
-			wg.Add(1)
-			go func(i int, ch chan PostScrapedItem, wg *sync.WaitGroup) {
-				// At the end of the goroutine, tell the WaitGroup
-				//   that another thread has completed.
-				defer wg.Done()
-				postScrape, err := c.postScrape(ctx, content[i])
-				result := PostScrapedItem{index: i, item: postScrape, err: err}
-				ch <- result
-			}(i+totalPostScraped, channel, &wg)
+		}(channelQueue)
+	}
+
+	// Now the jobs can be added to the channel, which is used as a queue
+	for i := 0; i < len(content); i++ {
+		channelQueue <- PostScrapedItem{index: i, item: content[i], err: nil} // add to queue
+	}
+
+	close(channelQueue) // This tells the goroutines there's nothing else to do
+	wg.Wait()           // Wait for the threads to finish
+	close(channelResult)
+
+	// Set post-scraped results
+	for postScrapedItem := range channelResult {
+		if postScrapedItem.err != nil {
+			return nil, fmt.Errorf("error while post scraping with scraper %s: %w", id, err)
 		}
-		wg.Wait()
-		close(channel)
-		totalPostScraped += len(channel)
-		// Set post-scraped results
-		for postScrapedItem := range channel {
-			if postScrapedItem.err != nil {
-				return nil, fmt.Errorf("error while post scraping with scraper %s: %w", id, err)
-			}
-			content[postScrapedItem.index] = postScrapedItem.item
-		}
+		content[postScrapedItem.index] = postScrapedItem.item
 	}
 
 	return content, err
