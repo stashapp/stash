@@ -221,13 +221,21 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </SelectSetting>
       </SettingSection>
 
-      <SettingSection headingID="config.general.parallel_scan_head">
+      <SettingSection headingID="config.general.parallel_head">
         <NumberSetting
           id="parallel-tasks"
           headingID="config.general.number_of_parallel_task_for_scan_generation_head"
           subHeadingID="config.general.number_of_parallel_task_for_scan_generation_desc"
           value={general.parallelTasks ?? undefined}
           onChange={(v) => saveGeneral({ parallelTasks: v })}
+        />
+
+        <NumberSetting
+          id="concurrent-getImages"
+          headingID="config.general.number_of_parallel_task_for_image_download_head"
+          subHeadingID="config.general.number_of_parallel_task_for_image_download_desc"
+          value={general.concurrentGetImages ?? undefined}
+          onChange={(v) => saveGeneral({ concurrentGetImages: v })}
         />
       </SettingSection>
 

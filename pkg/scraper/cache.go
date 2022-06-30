@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	pkg_config "github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -214,10 +215,16 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.Scrap
 		return nil, fmt.Errorf("error while name scraping with scraper %s: %w", id, err)
 	}
 
+	// prevent extra code executions and locks if there's no result.
+	if content == nil || len(content) < 1 {
+		return content, nil
+	}
+
 	// post-scraping items concurrently
 	// post scraping may download images then it would be slow if done single threaded on a big list.
-	// 10 Threads to do post scraping.
-	threads := 10
+	stashConfig := pkg_config.GetInstance()
+	concurrentGetImages := stashConfig.GetConcurrentGetImagesOrDefault()
+	threads := concurrentGetImages
 	totalPostScraped := 0
 	for totalPostScraped < len(content) {
 		channel := make(chan PostScrapedItem, threads)

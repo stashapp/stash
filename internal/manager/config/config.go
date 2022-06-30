@@ -61,6 +61,9 @@ const (
 	ParallelTasks        = "parallel_tasks"
 	parallelTasksDefault = 1
 
+	ConcurrentGetImages        = "concurrent_get_images"
+	concurrentGetImagesDefault = 10
+
 	PreviewPreset = "preview_preset"
 
 	PreviewAudio        = "preview_audio"
@@ -679,6 +682,23 @@ func (i *Instance) GetParallelTasksWithAutoDetection() int {
 	return parallelTasks
 }
 
+// GetConcurrentGetImages returns the number of Concurrent workers that should be started
+// to download and convert images url to base64.
+func (i *Instance) GetConcurrentGetImages() int {
+	return i.getInt(ConcurrentGetImages)
+}
+
+// GetConcurrentGetImagesOrDefault returns the number of Concurrent workers that should be started
+// to download and convert images url to base64. returns the default value if is below 1
+func (i *Instance) GetConcurrentGetImagesOrDefault() int {
+	result := i.GetConcurrentGetImages()
+	if result < 1 {
+		return concurrentGetImagesDefault
+	}
+
+	return result
+}
+
 func (i *Instance) GetPreviewAudio() bool {
 	return i.getBool(PreviewAudio)
 }
@@ -1262,6 +1282,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(Port, portDefault)
 
 	i.main.SetDefault(ParallelTasks, parallelTasksDefault)
+	i.main.SetDefault(ConcurrentGetImages, concurrentGetImagesDefault)
 	i.main.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	i.main.SetDefault(PreviewSegments, previewSegmentsDefault)
 	i.main.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
