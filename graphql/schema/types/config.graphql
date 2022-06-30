@@ -53,6 +53,8 @@ input ConfigGeneralInput {
   videoFileNamingAlgorithm: HashAlgorithm
   """Number of parallel tasks to start during scan/generate"""
   parallelTasks: Int
+  """Number of concurrent workers to download and convert images url to base64"""
+  concurrentGetImages: Int
   """Include audio stream in previews"""
   previewAudio: Boolean
   """Number of segments in a preview file"""
@@ -156,6 +158,8 @@ type ConfigGeneralResult {
   videoFileNamingAlgorithm: HashAlgorithm!
   """Number of parallel tasks to start during scan/generate"""
   parallelTasks: Int!
+  """Number of concurrent workers to download and convert images url to base64"""
+  concurrentGetImages: Int!
   """Include audio stream in previews"""
   previewAudio: Boolean!
   """Number of segments in a preview file"""

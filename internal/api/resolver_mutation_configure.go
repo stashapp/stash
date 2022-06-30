@@ -161,6 +161,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.ParallelTasks, *input.ParallelTasks)
 	}
 
+	if input.ConcurrentGetImages != nil {
+		c.Set(config.ConcurrentGetImages, *input.ConcurrentGetImages)
+	}
+
 	if input.PreviewAudio != nil {
 		c.Set(config.PreviewAudio, *input.PreviewAudio)
 	}
