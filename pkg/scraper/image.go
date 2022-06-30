@@ -3,8 +3,10 @@ package scraper
 import (
 	"context"
 	"fmt"
+	"github.com/stashapp/stash/pkg/logger"
 	"io"
 	"net/http"
+	pkg_neturl "net/url"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -17,6 +19,7 @@ func setPerformerImage(ctx context.Context, client *http.Client, p *models.Scrap
 			if strings.HasPrefix(p.Images[i], "http") {
 				img, err := getImage(ctx, p.Images[i], client, globalConfig)
 				if err != nil {
+					logger.Warnf("Could not set image using URL %s: %s", p.Images[i], err.Error())
 					return err
 				}
 
@@ -92,6 +95,13 @@ func setMovieBackImage(ctx context.Context, client *http.Client, m *models.Scrap
 }
 
 func getImage(ctx context.Context, url string, client *http.Client, globalConfig GlobalConfig) (*string, error) {
+	if strings.HasPrefix(url, "https%3A") || strings.HasPrefix(url, "http%3A") {
+		urlDecoded, err := pkg_neturl.PathUnescape(url)
+		if err != nil {
+			return nil, err
+		}
+		url = urlDecoded
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
