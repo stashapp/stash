@@ -49,6 +49,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
   menuItems
+  showTagCardOnHover
   soundOnPreview
   wallShowTitle
   wallPlayback

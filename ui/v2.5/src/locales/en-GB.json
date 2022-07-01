@@ -491,6 +491,10 @@
         "description": "Show or hide different types of content on the navigation bar",
         "heading": "Menu Items"
       },
+      "show_tag_card_on_hover": {
+        "description": "Show tag card when hovering tag badges",
+        "heading": "Tag card tooltips"
+      },
       "performers": {
         "options": {
           "image_location": {
