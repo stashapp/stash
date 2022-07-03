@@ -74,6 +74,6 @@ The import and export tasks read and write JSON files to the configured metadata
 
 > **⚠️ Note:** The full import task wipes the current database completely before importing.
 
-See the [JSON Specification](/help/JSONSpec.md) page for details on the exported JSON format.
+See the [JSON Specification](/ui/v2.5/src/docs/en/JSONSpec.md) page for details on the exported JSON format.
 
 ---
