@@ -121,7 +121,7 @@
   "ascending": "오름차순",
   "average_resolution": "평균 해상도",
   "birth_year": "태어난 년도",
-  "birthdate": "생일",
+  "birthdate": "생년월일",
   "bitrate": "비트레이트",
   "captions": "자막",
   "career_length": "배우 경력",
@@ -267,7 +267,7 @@
       "generated_path_head": "생성된 파일 경로",
       "hashing": "해싱",
       "image_ext_desc": "이미지로 인식될 파일 확장자입니다 (쉼표로 구분합니다).",
-      "image_ext_head": "이미지 확장 프로그램",
+      "image_ext_head": "이미지 확장자",
       "include_audio_desc": "미리보기를 생성할 때 소리를 포함합니다.",
       "include_audio_head": "소리 포함",
       "logging": "로깅",
@@ -295,14 +295,14 @@
       },
       "scraping": "스크레이핑",
       "sqlite_location": "SQLite 데이터베이스의 파일 위치 (설정 변경 후 재시작이 필요합니다)",
-      "video_ext_desc": "비디오로 인식되는 파일 확장자들의 목록입니다 (쉼표(,)로 구분).",
+      "video_ext_desc": "비디오로 인식될 파일 확장자입니다 (쉼표로 구분합니다).",
       "video_ext_head": "비디오 확장 프로그램",
       "video_head": "비디오"
     },
     "library": {
       "exclusions": "제외",
       "gallery_and_image_options": "갤러리와 이미지 옵션",
-      "media_content_extensions": "미디어 컨텐츠 확장 프로그램"
+      "media_content_extensions": "미디어 컨텐츠 확장자"
     },
     "logs": {
       "log_level": "로그 수준"
@@ -398,7 +398,7 @@
         "scanning_paths": "다음 경로 스캔 중"
       },
       "scan_for_content_desc": "새로운 컨텐츠를 스캔하고 데이터베이스에 추가합니다.",
-      "set_name_date_details_from_metadata_if_present": "파일 속성을 통해 이름, 날짜, 세부 사항들을 설정합니다"
+      "set_name_date_details_from_metadata_if_present": "파일 속성값으로 이름, 날짜, 세부 사항을 설정"
     },
     "tools": {
       "scene_duplicate_checker": "영상 중복 체크 도구",
@@ -413,7 +413,7 @@
         "ignored_words": "무시된 단어들",
         "matches_with": "{i}와 일치",
         "select_parser_recipe": "파서 레시피 선택",
-        "title": "영상 파일 이름 파서",
+        "title": "영상 파일 이름 분석기",
         "whitespace_chars": "공백 문자",
         "whitespace_chars_desc": "이 문자들은 제목에서 공백으로 대체됩니다"
       },
@@ -568,17 +568,17 @@
   },
   "criterion_modifier": {
     "between": "구간",
-    "equals": "같음",
+    "equals": "=",
     "excludes": "포함하지 않음",
     "format_string": "{criterion} {modifierString} {valueString}",
-    "greater_than": "초과",
+    "greater_than": ">",
     "includes": "포함",
     "includes_all": "모두 포함",
     "is_null": "값 없음",
-    "less_than": "미만",
+    "less_than": "<",
     "matches_regex": "정규표현식 일치",
     "not_between": "구간 밖",
-    "not_equals": "같지 않음",
+    "not_equals": "≠",
     "not_matches_regex": "정규표현식 불일치",
     "not_null": "값 존재함"
   },
@@ -673,7 +673,7 @@
     "set_image_url_title": "이미지 URL",
     "unsaved_changes": "저장되지 않은 변경 사항들이 있습니다. 그래도 나가겠습니까?"
   },
-  "dimensions": "크기",
+  "dimensions": "해상도",
   "director": "감독",
   "display_mode": {
     "grid": "격자",
@@ -695,7 +695,7 @@
     "search_accuracy_label": "검색 정밀도",
     "title": "중복된 영상"
   },
-  "duplicated_phash": "영상 필터에서 선택할 수 있습니다.",
+  "duplicated_phash": "중복됨 (perceptual hash)",
   "duration": "길이",
   "effect_filters": {
     "aspect": "방향",
@@ -744,7 +744,7 @@
   "galleries": "갤러리",
   "gallery": "갤러리",
   "gallery_count": "갤러리 개수",
-  "gender": "성",
+  "gender": "성별",
   "gender_types": {
     "FEMALE": "여성",
     "INTERSEX": "인터섹스",
@@ -776,7 +776,7 @@
   "instagram": "인스타그램",
   "interactive": "인터렉티브",
   "interactive_speed": "인터랙티브 속도",
-  "isMissing": "누락됨",
+  "isMissing": "데이터 누락됨",
   "library": "라이브러리",
   "loading": {
     "generic": "로드 중…"
@@ -1018,6 +1018,6 @@
   "url": "URL",
   "videos": "비디오",
   "view_all": "모두 보기",
-  "weight": "무게",
+  "weight": "몸무게",
   "years_old": "살"
 }
