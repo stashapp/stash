@@ -18,6 +18,7 @@
     "clear_image": "Clear Image",
     "close": "Close",
     "confirm": "Confirm",
+    "continue": "Continue",
     "create": "Create",
     "create_entity": "Create {entityType}",
     "create_marker": "Create Marker",
@@ -28,6 +29,7 @@
     "delete_file": "Delete file",
     "delete_file_and_funscript": "Delete file (and funscript)",
     "delete_generated_supporting_files": "Delete generated supporting files",
+    "delete_stashid": "Delete StashID",
     "disallow": "Disallow",
     "download": "Download",
     "download_backup": "Download Backup",
@@ -51,11 +53,13 @@
     "ignore": "Ignore",
     "import": "Import…",
     "import_from_file": "Import from file",
+    "logout": "Log out",
     "merge": "Merge",
     "merge_from": "Merge from",
     "merge_into": "Merge into",
     "next_action": "Next",
     "not_running": "not running",
+    "open_in_external_player": "Open in external player",
     "open_random": "Open Random",
     "overwrite": "Overwrite",
     "play_random": "Play Random",
@@ -66,6 +70,7 @@
     "reload_plugins": "Reload plugins",
     "reload_scrapers": "Reload scrapers",
     "remove": "Remove",
+    "remove_from_gallery": "Remove from Gallery",
     "rename_gen_files": "Rename generated files",
     "rescan": "Rescan",
     "reshuffle": "Reshuffle",
@@ -80,12 +85,12 @@
     "scrape_with": "Scrape with…",
     "search": "Search",
     "select_all": "Select All",
+    "select_entity": "Select {entityType}",
     "select_folders": "Select folders",
     "select_none": "Select None",
     "selective_auto_tag": "Selective Auto Tag",
     "selective_clean": "Selective Clean",
     "selective_scan": "Selective Scan",
-    "select_entity": "Select {entityType}",
     "set_as_default": "Set as default",
     "set_back_image": "Back image…",
     "set_front_image": "Front image…",
@@ -94,7 +99,9 @@
     "show_configuration": "Show Configuration",
     "skip": "Skip",
     "stop": "Stop",
+    "submit": "Submit",
     "submit_stash_box": "Submit to Stash-Box",
+    "submit_update": "Submit update",
     "tasks": {
       "clean_confirm_message": "Are you sure you want to Clean? This will delete database information and generated content for all scenes and galleries that are no longer found in the filesystem.",
       "dry_mode_selected": "Dry Mode selected. No actual deleting will take place, only logging.",
@@ -104,14 +111,7 @@
     "temp_enable": "Enable temporarily…",
     "unset": "Unset",
     "use_default": "Use default",
-    "view_random": "View Random",
-    "continue": "Continue",
-    "submit": "Submit",
-    "submit_update": "Submit update",
-    "logout": "Log out",
-    "remove_from_gallery": "Remove from Gallery",
-    "delete_stashid": "Delete StashID",
-    "open_in_external_player": "Open in external player"
+    "view_random": "View Random"
   },
   "actions_name": "Actions",
   "age": "Age",
@@ -203,20 +203,20 @@
     "dlna": {
       "allow_temp_ip": "Allow {tempIP}",
       "allowed_ip_addresses": "Allowed IP addresses",
+      "allowed_ip_temporarily": "Allowed IP temporarily",
       "default_ip_whitelist": "Default IP Whitelist",
       "default_ip_whitelist_desc": "Default IP addresses allow to access DLNA. Use {wildcard} to allow all IP addresses.",
+      "disabled_dlna_temporarily": "Disabled DLNA temporarily",
+      "disallowed_ip": "Disallowed IP",
       "enabled_by_default": "Enabled by default",
+      "enabled_dlna_temporarily": "Enabled DLNA temporarily",
       "network_interfaces": "Interfaces",
       "network_interfaces_desc": "Interfaces to expose DLNA server on. An empty list results in running on all interfaces. Requires DLNA restart after changing.",
       "recent_ip_addresses": "Recent IP addresses",
       "server_display_name": "Server Display Name",
       "server_display_name_desc": "Display name for the DLNA server. Defaults to {server_name} if empty.",
-      "until_restart": "until restart",
-      "allowed_ip_temporarily": "Allowed IP temporarily",
-      "disabled_dlna_temporarily": "Disabled DLNA temporarily",
-      "disallowed_ip": "Disallowed IP",
-      "enabled_dlna_temporarily": "Enabled DLNA temporarily",
-      "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour"
+      "successfully_cancelled_temporary_behaviour": "Successfully cancelled temporary behaviour",
+      "until_restart": "until restart"
     },
     "general": {
       "auth": {
@@ -337,8 +337,8 @@
     "tasks": {
       "added_job_to_queue": "Added {operation_name} to job queue",
       "auto_tag": {
-        "auto_tagging_paths": "Auto Tagging the following paths",
-        "auto_tagging_all_paths": "Auto Tagging all paths"
+        "auto_tagging_all_paths": "Auto Tagging all paths",
+        "auto_tagging_paths": "Auto Tagging the following paths"
       },
       "auto_tag_based_on_filenames": "Auto-tag content based on filenames.",
       "auto_tagging": "Auto Tagging",
@@ -352,8 +352,8 @@
       "empty_queue": "No tasks are currently running.",
       "export_to_json": "Exports the database content into JSON format in the metadata directory.",
       "generate": {
-        "generating_scenes": "Generating for {num} {scene}",
-        "generating_from_paths": "Generating for scenes from the following paths"
+        "generating_from_paths": "Generating for scenes from the following paths",
+        "generating_scenes": "Generating for {num} {scene}"
       },
       "generate_desc": "Generate supporting image, sprite, video, vtt and other files.",
       "generate_phashes_during_scan": "Generate perceptual hashes",
@@ -394,8 +394,8 @@
       "only_dry_run": "Only perform a dry run. Don't remove anything",
       "plugin_tasks": "Plugin Tasks",
       "scan": {
-        "scanning_paths": "Scanning the following paths",
-        "scanning_all_paths": "Scanning all paths"
+        "scanning_all_paths": "Scanning all paths",
+        "scanning_paths": "Scanning the following paths"
       },
       "scan_for_content_desc": "Scan for new content and add it to the database.",
       "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata"
@@ -436,10 +436,10 @@
       },
       "desktop_integration": {
         "desktop_integration": "Desktop Integration",
-        "skip_opening_browser": "Skip Opening Browser",
-        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup",
         "notifications_enabled": "Enable Notifications",
-        "send_desktop_notifications_for_events": "Send desktop notifications for events"
+        "send_desktop_notifications_for_events": "Send desktop notifications for events",
+        "skip_opening_browser": "Skip Opening Browser",
+        "skip_opening_browser_on_startup": "Skip auto-opening browser during startup"
       },
       "editing": {
         "disable_dropdown_create": {
@@ -452,10 +452,6 @@
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"
       },
-      "handy_connection_key": {
-        "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com",
-        "heading": "Handy Connection Key"
-      },
       "handy_connection": {
         "connect": "Connect",
         "server_offset": {
@@ -466,6 +462,13 @@
         },
         "sync": "Sync"
       },
+      "handy_connection_key": {
+        "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com",
+        "heading": "Handy Connection Key"
+      },
+      "image_lightbox": {
+        "heading": "Image Lightbox"
+      },
       "images": {
         "heading": "Images",
         "options": {
@@ -474,9 +477,6 @@
             "heading": "Write image thumbnails"
           }
         }
-      },
-      "image_lightbox": {
-        "heading": "Image Lightbox"
       },
       "interactive_options": "Interactive Options",
       "language": {
@@ -746,12 +746,12 @@
   "gallery_count": "Gallery Count",
   "gender": "Gender",
   "gender_types": {
-    "MALE": "Male",
     "FEMALE": "Female",
-    "TRANSGENDER_MALE": "Transgender Male",
-    "TRANSGENDER_FEMALE": "Transgender Female",
     "INTERSEX": "Intersex",
-    "NON_BINARY": "Non-Binary"
+    "MALE": "Male",
+    "NON_BINARY": "Non-Binary",
+    "TRANSGENDER_FEMALE": "Transgender Female",
+    "TRANSGENDER_MALE": "Transgender Male"
   },
   "hair_color": "Hair Colour",
   "handy_connection_status": {
@@ -824,10 +824,45 @@
   "perceptual_similarity": "Perceptual Similarity (phash)",
   "performer": "Performer",
   "performerTags": "Performer Tags",
+  "performer_age": "Performer Age",
   "performer_count": "Performer Count",
   "performer_favorite": "Performer Favourited",
-  "performer_age": "Performer Age",
   "performer_image": "Performer Image",
+  "performer_tagger": {
+    "add_new_performers": "Add New Performers",
+    "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
+    "batch_add_performers": "Batch Add Performers",
+    "batch_update_performers": "Batch Update Performers",
+    "config": {
+      "active_stash-box_instance": "Active stash-box instance:",
+      "edit_excluded_fields": "Edit Excluded Fields",
+      "excluded_fields": "Excluded fields:",
+      "no_fields_are_excluded": "No fields are excluded",
+      "no_instances_found": "No instances found",
+      "these_fields_will_not_be_changed_when_updating_performers": "These fields will not be changed when updating performers."
+    },
+    "current_page": "Current page",
+    "failed_to_save_performer": "Failed to save performer \"{performer}\"",
+    "name_already_exists": "Name already exists",
+    "network_error": "Network Error",
+    "no_results_found": "No results found.",
+    "number_of_performers_will_be_processed": "{performer_count} performers will be processed",
+    "performer_already_tagged": "Performer already tagged",
+    "performer_names_separated_by_comma": "Performer names separated by comma",
+    "performer_selection": "Performer selection",
+    "performer_successfully_tagged": "Performer successfully tagged:",
+    "query_all_performers_in_the_database": "All performers in the database",
+    "refresh_tagged_performers": "Refresh tagged performers",
+    "refreshing_will_update_the_data": "Refreshing will update the data of any tagged performers from the stash-box instance.",
+    "status_tagging_job_queued": "Status: Tagging job queued",
+    "status_tagging_performers": "Status: Tagging performers",
+    "tag_status": "Tag Status",
+    "to_use_the_performer_tagger": "To use the performer tagger a stash-box instance needs to be configured.",
+    "untagged_performers": "Untagged performers",
+    "update_performer": "Update Performer",
+    "update_performers": "Update Performers",
+    "updating_untagged_performers_description": "Updating untagged performers will try to match any performers that lack a stashid and update the metadata."
+  },
   "performers": "Performers",
   "piercings": "Piercings",
   "queue": "Queue",
@@ -870,6 +905,10 @@
       "something_went_wrong": "Oh no! Something went wrong!",
       "something_went_wrong_description": "If this looks like a problem with your inputs, go ahead and click back to fix them up. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
       "something_went_wrong_while_setting_up_your_system": "Something went wrong while setting up your system. Here is the error we received: {error}"
+    },
+    "folder": {
+      "file_path": "File path",
+      "up_dir": "Up a directory"
     },
     "github_repository": "Github repository",
     "migrate": {
@@ -924,14 +963,17 @@
       "next_step": "When you're ready to proceed with setting up a new system, click Next.",
       "unable_to_locate_specified_config": "If you're reading this, then Stash couldn't find the configuration file specified at the command line or the environment. This wizard will guide you through the process of setting up a new configuration."
     },
-    "welcome_to_stash": "Welcome to Stash",
-    "folder": {
-      "file_path": "File path",
-      "up_dir": "Up a directory"
-    }
+    "welcome_to_stash": "Welcome to Stash"
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
+  "stashbox": {
+    "go_review_draft": "Go to {endpoint_name} to review draft.",
+    "selected_stash_box": "Selected Stash-Box endpoint",
+    "submission_failed": "Submission failed",
+    "submission_successful": "Submission successful",
+    "submit_update": "Already exists in {endpoint_name}"
+  },
   "statistics": "Statistics",
   "stats": {
     "image_size": "Images size",
@@ -955,6 +997,7 @@
   "toast": {
     "added_entity": "Added {entity}",
     "added_generation_job_to_queue": "Added generation job to queue",
+    "created_entity": "Created {entity}",
     "default_filter_set": "Default filter set",
     "delete_entity": "Delete {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
@@ -963,10 +1006,9 @@
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Saved {entity}",
     "started_auto_tagging": "Started auto tagging",
-    "updated_entity": "Updated {entity}",
     "started_generating": "Started generating",
     "started_importing": "Started importing",
-    "created_entity": "Created {entity}"
+    "updated_entity": "Updated {entity}"
   },
   "total": "Total",
   "true": "True",
@@ -977,47 +1019,5 @@
   "videos": "Videos",
   "view_all": "View All",
   "weight": "Weight",
-  "years_old": "years old",
-  "stashbox": {
-    "selected_stash_box": "Selected Stash-Box endpoint",
-    "submission_successful": "Submission successful",
-    "submission_failed": "Submission failed",
-    "go_review_draft": "Go to {endpoint_name} to review draft.",
-    "submit_update": "Already exists in {endpoint_name}"
-  },
-  "performer_tagger": {
-    "network_error": "Network Error",
-    "failed_to_save_performer": "Failed to save performer \"{performer}\"",
-    "name_already_exists": "Name already exists",
-    "performer_already_tagged": "Performer already tagged",
-    "current_page": "Current page",
-    "performer_successfully_tagged": "Performer successfully tagged:",
-    "no_results_found": "No results found.",
-    "update_performer": "Update Performer",
-    "update_performers": "Update Performers",
-    "query_all_performers_in_the_database": "All performers in the database",
-    "tag_status": "Tag Status",
-    "untagged_performers": "Untagged performers",
-    "updating_untagged_performers_description": "Updating untagged performers will try to match any performers that lack a stashid and update the metadata.",
-    "refresh_tagged_performers": "Refresh tagged performers",
-    "refreshing_will_update_the_data": "Refreshing will update the data of any tagged performers from the stash-box instance.",
-    "add_new_performers": "Add New Performers",
-    "to_use_the_performer_tagger": "To use the performer tagger a stash-box instance needs to be configured.",
-    "performer_selection": "Performer selection",
-    "performer_names_separated_by_comma": "Performer names separated by comma",
-    "any_names_entered_will_be_queried": "Any names entered will be queried from the remote Stash-Box instance and added if found. Only exact matches will be considered a match.",
-    "batch_add_performers": "Batch Add Performers",
-    "batch_update_performers": "Batch Update Performers",
-    "status_tagging_performers": "Status: Tagging performers",
-    "status_tagging_job_queued": "Status: Tagging job queued",
-    "number_of_performers_will_be_processed": "{performer_count} performers will be processed",
-    "config": {
-      "excluded_fields": "Excluded fields:",
-      "these_fields_will_not_be_changed_when_updating_performers": "These fields will not be changed when updating performers.",
-      "edit_excluded_fields": "Edit Excluded Fields",
-      "no_fields_are_excluded": "No fields are excluded",
-      "active_stash-box_instance": "Active stash-box instance:",
-      "no_instances_found": "No instances found"
-    }
-  }
+  "years_old": "years old"
 }
