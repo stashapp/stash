@@ -37,13 +37,15 @@ func getPathQueryRegex(name string) string {
 	return ret
 }
 
-func getPathWords(path string) []string {
+func getPathWords(path string, trimExt bool) []string {
 	retStr := path
 
-	// remove the extension
-	ext := filepath.Ext(retStr)
-	if ext != "" {
-		retStr = strings.TrimSuffix(retStr, ext)
+	if trimExt {
+		// remove the extension
+		ext := filepath.Ext(retStr)
+		if ext != "" {
+			retStr = strings.TrimSuffix(retStr, ext)
+		}
 	}
 
 	// handle path separators
@@ -136,8 +138,8 @@ func getPerformers(words []string, performerReader models.PerformerReader, cache
 	return append(performers, swPerformers...), nil
 }
 
-func PathToPerformers(path string, reader models.PerformerReader, cache *Cache) ([]*models.Performer, error) {
-	words := getPathWords(path)
+func PathToPerformers(path string, reader models.PerformerReader, cache *Cache, trimExt bool) ([]*models.Performer, error) {
+	words := getPathWords(path, trimExt)
 
 	performers, err := getPerformers(words, reader, cache)
 	if err != nil {
@@ -172,8 +174,8 @@ func getStudios(words []string, reader models.StudioReader, cache *Cache) ([]*mo
 // PathToStudio returns the Studio that matches the given path.
 // Where multiple matching studios are found, the one that matches the latest
 // position in the path is returned.
-func PathToStudio(path string, reader models.StudioReader, cache *Cache) (*models.Studio, error) {
-	words := getPathWords(path)
+func PathToStudio(path string, reader models.StudioReader, cache *Cache, trimExt bool) (*models.Studio, error) {
+	words := getPathWords(path, trimExt)
 	candidates, err := getStudios(words, reader, cache)
 
 	if err != nil {
@@ -220,8 +222,8 @@ func getTags(words []string, reader models.TagReader, cache *Cache) ([]*models.T
 	return append(tags, swTags...), nil
 }
 
-func PathToTags(path string, reader models.TagReader, cache *Cache) ([]*models.Tag, error) {
-	words := getPathWords(path)
+func PathToTags(path string, reader models.TagReader, cache *Cache, trimExt bool) ([]*models.Tag, error) {
+	words := getPathWords(path, trimExt)
 	tags, err := getTags(words, reader, cache)
 
 	if err != nil {

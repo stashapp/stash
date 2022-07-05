@@ -14,6 +14,7 @@ import {
 import { parsePath, prepareQueryString } from "src/components/Tagger/utils";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { TaggerStateContext } from "../context";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;
@@ -71,7 +72,7 @@ const TaggerSceneDetails: React.FC<ITaggerSceneDetails> = ({ scene }) => {
         className="minimal collapse-button"
         size="lg"
       >
-        <Icon icon={open ? "chevron-up" : "chevron-down"} />
+        <Icon icon={open ? faChevronUp : faChevronDown} />
       </Button>
     </div>
   );

@@ -89,3 +89,5 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
     </div>
   );
 };
+
+export default SceneMarkersPanel;

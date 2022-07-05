@@ -8,14 +8,19 @@ import {
 } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { Icon } from "../Shared";
+import {
+  faEllipsisH,
+  faPencilAlt,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IListFilterOperation {
   text: string;
   onClick: () => void;
   isDisplayed?: () => boolean;
-  icon?: IconProp;
+  icon?: IconDefinition;
   buttonVariant?: string;
 }
 
@@ -78,14 +83,14 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     if (itemsSelected) {
       if (onEdit) {
         buttons.push({
-          icon: "pencil-alt",
+          icon: faPencilAlt,
           text: intl.formatMessage({ id: "actions.edit" }),
           onClick: onEdit,
         });
       }
       if (onDelete) {
         buttons.push({
-          icon: "trash",
+          icon: faTrash,
           text: intl.formatMessage({ id: "actions.delete" }),
           onClick: onDelete,
           buttonVariant: "danger",
@@ -95,7 +100,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
     if (buttons.length > 0) {
       return (
-        <ButtonGroup className="ml-2 mb-1">
+        <ButtonGroup className="ml-2 mb-2">
           {buttons.map((button) => {
             return (
               <OverlayTrigger
@@ -106,7 +111,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
                   variant={button.buttonVariant ?? "secondary"}
                   onClick={button.onClick}
                 >
-                  <Icon icon={button.icon as IconProp} />
+                  {button.icon ? <Icon icon={button.icon} /> : undefined}
                 </Button>
               </OverlayTrigger>
             );
@@ -171,9 +176,9 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
 
     if (options.length > 0) {
       return (
-        <Dropdown className="mb-1">
+        <Dropdown>
           <Dropdown.Toggle variant="secondary" id="more-menu">
-            <Icon icon="ellipsis-h" />
+            <Icon icon={faEllipsisH} />
           </Dropdown.Toggle>
           <Dropdown.Menu className="bg-secondary text-white">
             {options}
@@ -187,7 +192,7 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     <>
       {maybeRenderButtons()}
 
-      <div className="mx-2">{renderMore()}</div>
+      <div className="mx-2 mb-2">{renderMore()}</div>
     </>
   );
 };

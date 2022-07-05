@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button, ButtonProps } from "react-bootstrap";
-import { LoadingIndicator } from "src/components/Shared";
+import LoadingIndicator from "src/components/Shared/LoadingIndicator";
 
 interface IOperationButton extends ButtonProps {
   operation?: () => Promise<void>;

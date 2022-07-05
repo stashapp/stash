@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Button, Badge, Card } from "react-bootstrap";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 
 interface IPrimaryTags {
   sceneMarkers: GQL.SceneMarkerDataFragment[];

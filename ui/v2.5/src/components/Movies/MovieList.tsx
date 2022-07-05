@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
-import _ from "lodash";
+import cloneDeep from "lodash-es/cloneDeep";
 import Mousetrap from "mousetrap";
 import { useHistory } from "react-router-dom";
 import {
@@ -103,7 +103,7 @@ export const MovieList: React.FC<IMovieList> = ({ filterHook }) => {
       const { count } = result.data.findMovies;
 
       const index = Math.floor(Math.random() * count);
-      const filterCopy = _.cloneDeep(filter);
+      const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindMovies(filterCopy);

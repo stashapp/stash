@@ -1,4 +1,4 @@
-import _ from "lodash";
+import cloneDeep from "lodash-es/cloneDeep";
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useIntl } from "react-intl";
@@ -58,7 +58,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
       const { count } = result.data.findSceneMarkers;
 
       const index = Math.floor(Math.random() * count);
-      const filterCopy = _.cloneDeep(filter);
+      const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindSceneMarkers(filterCopy);
@@ -98,3 +98,5 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
     </>
   );
 };
+
+export default SceneMarkerList;

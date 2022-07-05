@@ -1,6 +1,6 @@
 import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
-import React, { useEffect, useState, useMemo, useContext } from "react";
+import React, { useEffect, useState, useMemo, useContext, lazy } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -16,29 +16,41 @@ import {
   queryFindScenes,
   queryFindScenesByID,
 } from "src/core/StashService";
-import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
-import { Icon } from "src/components/Shared";
+
+import Icon from "src/components/Shared/Icon";
 import { useToast } from "src/hooks";
-import { SubmitStashBoxDraft } from "src/components/Dialogs/SubmitDraft";
-import { ScenePlayer, getPlayerPosition } from "src/components/ScenePlayer";
+import SceneQueue from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { TextUtils } from "src/utils";
+import TextUtils from "src/utils/text";
 import Mousetrap from "mousetrap";
-import { SceneQueue } from "src/models/sceneQueue";
-import { QueueViewer } from "./QueueViewer";
-import { SceneMarkersPanel } from "./SceneMarkersPanel";
-import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
-import { SceneEditPanel } from "./SceneEditPanel";
-import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
-import { ExternalPlayerButton } from "./ExternalPlayerButton";
-import { SceneMoviePanel } from "./SceneMoviePanel";
-import { SceneGalleriesPanel } from "./SceneGalleriesPanel";
-import { DeleteScenesDialog } from "../DeleteScenesDialog";
-import { GenerateDialog } from "../../Dialogs/GenerateDialog";
-import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 import { OrganizedButton } from "./OrganizedButton";
 import { ConfigurationContext } from "src/hooks/Config";
+import { getPlayerPosition } from "src/components/ScenePlayer/util";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+
+const SubmitStashBoxDraft = lazy(
+  () => import("src/components/Dialogs/SubmitDraft")
+);
+const ScenePlayer = lazy(
+  () => import("src/components/ScenePlayer/ScenePlayer")
+);
+
+const GalleryViewer = lazy(
+  () => import("src/components/Galleries/GalleryViewer")
+);
+const ExternalPlayerButton = lazy(() => import("./ExternalPlayerButton"));
+
+const QueueViewer = lazy(() => import("./QueueViewer"));
+const SceneMarkersPanel = lazy(() => import("./SceneMarkersPanel"));
+const SceneFileInfoPanel = lazy(() => import("./SceneFileInfoPanel"));
+const SceneEditPanel = lazy(() => import("./SceneEditPanel"));
+const SceneDetailPanel = lazy(() => import("./SceneDetailPanel"));
+const SceneMoviePanel = lazy(() => import("./SceneMoviePanel"));
+const SceneGalleriesPanel = lazy(() => import("./SceneGalleriesPanel"));
+const DeleteScenesDialog = lazy(() => import("../DeleteScenesDialog"));
+const GenerateDialog = lazy(() => import("../../Dialogs/GenerateDialog"));
+const SceneVideoFilterPanel = lazy(() => import("./SceneVideoFilterPanel"));
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -237,7 +249,7 @@ const ScenePage: React.FC<IProps> = ({
         className="minimal"
         title={intl.formatMessage({ id: "operations" })}
       >
-        <Icon icon="ellipsis-v" />
+        <Icon icon={faEllipsisV} />
       </Dropdown.Toggle>
       <Dropdown.Menu className="bg-secondary text-white">
         <Dropdown.Item

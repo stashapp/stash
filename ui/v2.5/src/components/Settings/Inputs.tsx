@@ -1,3 +1,4 @@
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Collapse, Form, Modal, ModalProps } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -94,7 +95,7 @@ export const SettingGroup: React.FC<PropsWithChildren<ISettingGroup>> = ({
         variant="minimal"
         onClick={() => setOpen(!open)}
       >
-        <Icon className="fa-fw" icon={open ? "chevron-up" : "chevron-down"} />
+        <Icon className="fa-fw" icon={open ? faChevronUp : faChevronDown} />
       </Button>
     );
   }

@@ -7,9 +7,9 @@
     "allow": "Permitir",
     "allow_temporarily": "Permitir temporariamente",
     "apply": "Aplicar",
-    "auto_tag": "Auto tag",
+    "auto_tag": "Etiquetamento automático",
     "backup": "Backup",
-    "browse_for_image": "Navegar imagens…",
+    "browse_for_image": "Procurar por imagem…",
     "cancel": "Cancelar",
     "clean": "Limpar",
     "clear": "Limpar",
@@ -23,15 +23,18 @@
     "create_entity": "Criar {entityType}",
     "create_marker": "Criar marcador",
     "created_entity": "Criar {entity_type}: {entity_name}",
+    "customise": "Customizar",
     "delete": "Apagar",
     "delete_entity": "Apagar {entityType}",
     "delete_file": "Apagar arquivo",
     "delete_file_and_funscript": "Deletar arquivo (e funscript)",
     "delete_generated_supporting_files": "Apagar arquivos gerados de suporte",
+    "delete_stashid": "Deletar StashID",
     "disallow": "Não permitir",
     "download": "Download",
     "download_backup": "Download backup",
     "edit": "Editar",
+    "edit_entity": "Editar {entityType}",
     "export": "Exportar…",
     "export_all": "Exportar tudo…",
     "find": "Encontrar",
@@ -49,12 +52,14 @@
     "identify": "Identificar",
     "ignore": "Ignorar",
     "import": "Importar…",
-    "import_from_file": "Importar do arquivo",
+    "import_from_file": "Importar de arquivo",
+    "logout": "Sair",
     "merge": "Unir",
     "merge_from": "Unir do",
     "merge_into": "Unir em",
     "next_action": "Próximo",
     "not_running": "não realizado",
+    "open_in_external_player": "Abrir em um reprodutor externo",
     "open_random": "Abrir aleatório",
     "overwrite": "Sobrescrever",
     "play_random": "Tocar aleatório",
@@ -65,6 +70,7 @@
     "reload_plugins": "Recarregar plugins",
     "reload_scrapers": "Recarregar scrapers",
     "remove": "Remover",
+    "remove_from_gallery": "Remover da galeria",
     "rename_gen_files": "Renomear arquivos gerados",
     "rescan": "Reescanear",
     "reshuffle": "Reembaralhar",
@@ -79,9 +85,10 @@
     "scrape_with": "Scrape com…",
     "search": "Buscar",
     "select_all": "Selecionar todos",
+    "select_entity": "Selecionar {entityType}",
     "select_folders": "Selecionar pastas",
     "select_none": "Selecionar nenhum",
-    "selective_auto_tag": "Auto Tag seletivo",
+    "selective_auto_tag": "Etiquetamento automático seletivo",
     "selective_clean": "Limpeza Seletiva",
     "selective_scan": "Escaneamento seletivo",
     "set_as_default": "Aplicar como padrão",
@@ -94,13 +101,15 @@
     "stop": "Parar",
     "submit": "Enviar",
     "submit_stash_box": "Enviar para o Stash-Box",
+    "submit_update": "Enviar atualização",
     "tasks": {
       "clean_confirm_message": "Tem certeza de que quer limpar? Isto irá apagar as informações do banco de dados e conteúdos gerados de todas as cenas e galerias que não são mais encontradas no sistema.",
-      "dry_mode_selected": "Modo não destrutivo. Nenhum arquivo será apagado, apenas será logado.",
+      "dry_mode_selected": "Modo não destrutivo. Nenhum arquivo será apagado, apenas registrado.",
       "import_warning": "Tem certeza de que quer importar? Isto irá apagar o banco de dados e re-importar de seus metadados exportados."
     },
     "temp_disable": "Desabilitar temporariamente…",
     "temp_enable": "Habilitar temporariamente…",
+    "unset": "Desaplicar",
     "use_default": "Usar padrão",
     "view_random": "Mostrar aleatoriamente"
   },
@@ -114,10 +123,11 @@
   "birth_year": "Ano de nascimento",
   "birthdate": "Data de nascimento",
   "bitrate": "Taxa de bits",
+  "captions": "Legendas",
   "career_length": "Duração da carreira",
   "component_tagger": {
     "config": {
-      "active_instance": "Ativar stash-box:",
+      "active_instance": "Instância do stash-box ativa:",
       "blacklist_desc": "Os itens da lista negra são excluídos das consultas. Observe que são expressões regulares e também não fazem distinção entre maiúsculas e minúsculas. Certos caracteres devem ser escritos com uma barra invertida: {chars_require_escape}",
       "blacklist_label": "Lista negra",
       "query_mode_auto": "Automático",
@@ -133,23 +143,23 @@
       "query_mode_path_desc": "Usa o caminho inteiro do arquivo",
       "set_cover_desc": "Substitua a capa da cena se alguma for encontrada.",
       "set_cover_label": "Definir imagem da capa da cena",
-      "set_tag_desc": "Anexar tags à cena, sobrescrevendo ou mesclando com as tags existentes na cena.",
-      "set_tag_label": "Definir tags",
-      "show_male_desc": "Artistas masculinos estarão disponíveis para tag.",
+      "set_tag_desc": "Anexar etiquetas à cena, sobrescrevendo ou mesclando com as etiquetas existentes na cena.",
+      "set_tag_label": "Definir etiquetas",
+      "show_male_desc": "Define se artistas masculinos estarão disponíveis para etiquetar.",
       "show_male_label": "Mostrar artistas masculinos",
       "source": "Fonte"
     },
     "noun_query": "Query",
     "results": {
-      "duration_off": "Duração por pelo menos {number}s",
+      "duration_off": "Duração fora por pelo menos {number}s",
       "duration_unknown": "Duração desconhecida",
       "fp_found": "{fpCount, plural, =0 {Nenhuma nova correspondência de impressão digital encontrada} other{# novas correspondências de impressão digital encontradas}}",
       "fp_matches": "Duração é uma correspondência",
       "fp_matches_multi": "Duração corresponde {matchCount}/{durationsLength} impressão digital(s)",
       "hash_matches": "{hash_type} é uma correspondência",
-      "match_failed_already_tagged": "Cena já marcada",
+      "match_failed_already_tagged": "Cena já etiquetada",
       "match_failed_no_result": "Nenhum resultado encontrado",
-      "match_success": "Cena marcada com sucesso",
+      "match_success": "Cena etiquetada com sucesso",
       "phash_matches": "{count} PHashes coincide(m)",
       "unnamed": "Sem nome"
     },
@@ -162,16 +172,16 @@
   },
   "config": {
     "about": {
-      "build_hash": "Build hash:",
-      "build_time": "Tempo de build:",
+      "build_hash": "Hash do executável:",
+      "build_time": "Horário de criação do executável:",
       "check_for_new_version": "Verificar se há uma nova versão",
       "latest_version": "Última versão",
-      "latest_version_build_hash": "Build Hash da última versão:",
+      "latest_version_build_hash": "Hash do executável da última versão:",
       "new_version_notice": "[NOVA]",
-      "stash_discord": "Junte-se ao nosso {url} canal",
+      "stash_discord": "Junte-se ao nosso servidor no {url}",
       "stash_home": "Stash home no {url}",
       "stash_open_collective": "Apoie-nos através de {url}",
-      "stash_wiki": "Stash {url} página",
+      "stash_wiki": "Página da Stash {url}",
       "version": "Versão"
     },
     "application_paths": {
@@ -180,10 +190,10 @@
     "categories": {
       "about": "Sobre",
       "interface": "Interface",
-      "logs": "Logs",
+      "logs": "Registros",
       "metadata_providers": "Provedores de Meta-dados",
       "plugins": "Plugins",
-      "scraping": "Scraping",
+      "scraping": "Extração",
       "security": "Segurança",
       "services": "Serviços",
       "system": "Sistema",
@@ -193,14 +203,19 @@
     "dlna": {
       "allow_temp_ip": "Permitir {tempIP}",
       "allowed_ip_addresses": "Endereços de IP permitidos",
-      "default_ip_whitelist": "Whitelist de IP padrão",
+      "allowed_ip_temporarily": "IP permitido temporariamente",
+      "default_ip_whitelist": "Lista branca de IP padrão",
       "default_ip_whitelist_desc": "Endereços IP padrão permitidos a acessar DLNA. Use {wildcard} para permitir todos endereços de IP.",
+      "disabled_dlna_temporarily": "DLNA desativado temporariamente",
+      "disallowed_ip": "IP não permitido",
       "enabled_by_default": "Ativado por padrão",
+      "enabled_dlna_temporarily": "DLNA ativado temporariamente",
       "network_interfaces": "Interfaces",
       "network_interfaces_desc": "Interfaces para expor servidor DLNA ativo. Uma lista vazia resulta em execução em todas as interfaces. Requer DLNA ser reiniciado depois de alterar.",
       "recent_ip_addresses": "Endereços de IP recentes",
       "server_display_name": "Nome de exibição do servidor",
       "server_display_name_desc": "Nome de exibição do servidor DLNA. Padrão de {server_name} se vazio.",
+      "successfully_cancelled_temporary_behaviour": "Comportamento temporário cancelado com sucesso",
       "until_restart": "até reiniciar"
     },
     "general": {
@@ -214,12 +229,12 @@
           "heading": "Credenciais"
         },
         "generate_api_key": "Gerar Chave de API",
-        "log_file": "Arquivo de log",
-        "log_file_desc": "Caminho para o arquivo para o log de saída. Em branco para desativar o registro de arquivos. Requer reinicialização.",
-        "log_http": "Log de acesso http",
-        "log_http_desc": "Logs de acesso http para o terminal. Requer reinicialização.",
-        "log_to_terminal": "Log para terminal",
-        "log_to_terminal_desc": "Logs para o terminal, além de um arquivo. Sempre ativo se o log de arquivos estiver desativado. Requer reinicialização.",
+        "log_file": "Arquivo de registro",
+        "log_file_desc": "Caminho para o arquivo para mandar os registros. Deixe em branco para desativar o arquivo de registro. Requer reinicialização.",
+        "log_http": "Registrar acesso http",
+        "log_http_desc": "Registrar acesso http para o terminal. Requer reinicialização.",
+        "log_to_terminal": "Registrar para o terminal",
+        "log_to_terminal_desc": "Registrar para o terminal além do arquivo. Sempre ativo se o arquivo de registro estiver desativado. Requer reinicialização.",
         "maximum_session_age": "Tempo máximo da sessão",
         "maximum_session_age_desc": "Tempo ocioso máximo antes de uma sessão de login expirar, em segundos.",
         "password": "Senha",
@@ -230,7 +245,7 @@
       },
       "cache_location": "Localização do diretório do cache",
       "cache_path_head": "Caminho do cache",
-      "calculate_md5_and_ohash_desc": "Calcular MD5 checksum além do oshash. A ativação fará com que as varreduras iniciais sejam mais lentas. Nomeação de arquivo Hash deve ser definido para oshash para desabilitar o cálculo MD5.",
+      "calculate_md5_and_ohash_desc": "Calcular MD5 checksum além do oshash. A ativação fará com que as escaneamentos iniciais sejam mais lentos. Nomeação de arquivo Hash deve ser definido para oshash para desabilitar o cálculo MD5.",
       "calculate_md5_and_ohash_label": "Calcular MD5 para vídeos",
       "check_for_insecure_certificates": "Verifique se há certificados inseguros",
       "check_for_insecure_certificates_desc": "Alguns sites usam ssl certificados inseguros. Quando desmarcado o scraper pula a verificação de certificados inseguros e permite o scraping desses sites. Se você receber um erro de certificado quando scraping desmarque isto.",
@@ -240,9 +255,9 @@
       "create_galleries_from_folders_label": "Crie galerias de pastas contendo imagens",
       "db_path_head": "Caminho do banco de dados",
       "directory_locations_to_your_content": "Locais de diretório para o seu conteúdo",
-      "excluded_image_gallery_patterns_desc": "Regexps de imagem e galeria de arquivos/caminhos para excluir da Varredura e adicionar para Limpar",
+      "excluded_image_gallery_patterns_desc": "Regexps de imagem e galeria de arquivos/caminhos para excluir do escaneamento e adicionar para limpar",
       "excluded_image_gallery_patterns_head": "Padrões de imagem/galeria excluidos",
-      "excluded_video_patterns_desc": "Regexps de video arquivos/caminhos para excluir da Varredura e adicionar para Limpar",
+      "excluded_video_patterns_desc": "Regexps de video arquivos/caminhos para excluir do escaneamento e adicionar para limpar",
       "excluded_video_patterns_head": "Padrões de vídeo excluidos",
       "gallery_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como arquivos ZIP da galeria.",
       "gallery_ext_head": "Extensões zip da galeria",
@@ -250,31 +265,35 @@
       "generated_file_naming_hash_head": "Hash de nomeação de arquivo gerado",
       "generated_files_location": "Local de diretório para os arquivos gerados (marcadores de cena, pré visualizações de cena, sprites, etc)",
       "generated_path_head": "Caminho gerado",
-      "hashing": "Hashing",
+      "hashing": "Criação de Hash",
       "image_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como imagens.",
       "image_ext_head": "Extensões de imagem",
       "include_audio_desc": "Inclui stream de áudio quando gerar pré-visualizações.",
       "include_audio_head": "Incluir áudio",
-      "logging": "Logging",
-      "maximum_streaming_transcode_size_desc": "Tamanho máximo para streams transcodados",
+      "logging": "Registro",
+      "maximum_streaming_transcode_size_desc": "Tamanho máximo para streams transcodificadas",
       "maximum_streaming_transcode_size_head": "Tamanho máximo de transcodação de streaming",
-      "maximum_transcode_size_desc": "Tamanho máximo para transcodes gerados",
+      "maximum_transcode_size_desc": "Tamanho máximo para transcodificações geradas",
       "maximum_transcode_size_head": "Tamanho máximo de transcodificação",
       "metadata_path": {
         "description": "Localização do diretório usado durante importação ou exportação completa dos meta-dados",
-        "heading": "Caminho dos Meta-dados"
+        "heading": "Caminho dos Metadados"
       },
       "number_of_parallel_task_for_scan_generation_desc": "Defina como 0 para detecção automática. AVISO Execução de mais tarefas do que é necessário para obter 100% de utilização da CPU diminuirá o desempenho e potencialmente causar outros problemas.",
-      "number_of_parallel_task_for_scan_generation_head": "Número de tarefas paralelas para varredura/geração",
-      "parallel_scan_head": "Varredura/Geração paralela",
-      "preview_generation": "Pré visualizar a geração",
-      "scraper_user_agent": "Scraper User Agent",
+      "number_of_parallel_task_for_scan_generation_head": "Número de tarefas paralelas para escaneamento/geração",
+      "parallel_scan_head": "Escaneamento/geração paralela",
+      "preview_generation": "Geração de pré-visualização",
+      "python_path": {
+        "description": "Caminho do executável do Python. Utilizado para scripts de scrape e plugins. Se em branco, o caminho do Python será resolvido a partir do ambiente",
+        "heading": "Caminho do Python"
+      },
+      "scraper_user_agent": "Agente de Usuário do Extrator",
       "scraper_user_agent_desc": "User-Agent string usado durante solicitações http do scrape",
       "scrapers_path": {
         "description": "Caminho para o diretório para os arquivos de configuração de scrapers",
         "heading": "Caminho dos scrapers"
       },
-      "scraping": "Scraping",
+      "scraping": "Extração",
       "sqlite_location": "Localização do arquivo para o banco de dados SQLite (requer reinicialização)",
       "video_ext_desc": "Lista delimitada por vírgulas de extensões de arquivo que serão identificadas como vídeos.",
       "video_ext_head": "Extensões de vídeo",
@@ -286,19 +305,19 @@
       "media_content_extensions": "Extensões de arquivo de mídia"
     },
     "logs": {
-      "log_level": "Log Level"
+      "log_level": "Nível de registro"
     },
     "plugins": {
-      "hooks": "Hooks",
+      "hooks": "Ganchos",
       "triggers_on": "Triggers on"
     },
     "scraping": {
       "entity_metadata": "{entityType} metadados",
       "entity_scrapers": "Scrapers de {entityType}",
-      "excluded_tag_patterns_desc": "Expressões regulares de tags para excluir dos resultados da busca",
-      "excluded_tag_patterns_head": "Padrões de Tag Excluídos",
-      "scraper": "Scraper",
-      "scrapers": "Scrapers",
+      "excluded_tag_patterns_desc": "Expressões regulares de etiquetas para excluir dos resultados da busca",
+      "excluded_tag_patterns_head": "Padrões de etiqueta excluídos",
+      "scraper": "Extrator",
+      "scrapers": "Extratores",
       "search_by_name": "Buscar por nome",
       "supported_types": "Tipos suportados",
       "supported_urls": "URLs"
@@ -306,8 +325,8 @@
     "stashbox": {
       "add_instance": "Adicionar uma instância stash-box",
       "api_key": "Chave de API",
-      "description": "Stash-box facilita o tagging automático de cenas e artistas baseados em 'impressões digitais' e nomes de arquivos..\nEndpoint e chave de API pode ser encontrado na sua página de conta na instancia stash-box. Os nomes são necessários quando mais de uma instância são adicionados.",
-      "endpoint": "Endpoint",
+      "description": "Stash-box facilita o etiquetamento automático de cenas e artistas baseados em 'impressões digitais' e nomes de arquivos.\nEndpoint e chave de API pode ser encontrado na sua página de conta na instancia stash-box. Os nomes são necessários quando mais de uma instância são adicionados.",
+      "endpoint": "Ponto Final",
       "graphql_endpoint": "Endpoint GraphQL",
       "name": "Nome",
       "title": "Endpoints do Stash-box"
@@ -318,11 +337,11 @@
     "tasks": {
       "added_job_to_queue": "{operation_name} adicionada para a fila de trabalho",
       "auto_tag": {
-        "auto_tagging_all_paths": "Adicionar tags automaticamente em todos os caminhos",
-        "auto_tagging_paths": "Adicionar tags automaticamente nos seguintes caminhos"
+        "auto_tagging_all_paths": "Etiquetar automaticamente todos os caminhos",
+        "auto_tagging_paths": "Etiquetar automaticamente os seguintes caminhos"
       },
-      "auto_tag_based_on_filenames": "Conteúdo automático de tag baseado em nomes de arquivos.",
-      "auto_tagging": "Auto tagging",
+      "auto_tag_based_on_filenames": "Etiquetar automaticamente conteúdo baseado em nomes de arquivos.",
+      "auto_tagging": "Etiquetamento automático",
       "backing_up_database": "Backup do banco de dados",
       "backup_and_download": "Executa um backup do banco de dados e baixa do arquivo resultante.",
       "backup_database": "Executa um backup do banco de dados para o mesmo diretório que o banco de dados, com o formato do nome do arquivo {filename_format}",
@@ -372,13 +391,13 @@
       "maintenance": "Manutenção",
       "migrate_hash_files": "Usado depois de alterar o hash gerado de nomeação de arquivos para renomear arquivos gerados existentes para o novo formato hash.",
       "migrations": "Migrações",
-      "only_dry_run": "Executar apenas modo não destrutivo. Não remova nada",
+      "only_dry_run": "Executar em modo não destrutivo. Não remova nada",
       "plugin_tasks": "Tarefas de plugin",
       "scan": {
         "scanning_all_paths": "Escaneando todos os caminhos",
         "scanning_paths": "Escaneando os seguintes caminhos"
       },
-      "scan_for_content_desc": "Varre para novos conteúdos e adicioná-los ao banco de dados.",
+      "scan_for_content_desc": "Escaneie por novos conteúdos e os adicione ao banco de dados.",
       "set_name_date_details_from_metadata_if_present": "Definir nome, data e detalhes a partir dos meta-dados do arquivo"
     },
     "tools": {
@@ -433,9 +452,22 @@
         "description": "Compensação de tempo em milissegundos para a reprodução de scripts interativos.",
         "heading": "Compensação de tempo Funscript (ms)"
       },
+      "handy_connection": {
+        "connect": "Conectar",
+        "server_offset": {
+          "heading": "Compensação do Servidor"
+        },
+        "status": {
+          "heading": "Estado da conexão do Handy"
+        },
+        "sync": "Sincronizar"
+      },
       "handy_connection_key": {
         "description": "Chave de conexão para usar em cenas interativas. Ativar esta chave permitirá o Stash a compartilhar as informações da cena atual com handyfeeling.com",
         "heading": "Chave de conexão"
+      },
+      "image_lightbox": {
+        "heading": "Galeria de imagem"
       },
       "images": {
         "heading": "Imagens",
@@ -499,13 +531,17 @@
       "scene_wall": {
         "heading": "Muro de cenas/marcadores",
         "options": {
-          "display_title": "Exibir título e tags",
+          "display_title": "Exibir título e etiquetas",
           "toggle_sound": "Habilitar som"
         }
       },
+      "scroll_attempts_before_change": {
+        "description": "Número de vezes para tentar rolar antes de passar para o próximo/prévio item. Só se aplica ao modo de rolagem Movimentar Y.",
+        "heading": "Tentativas de rolagem antes da transição"
+      },
       "slideshow_delay": {
         "description": "Slideshow está disponível em galerias quando no modo de exibição de paredão",
-        "heading": "Atraso do slideshow"
+        "heading": "Atraso do slideshow (segundos)"
       },
       "title": "Interface de usuário"
     }
@@ -520,7 +556,7 @@
     "performers": "{count, plural, one {Artista} other {Artistas}}",
     "scenes": "{count, plural, one {Cena} other {Cenas}}",
     "studios": "{count, plural, one {Estúdio} other {Estúdios}}",
-    "tags": "{count, plural, one {Tag} other {Tags}}"
+    "tags": "{count, plural, one {Etiqueta} other {Etiquetas}}"
   },
   "country": "País",
   "cover_image": "Imagem de capa",
@@ -558,7 +594,7 @@
     "aliases_must_be_unique": "apelidos devem ser únicos",
     "delete_alert": "Os seguintes {count, plural, one {{singularEntity}} other {{pluralEntity}}} serão deletados permanentemente:",
     "delete_confirm": "Tem certeza de que deseja excluir {entityName}?",
-    "delete_entity_desc": "{count, plural, one {Tem certeza de que deseja excluir este(a) {singularEntity}? A menos que o arquivo também seja excluído, este(a) {singularEntity} será re-adicionado quando a varredura for executada.} other {Tem certeza de que deseja excluir estes(as) {pluralEntity}? A menos que os arquivos também sejam excluídos, estes(as) {pluralEntity} serão re-adicionados quando a varredura for executada.}}",
+    "delete_entity_desc": "{count, plural, one {Tem certeza de que deseja excluir este(a) {singularEntity}? A menos que o arquivo também esteja excluído, este(a) {singularEntity} será re-adicionado quando a escaneamento for executado.} other {Tem certeza de que deseja excluir estes(as) {pluralEntity}? A menos que os arquivos também estejam excluídos, estes(as) {pluralEntity} serão re-adicionados quando o escaneamento for executado.}}",
     "delete_entity_title": "{count, plural, one {Excluir {singularEntity}} other {Excluir {pluralEntity}}}",
     "delete_galleries_extra": "...e qualquer imagem não anexada a uma galeria.",
     "delete_gallery_files": "Deletar diretório, arquivo zip ou imagem não anexada a alguma galeria.",
@@ -580,12 +616,12 @@
       "reset_zoom_on_nav": "Restaurar nível de zoom ao trocar de imagem",
       "scale_up": {
         "description": "Aumentar imagens menores até que preencham a tela",
-        "label": "Aumentar para caber"
+        "label": "Aumentar até caber"
       },
       "scroll_mode": {
         "description": "Mantenha shift pressionado para usar outro modo temporariamente.",
-        "label": "Modo scroll",
-        "pan_y": "Pan Y",
+        "label": "Modo de rolagem",
+        "pan_y": "Movimentar Y",
         "zoom": "Zoom"
       }
     },
@@ -602,10 +638,12 @@
       "interactive_heatmap_speed": "Gerar heatmaps e velocidades para cenas interativas",
       "marker_image_previews": "Pré-visualizações de Imagem Animada para Marcadores",
       "marker_image_previews_tooltip": "Pré-visualizações WebP animadas para marcadores, necessário apenas de o Tipo de Pré-visualização estiver configurado para Imagem Animada.",
-      "marker_screenshots": "Capturas de Tela de Marcadores",
+      "marker_screenshots": "Capturas de tela de Marcadores",
       "marker_screenshots_tooltip": "Imagens JPG estáticas para marcadores, necessário apenas se o Tipo de Pré-visualização estiver configurado para Imagem Estática.",
       "markers": "Pré-visualizações de Marcadores",
       "markers_tooltip": "Vídeos de 20 segundos que iniciam em dado código de tempo.",
+      "override_preview_generation_options": "Sobrepor as opções da geração de pré-visualização",
+      "override_preview_generation_options_desc": "Sobrepor as opções da geração de pré-visualização. Os padrões são definidos em Sistema -> Geração de pré-visualização.",
       "overwrite": "Substituir arquivos gerados existentes",
       "phash": "Hashes perceptivos (para desduplicação)",
       "preview_exclude_end_time_desc": "Excluir os últimos x segundos de pré-visualizações de cena. Isso pode ser um valor em segundos, ou uma porcentagem (p. ex. 2%) da duração total da cena.",
@@ -638,9 +676,9 @@
   "dimensions": "Dimensões",
   "director": "Diretor(a)",
   "display_mode": {
-    "grid": "Grid",
+    "grid": "Grade",
     "list": "Lista",
-    "tagger": "Tagger",
+    "tagger": "Etiquetador",
     "unknown": "Desconhecido(a)",
     "wall": "Paredão"
   },
@@ -662,7 +700,7 @@
   "effect_filters": {
     "aspect": "Aspecto",
     "blue": "Azul",
-    "blur": "Blur",
+    "blur": "Borrão",
     "brightness": "Brilho",
     "contrast": "Contraste",
     "gamma": "Gama",
@@ -680,7 +718,9 @@
     "scale": "Escala",
     "warmth": "Calor"
   },
+  "empty_server": "Adicione algumas cenas ao seu servidor para ver as recomendações nesta página.",
   "ethnicity": "Etnicidade",
+  "existing_value": "valor existente",
   "eye_color": "Cor dos olhos",
   "fake_tits": "Peitos falsos",
   "false": "Falso",
@@ -695,6 +735,12 @@
   "filters": "Filtros",
   "framerate": "Taxa de quadros",
   "frames_per_second": "{value} quadros por segundo",
+  "front_page": {
+    "types": {
+      "premade_filter": "Filtro pré-pronto",
+      "saved_filter": "Filtro salvo"
+    }
+  },
   "galleries": "Galerias",
   "gallery": "Galeria",
   "gallery_count": "Contagem de galeria",
@@ -708,15 +754,25 @@
     "TRANSGENDER_MALE": "Transgênero Masculino"
   },
   "hair_color": "Cor do cabelo",
+  "handy_connection_status": {
+    "connecting": "Conectando",
+    "disconnected": "Desconectado",
+    "error": "Erro conectando ao Handy",
+    "missing": "Faltando",
+    "ready": "Pronto",
+    "syncing": "Sincronizando com o servidor",
+    "uploading": "Enviando script"
+  },
   "hasMarkers": "Possui marcadores",
   "height": "Altura",
   "help": "Ajuda",
+  "ignore_auto_tag": "Ignorar etiquetamento automático",
   "image": "Imagem",
   "image_count": "Contagem de imagem",
   "images": "Imagens",
-  "include_parent_tags": "Incluir tags pai",
+  "include_parent_tags": "Incluir etiquetas pai",
   "include_sub_studios": "Incluem estúdios filho",
-  "include_sub_tags": "Incluir sub-tags",
+  "include_sub_tags": "Incluir sub-etiquetas",
   "instagram": "Instagram",
   "interactive": "Interativo",
   "interactive_speed": "Velocidade interativa",
@@ -739,7 +795,7 @@
       "age_context": "{age} {years_old} nesta cena"
     },
     "phash": "PHash",
-    "stream": "Stream",
+    "stream": "Transmissão",
     "video_codec": "Codec de vídeo"
   },
   "megabits_per_second": "{value} megabits por segundo",
@@ -761,13 +817,13 @@
   },
   "parent_of": "Pai de {children}",
   "parent_studios": "Estúdios pai",
-  "parent_tag_count": "Contador de tags pai",
-  "parent_tags": "Tags pai",
+  "parent_tag_count": "Contador de etiquetas pai",
+  "parent_tags": "Etiquetas pai",
   "part_of": "Parte de {parent}",
   "path": "Caminho",
   "perceptual_similarity": "Semelhança Perceptiva (phash)",
   "performer": "Artista",
-  "performerTags": "Tags de artitas",
+  "performerTags": "Etiquetas de artistas",
   "performer_age": "Idade do Artista",
   "performer_count": "Contagem de artistas",
   "performer_favorite": "Artista Favoritado",
@@ -788,34 +844,36 @@
     "current_page": "Página atual",
     "failed_to_save_performer": "Falha ao salvar artista \"{performer}\"",
     "name_already_exists": "Nome já existe",
-    "network_error": "Erro de Rede",
+    "network_error": "Erro de rede",
     "no_results_found": "Nenhum resultado encontrado.",
     "number_of_performers_will_be_processed": "{performer_count} artistas serão processados",
-    "performer_already_tagged": "Artista já taggeado",
+    "performer_already_tagged": "Artista já etiquetado",
     "performer_names_separated_by_comma": "Nomes de artistas separados por vírgula",
     "performer_selection": "Seleção de artista",
-    "performer_successfully_tagged": "Artista taggeado com sucesso:",
+    "performer_successfully_tagged": "Artista etiquetado com sucesso:",
     "query_all_performers_in_the_database": "Todos os artistas no banco de dados",
-    "refresh_tagged_performers": "Recarregar artistas taggeados",
-    "refreshing_will_update_the_data": "Recarregar irá atualizar os dados de qualquer artista taggeado da instância do stash-box.",
-    "status_tagging_job_queued": "Status: Taggeamento adicionado à fila",
-    "status_tagging_performers": "Status: Taggeando artistas",
-    "tag_status": "Status da Tag",
-    "to_use_the_performer_tagger": "Para usar o tagger de artistas, uma instância do stash-box deve ser configurada.",
-    "untagged_performers": "Artistas sem tag",
+    "refresh_tagged_performers": "Recarregar artistas etiquetados",
+    "refreshing_will_update_the_data": "Recarregar irá atualizar os dados de qualquer artista etiquetado da instância do stash-box.",
+    "status_tagging_job_queued": "Status: Etiquetamento adicionado à fila",
+    "status_tagging_performers": "Status: Etiquetando artistas",
+    "tag_status": "Status da etiqueta",
+    "to_use_the_performer_tagger": "Para usar o etiquetador de artistas, uma instância do stash-box deve ser configurada.",
+    "untagged_performers": "Artistas sem etiqueta",
     "update_performer": "Atualizar Artista",
     "update_performers": "Atualizar Artistas",
-    "updating_untagged_performers_description": "A atualização de artistas sem tag tentará corresponder a qualquer artista sem um shashid e atualizar os metadados."
+    "updating_untagged_performers_description": "A atualização de artistas sem etiqueta tentará corresponder a qualquer artista sem um stashid e atualizar os metadados."
   },
   "performers": "Artistas",
   "piercings": "Piercings",
   "queue": "Fila",
   "random": "Aleatória",
   "rating": "Avaliação",
+  "recently_added_objects": "{objects} Recentemente Adicionados",
+  "recently_released_objects": "{objects} Recentemente Lançados",
   "resolution": "Resolução",
   "scene": "Cena",
-  "sceneTagger": "Tagger de cena",
-  "sceneTags": "Tags de cena",
+  "sceneTagger": "Etiquetador de cena",
+  "sceneTags": "Etiquetas da cena",
   "scene_count": "Contagem de cena",
   "scene_id": "Cena ID",
   "scenes": "Cenas",
@@ -847,6 +905,10 @@
       "something_went_wrong": "Ah não! Algo deu errado!",
       "something_went_wrong_description": "Se isso parece um problema com os dados fornecidos, clique no em Voltar para corrigi-los. Caso contrário, reporte um bug em {githubLink} ou busque ajuda em {discordLink}.",
       "something_went_wrong_while_setting_up_your_system": "Algo deu errado enquanto configurávamos seu sistema. Aqui está o erro que recebemos: {error}"
+    },
+    "folder": {
+      "file_path": "Caminho do arquivo",
+      "up_dir": "Subir um diretório"
     },
     "github_repository": "Repositório do Github",
     "migrate": {
@@ -901,10 +963,7 @@
       "next_step": "Quando estiver pronto para prosseguir com a criação do novo sistema, clique Próximo.",
       "unable_to_locate_specified_config": "Se está lendo isto, então o Stash não pôde encontrar o arquivo de configuração especificado na linha de comando ou no ambiente. Este assistente irá te guiar durante o processo de criação de uma nova configuração."
     },
-    "welcome_to_stash": "Bem-vindo ao Stash",
-    "folder": {
-      "up_dir": "Subir um diretório"
-    }
+    "welcome_to_stash": "Bem-vindo ao Stash"
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -912,8 +971,10 @@
     "go_review_draft": "Vá para {endpoint_name} para revisar rascunho.",
     "selected_stash_box": "Endpoint do Stash-Box selecionado",
     "submission_failed": "Falha no envio",
-    "submission_successful": "Envio bem-sucedido"
+    "submission_successful": "Envio bem-sucedido",
+    "submit_update": "Já existe no {endpoint_name}"
   },
+  "statistics": "Estatísticas",
   "stats": {
     "image_size": "Tamanho das imagens",
     "scenes_duration": "Duração das cenas",
@@ -923,14 +984,14 @@
   "studio": "Estúdio",
   "studio_depth": "Níveis (vazio para todos)",
   "studios": "Estúdios",
-  "sub_tag_count": "Número de sub-tags",
-  "sub_tag_of": "Sub-tags de {parent}",
-  "sub_tags": "Sub-tags",
+  "sub_tag_count": "Contagem de sub-etiquetas",
+  "sub_tag_of": "Sub-etiqueta de {parent}",
+  "sub_tags": "Sub-etiquetas",
   "subsidiary_studios": "Estúdios filhos",
   "synopsis": "Sinopse",
-  "tag": "Tag",
-  "tag_count": "Número de tags",
-  "tags": "Tags",
+  "tag": "Etiqueta",
+  "tag_count": "Contagem de etiquetas",
+  "tags": "Etiquetas",
   "tattoos": "Tatuagens",
   "title": "Título",
   "toast": {
@@ -941,10 +1002,10 @@
     "delete_entity": "Excluir {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Excluída {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Gerando captura de tela…",
-    "merged_tags": "Tags mescladas",
+    "merged_tags": "Etiquetas mescladas",
     "rescanning_entity": "Reescaneando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} salvo(a)",
-    "started_auto_tagging": "Auto tagging iniciado",
+    "started_auto_tagging": "Etiquetamento automático iniciado",
     "started_generating": "Geração de arquivos multimídia iniciada",
     "started_importing": "Importação iniciada",
     "updated_entity": "{entity} atualizado(a)"
@@ -952,9 +1013,11 @@
   "total": "Total",
   "true": "Verdadeiro",
   "twitter": "Twitter",
+  "type": "Tipo",
   "updated_at": "Atualizado em",
   "url": "URL",
   "videos": "Vídeos",
+  "view_all": "Ver todos",
   "weight": "Peso",
   "years_old": "anos"
 }

@@ -7,7 +7,7 @@
     "allow": "Erlauben",
     "allow_temporarily": "Vorübergehend erlauben",
     "apply": "Übernehmen",
-    "auto_tag": "Auto Tag",
+    "auto_tag": "Auto-Tag",
     "backup": "Backup",
     "browse_for_image": "Nach Bild suchen…",
     "cancel": "Abbrechen",
@@ -23,15 +23,18 @@
     "create_entity": "Erstelle {entityType}",
     "create_marker": "Erstelle Markierung",
     "created_entity": "{entity_type} erstellt: {entity_name}",
+    "customise": "Anpassen",
     "delete": "Löschen",
     "delete_entity": "Lösche {entityType}",
     "delete_file": "Lösche Datei",
     "delete_file_and_funscript": "Datei löschen (inkl. funscript)",
     "delete_generated_supporting_files": "Lösche generierte Hilfsdaten",
+    "delete_stashid": "StashID löschen",
     "disallow": "Nicht erlauben",
     "download": "Herunterladen",
     "download_backup": "Lade Backup herunter",
     "edit": "Bearbeiten",
+    "edit_entity": "Bearbeiten {entityType}",
     "export": "Exportieren…",
     "export_all": "Alle exportieren…",
     "find": "Suchen",
@@ -45,15 +48,18 @@
     "generate_thumb_from_current": "Erstelle Vorschaubild vom Gegenwärtigen",
     "hash_migration": "Hash Umwandlung",
     "hide": "Verstecke",
+    "hide_configuration": "Konfiguration ausblenden",
     "identify": "Identifizieren",
     "ignore": "Ignorieren",
     "import": "Importieren…",
     "import_from_file": "Importieren aus Datei",
+    "logout": "Ausloggen",
     "merge": "Zusammenführen",
     "merge_from": "Zusammenführen aus",
     "merge_into": "Zusammenführen in",
     "next_action": "Nächste",
     "not_running": "wird nicht ausgeführt",
+    "open_in_external_player": "In externem Player öffnen",
     "open_random": "Öffne Zufällig",
     "overwrite": "Überschreiben",
     "play_random": "Zufällige Wiedergabe",
@@ -64,6 +70,7 @@
     "reload_plugins": "Plugins neu laden",
     "reload_scrapers": "Scraper neu laden",
     "remove": "Entfernen",
+    "remove_from_gallery": "Aus Gallerie entfernen",
     "rename_gen_files": "Hilfsdaten umbenennen",
     "rescan": "Erneut scannen",
     "reshuffle": "Neu mischen",
@@ -78,6 +85,7 @@
     "scrape_with": "Scrape mit…",
     "search": "Suchen",
     "select_all": "Alle auswählen",
+    "select_entity": "{entityType} auswählen",
     "select_folders": "Ordner auswählen",
     "select_none": "Nichts auswählen",
     "selective_auto_tag": "Automatisch selektiv taggen",
@@ -88,9 +96,12 @@
     "set_front_image": "Vorderseite…",
     "set_image": "Bild festlegen…",
     "show": "Anzeigen",
+    "show_configuration": "Konfiguration anzeigen",
     "skip": "Überspringen",
     "stop": "Stopp",
+    "submit": "Einreichen",
     "submit_stash_box": "Zu Stash-Box übermitteln",
+    "submit_update": "Aktualisierung übermitteln",
     "tasks": {
       "clean_confirm_message": "Wollen Sie wirklich die Datenbank aufräumen? Dies wird alle Informationen und Hilfsdaten für Szenen und Galerien löschen, die nicht mehr auf dem Dateisystem vorhanden sind.",
       "dry_mode_selected": "Trockenmodus ausgewählt. Es findet keine Löschung der Daten statt, lediglich Protokollierung.",
@@ -98,6 +109,7 @@
     },
     "temp_disable": "Vorübergehend deaktivieren…",
     "temp_enable": "Vorübergehend aktivieren…",
+    "unset": "Aufheben",
     "use_default": "Standard verwenden",
     "view_random": "Zeige Zufällige"
   },
@@ -111,6 +123,7 @@
   "birth_year": "Geburtsjahr",
   "birthdate": "Geburtsdatum",
   "bitrate": "Bitrate",
+  "captions": "Untertitel",
   "career_length": "Karrierelänge",
   "component_tagger": {
     "config": {
@@ -190,14 +203,19 @@
     "dlna": {
       "allow_temp_ip": "Erlaube {tempIP}",
       "allowed_ip_addresses": "Erlaubte IP Adressen",
+      "allowed_ip_temporarily": "Temporär erlaubte IP",
       "default_ip_whitelist": "Standard IP Whitelist",
       "default_ip_whitelist_desc": "Standard IP Adressen, welche DLNA nutzen dürfen. Nutze {wildcard} um alle IP Adressen zu erlauben.",
+      "disabled_dlna_temporarily": "DLNA vorübergehend deaktiviert",
+      "disallowed_ip": "Unzulässige IP",
       "enabled_by_default": "Standardmäßig aktiviert",
+      "enabled_dlna_temporarily": "DLNA vorübergehend aktiviert",
       "network_interfaces": "Netzwerkoberflächen",
       "network_interfaces_desc": "Netzwerkoberflächen auf denen DLNA sichtbar ist. Eine leere Liste führt dazu, dass DLNA auf allen Oberflächen ausgeführt wird. Benötigt Neustart des DLNA nach Änderungen.",
       "recent_ip_addresses": "Letzte IP Adressen",
       "server_display_name": "Server Anzeigename",
       "server_display_name_desc": "Anzeigename des DLNA-Servers. Standardmäßig {server_name} bei leerem Feld.",
+      "successfully_cancelled_temporary_behaviour": "Erfolgreich temporäres Verhalten aufgehoben",
       "until_restart": "bis Neustart"
     },
     "general": {
@@ -265,6 +283,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Anzahl paralleler Tasks für Scan/Generierung",
       "parallel_scan_head": "Paralleler Scan/Generierung",
       "preview_generation": "Vorschau-Generierung",
+      "python_path": {
+        "description": "Ort der Python-Programmdatei. Wird für Script-Scraper und Plugins verwendet. Wenn leer, wird python aus der Umgebung aufgelöst",
+        "heading": "Python Pfad"
+      },
       "scraper_user_agent": "Scraper-Benutzeragent",
       "scraper_user_agent_desc": "User-Agent-String, der während Scrape-HTTP-Anfragen verwendet wird",
       "scrapers_path": {
@@ -430,9 +452,22 @@
         "description": "Zeitversatz in Millisekunden für interaktive Skriptwiedergabe.",
         "heading": "Funscript Zeitversatz (ms)"
       },
+      "handy_connection": {
+        "connect": "Verbinden",
+        "server_offset": {
+          "heading": "Server Kompensation"
+        },
+        "status": {
+          "heading": "Handy Verbindungsstatus"
+        },
+        "sync": "Synchronisieren"
+      },
       "handy_connection_key": {
         "description": "Handy Verbindungsschlüssel für interaktive Szenen. Wenn dieser Schlüssel gesetzt wird, kann Stash aktuellen Szeneinformationen mit handyfeeling.com teilen",
         "heading": "Handy Verbindungsschlüssel"
+      },
+      "image_lightbox": {
+        "heading": "Bild-Lightbox"
       },
       "images": {
         "heading": "Bilder",
@@ -489,7 +524,8 @@
           "continue_playlist_default": {
             "description": "Nächste Szene in der Warteschlange spielen",
             "heading": "Standardmäßig die Wiedergabeliste fortsetzen"
-          }
+          },
+          "show_scrubber": "Scrubber anzeigen"
         }
       },
       "scene_wall": {
@@ -499,9 +535,13 @@
           "toggle_sound": "Sound einschalten"
         }
       },
+      "scroll_attempts_before_change": {
+        "description": "Anzahl der Versuche, einen Bildlauf durchzuführen, bevor zum nächsten/vorherigen Element gewechselt wird. Gilt nur für den Bildlaufmodus Schwenkung Y.",
+        "heading": "Anzahl Scroll-Versuche vor Übergang"
+      },
       "slideshow_delay": {
         "description": "Die Diashow ist in Galerien in der Wandansicht verfügbar",
-        "heading": "Verzögerung der Diashow"
+        "heading": "Verzögerung der Diashow (Sekunden)"
       },
       "title": "Benutzeroberfläche"
     }
@@ -602,6 +642,8 @@
       "marker_screenshots_tooltip": "Statische JPG-Bilder für Markierungen, nur erforderlich, wenn der Vorschautyp auf Statisches Bild eingestellt ist.",
       "markers": "Vorschau für Markierungen",
       "markers_tooltip": "20-Sekunden-Videos, die zum angegebenen Zeitpunkt beginnen.",
+      "override_preview_generation_options": "Überschreibe Optionen zur Erstellung von Vorschauen",
+      "override_preview_generation_options_desc": "Überschreibe die Optionen zur Erstellung von Vorschauen für diesen Vorgang. Die Standardeinstellungen werden unter System -> \tVorschau-Generierung festgelegt.",
       "overwrite": "Vorhandene generierte Dateien überschreiben",
       "phash": "Perzeptuelle Hashes (zur Deduplizierung)",
       "preview_exclude_end_time_desc": "Schließen Sie die letzten x Sekunden von der Szenenvorschau aus. Dies kann ein Wert in Sekunden oder ein Prozentsatz (zB 2%) der gesamten Szenendauer sein.",
@@ -653,6 +695,7 @@
     "search_accuracy_label": "Suchgenauigkeit",
     "title": "Szenen-Duplikate"
   },
+  "duplicated_phash": "Dopplung (phash)",
   "duration": "Dauer",
   "effect_filters": {
     "aspect": "Seitenverhältnis",
@@ -675,7 +718,9 @@
     "scale": "Skalieren",
     "warmth": "Wärme"
   },
+  "empty_server": "Fügen Sie Ihrem Server einige Szenen hinzu, um Empfehlungen auf dieser Seite anzuzeigen.",
   "ethnicity": "Ethnizität",
+  "existing_value": "vorhandener Wert",
   "eye_color": "Augenfarbe",
   "fake_tits": "Brustvergrößerungen",
   "false": "Falsch",
@@ -690,6 +735,12 @@
   "filters": "Filter",
   "framerate": "Bildrate",
   "frames_per_second": "{value} Bilder pro Sekunde",
+  "front_page": {
+    "types": {
+      "premade_filter": "Vorgefertigte Filter",
+      "saved_filter": "Gespeicherte Filter"
+    }
+  },
   "galleries": "Galerien",
   "gallery": "Galerie",
   "gallery_count": "Galerienanzahl",
@@ -703,9 +754,19 @@
     "TRANSGENDER_MALE": "Trans* männlich"
   },
   "hair_color": "Haarfarbe",
+  "handy_connection_status": {
+    "connecting": "Verbindet",
+    "disconnected": "Getrennt",
+    "error": "Fehler bei der Verbindung zu Handy",
+    "missing": "Fehlt",
+    "ready": "Bereit",
+    "syncing": "Synchronisiert mit Server",
+    "uploading": "Skript wird hochgeladen"
+  },
   "hasMarkers": "Hat Markierungen",
   "height": "Größe",
   "help": "Hilfe",
+  "ignore_auto_tag": "Auto-Tag ignorieren",
   "image": "Bild",
   "image_count": "Bilderanzahl",
   "images": "Bilder",
@@ -760,15 +821,55 @@
   "parent_tags": "Übergeordnete Tags",
   "part_of": "Übergeordnet von {parent}",
   "path": "Pfad",
+  "perceptual_similarity": "Wahrnehmungsähnlichkeit (phash)",
   "performer": "Darsteller",
   "performerTags": "Darsteller-Tags",
+  "performer_age": "Alter der Darsteller",
   "performer_count": "Darstelleranzahl",
+  "performer_favorite": "Darsteller favorisiert",
   "performer_image": "Darsteller-Bild",
+  "performer_tagger": {
+    "add_new_performers": "Neue Darsteller hinzufügen",
+    "any_names_entered_will_be_queried": "Alle eingetragenen Namen werden bei der stash-box Instanz nachgeschlagen und hinzugefügt, wenn gefunden. Nur exakte Übereinstimmungen werden als Treffer gewertet.",
+    "batch_add_performers": "Stapelverarbeitung für Darsteller",
+    "batch_update_performers": "Stapelverarbeitungsaktualisierung für Darsteller",
+    "config": {
+      "active_stash-box_instance": "Ausgewählte stash-box Instanz:",
+      "edit_excluded_fields": "Ausgeschlossene Felder bearbeiten",
+      "excluded_fields": "Ausgeschlossene Felder:",
+      "no_fields_are_excluded": "Keine Felder werden ausgeschlossen",
+      "no_instances_found": "Keine Instanzen gefunden",
+      "these_fields_will_not_be_changed_when_updating_performers": "Diese Felder werden durch die Aktualisierung nicht verändert."
+    },
+    "current_page": "Aktuelle Seite",
+    "failed_to_save_performer": "Fehler beim Speichern der Darsteller \"{performer}\"",
+    "name_already_exists": "Name bereits vergeben",
+    "network_error": "Netzwerkfehler",
+    "no_results_found": "Keine Ergebnisse gefunden.",
+    "number_of_performers_will_be_processed": "{performer_count} Darsteller werden verarbeitet",
+    "performer_already_tagged": "Darsteller bereits getagged",
+    "performer_names_separated_by_comma": "Darstellernamen, mit Komma getrennt",
+    "performer_selection": "Darstellerauswahl",
+    "performer_successfully_tagged": "Darsteller erfolgreich getagged:",
+    "query_all_performers_in_the_database": "Alle Darsteller in der Datenbank",
+    "refresh_tagged_performers": "Aktualisieren getaggter Darsteller",
+    "refreshing_will_update_the_data": "Bei der Aktualisierung werden die Metadaten aller getaggten Darsteller über die stash-box-Instanz aktualisiert.",
+    "status_tagging_job_queued": "Status: Tagging-Auftrag in der Warteschlange",
+    "status_tagging_performers": "Status: Tagge Darsteller",
+    "tag_status": "Tag Status",
+    "to_use_the_performer_tagger": "Um den Darsteller-Tagger zu benutzen, muss eine stash-box Instanz konfiguriert sein.",
+    "untagged_performers": "Nicht getaggte Darsteller",
+    "update_performer": "Darsteller aktualisieren",
+    "update_performers": "Darsteller aktualisieren",
+    "updating_untagged_performers_description": "Bei der Aktualisierung von nicht getaggten Darstellern wird versucht die Metadaten alle Darsteller, welche keine StashID haben, zu aktualisieren."
+  },
   "performers": "Darsteller",
   "piercings": "Piercings",
   "queue": "Playlist",
   "random": "Zufällig",
   "rating": "Wertung",
+  "recently_added_objects": "Kürzlich hinzugefügte {objects}",
+  "recently_released_objects": "Kürzlich erschienene {objects}",
   "resolution": "Auflösung",
   "scene": "Szene",
   "sceneTagger": "Szenen-Tagger",
@@ -804,6 +905,10 @@
       "something_went_wrong": "Oh nein! Etwas ist schief gelaufen!",
       "something_went_wrong_description": "Es sieht so aus, als gäbe es Probleme mit deinen Eingaben, klicke Zurück und repariere sie. Falls du nicht weißt was du falsch gemacht hast, helfen wir gerne auf {discordLink}. Solltest du dir sicher sein einen Bug gefunden zu haben, schau doch mal auf {githubLink} vorbei.",
       "something_went_wrong_while_setting_up_your_system": "Etwas lief bei der Erstellung des Systems falsch. Hier ist die Fehlermeldung: {error}"
+    },
+    "folder": {
+      "file_path": "Dateipfad",
+      "up_dir": "Ein Verzeichnis hoch"
     },
     "github_repository": "Github Repository",
     "migrate": {
@@ -858,13 +963,18 @@
       "next_step": "Wenn du bereit bist ein neues System anzulegen, klicke Weiter.",
       "unable_to_locate_specified_config": "Wenn du das hier liest, konnte Stash die Konfigurationsdatei, welche spezifiziert wurde, nicht finden. Dieser Wizard wird dich deshalb durch den Prozess führen, eine neue Konfiguration anzulegen."
     },
-    "welcome_to_stash": "Willkommen zu Stash",
-    "folder": {
-      "up_dir": "Ein Verzeichnis hoch"
-    }
+    "welcome_to_stash": "Willkommen zu Stash"
   },
   "stash_id": "Stash-ID",
   "stash_ids": "Stash IDs",
+  "stashbox": {
+    "go_review_draft": "Gehe zu {endpoint_name}, um Entwurf zu begutachten.",
+    "selected_stash_box": "Ausgewählter Stash-Box Endpunkt",
+    "submission_failed": "Einreichen fehlgeschlagen",
+    "submission_successful": "Einreichen erfolgreich",
+    "submit_update": "Existiert bereits in {endpoint_name}"
+  },
+  "statistics": "Statistiken",
   "stats": {
     "image_size": "Bildspeicher",
     "scenes_duration": "Szenendauer",
@@ -903,9 +1013,11 @@
   "total": "Gesamt",
   "true": "Wahr",
   "twitter": "Twitter",
+  "type": "Typ",
   "updated_at": "Aktualisiert am",
   "url": "URL",
   "videos": "Videos",
+  "view_all": "Alle ansehen",
   "weight": "Gewicht",
   "years_old": "Jahre alt"
 }

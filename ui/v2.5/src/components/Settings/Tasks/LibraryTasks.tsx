@@ -17,8 +17,9 @@ import { useToast } from "src/hooks";
 import { GenerateOptions } from "./GenerateOptions";
 import { SettingSection } from "../SettingSection";
 import { BooleanSetting, Setting, SettingGroup } from "../Inputs";
-import { ManualLink } from "src/components/Help/Manual";
+import { ManualLink } from "src/components/Help/context";
 import { Icon } from "src/components/Shared";
+import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 
 interface IAutoTagOptions {
   options: GQL.AutoTagMetadataInput;
@@ -296,7 +297,7 @@ export const LibraryTasks: React.FC = () => {
               <>
                 <FormattedMessage id="actions.scan" />
                 <ManualLink tab="Tasks">
-                  <Icon icon="question-circle" />
+                  <Icon icon={faQuestionCircle} />
                 </ManualLink>
               </>
             ),
@@ -335,7 +336,7 @@ export const LibraryTasks: React.FC = () => {
             <>
               <FormattedMessage id="config.tasks.identify.heading" />
               <ManualLink tab="Identify">
-                <Icon icon="question-circle" />
+                <Icon icon={faQuestionCircle} />
               </ManualLink>
             </>
           }
@@ -358,7 +359,7 @@ export const LibraryTasks: React.FC = () => {
               <>
                 <FormattedMessage id="actions.auto_tag" />
                 <ManualLink tab="AutoTagging">
-                  <Icon icon="question-circle" />
+                  <Icon icon={faQuestionCircle} />
                 </ManualLink>
               </>
             ),
@@ -399,7 +400,7 @@ export const LibraryTasks: React.FC = () => {
               <>
                 <FormattedMessage id="actions.generate" />
                 <ManualLink tab="Tasks">
-                  <Icon icon="question-circle" />
+                  <Icon icon={faQuestionCircle} />
                 </ManualLink>
               </>
             ),

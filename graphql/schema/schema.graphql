@@ -1,7 +1,8 @@
 """The query root for this schema"""
 type Query {
   # Filters
-  findSavedFilters(mode: FilterMode!): [SavedFilter!]!
+  findSavedFilter(id: ID!): SavedFilter
+  findSavedFilters(mode: FilterMode): [SavedFilter!]!
   findDefaultFilter(mode: FilterMode!): SavedFilter
 
   """Find a scene by ID or Checksum"""
@@ -113,12 +114,6 @@ type Query {
 
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]! @deprecated(reason: "use scrapeSinglePerformer with scraper_id = builtin_freeones")
-
-  """Query StashBox for scenes"""
-  queryStashBoxScene(input: StashBoxSceneQueryInput!): [ScrapedScene!]! @deprecated(reason: "use scrapeSingleScene or scrapeMultiScenes")
-  """Query StashBox for performers"""
-  queryStashBoxPerformer(input: StashBoxPerformerQueryInput!): [StashBoxPerformerQueryResult!]! @deprecated(reason: "use scrapeSinglePerformer or scrapeMultiPerformers")
-  # === end deprecated methods ===
 
   # Plugins
   """List loaded plugins"""
@@ -243,6 +238,11 @@ type Mutation {
   configureDLNA(input: ConfigDLNAInput!): ConfigDLNAResult!
   configureScraping(input: ConfigScrapingInput!): ConfigScrapingResult!
   configureDefaults(input: ConfigDefaultSettingsInput!): ConfigDefaultSettingsResult!
+
+  # overwrites the entire UI configuration
+  configureUI(input: Map!): Map!
+  # sets a single UI key value
+  configureUISetting(key: String!, value: Any): Map!
 
   """Generate and set (or clear) API key"""
   generateAPIKey(input: GenerateAPIKeyInput!): String!

@@ -5,6 +5,7 @@ import "github.com/99designs/gqlgen/graphql"
 // Override for generated struct due to mistaken omitempty
 // https://github.com/Yamashou/gqlgenc/issues/77
 type SceneDraftInput struct {
+	ID           *string             `json:"id,omitempty"`
 	Title        *string             `json:"title,omitempty"`
 	Details      *string             `json:"details,omitempty"`
 	URL          *string             `json:"url,omitempty"`

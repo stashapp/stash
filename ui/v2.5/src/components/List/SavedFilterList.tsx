@@ -22,6 +22,7 @@ import { LoadingIndicator } from "src/components/Shared";
 import { PersistanceLevel } from "src/hooks/ListHook";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Icon } from "../Shared";
+import { faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface ISavedFilterListProps {
   filter: ListFilterModel;
@@ -191,7 +192,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
               e.stopPropagation();
             }}
           >
-            <Icon icon="save" />
+            <Icon icon={faSave} />
           </Button>
           <Button
             className="delete-button"
@@ -203,7 +204,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
               e.stopPropagation();
             }}
           >
-            <Icon icon="times" />
+            <Icon icon={faTimes} />
           </Button>
         </ButtonGroup>
       </div>
@@ -291,7 +292,9 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
       <ul className="saved-filter-list">
         {savedFilters
           .filter(
-            (f) => !filterName || f.name.toLowerCase().includes(filterName)
+            (f) =>
+              !filterName ||
+              f.name.toLowerCase().includes(filterName.toLowerCase())
           )
           .map((f) => (
             <SavedFilterItem key={f.name} item={f} />
@@ -344,7 +347,7 @@ export const SavedFilterList: React.FC<ISavedFilterListProps> = ({
                 onSaveFilter(filterName);
               }}
             >
-              <Icon icon="save" />
+              <Icon icon={faSave} />
             </Button>
           </OverlayTrigger>
         </InputGroup.Append>

@@ -10,7 +10,7 @@ import {
   ScrapedInputGroupRow,
   ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog";
-import _ from "lodash";
+import clone from "lodash-es/clone";
 import {
   useStudioCreate,
   usePerformerCreate,
@@ -235,7 +235,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       return;
     }
 
-    const ret = _.clone(idList);
+    const ret = clone(idList);
     // sort by id numerically
     ret.sort((a, b) => {
       return parseInt(a, 10) - parseInt(b, 10);

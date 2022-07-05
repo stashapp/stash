@@ -7,8 +7,15 @@ import {
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { useIntl } from "react-intl";
+import {
+  faBan,
+  faCheck,
+  faCircle,
+  faCog,
+  faHourglassStart,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 type JobFragment = Pick<
   GQL.Job,
@@ -68,25 +75,25 @@ const Task: React.FC<IJob> = ({ job }) => {
   }
 
   function getStatusIcon() {
-    let icon: IconProp = "circle";
+    let icon = faCircle;
     let iconClass = "";
     switch (job.status) {
       case GQL.JobStatus.Ready:
-        icon = "hourglass-start";
+        icon = faHourglassStart;
         break;
       case GQL.JobStatus.Running:
-        icon = "cog";
+        icon = faCog;
         iconClass = "fa-spin";
         break;
       case GQL.JobStatus.Stopping:
-        icon = "cog";
+        icon = faCog;
         iconClass = "fa-spin";
         break;
       case GQL.JobStatus.Finished:
-        icon = "check";
+        icon = faCheck;
         break;
       case GQL.JobStatus.Cancelled:
-        icon = "ban";
+        icon = faBan;
         break;
     }
 
@@ -138,7 +145,7 @@ const Task: React.FC<IJob> = ({ job }) => {
           onClick={() => stopJob()}
           disabled={!canStop()}
         >
-          <Icon icon="times" />
+          <Icon icon={faTimes} />
         </Button>
         <div className={`job-status ${getStatusClass()}`}>
           <div>

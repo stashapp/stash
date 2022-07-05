@@ -10,7 +10,7 @@ import {
   ScrapedTextAreaRow,
   ScrapedImageRow,
 } from "src/components/Shared/ScrapeDialog";
-import _ from "lodash";
+import clone from "lodash-es/clone";
 import {
   useStudioCreate,
   usePerformerCreate,
@@ -18,8 +18,8 @@ import {
   useTagCreate,
   makePerformerCreateInput,
 } from "src/core/StashService";
-import { useToast } from "src/hooks";
-import { DurationUtils } from "src/utils";
+import useToast from "src/hooks/Toast";
+import DurationUtils from "src/utils/duration";
 import { useIntl } from "react-intl";
 
 function renderScrapedStudio(
@@ -297,7 +297,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
       return;
     }
 
-    const ret = _.clone(idList);
+    const ret = clone(idList);
     // sort by id numerically
     ret.sort((a, b) => {
       return parseInt(a, 10) - parseInt(b, 10);
@@ -634,3 +634,5 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
     />
   );
 };
+
+export default SceneScrapeDialog;

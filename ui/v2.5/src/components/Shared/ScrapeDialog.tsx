@@ -8,9 +8,18 @@ import {
   FormControl,
   Badge,
 } from "react-bootstrap";
-import { CollapseButton, Icon, Modal } from "src/components/Shared";
-import _ from "lodash";
+import { CollapseButton } from "src/components/Shared/CollapseButton";
+import Icon from "src/components/Shared/Icon";
+import Modal from "src/components/Shared/Modal";
+import isEqual from "lodash-es/isEqual";
+import clone from "lodash-es/clone";
 import { FormattedMessage, useIntl } from "react-intl";
+import {
+  faCheck,
+  faPencilAlt,
+  faPlus,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 export class ScrapeResult<T> {
   public newValue?: T;
@@ -22,7 +31,7 @@ export class ScrapeResult<T> {
     this.originalValue = originalValue ?? undefined;
     this.newValue = newValue ?? undefined;
 
-    const valuesEqual = _.isEqual(originalValue, newValue);
+    const valuesEqual = isEqual(originalValue, newValue);
     this.useNewValue = !!this.newValue && !valuesEqual;
     this.scraped = this.useNewValue;
   }
@@ -33,11 +42,14 @@ export class ScrapeResult<T> {
   }
 
   public cloneWithValue(value?: T) {
-    const ret = _.clone(this);
+    const ret = clone(this);
 
     ret.newValue = value;
-    ret.useNewValue = !_.isEqual(ret.newValue, ret.originalValue);
-    ret.scraped = ret.useNewValue;
+    ret.useNewValue = !isEqual(ret.newValue, ret.originalValue);
+
+    // #2691 - if we're setting the value, assume it should be treated as
+    // scraped
+    ret.scraped = true;
 
     return ret;
   }
@@ -73,7 +85,7 @@ function renderButtonIcon(selected: boolean) {
   return (
     <Icon
       className={`fa-fw ${className}`}
-      icon={selected ? "check" : "times"}
+      icon={selected ? faCheck : faTimes}
     />
   );
 }
@@ -82,7 +94,7 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
   props: IScrapedRowProps<T, V>
 ) => {
   function handleSelectClick(isNew: boolean) {
-    const ret = _.clone(props.result);
+    const ret = clone(props.result);
     ret.useNewValue = isNew;
     props.onChange(ret);
   }
@@ -111,7 +123,7 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
           >
             {t.name}
             <Button className="minimal ml-2">
-              <Icon className="fa-fw" icon="plus" />
+              <Icon className="fa-fw" icon={faPlus} />
             </Button>
           </Badge>
         ))}
@@ -344,7 +356,7 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
   return (
     <Modal
       show
-      icon="pencil-alt"
+      icon={faPencilAlt}
       header={props.title}
       accept={{
         onClick: () => {

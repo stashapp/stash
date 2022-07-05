@@ -1,3 +1,4 @@
+import { faCheck, faList, faTimes } from "@fortawesome/free-solid-svg-icons";
 import React, { useState } from "react";
 import { Button, Row, Col } from "react-bootstrap";
 import { useIntl } from "react-intl";
@@ -36,7 +37,7 @@ const PerformerFieldSelect: React.FC<IProps> = ({
         variant="secondary"
         className={excluded[name] ? "text-muted" : "text-success"}
       >
-        <Icon icon={excluded[name] ? "times" : "check"} />
+        <Icon icon={excluded[name] ? faTimes : faCheck} />
       </Button>
       <span className="ml-3">{TextUtils.capitalize(name)}</span>
     </Col>
@@ -45,7 +46,7 @@ const PerformerFieldSelect: React.FC<IProps> = ({
   return (
     <Modal
       show={show}
-      icon="list"
+      icon={faList}
       dialogClassName="FieldSelect"
       accept={{
         text: intl.formatMessage({ id: "actions.save" }),

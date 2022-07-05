@@ -1,3 +1,4 @@
+import { faCheck, faTimes } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { Button } from "react-bootstrap";
 import { Icon } from "../Shared";
@@ -21,7 +22,7 @@ export const IncludeExcludeButton: React.FC<IIncludeExcludeButton> = ({
       exclude ? "text-danger" : "text-success"
     } include-exclude-button`}
   >
-    <Icon className="fa-fw" icon={exclude ? "times" : "check"} />
+    <Icon className="fa-fw" icon={exclude ? faTimes : faCheck} />
   </Button>
 );
 

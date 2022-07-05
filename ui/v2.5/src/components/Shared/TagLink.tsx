@@ -10,7 +10,8 @@ import {
   SceneDataFragment,
   GalleryDataFragment,
 } from "src/core/generated-graphql";
-import { NavUtils, TextUtils } from "src/utils";
+import NavUtils from "src/utils/navigation";
+import TextUtils from "src/utils/text";
 
 interface IProps {
   tag?: Partial<TagDataFragment>;

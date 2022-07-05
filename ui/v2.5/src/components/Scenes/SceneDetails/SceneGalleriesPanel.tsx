@@ -15,3 +15,5 @@ export const SceneGalleriesPanel: React.FC<ISceneGalleriesPanelProps> = ({
 
   return <div className="row justify-content-center">{cards}</div>;
 };
+
+export default SceneGalleriesPanel;

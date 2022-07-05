@@ -1,10 +1,11 @@
 import React, { useContext } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 import * as GQL from "src/core/generated-graphql";
 import { Icon, Modal, TruncatedText } from "src/components/Shared";
 import { TaggerStateContext } from "../context";
+import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IStudioModalProps {
   studio: GQL.ScrapedSceneStudioDataFragment;
@@ -12,7 +13,7 @@ interface IStudioModalProps {
   closeModal: () => void;
   handleStudioCreate: (input: GQL.StudioCreateInput) => void;
   header: string;
-  icon: IconName;
+  icon: IconDefinition;
 }
 
 const StudioModal: React.FC<IStudioModalProps> = ({
@@ -93,7 +94,7 @@ const StudioModal: React.FC<IStudioModalProps> = ({
             <h6 className="mt-2">
               <a href={link} target="_blank" rel="noopener noreferrer">
                 Stash-Box Source
-                <Icon icon="external-link-alt" className="ml-2" />
+                <Icon icon={faExternalLinkAlt} className="ml-2" />
               </a>
             </h6>
           )}

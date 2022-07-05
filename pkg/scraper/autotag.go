@@ -21,8 +21,8 @@ type autotagScraper struct {
 	globalConfig GlobalConfig
 }
 
-func autotagMatchPerformers(path string, performerReader models.PerformerReader) ([]*models.ScrapedPerformer, error) {
-	p, err := match.PathToPerformers(path, performerReader, nil)
+func autotagMatchPerformers(path string, performerReader models.PerformerReader, trimExt bool) ([]*models.ScrapedPerformer, error) {
+	p, err := match.PathToPerformers(path, performerReader, nil, trimExt)
 	if err != nil {
 		return nil, fmt.Errorf("error matching performers: %w", err)
 	}
@@ -45,8 +45,8 @@ func autotagMatchPerformers(path string, performerReader models.PerformerReader)
 	return ret, nil
 }
 
-func autotagMatchStudio(path string, studioReader models.StudioReader) (*models.ScrapedStudio, error) {
-	studio, err := match.PathToStudio(path, studioReader, nil)
+func autotagMatchStudio(path string, studioReader models.StudioReader, trimExt bool) (*models.ScrapedStudio, error) {
+	studio, err := match.PathToStudio(path, studioReader, nil, trimExt)
 	if err != nil {
 		return nil, fmt.Errorf("error matching studios: %w", err)
 	}
@@ -62,8 +62,8 @@ func autotagMatchStudio(path string, studioReader models.StudioReader) (*models.
 	return nil, nil
 }
 
-func autotagMatchTags(path string, tagReader models.TagReader) ([]*models.ScrapedTag, error) {
-	t, err := match.PathToTags(path, tagReader, nil)
+func autotagMatchTags(path string, tagReader models.TagReader, trimExt bool) ([]*models.ScrapedTag, error) {
+	t, err := match.PathToTags(path, tagReader, nil, trimExt)
 	if err != nil {
 		return nil, fmt.Errorf("error matching tags: %w", err)
 	}
@@ -85,20 +85,21 @@ func autotagMatchTags(path string, tagReader models.TagReader) ([]*models.Scrape
 
 func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scene *models.Scene) (*models.ScrapedScene, error) {
 	var ret *models.ScrapedScene
+	const trimExt = false
 
 	// populate performers, studio and tags based on scene path
 	if err := s.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		path := scene.Path
-		performers, err := autotagMatchPerformers(path, r.Performer())
+		performers, err := autotagMatchPerformers(path, r.Performer(), trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
-		studio, err := autotagMatchStudio(path, r.Studio())
+		studio, err := autotagMatchStudio(path, r.Studio(), trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
 
-		tags, err := autotagMatchTags(path, r.Tag())
+		tags, err := autotagMatchTags(path, r.Tag(), trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaScene: %w", err)
 		}
@@ -125,21 +126,24 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 		return nil, nil
 	}
 
+	// only trim extension if gallery is file-based
+	trimExt := gallery.Zip
+
 	var ret *models.ScrapedGallery
 
 	// populate performers, studio and tags based on scene path
 	if err := s.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
 		path := gallery.Path.String
-		performers, err := autotagMatchPerformers(path, r.Performer())
+		performers, err := autotagMatchPerformers(path, r.Performer(), trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}
-		studio, err := autotagMatchStudio(path, r.Studio())
+		studio, err := autotagMatchStudio(path, r.Studio(), trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}
 
-		tags, err := autotagMatchTags(path, r.Tag())
+		tags, err := autotagMatchTags(path, r.Tag(), trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaGallery: %w", err)
 		}

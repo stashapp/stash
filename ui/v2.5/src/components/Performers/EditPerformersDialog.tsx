@@ -20,6 +20,7 @@ import {
 } from "src/utils/gender";
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
+import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -183,7 +184,7 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     return (
       <Modal
         show
-        icon="pencil-alt"
+        icon={faPencilAlt}
         header={intl.formatMessage(
           { id: "actions.edit_entity" },
           { entityType: intl.formatMessage({ id: "performers" }) }

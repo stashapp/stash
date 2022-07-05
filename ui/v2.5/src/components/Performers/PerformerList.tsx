@@ -1,4 +1,4 @@
-import _ from "lodash";
+import cloneDeep from "lodash-es/cloneDeep";
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
 import { useHistory } from "react-router-dom";
@@ -138,7 +138,7 @@ export const PerformerList: React.FC<IPerformerList> = ({
     if (result.data?.findPerformers) {
       const { count } = result.data.findPerformers;
       const index = Math.floor(Math.random() * count);
-      const filterCopy = _.cloneDeep(filter);
+      const filterCopy = cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindPerformers(filterCopy);

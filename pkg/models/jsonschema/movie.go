@@ -5,6 +5,8 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
@@ -15,13 +17,18 @@ type Movie struct {
 	Date       string        `json:"date,omitempty"`
 	Rating     int           `json:"rating,omitempty"`
 	Director   string        `json:"director,omitempty"`
-	Synopsis   string        `json:"sypnopsis,omitempty"`
+	Synopsis   string        `json:"synopsis,omitempty"`
 	FrontImage string        `json:"front_image,omitempty"`
 	BackImage  string        `json:"back_image,omitempty"`
 	URL        string        `json:"url,omitempty"`
 	Studio     string        `json:"studio,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
+}
+
+// Backwards Compatible synopsis for the movie
+type MovieSynopsisBC struct {
+	Synopsis string `json:"sypnopsis,omitempty"`
 }
 
 func LoadMovieFile(filePath string) (*Movie, error) {
@@ -36,6 +43,22 @@ func LoadMovieFile(filePath string) (*Movie, error) {
 	err = jsonParser.Decode(&movie)
 	if err != nil {
 		return nil, err
+	}
+	if movie.Synopsis == "" {
+		// keep backwards compatibility with pre #2664 builds
+		// attempt to get the synopsis from the alternate (sypnopsis) key
+
+		_, err = file.Seek(0, 0) // seek to start of file
+		if err == nil {
+			var synopsis MovieSynopsisBC
+			err = jsonParser.Decode(&synopsis)
+			if err == nil {
+				movie.Synopsis = synopsis.Synopsis
+				if movie.Synopsis != "" {
+					logger.Debug("Movie synopsis retrieved from alternate key")
+				}
+			}
+		}
 	}
 	return &movie, nil
 }

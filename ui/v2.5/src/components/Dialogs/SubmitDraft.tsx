@@ -5,10 +5,16 @@ import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { getStashboxBase } from "src/utils";
 import { FormattedMessage, useIntl } from "react-intl";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   show: boolean;
-  entity: { name?: string | null; id: string; title?: string | null };
+  entity: {
+    name?: string | null;
+    id: string;
+    title?: string | null;
+    stash_ids: { stash_id: string; endpoint: string }[];
+  };
   boxes: Pick<GQL.StashBox, "name" | "endpoint">[];
   query: DocumentNode;
   onHide: () => void;
@@ -59,9 +65,15 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
   const handleSelectBox = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setSelectedBox(Number.parseInt(e.currentTarget.value) ?? 0);
 
+  // If the scene has an attached stash_id from that endpoint, the operation will be an update
+  const isUpdate =
+    entity.stash_ids.find(
+      (id) => id.endpoint === boxes[selectedBox].endpoint
+    ) !== undefined;
+
   return (
     <Modal
-      icon="paper-plane"
+      icon={faPaperPlane}
       header={intl.formatMessage({ id: "actions.submit_stash_box" })}
       isRunning={loading}
       show={show}
@@ -87,10 +99,24 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
               ))}
             </Form.Control>
           </Form.Group>
-          <Button onClick={handleSubmit}>
-            <FormattedMessage id="actions.submit" />{" "}
-            {`"${entity.name ?? entity.title}"`}
-          </Button>
+          <div className="text-right">
+            {isUpdate && (
+              <span className="mr-2">
+                <FormattedMessage
+                  id="stashbox.submit_update"
+                  values={{ endpoint_name: boxes[selectedBox].name }}
+                />
+              </span>
+            )}
+            <Button
+              onClick={handleSubmit}
+              variant={isUpdate ? "primary" : "success"}
+            >
+              <FormattedMessage
+                id={`actions.${isUpdate ? "submit_update" : "submit"}`}
+              />{" "}
+            </Button>
+          </div>
         </>
       ) : (
         <>
@@ -124,3 +150,5 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
     </Modal>
   );
 };
+
+export default SubmitStashBoxDraft;

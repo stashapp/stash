@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared";
 import { NavUtils } from "src/utils";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
 
 interface IPerformerListTableProps {
   performers: GQL.PerformerDataFragment[];
@@ -37,7 +38,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       <td>
         {performer.favorite && (
           <Button disabled className="favorite">
-            <Icon icon="heart" />
+            <Icon icon={faHeart} />
           </Button>
         )}
       </td>

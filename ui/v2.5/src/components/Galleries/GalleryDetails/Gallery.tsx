@@ -21,6 +21,7 @@ import { GalleryImagesPanel } from "./GalleryImagesPanel";
 import { GalleryAddPanel } from "./GalleryAddPanel";
 import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
 import { GalleryScenesPanel } from "./GalleryScenesPanel";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -116,7 +117,7 @@ export const GalleryPage: React.FC<IProps> = ({ gallery }) => {
           className="minimal"
           title={intl.formatMessage({ id: "operations" })}
         >
-          <Icon icon="ellipsis-v" />
+          <Icon icon={faEllipsisV} />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
           {gallery.path ? (

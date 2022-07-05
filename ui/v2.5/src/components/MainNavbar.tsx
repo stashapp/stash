@@ -6,22 +6,38 @@ import {
   useIntl,
 } from "react-intl";
 import { Nav, Navbar, Button, Fade } from "react-bootstrap";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
 import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
 import Mousetrap from "mousetrap";
 
 import { SessionUtils } from "src/utils";
-import { Icon } from "src/components/Shared";
+import Icon from "src/components/Shared/Icon";
 import { ConfigurationContext } from "src/hooks/Config";
-import { ManualStateContext } from "./Help/Manual";
+import { ManualStateContext } from "./Help/context";
 import { SettingsButton } from "./SettingsButton";
+import {
+  faBars,
+  faChartBar,
+  faFilm,
+  faHeart,
+  faImage,
+  faImages,
+  faMapMarkerAlt,
+  faPlayCircle,
+  faQuestionCircle,
+  faSignOutAlt,
+  faTag,
+  faTimes,
+  faUser,
+  faVideo,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface IMenuItem {
   name: string;
   message: MessageDescriptor;
   href: string;
-  icon: IconName;
+  icon: IconDefinition;
   hotkey: string;
   userCreatable?: boolean;
 }
@@ -77,21 +93,21 @@ const allMenuItems: IMenuItem[] = [
     name: "scenes",
     message: messages.scenes,
     href: "/scenes",
-    icon: "play-circle",
+    icon: faPlayCircle,
     hotkey: "g s",
   },
   {
     name: "images",
     message: messages.images,
     href: "/images",
-    icon: "image",
+    icon: faImage,
     hotkey: "g i",
   },
   {
     name: "movies",
     message: messages.movies,
     href: "/movies",
-    icon: "film",
+    icon: faFilm,
     hotkey: "g v",
     userCreatable: true,
   },
@@ -99,14 +115,14 @@ const allMenuItems: IMenuItem[] = [
     name: "markers",
     message: messages.markers,
     href: "/scenes/markers",
-    icon: "map-marker-alt",
+    icon: faMapMarkerAlt,
     hotkey: "g k",
   },
   {
     name: "galleries",
     message: messages.galleries,
     href: "/galleries",
-    icon: "images",
+    icon: faImages,
     hotkey: "g l",
     userCreatable: true,
   },
@@ -114,7 +130,7 @@ const allMenuItems: IMenuItem[] = [
     name: "performers",
     message: messages.performers,
     href: "/performers",
-    icon: "user",
+    icon: faUser,
     hotkey: "g p",
     userCreatable: true,
   },
@@ -122,7 +138,7 @@ const allMenuItems: IMenuItem[] = [
     name: "studios",
     message: messages.studios,
     href: "/studios",
-    icon: "video",
+    icon: faVideo,
     hotkey: "g u",
     userCreatable: true,
   },
@@ -130,7 +146,7 @@ const allMenuItems: IMenuItem[] = [
     name: "tags",
     message: messages.tags,
     href: "/tags",
-    icon: "tag",
+    icon: faTag,
     hotkey: "g t",
     userCreatable: true,
   },
@@ -236,7 +252,7 @@ export const MainNavbar: React.FC = () => {
           href="/logout"
           title={intl.formatMessage({ id: "actions.logout" })}
         >
-          <Icon icon="sign-out-alt" />
+          <Icon icon={faSignOutAlt} />
         </Button>
       );
     }
@@ -257,7 +273,7 @@ export const MainNavbar: React.FC = () => {
             className="minimal donate"
             title={intl.formatMessage({ id: "donate" })}
           >
-            <Icon icon="heart" />
+            <Icon icon={faHeart} />
             <span className="d-none d-sm-inline">
               {intl.formatMessage(messages.donate)}
             </span>
@@ -273,7 +289,7 @@ export const MainNavbar: React.FC = () => {
             className="minimal d-flex align-items-center h-100"
             title={intl.formatMessage({ id: "statistics" })}
           >
-            <Icon icon="chart-bar" />
+            <Icon icon={faChartBar} />
           </Button>
         </NavLink>
         <NavLink
@@ -289,7 +305,7 @@ export const MainNavbar: React.FC = () => {
           onClick={() => openManual()}
           title={intl.formatMessage({ id: "help" })}
         >
-          <Icon icon="question-circle" />
+          <Icon icon={faQuestionCircle} />
         </Button>
         {maybeRenderLogout()}
       </>
@@ -355,7 +371,7 @@ export const MainNavbar: React.FC = () => {
           )}
           {renderUtilityButtons()}
           <Navbar.Toggle className="nav-menu-toggle ml-sm-2">
-            <Icon icon={expanded ? "times" : "bars"} />
+            <Icon icon={expanded ? faTimes : faBars} />
           </Navbar.Toggle>
         </Nav>
       </Navbar>
