@@ -51,6 +51,9 @@ export function makeCriteria(type: CriterionType = "none") {
       return new NoneCriterion();
     case "name":
     case "path":
+      return new StringCriterion(
+        new MandatoryStringCriterionOption(type, type)
+      );
     case "checksum":
       return new StringCriterion(
         new MandatoryStringCriterionOption("media_info.checksum", type, type)
