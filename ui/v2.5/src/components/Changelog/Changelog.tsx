@@ -162,7 +162,7 @@ const Changelog: React.FC = () => {
   ];
 
   return (
-    <>
+    <div className="changelog">
       <h1 className="mb-4">Changelog:</h1>
       {releases.map((r) => (
         <Version
@@ -176,7 +176,7 @@ const Changelog: React.FC = () => {
           <MarkdownPage page={r.page} />
         </Version>
       ))}
-    </>
+    </div>
   );
 };
 

@@ -189,6 +189,7 @@
     },
     "categories": {
       "about": "About",
+      "changelog": "Changelog",
       "interface": "Interface",
       "logs": "Logs",
       "metadata_providers": "Metadata Providers",
