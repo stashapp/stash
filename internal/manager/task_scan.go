@@ -55,6 +55,7 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 		Paths:             paths,
 		ScanFilters:       []file.PathFilter{newScanFilter(instance.Config)},
 		ZipFileExtensions: instance.Config.GetGalleryExtensions(),
+		ParallelTasks:     instance.Config.GetParallelTasksWithAutoDetection(),
 	}, progress)
 
 	taskQueue.Close()

@@ -294,9 +294,10 @@ func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene,
 func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
 	return &file.Scanner{
 		Repository: file.Repository{
-			Manager:     db,
-			Store:       db.File,
-			FolderStore: db.Folder,
+			Manager:          db,
+			DatabaseProvider: db,
+			Store:            db.File,
+			FolderStore:      db.Folder,
 		},
 		FileDecorators: []file.Decorator{
 			&file.FilteredDecorator{
@@ -319,9 +320,10 @@ func makeCleaner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Cleaner {
 	return &file.Cleaner{
 		FS: &file.OsFS{},
 		Repository: file.Repository{
-			Manager:     db,
-			Store:       db.File,
-			FolderStore: db.Folder,
+			Manager:          db,
+			DatabaseProvider: db,
+			Store:            db.File,
+			FolderStore:      db.Folder,
 		},
 		Handlers: []file.CleanHandler{
 			&cleanHandler{},

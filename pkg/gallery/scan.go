@@ -35,7 +35,7 @@ type ScanHandler struct {
 	PluginCache *plugin.Cache
 }
 
-func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error {
+func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	baseFile := f.Base()
 
 	// try to match the file to a gallery

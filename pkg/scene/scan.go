@@ -52,7 +52,7 @@ func (h *ScanHandler) validate() error {
 	return nil
 }
 
-func (h *ScanHandler) Handle(ctx context.Context, fs file.FS, f file.File) error {
+func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	if err := h.validate(); err != nil {
 		return err
 	}

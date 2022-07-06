@@ -29,7 +29,7 @@ func (ff FilterFunc) Accept(f File) bool {
 
 // Handler provides a handler for Files.
 type Handler interface {
-	Handle(ctx context.Context, fs FS, f File) error
+	Handle(ctx context.Context, f File) error
 }
 
 // FilteredHandler is a Handler runs only if the filter accepts the file.
@@ -39,9 +39,9 @@ type FilteredHandler struct {
 }
 
 // Handle runs the handler if the filter accepts the file.
-func (h *FilteredHandler) Handle(ctx context.Context, fs FS, f File) error {
+func (h *FilteredHandler) Handle(ctx context.Context, f File) error {
 	if h.Accept(f) {
-		return h.Handler.Handle(ctx, fs, f)
+		return h.Handler.Handle(ctx, f)
 	}
 	return nil
 }

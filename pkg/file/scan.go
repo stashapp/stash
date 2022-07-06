@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -19,6 +20,7 @@ const scanQueueSize = 200000
 // Repository provides access to storage methods for files and folders.
 type Repository struct {
 	txn.Manager
+	txn.DatabaseProvider
 	Store
 
 	FolderStore FolderStore
@@ -33,15 +35,13 @@ type Repository struct {
 // All other files encountered are sent to the second goroutine queue.
 //
 // Folders are handled by checking if the folder exists in the database, by its full path.
-// If a folder entry already exists, then its mod time is updated (if applicable), the lastScanned
-// field is updated and the missing flag is nulled as needed. If the folder does not exist in the
-// database, then a new folder entry its created.
+// If a folder entry already exists, then its mod time is updated (if applicable).
+// If the folder does not exist in the database, then a new folder entry its created.
 //
 // Files are handled by first querying for the file by its path. If the file entry exists in the
 // database, then the mod time is compared to the value in the database. If the mod time is different
 // then file is marked as updated - it recalculates any fingerprints and fires decorators, then
-// the file entry is updated and any applicable handlers are fired. Regardless of whether the file
-// is marked as updated, the lastScanned field is updated and the missing flag is nulled as needed.
+// the file entry is updated and any applicable handlers are fired.
 //
 // If the file entry does not exist in the database, then fingerprints are calculated for the file.
 // It then determines if the file is a rename of an existing file by querying for file entries with
@@ -51,9 +51,6 @@ type Repository struct {
 //
 // If the file is not a renamed file, then the decorators are fired and the file is created, then
 // the applicable handlers are fired.
-//
-// At the end of the scan process, the database is queried for files and folders in the database
-// in the provided paths that were not seen during the scan. Theses are marked as missing.
 type Scanner struct {
 	FS                    FS
 	Repository            Repository
@@ -82,6 +79,7 @@ type scanJob struct {
 
 	startTime      time.Time
 	fileQueue      chan scanFile
+	dbQueue        chan func(ctx context.Context) error
 	retryList      []scanFile
 	retrying       bool
 	folderPathToID sync.Map
@@ -101,6 +99,8 @@ type ScanOptions struct {
 
 	// ScanFilters are used to determine if a file should be scanned.
 	ScanFilters []PathFilter
+
+	ParallelTasks int
 }
 
 // Scan starts the scanning process.
@@ -129,12 +129,17 @@ func (s *scanJob) withTxn(ctx context.Context, fn func(ctx context.Context) erro
 	return txn.WithTxn(ctx, s.Repository, fn)
 }
 
+func (s *scanJob) withDB(ctx context.Context, fn func(ctx context.Context) error) error {
+	return txn.WithDatabase(ctx, s.Repository, fn)
+}
+
 func (s *scanJob) execute(ctx context.Context) {
 	paths := s.options.Paths
 	logger.Infof("scanning %d paths", len(paths))
 	s.startTime = time.Now()
 
 	s.fileQueue = make(chan scanFile, scanQueueSize)
+	s.dbQueue = make(chan func(ctx context.Context) error, scanQueueSize)
 
 	go func() {
 		if err := s.queueFiles(ctx, paths); err != nil {
@@ -149,6 +154,20 @@ func (s *scanJob) execute(ctx context.Context) {
 		logger.Infof("Finished adding files to queue. %d files queued", s.count)
 	}()
 
+	done := make(chan struct{}, 1)
+
+	go func() {
+		if err := s.processDBOperations(ctx); err != nil {
+			if errors.Is(err, context.Canceled) {
+				return
+			}
+
+			logger.Errorf("error processing database operations for scan: %v", err)
+		}
+
+		close(done)
+	}()
+
 	if err := s.processQueue(ctx); err != nil {
 		if errors.Is(err, context.Canceled) {
 			return
@@ -158,8 +177,8 @@ func (s *scanJob) execute(ctx context.Context) {
 		return
 	}
 
-	// TODO - now mark any files not seen as missing
-	// s.markMissingFiles(ctx)
+	// wait for database operations to complete
+	<-done
 }
 
 func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
@@ -235,10 +254,12 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 
 		// if zip file is present, we handle immediately
 		if zipFile != nil {
-			if err := s.handleFile(ctx, ff); err != nil {
-				logger.Errorf("error processing %q: %v", path, err)
-				// don't return an error, just skip the file
-			}
+			s.ProgressReports.ExecuteTask("Scanning "+path, func() {
+				if err := s.handleFile(ctx, ff); err != nil {
+					logger.Errorf("error processing %q: %v", path, err)
+					// don't return an error, just skip the file
+				}
+			})
 
 			return nil
 		}
@@ -283,24 +304,61 @@ func (s *scanJob) scanZipFile(ctx context.Context, f scanFile) error {
 }
 
 func (s *scanJob) processQueue(ctx context.Context) error {
+	parallelTasks := s.options.ParallelTasks
+	if parallelTasks < 1 {
+		parallelTasks = 1
+	}
+
+	wg := sizedwaitgroup.New(parallelTasks)
+
 	for f := range s.fileQueue {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
 
-		s.processQueueItem(ctx, f)
-		if s.ProgressReports != nil {
-			s.ProgressReports.Increment()
-		}
+		wg.Add()
+		ff := f
+		go func() {
+			defer wg.Done()
+			s.processQueueItem(ctx, ff)
+		}()
 	}
 
+	wg.Wait()
 	s.retrying = true
 	for _, f := range s.retryList {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
 
-		s.processQueueItem(ctx, f)
+		wg.Add()
+		ff := f
+		go func() {
+			defer wg.Done()
+			s.processQueueItem(ctx, ff)
+		}()
+	}
+
+	wg.Wait()
+
+	close(s.dbQueue)
+
+	return nil
+}
+
+func (s *scanJob) incrementProgress() {
+	if s.ProgressReports != nil {
+		s.ProgressReports.Increment()
+	}
+}
+
+func (s *scanJob) processDBOperations(ctx context.Context) error {
+	for fn := range s.dbQueue {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+
+		_ = s.withTxn(ctx, fn)
 	}
 
 	return nil
@@ -375,6 +433,8 @@ func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 	path := file.Path
 
 	return s.withTxn(ctx, func(ctx context.Context) error {
+		defer s.incrementProgress()
+
 		// determine if folder already exists in data store (by path)
 		f, err := s.Repository.FolderStore.FindByPath(ctx, path)
 		if err != nil {
@@ -467,7 +527,8 @@ func modTime(info fs.FileInfo) time.Time {
 
 func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 	var ff File
-	if err := s.withTxn(ctx, func(ctx context.Context) error {
+	// don't use a transaction to check if new or existing
+	if err := s.withDB(ctx, func(ctx context.Context) error {
 		// determine if file already exists in data store
 		var err error
 		ff, err = s.Repository.FindByPath(ctx, f.Path)
@@ -486,7 +547,7 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 		return err
 	}
 
-	if ff != nil && s.isZipFile(f.info) {
+	if ff != nil && s.isZipFile(f.info.Name()) {
 		f.BaseFile = ff.Base()
 		if err := s.scanZipFile(ctx, f); err != nil {
 			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)
@@ -496,8 +557,8 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 	return nil
 }
 
-func (s *scanJob) isZipFile(entry fs.FileInfo) bool {
-	fExt := filepath.Ext(entry.Name())
+func (s *scanJob) isZipFile(path string) bool {
+	fExt := filepath.Ext(path)
 	for _, ext := range s.options.ZipFileExtensions {
 		if strings.EqualFold(fExt, "."+ext) {
 			return true
@@ -527,6 +588,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 		// add this file to the queue to be created later
 		if s.retrying {
 			// if we're retrying and the folder still doesn't exist, then it's a problem
+			s.incrementProgress()
 			return nil, fmt.Errorf("parent folder for %q doesn't exist", path)
 		}
 
@@ -538,6 +600,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	zipFileID, err := s.getZipFileID(ctx, f.zipFile)
 	if err != nil {
+		s.incrementProgress()
 		return nil, err
 	}
 
@@ -547,6 +610,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	fp, err := s.calculateFingerprints(f.fs, baseFile, path)
 	if err != nil {
+		s.incrementProgress()
 		return nil, err
 	}
 
@@ -555,6 +619,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 	// determine if the file is renamed from an existing file in the store
 	renamed, err := s.handleRename(ctx, baseFile, fp)
 	if err != nil {
+		s.incrementProgress()
 		return nil, err
 	}
 
@@ -564,20 +629,38 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	file, err := s.fireDecorators(ctx, f.fs, baseFile)
 	if err != nil {
+		s.incrementProgress()
 		return nil, err
 	}
 
-	// if not renamed, add file to store
-	logger.Infof("%s doesn't exist. Creating new file entry...", path)
-	if err := s.Repository.Create(ctx, file); err != nil {
-		return nil, fmt.Errorf("creating file %q: %w", path, err)
-	}
+	// if not renamed, queue file for creation
+	if err := s.queueDBOperation(ctx, path, func(ctx context.Context) error {
+		logger.Infof("%s doesn't exist. Creating new file entry...", path)
+		if err := s.Repository.Create(ctx, file); err != nil {
+			return fmt.Errorf("creating file %q: %w", path, err)
+		}
 
-	if err := s.fireHandlers(ctx, f.fs, file); err != nil {
+		if err := s.fireHandlers(ctx, file); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
 	return file, nil
+}
+
+func (s *scanJob) queueDBOperation(ctx context.Context, path string, fn func(ctx context.Context) error) error {
+	// perform immediately if it is a zip file
+	if s.isZipFile(path) {
+		return s.withTxn(ctx, fn)
+	}
+
+	s.dbQueue <- fn
+
+	return nil
 }
 
 func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, error) {
@@ -592,9 +675,9 @@ func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, erro
 	return f, nil
 }
 
-func (s *scanJob) fireHandlers(ctx context.Context, fs FS, f File) error {
+func (s *scanJob) fireHandlers(ctx context.Context, f File) error {
 	for _, h := range s.handlers {
-		if err := h.Handle(ctx, fs, f); err != nil {
+		if err := h.Handle(ctx, f); err != nil {
 			return err
 		}
 	}
@@ -690,8 +773,14 @@ func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp []Fingerprin
 		f.Fingerprints = otherBase.Fingerprints
 		*otherBase = *f
 
-		if err := s.Repository.Update(ctx, other); err != nil {
-			return nil, fmt.Errorf("updating file for rename %q: %w", f.Path, err)
+		if err := s.queueDBOperation(ctx, f.Path, func(ctx context.Context) error {
+			if err := s.Repository.Update(ctx, other); err != nil {
+				return fmt.Errorf("updating file for rename %q: %w", f.Path, err)
+			}
+
+			return nil
+		}); err != nil {
+			return nil, err
 		}
 
 		return other, nil
@@ -713,6 +802,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	updated := !fileModTime.Equal(base.ModTime)
 
 	if !updated {
+		s.incrementProgress()
 		return nil, nil
 	}
 
@@ -724,6 +814,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	// calculate and update fingerprints for the file
 	fp, err := s.calculateFingerprints(f.fs, base, path)
 	if err != nil {
+		s.incrementProgress()
 		return nil, err
 	}
 
@@ -731,14 +822,22 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 
 	existing, err = s.fireDecorators(ctx, f.fs, existing)
 	if err != nil {
+		s.incrementProgress()
 		return nil, err
 	}
 
-	if err := s.Repository.Update(ctx, existing); err != nil {
-		return nil, fmt.Errorf("updating file %q: %w", path, err)
-	}
+	// queue file for update
+	if err := s.queueDBOperation(ctx, path, func(ctx context.Context) error {
+		if err := s.Repository.Update(ctx, existing); err != nil {
+			return fmt.Errorf("updating file %q: %w", path, err)
+		}
 
-	if err := s.fireHandlers(ctx, f.fs, existing); err != nil {
+		if err := s.fireHandlers(ctx, existing); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
