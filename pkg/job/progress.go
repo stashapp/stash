@@ -146,7 +146,7 @@ func (p *Progress) addTask(t *task) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
-	p.currentTasks = append(p.currentTasks, t)
+	p.currentTasks = append([]*task{t}, p.currentTasks...)
 	p.updated()
 }
 
