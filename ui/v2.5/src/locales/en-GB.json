@@ -919,9 +919,10 @@
       "migration_failed_error": "The following error was encountered while migrating the database:",
       "migration_failed_help": "Please make any necessary corrections and try again. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
       "migration_irreversible_warning": "The schema migration process is not reversible. Once the migration is performed, your database will be incompatible with previous versions of stash.",
+      "migration_notes": "Migration Notes",
       "migration_required": "Migration required",
       "perform_schema_migration": "Perform schema migration",
-      "schema_too_old": "Your current stash database is schema version <strong>{databaseSchema}</strong> and needs to be migrated to version <strong>{appSchema}</strong>. This version of Stash will not function without migrating the database."
+      "schema_too_old": "Your current stash database is schema version <strong>{databaseSchema}</strong> and needs to be migrated to version <strong>{appSchema}</strong>. This version of Stash will not function without migrating the database. If you do not wish to migrate, you will need to downgrade to a version that matches your database schema."
     },
     "paths": {
       "database_filename_empty_for_default": "database filename (empty for default)",
