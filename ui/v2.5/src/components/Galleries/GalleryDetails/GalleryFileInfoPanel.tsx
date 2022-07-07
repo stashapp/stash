@@ -6,21 +6,24 @@ import { TextUtils } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
 
 interface IFileInfoPanelProps {
-  file: GQL.GalleryFileDataFragment;
+  folder?: Pick<GQL.Folder, "id" | "path">;
+  file?: GQL.GalleryFileDataFragment;
 }
 
 const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   props: IFileInfoPanelProps
 ) => {
-  const checksum = props.file.fingerprints.find((f) => f.type === "md5");
+  const checksum = props.file?.fingerprints.find((f) => f.type === "md5");
+  const path = props.folder ? props.folder.path : props.file?.path ?? "";
+  const id = props.folder ? "folder" : "path";
 
   return (
     <dl className="container gallery-file-info details-list">
       <TextField id="media_info.checksum" value={checksum?.value} truncate />
       <URLField
-        id="path"
-        url={`file://${props.file.path}`}
-        value={`file://${props.file.path}`}
+        id={id}
+        url={`file://${path}`}
+        value={`file://${path}`}
         truncate
       />
     </dl>
@@ -34,6 +37,10 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
   props: IGalleryFileInfoPanelProps
 ) => {
   const filesPanel = useMemo(() => {
+    if (props.gallery.folder) {
+      return <FileInfoPanel folder={props.gallery.folder} />;
+    }
+
     if (props.gallery.files.length === 0) {
       return <></>;
     }
