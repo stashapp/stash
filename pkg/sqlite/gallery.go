@@ -634,7 +634,7 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		// add joins for files and checksum
-		searchColumns := []string{"galleries.title", "galleries_query.parent_folder_path", "galleries_query.basename", "galleries_query.fingerprint"}
+		searchColumns := []string{"galleries.title", "galleries_query.folder_path", "galleries_query.parent_folder_path", "galleries_query.basename", "galleries_query.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
