@@ -36,6 +36,7 @@ const FrontPage: React.FC = () => {
       await saveUI({
         variables: {
           input: {
+            ...configuration?.ui,
             frontPageContent: content,
           },
         },
