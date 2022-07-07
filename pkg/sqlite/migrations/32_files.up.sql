@@ -302,6 +302,9 @@ INSERT INTO `folders`
   INNER JOIN `files` ON `galleries`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1
   WHERE `galleries`.`path` IS NOT NULL AND `galleries`.`zip` = '1';
 
+-- set the zip file id of the zip folders
+UPDATE `folders` SET `zip_file_id` = (SELECT `files`.`id` FROM `files` WHERE `folders`.`path` = `files`.`basename`); 
+
 -- insert gallery folders - we will fix these up in the post-migration
 INSERT INTO `folders`
   (
