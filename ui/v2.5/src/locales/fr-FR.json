@@ -116,7 +116,7 @@
   "age": "Âge",
   "aliases": "Alias",
   "all": "tout",
-  "also_known_as": "Aussi connu sous le nom",
+  "also_known_as": "Également connu comme",
   "ascending": "Ascendant",
   "average_resolution": "Résolution moyenne",
   "birth_year": "Année de naissance",
@@ -677,7 +677,7 @@
   "display_mode": {
     "grid": "Grille",
     "list": "Liste",
-    "tagger": "Étiqueteur",
+    "tagger": "Étiqueteuse",
     "unknown": "Inconnu",
     "wall": "Mur"
   },
@@ -715,7 +715,7 @@
     "rotate_right_and_scale": "Rotation à droite et mise à l'échelle",
     "saturation": "Saturation",
     "scale": "Mise à l'échelle",
-    "warmth": "Chaleur"
+    "warmth": "Température"
   },
   "empty_server": "Ajoutez quelques scènes à votre serveur pour afficher les recommandations sur cette page.",
   "ethnicity": "Ethnicité",
@@ -732,7 +732,7 @@
   "filter": "Filtre",
   "filter_name": "Nom du filtre",
   "filters": "Filtres",
-  "framerate": "Fréquence de rafraîchissement",
+  "framerate": "Fréquence",
   "frames_per_second": "{value} images par seconde",
   "front_page": {
     "types": {
@@ -763,7 +763,7 @@
     "uploading": "Script de chargement"
   },
   "hasMarkers": "Dispose de marqueurs",
-  "height": "Hauteur",
+  "height": "Taille",
   "help": "Aide",
   "ignore_auto_tag": "Ignorer l'étiquetage automatique",
   "image": "Image",
@@ -856,7 +856,7 @@
     "status_tagging_job_queued": "Statut : Tâche d'étiquetage en file d'attente",
     "status_tagging_performers": "Statut : Étiquetage des performeurs",
     "tag_status": "Statut de l'étiquette",
-    "to_use_the_performer_tagger": "Pour utiliser l'étiqueteur de performeurs, une instance stash-box doit être configurée.",
+    "to_use_the_performer_tagger": "Pour utiliser l'étiqueteuse de performeurs, une instance stash-box doit être configurée.",
     "untagged_performers": "Performeurs non étiquetés",
     "update_performer": "Mise à jour du performeur",
     "update_performers": "Mise à jour des performeurs",
@@ -864,14 +864,14 @@
   },
   "performers": "Performeurs",
   "piercings": "Piercings",
-  "queue": "File de lecture",
+  "queue": "Liste de lecture",
   "random": "Aléatoire",
   "rating": "Note",
   "recently_added_objects": "{objects} récemment ajoutés",
   "recently_released_objects": "{objects} récemment ajoutées",
   "resolution": "Résolution",
   "scene": "Scène",
-  "sceneTagger": "Étiqueteur de scènes",
+  "sceneTagger": "Étiqueteuse de scènes",
   "sceneTags": "Étiquettes de scène",
   "scene_count": "Nombre de scènes",
   "scene_id": "ID de scène",
