@@ -311,33 +311,22 @@ func (db *Database) RunMigrations() error {
 		// run each migration individually, and run custom migrations as needed
 		var i uint = 1
 		for ; i <= stepNumber; i++ {
+			newVersion := databaseSchemaVersion + i
+
+			// run pre migrations as needed
+			if err := db.runCustomMigrations(ctx, preMigrations[newVersion]); err != nil {
+				return fmt.Errorf("running pre migrations for schema version %d: %w", newVersion, err)
+			}
+
 			err = m.Steps(1)
 			if err != nil {
 				// migration failed
 				return err
 			}
 
-			newVersion := databaseSchemaVersion + i
-
-			// run custom migrations as needed
-			fns := customMigrations[newVersion]
-			for _, fn := range fns {
-				if err := func() error {
-					const disableForeignKeys = false
-					db, err := db.open(disableForeignKeys)
-					if err != nil {
-						return err
-					}
-
-					defer db.Close()
-					if err := fn(ctx, db); err != nil {
-						return fmt.Errorf("running custom migration for schema version %d: %w", newVersion, err)
-					}
-
-					return nil
-				}(); err != nil {
-					return err
-				}
+			// run post migrations as needed
+			if err := db.runCustomMigrations(ctx, postMigrations[newVersion]); err != nil {
+				return fmt.Errorf("running post migrations for schema version %d: %w", newVersion, err)
 			}
 		}
 	}
@@ -357,6 +346,31 @@ func (db *Database) RunMigrations() error {
 	_, err = db.db.Exec("VACUUM")
 	if err != nil {
 		logger.Warnf("error while performing post-migration vacuum: %v", err)
+	}
+
+	return nil
+}
+
+func (db *Database) runCustomMigrations(ctx context.Context, fns []customMigrationFunc) error {
+	for _, fn := range fns {
+		if err := db.runCustomMigration(ctx, fn); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *Database) runCustomMigration(ctx context.Context, fn customMigrationFunc) error {
+	const disableForeignKeys = false
+	d, err := db.open(disableForeignKeys)
+	if err != nil {
+		return err
+	}
+
+	defer d.Close()
+	if err := fn(ctx, d); err != nil {
+		return err
 	}
 
 	return nil

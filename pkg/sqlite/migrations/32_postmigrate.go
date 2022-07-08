@@ -21,7 +21,9 @@ func post32(ctx context.Context, db *sqlx.DB) error {
 	logger.Info("Running post-migration for schema version 32")
 
 	m := schema32Migrator{
-		db:          db,
+		migrator: migrator{
+			db: db,
+		},
 		folderCache: make(map[string]folderInfo),
 	}
 
@@ -46,34 +48,8 @@ type folderInfo struct {
 }
 
 type schema32Migrator struct {
-	db          *sqlx.DB
+	migrator
 	folderCache map[string]folderInfo
-}
-
-func (m *schema32Migrator) withTxn(ctx context.Context, fn func(tx *sqlx.Tx) error) error {
-	tx, err := m.db.BeginTxx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("beginning transaction: %w", err)
-	}
-
-	defer func() {
-		if p := recover(); p != nil {
-			// a panic occurred, rollback and repanic
-			_ = tx.Rollback()
-			panic(p)
-		}
-
-		if err != nil {
-			// something went wrong, rollback
-			_ = tx.Rollback()
-		} else {
-			// all good, commit
-			err = tx.Commit()
-		}
-	}()
-
-	err = fn(tx)
-	return err
 }
 
 func (m *schema32Migrator) migrateFolderSlashes(ctx context.Context) error {
@@ -333,5 +309,5 @@ func (m *schema32Migrator) getOrCreateFolder(path string, parentID *int, zipFile
 }
 
 func init() {
-	sqlite.RegisterCustomMigration(32, post32)
+	sqlite.RegisterPostMigration(32, post32)
 }

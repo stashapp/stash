@@ -8,10 +8,17 @@ import (
 
 type customMigrationFunc func(ctx context.Context, db *sqlx.DB) error
 
-func RegisterCustomMigration(schemaVersion uint, fn customMigrationFunc) {
-	v := customMigrations[schemaVersion]
+func RegisterPostMigration(schemaVersion uint, fn customMigrationFunc) {
+	v := postMigrations[schemaVersion]
 	v = append(v, fn)
-	customMigrations[schemaVersion] = v
+	postMigrations[schemaVersion] = v
 }
 
-var customMigrations = make(map[uint][]customMigrationFunc)
+func RegisterPreMigration(schemaVersion uint, fn customMigrationFunc) {
+	v := preMigrations[schemaVersion]
+	v = append(v, fn)
+	preMigrations[schemaVersion] = v
+}
+
+var postMigrations = make(map[uint][]customMigrationFunc)
+var preMigrations = make(map[uint][]customMigrationFunc)
