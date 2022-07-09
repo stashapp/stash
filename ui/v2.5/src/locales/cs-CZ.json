@@ -213,7 +213,153 @@
       "network_interfaces": "Rozhraní",
       "network_interfaces_desc": "Rozhraní ke spuštění DLNA serveru aktivní. Prázdný seznam má za následek spuštění na všech rozhraních. Po změně je nezbytné restartovat DLNA.",
       "recent_ip_addresses": "Nedávné IP adresy",
-      "server_display_name": "Jméno serveru"
+      "server_display_name": "Jméno serveru",
+      "server_display_name_desc": "Název DLNA serveru. Výchozí hodnota {} pokud je pole prázdné.",
+      "successfully_cancelled_temporary_behaviour": "Úspěšně zrušeno dočasné chování",
+      "until_restart": "pouze do restartu"
+    },
+    "general": {
+      "auth": {
+        "api_key": "API klíč",
+        "api_key_desc": "API klíč pro externí systémy. Vyžadován pouze tehdy, pokud jsou nastavené přihlašující údaje. Přihlašovací jméno musí být uloženo před generováním API klíče.",
+        "authentication": "Autentifikace",
+        "clear_api_key": "Vymazat API klíč",
+        "credentials": {
+          "description": "Přihlašovací údaje pro omezení přístupu do aplikace.",
+          "heading": "Přihlašovací údaje"
+        },
+        "generate_api_key": "Generovat API klíč",
+        "log_file": "Log soubor",
+        "log_file_desc": "Ceska k log souboru. Nechte prázdné pro zakázání logování. Vyžaduje restart.",
+        "log_http": "Zaznamenávat http přístup",
+        "log_http_desc": "Zaznamenávat http přístup do příkazové řádky. Vyžaduje restart.",
+        "log_to_terminal": "Logovat do příkazové řádky",
+        "log_to_terminal_desc": "Logovat do příkazové řádky kromě logování do terminálu. Vždy zapnuto pokud logování do souboru je zakázané. Vyžaduje restart.",
+        "maximum_session_age": "Maximální věk relace",
+        "maximum_session_age_desc": "Maximální doba nečinnosti před vypršením relace přihlášení v sekundách.",
+        "password": "Heslo",
+        "password_desc": "Heslo pro přístup do aplikace. Ponechte prázdné pro vypnutí autentizace",
+        "stash-box_integration": "Stash-box integrace",
+        "username": "Přihlašovací jméno",
+        "username_desc": "Přihlašovací jméno pro přístup do aplikace. Ponechte prázdné pro vypnutí autentizace"
+      },
+      "cache_location": "Složka pro mezipaměť",
+      "cache_path_head": "Cesta k mezipaměti",
+      "calculate_md5_and_ohash_desc": "Spočítat MD5 kontrolní součet kromě oshashe. Zapnutí zpomalí následující skenování. Hash dle názvu souboru musí být nastaven na oshash pro zrušení výpočtu MD5.",
+      "calculate_md5_and_ohash_label": "Spočíst MD5 pro videa",
+      "check_for_insecure_certificates": "Zkontrolujte nezabezpečené certifikáty",
+      "check_for_insecure_certificates_desc": "Některé weby používají nezabezpečené ssl certifikáty. Pokud není zaškrtnuto, scraper přeskočí kontrolu nezabezpečených certifikátů a povolí scraping těchto stránek. Pokud je při scrapingu zobrazena chyba certifikátu, zrušte zaškrtnutí.",
+      "chrome_cdp_path": "Cesta k Chrome CDP",
+      "chrome_cdp_path_desc": "Cesta k exe souboru aplikace Chrome nebo vzdálená adresa (začínající http:// nebo https://, například http://localhost:9222/json/version) k instanci Chrome.",
+      "create_galleries_from_folders_desc": "Je-li vybráno, budou vytvořeny galerie ze složek obsahující obrázky.",
+      "create_galleries_from_folders_label": "Vytvářet galerie ze složek obsahující obrázky",
+      "db_path_head": "Cesta k databázi",
+      "directory_locations_to_your_content": "Adresa k Vašemu obsahu",
+      "excluded_image_gallery_patterns_desc": "Regulární výrazy obrázků a galerií (souborů / cest) pro výjimku ze skenování a přidání k čištění",
+      "excluded_image_gallery_patterns_head": "Vyloučené vzory obrázků/galerií",
+      "excluded_video_patterns_desc": "Regulární výrazy video (souborů / cest) pro výjimku ze skenování a přidání k čištění",
+      "excluded_video_patterns_head": "Vyloučené video patterny",
+      "gallery_ext_desc": "Seznam souborových koncovek, oddělených čárkou, definující zip soubory galerií.",
+      "gallery_ext_head": "Koncovky zip souborů galerií",
+      "generated_file_naming_hash_desc": "Použít MD5 nebo oshash pro pojmenování generovaných souborů. Úprava tohoto nastavení vyžaduje aby všechny scény měly vyplněnou hodnotu MD5/oshash. Po úpravě této hodnoty je nezbytné přemigrovat nebo přegenerovat existující generované soubory. Navštivte stránku Úlohy pro migraci.",
+      "generated_file_naming_hash_head": "Typ hashe používaný pro pojmenování generovaných souborů",
+      "generated_files_location": "Umístění adresáře pro generované soubory (značky scén, náhledy scén, sprajty atd.)",
+      "generated_path_head": "Generovaná cesta",
+      "hashing": "Hashování",
+      "image_ext_desc": "Seznam koncovek souborů, oddělený čárkou, které budou identifikovány jako obrázky.",
+      "image_ext_head": "Koncovky souborů obrázků",
+      "include_audio_desc": "Zahrnout zvuk při generování náhledů.",
+      "include_audio_head": "Zahrnout zvuk",
+      "logging": "Logování",
+      "maximum_streaming_transcode_size_desc": "Maximální velikost překódovaných streamů",
+      "maximum_streaming_transcode_size_head": "Maximální velikost streamovaného překódovaného souboru",
+      "maximum_transcode_size_desc": "Maximální velikost pro generované překódované soubory",
+      "maximum_transcode_size_head": "Maximální velikost překódovaného souboru",
+      "metadata_path": {
+        "description": "Složka použita při kompletním exportu / importu",
+        "heading": "Cesta k metadatům"
+      },
+      "number_of_parallel_task_for_scan_generation_desc": "Nastavte na 0 pro autodetekci. Upozornění: běh vícero úloh než je vyžadováno pro dosažení 100% využítí CPU snižuje výkon a může potenciálně způsobit další problémy.",
+      "number_of_parallel_task_for_scan_generation_head": "Počet paralelních úloh pro skenování / generování",
+      "parallel_scan_head": "Paralelní skenování / generování",
+      "preview_generation": "Generování náhledů",
+      "python_path": {
+        "description": "Umístění exe python interpreteru. Používáno pro scrapery a pluginy. Pokud je pole prázdné, bude python identifikován dle proměnných prostředí",
+        "heading": "Cesta k Pythonu"
+      },
+      "scraper_user_agent": "Scraper User Agent",
+      "scraper_user_agent_desc": "User-Agent řetězec používaný při scrapování http požadavků",
+      "scrapers_path": {
+        "description": "Adresář konfiguračních souborů scraperů",
+        "heading": "Cesta ke scraperům"
+      },
+      "scraping": "Scrapování",
+      "sqlite_location": "Umístění souboru se SQLite databází (vyžaduje restart)",
+      "video_ext_desc": "Seznam koncovek souborů, oddělený čárkou, které budou identifikovány jako videa.",
+      "video_ext_head": "Koncovky video souborů",
+      "video_head": "Video"
+    },
+    "library": {
+      "exclusions": "Výjimky",
+      "gallery_and_image_options": "Možnosti galerie a obrázků",
+      "media_content_extensions": "Koncovky mediálních souborů"
+    },
+    "logs": {
+      "log_level": "Úroveň logování"
+    },
+    "plugins": {
+      "hooks": "Triggery",
+      "triggers_on": "Spuštěno při"
+    },
+    "scraping": {
+      "entity_metadata": "{entityType} Metadata",
+      "entity_scrapers": "{entityType} scrapery",
+      "excluded_tag_patterns_desc": "Regulární výrazy názvu tagů vyjmutých z výsledků scrapování",
+      "excluded_tag_patterns_head": "Vyjmuté tag patterny",
+      "scraper": "Scraper",
+      "scrapers": "Scrapery",
+      "search_by_name": "Hledat dle názvu",
+      "supported_types": "Podporované typy",
+      "supported_urls": "URLs"
+    },
+    "stashbox": {
+      "add_instance": "Přidat stash-box instanci",
+      "api_key": "API klíč",
+      "description": "Stash-box zjednodušuje automatizované tagování scén a herců na základě otisků a názvu souborů\nEndpoint a API klíč naleznete na stránce Vašeho účtu stash-box instance. Pojmenování je požadováno, pokud je přidáno vícero instancí.",
+      "endpoint": "Endpoint",
+      "graphql_endpoint": "GraphQL endpoint",
+      "name": "Název",
+      "title": "Stash-box Endpointy"
+    },
+    "system": {
+      "transcoding": "Překódování"
+    },
+    "tasks": {
+      "added_job_to_queue": "Operace {operation_name} byla přidána do fronty úloh",
+      "auto_tag": {
+        "auto_tagging_all_paths": "Autotagování všech cest",
+        "auto_tagging_paths": "Autotagování následujících cest"
+      },
+      "auto_tag_based_on_filenames": "Autotagování obsahu dle názvu souborů.",
+      "auto_tagging": "Autotagování",
+      "backing_up_database": "Zálohovat databázi",
+      "backup_and_download": "Provede zálohu databáze a stáhne výsledný soubor.",
+      "backup_database": "Provede zálohu databáze do stejné složky s formátem názvu souboru {filename_format}",
+      "cleanup_desc": "Zkontrolovat chybějící soubory a odstranit je z databáze. Toto je destruktivní akce.",
+      "data_management": "Správa dat",
+      "defaults_set": "Výchozí hodnoty byly nastaveny a budou použity při kliknutí na tlačítko {action} na stránce Úloh.",
+      "dont_include_file_extension_as_part_of_the_title": "Nezahrnovat příponu souboru jako součást názvu",
+      "empty_queue": "Momentálně nejsou spuštěny žádné úlohy.",
+      "export_to_json": "Exportuje obsah databáze do formátu JSON do složky metadata.",
+      "generate": {
+        "generating_from_paths": "Generovat pro scény z následujících cest",
+        "generating_scenes": "Generováno pro {num} {scene}"
+      },
+      "generate_desc": "Generovat podpůrné obrázky, sprite, video, vtt a další soubory.",
+      "generate_phashes_during_scan": "Generovat PHASHe",
+      "generate_phashes_during_scan_tooltip": "Pro deduplikaci a identifikaci scén.",
+      "generate_previews_during_scan": "Generovat animované náhledy",
+      "generate_previews_during_scan_tooltip": "Generovat animované WebP náhledy (požadováno pouze pokud typ náhledu je nastaven na \"animovaný obrázek\")."
     }
   }
 }
