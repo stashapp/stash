@@ -127,7 +127,93 @@
   "career_length": "Délka kariéry",
   "component_tagger": {
     "config": {
-      "active_instance": "Aktivní Stash-Box instance:"
+      "active_instance": "Aktivní Stash-Box instance:",
+      "blacklist_desc": "Položky na blacklistu jsou vyňaty z dotazů. Poznámka: Jedná se o regulární výrazy, nerozlišující malá a velká písmena. Některém znakům, pro jejich správnou interpretaci, musí předcházet znak zpětného lomítka: {chars_require_escape}",
+      "blacklist_label": "Blacklist",
+      "query_mode_auto": "Automaticky",
+      "query_mode_auto_desc": "Používá metadata, pokud jsou k dispozici nebo název souboru",
+      "query_mode_dir": "Složka",
+      "query_mode_dir_desc": "Používá pouze nadřazený adresář video souboru",
+      "query_mode_filename": "Název souboru",
+      "query_mode_filename_desc": "Používá pouze název souboru",
+      "query_mode_label": "Režim dotazu",
+      "query_mode_metadata": "Metadata",
+      "query_mode_metadata_desc": "Používá pouze metadata",
+      "query_mode_path": "Cesta",
+      "query_mode_path_desc": "Používá úplnou cestu k souboru",
+      "set_cover_desc": "Nahradit obálku scény, pokud je nalezena.",
+      "set_cover_label": "Nastavit obrázek obálky scény",
+      "set_tag_desc": "Přidat tagy ke scéně, buď přepsáním nebo sloučením existujících tagů na scéně.",
+      "set_tag_label": "Nastavit tagy",
+      "show_male_desc": "Zapnout / vypnout, zda mají být mužští umělci tagováni.",
+      "show_male_label": "Ukázat mužské umělce",
+      "source": "Zdroj"
+    },
+    "noun_query": "Dotaz",
+    "results": {
+      "duration_off": "Doba trvání se liší minálně o {number}s",
+      "duration_unknown": "Neznámá délka",
+      "fp_found": "{fpCount, plural, =0 {Žádné nové otisky nebyly nalezeny} other {# nových otisků bylo nalezeno}}",
+      "fp_matches": "Délka videa je shodná",
+      "fp_matches_multi": "Délka videa se shoduje u {matchCount}/{durationsLength} otisku(ů)",
+      "hash_matches": "{hash_type} se shodují",
+      "match_failed_already_tagged": "Scéna byla již otagována",
+      "match_failed_no_result": "Nebyly nalezeny žádné výsledky",
+      "match_success": "Scéna úspěšně otagována",
+      "phash_matches": "{count} PHash(ů) se shoduje",
+      "unnamed": "Bezejmený"
+    },
+    "verb_match_fp": "Identifikovat otisky",
+    "verb_matched": "Identifikováno",
+    "verb_scrape_all": "Scrape vše",
+    "verb_submit_fp": "Publikovat {fpCount, plural, one{# otisk} other{# otisk}}",
+    "verb_toggle_config": "{toggle} {configuration}",
+    "verb_toggle_unmatched": "{toggle} neidentifikované scény"
+  },
+  "config": {
+    "about": {
+      "build_hash": "Vytvořit hash:",
+      "build_time": "Čas sestavení:",
+      "check_for_new_version": "Zkontrolovat existenci nové verze",
+      "latest_version": "Nejnovější verze",
+      "latest_version_build_hash": "Hash sestavení poslední verze:",
+      "new_version_notice": "[NOVÝ]",
+      "stash_discord": "Připojte se na náš {url} kanál",
+      "stash_home": "Stash domovská stránka na {url}",
+      "stash_open_collective": "Podpořte nás skrze {url}",
+      "stash_wiki": "Stash {url} stránka",
+      "version": "Verze"
+    },
+    "application_paths": {
+      "heading": "Cesta k aplikaci"
+    },
+    "categories": {
+      "about": "O programu",
+      "interface": "Rozhraní",
+      "logs": "Logy",
+      "metadata_providers": "Poskytovatelé Metadat",
+      "plugins": "Pluginy",
+      "scraping": "Scrapování",
+      "security": "Zabezpečení",
+      "services": "Služby",
+      "system": "Systém",
+      "tasks": "Úlohy",
+      "tools": "Nástroje"
+    },
+    "dlna": {
+      "allow_temp_ip": "Povolit IP {tempIP}",
+      "allowed_ip_addresses": "Povolené IP adresy",
+      "allowed_ip_temporarily": "IP adresa dočasně povolena",
+      "default_ip_whitelist": "Seznam povolených výchozích IP adres",
+      "default_ip_whitelist_desc": "Výchozí IP adresy umožňují přístup k DLNA. Použijte {wildcard} k povolení všech IP adres.",
+      "disabled_dlna_temporarily": "Dočasně zakázáno DLNA",
+      "disallowed_ip": "Nepovolená IP adresa",
+      "enabled_by_default": "Povoleno ve výchozím nastavení",
+      "enabled_dlna_temporarily": "DLNA dočasně povoleno",
+      "network_interfaces": "Rozhraní",
+      "network_interfaces_desc": "Rozhraní ke spuštění DLNA serveru aktivní. Prázdný seznam má za následek spuštění na všech rozhraních. Po změně je nezbytné restartovat DLNA.",
+      "recent_ip_addresses": "Nedávné IP adresy",
+      "server_display_name": "Jméno serveru"
     }
   }
 }
