@@ -83,11 +83,14 @@
 
       &:nth-child(2) {
         text-align: center;
+        overflow-wrap: anywhere;
       }
     }
 
     .rating-stars {
       padding-left: 0.38rem;
+      display: flex;
+      flex-wrap: nowrap;
     }
 
     &-left {
