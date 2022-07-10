@@ -359,7 +359,191 @@
       "generate_phashes_during_scan": "Generovat PHASHe",
       "generate_phashes_during_scan_tooltip": "Pro deduplikaci a identifikaci scén.",
       "generate_previews_during_scan": "Generovat animované náhledy",
-      "generate_previews_during_scan_tooltip": "Generovat animované WebP náhledy (požadováno pouze pokud typ náhledu je nastaven na \"animovaný obrázek\")."
+      "generate_previews_during_scan_tooltip": "Generovat animované WebP náhledy (požadováno pouze pokud typ náhledu je nastaven na \"animovaný obrázek\").",
+      "generate_sprites_during_scan": "Generovat sprity scrubberu",
+      "generate_thumbnails_during_scan": "Generovat náhledy obrázků",
+      "generate_video_previews_during_scan": "Generovat náhledy videí",
+      "generate_video_previews_during_scan_tooltip": "Generovat náhledy videí, které se přehrají při najetí myší na scénu",
+      "generated_content": "Generovaný obsah",
+      "identify": {
+        "and_create_missing": "a vytvořit chybějící",
+        "create_missing": "Vytvořit chybějící",
+        "default_options": "Výchozí možnosti",
+        "description": "Automaticky nastavit metadata scény s použitím stash-boxu a scraper zdrojů.",
+        "explicit_set_description": "Následující možnosti budou použity tam, kde nejsou nastaveny rozdílné pro konkrétní zdroje.",
+        "field": "Pole",
+        "field_behaviour": "{strategy} {field}",
+        "field_options": "Možnosti pole",
+        "heading": "Identifikovat",
+        "identifying_from_paths": "Identifikovat scény z následujících cest",
+        "identifying_scenes": "Identifikuji {num} {scene}",
+        "include_male_performers": "Zahrnout mužské umělce",
+        "set_cover_images": "Nastavit titulní obrázky",
+        "set_organized": "Nastavit příznak \"organizovaný\"",
+        "source": "Zdroj",
+        "source_options": "Možnosti {source}",
+        "sources": "Zdroje",
+        "strategy": "Strategie"
+      },
+      "import_from_exported_json": "Importovat z exportovaného JSONu z metadata složky. Přemaže existující databázi.",
+      "incremental_import": "Inkrementální import z dodaného exportního zip souboru.",
+      "job_queue": "Fronta úloh",
+      "maintenance": "Údržba",
+      "migrate_hash_files": "Použijte po změně konvence pojmenovaní generovaných souborů pomocí hashe za účelem přejmenování generovaných souborů na nový hash formát.",
+      "migrations": "Migrace",
+      "only_dry_run": "Provést pouze \"dry run\". Nic nebude smazáno",
+      "plugin_tasks": "Úlohy pluginů",
+      "scan": {
+        "scanning_all_paths": "Skenovat všechny cesty",
+        "scanning_paths": "Skenovat následující cesty"
+      },
+      "scan_for_content_desc": "Skenovat na nový obsah a přidat ho do databáze.",
+      "set_name_date_details_from_metadata_if_present": "Nastavit jméno, datum a detaily z metadat souboru"
+    },
+    "tools": {
+      "scene_duplicate_checker": "Kontrola na duplikaci scén",
+      "scene_filename_parser": {
+        "add_field": "Přidat pole",
+        "capitalize_title": "Převést titul na kapitálky",
+        "display_fields": "Zobrazit pole",
+        "escape_chars": "Použijte \\ pro escapování doslovných znaků",
+        "filename": "Název souboru",
+        "filename_pattern": "Pattern názvu souboru",
+        "ignore_organized": "Ignorovat organizované scény",
+        "ignored_words": "Ignorovaná slova",
+        "matches_with": "Shoduje se s {i}",
+        "select_parser_recipe": "Vyberte parsovací formuli",
+        "title": "Parser dle názvu souboru scény",
+        "whitespace_chars": "Whitespace znaky",
+        "whitespace_chars_desc": "Tyto znaky v názvu budou nahrazeny prázdným znakem (mezerou)"
+      },
+      "scene_tools": "Nástroje scény"
+    },
+    "ui": {
+      "basic_settings": "Základní nastavení",
+      "custom_css": {
+        "description": "Stránka musí být znovu načtena, aby byly změny viditelné.",
+        "heading": "Vlastní CSS",
+        "option_label": "Vlastní CSS aktivováno"
+      },
+      "delete_options": {
+        "description": "Výchozí nastavení pro mazání obrázků, galerií a scén.",
+        "heading": "Možnosti mazání",
+        "options": {
+          "delete_file": "Výchozí nastavení - Smazat soubor",
+          "delete_generated_supporting_files": "Výchozí nastavení - Smazat podpůrné generované soubory"
+        }
+      },
+      "desktop_integration": {
+        "desktop_integration": "Integrace na plochu",
+        "notifications_enabled": "Aktivovat upozornění / notifikace",
+        "send_desktop_notifications_for_events": "Zasílat notifikace na plochu pro události",
+        "skip_opening_browser": "Přeskočit otevření prohlížeče",
+        "skip_opening_browser_on_startup": "Přeskočit automatické otevření prohlížeče při spuštění"
+      },
+      "editing": {
+        "disable_dropdown_create": {
+          "description": "Zakázat funkčnost tvorby nových objektů z rozbalovacích seznamů",
+          "heading": "Zakázat vytvoření z rozbalovacího seznamu"
+        },
+        "heading": "Editace"
+      },
+      "funscript_offset": {
+        "description": "Offset v milisekundách pro přehrávání interaktivních skriptů.",
+        "heading": "Offset funscriptu (ms)"
+      },
+      "handy_connection": {
+        "connect": "Připojit",
+        "server_offset": {
+          "heading": "Offset serveru"
+        },
+        "status": {
+          "heading": "Status připojení Handy"
+        },
+        "sync": "Synchronizovat"
+      },
+      "handy_connection_key": {
+        "description": "Connection Key k Handy pro použití v interaktivních scénách. Nastavení tohoto klíče umožní Stash ke sdílení aktuální scény s handyfeeling.com",
+        "heading": "Handy Connection klíč"
+      },
+      "image_lightbox": {
+        "heading": "Lightbox pro obrázek"
+      },
+      "images": {
+        "heading": "Obrázky",
+        "options": {
+          "write_image_thumbnails": {
+            "description": "Zapsat miniatury obrázků na disk, když jsou generovány za běhu",
+            "heading": "Zapsat miniatury obrázků"
+          }
+        }
+      },
+      "interactive_options": "Možnosti Interaktivní",
+      "language": {
+        "heading": "Jazyk"
+      },
+      "max_loop_duration": {
+        "description": "Maximální doba trvání scény, při které bude přehrávač scén opakovat video – 0 pro deaktivaci",
+        "heading": "Maximální doba trvání smyčky"
+      },
+      "menu_items": {
+        "description": "Zobrazit nebo skrýt různé typy obsahu na navigační liště",
+        "heading": "Menu položky"
+      },
+      "performers": {
+        "options": {
+          "image_location": {
+            "description": "Vlastní cesta pro výchozí obrázky účinkujících. Chcete-li použít vestavěné výchozí hodnoty, ponechte prázdné",
+            "heading": "Cesta pro výchozí obrázky účinkujících"
+          }
+        }
+      },
+      "preview_type": {
+        "description": "Konfigurace pro předměty na zdi",
+        "heading": "Typ náhledu",
+        "options": {
+          "animated": "Animovaný obrázek",
+          "static": "Statický obrázek",
+          "video": "Video"
+        }
+      },
+      "scene_list": {
+        "heading": "Seznam scén",
+        "options": {
+          "show_studio_as_text": "Zobrazit studia jako text"
+        }
+      },
+      "scene_player": {
+        "heading": "Přehrávač scén",
+        "options": {
+          "auto_start_video": "Automaticky spustit video",
+          "auto_start_video_on_play_selected": {
+            "description": "Automaticky spustit video pokud je přehráváno vybrané nebo náhodné video ze stránky scén",
+            "heading": "Automaticky spustit video při přehrávání vybraného"
+          },
+          "continue_playlist_default": {
+            "description": "Přehrát následující scénu na seznamu při skončení vida",
+            "heading": "(Výchozí nastavení) Pokračovat v playlistu"
+          },
+          "show_scrubber": "Zobrazit Scrubber"
+        }
+      },
+      "scene_wall": {
+        "heading": "Scéna / Marker zeď",
+        "options": {
+          "display_title": "Zobrazit titul a tagy",
+          "toggle_sound": "Povolit zvuk"
+        }
+      },
+      "scroll_attempts_before_change": {
+        "description": "Počet pokusů o posunutí před přechodem na další/předchozí položku. Platí pouze pro režim posouvání Pan Y.",
+        "heading": "Počet pokusů o rolování před přechodem"
+      },
+      "slideshow_delay": {
+        "description": "Slideshow je k dispozici v galeriích v režimu zobrazení stěny",
+        "heading": "Zpoždění prezentace (sekundy)"
+      },
+      "title": "Uživatelské rozhraní"
     }
   }
 }
