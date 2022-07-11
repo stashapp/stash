@@ -180,7 +180,7 @@ export function getAggregateState<T>(
   newValue: T,
   first: boolean
 ) {
-  if (!first && isEqual(currentValue, newValue)) {
+  if (!first && !isEqual(currentValue, newValue)) {
     return undefined;
   }
 
