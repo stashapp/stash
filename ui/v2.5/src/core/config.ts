@@ -27,6 +27,7 @@ export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export interface IUIConfig {
   frontPageContent?: FrontPageContent[];
+  lastNoteSeen?: number;
 }
 
 function recentlyReleased(
