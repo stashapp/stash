@@ -25,7 +25,11 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 				return err
 			}
 		} else if checksum != nil {
-			scene, err = qb.FindByChecksum(ctx, *checksum)
+			var scenes []*models.Scene
+			scenes, err = qb.FindByChecksum(ctx, *checksum)
+			if len(scenes) > 0 {
+				scene = scenes[0]
+			}
 		}
 
 		return err
@@ -41,18 +45,23 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input SceneHashInpu
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
-		var err error
 		if input.Checksum != nil {
-			scene, err = qb.FindByChecksum(ctx, *input.Checksum)
+			scenes, err := qb.FindByChecksum(ctx, *input.Checksum)
 			if err != nil {
 				return err
+			}
+			if len(scenes) > 0 {
+				scene = scenes[0]
 			}
 		}
 
 		if scene == nil && input.Oshash != nil {
-			scene, err = qb.FindByOSHash(ctx, *input.Oshash)
+			scenes, err := qb.FindByOSHash(ctx, *input.Oshash)
 			if err != nil {
 				return err
+			}
+			if len(scenes) > 0 {
+				scene = scenes[0]
 			}
 		}
 
@@ -77,9 +86,14 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 			if err == nil {
 				result.Count = len(scenes)
 				for _, s := range scenes {
-					result.TotalDuration += s.Duration.Float64
-					size, _ := strconv.ParseFloat(s.Size.String, 64)
-					result.TotalSize += size
+					f := s.PrimaryFile()
+					if f == nil {
+						continue
+					}
+
+					result.TotalDuration += f.Duration
+
+					result.TotalSize += float64(f.Size)
 				}
 			}
 		} else {

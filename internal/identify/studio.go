@@ -12,17 +12,17 @@ import (
 
 type StudioCreator interface {
 	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
-	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error
+	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []*models.StashID) error
 }
 
-func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, studio *models.ScrapedStudio) (*int64, error) {
+func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, studio *models.ScrapedStudio) (*int, error) {
 	created, err := w.Create(ctx, scrapedToStudioInput(studio))
 	if err != nil {
 		return nil, fmt.Errorf("error creating studio: %w", err)
 	}
 
 	if endpoint != "" && studio.RemoteSiteID != nil {
-		if err := w.UpdateStashIDs(ctx, created.ID, []models.StashID{
+		if err := w.UpdateStashIDs(ctx, created.ID, []*models.StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *studio.RemoteSiteID,
@@ -32,8 +32,7 @@ func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, 
 		}
 	}
 
-	createdID := int64(created.ID)
-	return &createdID, nil
+	return &created.ID, nil
 }
 
 func scrapedToStudioInput(studio *models.ScrapedStudio) models.Studio {

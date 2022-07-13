@@ -69,9 +69,9 @@ func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models
 	}
 
 	stashIDs, _ := reader.GetStashIDs(ctx, studio.ID)
-	var ret []models.StashID
+	var ret []*models.StashID
 	for _, stashID := range stashIDs {
-		newJoin := models.StashID{
+		newJoin := &models.StashID{
 			StashID:  stashID.StashID,
 			Endpoint: stashID.Endpoint,
 		}

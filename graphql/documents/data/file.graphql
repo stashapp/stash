@@ -1,0 +1,40 @@
+fragment FolderData on Folder {
+  id
+  path
+}
+
+fragment VideoFileData on VideoFile {
+  path
+  size
+  duration
+  video_codec
+  audio_codec
+  width
+  height
+  frame_rate
+  bit_rate
+  fingerprints {
+    type
+    value
+  }
+}
+
+fragment ImageFileData on ImageFile {
+  path
+  size
+  width
+  height
+  fingerprints {
+    type
+    value
+  }
+}
+
+fragment GalleryFileData on GalleryFile {
+  path
+  size
+  fingerprints {
+    type
+    value
+  }
+}

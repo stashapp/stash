@@ -2,23 +2,25 @@ package manager
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/videophash"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type GeneratePhashTask struct {
-	Scene               models.Scene
+	File                *file.VideoFile
 	Overwrite           bool
 	fileNamingAlgorithm models.HashAlgorithm
-	txnManager          models.Repository
+	txnManager          txn.Manager
+	fileUpdater         file.Updater
 }
 
 func (t *GeneratePhashTask) GetDescription() string {
-	return fmt.Sprintf("Generating phash for %s", t.Scene.Path)
+	return fmt.Sprintf("Generating phash for %s", t.File.Path)
 }
 
 func (t *GeneratePhashTask) Start(ctx context.Context) {
@@ -26,34 +28,27 @@ func (t *GeneratePhashTask) Start(ctx context.Context) {
 		return
 	}
 
-	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
-	if err != nil {
-		logger.Errorf("error reading video file: %s", err.Error())
-		return
-	}
-
-	hash, err := videophash.Generate(instance.FFMPEG, videoFile)
+	hash, err := videophash.Generate(instance.FFMPEG, t.File)
 	if err != nil {
 		logger.Errorf("error generating phash: %s", err.Error())
 		logErrorOutput(err)
 		return
 	}
 
-	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-		qb := t.txnManager.Scene
-		hashValue := sql.NullInt64{Int64: int64(*hash), Valid: true}
-		scenePartial := models.ScenePartial{
-			ID:    t.Scene.ID,
-			Phash: &hashValue,
-		}
-		_, err := qb.Update(ctx, scenePartial)
-		return err
+	if err := txn.WithTxn(ctx, t.txnManager, func(ctx context.Context) error {
+		qb := t.fileUpdater
+		hashValue := int64(*hash)
+		t.File.Fingerprints = t.File.Fingerprints.AppendUnique(file.Fingerprint{
+			Type:        file.FingerprintTypePhash,
+			Fingerprint: hashValue,
+		})
+
+		return qb.Update(ctx, t.File)
 	}); err != nil {
 		logger.Error(err.Error())
 	}
 }
 
 func (t *GeneratePhashTask) shouldGenerate() bool {
-	return t.Overwrite || !t.Scene.Phash.Valid
+	return t.Overwrite || t.File.Fingerprints.Get(file.FingerprintTypePhash) == nil
 }

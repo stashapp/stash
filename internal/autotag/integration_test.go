@@ -8,15 +8,19 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/txn"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	// necessary to register custom migrations
+	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
 )
 
 const testName = "Foo's Bar"
@@ -27,6 +31,8 @@ const existingStudioImageName = testName + ".dontChangeStudio.mp4"
 const existingStudioGalleryName = testName + ".dontChangeStudio.mp4"
 
 var existingStudioID int
+
+const expectedMatchTitle = "expected match"
 
 var db *sqlite.Database
 var r models.Repository
@@ -53,7 +59,7 @@ func runTests(m *testing.M) int {
 
 	f.Close()
 	databaseFile := f.Name()
-	db = &sqlite.Database{}
+	db = sqlite.NewDatabase()
 	if err := db.Open(databaseFile); err != nil {
 		panic(fmt.Sprintf("Could not initialize database: %s", err.Error()))
 	}
@@ -117,187 +123,354 @@ func createTag(ctx context.Context, qb models.TagWriter) error {
 	return nil
 }
 
-func createScenes(ctx context.Context, sqb models.SceneReaderWriter) error {
+func createScenes(ctx context.Context, sqb models.SceneReaderWriter, folderStore file.FolderStore, fileStore file.Store) error {
 	// create the scenes
 	scenePatterns, falseScenePatterns := generateTestPaths(testName, sceneExt)
 
 	for _, fn := range scenePatterns {
-		err := createScene(ctx, sqb, makeScene(fn, true))
+		f, err := createSceneFile(ctx, fn, folderStore, fileStore)
 		if err != nil {
 			return err
 		}
+
+		const expectedResult = true
+		if err := createScene(ctx, sqb, makeScene(expectedResult), f); err != nil {
+			return err
+		}
 	}
+
 	for _, fn := range falseScenePatterns {
-		err := createScene(ctx, sqb, makeScene(fn, false))
+		f, err := createSceneFile(ctx, fn, folderStore, fileStore)
 		if err != nil {
+			return err
+		}
+
+		const expectedResult = false
+		if err := createScene(ctx, sqb, makeScene(expectedResult), f); err != nil {
 			return err
 		}
 	}
 
 	// add organized scenes
 	for _, fn := range scenePatterns {
-		s := makeScene("organized"+fn, false)
-		s.Organized = true
-		err := createScene(ctx, sqb, s)
+		f, err := createSceneFile(ctx, "organized"+fn, folderStore, fileStore)
 		if err != nil {
+			return err
+		}
+
+		const expectedResult = false
+		s := makeScene(expectedResult)
+		s.Organized = true
+		if err := createScene(ctx, sqb, s, f); err != nil {
 			return err
 		}
 	}
 
 	// create scene with existing studio io
-	studioScene := makeScene(existingStudioSceneName, true)
-	studioScene.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
-	err := createScene(ctx, sqb, studioScene)
+	f, err := createSceneFile(ctx, existingStudioSceneName, folderStore, fileStore)
 	if err != nil {
+		return err
+	}
+
+	s := &models.Scene{
+		Title:    expectedMatchTitle,
+		URL:      existingStudioSceneName,
+		StudioID: &existingStudioID,
+	}
+	if err := createScene(ctx, sqb, s, f); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func makeScene(name string, expectedResult bool) *models.Scene {
-	scene := &models.Scene{
-		Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
-		Path:     name,
-	}
+func makeScene(expectedResult bool) *models.Scene {
+	s := &models.Scene{}
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		scene.Title = sql.NullString{Valid: true, String: name}
+		s.Title = expectedMatchTitle
 	}
 
-	return scene
+	return s
 }
 
-func createScene(ctx context.Context, sqb models.SceneWriter, scene *models.Scene) error {
-	_, err := sqb.Create(ctx, *scene)
+func createSceneFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*file.VideoFile, error) {
+	folderPath := filepath.Dir(name)
+	basename := filepath.Base(name)
+
+	folder, err := getOrCreateFolder(ctx, folderStore, folderPath)
+	if err != nil {
+		return nil, err
+	}
+
+	folderID := folder.ID
+
+	f := &file.VideoFile{
+		BaseFile: &file.BaseFile{
+			Basename:       basename,
+			ParentFolderID: folderID,
+		},
+	}
+
+	if err := fileStore.Create(ctx, f); err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
+func getOrCreateFolder(ctx context.Context, folderStore file.FolderStore, folderPath string) (*file.Folder, error) {
+	f, err := folderStore.FindByPath(ctx, folderPath)
+	if err != nil {
+		return nil, fmt.Errorf("getting folder by path: %w", err)
+	}
+
+	if f != nil {
+		return f, nil
+	}
+
+	var parentID file.FolderID
+	dir := filepath.Dir(folderPath)
+	if dir != "." {
+		parent, err := getOrCreateFolder(ctx, folderStore, dir)
+		if err != nil {
+			return nil, err
+		}
+
+		parentID = parent.ID
+	}
+
+	f = &file.Folder{
+		Path: folderPath,
+	}
+
+	if parentID != 0 {
+		f.ParentFolderID = &parentID
+	}
+
+	if err := folderStore.Create(ctx, f); err != nil {
+		return nil, fmt.Errorf("creating folder: %w", err)
+	}
+
+	return f, nil
+}
+
+func createScene(ctx context.Context, sqb models.SceneWriter, s *models.Scene, f *file.VideoFile) error {
+	err := sqb.Create(ctx, s, []file.ID{f.ID})
 
 	if err != nil {
-		return fmt.Errorf("Failed to create scene with name '%s': %s", scene.Path, err.Error())
+		return fmt.Errorf("Failed to create scene with path '%s': %s", f.Path, err.Error())
 	}
 
 	return nil
 }
 
-func createImages(ctx context.Context, sqb models.ImageReaderWriter) error {
+func createImages(ctx context.Context, w models.ImageReaderWriter, folderStore file.FolderStore, fileStore file.Store) error {
 	// create the images
 	imagePatterns, falseImagePatterns := generateTestPaths(testName, imageExt)
 
 	for _, fn := range imagePatterns {
-		err := createImage(ctx, sqb, makeImage(fn, true))
+		f, err := createImageFile(ctx, fn, folderStore, fileStore)
 		if err != nil {
+			return err
+		}
+
+		const expectedResult = true
+		if err := createImage(ctx, w, makeImage(expectedResult), f); err != nil {
 			return err
 		}
 	}
 	for _, fn := range falseImagePatterns {
-		err := createImage(ctx, sqb, makeImage(fn, false))
+		f, err := createImageFile(ctx, fn, folderStore, fileStore)
 		if err != nil {
+			return err
+		}
+
+		const expectedResult = false
+		if err := createImage(ctx, w, makeImage(expectedResult), f); err != nil {
 			return err
 		}
 	}
 
 	// add organized images
 	for _, fn := range imagePatterns {
-		s := makeImage("organized"+fn, false)
-		s.Organized = true
-		err := createImage(ctx, sqb, s)
+		f, err := createImageFile(ctx, "organized"+fn, folderStore, fileStore)
 		if err != nil {
+			return err
+		}
+
+		const expectedResult = false
+		s := makeImage(expectedResult)
+		s.Organized = true
+		if err := createImage(ctx, w, s, f); err != nil {
 			return err
 		}
 	}
 
 	// create image with existing studio io
-	studioImage := makeImage(existingStudioImageName, true)
-	studioImage.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
-	err := createImage(ctx, sqb, studioImage)
+	f, err := createImageFile(ctx, existingStudioImageName, folderStore, fileStore)
 	if err != nil {
+		return err
+	}
+
+	s := &models.Image{
+		Title:    existingStudioImageName,
+		StudioID: &existingStudioID,
+	}
+	if err := createImage(ctx, w, s, f); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func makeImage(name string, expectedResult bool) *models.Image {
-	image := &models.Image{
-		Checksum: md5.FromString(name),
-		Path:     name,
+func createImageFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*file.ImageFile, error) {
+	folderPath := filepath.Dir(name)
+	basename := filepath.Base(name)
+
+	folder, err := getOrCreateFolder(ctx, folderStore, folderPath)
+	if err != nil {
+		return nil, err
 	}
+
+	folderID := folder.ID
+
+	f := &file.ImageFile{
+		BaseFile: &file.BaseFile{
+			Basename:       basename,
+			ParentFolderID: folderID,
+		},
+	}
+
+	if err := fileStore.Create(ctx, f); err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
+func makeImage(expectedResult bool) *models.Image {
+	o := &models.Image{}
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		image.Title = sql.NullString{Valid: true, String: name}
+		o.Title = expectedMatchTitle
 	}
 
-	return image
+	return o
 }
 
-func createImage(ctx context.Context, sqb models.ImageWriter, image *models.Image) error {
-	_, err := sqb.Create(ctx, *image)
+func createImage(ctx context.Context, w models.ImageWriter, o *models.Image, f *file.ImageFile) error {
+	err := w.Create(ctx, &models.ImageCreateInput{
+		Image:   o,
+		FileIDs: []file.ID{f.ID},
+	})
 
 	if err != nil {
-		return fmt.Errorf("Failed to create image with name '%s': %s", image.Path, err.Error())
+		return fmt.Errorf("Failed to create image with path '%s': %s", f.Path, err.Error())
 	}
 
 	return nil
 }
 
-func createGalleries(ctx context.Context, sqb models.GalleryReaderWriter) error {
+func createGalleries(ctx context.Context, w models.GalleryReaderWriter, folderStore file.FolderStore, fileStore file.Store) error {
 	// create the galleries
 	galleryPatterns, falseGalleryPatterns := generateTestPaths(testName, galleryExt)
 
 	for _, fn := range galleryPatterns {
-		err := createGallery(ctx, sqb, makeGallery(fn, true))
+		f, err := createGalleryFile(ctx, fn, folderStore, fileStore)
 		if err != nil {
+			return err
+		}
+
+		const expectedResult = true
+		if err := createGallery(ctx, w, makeGallery(expectedResult), f); err != nil {
 			return err
 		}
 	}
 	for _, fn := range falseGalleryPatterns {
-		err := createGallery(ctx, sqb, makeGallery(fn, false))
+		f, err := createGalleryFile(ctx, fn, folderStore, fileStore)
 		if err != nil {
+			return err
+		}
+
+		const expectedResult = false
+		if err := createGallery(ctx, w, makeGallery(expectedResult), f); err != nil {
 			return err
 		}
 	}
 
 	// add organized galleries
 	for _, fn := range galleryPatterns {
-		s := makeGallery("organized"+fn, false)
-		s.Organized = true
-		err := createGallery(ctx, sqb, s)
+		f, err := createGalleryFile(ctx, "organized"+fn, folderStore, fileStore)
 		if err != nil {
+			return err
+		}
+
+		const expectedResult = false
+		s := makeGallery(expectedResult)
+		s.Organized = true
+		if err := createGallery(ctx, w, s, f); err != nil {
 			return err
 		}
 	}
 
 	// create gallery with existing studio io
-	studioGallery := makeGallery(existingStudioGalleryName, true)
-	studioGallery.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
-	err := createGallery(ctx, sqb, studioGallery)
+	f, err := createGalleryFile(ctx, existingStudioGalleryName, folderStore, fileStore)
 	if err != nil {
+		return err
+	}
+
+	s := &models.Gallery{
+		Title:    existingStudioGalleryName,
+		StudioID: &existingStudioID,
+	}
+	if err := createGallery(ctx, w, s, f); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func makeGallery(name string, expectedResult bool) *models.Gallery {
-	gallery := &models.Gallery{
-		Checksum: md5.FromString(name),
-		Path:     models.NullString(name),
+func createGalleryFile(ctx context.Context, name string, folderStore file.FolderStore, fileStore file.Store) (*file.BaseFile, error) {
+	folderPath := filepath.Dir(name)
+	basename := filepath.Base(name)
+
+	folder, err := getOrCreateFolder(ctx, folderStore, folderPath)
+	if err != nil {
+		return nil, err
 	}
+
+	folderID := folder.ID
+
+	f := &file.BaseFile{
+		Basename:       basename,
+		ParentFolderID: folderID,
+	}
+
+	if err := fileStore.Create(ctx, f); err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
+func makeGallery(expectedResult bool) *models.Gallery {
+	o := &models.Gallery{}
 
 	// if expectedResult is true then we expect it to match, set the title accordingly
 	if expectedResult {
-		gallery.Title = sql.NullString{Valid: true, String: name}
+		o.Title = expectedMatchTitle
 	}
 
-	return gallery
+	return o
 }
 
-func createGallery(ctx context.Context, sqb models.GalleryWriter, gallery *models.Gallery) error {
-	_, err := sqb.Create(ctx, *gallery)
-
+func createGallery(ctx context.Context, w models.GalleryWriter, o *models.Gallery, f *file.BaseFile) error {
+	err := w.Create(ctx, o, []file.ID{f.ID})
 	if err != nil {
-		return fmt.Errorf("Failed to create gallery with name '%s': %s", gallery.Path.String, err.Error())
+		return fmt.Errorf("Failed to create gallery with path '%s': %s", f.Path, err.Error())
 	}
 
 	return nil
@@ -332,17 +505,17 @@ func populateDB() error {
 			return err
 		}
 
-		err = createScenes(ctx, r.Scene)
+		err = createScenes(ctx, r.Scene, r.Folder, r.File)
 		if err != nil {
 			return err
 		}
 
-		err = createImages(ctx, r.Image)
+		err = createImages(ctx, r.Image, r.Folder, r.File)
 		if err != nil {
 			return err
 		}
 
-		err = createGalleries(ctx, r.Gallery)
+		err = createGalleries(ctx, r.Gallery, r.Folder, r.File)
 		if err != nil {
 			return err
 		}
@@ -391,10 +564,10 @@ func TestParsePerformerScenes(t *testing.T) {
 			}
 
 			// title is only set on scenes where we expect performer to be set
-			if scene.Title.String == scene.Path && len(performers) == 0 {
-				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path)
-			} else if scene.Title.String != scene.Path && len(performers) > 0 {
-				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path)
+			if scene.Title == expectedMatchTitle && len(performers) == 0 {
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path())
+			} else if scene.Title != expectedMatchTitle && len(performers) > 0 {
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path())
 			}
 		}
 
@@ -435,21 +608,21 @@ func TestParseStudioScenes(t *testing.T) {
 
 		for _, scene := range scenes {
 			// check for existing studio id scene first
-			if scene.Path == existingStudioSceneName {
-				if scene.StudioID.Int64 != int64(existingStudioID) {
+			if scene.URL == existingStudioSceneName {
+				if scene.StudioID == nil || *scene.StudioID != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for scene with existing studio ID")
 				}
 			} else {
 				// title is only set on scenes where we expect studio to be set
-				if scene.Title.String == scene.Path {
-					if !scene.StudioID.Valid {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
-					} else if scene.StudioID.Int64 != int64(studios[1].ID) {
-						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID.Int64, scene.Path)
+				if scene.Title == expectedMatchTitle {
+					if scene.StudioID == nil {
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path())
+					} else if scene.StudioID != nil && *scene.StudioID != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID, scene.Path())
 					}
 
-				} else if scene.Title.String != scene.Path && scene.StudioID.Int64 == int64(studios[1].ID) {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
+				} else if scene.Title != expectedMatchTitle && scene.StudioID != nil && *scene.StudioID == studios[1].ID {
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path())
 				}
 			}
 		}
@@ -499,10 +672,10 @@ func TestParseTagScenes(t *testing.T) {
 			}
 
 			// title is only set on scenes where we expect tag to be set
-			if scene.Title.String == scene.Path && len(tags) == 0 {
-				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path)
-			} else if scene.Title.String != scene.Path && len(tags) > 0 {
-				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path)
+			if scene.Title == expectedMatchTitle && len(tags) == 0 {
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path())
+			} else if (scene.Title != expectedMatchTitle) && len(tags) > 0 {
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path())
 			}
 		}
 
@@ -546,10 +719,11 @@ func TestParsePerformerImages(t *testing.T) {
 			}
 
 			// title is only set on images where we expect performer to be set
-			if image.Title.String == image.Path && len(performers) == 0 {
-				t.Errorf("Did not set performer '%s' for path '%s'", testName, image.Path)
-			} else if image.Title.String != image.Path && len(performers) > 0 {
-				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, image.Path)
+			expectedMatch := image.Title == expectedMatchTitle || image.Title == existingStudioImageName
+			if expectedMatch && len(performers) == 0 {
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, image.Path())
+			} else if !expectedMatch && len(performers) > 0 {
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, image.Path())
 			}
 		}
 
@@ -590,21 +764,21 @@ func TestParseStudioImages(t *testing.T) {
 
 		for _, image := range images {
 			// check for existing studio id image first
-			if image.Path == existingStudioImageName {
-				if image.StudioID.Int64 != int64(existingStudioID) {
+			if image.Title == existingStudioImageName {
+				if *image.StudioID != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for image with existing studio ID")
 				}
 			} else {
 				// title is only set on images where we expect studio to be set
-				if image.Title.String == image.Path {
-					if !image.StudioID.Valid {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path)
-					} else if image.StudioID.Int64 != int64(studios[1].ID) {
-						t.Errorf("Incorrect studio id %d set for path '%s'", image.StudioID.Int64, image.Path)
+				if image.Title == expectedMatchTitle {
+					if image.StudioID == nil {
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path())
+					} else if *image.StudioID != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", *image.StudioID, image.Path())
 					}
 
-				} else if image.Title.String != image.Path && image.StudioID.Int64 == int64(studios[1].ID) {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path)
+				} else if image.Title != expectedMatchTitle && image.StudioID != nil && *image.StudioID == studios[1].ID {
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path())
 				}
 			}
 		}
@@ -654,10 +828,11 @@ func TestParseTagImages(t *testing.T) {
 			}
 
 			// title is only set on images where we expect performer to be set
-			if image.Title.String == image.Path && len(tags) == 0 {
-				t.Errorf("Did not set tag '%s' for path '%s'", testName, image.Path)
-			} else if image.Title.String != image.Path && len(tags) > 0 {
-				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, image.Path)
+			expectedMatch := image.Title == expectedMatchTitle || image.Title == existingStudioImageName
+			if expectedMatch && len(tags) == 0 {
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, image.Path())
+			} else if !expectedMatch && len(tags) > 0 {
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, image.Path())
 			}
 		}
 
@@ -701,10 +876,11 @@ func TestParsePerformerGalleries(t *testing.T) {
 			}
 
 			// title is only set on galleries where we expect performer to be set
-			if gallery.Title.String == gallery.Path.String && len(performers) == 0 {
-				t.Errorf("Did not set performer '%s' for path '%s'", testName, gallery.Path.String)
-			} else if gallery.Title.String != gallery.Path.String && len(performers) > 0 {
-				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, gallery.Path.String)
+			expectedMatch := gallery.Title == expectedMatchTitle || gallery.Title == existingStudioGalleryName
+			if expectedMatch && len(performers) == 0 {
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, gallery.Path())
+			} else if !expectedMatch && len(performers) > 0 {
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, gallery.Path())
 			}
 		}
 
@@ -745,21 +921,21 @@ func TestParseStudioGalleries(t *testing.T) {
 
 		for _, gallery := range galleries {
 			// check for existing studio id gallery first
-			if gallery.Path.String == existingStudioGalleryName {
-				if gallery.StudioID.Int64 != int64(existingStudioID) {
+			if gallery.Title == existingStudioGalleryName {
+				if *gallery.StudioID != existingStudioID {
 					t.Error("Incorrectly overwrote studio ID for gallery with existing studio ID")
 				}
 			} else {
 				// title is only set on galleries where we expect studio to be set
-				if gallery.Title.String == gallery.Path.String {
-					if !gallery.StudioID.Valid {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, gallery.Path.String)
-					} else if gallery.StudioID.Int64 != int64(studios[1].ID) {
-						t.Errorf("Incorrect studio id %d set for path '%s'", gallery.StudioID.Int64, gallery.Path.String)
+				if gallery.Title == expectedMatchTitle {
+					if gallery.StudioID == nil {
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, gallery.Path())
+					} else if *gallery.StudioID != studios[1].ID {
+						t.Errorf("Incorrect studio id %d set for path '%s'", *gallery.StudioID, gallery.Path())
 					}
 
-				} else if gallery.Title.String != gallery.Path.String && gallery.StudioID.Int64 == int64(studios[1].ID) {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, gallery.Path.String)
+				} else if gallery.Title != expectedMatchTitle && (gallery.StudioID != nil && *gallery.StudioID == studios[1].ID) {
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, gallery.Path())
 				}
 			}
 		}
@@ -809,10 +985,11 @@ func TestParseTagGalleries(t *testing.T) {
 			}
 
 			// title is only set on galleries where we expect performer to be set
-			if gallery.Title.String == gallery.Path.String && len(tags) == 0 {
-				t.Errorf("Did not set tag '%s' for path '%s'", testName, gallery.Path.String)
-			} else if gallery.Title.String != gallery.Path.String && len(tags) > 0 {
-				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, gallery.Path.String)
+			expectedMatch := gallery.Title == expectedMatchTitle || gallery.Title == existingStudioGalleryName
+			if expectedMatch && len(tags) == 0 {
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, gallery.Path())
+			} else if !expectedMatch && len(tags) > 0 {
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, gallery.Path())
 			}
 		}
 

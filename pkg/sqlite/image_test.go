@@ -5,96 +5,1281 @@ package sqlite_test
 
 import (
 	"context"
-	"database/sql"
+	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
-
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestImageFind(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		// assume that the first image is imageWithGalleryPath
-		sqb := sqlite.ImageReaderWriter
+func Test_imageQueryBuilder_Create(t *testing.T) {
+	var (
+		title     = "title"
+		rating    = 3
+		ocounter  = 5
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		const imageIdx = 0
-		imageID := imageIDs[imageIdx]
-		image, err := sqb.Find(ctx, imageID)
+		imageFile = makeFileWithID(fileIdxStartImageFiles)
+	)
 
-		if err != nil {
-			t.Errorf("Error finding image: %s", err.Error())
-		}
+	tests := []struct {
+		name      string
+		newObject models.Image
+		wantErr   bool
+	}{
+		{
+			"full",
+			models.Image{
+				Title:        title,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithImage],
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithImage]},
+				TagIDs:       []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"with file",
+			models.Image{
+				Title:     title,
+				Rating:    &rating,
+				Organized: true,
+				OCounter:  ocounter,
+				StudioID:  &studioIDs[studioIdxWithImage],
+				Files: []*file.ImageFile{
+					imageFile.(*file.ImageFile),
+				},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithImage]},
+				TagIDs:       []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			models.Image{
+				StudioID: &invalidID,
+			},
+			true,
+		},
+		{
+			"invalid gallery id",
+			models.Image{
+				GalleryIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			models.Image{
+				TagIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			models.Image{
+				PerformerIDs: []int{invalidID},
+			},
+			true,
+		},
+	}
 
-		assert.Equal(t, getImageStringValue(imageIdx, "Path"), image.Path)
+	qb := db.Image
 
-		imageID = 0
-		image, err = sqb.Find(ctx, imageID)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		if err != nil {
-			t.Errorf("Error finding image: %s", err.Error())
-		}
+			var fileIDs []file.ID
+			for _, f := range tt.newObject.Files {
+				fileIDs = append(fileIDs, f.ID)
+			}
 
-		assert.Nil(t, image)
+			s := tt.newObject
+			if err := qb.Create(ctx, &models.ImageCreateInput{
+				Image:   &s,
+				FileIDs: fileIDs,
+			}); (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
 
-		return nil
-	})
+			if tt.wantErr {
+				assert.Zero(s.ID)
+				return
+			}
+
+			assert.NotZero(s.ID)
+
+			copy := tt.newObject
+			copy.ID = s.ID
+
+			assert.Equal(copy, s)
+
+			// ensure can find the image
+			found, err := qb.Find(ctx, s.ID)
+			if err != nil {
+				t.Errorf("imageQueryBuilder.Find() error = %v", err)
+			}
+
+			assert.Equal(copy, *found)
+
+			return
+		})
+	}
 }
 
-func TestImageFindByPath(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
-
-		const imageIdx = 1
-		imagePath := getImageStringValue(imageIdx, "Path")
-		image, err := sqb.FindByPath(ctx, imagePath)
-
-		if err != nil {
-			t.Errorf("Error finding image: %s", err.Error())
-		}
-
-		assert.Equal(t, imageIDs[imageIdx], image.ID)
-		assert.Equal(t, imagePath, image.Path)
-
-		imagePath = "not exist"
-		image, err = sqb.FindByPath(ctx, imagePath)
-
-		if err != nil {
-			t.Errorf("Error finding image: %s", err.Error())
-		}
-
-		assert.Nil(t, image)
-
-		return nil
-	})
+func clearImageFileIDs(image *models.Image) {
+	for _, f := range image.Files {
+		f.Base().ID = 0
+	}
 }
 
-func TestImageFindByGalleryID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+func makeImageFileWithID(i int) *file.ImageFile {
+	ret := makeImageFile(i)
+	ret.ID = imageFileIDs[i]
+	return ret
+}
 
-		images, err := sqb.FindByGalleryID(ctx, galleryIDs[galleryIdxWithTwoImages])
+func Test_imageQueryBuilder_Update(t *testing.T) {
+	var (
+		title     = "title"
+		rating    = 3
+		ocounter  = 5
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+	)
 
-		if err != nil {
-			t.Errorf("Error finding images: %s", err.Error())
-		}
+	tests := []struct {
+		name          string
+		updatedObject *models.Image
+		wantErr       bool
+	}{
+		{
+			"full",
+			&models.Image{
+				ID:        imageIDs[imageIdxWithGallery],
+				Title:     title,
+				Rating:    &rating,
+				Organized: true,
+				OCounter:  ocounter,
+				StudioID:  &studioIDs[studioIdxWithImage],
+				Files: []*file.ImageFile{
+					makeImageFileWithID(imageIdxWithGallery),
+				},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithImage]},
+				TagIDs:       []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"clear nullables",
+			&models.Image{
+				ID: imageIDs[imageIdxWithGallery],
+				Files: []*file.ImageFile{
+					makeImageFileWithID(imageIdxWithGallery),
+				},
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear gallery ids",
+			&models.Image{
+				ID: imageIDs[imageIdxWithGallery],
+				Files: []*file.ImageFile{
+					makeImageFileWithID(imageIdxWithGallery),
+				},
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear tag ids",
+			&models.Image{
+				ID: imageIDs[imageIdxWithTag],
+				Files: []*file.ImageFile{
+					makeImageFileWithID(imageIdxWithTag),
+				},
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear performer ids",
+			&models.Image{
+				ID: imageIDs[imageIdxWithPerformer],
+				Files: []*file.ImageFile{
+					makeImageFileWithID(imageIdxWithPerformer),
+				},
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			&models.Image{
+				ID: imageIDs[imageIdxWithGallery],
+				Files: []*file.ImageFile{
+					makeImageFileWithID(imageIdxWithGallery),
+				},
+				Organized: true,
+				StudioID:  &invalidID,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			true,
+		},
+		{
+			"invalid gallery id",
+			&models.Image{
+				ID: imageIDs[imageIdxWithGallery],
+				Files: []*file.ImageFile{
+					makeImageFileWithID(imageIdxWithGallery),
+				},
+				Organized:  true,
+				GalleryIDs: []int{invalidID},
+				CreatedAt:  createdAt,
+				UpdatedAt:  updatedAt,
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			&models.Image{
+				ID: imageIDs[imageIdxWithGallery],
+				Files: []*file.ImageFile{
+					makeImageFileWithID(imageIdxWithGallery),
+				},
+				Organized: true,
+				TagIDs:    []int{invalidID},
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			&models.Image{
+				ID: imageIDs[imageIdxWithGallery],
+				Files: []*file.ImageFile{
+					makeImageFileWithID(imageIdxWithGallery),
+				},
+				Organized:    true,
+				PerformerIDs: []int{invalidID},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+			},
+			true,
+		},
+	}
 
-		assert.Len(t, images, 2)
-		assert.Equal(t, imageIDs[imageIdx1WithGallery], images[0].ID)
-		assert.Equal(t, imageIDs[imageIdx2WithGallery], images[1].ID)
+	qb := db.Image
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		images, err = sqb.FindByGalleryID(ctx, galleryIDs[galleryIdxWithScene])
+			copy := *tt.updatedObject
 
-		if err != nil {
-			t.Errorf("Error finding images: %s", err.Error())
-		}
+			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-		assert.Len(t, images, 0)
+			if tt.wantErr {
+				return
+			}
 
-		return nil
-	})
+			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			if err != nil {
+				t.Errorf("imageQueryBuilder.Find() error = %v", err)
+			}
+
+			assert.Equal(copy, *s)
+
+			return
+		})
+	}
+}
+
+func clearImagePartial() models.ImagePartial {
+	// leave mandatory fields
+	return models.ImagePartial{
+		Title:        models.OptionalString{Set: true, Null: true},
+		Rating:       models.OptionalInt{Set: true, Null: true},
+		StudioID:     models.OptionalInt{Set: true, Null: true},
+		GalleryIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+	}
+}
+
+func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
+	var (
+		title     = "title"
+		rating    = 3
+		ocounter  = 5
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+	)
+
+	tests := []struct {
+		name    string
+		id      int
+		partial models.ImagePartial
+		want    models.Image
+		wantErr bool
+	}{
+		{
+			"full",
+			imageIDs[imageIdx1WithGallery],
+			models.ImagePartial{
+				Title:     models.NewOptionalString(title),
+				Rating:    models.NewOptionalInt(rating),
+				Organized: models.NewOptionalBool(true),
+				OCounter:  models.NewOptionalInt(ocounter),
+				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithImage]),
+				CreatedAt: models.NewOptionalTime(createdAt),
+				UpdatedAt: models.NewOptionalTime(updatedAt),
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithImage]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+			},
+			models.Image{
+				ID:        imageIDs[imageIdx1WithGallery],
+				Title:     title,
+				Rating:    &rating,
+				Organized: true,
+				OCounter:  ocounter,
+				StudioID:  &studioIDs[studioIdxWithImage],
+				Files: []*file.ImageFile{
+					makeImageFile(imageIdx1WithGallery),
+				},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   []int{galleryIDs[galleryIdxWithImage]},
+				TagIDs:       []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"clear all",
+			imageIDs[imageIdx1WithGallery],
+			clearImagePartial(),
+			models.Image{
+				ID:       imageIDs[imageIdx1WithGallery],
+				OCounter: getOCounter(imageIdx1WithGallery),
+				Files: []*file.ImageFile{
+					makeImageFile(imageIdx1WithGallery),
+				},
+			},
+			false,
+		},
+		{
+			"invalid id",
+			invalidID,
+			models.ImagePartial{},
+			models.Image{},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Image
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			clearImageFileIDs(got)
+			assert.Equal(tt.want, *got)
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("imageQueryBuilder.Find() error = %v", err)
+			}
+
+			clearImageFileIDs(s)
+			assert.Equal(tt.want, *s)
+		})
+	}
+}
+
+func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		partial models.ImagePartial
+		want    models.Image
+		wantErr bool
+	}{
+		{
+			"add galleries",
+			imageIDs[imageIdxWithGallery],
+			models.ImagePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdx1WithImage], galleryIDs[galleryIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Image{
+				GalleryIDs: append(indexesToIDs(galleryIDs, imageGalleries[imageIdxWithGallery]),
+					galleryIDs[galleryIdx1WithImage],
+					galleryIDs[galleryIdx1WithPerformer],
+				),
+			},
+			false,
+		},
+		{
+			"add tags",
+			imageIDs[imageIdxWithTwoTags],
+			models.ImagePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Image{
+				TagIDs: append(indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
+					tagIDs[tagIdx1WithDupName],
+					tagIDs[tagIdx1WithGallery],
+				),
+			},
+			false,
+		},
+		{
+			"add performers",
+			imageIDs[imageIdxWithTwoPerformers],
+			models.ImagePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName], performerIDs[performerIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Image{
+				PerformerIDs: append(indexesToIDs(performerIDs, imagePerformers[imageIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithDupName],
+					performerIDs[performerIdx1WithGallery],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate galleries",
+			imageIDs[imageIdxWithGallery],
+			models.ImagePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithImage], galleryIDs[galleryIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Image{
+				GalleryIDs: append(indexesToIDs(galleryIDs, imageGalleries[imageIdxWithGallery]),
+					galleryIDs[galleryIdx1WithPerformer],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate tags",
+			imageIDs[imageIdxWithTwoTags],
+			models.ImagePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Image{
+				TagIDs: append(indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
+					tagIDs[tagIdx1WithGallery],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate performers",
+			imageIDs[imageIdxWithTwoPerformers],
+			models.ImagePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Image{
+				PerformerIDs: append(indexesToIDs(performerIDs, imagePerformers[imageIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithGallery],
+				),
+			},
+			false,
+		},
+		{
+			"add invalid galleries",
+			imageIDs[imageIdxWithGallery],
+			models.ImagePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Image{},
+			true,
+		},
+		{
+			"add invalid tags",
+			imageIDs[imageIdxWithTwoTags],
+			models.ImagePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Image{},
+			true,
+		},
+		{
+			"add invalid performers",
+			imageIDs[imageIdxWithTwoPerformers],
+			models.ImagePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Image{},
+			true,
+		},
+		{
+			"remove galleries",
+			imageIDs[imageIdxWithGallery],
+			models.ImagePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithImage]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Image{},
+			false,
+		},
+		{
+			"remove tags",
+			imageIDs[imageIdxWithTwoTags],
+			models.ImagePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Image{
+				TagIDs: []int{tagIDs[tagIdx2WithImage]},
+			},
+			false,
+		},
+		{
+			"remove performers",
+			imageIDs[imageIdxWithTwoPerformers],
+			models.ImagePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Image{
+				PerformerIDs: []int{performerIDs[performerIdx2WithImage]},
+			},
+			false,
+		},
+		{
+			"remove unrelated galleries",
+			imageIDs[imageIdxWithGallery],
+			models.ImagePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Image{
+				GalleryIDs: []int{galleryIDs[galleryIdxWithImage]},
+			},
+			false,
+		},
+		{
+			"remove unrelated tags",
+			imageIDs[imageIdxWithTwoTags],
+			models.ImagePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Image{
+				TagIDs: indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
+			},
+			false,
+		},
+		{
+			"remove unrelated performers",
+			imageIDs[imageIdxWithTwoPerformers],
+			models.ImagePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Image{
+				PerformerIDs: indexesToIDs(performerIDs, imagePerformers[imageIdxWithTwoPerformers]),
+			},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		qb := db.Image
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("imageQueryBuilder.Find() error = %v", err)
+			}
+
+			// only compare fields that were in the partial
+			if tt.partial.PerformerIDs != nil {
+				assert.Equal(tt.want.PerformerIDs, got.PerformerIDs)
+				assert.Equal(tt.want.PerformerIDs, s.PerformerIDs)
+			}
+			if tt.partial.TagIDs != nil {
+				assert.Equal(tt.want.TagIDs, got.TagIDs)
+				assert.Equal(tt.want.TagIDs, s.TagIDs)
+			}
+			if tt.partial.GalleryIDs != nil {
+				assert.Equal(tt.want.GalleryIDs, got.GalleryIDs)
+				assert.Equal(tt.want.GalleryIDs, s.GalleryIDs)
+			}
+		})
+	}
+}
+
+func Test_imageQueryBuilder_IncrementOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"increment",
+			imageIDs[1],
+			2,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.IncrementOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.IncrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("imageQueryBuilder.IncrementOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_imageQueryBuilder_DecrementOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"decrement",
+			imageIDs[2],
+			1,
+			false,
+		},
+		{
+			"zero",
+			imageIDs[0],
+			0,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.DecrementOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.DecrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("imageQueryBuilder.DecrementOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_imageQueryBuilder_ResetOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"decrement",
+			imageIDs[2],
+			0,
+			false,
+		},
+		{
+			"zero",
+			imageIDs[0],
+			0,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.ResetOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.ResetOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("imageQueryBuilder.ResetOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_imageQueryBuilder_Destroy(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		wantErr bool
+	}{
+		{
+			"valid",
+			imageIDs[imageIdxWithGallery],
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			true,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			withRollbackTxn(func(ctx context.Context) error {
+				if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+					t.Errorf("imageQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				// ensure cannot be found
+				i, err := qb.Find(ctx, tt.id)
+
+				assert.NotNil(err)
+				assert.Nil(i)
+				return nil
+			})
+		})
+	}
+}
+
+func makeImageWithID(index int) *models.Image {
+	ret := makeImage(index)
+	ret.ID = imageIDs[index]
+
+	ret.Files = []*file.ImageFile{makeImageFile(index)}
+
+	return ret
+}
+
+func Test_imageQueryBuilder_Find(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    *models.Image
+		wantErr bool
+	}{
+		{
+			"valid",
+			imageIDs[imageIdxWithGallery],
+			makeImageWithID(imageIdxWithGallery),
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			nil,
+			true,
+		},
+		{
+			"with performers",
+			imageIDs[imageIdxWithTwoPerformers],
+			makeImageWithID(imageIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			imageIDs[imageIdxWithTwoTags],
+			makeImageWithID(imageIdxWithTwoTags),
+			false,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.Find(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if got != nil {
+				clearImageFileIDs(got)
+			}
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_imageQueryBuilder_FindMany(t *testing.T) {
+	tests := []struct {
+		name    string
+		ids     []int
+		want    []*models.Image
+		wantErr bool
+	}{
+		{
+			"valid with relationships",
+			[]int{imageIDs[imageIdxWithGallery], imageIDs[imageIdxWithTwoPerformers], imageIDs[imageIdxWithTwoTags]},
+			[]*models.Image{
+				makeImageWithID(imageIdxWithGallery),
+				makeImageWithID(imageIdxWithTwoPerformers),
+				makeImageWithID(imageIdxWithTwoTags),
+			},
+			false,
+		},
+		{
+			"invalid",
+			[]int{imageIDs[imageIdxWithGallery], imageIDs[imageIdxWithTwoPerformers], invalidID},
+			nil,
+			true,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.FindMany(ctx, tt.ids)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			for _, f := range got {
+				clearImageFileIDs(f)
+			}
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("imageQueryBuilder.FindMany() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_imageQueryBuilder_FindByChecksum(t *testing.T) {
+	getChecksum := func(index int) string {
+		return getImageStringValue(index, checksumField)
+	}
+
+	tests := []struct {
+		name     string
+		checksum string
+		want     []*models.Image
+		wantErr  bool
+	}{
+		{
+			"valid",
+			getChecksum(imageIdxWithGallery),
+			[]*models.Image{makeImageWithID(imageIdxWithGallery)},
+			false,
+		},
+		{
+			"invalid",
+			"invalid checksum",
+			nil,
+			false,
+		},
+		{
+			"with performers",
+			getChecksum(imageIdxWithTwoPerformers),
+			[]*models.Image{makeImageWithID(imageIdxWithTwoPerformers)},
+			false,
+		},
+		{
+			"with tags",
+			getChecksum(imageIdxWithTwoTags),
+			[]*models.Image{makeImageWithID(imageIdxWithTwoTags)},
+			false,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByChecksum(ctx, tt.checksum)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			for _, f := range got {
+				clearImageFileIDs(f)
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_imageQueryBuilder_FindByPath(t *testing.T) {
+	getPath := func(index int) string {
+		return getFilePath(folderIdxWithImageFiles, getImageBasename(index))
+	}
+
+	tests := []struct {
+		name    string
+		path    string
+		want    []*models.Image
+		wantErr bool
+	}{
+		{
+			"valid",
+			getPath(imageIdxWithGallery),
+			[]*models.Image{makeImageWithID(imageIdxWithGallery)},
+			false,
+		},
+		{
+			"invalid",
+			"invalid path",
+			nil,
+			false,
+		},
+		{
+			"with performers",
+			getPath(imageIdxWithTwoPerformers),
+			[]*models.Image{makeImageWithID(imageIdxWithTwoPerformers)},
+			false,
+		},
+		{
+			"with tags",
+			getPath(imageIdxWithTwoTags),
+			[]*models.Image{makeImageWithID(imageIdxWithTwoTags)},
+			false,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByPath(ctx, tt.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			for _, f := range got {
+				clearImageFileIDs(f)
+			}
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_imageQueryBuilder_FindByGalleryID(t *testing.T) {
+	tests := []struct {
+		name      string
+		galleryID int
+		want      []*models.Image
+		wantErr   bool
+	}{
+		{
+			"valid",
+			galleryIDs[galleryIdxWithTwoImages],
+			[]*models.Image{makeImageWithID(imageIdx1WithGallery), makeImageWithID(imageIdx2WithGallery)},
+			false,
+		},
+		{
+			"none",
+			galleryIDs[galleryIdx1WithPerformer],
+			nil,
+			false,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByGalleryID(ctx, tt.galleryID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.FindByGalleryID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			for _, f := range got {
+				clearImageFileIDs(f)
+			}
+
+			assert.Equal(tt.want, got)
+			return
+		})
+	}
+}
+
+func Test_imageQueryBuilder_CountByGalleryID(t *testing.T) {
+	tests := []struct {
+		name      string
+		galleryID int
+		want      int
+		wantErr   bool
+	}{
+		{
+			"valid",
+			galleryIDs[galleryIdxWithTwoImages],
+			2,
+			false,
+		},
+		{
+			"none",
+			galleryIDs[galleryIdx1WithPerformer],
+			0,
+			false,
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.CountByGalleryID(ctx, tt.galleryID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.CountByGalleryID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("imageQueryBuilder.CountByGalleryID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func imagesToIDs(i []*models.Image) []int {
+	var ret []int
+	for _, ii := range i {
+		ret = append(ret, ii.ID)
+	}
+
+	return ret
+}
+
+func Test_imageStore_FindByFolderID(t *testing.T) {
+	tests := []struct {
+		name     string
+		folderID file.FolderID
+		include  []int
+		exclude  []int
+	}{
+		{
+			"valid",
+			folderIDs[folderIdxWithImageFiles],
+			[]int{imageIdxWithGallery},
+			nil,
+		},
+		{
+			"invalid",
+			invalidFolderID,
+			nil,
+			[]int{imageIdxWithGallery},
+		},
+		{
+			"parent folder",
+			folderIDs[folderIdxForObjectFiles],
+			nil,
+			[]int{imageIdxWithGallery},
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByFolderID(ctx, tt.folderID)
+			if err != nil {
+				t.Errorf("ImageStore.FindByFolderID() error = %v", err)
+				return
+			}
+			for _, f := range got {
+				clearImageFileIDs(f)
+			}
+
+			ids := imagesToIDs(got)
+			include := indexesToIDs(imageIDs, tt.include)
+			exclude := indexesToIDs(imageIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
+func Test_imageStore_FindByZipFileID(t *testing.T) {
+	tests := []struct {
+		name      string
+		zipFileID file.ID
+		include   []int
+		exclude   []int
+	}{
+		{
+			"valid",
+			fileIDs[fileIdxZip],
+			[]int{imageIdxInZip},
+			nil,
+		},
+		{
+			"invalid",
+			invalidFileID,
+			nil,
+			[]int{imageIdxInZip},
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByZipFileID(ctx, tt.zipFileID)
+			if err != nil {
+				t.Errorf("ImageStore.FindByZipFileID() error = %v", err)
+				return
+			}
+			for _, f := range got {
+				clearImageFileIDs(f)
+			}
+
+			ids := imagesToIDs(got)
+			include := indexesToIDs(imageIDs, tt.include)
+			exclude := indexesToIDs(imageIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
 }
 
 func TestImageQueryQ(t *testing.T) {
@@ -103,7 +1288,7 @@ func TestImageQueryQ(t *testing.T) {
 
 		q := getImageStringValue(imageIdx, titleField)
 
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		imageQueryQ(ctx, t, sqb, q, imageIdx)
 
@@ -156,7 +1341,7 @@ func imageQueryQ(ctx context.Context, t *testing.T, sqb models.ImageReader, q st
 
 func TestImageQueryPath(t *testing.T) {
 	const imageIdx = 1
-	imagePath := getImageStringValue(imageIdx, "Path")
+	imagePath := getFilePath(folderIdxWithImageFiles, getImageBasename(imageIdx))
 
 	pathCriterion := models.StringCriterionInput{
 		Value:    imagePath,
@@ -178,7 +1363,7 @@ func TestImageQueryPath(t *testing.T) {
 
 func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput, expected int) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			Path: &pathCriterion,
 		}
@@ -188,7 +1373,7 @@ func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput, ex
 		assert.Equal(t, expected, len(images), "number of returned images")
 
 		for _, image := range images {
-			verifyString(t, image.Path, pathCriterion)
+			verifyString(t, image.Path(), pathCriterion)
 		}
 
 		return nil
@@ -199,8 +1384,8 @@ func TestImageQueryPathOr(t *testing.T) {
 	const image1Idx = 1
 	const image2Idx = 2
 
-	image1Path := getImageStringValue(image1Idx, "Path")
-	image2Path := getImageStringValue(image2Idx, "Path")
+	image1Path := getFilePath(folderIdxWithImageFiles, getImageBasename(image1Idx))
+	image2Path := getFilePath(folderIdxWithImageFiles, getImageBasename(image2Idx))
 
 	imageFilter := models.ImageFilterType{
 		Path: &models.StringCriterionInput{
@@ -216,13 +1401,16 @@ func TestImageQueryPathOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
-		assert.Len(t, images, 2)
-		assert.Equal(t, image1Path, images[0].Path)
-		assert.Equal(t, image2Path, images[1].Path)
+		if !assert.Len(t, images, 2) {
+			return nil
+		}
+
+		assert.Equal(t, image1Path, images[0].Path())
+		assert.Equal(t, image2Path, images[1].Path())
 
 		return nil
 	})
@@ -230,7 +1418,7 @@ func TestImageQueryPathOr(t *testing.T) {
 
 func TestImageQueryPathAndRating(t *testing.T) {
 	const imageIdx = 1
-	imagePath := getImageStringValue(imageIdx, "Path")
+	imagePath := getFilePath(folderIdxWithImageFiles, getImageBasename(imageIdx))
 	imageRating := getRating(imageIdx)
 
 	imageFilter := models.ImageFilterType{
@@ -247,13 +1435,13 @@ func TestImageQueryPathAndRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
 		assert.Len(t, images, 1)
-		assert.Equal(t, imagePath, images[0].Path)
-		assert.Equal(t, imageRating.Int64, images[0].Rating.Int64)
+		assert.Equal(t, imagePath, images[0].Path())
+		assert.Equal(t, int(imageRating.Int64), *images[0].Rating)
 
 		return nil
 	})
@@ -282,14 +1470,14 @@ func TestImageQueryPathNotRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
 		for _, image := range images {
-			verifyString(t, image.Path, pathCriterion)
+			verifyString(t, image.Path(), pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyInt64(t, image.Rating, ratingCriterion)
+			verifyIntPtr(t, image.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -313,7 +1501,7 @@ func TestImageIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 
 		_, _, err := queryImagesWithCount(ctx, sqb, imageFilter, nil)
 		assert.NotNil(err)
@@ -359,7 +1547,7 @@ func TestImageQueryRating(t *testing.T) {
 
 func verifyImagesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			Rating: &ratingCriterion,
 		}
@@ -370,7 +1558,7 @@ func verifyImagesRating(t *testing.T, ratingCriterion models.IntCriterionInput) 
 		}
 
 		for _, image := range images {
-			verifyInt64(t, image.Rating, ratingCriterion)
+			verifyIntPtr(t, image.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -398,7 +1586,7 @@ func TestImageQueryOCounter(t *testing.T) {
 
 func verifyImagesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			OCounter: &oCounterCriterion,
 		}
@@ -427,7 +1615,7 @@ func TestImageQueryResolution(t *testing.T) {
 
 func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			Resolution: &models.ResolutionCriterionInput{
 				Value:    resolution,
@@ -441,34 +1629,37 @@ func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 		}
 
 		for _, image := range images {
-			verifyImageResolution(t, image.Height, resolution)
+			verifyImageResolution(t, image.Files[0].Height, resolution)
 		}
 
 		return nil
 	})
 }
 
-func verifyImageResolution(t *testing.T, height sql.NullInt64, resolution models.ResolutionEnum) {
+func verifyImageResolution(t *testing.T, height int, resolution models.ResolutionEnum) {
+	if !resolution.IsValid() {
+		return
+	}
+
 	assert := assert.New(t)
-	h := height.Int64
 
 	switch resolution {
 	case models.ResolutionEnumLow:
-		assert.True(h < 480)
+		assert.True(height < 480)
 	case models.ResolutionEnumStandard:
-		assert.True(h >= 480 && h < 720)
+		assert.True(height >= 480 && height < 720)
 	case models.ResolutionEnumStandardHd:
-		assert.True(h >= 720 && h < 1080)
+		assert.True(height >= 720 && height < 1080)
 	case models.ResolutionEnumFullHd:
-		assert.True(h >= 1080 && h < 2160)
+		assert.True(height >= 1080 && height < 2160)
 	case models.ResolutionEnumFourK:
-		assert.True(h >= 2160)
+		assert.True(height >= 2160)
 	}
 }
 
 func TestImageQueryIsMissingGalleries(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "galleries"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -505,7 +1696,7 @@ func TestImageQueryIsMissingGalleries(t *testing.T) {
 
 func TestImageQueryIsMissingStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "studio"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -540,7 +1731,7 @@ func TestImageQueryIsMissingStudio(t *testing.T) {
 
 func TestImageQueryIsMissingPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "performers"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -577,7 +1768,7 @@ func TestImageQueryIsMissingPerformers(t *testing.T) {
 
 func TestImageQueryIsMissingTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "tags"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -609,7 +1800,7 @@ func TestImageQueryIsMissingTags(t *testing.T) {
 
 func TestImageQueryIsMissingRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		isMissing := "rating"
 		imageFilter := models.ImageFilterType{
 			IsMissing: &isMissing,
@@ -622,9 +1813,9 @@ func TestImageQueryIsMissingRating(t *testing.T) {
 
 		assert.True(t, len(images) > 0)
 
-		// ensure date is null, empty or "0001-01-01"
+		// ensure rating is null
 		for _, image := range images {
-			assert.True(t, !image.Rating.Valid)
+			assert.Nil(t, image.Rating)
 		}
 
 		return nil
@@ -633,7 +1824,7 @@ func TestImageQueryIsMissingRating(t *testing.T) {
 
 func TestImageQueryGallery(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		galleryCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(galleryIDs[galleryIdxWithImage]),
@@ -691,7 +1882,7 @@ func TestImageQueryGallery(t *testing.T) {
 
 func TestImageQueryPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		performerCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(performerIDs[performerIdxWithImage]),
@@ -768,7 +1959,7 @@ func TestImageQueryPerformers(t *testing.T) {
 
 func TestImageQueryTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithImage]),
@@ -845,7 +2036,7 @@ func TestImageQueryTags(t *testing.T) {
 
 func TestImageQueryStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithImage]),
@@ -891,7 +2082,7 @@ func TestImageQueryStudio(t *testing.T) {
 
 func TestImageQueryStudioDepth(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -961,7 +2152,7 @@ func queryImages(ctx context.Context, t *testing.T, sqb models.ImageReader, imag
 
 func TestImageQueryPerformerTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
@@ -1058,7 +2249,7 @@ func TestImageQueryTagCount(t *testing.T) {
 
 func verifyImagesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -1099,7 +2290,7 @@ func TestImageQueryPerformerCount(t *testing.T) {
 
 func verifyImagesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		imageFilter := models.ImageFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
@@ -1120,42 +2311,79 @@ func verifyImagesPerformerCount(t *testing.T, performerCountCriterion models.Int
 }
 
 func TestImageQuerySorting(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sort := titleField
-		direction := models.SortDirectionEnumAsc
-		findFilter := models.FindFilterType{
-			Sort:      &sort,
-			Direction: &direction,
-		}
+	tests := []struct {
+		name     string
+		sortBy   string
+		dir      models.SortDirectionEnum
+		firstIdx int // -1 to ignore
+		lastIdx  int
+	}{
+		{
+			"file mod time",
+			"file_mod_time",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"file size",
+			"size",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"path",
+			"path",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+	}
 
-		sqb := sqlite.ImageReaderWriter
-		images, _, err := queryImagesWithCount(ctx, sqb, nil, &findFilter)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
+	qb := db.Image
 
-		// images should be in same order as indexes
-		firstImage := images[0]
-		lastImage := images[len(images)-1]
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.Query(ctx, models.ImageQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: &models.FindFilterType{
+						Sort:      &tt.sortBy,
+						Direction: &tt.dir,
+					},
+				},
+			})
 
-		assert.Equal(t, imageIDs[0], firstImage.ID)
-		assert.Equal(t, imageIDs[len(imageIDs)-1], lastImage.ID)
+			if err != nil {
+				t.Errorf("ImageStore.TestImageQuerySorting() error = %v", err)
+				return
+			}
 
-		// sort in descending order
-		direction = models.SortDirectionEnumDesc
+			images, err := got.Resolve(ctx)
+			if err != nil {
+				t.Errorf("ImageStore.TestImageQuerySorting() error = %v", err)
+				return
+			}
 
-		images, _, err = queryImagesWithCount(ctx, sqb, nil, &findFilter)
-		if err != nil {
-			t.Errorf("Error querying image: %s", err.Error())
-		}
-		firstImage = images[0]
-		lastImage = images[len(images)-1]
+			if !assert.Greater(len(images), 0) {
+				return
+			}
 
-		assert.Equal(t, imageIDs[len(imageIDs)-1], firstImage.ID)
-		assert.Equal(t, imageIDs[0], lastImage.ID)
+			// image should be in same order as indexes
+			first := images[0]
+			last := images[len(images)-1]
 
-		return nil
-	})
+			if tt.firstIdx != -1 {
+				firstID := sceneIDs[tt.firstIdx]
+				assert.Equal(firstID, first.ID)
+			}
+			if tt.lastIdx != -1 {
+				lastID := sceneIDs[tt.lastIdx]
+				assert.Equal(lastID, last.ID)
+			}
+		})
+	}
 }
 
 func TestImageQueryPagination(t *testing.T) {
@@ -1165,7 +2393,7 @@ func TestImageQueryPagination(t *testing.T) {
 			PerPage: &perPage,
 		}
 
-		sqb := sqlite.ImageReaderWriter
+		sqb := db.Image
 		images, _, err := queryImagesWithCount(ctx, sqb, nil, &findFilter)
 		if err != nil {
 			t.Errorf("Error querying image: %s", err.Error())
@@ -1201,12 +2429,6 @@ func TestImageQueryPagination(t *testing.T) {
 	})
 }
 
-// TODO Update
-// TODO IncrementOCounter
-// TODO DecrementOCounter
-// TODO ResetOCounter
-// TODO Destroy
-// TODO FindByChecksum
 // TODO Count
 // TODO SizeCount
 // TODO All

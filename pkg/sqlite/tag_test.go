@@ -957,10 +957,11 @@ func TestTagMerge(t *testing.T) {
 		}
 
 		// ensure scene points to new tag
-		sceneTagIDs, err := sqlite.SceneReaderWriter.GetTagIDs(ctx, sceneIDs[sceneIdxWithTwoTags])
+		s, err := db.Scene.Find(ctx, sceneIDs[sceneIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
+		sceneTagIDs := s.TagIDs
 
 		assert.Contains(sceneTagIDs, destID)
 
@@ -980,23 +981,23 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(markerTagIDs, destID)
 
 		// ensure image points to new tag
-		imageTagIDs, err := sqlite.ImageReaderWriter.GetTagIDs(ctx, imageIDs[imageIdxWithTwoTags])
+		imageTagIDs, err := db.Image.GetTagIDs(ctx, imageIDs[imageIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
 
 		assert.Contains(imageTagIDs, destID)
 
-		// ensure gallery points to new tag
-		galleryTagIDs, err := sqlite.GalleryReaderWriter.GetTagIDs(ctx, galleryIDs[galleryIdxWithTwoTags])
+		g, err := db.Gallery.Find(ctx, galleryIDs[galleryIdxWithTwoTags])
 		if err != nil {
 			return err
 		}
 
-		assert.Contains(galleryTagIDs, destID)
+		// ensure gallery points to new tag
+		assert.Contains(g.TagIDs, destID)
 
 		// ensure performer points to new tag
-		performerTagIDs, err := sqlite.GalleryReaderWriter.GetTagIDs(ctx, performerIDs[performerIdxWithTwoTags])
+		performerTagIDs, err := sqlite.PerformerReaderWriter.GetTagIDs(ctx, performerIDs[performerIdxWithTwoTags])
 		if err != nil {
 			return err
 		}

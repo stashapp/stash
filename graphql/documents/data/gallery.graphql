@@ -1,7 +1,5 @@
 fragment GalleryData on Gallery {
   id
-  checksum
-  path
   created_at
   updated_at
   title
@@ -10,6 +8,14 @@ fragment GalleryData on Gallery {
   details
   rating
   organized
+
+  files {
+    ...GalleryFileData
+  }
+  folder {
+    ...FolderData
+  }
+
   images {
     ...SlimImageData
   }

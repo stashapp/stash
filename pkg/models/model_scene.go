@@ -1,125 +1,144 @@
 package models
 
 import (
-	"database/sql"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/file"
 )
 
 // Scene stores the metadata for a single video scene.
 type Scene struct {
-	ID               int                 `db:"id" json:"id"`
-	Checksum         sql.NullString      `db:"checksum" json:"checksum"`
-	OSHash           sql.NullString      `db:"oshash" json:"oshash"`
-	Path             string              `db:"path" json:"path"`
-	Title            sql.NullString      `db:"title" json:"title"`
-	Details          sql.NullString      `db:"details" json:"details"`
-	URL              sql.NullString      `db:"url" json:"url"`
-	Date             SQLiteDate          `db:"date" json:"date"`
-	Rating           sql.NullInt64       `db:"rating" json:"rating"`
-	Organized        bool                `db:"organized" json:"organized"`
-	OCounter         int                 `db:"o_counter" json:"o_counter"`
-	Size             sql.NullString      `db:"size" json:"size"`
-	Duration         sql.NullFloat64     `db:"duration" json:"duration"`
-	VideoCodec       sql.NullString      `db:"video_codec" json:"video_codec"`
-	Format           sql.NullString      `db:"format" json:"format_name"`
-	AudioCodec       sql.NullString      `db:"audio_codec" json:"audio_codec"`
-	Width            sql.NullInt64       `db:"width" json:"width"`
-	Height           sql.NullInt64       `db:"height" json:"height"`
-	Framerate        sql.NullFloat64     `db:"framerate" json:"framerate"`
-	Bitrate          sql.NullInt64       `db:"bitrate" json:"bitrate"`
-	StudioID         sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime      NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	Phash            sql.NullInt64       `db:"phash,omitempty" json:"phash"`
-	CreatedAt        SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt        SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
-	Interactive      bool                `db:"interactive" json:"interactive"`
-	InteractiveSpeed sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
+	ID        int    `json:"id"`
+	Title     string `json:"title"`
+	Details   string `json:"details"`
+	URL       string `json:"url"`
+	Date      *Date  `json:"date"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	OCounter  int    `json:"o_counter"`
+	StudioID  *int   `json:"studio_id"`
+
+	// transient - not persisted
+	Files []*file.VideoFile
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	GalleryIDs   []int          `json:"gallery_ids"`
+	TagIDs       []int          `json:"tag_ids"`
+	PerformerIDs []int          `json:"performer_ids"`
+	Movies       []MoviesScenes `json:"movies"`
+	StashIDs     []StashID      `json:"stash_ids"`
 }
 
-func (s *Scene) File() File {
-	ret := File{
-		Path: s.Path,
+func (s Scene) PrimaryFile() *file.VideoFile {
+	if len(s.Files) == 0 {
+		return nil
 	}
 
-	if s.Checksum.Valid {
-		ret.Checksum = s.Checksum.String
-	}
-	if s.OSHash.Valid {
-		ret.OSHash = s.OSHash.String
-	}
-	if s.FileModTime.Valid {
-		ret.FileModTime = s.FileModTime.Timestamp
-	}
-	if s.Size.Valid {
-		ret.Size = s.Size.String
-	}
-
-	return ret
+	return s.Files[0]
 }
 
-func (s *Scene) SetFile(f File) {
-	path := f.Path
-	s.Path = path
+func (s Scene) Path() string {
+	if p := s.PrimaryFile(); p != nil {
+		return p.Base().Path
+	}
 
-	if f.Checksum != "" {
-		s.Checksum = sql.NullString{
-			String: f.Checksum,
-			Valid:  true,
+	return ""
+}
+
+func (s Scene) getHash(type_ string) string {
+	if p := s.PrimaryFile(); p != nil {
+		v := p.Base().Fingerprints.Get(type_)
+		if v == nil {
+			return ""
 		}
+
+		return v.(string)
 	}
-	if f.OSHash != "" {
-		s.OSHash = sql.NullString{
-			String: f.OSHash,
-			Valid:  true,
+	return ""
+}
+
+func (s Scene) Checksum() string {
+	return s.getHash(file.FingerprintTypeMD5)
+}
+
+func (s Scene) OSHash() string {
+	return s.getHash(file.FingerprintTypeOshash)
+}
+
+func (s Scene) Phash() int64 {
+	if p := s.PrimaryFile(); p != nil {
+		v := p.Base().Fingerprints.Get(file.FingerprintTypePhash)
+		if v == nil {
+			return 0
 		}
+
+		return v.(int64)
 	}
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		s.FileModTime = NullSQLiteTimestamp{
-			Timestamp: f.FileModTime,
-			Valid:     true,
-		}
+	return 0
+}
+
+func (s Scene) Duration() float64 {
+	if p := s.PrimaryFile(); p != nil {
+		return p.Duration
 	}
-	if f.Size != "" {
-		s.Size = sql.NullString{
-			String: f.Size,
-			Valid:  true,
-		}
+
+	return 0
+}
+
+func (s Scene) Format() string {
+	if p := s.PrimaryFile(); p != nil {
+		return p.Format
 	}
+
+	return ""
+}
+
+func (s Scene) VideoCodec() string {
+	if p := s.PrimaryFile(); p != nil {
+		return p.VideoCodec
+	}
+
+	return ""
+}
+
+func (s Scene) AudioCodec() string {
+	if p := s.PrimaryFile(); p != nil {
+		return p.AudioCodec
+	}
+
+	return ""
 }
 
 // ScenePartial represents part of a Scene object. It is used to update
-// the database entry. Only non-nil fields will be updated.
+// the database entry.
 type ScenePartial struct {
-	ID               int                  `db:"id" json:"id"`
-	Checksum         *sql.NullString      `db:"checksum" json:"checksum"`
-	OSHash           *sql.NullString      `db:"oshash" json:"oshash"`
-	Path             *string              `db:"path" json:"path"`
-	Title            *sql.NullString      `db:"title" json:"title"`
-	Details          *sql.NullString      `db:"details" json:"details"`
-	URL              *sql.NullString      `db:"url" json:"url"`
-	Date             *SQLiteDate          `db:"date" json:"date"`
-	Rating           *sql.NullInt64       `db:"rating" json:"rating"`
-	Organized        *bool                `db:"organized" json:"organized"`
-	Size             *sql.NullString      `db:"size" json:"size"`
-	Duration         *sql.NullFloat64     `db:"duration" json:"duration"`
-	VideoCodec       *sql.NullString      `db:"video_codec" json:"video_codec"`
-	Format           *sql.NullString      `db:"format" json:"format_name"`
-	AudioCodec       *sql.NullString      `db:"audio_codec" json:"audio_codec"`
-	Width            *sql.NullInt64       `db:"width" json:"width"`
-	Height           *sql.NullInt64       `db:"height" json:"height"`
-	Framerate        *sql.NullFloat64     `db:"framerate" json:"framerate"`
-	Bitrate          *sql.NullInt64       `db:"bitrate" json:"bitrate"`
-	StudioID         *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	MovieID          *sql.NullInt64       `db:"movie_id,omitempty" json:"movie_id"`
-	FileModTime      *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	Phash            *sql.NullInt64       `db:"phash,omitempty" json:"phash"`
-	CreatedAt        *SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt        *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
-	Interactive      *bool                `db:"interactive" json:"interactive"`
-	InteractiveSpeed *sql.NullInt64       `db:"interactive_speed" json:"interactive_speed"`
+	Title     OptionalString
+	Details   OptionalString
+	URL       OptionalString
+	Date      OptionalDate
+	Rating    OptionalInt
+	Organized OptionalBool
+	OCounter  OptionalInt
+	StudioID  OptionalInt
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
+
+	GalleryIDs   *UpdateIDs
+	TagIDs       *UpdateIDs
+	PerformerIDs *UpdateIDs
+	MovieIDs     *UpdateMovieIDs
+	StashIDs     *UpdateStashIDs
+}
+
+func NewScenePartial() ScenePartial {
+	updatedTime := time.Now()
+	return ScenePartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
+	}
 }
 
 type SceneMovieInput struct {
@@ -142,86 +161,83 @@ type SceneUpdateInput struct {
 	Movies           []*SceneMovieInput `json:"movies"`
 	TagIds           []string           `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage *string         `json:"cover_image"`
-	StashIds   []*StashIDInput `json:"stash_ids"`
+	CoverImage *string   `json:"cover_image"`
+	StashIds   []StashID `json:"stash_ids"`
 }
 
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.
-func (s ScenePartial) UpdateInput() SceneUpdateInput {
-	boolPtrCopy := func(v *bool) *bool {
-		if v == nil {
-			return nil
-		}
+func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
+	var dateStr *string
+	if s.Date.Set {
+		d := s.Date.Value
+		v := d.String()
+		dateStr = &v
+	}
 
-		vv := *v
-		return &vv
+	var stashIDs []StashID
+	if s.StashIDs != nil {
+		stashIDs = s.StashIDs.StashIDs
 	}
 
 	return SceneUpdateInput{
-		ID:        strconv.Itoa(s.ID),
-		Title:     nullStringPtrToStringPtr(s.Title),
-		Details:   nullStringPtrToStringPtr(s.Details),
-		URL:       nullStringPtrToStringPtr(s.URL),
-		Date:      s.Date.StringPtr(),
-		Rating:    nullInt64PtrToIntPtr(s.Rating),
-		Organized: boolPtrCopy(s.Organized),
-		StudioID:  nullInt64PtrToStringPtr(s.StudioID),
-	}
-}
-
-func (s *ScenePartial) SetFile(f File) {
-	path := f.Path
-	s.Path = &path
-
-	if f.Checksum != "" {
-		s.Checksum = &sql.NullString{
-			String: f.Checksum,
-			Valid:  true,
-		}
-	}
-	if f.OSHash != "" {
-		s.OSHash = &sql.NullString{
-			String: f.OSHash,
-			Valid:  true,
-		}
-	}
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		s.FileModTime = &NullSQLiteTimestamp{
-			Timestamp: f.FileModTime,
-			Valid:     true,
-		}
-	}
-	if f.Size != "" {
-		s.Size = &sql.NullString{
-			String: f.Size,
-			Valid:  true,
-		}
+		ID:           strconv.Itoa(id),
+		Title:        s.Title.Ptr(),
+		Details:      s.Details.Ptr(),
+		URL:          s.URL.Ptr(),
+		Date:         dateStr,
+		Rating:       s.Rating.Ptr(),
+		Organized:    s.Organized.Ptr(),
+		StudioID:     s.StudioID.StringPtr(),
+		GalleryIds:   s.GalleryIDs.IDStrings(),
+		PerformerIds: s.PerformerIDs.IDStrings(),
+		Movies:       s.MovieIDs.SceneMovieInputs(),
+		TagIds:       s.TagIDs.IDStrings(),
+		StashIds:     stashIDs,
 	}
 }
 
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
 func (s Scene) GetTitle() string {
-	if s.Title.String != "" {
-		return s.Title.String
+	if s.Title != "" {
+		return s.Title
 	}
 
-	return filepath.Base(s.Path)
+	return filepath.Base(s.Path())
 }
 
 // GetHash returns the hash of the scene, based on the hash algorithm provided. If
 // hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
 func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
-	return s.File().GetHash(hashAlgorithm)
-}
-
-func (s Scene) GetMinResolution() int64 {
-	if s.Width.Int64 < s.Height.Int64 {
-		return s.Width.Int64
+	f := s.PrimaryFile()
+	if f == nil {
+		return ""
 	}
 
-	return s.Height.Int64
+	switch hashAlgorithm {
+	case HashAlgorithmMd5:
+		return f.Base().Fingerprints.Get(file.FingerprintTypeMD5).(string)
+	case HashAlgorithmOshash:
+		return f.Base().Fingerprints.Get(file.FingerprintTypeOshash).(string)
+	}
+
+	return ""
+}
+
+func (s Scene) GetMinResolution() int {
+	f := s.PrimaryFile()
+	if f == nil {
+		return 0
+	}
+
+	w := f.Width
+	h := f.Height
+
+	if w < h {
+		return w
+	}
+
+	return h
 }
 
 // SceneFileType represents the file metadata for a scene.
@@ -246,12 +262,12 @@ func (s *Scenes) New() interface{} {
 	return &Scene{}
 }
 
-type SceneCaption struct {
+type VideoCaption struct {
 	LanguageCode string `json:"language_code"`
 	Filename     string `json:"filename"`
 	CaptionType  string `json:"caption_type"`
 }
 
-func (c SceneCaption) Path(scenePath string) string {
-	return filepath.Join(filepath.Dir(scenePath), c.Filename)
+func (c VideoCaption) Path(filePath string) string {
+	return filepath.Join(filepath.Dir(filePath), c.Filename)
 }

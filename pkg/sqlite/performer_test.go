@@ -645,7 +645,7 @@ func verifyPerformersSceneCount(t *testing.T, sceneCountCriterion models.IntCrit
 		assert.Greater(t, len(performers), 0)
 
 		for _, performer := range performers {
-			ids, err := sqlite.SceneReaderWriter.FindByPerformerID(ctx, performer.ID)
+			ids, err := db.Scene.FindByPerformerID(ctx, performer.ID)
 			if err != nil {
 				return err
 			}
@@ -688,7 +688,7 @@ func verifyPerformersImageCount(t *testing.T, imageCountCriterion models.IntCrit
 		for _, performer := range performers {
 			pp := 0
 
-			result, err := sqlite.ImageReaderWriter.Query(ctx, models.ImageQueryOptions{
+			result, err := db.Image.Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: &models.FindFilterType{
 						PerPage: &pp,
@@ -744,7 +744,7 @@ func verifyPerformersGalleryCount(t *testing.T, galleryCountCriterion models.Int
 		for _, performer := range performers {
 			pp := 0
 
-			_, count, err := sqlite.GalleryReaderWriter.Query(ctx, &models.GalleryFilterType{
+			_, count, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
 				Performers: &models.MultiCriterionInput{
 					Value:    []string{strconv.Itoa(performer.ID)},
 					Modifier: models.CriterionModifierIncludes,

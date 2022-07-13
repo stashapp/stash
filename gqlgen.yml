@@ -22,10 +22,18 @@ autobind:
   - github.com/stashapp/stash/pkg/scraper/stashbox
 
 models:
-  # autobind on config causes generation issues
   # Scalars
   Timestamp:
     model: github.com/stashapp/stash/pkg/models.Timestamp
+  Int64:
+    model: github.com/stashapp/stash/pkg/models.Int64
+  # define to force resolvers
+  Image:
+    model: github.com/stashapp/stash/pkg/models.Image
+    fields:
+      title:
+        resolver: true
+  # autobind on config causes generation issues
   StashConfig:
     model: github.com/stashapp/stash/internal/manager/config.StashConfig
   StashConfigInput:
@@ -83,6 +91,8 @@ models:
   ScanMetaDataFilterInput:
     model: github.com/stashapp/stash/internal/manager.ScanMetaDataFilterInput
   # renamed types
+  BulkUpdateIdMode:
+    model: github.com/stashapp/stash/pkg/models.RelationshipUpdateMode
   DLNAStatus:
     model: github.com/stashapp/stash/internal/dlna.Status
   DLNAIP:
@@ -102,6 +112,8 @@ models:
   ScraperSource:
     model: github.com/stashapp/stash/pkg/scraper.Source
   # rebind inputs to types
+  StashIDInput:
+    model: github.com/stashapp/stash/pkg/models.StashID
   IdentifySourceInput:
     model: github.com/stashapp/stash/internal/identify.Source
   IdentifyFieldOptionsInput:

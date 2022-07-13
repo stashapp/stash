@@ -3,6 +3,7 @@ package autotag
 import (
 	"testing"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -72,7 +73,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 	mockSceneReader := &mocks.SceneReaderWriter{}
 
-	const studioID = 2
+	var studioID = 2
 
 	var aliases []string
 
@@ -87,8 +88,14 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 	var scenes []*models.Scene
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID:   i + 1,
-			Path: p,
+			ID: i + 1,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: p,
+					},
+				},
+			},
 		})
 	}
 
@@ -134,11 +141,9 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("Find", testCtx, sceneID).Return(&models.Scene{}, nil).Once()
-		expectedStudioID := models.NullInt64(studioID)
-		mockSceneReader.On("Update", testCtx, models.ScenePartial{
-			ID:       sceneID,
-			StudioID: &expectedStudioID,
+		expectedStudioID := studioID
+		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+			StudioID: models.NewOptionalInt(expectedStudioID),
 		}).Return(nil, nil).Once()
 	}
 
@@ -166,7 +171,7 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 
 	mockImageReader := &mocks.ImageReaderWriter{}
 
-	const studioID = 2
+	var studioID = 2
 
 	var aliases []string
 
@@ -180,8 +185,8 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 	matchingPaths, falsePaths := generateTestPaths(testPathName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:   i + 1,
-			Path: p,
+			ID:    i + 1,
+			Files: []*file.ImageFile{makeImageFile(p)},
 		})
 	}
 
@@ -226,11 +231,9 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("Find", testCtx, imageID).Return(&models.Image{}, nil).Once()
-		expectedStudioID := models.NullInt64(studioID)
-		mockImageReader.On("Update", testCtx, models.ImagePartial{
-			ID:       imageID,
-			StudioID: &expectedStudioID,
+		expectedStudioID := studioID
+		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+			StudioID: models.NewOptionalInt(expectedStudioID),
 		}).Return(nil, nil).Once()
 	}
 
@@ -257,7 +260,7 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	aliasRegex := tc.aliasRegex
 	mockGalleryReader := &mocks.GalleryReaderWriter{}
 
-	const studioID = 2
+	var studioID = 2
 
 	var aliases []string
 
@@ -270,9 +273,14 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	var galleries []*models.Gallery
 	matchingPaths, falsePaths := generateTestPaths(testPathName, galleryExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
+		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID:   i + 1,
-			Path: models.NullString(p),
+			ID: i + 1,
+			Files: []file.File{
+				&file.BaseFile{
+					Path: v,
+				},
+			},
 		})
 	}
 
@@ -316,11 +324,9 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("Find", testCtx, galleryID).Return(&models.Gallery{}, nil).Once()
-		expectedStudioID := models.NullInt64(studioID)
-		mockGalleryReader.On("UpdatePartial", testCtx, models.GalleryPartial{
-			ID:       galleryID,
-			StudioID: &expectedStudioID,
+		expectedStudioID := studioID
+		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+			StudioID: models.NewOptionalInt(expectedStudioID),
 		}).Return(nil, nil).Once()
 	}
 

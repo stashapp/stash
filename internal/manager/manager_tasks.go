@@ -13,16 +13,11 @@ import (
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scene"
 )
 
-func isGallery(pathname string) bool {
+func isZip(pathname string) bool {
 	gExt := config.GetInstance().GetGalleryExtensions()
 	return fsutil.MatchExtension(pathname, gExt)
-}
-
-func isCaptions(pathname string) bool {
-	return fsutil.MatchExtension(pathname, scene.CaptionExts)
 }
 
 func isVideo(pathname string) bool {
@@ -36,13 +31,15 @@ func isImage(pathname string) bool {
 }
 
 func getScanPaths(inputPaths []string) []*config.StashConfig {
+	stashPaths := config.GetInstance().GetStashPaths()
+
 	if len(inputPaths) == 0 {
-		return config.GetInstance().GetStashPaths()
+		return stashPaths
 	}
 
 	var ret []*config.StashConfig
 	for _, p := range inputPaths {
-		s := getStashFromDirPath(p)
+		s := getStashFromDirPath(stashPaths, p)
 		if s == nil {
 			logger.Warnf("%s is not in the configured stash paths", p)
 			continue
@@ -84,7 +81,7 @@ func (s *Manager) Scan(ctx context.Context, input ScanMetadataInput) (int, error
 	}
 
 	scanJob := ScanJob{
-		txnManager:    s.Repository,
+		scanner:       s.Scanner,
 		input:         input,
 		subscriptions: s.scanSubs,
 	}
@@ -237,9 +234,12 @@ type CleanMetadataInput struct {
 
 func (s *Manager) Clean(ctx context.Context, input CleanMetadataInput) int {
 	j := cleanJob{
-		txnManager: s.Repository,
-		input:      input,
-		scanSubs:   s.scanSubs,
+		cleaner:      s.Cleaner,
+		txnManager:   s.Repository,
+		sceneService: s.SceneService,
+		imageService: s.ImageService,
+		input:        input,
+		scanSubs:     s.scanSubs,
 	}
 
 	return s.JobManager.Add(ctx, "Cleaning...", &j)

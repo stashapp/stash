@@ -16,7 +16,7 @@ type GenerateSpriteTask struct {
 }
 
 func (t *GenerateSpriteTask) GetDescription() string {
-	return fmt.Sprintf("Generating sprites for %s", t.Scene.Path)
+	return fmt.Sprintf("Generating sprites for %s", t.Scene.Path())
 }
 
 func (t *GenerateSpriteTask) Start(ctx context.Context) {
@@ -25,7 +25,7 @@ func (t *GenerateSpriteTask) Start(ctx context.Context) {
 	}
 
 	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path())
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return

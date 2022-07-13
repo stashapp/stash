@@ -23,7 +23,7 @@ type GeneratePreviewTask struct {
 }
 
 func (t *GeneratePreviewTask) GetDescription() string {
-	return fmt.Sprintf("Generating preview for %s", t.Scene.Path)
+	return fmt.Sprintf("Generating preview for %s", t.Scene.Path())
 }
 
 func (t *GeneratePreviewTask) Start(ctx context.Context) {
@@ -32,7 +32,7 @@ func (t *GeneratePreviewTask) Start(ctx context.Context) {
 	}
 
 	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path())
 	if err != nil {
 		logger.Errorf("error reading video file: %v", err)
 		return
@@ -55,7 +55,7 @@ func (t *GeneratePreviewTask) Start(ctx context.Context) {
 }
 
 func (t GeneratePreviewTask) generateVideo(videoChecksum string, videoDuration float64) error {
-	videoFilename := t.Scene.Path
+	videoFilename := t.Scene.Path()
 
 	if err := t.generator.PreviewVideo(context.TODO(), videoFilename, videoDuration, videoChecksum, t.Options, true); err != nil {
 		logger.Warnf("[generator] failed generating scene preview, trying fallback")
@@ -68,7 +68,7 @@ func (t GeneratePreviewTask) generateVideo(videoChecksum string, videoDuration f
 }
 
 func (t GeneratePreviewTask) generateWebp(videoChecksum string) error {
-	videoFilename := t.Scene.Path
+	videoFilename := t.Scene.Path()
 	return t.generator.PreviewWebp(context.TODO(), videoFilename, videoChecksum)
 }
 

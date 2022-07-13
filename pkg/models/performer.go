@@ -154,7 +154,7 @@ type PerformerWriter interface {
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
 	DestroyImage(ctx context.Context, performerID int) error
-	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []StashID) error
+	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []*StashID) error
 	UpdateTags(ctx context.Context, performerID int, tagIDs []int) error
 }
 

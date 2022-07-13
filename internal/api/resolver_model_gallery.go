@@ -2,24 +2,91 @@ package api
 
 import (
 	"context"
+	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (r *galleryResolver) Path(ctx context.Context, obj *models.Gallery) (*string, error) {
-	if obj.Path.Valid {
-		return &obj.Path.String, nil
+func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*GalleryFile, error) {
+	ret := make([]*GalleryFile, len(obj.Files))
+
+	for i, f := range obj.Files {
+		base := f.Base()
+		ret[i] = &GalleryFile{
+			ID:             strconv.Itoa(int(base.ID)),
+			Path:           base.Path,
+			Basename:       base.Basename,
+			ParentFolderID: strconv.Itoa(int(base.ParentFolderID)),
+			ModTime:        base.ModTime,
+			Size:           base.Size,
+			CreatedAt:      base.CreatedAt,
+			UpdatedAt:      base.UpdatedAt,
+			Fingerprints:   resolveFingerprints(base),
+		}
+
+		if base.ZipFileID != nil {
+			zipFileID := strconv.Itoa(int(*base.ZipFileID))
+			ret[i].ZipFileID = &zipFileID
+		}
 	}
-	return nil, nil
+
+	return ret, nil
 }
 
-func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*string, error) {
-	if obj.Title.Valid {
-		return &obj.Title.String, nil
+func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*Folder, error) {
+	if obj.FolderID == nil {
+		return nil, nil
 	}
+
+	var ret *file.Folder
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
+
+		ret, err = r.repository.Folder.Find(ctx, *obj.FolderID)
+		if err != nil {
+			return err
+		}
+
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	if ret == nil {
+		return nil, nil
+	}
+
+	rr := &Folder{
+		ID:        ret.ID.String(),
+		Path:      ret.Path,
+		ModTime:   ret.ModTime,
+		CreatedAt: ret.CreatedAt,
+		UpdatedAt: ret.UpdatedAt,
+	}
+
+	if ret.ParentFolderID != nil {
+		pfidStr := ret.ParentFolderID.String()
+		rr.ParentFolderID = &pfidStr
+	}
+
+	if ret.ZipFileID != nil {
+		zfidStr := ret.ZipFileID.String()
+		rr.ZipFileID = &zfidStr
+	}
+
+	return rr, nil
+}
+
+func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
+	f := obj.PrimaryFile()
+	if f != nil {
+		return &f.Base().ModTime, nil
+	}
+
 	return nil, nil
 }
 
@@ -70,31 +137,9 @@ func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *
 }
 
 func (r *galleryResolver) Date(ctx context.Context, obj *models.Gallery) (*string, error) {
-	if obj.Date.Valid {
-		result := utils.GetYMDFromDatabaseDate(obj.Date.String)
+	if obj.Date != nil {
+		result := obj.Date.String()
 		return &result, nil
-	}
-	return nil, nil
-}
-
-func (r *galleryResolver) URL(ctx context.Context, obj *models.Gallery) (*string, error) {
-	if obj.URL.Valid {
-		return &obj.URL.String, nil
-	}
-	return nil, nil
-}
-
-func (r *galleryResolver) Details(ctx context.Context, obj *models.Gallery) (*string, error) {
-	if obj.Details.Valid {
-		return &obj.Details.String, nil
-	}
-	return nil, nil
-}
-
-func (r *galleryResolver) Rating(ctx context.Context, obj *models.Gallery) (*int, error) {
-	if obj.Rating.Valid {
-		rating := int(obj.Rating.Int64)
-		return &rating, nil
 	}
 	return nil, nil
 }
@@ -112,13 +157,13 @@ func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret 
 }
 
 func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret *models.Studio, err error) {
-	if !obj.StudioID.Valid {
+	if obj.StudioID == nil {
 		return nil, nil
 	}
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.repository.Studio.Find(ctx, int(obj.StudioID.Int64))
+		ret, err = r.repository.Studio.Find(ctx, *obj.StudioID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -161,16 +206,4 @@ func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (
 	}
 
 	return ret, nil
-}
-
-func (r *galleryResolver) CreatedAt(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
-	return &obj.CreatedAt.Timestamp, nil
-}
-
-func (r *galleryResolver) UpdatedAt(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
-	return &obj.UpdatedAt.Timestamp, nil
-}
-
-func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
-	return &obj.FileModTime.Timestamp, nil
 }

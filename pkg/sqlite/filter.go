@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,11 +20,30 @@ type sqlClause struct {
 	args []interface{}
 }
 
+func (c sqlClause) not() sqlClause {
+	return sqlClause{
+		sql:  "NOT (" + c.sql + ")",
+		args: c.args,
+	}
+}
+
 func makeClause(sql string, args ...interface{}) sqlClause {
 	return sqlClause{
 		sql:  sql,
 		args: args,
 	}
+}
+
+func orClauses(clauses ...sqlClause) sqlClause {
+	var ret []string
+	var args []interface{}
+
+	for _, clause := range clauses {
+		ret = append(ret, "("+clause.sql+")")
+		args = append(args, clause.args...)
+	}
+
+	return sqlClause{sql: strings.Join(ret, " OR "), args: args}
 }
 
 type criterionHandler interface {
@@ -399,6 +419,100 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 	}
 }
 
+func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, basenameColumn string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			addWildcards := true
+			not := false
+
+			if modifier := c.Modifier; c.Modifier.IsValid() {
+				switch modifier {
+				case models.CriterionModifierIncludes:
+					f.whereClauses = append(f.whereClauses, getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not))
+				case models.CriterionModifierExcludes:
+					not = true
+					f.whereClauses = append(f.whereClauses, getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not))
+				case models.CriterionModifierEquals:
+					addWildcards = false
+					f.whereClauses = append(f.whereClauses, getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not))
+				case models.CriterionModifierNotEquals:
+					addWildcards = false
+					not = true
+					f.whereClauses = append(f.whereClauses, getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not))
+				case models.CriterionModifierMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?) OR (%s IS NOT NULL AND %[2]s regexp ?)", pathColumn, basenameColumn), c.Value, c.Value)
+				case models.CriterionModifierNotMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?) AND (%s IS NULL OR %[2]s NOT regexp ?)", pathColumn, basenameColumn), c.Value, c.Value)
+				case models.CriterionModifierIsNull:
+					f.addWhere(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = '')", pathColumn, basenameColumn))
+				case models.CriterionModifierNotNull:
+					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != '')", pathColumn, basenameColumn))
+				default:
+					panic("unsupported string filter modifier")
+				}
+			}
+		}
+	}
+}
+
+func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not bool) sqlClause {
+	// if path value has slashes, then we're potentially searching directory only or
+	// directory plus basename
+	hasSlashes := strings.Contains(p, string(filepath.Separator))
+	trailingSlash := hasSlashes && p[len(p)-1] == filepath.Separator
+	const emptyDir = "/"
+
+	// possible values:
+	// dir/basename
+	// dir1/subdir
+	// dir/
+	// /basename
+	// dirOrBasename
+
+	basename := filepath.Base(p)
+	dir := path(filepath.Dir(p)).String()
+	p = path(p).String()
+
+	if addWildcards {
+		p = "%" + p + "%"
+		basename += "%"
+		dir = "%" + dir
+	}
+
+	var ret sqlClause
+
+	switch {
+	case !hasSlashes:
+		// dir or basename
+		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %s LIKE ?", pathColumn, basenameColumn), p, p)
+	case dir != emptyDir && !trailingSlash:
+		// (path like %dir AND basename like basename%) OR path like %p%
+		c1 := makeClause(fmt.Sprintf("%s LIKE ? AND %s LIKE ?", pathColumn, basenameColumn), dir, basename)
+		c2 := makeClause(fmt.Sprintf("%s LIKE ?", pathColumn), p)
+		ret = orClauses(c1, c2)
+	case dir == emptyDir && !trailingSlash:
+		// path like %p% OR basename like basename%
+		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %s LIKE ?", pathColumn, basenameColumn), p, basename)
+	case dir != emptyDir && trailingSlash:
+		// path like %p% OR path like %dir
+		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %[1]s LIKE ?", pathColumn), p, dir)
+	}
+
+	if not {
+		ret = ret.not()
+	}
+
+	return ret
+}
+
 func intCriterionHandler(c *models.IntCriterionInput, column string) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
@@ -586,7 +700,7 @@ func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCrit
 }
 
 type hierarchicalMultiCriterionHandlerBuilder struct {
-	tx dbi
+	tx dbWrapper
 
 	primaryTable string
 	foreignTable string
@@ -597,7 +711,7 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	relationsTable string
 }
 
-func getHierarchicalValues(ctx context.Context, tx dbi, values []string, table, relationsTable, parentFK string, depth *int) string {
+func getHierarchicalValues(ctx context.Context, tx dbWrapper, values []string, table, relationsTable, parentFK string, depth *int) string {
 	var args []interface{}
 
 	depthVal := 0
@@ -723,7 +837,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 }
 
 type joinedHierarchicalMultiCriterionHandlerBuilder struct {
-	tx dbi
+	tx dbWrapper
 
 	primaryTable string
 	foreignTable string

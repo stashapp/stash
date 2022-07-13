@@ -2,11 +2,9 @@ package image
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/performer"
@@ -15,28 +13,22 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
-type FullCreatorUpdater interface {
-	FinderCreatorUpdater
-	UpdatePerformers(ctx context.Context, imageID int, performerIDs []int) error
-	UpdateTags(ctx context.Context, imageID int, tagIDs []int) error
-	UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error
+type GalleryChecksumsFinder interface {
+	FindByChecksums(ctx context.Context, checksums []string) ([]*models.Gallery, error)
 }
 
 type Importer struct {
-	ReaderWriter        FullCreatorUpdater
+	ReaderWriter        FinderCreatorUpdater
 	StudioWriter        studio.NameFinderCreator
-	GalleryWriter       gallery.ChecksumsFinder
+	GalleryWriter       GalleryChecksumsFinder
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Image
 	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
 
-	ID         int
-	image      models.Image
-	galleries  []*models.Gallery
-	performers []*models.Performer
-	tags       []*models.Tag
+	ID    int
+	image models.Image
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -63,33 +55,33 @@ func (i *Importer) PreImport(ctx context.Context) error {
 
 func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	newImage := models.Image{
-		Checksum: imageJSON.Checksum,
-		Path:     i.Path,
+		// Checksum: imageJSON.Checksum,
+		// Path:     i.Path,
 	}
 
 	if imageJSON.Title != "" {
-		newImage.Title = sql.NullString{String: imageJSON.Title, Valid: true}
+		newImage.Title = imageJSON.Title
 	}
 	if imageJSON.Rating != 0 {
-		newImage.Rating = sql.NullInt64{Int64: int64(imageJSON.Rating), Valid: true}
+		newImage.Rating = &imageJSON.Rating
 	}
 
 	newImage.Organized = imageJSON.Organized
 	newImage.OCounter = imageJSON.OCounter
-	newImage.CreatedAt = models.SQLiteTimestamp{Timestamp: imageJSON.CreatedAt.GetTime()}
-	newImage.UpdatedAt = models.SQLiteTimestamp{Timestamp: imageJSON.UpdatedAt.GetTime()}
+	newImage.CreatedAt = imageJSON.CreatedAt.GetTime()
+	newImage.UpdatedAt = imageJSON.UpdatedAt.GetTime()
 
-	if imageJSON.File != nil {
-		if imageJSON.File.Size != 0 {
-			newImage.Size = sql.NullInt64{Int64: int64(imageJSON.File.Size), Valid: true}
-		}
-		if imageJSON.File.Width != 0 {
-			newImage.Width = sql.NullInt64{Int64: int64(imageJSON.File.Width), Valid: true}
-		}
-		if imageJSON.File.Height != 0 {
-			newImage.Height = sql.NullInt64{Int64: int64(imageJSON.File.Height), Valid: true}
-		}
-	}
+	// if imageJSON.File != nil {
+	// 	if imageJSON.File.Size != 0 {
+	// 		newImage.Size = &imageJSON.File.Size
+	// 	}
+	// 	if imageJSON.File.Width != 0 {
+	// 		newImage.Width = &imageJSON.File.Width
+	// 	}
+	// 	if imageJSON.File.Height != 0 {
+	// 		newImage.Height = &imageJSON.File.Height
+	// 	}
+	// }
 
 	return newImage
 }
@@ -115,13 +107,10 @@ func (i *Importer) populateStudio(ctx context.Context) error {
 				if err != nil {
 					return err
 				}
-				i.image.StudioID = sql.NullInt64{
-					Int64: int64(studioID),
-					Valid: true,
-				}
+				i.image.StudioID = &studioID
 			}
 		} else {
-			i.image.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			i.image.StudioID = &studio.ID
 		}
 	}
 
@@ -156,7 +145,7 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 				continue
 			}
 		} else {
-			i.galleries = append(i.galleries, gallery[0])
+			i.image.GalleryIDs = append(i.image.GalleryIDs, gallery[0].ID)
 		}
 	}
 
@@ -200,7 +189,9 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 			// ignore if MissingRefBehaviour set to Ignore
 		}
 
-		i.performers = performers
+		for _, p := range performers {
+			i.image.PerformerIDs = append(i.image.PerformerIDs, p.ID)
+		}
 	}
 
 	return nil
@@ -230,45 +221,15 @@ func (i *Importer) populateTags(ctx context.Context) error {
 			return err
 		}
 
-		i.tags = tags
+		for _, t := range tags {
+			i.image.TagIDs = append(i.image.TagIDs, t.ID)
+		}
 	}
 
 	return nil
 }
 
 func (i *Importer) PostImport(ctx context.Context, id int) error {
-	if len(i.galleries) > 0 {
-		var galleryIDs []int
-		for _, g := range i.galleries {
-			galleryIDs = append(galleryIDs, g.ID)
-		}
-
-		if err := i.ReaderWriter.UpdateGalleries(ctx, id, galleryIDs); err != nil {
-			return fmt.Errorf("failed to associate galleries: %v", err)
-		}
-	}
-
-	if len(i.performers) > 0 {
-		var performerIDs []int
-		for _, performer := range i.performers {
-			performerIDs = append(performerIDs, performer.ID)
-		}
-
-		if err := i.ReaderWriter.UpdatePerformers(ctx, id, performerIDs); err != nil {
-			return fmt.Errorf("failed to associate performers: %v", err)
-		}
-	}
-
-	if len(i.tags) > 0 {
-		var tagIDs []int
-		for _, t := range i.tags {
-			tagIDs = append(tagIDs, t.ID)
-		}
-		if err := i.ReaderWriter.UpdateTags(ctx, id, tagIDs); err != nil {
-			return fmt.Errorf("failed to associate tags: %v", err)
-		}
-	}
-
 	return nil
 }
 
@@ -277,29 +238,29 @@ func (i *Importer) Name() string {
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	var existing *models.Image
-	var err error
-	existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
+	// var existing []*models.Image
+	// var err error
+	// existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
 
-	if err != nil {
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if existing != nil {
-		id := existing.ID
-		return &id, nil
-	}
+	// if len(existing) > 0 {
+	// 	id := existing[0].ID
+	// 	return &id, nil
+	// }
 
 	return nil, nil
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.image)
+	err := i.ReaderWriter.Create(ctx, &models.ImageCreateInput{Image: &i.image})
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %v", err)
 	}
 
-	id := created.ID
+	id := i.image.ID
 	i.ID = id
 	return &id, nil
 }
@@ -308,7 +269,7 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 	image := i.image
 	image.ID = id
 	i.ID = id
-	_, err := i.ReaderWriter.UpdateFull(ctx, image)
+	err := i.ReaderWriter.Update(ctx, &image)
 	if err != nil {
 		return fmt.Errorf("error updating existing image: %v", err)
 	}

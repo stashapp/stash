@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"path/filepath"
 	"regexp"
@@ -238,9 +237,10 @@ type sceneHolder struct {
 
 func newSceneHolder(scene *models.Scene) *sceneHolder {
 	sceneCopy := models.Scene{
-		ID:       scene.ID,
-		Checksum: scene.Checksum,
-		Path:     scene.Path,
+		ID:    scene.ID,
+		Files: scene.Files,
+		// Checksum: scene.Checksum,
+		// Path:     scene.Path,
 	}
 	ret := sceneHolder{
 		scene:  scene,
@@ -307,11 +307,9 @@ func (h *sceneHolder) setDate(field *parserField, value string) {
 
 	// ensure the date is valid
 	// only set if new value is different from the old
-	if validateDate(fullDate) && h.scene.Date.String != fullDate {
-		h.result.Date = models.SQLiteDate{
-			String: fullDate,
-			Valid:  true,
-		}
+	if validateDate(fullDate) && h.scene.Date != nil && h.scene.Date.String() != fullDate {
+		d := models.NewDate(fullDate)
+		h.result.Date = &d
 	}
 }
 
@@ -337,24 +335,17 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 
 	switch field.field {
 	case "title":
-		h.result.Title = sql.NullString{
-			String: value.(string),
-			Valid:  true,
-		}
+		v := value.(string)
+		h.result.Title = v
 	case "date":
 		if validateDate(value.(string)) {
-			h.result.Date = models.SQLiteDate{
-				String: value.(string),
-				Valid:  true,
-			}
+			d := models.NewDate(value.(string))
+			h.result.Date = &d
 		}
 	case "rating":
 		rating, _ := strconv.Atoi(value.(string))
 		if validateRating(rating) {
-			h.result.Rating = sql.NullInt64{
-				Int64: int64(rating),
-				Valid: true,
-			}
+			h.result.Rating = &rating
 		}
 	case "performer":
 		// add performer to list
@@ -394,9 +385,9 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 	// scene path in the match. Otherwise, use the default behaviour of just
 	// the file's basename
 	// must be double \ because of the regex escaping
-	filename := filepath.Base(scene.Path)
+	filename := filepath.Base(scene.Path())
 	if strings.Contains(m.regexString, `\\`) || strings.Contains(m.regexString, "/") {
-		filename = scene.Path
+		filename = scene.Path()
 	}
 
 	result := m.regex.FindStringSubmatch(filename)
@@ -696,8 +687,8 @@ func (p *SceneFilenameParser) setMovies(ctx context.Context, qb MovieNameFinder,
 }
 
 func (p *SceneFilenameParser) setParserResult(ctx context.Context, repo SceneFilenameParserRepository, h sceneHolder, result *SceneParserResult) {
-	if h.result.Title.Valid {
-		title := h.result.Title.String
+	if h.result.Title != "" {
+		title := h.result.Title
 		title = p.replaceWhitespaceCharacters(title)
 
 		if p.ParserInput.CapitalizeTitle != nil && *p.ParserInput.CapitalizeTitle {
@@ -707,13 +698,13 @@ func (p *SceneFilenameParser) setParserResult(ctx context.Context, repo SceneFil
 		result.Title = &title
 	}
 
-	if h.result.Date.Valid {
-		result.Date = &h.result.Date.String
+	if h.result.Date != nil {
+		dateStr := h.result.Date.String()
+		result.Date = &dateStr
 	}
 
-	if h.result.Rating.Valid {
-		rating := int(h.result.Rating.Int64)
-		result.Rating = &rating
+	if h.result.Rating != nil {
+		result.Rating = h.result.Rating
 	}
 
 	if len(h.performers) > 0 {
@@ -727,5 +718,4 @@ func (p *SceneFilenameParser) setParserResult(ctx context.Context, repo SceneFil
 	if len(h.movies) > 0 {
 		p.setMovies(ctx, repo.Movie, h, result)
 	}
-
 }

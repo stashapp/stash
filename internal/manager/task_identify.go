@@ -51,7 +51,8 @@ func (j *IdentifyJob) Execute(ctx context.Context, progress *job.Progress) {
 
 	// if scene ids provided, use those
 	// otherwise, batch query for all scenes - ordering by path
-	if err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+	// don't use a transaction to query scenes
+	if err := txn.WithDatabase(ctx, instance.Repository, func(ctx context.Context) error {
 		if len(j.input.SceneIDs) == 0 {
 			return j.identifyAllScenes(ctx, sources)
 		}
@@ -130,7 +131,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 	}
 
 	var taskError error
-	j.progress.ExecuteTask("Identifying "+s.Path, func() {
+	j.progress.ExecuteTask("Identifying "+s.Path(), func() {
 		task := identify.SceneIdentifier{
 			SceneReaderUpdater: instance.Repository.Scene,
 			StudioCreator:      instance.Repository.Studio,
@@ -139,7 +140,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 
 			DefaultOptions: j.input.Options,
 			Sources:        sources,
-			ScreenshotSetter: &scene.PathsScreenshotSetter{
+			ScreenshotSetter: &scene.PathsCoverSetter{
 				Paths:               instance.Paths,
 				FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
 			},
@@ -150,7 +151,7 @@ func (j *IdentifyJob) identifyScene(ctx context.Context, s *models.Scene, source
 	})
 
 	if taskError != nil {
-		logger.Errorf("Error encountered identifying %s: %v", s.Path, taskError)
+		logger.Errorf("Error encountered identifying %s: %v", s.Path(), taskError)
 	}
 
 	j.progress.Increment()

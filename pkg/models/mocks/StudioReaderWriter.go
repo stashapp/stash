@@ -442,11 +442,11 @@ func (_m *StudioReaderWriter) UpdateImage(ctx context.Context, studioID int, ima
 }
 
 // UpdateStashIDs provides a mock function with given fields: ctx, studioID, stashIDs
-func (_m *StudioReaderWriter) UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error {
+func (_m *StudioReaderWriter) UpdateStashIDs(ctx context.Context, studioID int, stashIDs []*models.StashID) error {
 	ret := _m.Called(ctx, studioID, stashIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []models.StashID) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int, []*models.StashID) error); ok {
 		r0 = rf(ctx, studioID, stashIDs)
 	} else {
 		r0 = ret.Error(0)

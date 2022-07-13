@@ -66,10 +66,6 @@ func getSort(sort string, direction string, tableName string) string {
 	case strings.Compare(sort, "filesize") == 0:
 		colName := getColumn(tableName, "size")
 		return " ORDER BY cast(" + colName + " as integer) " + direction
-	case strings.Compare(sort, "perceptual_similarity") == 0:
-		colName := getColumn(tableName, "phash")
-		secondaryColName := getColumn(tableName, "size")
-		return " ORDER BY " + colName + " " + direction + ", " + secondaryColName + " DESC"
 	case strings.HasPrefix(sort, randomSeedPrefix):
 		// seed as a parameter from the UI
 		// turn the provided seed into a float
@@ -84,20 +80,17 @@ func getSort(sort string, direction string, tableName string) string {
 		return getRandomSort(tableName, direction, randomSortFloat)
 	default:
 		colName := getColumn(tableName, sort)
-		var additional string
-		if tableName == "scenes" {
-			additional = ", bitrate DESC, framerate DESC, scenes.rating DESC, scenes.duration DESC"
-		} else if tableName == "scene_markers" {
-			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
+		if strings.Contains(sort, ".") {
+			colName = sort
 		}
 		if strings.Compare(sort, "name") == 0 {
-			return " ORDER BY " + colName + " COLLATE NOCASE " + direction + additional
+			return " ORDER BY " + colName + " COLLATE NOCASE " + direction
 		}
 		if strings.Compare(sort, "title") == 0 {
-			return " ORDER BY " + colName + " COLLATE NATURAL_CS " + direction + additional
+			return " ORDER BY " + colName + " COLLATE NATURAL_CS " + direction
 		}
 
-		return " ORDER BY " + colName + " " + direction + additional
+		return " ORDER BY " + colName + " " + direction
 	}
 }
 
@@ -226,7 +219,7 @@ func getCountCriterionClause(primaryTable, joinTable, primaryFK string, criterio
 	return getIntCriterionWhereClause(lhs, criterion)
 }
 
-func getImage(ctx context.Context, tx dbi, query string, args ...interface{}) ([]byte, error) {
+func getImage(ctx context.Context, tx dbWrapper, query string, args ...interface{}) ([]byte, error) {
 	rows, err := tx.Queryx(ctx, query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {

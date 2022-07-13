@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import TextUtils from "src/utils/text";
 import { Button, Form, Spinner } from "react-bootstrap";
 import Icon from "src/components/Shared/Icon";
 import { useIntl } from "react-intl";
@@ -13,6 +12,7 @@ import {
   faStepBackward,
   faStepForward,
 } from "@fortawesome/free-solid-svg-icons";
+import { objectTitle } from "src/core/files";
 
 export interface IPlaylistViewer {
   scenes?: GQL.SlimSceneDataFragment[];
@@ -92,7 +92,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
             </div>
             <div>
               <span className="align-middle text-break">
-                {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+                {objectTitle(scene)}
               </span>
             </div>
           </div>
