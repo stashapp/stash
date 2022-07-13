@@ -8,10 +8,11 @@ import (
 )
 
 func DeleteGalleryFile(gallery *models.Gallery) {
-	if gallery.Path.Valid {
-		err := os.Remove(gallery.Path.String)
+	path := gallery.Path()
+	if path != "" {
+		err := os.Remove(path)
 		if err != nil {
-			logger.Warnf("Could not delete file %s: %s", gallery.Path.String, err.Error())
+			logger.Warnf("Could not delete file %s: %s", path, err.Error())
 		}
 	}
 }

@@ -1,6 +1,10 @@
 package models
 
-import "context"
+import (
+	"context"
+
+	"github.com/stashapp/stash/pkg/file"
+)
 
 type GalleryFilterType struct {
 	And     *GalleryFilterType    `json:"AND"`
@@ -71,30 +75,23 @@ type GalleryDestroyInput struct {
 type GalleryReader interface {
 	Find(ctx context.Context, id int) (*Gallery, error)
 	FindMany(ctx context.Context, ids []int) ([]*Gallery, error)
-	FindByChecksum(ctx context.Context, checksum string) (*Gallery, error)
+	FindByChecksum(ctx context.Context, checksum string) ([]*Gallery, error)
 	FindByChecksums(ctx context.Context, checksums []string) ([]*Gallery, error)
-	FindByPath(ctx context.Context, path string) (*Gallery, error)
+	FindByPath(ctx context.Context, path string) ([]*Gallery, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Gallery, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Gallery, error)
 	Count(ctx context.Context) (int, error)
 	All(ctx context.Context) ([]*Gallery, error)
 	Query(ctx context.Context, galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int, error)
 	QueryCount(ctx context.Context, galleryFilter *GalleryFilterType, findFilter *FindFilterType) (int, error)
-	GetPerformerIDs(ctx context.Context, galleryID int) ([]int, error)
-	GetTagIDs(ctx context.Context, galleryID int) ([]int, error)
-	GetSceneIDs(ctx context.Context, galleryID int) ([]int, error)
 	GetImageIDs(ctx context.Context, galleryID int) ([]int, error)
 }
 
 type GalleryWriter interface {
-	Create(ctx context.Context, newGallery Gallery) (*Gallery, error)
-	Update(ctx context.Context, updatedGallery Gallery) (*Gallery, error)
-	UpdatePartial(ctx context.Context, updatedGallery GalleryPartial) (*Gallery, error)
-	UpdateFileModTime(ctx context.Context, id int, modTime NullSQLiteTimestamp) error
+	Create(ctx context.Context, newGallery *Gallery, fileIDs []file.ID) error
+	Update(ctx context.Context, updatedGallery *Gallery) error
+	UpdatePartial(ctx context.Context, id int, updatedGallery GalleryPartial) (*Gallery, error)
 	Destroy(ctx context.Context, id int) error
-	UpdatePerformers(ctx context.Context, galleryID int, performerIDs []int) error
-	UpdateTags(ctx context.Context, galleryID int, tagIDs []int) error
-	UpdateScenes(ctx context.Context, galleryID int, sceneIDs []int) error
 	UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error
 }
 

@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -176,15 +177,26 @@ func TestScenePerformers(t *testing.T) {
 		mockPerformerReader.On("Query", testCtx, mock.Anything, mock.Anything).Return(nil, 0, nil)
 		mockPerformerReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
-		if test.Matches {
-			mockSceneReader.On("GetPerformerIDs", testCtx, sceneID).Return(nil, nil).Once()
-			mockSceneReader.On("UpdatePerformers", testCtx, sceneID, []int{performerID}).Return(nil).Once()
+		scene := models.Scene{
+			ID: sceneID,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: test.Path,
+					},
+				},
+			},
 		}
 
-		scene := models.Scene{
-			ID:   sceneID,
-			Path: test.Path,
+		if test.Matches {
+			mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}).Return(nil, nil).Once()
 		}
+
 		err := ScenePerformers(testCtx, &scene, mockSceneReader, mockPerformerReader, nil)
 
 		assert.Nil(err)
@@ -196,9 +208,11 @@ func TestScenePerformers(t *testing.T) {
 func TestSceneStudios(t *testing.T) {
 	t.Parallel()
 
-	const sceneID = 1
-	const studioName = "studio name"
-	const studioID = 2
+	var (
+		sceneID    = 1
+		studioName = "studio name"
+		studioID   = 2
+	)
 	studio := models.Studio{
 		ID:   studioID,
 		Name: models.NullString(studioName),
@@ -217,17 +231,21 @@ func TestSceneStudios(t *testing.T) {
 
 	doTest := func(mockStudioReader *mocks.StudioReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockSceneReader.On("Find", testCtx, sceneID).Return(&models.Scene{}, nil).Once()
-			expectedStudioID := models.NullInt64(studioID)
-			mockSceneReader.On("Update", testCtx, models.ScenePartial{
-				ID:       sceneID,
-				StudioID: &expectedStudioID,
+			expectedStudioID := studioID
+			mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+				StudioID: models.NewOptionalInt(expectedStudioID),
 			}).Return(nil, nil).Once()
 		}
 
 		scene := models.Scene{
-			ID:   sceneID,
-			Path: test.Path,
+			ID: sceneID,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: test.Path,
+					},
+				},
+			},
 		}
 		err := SceneStudios(testCtx, &scene, mockSceneReader, mockStudioReader, nil)
 
@@ -290,13 +308,23 @@ func TestSceneTags(t *testing.T) {
 
 	doTest := func(mockTagReader *mocks.TagReaderWriter, mockSceneReader *mocks.SceneReaderWriter, test pathTestTable) {
 		if test.Matches {
-			mockSceneReader.On("GetTagIDs", testCtx, sceneID).Return(nil, nil).Once()
-			mockSceneReader.On("UpdateTags", testCtx, sceneID, []int{tagID}).Return(nil).Once()
+			mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			}).Return(nil, nil).Once()
 		}
 
 		scene := models.Scene{
-			ID:   sceneID,
-			Path: test.Path,
+			ID: sceneID,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: test.Path,
+					},
+				},
+			},
 		}
 		err := SceneTags(testCtx, &scene, mockSceneReader, mockTagReader, nil)
 

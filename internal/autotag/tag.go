@@ -12,17 +12,17 @@ import (
 
 type SceneQueryTagUpdater interface {
 	scene.Queryer
-	scene.TagUpdater
+	scene.PartialUpdater
 }
 
 type ImageQueryTagUpdater interface {
 	image.Queryer
-	image.TagUpdater
+	image.PartialUpdater
 }
 
 type GalleryQueryTagUpdater interface {
 	gallery.Queryer
-	gallery.TagUpdater
+	gallery.PartialUpdater
 }
 
 func getTagTaggers(p *models.Tag, aliases []string, cache *match.Cache) []tagger {
@@ -50,8 +50,8 @@ func TagScenes(ctx context.Context, p *models.Tag, paths []string, aliases []str
 	t := getTagTaggers(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagScenes(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-			return scene.AddTag(ctx, rw, otherID, subjectID)
+		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
+			return scene.AddTag(ctx, rw, o, p.ID)
 		}); err != nil {
 			return err
 		}
@@ -64,8 +64,8 @@ func TagImages(ctx context.Context, p *models.Tag, paths []string, aliases []str
 	t := getTagTaggers(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagImages(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-			return image.AddTag(ctx, rw, otherID, subjectID)
+		if err := tt.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
+			return image.AddTag(ctx, rw, i, p.ID)
 		}); err != nil {
 			return err
 		}
@@ -78,8 +78,8 @@ func TagGalleries(ctx context.Context, p *models.Tag, paths []string, aliases []
 	t := getTagTaggers(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagGalleries(ctx, paths, rw, func(subjectID, otherID int) (bool, error) {
-			return gallery.AddTag(ctx, rw, otherID, subjectID)
+		if err := tt.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
+			return gallery.AddTag(ctx, rw, o, p.ID)
 		}); err != nil {
 			return err
 		}

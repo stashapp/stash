@@ -20,6 +20,7 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type Plugin struct {
@@ -197,6 +198,13 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTrigge
 	}); err != nil {
 		logger.Errorf("error executing post hooks: %s", err.Error())
 	}
+}
+
+func (c Cache) RegisterPostHooks(ctx context.Context, txnMgr txn.Manager, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
+	txnMgr.AddPostCommitHook(ctx, func(ctx context.Context) error {
+		c.ExecutePostHooks(ctx, id, hookType, input, inputFields)
+		return nil
+	})
 }
 
 func (c Cache) ExecuteSceneUpdatePostHooks(ctx context.Context, input models.SceneUpdateInput, inputFields []string) {

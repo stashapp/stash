@@ -13,7 +13,7 @@ import (
 )
 
 type GenerateMarkersTask struct {
-	TxnManager          models.Repository
+	TxnManager          Repository
 	Scene               *models.Scene
 	Marker              *models.SceneMarker
 	Overwrite           bool
@@ -27,7 +27,7 @@ type GenerateMarkersTask struct {
 
 func (t *GenerateMarkersTask) GetDescription() string {
 	if t.Scene != nil {
-		return fmt.Sprintf("Generating markers for %s", t.Scene.Path)
+		return fmt.Sprintf("Generating markers for %s", t.Scene.Path())
 	} else if t.Marker != nil {
 		return fmt.Sprintf("Generating marker preview for marker ID %d", t.Marker.ID)
 	}
@@ -57,7 +57,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 		}
 
 		ffprobe := instance.FFProbe
-		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
+		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path())
 		if err != nil {
 			logger.Errorf("error reading video file: %s", err.Error())
 			return
@@ -83,7 +83,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	}
 
 	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
+	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path())
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return
@@ -133,13 +133,9 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 
 func (t *GenerateMarkersTask) markersNeeded(ctx context.Context) int {
 	markers := 0
-	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
-		var err error
-		sceneMarkers, err = t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
-		return err
-	}); err != nil {
-		logger.Errorf("errror finding scene markers: %s", err.Error())
+	sceneMarkers, err := t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
+	if err != nil {
+		logger.Errorf("error finding scene markers: %s", err.Error())
 		return 0
 	}
 

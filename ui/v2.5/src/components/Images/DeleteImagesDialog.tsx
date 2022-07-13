@@ -7,6 +7,7 @@ import { useToast } from "src/hooks";
 import { ConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { objectPath } from "src/core/files";
 
 interface IDeleteImageDialogProps {
   selected: GQL.SlimImageDataFragment[];
@@ -87,7 +88,7 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
         </p>
         <ul>
           {props.selected.slice(0, 5).map((s) => (
-            <li key={s.path}>{s.path}</li>
+            <li key={objectPath(s)}>{objectPath(s)}</li>
           ))}
           {props.selected.length > 5 && (
             <FormattedMessage

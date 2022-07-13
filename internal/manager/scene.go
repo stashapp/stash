@@ -11,17 +11,18 @@ import (
 
 func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
 	var container ffmpeg.Container
-	if scene.Format.Valid {
-		container = ffmpeg.Container(scene.Format.String)
+	format := scene.Format()
+	if format != "" {
+		container = ffmpeg.Container(format)
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
 		ffprobe := GetInstance().FFProbe
-		tmpVideoFile, err := ffprobe.NewVideoFile(scene.Path)
+		tmpVideoFile, err := ffprobe.NewVideoFile(scene.Path())
 		if err != nil {
 			return ffmpeg.Container(""), fmt.Errorf("error reading video file: %v", err)
 		}
 
-		return ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
+		return ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path())
 	}
 
 	return container, nil
@@ -32,7 +33,7 @@ func includeSceneStreamPath(scene *models.Scene, streamingResolution models.Stre
 	// resolution
 	convertedRes := models.ResolutionEnum(streamingResolution)
 
-	minResolution := int64(convertedRes.GetMinResolution())
+	minResolution := convertedRes.GetMinResolution()
 	sceneResolution := scene.GetMinResolution()
 
 	// don't include if scene resolution is smaller than the streamingResolution
@@ -47,7 +48,7 @@ func includeSceneStreamPath(scene *models.Scene, streamingResolution models.Stre
 
 	// convert StreamingResolutionEnum to ResolutionEnum
 	maxStreamingResolution := models.ResolutionEnum(maxStreamingTranscodeSize)
-	return int64(maxStreamingResolution.GetMinResolution()) >= minResolution
+	return maxStreamingResolution.GetMinResolution() >= minResolution
 }
 
 type SceneStreamEndpoint struct {
@@ -79,8 +80,8 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 
 	// direct stream should only apply when the audio codec is supported
 	audioCodec := ffmpeg.MissingUnsupported
-	if scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.ProbeAudioCodec(scene.AudioCodec.String)
+	if scene.AudioCodec() != "" {
+		audioCodec = ffmpeg.ProbeAudioCodec(scene.AudioCodec())
 	}
 
 	// don't care if we can't get the container

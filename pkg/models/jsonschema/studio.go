@@ -10,17 +10,17 @@ import (
 )
 
 type Studio struct {
-	Name          string           `json:"name,omitempty"`
-	URL           string           `json:"url,omitempty"`
-	ParentStudio  string           `json:"parent_studio,omitempty"`
-	Image         string           `json:"image,omitempty"`
-	CreatedAt     json.JSONTime    `json:"created_at,omitempty"`
-	UpdatedAt     json.JSONTime    `json:"updated_at,omitempty"`
-	Rating        int              `json:"rating,omitempty"`
-	Details       string           `json:"details,omitempty"`
-	Aliases       []string         `json:"aliases,omitempty"`
-	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
-	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
+	Name          string            `json:"name,omitempty"`
+	URL           string            `json:"url,omitempty"`
+	ParentStudio  string            `json:"parent_studio,omitempty"`
+	Image         string            `json:"image,omitempty"`
+	CreatedAt     json.JSONTime     `json:"created_at,omitempty"`
+	UpdatedAt     json.JSONTime     `json:"updated_at,omitempty"`
+	Rating        int               `json:"rating,omitempty"`
+	Details       string            `json:"details,omitempty"`
+	Aliases       []string          `json:"aliases,omitempty"`
+	StashIDs      []*models.StashID `json:"stash_ids,omitempty"`
+	IgnoreAutoTag bool              `json:"ignore_auto_tag,omitempty"`
 }
 
 func LoadStudioFile(filePath string) (*Studio, error) {

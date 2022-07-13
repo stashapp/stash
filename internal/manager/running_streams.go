@@ -38,7 +38,7 @@ func (c *StreamRequestContext) Cancel() {
 }
 
 func KillRunningStreams(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) {
-	instance.ReadLockManager.Cancel(scene.Path)
+	instance.ReadLockManager.Cancel(scene.Path())
 
 	sceneHash := scene.GetHash(fileNamingAlgo)
 
@@ -62,7 +62,7 @@ type SceneServer struct {
 func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
 	fileNamingAlgo := config.GetInstance().GetVideoFileNamingAlgorithm()
 
-	filepath := GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(fileNamingAlgo))
+	filepath := GetInstance().Paths.Scene.GetStreamPath(scene.Path(), scene.GetHash(fileNamingAlgo))
 	streamRequestCtx := NewStreamRequestContext(w, r)
 
 	// #2579 - hijacking and closing the connection here causes video playback to fail in Safari

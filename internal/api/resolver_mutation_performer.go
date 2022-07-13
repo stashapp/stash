@@ -152,7 +152,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 
 		// Save the stash_ids
 		if input.StashIds != nil {
-			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			stashIDJoins := input.StashIds
 			if err := qb.UpdateStashIDs(ctx, performer.ID, stashIDJoins); err != nil {
 				return err
 			}
@@ -275,7 +275,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 
 		// Save the stash_ids
 		if translator.hasField("stash_ids") {
-			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			stashIDJoins := input.StashIds
 			if err := qb.UpdateStashIDs(ctx, performerID, stashIDJoins); err != nil {
 				return err
 			}

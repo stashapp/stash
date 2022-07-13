@@ -2,7 +2,6 @@ package scraper
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -230,9 +229,12 @@ func (s *stashScraper) scrapeSceneByScene(ctx context.Context, scene *models.Sce
 		Oshash   *string `graphql:"oshash" json:"oshash"`
 	}
 
+	checksum := scene.Checksum()
+	oshash := scene.OSHash()
+
 	input := SceneHashInput{
-		Checksum: &scene.Checksum.String,
-		Oshash:   &scene.OSHash.String,
+		Checksum: &checksum,
+		Oshash:   &oshash,
 	}
 
 	vars := map[string]interface{}{
@@ -280,8 +282,9 @@ func (s *stashScraper) scrapeGalleryByGallery(ctx context.Context, gallery *mode
 		Checksum *string `graphql:"checksum" json:"checksum"`
 	}
 
+	checksum := gallery.Checksum()
 	input := GalleryHashInput{
-		Checksum: &gallery.Checksum,
+		Checksum: &checksum,
 	}
 
 	vars := map[string]interface{}{
@@ -307,17 +310,10 @@ func (s *stashScraper) scrapeByURL(_ context.Context, _ string, _ ScrapeContentT
 }
 
 func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
-	toStringPtr := func(s sql.NullString) *string {
-		if s.Valid {
-			return &s.String
-		}
-
-		return nil
-	}
-
-	dateToStringPtr := func(s models.SQLiteDate) *string {
-		if s.Valid {
-			return &s.String
+	dateToStringPtr := func(s *models.Date) *string {
+		if s != nil {
+			v := s.String()
+			return &v
 		}
 
 		return nil
@@ -325,25 +321,18 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 
 	return models.SceneUpdateInput{
 		ID:      strconv.Itoa(scene.ID),
-		Title:   toStringPtr(scene.Title),
-		Details: toStringPtr(scene.Details),
-		URL:     toStringPtr(scene.URL),
+		Title:   &scene.Title,
+		Details: &scene.Details,
+		URL:     &scene.URL,
 		Date:    dateToStringPtr(scene.Date),
 	}
 }
 
 func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
-	toStringPtr := func(s sql.NullString) *string {
-		if s.Valid {
-			return &s.String
-		}
-
-		return nil
-	}
-
-	dateToStringPtr := func(s models.SQLiteDate) *string {
-		if s.Valid {
-			return &s.String
+	dateToStringPtr := func(s *models.Date) *string {
+		if s != nil {
+			v := s.String()
+			return &v
 		}
 
 		return nil
@@ -351,9 +340,9 @@ func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
 
 	return models.GalleryUpdateInput{
 		ID:      strconv.Itoa(gallery.ID),
-		Title:   toStringPtr(gallery.Title),
-		Details: toStringPtr(gallery.Details),
-		URL:     toStringPtr(gallery.URL),
+		Title:   &gallery.Title,
+		Details: &gallery.Details,
+		URL:     &gallery.URL,
 		Date:    dateToStringPtr(gallery.Date),
 	}
 }

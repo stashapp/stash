@@ -166,7 +166,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				_, err := r.Performer.Update(ctx, partial)
 
 				if !t.refresh {
-					err = r.Performer.UpdateStashIDs(ctx, t.performer.ID, []models.StashID{
+					err = r.Performer.UpdateStashIDs(ctx, t.performer.ID, []*models.StashID{
 						{
 							Endpoint: t.box.Endpoint,
 							StashID:  *performer.RemoteSiteID,
@@ -231,7 +231,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 					return err
 				}
 
-				err = r.Performer.UpdateStashIDs(ctx, createdPerformer.ID, []models.StashID{
+				err = r.Performer.UpdateStashIDs(ctx, createdPerformer.ID, []*models.StashID{
 					{
 						Endpoint: t.box.Endpoint,
 						StashID:  *performer.RemoteSiteID,

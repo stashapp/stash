@@ -1,104 +1,98 @@
 package models
 
 import (
-	"database/sql"
-	"path/filepath"
-	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/file"
 )
 
 // Image stores the metadata for a single image.
 type Image struct {
-	ID          int                 `db:"id" json:"id"`
-	Checksum    string              `db:"checksum" json:"checksum"`
-	Path        string              `db:"path" json:"path"`
-	Title       sql.NullString      `db:"title" json:"title"`
-	Rating      sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   bool                `db:"organized" json:"organized"`
-	OCounter    int                 `db:"o_counter" json:"o_counter"`
-	Size        sql.NullInt64       `db:"size" json:"size"`
-	Width       sql.NullInt64       `db:"width" json:"width"`
-	Height      sql.NullInt64       `db:"height" json:"height"`
-	StudioID    sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	CreatedAt   SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	ID int `json:"id"`
+
+	Title     string `json:"title"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	OCounter  int    `json:"o_counter"`
+	StudioID  *int   `json:"studio_id"`
+
+	// transient - not persisted
+	Files []*file.ImageFile
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	GalleryIDs   []int `json:"gallery_ids"`
+	TagIDs       []int `json:"tag_ids"`
+	PerformerIDs []int `json:"performer_ids"`
 }
 
-// ImagePartial represents part of a Image object. It is used to update
-// the database entry. Only non-nil fields will be updated.
-type ImagePartial struct {
-	ID          int                  `db:"id" json:"id"`
-	Checksum    *string              `db:"checksum" json:"checksum"`
-	Path        *string              `db:"path" json:"path"`
-	Title       *sql.NullString      `db:"title" json:"title"`
-	Rating      *sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   *bool                `db:"organized" json:"organized"`
-	Size        *sql.NullInt64       `db:"size" json:"size"`
-	Width       *sql.NullInt64       `db:"width" json:"width"`
-	Height      *sql.NullInt64       `db:"height" json:"height"`
-	StudioID    *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+func (i Image) PrimaryFile() *file.ImageFile {
+	if len(i.Files) == 0 {
+		return nil
+	}
+
+	return i.Files[0]
 }
 
-func (i *Image) File() File {
-	ret := File{
-		Path: i.Path,
+func (i Image) Path() string {
+	if p := i.PrimaryFile(); p != nil {
+		return p.Path
 	}
 
-	ret.Checksum = i.Checksum
-	if i.FileModTime.Valid {
-		ret.FileModTime = i.FileModTime.Timestamp
-	}
-	if i.Size.Valid {
-		ret.Size = strconv.FormatInt(i.Size.Int64, 10)
-	}
-
-	return ret
+	return ""
 }
 
-func (i *Image) SetFile(f File) {
-	path := f.Path
-	i.Path = path
-
-	if f.Checksum != "" {
-		i.Checksum = f.Checksum
-	}
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		i.FileModTime = NullSQLiteTimestamp{
-			Timestamp: f.FileModTime,
-			Valid:     true,
+func (i Image) Checksum() string {
+	if p := i.PrimaryFile(); p != nil {
+		v := p.Fingerprints.Get(file.FingerprintTypeMD5)
+		if v == nil {
+			return ""
 		}
+
+		return v.(string)
 	}
-	if f.Size != "" {
-		size, err := strconv.ParseInt(f.Size, 10, 64)
-		if err == nil {
-			i.Size = sql.NullInt64{
-				Int64: size,
-				Valid: true,
-			}
-		}
-	}
+	return ""
 }
 
 // GetTitle returns the title of the image. If the Title field is empty,
 // then the base filename is returned.
-func (i *Image) GetTitle() string {
-	if i.Title.String != "" {
-		return i.Title.String
+func (i Image) GetTitle() string {
+	if i.Title != "" {
+		return i.Title
 	}
 
-	return filepath.Base(i.Path)
+	if p := i.PrimaryFile(); p != nil {
+		return p.Basename
+	}
+
+	return ""
 }
 
-// ImageFileType represents the file metadata for an image.
-type ImageFileType struct {
-	Size   *int `graphql:"size" json:"size"`
-	Width  *int `graphql:"width" json:"width"`
-	Height *int `graphql:"height" json:"height"`
+type ImageCreateInput struct {
+	*Image
+	FileIDs []file.ID
+}
+
+type ImagePartial struct {
+	Title     OptionalString
+	Rating    OptionalInt
+	Organized OptionalBool
+	OCounter  OptionalInt
+	StudioID  OptionalInt
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
+
+	GalleryIDs   *UpdateIDs
+	TagIDs       *UpdateIDs
+	PerformerIDs *UpdateIDs
+}
+
+func NewImagePartial() ImagePartial {
+	updatedTime := time.Now()
+	return ImagePartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
+	}
 }
 
 type Images []*Image

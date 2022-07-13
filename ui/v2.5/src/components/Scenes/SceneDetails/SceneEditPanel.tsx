@@ -31,7 +31,7 @@ import {
   URLField,
 } from "src/components/Shared";
 import useToast from "src/hooks/Toast";
-import { ImageUtils, FormUtils, TextUtils, getStashIDs } from "src/utils";
+import { ImageUtils, FormUtils, getStashIDs } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
@@ -44,6 +44,7 @@ import {
   faSyncAlt,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import { objectTitle } from "src/core/files";
 
 const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
@@ -65,7 +66,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     scene.galleries.map((g) => ({
       id: g.id,
-      title: g.title ?? TextUtils.fileNameFromPath(g.path ?? ""),
+      title: objectTitle(g),
     }))
   );
 

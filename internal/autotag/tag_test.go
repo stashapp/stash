@@ -3,6 +3,7 @@ package autotag
 import (
 	"testing"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -87,8 +88,14 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	var scenes []*models.Scene
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID:   i + 1,
-			Path: p,
+			ID: i + 1,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: p,
+					},
+				},
+			},
 		})
 	}
 
@@ -133,8 +140,12 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("GetTagIDs", testCtx, sceneID).Return(nil, nil).Once()
-		mockSceneReader.On("UpdateTags", testCtx, sceneID, []int{tagID}).Return(nil).Once()
+		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := TagScenes(testCtx, &tag, nil, aliases, mockSceneReader, nil)
@@ -175,8 +186,8 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	matchingPaths, falsePaths := generateTestPaths(testPathName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:   i + 1,
-			Path: p,
+			ID:    i + 1,
+			Files: []*file.ImageFile{makeImageFile(p)},
 		})
 	}
 
@@ -221,8 +232,13 @@ func testTagImages(t *testing.T, tc testTagCase) {
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("GetTagIDs", testCtx, imageID).Return(nil, nil).Once()
-		mockImageReader.On("UpdateTags", testCtx, imageID, []int{tagID}).Return(nil).Once()
+
+		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := TagImages(testCtx, &tag, nil, aliases, mockImageReader, nil)
@@ -262,9 +278,14 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	var galleries []*models.Gallery
 	matchingPaths, falsePaths := generateTestPaths(testPathName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
+		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID:   i + 1,
-			Path: models.NullString(p),
+			ID: i + 1,
+			Files: []file.File{
+				&file.BaseFile{
+					Path: v,
+				},
+			},
 		})
 	}
 
@@ -308,8 +329,14 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("GetTagIDs", testCtx, galleryID).Return(nil, nil).Once()
-		mockGalleryReader.On("UpdateTags", testCtx, galleryID, []int{tagID}).Return(nil).Once()
+
+		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
+
 	}
 
 	err := TagGalleries(testCtx, &tag, nil, aliases, mockGalleryReader, nil)

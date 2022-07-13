@@ -7,10 +7,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type dbi struct{}
+type dbReader interface {
+	Get(dest interface{}, query string, args ...interface{}) error
+	Select(dest interface{}, query string, args ...interface{}) error
+	Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
+	QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error)
+}
 
-func (*dbi) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
-	tx, err := getTx(ctx)
+type dbWrapper struct{}
+
+func (*dbWrapper) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+	tx, err := getDBReader(ctx)
 	if err != nil {
 		return err
 	}
@@ -18,8 +25,8 @@ func (*dbi) Get(ctx context.Context, dest interface{}, query string, args ...int
 	return tx.Get(dest, query, args...)
 }
 
-func (*dbi) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
-	tx, err := getTx(ctx)
+func (*dbWrapper) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+	tx, err := getDBReader(ctx)
 	if err != nil {
 		return err
 	}
@@ -27,8 +34,8 @@ func (*dbi) Select(ctx context.Context, dest interface{}, query string, args ...
 	return tx.Select(dest, query, args...)
 }
 
-func (*dbi) Queryx(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
-	tx, err := getTx(ctx)
+func (*dbWrapper) Queryx(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+	tx, err := getDBReader(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +43,7 @@ func (*dbi) Queryx(ctx context.Context, query string, args ...interface{}) (*sql
 	return tx.Queryx(query, args...)
 }
 
-func (*dbi) NamedExec(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
+func (*dbWrapper) NamedExec(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
 	tx, err := getTx(ctx)
 	if err != nil {
 		return nil, err
@@ -45,7 +52,7 @@ func (*dbi) NamedExec(ctx context.Context, query string, arg interface{}) (sql.R
 	return tx.NamedExec(query, arg)
 }
 
-func (*dbi) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+func (*dbWrapper) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	tx, err := getTx(ctx)
 	if err != nil {
 		return nil, err

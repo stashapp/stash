@@ -74,12 +74,12 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 
 	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
 
-	mockSceneReaderWriter.On("Update", testCtx, mock.MatchedBy(func(partial models.ScenePartial) bool {
-		return partial.ID != errUpdateID
-	})).Return(nil, nil)
-	mockSceneReaderWriter.On("Update", testCtx, mock.MatchedBy(func(partial models.ScenePartial) bool {
-		return partial.ID == errUpdateID
-	})).Return(nil, errors.New("update error"))
+	mockSceneReaderWriter.On("UpdatePartial", testCtx, mock.MatchedBy(func(id int) bool {
+		return id == errUpdateID
+	}), mock.Anything).Return(nil, errors.New("update error"))
+	mockSceneReaderWriter.On("UpdatePartial", testCtx, mock.MatchedBy(func(id int) bool {
+		return id != errUpdateID
+	}), mock.Anything).Return(nil, nil)
 
 	tests := []struct {
 		name    string
@@ -245,26 +245,26 @@ func Test_getFieldOptions(t *testing.T) {
 func Test_getScenePartial(t *testing.T) {
 	var (
 		originalTitle   = "originalTitle"
-		originalDate    = "originalDate"
+		originalDate    = "2001-01-01"
 		originalDetails = "originalDetails"
 		originalURL     = "originalURL"
 	)
 
 	var (
 		scrapedTitle   = "scrapedTitle"
-		scrapedDate    = "scrapedDate"
+		scrapedDate    = "2002-02-02"
 		scrapedDetails = "scrapedDetails"
 		scrapedURL     = "scrapedURL"
 	)
 
+	originalDateObj := models.NewDate(originalDate)
+	scrapedDateObj := models.NewDate(scrapedDate)
+
 	originalScene := &models.Scene{
-		Title: models.NullString(originalTitle),
-		Date: models.SQLiteDate{
-			String: originalDate,
-			Valid:  true,
-		},
-		Details: models.NullString(originalDetails),
-		URL:     models.NullString(originalURL),
+		Title:   originalTitle,
+		Date:    &originalDateObj,
+		Details: originalDetails,
+		URL:     originalURL,
 	}
 
 	organisedScene := *originalScene
@@ -273,13 +273,10 @@ func Test_getScenePartial(t *testing.T) {
 	emptyScene := &models.Scene{}
 
 	postPartial := models.ScenePartial{
-		Title: models.NullStringPtr(scrapedTitle),
-		Date: &models.SQLiteDate{
-			String: scrapedDate,
-			Valid:  true,
-		},
-		Details: models.NullStringPtr(scrapedDetails),
-		URL:     models.NullStringPtr(scrapedURL),
+		Title:   models.NewOptionalString(scrapedTitle),
+		Date:    models.NewOptionalDate(scrapedDateObj),
+		Details: models.NewOptionalString(scrapedDetails),
+		URL:     models.NewOptionalString(scrapedURL),
 	}
 
 	scrapedScene := &scraper.ScrapedScene{
@@ -387,7 +384,7 @@ func Test_getScenePartial(t *testing.T) {
 				true,
 			},
 			models.ScenePartial{
-				Organized: &setOrganised,
+				Organized: models.NewOptionalBool(setOrganised),
 			},
 		},
 		{

@@ -74,30 +74,65 @@ const getDurationStatus = (
   );
 };
 
+function matchPhashes(
+  scenePhashes: Pick<GQL.Fingerprint, "type" | "value">[],
+  fingerprints: GQL.StashBoxFingerprint[]
+) {
+  const phashes = fingerprints.filter((f) => f.algorithm === "PHASH");
+
+  const matches: { [key: string]: number } = {};
+  phashes.forEach((p) => {
+    let bestMatch = -1;
+    scenePhashes.forEach((fp) => {
+      const d = distance(p.hash, fp.value);
+
+      if (d <= 8 && (bestMatch === -1 || d < bestMatch)) {
+        bestMatch = d;
+      }
+    });
+
+    if (bestMatch !== -1) {
+      matches[p.hash] = bestMatch;
+    }
+  });
+
+  return matches;
+}
+
 const getFingerprintStatus = (
   scene: IScrapedScene,
   stashScene: GQL.SlimSceneDataFragment
 ) => {
-  const checksumMatch = scene.fingerprints?.some(
-    (f) => f.hash === stashScene.checksum || f.hash === stashScene.oshash
+  const checksumMatch = scene.fingerprints?.some((f) =>
+    stashScene.files.some((ff) =>
+      ff.fingerprints.some(
+        (fp) =>
+          fp.value === f.hash && (fp.type === "oshash" || fp.type === "md5")
+      )
+    )
   );
-  const phashMatches = stashScene.phash
-    ? scene.fingerprints?.filter(
-        (f) =>
-          f.algorithm === "PHASH" && distance(f.hash, stashScene.phash) <= 8
-      ) ?? []
-    : [];
+
+  const allPhashes = stashScene.files.reduce(
+    (pv: Pick<GQL.Fingerprint, "type" | "value">[], cv) => {
+      return [...pv, ...cv.fingerprints.filter((f) => f.type === "phash")];
+    },
+    []
+  );
+
+  const phashMatches = matchPhashes(allPhashes, scene.fingerprints ?? []);
 
   const phashList = (
     <div className="m-2">
-      {phashMatches.map((fp) => (
-        <div key={fp.hash}>
-          <b>{fp.hash}</b>
-          {fp.hash === stashScene.phash
-            ? ", Exact match"
-            : `, distance ${distance(fp.hash, stashScene.phash)}`}
-        </div>
-      ))}
+      {Object.entries(phashMatches).map((fp) => {
+        const hash = fp[0];
+        const d = fp[1];
+        return (
+          <div key={hash}>
+            <b>{hash}</b>
+            {d === 0 ? ", Exact match" : `, distance ${d}`}
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -624,6 +659,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     return <LoadingIndicator card />;
   }
 
+  const stashSceneFile =
+    stashScene.files.length > 0 ? stashScene.files[0] : undefined;
+
   return (
     <>
       <div className={isActive ? "col-lg-6" : ""}>
@@ -640,7 +678,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             )}
 
             {maybeRenderDateField()}
-            {getDurationStatus(scene, stashScene.file?.duration)}
+            {getDurationStatus(scene, stashSceneFile?.duration)}
             {getFingerprintStatus(scene, stashScene)}
           </div>
         </div>

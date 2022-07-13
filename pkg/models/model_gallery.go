@@ -1,89 +1,115 @@
 package models
 
 import (
-	"database/sql"
 	"path/filepath"
 	"time"
+
+	"github.com/stashapp/stash/pkg/file"
 )
 
 type Gallery struct {
-	ID          int                 `db:"id" json:"id"`
-	Path        sql.NullString      `db:"path" json:"path"`
-	Checksum    string              `db:"checksum" json:"checksum"`
-	Zip         bool                `db:"zip" json:"zip"`
-	Title       sql.NullString      `db:"title" json:"title"`
-	URL         sql.NullString      `db:"url" json:"url"`
-	Date        SQLiteDate          `db:"date" json:"date"`
-	Details     sql.NullString      `db:"details" json:"details"`
-	Rating      sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   bool                `db:"organized" json:"organized"`
-	StudioID    sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	CreatedAt   SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	ID int `json:"id"`
+
+	// Path        *string    `json:"path"`
+	// Checksum    string     `json:"checksum"`
+	// Zip         bool       `json:"zip"`
+
+	Title     string `json:"title"`
+	URL       string `json:"url"`
+	Date      *Date  `json:"date"`
+	Details   string `json:"details"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	StudioID  *int   `json:"studio_id"`
+
+	// FileModTime *time.Time `json:"file_mod_time"`
+
+	// transient - not persisted
+	Files []file.File
+
+	FolderID *file.FolderID `json:"folder_id"`
+
+	// transient - not persisted
+	FolderPath string `json:"folder_path"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	SceneIDs     []int `json:"scene_ids"`
+	TagIDs       []int `json:"tag_ids"`
+	PerformerIDs []int `json:"performer_ids"`
+}
+
+func (g Gallery) PrimaryFile() file.File {
+	if len(g.Files) == 0 {
+		return nil
+	}
+
+	return g.Files[0]
+}
+
+func (g Gallery) Path() string {
+	if p := g.PrimaryFile(); p != nil {
+		return p.Base().Path
+	}
+
+	return g.FolderPath
+}
+
+func (g Gallery) Checksum() string {
+	if p := g.PrimaryFile(); p != nil {
+		v := p.Base().Fingerprints.Get(file.FingerprintTypeMD5)
+		if v == nil {
+			return ""
+		}
+
+		return v.(string)
+	}
+	return ""
 }
 
 // GalleryPartial represents part of a Gallery object. It is used to update
 // the database entry. Only non-nil fields will be updated.
 type GalleryPartial struct {
-	ID          int                  `db:"id" json:"id"`
-	Path        *sql.NullString      `db:"path" json:"path"`
-	Checksum    *string              `db:"checksum" json:"checksum"`
-	Title       *sql.NullString      `db:"title" json:"title"`
-	URL         *sql.NullString      `db:"url" json:"url"`
-	Date        *SQLiteDate          `db:"date" json:"date"`
-	Details     *sql.NullString      `db:"details" json:"details"`
-	Rating      *sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   *bool                `db:"organized" json:"organized"`
-	StudioID    *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	// Path        OptionalString
+	// Checksum    OptionalString
+	// Zip         OptionalBool
+	Title     OptionalString
+	URL       OptionalString
+	Date      OptionalDate
+	Details   OptionalString
+	Rating    OptionalInt
+	Organized OptionalBool
+	StudioID  OptionalInt
+	// FileModTime OptionalTime
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
+
+	SceneIDs     *UpdateIDs
+	TagIDs       *UpdateIDs
+	PerformerIDs *UpdateIDs
 }
 
-func (s *Gallery) File() File {
-	ret := File{
-		Path: s.Path.String,
-	}
-
-	ret.Checksum = s.Checksum
-
-	if s.FileModTime.Valid {
-		ret.FileModTime = s.FileModTime.Timestamp
-	}
-
-	return ret
-}
-
-func (s *Gallery) SetFile(f File) {
-	path := f.Path
-	s.Path = sql.NullString{
-		String: path,
-		Valid:  true,
-	}
-
-	if f.Checksum != "" {
-		s.Checksum = f.Checksum
-	}
-
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		s.FileModTime = NullSQLiteTimestamp{
-			Timestamp: f.FileModTime,
-			Valid:     true,
-		}
+func NewGalleryPartial() GalleryPartial {
+	updatedTime := time.Now()
+	return GalleryPartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
 	}
 }
 
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
-func (s Gallery) GetTitle() string {
-	if s.Title.String != "" {
-		return s.Title.String
+func (g Gallery) GetTitle() string {
+	if g.Title != "" {
+		return g.Title
 	}
 
-	if s.Path.Valid {
-		return filepath.Base(s.Path.String)
+	if len(g.Files) > 0 {
+		return filepath.Base(g.Path())
+	}
+
+	if g.FolderPath != "" {
+		return g.FolderPath
 	}
 
 	return ""

@@ -283,7 +283,9 @@ func (qb *sceneMarkerQueryBuilder) getSceneMarkerSort(query *queryBuilder, findF
 		sort = "updated_at"
 		tableName = "scenes"
 	}
-	return getSort(sort, direction, tableName)
+
+	additional := ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
+	return getSort(sort, direction, tableName) + additional
 }
 
 func (qb *sceneMarkerQueryBuilder) querySceneMarkers(ctx context.Context, query string, args []interface{}) ([]*models.SceneMarker, error) {

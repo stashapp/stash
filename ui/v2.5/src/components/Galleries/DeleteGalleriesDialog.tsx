@@ -7,6 +7,7 @@ import { useToast } from "src/hooks";
 import { ConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { galleryPath } from "src/core/galleries";
 
 interface IDeleteGalleryDialogProps {
   selected: GQL.SlimGalleryDataFragment[];
@@ -73,7 +74,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
       return;
     }
 
-    const fsGalleries = props.selected.filter((g) => g.path);
+    const fsGalleries = props.selected.filter((g) => galleryPath(g));
     if (fsGalleries.length === 0) {
       return;
     }
@@ -92,7 +93,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
         </p>
         <ul>
           {fsGalleries.slice(0, 5).map((s) => (
-            <li key={s.path}>{s.path}</li>
+            <li key={galleryPath(s)}>{galleryPath(s)}</li>
           ))}
           {fsGalleries.length > 5 && (
             <FormattedMessage

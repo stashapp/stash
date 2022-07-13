@@ -10,6 +10,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -22,7 +23,7 @@ type objectList interface {
 }
 
 type repository struct {
-	tx        dbi
+	tx        dbWrapper
 	tableName string
 	idColumn  string
 }
@@ -30,11 +31,6 @@ type repository struct {
 func (r *repository) getByID(ctx context.Context, id int, dest interface{}) error {
 	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT 1", r.tableName, r.idColumn)
 	return r.tx.Get(ctx, dest, stmt, id)
-}
-
-func (r *repository) getAll(ctx context.Context, id int, f func(rows *sqlx.Rows) error) error {
-	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", r.tableName, r.idColumn)
-	return r.queryFunc(ctx, stmt, []interface{}{id}, false, f)
 }
 
 func (r *repository) insert(ctx context.Context, obj interface{}) (sql.Result, error) {
@@ -70,21 +66,21 @@ func (r *repository) update(ctx context.Context, id int, obj interface{}, partia
 	return err
 }
 
-func (r *repository) updateMap(ctx context.Context, id int, m map[string]interface{}) error {
-	exists, err := r.exists(ctx, id)
-	if err != nil {
-		return err
-	}
+// func (r *repository) updateMap(ctx context.Context, id int, m map[string]interface{}) error {
+// 	exists, err := r.exists(ctx, id)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if !exists {
-		return fmt.Errorf("%s %d does not exist in %s", r.idColumn, id, r.tableName)
-	}
+// 	if !exists {
+// 		return fmt.Errorf("%s %d does not exist in %s", r.idColumn, id, r.tableName)
+// 	}
 
-	stmt := fmt.Sprintf("UPDATE %s SET %s WHERE %s.%s = :id", r.tableName, updateSetMap(m), r.tableName, r.idColumn)
-	_, err = r.tx.NamedExec(ctx, stmt, m)
+// 	stmt := fmt.Sprintf("UPDATE %s SET %s WHERE %s.%s = :id", r.tableName, updateSetMap(m), r.tableName, r.idColumn)
+// 	_, err = r.tx.NamedExec(ctx, stmt, m)
 
-	return err
-}
+// 	return err
+// }
 
 func (r *repository) destroyExisting(ctx context.Context, ids []int) error {
 	for _, id := range ids {
@@ -147,7 +143,7 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 	}
 
 	if err := r.tx.Select(ctx, &result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return []int{}, err
+		return []int{}, fmt.Errorf("running query: %s [%v]: %w", query, args, err)
 	}
 
 	vsm := make([]int, len(result))
@@ -155,20 +151,6 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 		vsm[i] = v.Int
 	}
 	return vsm, nil
-}
-
-func (r *repository) runSumQuery(ctx context.Context, query string, args []interface{}) (float64, error) {
-	// Perform query and fetch result
-	result := struct {
-		Float64 float64 `db:"sum"`
-	}{0}
-
-	// Perform query and fetch result
-	if err := r.tx.Get(ctx, &result, query, args...); err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return 0, err
-	}
-
-	return result.Float64, nil
 }
 
 func (r *repository) queryFunc(ctx context.Context, query string, args []interface{}, single bool, f func(rows *sqlx.Rows) error) error {
@@ -209,12 +191,16 @@ func (r *repository) query(ctx context.Context, query string, args []interface{}
 }
 
 func (r *repository) queryStruct(ctx context.Context, query string, args []interface{}, out interface{}) error {
-	return r.queryFunc(ctx, query, args, true, func(rows *sqlx.Rows) error {
+	if err := r.queryFunc(ctx, query, args, true, func(rows *sqlx.Rows) error {
 		if err := rows.StructScan(out); err != nil {
 			return err
 		}
 		return nil
-	})
+	}); err != nil {
+		return fmt.Errorf("executing query: %s [%v]: %w", query, args, err)
+	}
+
+	return nil
 }
 
 func (r *repository) querySimple(ctx context.Context, query string, args []interface{}, out interface{}) error {
@@ -370,9 +356,9 @@ type captionRepository struct {
 	repository
 }
 
-func (r *captionRepository) get(ctx context.Context, id int) ([]*models.SceneCaption, error) {
-	query := fmt.Sprintf("SELECT %s, %s, %s from %s WHERE %s = ?", sceneCaptionCodeColumn, sceneCaptionFilenameColumn, sceneCaptionTypeColumn, r.tableName, r.idColumn)
-	var ret []*models.SceneCaption
+func (r *captionRepository) get(ctx context.Context, id file.ID) ([]*models.VideoCaption, error) {
+	query := fmt.Sprintf("SELECT %s, %s, %s from %s WHERE %s = ?", captionCodeColumn, captionFilenameColumn, captionTypeColumn, r.tableName, r.idColumn)
+	var ret []*models.VideoCaption
 	err := r.queryFunc(ctx, query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
 		var captionCode string
 		var captionFilename string
@@ -382,7 +368,7 @@ func (r *captionRepository) get(ctx context.Context, id int) ([]*models.SceneCap
 			return err
 		}
 
-		caption := &models.SceneCaption{
+		caption := &models.VideoCaption{
 			LanguageCode: captionCode,
 			Filename:     captionFilename,
 			CaptionType:  captionType,
@@ -393,13 +379,13 @@ func (r *captionRepository) get(ctx context.Context, id int) ([]*models.SceneCap
 	return ret, err
 }
 
-func (r *captionRepository) insert(ctx context.Context, id int, caption *models.SceneCaption) (sql.Result, error) {
-	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)", r.tableName, r.idColumn, sceneCaptionCodeColumn, sceneCaptionFilenameColumn, sceneCaptionTypeColumn)
+func (r *captionRepository) insert(ctx context.Context, id file.ID, caption *models.VideoCaption) (sql.Result, error) {
+	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)", r.tableName, r.idColumn, captionCodeColumn, captionFilenameColumn, captionTypeColumn)
 	return r.tx.Exec(ctx, stmt, id, caption.LanguageCode, caption.Filename, caption.CaptionType)
 }
 
-func (r *captionRepository) replace(ctx context.Context, id int, captions []*models.SceneCaption) error {
-	if err := r.destroy(ctx, []int{id}); err != nil {
+func (r *captionRepository) replace(ctx context.Context, id file.ID, captions []*models.VideoCaption) error {
+	if err := r.destroy(ctx, []int{int(id)}); err != nil {
 		return err
 	}
 
@@ -472,7 +458,7 @@ func (r *stashIDRepository) get(ctx context.Context, id int) ([]*models.StashID,
 	return []*models.StashID(ret), err
 }
 
-func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []models.StashID) error {
+func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []*models.StashID) error {
 	if err := r.destroy(ctx, []int{id}); err != nil {
 		return err
 	}
@@ -529,10 +515,10 @@ func updateSet(i interface{}, partial bool) string {
 	return strings.Join(query, ", ")
 }
 
-func updateSetMap(m map[string]interface{}) string {
-	var query []string
-	for k := range m {
-		query = append(query, fmt.Sprintf("%s=:%s", k, k))
-	}
-	return strings.Join(query, ", ")
-}
+// func updateSetMap(m map[string]interface{}) string {
+// 	var query []string
+// 	for k := range m {
+// 		query = append(query, fmt.Sprintf("%s=:%s", k, k))
+// 	}
+// 	return strings.Join(query, ", ")
+// }

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +28,13 @@ func TestIsCover(t *testing.T) {
 	assert := assert.New(t)
 	for _, tc := range tests {
 		img := &models.Image{
-			Path: tc.fn,
+			Files: []*file.ImageFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: tc.fn,
+					},
+				},
+			},
 		}
 		assert.Equal(tc.isCover, IsCover(img), "expected: %t for %s", tc.isCover, tc.fn)
 	}

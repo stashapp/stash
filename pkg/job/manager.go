@@ -2,8 +2,11 @@ package job
 
 import (
 	"context"
+	"runtime/debug"
 	"sync"
 	"time"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 const maxGraveyardSize = 10
@@ -179,18 +182,30 @@ func (m *Manager) dispatch(ctx context.Context, j *Job) (done chan struct{}) {
 	j.cancelFunc = cancelFunc
 
 	done = make(chan struct{})
-	go func() {
-		progress := m.newProgress(j)
-		j.exec.Execute(ctx, progress)
-
-		m.onJobFinish(j)
-
-		close(done)
-	}()
+	go m.executeJob(ctx, j, done)
 
 	m.notifyJobUpdate(j)
 
 	return
+}
+
+func (m *Manager) executeJob(ctx context.Context, j *Job, done chan struct{}) {
+	defer close(done)
+	defer m.onJobFinish(j)
+	defer func() {
+		if p := recover(); p != nil {
+			// a panic occurred, log and mark the job as failed
+			logger.Errorf("panic in job %d - %s: %v", j.ID, j.Description, p)
+			logger.Error(string(debug.Stack()))
+
+			m.mutex.Lock()
+			defer m.mutex.Unlock()
+			j.Status = StatusFailed
+		}
+	}()
+
+	progress := m.newProgress(j)
+	j.exec.Execute(ctx, progress)
 }
 
 func (m *Manager) onJobFinish(job *Job) {
@@ -199,7 +214,7 @@ func (m *Manager) onJobFinish(job *Job) {
 
 	if job.Status == StatusStopping {
 		job.Status = StatusCancelled
-	} else {
+	} else if job.Status != StatusFailed {
 		job.Status = StatusFinished
 	}
 	t := time.Now()
