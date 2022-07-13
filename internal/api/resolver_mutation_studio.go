@@ -90,7 +90,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateI
 
 		// Save the stash_ids
 		if input.StashIds != nil {
-			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			stashIDJoins := input.StashIds
 			if err := qb.UpdateStashIDs(ctx, s.ID, stashIDJoins); err != nil {
 				return err
 			}
@@ -182,7 +182,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 
 		// Save the stash_ids
 		if translator.hasField("stash_ids") {
-			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			stashIDJoins := input.StashIds
 			if err := qb.UpdateStashIDs(ctx, studioID, stashIDJoins); err != nil {
 				return err
 			}

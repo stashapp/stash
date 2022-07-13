@@ -1,18 +1,14 @@
 fragment ImageData on Image {
   id
-  checksum
   title
   rating
   organized
   o_counter
-  path
   created_at
   updated_at
 
-  file {
-    size
-    width
-    height
+  files {
+    ...ImageFileData
   }
 
   paths {

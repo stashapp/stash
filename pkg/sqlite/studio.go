@@ -429,7 +429,7 @@ func (qb *studioQueryBuilder) GetStashIDs(ctx context.Context, studioID int) ([]
 	return qb.stashIDRepository().get(ctx, studioID)
 }
 
-func (qb *studioQueryBuilder) UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error {
+func (qb *studioQueryBuilder) UpdateStashIDs(ctx context.Context, studioID int, stashIDs []*models.StashID) error {
 	return qb.stashIDRepository().replace(ctx, studioID, stashIDs)
 }
 

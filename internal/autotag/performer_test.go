@@ -3,6 +3,7 @@ package autotag
 import (
 	"testing"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -47,8 +48,14 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	matchingPaths, falsePaths := generateTestPaths(performerName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID:   i + 1,
-			Path: p,
+			ID: i + 1,
+			Files: []*file.VideoFile{
+				{
+					BaseFile: &file.BaseFile{
+						Path: p,
+					},
+				},
+			},
 		})
 	}
 
@@ -77,8 +84,12 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("GetPerformerIDs", testCtx, sceneID).Return(nil, nil).Once()
-		mockSceneReader.On("UpdatePerformers", testCtx, sceneID, []int{performerID}).Return(nil).Once()
+		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := PerformerScenes(testCtx, &performer, nil, mockSceneReader, nil)
@@ -122,8 +133,8 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	matchingPaths, falsePaths := generateTestPaths(performerName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:   i + 1,
-			Path: p,
+			ID:    i + 1,
+			Files: []*file.ImageFile{makeImageFile(p)},
 		})
 	}
 
@@ -152,8 +163,12 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("GetPerformerIDs", testCtx, imageID).Return(nil, nil).Once()
-		mockImageReader.On("UpdatePerformers", testCtx, imageID, []int{performerID}).Return(nil).Once()
+		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := PerformerImages(testCtx, &performer, nil, mockImageReader, nil)
@@ -196,9 +211,14 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	var galleries []*models.Gallery
 	matchingPaths, falsePaths := generateTestPaths(performerName, galleryExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
+		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID:   i + 1,
-			Path: models.NullString(p),
+			ID: i + 1,
+			Files: []file.File{
+				&file.BaseFile{
+					Path: v,
+				},
+			},
 		})
 	}
 
@@ -226,8 +246,12 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("GetPerformerIDs", testCtx, galleryID).Return(nil, nil).Once()
-		mockGalleryReader.On("UpdatePerformers", testCtx, galleryID, []int{performerID}).Return(nil).Once()
+		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
 	err := PerformerGalleries(testCtx, &performer, nil, mockGalleryReader, nil)

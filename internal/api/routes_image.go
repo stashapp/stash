@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
@@ -18,7 +19,7 @@ import (
 
 type ImageFinder interface {
 	Find(ctx context.Context, id int) (*models.Image, error)
-	FindByChecksum(ctx context.Context, checksum string) (*models.Image, error)
+	FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error)
 }
 
 type imageRoutes struct {
@@ -43,7 +44,7 @@ func (rs imageRoutes) Routes() chi.Router {
 
 func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	img := r.Context().Value(imageKey).(*models.Image)
-	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(img.Checksum, models.DefaultGthumbWidth)
+	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(img.Checksum(), models.DefaultGthumbWidth)
 
 	w.Header().Add("Cache-Control", "max-age=604800000")
 
@@ -52,8 +53,16 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	if exists {
 		http.ServeFile(w, r, filepath)
 	} else {
+		// don't return anything if there is no file
+		f := img.PrimaryFile()
+		if f == nil {
+			// TODO - probably want to return a placeholder
+			http.Error(w, http.StatusText(404), 404)
+			return
+		}
+
 		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG)
-		data, err := encoder.GetThumbnail(img, models.DefaultGthumbWidth)
+		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {
 			// don't log for unsupported image format
 			if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
@@ -72,7 +81,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 
 		// write the generated thumbnail to disk if enabled
 		if manager.GetInstance().Config.IsWriteImageThumbnails() {
-			logger.Debugf("writing thumbnail to disk: %s", img.Path)
+			logger.Debugf("writing thumbnail to disk: %s", img.Path())
 			if err := fsutil.WriteFile(filepath, data); err != nil {
 				logger.Errorf("error writing thumbnail for image %s: %s", img.Path, err)
 			}
@@ -87,7 +96,13 @@ func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	i := r.Context().Value(imageKey).(*models.Image)
 
 	// if image is in a zip file, we need to serve it specifically
-	image.Serve(w, r, i.Path)
+
+	if len(i.Files) == 0 {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	i.Files[0].Serve(&file.OsFS{}, w, r)
 }
 
 // endregion
@@ -101,7 +116,10 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.imageFinder
 			if imageID == 0 {
-				image, _ = qb.FindByChecksum(ctx, imageIdentifierQueryParam)
+				images, _ := qb.FindByChecksum(ctx, imageIdentifierQueryParam)
+				if len(images) > 0 {
+					image = images[0]
+				}
 			} else {
 				image, _ = qb.Find(ctx, imageID)
 			}

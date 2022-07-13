@@ -11,6 +11,8 @@ import (
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -23,9 +25,8 @@ type SceneFinder interface {
 	manager.SceneCoverGetter
 
 	scene.IDFinder
-	FindByChecksum(ctx context.Context, checksum string) (*models.Scene, error)
-	FindByOSHash(ctx context.Context, oshash string) (*models.Scene, error)
-	GetCaptions(ctx context.Context, sceneID int) ([]*models.SceneCaption, error)
+	FindByChecksum(ctx context.Context, checksum string) ([]*models.Scene, error)
+	FindByOSHash(ctx context.Context, oshash string) ([]*models.Scene, error)
 }
 
 type SceneMarkerFinder interface {
@@ -33,9 +34,14 @@ type SceneMarkerFinder interface {
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
 }
 
+type CaptionFinder interface {
+	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
+}
+
 type sceneRoutes struct {
 	txnManager        txn.Manager
 	sceneFinder       SceneFinder
+	captionFinder     CaptionFinder
 	sceneMarkerFinder SceneMarkerFinder
 	tagFinder         scene.MarkerTagFinder
 }
@@ -116,7 +122,7 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	ffprobe := manager.GetInstance().FFProbe
-	videoFile, err := ffprobe.NewVideoFile(scene.Path)
+	videoFile, err := ffprobe.NewVideoFile(scene.Path())
 	if err != nil {
 		logger.Errorf("[stream] error reading video file: %v", err)
 		return
@@ -149,8 +155,10 @@ func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, streamFormat ffmpeg.StreamFormat) {
-	logger.Debugf("Streaming as %s", streamFormat.MimeType)
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	f := scene.PrimaryFile()
+	logger.Debugf("Streaming as %s", streamFormat.MimeType)
 
 	// start stream based on query param, if provided
 	if err := r.ParseForm(); err != nil {
@@ -162,17 +170,20 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	requestedSize := r.Form.Get("resolution")
 
 	audioCodec := ffmpeg.MissingUnsupported
-	if scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.ProbeAudioCodec(scene.AudioCodec.String)
+	if f.AudioCodec != "" {
+		audioCodec = ffmpeg.ProbeAudioCodec(f.AudioCodec)
 	}
 
+	width := f.Width
+	height := f.Height
+
 	options := ffmpeg.TranscodeStreamOptions{
-		Input:     scene.Path,
+		Input:     f.Path,
 		Codec:     streamFormat,
 		VideoOnly: audioCodec == ffmpeg.MissingUnsupported,
 
-		VideoWidth:  int(scene.Width.Int64),
-		VideoHeight: int(scene.Height.Int64),
+		VideoWidth:  width,
+		VideoHeight: height,
 
 		StartTime:        ss,
 		MaxTranscodeSize: config.GetInstance().GetMaxStreamingTranscodeSize().GetMaxResolution(),
@@ -186,7 +197,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 
 	lm := manager.GetInstance().ReadLockManager
 	streamRequestCtx := manager.NewStreamRequestContext(w, r)
-	lockCtx := lm.ReadLock(streamRequestCtx, scene.Path)
+	lockCtx := lm.ReadLock(streamRequestCtx, f.Path)
 	defer lockCtx.Cancel()
 
 	stream, err := encoder.GetTranscodeStream(lockCtx, options)
@@ -295,7 +306,7 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
-	funscript := scene.GetFunscriptPath(s.Path)
+	funscript := video.GetFunscriptPath(s.Path())
 	serveFileNoCache(w, r, funscript)
 }
 
@@ -311,10 +322,15 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 
 	if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
-		captions, err := rs.sceneFinder.GetCaptions(ctx, s.ID)
+		primaryFile := s.PrimaryFile()
+		if primaryFile == nil {
+			return nil
+		}
+
+		captions, err := rs.captionFinder.GetCaptions(ctx, primaryFile.Base().ID)
 		for _, caption := range captions {
 			if lang == caption.LanguageCode && ext == caption.CaptionType {
-				sub, err := scene.ReadSubs(caption.Path(s.Path))
+				sub, err := video.ReadSubs(caption.Path(s.Path()))
 				if err == nil {
 					var b bytes.Buffer
 					err = sub.WriteToWebVTT(&b)
@@ -460,11 +476,17 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.sceneFinder
 			if sceneID == 0 {
+				var scenes []*models.Scene
 				// determine checksum/os by the length of the query param
 				if len(sceneIdentifierQueryParam) == 32 {
-					scene, _ = qb.FindByChecksum(ctx, sceneIdentifierQueryParam)
+					scenes, _ = qb.FindByChecksum(ctx, sceneIdentifierQueryParam)
+
 				} else {
-					scene, _ = qb.FindByOSHash(ctx, sceneIdentifierQueryParam)
+					scenes, _ = qb.FindByOSHash(ctx, sceneIdentifierQueryParam)
+				}
+
+				if len(scenes) > 0 {
+					scene = scenes[0]
 				}
 			} else {
 				scene, _ = qb.Find(ctx, sceneID)

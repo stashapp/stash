@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -54,7 +53,7 @@ type GeneratePreviewOptionsInput struct {
 const generateQueueSize = 200000
 
 type GenerateJob struct {
-	txnManager models.Repository
+	txnManager Repository
 	input      GenerateMetadataInput
 
 	overwrite      bool
@@ -192,36 +191,29 @@ func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, que
 
 	findFilter := models.BatchFindFilter(batchSize)
 
-	if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
-		for more := true; more; {
-			if job.IsCancelled(ctx) {
-				return context.Canceled
-			}
-
-			scenes, err := scene.Query(ctx, j.txnManager.Scene, nil, findFilter)
-			if err != nil {
-				return err
-			}
-
-			for _, ss := range scenes {
-				if job.IsCancelled(ctx) {
-					return context.Canceled
-				}
-
-				j.queueSceneJobs(ctx, g, ss, queue, &totals)
-			}
-
-			if len(scenes) != batchSize {
-				more = false
-			} else {
-				*findFilter.Page++
-			}
+	for more := true; more; {
+		if job.IsCancelled(ctx) {
+			return totals
 		}
 
-		return nil
-	}); err != nil {
-		if !errors.Is(err, context.Canceled) {
+		scenes, err := scene.Query(ctx, j.txnManager.Scene, nil, findFilter)
+		if err != nil {
 			logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
+			return totals
+		}
+
+		for _, ss := range scenes {
+			if job.IsCancelled(ctx) {
+				return totals
+			}
+
+			j.queueSceneJobs(ctx, g, ss, queue, &totals)
+		}
+
+		if len(scenes) != batchSize {
+			more = false
+		} else {
+			*findFilter.Page++
 		}
 	}
 
@@ -351,17 +343,21 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 	}
 
 	if utils.IsTrue(j.input.Phashes) {
-		task := &GeneratePhashTask{
-			Scene:               *scene,
-			fileNamingAlgorithm: j.fileNamingAlgo,
-			txnManager:          j.txnManager,
-			Overwrite:           j.overwrite,
-		}
+		// generate for all files in scene
+		for _, f := range scene.Files {
+			task := &GeneratePhashTask{
+				File:                f,
+				fileNamingAlgorithm: j.fileNamingAlgo,
+				txnManager:          j.txnManager,
+				fileUpdater:         j.txnManager.File,
+				Overwrite:           j.overwrite,
+			}
 
-		if task.shouldGenerate() {
-			totals.phashes++
-			totals.tasks++
-			queue <- task
+			if task.shouldGenerate() {
+				totals.phashes++
+				totals.tasks++
+				queue <- task
+			}
 		}
 	}
 

@@ -13,11 +13,16 @@ type queryURLParameters map[string]string
 
 func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret := make(queryURLParameters)
-	ret["checksum"] = scene.Checksum.String
-	ret["oshash"] = scene.OSHash.String
-	ret["filename"] = filepath.Base(scene.Path)
-	ret["title"] = scene.Title.String
-	ret["url"] = scene.URL.String
+	ret["checksum"] = scene.Checksum()
+	ret["oshash"] = scene.OSHash()
+	ret["filename"] = filepath.Base(scene.Path())
+
+	if scene.Title != "" {
+		ret["title"] = scene.Title
+	}
+	if scene.URL != "" {
+		ret["url"] = scene.URL
+	}
 	return ret
 }
 
@@ -46,13 +51,18 @@ func queryURLParameterFromURL(url string) queryURLParameters {
 
 func queryURLParametersFromGallery(gallery *models.Gallery) queryURLParameters {
 	ret := make(queryURLParameters)
-	ret["checksum"] = gallery.Checksum
+	ret["checksum"] = gallery.Checksum()
 
-	if gallery.Path.Valid {
-		ret["filename"] = filepath.Base(gallery.Path.String)
+	if gallery.Path() != "" {
+		ret["filename"] = filepath.Base(gallery.Path())
 	}
-	ret["title"] = gallery.Title.String
-	ret["url"] = gallery.URL.String
+	if gallery.Title != "" {
+		ret["title"] = gallery.Title
+	}
+
+	if gallery.URL != "" {
+		ret["url"] = gallery.URL
+	}
 
 	return ret
 }

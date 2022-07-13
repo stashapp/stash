@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"errors"
@@ -20,7 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-var appSchemaVersion uint = 31
+var appSchemaVersion uint = 32
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -59,12 +60,28 @@ func init() {
 }
 
 type Database struct {
+	File    *FileStore
+	Folder  *FolderStore
+	Image   *ImageStore
+	Gallery *GalleryStore
+	Scene   *SceneStore
+
 	db     *sqlx.DB
 	dbPath string
 
 	schemaVersion uint
 
 	writeMu sync.Mutex
+}
+
+func NewDatabase() *Database {
+	return &Database{
+		File:    NewFileStore(),
+		Folder:  NewFolderStore(),
+		Image:   NewImageStore(),
+		Gallery: NewGalleryStore(),
+		Scene:   NewSceneStore(),
+	}
 }
 
 // Ready returns an error if the database is not ready to begin transactions.
@@ -122,10 +139,6 @@ func (db *Database) Open(dbPath string) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if err := db.runCustomMigrations(); err != nil {
-		return err
 	}
 
 	return nil
@@ -246,7 +259,7 @@ func (db *Database) Version() uint {
 func (db *Database) getMigrate() (*migrate.Migrate, error) {
 	migrations, err := iofs.New(migrationsBox, "migrations")
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
 	const disableForeignKeys = true
@@ -282,6 +295,8 @@ func (db *Database) getDatabaseSchemaVersion() (uint, error) {
 
 // Migrate the database
 func (db *Database) RunMigrations() error {
+	ctx := context.Background()
+
 	m, err := db.getMigrate()
 	if err != nil {
 		return err
@@ -292,10 +307,27 @@ func (db *Database) RunMigrations() error {
 	stepNumber := appSchemaVersion - databaseSchemaVersion
 	if stepNumber != 0 {
 		logger.Infof("Migrating database from version %d to %d", databaseSchemaVersion, appSchemaVersion)
-		err = m.Steps(int(stepNumber))
-		if err != nil {
-			// migration failed
-			return err
+
+		// run each migration individually, and run custom migrations as needed
+		var i uint = 1
+		for ; i <= stepNumber; i++ {
+			newVersion := databaseSchemaVersion + i
+
+			// run pre migrations as needed
+			if err := db.runCustomMigrations(ctx, preMigrations[newVersion]); err != nil {
+				return fmt.Errorf("running pre migrations for schema version %d: %w", newVersion, err)
+			}
+
+			err = m.Steps(1)
+			if err != nil {
+				// migration failed
+				return err
+			}
+
+			// run post migrations as needed
+			if err := db.runCustomMigrations(ctx, postMigrations[newVersion]); err != nil {
+				return fmt.Errorf("running post migrations for schema version %d: %w", newVersion, err)
+			}
 		}
 	}
 
@@ -314,6 +346,31 @@ func (db *Database) RunMigrations() error {
 	_, err = db.db.Exec("VACUUM")
 	if err != nil {
 		logger.Warnf("error while performing post-migration vacuum: %v", err)
+	}
+
+	return nil
+}
+
+func (db *Database) runCustomMigrations(ctx context.Context, fns []customMigrationFunc) error {
+	for _, fn := range fns {
+		if err := db.runCustomMigration(ctx, fn); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (db *Database) runCustomMigration(ctx context.Context, fn customMigrationFunc) error {
+	const disableForeignKeys = false
+	d, err := db.open(disableForeignKeys)
+	if err != nil {
+		return err
+	}
+
+	defer d.Close()
+	if err := fn(ctx, d); err != nil {
+		return err
 	}
 
 	return nil

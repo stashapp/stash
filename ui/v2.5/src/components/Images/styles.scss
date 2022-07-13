@@ -114,3 +114,16 @@ $imageTabWidth: 450px;
     height: calc(1.5em + 0.75rem + 2px);
   }
 }
+
+.image-file-card.card {
+  margin: 0;
+  padding: 0;
+
+  .card-header {
+    cursor: pointer;
+  }
+
+  dl {
+    margin-bottom: 0;
+  }
+}

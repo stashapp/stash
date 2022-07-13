@@ -13,7 +13,7 @@ import (
 
 type PerformerCreator interface {
 	Create(ctx context.Context, newPerformer models.Performer) (*models.Performer, error)
-	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
+	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []*models.StashID) error
 }
 
 func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer, createMissing bool) (*int, error) {
@@ -39,7 +39,7 @@ func createMissingPerformer(ctx context.Context, endpoint string, w PerformerCre
 	}
 
 	if endpoint != "" && p.RemoteSiteID != nil {
-		if err := w.UpdateStashIDs(ctx, created.ID, []models.StashID{
+		if err := w.UpdateStashIDs(ctx, created.ID, []*models.StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *p.RemoteSiteID,

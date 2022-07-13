@@ -107,8 +107,8 @@ func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonsch
 		Image:        image,
 		Rating:       rating,
 		Aliases:      aliases,
-		StashIDs: []models.StashID{
-			stashID,
+		StashIDs: []*models.StashID{
+			&stashID,
 		},
 		IgnoreAutoTag: autoTagIgnored,
 	}

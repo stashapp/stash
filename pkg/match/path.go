@@ -307,7 +307,7 @@ func PathToScenes(ctx context.Context, name string, paths []string, sceneReader 
 
 	r := nameToRegexp(name, useUnicode)
 	for _, p := range scenes {
-		if regexpMatchesPath(r, p.Path) != -1 {
+		if regexpMatchesPath(r, p.Path()) != -1 {
 			ret = append(ret, p)
 		}
 	}
@@ -344,7 +344,7 @@ func PathToImages(ctx context.Context, name string, paths []string, imageReader 
 
 	r := nameToRegexp(name, useUnicode)
 	for _, p := range images {
-		if regexpMatchesPath(r, p.Path) != -1 {
+		if regexpMatchesPath(r, p.Path()) != -1 {
 			ret = append(ret, p)
 		}
 	}
@@ -381,7 +381,8 @@ func PathToGalleries(ctx context.Context, name string, paths []string, galleryRe
 
 	r := nameToRegexp(name, useUnicode)
 	for _, p := range gallerys {
-		if regexpMatchesPath(r, p.Path.String) != -1 {
+		path := p.Path()
+		if path != "" && regexpMatchesPath(r, path) != -1 {
 			ret = append(ret, p)
 		}
 	}

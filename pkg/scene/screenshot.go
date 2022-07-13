@@ -7,7 +7,7 @@ import (
 	"image/jpeg"
 	"os"
 
-	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 
@@ -18,21 +18,20 @@ import (
 	_ "image/png"
 )
 
-type screenshotter interface {
-	GenerateScreenshot(ctx context.Context, probeResult *ffmpeg.VideoFile, hash string) error
-	GenerateThumbnail(ctx context.Context, probeResult *ffmpeg.VideoFile, hash string) error
+type CoverGenerator interface {
+	GenerateCover(ctx context.Context, scene *models.Scene, f *file.VideoFile) error
 }
 
 type ScreenshotSetter interface {
 	SetScreenshot(scene *models.Scene, imageData []byte) error
 }
 
-type PathsScreenshotSetter struct {
+type PathsCoverSetter struct {
 	Paths               *paths.Paths
 	FileNamingAlgorithm models.HashAlgorithm
 }
 
-func (ss *PathsScreenshotSetter) SetScreenshot(scene *models.Scene, imageData []byte) error {
+func (ss *PathsCoverSetter) SetScreenshot(scene *models.Scene, imageData []byte) error {
 	checksum := scene.GetHash(ss.FileNamingAlgorithm)
 	return SetScreenshot(ss.Paths, checksum, imageData)
 }

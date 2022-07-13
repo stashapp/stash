@@ -90,19 +90,13 @@ func (c Cache) postScrapeMovie(ctx context.Context, m models.ScrapedMovie) (Scra
 }
 
 func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPerformer) error {
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		tqb := c.repository.TagFinder
+	tqb := c.repository.TagFinder
 
-		tags, err := postProcessTags(ctx, tqb, p.Tags)
-		if err != nil {
-			return err
-		}
-		p.Tags = tags
-
-		return nil
-	}); err != nil {
+	tags, err := postProcessTags(ctx, tqb, p.Tags)
+	if err != nil {
 		return err
 	}
+	p.Tags = tags
 
 	return nil
 }

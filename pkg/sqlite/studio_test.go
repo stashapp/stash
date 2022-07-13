@@ -486,7 +486,7 @@ func verifyStudiosSceneCount(t *testing.T, sceneCountCriterion models.IntCriteri
 		assert.Greater(t, len(studios), 0)
 
 		for _, studio := range studios {
-			sceneCount, err := sqlite.SceneReaderWriter.CountByStudioID(ctx, studio.ID)
+			sceneCount, err := db.Scene.CountByStudioID(ctx, studio.ID)
 			if err != nil {
 				return err
 			}
@@ -529,7 +529,7 @@ func verifyStudiosImageCount(t *testing.T, imageCountCriterion models.IntCriteri
 		for _, studio := range studios {
 			pp := 0
 
-			result, err := sqlite.ImageReaderWriter.Query(ctx, models.ImageQueryOptions{
+			result, err := db.Image.Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: &models.FindFilterType{
 						PerPage: &pp,
@@ -585,7 +585,7 @@ func verifyStudiosGalleryCount(t *testing.T, galleryCountCriterion models.IntCri
 		for _, studio := range studios {
 			pp := 0
 
-			_, count, err := sqlite.GalleryReaderWriter.Query(ctx, &models.GalleryFilterType{
+			_, count, err := db.Gallery.Query(ctx, &models.GalleryFilterType{
 				Studios: &models.HierarchicalMultiCriterionInput{
 					Value:    []string{strconv.Itoa(studio.ID)},
 					Modifier: models.CriterionModifierIncludes,

@@ -155,8 +155,8 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		DeathDate: deathDate.String,
 		HairColor: hairColor,
 		Weight:    weight,
-		StashIDs: []models.StashID{
-			stashID,
+		StashIDs: []*models.StashID{
+			&stashID,
 		},
 		IgnoreAutoTag: autoTagIgnored,
 	}

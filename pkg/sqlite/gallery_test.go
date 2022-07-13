@@ -8,115 +8,1178 @@ import (
 	"math"
 	"strconv"
 	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
-
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGalleryFind(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		gqb := sqlite.GalleryReaderWriter
+var invalidID = -1
 
-		const galleryIdx = 0
-		gallery, err := gqb.Find(ctx, galleryIDs[galleryIdx])
+func Test_galleryQueryBuilder_Create(t *testing.T) {
+	var (
+		title     = "title"
+		url       = "url"
+		rating    = 3
+		details   = "details"
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		if err != nil {
-			t.Errorf("Error finding gallery: %s", err.Error())
-		}
+		galleryFile = makeFileWithID(fileIdxStartGalleryFiles)
+	)
 
-		assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path.String)
+	date := models.NewDate("2003-02-01")
 
-		gallery, err = gqb.Find(ctx, 0)
+	tests := []struct {
+		name      string
+		newObject models.Gallery
+		wantErr   bool
+	}{
+		{
+			"full",
+			models.Gallery{
+				Title:        title,
+				URL:          url,
+				Date:         &date,
+				Details:      details,
+				Rating:       &rating,
+				Organized:    true,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"with file",
+			models.Gallery{
+				Title:     title,
+				URL:       url,
+				Date:      &date,
+				Details:   details,
+				Rating:    &rating,
+				Organized: true,
+				StudioID:  &studioIDs[studioIdxWithScene],
+				Files: []file.File{
+					galleryFile,
+				},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			models.Gallery{
+				StudioID: &invalidID,
+			},
+			true,
+		},
+		{
+			"invalid scene id",
+			models.Gallery{
+				SceneIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			models.Gallery{
+				TagIDs: []int{invalidID},
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			models.Gallery{
+				PerformerIDs: []int{invalidID},
+			},
+			true,
+		},
+	}
 
-		if err != nil {
-			t.Errorf("Error finding gallery: %s", err.Error())
-		}
+	qb := db.Gallery
 
-		assert.Nil(t, gallery)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		return nil
-	})
+			s := tt.newObject
+			var fileIDs []file.ID
+			if len(s.Files) > 0 {
+				fileIDs = []file.ID{s.Files[0].Base().ID}
+			}
+
+			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				assert.Zero(s.ID)
+				return
+			}
+
+			assert.NotZero(s.ID)
+
+			copy := tt.newObject
+			copy.ID = s.ID
+
+			assert.Equal(copy, s)
+
+			// ensure can find the scene
+			found, err := qb.Find(ctx, s.ID)
+			if err != nil {
+				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
+			}
+
+			if !assert.NotNil(found) {
+				return
+			}
+
+			assert.Equal(copy, *found)
+
+			return
+		})
+	}
 }
 
-func TestGalleryFindByChecksum(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		gqb := sqlite.GalleryReaderWriter
-
-		const galleryIdx = 0
-		galleryChecksum := getGalleryStringValue(galleryIdx, "Checksum")
-		gallery, err := gqb.FindByChecksum(ctx, galleryChecksum)
-
-		if err != nil {
-			t.Errorf("Error finding gallery: %s", err.Error())
-		}
-
-		assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path.String)
-
-		galleryChecksum = "not exist"
-		gallery, err = gqb.FindByChecksum(ctx, galleryChecksum)
-
-		if err != nil {
-			t.Errorf("Error finding gallery: %s", err.Error())
-		}
-
-		assert.Nil(t, gallery)
-
-		return nil
-	})
+func makeGalleryFileWithID(i int) *file.BaseFile {
+	ret := makeGalleryFile(i)
+	ret.ID = galleryFileIDs[i]
+	return ret
 }
 
-func TestGalleryFindByPath(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		gqb := sqlite.GalleryReaderWriter
+func Test_galleryQueryBuilder_Update(t *testing.T) {
+	var (
+		title     = "title"
+		url       = "url"
+		rating    = 3
+		details   = "details"
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+	)
 
-		const galleryIdx = 0
-		galleryPath := getGalleryStringValue(galleryIdx, "Path")
-		gallery, err := gqb.FindByPath(ctx, galleryPath)
+	date := models.NewDate("2003-02-01")
 
-		if err != nil {
-			t.Errorf("Error finding gallery: %s", err.Error())
-		}
+	tests := []struct {
+		name          string
+		updatedObject *models.Gallery
+		wantErr       bool
+	}{
+		{
+			"full",
+			&models.Gallery{
+				ID:        galleryIDs[galleryIdxWithScene],
+				Title:     title,
+				URL:       url,
+				Date:      &date,
+				Details:   details,
+				Rating:    &rating,
+				Organized: true,
+				StudioID:  &studioIDs[studioIdxWithScene],
+				Files: []file.File{
+					makeGalleryFileWithID(galleryIdxWithScene),
+				},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				SceneIDs:     []int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]},
+				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"clear nullables",
+			&models.Gallery{
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFileWithID(galleryIdxWithImage),
+				},
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear scene ids",
+			&models.Gallery{
+				ID: galleryIDs[galleryIdxWithScene],
+				Files: []file.File{
+					makeGalleryFileWithID(galleryIdxWithScene),
+				},
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear tag ids",
+			&models.Gallery{
+				ID: galleryIDs[galleryIdxWithTag],
+				Files: []file.File{
+					makeGalleryFileWithID(galleryIdxWithTag),
+				},
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"clear performer ids",
+			&models.Gallery{
+				ID: galleryIDs[galleryIdxWithPerformer],
+				Files: []file.File{
+					makeGalleryFileWithID(galleryIdxWithPerformer),
+				},
+				Organized: true,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			&models.Gallery{
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFileWithID(galleryIdxWithImage),
+				},
+				Organized: true,
+				StudioID:  &invalidID,
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			true,
+		},
+		{
+			"invalid scene id",
+			&models.Gallery{
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFileWithID(galleryIdxWithImage),
+				},
+				Organized: true,
+				SceneIDs:  []int{invalidID},
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			&models.Gallery{
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFileWithID(galleryIdxWithImage),
+				},
+				Organized: true,
+				TagIDs:    []int{invalidID},
+				CreatedAt: createdAt,
+				UpdatedAt: updatedAt,
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			&models.Gallery{
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFileWithID(galleryIdxWithImage),
+				},
+				Organized:    true,
+				PerformerIDs: []int{invalidID},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+			},
+			true,
+		},
+	}
 
-		assert.Equal(t, galleryPath, gallery.Path.String)
+	qb := db.Gallery
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		galleryPath = "not exist"
-		gallery, err = gqb.FindByPath(ctx, galleryPath)
+			copy := *tt.updatedObject
 
-		if err != nil {
-			t.Errorf("Error finding gallery: %s", err.Error())
-		}
+			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-		assert.Nil(t, gallery)
+			if tt.wantErr {
+				return
+			}
 
-		return nil
-	})
+			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			if err != nil {
+				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
+				return
+			}
+
+			assert.Equal(copy, *s)
+
+			return
+		})
+	}
 }
 
-func TestGalleryFindBySceneID(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		gqb := sqlite.GalleryReaderWriter
+func clearGalleryFileIDs(gallery *models.Gallery) {
+	for _, f := range gallery.Files {
+		f.Base().ID = 0
+	}
+}
 
-		sceneID := sceneIDs[sceneIdxWithGallery]
-		galleries, err := gqb.FindBySceneID(ctx, sceneID)
+func clearGalleryPartial() models.GalleryPartial {
+	// leave mandatory fields
+	return models.GalleryPartial{
+		Title:        models.OptionalString{Set: true, Null: true},
+		Details:      models.OptionalString{Set: true, Null: true},
+		URL:          models.OptionalString{Set: true, Null: true},
+		Date:         models.OptionalDate{Set: true, Null: true},
+		Rating:       models.OptionalInt{Set: true, Null: true},
+		StudioID:     models.OptionalInt{Set: true, Null: true},
+		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+	}
+}
 
-		if err != nil {
-			t.Errorf("Error finding gallery: %s", err.Error())
-		}
+func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
+	var (
+		title     = "title"
+		details   = "details"
+		url       = "url"
+		rating    = 3
+		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		assert.Equal(t, getGalleryStringValue(galleryIdxWithScene, "Path"), galleries[0].Path.String)
+		date = models.NewDate("2003-02-01")
+	)
 
-		galleries, err = gqb.FindBySceneID(ctx, 0)
+	tests := []struct {
+		name    string
+		id      int
+		partial models.GalleryPartial
+		want    models.Gallery
+		wantErr bool
+	}{
+		{
+			"full",
+			galleryIDs[galleryIdxWithImage],
+			models.GalleryPartial{
+				Title:     models.NewOptionalString(title),
+				Details:   models.NewOptionalString(details),
+				URL:       models.NewOptionalString(url),
+				Date:      models.NewOptionalDate(date),
+				Rating:    models.NewOptionalInt(rating),
+				Organized: models.NewOptionalBool(true),
+				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithGallery]),
+				CreatedAt: models.NewOptionalTime(createdAt),
+				UpdatedAt: models.NewOptionalTime(updatedAt),
 
-		if err != nil {
-			t.Errorf("Error finding gallery: %s", err.Error())
-		}
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{sceneIDs[sceneIdxWithGallery]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithGallery], performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+			},
+			models.Gallery{
+				ID:        galleryIDs[galleryIdxWithImage],
+				Title:     title,
+				Details:   details,
+				URL:       url,
+				Date:      &date,
+				Rating:    &rating,
+				Organized: true,
+				StudioID:  &studioIDs[studioIdxWithGallery],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithImage),
+				},
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				SceneIDs:     []int{sceneIDs[sceneIdxWithGallery]},
+				TagIDs:       []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithDupName]},
+				PerformerIDs: []int{performerIDs[performerIdx1WithGallery], performerIDs[performerIdx1WithDupName]},
+			},
+			false,
+		},
+		{
+			"clear all",
+			galleryIDs[galleryIdxWithImage],
+			clearGalleryPartial(),
+			models.Gallery{
+				ID: galleryIDs[galleryIdxWithImage],
+				Files: []file.File{
+					makeGalleryFile(galleryIdxWithImage),
+				},
+			},
+			false,
+		},
+		{
+			"invalid id",
+			invalidID,
+			models.GalleryPartial{},
+			models.Gallery{},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Gallery
 
-		assert.Nil(t, galleries)
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
 
-		return nil
-	})
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			clearGalleryFileIDs(got)
+			assert.Equal(tt.want, *got)
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
+			}
+
+			clearGalleryFileIDs(s)
+			assert.Equal(tt.want, *s)
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_UpdatePartialRelationships(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		partial models.GalleryPartial
+		want    models.Gallery
+		wantErr bool
+	}{
+		{
+			"add scenes",
+			galleryIDs[galleryIdx1WithImage],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[sceneIdx1WithStudio], tagIDs[sceneIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				SceneIDs: append(indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(galleryIdx1WithImage)),
+					sceneIDs[sceneIdx1WithStudio],
+					sceneIDs[sceneIdx1WithPerformer],
+				),
+			},
+			false,
+		},
+		{
+			"add tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				TagIDs: append(indexesToIDs(tagIDs, galleryTags[galleryIdxWithTwoTags]),
+					tagIDs[tagIdx1WithDupName],
+					tagIDs[tagIdx1WithImage],
+				),
+			},
+			false,
+		},
+		{
+			"add performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName], performerIDs[performerIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				PerformerIDs: append(indexesToIDs(performerIDs, galleryPerformers[galleryIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithDupName],
+					performerIDs[performerIdx1WithImage],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate scenes",
+			galleryIDs[galleryIdxWithScene],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{sceneIDs[sceneIdxWithGallery], sceneIDs[sceneIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				SceneIDs: append(indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(galleryIdxWithScene)),
+					sceneIDs[sceneIdx1WithPerformer],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithGallery], tagIDs[tagIdx1WithScene]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				TagIDs: append(indexesToIDs(tagIDs, galleryTags[galleryIdxWithTwoTags]),
+					tagIDs[tagIdx1WithScene],
+				),
+			},
+			false,
+		},
+		{
+			"add duplicate performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithGallery], performerIDs[performerIdx1WithScene]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{
+				PerformerIDs: append(indexesToIDs(performerIDs, galleryPerformers[galleryIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithScene],
+				),
+			},
+			false,
+		},
+		{
+			"add invalid scenes",
+			galleryIDs[galleryIdxWithScene],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{},
+			true,
+		},
+		{
+			"add invalid tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{},
+			true,
+		},
+		{
+			"add invalid performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Gallery{},
+			true,
+		},
+		{
+			"remove scenes",
+			galleryIDs[galleryIdxWithScene],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{sceneIDs[sceneIdxWithGallery]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{},
+			false,
+		},
+		{
+			"remove tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				TagIDs: []int{tagIDs[tagIdx2WithGallery]},
+			},
+			false,
+		},
+		{
+			"remove performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				PerformerIDs: []int{performerIDs[performerIdx2WithGallery]},
+			},
+			false,
+		},
+		{
+			"remove unrelated scenes",
+			galleryIDs[galleryIdxWithScene],
+			models.GalleryPartial{
+				SceneIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[sceneIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				SceneIDs: []int{sceneIDs[sceneIdxWithGallery]},
+			},
+			false,
+		},
+		{
+			"remove unrelated tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			models.GalleryPartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				TagIDs: indexesToIDs(tagIDs, galleryTags[galleryIdxWithTwoTags]),
+			},
+			false,
+		},
+		{
+			"remove unrelated performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			models.GalleryPartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Gallery{
+				PerformerIDs: indexesToIDs(performerIDs, galleryPerformers[galleryIdxWithTwoPerformers]),
+			},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		qb := db.Gallery
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
+			}
+
+			// only compare fields that were in the partial
+			if tt.partial.PerformerIDs != nil {
+				assert.Equal(tt.want.PerformerIDs, got.PerformerIDs)
+				assert.Equal(tt.want.PerformerIDs, s.PerformerIDs)
+			}
+			if tt.partial.TagIDs != nil {
+				assert.Equal(tt.want.TagIDs, got.TagIDs)
+				assert.Equal(tt.want.TagIDs, s.TagIDs)
+			}
+			if tt.partial.SceneIDs != nil {
+				assert.Equal(tt.want.SceneIDs, got.SceneIDs)
+				assert.Equal(tt.want.SceneIDs, s.SceneIDs)
+			}
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_Destroy(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		wantErr bool
+	}{
+		{
+			"valid",
+			galleryIDs[galleryIdxWithScene],
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			true,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			// ensure cannot be found
+			i, err := qb.Find(ctx, tt.id)
+
+			assert.NotNil(err)
+			assert.Nil(i)
+			return
+
+		})
+	}
+}
+
+func makeGalleryWithID(index int) *models.Gallery {
+	const includeScenes = true
+	ret := makeGallery(index, includeScenes)
+	ret.ID = galleryIDs[index]
+
+	if ret.Date != nil && ret.Date.IsZero() {
+		ret.Date = nil
+	}
+
+	ret.Files = []file.File{makeGalleryFile(index)}
+
+	return ret
+}
+
+func Test_galleryQueryBuilder_Find(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    *models.Gallery
+		wantErr bool
+	}{
+		{
+			"valid",
+			galleryIDs[galleryIdxWithImage],
+			makeGalleryWithID(galleryIdxWithImage),
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			nil,
+			true,
+		},
+		{
+			"with performers",
+			galleryIDs[galleryIdxWithTwoPerformers],
+			makeGalleryWithID(galleryIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			galleryIDs[galleryIdxWithTwoTags],
+			makeGalleryWithID(galleryIdxWithTwoTags),
+			false,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.Find(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if got != nil {
+				clearGalleryFileIDs(got)
+			}
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_FindMany(t *testing.T) {
+	tests := []struct {
+		name    string
+		ids     []int
+		want    []*models.Gallery
+		wantErr bool
+	}{
+		{
+			"valid with relationships",
+			[]int{galleryIDs[galleryIdxWithImage], galleryIDs[galleryIdxWithTwoPerformers], galleryIDs[galleryIdxWithTwoTags]},
+			[]*models.Gallery{
+				makeGalleryWithID(galleryIdxWithImage),
+				makeGalleryWithID(galleryIdxWithTwoPerformers),
+				makeGalleryWithID(galleryIdxWithTwoTags),
+			},
+			false,
+		},
+		{
+			"invalid",
+			[]int{galleryIDs[galleryIdxWithImage], galleryIDs[galleryIdxWithTwoPerformers], invalidID},
+			nil,
+			true,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindMany(ctx, tt.ids)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_FindByChecksum(t *testing.T) {
+	getChecksum := func(index int) string {
+		return getGalleryStringValue(index, checksumField)
+	}
+
+	tests := []struct {
+		name     string
+		checksum string
+		want     []*models.Gallery
+		wantErr  bool
+	}{
+		{
+			"valid",
+			getChecksum(galleryIdxWithImage),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithImage)},
+			false,
+		},
+		{
+			"invalid",
+			"invalid checksum",
+			nil,
+			false,
+		},
+		{
+			"with performers",
+			getChecksum(galleryIdxWithTwoPerformers),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithTwoPerformers)},
+			false,
+		},
+		{
+			"with tags",
+			getChecksum(galleryIdxWithTwoTags),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithTwoTags)},
+			false,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByChecksum(ctx, tt.checksum)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_FindByChecksums(t *testing.T) {
+	getChecksum := func(index int) string {
+		return getGalleryStringValue(index, checksumField)
+	}
+
+	tests := []struct {
+		name      string
+		checksums []string
+		want      []*models.Gallery
+		wantErr   bool
+	}{
+		{
+			"valid with relationships",
+			[]string{
+				getChecksum(galleryIdxWithImage),
+				getChecksum(galleryIdxWithTwoPerformers),
+				getChecksum(galleryIdxWithTwoTags),
+			},
+			[]*models.Gallery{
+				makeGalleryWithID(galleryIdxWithImage),
+				makeGalleryWithID(galleryIdxWithTwoPerformers),
+				makeGalleryWithID(galleryIdxWithTwoTags),
+			},
+			false,
+		},
+		{
+			"with invalid",
+			[]string{
+				getChecksum(galleryIdxWithImage),
+				getChecksum(galleryIdxWithTwoPerformers),
+				"invalid checksum",
+				getChecksum(galleryIdxWithTwoTags),
+			},
+			[]*models.Gallery{
+				makeGalleryWithID(galleryIdxWithImage),
+				makeGalleryWithID(galleryIdxWithTwoPerformers),
+				makeGalleryWithID(galleryIdxWithTwoTags),
+			},
+			false,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByChecksums(ctx, tt.checksums)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_FindByPath(t *testing.T) {
+	getPath := func(index int) string {
+		return getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(index))
+	}
+
+	tests := []struct {
+		name    string
+		path    string
+		want    []*models.Gallery
+		wantErr bool
+	}{
+		{
+			"valid",
+			getPath(galleryIdxWithImage),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithImage)},
+			false,
+		},
+		{
+			"invalid",
+			"invalid path",
+			nil,
+			false,
+		},
+		{
+			"with performers",
+			getPath(galleryIdxWithTwoPerformers),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithTwoPerformers)},
+			false,
+		},
+		{
+			"with tags",
+			getPath(galleryIdxWithTwoTags),
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithTwoTags)},
+			false,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByPath(ctx, tt.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_FindBySceneID(t *testing.T) {
+	tests := []struct {
+		name    string
+		sceneID int
+		want    []*models.Gallery
+		wantErr bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdxWithGallery],
+			[]*models.Gallery{makeGalleryWithID(galleryIdxWithScene)},
+			false,
+		},
+		{
+			"none",
+			sceneIDs[sceneIdx1WithPerformer],
+			nil,
+			false,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindBySceneID(ctx, tt.sceneID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindBySceneID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_FindByImageID(t *testing.T) {
+	tests := []struct {
+		name    string
+		imageID int
+		want    []*models.Gallery
+		wantErr bool
+	}{
+		{
+			"valid",
+			imageIDs[imageIdxWithTwoGalleries],
+			[]*models.Gallery{
+				makeGalleryWithID(galleryIdx1WithImage),
+				makeGalleryWithID(galleryIdx2WithImage),
+			},
+			false,
+		},
+		{
+			"none",
+			imageIDs[imageIdx1WithPerformer],
+			nil,
+			false,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByImageID(ctx, tt.imageID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.FindByImageID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			for _, f := range got {
+				clearGalleryFileIDs(f)
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_galleryQueryBuilder_CountByImageID(t *testing.T) {
+	tests := []struct {
+		name    string
+		imageID int
+		want    int
+		wantErr bool
+	}{
+		{
+			"valid",
+			imageIDs[imageIdxWithTwoGalleries],
+			2,
+			false,
+		},
+		{
+			"none",
+			imageIDs[imageIdx1WithPerformer],
+			0,
+			false,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.CountByImageID(ctx, tt.imageID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("galleryQueryBuilder.CountByImageID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("galleryQueryBuilder.CountByImageID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
 
 func TestGalleryQueryQ(t *testing.T) {
@@ -124,22 +1187,22 @@ func TestGalleryQueryQ(t *testing.T) {
 		const galleryIdx = 0
 
 		q := getGalleryStringValue(galleryIdx, pathField)
-
-		sqb := sqlite.GalleryReaderWriter
-
-		galleryQueryQ(ctx, t, sqb, q, galleryIdx)
+		galleryQueryQ(ctx, t, q, galleryIdx)
 
 		return nil
 	})
 }
 
-func galleryQueryQ(ctx context.Context, t *testing.T, qb models.GalleryReader, q string, expectedGalleryIdx int) {
+func galleryQueryQ(ctx context.Context, t *testing.T, q string, expectedGalleryIdx int) {
+	qb := db.Gallery
+
 	filter := models.FindFilterType{
 		Q: &q,
 	}
 	galleries, _, err := qb.Query(ctx, nil, &filter)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
+		return
 	}
 
 	assert.Len(t, galleries, 1)
@@ -157,43 +1220,90 @@ func galleryQueryQ(ctx context.Context, t *testing.T, qb models.GalleryReader, q
 }
 
 func TestGalleryQueryPath(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		const galleryIdx = 1
-		galleryPath := getGalleryStringValue(galleryIdx, "Path")
+	const galleryIdx = 1
+	galleryPath := getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(galleryIdx))
 
-		pathCriterion := models.StringCriterionInput{
-			Value:    galleryPath,
-			Modifier: models.CriterionModifierEquals,
-		}
+	tests := []struct {
+		name  string
+		input models.StringCriterionInput
+	}{
+		{
+			"equals",
+			models.StringCriterionInput{
+				Value:    galleryPath,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+		{
+			"not equals",
+			models.StringCriterionInput{
+				Value:    galleryPath,
+				Modifier: models.CriterionModifierNotEquals,
+			},
+		},
+		{
+			"matches regex",
+			models.StringCriterionInput{
+				Value:    "gallery.*1_Path",
+				Modifier: models.CriterionModifierMatchesRegex,
+			},
+		},
+		{
+			"not matches regex",
+			models.StringCriterionInput{
+				Value:    "gallery.*1_Path",
+				Modifier: models.CriterionModifierNotMatchesRegex,
+			},
+		},
+		{
+			"is null",
+			models.StringCriterionInput{
+				Modifier: models.CriterionModifierIsNull,
+			},
+		},
+		{
+			"not null",
+			models.StringCriterionInput{
+				Modifier: models.CriterionModifierNotNull,
+			},
+		},
+	}
 
-		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
+	qb := db.Gallery
 
-		pathCriterion.Modifier = models.CriterionModifierNotEquals
-		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, count, err := qb.Query(ctx, &models.GalleryFilterType{
+				Path: &tt.input,
+			}, nil)
 
-		pathCriterion.Modifier = models.CriterionModifierMatchesRegex
-		pathCriterion.Value = "gallery.*1_Path"
-		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
+			if err != nil {
+				t.Errorf("GalleryStore.TestSceneQueryPath() error = %v", err)
+				return
+			}
 
-		pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
-		verifyGalleriesPath(ctx, t, sqlite.GalleryReaderWriter, pathCriterion)
+			assert.NotEqual(t, 0, count)
 
-		return nil
-	})
+			for _, gallery := range got {
+				verifyString(t, gallery.Path(), tt.input)
+			}
+		})
+	}
 }
 
-func verifyGalleriesPath(ctx context.Context, t *testing.T, sqb models.GalleryReader, pathCriterion models.StringCriterionInput) {
+func verifyGalleriesPath(ctx context.Context, t *testing.T, pathCriterion models.StringCriterionInput) {
 	galleryFilter := models.GalleryFilterType{
 		Path: &pathCriterion,
 	}
 
+	sqb := db.Gallery
 	galleries, _, err := sqb.Query(ctx, &galleryFilter, nil)
 	if err != nil {
 		t.Errorf("Error querying gallery: %s", err.Error())
 	}
 
 	for _, gallery := range galleries {
-		verifyNullString(t, gallery.Path, pathCriterion)
+		verifyString(t, gallery.Path(), pathCriterion)
 	}
 }
 
@@ -201,8 +1311,8 @@ func TestGalleryQueryPathOr(t *testing.T) {
 	const gallery1Idx = 1
 	const gallery2Idx = 2
 
-	gallery1Path := getGalleryStringValue(gallery1Idx, "Path")
-	gallery2Path := getGalleryStringValue(gallery2Idx, "Path")
+	gallery1Path := getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(gallery1Idx))
+	gallery2Path := getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(gallery2Idx))
 
 	galleryFilter := models.GalleryFilterType{
 		Path: &models.StringCriterionInput{
@@ -218,13 +1328,16 @@ func TestGalleryQueryPathOr(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
-		assert.Len(t, galleries, 2)
-		assert.Equal(t, gallery1Path, galleries[0].Path.String)
-		assert.Equal(t, gallery2Path, galleries[1].Path.String)
+		if !assert.Len(t, galleries, 2) {
+			return nil
+		}
+
+		assert.Equal(t, gallery1Path, galleries[0].Path())
+		assert.Equal(t, gallery2Path, galleries[1].Path())
 
 		return nil
 	})
@@ -232,8 +1345,8 @@ func TestGalleryQueryPathOr(t *testing.T) {
 
 func TestGalleryQueryPathAndRating(t *testing.T) {
 	const galleryIdx = 1
-	galleryPath := getGalleryStringValue(galleryIdx, "Path")
-	galleryRating := getRating(galleryIdx)
+	galleryPath := getFilePath(folderIdxWithGalleryFiles, getGalleryBasename(galleryIdx))
+	galleryRating := getIntPtr(getRating(galleryIdx))
 
 	galleryFilter := models.GalleryFilterType{
 		Path: &models.StringCriterionInput{
@@ -242,20 +1355,23 @@ func TestGalleryQueryPathAndRating(t *testing.T) {
 		},
 		And: &models.GalleryFilterType{
 			Rating: &models.IntCriterionInput{
-				Value:    int(galleryRating.Int64),
+				Value:    *galleryRating,
 				Modifier: models.CriterionModifierEquals,
 			},
 		},
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
-		assert.Len(t, galleries, 1)
-		assert.Equal(t, galleryPath, galleries[0].Path.String)
-		assert.Equal(t, galleryRating.Int64, galleries[0].Rating.Int64)
+		if !assert.Len(t, galleries, 1) {
+			return nil
+		}
+
+		assert.Equal(t, galleryPath, galleries[0].Path())
+		assert.Equal(t, *galleryRating, *galleries[0].Rating)
 
 		return nil
 	})
@@ -284,14 +1400,14 @@ func TestGalleryQueryPathNotRating(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		for _, gallery := range galleries {
-			verifyNullString(t, gallery.Path, pathCriterion)
+			verifyString(t, gallery.Path(), pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyInt64(t, gallery.Rating, ratingCriterion)
+			verifyIntPtr(t, gallery.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -315,7 +1431,7 @@ func TestGalleryIllegalQuery(t *testing.T) {
 	}
 
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		_, _, err := sqb.Query(ctx, galleryFilter, nil)
 		assert.NotNil(err)
@@ -349,7 +1465,7 @@ func TestGalleryQueryURL(t *testing.T) {
 
 	verifyFn := func(g *models.Gallery) {
 		t.Helper()
-		verifyNullString(t, g.URL, urlCriterion)
+		verifyString(t, g.URL, urlCriterion)
 	}
 
 	verifyGalleryQuery(t, filter, verifyFn)
@@ -375,7 +1491,7 @@ func TestGalleryQueryURL(t *testing.T) {
 func verifyGalleryQuery(t *testing.T, filter models.GalleryFilterType, verifyFn func(s *models.Gallery)) {
 	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 
 		galleries := queryGallery(ctx, t, sqb, &filter, nil)
 
@@ -417,7 +1533,7 @@ func TestGalleryQueryRating(t *testing.T) {
 
 func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		galleryFilter := models.GalleryFilterType{
 			Rating: &ratingCriterion,
 		}
@@ -428,7 +1544,7 @@ func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInpu
 		}
 
 		for _, gallery := range galleries {
-			verifyInt64(t, gallery.Rating, ratingCriterion)
+			verifyIntPtr(t, gallery.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -437,7 +1553,7 @@ func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInpu
 
 func TestGalleryQueryIsMissingScene(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.GalleryReaderWriter
+		qb := db.Gallery
 		isMissing := "scenes"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -481,7 +1597,7 @@ func queryGallery(ctx context.Context, t *testing.T, sqb models.GalleryReader, g
 
 func TestGalleryQueryIsMissingStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		isMissing := "studio"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -510,7 +1626,7 @@ func TestGalleryQueryIsMissingStudio(t *testing.T) {
 
 func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		isMissing := "performers"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -541,7 +1657,7 @@ func TestGalleryQueryIsMissingPerformers(t *testing.T) {
 
 func TestGalleryQueryIsMissingTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		isMissing := "tags"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -567,7 +1683,7 @@ func TestGalleryQueryIsMissingTags(t *testing.T) {
 
 func TestGalleryQueryIsMissingDate(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		isMissing := "date"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
@@ -580,7 +1696,7 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 
 		// ensure date is null, empty or "0001-01-01"
 		for _, g := range galleries {
-			assert.True(t, !g.Date.Valid || g.Date.String == "" || g.Date.String == "0001-01-01")
+			assert.True(t, g.Date == nil || g.Date.Time == time.Time{})
 		}
 
 		return nil
@@ -589,7 +1705,7 @@ func TestGalleryQueryIsMissingDate(t *testing.T) {
 
 func TestGalleryQueryPerformers(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		performerCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(performerIDs[performerIdxWithGallery]),
@@ -645,7 +1761,7 @@ func TestGalleryQueryPerformers(t *testing.T) {
 
 func TestGalleryQueryTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithGallery]),
@@ -700,7 +1816,7 @@ func TestGalleryQueryTags(t *testing.T) {
 
 func TestGalleryQueryStudio(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(studioIDs[studioIdxWithGallery]),
@@ -740,7 +1856,7 @@ func TestGalleryQueryStudio(t *testing.T) {
 
 func TestGalleryQueryStudioDepth(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -801,7 +1917,7 @@ func TestGalleryQueryStudioDepth(t *testing.T) {
 
 func TestGalleryQueryPerformerTags(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
@@ -898,7 +2014,7 @@ func TestGalleryQueryTagCount(t *testing.T) {
 
 func verifyGalleriesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		galleryFilter := models.GalleryFilterType{
 			TagCount: &tagCountCriterion,
 		}
@@ -907,11 +2023,7 @@ func verifyGalleriesTagCount(t *testing.T, tagCountCriterion models.IntCriterion
 		assert.Greater(t, len(galleries), 0)
 
 		for _, gallery := range galleries {
-			ids, err := sqb.GetTagIDs(ctx, gallery.ID)
-			if err != nil {
-				return err
-			}
-			verifyInt(t, len(ids), tagCountCriterion)
+			verifyInt(t, len(gallery.TagIDs), tagCountCriterion)
 		}
 
 		return nil
@@ -939,7 +2051,7 @@ func TestGalleryQueryPerformerCount(t *testing.T) {
 
 func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		galleryFilter := models.GalleryFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
@@ -948,11 +2060,7 @@ func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.
 		assert.Greater(t, len(galleries), 0)
 
 		for _, gallery := range galleries {
-			ids, err := sqb.GetPerformerIDs(ctx, gallery.ID)
-			if err != nil {
-				return err
-			}
-			verifyInt(t, len(ids), performerCountCriterion)
+			verifyInt(t, len(gallery.PerformerIDs), performerCountCriterion)
 		}
 
 		return nil
@@ -961,7 +2069,7 @@ func verifyGalleriesPerformerCount(t *testing.T, performerCountCriterion models.
 
 func TestGalleryQueryAverageResolution(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
-		qb := sqlite.GalleryReaderWriter
+		qb := db.Gallery
 		resolution := models.ResolutionEnumLow
 		galleryFilter := models.GalleryFilterType{
 			AverageResolution: &models.ResolutionCriterionInput{
@@ -999,7 +2107,7 @@ func TestGalleryQueryImageCount(t *testing.T) {
 
 func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
-		sqb := sqlite.GalleryReaderWriter
+		sqb := db.Gallery
 		galleryFilter := models.GalleryFilterType{
 			ImageCount: &imageCountCriterion,
 		}
@@ -1010,7 +2118,7 @@ func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCrite
 		for _, gallery := range galleries {
 			pp := 0
 
-			result, err := sqlite.ImageReaderWriter.Query(ctx, models.ImageQueryOptions{
+			result, err := db.Image.Query(ctx, models.ImageQueryOptions{
 				QueryOptions: models.QueryOptions{
 					FindFilter: &models.FindFilterType{
 						PerPage: &pp,
@@ -1034,8 +2142,66 @@ func verifyGalleriesImageCount(t *testing.T, imageCountCriterion models.IntCrite
 	})
 }
 
+func TestGalleryQuerySorting(t *testing.T) {
+	tests := []struct {
+		name            string
+		sortBy          string
+		dir             models.SortDirectionEnum
+		firstGalleryIdx int // -1 to ignore
+		lastGalleryIdx  int
+	}{
+		{
+			"file mod time",
+			"file_mod_time",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"path",
+			"path",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, _, err := qb.Query(ctx, nil, &models.FindFilterType{
+				Sort:      &tt.sortBy,
+				Direction: &tt.dir,
+			})
+
+			if err != nil {
+				t.Errorf("GalleryStore.TestGalleryQuerySorting() error = %v", err)
+				return
+			}
+
+			if !assert.Greater(len(got), 0) {
+				return
+			}
+
+			// scenes should be in same order as indexes
+			firstGallery := got[0]
+			lastGallery := got[len(got)-1]
+
+			if tt.firstGalleryIdx != -1 {
+				firstID := galleryIDs[tt.firstGalleryIdx]
+				assert.Equal(firstID, firstGallery.ID)
+			}
+			if tt.lastGalleryIdx != -1 {
+				lastID := galleryIDs[tt.lastGalleryIdx]
+				assert.Equal(lastID, lastGallery.ID)
+			}
+		})
+	}
+}
+
 // TODO Count
 // TODO All
 // TODO Query
-// TODO Update
 // TODO Destroy

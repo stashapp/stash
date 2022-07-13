@@ -27,7 +27,15 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 				return err
 			}
 		} else if checksum != nil {
-			image, err = qb.FindByChecksum(ctx, *checksum)
+			var images []*models.Image
+			images, err = qb.FindByChecksum(ctx, *checksum)
+			if err != nil {
+				return err
+			}
+
+			if len(images) > 0 {
+				image = images[0]
+			}
 		}
 
 		return err
