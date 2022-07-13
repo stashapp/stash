@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ develop, master ]
+    branches: [ develop, master, files-refactor ]
   pull_request:
   release:
     types: [ published ]
@@ -130,6 +130,10 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       run : git tag -f latest_develop; git push -f --tags
 
+    - name: Update files-refactor-release tag
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/files-refactor' }}
+      run : git tag -f files-refactor-release; git push -f --tags
+
     - name: Development Release
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       uses: marvinpinto/action-automatic-releases@v1.1.2
@@ -149,7 +153,9 @@ jobs:
           CHECKSUMS_SHA1
 
     - name: Master release
-      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      # NOTE: this isn't perfect, but should cover most scenarios
+      # DON'T create tag names starting with "v" if they are not stable releases
+      if: ${{ github.event_name == 'release' && !startsWith(github.ref, 'refs/tags/v') }}
       uses: WithoutPants/github-release@v2.0.4
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
@@ -164,6 +170,24 @@ jobs:
           dist/stash-linux-arm32v6
           CHECKSUMS_SHA1
         gzip: false
+
+    - name: Files refactor Release
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/files-refactor' }}
+      uses: softprops/action-gh-release@v1
+      with:
+        token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: true
+        tag_name: files-refactor-release
+        target_commitish: refs/heads/files-refactor
+        files: |
+          dist/stash-macos-intel
+          dist/stash-macos-applesilicon
+          dist/stash-win.exe
+          dist/stash-linux
+          dist/stash-linux-arm64v8
+          dist/stash-linux-arm32v7
+          dist/stash-linux-arm32v6
+          CHECKSUMS_SHA1
 
     - name: Development Docker
       if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
@@ -180,7 +204,9 @@ jobs:
         bash ./docker/ci/x86_64/docker_push.sh development
 
     - name: Release Docker
-      if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
+      # NOTE: this isn't perfect, but should cover most scenarios
+      # DON'T create tag names starting with "v" if they are not stable releases
+      if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'release' && !startsWith(github.ref, 'refs/tags/v') }}
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
