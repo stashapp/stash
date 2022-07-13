@@ -166,7 +166,8 @@ export const App: React.FC = () => {
   }
 
   function maybeRenderReleaseNotes() {
-    const { lastNoteSeen } = config.data?.configuration.ui as IUIConfig;
+    const lastNoteSeen = (config.data?.configuration.ui as IUIConfig)
+      ?.lastNoteSeen;
     const notes = releaseNotes.filter((n) => {
       return !lastNoteSeen || n.date > lastNoteSeen;
     });
