@@ -69,7 +69,7 @@ export function useLocalForage<T>(
   }, [loading, key, defaultValue]);
 
   useEffect(() => {
-    if (isEqual(Cache[key], data)) {
+    if (!isEqual(Cache[key], data)) {
       Cache[key] = {
         ...Cache[key],
         ...data,
