@@ -134,7 +134,6 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 		limit    = 1000
 		logEvery = 10000
 	)
-	offset := 0
 
 	result := struct {
 		Count int `db:"count"`
@@ -146,10 +145,19 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 
 	logger.Infof("Migrating %d files...", result.Count)
 
+	lastID := 0
+	count := 0
+
 	for {
 		gotSome := false
 
-		query := fmt.Sprintf("SELECT `id`, `basename` FROM `files` ORDER BY `id` LIMIT %d OFFSET %d", limit, offset)
+		// using offset for this is slow. Save the last id and filter by that instead
+		query := "SELECT `id`, `basename` FROM `files` "
+		if lastID != 0 {
+			query += fmt.Sprintf("WHERE `id` > %d ", lastID)
+		}
+
+		query += fmt.Sprintf("ORDER BY `id` LIMIT %d", limit)
 
 		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
 			rows, err := m.db.Query(query)
@@ -188,6 +196,9 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 						return err
 					}
 				}
+
+				lastID = id
+				count++
 			}
 
 			return rows.Err()
@@ -199,10 +210,8 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 			break
 		}
 
-		offset += limit
-
-		if offset%logEvery == 0 {
-			logger.Infof("Migrated %d files", offset)
+		if count%logEvery == 0 {
+			logger.Infof("Migrated %d files", count)
 		}
 	}
 
