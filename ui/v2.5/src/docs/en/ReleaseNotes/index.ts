@@ -10,7 +10,7 @@ interface IReleaseNotes {
 
 export const releaseNotes: IReleaseNotes[] = [
   {
-    date: 20220707,
+    date: 20220715,
     content: v0170,
   },
 ];
