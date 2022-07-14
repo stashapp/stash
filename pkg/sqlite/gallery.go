@@ -596,6 +596,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	}))
 
 	query.handleCriterion(ctx, pathCriterionHandler(galleryFilter.Path, "galleries_query.parent_folder_path", "galleries_query.basename"))
+	query.handleCriterion(ctx, galleryFileCountCriterionHandler(qb, galleryFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating, "galleries.rating"))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))
 	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized"))
@@ -681,6 +682,16 @@ func (qb *GalleryStore) QueryCount(ctx context.Context, galleryFilter *models.Ga
 	}
 
 	return query.executeCount(ctx)
+}
+
+func galleryFileCountCriterionHandler(qb *GalleryStore, fileCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: galleryTable,
+		joinTable:    galleriesFilesTable,
+		primaryFK:    galleryIDColumn,
+	}
+
+	return h.handler(fileCount)
 }
 
 func galleryIsMissingCriterionHandler(qb *GalleryStore, isMissing *string) criterionHandlerFunc {
@@ -897,6 +908,8 @@ func (qb *GalleryStore) getGallerySort(findFilter *models.FindFilterType) string
 	}
 
 	switch sort {
+	case "file_count":
+		return getCountSort(galleryTable, galleriesFilesTable, galleryIDColumn, direction)
 	case "images_count":
 		return getCountSort(galleryTable, galleriesImagesTable, galleryIDColumn, direction)
 	case "tag_count":

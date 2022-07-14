@@ -16,6 +16,8 @@ type GalleryFilterType struct {
 	Checksum *StringCriterionInput `json:"checksum"`
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
+	// Filter by zip file count
+	FileCount *IntCriterionInput `json:"file_count"`
 	// Filter to only include galleries missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter to include/exclude galleries that were created from zip
