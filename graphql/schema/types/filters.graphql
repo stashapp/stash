@@ -132,6 +132,8 @@ input SceneFilterType {
   phash: StringCriterionInput
   """Filter by path"""
   path: StringCriterionInput
+  """Filter by file count"""
+  file_count: IntCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
   """Filter by organized"""
@@ -239,6 +241,8 @@ input GalleryFilterType {
   checksum: StringCriterionInput
   """Filter by path"""
   path: StringCriterionInput
+  """Filter by zip-file count"""
+  file_count: IntCriterionInput
   """Filter to only include galleries missing this property"""
   is_missing: String
   """Filter to include/exclude galleries that were created from zip"""
@@ -327,6 +331,8 @@ input ImageFilterType {
   checksum: StringCriterionInput
   """Filter by path"""
   path: StringCriterionInput
+  """Filter by file count"""
+  file_count: IntCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
   """Filter by organized"""

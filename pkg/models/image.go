@@ -11,6 +11,8 @@ type ImageFilterType struct {
 	Checksum *StringCriterionInput `json:"checksum"`
 	// Filter by path
 	Path *StringCriterionInput `json:"path"`
+	// Filter by file count
+	FileCount *IntCriterionInput `json:"file_count"`
 	// Filter by rating
 	Rating *IntCriterionInput `json:"rating"`
 	// Filter by organized

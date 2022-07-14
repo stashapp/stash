@@ -496,8 +496,11 @@ export class MandatoryNumberCriterionOption extends CriterionOption {
   }
 }
 
-export function createMandatoryNumberCriterionOption(value: CriterionType) {
-  return new MandatoryNumberCriterionOption(value, value, value);
+export function createMandatoryNumberCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new MandatoryNumberCriterionOption(messageID ?? value, value, value);
 }
 
 export class DurationCriterion extends Criterion<INumberValue> {

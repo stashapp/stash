@@ -41,6 +41,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_age"),
   PerformerFavoriteCriterionOption,
   StudiosCriterionOption,
+  createMandatoryNumberCriterionOption("file_count"),
 ];
 export const ImageListFilterOptions = new ListFilterOptions(
   defaultSortBy,

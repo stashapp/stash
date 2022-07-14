@@ -56,6 +56,7 @@ const criterionOptions = [
   createStringCriterionOption("image_count"),
   StudiosCriterionOption,
   createStringCriterionOption("url"),
+  createMandatoryNumberCriterionOption("file_count", "zip_file_count"),
 ];
 
 export const GalleryListFilterOptions = new ListFilterOptions(

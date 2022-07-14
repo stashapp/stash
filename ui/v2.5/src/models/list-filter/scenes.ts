@@ -81,6 +81,7 @@ const criterionOptions = [
   InteractiveCriterionOption,
   CaptionsCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),
+  createMandatoryNumberCriterionOption("file_count"),
 ];
 
 export const SceneListFilterOptions = new ListFilterOptions(
