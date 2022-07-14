@@ -30,6 +30,7 @@ const sortByOptions = [
   "organized",
   "o_counter",
   "date",
+  "file_count",
   "filesize",
   "duration",
   "framerate",
@@ -81,6 +82,7 @@ const criterionOptions = [
   InteractiveCriterionOption,
   CaptionsCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),
+  createMandatoryNumberCriterionOption("file_count"),
 ];
 
 export const SceneListFilterOptions = new ListFilterOptions(

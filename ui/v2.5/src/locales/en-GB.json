@@ -728,6 +728,7 @@
   "false": "False",
   "favourite": "Favourite",
   "file": "file",
+  "file_count": "File Count",
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
   "files": "files",
@@ -1024,5 +1025,6 @@
   "videos": "Videos",
   "view_all": "View All",
   "weight": "Weight",
-  "years_old": "years old"
+  "years_old": "years old",
+  "zip_file_count": "Zip File Count"
 }

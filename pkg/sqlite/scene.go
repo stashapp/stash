@@ -756,6 +756,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	}
 
 	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "scenes_query.parent_folder_path", "scenes_query.basename"))
+	query.handleCriterion(ctx, sceneFileCountCriterionHandler(qb, sceneFilter.FileCount))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Title, "scenes.title"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Details, "scenes.details"))
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
@@ -914,6 +915,16 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 	ret.TotalDuration = out.Duration.Float64
 	ret.TotalSize = out.Size.Float64
 	return ret, nil
+}
+
+func sceneFileCountCriterionHandler(qb *SceneStore, fileCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: sceneTable,
+		joinTable:    scenesFilesTable,
+		primaryFK:    sceneIDColumn,
+	}
+
+	return h.handler(fileCount)
 }
 
 func scenePhashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput) criterionHandlerFunc {
@@ -1204,6 +1215,8 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		query.sortAndPagination += getCountSort(sceneTable, scenesTagsTable, sceneIDColumn, direction)
 	case "performer_count":
 		query.sortAndPagination += getCountSort(sceneTable, performersScenesTable, sceneIDColumn, direction)
+	case "file_count":
+		query.sortAndPagination += getCountSort(sceneTable, scenesFilesTable, sceneIDColumn, direction)
 	case "path":
 		// special handling for path
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY scenes_query.parent_folder_path %s, scenes_query.basename %[1]s", direction)

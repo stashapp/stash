@@ -133,4 +133,5 @@ export type CriterionType =
   | "performer_favorite"
   | "performer_age"
   | "duplicated"
-  | "ignore_auto_tag";
+  | "ignore_auto_tag"
+  | "file_count";
