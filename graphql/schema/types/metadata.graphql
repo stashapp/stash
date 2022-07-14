@@ -71,10 +71,19 @@ input ScanMetaDataFilterInput {
 input ScanMetadataInput {
   paths: [String!]
 
+  # useFileMetadata is deprecated with the new file management system
+  # if this functionality is desired, then we can make a built in scraper instead.
+
   """Set name, date, details from metadata (if present)"""
-  useFileMetadata: Boolean
+  useFileMetadata: Boolean @deprecated(reason: "Not implemented")
+
+  # stripFileExtension is deprecated since we no longer set the title from the 
+  # filename - it is automatically returned if the object has no title. If this
+  # functionality is desired, then we could make this an option to not include
+  # the extension in the auto-generated title.
+
   """Strip file extension from title"""
-  stripFileExtension: Boolean
+  stripFileExtension: Boolean @deprecated(reason: "Not implemented")
   """Generate previews during scan"""
   scanGeneratePreviews: Boolean
   """Generate image previews during scan"""
