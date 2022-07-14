@@ -198,6 +198,8 @@ func initialize() error {
 		Repository:   db.Gallery,
 		ImageFinder:  db.Image,
 		ImageService: instance.ImageService,
+		File:         db.File,
+		Folder:       db.Folder,
 	}
 
 	instance.JobManager = initJobManager()

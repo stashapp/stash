@@ -188,3 +188,39 @@ func Destroy(ctx context.Context, destroyer Destroyer, f File, fileDeleter *Dele
 
 	return nil
 }
+
+type FolderGetterDestroyer interface {
+	FolderGetter
+	FolderDestroyer
+}
+
+type ZipDestroyer struct {
+	FileDestroyer   Destroyer
+	FolderDestroyer FolderGetterDestroyer
+}
+
+func (d *ZipDestroyer) DestroyZip(ctx context.Context, f File, fileDeleter *Deleter, deleteFile bool) error {
+	// destroy contained folders
+	folders, err := d.FolderDestroyer.FindByZipFileID(ctx, f.Base().ID)
+	if err != nil {
+		return err
+	}
+
+	for _, ff := range folders {
+		if err := d.FolderDestroyer.Destroy(ctx, ff.ID); err != nil {
+			return err
+		}
+	}
+
+	if err := d.FileDestroyer.Destroy(ctx, f.Base().ID); err != nil {
+		return err
+	}
+
+	if deleteFile {
+		if err := fileDeleter.Files([]string{f.Base().Path}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
