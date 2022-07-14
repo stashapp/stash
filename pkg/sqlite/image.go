@@ -564,6 +564,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
 
 	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "images_query.parent_folder_path", "images_query.basename"))
+	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating"))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized"))
@@ -687,6 +688,16 @@ func (qb *ImageStore) QueryCount(ctx context.Context, imageFilter *models.ImageF
 	}
 
 	return query.executeCount(ctx)
+}
+
+func imageFileCountCriterionHandler(qb *ImageStore, fileCount *models.IntCriterionInput) criterionHandlerFunc {
+	h := countCriterionHandlerBuilder{
+		primaryTable: imageTable,
+		joinTable:    imagesFilesTable,
+		primaryFK:    imageIDColumn,
+	}
+
+	return h.handler(fileCount)
 }
 
 func imageIsMissingCriterionHandler(qb *ImageStore, isMissing *string) criterionHandlerFunc {
@@ -869,6 +880,8 @@ func (qb *ImageStore) getImageSort(findFilter *models.FindFilterType) string {
 	switch sort {
 	case "path":
 		return " ORDER BY images_query.parent_folder_path " + direction + ", images_query.basename " + direction
+	case "file_count":
+		return getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
 	case "tag_count":
 		return getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
 	case "performer_count":
