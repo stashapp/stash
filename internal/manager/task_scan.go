@@ -51,9 +51,14 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	const taskQueueSize = 200000
 	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, instance.Config.GetParallelTasksWithAutoDetection())
 
+	var minModTime time.Time
+	if j.input.Filter != nil && j.input.Filter.MinModTime != nil {
+		minModTime = *j.input.Filter.MinModTime
+	}
+
 	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
 		Paths:             paths,
-		ScanFilters:       []file.PathFilter{newScanFilter(instance.Config)},
+		ScanFilters:       []file.PathFilter{newScanFilter(instance.Config, minModTime)},
 		ZipFileExtensions: instance.Config.GetGalleryExtensions(),
 		ParallelTasks:     instance.Config.GetParallelTasksWithAutoDetection(),
 	}, progress)
@@ -79,9 +84,10 @@ type scanFilter struct {
 	zipExt            []string
 	videoExcludeRegex []*regexp.Regexp
 	imageExcludeRegex []*regexp.Regexp
+	minModTime        time.Time
 }
 
-func newScanFilter(c *config.Instance) *scanFilter {
+func newScanFilter(c *config.Instance, minModTime time.Time) *scanFilter {
 	return &scanFilter{
 		stashPaths:        c.GetStashPaths(),
 		generatedPath:     c.GetGeneratedPath(),
@@ -90,11 +96,17 @@ func newScanFilter(c *config.Instance) *scanFilter {
 		zipExt:            c.GetGalleryExtensions(),
 		videoExcludeRegex: generateRegexps(c.GetExcludes()),
 		imageExcludeRegex: generateRegexps(c.GetImageExcludes()),
+		minModTime:        minModTime,
 	}
 }
 
 func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
 	if fsutil.IsPathInDir(f.generatedPath, path) {
+		return false
+	}
+
+	// exit early on cutoff
+	if info.Mode().IsRegular() && info.ModTime().Before(f.minModTime) {
 		return false
 	}
 
