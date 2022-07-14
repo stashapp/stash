@@ -908,6 +908,8 @@ func (qb *GalleryStore) getGallerySort(findFilter *models.FindFilterType) string
 	}
 
 	switch sort {
+	case "file_count":
+		return getCountSort(galleryTable, galleriesFilesTable, galleryIDColumn, direction)
 	case "images_count":
 		return getCountSort(galleryTable, galleriesImagesTable, galleryIDColumn, direction)
 	case "tag_count":

@@ -880,6 +880,8 @@ func (qb *ImageStore) getImageSort(findFilter *models.FindFilterType) string {
 	switch sort {
 	case "path":
 		return " ORDER BY images_query.parent_folder_path " + direction + ", images_query.basename " + direction
+	case "file_count":
+		return getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
 	case "tag_count":
 		return getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
 	case "performer_count":

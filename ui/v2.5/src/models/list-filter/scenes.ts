@@ -30,6 +30,7 @@ const sortByOptions = [
   "organized",
   "o_counter",
   "date",
+  "file_count",
   "filesize",
   "duration",
   "framerate",

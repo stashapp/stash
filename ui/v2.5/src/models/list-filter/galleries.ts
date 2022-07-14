@@ -25,6 +25,10 @@ const sortByOptions = ["date", ...MediaSortByOptions]
       messageID: "image_count",
       value: "images_count",
     },
+    {
+      messageID: "zip_file_count",
+      value: "file_count",
+    },
   ]);
 
 const displayModeOptions = [
