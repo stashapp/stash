@@ -144,13 +144,13 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         if (sceneStudioID !== updateStudioID) {
           updateStudioID = undefined;
         }
-        if (isEqual(scenePerformerIDs, updatePerformerIds)) {
+        if (!isEqual(scenePerformerIDs, updatePerformerIds)) {
           updatePerformerIds = [];
         }
-        if (isEqual(sceneTagIDs, updateTagIds)) {
+        if (!isEqual(sceneTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
-        if (isEqual(sceneMovieIDs, updateMovieIds)) {
+        if (!isEqual(sceneMovieIDs, updateMovieIds)) {
           updateMovieIds = [];
         }
         if (scene.organized !== updateOrganized) {
