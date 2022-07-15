@@ -88,6 +88,8 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 			UpdatedAt: now,
 		}
 
+		logger.Infof("%s doesn't exist. Creating new scene...", f.Base().Path)
+
 		if err := h.CreatorUpdater.Create(ctx, newScene, []file.ID{videoFile.ID}); err != nil {
 			return fmt.Errorf("creating new scene: %w", err)
 		}

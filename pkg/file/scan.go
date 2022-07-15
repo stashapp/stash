@@ -100,6 +100,9 @@ type ScanOptions struct {
 	// ScanFilters are used to determine if a file should be scanned.
 	ScanFilters []PathFilter
 
+	// HandlerRequiredFilters are used to determine if an unchanged file needs to be handled
+	HandlerRequiredFilters []Filter
+
 	ParallelTasks int
 }
 
@@ -636,7 +639,6 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	// if not renamed, queue file for creation
 	if err := s.queueDBOperation(ctx, path, func(ctx context.Context) error {
-		logger.Infof("%s doesn't exist. Creating new file entry...", path)
 		if err := s.Repository.Create(ctx, file); err != nil {
 			return fmt.Errorf("creating file %q: %w", path, err)
 		}
@@ -793,6 +795,19 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 	return other, nil
 }
 
+func (s *scanJob) isHandlerRequired(ctx context.Context, f File) bool {
+	accept := len(s.options.HandlerRequiredFilters) == 0
+	for _, filter := range s.options.HandlerRequiredFilters {
+		// accept if any filter accepts the file
+		if filter.Accept(ctx, f) {
+			accept = true
+			break
+		}
+	}
+
+	return accept
+}
+
 // returns a file only if it was updated
 func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File) (File, error) {
 	base := existing.Base()
@@ -802,7 +817,31 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	updated := !fileModTime.Equal(base.ModTime)
 
 	if !updated {
-		s.incrementProgress()
+		handlerRequired := false
+		if err := s.withDB(ctx, func(ctx context.Context) error {
+			// check if the handler needs to be run
+			handlerRequired = s.isHandlerRequired(ctx, existing)
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+
+		if !handlerRequired {
+			s.incrementProgress()
+			return nil, nil
+		}
+
+		if err := s.queueDBOperation(ctx, path, func(ctx context.Context) error {
+			if err := s.fireHandlers(ctx, existing); err != nil {
+				return err
+			}
+
+			s.incrementProgress()
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+
 		return nil, nil
 	}
 

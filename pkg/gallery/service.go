@@ -8,8 +8,12 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type Repository interface {
+type FinderByFile interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
+}
+
+type Repository interface {
+	FinderByFile
 	Destroy(ctx context.Context, id int) error
 }
 

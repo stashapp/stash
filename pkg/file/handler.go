@@ -18,13 +18,13 @@ func (pff PathFilterFunc) Accept(path string) bool {
 
 // Filter provides a filter function for Files.
 type Filter interface {
-	Accept(f File) bool
+	Accept(ctx context.Context, f File) bool
 }
 
-type FilterFunc func(f File) bool
+type FilterFunc func(ctx context.Context, f File) bool
 
-func (ff FilterFunc) Accept(f File) bool {
-	return ff(f)
+func (ff FilterFunc) Accept(ctx context.Context, f File) bool {
+	return ff(ctx, f)
 }
 
 // Handler provides a handler for Files.
@@ -40,7 +40,7 @@ type FilteredHandler struct {
 
 // Handle runs the handler if the filter accepts the file.
 func (h *FilteredHandler) Handle(ctx context.Context, f File) error {
-	if h.Accept(f) {
+	if h.Accept(ctx, f) {
 		return h.Handler.Handle(ctx, f)
 	}
 	return nil

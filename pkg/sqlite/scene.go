@@ -470,6 +470,13 @@ func (qb *SceneStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*mode
 	return ret, nil
 }
 
+func (qb *SceneStore) CountByFileID(ctx context.Context, fileID file.ID) (int, error) {
+	joinTable := scenesFilesJoinTable
+
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(fileIDColumn).Eq(fileID))
+	return count(ctx, q)
+}
+
 func (qb *SceneStore) FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Scene, error) {
 	table := qb.queryTable()
 
