@@ -180,7 +180,8 @@ func Destroy(ctx context.Context, destroyer Destroyer, f File, fileDeleter *Dele
 		return err
 	}
 
-	if deleteFile {
+	// don't delete files in zip files
+	if deleteFile && f.Base().ZipFileID != nil {
 		if err := fileDeleter.Files([]string{f.Base().Path}); err != nil {
 			return err
 		}

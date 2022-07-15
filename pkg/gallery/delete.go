@@ -11,12 +11,8 @@ import (
 func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
-	// TODO - we currently destroy associated files so that they will be rescanned.
-	// A better way would be to keep the file entries in the database, and recreate
-	// associated objects during the scan process if there are none already.
-
 	// if this is a zip-based gallery, delete the images as well first
-	zipImgsDestroyed, err := s.destroyZipFiles(ctx, i, fileDeleter, deleteGenerated, deleteFile)
+	zipImgsDestroyed, err := s.destroyZipFileImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +39,7 @@ func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *i
 	return imgsDestroyed, nil
 }
 
-func (s *Service) destroyZipFiles(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
+func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
 	destroyer := &file.ZipDestroyer{
@@ -71,8 +67,10 @@ func (s *Service) destroyZipFiles(ctx context.Context, i *models.Gallery, fileDe
 
 		imgsDestroyed = append(imgsDestroyed, thisDestroyed...)
 
-		if err := destroyer.DestroyZip(ctx, f, fileDeleter.Deleter, deleteFile); err != nil {
-			return nil, err
+		if deleteFile {
+			if err := destroyer.DestroyZip(ctx, f, fileDeleter.Deleter, deleteFile); err != nil {
+				return nil, err
+			}
 		}
 	}
 

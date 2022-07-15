@@ -33,17 +33,12 @@ func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.
 func (s *Service) Destroy(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
-	const fromZip = false
-	return s.destroyImage(ctx, i, fileDeleter, deleteGenerated, deleteFile, fromZip)
+	return s.destroyImage(ctx, i, fileDeleter, deleteGenerated, deleteFile)
 }
 
 // DestroyZipImages destroys all images in zip, optionally marking the files and generated files for deletion.
 // Returns a slice of images that were destroyed.
 func (s *Service) DestroyZipImages(ctx context.Context, zipFile file.File, fileDeleter *FileDeleter, deleteGenerated bool) ([]*models.Image, error) {
-	// TODO - we currently destroy associated files so that they will be rescanned.
-	// A better way would be to keep the file entries in the database, and recreate
-	// associated objects during the scan process if there are none already.
-
 	var imgsDestroyed []*models.Image
 
 	imgs, err := s.Repository.FindByZipFileID(ctx, zipFile.Base().ID)
@@ -53,8 +48,7 @@ func (s *Service) DestroyZipImages(ctx context.Context, zipFile file.File, fileD
 
 	for _, img := range imgs {
 		const deleteFileInZip = false
-		const fromZip = true
-		if err := s.destroyImage(ctx, img, fileDeleter, deleteGenerated, deleteFileInZip, fromZip); err != nil {
+		if err := s.destroyImage(ctx, img, fileDeleter, deleteGenerated, deleteFileInZip); err != nil {
 			return nil, err
 		}
 
@@ -65,13 +59,11 @@ func (s *Service) DestroyZipImages(ctx context.Context, zipFile file.File, fileD
 }
 
 // Destroy destroys an image, optionally marking the file and generated files for deletion.
-func (s *Service) destroyImage(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool, fromZip bool) error {
-	// TODO - we currently destroy associated files so that they will be rescanned.
-	// A better way would be to keep the file entries in the database, and recreate
-	// associated objects during the scan process if there are none already.
-
-	if err := s.destroyFiles(ctx, i, fileDeleter, deleteFile, fromZip); err != nil {
-		return err
+func (s *Service) destroyImage(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
+	if deleteFile {
+		if err := s.deleteFiles(ctx, i, fileDeleter); err != nil {
+			return err
+		}
 	}
 
 	if deleteGenerated {
@@ -83,7 +75,8 @@ func (s *Service) destroyImage(ctx context.Context, i *models.Image, fileDeleter
 	return s.Repository.Destroy(ctx, i.ID)
 }
 
-func (s *Service) destroyFiles(ctx context.Context, i *models.Image, fileDeleter *FileDeleter, deleteFile bool, fromZip bool) error {
+// deleteFiles deletes files for the image from the database and file system, if they are not in use by other images
+func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter *FileDeleter) error {
 	for _, f := range i.Files {
 		// only delete files where there is no other associated image
 		otherImages, err := s.Repository.FindByFileID(ctx, f.ID)
@@ -97,7 +90,8 @@ func (s *Service) destroyFiles(ctx context.Context, i *models.Image, fileDeleter
 		}
 
 		// don't delete files in zip archives
-		if fromZip || f.ZipFileID == nil {
+		const deleteFile = true
+		if f.ZipFileID == nil {
 			if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 				return err
 			}
