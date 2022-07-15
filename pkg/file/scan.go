@@ -616,8 +616,15 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	baseFile.SetFingerprints(fp)
 
+	file, err := s.fireDecorators(ctx, f.fs, baseFile)
+	if err != nil {
+		s.incrementProgress()
+		return nil, err
+	}
+
 	// determine if the file is renamed from an existing file in the store
-	renamed, err := s.handleRename(ctx, baseFile, fp)
+	// do this after decoration so that missing fields can be populated
+	renamed, err := s.handleRename(ctx, file, fp)
 	if err != nil {
 		s.incrementProgress()
 		return nil, err
@@ -625,12 +632,6 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	if renamed != nil {
 		return renamed, nil
-	}
-
-	file, err := s.fireDecorators(ctx, f.fs, baseFile)
-	if err != nil {
-		s.incrementProgress()
-		return nil, err
 	}
 
 	// if not renamed, queue file for creation
@@ -733,7 +734,7 @@ func (s *scanJob) getFileFS(f *BaseFile) (FS, error) {
 	return fs.OpenZip(zipPath)
 }
 
-func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp []Fingerprint) (File, error) {
+func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (File, error) {
 	var others []File
 
 	for _, tfp := range fp {
@@ -761,36 +762,35 @@ func (s *scanJob) handleRename(ctx context.Context, f *BaseFile, fp []Fingerprin
 	}
 
 	n := len(missing)
-	switch {
-	case n == 1:
-		// assume does not exist, update existing file
-		other := missing[0]
-		otherBase := other.Base()
-
-		logger.Infof("%s moved to %s. Updating path...", otherBase.Path, f.Path)
-		f.ID = otherBase.ID
-		f.CreatedAt = otherBase.CreatedAt
-		f.Fingerprints = otherBase.Fingerprints
-		*otherBase = *f
-
-		if err := s.queueDBOperation(ctx, f.Path, func(ctx context.Context) error {
-			if err := s.Repository.Update(ctx, other); err != nil {
-				return fmt.Errorf("updating file for rename %q: %w", f.Path, err)
-			}
-
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-
-		return other, nil
-	case n > 1:
-		// multiple candidates
-		// TODO - mark all as missing and just create a new file
+	if n == 0 {
+		// no missing files, not a rename
 		return nil, nil
 	}
 
-	return nil, nil
+	// assume does not exist, update existing file
+	// it's possible that there may be multiple missing files.
+	// just use the first one to rename.
+	other := missing[0]
+	otherBase := other.Base()
+
+	fBase := f.Base()
+
+	logger.Infof("%s moved to %s. Updating path...", otherBase.Path, fBase.Path)
+	fBase.ID = otherBase.ID
+	fBase.CreatedAt = otherBase.CreatedAt
+	fBase.Fingerprints = otherBase.Fingerprints
+
+	if err := s.queueDBOperation(ctx, fBase.Path, func(ctx context.Context) error {
+		if err := s.Repository.Update(ctx, f); err != nil {
+			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return other, nil
 }
 
 // returns a file only if it was updated
