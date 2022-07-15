@@ -792,7 +792,7 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 		return nil, err
 	}
 
-	return other, nil
+	return f, nil
 }
 
 func (s *scanJob) isHandlerRequired(ctx context.Context, f File) bool {
