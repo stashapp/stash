@@ -287,7 +287,7 @@
         "description": "Emplacement de l'exécutable python. Utilisé par les extracteurs de contenu et les plugins. Si vide, python sera résolu à partir de l'environnement",
         "heading": "Chemin de Python"
       },
-      "scraper_user_agent": "utilisateur de l'extracteur",
+      "scraper_user_agent": "Agent utilisateur de l'extracteur",
       "scraper_user_agent_desc": "Chaîne utilisateur utilisée dans les requêtes http lors de l'extraction de contenu",
       "scrapers_path": {
         "description": "Emplacement du répertoire des fichiers de configuration de l'extracteur de contenu",
@@ -359,7 +359,7 @@
       "generate_phashes_during_scan": "Générer des empreintes perceptuelles",
       "generate_phashes_during_scan_tooltip": "Pour la déduplication et l'identification de scènes.",
       "generate_previews_during_scan": "Générer des aperçus d'images animées",
-      "generate_previews_during_scan_tooltip": "Générez des aperçus WebP animés (requis uniquement si le type d'aperçu est défini sur Image animée).",
+      "generate_previews_during_scan_tooltip": "Générer des aperçus WebP animés, requis uniquement si le type d'aperçu est défini sur Image animée.",
       "generate_sprites_during_scan": "Générer les images animées de progression",
       "generate_thumbnails_during_scan": "Générer des vignettes pour les images",
       "generate_video_previews_during_scan": "Générer les aperçus",
@@ -621,7 +621,7 @@
       "scroll_mode": {
         "description": "Maintenir la touche shift pour utiliser temporairement l'autre mode.",
         "label": "Mode de défilement",
-        "pan_y": "Panoramique axe Y",
+        "pan_y": "Panoramique Y",
         "zoom": "Zoom"
       }
     },
@@ -636,10 +636,10 @@
       "image_previews": "Aperçus d'images animées",
       "image_previews_tooltip": "Aperçu WebP animé, requis uniquement si le mode d'aperçu est défini sur Image animée.",
       "interactive_heatmap_speed": "Générer des cartes de fréquentation et vitesses pour les scènes interactives",
-      "marker_image_previews": "Aperçu des images animées par marqueur",
-      "marker_image_previews_tooltip": "Aperçus WebP de marqueurs animés, requis uniquement si le mode d'aperçu est défini sur Image animée.",
-      "marker_screenshots": "Marqueur captures d'écran",
-      "marker_screenshots_tooltip": "Marquer les images JPG statiques, requis uniquement si le mode d'aperçu est défini sur Image statique.",
+      "marker_image_previews": "Aperçus animés des marqueurs",
+      "marker_image_previews_tooltip": "Aperçus WebP animés de marqueurs, requis uniquement si le mode d'aperçu est défini sur Image animée.",
+      "marker_screenshots": "Captures d'écran des marqueurs",
+      "marker_screenshots_tooltip": "Images JPG statiques des marqueurs, requis uniquement si le mode d'aperçu est défini sur Image statique.",
       "markers": "Aperçus des marqueurs",
       "markers_tooltip": "Vidéos de 20 secondes qui débutent au repère temporel donné.",
       "override_preview_generation_options": "Remplacer les options de génération d'aperçu",
