@@ -3,6 +3,7 @@ package gallery
 import (
 	"context"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -10,12 +11,8 @@ import (
 func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
 
-	// TODO - we currently destroy associated files so that they will be rescanned.
-	// A better way would be to keep the file entries in the database, and recreate
-	// associated objects during the scan process if there are none already.
-
 	// if this is a zip-based gallery, delete the images as well first
-	zipImgsDestroyed, err := s.destroyZipImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
+	zipImgsDestroyed, err := s.destroyZipFileImages(ctx, i, fileDeleter, deleteGenerated, deleteFile)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +39,13 @@ func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *i
 	return imgsDestroyed, nil
 }
 
-func (s *Service) destroyZipImages(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
+func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
 	var imgsDestroyed []*models.Image
+
+	destroyer := &file.ZipDestroyer{
+		FileDestroyer:   s.File,
+		FolderDestroyer: s.Folder,
+	}
 
 	// for zip-based galleries, delete the images as well first
 	for _, f := range i.Files {
@@ -58,21 +60,15 @@ func (s *Service) destroyZipImages(ctx context.Context, i *models.Gallery, fileD
 			continue
 		}
 
-		imgs, err := s.ImageFinder.FindByZipFileID(ctx, f.Base().ID)
+		thisDestroyed, err := s.ImageService.DestroyZipImages(ctx, f, fileDeleter, deleteGenerated)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, img := range imgs {
-			if err := s.ImageService.Destroy(ctx, img, fileDeleter, deleteGenerated, false); err != nil {
-				return nil, err
-			}
-
-			imgsDestroyed = append(imgsDestroyed, img)
-		}
+		imgsDestroyed = append(imgsDestroyed, thisDestroyed...)
 
 		if deleteFile {
-			if err := fileDeleter.Files([]string{f.Base().Path}); err != nil {
+			if err := destroyer.DestroyZip(ctx, f, fileDeleter.Deleter, deleteFile); err != nil {
 				return nil, err
 			}
 		}

@@ -115,6 +115,8 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 			}
 		}
 
+		logger.Infof("%s doesn't exist. Creating new image...", f.Base().Path)
+
 		if err := h.CreatorUpdater.Create(ctx, &models.ImageCreateInput{
 			Image:   newImage,
 			FileIDs: []file.ID{imageFile.ID},

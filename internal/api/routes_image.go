@@ -66,7 +66,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// don't log for unsupported image format
 			if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
-				logger.Errorf("error generating thumbnail for image: %s", err.Error())
+				logger.Errorf("error generating thumbnail for %s: %v", f.Path, err)
 
 				var exitErr *exec.ExitError
 				if errors.As(err, &exitErr) {

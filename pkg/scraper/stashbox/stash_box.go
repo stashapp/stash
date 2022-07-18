@@ -737,151 +737,139 @@ func (c Client) GetUser(ctx context.Context) (*graphql.Me, error) {
 	return c.client.Me(ctx)
 }
 
-func (c Client) SubmitSceneDraft(ctx context.Context, sceneID int, endpoint string, imagePath string) (*string, error) {
+func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, imagePath string) (*string, error) {
 	draft := graphql.SceneDraftInput{}
-	var image *os.File
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		r := c.repository
-		qb := r.Scene
-		pqb := r.Performer
-		sqb := r.Studio
+	var image io.Reader
+	r := c.repository
+	pqb := r.Performer
+	sqb := r.Studio
 
-		scene, err := qb.Find(ctx, sceneID)
+	if scene.Title != "" {
+		draft.Title = &scene.Title
+	}
+	if scene.Details != "" {
+		draft.Details = &scene.Details
+	}
+	if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
+		url := strings.TrimSpace(scene.URL)
+		draft.URL = &url
+	}
+	if scene.Date != nil {
+		v := scene.Date.String()
+		draft.Date = &v
+	}
+
+	if scene.StudioID != nil {
+		studio, err := sqb.Find(ctx, int(*scene.StudioID))
 		if err != nil {
-			return err
+			return nil, err
+		}
+		studioDraft := graphql.DraftEntityInput{
+			Name: studio.Name.String,
 		}
 
-		if scene.Title != "" {
-			draft.Title = &scene.Title
-		}
-		if scene.Details != "" {
-			draft.Details = &scene.Details
-		}
-		if scene.URL != "" && len(strings.TrimSpace(scene.URL)) > 0 {
-			url := strings.TrimSpace(scene.URL)
-			draft.URL = &url
-		}
-		if scene.Date != nil {
-			v := scene.Date.String()
-			draft.Date = &v
-		}
-
-		if scene.StudioID != nil {
-			studio, err := sqb.Find(ctx, int(*scene.StudioID))
-			if err != nil {
-				return err
-			}
-			studioDraft := graphql.DraftEntityInput{
-				Name: studio.Name.String,
-			}
-
-			stashIDs, err := sqb.GetStashIDs(ctx, studio.ID)
-			if err != nil {
-				return err
-			}
-			for _, stashID := range stashIDs {
-				if stashID.Endpoint == endpoint {
-					studioDraft.ID = &stashID.StashID
-					break
-				}
-			}
-			draft.Studio = &studioDraft
-		}
-
-		fingerprints := []*graphql.FingerprintInput{}
-		duration := scene.Duration()
-		if oshash := scene.OSHash(); oshash != "" && duration != 0 {
-			fingerprint := graphql.FingerprintInput{
-				Hash:      oshash,
-				Algorithm: graphql.FingerprintAlgorithmOshash,
-				Duration:  int(duration),
-			}
-			fingerprints = append(fingerprints, &fingerprint)
-		}
-
-		if checksum := scene.Checksum(); checksum != "" && duration != 0 {
-			fingerprint := graphql.FingerprintInput{
-				Hash:      checksum,
-				Algorithm: graphql.FingerprintAlgorithmMd5,
-				Duration:  int(duration),
-			}
-			fingerprints = append(fingerprints, &fingerprint)
-		}
-
-		if phash := scene.Phash(); phash != 0 && duration != 0 {
-			fingerprint := graphql.FingerprintInput{
-				Hash:      utils.PhashToString(phash),
-				Algorithm: graphql.FingerprintAlgorithmPhash,
-				Duration:  int(duration),
-			}
-			fingerprints = append(fingerprints, &fingerprint)
-		}
-		draft.Fingerprints = fingerprints
-
-		scenePerformers, err := pqb.FindBySceneID(ctx, sceneID)
+		stashIDs, err := sqb.GetStashIDs(ctx, studio.ID)
 		if err != nil {
-			return err
+			return nil, err
 		}
-
-		performers := []*graphql.DraftEntityInput{}
-		for _, p := range scenePerformers {
-			performerDraft := graphql.DraftEntityInput{
-				Name: p.Name.String,
-			}
-
-			stashIDs, err := pqb.GetStashIDs(ctx, p.ID)
-			if err != nil {
-				return err
-			}
-
-			for _, stashID := range stashIDs {
-				if stashID.Endpoint == endpoint {
-					performerDraft.ID = &stashID.StashID
-					break
-				}
-			}
-
-			performers = append(performers, &performerDraft)
-		}
-		draft.Performers = performers
-
-		var tags []*graphql.DraftEntityInput
-		sceneTags, err := r.Tag.FindBySceneID(ctx, scene.ID)
-		if err != nil {
-			return err
-		}
-		for _, tag := range sceneTags {
-			tags = append(tags, &graphql.DraftEntityInput{Name: tag.Name})
-		}
-		draft.Tags = tags
-
-		exists, _ := fsutil.FileExists(imagePath)
-		if exists {
-			file, err := os.Open(imagePath)
-			if err == nil {
-				image = file
-			}
-		}
-
-		stashIDs := scene.StashIDs
-		var stashID *string
-		for _, v := range stashIDs {
-			if v.Endpoint == endpoint {
-				vv := v.StashID
-				stashID = &vv
+		for _, stashID := range stashIDs {
+			if stashID.Endpoint == endpoint {
+				studioDraft.ID = &stashID.StashID
 				break
 			}
 		}
-		draft.ID = stashID
+		draft.Studio = &studioDraft
+	}
 
-		return nil
-	}); err != nil {
+	fingerprints := []*graphql.FingerprintInput{}
+	duration := scene.Duration()
+	if oshash := scene.OSHash(); oshash != "" && duration != 0 {
+		fingerprint := graphql.FingerprintInput{
+			Hash:      oshash,
+			Algorithm: graphql.FingerprintAlgorithmOshash,
+			Duration:  int(duration),
+		}
+		fingerprints = append(fingerprints, &fingerprint)
+	}
+
+	if checksum := scene.Checksum(); checksum != "" && duration != 0 {
+		fingerprint := graphql.FingerprintInput{
+			Hash:      checksum,
+			Algorithm: graphql.FingerprintAlgorithmMd5,
+			Duration:  int(duration),
+		}
+		fingerprints = append(fingerprints, &fingerprint)
+	}
+
+	if phash := scene.Phash(); phash != 0 && duration != 0 {
+		fingerprint := graphql.FingerprintInput{
+			Hash:      utils.PhashToString(phash),
+			Algorithm: graphql.FingerprintAlgorithmPhash,
+			Duration:  int(duration),
+		}
+		fingerprints = append(fingerprints, &fingerprint)
+	}
+	draft.Fingerprints = fingerprints
+
+	scenePerformers, err := pqb.FindBySceneID(ctx, scene.ID)
+	if err != nil {
 		return nil, err
 	}
 
+	performers := []*graphql.DraftEntityInput{}
+	for _, p := range scenePerformers {
+		performerDraft := graphql.DraftEntityInput{
+			Name: p.Name.String,
+		}
+
+		stashIDs, err := pqb.GetStashIDs(ctx, p.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, stashID := range stashIDs {
+			if stashID.Endpoint == endpoint {
+				performerDraft.ID = &stashID.StashID
+				break
+			}
+		}
+
+		performers = append(performers, &performerDraft)
+	}
+	draft.Performers = performers
+
+	var tags []*graphql.DraftEntityInput
+	sceneTags, err := r.Tag.FindBySceneID(ctx, scene.ID)
+	if err != nil {
+		return nil, err
+	}
+	for _, tag := range sceneTags {
+		tags = append(tags, &graphql.DraftEntityInput{Name: tag.Name})
+	}
+	draft.Tags = tags
+
+	exists, _ := fsutil.FileExists(imagePath)
+	if exists {
+		file, err := os.Open(imagePath)
+		if err == nil {
+			image = file
+		}
+	}
+
+	stashIDs := scene.StashIDs
+	var stashID *string
+	for _, v := range stashIDs {
+		if v.Endpoint == endpoint {
+			vv := v.StashID
+			stashID = &vv
+			break
+		}
+	}
+	draft.ID = stashID
+
 	var id *string
 	var ret graphql.SubmitSceneDraft
-	err := c.submitDraft(ctx, graphql.SubmitSceneDraftDocument, draft, image, &ret)
+	err = c.submitDraft(ctx, graphql.SubmitSceneDraftDocument, draft, image, &ret)
 	id = ret.SubmitSceneDraft.ID
 
 	return id, err

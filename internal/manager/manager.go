@@ -198,6 +198,8 @@ func initialize() error {
 		Repository:   db.Gallery,
 		ImageFinder:  db.Image,
 		ImageService: instance.ImageService,
+		File:         db.File,
+		Folder:       db.Folder,
 	}
 
 	instance.JobManager = initJobManager()
@@ -266,15 +268,15 @@ func initialize() error {
 	return nil
 }
 
-func videoFileFilter(f file.File) bool {
+func videoFileFilter(ctx context.Context, f file.File) bool {
 	return isVideo(f.Base().Basename)
 }
 
-func imageFileFilter(f file.File) bool {
+func imageFileFilter(ctx context.Context, f file.File) bool {
 	return isImage(f.Base().Basename)
 }
 
-func galleryFileFilter(f file.File) bool {
+func galleryFileFilter(ctx context.Context, f file.File) bool {
 	return isZip(f.Base().Basename)
 }
 

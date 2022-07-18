@@ -51,11 +51,17 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	const taskQueueSize = 200000
 	taskQueue := job.NewTaskQueue(ctx, progress, taskQueueSize, instance.Config.GetParallelTasksWithAutoDetection())
 
+	var minModTime time.Time
+	if j.input.Filter != nil && j.input.Filter.MinModTime != nil {
+		minModTime = *j.input.Filter.MinModTime
+	}
+
 	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
-		Paths:             paths,
-		ScanFilters:       []file.PathFilter{newScanFilter(instance.Config)},
-		ZipFileExtensions: instance.Config.GetGalleryExtensions(),
-		ParallelTasks:     instance.Config.GetParallelTasksWithAutoDetection(),
+		Paths:                  paths,
+		ScanFilters:            []file.PathFilter{newScanFilter(instance.Config, minModTime)},
+		ZipFileExtensions:      instance.Config.GetGalleryExtensions(),
+		ParallelTasks:          instance.Config.GetParallelTasksWithAutoDetection(),
+		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(instance.Config)},
 	}, progress)
 
 	taskQueue.Close()
@@ -71,30 +77,102 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	j.subscriptions.notify()
 }
 
-type scanFilter struct {
-	stashPaths        []*config.StashConfig
-	generatedPath     string
-	vidExt            []string
-	imgExt            []string
-	zipExt            []string
-	videoExcludeRegex []*regexp.Regexp
-	imageExcludeRegex []*regexp.Regexp
+type extensionConfig struct {
+	vidExt []string
+	imgExt []string
+	zipExt []string
 }
 
-func newScanFilter(c *config.Instance) *scanFilter {
+func newExtensionConfig(c *config.Instance) extensionConfig {
+	return extensionConfig{
+		vidExt: c.GetVideoExtensions(),
+		imgExt: c.GetImageExtensions(),
+		zipExt: c.GetGalleryExtensions(),
+	}
+}
+
+type fileCounter interface {
+	CountByFileID(ctx context.Context, fileID file.ID) (int, error)
+}
+
+// handlerRequiredFilter returns true if a File's handler needs to be executed despite the file not being updated.
+type handlerRequiredFilter struct {
+	extensionConfig
+	SceneFinder   fileCounter
+	ImageFinder   fileCounter
+	GalleryFinder fileCounter
+}
+
+func newHandlerRequiredFilter(c *config.Instance) *handlerRequiredFilter {
+	db := instance.Database
+
+	return &handlerRequiredFilter{
+		extensionConfig: newExtensionConfig(c),
+		SceneFinder:     db.Scene,
+		ImageFinder:     db.Image,
+		GalleryFinder:   db.Gallery,
+	}
+}
+
+func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
+	path := ff.Base().Path
+	isVideoFile := fsutil.MatchExtension(path, f.vidExt)
+	isImageFile := fsutil.MatchExtension(path, f.imgExt)
+	isZipFile := fsutil.MatchExtension(path, f.zipExt)
+
+	var counter fileCounter
+
+	switch {
+	case isVideoFile:
+		// return true if there are no scenes associated
+		counter = f.SceneFinder
+	case isImageFile:
+		counter = f.ImageFinder
+	case isZipFile:
+		counter = f.GalleryFinder
+	}
+
+	if counter == nil {
+		return false
+	}
+
+	n, err := counter.CountByFileID(ctx, ff.Base().ID)
+	if err != nil {
+		// just ignore
+		return false
+	}
+
+	// execute handler if there are no related objects
+	return n == 0
+}
+
+type scanFilter struct {
+	extensionConfig
+	stashPaths        []*config.StashConfig
+	generatedPath     string
+	videoExcludeRegex []*regexp.Regexp
+	imageExcludeRegex []*regexp.Regexp
+	minModTime        time.Time
+}
+
+func newScanFilter(c *config.Instance, minModTime time.Time) *scanFilter {
 	return &scanFilter{
+		extensionConfig:   newExtensionConfig(c),
 		stashPaths:        c.GetStashPaths(),
 		generatedPath:     c.GetGeneratedPath(),
-		vidExt:            c.GetVideoExtensions(),
-		imgExt:            c.GetImageExtensions(),
-		zipExt:            c.GetGalleryExtensions(),
 		videoExcludeRegex: generateRegexps(c.GetExcludes()),
 		imageExcludeRegex: generateRegexps(c.GetImageExcludes()),
+		minModTime:        minModTime,
 	}
 }
 
 func (f *scanFilter) Accept(ctx context.Context, path string, info fs.FileInfo) bool {
 	if fsutil.IsPathInDir(f.generatedPath, path) {
+		return false
+	}
+
+	// exit early on cutoff
+	if info.Mode().IsRegular() && info.ModTime().Before(f.minModTime) {
 		return false
 	}
 

@@ -60,11 +60,9 @@ type cleanFilter struct {
 func newCleanFilter(c *config.Instance) *cleanFilter {
 	return &cleanFilter{
 		scanFilter: scanFilter{
+			extensionConfig:   newExtensionConfig(c),
 			stashPaths:        c.GetStashPaths(),
 			generatedPath:     c.GetGeneratedPath(),
-			vidExt:            c.GetVideoExtensions(),
-			imgExt:            c.GetImageExtensions(),
-			zipExt:            c.GetGalleryExtensions(),
 			videoExcludeRegex: generateRegexps(c.GetExcludes()),
 			imageExcludeRegex: generateRegexps(c.GetImageExcludes()),
 		},
