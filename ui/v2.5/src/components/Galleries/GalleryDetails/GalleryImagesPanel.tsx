@@ -65,10 +65,15 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
         gallery_id: gallery.id!,
         image_ids: Array.from(selectedIds.values()),
       });
+
       Toast.success({
         content: intl.formatMessage(
-          { id: "toast.added_entity" },
-          { entity: intl.formatMessage({ id: "images" }) }
+          { id: "toast.removed_entity" },
+          {
+            count: selectedIds.size,
+            singularEntity: intl.formatMessage({ id: "image" }),
+            pluralEntity: intl.formatMessage({ id: "images" }),
+          }
         ),
       });
     } catch (e) {
