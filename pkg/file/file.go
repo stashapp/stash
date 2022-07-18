@@ -198,7 +198,7 @@ type FilteredDecorator struct {
 
 // Decorate runs the decorator if the filter accepts the file.
 func (d *FilteredDecorator) Decorate(ctx context.Context, fs FS, f File) (File, error) {
-	if d.Accept(f) {
+	if d.Accept(ctx, f) {
 		return d.Decorator.Decorate(ctx, fs, f)
 	}
 	return f, nil

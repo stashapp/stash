@@ -140,12 +140,10 @@ func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter 
 		}
 	}
 
-	// TODO - we currently destroy associated files so that they will be rescanned.
-	// A better way would be to keep the file entries in the database, and recreate
-	// associated objects during the scan process if there are none already.
-
-	if err := s.destroyFiles(ctx, scene, fileDeleter, deleteFile); err != nil {
-		return err
+	if deleteFile {
+		if err := s.deleteFiles(ctx, scene, fileDeleter); err != nil {
+			return err
+		}
 	}
 
 	if deleteGenerated {
@@ -161,7 +159,8 @@ func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter 
 	return nil
 }
 
-func (s *Service) destroyFiles(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteFile bool) error {
+// deleteFiles deletes files from the database and file system
+func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter) error {
 	for _, f := range scene.Files {
 		// only delete files where there is no other associated scene
 		otherScenes, err := s.Repository.FindByFileID(ctx, f.ID)
@@ -174,12 +173,13 @@ func (s *Service) destroyFiles(ctx context.Context, scene *models.Scene, fileDel
 			continue
 		}
 
+		const deleteFile = true
 		if err := file.Destroy(ctx, s.File, f, fileDeleter.Deleter, deleteFile); err != nil {
 			return err
 		}
 
 		// don't delete files in zip archives
-		if deleteFile && f.ZipFileID == nil {
+		if f.ZipFileID == nil {
 			funscriptPath := video.GetFunscriptPath(f.Path)
 			funscriptExists, _ := fsutil.FileExists(funscriptPath)
 			if funscriptExists {

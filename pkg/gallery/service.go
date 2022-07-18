@@ -8,8 +8,12 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type Repository interface {
+type FinderByFile interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
+}
+
+type Repository interface {
+	FinderByFile
 	Destroy(ctx context.Context, id int) error
 }
 
@@ -20,10 +24,13 @@ type ImageFinder interface {
 
 type ImageService interface {
 	Destroy(ctx context.Context, i *models.Image, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) error
+	DestroyZipImages(ctx context.Context, zipFile file.File, fileDeleter *image.FileDeleter, deleteGenerated bool) ([]*models.Image, error)
 }
 
 type Service struct {
 	Repository   Repository
 	ImageFinder  ImageFinder
 	ImageService ImageService
+	File         file.Store
+	Folder       file.FolderStore
 }

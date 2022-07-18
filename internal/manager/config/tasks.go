@@ -2,8 +2,10 @@ package config
 
 type ScanMetadataOptions struct {
 	// Set name, date, details from metadata (if present)
+	// Deprecated: not implemented
 	UseFileMetadata bool `json:"useFileMetadata"`
 	// Strip file extension from title
+	// Deprecated: not implemented
 	StripFileExtension bool `json:"stripFileExtension"`
 	// Generate previews during scan
 	ScanGeneratePreviews bool `json:"scanGeneratePreviews"`

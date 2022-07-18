@@ -379,6 +379,13 @@ func (qb *ImageStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*mode
 	return ret, nil
 }
 
+func (qb *ImageStore) CountByFileID(ctx context.Context, fileID file.ID) (int, error) {
+	joinTable := imagesFilesJoinTable
+
+	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(fileIDColumn).Eq(fileID))
+	return count(ctx, q)
+}
+
 func (qb *ImageStore) FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Image, error) {
 	table := imagesQueryTable
 

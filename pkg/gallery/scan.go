@@ -64,8 +64,10 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 			UpdatedAt: now,
 		}
 
+		logger.Infof("%s doesn't exist. Creating new gallery...", f.Base().Path)
+
 		if err := h.CreatorUpdater.Create(ctx, newGallery, []file.ID{baseFile.ID}); err != nil {
-			return fmt.Errorf("creating new image: %w", err)
+			return fmt.Errorf("creating new gallery: %w", err)
 		}
 
 		h.PluginCache.ExecutePostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
