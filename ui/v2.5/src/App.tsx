@@ -131,28 +131,33 @@ export const App: React.FC = () => {
     }
 
     return (
-      <Suspense fallback={<LoadingIndicator />}>
-        <Switch>
-          <Route exact path="/" component={FrontPage} />
-          <Route path="/scenes" component={Scenes} />
-          <Route path="/images" component={Images} />
-          <Route path="/galleries" component={Galleries} />
-          <Route path="/performers" component={Performers} />
-          <Route path="/tags" component={Tags} />
-          <Route path="/studios" component={Studios} />
-          <Route path="/movies" component={Movies} />
-          <Route path="/stats" component={Stats} />
-          <Route path="/settings" component={Settings} />
-          <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
-          <Route
-            path="/sceneDuplicateChecker"
-            component={SceneDuplicateChecker}
-          />
-          <Route path="/setup" component={Setup} />
-          <Route path="/migrate" component={Migrate} />
-          <Route component={PageNotFound} />
-        </Switch>
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingIndicator />}>
+          <Switch>
+            <Route exact path="/" component={FrontPage} />
+            <Route path="/scenes" component={Scenes} />
+            <Route path="/images" component={Images} />
+            <Route path="/galleries" component={Galleries} />
+            <Route path="/performers" component={Performers} />
+            <Route path="/tags" component={Tags} />
+            <Route path="/studios" component={Studios} />
+            <Route path="/movies" component={Movies} />
+            <Route path="/stats" component={Stats} />
+            <Route path="/settings" component={Settings} />
+            <Route
+              path="/sceneFilenameParser"
+              component={SceneFilenameParser}
+            />
+            <Route
+              path="/sceneDuplicateChecker"
+              component={SceneDuplicateChecker}
+            />
+            <Route path="/setup" component={Setup} />
+            <Route path="/migrate" component={Migrate} />
+            <Route component={PageNotFound} />
+          </Switch>
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
