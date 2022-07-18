@@ -198,7 +198,7 @@ func (v *VideoFile) getVideoStream() *FFProbeStream {
 
 func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
 	for i, stream := range probeJSON.Streams {
-		if stream.CodecType == fileType {
+		if stream.CodecType == fileType && stream.Disposition.Default == 1 {
 			return i
 		}
 	}
