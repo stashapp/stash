@@ -17,7 +17,6 @@ type ImageFile struct {
 
 type Image struct {
 	Title      string        `json:"title,omitempty"`
-	Checksum   string        `json:"checksum,omitempty"`
 	Studio     string        `json:"studio,omitempty"`
 	Rating     int           `json:"rating,omitempty"`
 	Organized  bool          `json:"organized,omitempty"`
@@ -25,7 +24,7 @@ type Image struct {
 	Galleries  []string      `json:"galleries,omitempty"`
 	Performers []string      `json:"performers,omitempty"`
 	Tags       []string      `json:"tags,omitempty"`
-	File       *ImageFile    `json:"file,omitempty"`
+	Files      []string      `json:"files,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
 }

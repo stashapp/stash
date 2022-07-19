@@ -38,9 +38,6 @@ type SceneMovie struct {
 
 type Scene struct {
 	Title      string           `json:"title,omitempty"`
-	Checksum   string           `json:"checksum,omitempty"`
-	OSHash     string           `json:"oshash,omitempty"`
-	Phash      string           `json:"phash,omitempty"`
 	Studio     string           `json:"studio,omitempty"`
 	URL        string           `json:"url,omitempty"`
 	Date       string           `json:"date,omitempty"`
@@ -53,7 +50,7 @@ type Scene struct {
 	Movies     []SceneMovie     `json:"movies,omitempty"`
 	Tags       []string         `json:"tags,omitempty"`
 	Markers    []SceneMarker    `json:"markers,omitempty"`
-	File       *SceneFile       `json:"file,omitempty"`
+	Files      []string         `json:"files,omitempty"`
 	Cover      string           `json:"cover,omitempty"`
 	CreatedAt  json.JSONTime    `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime    `json:"updated_at,omitempty"`

@@ -30,7 +30,6 @@ type Importer struct {
 	MovieWriter         movie.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Scene
-	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
 	FileNamingAlgorithm models.HashAlgorithm
 
@@ -366,7 +365,15 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 }
 
 func (i *Importer) Name() string {
-	return i.Path
+	if i.Input.Title != "" {
+		return i.Input.Title
+	}
+
+	if len(i.Input.Files) > 0 {
+		return i.Input.Files[0]
+	}
+
+	return ""
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {

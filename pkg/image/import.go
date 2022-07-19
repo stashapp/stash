@@ -29,7 +29,6 @@ type Importer struct {
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Image
-	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
 
 	ID    int
@@ -242,7 +241,15 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 }
 
 func (i *Importer) Name() string {
-	return i.Path
+	if i.Input.Title != "" {
+		return i.Input.Title
+	}
+
+	if len(i.Input.Files) > 0 {
+		return i.Input.Files[0]
+	}
+
+	return ""
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {

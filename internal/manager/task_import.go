@@ -537,7 +537,6 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			sceneImporter := &scene.Importer{
 				ReaderWriter: readerWriter,
 				Input:        *sceneJSON,
-				Path:         mappingJSON.Path,
 
 				FileNamingAlgorithm: t.fileNamingAlgorithm,
 				MissingRefBehaviour: t.MissingRefBehaviour,
@@ -604,7 +603,6 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 			imageImporter := &image.Importer{
 				ReaderWriter: readerWriter,
 				Input:        *imageJSON,
-				Path:         mappingJSON.Path,
 
 				MissingRefBehaviour: t.MissingRefBehaviour,
 

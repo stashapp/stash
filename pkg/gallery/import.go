@@ -243,7 +243,19 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 }
 
 func (i *Importer) Name() string {
-	return i.Input.Path
+	if i.Input.Title != "" {
+		return i.Input.Title
+	}
+
+	if i.Input.FolderPath != "" {
+		return i.Input.FolderPath
+	}
+
+	if len(i.Input.ZipFiles) > 0 {
+		return i.Input.ZipFiles[0]
+	}
+
+	return ""
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
