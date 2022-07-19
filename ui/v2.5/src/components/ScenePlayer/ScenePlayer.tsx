@@ -558,6 +558,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     interactiveClient.setLooping(looping);
 
     player.load();
+    player.focus();
 
     if ((player as any).vttThumbnails?.src)
       (player as any).vttThumbnails?.src(scene?.paths.vtt);
