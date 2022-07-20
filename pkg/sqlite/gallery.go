@@ -518,6 +518,23 @@ func (qb *GalleryStore) CountByImageID(ctx context.Context, imageID int) (int, e
 	return count(ctx, q)
 }
 
+func (qb *GalleryStore) FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error) {
+	table := galleriesQueryTable
+
+	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
+		table.Col("folder_id").IsNull(),
+		table.Col("file_id").IsNull(),
+		table.Col("title").Eq(title),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting user galleries for title %s: %w", title, err)
+	}
+
+	return ret, nil
+}
+
 func (qb *GalleryStore) Count(ctx context.Context) (int, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(qb.table())
 	return count(ctx, q)

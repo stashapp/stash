@@ -3,6 +3,7 @@ package jsonschema
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stashapp/stash/pkg/models/json"
@@ -22,6 +23,19 @@ type Gallery struct {
 	Tags       []string      `json:"tags,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
+}
+
+func (s Gallery) Filename(basename string, hash string) string {
+	ret := s.Title
+	if ret == "" {
+		ret = basename
+	}
+
+	if hash != "" {
+		ret += "." + hash
+	}
+
+	return ret + ".json"
 }
 
 func LoadGalleryFile(filePath string) (*Gallery, error) {
@@ -45,4 +59,24 @@ func SaveGalleryFile(filePath string, gallery *Gallery) error {
 		return fmt.Errorf("gallery must not be nil")
 	}
 	return marshalToFile(filePath, gallery)
+}
+
+// GalleryRef is used to identify a Gallery.
+// Only one field should be populated.
+type GalleryRef struct {
+	ZipFiles   []string `json:"zip_files,omitempty"`
+	FolderPath string   `json:"folder_path,omitempty"`
+	// Title is used only if FolderPath and ZipPaths is empty
+	Title string `json:"title,omitempty"`
+}
+
+func (r GalleryRef) String() string {
+	switch {
+	case r.FolderPath != "":
+		return "{ folder: " + r.FolderPath + " }"
+	case len(r.ZipFiles) > 0:
+		return "{ zipFiles: [" + strings.Join(r.ZipFiles, ", ") + "] }"
+	default:
+		return "{ title: " + r.Title + " }"
+	}
 }

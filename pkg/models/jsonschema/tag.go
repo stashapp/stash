@@ -18,6 +18,10 @@ type Tag struct {
 	UpdatedAt     json.JSONTime `json:"updated_at,omitempty"`
 }
 
+func (s Tag) Filename() string {
+	return s.Name + ".json"
+}
+
 func LoadTagFile(filePath string) (*Tag, error) {
 	var tag Tag
 	file, err := os.Open(filePath)

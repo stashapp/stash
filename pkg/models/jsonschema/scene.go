@@ -45,7 +45,7 @@ type Scene struct {
 	Organized  bool             `json:"organized,omitempty"`
 	OCounter   int              `json:"o_counter,omitempty"`
 	Details    string           `json:"details,omitempty"`
-	Galleries  []string         `json:"galleries,omitempty"`
+	Galleries  []GalleryRef     `json:"galleries,omitempty"`
 	Performers []string         `json:"performers,omitempty"`
 	Movies     []SceneMovie     `json:"movies,omitempty"`
 	Tags       []string         `json:"tags,omitempty"`
@@ -55,6 +55,19 @@ type Scene struct {
 	CreatedAt  json.JSONTime    `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime    `json:"updated_at,omitempty"`
 	StashIDs   []models.StashID `json:"stash_ids,omitempty"`
+}
+
+func (s Scene) Filename(basename string, hash string) string {
+	ret := s.Title
+	if ret == "" {
+		ret = basename
+	}
+
+	if hash != "" {
+		ret += "." + hash
+	}
+
+	return ret + ".json"
 }
 
 func LoadSceneFile(filePath string) (*Scene, error) {

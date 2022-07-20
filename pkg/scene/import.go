@@ -25,7 +25,7 @@ type FullCreatorUpdater interface {
 type Importer struct {
 	ReaderWriter        FullCreatorUpdater
 	StudioWriter        studio.NameFinderCreator
-	GalleryWriter       gallery.ChecksumsFinder
+	GalleryFinder       gallery.Finder
 	PerformerWriter     performer.NameFinderCreator
 	MovieWriter         movie.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
@@ -191,33 +191,50 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	return created.ID, nil
 }
 
+func (i *Importer) locateGallery(ctx context.Context, ref jsonschema.GalleryRef) (*models.Gallery, error) {
+	var galleries []*models.Gallery
+	var err error
+	switch {
+	case ref.FolderPath != "":
+		galleries, err = i.GalleryFinder.FindByPath(ctx, ref.FolderPath)
+	case len(ref.ZipFiles) > 0:
+		for _, p := range ref.ZipFiles {
+			galleries, err = i.GalleryFinder.FindByPath(ctx, p)
+			if err != nil {
+				break
+			}
+
+			if len(galleries) > 0 {
+				break
+			}
+		}
+	case ref.Title != "":
+		galleries, err = i.GalleryFinder.FindUserGalleryByTitle(ctx, ref.Title)
+	}
+
+	var ret *models.Gallery
+	if len(galleries) > 0 {
+		ret = galleries[0]
+	}
+
+	return ret, err
+}
+
 func (i *Importer) populateGalleries(ctx context.Context) error {
-	if len(i.Input.Galleries) > 0 {
-		checksums := i.Input.Galleries
-		galleries, err := i.GalleryWriter.FindByChecksums(ctx, checksums)
+	for _, ref := range i.Input.Galleries {
+		gallery, err := i.locateGallery(ctx, ref)
 		if err != nil {
 			return err
 		}
 
-		var pluckedChecksums []string
-		for _, gallery := range galleries {
-			pluckedChecksums = append(pluckedChecksums, gallery.Checksum())
-		}
-
-		missingGalleries := stringslice.StrFilter(checksums, func(checksum string) bool {
-			return !stringslice.StrInclude(pluckedChecksums, checksum)
-		})
-
-		if len(missingGalleries) > 0 {
+		if gallery == nil {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
-				return fmt.Errorf("scene galleries [%s] not found", strings.Join(missingGalleries, ", "))
+				return fmt.Errorf("scene gallery '%s' not found", ref.String())
 			}
 
 			// we don't create galleries - just ignore
-		}
-
-		for _, o := range galleries {
-			i.scene.GalleryIDs.Add(o.ID)
+		} else {
+			i.scene.GalleryIDs.Add(gallery.ID)
 		}
 	}
 

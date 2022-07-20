@@ -21,12 +21,25 @@ type Image struct {
 	Rating     int           `json:"rating,omitempty"`
 	Organized  bool          `json:"organized,omitempty"`
 	OCounter   int           `json:"o_counter,omitempty"`
-	Galleries  []string      `json:"galleries,omitempty"`
+	Galleries  []GalleryRef  `json:"galleries,omitempty"`
 	Performers []string      `json:"performers,omitempty"`
 	Tags       []string      `json:"tags,omitempty"`
 	Files      []string      `json:"files,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
+}
+
+func (s Image) Filename(basename string, hash string) string {
+	ret := s.Title
+	if ret == "" {
+		ret = basename
+	}
+
+	if hash != "" {
+		ret += "." + hash
+	}
+
+	return ret + ".json"
 }
 
 func LoadImageFile(filePath string) (*Image, error) {

@@ -10,8 +10,7 @@ import (
 type JSONPaths struct {
 	Metadata string
 
-	MappingsFile string
-	ScrapedFile  string
+	ScrapedFile string
 
 	Performers string
 	Scenes     string
@@ -25,7 +24,6 @@ type JSONPaths struct {
 func newJSONPaths(baseDir string) *JSONPaths {
 	jp := JSONPaths{}
 	jp.Metadata = baseDir
-	jp.MappingsFile = filepath.Join(baseDir, "mappings.json")
 	jp.ScrapedFile = filepath.Join(baseDir, "scraped.json")
 	jp.Performers = filepath.Join(baseDir, "performers")
 	jp.Scenes = filepath.Join(baseDir, "scenes")
@@ -68,32 +66,4 @@ func EnsureJSONDirs(baseDir string) {
 	if err := fsutil.EnsureDir(jsonPaths.Tags); err != nil {
 		logger.Warnf("couldn't create directories for Tags: %v", err)
 	}
-}
-
-func (jp *JSONPaths) PerformerJSONPath(checksum string) string {
-	return filepath.Join(jp.Performers, checksum+".json")
-}
-
-func (jp *JSONPaths) SceneJSONPath(checksum string) string {
-	return filepath.Join(jp.Scenes, checksum+".json")
-}
-
-func (jp *JSONPaths) ImageJSONPath(checksum string) string {
-	return filepath.Join(jp.Images, checksum+".json")
-}
-
-func (jp *JSONPaths) GalleryJSONPath(checksum string) string {
-	return filepath.Join(jp.Galleries, checksum+".json")
-}
-
-func (jp *JSONPaths) StudioJSONPath(checksum string) string {
-	return filepath.Join(jp.Studios, checksum+".json")
-}
-
-func (jp *JSONPaths) TagJSONPath(checksum string) string {
-	return filepath.Join(jp.Tags, checksum+".json")
-}
-
-func (jp *JSONPaths) MovieJSONPath(checksum string) string {
-	return filepath.Join(jp.Movies, checksum+".json")
 }

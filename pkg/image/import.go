@@ -13,8 +13,9 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
-type GalleryChecksumsFinder interface {
-	FindByChecksums(ctx context.Context, checksums []string) ([]*models.Gallery, error)
+type GalleryFinder interface {
+	FindByPath(ctx context.Context, p string) ([]*models.Gallery, error)
+	FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error)
 }
 
 type FullCreatorUpdater interface {
@@ -25,7 +26,7 @@ type FullCreatorUpdater interface {
 type Importer struct {
 	ReaderWriter        FullCreatorUpdater
 	StudioWriter        studio.NameFinderCreator
-	GalleryWriter       GalleryChecksumsFinder
+	GalleryFinder       GalleryFinder
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Image
@@ -135,16 +136,45 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	return created.ID, nil
 }
 
+func (i *Importer) locateGallery(ctx context.Context, ref jsonschema.GalleryRef) (*models.Gallery, error) {
+	var galleries []*models.Gallery
+	var err error
+	switch {
+	case ref.FolderPath != "":
+		galleries, err = i.GalleryFinder.FindByPath(ctx, ref.FolderPath)
+	case len(ref.ZipFiles) > 0:
+		for _, p := range ref.ZipFiles {
+			galleries, err = i.GalleryFinder.FindByPath(ctx, p)
+			if err != nil {
+				break
+			}
+
+			if len(galleries) > 0 {
+				break
+			}
+		}
+	case ref.Title != "":
+		galleries, err = i.GalleryFinder.FindUserGalleryByTitle(ctx, ref.Title)
+	}
+
+	var ret *models.Gallery
+	if len(galleries) > 0 {
+		ret = galleries[0]
+	}
+
+	return ret, err
+}
+
 func (i *Importer) populateGalleries(ctx context.Context) error {
-	for _, checksum := range i.Input.Galleries {
-		gallery, err := i.GalleryWriter.FindByChecksums(ctx, []string{checksum})
+	for _, ref := range i.Input.Galleries {
+		gallery, err := i.locateGallery(ctx, ref)
 		if err != nil {
 			return fmt.Errorf("error finding gallery: %v", err)
 		}
 
-		if len(gallery) == 0 {
+		if gallery == nil {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
-				return fmt.Errorf("image gallery '%s' not found", i.Input.Studio)
+				return fmt.Errorf("image gallery '%s' not found", ref.String())
 			}
 
 			// we don't create galleries - just ignore
@@ -152,7 +182,7 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 				continue
 			}
 		} else {
-			i.image.GalleryIDs.Add(gallery[0].ID)
+			i.image.GalleryIDs.Add(gallery.ID)
 		}
 	}
 
