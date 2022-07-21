@@ -16,8 +16,7 @@ import (
 // const mutexType = "gallery"
 
 type FinderCreatorUpdater interface {
-	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
-	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Gallery, error)
+	Finder
 	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []file.ID) error
 	AddFileID(ctx context.Context, id int, fileID file.ID) error
 }

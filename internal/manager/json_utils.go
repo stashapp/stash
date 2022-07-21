@@ -46,3 +46,7 @@ func (jp *jsonUtils) saveImage(fn string, image *jsonschema.Image) error {
 func (jp *jsonUtils) saveGallery(fn string, gallery *jsonschema.Gallery) error {
 	return jsonschema.SaveGalleryFile(filepath.Join(jp.json.Galleries, fn), gallery)
 }
+
+func (jp *jsonUtils) saveFile(fn string, file jsonschema.DirEntry) error {
+	return jsonschema.SaveFileFile(filepath.Join(jp.json.Files, fn), file)
+}

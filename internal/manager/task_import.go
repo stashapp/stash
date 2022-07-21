@@ -131,6 +131,7 @@ func (t *ImportTask) Start(ctx context.Context) {
 	t.ImportPerformers(ctx)
 	t.ImportStudios(ctx)
 	t.ImportMovies(ctx)
+	t.ImportFiles(ctx)
 	t.ImportGalleries(ctx)
 
 	t.ImportScrapedItems(ctx)
@@ -368,6 +369,96 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 	logger.Info("[movies] import complete")
 }
 
+func (t *ImportTask) ImportFiles(ctx context.Context) {
+	logger.Info("[files] importing")
+
+	path := t.json.json.Files
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			logger.Errorf("[files] failed to read files directory: %v", err)
+		}
+
+		return
+	}
+
+	pendingParent := make(map[string][]jsonschema.DirEntry)
+
+	for i, fi := range files {
+		index := i + 1
+		fileJSON, err := jsonschema.LoadFileFile(filepath.Join(path, fi.Name()))
+		if err != nil {
+			logger.Errorf("[files] failed to read json: %s", err.Error())
+			continue
+		}
+
+		logger.Progressf("[files] %d of %d", index, len(files))
+
+		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+			return t.ImportFile(ctx, fileJSON, pendingParent)
+		}); err != nil {
+			if errors.Is(err, errZipFileNotExist) {
+				// add to the pending parent list so that it is created after the parent
+				s := pendingParent[fileJSON.DirEntry().ZipFile]
+				s = append(s, fileJSON)
+				pendingParent[fileJSON.DirEntry().ZipFile] = s
+				continue
+			}
+
+			logger.Errorf("[files] <%s> failed to create: %s", fi.Name(), err.Error())
+			continue
+		}
+	}
+
+	// create the leftover studios, warning for missing parents
+	if len(pendingParent) > 0 {
+		logger.Warnf("[files] importing files with missing zip files")
+
+		for _, s := range pendingParent {
+			for _, orphanFileJSON := range s {
+				if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+					return t.ImportFile(ctx, orphanFileJSON, nil)
+				}); err != nil {
+					logger.Errorf("[files] <%s> failed to create: %s", orphanFileJSON.DirEntry().Path, err.Error())
+					continue
+				}
+			}
+		}
+	}
+
+	logger.Info("[files] import complete")
+}
+
+func (t *ImportTask) ImportFile(ctx context.Context, fileJSON jsonschema.DirEntry, pendingParent map[string][]jsonschema.DirEntry) error {
+	r := t.txnManager
+	readerWriter := r.File
+
+	fileImporter := &fileFolderImporter{
+		ReaderWriter: readerWriter,
+		FolderStore:  r.Folder,
+		Input:        fileJSON,
+	}
+
+	// ignore duplicate files - don't overwrite
+	if err := performImport(ctx, fileImporter, ImportDuplicateEnumIgnore); err != nil {
+		return err
+	}
+
+	// now create the files pending this file's creation
+	s := pendingParent[fileJSON.DirEntry().Path]
+	for _, childFileJSON := range s {
+		// map is nil since we're not checking parent studios at this point
+		if err := t.ImportFile(ctx, childFileJSON, nil); err != nil {
+			return fmt.Errorf("failed to create child file <%s>: %s", childFileJSON.DirEntry().Path, err.Error())
+		}
+	}
+
+	// delete the entry from the map so that we know its not left over
+	delete(pendingParent, fileJSON.DirEntry().Path)
+
+	return nil
+}
+
 func (t *ImportTask) ImportGalleries(ctx context.Context) {
 	logger.Info("[galleries] importing")
 
@@ -400,6 +491,8 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 
 			galleryImporter := &gallery.Importer{
 				ReaderWriter:        readerWriter,
+				FolderFinder:        r.Folder,
+				FileFinder:          r.File,
 				PerformerWriter:     performerWriter,
 				StudioWriter:        studioWriter,
 				TagWriter:           tagWriter,
@@ -590,6 +683,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			sceneImporter := &scene.Importer{
 				ReaderWriter: readerWriter,
 				Input:        *sceneJSON,
+				FileFinder:   r.File,
 
 				FileNamingAlgorithm: t.fileNamingAlgorithm,
 				MissingRefBehaviour: t.MissingRefBehaviour,
@@ -663,6 +757,7 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 
 			imageImporter := &image.Importer{
 				ReaderWriter: readerWriter,
+				FileFinder:   r.File,
 				Input:        *imageJSON,
 
 				MissingRefBehaviour: t.MissingRefBehaviour,

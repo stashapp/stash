@@ -19,6 +19,7 @@ type JSONPaths struct {
 	Studios    string
 	Tags       string
 	Movies     string
+	Files      string
 }
 
 func newJSONPaths(baseDir string) *JSONPaths {
@@ -32,6 +33,7 @@ func newJSONPaths(baseDir string) *JSONPaths {
 	jp.Studios = filepath.Join(baseDir, "studios")
 	jp.Movies = filepath.Join(baseDir, "movies")
 	jp.Tags = filepath.Join(baseDir, "tags")
+	jp.Files = filepath.Join(baseDir, "files")
 	return &jp
 }
 
@@ -65,5 +67,8 @@ func EnsureJSONDirs(baseDir string) {
 	}
 	if err := fsutil.EnsureDir(jsonPaths.Tags); err != nil {
 		logger.Warnf("couldn't create directories for Tags: %v", err)
+	}
+	if err := fsutil.EnsureDir(jsonPaths.Files); err != nil {
+		logger.Warnf("couldn't create directories for Files: %v", err)
 	}
 }

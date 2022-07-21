@@ -8,13 +8,6 @@ import (
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
-type ImageFile struct {
-	ModTime json.JSONTime `json:"mod_time,omitempty"`
-	Size    int64         `json:"size"`
-	Width   int           `json:"width"`
-	Height  int           `json:"height"`
-}
-
 type Image struct {
 	Title      string        `json:"title,omitempty"`
 	Studio     string        `json:"studio,omitempty"`

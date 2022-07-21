@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -18,6 +19,9 @@ type CountQueryer interface {
 type Finder interface {
 	FindByPath(ctx context.Context, p string) ([]*models.Gallery, error)
 	FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error)
+	FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Gallery, error)
+	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
+	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Gallery, error)
 }
 
 func CountByPerformerID(ctx context.Context, r CountQueryer, id int) (int, error) {

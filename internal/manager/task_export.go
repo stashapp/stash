@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -382,6 +383,96 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int, repo Reposit
 	logger.Infof("[scenes] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
+func exportFile(f file.File, t *ExportTask) {
+	newFileJSON := fileToJSON(f)
+
+	fn := newFileJSON.Filename()
+
+	if err := t.json.saveFile(fn, newFileJSON); err != nil {
+		logger.Errorf("[files] <%s> failed to save json: %s", fn, err.Error())
+	}
+}
+
+func fileToJSON(f file.File) jsonschema.DirEntry {
+	bf := f.Base()
+
+	base := jsonschema.BaseFile{
+		BaseDirEntry: jsonschema.BaseDirEntry{
+			Type:      jsonschema.DirEntryTypeFile,
+			ModTime:   json.JSONTime{Time: bf.ModTime},
+			Path:      filepath.ToSlash(bf.Path),
+			CreatedAt: json.JSONTime{Time: bf.CreatedAt},
+			UpdatedAt: json.JSONTime{Time: bf.UpdatedAt},
+		},
+		Size: bf.Size,
+	}
+
+	if bf.ZipFile != nil {
+		base.ZipFile = bf.ZipFile.Base().Path
+	}
+
+	for _, fp := range bf.Fingerprints {
+		base.Fingerprints = append(base.Fingerprints, jsonschema.Fingerprint{
+			Type:        fp.Type,
+			Fingerprint: fp.Fingerprint,
+		})
+	}
+
+	switch ff := f.(type) {
+	case *file.VideoFile:
+		base.Type = jsonschema.DirEntryTypeVideo
+		return jsonschema.VideoFile{
+			BaseFile:         &base,
+			Format:           ff.Format,
+			Width:            ff.Width,
+			Height:           ff.Height,
+			Duration:         ff.Duration,
+			VideoCodec:       ff.VideoCodec,
+			AudioCodec:       ff.AudioCodec,
+			FrameRate:        ff.FrameRate,
+			BitRate:          ff.BitRate,
+			Interactive:      ff.Interactive,
+			InteractiveSpeed: ff.InteractiveSpeed,
+		}
+	case *file.ImageFile:
+		base.Type = jsonschema.DirEntryTypeImage
+		return jsonschema.ImageFile{
+			BaseFile: &base,
+			Format:   ff.Format,
+			Width:    ff.Width,
+			Height:   ff.Height,
+		}
+	}
+
+	return &base
+}
+
+func exportFolder(f file.Folder, t *ExportTask) {
+	newFileJSON := folderToJSON(f)
+
+	fn := newFileJSON.Filename()
+
+	if err := t.json.saveFile(fn, newFileJSON); err != nil {
+		logger.Errorf("[files] <%s> failed to save json: %s", fn, err.Error())
+	}
+}
+
+func folderToJSON(f file.Folder) jsonschema.DirEntry {
+	base := jsonschema.BaseDirEntry{
+		Type:      jsonschema.DirEntryTypeFolder,
+		ModTime:   json.JSONTime{Time: f.ModTime},
+		Path:      filepath.ToSlash(f.Path),
+		CreatedAt: json.JSONTime{Time: f.CreatedAt},
+		UpdatedAt: json.JSONTime{Time: f.UpdatedAt},
+	}
+
+	if f.ZipFile != nil {
+		base.ZipFile = f.ZipFile.Base().Path
+	}
+
+	return &base
+}
+
 func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models.Scene, repo Repository, t *ExportTask) {
 	defer wg.Done()
 	sceneReader := repo.Scene
@@ -403,6 +494,11 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene JSON: %s", sceneHash, err.Error())
 			continue
+		}
+
+		// export files
+		for _, f := range s.Files {
+			exportFile(f, t)
 		}
 
 		newSceneJSON.Studio, err = scene.GetStudioName(ctx, studioReader, s)
@@ -540,6 +636,11 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 
 		newImageJSON := image.ToBasicJSON(s)
 
+		// export files
+		for _, f := range s.Files {
+			exportFile(f, t)
+		}
+
 		var err error
 		newImageJSON.Studio, err = image.GetStudioName(ctx, studioReader, s)
 		if err != nil {
@@ -654,6 +755,27 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 		if err != nil {
 			logger.Errorf("[galleries] <%s> error getting gallery JSON: %s", galleryHash, err.Error())
 			continue
+		}
+
+		// export files
+		for _, f := range g.Files {
+			exportFile(f, t)
+		}
+
+		// export folder if necessary
+		if g.FolderID != nil {
+			folder, err := repo.Folder.Find(ctx, *g.FolderID)
+			if err != nil {
+				logger.Errorf("[galleries] <%s> error getting gallery folder: %v", galleryHash, err)
+				continue
+			}
+
+			if folder == nil {
+				logger.Errorf("[galleries] <%s> unable to find gallery folder", galleryHash)
+				continue
+			}
+
+			exportFolder(*folder, t)
 		}
 
 		newGalleryJSON.Studio, err = gallery.GetStudioName(ctx, studioReader, g)

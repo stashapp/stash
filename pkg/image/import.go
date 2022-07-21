@@ -3,8 +3,10 @@ package image
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/performer"
@@ -25,6 +27,7 @@ type FullCreatorUpdater interface {
 
 type Importer struct {
 	ReaderWriter        FullCreatorUpdater
+	FileFinder          file.Getter
 	StudioWriter        studio.NameFinderCreator
 	GalleryFinder       GalleryFinder
 	PerformerWriter     performer.NameFinderCreator
@@ -38,6 +41,10 @@ type Importer struct {
 
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.image = i.imageJSONToImage(i.Input)
+
+	if err := i.populateFiles(ctx); err != nil {
+		return err
+	}
 
 	if err := i.populateStudio(ctx); err != nil {
 		return err
@@ -65,6 +72,12 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
+
+		Title:     imageJSON.Title,
+		Organized: imageJSON.Organized,
+		OCounter:  imageJSON.OCounter,
+		CreatedAt: imageJSON.CreatedAt.GetTime(),
+		UpdatedAt: imageJSON.UpdatedAt.GetTime(),
 	}
 
 	if imageJSON.Title != "" {
@@ -74,24 +87,25 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 		newImage.Rating = &imageJSON.Rating
 	}
 
-	newImage.Organized = imageJSON.Organized
-	newImage.OCounter = imageJSON.OCounter
-	newImage.CreatedAt = imageJSON.CreatedAt.GetTime()
-	newImage.UpdatedAt = imageJSON.UpdatedAt.GetTime()
-
-	// if imageJSON.File != nil {
-	// 	if imageJSON.File.Size != 0 {
-	// 		newImage.Size = &imageJSON.File.Size
-	// 	}
-	// 	if imageJSON.File.Width != 0 {
-	// 		newImage.Width = &imageJSON.File.Width
-	// 	}
-	// 	if imageJSON.File.Height != 0 {
-	// 		newImage.Height = &imageJSON.File.Height
-	// 	}
-	// }
-
 	return newImage
+}
+
+func (i *Importer) populateFiles(ctx context.Context) error {
+	for _, ref := range i.Input.Files {
+		path := filepath.FromSlash(ref)
+		f, err := i.FileFinder.FindByPath(ctx, path)
+		if err != nil {
+			return fmt.Errorf("error finding file: %w", err)
+		}
+
+		if f == nil {
+			return fmt.Errorf("image file '%s' not found", path)
+		} else {
+			i.image.Files = append(i.image.Files, f.(*file.ImageFile))
+		}
+	}
+
+	return nil
 }
 
 func (i *Importer) populateStudio(ctx context.Context) error {
@@ -283,24 +297,34 @@ func (i *Importer) Name() string {
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	// var existing []*models.Image
-	// var err error
-	// existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
+	var existing []*models.Image
+	var err error
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	for _, f := range i.image.Files {
+		existing, err = i.ReaderWriter.FindByFileID(ctx, f.ID)
+		if err != nil {
+			return nil, err
+		}
 
-	// if len(existing) > 0 {
-	// 	id := existing[0].ID
-	// 	return &id, nil
-	// }
+		if len(existing) > 0 {
+			id := existing[0].ID
+			return &id, nil
+		}
+	}
 
 	return nil, nil
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &models.ImageCreateInput{Image: &i.image})
+	var fileIDs []file.ID
+	for _, f := range i.image.Files {
+		fileIDs = append(fileIDs, f.Base().ID)
+	}
+
+	err := i.ReaderWriter.Create(ctx, &models.ImageCreateInput{
+		Image:   &i.image,
+		FileIDs: fileIDs,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %v", err)
 	}
