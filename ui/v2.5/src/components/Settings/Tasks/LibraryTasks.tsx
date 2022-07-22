@@ -375,19 +375,34 @@ export const LibraryTasks: React.FC = () => {
         <Setting
           heading={
             <>
-              <FormattedMessage id="config.tasks.tagger.heading" />
+              <FormattedMessage id="config.tasks.scene_tagger.heading" />
               <ManualLink tab="Tagger">
                 <Icon icon={faQuestionCircle} />
               </ManualLink>
             </>
           }
-          subHeadingID="config.tasks.tagger.description"
+          subHeadingID="config.tasks.scene_tagger.description"
         >
           <Link to={"scenes?disp=3"}>
             <Button variant="primary">
               <FormattedMessage id="scenes" defaultMessage="Scenes" />
             </Button>
           </Link>
+        </Setting>
+      </SettingSection>
+
+      <SettingSection>
+        <Setting
+          heading={
+            <>
+              <FormattedMessage id="config.tasks.performer_tagger.heading" />
+              <ManualLink tab="Tagger">
+                <Icon icon={faQuestionCircle} />
+              </ManualLink>
+            </>
+          }
+          subHeadingID="config.tasks.performer_tagger.description"
+        >
           <Link to={"performers?disp=3"}>
             <Button variant="primary">
               <FormattedMessage id="performers" defaultMessage="Performers" />

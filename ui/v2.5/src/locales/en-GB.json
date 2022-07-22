@@ -396,17 +396,21 @@
       "migrate_hash_files": "Used after changing the Generated file naming hash to rename existing generated files to the new hash format.",
       "migrations": "Migrations",
       "only_dry_run": "Only perform a dry run. Don't remove anything",
+      "performer_tagger": {
+        "description": "Batch add performers or update existing performer metadata using stash-box.",
+        "heading": "Performer Tagger"
+      },
       "plugin_tasks": "Plugin Tasks",
       "scan": {
         "scanning_all_paths": "Scanning all paths",
         "scanning_paths": "Scanning the following paths"
       },
       "scan_for_content_desc": "Scan for new content and add it to the database.",
-      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata",
-      "tagger": {
-        "description": "Set metadata using stash-box and scraper sources.",
-        "heading": "Tagger"
-      }
+      "scene_tagger": {
+        "description": "Interactively set scene metadata using stash-box and scraper sources.",
+        "heading": "Scene Tagger"
+      },
+      "set_name_date_details_from_metadata_if_present": "Set name, date, details from embedded file metadata"
     },
     "tools": {
       "scene_duplicate_checker": "Scene Duplicate Checker",
