@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Button, Form } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import {
   mutateMetadataScan,
   mutateMetadataAutoTag,
@@ -328,6 +329,71 @@ export const LibraryTasks: React.FC = () => {
         >
           <ScanOptions options={scanOptions} setOptions={setScanOptions} />
         </SettingGroup>
+      </SettingSection>
+
+      <SettingSection>
+        <Setting
+          heading={
+            <>
+              <FormattedMessage id="config.tasks.create.heading" />
+              <ManualLink tab="Tasks">
+                <Icon icon={faQuestionCircle} />
+              </ManualLink>
+            </>
+          }
+          subHeadingID="config.tasks.create.description"
+        >
+          <Link to={"/performers/new"}>
+            <Button variant="primary">
+              <FormattedMessage id="performer" defaultMessage="Performer" />
+            </Button>
+          </Link>
+          <Link to={"/studios/new"}>
+            <Button variant="primary">
+              <FormattedMessage id="studio" defaultMessage="Studio" />
+            </Button>
+          </Link>
+          <Link to={"/tags/new"}>
+            <Button variant="primary">
+              <FormattedMessage id="tag" defaultMessage="Tag" />
+            </Button>
+          </Link>
+          <Link to={"/movies/new"}>
+            <Button variant="primary">
+              <FormattedMessage id="movie" defaultMessage="Movie" />
+            </Button>
+          </Link>
+          <Link to={"/galleries/new"}>
+            <Button variant="primary">
+              <FormattedMessage id="gallery" defaultMessage="Gallery" />
+            </Button>
+          </Link>
+        </Setting>
+      </SettingSection>
+
+      <SettingSection>
+        <Setting
+          heading={
+            <>
+              <FormattedMessage id="config.tasks.tagger.heading" />
+              <ManualLink tab="Tagger">
+                <Icon icon={faQuestionCircle} />
+              </ManualLink>
+            </>
+          }
+          subHeadingID="config.tasks.tagger.description"
+        >
+          <Link to={"scenes?disp=3"}>
+            <Button variant="primary">
+              <FormattedMessage id="scenes" defaultMessage="Scenes" />
+            </Button>
+          </Link>
+          <Link to={"performers?disp=3"}>
+            <Button variant="primary">
+              <FormattedMessage id="performers" defaultMessage="Performers" />
+            </Button>
+          </Link>
+        </Setting>
       </SettingSection>
 
       <SettingSection>
