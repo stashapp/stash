@@ -197,11 +197,21 @@ func (v *VideoFile) getVideoStream() *FFProbeStream {
 }
 
 func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
+	ret := -1
 	for i, stream := range probeJSON.Streams {
-		if stream.CodecType == fileType {
-			return i
+		// skip cover art/thumbnails
+		if stream.CodecType == fileType && stream.Disposition.AttachedPic == 0 {
+			// prefer default stream
+			if stream.Disposition.Default == 1 {
+				return i
+			}
+
+			// backwards compatible behaviour - fallback to first matching stream
+			if ret == -1 {
+				ret = i
+			}
 		}
 	}
 
-	return -1
+	return ret
 }
