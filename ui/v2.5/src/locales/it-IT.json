@@ -999,7 +999,6 @@
     "added_generation_job_to_queue": "Aggiunto lavoro di creazione alla coda",
     "created_entity": "Creato/a {entity}",
     "default_filter_set": "Filtro predefinito impostato",
-    "delete_entity": "Cancella {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Cancellato/a {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Sto creando la schermata…",
     "merged_tags": "Tag unite",

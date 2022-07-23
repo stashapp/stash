@@ -999,7 +999,6 @@
     "added_generation_job_to_queue": "Ajout d'une tâche de génération en file d'attente",
     "created_entity": "Créé(e) {entity}",
     "default_filter_set": "Filtre par défaut défini",
-    "delete_entity": "Supprimer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} supprimé(e)(s)",
     "generating_screenshot": "Génération de la capture d'écran…",
     "merged_tags": "Étiquettes fusionnées",

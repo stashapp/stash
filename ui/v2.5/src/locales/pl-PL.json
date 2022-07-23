@@ -999,7 +999,6 @@
     "added_generation_job_to_queue": "Dodano zadanie generowania do kolejki",
     "created_entity": "Utworzono {entity}",
     "default_filter_set": "Domyślny zestaw filtrów",
-    "delete_entity": "Usuń {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Usuń {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generowanie zrzutu ekranu…",
     "merged_tags": "Połączone tagi",

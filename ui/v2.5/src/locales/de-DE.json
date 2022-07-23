@@ -999,7 +999,6 @@
     "added_generation_job_to_queue": "Generierungsaufgabe zur Warteschlange hinzugefügt",
     "created_entity": "{entity} erstellt",
     "default_filter_set": "Standardfiltersatz",
-    "delete_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} löschen",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
     "generating_screenshot": "Screenshot wird erstellt…",
     "merged_tags": "Zusammengeführte Tags",

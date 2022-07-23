@@ -999,7 +999,6 @@
     "added_generation_job_to_queue": "Köade genereringsjobb",
     "created_entity": "Skapade {entity}",
     "default_filter_set": "Standardfilter valt",
-    "delete_entity": "Radera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Raderade {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Genererar skärmbild…",
     "merged_tags": "Slog samman taggar",

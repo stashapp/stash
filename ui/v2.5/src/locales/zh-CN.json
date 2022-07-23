@@ -999,7 +999,6 @@
     "added_generation_job_to_queue": "已添加生成工作至队列",
     "created_entity": "已经创建{entity}",
     "default_filter_set": "默认过滤器",
-    "delete_entity": "删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "已经删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "正在生成截图…",
     "merged_tags": "已经合并标签",

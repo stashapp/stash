@@ -929,7 +929,6 @@
     "added_generation_job_to_queue": "Lisätty generointi työjonoon",
     "created_entity": "Luotiin {entity}",
     "default_filter_set": "Oletussuodattimet",
-    "delete_entity": "Poista {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Poistettu {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generoidaan näyttökuvaa…",
     "merged_tags": "Yhdistetyt tunnisteet",

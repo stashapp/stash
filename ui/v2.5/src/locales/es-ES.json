@@ -976,7 +976,6 @@
     "added_generation_job_to_queue": "Tarea de generación añadida a la cola",
     "created_entity": "{entity} creada",
     "default_filter_set": "Establecer como filtro por defecto",
-    "delete_entity": "Eliminar {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Eliminado {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generando captura…",
     "merged_tags": "Etiquetas combinadas",

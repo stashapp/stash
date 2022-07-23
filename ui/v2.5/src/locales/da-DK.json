@@ -988,7 +988,6 @@
     "added_generation_job_to_queue": "Tilføjet generationsjob til køen",
     "created_entity": "Oprettet {entity}",
     "default_filter_set": "Standard filtersæt",
-    "delete_entity": "Slet {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Slettede {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Genererer skærmbillede…",
     "merged_tags": "Sammenlagte tags",

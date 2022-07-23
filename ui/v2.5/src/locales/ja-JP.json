@@ -999,7 +999,6 @@
     "added_generation_job_to_queue": "キューに生成ジョブが追加されました",
     "created_entity": "{entity}が作成されました",
     "default_filter_set": "デフォルトのフィルターセット",
-    "delete_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を削除",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}を削除しました",
     "generating_screenshot": "スクリーンショットを生成中…",
     "merged_tags": "マージされたタグ",

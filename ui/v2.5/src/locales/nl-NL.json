@@ -801,6 +801,9 @@
       "something_went_wrong_description": "Als dit lijkt op een probleem met je invoer, ga je gang en klik je op Terug om ze op te lossen. Breng anders een bug aan op {githubLink} of zoek hulp in de {discordLink}.",
       "something_went_wrong_while_setting_up_your_system": "Er is iets misgegaan tijdens het instellen van uw systeem. Dit is de fout die we hebben ontvangen: {error}"
     },
+    "folder": {
+      "up_dir": "Een directory omhoog"
+    },
     "github_repository": "Github repository",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "Pad naar back-up database (leeg laten om back-up uit te schakelen):",
@@ -854,10 +857,7 @@
       "next_step": "Wanneer u klaar bent om door te gaan met het instellen van een nieuw systeem, klikt u op Volgende.",
       "unable_to_locate_specified_config": "Als je dit leest, kan Stash het opgegeven configuratiebestand op de opdrachtregel of in de omgeving niet vinden. Deze wizard leidt u door het proces van het opzetten van een nieuwe configuratiebestand."
     },
-    "welcome_to_stash": "Welkom bij Stash",
-    "folder": {
-      "up_dir": "Een directory omhoog"
-    }
+    "welcome_to_stash": "Welkom bij Stash"
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -885,7 +885,6 @@
     "added_generation_job_to_queue": "Generatietaak toegevoegd aan wachtrij",
     "created_entity": "{entity} Aangemaakt",
     "default_filter_set": "Standaard filterset",
-    "delete_entity": "Verwijder {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Verwijderd {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Screenshot Genereren…",
     "merged_tags": "Samengevoegde Labels",

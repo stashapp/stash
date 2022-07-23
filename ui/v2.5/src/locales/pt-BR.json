@@ -999,7 +999,6 @@
     "added_generation_job_to_queue": "Trabalho de geração adicionado para fila",
     "created_entity": "Criar {entity}",
     "default_filter_set": "Filtragem padrão definada",
-    "delete_entity": "Excluir {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Excluída {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Gerando captura de tela…",
     "merged_tags": "Etiquetas mescladas",
