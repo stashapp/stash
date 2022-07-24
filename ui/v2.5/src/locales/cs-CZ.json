@@ -546,5 +546,66 @@
       "title": "Uživatelské rozhraní"
     }
   },
-  "configuration": "Konfigurace"
+  "configuration": "Konfigurace",
+  "countables": {
+    "files": "{count, plural, one {Soubor} other {Soubory}}",
+    "galleries": "{count, plural, one {Galerie} other {Galerie}}",
+    "images": "{count, plural, one {Obrázek} other {Obrázky}}",
+    "markers": "{count, plural, one {Marker} other {Markery}}",
+    "movies": "{count, plural, one {Film} other {Filmy}}",
+    "performers": "{count, plural, one {Umělěc} other {Umělci}}",
+    "scenes": "{count, plural, one {Scéna} other {Scény}}",
+    "studios": "{count, plural, one {Studio} other {Studia}}",
+    "tags": "{count, plural, one {Tag} other {Tagy}}"
+  },
+  "country": "Země",
+  "cover_image": "Titulní obrázek",
+  "created_at": "Vytvořeno",
+  "criterion": {
+    "greater_than": "Větší než",
+    "less_than": "Méně než",
+    "value": "Hodnota"
+  },
+  "criterion_modifier": {
+    "between": "mezi",
+    "equals": "je",
+    "excludes": "vylučuje",
+    "format_string": "{criterion} {modifierString} {valueString}",
+    "greater_than": "Je větší než",
+    "includes": "zahrnuje",
+    "includes_all": "zahrnuje všechny",
+    "is_null": "je null",
+    "less_than": "je menší než",
+    "matches_regex": "vyhovuje regulárnímu výrazu",
+    "not_between": "není mezi",
+    "not_equals": "není",
+    "not_matches_regex": "nevyhovuje regulárnímu výrazu",
+    "not_null": "není null"
+  },
+  "custom": "Vlastní",
+  "date": "Datum",
+  "death_date": "Datum úmrtí",
+  "death_year": "Rok úmrtí",
+  "descending": "Sestupně",
+  "detail": "Detail",
+  "details": "Detaily",
+  "developmentVersion": "Vývojářská verze",
+  "dialogs": {
+    "aliases_must_be_unique": "aliasy musí být unikátní",
+    "delete_alert": "Následující {count, plural, one {{singularEntity}} other {{pluralEntity}}} budou permanentně smazány:",
+    "delete_confirm": "Jste si jisti, že chcete smazat {entityName}?",
+    "delete_entity_desc": "{count, plural, one {Jste si jisti, že checete smazat toto {singularEntity}? Pokud není soubor rovněž smazán, tato {singularEntity} bude znovu přidána při příštím skenování.} other {Jste si jisti, že chcete smazat tyto {pluralEntity}? Pokud nejsou soubory rovněž smazány, tyto {pluralEntity} budou znovu přidány při příštím skenování.}}",
+    "delete_entity_title": "{count, plural, one {Smazat {singularEntity}} other {Smazat {pluralEntity}}}",
+    "delete_galleries_extra": "…navíc všechny obrazové soubory, které nejsou připojeny k žádné jiné galerii.",
+    "delete_gallery_files": "Smazat složku galerie/zip soubor a jakékoliv obrázky nenapojené na jinou galerii.",
+    "delete_object_desc": "Jste si jisti, že chcete smazat {count, plural, one {tuto {singularEntity}} other {tyto {pluralEntity}}}?",
+    "delete_object_overflow": "…a {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+    "delete_object_title": "Smazat {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "edit_entity_title": "Upravit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "export_include_related_objects": "Zahrnout související objekty do exportu",
+    "export_title": "Exportovat",
+    "lightbox": {
+      "delay": "Zpoždění (sekundy)"
+    }
+  }
 }
