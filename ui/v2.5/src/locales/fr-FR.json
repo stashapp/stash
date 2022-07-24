@@ -27,7 +27,7 @@
     "delete": "Supprimer",
     "delete_entity": "Supprimer {entityType}",
     "delete_file": "Supprimer le fichier",
-    "delete_file_and_funscript": "Supprimer le fichier (et funscript)",
+    "delete_file_and_funscript": "Supprimer le fichier (et script interactif)",
     "delete_generated_supporting_files": "Supprimer les fichiers générés associés",
     "delete_stashid": "Supprimer StashID",
     "disallow": "Refuser",
@@ -450,7 +450,7 @@
       },
       "funscript_offset": {
         "description": "Décalage temporel en millisecondes pour la lecture des scripts interactifs.",
-        "heading": "Décalage funscript (ms)"
+        "heading": "Décalage du script interactif (ms)"
       },
       "handy_connection": {
         "connect": "Connecter",
