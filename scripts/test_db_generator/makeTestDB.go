@@ -1,5 +1,5 @@
-//go:build ignore
-// +build ignore
+//go:build tools
+// +build tools
 
 package main
 
@@ -16,7 +16,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/hash/md5"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -54,9 +53,11 @@ func main() {
 
 	initNaming(*c)
 
+	logf("Initializing database...")
 	if err = database.Initialize(c.Database); err != nil {
 		log.Fatalf("couldn't initialize database: %v", err)
 	}
+	logf("Populating database...")
 	populateDB()
 }
 
@@ -110,6 +111,7 @@ func retry(attempts int, fn func() error) error {
 }
 
 func makeTags(n int) {
+	logf("creating %d tags...", n)
 	for i := 0; i < n; i++ {
 		if err := retry(100, func() error {
 			return withTxn(func(r models.Repository) error {
@@ -145,6 +147,7 @@ func makeTags(n int) {
 }
 
 func makeStudios(n int) {
+	logf("creating %d studios...", n)
 	for i := 0; i < n; i++ {
 		if err := retry(100, func() error {
 			return withTxn(func(r models.Repository) error {
@@ -178,6 +181,7 @@ func makeStudios(n int) {
 }
 
 func makePerformers(n int) {
+	logf("creating %d performers...", n)
 	for i := 0; i < n; i++ {
 		if err := retry(100, func() error {
 			return withTxn(func(r models.Repository) error {
@@ -205,8 +209,12 @@ func makePerformers(n int) {
 	}
 }
 
+func logf(f string, args ...interface{}) {
+	log.Printf(f+"\n", args...)
+}
+
 func makeScenes(n int) {
-	logger.Infof("creating %d scenes...", n)
+	logf("creating %d scenes...", n)
 	for i := 0; i < n; {
 		// do in batches of 1000
 		batch := i + batchSize
@@ -229,7 +237,7 @@ func makeScenes(n int) {
 			panic(err)
 		}
 
-		logger.Infof("... created %d scenes", i)
+		logf("... created %d scenes", i)
 	}
 }
 
@@ -280,7 +288,7 @@ func generateScene(i int) models.Scene {
 }
 
 func makeImages(n int) {
-	logger.Infof("creating %d images...", n)
+	logf("creating %d images...", n)
 	for i := 0; i < n; {
 		// do in batches of 1000
 		batch := i + batchSize
@@ -297,7 +305,7 @@ func makeImages(n int) {
 				makeImageRelationships(r, created.ID)
 			}
 
-			logger.Infof("... created %d images", i)
+			logf("... created %d images", i)
 
 			return nil
 		}); err != nil {
@@ -321,7 +329,7 @@ func generateImage(i int) models.Image {
 }
 
 func makeGalleries(n int) {
-	logger.Infof("creating %d galleries...", n)
+	logf("creating %d galleries...", n)
 	for i := 0; i < n; {
 		// do in batches of 1000
 		batch := i + batchSize
@@ -344,7 +352,7 @@ func makeGalleries(n int) {
 			panic(err)
 		}
 
-		logger.Infof("... created %d galleries", i)
+		logf("... created %d galleries", i)
 	}
 }
 
@@ -363,7 +371,7 @@ func generateGallery(i int) models.Gallery {
 }
 
 func makeMarkers(n int) {
-	logger.Infof("creating %d markers...", n)
+	logf("creating %d markers...", n)
 	for i := 0; i < n; {
 		// do in batches of 1000
 		batch := i + batchSize
@@ -386,7 +394,7 @@ func makeMarkers(n int) {
 				}
 			}
 
-			logger.Infof("... created %d markers", i)
+			logf("... created %d markers", i)
 
 			return nil
 		}); err != nil {

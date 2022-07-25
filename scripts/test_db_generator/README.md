@@ -5,6 +5,6 @@ Edit the `config.yml` file to your liking. The numbers indicate the number of ob
 May cause unexpected behaviour if run against an existing database file.
 
 To run - from the `test_db_generator`:
-`go run .`
+`go run -tags tools .`
 
 The database file will be generated in the current directory.
