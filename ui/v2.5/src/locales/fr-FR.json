@@ -123,7 +123,7 @@
   "birth_year": "Année de naissance",
   "birthdate": "Date de naissance",
   "bitrate": "Débit",
-  "captions": "Légendes",
+  "captions": "Sous-titres",
   "career_length": "Durée de la carrière",
   "component_tagger": {
     "config": {
@@ -132,17 +132,17 @@
       "blacklist_label": "Liste noire",
       "query_mode_auto": "Automatique",
       "query_mode_auto_desc": "Utilise les métadonnées si présentes, ou le nom de fichier",
-      "query_mode_dir": "Répertoire parent",
+      "query_mode_dir": "Dossier",
       "query_mode_dir_desc": "Utilise uniquement le répertoire parent du fichier vidéo",
       "query_mode_filename": "Nom de fichier",
       "query_mode_filename_desc": "Utilise uniquement le nom du fichier",
-      "query_mode_label": "Mode",
+      "query_mode_label": "Mode de recherche",
       "query_mode_metadata": "Métadonnées",
       "query_mode_metadata_desc": "Utilise uniquement les métadonnées",
       "query_mode_path": "Chemin",
       "query_mode_path_desc": "Utilise le chemin complet du fichier",
-      "set_cover_desc": "Remplace la couverture de la scène si une est trouvée.",
-      "set_cover_label": "Définir l'image de couverture de la scène",
+      "set_cover_desc": "Remplacer la vignette de la scène si une est trouvée.",
+      "set_cover_label": "Définir la vignette de la scène",
       "set_tag_desc": "Attache des étiquettes à la scène, en écrasant ou en fusionnant avec des étiquettes existantes.",
       "set_tag_label": "Définir les étiquettes",
       "show_male_desc": "Cocher si les performeurs masculins seront disponibles pour le marquage.",
@@ -193,7 +193,7 @@
       "logs": "Journaux",
       "metadata_providers": "Fournisseurs de métadonnées",
       "plugins": "Plugins",
-      "scraping": "Scraping",
+      "scraping": "Recherche",
       "security": "Sécurité",
       "services": "Services",
       "system": "Système",
@@ -293,7 +293,7 @@
         "description": "Emplacement du répertoire des fichiers de configuration de l'extracteur de contenu",
         "heading": "Chemin des extracteurs de contenu"
       },
-      "scraping": "Scraping",
+      "scraping": "Recherche",
       "sqlite_location": "Emplacement du fichier de base de données SQLite (nécessite un redémarrage)",
       "video_ext_desc": "Liste d'extensions de fichiers séparées par des virgules qui seront reconnues comme des vidéos.",
       "video_ext_head": "Extensions de fichiers vidéo",
@@ -320,7 +320,7 @@
       "scrapers": "Extracteurs",
       "search_by_name": "Recherche par nom",
       "supported_types": "Types supportés",
-      "supported_urls": "URLs"
+      "supported_urls": "Adresses Web"
     },
     "stashbox": {
       "add_instance": "Ajouter une instance Stash-Box",
@@ -378,7 +378,7 @@
         "identifying_from_paths": "Identifier des scènes à partir des chemins suivants",
         "identifying_scenes": "Identifier {num} {scene}",
         "include_male_performers": "Inclure les performeurs masculins",
-        "set_cover_images": "Définir les images de couverture",
+        "set_cover_images": "Définir les vignettes",
         "set_organized": "Définir le drapeau organisé",
         "source": "Source",
         "source_options": "Options pour {source}",
@@ -388,7 +388,7 @@
       "import_from_exported_json": "Importation à partir du JSON exporté dans le répertoire des métadonnées. Efface la base de données existante.",
       "incremental_import": "Importation incrémentielle à partir d'un fichier zip d'exportation fourni.",
       "job_queue": "File d'attente des tâches",
-      "maintenance": "Maintenance",
+      "maintenance": "Entretien",
       "migrate_hash_files": "Utilisé après modification de l'empreinte des fichiers générés pour renommer les existants au nouveau format.",
       "migrations": "Migrations",
       "only_dry_run": "Effectuer un essai à blanc. Ne supprime rien",
@@ -470,7 +470,7 @@
         "heading": "Visionneuse d'images"
       },
       "images": {
-        "heading": "Images",
+        "heading": "Photos",
         "options": {
           "write_image_thumbnails": {
             "description": "Écrire les vignettes des images sur le disque lorsqu'elles sont générées à la volée",
@@ -550,12 +550,12 @@
   "countables": {
     "files": "{count, plural, one {Fichier} other {Fichiers}}",
     "galleries": "{count, plural, one {Galerie} other {Galeries}}",
-    "images": "{count, plural, one {Image} other {Images}}",
+    "images": "{count, plural, one {Image} sur {Images}}",
     "markers": "{count, plural, one {Marqueur} other {Marqueurs}}",
     "movies": "{count, plural, one {Film} other {Films}}",
     "performers": "{count, plural, one {Performeur} other {Performeurs}}",
     "scenes": "{count, plural, one {Scène} other {Scènes}}",
-    "studios": "{count, plural, one {Studio} other {Studios}}",
+    "studios": "{count, plural, one {Studio} sur {Studios}}",
     "tags": "{count, plural, one {Étiquette} other {Étiquettes}}"
   },
   "country": "Pays",
@@ -592,10 +592,10 @@
   "developmentVersion": "Version de développement",
   "dialogs": {
     "aliases_must_be_unique": "Les alias doivent être uniques",
-    "delete_alert": "{count, plural, one {Ce/Cette {singularEntity} sera supprimé(e)} other {Ces {pluralEntity} seront supprimé(e)s}} définitivement :",
+    "delete_alert": "Le(s) {count, plural, one {{singularEntity}} suivant(s) sur {{pluralEntity}}} seront supprimé(s) définitivement :",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer {entityName} ?",
     "delete_entity_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity} ? À moins que le fichier ne soit également supprimé, cette {singularEntity} sera ajoutée à nouveau lors de la prochaine analyse.} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity} ? À moins que les fichiers ne soient également supprimés, ces {pluralEntity} seront ajoutées à nouveau lors de la prochaine analyse.}}",
-    "delete_entity_title": "{count, plural, one {Delete {singularEntity}} other {Delete {pluralEntity}}}",
+    "delete_entity_title": "{count, plural, one {Delete {singularEntity}} sur {Delete {pluralEntity}}}",
     "delete_galleries_extra": "…ainsi que tous fichiers image qui ne sont pas associés à une autre galerie.",
     "delete_gallery_files": "Supprime le répertoire ou l'archive zip de la galerie et toutes images qui ne sont pas associées à une autre galerie.",
     "delete_object_desc": "Êtes-vous sûr de vouloir supprimer {count, plural, one {this {singularEntity}} other {these {pluralEntity}}} ?",
@@ -603,7 +603,7 @@
     "delete_object_title": "Supprimer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "Éditer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inclure les objets liés dans l'exportation",
-    "export_title": "Export",
+    "export_title": "Exporter",
     "lightbox": {
       "delay": "Délai (Secondes)",
       "display_mode": {
@@ -769,7 +769,7 @@
   "ignore_auto_tag": "Ignorer l'étiquetage automatique",
   "image": "Image",
   "image_count": "Nombre d'Images",
-  "images": "Images",
+  "images": "Photos",
   "include_parent_tags": "Inclure les étiquettes parentes",
   "include_sub_studios": "Inclure les studios affiliés",
   "include_sub_tags": "Inclure les sous-étiquettes",
@@ -864,7 +864,7 @@
     "updating_untagged_performers_description": "Une mise à jour des performeurs non étiquetés essaiera de faire correspondre tous les performeurs qui n'ont pas de StashID et actualisera les métadonnées."
   },
   "performers": "Performeurs",
-  "piercings": "Piercings",
+  "piercings": "Perçages",
   "queue": "Liste de lecture",
   "random": "Aléatoire",
   "rating": "Note",
@@ -997,11 +997,12 @@
   "toast": {
     "added_entity": "{entity} ajouté(e)",
     "added_generation_job_to_queue": "Ajout d'une tâche de génération en file d'attente",
-    "created_entity": "Créé(e) {entity}",
+    "created_entity": "{entity} créé(e)",
     "default_filter_set": "Filtre par défaut défini",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} supprimé(e)(s)",
     "generating_screenshot": "Génération de la capture d'écran…",
     "merged_tags": "Étiquettes fusionnées",
+    "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} retiré(e)(s)",
     "rescanning_entity": "Réexamen de {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} sauvegardé(e)",
     "started_auto_tagging": "Démarrage de l'étiquetage automatique",
