@@ -155,7 +155,7 @@ jobs:
     - name: Master release
       # NOTE: this isn't perfect, but should cover most scenarios
       # DON'T create tag names starting with "v" if they are not stable releases
-      if: ${{ github.event_name == 'release' && !startsWith(github.ref, 'refs/tags/v') }}
+      if: ${{ github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v') }}
       uses: WithoutPants/github-release@v2.0.4
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
@@ -206,7 +206,7 @@ jobs:
     - name: Release Docker
       # NOTE: this isn't perfect, but should cover most scenarios
       # DON'T create tag names starting with "v" if they are not stable releases
-      if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'release' && !startsWith(github.ref, 'refs/tags/v') }}
+      if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags/v') }}
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
