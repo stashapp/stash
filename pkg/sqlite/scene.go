@@ -762,7 +762,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 		query.not(qb.makeFilter(ctx, sceneFilter.Not))
 	}
 
-	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "scenes_query.parent_folder_path", "scenes_query.basename"))
+	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "scenes_query.parent_folder_path", "scenes_query.basename", nil))
 	query.handleCriterion(ctx, sceneFileCountCriterionHandler(qb, sceneFilter.FileCount))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Title, "scenes.title"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Details, "scenes.details"))
@@ -799,7 +799,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Organized, "scenes.organized"))
 
 	query.handleCriterion(ctx, durationCriterionHandler(sceneFilter.Duration, "scenes_query.duration"))
-	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "scenes_query.video_height", "scenes_query.video_width"))
+	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "scenes_query.video_height", "scenes_query.video_width", nil))
 
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterion(ctx, sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
@@ -958,9 +958,13 @@ func durationCriterionHandler(durationFilter *models.IntCriterionInput, column s
 	}
 }
 
-func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, heightColumn string, widthColumn string) criterionHandlerFunc {
+func resolutionCriterionHandler(resolution *models.ResolutionCriterionInput, heightColumn string, widthColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if resolution != nil && resolution.Value.IsValid() {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+
 			min := resolution.Value.GetMinResolution()
 			max := resolution.Value.GetMaxResolution()
 

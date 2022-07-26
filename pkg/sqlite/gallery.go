@@ -602,7 +602,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 		}
 	}))
 
-	query.handleCriterion(ctx, pathCriterionHandler(galleryFilter.Path, "galleries_query.parent_folder_path", "galleries_query.basename"))
+	query.handleCriterion(ctx, pathCriterionHandler(galleryFilter.Path, "galleries_query.parent_folder_path", "galleries_query.basename", nil))
 	query.handleCriterion(ctx, galleryFileCountCriterionHandler(qb, galleryFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating, "galleries.rating"))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))

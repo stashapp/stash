@@ -563,20 +563,21 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if imageFilter.Checksum != nil {
-			f.addLeftJoin(fingerprintTable, "fingerprints_md5", "galleries_query.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
+			qb.addQueryTable(f)
+			f.addInnerJoin(fingerprintTable, "fingerprints_md5", "galleries_query.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
 		}
 
 		stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
 	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
 
-	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "images_query.parent_folder_path", "images_query.basename"))
+	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "images_query.parent_folder_path", "images_query.basename", qb.addQueryTable))
 	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating"))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized"))
 
-	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "images_query.image_height", "images_query.image_width"))
+	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "images_query.image_height", "images_query.image_width", qb.addQueryTable))
 	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
 
 	query.handleCriterion(ctx, imageTagsCriterionHandler(qb, imageFilter.Tags))
@@ -591,6 +592,10 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	return query
 }
 
+func (qb *ImageStore) addQueryTable(f *filterBuilder) {
+	f.addInnerJoin(imagesQueryTable.GetTable(), "", "images.id = images_query.id")
+}
+
 func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if imageFilter == nil {
 		imageFilter = &models.ImageFilterType{}
@@ -602,14 +607,13 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 	query := qb.newQuery()
 	distinctIDs(&query, imageTable)
 
-	// for convenience, join with the query view
-	query.addJoins(join{
-		table:    imagesQueryTable.GetTable(),
-		onClause: "images.id = images_query.id",
-		joinType: "INNER",
-	})
-
 	if q := findFilter.Q; q != nil && *q != "" {
+		query.addJoins(join{
+			table:    imagesQueryTable.GetTable(),
+			onClause: "images.id = images_query.id",
+			joinType: "INNER",
+		})
+
 		searchColumns := []string{"images.title", "images_query.parent_folder_path", "images_query.basename", "images_query.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
@@ -621,7 +625,7 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 
 	query.addFilter(filter)
 
-	query.sortAndPagination = qb.getImageSort(findFilter) + getPagination(findFilter)
+	qb.setImageSortAndPagination(&query, findFilter)
 
 	return &query, nil
 }
@@ -769,8 +773,10 @@ func imageTagCountCriterionHandler(qb *ImageStore, tagCount *models.IntCriterion
 
 func imageGalleriesCriterionHandler(qb *ImageStore, galleries *models.MultiCriterionInput) criterionHandlerFunc {
 	addJoinsFunc := func(f *filterBuilder) {
-		qb.galleriesRepository().join(f, "", "images.id")
-		f.addLeftJoin(galleryTable, "", "galleries_images.gallery_id = galleries.id")
+		if galleries.Modifier == models.CriterionModifierIncludes || galleries.Modifier == models.CriterionModifierIncludesAll {
+			f.addInnerJoin(galleriesImagesTable, "", "galleries_images.image_id = images.id")
+			f.addInnerJoin(galleryTable, "", "galleries_images.gallery_id = galleries.id")
+		}
 	}
 	h := qb.getMultiCriterionHandlerBuilder(galleryTable, galleriesImagesTable, galleryIDColumn, addJoinsFunc)
 
@@ -872,30 +878,44 @@ INNER JOIN (` + valuesClause + `) t ON t.column2 = pt.tag_id
 	}
 }
 
-func (qb *ImageStore) getImageSort(findFilter *models.FindFilterType) string {
-	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return ""
-	}
-	sort := findFilter.GetSort("title")
-	direction := findFilter.GetDirection()
+func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *models.FindFilterType) {
+	sortClause := ""
 
-	// translate sort field
-	if sort == "file_mod_time" {
-		sort = "mod_time"
+	if findFilter != nil && findFilter.Sort != nil && *findFilter.Sort != "" {
+		sort := findFilter.GetSort("title")
+		direction := findFilter.GetDirection()
+
+		// translate sort field
+		if sort == "file_mod_time" {
+			sort = "mod_time"
+		}
+
+		addQueryJoin := func() {
+			q.addJoins(join{
+				table:    imagesQueryTable.GetTable(),
+				onClause: "images.id = images_query.id",
+			})
+		}
+
+		switch sort {
+		case "path":
+			addQueryJoin()
+			sortClause = " ORDER BY images_query.parent_folder_path " + direction + ", images_query.basename " + direction
+		case "file_count":
+			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
+		case "tag_count":
+			sortClause = getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
+		case "performer_count":
+			sortClause = getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
+		case "mod_time", "size":
+			addQueryJoin()
+			sortClause = getSort(sort, direction, "images_query")
+		default:
+			sortClause = getSort(sort, direction, "images")
+		}
 	}
 
-	switch sort {
-	case "path":
-		return " ORDER BY images_query.parent_folder_path " + direction + ", images_query.basename " + direction
-	case "file_count":
-		return getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
-	case "tag_count":
-		return getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
-	case "performer_count":
-		return getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
-	default:
-		return getSort(sort, direction, "images_query")
-	}
+	q.sortAndPagination = sortClause + getPagination(findFilter)
 }
 
 func (qb *ImageStore) galleriesRepository() *joinRepository {

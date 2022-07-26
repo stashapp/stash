@@ -27,8 +27,8 @@ const testName = "Foo's Bar"
 const existingStudioName = "ExistingStudio"
 
 const existingStudioSceneName = testName + ".dontChangeStudio.mp4"
-const existingStudioImageName = testName + ".dontChangeStudio.mp4"
-const existingStudioGalleryName = testName + ".dontChangeStudio.mp4"
+const existingStudioImageName = testName + ".dontChangeStudio.png"
+const existingStudioGalleryName = testName + ".dontChangeStudio.zip"
 
 var existingStudioID int
 
