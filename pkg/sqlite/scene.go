@@ -456,10 +456,8 @@ func (qb *SceneStore) find(ctx context.Context, id int) (*models.Scene, error) {
 }
 
 func (qb *SceneStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error) {
-	table := qb.queryTable()
-
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("file_id").Eq(fileID),
+	sq := dialect.From(scenesFilesJoinTable).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
+		scenesFilesJoinTable.Col(fileIDColumn).Eq(fileID),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
@@ -478,18 +476,23 @@ func (qb *SceneStore) CountByFileID(ctx context.Context, fileID file.ID) (int, e
 }
 
 func (qb *SceneStore) FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Scene, error) {
-	table := qb.queryTable()
+	fingerprintTable := fingerprintTableMgr.table
 
 	var ex []exp.Expression
 
 	for _, v := range fp {
 		ex = append(ex, goqu.And(
-			table.Col("fingerprint_type").Eq(v.Type),
-			table.Col("fingerprint").Eq(v.Fingerprint),
+			fingerprintTable.Col("type").Eq(v.Type),
+			fingerprintTable.Col("fingerprint").Eq(v.Fingerprint),
 		))
 	}
 
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(goqu.Or(ex...))
+	sq := dialect.From(scenesFilesJoinTable).
+		InnerJoin(
+			fingerprintTable,
+			goqu.On(fingerprintTable.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
+		).
+		Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(goqu.Or(ex...))
 
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil {
@@ -500,39 +503,26 @@ func (qb *SceneStore) FindByFingerprints(ctx context.Context, fp []file.Fingerpr
 }
 
 func (qb *SceneStore) FindByChecksum(ctx context.Context, checksum string) ([]*models.Scene, error) {
-	table := qb.queryTable()
-
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("fingerprint_type").Eq(file.FingerprintTypeMD5),
-		table.Col("fingerprint").Eq(checksum),
-	)
-
-	ret, err := qb.findBySubquery(ctx, sq)
-	if err != nil {
-		return nil, fmt.Errorf("getting scenes by checksum %s: %w", checksum, err)
-	}
-
-	return ret, nil
+	return qb.FindByFingerprints(ctx, []file.Fingerprint{
+		{
+			Type:        file.FingerprintTypeMD5,
+			Fingerprint: checksum,
+		},
+	})
 }
 
 func (qb *SceneStore) FindByOSHash(ctx context.Context, oshash string) ([]*models.Scene, error) {
-	table := qb.queryTable()
-
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("fingerprint_type").Eq(file.FingerprintTypeOshash),
-		table.Col("fingerprint").Eq(oshash),
-	)
-
-	ret, err := qb.findBySubquery(ctx, sq)
-	if err != nil {
-		return nil, fmt.Errorf("getting scenes by oshash %s: %w", oshash, err)
-	}
-
-	return ret, nil
+	return qb.FindByFingerprints(ctx, []file.Fingerprint{
+		{
+			Type:        file.FingerprintTypeOshash,
+			Fingerprint: oshash,
+		},
+	})
 }
 
 func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene, error) {
-	table := scenesQueryTable
+	filesTable := fileTableMgr.table
+	foldersTable := folderTableMgr.table
 	basename := filepath.Base(p)
 	dirStr := filepath.Dir(p)
 
@@ -542,9 +532,15 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 
 	dir, _ := path(dirStr).Value()
 
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("parent_folder_path").Like(dir),
-		table.Col("basename").Like(basename),
+	sq := dialect.From(scenesFilesJoinTable).InnerJoin(
+		filesTable,
+		goqu.On(filesTable.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
+	).InnerJoin(
+		foldersTable,
+		goqu.On(foldersTable.Col(idColumn).Eq(filesTable.Col("parent_folder_id"))),
+	).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
+		foldersTable.Col("path").Like(dir),
+		filesTable.Col("basename").Like(basename),
 	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
@@ -670,18 +666,16 @@ func (qb *SceneStore) CountByTagID(ctx context.Context, tagID int) (int, error) 
 }
 
 func (qb *SceneStore) countMissingFingerprints(ctx context.Context, fpType string) (int, error) {
-	table := qb.queryTable()
 	fpTable := fingerprintTableMgr.table.As("fingerprints_temp")
 
-	q := dialect.Select(goqu.COUNT(goqu.DISTINCT(table.Col(idColumn)))).From(table).LeftJoin(
+	q := dialect.From(scenesFilesJoinTable).LeftJoin(
 		fpTable,
 		goqu.On(
-			table.Col("file_id").Eq(fpTable.Col("file_id")),
+			scenesFilesJoinTable.Col(fileIDColumn).Eq(fpTable.Col(fileIDColumn)),
 			fpTable.Col("type").Eq(fpType),
 		),
-	)
+	).Select(goqu.COUNT(goqu.DISTINCT(scenesFilesJoinTable.Col(sceneIDColumn)))).Where(fpTable.Col("fingerprint").IsNull())
 
-	q.Where(fpTable.Col("fingerprint").IsNull())
 	return count(ctx, q)
 }
 

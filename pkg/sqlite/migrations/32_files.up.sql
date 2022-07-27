@@ -28,7 +28,15 @@ CREATE TABLE `files` (
 );
 
 CREATE UNIQUE INDEX `index_files_zip_basename_unique` ON `files` (`zip_file_id`, `parent_folder_id`, `basename`);
+
+-- this should be met by the above index, but queries on zip_file_id don't use it for some reason
+CREATE INDEX `index_files_on_zip_id` ON `files` (`zip_file_id`);
+
 CREATE UNIQUE INDEX `index_files_on_parent_folder_id_basename_unique` on `files` (`parent_folder_id`, `basename`);
+
+-- this should be met by the above index, but queries on parent_folder_id don't use it for some reason
+CREATE INDEX `index_files_on_parent_folder_id` ON `files` (`parent_folder_id`);
+
 CREATE INDEX `index_files_on_basename` on `files` (`basename`);
 
 ALTER TABLE `folders` ADD COLUMN `zip_file_id` integer REFERENCES `files`(`id`);

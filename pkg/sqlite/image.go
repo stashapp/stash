@@ -3,9 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
-	"path/filepath"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -365,11 +363,14 @@ func (qb *ImageStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset
 }
 
 func (qb *ImageStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Image, error) {
-	table := imagesQueryTable
+	table := qb.table()
 
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("file_id").Eq(fileID),
-	)
+	sq := dialect.From(table).
+		InnerJoin(
+			imagesFilesJoinTable,
+			goqu.On(table.Col(idColumn).Eq(imagesFilesJoinTable.Col(imageIDColumn))),
+		).
+		Select(table.Col(idColumn)).Where(imagesFilesJoinTable.Col(fileIDColumn).Eq(fileID))
 
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil {
@@ -387,18 +388,28 @@ func (qb *ImageStore) CountByFileID(ctx context.Context, fileID file.ID) (int, e
 }
 
 func (qb *ImageStore) FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Image, error) {
-	table := imagesQueryTable
+	table := qb.table()
+	fingerprintTable := fingerprintTableMgr.table
 
 	var ex []exp.Expression
 
 	for _, v := range fp {
 		ex = append(ex, goqu.And(
-			table.Col("fingerprint_type").Eq(v.Type),
-			table.Col("fingerprint").Eq(v.Fingerprint),
+			fingerprintTable.Col("type").Eq(v.Type),
+			fingerprintTable.Col("fingerprint").Eq(v.Fingerprint),
 		))
 	}
 
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(goqu.Or(ex...))
+	sq := dialect.From(table).
+		InnerJoin(
+			imagesFilesJoinTable,
+			goqu.On(table.Col(idColumn).Eq(imagesFilesJoinTable.Col(imageIDColumn))),
+		).
+		InnerJoin(
+			fingerprintTable,
+			goqu.On(fingerprintTable.Col(fileIDColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn))),
+		).
+		Select(table.Col(idColumn)).Where(goqu.Or(ex...))
 
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil {
@@ -409,45 +420,32 @@ func (qb *ImageStore) FindByFingerprints(ctx context.Context, fp []file.Fingerpr
 }
 
 func (qb *ImageStore) FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error) {
-	table := imagesQueryTable
-
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("fingerprint_type").Eq(file.FingerprintTypeMD5),
-		table.Col("fingerprint").Eq(checksum),
-	)
-
-	ret, err := qb.findBySubquery(ctx, sq)
-	if err != nil {
-		return nil, fmt.Errorf("getting image by checksum %s: %w", checksum, err)
-	}
-
-	return ret, nil
-}
-
-func (qb *ImageStore) FindByPath(ctx context.Context, p string) ([]*models.Image, error) {
-	table := imagesQueryTable
-	basename := filepath.Base(p)
-	dir, _ := path(filepath.Dir(p)).Value()
-
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
-		table.Col("parent_folder_path").Eq(dir),
-		table.Col("basename").Eq(basename),
-	)
-
-	ret, err := qb.findBySubquery(ctx, sq)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, fmt.Errorf("getting image by path %s: %w", p, err)
-	}
-
-	return ret, nil
+	return qb.FindByFingerprints(ctx, []file.Fingerprint{
+		{
+			Type:        file.FingerprintTypeMD5,
+			Fingerprint: checksum,
+		},
+	})
 }
 
 func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Image, error) {
-	table := qb.queryTable()
+	table := qb.table()
+	queryTable := qb.queryTable()
 
-	q := qb.selectDataset().Where(
-		table.Col("gallery_id").Eq(galleryID),
-	).GroupBy(table.Col(idColumn)).Order(table.Col("parent_folder_path").Asc(), table.Col("basename").Asc())
+	sq := dialect.From(table).
+		InnerJoin(
+			galleriesImagesJoinTable,
+			goqu.On(table.Col(idColumn).Eq(galleriesImagesJoinTable.Col(imageIDColumn))),
+		).
+		Select(table.Col(idColumn)).Where(
+		galleriesImagesJoinTable.Col("gallery_id").Eq(galleryID),
+	)
+
+	q := qb.selectDataset().Prepared(true).Where(
+		queryTable.Col(idColumn).Eq(
+			sq,
+		),
+	).Order(queryTable.Col("parent_folder_path").Asc(), queryTable.Col("basename").Asc())
 
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -465,8 +463,21 @@ func (qb *ImageStore) CountByGalleryID(ctx context.Context, galleryID int) (int,
 }
 
 func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Image, error) {
-	table := qb.queryTable()
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(table.Col("parent_folder_id").Eq(folderID))
+	table := qb.table()
+	fileTable := goqu.T(fileTable)
+
+	sq := dialect.From(table).
+		InnerJoin(
+			imagesFilesJoinTable,
+			goqu.On(table.Col(idColumn).Eq(imagesFilesJoinTable.Col(imageIDColumn))),
+		).
+		InnerJoin(
+			fileTable,
+			goqu.On(imagesFilesJoinTable.Col(fileIDColumn).Eq(fileTable.Col(idColumn))),
+		).
+		Select(table.Col(idColumn)).Where(
+		fileTable.Col("parent_folder_id").Eq(folderID),
+	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil {
@@ -477,8 +488,21 @@ func (qb *ImageStore) FindByFolderID(ctx context.Context, folderID file.FolderID
 }
 
 func (qb *ImageStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*models.Image, error) {
-	table := qb.queryTable()
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(table.Col("zip_file_id").Eq(zipFileID))
+	table := qb.table()
+	fileTable := goqu.T(fileTable)
+
+	sq := dialect.From(table).
+		InnerJoin(
+			imagesFilesJoinTable,
+			goqu.On(table.Col(idColumn).Eq(imagesFilesJoinTable.Col(imageIDColumn))),
+		).
+		InnerJoin(
+			fileTable,
+			goqu.On(imagesFilesJoinTable.Col(fileIDColumn).Eq(fileTable.Col(idColumn))),
+		).
+		Select(table.Col(idColumn)).Where(
+		fileTable.Col("zip_file_id").Eq(zipFileID),
+	)
 
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil {

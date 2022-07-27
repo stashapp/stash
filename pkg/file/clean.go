@@ -47,7 +47,7 @@ func (s *Cleaner) Clean(ctx context.Context, options CleanOptions, progress *job
 	}
 
 	if err := j.execute(ctx); err != nil {
-		logger.Errorf("error cleaning files: %w", err)
+		logger.Errorf("error cleaning files: %v", err)
 		return
 	}
 }
