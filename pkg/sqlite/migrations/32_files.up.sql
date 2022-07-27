@@ -28,18 +28,11 @@ CREATE TABLE `files` (
 );
 
 CREATE UNIQUE INDEX `index_files_zip_basename_unique` ON `files` (`zip_file_id`, `parent_folder_id`, `basename`);
-
--- this should be met by the above index, but queries on zip_file_id don't use it for some reason
-CREATE INDEX `index_files_on_zip_id` ON `files` (`zip_file_id`);
-
 CREATE UNIQUE INDEX `index_files_on_parent_folder_id_basename_unique` on `files` (`parent_folder_id`, `basename`);
-
--- this should be met by the above index, but queries on parent_folder_id don't use it for some reason
-CREATE INDEX `index_files_on_parent_folder_id` ON `files` (`parent_folder_id`);
-
 CREATE INDEX `index_files_on_basename` on `files` (`basename`);
 
 ALTER TABLE `folders` ADD COLUMN `zip_file_id` integer REFERENCES `files`(`id`);
+CREATE INDEX `index_folders_on_zip_file_id` on `folders` (`zip_file_id`);
 
 CREATE TABLE `files_fingerprints` (
   `file_id` integer NOT NULL,
@@ -92,6 +85,8 @@ CREATE TABLE `images_files` (
     PRIMARY KEY(`image_id`, `file_id`)
 );
 
+CREATE INDEX `index_images_files_on_file_id` on `images_files` (`file_id`);
+
 CREATE TABLE `galleries_files` (
     `gallery_id` integer NOT NULL,
     `file_id` integer NOT NULL,
@@ -101,6 +96,8 @@ CREATE TABLE `galleries_files` (
     PRIMARY KEY(`gallery_id`, `file_id`)
 );
 
+CREATE INDEX `index_galleries_files_file_id` ON `galleries_files` (`file_id`);
+
 CREATE TABLE `scenes_files` (
     `scene_id` integer NOT NULL,
     `file_id` integer NOT NULL,
@@ -109,6 +106,8 @@ CREATE TABLE `scenes_files` (
     foreign key(`file_id`) references `files`(`id`) on delete CASCADE,
     PRIMARY KEY(`scene_id`, `file_id`)
 );
+
+CREATE INDEX `index_scenes_files_file_id` ON `scenes_files` (`file_id`);
 
 PRAGMA foreign_keys=OFF;
 

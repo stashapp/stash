@@ -632,13 +632,26 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 	distinctIDs(&query, imageTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		query.addJoins(join{
-			table:    imagesQueryTable.GetTable(),
-			onClause: "images.id = images_query.id",
-			joinType: "INNER",
-		})
+		query.addJoins(
+			join{
+				table:    imagesFilesTable,
+				onClause: "images_files.image_id = images.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "images_files.file_id = files.id",
+			},
+			join{
+				table:    folderTable,
+				onClause: "files.parent_folder_id = folders.id",
+			},
+			join{
+				table:    fingerprintTable,
+				onClause: "files_fingerprints.file_id = images_files.file_id",
+			},
+		)
 
-		searchColumns := []string{"images.title", "images_query.parent_folder_path", "images_query.basename", "images_query.fingerprint"}
+		searchColumns := []string{"images.title", "folders.path", "files.basename", "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -914,17 +927,27 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			sort = "mod_time"
 		}
 
-		addQueryJoin := func() {
-			q.addJoins(join{
-				table:    imagesQueryTable.GetTable(),
-				onClause: "images.id = images_query.id",
-			})
+		addFilesJoin := func() {
+			q.addJoins(
+				join{
+					table:    imagesFilesTable,
+					onClause: "images_files.image_id = images.id",
+				},
+				join{
+					table:    fileTable,
+					onClause: "images_files.file_id = files.id",
+				},
+			)
 		}
 
 		switch sort {
 		case "path":
-			addQueryJoin()
-			sortClause = " ORDER BY images_query.parent_folder_path " + direction + ", images_query.basename " + direction
+			addFilesJoin()
+			q.addJoins(join{
+				table:    folderTable,
+				onClause: "files.parent_folder_id = folders.id",
+			})
+			sortClause = " ORDER BY folders.path " + direction + ", files.basename " + direction
 		case "file_count":
 			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
 		case "tag_count":
@@ -932,8 +955,8 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "performer_count":
 			sortClause = getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
 		case "mod_time", "size":
-			addQueryJoin()
-			sortClause = getSort(sort, direction, "images_query")
+			addFilesJoin()
+			sortClause = getSort(sort, direction, "files")
 		default:
 			sortClause = getSort(sort, direction, "images")
 		}
