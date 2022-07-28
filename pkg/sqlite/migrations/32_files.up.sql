@@ -27,12 +27,12 @@ CREATE TABLE `files` (
   CHECK (`basename` != '')
 );
 
-CREATE UNIQUE INDEX `index_files_zip_basename_unique` ON `files` (`zip_file_id`, `parent_folder_id`, `basename`);
+CREATE UNIQUE INDEX `index_files_zip_basename_unique` ON `files` (`zip_file_id`, `parent_folder_id`, `basename`) WHERE `zip_file_id` IS NOT NULL;
 CREATE UNIQUE INDEX `index_files_on_parent_folder_id_basename_unique` on `files` (`parent_folder_id`, `basename`);
 CREATE INDEX `index_files_on_basename` on `files` (`basename`);
 
 ALTER TABLE `folders` ADD COLUMN `zip_file_id` integer REFERENCES `files`(`id`);
-CREATE INDEX `index_folders_on_zip_file_id` on `folders` (`zip_file_id`);
+CREATE INDEX `index_folders_on_zip_file_id` on `folders` (`zip_file_id`) WHERE `zip_file_id` IS NOT NULL;
 
 CREATE TABLE `files_fingerprints` (
   `file_id` integer NOT NULL,
