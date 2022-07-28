@@ -130,6 +130,14 @@ export const SettingsInterfacePanel: React.FC = () => {
             onChange={(v) => saveInterface({ menuItems: v })}
           />
         </div>
+
+        <BooleanSetting
+          id="format-counters"
+          headingID="config.ui.format_counters.heading"
+          subHeadingID="config.ui.format_counters.description"
+          checked={iface.formatCounters ?? undefined}
+          onChange={(v) => saveInterface({ formatCounters: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.desktop_integration.desktop_integration">

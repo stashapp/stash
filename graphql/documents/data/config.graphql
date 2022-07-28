@@ -60,6 +60,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   autostartVideoOnPlaySelected
   continuePlaylistDefault
   showStudioAsText
+  formatCounters
   css
   cssEnabled
   language

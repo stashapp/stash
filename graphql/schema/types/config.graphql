@@ -255,7 +255,10 @@ input ConfigInterfaceInput {
   
   """If true, studio overlays will be shown as text instead of logo images"""
   showStudioAsText: Boolean
-  
+
+"""If true, counters will get formated"""
+  formatCounters: Boolean
+    
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
@@ -317,6 +320,9 @@ type ConfigInterfaceResult {
 
   """If true, studio overlays will be shown as text instead of logo images"""
   showStudioAsText: Boolean
+
+  """If true, counters will get formated"""
+  formatCounters: Boolean
 
   """Custom CSS"""
   css: String

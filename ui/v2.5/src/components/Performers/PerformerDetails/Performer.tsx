@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Tabs, Tab, Badge, Col, Row } from "react-bootstrap";
+import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useHistory } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -13,6 +13,7 @@ import {
   mutateMetadataAutoTag,
 } from "src/core/StashService";
 import {
+  Counter,
   CountryFlag,
   DetailsEditNavbar,
   ErrorMessage,
@@ -20,6 +21,7 @@ import {
   LoadingIndicator,
 } from "src/components/Shared";
 import { useLightbox, useToast } from "src/hooks";
+import { ConfigurationContext } from "src/hooks/Config";
 import { TextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
@@ -49,6 +51,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const history = useHistory();
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
+
+  // Configuration settings
+  const { configuration } = React.useContext(ConfigurationContext);
+  const formatCounter = configuration?.interface.formatCounters ?? false;
 
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
@@ -195,9 +201,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "scenes" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.scene_count ?? 0)}
-              </Badge>
+              <Counter
+                formatCounter={formatCounter}
+                count={performer.scene_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -208,9 +215,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "galleries" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.gallery_count ?? 0)}
-              </Badge>
+              <Counter
+                formatCounter={formatCounter}
+                count={performer.gallery_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -221,9 +229,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "images" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.image_count ?? 0)}
-              </Badge>
+              <Counter
+                formatCounter={formatCounter}
+                count={performer.image_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -234,9 +243,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "movies" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.movie_count ?? 0)}
-              </Badge>
+              <Counter
+                formatCounter={formatCounter}
+                count={performer.movie_count ?? 0}
+              />
             </React.Fragment>
           }
         >

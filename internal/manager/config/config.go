@@ -136,6 +136,7 @@ const (
 	autostartVideoOnPlaySelectedDefault = true
 	ContinuePlaylistDefault             = "continue_playlist_default"
 	ShowStudioAsText                    = "show_studio_as_text"
+	FormatCounters                      = "format_counters"
 	CSSEnabled                          = "cssEnabled"
 
 	ShowScrubber        = "show_scrubber"
@@ -912,6 +913,10 @@ func (i *Instance) GetContinuePlaylistDefault() bool {
 
 func (i *Instance) GetShowStudioAsText() bool {
 	return i.getBool(ShowStudioAsText)
+}
+
+func (i *Instance) GetFormatCounters() bool {
+	return i.getBool(FormatCounters)
 }
 
 func (i *Instance) getSlideshowDelay() int {

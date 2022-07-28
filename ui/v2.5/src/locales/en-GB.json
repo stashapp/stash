@@ -448,6 +448,10 @@
         },
         "heading": "Editing"
       },
+      "format_counters": {
+        "description": "Format counters in studio, performer and tags details view, for example \"1831\" will get formated to \"1,8K\".",
+        "heading": "Format counters"
+      },
       "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"

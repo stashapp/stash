@@ -1,4 +1,4 @@
-import { Tabs, Tab, Dropdown, Badge } from "react-bootstrap";
+import { Tabs, Tab, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -14,6 +14,7 @@ import {
 } from "src/core/StashService";
 import { ImageUtils } from "src/utils";
 import {
+  Counter,
   DetailsEditNavbar,
   ErrorMessage,
   Modal,
@@ -21,6 +22,7 @@ import {
   Icon,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { ConfigurationContext } from "src/hooks/Config";
 import { tagRelationHook } from "src/core/tags";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
@@ -48,6 +50,11 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   const history = useHistory();
   const Toast = useToast();
   const intl = useIntl();
+
+  // Configuration settings
+  const { configuration } = React.useContext(ConfigurationContext);
+  const formatCounter = configuration?.interface.formatCounters ?? false;
+
   const { tab = "scenes" } = useParams<ITabParams>();
 
   // Editing state
@@ -308,9 +315,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
               title={
                 <React.Fragment>
                   {intl.formatMessage({ id: "scenes" })}
-                  <Badge className="left-spacing" pill variant="secondary">
-                    {intl.formatNumber(tag.scene_count ?? 0)}
-                  </Badge>
+                  <Counter
+                    formatCounter={formatCounter}
+                    count={tag.scene_count ?? 0}
+                  />
                 </React.Fragment>
               }
             >
@@ -321,9 +329,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
               title={
                 <React.Fragment>
                   {intl.formatMessage({ id: "images" })}
-                  <Badge className="left-spacing" pill variant="secondary">
-                    {intl.formatNumber(tag.image_count ?? 0)}
-                  </Badge>
+                  <Counter
+                    formatCounter={formatCounter}
+                    count={tag.image_count ?? 0}
+                  />
                 </React.Fragment>
               }
             >
@@ -334,9 +343,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
               title={
                 <React.Fragment>
                   {intl.formatMessage({ id: "galleries" })}
-                  <Badge className="left-spacing" pill variant="secondary">
-                    {intl.formatNumber(tag.gallery_count ?? 0)}
-                  </Badge>
+                  <Counter
+                    formatCounter={formatCounter}
+                    count={tag.gallery_count ?? 0}
+                  />
                 </React.Fragment>
               }
             >
@@ -347,9 +357,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
               title={
                 <React.Fragment>
                   {intl.formatMessage({ id: "markers" })}
-                  <Badge className="left-spacing" pill variant="secondary">
-                    {intl.formatNumber(tag.scene_marker_count ?? 0)}
-                  </Badge>
+                  <Counter
+                    formatCounter={formatCounter}
+                    count={tag.scene_marker_count ?? 0}
+                  />
                 </React.Fragment>
               }
             >
@@ -360,9 +371,10 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
               title={
                 <React.Fragment>
                   {intl.formatMessage({ id: "performers" })}
-                  <Badge className="left-spacing" pill variant="secondary">
-                    {intl.formatNumber(tag.performer_count ?? 0)}
-                  </Badge>
+                  <Counter
+                    formatCounter={formatCounter}
+                    count={tag.performer_count ?? 0}
+                  />
                 </React.Fragment>
               }
             >
