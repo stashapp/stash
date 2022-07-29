@@ -487,6 +487,18 @@ export const useSceneGenerateScreenshot = () =>
     update: deleteCache([GQL.FindScenesDocument]),
   });
 
+export const mutateSceneSetPrimaryFile = (id: string, fileID: string) =>
+  client.mutate<GQL.SceneUpdateMutation>({
+    mutation: GQL.SceneUpdateDocument,
+    variables: {
+      input: {
+        id,
+        primary_file_id: fileID,
+      },
+    },
+    update: deleteCache(sceneMutationImpactedQueries),
+  });
+
 const imageMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
@@ -609,6 +621,18 @@ export const mutateImageResetO = (id: string) =>
     },
   });
 
+export const mutateImageSetPrimaryFile = (id: string, fileID: string) =>
+  client.mutate<GQL.ImageUpdateMutation>({
+    mutation: GQL.ImageUpdateDocument,
+    variables: {
+      input: {
+        id,
+        primary_file_id: fileID,
+      },
+    },
+    update: deleteCache(imageMutationImpactedQueries),
+  });
+
 const galleryMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
@@ -654,6 +678,18 @@ export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
   client.mutate<GQL.RemoveGalleryImagesMutation>({
     mutation: GQL.RemoveGalleryImagesDocument,
     variables: input,
+    update: deleteCache(galleryMutationImpactedQueries),
+  });
+
+export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>
+  client.mutate<GQL.GalleryUpdateMutation>({
+    mutation: GQL.GalleryUpdateDocument,
+    variables: {
+      input: {
+        id,
+        primary_file_id: fileID,
+      },
+    },
     update: deleteCache(galleryMutationImpactedQueries),
   });
 

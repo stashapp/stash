@@ -111,6 +111,16 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 
+	if input.PrimaryFileID != nil {
+		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
+		if err != nil {
+			return nil, fmt.Errorf("converting primary file id: %w", err)
+		}
+
+		converted := file.ID(primaryFileID)
+		updatedScene.PrimaryFileID = &converted
+	}
+
 	if translator.hasField("performer_ids") {
 		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
 		if err != nil {

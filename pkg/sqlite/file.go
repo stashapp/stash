@@ -686,6 +686,40 @@ func (qb *FileStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]
 	return qb.getMany(ctx, q)
 }
 
+func (qb *FileStore) IsPrimary(ctx context.Context, fileID file.ID) (bool, error) {
+	joinTables := []exp.IdentifierExpression{
+		scenesFilesJoinTable,
+		galleriesFilesJoinTable,
+		imagesFilesJoinTable,
+	}
+
+	var sq *goqu.SelectDataset
+
+	for _, t := range joinTables {
+		qq := dialect.From(t).Select(t.Col(fileIDColumn)).Where(
+			t.Col(fileIDColumn).Eq(fileID),
+			t.Col("primary").Eq(1),
+		)
+
+		if sq == nil {
+			sq = qq
+		} else {
+			sq = sq.Union(qq)
+		}
+	}
+
+	q := dialect.Select(goqu.COUNT("*").As("count")).Prepared(true).From(
+		sq,
+	)
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return false, err
+	}
+
+	return ret > 0, nil
+}
+
 func (qb *FileStore) validateFilter(fileFilter *models.FileFilterType) error {
 	const and = "AND"
 	const or = "OR"

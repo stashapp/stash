@@ -101,6 +101,16 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	}
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
+	if input.PrimaryFileID != nil {
+		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
+		if err != nil {
+			return nil, fmt.Errorf("converting primary file id: %w", err)
+		}
+
+		converted := file.ID(primaryFileID)
+		updatedImage.PrimaryFileID = &converted
+	}
+
 	if translator.hasField("gallery_ids") {
 		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds, models.RelationshipUpdateModeSet)
 		if err != nil {
