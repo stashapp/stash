@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { TruncatedText } from "src/components/Shared";
+import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
 import * as GQL from "src/core/generated-graphql";
 import { mutateSceneSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -13,6 +14,7 @@ interface IFileInfoPanelProps {
   primary?: boolean;
   ofMany?: boolean;
   onSetPrimaryFile?: () => void;
+  onDeleteFile?: () => void;
   loading?: boolean;
 }
 
@@ -111,18 +113,20 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           truncate
         />
       </dl>
-      {props.ofMany && props.onSetPrimaryFile && (
+      {props.ofMany && props.onSetPrimaryFile && !props.primary && (
         <div>
-          {!props.primary && (
-            <Button
-              className="edit-button"
-              disabled={props.loading}
-              onClick={props.onSetPrimaryFile}
-            >
-              <FormattedMessage id="actions.make_primary" />
-            </Button>
-          )}
-          <Button variant="danger" disabled={props.loading}>
+          <Button
+            className="edit-button"
+            disabled={props.loading}
+            onClick={props.onSetPrimaryFile}
+          >
+            <FormattedMessage id="actions.make_primary" />
+          </Button>
+          <Button
+            variant="danger"
+            disabled={props.loading}
+            onClick={props.onDeleteFile}
+          >
             <FormattedMessage id="actions.delete_file" />
           </Button>
         </div>
@@ -141,6 +145,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   const Toast = useToast();
 
   const [loading, setLoading] = useState(false);
+  const [deletingFile, setDeletingFile] = useState<
+    GQL.VideoFileDataFragment | undefined
+  >();
 
   function renderStashIDs() {
     if (!props.scene.stash_ids.length) {
@@ -222,6 +229,12 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
     return (
       <Accordion defaultActiveKey={props.scene.files[0].id}>
+        {deletingFile && (
+          <DeleteFilesDialog
+            onClose={() => setDeletingFile(undefined)}
+            selected={[deletingFile]}
+          />
+        )}
         {props.scene.files.map((file, index) => (
           <Card key={file.id} className="scene-file-card">
             <Accordion.Toggle as={Card.Header} eventKey={file.id}>
@@ -234,6 +247,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
                   primary={index === 0}
                   ofMany
                   onSetPrimaryFile={() => onSetPrimaryFile(file.id)}
+                  onDeleteFile={() => setDeletingFile(file)}
                   loading={loading}
                 />
               </Card.Body>
@@ -242,7 +256,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         ))}
       </Accordion>
     );
-  }, [props.scene, loading, Toast]);
+  }, [props.scene, loading, Toast, deletingFile]);
 
   return (
     <>

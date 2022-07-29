@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { TruncatedText } from "src/components/Shared";
+import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
 import * as GQL from "src/core/generated-graphql";
 import { mutateImageSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -13,6 +14,7 @@ interface IFileInfoPanelProps {
   primary?: boolean;
   ofMany?: boolean;
   onSetPrimaryFile?: () => void;
+  onDeleteFile?: () => void;
   loading?: boolean;
 }
 
@@ -69,18 +71,20 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
           truncate
         />
       </dl>
-      {props.ofMany && props.onSetPrimaryFile && (
+      {props.ofMany && props.onSetPrimaryFile && !props.primary && (
         <div>
-          {!props.primary && (
-            <Button
-              className="edit-button"
-              disabled={props.loading}
-              onClick={props.onSetPrimaryFile}
-            >
-              <FormattedMessage id="actions.make_primary" />
-            </Button>
-          )}
-          <Button variant="danger" disabled={props.loading}>
+          <Button
+            className="edit-button"
+            disabled={props.loading}
+            onClick={props.onSetPrimaryFile}
+          >
+            <FormattedMessage id="actions.make_primary" />
+          </Button>
+          <Button
+            variant="danger"
+            disabled={props.loading}
+            onClick={props.onDeleteFile}
+          >
             <FormattedMessage id="actions.delete_file" />
           </Button>
         </div>
@@ -98,6 +102,9 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
   const Toast = useToast();
 
   const [loading, setLoading] = useState(false);
+  const [deletingFile, setDeletingFile] = useState<
+    GQL.ImageFileDataFragment | undefined
+  >();
 
   if (props.image.files.length === 0) {
     return <></>;
@@ -120,6 +127,12 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
 
   return (
     <Accordion defaultActiveKey={props.image.files[0].id}>
+      {deletingFile && (
+        <DeleteFilesDialog
+          onClose={() => setDeletingFile(undefined)}
+          selected={[deletingFile]}
+        />
+      )}
       {props.image.files.map((file, index) => (
         <Card key={file.id} className="image-file-card">
           <Accordion.Toggle as={Card.Header} eventKey={file.id}>
@@ -132,6 +145,7 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
                 primary={index === 0}
                 ofMany
                 onSetPrimaryFile={() => onSetPrimaryFile(file.id)}
+                onDeleteFile={() => setDeletingFile(file)}
                 loading={loading}
               />
             </Card.Body>

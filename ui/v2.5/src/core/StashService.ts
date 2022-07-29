@@ -700,6 +700,24 @@ export const studioMutationImpactedQueries = [
   GQL.AllStudiosForFilterDocument,
 ];
 
+export const mutateDeleteFiles = (ids: string[]) =>
+  client.mutate<GQL.DeleteFilesMutation>({
+    mutation: GQL.DeleteFilesDocument,
+    variables: {
+      ids,
+    },
+    update: deleteCache([
+      ...sceneMutationImpactedQueries,
+      ...imageMutationImpactedQueries,
+      ...galleryMutationImpactedQueries,
+    ]),
+    refetchQueries: getQueryNames([
+      GQL.FindSceneDocument,
+      GQL.FindImageDocument,
+      GQL.FindGalleryDocument,
+    ]),
+  });
+
 export const useStudioCreate = () =>
   GQL.useStudioCreateMutation({
     refetchQueries: getQueryNames([GQL.AllStudiosForFilterDocument]),

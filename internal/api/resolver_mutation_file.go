@@ -38,8 +38,21 @@ func (r *mutationResolver) DeleteFiles(ctx context.Context, ids []string) (ret b
 				return fmt.Errorf("checking if file %s is primary: %w", path, err)
 			}
 
-			if !isPrimary {
+			if isPrimary {
 				return fmt.Errorf("cannot delete primary file %s", path)
+			}
+
+			// destroy files in zip file
+			inZip, err := qb.FindByZipFileID(ctx, fileID)
+			if err != nil {
+				return fmt.Errorf("finding zip file contents for %s: %w", path, err)
+			}
+
+			for _, ff := range inZip {
+				const deleteFileInZip = false
+				if err := file.Destroy(ctx, qb, ff, fileDeleter, deleteFileInZip); err != nil {
+					return fmt.Errorf("destroying file %s: %w", ff.Base().Path, err)
+				}
 			}
 
 			const deleteFile = true
