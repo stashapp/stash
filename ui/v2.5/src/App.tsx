@@ -174,7 +174,7 @@ export const App: React.FC = () => {
     if (setupMatch) {
       return;
     }
-    
+
     const lastNoteSeen = (config.data?.configuration.ui as IUIConfig)
       ?.lastNoteSeen;
     const notes = releaseNotes.filter((n) => {
