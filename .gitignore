@@ -31,6 +31,7 @@ ui/v2.5/src/core/generated-*.tsx
 .idea/**/shelf
 .vscode
 .devcontainer
+*.code-workspace
 
 # Generated files
 .idea/**/contentModel.xml
@@ -58,3 +59,5 @@ node_modules
 /stash
 dist
 .DS_Store
+
+
