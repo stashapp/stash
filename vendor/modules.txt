@@ -309,6 +309,10 @@ github.com/rs/zerolog/log
 # github.com/russross/blackfriday/v2 v2.1.0
 ## explicit
 github.com/russross/blackfriday/v2
+# github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
+## explicit
+github.com/rwcarlsen/goexif/exif
+github.com/rwcarlsen/goexif/tiff
 # github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 ## explicit
 github.com/shurcooL/graphql

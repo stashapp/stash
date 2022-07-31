@@ -2,10 +2,17 @@ package match
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"unicode"
+
+	unicodeutf16 "golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
+
+	"github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/tiff"
 
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -15,14 +22,16 @@ import (
 )
 
 const (
-	separatorChars   = `.\-_ `
-	separatorPattern = `(?:_|[^\p{L}\w\d])+`
+	separatorChars       = `.\-_ `
+	separatorPattern     = `(?:_|[^\p{L}\w\d])+`
+	separatorPatternExif = `(?:_|[^\p{L}\w\d\,])+`
 
 	reNotLetterWordUnicode = `[^\p{L}\w\d]`
 	reNotLetterWord        = `[^\w\d]`
 )
 
 var separatorRE = regexp.MustCompile(separatorPattern)
+var separatorREExif = regexp.MustCompile(separatorPatternExif)
 
 func getPathQueryRegex(name string) string {
 	// escape specific regex characters
@@ -70,6 +79,52 @@ func getPathWords(path string, trimExt bool) []string {
 	}
 
 	return ret
+}
+
+// Helper function for GetExifWords. Using this it allow for less variable and code repetition in said function
+func tiffTagToString(tag *tiff.Tag, err error) string {
+
+	if err != nil {
+		return ""
+	} else {
+		ret, err2 := tag.StringVal()
+		if err2 != nil {
+			return ""
+		} else {
+			return ret
+		}
+	}
+}
+
+// Return an array of tags extracted from the exif if any, and a path like string of tags, else an empty array
+func GetExifWords(path string) ([]string, string, error) {
+	var err error
+	var imgFile *os.File
+	var metaData *exif.Exif
+
+	imgFile, err = os.Open(path)
+	if err != nil {
+		return nil, "", err
+	}
+	metaData, err = exif.Decode(imgFile)
+	if err != nil {
+		return nil, "", err
+	}
+	tagsV, _ := metaData.Get(exif.XPKeywords)
+	retBy := tagsV.Val
+	retBy, _, _ = transform.Bytes(unicodeutf16.UTF16(unicodeutf16.LittleEndian, unicodeutf16.IgnoreBOM).NewDecoder(), retBy)
+	retStr := string(retBy) + "," + tiffTagToString(metaData.Get(exif.ImageDescription)) + "," + tiffTagToString(metaData.Get(exif.Artist)) + "," + tiffTagToString(metaData.Get(exif.MakerNote)) + "," + tiffTagToString(metaData.Get(exif.UserComment)) + "," + tiffTagToString(metaData.Get(exif.SubjectLocation)) + "," + tiffTagToString(metaData.Get(exif.SceneType))
+	retStr = separatorREExif.ReplaceAllString(retStr, " ")
+
+	words := strings.Split(retStr, ",")
+	// remove any single letter words
+	var ret []string
+	for _, w := range words {
+		if len(w) > 1 {
+			ret = stringslice.StrAppendUnique(ret, string([]rune(w)[0:2]))
+		}
+	}
+	return ret, strings.Join(words, "\\"), nil
 }
 
 // https://stackoverflow.com/a/53069799
@@ -140,7 +195,12 @@ func getPerformers(words []string, performerReader models.PerformerReader, cache
 
 func PathToPerformers(path string, reader models.PerformerReader, cache *Cache, trimExt bool) ([]*models.Performer, error) {
 	words := getPathWords(path, trimExt)
+	exif, exifStr, exiferr := GetExifWords(path)
 
+	if exiferr == nil {
+		words = append(words, exif...) // If not error while getting exif data, we add the new words to the pack...
+		path += "\\" + exifStr         // ...and we add them to the "path" at the end. Ex: C:\Path\To\Image.jpg\exif1\exif2 etc...
+	}
 	performers, err := getPerformers(words, reader, cache)
 	if err != nil {
 		return nil, err
@@ -176,6 +236,12 @@ func getStudios(words []string, reader models.StudioReader, cache *Cache) ([]*mo
 // position in the path is returned.
 func PathToStudio(path string, reader models.StudioReader, cache *Cache, trimExt bool) (*models.Studio, error) {
 	words := getPathWords(path, trimExt)
+	exif, exifStr, exiferr := GetExifWords(path)
+
+	if exiferr == nil {
+		words = append(words, exif...) // If not error while getting exif data, we add the new words to the pack...
+		path += "\\" + exifStr         // ...and we add them to the "path" at the end. Ex: C:\Path\To\Image.jpg\exif1\exif2 etc...
+	}
 	candidates, err := getStudios(words, reader, cache)
 
 	if err != nil {
@@ -224,6 +290,12 @@ func getTags(words []string, reader models.TagReader, cache *Cache) ([]*models.T
 
 func PathToTags(path string, reader models.TagReader, cache *Cache, trimExt bool) ([]*models.Tag, error) {
 	words := getPathWords(path, trimExt)
+	exif, exifStr, exiferr := GetExifWords(path)
+
+	if exiferr == nil {
+		words = append(words, exif...) // If not error while getting exif data, we add the new words to the pack...
+		path += "\\" + exifStr         // ...and we add them to the "path" at the end. Ex: C:\Path\To\Image.jpg\exif1\exif2 etc...
+	}
 	tags, err := getTags(words, reader, cache)
 
 	if err != nil {
