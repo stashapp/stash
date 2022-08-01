@@ -420,9 +420,12 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 	}
 }
 
-func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, basenameColumn string) criterionHandlerFunc {
+func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, basenameColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
 			addWildcards := true
 			not := false
 
