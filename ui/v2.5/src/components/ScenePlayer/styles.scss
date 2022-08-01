@@ -34,6 +34,7 @@ $sceneTabWidth: 450px;
     // default opacity to 0, it gets set to 1 when moused-over.
     // prevents the border from showing up when initially loaded
     opacity: 0;
+    z-index: 1;
   }
 
   .vjs-big-button-group {
