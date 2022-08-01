@@ -1655,6 +1655,152 @@ func TestSceneCountByPerformerID(t *testing.T) {
 	})
 }
 
+func scenesToIDs(i []*models.Scene) []int {
+	var ret []int
+	for _, ii := range i {
+		ret = append(ret, ii.ID)
+	}
+
+	return ret
+}
+
+func Test_sceneStore_FindByFileID(t *testing.T) {
+	tests := []struct {
+		name    string
+		fileID  file.ID
+		include []int
+		exclude []int
+	}{
+		{
+			"valid",
+			sceneFileIDs[sceneIdx1WithPerformer],
+			[]int{sceneIdx1WithPerformer},
+			nil,
+		},
+		{
+			"invalid",
+			invalidFileID,
+			nil,
+			[]int{sceneIdx1WithPerformer},
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByFileID(ctx, tt.fileID)
+			if err != nil {
+				t.Errorf("SceneStore.FindByFileID() error = %v", err)
+				return
+			}
+			for _, f := range got {
+				clearSceneFileIDs(f)
+			}
+
+			ids := scenesToIDs(got)
+			include := indexesToIDs(galleryIDs, tt.include)
+			exclude := indexesToIDs(galleryIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
+func Test_sceneStore_CountByFileID(t *testing.T) {
+	tests := []struct {
+		name   string
+		fileID file.ID
+		want   int
+	}{
+		{
+			"valid",
+			sceneFileIDs[sceneIdxWithTwoPerformers],
+			1,
+		},
+		{
+			"invalid",
+			invalidFileID,
+			0,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.CountByFileID(ctx, tt.fileID)
+			if err != nil {
+				t.Errorf("SceneStore.CountByFileID() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_sceneStore_CountMissingChecksum(t *testing.T) {
+	tests := []struct {
+		name string
+		want int
+	}{
+		{
+			"valid",
+			0,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.CountMissingChecksum(ctx)
+			if err != nil {
+				t.Errorf("SceneStore.CountMissingChecksum() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_sceneStore_CountMissingOshash(t *testing.T) {
+	tests := []struct {
+		name string
+		want int
+	}{
+		{
+			"valid",
+			0,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.CountMissingOSHash(ctx)
+			if err != nil {
+				t.Errorf("SceneStore.CountMissingOSHash() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
 func TestSceneWall(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene

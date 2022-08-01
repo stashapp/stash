@@ -97,7 +97,6 @@ type ImageReader interface {
 	FindByChecksum(ctx context.Context, checksum string) ([]*Image, error)
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Image, error)
 	CountByGalleryID(ctx context.Context, galleryID int) (int, error)
-	FindByPath(ctx context.Context, path string) ([]*Image, error)
 	Count(ctx context.Context) (int, error)
 	Size(ctx context.Context) (float64, error)
 	All(ctx context.Context) ([]*Image, error)

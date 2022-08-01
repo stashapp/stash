@@ -1035,38 +1035,58 @@ func Test_imageQueryBuilder_FindByChecksum(t *testing.T) {
 	}
 }
 
-func Test_imageQueryBuilder_FindByPath(t *testing.T) {
-	getPath := func(index int) string {
-		return getFilePath(folderIdxWithImageFiles, getImageBasename(index))
+func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
+	getChecksum := func(index int) string {
+		return getImageStringValue(index, checksumField)
 	}
 
 	tests := []struct {
-		name    string
-		path    string
-		want    []*models.Image
-		wantErr bool
+		name         string
+		fingerprints []file.Fingerprint
+		want         []*models.Image
+		wantErr      bool
 	}{
 		{
 			"valid",
-			getPath(imageIdxWithGallery),
+			[]file.Fingerprint{
+				{
+					Type:        file.FingerprintTypeMD5,
+					Fingerprint: getChecksum(imageIdxWithGallery),
+				},
+			},
 			[]*models.Image{makeImageWithID(imageIdxWithGallery)},
 			false,
 		},
 		{
 			"invalid",
-			"invalid path",
+			[]file.Fingerprint{
+				{
+					Type:        file.FingerprintTypeMD5,
+					Fingerprint: "invalid checksum",
+				},
+			},
 			nil,
 			false,
 		},
 		{
 			"with performers",
-			getPath(imageIdxWithTwoPerformers),
+			[]file.Fingerprint{
+				{
+					Type:        file.FingerprintTypeMD5,
+					Fingerprint: getChecksum(imageIdxWithTwoPerformers),
+				},
+			},
 			[]*models.Image{makeImageWithID(imageIdxWithTwoPerformers)},
 			false,
 		},
 		{
 			"with tags",
-			getPath(imageIdxWithTwoTags),
+			[]file.Fingerprint{
+				{
+					Type:        file.FingerprintTypeMD5,
+					Fingerprint: getChecksum(imageIdxWithTwoTags),
+				},
+			},
 			[]*models.Image{makeImageWithID(imageIdxWithTwoTags)},
 			false,
 		},
@@ -1077,14 +1097,16 @@ func Test_imageQueryBuilder_FindByPath(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			got, err := qb.FindByPath(ctx, tt.path)
+			got, err := qb.FindByFingerprints(ctx, tt.fingerprints)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("imageQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("imageQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			for _, f := range got {
 				clearImageFileIDs(f)
 			}
+
 			assert.Equal(tt.want, got)
 		})
 	}
@@ -1176,6 +1198,55 @@ func imagesToIDs(i []*models.Image) []int {
 	}
 
 	return ret
+}
+
+func Test_imageStore_FindByFileID(t *testing.T) {
+	tests := []struct {
+		name    string
+		fileID  file.ID
+		include []int
+		exclude []int
+	}{
+		{
+			"valid",
+			imageFileIDs[imageIdxWithGallery],
+			[]int{imageIdxWithGallery},
+			nil,
+		},
+		{
+			"invalid",
+			invalidFileID,
+			nil,
+			[]int{imageIdxWithGallery},
+		},
+	}
+
+	qb := db.Image
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByFileID(ctx, tt.fileID)
+			if err != nil {
+				t.Errorf("ImageStore.FindByFileID() error = %v", err)
+				return
+			}
+			for _, f := range got {
+				clearImageFileIDs(f)
+			}
+
+			ids := imagesToIDs(got)
+			include := indexesToIDs(imageIDs, tt.include)
+			exclude := indexesToIDs(imageIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
 }
 
 func Test_imageStore_FindByFolderID(t *testing.T) {

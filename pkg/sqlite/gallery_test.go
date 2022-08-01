@@ -1182,6 +1182,108 @@ func Test_galleryQueryBuilder_CountByImageID(t *testing.T) {
 	}
 }
 
+func galleriesToIDs(i []*models.Gallery) []int {
+	var ret []int
+	for _, ii := range i {
+		ret = append(ret, ii.ID)
+	}
+
+	return ret
+}
+
+func Test_galleryStore_FindByFileID(t *testing.T) {
+	tests := []struct {
+		name    string
+		fileID  file.ID
+		include []int
+		exclude []int
+	}{
+		{
+			"valid",
+			galleryFileIDs[galleryIdx1WithImage],
+			[]int{galleryIdx1WithImage},
+			nil,
+		},
+		{
+			"invalid",
+			invalidFileID,
+			nil,
+			[]int{galleryIdx1WithImage},
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByFileID(ctx, tt.fileID)
+			if err != nil {
+				t.Errorf("GalleryStore.FindByFileID() error = %v", err)
+				return
+			}
+			for _, f := range got {
+				clearGalleryFileIDs(f)
+			}
+
+			ids := galleriesToIDs(got)
+			include := indexesToIDs(galleryIDs, tt.include)
+			exclude := indexesToIDs(galleryIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
+func Test_galleryStore_FindByFolderID(t *testing.T) {
+	tests := []struct {
+		name     string
+		folderID file.FolderID
+		include  []int
+		exclude  []int
+	}{
+		// TODO - add folder gallery
+		{
+			"invalid",
+			invalidFolderID,
+			nil,
+			[]int{galleryIdxWithImage},
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByFolderID(ctx, tt.folderID)
+			if err != nil {
+				t.Errorf("GalleryStore.FindByFolderID() error = %v", err)
+				return
+			}
+			for _, f := range got {
+				clearGalleryFileIDs(f)
+			}
+
+			ids := galleriesToIDs(got)
+			include := indexesToIDs(imageIDs, tt.include)
+			exclude := indexesToIDs(imageIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 func TestGalleryQueryQ(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		const galleryIdx = 0

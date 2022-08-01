@@ -155,7 +155,7 @@ func Test_fileFileStore_Create(t *testing.T) {
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
-			false,
+			true,
 		},
 		{
 			"empty basename",
@@ -376,14 +376,14 @@ func Test_fileStore_Update(t *testing.T) {
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
-			false,
+			true,
 		},
 		{
 			"clear zip",
 			&file.BaseFile{
 				ID:             fileIDs[fileIdxInZip],
-				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)),
-				Basename:       getFileBaseName(fileIdxZip),
+				Path:           getFilePath(folderIdxWithFiles, getFileBaseName(fileIdxZip)+".renamed"),
+				Basename:       getFileBaseName(fileIdxZip) + ".renamed",
 				ParentFolderID: folderIDs[folderIdxWithFiles],
 			},
 			false,

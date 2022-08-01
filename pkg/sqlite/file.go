@@ -738,7 +738,7 @@ func (qb *FileStore) makeFilter(ctx context.Context, fileFilter *models.FileFilt
 		query.not(qb.makeFilter(ctx, fileFilter.Not))
 	}
 
-	query.handleCriterion(ctx, pathCriterionHandler(fileFilter.Path, "folders.path", "files.basename"))
+	query.handleCriterion(ctx, pathCriterionHandler(fileFilter.Path, "folders.path", "files.basename", nil))
 
 	return query
 }
