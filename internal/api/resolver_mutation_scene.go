@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -477,6 +478,48 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 			OSHash:             scene.OSHash,
 			Path:               scene.Path,
 		}, nil)
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) SceneAssignFile(ctx context.Context, input AssignSceneFileInput) (bool, error) {
+	sceneID, err := strconv.Atoi(input.SceneID)
+	if err != nil {
+		return false, fmt.Errorf("converting scene ID: %w", err)
+	}
+
+	fileIDInt, err := strconv.Atoi(input.FileID)
+	if err != nil {
+		return false, fmt.Errorf("converting file ID: %w", err)
+	}
+
+	fileID := file.ID(fileIDInt)
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		// ensure file isn't a primary file and that it is a video file
+		f, err := r.repository.File.Find(ctx, fileID)
+		if err != nil {
+			return err
+		}
+
+		ff := f[0]
+		if _, ok := ff.(*file.VideoFile); !ok {
+			return fmt.Errorf("%s is not a video file", ff.Base().Path)
+		}
+
+		isPrimary, err := r.repository.File.IsPrimary(ctx, fileID)
+		if err != nil {
+			return err
+		}
+
+		if isPrimary {
+			return errors.New("cannot reassign primary file")
+		}
+
+		return r.repository.Scene.AssignFiles(ctx, sceneID, fileID)
+	}); err != nil {
+		return false, fmt.Errorf("assigning file to scene: %w", err)
 	}
 
 	return true, nil

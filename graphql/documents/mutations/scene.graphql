@@ -43,3 +43,7 @@ mutation ScenesDestroy($ids: [ID!]!, $delete_file: Boolean, $delete_generated : 
 mutation SceneGenerateScreenshot($id: ID!, $at: Float) {
   sceneGenerateScreenshot(id: $id, at: $at)
 }
+
+mutation SceneAssignFile($input: AssignSceneFileInput!) {
+  sceneAssignFile(input: $input)
+}

@@ -4113,5 +4113,47 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 	})
 }
 
+func TestSceneStore_AssignFiles(t *testing.T) {
+	tests := []struct {
+		name    string
+		sceneID int
+		fileID  file.ID
+		wantErr bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdx1WithPerformer],
+			sceneFileIDs[sceneIdx1WithStudio],
+			false,
+		},
+		{
+			"invalid file id",
+			sceneIDs[sceneIdx1WithPerformer],
+			invalidFileID,
+			true,
+		},
+		{
+			"invalid scene id",
+			invalidID,
+			sceneFileIDs[sceneIdx1WithStudio],
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withRollbackTxn(func(ctx context.Context) error {
+				if err := qb.AssignFiles(ctx, tt.sceneID, tt.fileID); (err != nil) != tt.wantErr {
+					t.Errorf("SceneStore.AssignFiles() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				return nil
+			})
+		})
+	}
+}
+
 // TODO Count
 // TODO SizeCount

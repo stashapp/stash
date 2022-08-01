@@ -507,6 +507,19 @@ export const mutateSceneSetPrimaryFile = (id: string, fileID: string) =>
     update: deleteCache(sceneMutationImpactedQueries),
   });
 
+export const mutateSceneAssignFile = (sceneID: string, fileID: string) =>
+  client.mutate<GQL.SceneAssignFileMutation>({
+    mutation: GQL.SceneAssignFileDocument,
+    variables: {
+      input: {
+        scene_id: sceneID,
+        file_id: fileID,
+      },
+    },
+    update: deleteCache(sceneMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+  });
+
 const imageMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,

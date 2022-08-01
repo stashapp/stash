@@ -183,3 +183,8 @@ type SceneStreamEndpoint {
   mime_type: String
   label: String
 }
+
+input AssignSceneFileInput {
+  scene_id: ID!
+  file_id: ID!
+}

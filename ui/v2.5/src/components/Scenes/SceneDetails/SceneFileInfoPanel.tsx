@@ -249,10 +249,8 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         )}
         {reassigningFile && (
           <ReassignFilesDialog
-            type="scenes"
             onClose={() => setReassigningFile(undefined)}
-            selected={[reassigningFile]}
-            reassign={() => {}}
+            selected={reassigningFile}
           />
         )}
         {props.scene.files.map((file, index) => (

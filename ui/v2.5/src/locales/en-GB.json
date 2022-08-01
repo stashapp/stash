@@ -1054,6 +1054,7 @@
     "generating_screenshot": "Generating screenshot…",
     "merged_tags": "Merged tags",
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
+    "reassign_past_tense": "File reassigned",
     "removed_entity": "Removed {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "saved_entity": "Saved {entity}",
     "started_auto_tagging": "Started auto tagging",

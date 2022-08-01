@@ -182,6 +182,8 @@ type Mutation {
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!
 
+  sceneAssignFile(input: AssignSceneFileInput!): Boolean!
+
   imageUpdate(input: ImageUpdateInput!): Image
   bulkImageUpdate(input: BulkImageUpdateInput!): [Image!]
   imageDestroy(input: ImageDestroyInput!): Boolean!
