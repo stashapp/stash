@@ -561,8 +561,9 @@ export const GalleryEditPanel: React.FC<
               })}
               <Col sm={9} xl={12}>
                 <SceneSelect
-                  scenes={scenes}
+                  selected={scenes}
                   onSelect={(items) => onSetScenes(items)}
+                  isMulti
                 />
               </Col>
             </Form.Group>

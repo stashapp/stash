@@ -3,6 +3,7 @@ import { Accordion, Button, Card } from "react-bootstrap";
 import { FormattedMessage } from "react-intl";
 import { TruncatedText } from "src/components/Shared";
 import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
+import ReassignFilesDialog from "src/components/Shared/ReassignFilesDialog";
 import * as GQL from "src/core/generated-graphql";
 import { mutateGallerySetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -16,6 +17,7 @@ interface IFileInfoPanelProps {
   ofMany?: boolean;
   onSetPrimaryFile?: () => void;
   onDeleteFile?: () => void;
+  onReassign?: () => void;
   loading?: boolean;
 }
 
@@ -55,6 +57,13 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             <FormattedMessage id="actions.make_primary" />
           </Button>
           <Button
+            className="edit-button"
+            disabled={props.loading}
+            onClick={props.onReassign}
+          >
+            <FormattedMessage id="actions.reassign" />
+          </Button>
+          <Button
             variant="danger"
             disabled={props.loading}
             onClick={props.onDeleteFile}
@@ -77,6 +86,9 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
 
   const [loading, setLoading] = useState(false);
   const [deletingFile, setDeletingFile] = useState<
+    GQL.GalleryFileDataFragment | undefined
+  >();
+  const [reassigningFile, setReassigningFile] = useState<
     GQL.GalleryFileDataFragment | undefined
   >();
 
@@ -112,6 +124,14 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
             selected={[deletingFile]}
           />
         )}
+        {reassigningFile && (
+          <ReassignFilesDialog
+            type="galleries"
+            onClose={() => setReassigningFile(undefined)}
+            selected={[reassigningFile]}
+            reassign={() => {}}
+          />
+        )}
         {props.gallery.files.map((file, index) => (
           <Card key={file.id} className="gallery-file-card">
             <Accordion.Toggle as={Card.Header} eventKey={file.id}>
@@ -126,6 +146,7 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
                   onSetPrimaryFile={() => onSetPrimaryFile(file.id)}
                   loading={loading}
                   onDeleteFile={() => setDeletingFile(file)}
+                  onReassign={() => setReassigningFile(file)}
                 />
               </Card.Body>
             </Accordion.Collapse>
@@ -133,7 +154,7 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
         ))}
       </Accordion>
     );
-  }, [props.gallery, loading, Toast, deletingFile]);
+  }, [props.gallery, loading, Toast, deletingFile, reassigningFile]);
 
   return (
     <>

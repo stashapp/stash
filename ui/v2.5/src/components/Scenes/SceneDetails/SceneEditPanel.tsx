@@ -739,8 +739,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
               })}
               <Col sm={9}>
                 <GallerySelect
-                  galleries={galleries}
+                  selected={galleries}
                   onSelect={(items) => onSetGalleries(items)}
+                  isMulti
                 />
               </Col>
             </Form.Group>

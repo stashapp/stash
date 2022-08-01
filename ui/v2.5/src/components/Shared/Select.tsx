@@ -94,16 +94,12 @@ interface IFilterComponentProps extends IFilterProps {
 interface IFilterSelectProps<T extends boolean>
   extends Omit<ISelectProps<T>, "onChange" | "items" | "onCreateOption"> {}
 
-type Gallery = { id: string; title: string };
-interface IGallerySelect {
-  galleries: Gallery[];
-  onSelect: (items: Gallery[]) => void;
-}
-
-type Scene = { id: string; title: string };
-interface ISceneSelect {
-  scenes: Scene[];
-  onSelect: (items: Scene[]) => void;
+type TitledObject = { id: string; title: string };
+interface ITitledSelect {
+  selected: TitledObject[];
+  onSelect: (items: TitledObject[]) => void;
+  isMulti?: boolean;
+  disabled?: boolean;
 }
 
 const getSelectedItems = (selectedItems: ValueType<Option, boolean>) =>
@@ -266,7 +262,7 @@ const FilterSelectComponent = <T extends boolean>(
   );
 };
 
-export const GallerySelect: React.FC<IGallerySelect> = (props) => {
+export const GallerySelect: React.FC<ITitledSelect> = (props) => {
   const [query, setQuery] = useState<string>("");
   const { data, loading } = GQL.useFindGalleriesQuery({
     skip: query === "",
@@ -297,7 +293,7 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
     );
   };
 
-  const options = props.galleries.map((g) => ({
+  const options = props.selected.map((g) => ({
     value: g.id,
     label: g.title ?? "Unknown",
   }));
@@ -317,7 +313,7 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
   );
 };
 
-export const SceneSelect: React.FC<ISceneSelect> = (props) => {
+export const SceneSelect: React.FC<ITitledSelect> = (props) => {
   const [query, setQuery] = useState<string>("");
   const { data, loading } = GQL.useFindScenesQuery({
     skip: query === "",
@@ -338,7 +334,7 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItems: ValueType<Option, true>) => {
+  const onChange = (selectedItems: ValueType<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
     props.onSelect(
       (selected ?? []).map((s) => ({
@@ -348,7 +344,7 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
     );
   };
 
-  const options = props.scenes.map((s) => ({
+  const options = props.selected.map((s) => ({
     value: s.id,
     label: s.title,
   }));
@@ -360,10 +356,63 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
       isLoading={loading}
       items={items}
       selectedOptions={options}
-      isMulti
+      isMulti={props.isMulti ?? false}
       placeholder="Search for scene..."
       noOptionsMessage={query === "" ? null : "No scenes found."}
       showDropdown={false}
+      isDisabled={props.disabled}
+    />
+  );
+};
+
+export const ImageSelect: React.FC<ITitledSelect> = (props) => {
+  const [query, setQuery] = useState<string>("");
+  const { data, loading } = GQL.useFindImagesQuery({
+    skip: query === "",
+    variables: {
+      filter: {
+        q: query,
+      },
+    },
+  });
+
+  const images = data?.findImages.images ?? [];
+  const items = images.map((s) => ({
+    label: objectTitle(s),
+    value: s.id,
+  }));
+
+  const onInputChange = debounce((input: string) => {
+    setQuery(input);
+  }, 500);
+
+  const onChange = (selectedItems: ValueType<Option, boolean>) => {
+    const selected = getSelectedItems(selectedItems);
+    props.onSelect(
+      (selected ?? []).map((s) => ({
+        id: s.value,
+        title: s.label,
+      }))
+    );
+  };
+
+  const options = props.selected.map((s) => ({
+    value: s.id,
+    label: s.title,
+  }));
+
+  return (
+    <SelectComponent
+      onChange={onChange}
+      onInputChange={onInputChange}
+      isLoading={loading}
+      items={items}
+      selectedOptions={options}
+      isMulti={props.isMulti ?? false}
+      placeholder="Search for image..."
+      noOptionsMessage={query === "" ? null : "No images found."}
+      showDropdown={false}
+      isDisabled={props.disabled}
     />
   );
 };

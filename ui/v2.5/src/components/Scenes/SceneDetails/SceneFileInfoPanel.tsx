@@ -3,6 +3,7 @@ import { Accordion, Button, Card } from "react-bootstrap";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { TruncatedText } from "src/components/Shared";
 import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
+import ReassignFilesDialog from "src/components/Shared/ReassignFilesDialog";
 import * as GQL from "src/core/generated-graphql";
 import { mutateSceneSetPrimaryFile } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -15,6 +16,7 @@ interface IFileInfoPanelProps {
   ofMany?: boolean;
   onSetPrimaryFile?: () => void;
   onDeleteFile?: () => void;
+  onReassign?: () => void;
   loading?: boolean;
 }
 
@@ -123,6 +125,13 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             <FormattedMessage id="actions.make_primary" />
           </Button>
           <Button
+            className="edit-button"
+            disabled={props.loading}
+            onClick={props.onReassign}
+          >
+            <FormattedMessage id="actions.reassign" />
+          </Button>
+          <Button
             variant="danger"
             disabled={props.loading}
             onClick={props.onDeleteFile}
@@ -146,6 +155,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
   const [loading, setLoading] = useState(false);
   const [deletingFile, setDeletingFile] = useState<
+    GQL.VideoFileDataFragment | undefined
+  >();
+  const [reassigningFile, setReassigningFile] = useState<
     GQL.VideoFileDataFragment | undefined
   >();
 
@@ -235,6 +247,14 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
             selected={[deletingFile]}
           />
         )}
+        {reassigningFile && (
+          <ReassignFilesDialog
+            type="scenes"
+            onClose={() => setReassigningFile(undefined)}
+            selected={[reassigningFile]}
+            reassign={() => {}}
+          />
+        )}
         {props.scene.files.map((file, index) => (
           <Card key={file.id} className="scene-file-card">
             <Accordion.Toggle as={Card.Header} eventKey={file.id}>
@@ -248,6 +268,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
                   ofMany
                   onSetPrimaryFile={() => onSetPrimaryFile(file.id)}
                   onDeleteFile={() => setDeletingFile(file)}
+                  onReassign={() => setReassigningFile(file)}
                   loading={loading}
                 />
               </Card.Body>
@@ -256,7 +277,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         ))}
       </Accordion>
     );
-  }, [props.scene, loading, Toast, deletingFile]);
+  }, [props.scene, loading, Toast, deletingFile, reassigningFile]);
 
   return (
     <>

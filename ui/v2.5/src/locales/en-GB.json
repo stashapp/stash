@@ -67,6 +67,7 @@
     "play_selected": "Play selected",
     "preview": "Preview",
     "previous_action": "Back",
+    "reassign": "Reassign",
     "refresh": "Refresh",
     "reload_plugins": "Reload plugins",
     "reload_scrapers": "Reload scrapers",
@@ -630,6 +631,7 @@
   "developmentVersion": "Development Version",
   "dialogs": {
     "aliases_must_be_unique": "aliases must be unique",
+    "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
     "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
@@ -670,6 +672,10 @@
       "source": "Source"
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
+    "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
+    "reassign_files": {
+      "destination": "Reassign to"
+    },
     "scene_gen": {
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
