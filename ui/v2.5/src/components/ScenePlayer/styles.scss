@@ -452,6 +452,10 @@ $sceneTabWidth: 450px;
   }
 }
 
+.vjs-menu-button-popup .vjs-menu .vjs-menu-content {
+  z-index: 1;
+}
+
 .vjs-marker {
   background-color: rgba(33, 33, 33, 0.8);
   bottom: 0;
