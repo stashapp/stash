@@ -212,6 +212,11 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 
 		if count%logEvery == 0 {
 			logger.Infof("Migrated %d files", count)
+
+			// manual checkpoint to flush wal file
+			if _, err := m.db.Exec("PRAGMA wal_checkpoint(FULL)"); err != nil {
+				return fmt.Errorf("running wal checkpoint: %w", err)
+			}
 		}
 	}
 
