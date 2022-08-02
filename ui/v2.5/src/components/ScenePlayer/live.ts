@@ -29,8 +29,33 @@ const offset = function (this: VideoJsPlayer) {
       return Player.__super__.duration.apply(this, arguments);
     };
 
+    Player.prototype.scrubDelayTime = function (seconds: number, newTime: number) {
+      if (this._scrubLastTime === undefined) {
+        this._scrubLastTime = newTime;
+      }
+      if (newTime < this._scrubLastTime) {
+        // Ignore old events
+        return;
+      }
+      if (this._scrubTimer !== null) {
+        clearTimeout(this._scrubTimer);
+      }
+      this._scrubTimer = setTimeout(() => {
+        if (this.scrubbing()) {
+          this.scrubDelayTime(seconds, newTime);
+          return;
+        }
+        this.currentTime(seconds);
+        this._scrubTimer = null;
+      }, 100);
+    }
+
     Player.prototype.currentTime = function (seconds: number) {
       if (seconds !== undefined && this._offsetDuration !== undefined) {
+        if (this.scrubbing()) {
+          this.scrubDelayTime(seconds, new Date().getMilliseconds());
+          return seconds;
+        }
         this._offsetStart = seconds;
 
         const srcUrl = new URL(this.src());
