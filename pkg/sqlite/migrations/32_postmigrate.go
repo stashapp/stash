@@ -86,6 +86,22 @@ func (m *schema32Migrator) migrateFolderSlashes(ctx context.Context) error {
 	return nil
 }
 
+// dir returns all but the last element of path, typically the path's directory.
+// After dropping the final element using Split, the path is Cleaned and trailing
+// slashes are removed.
+//
+// This is a re-implementation of path.Dir which changes double slash prefixed
+// paths into single slash.
+func dir(p string) string {
+	parent := path.Dir(p)
+	// restore the double slash
+	if strings.HasPrefix(p, "//") && len(parent) > 1 {
+		parent = "/" + parent
+	}
+
+	return parent
+}
+
 func (m *schema32Migrator) migrateFolders(ctx context.Context) error {
 	if err := m.migrateFolderSlashes(ctx); err != nil {
 		return err
@@ -110,7 +126,7 @@ func (m *schema32Migrator) migrateFolders(ctx context.Context) error {
 			return err
 		}
 
-		parent := path.Dir(p)
+		parent := dir(p)
 		parentID, zipFileID, err := m.createFolderHierarchy(parent)
 		if err != nil {
 			return err
@@ -183,7 +199,7 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 				}
 
 				convertedPath := filepath.ToSlash(p)
-				parent := path.Dir(convertedPath)
+				parent := dir(convertedPath)
 				basename := path.Base(convertedPath)
 				if parent != "." {
 					parentID, zipFileID, err := m.createFolderHierarchy(parent)
@@ -212,6 +228,11 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 
 		if count%logEvery == 0 {
 			logger.Infof("Migrated %d files", count)
+
+			// manual checkpoint to flush wal file
+			if _, err := m.db.Exec("PRAGMA wal_checkpoint(FULL)"); err != nil {
+				return fmt.Errorf("running wal checkpoint: %w", err)
+			}
 		}
 	}
 
@@ -249,7 +270,7 @@ func (m *schema32Migrator) deletePlaceholderFolder(ctx context.Context) error {
 }
 
 func (m *schema32Migrator) createFolderHierarchy(p string) (*int, sql.NullInt64, error) {
-	parent := path.Dir(p)
+	parent := dir(p)
 
 	if parent == "." || parent == "/" {
 		// get or create this folder
