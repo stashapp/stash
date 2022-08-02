@@ -73,6 +73,26 @@ input SceneMovieInput {
   scene_index: Int
 }
 
+input SceneCreateInput {
+  title: String
+  details: String
+  url: String
+  date: String
+  rating: Int
+  organized: Boolean
+  studio_id: ID
+  gallery_ids: [ID!]
+  performer_ids: [ID!]
+  movies: [SceneMovieInput!]
+  tag_ids: [ID!]
+  """This should be a URL or a base64 encoded data URL"""
+  cover_image: String
+  stash_ids: [StashIDInput!]
+
+  # the first id will be assigned as primary
+  file_ids: [ID!]
+}
+
 input SceneUpdateInput {
   clientMutationId: String
   id: ID!

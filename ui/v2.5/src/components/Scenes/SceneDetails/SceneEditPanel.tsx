@@ -19,6 +19,7 @@ import {
   useSceneUpdate,
   mutateReloadScrapers,
   queryScrapeSceneQueryFragment,
+  mutateCreateScene,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -34,7 +35,8 @@ import useToast from "src/hooks/Toast";
 import { ImageUtils, FormUtils, getStashIDs } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { useFormik } from "formik";
-import { Prompt } from "react-router-dom";
+import { Prompt, useHistory } from "react-router-dom";
+import queryString from "query-string";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
@@ -50,19 +52,32 @@ const SceneScrapeDialog = lazy(() => import("./SceneScrapeDialog"));
 const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
 
 interface IProps {
-  scene: GQL.SceneDataFragment;
+  scene: Partial<GQL.SceneDataFragment>;
+  isNew: boolean;
   isVisible: boolean;
-  onDelete: () => void;
-  onUpdate?: () => void;
+  onDelete?: () => void;
+}
+
+interface ISceneEditParams {
+  file_id: string;
 }
 
 export const SceneEditPanel: React.FC<IProps> = ({
   scene,
+  isNew,
   isVisible,
   onDelete,
 }) => {
   const intl = useIntl();
   const Toast = useToast();
+  const history = useHistory();
+
+  const queryParams = useMemo(() => queryString.parse(location.search), [
+    location.search,
+  ]);
+
+  const fileID = (queryParams?.file_id ?? "") as string;
+
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
     []
   );
@@ -84,8 +99,8 @@ export const SceneEditPanel: React.FC<IProps> = ({
   >();
 
   useEffect(() => {
-    setCoverImagePreview(scene.paths.screenshot ?? undefined);
-  }, [scene.paths.screenshot]);
+    setCoverImagePreview(scene.paths?.screenshot ?? undefined);
+  }, [scene.paths?.screenshot]);
 
   useEffect(() => {
     setGalleries(
@@ -150,7 +165,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     initialValues,
     enableReinitialize: true,
     validationSchema: schema,
-    onSubmit: (values) => onSave(getSceneInput(values)),
+    onSubmit: (values) => onSave(values),
   });
 
   function setRating(v: number) {
@@ -176,7 +191,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
         formik.handleSubmit();
       });
       Mousetrap.bind("d d", () => {
-        onDelete();
+        if (onDelete) {
+          onDelete();
+        }
       });
 
       // numeric keypresses get caught by jwplayer, so blur the element
@@ -230,7 +247,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   function getSceneInput(input: InputValues): GQL.SceneUpdateInput {
     return {
-      id: scene.id,
+      id: scene.id!,
       ...input,
     };
   }
@@ -252,27 +269,47 @@ export const SceneEditPanel: React.FC<IProps> = ({
     formik.setFieldValue("movies", newMovies);
   }
 
-  async function onSave(input: GQL.SceneUpdateInput) {
+  function getCreateValues(values: InputValues): GQL.SceneCreateInput {
+    return {
+      ...values,
+    };
+  }
+
+  async function onSave(input: InputValues) {
     setIsLoading(true);
     try {
-      const result = await updateScene({
-        variables: {
-          input: {
-            ...input,
-            rating: input.rating ?? null,
+      if (!isNew) {
+        const updateValues = getSceneInput(input);
+        const result = await updateScene({
+          variables: {
+            input: {
+              ...updateValues,
+              id: scene.id!,
+              rating: input.rating ?? null,
+            },
           },
-        },
-      });
-      if (result.data?.sceneUpdate) {
-        Toast.success({
-          content: intl.formatMessage(
-            { id: "toast.updated_entity" },
-            { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
-          ),
         });
-        // clear the cover image so that it doesn't appear dirty
-        formik.resetForm({ values: formik.values });
+        if (result.data?.sceneUpdate) {
+          Toast.success({
+            content: intl.formatMessage(
+              { id: "toast.updated_entity" },
+              { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+            ),
+          });
+        }
+      } else {
+        const createValues = getCreateValues(input);
+        const result = await mutateCreateScene({
+          ...createValues,
+          file_ids: [fileID as string],
+        });
+        if (result.data?.sceneCreate?.id) {
+          history.push(`/scenes/${result.data?.sceneCreate.id}`);
+        }
       }
+
+      // clear the cover image so that it doesn't appear dirty
+      formik.resetForm({ values: formik.values });
     } catch (e) {
       Toast.error(e);
     }
@@ -312,7 +349,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   async function onScrapeClicked(s: GQL.ScraperSourceInput) {
     setIsLoading(true);
     try {
-      const result = await queryScrapeScene(s, scene.id);
+      const result = await queryScrapeScene(s, scene.id!);
       if (!result.data || !result.data.scrapeSingleScene?.length) {
         Toast.success({
           content: "No scenes found",
@@ -393,7 +430,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
     const currentScene = getSceneInput(formik.values);
     if (!currentScene.cover_image) {
-      currentScene.cover_image = scene.paths.screenshot;
+      currentScene.cover_image = scene.paths!.screenshot;
     }
 
     return (
@@ -656,6 +693,24 @@ export const SceneEditPanel: React.FC<IProps> = ({
     );
   }
 
+  const image = useMemo(() => {
+    if (imageEncoding) {
+      return <LoadingIndicator message="Encoding image..." />
+    }
+
+    if (coverImagePreview) {
+      return (
+        <img
+          className="scene-cover"
+          src={coverImagePreview}
+          alt={intl.formatMessage({ id: "cover_image" })}
+        />
+      );
+    }
+
+    return <div></div>;
+  }, [imageEncoding, coverImagePreview]);
+
   if (isLoading) return <LoadingIndicator />;
 
   return (
@@ -678,20 +733,24 @@ export const SceneEditPanel: React.FC<IProps> = ({
             >
               <FormattedMessage id="actions.save" />
             </Button>
-            <Button
-              className="edit-button"
-              variant="danger"
-              onClick={() => onDelete()}
-            >
-              <FormattedMessage id="actions.delete" />
-            </Button>
+            {onDelete && (
+              <Button
+                className="edit-button"
+                variant="danger"
+                onClick={() => onDelete()}
+              >
+                <FormattedMessage id="actions.delete" />
+              </Button>
+            )}
           </div>
-          <div className="ml-auto pr-3 text-right d-flex">
-            <ButtonGroup className="scraper-group">
-              {renderScraperMenu()}
-              {renderScrapeQueryMenu()}
-            </ButtonGroup>
-          </div>
+          {!isNew && (
+            <div className="ml-auto pr-3 text-right d-flex">
+              <ButtonGroup className="scraper-group">
+                {renderScraperMenu()}
+                {renderScrapeQueryMenu()}
+              </ButtonGroup>
+            </div>
+          )}
         </div>
         <div className="form-container row px-3">
           <div className="col-12 col-lg-7 col-xl-12">
@@ -900,15 +959,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 <Form.Label>
                   <FormattedMessage id="cover_image" />
                 </Form.Label>
-                {imageEncoding ? (
-                  <LoadingIndicator message="Encoding image..." />
-                ) : (
-                  <img
-                    className="scene-cover"
-                    src={coverImagePreview}
-                    alt={intl.formatMessage({ id: "cover_image" })}
-                  />
-                )}
+                {image}
                 <ImageInput
                   isEditing
                   onImageChange={onCoverImageChange}

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
+import { useHistory } from "react-router-dom";
 import { TruncatedText } from "src/components/Shared";
 import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
 import ReassignFilesDialog from "src/components/Shared/ReassignFilesDialog";
@@ -24,6 +25,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   props: IFileInfoPanelProps
 ) => {
   const intl = useIntl();
+  const history = useHistory();
 
   function renderFileSize() {
     const { size, unit } = TextUtils.fileSize(props.file.size);
@@ -48,6 +50,10 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   const oshash = props.file.fingerprints.find((f) => f.type === "oshash");
   const phash = props.file.fingerprints.find((f) => f.type === "phash");
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
+
+  function onSplit() {
+    history.push(`/scenes/new?file_id=${props.file.id}`);
+  }
 
   return (
     <div>
@@ -130,6 +136,9 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
             onClick={props.onReassign}
           >
             <FormattedMessage id="actions.reassign" />
+          </Button>
+          <Button className="edit-button" onClick={onSplit}>
+            <FormattedMessage id="actions.split" />
           </Button>
           <Button
             variant="danger"

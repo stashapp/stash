@@ -162,6 +162,7 @@ type Mutation {
   setup(input: SetupInput!): Boolean!
   migrate(input: MigrateInput!): Boolean!
 
+  sceneCreate(input: SceneCreateInput!): Scene
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!

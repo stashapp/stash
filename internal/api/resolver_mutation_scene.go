@@ -31,6 +31,10 @@ func (r *mutationResolver) getScene(ctx context.Context, id int) (ret *models.Sc
 	return ret, nil
 }
 
+func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInput) (ret *models.Scene, err error) {
+	panic("not implemented")
+}
+
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (ret *models.Scene, err error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),

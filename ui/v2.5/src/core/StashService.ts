@@ -520,6 +520,16 @@ export const mutateSceneAssignFile = (sceneID: string, fileID: string) =>
     refetchQueries: getQueryNames([GQL.FindSceneDocument]),
   });
 
+export const mutateCreateScene = (input: GQL.SceneCreateInput) =>
+  client.mutate<GQL.SceneCreateMutation>({
+    mutation: GQL.SceneCreateDocument,
+    variables: {
+      input,
+    },
+    update: deleteCache(sceneMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+  });
+
 const imageMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
