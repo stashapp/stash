@@ -147,7 +147,7 @@ func (t *ExportTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 		json: *paths.GetJSONPaths(t.baseDir),
 	}
 
-	_ = fsutil.EmptyDir(t.baseDir)
+	paths.EmptyJSONDirs(t.baseDir)
 	paths.EnsureJSONDirs(t.baseDir)
 
 	txnErr := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {

@@ -42,6 +42,18 @@ func GetJSONPaths(baseDir string) *JSONPaths {
 	return jp
 }
 
+func EmptyJSONDirs(baseDir string) {
+	jsonPaths := GetJSONPaths(baseDir)
+	_ = fsutil.EmptyDir(jsonPaths.Scenes)
+	_ = fsutil.EmptyDir(jsonPaths.Images)
+	_ = fsutil.EmptyDir(jsonPaths.Galleries)
+	_ = fsutil.EmptyDir(jsonPaths.Performers)
+	_ = fsutil.EmptyDir(jsonPaths.Studios)
+	_ = fsutil.EmptyDir(jsonPaths.Movies)
+	_ = fsutil.EmptyDir(jsonPaths.Tags)
+	_ = fsutil.EmptyDir(jsonPaths.Files)
+}
+
 func EnsureJSONDirs(baseDir string) {
 	jsonPaths := GetJSONPaths(baseDir)
 	if err := fsutil.EnsureDir(jsonPaths.Metadata); err != nil {
