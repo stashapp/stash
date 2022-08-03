@@ -26,14 +26,12 @@ type Gallery struct {
 }
 
 func (s Gallery) Filename(basename string, hash string) string {
-	ret := s.Title
-	if ret == "" {
-		ret = basename
-	}
+	ret := basename
 
-	if hash != "" {
-		ret += "." + hash
+	if ret != "" {
+		ret += "."
 	}
+	ret += hash
 
 	return ret + ".json"
 }

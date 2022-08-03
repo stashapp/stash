@@ -811,14 +811,16 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 
 		pf := g.PrimaryFile()
 		basename := ""
-		hash := ""
-		if pf != nil {
+		// use id in case multiple galleries with the same basename
+		hash := strconv.Itoa(g.ID)
+
+		switch {
+		case pf != nil:
 			basename = pf.Base().Basename
-			hash = g.Checksum()
-		} else if g.FolderPath != "" {
+		case g.FolderPath != "":
 			basename = filepath.Base(g.FolderPath)
-			// use id in case multiple galleries with the same folder basename
-			hash = strconv.Itoa(g.ID)
+		default:
+			basename = g.Title
 		}
 
 		fn := newGalleryJSON.Filename(basename, hash)
