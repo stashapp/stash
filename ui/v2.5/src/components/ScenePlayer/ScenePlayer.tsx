@@ -308,7 +308,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       const currentSrc = player.currentSrc();
 
       const isDirect =
-        currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
+        currentSrc.endsWith("/stream") || currentSrc.includes("/stream.m3u8");
 
       const curTime = player.currentTime();
       if (!isDirect) {

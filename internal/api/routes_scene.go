@@ -184,6 +184,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	lockCtx.AttachCommand(stream.Cmd)
 
 	stream.Serve(w, r)
+	w.(http.Flusher).Flush()
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {

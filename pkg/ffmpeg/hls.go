@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const hlsSegmentLength = 10.0
+const hlsSegmentLength = 20.0
 
 // WriteHLSPlaylist writes a HLS playlist to w using baseUrl as the base URL for TS streams.
 func WriteHLSPlaylist(duration float64, baseUrl string, w io.Writer) {
@@ -21,7 +21,7 @@ func WriteHLSPlaylist(duration float64, baseUrl string, w io.Writer) {
 	upTo := 0.0
 
 	i := strings.LastIndex(baseUrl, ".m3u8")
-	tsURL := baseUrl[0:i] + ".ts"
+	tsURL := baseUrl[:i] + strings.Replace(baseUrl[i:], ".m3u8", ".ts", 1)
 
 	for leftover > 0 {
 		thisLength := hlsSegmentLength
@@ -30,7 +30,11 @@ func WriteHLSPlaylist(duration float64, baseUrl string, w io.Writer) {
 		}
 
 		fmt.Fprintf(w, "#EXTINF: %f,\n", thisLength)
-		fmt.Fprintf(w, "%s?start=%f\n", tsURL, upTo)
+		queryDelimiter := "?"
+		if strings.Contains(tsURL, "?") {
+			queryDelimiter = "&"
+		}
+		fmt.Fprintf(w, "%s%sstart=%f\n", tsURL, queryDelimiter, upTo)
 
 		leftover -= thisLength
 		upTo += thisLength

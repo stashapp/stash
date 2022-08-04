@@ -30,8 +30,12 @@ func (c *StreamRequestContext) Cancel() {
 	}
 
 	// hijack and close the connection
-	conn, _, _ := hj.Hijack()
+	conn, bw, _ := hj.Hijack()
 	if conn != nil {
+		// notify end of stream
+		bw.WriteString("0\r\n")
+		bw.WriteString("\r\n")
+		bw.Flush()
 		conn.Close()
 	}
 }
