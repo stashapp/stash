@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -58,7 +57,6 @@ func (qb queryBuilder) toSQL(includeSortPagination bool) string {
 func (qb queryBuilder) findIDs(ctx context.Context) ([]int, error) {
 	const includeSortPagination = true
 	sql := qb.toSQL(includeSortPagination)
-	logger.Tracef("SQL: %s, args: %v", sql, qb.args)
 	return qb.repository.runIdsQuery(ctx, sql, qb.args)
 }
 

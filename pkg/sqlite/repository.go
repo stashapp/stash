@@ -11,7 +11,6 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -154,8 +153,6 @@ func (r *repository) runIdsQuery(ctx context.Context, query string, args []inter
 }
 
 func (r *repository) queryFunc(ctx context.Context, query string, args []interface{}, single bool, f func(rows *sqlx.Rows) error) error {
-	logger.Tracef("SQL: %s, args: %v", query, args)
-
 	rows, err := r.tx.Queryx(ctx, query, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -252,8 +249,6 @@ func (r *repository) executeFindQuery(ctx context.Context, body string, args []i
 	idsQuery := withClause + body + sortAndPagination
 
 	// Perform query and fetch result
-	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
-
 	var countResult int
 	var countErr error
 	var idsResult []int

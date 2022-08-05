@@ -557,7 +557,6 @@ func queryFunc(ctx context.Context, query *goqu.SelectDataset, single bool, f fu
 		return err
 	}
 
-	logger.Tracef("SQL: %s [%v]", q, args)
 	rows, err := tx.QueryxContext(ctx, q, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -592,7 +591,6 @@ func querySimple(ctx context.Context, query *goqu.SelectDataset, out interface{}
 		return err
 	}
 
-	logger.Tracef("SQL: %s [%v]", q, args)
 	rows, err := tx.QueryxContext(ctx, q, args...)
 	if err != nil {
 		return fmt.Errorf("querying `%s` [%v]: %w", q, args, err)
