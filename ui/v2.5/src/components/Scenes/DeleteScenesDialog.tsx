@@ -99,7 +99,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
         <p className="font-weight-bold">
           <FormattedMessage
             values={{
-              count: props.selected.length,
+              count: deletedFiles.length,
               singularEntity: intl.formatMessage({ id: "file" }),
               pluralEntity: intl.formatMessage({ id: "files" }),
             }}
