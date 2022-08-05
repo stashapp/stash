@@ -587,21 +587,21 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if imageFilter.Checksum != nil {
-			qb.addQueryTable(f)
-			f.addInnerJoin(fingerprintTable, "fingerprints_md5", "galleries_query.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
+			qb.addImagesFilesTable(f)
+			f.addInnerJoin(fingerprintTable, "fingerprints_md5", "images_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
 		}
 
 		stringCriterionHandler(imageFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
 	}))
 	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.Title, "images.title"))
 
-	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "images_query.parent_folder_path", "images_query.basename", qb.addQueryTable))
+	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
-	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating"))
-	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter"))
-	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized"))
+	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
+	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
 
-	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "images_query.image_height", "images_query.image_width", qb.addQueryTable))
+	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "image_files.height", "image_files.width", qb.addImageFilesTable))
 	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))
 
 	query.handleCriterion(ctx, imageTagsCriterionHandler(qb, imageFilter.Tags))
@@ -616,8 +616,23 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	return query
 }
 
-func (qb *ImageStore) addQueryTable(f *filterBuilder) {
-	f.addInnerJoin(imagesQueryTable.GetTable(), "", "images.id = images_query.id")
+func (qb *ImageStore) addImagesFilesTable(f *filterBuilder) {
+	f.addLeftJoin(imagesFilesTable, "", "images_files.image_id = images.id")
+}
+
+func (qb *ImageStore) addFilesTable(f *filterBuilder) {
+	qb.addImagesFilesTable(f)
+	f.addLeftJoin(fileTable, "", "images_files.file_id = files.id")
+}
+
+func (qb *ImageStore) addFoldersTable(f *filterBuilder) {
+	qb.addFilesTable(f)
+	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
+}
+
+func (qb *ImageStore) addImageFilesTable(f *filterBuilder) {
+	qb.addImagesFilesTable(f)
+	f.addLeftJoin(imageFileTable, "", "image_files.file_id = images_files.file_id")
 }
 
 func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
