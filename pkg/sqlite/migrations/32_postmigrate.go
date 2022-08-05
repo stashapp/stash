@@ -277,9 +277,22 @@ func (m *schema32Migrator) createFolderHierarchy(p string) (*int, sql.NullInt64,
 		return m.getOrCreateFolder(p, nil, sql.NullInt64{})
 	}
 
-	parentID, zipFileID, err := m.createFolderHierarchy(parent)
-	if err != nil {
-		return nil, sql.NullInt64{}, err
+	var (
+		parentID  *int
+		zipFileID sql.NullInt64
+		err       error
+	)
+
+	// try to find parent folder in cache first
+	foundEntry, ok := m.folderCache[parent]
+	if ok {
+		parentID = &foundEntry.id
+		zipFileID = foundEntry.zipID
+	} else {
+		parentID, zipFileID, err = m.createFolderHierarchy(parent)
+		if err != nil {
+			return nil, sql.NullInt64{}, err
+		}
 	}
 
 	return m.getOrCreateFolder(p, parentID, zipFileID)
