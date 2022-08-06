@@ -22,10 +22,9 @@ import (
 )
 
 const (
-	separatorChars       = `.\-_ `
-	separatorPattern     = `(?:_|[^\p{L}\w\d])+`
-	separatorPatternExif = `(?:_|[^\p{L}\w\d\,])+`
-
+	separatorChars         = `.\-_ `
+	separatorPattern       = `(?:_|[^\p{L}\w\d])+`
+	separatorPatternExif   = `(?:_|[^\p{L}\w\d\,])+`
 	reNotLetterWordUnicode = `[^\p{L}\w\d]`
 	reNotLetterWord        = `[^\w\d]`
 )
@@ -99,6 +98,11 @@ func tiffTagToString(tag *tiff.Tag, err error) string {
 // Return an array of tags extracted from the exif if any, and a path like string of tags, else an empty array
 func GetExifWords(path string) ([]string, string, error) {
 	var err error
+	var pathExt = strings.ToLower(filepath.Ext(path))
+	if !(pathExt == "jpg" || pathExt == "jpeg" || pathExt == "tiff") {
+		return nil, "", nil
+	}
+
 	var imgFile *os.File
 	var metaData *exif.Exif
 
