@@ -155,12 +155,12 @@
       "duration_unknown": "Durée inconnue",
       "fp_found": "{fpCount, plural, =0 {Aucune nouvelle correspondance d'empreinte trouvée} other {# nouvelles correspondances d'empreintes trouvées}}",
       "fp_matches": "La durée correspond",
-      "fp_matches_multi": "La durée correspond à {matchCount}/{durationsLength} empreinte(s)",
+      "fp_matches_multi": "La durée correspond à {matchCount}/{durationsLength} empreinte.s",
       "hash_matches": "{hash_type} est une correspondance",
       "match_failed_already_tagged": "Scène déjà étiquetée",
       "match_failed_no_result": "Aucun résultat trouvé",
       "match_success": "Scène étiquetée avec succès",
-      "phash_matches": "{count} PHashes correspondants",
+      "phash_matches": "{count} empreinte.s correspondante.s",
       "unnamed": "Sans nom"
     },
     "verb_match_fp": "Empreintes correspondantes",
@@ -335,7 +335,7 @@
       "transcoding": "Transcodage"
     },
     "tasks": {
-      "added_job_to_queue": "{operation_name} ajouté(e) à la liste des tâches",
+      "added_job_to_queue": "{operation_name} ajouté.e à la liste des tâches",
       "auto_tag": {
         "auto_tagging_all_paths": "Étiquetage automatique de tous les chemins",
         "auto_tagging_paths": "Étiquetage automatique des chemins suivants"
@@ -592,7 +592,7 @@
   "developmentVersion": "Version de développement",
   "dialogs": {
     "aliases_must_be_unique": "Les alias doivent être uniques",
-    "delete_alert": "Le(s) {count, plural, one {{singularEntity}} suivant(s) sur {{pluralEntity}}} seront supprimé(s) définitivement :",
+    "delete_alert": "Le.s {count, plural, one {{singularEntity}} suivant.s sur {{pluralEntity}}} sera.ont supprimé.s définitivement :",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer {entityName} ?",
     "delete_entity_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity} ? À moins que le fichier ne soit également supprimé, cette {singularEntity} sera ajoutée à nouveau lors de la prochaine analyse.} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity} ? À moins que les fichiers ne soient également supprimés, ces {pluralEntity} seront ajoutées à nouveau lors de la prochaine analyse.}}",
     "delete_entity_title": "{count, plural, one {Delete {singularEntity}} sur {Delete {pluralEntity}}}",
@@ -695,7 +695,7 @@
     "search_accuracy_label": "La pertinence de la recherche",
     "title": "Scènes dupliquées"
   },
-  "duplicated_phash": "Dupliqué (phash)",
+  "duplicated_phash": "Empreinte dupliquée",
   "duration": "Durée",
   "effect_filters": {
     "aspect": "Aspect",
@@ -794,7 +794,7 @@
       "age": "{age} {years_old}",
       "age_context": "{age} {years_old} dans cette scène"
     },
-    "phash": "PHash",
+    "phash": "Empreinte",
     "stream": "Flux",
     "video_codec": "Codec vidéo"
   },
@@ -821,7 +821,7 @@
   "parent_tags": "Étiquettes parentes",
   "part_of": "Fait partie de {parent}",
   "path": "Chemin",
-  "perceptual_similarity": "Similitude perceptuelle (phash)",
+  "perceptual_similarity": "Similitude perceptuelle (empreinte)",
   "performer": "Performeur",
   "performerTags": "Étiquettes de performeur",
   "performer_age": "Âge du performeur",
@@ -999,16 +999,16 @@
     "added_generation_job_to_queue": "Ajout d'une tâche de génération en file d'attente",
     "created_entity": "{entity} créé(e)",
     "default_filter_set": "Filtre par défaut défini",
-    "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} supprimé(e)(s)",
+    "delete_past_tense": "{count, plural, one {{singularEntity}} sur {{pluralEntity}}} supprimé.e.s",
     "generating_screenshot": "Génération de la capture d'écran…",
     "merged_tags": "Étiquettes fusionnées",
     "removed_entity": "{count, plural, one {{singularEntity}} sur {{pluralEntity}}} supprimé.e.s",
     "rescanning_entity": "Réexamen de {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
-    "saved_entity": "{entity} sauvegardé(e)",
+    "saved_entity": "{entity} sauvegardé.e",
     "started_auto_tagging": "Démarrage de l'étiquetage automatique",
     "started_generating": "Démarrage de la génération",
     "started_importing": "Démarrage de l'importation",
-    "updated_entity": "{entity} mis(e) à jour"
+    "updated_entity": "{entity} mis.e à jour"
   },
   "total": "Total",
   "true": "Vrai",
