@@ -245,8 +245,8 @@ func (qb *performerQueryBuilder) makeFilter(ctx context.Context, filter *models.
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Name, tableName+".name"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Details, tableName+".details"))
 
-	query.handleCriterion(ctx, boolCriterionHandler(filter.FilterFavorites, tableName+".favorite"))
-	query.handleCriterion(ctx, boolCriterionHandler(filter.IgnoreAutoTag, tableName+".ignore_auto_tag"))
+	query.handleCriterion(ctx, boolCriterionHandler(filter.FilterFavorites, tableName+".favorite", nil))
+	query.handleCriterion(ctx, boolCriterionHandler(filter.IgnoreAutoTag, tableName+".ignore_auto_tag", nil))
 
 	query.handleCriterion(ctx, yearFilterCriterionHandler(filter.BirthYear, tableName+".birthdate"))
 	query.handleCriterion(ctx, yearFilterCriterionHandler(filter.DeathYear, tableName+".death_date"))
@@ -269,10 +269,10 @@ func (qb *performerQueryBuilder) makeFilter(ctx context.Context, filter *models.
 	query.handleCriterion(ctx, stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))
-	query.handleCriterion(ctx, intCriterionHandler(filter.Rating, tableName+".rating"))
+	query.handleCriterion(ctx, intCriterionHandler(filter.Rating, tableName+".rating", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.URL, tableName+".url"))
-	query.handleCriterion(ctx, intCriterionHandler(filter.Weight, tableName+".weight"))
+	query.handleCriterion(ctx, intCriterionHandler(filter.Weight, tableName+".weight", nil))
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if filter.StashID != nil {
 			qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")

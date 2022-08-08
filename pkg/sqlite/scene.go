@@ -756,13 +756,14 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 		query.not(qb.makeFilter(ctx, sceneFilter.Not))
 	}
 
-	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "scenes_query.parent_folder_path", "scenes_query.basename", nil))
+	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, sceneFileCountCriterionHandler(qb, sceneFilter.FileCount))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Title, "scenes.title"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Details, "scenes.details"))
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.Oshash != nil {
-			f.addLeftJoin(fingerprintTable, "fingerprints_oshash", "scenes_query.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
+			qb.addSceneFilesTable(f)
+			f.addLeftJoin(fingerprintTable, "fingerprints_oshash", "scenes_files.file_id = fingerprints_oshash.file_id AND fingerprints_oshash.type = 'oshash'")
 		}
 
 		stringCriterionHandler(sceneFilter.Oshash, "fingerprints_oshash.fingerprint")(ctx, f)
@@ -770,7 +771,8 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.Checksum != nil {
-			f.addLeftJoin(fingerprintTable, "fingerprints_md5", "scenes_query.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
+			qb.addSceneFilesTable(f)
+			f.addLeftJoin(fingerprintTable, "fingerprints_md5", "scenes_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
 		}
 
 		stringCriterionHandler(sceneFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
@@ -778,22 +780,23 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.Phash != nil {
-			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_query.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+			qb.addSceneFilesTable(f)
+			f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 
 			value, _ := utils.StringToPhash(sceneFilter.Phash.Value)
 			intCriterionHandler(&models.IntCriterionInput{
 				Value:    int(value),
 				Modifier: sceneFilter.Phash.Modifier,
-			}, "fingerprints_phash.fingerprint")(ctx, f)
+			}, "fingerprints_phash.fingerprint", nil)(ctx, f)
 		}
 	}))
 
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating, "scenes.rating"))
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter"))
-	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Organized, "scenes.organized"))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating, "scenes.rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter", nil))
+	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Organized, "scenes.organized", nil))
 
-	query.handleCriterion(ctx, durationCriterionHandler(sceneFilter.Duration, "scenes_query.duration"))
-	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "scenes_query.video_height", "scenes_query.video_width", nil))
+	query.handleCriterion(ctx, durationCriterionHandler(sceneFilter.Duration, "video_files.duration", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, resolutionCriterionHandler(sceneFilter.Resolution, "video_files.height", "video_files.width", qb.addVideoFilesTable))
 
 	query.handleCriterion(ctx, hasMarkersCriterionHandler(sceneFilter.HasMarkers))
 	query.handleCriterion(ctx, sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
@@ -806,8 +809,8 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 		}
 	}))
 
-	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Interactive, "scenes.interactive"))
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.InteractiveSpeed, "scenes.interactive_speed"))
+	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Interactive, "video_files.interactive", qb.addVideoFilesTable))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.InteractiveSpeed, "video_files.interactive_speed", qb.addVideoFilesTable))
 
 	query.handleCriterion(ctx, sceneCaptionCriterionHandler(qb, sceneFilter.Captions))
 
@@ -820,9 +823,28 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, scenePerformerTagsCriterionHandler(qb, sceneFilter.PerformerTags))
 	query.handleCriterion(ctx, scenePerformerFavoriteCriterionHandler(sceneFilter.PerformerFavorite))
 	query.handleCriterion(ctx, scenePerformerAgeCriterionHandler(sceneFilter.PerformerAge))
-	query.handleCriterion(ctx, scenePhashDuplicatedCriterionHandler(sceneFilter.Duplicated))
+	query.handleCriterion(ctx, scenePhashDuplicatedCriterionHandler(sceneFilter.Duplicated, qb.addSceneFilesTable))
 
 	return query
+}
+
+func (qb *SceneStore) addSceneFilesTable(f *filterBuilder) {
+	f.addLeftJoin(scenesFilesTable, "", "scenes_files.scene_id = scenes.id")
+}
+
+func (qb *SceneStore) addFilesTable(f *filterBuilder) {
+	qb.addSceneFilesTable(f)
+	f.addLeftJoin(fileTable, "", "scenes_files.file_id = files.id")
+}
+
+func (qb *SceneStore) addFoldersTable(f *filterBuilder) {
+	qb.addFilesTable(f)
+	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
+}
+
+func (qb *SceneStore) addVideoFilesTable(f *filterBuilder) {
+	qb.addSceneFilesTable(f)
+	f.addLeftJoin(videoFileTable, "", "video_files.file_id = scenes_files.file_id")
 }
 
 func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error) {
@@ -839,17 +861,31 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 	query := qb.newQuery()
 	distinctIDs(&query, sceneTable)
 
-	// for convenience, join with the query view
-	query.addJoins(join{
-		table:    scenesQueryTable.GetTable(),
-		onClause: "scenes.id = scenes_query.id",
-		joinType: "INNER",
-	})
-
 	if q := findFilter.Q; q != nil && *q != "" {
-		query.join("scene_markers", "", "scene_markers.scene_id = scenes.id")
+		query.addJoins(
+			join{
+				table:    scenesFilesTable,
+				onClause: "scenes_files.scene_id = scenes.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "scenes_files.file_id = files.id",
+			},
+			join{
+				table:    folderTable,
+				onClause: "files.parent_folder_id = folders.id",
+			},
+			join{
+				table:    fingerprintTable,
+				onClause: "files_fingerprints.file_id = scenes_files.file_id",
+			},
+			join{
+				table:    sceneMarkerTable,
+				onClause: "scene_markers.scene_id = scenes.id",
+			},
+		)
 
-		searchColumns := []string{"scenes.title", "scenes.details", "scenes_query.parent_folder_path", "scenes_query.basename", "scenes_query.fingerprint", "scene_markers.title"}
+		searchColumns := []string{"scenes.title", "scenes.details", "folders.path", "files.basename", "files_fingerprints.fingerprint", "scene_markers.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -890,12 +926,32 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 	}
 
 	if options.TotalDuration {
-		query.addColumn("COALESCE(scenes_query.duration, 0) as duration")
+		query.addJoins(
+			join{
+				table:    scenesFilesTable,
+				onClause: "scenes_files.scene_id = scenes.id",
+			},
+			join{
+				table:    videoFileTable,
+				onClause: "scenes_files.file_id = video_files.file_id",
+			},
+		)
+		query.addColumn("COALESCE(video_files.duration, 0) as duration")
 		aggregateQuery.addColumn("SUM(temp.duration) as duration")
 	}
 
 	if options.TotalSize {
-		query.addColumn("COALESCE(scenes_query.size, 0) as size")
+		query.addJoins(
+			join{
+				table:    scenesFilesTable,
+				onClause: "scenes_files.scene_id = scenes.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "scenes_files.file_id = files.id",
+			},
+		)
+		query.addColumn("COALESCE(files.size, 0) as size")
 		aggregateQuery.addColumn("SUM(temp.size) as size")
 	}
 
@@ -928,24 +984,32 @@ func sceneFileCountCriterionHandler(qb *SceneStore, fileCount *models.IntCriteri
 	return h.handler(fileCount)
 }
 
-func scenePhashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput) criterionHandlerFunc {
+func scenePhashDuplicatedCriterionHandler(duplicatedFilter *models.PHashDuplicationCriterionInput, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		// TODO: Wishlist item: Implement Distance matching
 		if duplicatedFilter != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+
 			var v string
 			if *duplicatedFilter.Duplicated {
 				v = ">"
 			} else {
 				v = "="
 			}
-			f.addInnerJoin("(SELECT file_id FROM files_fingerprints INNER JOIN (SELECT fingerprint FROM files_fingerprints WHERE type = 'phash' GROUP BY fingerprint HAVING COUNT (fingerprint) "+v+" 1) dupes on files_fingerprints.fingerprint = dupes.fingerprint)", "scph", "scenes_query.file_id = scph.file_id")
+
+			f.addInnerJoin("(SELECT file_id FROM files_fingerprints INNER JOIN (SELECT fingerprint FROM files_fingerprints WHERE type = 'phash' GROUP BY fingerprint HAVING COUNT (fingerprint) "+v+" 1) dupes on files_fingerprints.fingerprint = dupes.fingerprint)", "scph", "scenes_files.file_id = scph.file_id")
 		}
 	}
 }
 
-func durationCriterionHandler(durationFilter *models.IntCriterionInput, column string) criterionHandlerFunc {
+func durationCriterionHandler(durationFilter *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if durationFilter != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
 			clause, args := getIntCriterionWhereClause("cast("+column+" as int)", *durationFilter)
 			f.addWhere(clause, args...)
 		}
@@ -1015,7 +1079,8 @@ func sceneIsMissingCriterionHandler(qb *SceneStore, isMissing *string) criterion
 				qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
 				f.addWhere("scene_stash_ids.scene_id IS NULL")
 			case "phash":
-				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_query.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
+				qb.addSceneFilesTable(f)
+				f.addLeftJoin(fingerprintTable, "fingerprints_phash", "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'")
 				f.addWhere("fingerprints_phash.fingerprint IS NULL")
 			default:
 				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
@@ -1040,7 +1105,8 @@ func sceneCaptionCriterionHandler(qb *SceneStore, captions *models.StringCriteri
 		joinTable:    videoCaptionsTable,
 		stringColumn: captionCodeColumn,
 		addJoinTable: func(f *filterBuilder) {
-			f.addLeftJoin(videoCaptionsTable, "", "video_captions.file_id = scenes_query.file_id")
+			qb.addSceneFilesTable(f)
+			f.addLeftJoin(videoCaptionsTable, "", "video_captions.file_id = scenes_files.file_id")
 		},
 	}
 
@@ -1201,14 +1267,27 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	}
 	sort := findFilter.GetSort("title")
 
-	// translate sort field
-	switch sort {
-	case "bitrate":
-		sort = "bit_rate"
-	case "file_mod_time":
-		sort = "mod_time"
-	case "framerate":
-		sort = "frame_rate"
+	addFileTable := func() {
+		query.addJoins(
+			join{
+				table:    scenesFilesTable,
+				onClause: "scenes_files.scene_id = scenes.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "scenes_files.file_id = files.id",
+			},
+		)
+	}
+
+	addVideoFileTable := func() {
+		addFileTable()
+		query.addJoins(
+			join{
+				table:    videoFileTable,
+				onClause: "video_files.file_id = scenes_files.file_id",
+			},
+		)
 	}
 
 	direction := findFilter.GetDirection()
@@ -1224,21 +1303,47 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		query.sortAndPagination += getCountSort(sceneTable, scenesFilesTable, sceneIDColumn, direction)
 	case "path":
 		// special handling for path
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY scenes_query.parent_folder_path %s, scenes_query.basename %[1]s", direction)
+		addFileTable()
+		query.addJoins(
+			join{
+				table:    folderTable,
+				onClause: "files.parent_folder_id = folders.id",
+			},
+		)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
 	case "perceptual_similarity":
 		// special handling for phash
-		query.addJoins(join{
-			table:    fingerprintTable,
-			as:       "fingerprints_phash",
-			onClause: "scenes_query.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'",
-		})
+		addFileTable()
+		query.addJoins(
+			join{
+				table:    fingerprintTable,
+				as:       "fingerprints_phash",
+				onClause: "scenes_files.file_id = fingerprints_phash.file_id AND fingerprints_phash.type = 'phash'",
+			},
+		)
 
-		query.sortAndPagination += " ORDER BY fingerprints_phash.fingerprint " + direction + ", scenes_query.size DESC"
+		query.sortAndPagination += " ORDER BY fingerprints_phash.fingerprint " + direction + ", files.size DESC"
+	case "bitrate":
+		sort = "bit_rate"
+		addVideoFileTable()
+		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+	case "file_mod_time":
+		sort = "mod_time"
+		addFileTable()
+		query.sortAndPagination += getSort(sort, direction, fileTable)
+	case "framerate":
+		sort = "frame_rate"
+		addVideoFileTable()
+		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+	case "size":
+		addFileTable()
+		query.sortAndPagination += getSort(sort, direction, fileTable)
+	case "duration":
+		addVideoFileTable()
+		query.sortAndPagination += getSort(sort, direction, videoFileTable)
 	default:
-		query.sortAndPagination += getSort(sort, direction, "scenes_query")
+		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
-
-	query.sortAndPagination += ", scenes_query.bit_rate DESC, scenes_query.frame_rate DESC, scenes.rating DESC, scenes_query.duration DESC"
 }
 
 func (qb *SceneStore) imageRepository() *imageRepository {

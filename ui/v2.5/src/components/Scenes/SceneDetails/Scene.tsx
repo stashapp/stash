@@ -19,7 +19,7 @@ import {
 
 import Icon from "src/components/Shared/Icon";
 import { useToast } from "src/hooks";
-import SceneQueue from "src/models/sceneQueue";
+import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import Mousetrap from "mousetrap";
 import { OCounterButton } from "./OCounterButton";
@@ -56,7 +56,7 @@ interface IProps {
   scene: GQL.SceneDataFragment;
   refetch: () => void;
   setTimestamp: (num: number) => void;
-  queueScenes: GQL.SceneDataFragment[];
+  queueScenes: QueuedScene[];
   onQueueNext: () => void;
   onQueuePrevious: () => void;
   onQueueRandom: () => void;
@@ -519,7 +519,7 @@ const SceneLoader: React.FC = () => {
     () => SceneQueue.fromQueryParameters(location.search),
     [location.search]
   );
-  const [queueScenes, setQueueScenes] = useState<GQL.SceneDataFragment[]>([]);
+  const [queueScenes, setQueueScenes] = useState<QueuedScene[]>([]);
 
   const [queueTotal, setQueueTotal] = useState(0);
   const [queueStart, setQueueStart] = useState(1);
@@ -592,7 +592,7 @@ const SceneLoader: React.FC = () => {
     const { scenes } = query.data.findScenes;
 
     // prepend scenes to scene list
-    const newScenes = scenes.concat(queueScenes);
+    const newScenes = (scenes as QueuedScene[]).concat(queueScenes);
     setQueueScenes(newScenes);
     setQueueStart(newStart);
   }
@@ -613,7 +613,7 @@ const SceneLoader: React.FC = () => {
     const { scenes } = query.data.findScenes;
 
     // append scenes to scene list
-    const newScenes = scenes.concat(queueScenes);
+    const newScenes = (scenes as QueuedScene[]).concat(queueScenes);
     setQueueScenes(newScenes);
     // don't change queue start
   }

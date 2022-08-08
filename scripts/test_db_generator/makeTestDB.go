@@ -11,10 +11,12 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"path"
 	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
@@ -66,9 +68,6 @@ func main() {
 		log.Fatalf("couldn't initialize database: %v", err)
 	}
 	logf("Populating database...")
-	if err = makeFolder(); err != nil {
-		log.Fatalf("couldn't create folder: %v", err)
-	}
 	populateDB()
 }
 
@@ -117,18 +116,39 @@ func retry(attempts int, fn func() error) error {
 	return err
 }
 
-func makeFolder() error {
-	return withTxn(func(ctx context.Context) error {
-		f := file.Folder{
-			Path: ".",
-		}
-		if err := repo.Folder.Create(ctx, &f); err != nil {
-			return err
+func getOrCreateFolder(ctx context.Context, p string) (*file.Folder, error) {
+	ret, err := repo.Folder.FindByPath(ctx, p)
+	if err != nil {
+		return nil, err
+	}
+
+	if ret != nil {
+		return ret, nil
+	}
+
+	var parentID *file.FolderID
+
+	if p != "." {
+		parent := path.Dir(p)
+		parentFolder, err := getOrCreateFolder(ctx, parent)
+		if err != nil {
+			return nil, err
 		}
 
-		folderID = f.ID
-		return nil
-	})
+		parentID = &parentFolder.ID
+	}
+
+	f := file.Folder{
+		Path:           p,
+		ParentFolderID: parentID,
+	}
+
+	if err := repo.Folder.Create(ctx, &f); err != nil {
+		return nil, err
+	}
+
+	ret = &f
+	return ret, nil
 }
 
 func makeTags(n int) {
@@ -230,11 +250,10 @@ func makePerformers(n int) {
 	}
 }
 
-func generateBaseFile(path string) *file.BaseFile {
+func generateBaseFile(parentFolderID file.FolderID, path string) *file.BaseFile {
 	return &file.BaseFile{
-		Path:           path,
 		Basename:       path,
-		ParentFolderID: folderID,
+		ParentFolderID: parentFolderID,
 		Fingerprints: []file.Fingerprint{
 			file.Fingerprint{
 				Type:        "md5",
@@ -250,11 +269,11 @@ func generateBaseFile(path string) *file.BaseFile {
 	}
 }
 
-func generateVideoFile(path string) file.File {
+func generateVideoFile(parentFolderID file.FolderID, path string) file.File {
 	w, h := getResolution()
 
 	return &file.VideoFile{
-		BaseFile: generateBaseFile(path),
+		BaseFile: generateBaseFile(parentFolderID, path),
 		Duration: rand.Float64() * 14400,
 		Height:   h,
 		Width:    w,
@@ -262,7 +281,13 @@ func generateVideoFile(path string) file.File {
 }
 
 func makeVideoFile(ctx context.Context, path string) (file.File, error) {
-	f := generateVideoFile(path)
+	folderPath := fsutil.GetIntraDir(path, 2, 2)
+	parentFolder, err := getOrCreateFolder(ctx, folderPath)
+	if err != nil {
+		return nil, err
+	}
+
+	f := generateVideoFile(parentFolder.ID, path)
 
 	if err := repo.File.Create(ctx, f); err != nil {
 		return nil, err
@@ -341,18 +366,24 @@ func generateScene(i int) models.Scene {
 	}
 }
 
-func generateImageFile(path string) file.File {
+func generateImageFile(parentFolderID file.FolderID, path string) file.File {
 	w, h := getResolution()
 
 	return &file.ImageFile{
-		BaseFile: generateBaseFile(path),
+		BaseFile: generateBaseFile(parentFolderID, path),
 		Height:   h,
 		Width:    w,
 	}
 }
 
 func makeImageFile(ctx context.Context, path string) (file.File, error) {
-	f := generateImageFile(path)
+	folderPath := fsutil.GetIntraDir(path, 2, 2)
+	parentFolder, err := getOrCreateFolder(ctx, folderPath)
+	if err != nil {
+		return nil, err
+	}
+
+	f := generateImageFile(parentFolder.ID, path)
 
 	if err := repo.File.Create(ctx, f); err != nil {
 		return nil, err
@@ -438,12 +469,18 @@ func makeGalleries(n int) {
 	}
 }
 
-func generateZipFile(path string) file.File {
-	return generateBaseFile(path)
+func generateZipFile(parentFolderID file.FolderID, path string) file.File {
+	return generateBaseFile(parentFolderID, path)
 }
 
 func makeZipFile(ctx context.Context, path string) (file.File, error) {
-	f := generateZipFile(path)
+	folderPath := fsutil.GetIntraDir(path, 2, 2)
+	parentFolder, err := getOrCreateFolder(ctx, folderPath)
+	if err != nil {
+		return nil, err
+	}
+
+	f := generateZipFile(parentFolder.ID, path)
 
 	if err := repo.File.Create(ctx, f); err != nil {
 		return nil, err

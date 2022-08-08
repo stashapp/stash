@@ -1853,8 +1853,11 @@ func queryScene(ctx context.Context, t *testing.T, sqb models.SceneReader, scene
 	result, err := sqb.Query(ctx, models.SceneQueryOptions{
 		QueryOptions: models.QueryOptions{
 			FindFilter: findFilter,
+			Count:      true,
 		},
-		SceneFilter: sceneFilter,
+		SceneFilter:   sceneFilter,
+		TotalDuration: true,
+		TotalSize:     true,
 	})
 	if err != nil {
 		t.Errorf("Error querying scene: %v", err)
@@ -1875,7 +1878,9 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 	}
 	scenes := queryScene(ctx, t, sqb, nil, &filter)
 
-	assert.Len(t, scenes, 1)
+	if !assert.Len(t, scenes, 1) {
+		return
+	}
 	scene := scenes[0]
 	assert.Equal(t, sceneIDs[expectedSceneIdx], scene.ID)
 
