@@ -63,7 +63,7 @@ func (s *Manager) ScanSubscribe(ctx context.Context) <-chan bool {
 type ScanMetadataInput struct {
 	Paths []string `json:"paths"`
 
-	config.ScanMetadataOptions
+	config.ScanMetadataOptions `mapstructure:",squash"`
 
 	// Filter options for the scan
 	Filter *ScanMetaDataFilterInput `json:"filter"`
