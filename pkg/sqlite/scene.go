@@ -642,7 +642,18 @@ func (qb *SceneStore) Size(ctx context.Context) (float64, error) {
 }
 
 func (qb *SceneStore) Duration(ctx context.Context) (float64, error) {
-	q := dialect.Select(goqu.SUM(qb.queryTable().Col("duration"))).From(qb.queryTable())
+	table := qb.table()
+	videoFileTable := videoFileTableMgr.table
+
+	q := dialect.Select(
+		goqu.SUM(videoFileTable.Col("duration"))).From(table).InnerJoin(
+		scenesFilesJoinTable,
+		goqu.On(scenesFilesJoinTable.Col("scene_id").Eq(table.Col(idColumn))),
+	).InnerJoin(
+		videoFileTable,
+		goqu.On(videoFileTable.Col("file_id").Eq(scenesFilesJoinTable.Col("file_id"))),
+	)
+
 	var ret float64
 	if err := querySimple(ctx, q, &ret); err != nil {
 		return 0, err
