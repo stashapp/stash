@@ -181,7 +181,7 @@ func Destroy(ctx context.Context, destroyer Destroyer, f File, fileDeleter *Dele
 	}
 
 	// don't delete files in zip files
-	if deleteFile && f.Base().ZipFileID != nil {
+	if deleteFile && f.Base().ZipFileID == nil {
 		if err := fileDeleter.Files([]string{f.Base().Path}); err != nil {
 			return err
 		}
@@ -190,17 +190,24 @@ func Destroy(ctx context.Context, destroyer Destroyer, f File, fileDeleter *Dele
 	return nil
 }
 
-type FolderGetterDestroyer interface {
-	FolderGetter
-	FolderDestroyer
-}
-
 type ZipDestroyer struct {
-	FileDestroyer   Destroyer
+	FileDestroyer   GetterDestroyer
 	FolderDestroyer FolderGetterDestroyer
 }
 
 func (d *ZipDestroyer) DestroyZip(ctx context.Context, f File, fileDeleter *Deleter, deleteFile bool) error {
+	// destroy contained files
+	files, err := d.FileDestroyer.FindByZipFileID(ctx, f.Base().ID)
+	if err != nil {
+		return err
+	}
+
+	for _, ff := range files {
+		if err := d.FileDestroyer.Destroy(ctx, ff.Base().ID); err != nil {
+			return err
+		}
+	}
+
 	// destroy contained folders
 	folders, err := d.FolderDestroyer.FindByZipFileID(ctx, f.Base().ID)
 	if err != nil {

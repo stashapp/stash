@@ -7,7 +7,6 @@ import { useToast } from "src/hooks";
 import { ConfigurationContext } from "src/hooks/Config";
 import { FormattedMessage, useIntl } from "react-intl";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-import { galleryPath } from "src/core/galleries";
 
 interface IDeleteGalleryDialogProps {
   selected: GQL.SlimGalleryDataFragment[];
@@ -74,8 +73,14 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
       return;
     }
 
-    const fsGalleries = props.selected.filter((g) => galleryPath(g));
-    if (fsGalleries.length === 0) {
+    const deletedFiles: string[] = [];
+
+    props.selected.forEach((s) => {
+      const paths = s.files.map((f) => f.path);
+      deletedFiles.push(...paths);
+    });
+
+    if (deletedFiles.length === 0) {
       return;
     }
 
@@ -84,7 +89,7 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
         <p className="font-weight-bold">
           <FormattedMessage
             values={{
-              count: fsGalleries.length,
+              count: deletedFiles.length,
               singularEntity: intl.formatMessage({ id: "file" }),
               pluralEntity: intl.formatMessage({ id: "files" }),
             }}
@@ -92,13 +97,13 @@ export const DeleteGalleriesDialog: React.FC<IDeleteGalleryDialogProps> = (
           />
         </p>
         <ul>
-          {fsGalleries.slice(0, 5).map((s) => (
-            <li key={galleryPath(s)}>{galleryPath(s)}</li>
+          {deletedFiles.slice(0, 5).map((s) => (
+            <li key={s}>{s}</li>
           ))}
-          {fsGalleries.length > 5 && (
+          {deletedFiles.length > 5 && (
             <FormattedMessage
               values={{
-                count: fsGalleries.length - 5,
+                count: deletedFiles.length - 5,
                 singularEntity: intl.formatMessage({ id: "file" }),
                 pluralEntity: intl.formatMessage({ id: "files" }),
               }}

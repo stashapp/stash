@@ -56,6 +56,11 @@ type FolderDestroyer interface {
 	Destroy(ctx context.Context, id FolderID) error
 }
 
+type FolderGetterDestroyer interface {
+	FolderGetter
+	FolderDestroyer
+}
+
 // FolderStore provides methods to find, create and update Folders.
 type FolderStore interface {
 	FolderGetter
