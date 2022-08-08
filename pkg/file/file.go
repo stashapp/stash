@@ -177,6 +177,11 @@ type Destroyer interface {
 	Destroy(ctx context.Context, id ID) error
 }
 
+type GetterDestroyer interface {
+	Getter
+	Destroyer
+}
+
 // Store provides methods to find, create and update Files.
 type Store interface {
 	Getter
