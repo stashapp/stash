@@ -587,7 +587,8 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if galleryFilter.Checksum != nil {
-			f.addLeftJoin(fingerprintTable, "fingerprints_md5", "galleries_query.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
+			qb.addGalleriesFilesTable(f)
+			f.addLeftJoin(fingerprintTable, "fingerprints_md5", "galleries_files.file_id = fingerprints_md5.file_id AND fingerprints_md5.type = 'md5'")
 		}
 
 		stringCriterionHandler(galleryFilter.Checksum, "fingerprints_md5.fingerprint")(ctx, f)
@@ -595,19 +596,21 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if galleryFilter.IsZip != nil {
+			qb.addGalleriesFilesTable(f)
 			if *galleryFilter.IsZip {
-				f.addWhere("galleries_query.file_id IS NOT NULL")
+
+				f.addWhere("galleries_files.file_id IS NOT NULL")
 			} else {
-				f.addWhere("galleries_query.file_id IS NULL")
+				f.addWhere("galleries_files.file_id IS NULL")
 			}
 		}
 	}))
 
-	query.handleCriterion(ctx, pathCriterionHandler(galleryFilter.Path, "galleries_query.parent_folder_path", "galleries_query.basename", nil))
+	query.handleCriterion(ctx, pathCriterionHandler(galleryFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, galleryFileCountCriterionHandler(qb, galleryFilter.FileCount))
-	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating, "galleries.rating"))
+	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating, "galleries.rating", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))
-	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized"))
+	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized", nil))
 	query.handleCriterion(ctx, galleryIsMissingCriterionHandler(qb, galleryFilter.IsMissing))
 	query.handleCriterion(ctx, galleryTagsCriterionHandler(qb, galleryFilter.Tags))
 	query.handleCriterion(ctx, galleryTagCountCriterionHandler(qb, galleryFilter.TagCount))
@@ -623,6 +626,20 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	return query
 }
 
+func (qb *GalleryStore) addGalleriesFilesTable(f *filterBuilder) {
+	f.addLeftJoin(galleriesFilesTable, "", "galleries_files.gallery_id = galleries.id")
+}
+
+func (qb *GalleryStore) addFilesTable(f *filterBuilder) {
+	qb.addGalleriesFilesTable(f)
+	f.addLeftJoin(fileTable, "", "galleries_files.file_id = files.id")
+}
+
+func (qb *GalleryStore) addFoldersTable(f *filterBuilder) {
+	qb.addFilesTable(f)
+	f.addLeftJoin(folderTable, "", "files.parent_folder_id = folders.id")
+}
+
 func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) (*queryBuilder, error) {
 	if galleryFilter == nil {
 		galleryFilter = &models.GalleryFilterType{}
@@ -634,16 +651,33 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 	query := qb.newQuery()
 	distinctIDs(&query, galleryTable)
 
-	// for convenience, join with the query view
-	query.addJoins(join{
-		table:    galleriesQueryTable.GetTable(),
-		onClause: "galleries.id = galleries_query.id",
-		joinType: "INNER",
-	})
-
 	if q := findFilter.Q; q != nil && *q != "" {
+		query.addJoins(
+			join{
+				table:    galleriesFilesTable,
+				onClause: "galleries_files.gallery_id = galleries.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "galleries_files.file_id = files.id",
+			},
+			join{
+				table:    folderTable,
+				onClause: "files.parent_folder_id = folders.id",
+			},
+			join{
+				table:    fingerprintTable,
+				onClause: "files_fingerprints.file_id = galleries_files.file_id",
+			},
+			join{
+				table:    folderTable,
+				as:       "gallery_folder",
+				onClause: "galleries.folder_id = gallery_folder.id",
+			},
+		)
+
 		// add joins for files and checksum
-		searchColumns := []string{"galleries.title", "galleries_query.folder_path", "galleries_query.parent_folder_path", "galleries_query.basename", "galleries_query.fingerprint"}
+		searchColumns := []string{"galleries.title", "gallery_folder.path", "folders.path", "files.basename", "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -654,7 +688,8 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 
 	query.addFilter(filter)
 
-	query.sortAndPagination = qb.getGallerySort(findFilter) + getPagination(findFilter)
+	qb.setGallerySort(&query, findFilter)
+	query.sortAndPagination += getPagination(findFilter)
 
 	return &query, nil
 }
@@ -902,33 +937,52 @@ func galleryAverageResolutionCriterionHandler(qb *GalleryStore, resolution *mode
 	}
 }
 
-func (qb *GalleryStore) getGallerySort(findFilter *models.FindFilterType) string {
+func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.FindFilterType) {
 	if findFilter == nil || findFilter.Sort == nil || *findFilter.Sort == "" {
-		return ""
+		return
 	}
 
 	sort := findFilter.GetSort("path")
 	direction := findFilter.GetDirection()
 
-	// translate sort field
-	if sort == "file_mod_time" {
-		sort = "mod_time"
+	addFileTable := func() {
+		query.addJoins(
+			join{
+				table:    galleriesFilesTable,
+				onClause: "galleries_files.gallery_id = galleries.id",
+			},
+			join{
+				table:    fileTable,
+				onClause: "galleries_files.file_id = files.id",
+			},
+		)
 	}
 
 	switch sort {
 	case "file_count":
-		return getCountSort(galleryTable, galleriesFilesTable, galleryIDColumn, direction)
+		query.sortAndPagination += getCountSort(galleryTable, galleriesFilesTable, galleryIDColumn, direction)
 	case "images_count":
-		return getCountSort(galleryTable, galleriesImagesTable, galleryIDColumn, direction)
+		query.sortAndPagination += getCountSort(galleryTable, galleriesImagesTable, galleryIDColumn, direction)
 	case "tag_count":
-		return getCountSort(galleryTable, galleriesTagsTable, galleryIDColumn, direction)
+		query.sortAndPagination += getCountSort(galleryTable, galleriesTagsTable, galleryIDColumn, direction)
 	case "performer_count":
-		return getCountSort(galleryTable, performersGalleriesTable, galleryIDColumn, direction)
+		query.sortAndPagination += getCountSort(galleryTable, performersGalleriesTable, galleryIDColumn, direction)
 	case "path":
 		// special handling for path
-		return fmt.Sprintf(" ORDER BY galleries_query.parent_folder_path %s, galleries_query.basename %[1]s", direction)
+		addFileTable()
+		query.addJoins(
+			join{
+				table:    folderTable,
+				onClause: "files.parent_folder_id = folders.id",
+			},
+		)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
+	case "file_mod_time":
+		sort = "mod_time"
+		addFileTable()
+		query.sortAndPagination += getSort(sort, direction, fileTable)
 	default:
-		return getSort(sort, direction, "galleries_query")
+		query.sortAndPagination += getSort(sort, direction, "galleries")
 	}
 }
 

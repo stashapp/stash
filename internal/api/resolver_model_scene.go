@@ -164,7 +164,7 @@ func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []
 
 func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) (ret []*models.Gallery, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Gallery.FindBySceneID(ctx, obj.ID)
+		ret, err = r.repository.Gallery.FindMany(ctx, obj.GalleryIDs)
 		return err
 	}); err != nil {
 		return nil, err
@@ -216,7 +216,7 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*S
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*models.Tag, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Tag.FindBySceneID(ctx, obj.ID)
+		ret, err = r.repository.Tag.FindMany(ctx, obj.TagIDs)
 		return err
 	}); err != nil {
 		return nil, err
@@ -227,7 +227,7 @@ func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*mod
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret []*models.Performer, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Performer.FindBySceneID(ctx, obj.ID)
+		ret, err = r.repository.Performer.FindMany(ctx, obj.PerformerIDs)
 		return err
 	}); err != nil {
 		return nil, err

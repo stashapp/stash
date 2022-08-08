@@ -516,7 +516,7 @@ func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not
 	return ret
 }
 
-func intCriterionHandler(c *models.IntCriterionInput, column string) criterionHandlerFunc {
+func intCriterionHandler(c *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
 			clause, args := getIntCriterionWhereClause(column, *c)
@@ -525,9 +525,12 @@ func intCriterionHandler(c *models.IntCriterionInput, column string) criterionHa
 	}
 }
 
-func boolCriterionHandler(c *bool, column string) criterionHandlerFunc {
+func boolCriterionHandler(c *bool, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
 			var v string
 			if *c {
 				v = "1"

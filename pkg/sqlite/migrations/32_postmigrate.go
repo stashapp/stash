@@ -209,7 +209,7 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 
 					_, err = m.db.Exec("UPDATE `files` SET `parent_folder_id` = ?, `zip_file_id` = ?, `basename` = ? WHERE `id` = ?", parentID, zipFileID, basename, id)
 					if err != nil {
-						return err
+						return fmt.Errorf("migrating file %s: %w", p, err)
 					}
 				}
 
@@ -277,9 +277,22 @@ func (m *schema32Migrator) createFolderHierarchy(p string) (*int, sql.NullInt64,
 		return m.getOrCreateFolder(p, nil, sql.NullInt64{})
 	}
 
-	parentID, zipFileID, err := m.createFolderHierarchy(parent)
-	if err != nil {
-		return nil, sql.NullInt64{}, err
+	var (
+		parentID  *int
+		zipFileID sql.NullInt64
+		err       error
+	)
+
+	// try to find parent folder in cache first
+	foundEntry, ok := m.folderCache[parent]
+	if ok {
+		parentID = &foundEntry.id
+		zipFileID = foundEntry.zipID
+	} else {
+		parentID, zipFileID, err = m.createFolderHierarchy(parent)
+		if err != nil {
+			return nil, sql.NullInt64{}, err
+		}
 	}
 
 	return m.getOrCreateFolder(p, parentID, zipFileID)
@@ -323,12 +336,12 @@ func (m *schema32Migrator) getOrCreateFolder(path string, parentID *int, zipFile
 	now := time.Now()
 	result, err := m.db.Exec(insertSQL, path, parentFolderID, zipFileID, time.Time{}, now, now)
 	if err != nil {
-		return nil, sql.NullInt64{}, err
+		return nil, sql.NullInt64{}, fmt.Errorf("creating folder %s: %w", path, err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		return nil, sql.NullInt64{}, err
+		return nil, sql.NullInt64{}, fmt.Errorf("creating folder %s: %w", path, err)
 	}
 
 	idInt := int(id)
