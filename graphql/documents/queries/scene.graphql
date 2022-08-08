@@ -4,7 +4,7 @@ query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene
     filesize
     duration
     scenes {
-      ...SceneData
+      ...SlimSceneData
     }
   }
 }
