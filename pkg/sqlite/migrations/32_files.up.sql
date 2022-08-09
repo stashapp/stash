@@ -542,45 +542,6 @@ PRAGMA foreign_keys=ON;
 
 -- create views to simplify queries
 
-CREATE VIEW `images_query` AS 
-  SELECT 
-    `images`.`id`,
-    `images`.`title`,
-    `images`.`rating`,
-    `images`.`organized`,
-    `images`.`o_counter`,
-    `images`.`studio_id`,
-    `images`.`created_at`,
-    `images`.`updated_at`,
-    `galleries_images`.`gallery_id`,
-    `images_tags`.`tag_id`,
-    `performers_images`.`performer_id`,
-    `image_files`.`format` as `image_format`,
-    `image_files`.`width` as `image_width`,
-    `image_files`.`height` as `image_height`,
-    `files`.`id` as `file_id`,
-    `files`.`basename`,
-    `files`.`size`,
-    `files`.`mod_time`,
-    `files`.`zip_file_id`,
-    `folders`.`id` as `parent_folder_id`,
-    `folders`.`path` as `parent_folder_path`,
-    `zip_files`.`basename` as `zip_basename`,
-    `zip_files_folders`.`path` as `zip_folder_path`,
-    `files_fingerprints`.`type` as `fingerprint_type`,
-    `files_fingerprints`.`fingerprint`
-  FROM `images`
-  LEFT JOIN `performers_images` ON (`images`.`id` = `performers_images`.`image_id`) 
-  LEFT JOIN `galleries_images` ON (`images`.`id` = `galleries_images`.`image_id`) 
-  LEFT JOIN `images_tags` ON (`images`.`id` = `images_tags`.`image_id`)
-  LEFT JOIN `images_files` ON (`images`.`id` = `images_files`.`image_id`) 
-  LEFT JOIN `image_files` ON (`images_files`.`file_id` = `image_files`.`file_id`) 
-  LEFT JOIN `files` ON (`images_files`.`file_id` = `files`.`id`) 
-  LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
-  LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
-  LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
-  LEFT JOIN `files_fingerprints` ON (`images_files`.`file_id` = `files_fingerprints`.`file_id`);
-
 CREATE VIEW `galleries_query` AS 
   SELECT 
     `galleries`.`id`,
