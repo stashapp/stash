@@ -9,6 +9,10 @@ fragment SceneData on Scene {
   organized
   interactive
   interactive_speed
+  captions {
+    language_code
+    caption_type
+  }
   created_at
   updated_at
 
