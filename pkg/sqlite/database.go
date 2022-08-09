@@ -76,13 +76,14 @@ type Database struct {
 
 func NewDatabase() *Database {
 	fileStore := NewFileStore()
+	folderStore := NewFolderStore()
 
 	ret := &Database{
 		File:    fileStore,
-		Folder:  NewFolderStore(),
+		Folder:  folderStore,
 		Scene:   NewSceneStore(fileStore),
 		Image:   NewImageStore(fileStore),
-		Gallery: NewGalleryStore(),
+		Gallery: NewGalleryStore(fileStore, folderStore),
 	}
 
 	return ret

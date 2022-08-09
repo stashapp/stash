@@ -13,7 +13,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
@@ -59,6 +58,23 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.UpdatedAt = o.UpdatedAt
 }
 
+func (r *galleryRow) resolve() *models.Gallery {
+	return &models.Gallery{
+		ID:        r.ID,
+		Title:     r.Title.String,
+		URL:       r.URL.String,
+		Date:      r.Date.DatePtr(),
+		Details:   r.Details.String,
+		Rating:    nullIntPtr(r.Rating),
+		Organized: r.Organized,
+		StudioID:  nullIntPtr(r.StudioID),
+		FolderID:  nullIntFolderIDPtr(r.FolderID),
+		// FolderPath: r.FolderPath.String,
+		CreatedAt: r.CreatedAt,
+		UpdatedAt: r.UpdatedAt,
+	}
+}
+
 type galleryRowRecord struct {
 	updateRecord
 }
@@ -75,122 +91,29 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setTime("updated_at", o.UpdatedAt)
 }
 
-type galleryQueryRow struct {
-	galleryRow
-
-	relatedFileQueryRow
-
-	FolderPath null.String `db:"folder_path"`
-
-	SceneID     null.Int `db:"scene_id"`
-	TagID       null.Int `db:"tag_id"`
-	PerformerID null.Int `db:"performer_id"`
-}
-
-func (r *galleryQueryRow) resolve() *models.Gallery {
-	ret := &models.Gallery{
-		ID:         r.ID,
-		Title:      r.Title.String,
-		URL:        r.URL.String,
-		Date:       r.Date.DatePtr(),
-		Details:    r.Details.String,
-		Rating:     nullIntPtr(r.Rating),
-		Organized:  r.Organized,
-		StudioID:   nullIntPtr(r.StudioID),
-		FolderID:   nullIntFolderIDPtr(r.FolderID),
-		FolderPath: r.FolderPath.String,
-		CreatedAt:  r.CreatedAt,
-		UpdatedAt:  r.UpdatedAt,
-	}
-
-	r.appendRelationships(ret)
-
-	return ret
-}
-
-func appendFileUnique(vs []file.File, toAdd file.File, isPrimary bool) []file.File {
-	// check in reverse, since it's most likely to be the last one
-	for i := len(vs) - 1; i >= 0; i-- {
-		if vs[i].Base().ID == toAdd.Base().ID {
-
-			// merge the two
-			mergeFiles(vs[i], toAdd)
-			return vs
-		}
-	}
-
-	if !isPrimary {
-		return append(vs, toAdd)
-	}
-
-	// primary should be first
-	return append([]file.File{toAdd}, vs...)
-}
-
-func (r *galleryQueryRow) appendRelationships(i *models.Gallery) {
-	if r.TagID.Valid {
-		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, int(r.TagID.Int64))
-	}
-	if r.PerformerID.Valid {
-		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, int(r.PerformerID.Int64))
-	}
-	if r.SceneID.Valid {
-		i.SceneIDs = intslice.IntAppendUnique(i.SceneIDs, int(r.SceneID.Int64))
-	}
-
-	if r.relatedFileQueryRow.FileID.Valid {
-		f := r.fileQueryRow.resolve()
-		i.Files = appendFileUnique(i.Files, f, r.Primary.Bool)
-	}
-}
-
-type galleryQueryRows []galleryQueryRow
-
-func (r galleryQueryRows) resolve() []*models.Gallery {
-	var ret []*models.Gallery
-	var last *models.Gallery
-	var lastID int
-
-	for _, row := range r {
-		if last == nil || lastID != row.ID {
-			f := row.resolve()
-			last = f
-			lastID = row.ID
-			ret = append(ret, last)
-			continue
-		}
-
-		// must be merging with previous row
-		row.appendRelationships(last)
-	}
-
-	return ret
-}
-
 type GalleryStore struct {
 	repository
 
-	tableMgr      *table
-	queryTableMgr *table
+	tableMgr *table
+
+	fileStore   *FileStore
+	folderStore *FolderStore
 }
 
-func NewGalleryStore() *GalleryStore {
+func NewGalleryStore(fileStore *FileStore, folderStore *FolderStore) *GalleryStore {
 	return &GalleryStore{
 		repository: repository{
 			tableName: galleryTable,
 			idColumn:  idColumn,
 		},
-		tableMgr:      galleryTableMgr,
-		queryTableMgr: galleryQueryTableMgr,
+		tableMgr:    galleryTableMgr,
+		fileStore:   fileStore,
+		folderStore: folderStore,
 	}
 }
 
 func (qb *GalleryStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
-}
-
-func (qb *GalleryStore) queryTable() exp.IdentifierExpression {
-	return qb.queryTableMgr.table
 }
 
 func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, fileIDs []file.ID) error {
@@ -298,7 +221,7 @@ func (qb *GalleryStore) Destroy(ctx context.Context, id int) error {
 }
 
 func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
-	return dialect.From(galleriesQueryTable).Select(galleriesQueryTable.All())
+	return dialect.From(qb.table()).Select(qb.table().All())
 }
 
 func (qb *GalleryStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Gallery, error) {
@@ -316,24 +239,88 @@ func (qb *GalleryStore) get(ctx context.Context, q *goqu.SelectDataset) (*models
 
 func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Gallery, error) {
 	const single = false
-	var rows galleryQueryRows
+	var ret []*models.Gallery
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
-		var f galleryQueryRow
+		var f galleryRow
 		if err := r.StructScan(&f); err != nil {
 			return err
 		}
 
-		rows = append(rows, f)
+		s := f.resolve()
+
+		if err := qb.resolveRelationships(ctx, s); err != nil {
+			return err
+		}
+
+		ret = append(ret, s)
 		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	return rows.resolve(), nil
+	return ret, nil
+}
+
+func (qb *GalleryStore) resolveRelationships(ctx context.Context, s *models.Gallery) error {
+	var err error
+
+	// files
+	s.Files, err = qb.getFiles(ctx, s.ID)
+	if err != nil {
+		return fmt.Errorf("resolving gallery files: %w", err)
+	}
+
+	// folder
+	if s.FolderID != nil {
+		folder, err := qb.folderStore.Find(ctx, *s.FolderID)
+		if err != nil {
+			return fmt.Errorf("resolving gallery folder: %w", err)
+		}
+
+		s.FolderPath = folder.Path
+	}
+
+	// performers
+	s.PerformerIDs, err = qb.performersRepository().getIDs(ctx, s.ID)
+	if err != nil {
+		return fmt.Errorf("resolving gallery performers: %w", err)
+	}
+
+	// tags
+	s.TagIDs, err = qb.tagsRepository().getIDs(ctx, s.ID)
+	if err != nil {
+		return fmt.Errorf("resolving gallery tags: %w", err)
+	}
+
+	// scenes
+	s.SceneIDs, err = qb.scenesRepository().getIDs(ctx, s.ID)
+	if err != nil {
+		return fmt.Errorf("resolving gallery scenes: %w", err)
+	}
+
+	return nil
+}
+
+func (qb *GalleryStore) getFiles(ctx context.Context, id int) ([]file.File, error) {
+	fileIDs, err := qb.filesRepository().get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// use fileStore to load files
+	files, err := qb.fileStore.Find(ctx, fileIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]file.File, len(files))
+	copy(ret, files)
+
+	return ret, nil
 }
 
 func (qb *GalleryStore) Find(ctx context.Context, id int) (*models.Gallery, error) {
-	q := qb.selectDataset().Where(qb.queryTableMgr.byID(id))
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
@@ -362,7 +349,7 @@ func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gall
 }
 
 func (qb *GalleryStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Gallery, error) {
-	table := qb.queryTable()
+	table := qb.table()
 
 	q := qb.selectDataset().Prepared(true).Where(
 		table.Col(idColumn).Eq(
@@ -986,6 +973,16 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	}
 }
 
+func (qb *GalleryStore) filesRepository() *filesRepository {
+	return &filesRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: galleriesFilesTable,
+			idColumn:  galleryIDColumn,
+		},
+	}
+}
+
 func (qb *GalleryStore) performersRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
@@ -1026,4 +1023,15 @@ func (qb *GalleryStore) GetImageIDs(ctx context.Context, galleryID int) ([]int, 
 func (qb *GalleryStore) UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.imagesRepository().replace(ctx, galleryID, imageIDs)
+}
+
+func (qb *GalleryStore) scenesRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: galleriesScenesTable,
+			idColumn:  galleryIDColumn,
+		},
+		fkColumn: sceneIDColumn,
+	}
 }

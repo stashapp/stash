@@ -250,12 +250,6 @@ func (r *fileQueryRow) appendRelationships(i *file.BaseFile) {
 	}
 }
 
-func mergeFiles(dest file.File, src file.File) {
-	if src.Base().Fingerprints != nil {
-		dest.Base().Fingerprints = appendFingerprintsUnique(dest.Base().Fingerprints, src.Base().Fingerprints...)
-	}
-}
-
 type fileQueryRows []fileQueryRow
 
 func (r fileQueryRows) resolve() []file.File {
@@ -277,11 +271,6 @@ func (r fileQueryRows) resolve() []file.File {
 	}
 
 	return ret
-}
-
-type relatedFileQueryRow struct {
-	fileQueryRow
-	Primary null.Bool `db:"primary"`
 }
 
 type FileStore struct {
