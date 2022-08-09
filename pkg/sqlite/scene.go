@@ -392,18 +392,23 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 }
 
 func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
-	var scenes []*models.Scene
-	for _, id := range ids {
-		scene, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
+	q := qb.selectDataset().Prepared(true).Where(scenesQueryTable.Col(idColumn).In(ids))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
 
-		if scene == nil {
-			return nil, fmt.Errorf("scene with id %d not found", id)
-		}
+	scenes := make([]*models.Scene, len(ids))
 
-		scenes = append(scenes, scene)
+	for _, s := range unsorted {
+		i := intslice.IntIndex(ids, s.ID)
+		scenes[i] = s
+	}
+
+	for i := range scenes {
+		if scenes[i] == nil {
+			return nil, fmt.Errorf("scene with id %d not found", ids[i])
+		}
 	}
 
 	return scenes, nil
