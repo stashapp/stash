@@ -70,6 +70,19 @@ func (*dbWrapper) Queryx(ctx context.Context, query string, args ...interface{})
 	return ret, err
 }
 
+func (*dbWrapper) QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
+	tx, err := getDBReader(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	start := time.Now()
+	ret, err := tx.QueryxContext(ctx, query, args...)
+	logSQL(start, query, args...)
+
+	return ret, err
+}
+
 func (*dbWrapper) NamedExec(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
 	tx, err := getTx(ctx)
 	if err != nil {
