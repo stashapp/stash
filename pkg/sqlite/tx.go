@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -31,80 +32,88 @@ func logSQL(start time.Time, query string, args ...interface{}) {
 
 type dbWrapper struct{}
 
+func sqlError(err error, sql string, args ...interface{}) error {
+	if err == nil {
+		return nil
+	}
+
+	return fmt.Errorf("error executing `%s` [%v]: %w", sql, args, err)
+}
+
 func (*dbWrapper) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
 	tx, err := getDBReader(ctx)
 	if err != nil {
-		return err
+		return sqlError(err, query, args...)
 	}
 
 	start := time.Now()
 	err = tx.Get(dest, query, args...)
 	logSQL(start, query, args...)
 
-	return err
+	return sqlError(err, query, args...)
 }
 
 func (*dbWrapper) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
 	tx, err := getDBReader(ctx)
 	if err != nil {
-		return err
+		return sqlError(err, query, args...)
 	}
 
 	start := time.Now()
 	err = tx.Select(dest, query, args...)
 	logSQL(start, query, args...)
 
-	return err
+	return sqlError(err, query, args...)
 }
 
 func (*dbWrapper) Queryx(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
 	tx, err := getDBReader(ctx)
 	if err != nil {
-		return nil, err
+		return nil, sqlError(err, query, args...)
 	}
 
 	start := time.Now()
 	ret, err := tx.Queryx(query, args...)
 	logSQL(start, query, args...)
 
-	return ret, err
+	return ret, sqlError(err, query, args...)
 }
 
 func (*dbWrapper) QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
 	tx, err := getDBReader(ctx)
 	if err != nil {
-		return nil, err
+		return nil, sqlError(err, query, args...)
 	}
 
 	start := time.Now()
 	ret, err := tx.QueryxContext(ctx, query, args...)
 	logSQL(start, query, args...)
 
-	return ret, err
+	return ret, sqlError(err, query, args...)
 }
 
 func (*dbWrapper) NamedExec(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
 	tx, err := getTx(ctx)
 	if err != nil {
-		return nil, err
+		return nil, sqlError(err, query, arg)
 	}
 
 	start := time.Now()
 	ret, err := tx.NamedExec(query, arg)
 	logSQL(start, query, arg)
 
-	return ret, err
+	return ret, sqlError(err, query, arg)
 }
 
 func (*dbWrapper) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	tx, err := getTx(ctx)
 	if err != nil {
-		return nil, err
+		return nil, sqlError(err, query, args...)
 	}
 
 	start := time.Now()
 	ret, err := tx.Exec(query, args...)
 	logSQL(start, query, args...)
 
-	return ret, err
+	return ret, sqlError(err, query, args...)
 }

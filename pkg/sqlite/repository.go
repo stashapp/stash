@@ -32,6 +32,11 @@ func (r *repository) getByID(ctx context.Context, id int, dest interface{}) erro
 	return r.tx.Get(ctx, dest, stmt, id)
 }
 
+func (r *repository) getAll(ctx context.Context, id int, f func(rows *sqlx.Rows) error) error {
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", r.tableName, r.idColumn)
+	return r.queryFunc(ctx, stmt, []interface{}{id}, false, f)
+}
+
 func (r *repository) insert(ctx context.Context, obj interface{}) (sql.Result, error) {
 	stmt := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", r.tableName, listKeys(obj, false), listKeys(obj, true))
 	return r.tx.NamedExec(ctx, stmt, obj)
@@ -466,6 +471,41 @@ func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []*model
 		}
 	}
 	return nil
+}
+
+type filesRepository struct {
+	repository
+}
+
+func (r *filesRepository) get(ctx context.Context, id int) ([]file.ID, error) {
+	query := fmt.Sprintf("SELECT file_id, `primary` from %s WHERE %s = ?", r.tableName, r.idColumn)
+
+	type relatedFile struct {
+		FileID  file.ID `db:"file_id"`
+		Primary bool    `db:"primary"`
+	}
+
+	var ret []file.ID
+	if err := r.queryFunc(ctx, query, []interface{}{id}, false, func(rows *sqlx.Rows) error {
+		var f relatedFile
+
+		if err := rows.StructScan(&f); err != nil {
+			return err
+		}
+
+		if f.Primary {
+			// prepend to list
+			ret = append([]file.ID{f.FileID}, ret...)
+		} else {
+			ret = append(ret, f.FileID)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func listKeys(i interface{}, addPrefix bool) string {

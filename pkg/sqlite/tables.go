@@ -15,7 +15,6 @@ var (
 	imagesFilesJoinTable      = goqu.T(imagesFilesTable)
 	imagesQueryTable          = goqu.T("images_query")
 	galleriesQueryTable       = goqu.T("galleries_query")
-	scenesQueryTable          = goqu.T("scenes_query")
 
 	galleriesFilesJoinTable      = goqu.T(galleriesFilesTable)
 	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
@@ -119,11 +118,6 @@ var (
 	sceneTableMgr = &table{
 		table:    goqu.T(sceneTable),
 		idColumn: goqu.T(sceneTable).Col(idColumn),
-	}
-
-	sceneQueryTableMgr = &table{
-		table:    scenesQueryTable,
-		idColumn: scenesQueryTable.Col(idColumn),
 	}
 
 	scenesFilesTableMgr = &relatedFilesTable{

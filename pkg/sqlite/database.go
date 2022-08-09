@@ -75,13 +75,15 @@ type Database struct {
 }
 
 func NewDatabase() *Database {
-	return &Database{
+	ret := &Database{
 		File:    NewFileStore(),
 		Folder:  NewFolderStore(),
 		Image:   NewImageStore(),
 		Gallery: NewGalleryStore(),
-		Scene:   NewSceneStore(),
 	}
+
+	ret.Scene = NewSceneStore(ret.File)
+	return ret
 }
 
 // Ready returns an error if the database is not ready to begin transactions.

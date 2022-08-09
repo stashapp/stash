@@ -361,6 +361,7 @@ type scenesMoviesTable struct {
 }
 
 type moviesScenesRow struct {
+	SceneID    null.Int `db:"scene_id"`
 	MovieID    null.Int `db:"movie_id"`
 	SceneIndex null.Int `db:"scene_index"`
 }
