@@ -13,6 +13,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"gopkg.in/guregu/null.v4"
 	"gopkg.in/guregu/null.v4/zero"
 )
@@ -331,18 +332,23 @@ func (qb *GalleryStore) Find(ctx context.Context, id int) (*models.Gallery, erro
 }
 
 func (qb *GalleryStore) FindMany(ctx context.Context, ids []int) ([]*models.Gallery, error) {
-	var galleries []*models.Gallery
-	for _, id := range ids {
-		gallery, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(ids))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
 
-		if gallery == nil {
-			return nil, fmt.Errorf("gallery with id %d not found", id)
-		}
+	galleries := make([]*models.Gallery, len(ids))
 
-		galleries = append(galleries, gallery)
+	for _, s := range unsorted {
+		i := intslice.IntIndex(ids, s.ID)
+		galleries[i] = s
+	}
+
+	for i := range galleries {
+		if galleries[i] == nil {
+			return nil, fmt.Errorf("gallery with id %d not found", ids[i])
+		}
 	}
 
 	return galleries, nil
