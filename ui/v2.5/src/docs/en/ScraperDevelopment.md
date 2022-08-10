@@ -368,6 +368,15 @@ Height and weight are extracted from the selected spans and converted to `cm` an
 
 * `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`). Strings "Today", "Yesterday" are matched (case insensitive) and converted by the scraper so you don't need to edit/replace them.
 
+Unix timestamps (example: 1660169451) can also be parsed by selecting `unix` as the date format.
+Example:
+```yaml
+Date:
+  selector: //div[@class="value epoch"]/text()
+  postProcess:
+    - parseDate: unix
+```
+
 * `subtractDays`: if set to `true` it subtracts the value in days from the current date and returns the resulting date in stash's date format.
 Example:
 ```yaml
