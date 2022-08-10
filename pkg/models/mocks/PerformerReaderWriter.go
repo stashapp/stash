@@ -360,22 +360,22 @@ func (_m *PerformerReaderWriter) GetImage(ctx context.Context, performerID int) 
 	return r0, r1
 }
 
-// GetStashIDs provides a mock function with given fields: ctx, performerID
-func (_m *PerformerReaderWriter) GetStashIDs(ctx context.Context, performerID int) ([]*models.StashID, error) {
-	ret := _m.Called(ctx, performerID)
+// GetStashIDs provides a mock function with given fields: ctx, relatedID
+func (_m *PerformerReaderWriter) GetStashIDs(ctx context.Context, relatedID int) ([]models.StashID, error) {
+	ret := _m.Called(ctx, relatedID)
 
-	var r0 []*models.StashID
-	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.StashID); ok {
-		r0 = rf(ctx, performerID)
+	var r0 []models.StashID
+	if rf, ok := ret.Get(0).(func(context.Context, int) []models.StashID); ok {
+		r0 = rf(ctx, relatedID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.StashID)
+			r0 = ret.Get(0).([]models.StashID)
 		}
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = rf(ctx, performerID)
+		r1 = rf(ctx, relatedID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -520,11 +520,11 @@ func (_m *PerformerReaderWriter) UpdateImage(ctx context.Context, performerID in
 }
 
 // UpdateStashIDs provides a mock function with given fields: ctx, performerID, stashIDs
-func (_m *PerformerReaderWriter) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []*models.StashID) error {
+func (_m *PerformerReaderWriter) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error {
 	ret := _m.Called(ctx, performerID, stashIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, []*models.StashID) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int, []models.StashID) error); ok {
 		r0 = rf(ctx, performerID, stashIDs)
 	} else {
 		r0 = ret.Error(0)

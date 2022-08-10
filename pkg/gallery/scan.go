@@ -11,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 // const mutexType = "gallery"
@@ -26,6 +25,7 @@ type FinderCreatorUpdater interface {
 type SceneFinderUpdater interface {
 	FindByPath(ctx context.Context, p string) ([]*models.Scene, error)
 	Update(ctx context.Context, updatedScene *models.Scene) error
+	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 }
 
 type ScanHandler struct {
@@ -122,13 +122,8 @@ func (h *ScanHandler) associateScene(ctx context.Context, existing []*models.Gal
 
 	for _, scene := range scenes {
 		// found related Scene
-		newIDs := intslice.IntAppendUniques(scene.GalleryIDs, galleryIDs)
-		if len(newIDs) > len(scene.GalleryIDs) {
-			logger.Infof("associate: Gallery %s is related to scene: %s", f.Base().Path, scene.GetTitle())
-			scene.GalleryIDs = newIDs
-			if err := h.SceneFinderUpdater.Update(ctx, scene); err != nil {
-				return err
-			}
+		if err := h.SceneFinderUpdater.AddGalleryIDs(ctx, scene.ID, galleryIDs); err != nil {
+			return err
 		}
 	}
 

@@ -96,6 +96,7 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 					},
 				},
 			},
+			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 

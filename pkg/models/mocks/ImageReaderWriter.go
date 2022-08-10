@@ -197,29 +197,6 @@ func (_m *ImageReaderWriter) FindByGalleryID(ctx context.Context, galleryID int)
 	return r0, r1
 }
 
-// FindByPath provides a mock function with given fields: ctx, path
-func (_m *ImageReaderWriter) FindByPath(ctx context.Context, path string) ([]*models.Image, error) {
-	ret := _m.Called(ctx, path)
-
-	var r0 []*models.Image
-	if rf, ok := ret.Get(0).(func(context.Context, string) []*models.Image); ok {
-		r0 = rf(ctx, path)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Image)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, path)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FindMany provides a mock function with given fields: ctx, ids
 func (_m *ImageReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.Image, error) {
 	ret := _m.Called(ctx, ids)

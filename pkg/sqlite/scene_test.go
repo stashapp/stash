@@ -21,6 +21,36 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *models.Scene) error {
+	if expected.GalleryIDs.Loaded() {
+		if err := actual.LoadGalleryIDs(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
+	if expected.TagIDs.Loaded() {
+		if err := actual.LoadTagIDs(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
+	if expected.PerformerIDs.Loaded() {
+		if err := actual.LoadPerformerIDs(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
+	if expected.Movies.Loaded() {
+		if err := actual.LoadMovies(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
+	if expected.StashIDs.Loaded() {
+		if err := actual.LoadStashIDs(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func Test_sceneQueryBuilder_Create(t *testing.T) {
 	var (
 		title       = "title"
@@ -60,10 +90,10 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				StudioID:     &studioIDs[studioIdxWithScene],
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
-				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
-				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
-				Movies: []models.MoviesScenes{
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
 						MovieID:    movieIDs[movieIdxWithScene],
 						SceneIndex: &sceneIndex,
@@ -72,8 +102,8 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						MovieID:    movieIDs[movieIdxWithStudio],
 						SceneIndex: &sceneIndex2,
 					},
-				},
-				StashIDs: []models.StashID{
+				}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						StashID:  stashID1,
 						Endpoint: endpoint1,
@@ -82,7 +112,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						StashID:  stashID2,
 						Endpoint: endpoint2,
 					},
-				},
+				}),
 				Files: []*file.VideoFile{},
 			},
 			false,
@@ -103,10 +133,10 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				},
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
-				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
-				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
-				Movies: []models.MoviesScenes{
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
 						MovieID:    movieIDs[movieIdxWithScene],
 						SceneIndex: &sceneIndex,
@@ -115,8 +145,8 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						MovieID:    movieIDs[movieIdxWithStudio],
 						SceneIndex: &sceneIndex2,
 					},
-				},
-				StashIDs: []models.StashID{
+				}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						StashID:  stashID1,
 						Endpoint: endpoint1,
@@ -125,7 +155,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						StashID:  stashID2,
 						Endpoint: endpoint2,
 					},
-				},
+				}),
 			},
 			false,
 		},
@@ -139,33 +169,33 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		{
 			"invalid gallery id",
 			models.Scene{
-				GalleryIDs: []int{invalidID},
+				GalleryIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
 		{
 			"invalid tag id",
 			models.Scene{
-				TagIDs: []int{invalidID},
+				TagIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
 		{
 			"invalid performer id",
 			models.Scene{
-				PerformerIDs: []int{invalidID},
+				PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
 		{
 			"invalid movie id",
 			models.Scene{
-				Movies: []models.MoviesScenes{
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
 						MovieID:    invalidID,
 						SceneIndex: &sceneIndex,
 					},
-				},
+				}),
 			},
 			true,
 		},
@@ -197,6 +227,12 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 			copy := tt.newObject
 			copy.ID = s.ID
 
+			// load relationships
+			if err := loadSceneRelationships(ctx, copy, &s); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+
 			assert.Equal(copy, s)
 
 			// ensure can find the scene
@@ -206,6 +242,12 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 			}
 
 			if !assert.NotNil(found) {
+				return
+			}
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, copy, found); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
 				return
 			}
 			assert.Equal(copy, *found)
@@ -268,10 +310,10 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				StudioID:     &studioIDs[studioIdxWithScene],
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
-				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
-				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
-				Movies: []models.MoviesScenes{
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
 						MovieID:    movieIDs[movieIdxWithScene],
 						SceneIndex: &sceneIndex,
@@ -280,8 +322,8 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 						MovieID:    movieIDs[movieIdxWithStudio],
 						SceneIndex: &sceneIndex2,
 					},
-				},
-				StashIDs: []models.StashID{
+				}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						StashID:  stashID1,
 						Endpoint: endpoint1,
@@ -290,7 +332,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 						StashID:  stashID2,
 						Endpoint: endpoint2,
 					},
-				},
+				}),
 			},
 			false,
 		},
@@ -301,11 +343,11 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithSpacedName),
 				},
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
-				Movies:       []models.MoviesScenes{},
-				StashIDs:     []models.StashID{},
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 			},
 			false,
 		},
@@ -316,11 +358,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithGallery),
 				},
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
-				Movies:       []models.MoviesScenes{},
-				StashIDs:     []models.StashID{},
+				GalleryIDs: models.NewRelatedIDs([]int{}),
 			},
 			false,
 		},
@@ -331,11 +369,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithTag),
 				},
-				TagIDs:       []int{},
-				GalleryIDs:   []int{},
-				PerformerIDs: []int{},
-				Movies:       []models.MoviesScenes{},
-				StashIDs:     []models.StashID{},
+				TagIDs: models.NewRelatedIDs([]int{}),
 			},
 			false,
 		},
@@ -346,11 +380,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithPerformer),
 				},
-				PerformerIDs: []int{},
-				TagIDs:       []int{},
-				GalleryIDs:   []int{},
-				Movies:       []models.MoviesScenes{},
-				StashIDs:     []models.StashID{},
+				PerformerIDs: models.NewRelatedIDs([]int{}),
 			},
 			false,
 		},
@@ -361,11 +391,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithMovie),
 				},
-				Movies:       []models.MoviesScenes{},
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
-				StashIDs:     []models.StashID{},
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
 			},
 			false,
 		},
@@ -376,12 +402,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithGallery),
 				},
-				StudioID:     &invalidID,
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
-				Movies:       []models.MoviesScenes{},
-				StashIDs:     []models.StashID{},
+				StudioID: &invalidID,
 			},
 			true,
 		},
@@ -392,7 +413,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithGallery),
 				},
-				GalleryIDs: []int{invalidID},
+				GalleryIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
@@ -403,7 +424,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithGallery),
 				},
-				TagIDs: []int{invalidID},
+				TagIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
@@ -414,7 +435,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithGallery),
 				},
-				PerformerIDs: []int{invalidID},
+				PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
@@ -425,12 +446,12 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFileWithID(sceneIdxWithSpacedName),
 				},
-				Movies: []models.MoviesScenes{
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
 						MovieID:    invalidID,
 						SceneIndex: &sceneIndex,
 					},
-				},
+				}),
 			},
 			true,
 		},
@@ -454,6 +475,12 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			s, err := qb.Find(ctx, tt.updatedObject.ID)
 			if err != nil {
 				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, copy, s); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
 			}
 
 			assert.Equal(copy, *s)
@@ -571,10 +598,10 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				StudioID:     &studioIDs[studioIdxWithScene],
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
-				GalleryIDs:   []int{galleryIDs[galleryIdxWithScene]},
-				TagIDs:       []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs: []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
-				Movies: []models.MoviesScenes{
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
 						MovieID:    movieIDs[movieIdxWithScene],
 						SceneIndex: &sceneIndex,
@@ -583,8 +610,8 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 						MovieID:    movieIDs[movieIdxWithStudio],
 						SceneIndex: &sceneIndex2,
 					},
-				},
-				StashIDs: []models.StashID{
+				}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						StashID:  stashID1,
 						Endpoint: endpoint1,
@@ -593,7 +620,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 						StashID:  stashID2,
 						Endpoint: endpoint2,
 					},
-				},
+				}),
 			},
 			false,
 		},
@@ -606,11 +633,11 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				Files: []*file.VideoFile{
 					makeSceneFile(sceneIdxWithSpacedName),
 				},
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
-				Movies:       []models.MoviesScenes{},
-				StashIDs:     []models.StashID{},
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 			},
 			false,
 		},
@@ -641,6 +668,12 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			// ignore file ids
 			clearSceneFileIDs(got)
 
+			// load relationships
+			if err := loadSceneRelationships(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+
 			assert.Equal(tt.want, *got)
 
 			s, err := qb.Find(ctx, tt.id)
@@ -650,6 +683,12 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 
 			// ignore file ids
 			clearSceneFileIDs(s)
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, tt.want, s); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
 
 			assert.Equal(tt.want, *s)
 		})
@@ -705,10 +744,10 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				GalleryIDs: append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
+				GalleryIDs: models.NewRelatedIDs(append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
 					galleryIDs[galleryIdx1WithImage],
 					galleryIDs[galleryIdx1WithPerformer],
-				),
+				)),
 			},
 			false,
 		},
@@ -722,10 +761,10 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				TagIDs: append(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
+				TagIDs: models.NewRelatedIDs(append(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
 					tagIDs[tagIdx1WithDupName],
 					tagIDs[tagIdx1WithGallery],
-				),
+				)),
 			},
 			false,
 		},
@@ -739,10 +778,10 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				PerformerIDs: append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+				PerformerIDs: models.NewRelatedIDs(append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
 					performerIDs[performerIdx1WithDupName],
 					performerIDs[performerIdx1WithGallery],
-				),
+				)),
 			},
 			false,
 		},
@@ -756,11 +795,11 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				Movies: append([]models.MoviesScenes{
+				Movies: models.NewRelatedMovies(append([]models.MoviesScenes{
 					{
 						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
 					},
-				}, movieScenes...),
+				}, movieScenes...)),
 			},
 			false,
 		},
@@ -774,7 +813,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				StashIDs: append([]models.StashID{sceneStashID(sceneIdxWithSpacedName)}, stashIDs...),
+				StashIDs: models.NewRelatedStashIDs(append([]models.StashID{sceneStashID(sceneIdxWithSpacedName)}, stashIDs...)),
 			},
 			false,
 		},
@@ -788,9 +827,9 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				GalleryIDs: append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
+				GalleryIDs: models.NewRelatedIDs(append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
 					galleryIDs[galleryIdx1WithPerformer],
-				),
+				)),
 			},
 			false,
 		},
@@ -804,9 +843,9 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				TagIDs: append(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
+				TagIDs: models.NewRelatedIDs(append(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
 					tagIDs[tagIdx1WithGallery],
-				),
+				)),
 			},
 			false,
 		},
@@ -820,9 +859,9 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				PerformerIDs: append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+				PerformerIDs: models.NewRelatedIDs(append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
 					performerIDs[performerIdx1WithGallery],
-				),
+				)),
 			},
 			false,
 		},
@@ -843,11 +882,11 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				Movies: append([]models.MoviesScenes{
+				Movies: models.NewRelatedMovies(append([]models.MoviesScenes{
 					{
 						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
 					},
-				}, movieScenes...),
+				}, movieScenes...)),
 			},
 			false,
 		},
@@ -863,7 +902,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				StashIDs: []models.StashID{sceneStashID(sceneIdxWithSpacedName)},
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{sceneStashID(sceneIdxWithSpacedName)}),
 			},
 			false,
 		},
@@ -929,7 +968,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				GalleryIDs: []int{},
+				GalleryIDs: models.NewRelatedIDs([]int{}),
 			},
 			false,
 		},
@@ -943,7 +982,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				TagIDs: []int{tagIDs[tagIdx2WithScene]},
+				TagIDs: models.NewRelatedIDs([]int{tagIDs[tagIdx2WithScene]}),
 			},
 			false,
 		},
@@ -957,7 +996,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				PerformerIDs: []int{performerIDs[performerIdx2WithScene]},
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx2WithScene]}),
 			},
 			false,
 		},
@@ -975,7 +1014,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				Movies: []models.MoviesScenes{},
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
 			},
 			false,
 		},
@@ -989,7 +1028,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				StashIDs: []models.StashID{},
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
 			},
 			false,
 		},
@@ -1003,7 +1042,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				GalleryIDs: []int{galleryIDs[galleryIdxWithScene]},
+				GalleryIDs: models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
 			},
 			false,
 		},
@@ -1017,7 +1056,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				TagIDs: indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
+				TagIDs: models.NewRelatedIDs(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])),
 			},
 			false,
 		},
@@ -1031,7 +1070,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				PerformerIDs: indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+				PerformerIDs: models.NewRelatedIDs(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers])),
 			},
 			false,
 		},
@@ -1049,11 +1088,11 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				Movies: []models.MoviesScenes{
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
 						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
 					},
-				},
+				}),
 			},
 			false,
 		},
@@ -1067,7 +1106,7 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				StashIDs: []models.StashID{sceneStashID(sceneIdxWithGallery)},
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{sceneStashID(sceneIdxWithGallery)}),
 			},
 			false,
 		},
@@ -1092,6 +1131,16 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			s, err := qb.Find(ctx, tt.id)
 			if err != nil {
 				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+			if err := loadSceneRelationships(ctx, tt.want, s); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
 			}
 
 			// only compare fields that were in the partial
@@ -1353,6 +1402,12 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 
 				if got != nil {
 					clearSceneFileIDs(got)
+
+					// load relationships
+					if err := loadSceneRelationships(ctx, *tt.want, got); err != nil {
+						t.Errorf("loadSceneRelationships() error = %v", err)
+						return nil
+					}
 				}
 
 				assert.Equal(tt.want, got)
@@ -1360,6 +1415,21 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 			})
 		})
 	}
+}
+
+func postFindScenes(ctx context.Context, want []*models.Scene, got []*models.Scene) error {
+	for i, s := range got {
+		clearSceneFileIDs(s)
+
+		// load relationships
+		if i < len(want) {
+			if err := loadSceneRelationships(ctx, *want[i], s); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func Test_sceneQueryBuilder_FindMany(t *testing.T) {
@@ -1404,8 +1474,9 @@ func Test_sceneQueryBuilder_FindMany(t *testing.T) {
 				return
 			}
 
-			for _, s := range got {
-				clearSceneFileIDs(s)
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
 			}
 
 			assert.Equal(tt.want, got)
@@ -1474,8 +1545,9 @@ func Test_sceneQueryBuilder_FindByChecksum(t *testing.T) {
 					return nil
 				}
 
-				for _, s := range got {
-					clearSceneFileIDs(s)
+				if err := postFindScenes(ctx, tt.want, got); err != nil {
+					t.Errorf("loadSceneRelationships() error = %v", err)
+					return nil
 				}
 
 				assert.Equal(tt.want, got)
@@ -1546,8 +1618,9 @@ func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
 					return nil
 				}
 
-				for _, s := range got {
-					clearSceneFileIDs(s)
+				if err := postFindScenes(ctx, tt.want, got); err != nil {
+					t.Errorf("loadSceneRelationships() error = %v", err)
+					return nil
 				}
 
 				if !reflect.DeepEqual(got, tt.want) {
@@ -1620,8 +1693,9 @@ func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 					return nil
 				}
 
-				for _, s := range got {
-					clearSceneFileIDs(s)
+				if err := postFindScenes(ctx, tt.want, got); err != nil {
+					t.Errorf("loadSceneRelationships() error = %v", err)
+					return nil
 				}
 
 				assert.Equal(tt.want, got)
@@ -1664,8 +1738,9 @@ func Test_sceneQueryBuilder_FindByGalleryID(t *testing.T) {
 				return
 			}
 
-			for _, s := range got {
-				clearSceneFileIDs(s)
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
 			}
 
 			assert.Equal(tt.want, got)
@@ -3539,7 +3614,11 @@ func verifyScenesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInp
 		assert.Greater(t, len(scenes), 0)
 
 		for _, scene := range scenes {
-			verifyInt(t, len(scene.TagIDs), tagCountCriterion)
+			if err := scene.LoadTagIDs(ctx, sqb); err != nil {
+				t.Errorf("scene.LoadTagIDs() error = %v", err)
+				return nil
+			}
+			verifyInt(t, len(scene.TagIDs.List()), tagCountCriterion)
 		}
 
 		return nil
@@ -3576,7 +3655,12 @@ func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.Int
 		assert.Greater(t, len(scenes), 0)
 
 		for _, scene := range scenes {
-			verifyInt(t, len(scene.PerformerIDs), performerCountCriterion)
+			if err := scene.LoadPerformerIDs(ctx, sqb); err != nil {
+				t.Errorf("scene.LoadPerformerIDs() error = %v", err)
+				return nil
+			}
+
+			verifyInt(t, len(scene.PerformerIDs.List()), performerCountCriterion)
 		}
 
 		return nil
@@ -3776,6 +3860,10 @@ func TestSceneStashIDs(t *testing.T) {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
+		if err := scene.LoadStashIDs(ctx, qb); err != nil {
+			return err
+		}
+
 		testSceneStashIDs(ctx, t, scene)
 		return nil
 	}); err != nil {
@@ -3785,7 +3873,7 @@ func TestSceneStashIDs(t *testing.T) {
 
 func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
 	// ensure no stash IDs to begin with
-	assert.Len(t, s.StashIDs, 0)
+	assert.Len(t, s.StashIDs.List(), 0)
 
 	// add stash ids
 	const stashIDStr = "stashID"
@@ -3809,7 +3897,12 @@ func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
 		t.Error(err.Error())
 	}
 
-	assert.Equal(t, []models.StashID{stashID}, s.StashIDs)
+	if err := s.LoadStashIDs(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Equal(t, []models.StashID{stashID}, s.StashIDs.List())
 
 	// remove stash ids and ensure was updated
 	s, err = qb.UpdatePartial(ctx, s.ID, models.ScenePartial{
@@ -3822,7 +3915,12 @@ func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
 		t.Error(err.Error())
 	}
 
-	assert.Len(t, s.StashIDs, 0)
+	if err := s.LoadStashIDs(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Len(t, s.StashIDs.List(), 0)
 }
 
 func TestSceneQueryQTrim(t *testing.T) {

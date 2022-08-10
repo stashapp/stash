@@ -961,7 +961,10 @@ func TestTagMerge(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		sceneTagIDs := s.TagIDs
+		if err := s.LoadTagIDs(ctx, db.Scene); err != nil {
+			return err
+		}
+		sceneTagIDs := s.TagIDs.List()
 
 		assert.Contains(sceneTagIDs, destID)
 

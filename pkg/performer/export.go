@@ -12,7 +12,7 @@ import (
 
 type ImageStashIDGetter interface {
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
-	GetStashIDs(ctx context.Context, performerID int) ([]*models.StashID, error)
+	models.StashIDLoader
 }
 
 // ToJSON converts a Performer object into its JSON equivalent.
@@ -100,9 +100,9 @@ func ToJSON(ctx context.Context, reader ImageStashIDGetter, performer *models.Pe
 	}
 
 	stashIDs, _ := reader.GetStashIDs(ctx, performer.ID)
-	var ret []*models.StashID
+	var ret []models.StashID
 	for _, stashID := range stashIDs {
-		newJoin := &models.StashID{
+		newJoin := models.StashID{
 			StashID:  stashID.StashID,
 			Endpoint: stashID.Endpoint,
 		}

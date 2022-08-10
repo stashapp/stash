@@ -193,6 +193,17 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manager, s *models.Scene, result *scrapeResult) error {
 	var updater *scene.UpdateSet
 	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
+		// load scene relationships
+		if err := s.LoadPerformerIDs(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
+		if err := s.LoadTagIDs(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
+		if err := s.LoadStashIDs(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
+
 		var err error
 		updater, err = t.getSceneUpdater(ctx, s, result)
 		if err != nil {
@@ -205,8 +216,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 			return nil
 		}
 
-		_, err = updater.Update(ctx, t.SceneReaderUpdater, t.ScreenshotSetter)
-		if err != nil {
+		if _, err := updater.Update(ctx, t.SceneReaderUpdater, t.ScreenshotSetter); err != nil {
 			return fmt.Errorf("error updating scene: %w", err)
 		}
 

@@ -44,7 +44,7 @@ type StudioReader interface {
 	Query(ctx context.Context, studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int, error)
 	GetImage(ctx context.Context, studioID int) ([]byte, error)
 	HasImage(ctx context.Context, studioID int) (bool, error)
-	GetStashIDs(ctx context.Context, studioID int) ([]*StashID, error)
+	StashIDLoader
 	GetAliases(ctx context.Context, studioID int) ([]string, error)
 }
 
@@ -55,7 +55,7 @@ type StudioWriter interface {
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, studioID int, image []byte) error
 	DestroyImage(ctx context.Context, studioID int) error
-	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []*StashID) error
+	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []StashID) error
 	UpdateAliases(ctx context.Context, studioID int, aliases []string) error
 }
 

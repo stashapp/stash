@@ -157,14 +157,17 @@ func Test_sceneRelationships_performers(t *testing.T) {
 	}
 
 	emptyScene := &models.Scene{
-		ID: sceneID,
+		ID:           sceneID,
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 	}
 
 	sceneWithPerformer := &models.Scene{
 		ID: sceneWithPerformerID,
-		PerformerIDs: []int{
+		PerformerIDs: models.NewRelatedIDs([]int{
 			existingPerformerID,
-		},
+		}),
 	}
 
 	tr := sceneRelationships{
@@ -174,7 +177,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		sceneID      *models.Scene
+		scene        *models.Scene
 		fieldOptions *FieldOptions
 		scraped      []*models.ScrapedPerformer
 		ignoreMale   bool
@@ -301,7 +304,7 @@ func Test_sceneRelationships_performers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tr.scene = tt.sceneID
+			tr.scene = tt.scene
 			tr.fieldOptions["performers"] = tt.fieldOptions
 			tr.result = &scrapeResult{
 				result: &scraper.ScrapedScene{
@@ -341,14 +344,19 @@ func Test_sceneRelationships_tags(t *testing.T) {
 	}
 
 	emptyScene := &models.Scene{
-		ID: sceneID,
+		ID:           sceneID,
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 	}
 
 	sceneWithTag := &models.Scene{
 		ID: sceneWithTagID,
-		TagIDs: []int{
+		TagIDs: models.NewRelatedIDs([]int{
 			existingID,
-		},
+		}),
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 	}
 
 	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
@@ -531,12 +539,12 @@ func Test_sceneRelationships_stashIDs(t *testing.T) {
 
 	sceneWithStashIDs := &models.Scene{
 		ID: sceneWithStashID,
-		StashIDs: []models.StashID{
+		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			{
 				StashID:  remoteSiteID,
 				Endpoint: existingEndpoint,
 			},
-		},
+		}),
 	}
 
 	mockSceneReaderWriter := &mocks.SceneReaderWriter{}

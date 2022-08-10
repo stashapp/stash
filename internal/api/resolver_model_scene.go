@@ -164,7 +164,7 @@ func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []
 
 func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) (ret []*models.Gallery, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Gallery.FindMany(ctx, obj.GalleryIDs)
+		ret, err = r.repository.Gallery.FindBySceneID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -190,9 +190,14 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
 		mqb := r.repository.Movie
 
-		for _, sm := range obj.Movies {
+		if err := obj.LoadMovies(ctx, qb); err != nil {
+			return err
+		}
+
+		for _, sm := range obj.Movies.List() {
 			movie, err := mqb.Find(ctx, sm.MovieID)
 			if err != nil {
 				return err
@@ -216,7 +221,7 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*S
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*models.Tag, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Tag.FindMany(ctx, obj.TagIDs)
+		ret, err = r.repository.Tag.FindBySceneID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -227,13 +232,33 @@ func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*mod
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret []*models.Performer, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Performer.FindMany(ctx, obj.PerformerIDs)
+		ret, err = r.repository.Performer.FindBySceneID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
+}
+
+func stashIDsSliceToPtrSlice(v []models.StashID) []*models.StashID {
+	ret := make([]*models.StashID, len(v))
+	for i, vv := range v {
+		c := vv
+		ret[i] = &c
+	}
+
+	return ret
+}
+
+func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []*models.StashID, err error) {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return obj.LoadStashIDs(ctx, r.repository.Scene)
+	}); err != nil {
+		return nil, err
+	}
+
+	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
 }
 
 func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {

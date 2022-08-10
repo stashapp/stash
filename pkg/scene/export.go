@@ -80,7 +80,7 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	}
 
 	var ret []models.StashID
-	for _, stashID := range scene.StashIDs {
+	for _, stashID := range scene.StashIDs.List() {
 		newJoin := models.StashID{
 			StashID:  stashID.StashID,
 			Endpoint: stashID.Endpoint,
@@ -219,7 +219,7 @@ type MovieFinder interface {
 // GetSceneMoviesJSON returns a slice of SceneMovie JSON representation objects
 // corresponding to the provided scene's scene movie relationships.
 func GetSceneMoviesJSON(ctx context.Context, movieReader MovieFinder, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
-	sceneMovies := scene.Movies
+	sceneMovies := scene.Movies.List()
 
 	var results []jsonschema.SceneMovie
 	for _, sceneMovie := range sceneMovies {
@@ -246,7 +246,7 @@ func GetSceneMoviesJSON(ctx context.Context, movieReader MovieFinder, scene *mod
 func GetDependentMovieIDs(ctx context.Context, scene *models.Scene) ([]int, error) {
 	var ret []int
 
-	m := scene.Movies
+	m := scene.Movies.List()
 	for _, mm := range m {
 		ret = append(ret, mm.MovieID)
 	}

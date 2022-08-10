@@ -56,6 +56,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 					},
 				},
 			},
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 

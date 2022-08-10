@@ -403,6 +403,10 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 	for s := range jobChan {
 		sceneHash := s.GetHash(t.fileNamingAlgorithm)
 
+		if err := s.LoadRelationships(ctx, sceneReader); err != nil {
+			logger.Errorf("[scenes] <%s> error loading scene relationships: %v", sceneHash, err)
+		}
+
 		newSceneJSON, err := scene.ToBasicJSON(ctx, sceneReader, s)
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene JSON: %s", sceneHash, err.Error())

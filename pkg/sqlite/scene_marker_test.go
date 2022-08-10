@@ -157,7 +157,13 @@ func TestMarkerQuerySceneTags(t *testing.T) {
 				t.Errorf("error getting marker tag ids: %v", err)
 				return
 			}
-			tagIDs := s.TagIDs
+
+			if err := s.LoadTagIDs(ctx, db.Scene); err != nil {
+				t.Errorf("error getting marker tag ids: %v", err)
+				return
+			}
+
+			tagIDs := s.TagIDs.List()
 			if markerFilter.SceneTags.Modifier == models.CriterionModifierIsNull && len(tagIDs) > 0 {
 				t.Errorf("expected marker %d to have no scene tags - found %d", m.ID, len(tagIDs))
 			}

@@ -57,6 +57,11 @@ func (r *mutationResolver) SubmitStashBoxSceneDraft(ctx context.Context, input S
 		if err != nil {
 			return err
 		}
+
+		if err := scene.LoadStashIDs(ctx, qb); err != nil {
+			return err
+		}
+
 		filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 
 		res, err = client.SubmitSceneDraft(ctx, scene, boxes[input.StashBoxIndex].Endpoint, filepath)

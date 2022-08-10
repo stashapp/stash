@@ -8,10 +8,12 @@ import (
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 type SceneQueryTagUpdater interface {
 	scene.Queryer
+	models.TagIDLoader
 	scene.PartialUpdater
 }
 
@@ -51,7 +53,20 @@ func TagScenes(ctx context.Context, p *models.Tag, paths []string, aliases []str
 
 	for _, tt := range t {
 		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
-			return scene.AddTag(ctx, rw, o, p.ID)
+			if err := o.LoadTagIDs(ctx, rw); err != nil {
+				return false, err
+			}
+			existing := o.TagIDs.List()
+
+			if intslice.IntInclude(existing, p.ID) {
+				return false, nil
+			}
+
+			if err := scene.AddTag(ctx, rw, o, p.ID); err != nil {
+				return false, err
+			}
+
+			return true, nil
 		}); err != nil {
 			return err
 		}

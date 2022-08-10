@@ -975,13 +975,13 @@ func makeScene(i int) *models.Scene {
 		OCounter:     getOCounter(i),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
-		GalleryIDs:   gids,
-		PerformerIDs: pids,
-		TagIDs:       tids,
-		Movies:       movies,
-		StashIDs: []models.StashID{
+		GalleryIDs:   models.NewRelatedIDs(gids),
+		PerformerIDs: models.NewRelatedIDs(pids),
+		TagIDs:       models.NewRelatedIDs(tids),
+		Movies:       models.NewRelatedMovies(movies),
+		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			sceneStashID(i),
-		},
+		}),
 	}
 }
 
