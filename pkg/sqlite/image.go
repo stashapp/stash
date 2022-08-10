@@ -972,7 +972,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			sortClause = getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
 		case "performer_count":
 			sortClause = getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
-		case "mod_time", "size":
+		case "mod_time", "filesize":
 			addFilesJoin()
 			sortClause = getSort(sort, direction, "files")
 		default:

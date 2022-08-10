@@ -2416,7 +2416,7 @@ func TestImageQuerySorting(t *testing.T) {
 		},
 		{
 			"file size",
-			"size",
+			"filesize",
 			models.SortDirectionEnumDesc,
 			-1,
 			-1,
