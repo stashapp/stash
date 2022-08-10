@@ -533,7 +533,13 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 
 	if ff != nil && s.isZipFile(f.info.Name()) {
 		f.BaseFile = ff.Base()
-		if err := s.scanZipFile(ctx, f); err != nil {
+
+		// scan zip files with a different context that is not cancellable
+		// cancelling while scanning zip file contents results in the scan
+		// contents being partially completed
+		zipCtx := context.Background()
+
+		if err := s.scanZipFile(zipCtx, f); err != nil {
 			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)
 		}
 	}
