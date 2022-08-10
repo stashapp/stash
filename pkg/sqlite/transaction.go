@@ -103,7 +103,11 @@ func getDBReader(ctx context.Context) (dbReader, error) {
 }
 
 func (db *Database) IsLocked(err error) bool {
-	return errors.Is(err, sqlite3.ErrLocked)
+	var sqliteError sqlite3.Error
+	if errors.As(err, &sqliteError) {
+		return sqliteError.Code == sqlite3.ErrBusy
+	}
+	return false
 }
 
 func (db *Database) TxnRepository() models.Repository {
