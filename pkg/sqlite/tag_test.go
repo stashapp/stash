@@ -996,8 +996,12 @@ func TestTagMerge(t *testing.T) {
 			return err
 		}
 
+		if err := g.LoadTagIDs(ctx, db.Gallery); err != nil {
+			return err
+		}
+
 		// ensure gallery points to new tag
-		assert.Contains(g.TagIDs, destID)
+		assert.Contains(g.TagIDs.List(), destID)
 
 		// ensure performer points to new tag
 		performerTagIDs, err := sqlite.PerformerReaderWriter.GetTagIDs(ctx, performerIDs[performerIdxWithTwoTags])

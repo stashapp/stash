@@ -147,7 +147,7 @@ func (r *galleryResolver) Date(ctx context.Context, obj *models.Gallery) (*strin
 func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret []*models.Scene, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.repository.Scene.FindMany(ctx, obj.SceneIDs)
+		ret, err = r.repository.Scene.FindByGalleryID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -175,7 +175,7 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret 
 func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []*models.Tag, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.repository.Tag.FindMany(ctx, obj.TagIDs)
+		ret, err = r.repository.Tag.FindByGalleryID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []
 func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (ret []*models.Performer, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		var err error
-		ret, err = r.repository.Performer.FindMany(ctx, obj.PerformerIDs)
+		ret, err = r.repository.Performer.FindByGalleryID(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

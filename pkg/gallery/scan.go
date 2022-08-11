@@ -19,7 +19,7 @@ type FinderCreatorUpdater interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
 	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Gallery, error)
 	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []file.ID) error
-	Update(ctx context.Context, updatedGallery *models.Gallery) error
+	AddFileID(ctx context.Context, id int, fileID file.ID) error
 }
 
 type SceneFinderUpdater interface {
@@ -29,7 +29,7 @@ type SceneFinderUpdater interface {
 }
 
 type ScanHandler struct {
-	CreatorUpdater     FinderCreatorUpdater
+	CreatorUpdater     FullCreatorUpdater
 	SceneFinderUpdater SceneFinderUpdater
 
 	PluginCache *plugin.Cache
@@ -97,8 +97,8 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			i.Files = append(i.Files, f)
 		}
 
-		if err := h.CreatorUpdater.Update(ctx, i); err != nil {
-			return fmt.Errorf("updating gallery: %w", err)
+		if err := h.CreatorUpdater.AddFileID(ctx, i.ID, f.Base().ID); err != nil {
+			return fmt.Errorf("adding file to gallery: %w", err)
 		}
 	}
 

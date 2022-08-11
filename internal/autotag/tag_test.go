@@ -288,6 +288,7 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 					Path: v,
 				},
 			},
+			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 

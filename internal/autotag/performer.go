@@ -25,6 +25,7 @@ type ImageQueryPerformerUpdater interface {
 
 type GalleryQueryPerformerUpdater interface {
 	gallery.Queryer
+	models.PerformerIDLoader
 	gallery.PartialUpdater
 }
 
@@ -86,6 +87,19 @@ func PerformerGalleries(ctx context.Context, p *models.Performer, paths []string
 	t := getPerformerTagger(p, cache)
 
 	return t.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
-		return gallery.AddPerformer(ctx, rw, o, p.ID)
+		if err := o.LoadPerformerIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := o.PerformerIDs.List()
+
+		if intslice.IntInclude(existing, p.ID) {
+			return false, nil
+		}
+
+		if err := gallery.AddPerformer(ctx, rw, o, p.ID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }

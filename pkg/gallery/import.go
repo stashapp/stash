@@ -14,7 +14,7 @@ import (
 )
 
 type Importer struct {
-	ReaderWriter        FinderCreatorUpdater
+	ReaderWriter        FullCreatorUpdater
 	StudioWriter        studio.NameFinderCreator
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
@@ -22,6 +22,11 @@ type Importer struct {
 	MissingRefBehaviour models.ImportMissingRefEnum
 
 	gallery models.Gallery
+}
+
+type FullCreatorUpdater interface {
+	FinderCreatorUpdater
+	Update(ctx context.Context, updatedGallery *models.Gallery) error
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -43,7 +48,10 @@ func (i *Importer) PreImport(ctx context.Context) error {
 }
 
 func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.Gallery {
-	newGallery := models.Gallery{}
+	newGallery := models.Gallery{
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+	}
 
 	if galleryJSON.Title != "" {
 		newGallery.Title = galleryJSON.Title
@@ -149,7 +157,7 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 		}
 
 		for _, p := range performers {
-			i.gallery.PerformerIDs = append(i.gallery.PerformerIDs, p.ID)
+			i.gallery.PerformerIDs.Add(p.ID)
 		}
 	}
 
@@ -207,7 +215,7 @@ func (i *Importer) populateTags(ctx context.Context) error {
 		}
 
 		for _, t := range tags {
-			i.gallery.TagIDs = append(i.gallery.TagIDs, t.ID)
+			i.gallery.TagIDs.Add(t.ID)
 		}
 	}
 

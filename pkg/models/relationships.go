@@ -2,6 +2,10 @@ package models
 
 import "context"
 
+type SceneIDLoader interface {
+	GetSceneIDs(ctx context.Context, relatedID int) ([]int, error)
+}
+
 type GalleryIDLoader interface {
 	GetGalleryIDs(ctx context.Context, relatedID int) ([]int, error)
 }

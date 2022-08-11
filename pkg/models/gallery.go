@@ -82,6 +82,11 @@ type GalleryReader interface {
 	FindByPath(ctx context.Context, path string) ([]*Gallery, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Gallery, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Gallery, error)
+
+	SceneIDLoader
+	PerformerIDLoader
+	TagIDLoader
+
 	Count(ctx context.Context) (int, error)
 	All(ctx context.Context) ([]*Gallery, error)
 	Query(ctx context.Context, galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int, error)

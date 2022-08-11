@@ -1135,12 +1135,12 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
-		PerformerIDs: pids,
-		TagIDs:       tids,
+		PerformerIDs: models.NewRelatedIDs(pids),
+		TagIDs:       models.NewRelatedIDs(tids),
 	}
 
 	if includeScenes {
-		ret.SceneIDs = indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(i))
+		ret.SceneIDs = models.NewRelatedIDs(indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(i)))
 	}
 
 	return ret

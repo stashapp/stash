@@ -6,7 +6,18 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
+
+type GalleryPerformerUpdater interface {
+	models.PerformerIDLoader
+	gallery.PartialUpdater
+}
+
+type GalleryTagUpdater interface {
+	models.TagIDLoader
+	gallery.PartialUpdater
+}
 
 func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 	var path string
@@ -28,11 +39,24 @@ func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 }
 
 // GalleryPerformers tags the provided gallery with performers whose name matches the gallery's path.
-func GalleryPerformers(ctx context.Context, s *models.Gallery, rw gallery.PartialUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
+func GalleryPerformers(ctx context.Context, s *models.Gallery, rw GalleryPerformerUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
 	t := getGalleryFileTagger(s, cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
-		return gallery.AddPerformer(ctx, rw, s, otherID)
+		if err := s.LoadPerformerIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := s.PerformerIDs.List()
+
+		if intslice.IntInclude(existing, otherID) {
+			return false, nil
+		}
+
+		if err := gallery.AddPerformer(ctx, rw, s, otherID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }
 
@@ -53,10 +77,23 @@ func GalleryStudios(ctx context.Context, s *models.Gallery, rw GalleryFinderUpda
 }
 
 // GalleryTags tags the provided gallery with tags whose name matches the gallery's path.
-func GalleryTags(ctx context.Context, s *models.Gallery, rw gallery.PartialUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
+func GalleryTags(ctx context.Context, s *models.Gallery, rw GalleryTagUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
 	t := getGalleryFileTagger(s, cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
-		return gallery.AddTag(ctx, rw, s, otherID)
+		if err := s.LoadTagIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := s.TagIDs.List()
+
+		if intslice.IntInclude(existing, otherID) {
+			return false, nil
+		}
+
+		if err := gallery.AddTag(ctx, rw, s, otherID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }

@@ -221,6 +221,7 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 					Path: v,
 				},
 			},
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 

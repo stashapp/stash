@@ -25,6 +25,7 @@ type ImageQueryTagUpdater interface {
 
 type GalleryQueryTagUpdater interface {
 	gallery.Queryer
+	models.TagIDLoader
 	gallery.PartialUpdater
 }
 
@@ -108,7 +109,20 @@ func TagGalleries(ctx context.Context, p *models.Tag, paths []string, aliases []
 
 	for _, tt := range t {
 		if err := tt.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
-			return gallery.AddTag(ctx, rw, o, p.ID)
+			if err := o.LoadTagIDs(ctx, rw); err != nil {
+				return false, err
+			}
+			existing := o.TagIDs.List()
+
+			if intslice.IntInclude(existing, p.ID) {
+				return false, nil
+			}
+
+			if err := gallery.AddTag(ctx, rw, o, p.ID); err != nil {
+				return false, err
+			}
+
+			return true, nil
 		}); err != nil {
 			return err
 		}
