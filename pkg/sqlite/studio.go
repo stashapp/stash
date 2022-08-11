@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 const studioTable = "studios"
@@ -76,21 +79,45 @@ func (qb *studioQueryBuilder) Find(ctx context.Context, id int) (*models.Studio,
 }
 
 func (qb *studioQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Studio, error) {
-	var studios []*models.Studio
-	for _, id := range ids {
-		studio, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-
-		if studio == nil {
-			return nil, fmt.Errorf("studio with id %d not found", id)
-		}
-
-		studios = append(studios, studio)
+	tableMgr := studioTableMgr
+	q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(ids...))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
 	}
 
-	return studios, nil
+	ret := make([]*models.Studio, len(ids))
+
+	for _, s := range unsorted {
+		i := intslice.IntIndex(ids, s.ID)
+		ret[i] = s
+	}
+
+	for i := range ret {
+		if ret[i] == nil {
+			return nil, fmt.Errorf("studio with id %d not found", ids[i])
+		}
+	}
+
+	return ret, nil
+}
+
+func (qb *studioQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Studio, error) {
+	const single = false
+	var ret []*models.Studio
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var f models.Studio
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		ret = append(ret, &f)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (qb *studioQueryBuilder) FindChildren(ctx context.Context, id int) ([]*models.Studio, error) {
@@ -258,14 +285,9 @@ func (qb *studioQueryBuilder) Query(ctx context.Context, studioFilter *models.St
 		return nil, 0, err
 	}
 
-	var studios []*models.Studio
-	for _, id := range idsResult {
-		studio, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		studios = append(studios, studio)
+	studios, err := qb.FindMany(ctx, idsResult)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return studios, countResult, nil

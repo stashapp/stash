@@ -6,7 +6,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 const movieTable = "movies"
@@ -66,21 +69,45 @@ func (qb *movieQueryBuilder) Find(ctx context.Context, id int) (*models.Movie, e
 }
 
 func (qb *movieQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Movie, error) {
-	var movies []*models.Movie
-	for _, id := range ids {
-		movie, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-
-		if movie == nil {
-			return nil, fmt.Errorf("movie with id %d not found", id)
-		}
-
-		movies = append(movies, movie)
+	tableMgr := movieTableMgr
+	q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(ids...))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
 	}
 
-	return movies, nil
+	ret := make([]*models.Movie, len(ids))
+
+	for _, s := range unsorted {
+		i := intslice.IntIndex(ids, s.ID)
+		ret[i] = s
+	}
+
+	for i := range ret {
+		if ret[i] == nil {
+			return nil, fmt.Errorf("movie with id %d not found", ids[i])
+		}
+	}
+
+	return ret, nil
+}
+
+func (qb *movieQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Movie, error) {
+	const single = false
+	var ret []*models.Movie
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var f models.Movie
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		ret = append(ret, &f)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (qb *movieQueryBuilder) FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error) {
@@ -156,14 +183,9 @@ func (qb *movieQueryBuilder) Query(ctx context.Context, movieFilter *models.Movi
 		return nil, 0, err
 	}
 
-	var movies []*models.Movie
-	for _, id := range idsResult {
-		movie, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		movies = append(movies, movie)
+	movies, err := qb.FindMany(ctx, idsResult)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return movies, countResult, nil
