@@ -31,6 +31,10 @@ func (*TxnManager) AddPostCommitHook(ctx context.Context, hook txn.TxnFunc) {
 func (*TxnManager) AddPostRollbackHook(ctx context.Context, hook txn.TxnFunc) {
 }
 
+func (*TxnManager) IsLocked(err error) bool {
+	return false
+}
+
 func (*TxnManager) Reset() error {
 	return nil
 }

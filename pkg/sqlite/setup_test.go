@@ -458,10 +458,6 @@ var (
 )
 
 func indexesToIDs(ids []int, indexes []int) []int {
-	if len(indexes) == 0 {
-		return nil
-	}
-
 	ret := make([]int, len(indexes))
 	for i, idx := range indexes {
 		ret[i] = ids[idx]
@@ -964,13 +960,10 @@ func makeScene(i int) *models.Scene {
 
 	mids := indexesToIDs(movieIDs, sceneMovies[i])
 
-	var movies []models.MoviesScenes
-	if len(mids) > 0 {
-		movies = make([]models.MoviesScenes, len(mids))
-		for i, m := range mids {
-			movies[i] = models.MoviesScenes{
-				MovieID: m,
-			}
+	movies := make([]models.MoviesScenes, len(mids))
+	for i, m := range mids {
+		movies[i] = models.MoviesScenes{
+			MovieID: m,
 		}
 	}
 
