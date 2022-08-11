@@ -125,9 +125,13 @@ type PerformerFilterType struct {
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 }
 
+type PerformerFinder interface {
+	FindMany(ctx context.Context, ids []int) ([]*Performer, error)
+}
+
 type PerformerReader interface {
 	Find(ctx context.Context, id int) (*Performer, error)
-	FindMany(ctx context.Context, ids []int) ([]*Performer, error)
+	PerformerFinder
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Performer, error)
 	FindNamesBySceneID(ctx context.Context, sceneID int) ([]*Performer, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Performer, error)

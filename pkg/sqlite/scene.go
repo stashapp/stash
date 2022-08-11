@@ -360,14 +360,16 @@ func (qb *SceneStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 
 		s := f.resolve()
 
-		if err := qb.resolveRelationships(ctx, s); err != nil {
-			return err
-		}
-
 		ret = append(ret, s)
 		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	for _, s := range ret {
+		if err := qb.resolveRelationships(ctx, s); err != nil {
+			return nil, err
+		}
 	}
 
 	return ret, nil

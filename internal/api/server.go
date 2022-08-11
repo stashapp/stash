@@ -26,6 +26,7 @@ import (
 
 	"github.com/go-chi/httplog"
 	"github.com/rs/cors"
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -74,6 +75,14 @@ func Start() error {
 	}
 
 	txnManager := manager.GetInstance().Repository
+
+	dataloaders := loaders.Middleware{
+		DatabaseProvider: txnManager,
+		Repository:       txnManager,
+	}
+
+	r.Use(dataloaders.Middleware)
+
 	pluginCache := manager.GetInstance().PluginCache
 	sceneService := manager.GetInstance().SceneService
 	imageService := manager.GetInstance().ImageService

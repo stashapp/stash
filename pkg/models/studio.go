@@ -30,9 +30,13 @@ type StudioFilterType struct {
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 }
 
+type StudioFinder interface {
+	FindMany(ctx context.Context, ids []int) ([]*Studio, error)
+}
+
 type StudioReader interface {
 	Find(ctx context.Context, id int) (*Studio, error)
-	FindMany(ctx context.Context, ids []int) ([]*Studio, error)
+	StudioFinder
 	FindChildren(ctx context.Context, id int) ([]*Studio, error)
 	FindByName(ctx context.Context, name string, nocase bool) (*Studio, error)
 	FindByStashID(ctx context.Context, stashID StashID) ([]*Studio, error)

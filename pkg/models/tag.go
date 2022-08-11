@@ -34,9 +34,13 @@ type TagFilterType struct {
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 }
 
+type TagFinder interface {
+	FindMany(ctx context.Context, ids []int) ([]*Tag, error)
+}
+
 type TagReader interface {
 	Find(ctx context.Context, id int) (*Tag, error)
-	FindMany(ctx context.Context, ids []int) ([]*Tag, error)
+	TagFinder
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Tag, error)
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Tag, error)
 	FindBySceneMarkerID(ctx context.Context, sceneMarkerID int) ([]*Tag, error)

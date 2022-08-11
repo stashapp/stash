@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -56,14 +57,7 @@ func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, er
 
 func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (ret *models.Studio, err error) {
 	if obj.StudioID.Valid {
-		if err := r.withTxn(ctx, func(ctx context.Context) error {
-			ret, err = r.repository.Studio.Find(ctx, int(obj.StudioID.Int64))
-			return err
-		}); err != nil {
-			return nil, err
-		}
-
-		return ret, nil
+		return loaders.From(ctx).StudioByID.Load(int(obj.StudioID.Int64))
 	}
 
 	return nil, nil

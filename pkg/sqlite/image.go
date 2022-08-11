@@ -274,14 +274,16 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 
 		i := f.resolve()
 
-		if err := qb.resolveRelationships(ctx, i); err != nil {
-			return err
-		}
-
 		ret = append(ret, i)
 		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	for _, i := range ret {
+		if err := qb.resolveRelationships(ctx, i); err != nil {
+			return nil, err
+		}
 	}
 
 	return ret, nil
