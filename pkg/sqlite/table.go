@@ -361,6 +361,7 @@ type scenesMoviesTable struct {
 }
 
 type moviesScenesRow struct {
+	SceneID    null.Int `db:"scene_id"`
 	MovieID    null.Int `db:"movie_id"`
 	SceneIndex null.Int `db:"scene_index"`
 }
@@ -552,12 +553,8 @@ func queryFunc(ctx context.Context, query *goqu.SelectDataset, single bool, f fu
 		return err
 	}
 
-	tx, err := getDBReader(ctx)
-	if err != nil {
-		return err
-	}
-
-	rows, err := tx.QueryxContext(ctx, q, args...)
+	wrapper := dbWrapper{}
+	rows, err := wrapper.QueryxContext(ctx, q, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("querying `%s` [%v]: %w", q, args, err)
@@ -586,12 +583,8 @@ func querySimple(ctx context.Context, query *goqu.SelectDataset, out interface{}
 		return err
 	}
 
-	tx, err := getDBReader(ctx)
-	if err != nil {
-		return err
-	}
-
-	rows, err := tx.QueryxContext(ctx, q, args...)
+	wrapper := dbWrapper{}
+	rows, err := wrapper.QueryxContext(ctx, q, args...)
 	if err != nil {
 		return fmt.Errorf("querying `%s` [%v]: %w", q, args, err)
 	}

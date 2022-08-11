@@ -1,11 +1,16 @@
 package txn
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 type Manager interface {
 	Begin(ctx context.Context) (context.Context, error)
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
+
+	IsLocked(err error) bool
 
 	AddPostCommitHook(ctx context.Context, hook TxnFunc)
 	AddPostRollbackHook(ctx context.Context, hook TxnFunc)
@@ -57,4 +62,34 @@ func WithDatabase(ctx context.Context, p DatabaseProvider, fn TxnFunc) error {
 	}
 
 	return fn(ctx)
+}
+
+type Retryer struct {
+	Manager Manager
+	Retries int
+	OnFail  func(ctx context.Context, err error, attempt int) error
+}
+
+func (r Retryer) WithTxn(ctx context.Context, fn TxnFunc) error {
+	var attempt int
+	var err error
+	for attempt = 1; attempt <= r.Retries; attempt++ {
+		err = WithTxn(ctx, r.Manager, fn)
+
+		if err == nil {
+			return nil
+		}
+
+		if !r.Manager.IsLocked(err) {
+			return err
+		}
+
+		if r.OnFail != nil {
+			if err := r.OnFail(ctx, err, attempt); err != nil {
+				return err
+			}
+		}
+	}
+
+	return fmt.Errorf("failed after %d attempts: %w", attempt, err)
 }

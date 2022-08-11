@@ -15,7 +15,11 @@ import (
 	"github.com/stashapp/stash/pkg/txn"
 )
 
-const scanQueueSize = 200000
+const (
+	scanQueueSize = 200000
+	// maximum number of times to retry in the event of a locked database
+	maxRetries = 1000
+)
 
 // Repository provides access to storage methods for files and folders.
 type Repository struct {
@@ -86,7 +90,7 @@ type scanJob struct {
 	zipPathToID    sync.Map
 	count          int
 
-	txnMutex sync.Mutex
+	txnRetryer txn.Retryer
 }
 
 // ScanOptions provides options for scanning files.
@@ -113,6 +117,10 @@ func (s *Scanner) Scan(ctx context.Context, handlers []Handler, options ScanOpti
 		handlers:        handlers,
 		ProgressReports: progressReporter,
 		options:         options,
+		txnRetryer: txn.Retryer{
+			Manager: s.Repository,
+			Retries: maxRetries,
+		},
 	}
 
 	job.execute(ctx)
@@ -126,10 +134,7 @@ type scanFile struct {
 }
 
 func (s *scanJob) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
-	// get exclusive access to the database
-	s.txnMutex.Lock()
-	defer s.txnMutex.Unlock()
-	return txn.WithTxn(ctx, s.Repository, fn)
+	return s.txnRetryer.WithTxn(ctx, fn)
 }
 
 func (s *scanJob) withDB(ctx context.Context, fn func(ctx context.Context) error) error {
@@ -157,20 +162,6 @@ func (s *scanJob) execute(ctx context.Context) {
 		logger.Infof("Finished adding files to queue. %d files queued", s.count)
 	}()
 
-	done := make(chan struct{}, 1)
-
-	go func() {
-		if err := s.processDBOperations(ctx); err != nil {
-			if errors.Is(err, context.Canceled) {
-				return
-			}
-
-			logger.Errorf("error processing database operations for scan: %v", err)
-		}
-
-		close(done)
-	}()
-
 	if err := s.processQueue(ctx); err != nil {
 		if errors.Is(err, context.Canceled) {
 			return
@@ -179,9 +170,6 @@ func (s *scanJob) execute(ctx context.Context) {
 		logger.Errorf("error scanning files: %v", err)
 		return
 	}
-
-	// wait for database operations to complete
-	<-done
 }
 
 func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
@@ -247,7 +235,10 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 		if info.IsDir() {
 			// handle folders immediately
 			if err := s.handleFolder(ctx, ff); err != nil {
-				logger.Errorf("error processing %q: %v", path, err)
+				if !errors.Is(err, context.Canceled) {
+					logger.Errorf("error processing %q: %v", path, err)
+				}
+
 				// skip the directory since we won't be able to process the files anyway
 				return fs.SkipDir
 			}
@@ -259,7 +250,9 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 		if zipFile != nil {
 			s.ProgressReports.ExecuteTask("Scanning "+path, func() {
 				if err := s.handleFile(ctx, ff); err != nil {
-					logger.Errorf("error processing %q: %v", path, err)
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error processing %q: %v", path, err)
+					}
 					// don't return an error, just skip the file
 				}
 			})
@@ -355,18 +348,6 @@ func (s *scanJob) incrementProgress() {
 	}
 }
 
-func (s *scanJob) processDBOperations(ctx context.Context) error {
-	for fn := range s.dbQueue {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-
-		_ = s.withTxn(ctx, fn)
-	}
-
-	return nil
-}
-
 func (s *scanJob) processQueueItem(ctx context.Context, f scanFile) {
 	s.ProgressReports.ExecuteTask("Scanning "+f.Path, func() {
 		var err error
@@ -376,7 +357,7 @@ func (s *scanJob) processQueueItem(ctx context.Context, f scanFile) {
 			err = s.handleFile(ctx, f)
 		}
 
-		if err != nil {
+		if err != nil && !errors.Is(err, context.Canceled) {
 			logger.Errorf("error processing %q: %v", f.Path, err)
 		}
 	})
@@ -552,7 +533,13 @@ func (s *scanJob) handleFile(ctx context.Context, f scanFile) error {
 
 	if ff != nil && s.isZipFile(f.info.Name()) {
 		f.BaseFile = ff.Base()
-		if err := s.scanZipFile(ctx, f); err != nil {
+
+		// scan zip files with a different context that is not cancellable
+		// cancelling while scanning zip file contents results in the scan
+		// contents being partially completed
+		zipCtx := context.Background()
+
+		if err := s.scanZipFile(zipCtx, f); err != nil {
 			logger.Errorf("Error scanning zip file %q: %v", f.Path, err)
 		}
 	}
@@ -638,7 +625,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 	}
 
 	// if not renamed, queue file for creation
-	if err := s.queueDBOperation(ctx, path, func(ctx context.Context) error {
+	if err := s.withTxn(ctx, func(ctx context.Context) error {
 		if err := s.Repository.Create(ctx, file); err != nil {
 			return fmt.Errorf("creating file %q: %w", path, err)
 		}
@@ -653,17 +640,6 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 	}
 
 	return file, nil
-}
-
-func (s *scanJob) queueDBOperation(ctx context.Context, path string, fn func(ctx context.Context) error) error {
-	// perform immediately if it is a zip file
-	if s.isZipFile(path) {
-		return s.withTxn(ctx, fn)
-	}
-
-	s.dbQueue <- fn
-
-	return nil
 }
 
 func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, error) {
@@ -782,7 +758,7 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 	fBase.CreatedAt = otherBase.CreatedAt
 	fBase.Fingerprints = otherBase.Fingerprints
 
-	if err := s.queueDBOperation(ctx, fBase.Path, func(ctx context.Context) error {
+	if err := s.withTxn(ctx, func(ctx context.Context) error {
 		if err := s.Repository.Update(ctx, f); err != nil {
 			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
 		}
@@ -831,7 +807,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 			return nil, nil
 		}
 
-		if err := s.queueDBOperation(ctx, path, func(ctx context.Context) error {
+		if err := s.withTxn(ctx, func(ctx context.Context) error {
 			if err := s.fireHandlers(ctx, existing); err != nil {
 				return err
 			}
@@ -866,7 +842,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	}
 
 	// queue file for update
-	if err := s.queueDBOperation(ctx, path, func(ctx context.Context) error {
+	if err := s.withTxn(ctx, func(ctx context.Context) error {
 		if err := s.Repository.Update(ctx, existing); err != nil {
 			return fmt.Errorf("updating file %q: %w", path, err)
 		}
