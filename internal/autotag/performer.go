@@ -19,6 +19,7 @@ type SceneQueryPerformerUpdater interface {
 
 type ImageQueryPerformerUpdater interface {
 	image.Queryer
+	models.PerformerIDLoader
 	image.PartialUpdater
 }
 
@@ -62,8 +63,21 @@ func PerformerScenes(ctx context.Context, p *models.Performer, paths []string, r
 func PerformerImages(ctx context.Context, p *models.Performer, paths []string, rw ImageQueryPerformerUpdater, cache *match.Cache) error {
 	t := getPerformerTagger(p, cache)
 
-	return t.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
-		return image.AddPerformer(ctx, rw, i, p.ID)
+	return t.tagImages(ctx, paths, rw, func(o *models.Image) (bool, error) {
+		if err := o.LoadPerformerIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := o.PerformerIDs.List()
+
+		if intslice.IntInclude(existing, p.ID) {
+			return false, nil
+		}
+
+		if err := image.AddPerformer(ctx, rw, o, p.ID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }
 

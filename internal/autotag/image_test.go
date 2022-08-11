@@ -59,8 +59,9 @@ func TestImagePerformers(t *testing.T) {
 		}
 
 		image := models.Image{
-			ID:    imageID,
-			Files: []*file.ImageFile{makeImageFile(test.Path)},
+			ID:           imageID,
+			Files:        []*file.ImageFile{makeImageFile(test.Path)},
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		}
 		err := ImagePerformers(testCtx, &image, mockImageReader, mockPerformerReader, nil)
 
@@ -174,8 +175,9 @@ func TestImageTags(t *testing.T) {
 		}
 
 		image := models.Image{
-			ID:    imageID,
-			Files: []*file.ImageFile{makeImageFile(test.Path)},
+			ID:     imageID,
+			Files:  []*file.ImageFile{makeImageFile(test.Path)},
+			TagIDs: models.NewRelatedIDs([]int{}),
 		}
 		err := ImageTags(testCtx, &image, mockImageReader, mockTagReader, nil)
 

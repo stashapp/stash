@@ -187,8 +187,9 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	matchingPaths, falsePaths := generateTestPaths(testPathName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:    i + 1,
-			Files: []*file.ImageFile{makeImageFile(p)},
+			ID:     i + 1,
+			Files:  []*file.ImageFile{makeImageFile(p)},
+			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 

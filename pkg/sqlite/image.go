@@ -116,18 +116,19 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateI
 		}
 	}
 
-	if len(newObject.GalleryIDs) > 0 {
-		if err := imageGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs); err != nil {
+	if newObject.PerformerIDs.Loaded() {
+		if err := imagesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
 		}
 	}
-	if len(newObject.PerformerIDs) > 0 {
-		if err := imagesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
+	if newObject.TagIDs.Loaded() {
+		if err := imagesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
 			return err
 		}
 	}
-	if len(newObject.TagIDs) > 0 {
-		if err := imagesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs); err != nil {
+
+	if newObject.GalleryIDs.Loaded() {
+		if err := imageGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs.List()); err != nil {
 			return err
 		}
 	}
@@ -184,14 +185,22 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 		return err
 	}
 
-	if err := imageGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs); err != nil {
-		return err
+	if updatedObject.PerformerIDs.Loaded() {
+		if err := imagesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := imagesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs); err != nil {
-		return err
+
+	if updatedObject.TagIDs.Loaded() {
+		if err := imagesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := imagesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
-		return err
+
+	if updatedObject.GalleryIDs.Loaded() {
+		if err := imageGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs.List()); err != nil {
+			return err
+		}
 	}
 
 	fileIDs := make([]file.ID, len(updatedObject.Files))
@@ -285,24 +294,6 @@ func (qb *ImageStore) resolveRelationships(ctx context.Context, i *models.Image)
 	i.Files, err = qb.getFiles(ctx, i.ID)
 	if err != nil {
 		return fmt.Errorf("resolving image files: %w", err)
-	}
-
-	// performers
-	i.PerformerIDs, err = qb.performersRepository().getIDs(ctx, i.ID)
-	if err != nil {
-		return fmt.Errorf("resolving image performers: %w", err)
-	}
-
-	// tags
-	i.TagIDs, err = qb.tagsRepository().getIDs(ctx, i.ID)
-	if err != nil {
-		return fmt.Errorf("resolving image tags: %w", err)
-	}
-
-	// galleries
-	i.GalleryIDs, err = qb.galleriesRepository().getIDs(ctx, i.ID)
-	if err != nil {
-		return fmt.Errorf("resolving image galleries: %w", err)
 	}
 
 	return nil
@@ -1004,9 +995,14 @@ func (qb *ImageStore) filesRepository() *filesRepository {
 	}
 }
 
-// func (qb *imageQueryBuilder) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
-// 	return qb.galleriesRepository().getIDs(ctx, imageID)
-// }
+func (qb *ImageStore) AddFileID(ctx context.Context, id int, fileID file.ID) error {
+	const firstPrimary = false
+	return imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []file.ID{fileID})
+}
+
+func (qb *ImageStore) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
+	return qb.galleriesRepository().getIDs(ctx, imageID)
+}
 
 // func (qb *imageQueryBuilder) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
 // 	// Delete the existing joins and then create new ones

@@ -1051,9 +1051,9 @@ func makeImage(i int) *models.Image {
 		Rating:       getIntPtr(getRating(i)),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
-		GalleryIDs:   gids,
-		PerformerIDs: pids,
-		TagIDs:       tids,
+		GalleryIDs:   models.NewRelatedIDs(gids),
+		PerformerIDs: models.NewRelatedIDs(pids),
+		TagIDs:       models.NewRelatedIDs(tids),
 	}
 }
 

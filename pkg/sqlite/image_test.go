@@ -15,6 +15,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func loadImageRelationships(ctx context.Context, expected models.Image, actual *models.Image) error {
+	if expected.GalleryIDs.Loaded() {
+		if err := actual.LoadGalleryIDs(ctx, db.Image); err != nil {
+			return err
+		}
+	}
+	if expected.TagIDs.Loaded() {
+		if err := actual.LoadTagIDs(ctx, db.Image); err != nil {
+			return err
+		}
+	}
+	if expected.PerformerIDs.Loaded() {
+		if err := actual.LoadPerformerIDs(ctx, db.Image); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func Test_imageQueryBuilder_Create(t *testing.T) {
 	var (
 		title     = "title"
@@ -41,9 +61,9 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				StudioID:     &studioIDs[studioIdxWithImage],
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
-				GalleryIDs:   []int{galleryIDs[galleryIdxWithImage]},
-				TagIDs:       []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs: []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]},
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 				Files:        []*file.ImageFile{},
 			},
 			false,
@@ -61,9 +81,9 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				},
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
-				GalleryIDs:   []int{galleryIDs[galleryIdxWithImage]},
-				TagIDs:       []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs: []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]},
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
 		},
@@ -77,21 +97,21 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 		{
 			"invalid gallery id",
 			models.Image{
-				GalleryIDs: []int{invalidID},
+				GalleryIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
 		{
 			"invalid tag id",
 			models.Image{
-				TagIDs: []int{invalidID},
+				TagIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
 		{
 			"invalid performer id",
 			models.Image{
-				PerformerIDs: []int{invalidID},
+				PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
@@ -126,12 +146,24 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			copy := tt.newObject
 			copy.ID = s.ID
 
+			// load relationships
+			if err := loadImageRelationships(ctx, copy, &s); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
+			}
+
 			assert.Equal(copy, s)
 
 			// ensure can find the image
 			found, err := qb.Find(ctx, s.ID)
 			if err != nil {
 				t.Errorf("imageQueryBuilder.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadImageRelationships(ctx, copy, found); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
 			}
 
 			assert.Equal(copy, *found)
@@ -181,9 +213,9 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				},
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
-				GalleryIDs:   []int{galleryIDs[galleryIdxWithImage]},
-				TagIDs:       []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs: []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]},
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
 		},
@@ -194,9 +226,9 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				Files: []*file.ImageFile{
 					makeImageFileWithID(imageIdxWithGallery),
 				},
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
 				Organized:    true,
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -210,9 +242,9 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				Files: []*file.ImageFile{
 					makeImageFileWithID(imageIdxWithGallery),
 				},
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
 				Organized:    true,
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -226,9 +258,9 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				Files: []*file.ImageFile{
 					makeImageFileWithID(imageIdxWithTag),
 				},
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
 				Organized:    true,
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -242,9 +274,9 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				Files: []*file.ImageFile{
 					makeImageFileWithID(imageIdxWithPerformer),
 				},
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
 				Organized:    true,
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
@@ -273,7 +305,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 					makeImageFileWithID(imageIdxWithGallery),
 				},
 				Organized:  true,
-				GalleryIDs: []int{invalidID},
+				GalleryIDs: models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt:  createdAt,
 				UpdatedAt:  updatedAt,
 			},
@@ -287,7 +319,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 					makeImageFileWithID(imageIdxWithGallery),
 				},
 				Organized: true,
-				TagIDs:    []int{invalidID},
+				TagIDs:    models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt: createdAt,
 				UpdatedAt: updatedAt,
 			},
@@ -301,7 +333,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 					makeImageFileWithID(imageIdxWithGallery),
 				},
 				Organized:    true,
-				PerformerIDs: []int{invalidID},
+				PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 			},
@@ -327,6 +359,12 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 			s, err := qb.Find(ctx, tt.updatedObject.ID)
 			if err != nil {
 				t.Errorf("imageQueryBuilder.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadImageRelationships(ctx, copy, s); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
 			}
 
 			assert.Equal(copy, *s)
@@ -400,9 +438,9 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				},
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
-				GalleryIDs:   []int{galleryIDs[galleryIdxWithImage]},
-				TagIDs:       []int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]},
-				PerformerIDs: []int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]},
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
 		},
@@ -416,9 +454,9 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				Files: []*file.ImageFile{
 					makeImageFile(imageIdx1WithGallery),
 				},
-				GalleryIDs:   []int{},
-				TagIDs:       []int{},
-				PerformerIDs: []int{},
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
 			},
 			false,
 		},
@@ -447,6 +485,12 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			}
 
 			clearImageFileIDs(got)
+			// load relationships
+			if err := loadImageRelationships(ctx, tt.want, got); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
+			}
+
 			assert.Equal(tt.want, *got)
 
 			s, err := qb.Find(ctx, tt.id)
@@ -455,6 +499,11 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			}
 
 			clearImageFileIDs(s)
+			// load relationships
+			if err := loadImageRelationships(ctx, tt.want, s); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
+			}
 			assert.Equal(tt.want, *s)
 		})
 	}
@@ -478,10 +527,10 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				GalleryIDs: append(indexesToIDs(galleryIDs, imageGalleries[imageIdxWithGallery]),
+				GalleryIDs: models.NewRelatedIDs(append(indexesToIDs(galleryIDs, imageGalleries[imageIdxWithGallery]),
 					galleryIDs[galleryIdx1WithImage],
 					galleryIDs[galleryIdx1WithPerformer],
-				),
+				)),
 			},
 			false,
 		},
@@ -495,10 +544,10 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				TagIDs: append(indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
+				TagIDs: models.NewRelatedIDs(append(indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
 					tagIDs[tagIdx1WithDupName],
 					tagIDs[tagIdx1WithGallery],
-				),
+				)),
 			},
 			false,
 		},
@@ -512,10 +561,10 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				PerformerIDs: append(indexesToIDs(performerIDs, imagePerformers[imageIdxWithTwoPerformers]),
+				PerformerIDs: models.NewRelatedIDs(append(indexesToIDs(performerIDs, imagePerformers[imageIdxWithTwoPerformers]),
 					performerIDs[performerIdx1WithDupName],
 					performerIDs[performerIdx1WithGallery],
-				),
+				)),
 			},
 			false,
 		},
@@ -529,9 +578,9 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				GalleryIDs: append(indexesToIDs(galleryIDs, imageGalleries[imageIdxWithGallery]),
+				GalleryIDs: models.NewRelatedIDs(append(indexesToIDs(galleryIDs, imageGalleries[imageIdxWithGallery]),
 					galleryIDs[galleryIdx1WithPerformer],
-				),
+				)),
 			},
 			false,
 		},
@@ -545,9 +594,9 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				TagIDs: append(indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
+				TagIDs: models.NewRelatedIDs(append(indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
 					tagIDs[tagIdx1WithGallery],
-				),
+				)),
 			},
 			false,
 		},
@@ -561,9 +610,9 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				PerformerIDs: append(indexesToIDs(performerIDs, imagePerformers[imageIdxWithTwoPerformers]),
+				PerformerIDs: models.NewRelatedIDs(append(indexesToIDs(performerIDs, imagePerformers[imageIdxWithTwoPerformers]),
 					performerIDs[performerIdx1WithGallery],
-				),
+				)),
 			},
 			false,
 		},
@@ -613,7 +662,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				GalleryIDs: []int{},
+				GalleryIDs: models.NewRelatedIDs([]int{}),
 			},
 			false,
 		},
@@ -627,7 +676,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				TagIDs: []int{tagIDs[tagIdx2WithImage]},
+				TagIDs: models.NewRelatedIDs([]int{tagIDs[tagIdx2WithImage]}),
 			},
 			false,
 		},
@@ -641,7 +690,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				PerformerIDs: []int{performerIDs[performerIdx2WithImage]},
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx2WithImage]}),
 			},
 			false,
 		},
@@ -655,7 +704,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				GalleryIDs: []int{galleryIDs[galleryIdxWithImage]},
+				GalleryIDs: models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
 			},
 			false,
 		},
@@ -669,7 +718,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				TagIDs: indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
+				TagIDs: models.NewRelatedIDs(indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags])),
 			},
 			false,
 		},
@@ -683,7 +732,7 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				PerformerIDs: indexesToIDs(performerIDs, imagePerformers[imageIdxWithTwoPerformers]),
+				PerformerIDs: models.NewRelatedIDs(indexesToIDs(performerIDs, imagePerformers[imageIdxWithTwoPerformers])),
 			},
 			false,
 		},
@@ -708,6 +757,16 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			s, err := qb.Find(ctx, tt.id)
 			if err != nil {
 				t.Errorf("imageQueryBuilder.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadImageRelationships(ctx, tt.want, got); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
+			}
+			if err := loadImageRelationships(ctx, tt.want, s); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
 			}
 
 			// only compare fields that were in the partial
@@ -944,10 +1003,31 @@ func Test_imageQueryBuilder_Find(t *testing.T) {
 
 			if got != nil {
 				clearImageFileIDs(got)
+
+				// load relationships
+				if err := loadImageRelationships(ctx, *tt.want, got); err != nil {
+					t.Errorf("loadImageRelationships() error = %v", err)
+					return
+				}
 			}
 			assert.Equal(tt.want, got)
 		})
 	}
+}
+
+func postFindImages(ctx context.Context, want []*models.Image, got []*models.Image) error {
+	for i, s := range got {
+		clearImageFileIDs(s)
+
+		// load relationships
+		if i < len(want) {
+			if err := loadImageRelationships(ctx, *want[i], s); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func Test_imageQueryBuilder_FindMany(t *testing.T) {
@@ -985,8 +1065,9 @@ func Test_imageQueryBuilder_FindMany(t *testing.T) {
 				return
 			}
 
-			for _, f := range got {
-				clearImageFileIDs(f)
+			if err := postFindImages(ctx, tt.want, got); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
 			}
 
 			if !reflect.DeepEqual(got, tt.want) {
@@ -1044,8 +1125,9 @@ func Test_imageQueryBuilder_FindByChecksum(t *testing.T) {
 				return
 			}
 
-			for _, f := range got {
-				clearImageFileIDs(f)
+			if err := postFindImages(ctx, tt.want, got); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
 			}
 
 			assert.Equal(tt.want, got)
@@ -1121,8 +1203,9 @@ func Test_imageQueryBuilder_FindByFingerprints(t *testing.T) {
 				return
 			}
 
-			for _, f := range got {
-				clearImageFileIDs(f)
+			if err := postFindImages(ctx, tt.want, got); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
 			}
 
 			assert.Equal(tt.want, got)
@@ -1162,8 +1245,9 @@ func Test_imageQueryBuilder_FindByGalleryID(t *testing.T) {
 				return
 			}
 
-			for _, f := range got {
-				clearImageFileIDs(f)
+			if err := postFindImages(ctx, tt.want, got); err != nil {
+				t.Errorf("loadImageRelationships() error = %v", err)
+				return
 			}
 
 			assert.Equal(tt.want, got)

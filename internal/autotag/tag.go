@@ -19,6 +19,7 @@ type SceneQueryTagUpdater interface {
 
 type ImageQueryTagUpdater interface {
 	image.Queryer
+	models.TagIDLoader
 	image.PartialUpdater
 }
 
@@ -79,8 +80,21 @@ func TagImages(ctx context.Context, p *models.Tag, paths []string, aliases []str
 	t := getTagTaggers(p, aliases, cache)
 
 	for _, tt := range t {
-		if err := tt.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
-			return image.AddTag(ctx, rw, i, p.ID)
+		if err := tt.tagImages(ctx, paths, rw, func(o *models.Image) (bool, error) {
+			if err := o.LoadTagIDs(ctx, rw); err != nil {
+				return false, err
+			}
+			existing := o.TagIDs.List()
+
+			if intslice.IntInclude(existing, p.ID) {
+				return false, nil
+			}
+
+			if err := image.AddTag(ctx, rw, o, p.ID); err != nil {
+				return false, err
+			}
+
+			return true, nil
 		}); err != nil {
 			return err
 		}
