@@ -36,11 +36,11 @@ require (
 	github.com/vektra/mockery/v2 v2.10.0
 	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb
-	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
-	golang.org/x/sys v0.0.0-20220329152356-43be30ef3008
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
+	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/text v0.3.7
-	golang.org/x/tools v0.1.10 // indirect
+	golang.org/x/tools v0.1.12 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -56,6 +56,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/spf13/cast v1.4.1
 	github.com/vearutop/statigz v1.1.6
+	github.com/vektah/dataloaden v0.3.0
 	github.com/vektah/gqlparser/v2 v2.4.1
 	gopkg.in/guregu/null.v4 v4.0.0
 )
@@ -100,8 +101,7 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/urfave/cli/v2 v2.4.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
