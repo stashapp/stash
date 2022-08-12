@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -22,9 +23,27 @@ type Image struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	GalleryIDs   []int `json:"gallery_ids"`
-	TagIDs       []int `json:"tag_ids"`
-	PerformerIDs []int `json:"performer_ids"`
+	GalleryIDs   RelatedIDs `json:"gallery_ids"`
+	TagIDs       RelatedIDs `json:"tag_ids"`
+	PerformerIDs RelatedIDs `json:"performer_ids"`
+}
+
+func (i *Image) LoadGalleryIDs(ctx context.Context, l GalleryIDLoader) error {
+	return i.GalleryIDs.load(func() ([]int, error) {
+		return l.GetGalleryIDs(ctx, i.ID)
+	})
+}
+
+func (i *Image) LoadPerformerIDs(ctx context.Context, l PerformerIDLoader) error {
+	return i.PerformerIDs.load(func() ([]int, error) {
+		return l.GetPerformerIDs(ctx, i.ID)
+	})
+}
+
+func (i *Image) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return i.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, i.ID)
+	})
 }
 
 func (i Image) PrimaryFile() *file.ImageFile {

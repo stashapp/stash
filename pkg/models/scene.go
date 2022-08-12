@@ -133,6 +133,13 @@ type SceneReader interface {
 	FindByPerformerID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindByGalleryID(ctx context.Context, performerID int) ([]*Scene, error)
 	FindDuplicates(ctx context.Context, distance int) ([][]*Scene, error)
+
+	GalleryIDLoader
+	PerformerIDLoader
+	TagIDLoader
+	SceneMovieLoader
+	StashIDLoader
+
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
 	FindByMovieID(ctx context.Context, movieID int) ([]*Scene, error)

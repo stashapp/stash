@@ -199,15 +199,17 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (
 	return ret, nil
 }
 
-func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer) (ret []*models.StashID, err error) {
+func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer) ([]*models.StashID, error) {
+	var ret []models.StashID
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
 		ret, err = r.repository.Performer.GetStashIDs(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
 	}
 
-	return ret, nil
+	return stashIDsSliceToPtrSlice(ret), nil
 }
 
 func (r *performerResolver) Rating(ctx context.Context, obj *models.Performer) (*int, error) {

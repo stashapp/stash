@@ -133,14 +133,20 @@ func (qb *GalleryStore) Create(ctx context.Context, newObject *models.Gallery, f
 		}
 	}
 
-	if err := galleriesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
-		return err
+	if newObject.PerformerIDs.Loaded() {
+		if err := galleriesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := galleriesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs); err != nil {
-		return err
+	if newObject.TagIDs.Loaded() {
+		if err := galleriesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := galleriesScenesTableMgr.insertJoins(ctx, id, newObject.SceneIDs); err != nil {
-		return err
+	if newObject.SceneIDs.Loaded() {
+		if err := galleriesScenesTableMgr.insertJoins(ctx, id, newObject.SceneIDs.List()); err != nil {
+			return err
+		}
 	}
 
 	updated, err := qb.Find(ctx, id)
@@ -161,14 +167,20 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 		return err
 	}
 
-	if err := galleriesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs); err != nil {
-		return err
+	if updatedObject.PerformerIDs.Loaded() {
+		if err := galleriesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := galleriesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
-		return err
+	if updatedObject.TagIDs.Loaded() {
+		if err := galleriesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := galleriesScenesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.SceneIDs); err != nil {
-		return err
+	if updatedObject.SceneIDs.Loaded() {
+		if err := galleriesScenesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.SceneIDs.List()); err != nil {
+			return err
+		}
 	}
 
 	fileIDs := make([]file.ID, len(updatedObject.Files))
@@ -249,14 +261,16 @@ func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*
 
 		s := f.resolve()
 
-		if err := qb.resolveRelationships(ctx, s); err != nil {
-			return err
-		}
-
 		ret = append(ret, s)
 		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	for _, s := range ret {
+		if err := qb.resolveRelationships(ctx, s); err != nil {
+			return nil, err
+		}
 	}
 
 	return ret, nil
@@ -279,24 +293,6 @@ func (qb *GalleryStore) resolveRelationships(ctx context.Context, s *models.Gall
 		}
 
 		s.FolderPath = folder.Path
-	}
-
-	// performers
-	s.PerformerIDs, err = qb.performersRepository().getIDs(ctx, s.ID)
-	if err != nil {
-		return fmt.Errorf("resolving gallery performers: %w", err)
-	}
-
-	// tags
-	s.TagIDs, err = qb.tagsRepository().getIDs(ctx, s.ID)
-	if err != nil {
-		return fmt.Errorf("resolving gallery tags: %w", err)
-	}
-
-	// scenes
-	s.SceneIDs, err = qb.scenesRepository().getIDs(ctx, s.ID)
-	if err != nil {
-		return fmt.Errorf("resolving gallery scenes: %w", err)
 	}
 
 	return nil
@@ -989,6 +985,11 @@ func (qb *GalleryStore) filesRepository() *filesRepository {
 	}
 }
 
+func (qb *GalleryStore) AddFileID(ctx context.Context, id int, fileID file.ID) error {
+	const firstPrimary = false
+	return galleriesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []file.ID{fileID})
+}
+
 func (qb *GalleryStore) performersRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
@@ -1000,6 +1001,10 @@ func (qb *GalleryStore) performersRepository() *joinRepository {
 	}
 }
 
+func (qb *GalleryStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.performersRepository().getIDs(ctx, id)
+}
+
 func (qb *GalleryStore) tagsRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
@@ -1009,6 +1014,10 @@ func (qb *GalleryStore) tagsRepository() *joinRepository {
 		},
 		fkColumn: "tag_id",
 	}
+}
+
+func (qb *GalleryStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.tagsRepository().getIDs(ctx, id)
 }
 
 func (qb *GalleryStore) imagesRepository() *joinRepository {
@@ -1040,4 +1049,8 @@ func (qb *GalleryStore) scenesRepository() *joinRepository {
 		},
 		fkColumn: sceneIDColumn,
 	}
+}
+
+func (qb *GalleryStore) GetSceneIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.scenesRepository().getIDs(ctx, id)
 }

@@ -102,6 +102,10 @@ type ImageReader interface {
 	All(ctx context.Context) ([]*Image, error)
 	Query(ctx context.Context, options ImageQueryOptions) (*ImageQueryResult, error)
 	QueryCount(ctx context.Context, imageFilter *ImageFilterType, findFilter *FindFilterType) (int, error)
+
+	GalleryIDLoader
+	PerformerIDLoader
+	TagIDLoader
 }
 
 type ImageWriter interface {

@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 const tagTable = "tags"
@@ -94,21 +97,45 @@ func (qb *tagQueryBuilder) Find(ctx context.Context, id int) (*models.Tag, error
 }
 
 func (qb *tagQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Tag, error) {
-	var tags []*models.Tag
-	for _, id := range ids {
-		tag, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-
-		if tag == nil {
-			return nil, fmt.Errorf("tag with id %d not found", id)
-		}
-
-		tags = append(tags, tag)
+	tableMgr := tagTableMgr
+	q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(ids...))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
 	}
 
-	return tags, nil
+	ret := make([]*models.Tag, len(ids))
+
+	for _, s := range unsorted {
+		i := intslice.IntIndex(ids, s.ID)
+		ret[i] = s
+	}
+
+	for i := range ret {
+		if ret[i] == nil {
+			return nil, fmt.Errorf("tag with id %d not found", ids[i])
+		}
+	}
+
+	return ret, nil
+}
+
+func (qb *tagQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Tag, error) {
+	const single = false
+	var ret []*models.Tag
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var f models.Tag
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		ret = append(ret, &f)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (qb *tagQueryBuilder) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Tag, error) {
@@ -343,13 +370,9 @@ func (qb *tagQueryBuilder) Query(ctx context.Context, tagFilter *models.TagFilte
 		return nil, 0, err
 	}
 
-	var tags []*models.Tag
-	for _, id := range idsResult {
-		tag, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, 0, err
-		}
-		tags = append(tags, tag)
+	tags, err := qb.FindMany(ctx, idsResult)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return tags, countResult, nil

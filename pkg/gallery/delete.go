@@ -91,8 +91,12 @@ func (s *Service) destroyFolderImages(ctx context.Context, i *models.Gallery, fi
 	}
 
 	for _, img := range imgs {
+		if err := img.LoadGalleryIDs(ctx, s.ImageFinder); err != nil {
+			return nil, err
+		}
+
 		// only destroy images that are not attached to other galleries
-		if len(img.GalleryIDs) > 1 {
+		if len(img.GalleryIDs.List()) > 1 {
 			continue
 		}
 

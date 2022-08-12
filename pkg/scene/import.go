@@ -18,6 +18,7 @@ import (
 
 type FullCreatorUpdater interface {
 	CreatorUpdater
+	Update(ctx context.Context, updatedScene *models.Scene) error
 	Updater
 }
 
@@ -75,9 +76,14 @@ func (i *Importer) PreImport(ctx context.Context) error {
 func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
 		// Path:    i.Path,
-		Title:   sceneJSON.Title,
-		Details: sceneJSON.Details,
-		URL:     sceneJSON.URL,
+		Title:        sceneJSON.Title,
+		Details:      sceneJSON.Details,
+		URL:          sceneJSON.URL,
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		GalleryIDs:   models.NewRelatedIDs([]int{}),
+		Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
+		StashIDs:     models.NewRelatedStashIDs(sceneJSON.StashIDs),
 	}
 
 	// if sceneJSON.Checksum != "" {
@@ -140,8 +146,6 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	// 		newScene.Bitrate = &v
 	// 	}
 	// }
-
-	newScene.StashIDs = append(newScene.StashIDs, i.Input.StashIDs...)
 
 	return newScene
 }
@@ -214,7 +218,7 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 		}
 
 		for _, o := range galleries {
-			i.scene.GalleryIDs = append(i.scene.GalleryIDs, o.ID)
+			i.scene.GalleryIDs.Add(o.ID)
 		}
 	}
 
@@ -259,7 +263,7 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 		}
 
 		for _, p := range performers {
-			i.scene.PerformerIDs = append(i.scene.PerformerIDs, p.ID)
+			i.scene.PerformerIDs.Add(p.ID)
 		}
 	}
 
@@ -317,7 +321,7 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 				toAdd.SceneIndex = &index
 			}
 
-			i.scene.Movies = append(i.scene.Movies, toAdd)
+			i.scene.Movies.Add(toAdd)
 		}
 	}
 
@@ -344,7 +348,7 @@ func (i *Importer) populateTags(ctx context.Context) error {
 		}
 
 		for _, p := range tags {
-			i.scene.TagIDs = append(i.scene.TagIDs, p.ID)
+			i.scene.TagIDs.Add(p.ID)
 		}
 	}
 

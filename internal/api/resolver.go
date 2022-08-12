@@ -245,3 +245,13 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 
 	return result, nil
 }
+
+func firstError(errs []error) error {
+	for _, e := range errs {
+		if e != nil {
+			return e
+		}
+	}
+
+	return nil
+}

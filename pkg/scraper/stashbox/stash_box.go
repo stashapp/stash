@@ -32,20 +32,21 @@ import (
 
 type SceneReader interface {
 	Find(ctx context.Context, id int) (*models.Scene, error)
+	models.StashIDLoader
 }
 
 type PerformerReader interface {
 	match.PerformerFinder
 	Find(ctx context.Context, id int) (*models.Performer, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
-	GetStashIDs(ctx context.Context, performerID int) ([]*models.StashID, error)
+	models.StashIDLoader
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
 
 type StudioReader interface {
 	match.StudioFinder
 	studio.Finder
-	GetStashIDs(ctx context.Context, studioID int) ([]*models.StashID, error)
+	models.StashIDLoader
 }
 type TagFinder interface {
 	tag.Queryer
@@ -227,7 +228,11 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 				continue
 			}
 
-			stashIDs := scene.StashIDs
+			if err := scene.LoadStashIDs(ctx, qb); err != nil {
+				return err
+			}
+
+			stashIDs := scene.StashIDs.List()
 			sceneStashID := ""
 			for _, stashID := range stashIDs {
 				if stashID.Endpoint == endpoint {
@@ -827,8 +832,9 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 		}
 
 		for _, stashID := range stashIDs {
+			c := stashID
 			if stashID.Endpoint == endpoint {
-				performerDraft.ID = &stashID.StashID
+				performerDraft.ID = &c.StashID
 				break
 			}
 		}
@@ -855,7 +861,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 		}
 	}
 
-	stashIDs := scene.StashIDs
+	stashIDs := scene.StashIDs.List()
 	var stashID *string
 	for _, v := range stashIDs {
 		if v.Endpoint == endpoint {
@@ -952,8 +958,9 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		}
 		var stashID *string
 		for _, v := range stashIDs {
+			c := v
 			if v.Endpoint == endpoint {
-				stashID = &v.StashID
+				stashID = &c.StashID
 				break
 			}
 		}

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"path/filepath"
 	"time"
 
@@ -35,9 +36,27 @@ type Gallery struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	SceneIDs     []int `json:"scene_ids"`
-	TagIDs       []int `json:"tag_ids"`
-	PerformerIDs []int `json:"performer_ids"`
+	SceneIDs     RelatedIDs `json:"scene_ids"`
+	TagIDs       RelatedIDs `json:"tag_ids"`
+	PerformerIDs RelatedIDs `json:"performer_ids"`
+}
+
+func (g *Gallery) LoadSceneIDs(ctx context.Context, l SceneIDLoader) error {
+	return g.SceneIDs.load(func() ([]int, error) {
+		return l.GetSceneIDs(ctx, g.ID)
+	})
+}
+
+func (g *Gallery) LoadPerformerIDs(ctx context.Context, l PerformerIDLoader) error {
+	return g.PerformerIDs.load(func() ([]int, error) {
+		return l.GetPerformerIDs(ctx, g.ID)
+	})
+}
+
+func (g *Gallery) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return g.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, g.ID)
+	})
 }
 
 func (g Gallery) PrimaryFile() file.File {

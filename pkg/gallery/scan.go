@@ -11,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 // const mutexType = "gallery"
@@ -20,16 +19,17 @@ type FinderCreatorUpdater interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
 	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Gallery, error)
 	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []file.ID) error
-	Update(ctx context.Context, updatedGallery *models.Gallery) error
+	AddFileID(ctx context.Context, id int, fileID file.ID) error
 }
 
 type SceneFinderUpdater interface {
 	FindByPath(ctx context.Context, p string) ([]*models.Scene, error)
 	Update(ctx context.Context, updatedScene *models.Scene) error
+	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 }
 
 type ScanHandler struct {
-	CreatorUpdater     FinderCreatorUpdater
+	CreatorUpdater     FullCreatorUpdater
 	SceneFinderUpdater SceneFinderUpdater
 
 	PluginCache *plugin.Cache
@@ -97,8 +97,8 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			i.Files = append(i.Files, f)
 		}
 
-		if err := h.CreatorUpdater.Update(ctx, i); err != nil {
-			return fmt.Errorf("updating gallery: %w", err)
+		if err := h.CreatorUpdater.AddFileID(ctx, i.ID, f.Base().ID); err != nil {
+			return fmt.Errorf("adding file to gallery: %w", err)
 		}
 	}
 
@@ -122,13 +122,8 @@ func (h *ScanHandler) associateScene(ctx context.Context, existing []*models.Gal
 
 	for _, scene := range scenes {
 		// found related Scene
-		newIDs := intslice.IntAppendUniques(scene.GalleryIDs, galleryIDs)
-		if len(newIDs) > len(scene.GalleryIDs) {
-			logger.Infof("associate: Gallery %s is related to scene: %s", f.Base().Path, scene.GetTitle())
-			scene.GalleryIDs = newIDs
-			if err := h.SceneFinderUpdater.Update(ctx, scene); err != nil {
-				return err
-			}
+		if err := h.SceneFinderUpdater.AddGalleryIDs(ctx, scene.ID, galleryIDs); err != nil {
+			return err
 		}
 	}
 

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -26,11 +27,65 @@ type Scene struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	GalleryIDs   []int          `json:"gallery_ids"`
-	TagIDs       []int          `json:"tag_ids"`
-	PerformerIDs []int          `json:"performer_ids"`
-	Movies       []MoviesScenes `json:"movies"`
-	StashIDs     []StashID      `json:"stash_ids"`
+	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
+	TagIDs       RelatedIDs      `json:"tag_ids"`
+	PerformerIDs RelatedIDs      `json:"performer_ids"`
+	Movies       RelatedMovies   `json:"movies"`
+	StashIDs     RelatedStashIDs `json:"stash_ids"`
+}
+
+func (s *Scene) LoadGalleryIDs(ctx context.Context, l GalleryIDLoader) error {
+	return s.GalleryIDs.load(func() ([]int, error) {
+		return l.GetGalleryIDs(ctx, s.ID)
+	})
+}
+
+func (s *Scene) LoadPerformerIDs(ctx context.Context, l PerformerIDLoader) error {
+	return s.PerformerIDs.load(func() ([]int, error) {
+		return l.GetPerformerIDs(ctx, s.ID)
+	})
+}
+
+func (s *Scene) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return s.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, s.ID)
+	})
+}
+
+func (s *Scene) LoadMovies(ctx context.Context, l SceneMovieLoader) error {
+	return s.Movies.load(func() ([]MoviesScenes, error) {
+		return l.GetMovies(ctx, s.ID)
+	})
+}
+
+func (s *Scene) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
+	return s.StashIDs.load(func() ([]StashID, error) {
+		return l.GetStashIDs(ctx, s.ID)
+	})
+}
+
+func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
+	if err := s.LoadGalleryIDs(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadPerformerIDs(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadTagIDs(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadMovies(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadStashIDs(ctx, l); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s Scene) PrimaryFile() *file.VideoFile {

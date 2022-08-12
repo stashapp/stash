@@ -36,11 +36,27 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	}
 
 	// Populate a new performer from the input
+	performerIDs, err := stringslice.StringSliceToIntSlice(input.PerformerIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting performer ids: %w", err)
+	}
+	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+	sceneIDs, err := stringslice.StringSliceToIntSlice(input.SceneIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting scene ids: %w", err)
+	}
+
 	currentTime := time.Now()
 	newGallery := models.Gallery{
-		Title:     input.Title,
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
+		Title:        input.Title,
+		PerformerIDs: models.NewRelatedIDs(performerIDs),
+		TagIDs:       models.NewRelatedIDs(tagIDs),
+		SceneIDs:     models.NewRelatedIDs(sceneIDs),
+		CreatedAt:    currentTime,
+		UpdatedAt:    currentTime,
 	}
 	if input.URL != nil {
 		newGallery.URL = *input.URL
@@ -58,20 +74,6 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	if input.StudioID != nil {
 		studioID, _ := strconv.Atoi(*input.StudioID)
 		newGallery.StudioID = &studioID
-	}
-
-	var err error
-	newGallery.PerformerIDs, err = stringslice.StringSliceToIntSlice(input.PerformerIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting performer ids: %w", err)
-	}
-	newGallery.TagIDs, err = stringslice.StringSliceToIntSlice(input.TagIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting tag ids: %w", err)
-	}
-	newGallery.SceneIDs, err = stringslice.StringSliceToIntSlice(input.SceneIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting scene ids: %w", err)
 	}
 
 	// Start the transaction and save the gallery

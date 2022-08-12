@@ -60,6 +60,7 @@ func TestGalleryPerformers(t *testing.T) {
 					Path: test.Path,
 				},
 			},
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		}
 		err := GalleryPerformers(testCtx, &gallery, mockGalleryReader, mockPerformerReader, nil)
 
@@ -183,6 +184,7 @@ func TestGalleryTags(t *testing.T) {
 					Path: test.Path,
 				},
 			},
+			TagIDs: models.NewRelatedIDs([]int{}),
 		}
 		err := GalleryTags(testCtx, &gallery, mockGalleryReader, mockTagReader, nil)
 

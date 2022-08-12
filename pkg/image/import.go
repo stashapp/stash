@@ -17,8 +17,13 @@ type GalleryChecksumsFinder interface {
 	FindByChecksums(ctx context.Context, checksums []string) ([]*models.Gallery, error)
 }
 
+type FullCreatorUpdater interface {
+	FinderCreatorUpdater
+	Update(ctx context.Context, updatedImage *models.Image) error
+}
+
 type Importer struct {
-	ReaderWriter        FinderCreatorUpdater
+	ReaderWriter        FullCreatorUpdater
 	StudioWriter        studio.NameFinderCreator
 	GalleryWriter       GalleryChecksumsFinder
 	PerformerWriter     performer.NameFinderCreator
@@ -57,6 +62,9 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 	newImage := models.Image{
 		// Checksum: imageJSON.Checksum,
 		// Path:     i.Path,
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		GalleryIDs:   models.NewRelatedIDs([]int{}),
 	}
 
 	if imageJSON.Title != "" {
@@ -145,7 +153,7 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 				continue
 			}
 		} else {
-			i.image.GalleryIDs = append(i.image.GalleryIDs, gallery[0].ID)
+			i.image.GalleryIDs.Add(gallery[0].ID)
 		}
 	}
 
@@ -190,7 +198,7 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 		}
 
 		for _, p := range performers {
-			i.image.PerformerIDs = append(i.image.PerformerIDs, p.ID)
+			i.image.PerformerIDs.Add(p.ID)
 		}
 	}
 
@@ -222,7 +230,7 @@ func (i *Importer) populateTags(ctx context.Context) error {
 		}
 
 		for _, t := range tags {
-			i.image.TagIDs = append(i.image.TagIDs, t.ID)
+			i.image.TagIDs.Add(t.ID)
 		}
 	}
 
