@@ -315,6 +315,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		c.Set(config.WallPlayback, *input.WallPlayback)
 	}
 
+	if input.RatingSystem != nil {
+		c.Set(config.RatingSystem, *input.RatingSystem)
+	}
+
 	if input.MaximumLoopDuration != nil {
 		c.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
 	}

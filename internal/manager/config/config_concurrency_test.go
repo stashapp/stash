@@ -78,6 +78,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(WallShowTitle, i.GetWallShowTitle())
 				i.Set(CustomPerformerImageLocation, i.GetCustomPerformerImageLocation())
 				i.Set(WallPlayback, i.GetWallPlayback())
+				i.Set(RatingSystem, i.GetRatingSystem())
 				i.Set(MaximumLoopDuration, i.GetMaximumLoopDuration())
 				i.Set(AutostartVideo, i.GetAutostartVideo())
 				i.Set(ShowStudioAsText, i.GetShowStudioAsText())

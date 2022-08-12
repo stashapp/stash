@@ -58,3 +58,10 @@ node_modules
 /stash
 dist
 .DS_Store
+/.vs
+*.yml
+/ffmpeg-release-essentials.zip
+/icon.png
+/package-lock.json
+/package.json
+/stash-go.sqlite

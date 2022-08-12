@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, Box } from "react";
 import { Button } from "react-bootstrap";
 import Icon from "src/components/Shared/Icon";
 import { faStar as fasStar } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
+import { faStarHalf as faStarHalf } from "@fortawesome/free-regular-svg-icons";
 
 export interface IRatingStarsProps {
   value?: number;
@@ -116,4 +117,60 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
       )}
     </div>
   );
+
+  //return (
+  //  <Box
+  //    sx={{
+  //      display: 'inline-flex',
+  //      position: 'relative',
+  //      cursor: 'pointer',
+  //      textAlign: 'left'
+  //    }}
+  //    disabled={disabled}
+  //    onClick={setRating}
+  //    onMouseMove={handleMouseMove}
+  //    onMouseLeave={handleMouseLeave}
+  //    ref={ratingContainerRef}
+  //  >
+  //    {[...new Array(totalStars)].map((arr, index) => {
+  //      const activeState = isHovered ? hoverActiveStar : activeStar;
+
+  //      const showEmptyIcon = activeState === -1 || activeState < index + 1;
+
+  //      const isActiveRating = activeState !== 1;
+  //      const isRatingWithPrecision = activeState % 1 !== 0;
+  //      const isRatingEqualToIndex = Math.ceil(activeState) === index + 1;
+  //      const showRatingWithPrecision =
+  //        isActiveRating && isRatingWithPrecision && isRatingEqualToIndex;
+
+  //      return (
+  //        <Box
+  //          position={'relative'}
+  //          sx={{
+  //            cursor: 'pointer'
+  //          }}
+  //          key={index}
+  //        >
+  //          <Box
+  //            sx={{
+  //              width: showRatingWithPrecision ? `${(activeState % 1) * 100}%` : '0%',
+  //              overflow: 'hidden',
+  //              position: 'absolute'
+  //            }}
+  //          >
+  //            <FilledIcon />
+  //          </Box>
+  //          {/*Note here */}
+  //          <Box
+  //            sx={{
+  //              color: showEmptyIcon ? 'gray' : 'inherit'
+  //            }}
+  //          >
+  //            {showEmptyIcon ? <EmptyIcon /> : <FilledIcon />}
+  //          </Box>
+  //        </Box>
+  //      );
+  //    })}
+  //  </Box>
+  //  );
 };

@@ -1,6 +1,7 @@
 import {
   ImageLightboxDisplayMode,
   ImageLightboxScrollMode,
+  RatingSystem,
 } from "../core/generated-graphql";
 
 export const imageLightboxDisplayModeIntlMap = new Map<
@@ -24,4 +25,9 @@ export const imageLightboxScrollModeIntlMap = new Map<
 >([
   [ImageLightboxScrollMode.Zoom, "dialogs.lightbox.scroll_mode.zoom"],
   [ImageLightboxScrollMode.PanY, "dialogs.lightbox.scroll_mode.pan_y"],
+]);
+
+export const ratingSystemIntlMap = new Map<RatingSystem, string>([
+  [RatingSystem.FiveStar, "config.ui.editing.rating_system.options.five_stars"],
+  [RatingSystem.TenStar, "config.ui.editing.rating_system.options.ten_stars"],
 ]);

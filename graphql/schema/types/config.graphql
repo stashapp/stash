@@ -270,6 +270,9 @@ input ConfigInterfaceInput {
   
   """Set to true to disable creating new objects via the dropdown menus"""
   disableDropdownCreate: ConfigDisableDropdownCreateInput
+
+  """Rating System Type"""
+  ratingSystem: String
   
   """Handy Connection Key"""
   handyKey: String
@@ -298,6 +301,9 @@ type ConfigInterfaceResult {
   wallShowTitle: Boolean
   """Wall playback type"""
   wallPlayback: String
+
+  """Rating System Type"""
+  ratingSystem: String
 
   """Show scene scrubber by default"""
   showScrubber: Boolean

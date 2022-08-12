@@ -17,6 +17,7 @@ import * as GQL from "src/core/generated-graphql";
 import {
   imageLightboxDisplayModeIntlMap,
   imageLightboxScrollModeIntlMap,
+  ratingSystemIntlMap,
 } from "src/core/enums";
 import { useInterfaceLocalForage } from "src/hooks";
 import {
@@ -376,6 +377,22 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
         </div>
+        <SelectSetting
+          id="editing_rating_system"
+          headingID="config.ui.editing.rating_system.label"
+          value={iface.ratingSystem ?? GQL.RatingSystem.FiveStar}
+          onChange={(v) =>
+            saveInterface({ ratingSystem: v as GQL.RatingSystem })
+          }
+        >
+          {Array.from(ratingSystemIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
       </SettingSection>
 
       <SettingSection headingID="config.ui.custom_css.heading">
