@@ -20,6 +20,7 @@ type Repository interface {
 type ImageFinder interface {
 	FindByFolderID(ctx context.Context, folder file.FolderID) ([]*models.Image, error)
 	FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*models.Image, error)
+	models.GalleryIDLoader
 }
 
 type ImageService interface {

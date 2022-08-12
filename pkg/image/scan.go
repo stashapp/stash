@@ -24,7 +24,8 @@ type FinderCreatorUpdater interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Image, error)
 	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Image, error)
 	Create(ctx context.Context, newImage *models.ImageCreateInput) error
-	Update(ctx context.Context, updatedImage *models.Image) error
+	AddFileID(ctx context.Context, id int, fileID file.ID) error
+	models.GalleryIDLoader
 }
 
 type GalleryFinderCreator interface {
@@ -95,8 +96,9 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 		// create a new image
 		now := time.Now()
 		newImage := &models.Image{
-			CreatedAt: now,
-			UpdatedAt: now,
+			CreatedAt:  now,
+			UpdatedAt:  now,
+			GalleryIDs: models.NewRelatedIDs([]int{}),
 		}
 
 		// if the file is in a zip, then associate it with the gallery
@@ -107,7 +109,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 			}
 
 			for _, gg := range g {
-				newImage.GalleryIDs = append(newImage.GalleryIDs, gg.ID)
+				newImage.GalleryIDs.Add(gg.ID)
 			}
 		} else if h.ScanConfig.GetCreateGalleriesFromFolders() {
 			if err := h.associateFolderBasedGallery(ctx, newImage, imageFile); err != nil {
@@ -162,8 +164,8 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 				}
 			}
 
-			if err := h.CreatorUpdater.Update(ctx, i); err != nil {
-				return fmt.Errorf("updating image: %w", err)
+			if err := h.CreatorUpdater.AddFileID(ctx, i.ID, f.ID); err != nil {
+				return fmt.Errorf("adding file to image: %w", err)
 			}
 		}
 	}
@@ -210,8 +212,12 @@ func (h *ScanHandler) associateFolderBasedGallery(ctx context.Context, newImage 
 		return err
 	}
 
-	if g != nil && !intslice.IntInclude(newImage.GalleryIDs, g.ID) {
-		newImage.GalleryIDs = append(newImage.GalleryIDs, g.ID)
+	if err := newImage.LoadGalleryIDs(ctx, h.CreatorUpdater); err != nil {
+		return err
+	}
+
+	if g != nil && !intslice.IntInclude(newImage.GalleryIDs.List(), g.ID) {
+		newImage.GalleryIDs.Add(g.ID)
 		logger.Infof("Adding %s to folder-based gallery %s", f.Base().Path, g.Path())
 	}
 

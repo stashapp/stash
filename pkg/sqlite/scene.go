@@ -157,20 +157,33 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		}
 	}
 
-	if err := scenesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
-		return err
+	if newObject.PerformerIDs.Loaded() {
+		if err := scenesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs); err != nil {
-		return err
+	if newObject.TagIDs.Loaded() {
+		if err := scenesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs); err != nil {
-		return err
+
+	if newObject.GalleryIDs.Loaded() {
+		if err := scenesGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs); err != nil {
-		return err
+
+	if newObject.StashIDs.Loaded() {
+		if err := scenesStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesMoviesTableMgr.insertJoins(ctx, id, newObject.Movies); err != nil {
-		return err
+
+	if newObject.Movies.Loaded() {
+		if err := scenesMoviesTableMgr.insertJoins(ctx, id, newObject.Movies.List()); err != nil {
+			return err
+		}
 	}
 
 	updated, err := qb.find(ctx, id)
@@ -235,20 +248,34 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 		return err
 	}
 
-	if err := scenesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs); err != nil {
-		return err
+	if updatedObject.PerformerIDs.Loaded() {
+		if err := scenesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
-		return err
+
+	if updatedObject.TagIDs.Loaded() {
+		if err := scenesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs); err != nil {
-		return err
+
+	if updatedObject.GalleryIDs.Loaded() {
+		if err := scenesGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs); err != nil {
-		return err
+
+	if updatedObject.StashIDs.Loaded() {
+		if err := scenesStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesMoviesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Movies); err != nil {
-		return err
+
+	if updatedObject.Movies.Loaded() {
+		if err := scenesMoviesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Movies.List()); err != nil {
+			return err
+		}
 	}
 
 	fileIDs := make([]file.ID, len(updatedObject.Files))
@@ -333,14 +360,16 @@ func (qb *SceneStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 
 		s := f.resolve()
 
-		if err := qb.resolveRelationships(ctx, s); err != nil {
-			return err
-		}
-
 		ret = append(ret, s)
 		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	for _, s := range ret {
+		if err := qb.resolveRelationships(ctx, s); err != nil {
+			return nil, err
+		}
 	}
 
 	return ret, nil
@@ -353,36 +382,6 @@ func (qb *SceneStore) resolveRelationships(ctx context.Context, s *models.Scene)
 	s.Files, err = qb.getFiles(ctx, s.ID)
 	if err != nil {
 		return fmt.Errorf("resolving scene files: %w", err)
-	}
-
-	// movies
-	s.Movies, err = qb.getMovies(ctx, s.ID)
-	if err != nil {
-		return fmt.Errorf("resolving scene movies: %w", err)
-	}
-
-	// performers
-	s.PerformerIDs, err = qb.performersRepository().getIDs(ctx, s.ID)
-	if err != nil {
-		return fmt.Errorf("resolving scene performers: %w", err)
-	}
-
-	// tags
-	s.TagIDs, err = qb.tagsRepository().getIDs(ctx, s.ID)
-	if err != nil {
-		return fmt.Errorf("resolving scene tags: %w", err)
-	}
-
-	// galleries
-	s.GalleryIDs, err = qb.galleriesRepository().getIDs(ctx, s.ID)
-	if err != nil {
-		return fmt.Errorf("resolving scene galleries: %w", err)
-	}
-
-	// stash ids
-	s.StashIDs, err = qb.getStashIDs(ctx, s.ID)
-	if err != nil {
-		return fmt.Errorf("resolving scene stash ids: %w", err)
 	}
 
 	return nil
@@ -407,37 +406,6 @@ func (qb *SceneStore) getFiles(ctx context.Context, id int) ([]*file.VideoFile, 
 		if !ok {
 			return nil, fmt.Errorf("expected file to be *file.VideoFile not %T", f)
 		}
-	}
-
-	return ret, nil
-}
-
-func (qb *SceneStore) getMovies(ctx context.Context, id int) (ret []models.MoviesScenes, err error) {
-	ret = []models.MoviesScenes{}
-	if err := qb.moviesRepository().getAll(ctx, id, func(rows *sqlx.Rows) error {
-		var ms moviesScenesRow
-		if err := rows.StructScan(&ms); err != nil {
-			return err
-		}
-
-		ret = append(ret, ms.resolve(id))
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
-}
-
-func (qb *SceneStore) getStashIDs(ctx context.Context, id int) ([]models.StashID, error) {
-	stashIDs, err := qb.stashIDRepository().get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	ret := make([]models.StashID, len(stashIDs))
-	for i, sid := range stashIDs {
-		ret[i] = *sid
 	}
 
 	return ret, nil
@@ -1399,6 +1367,24 @@ func (qb *SceneStore) moviesRepository() *repository {
 	}
 }
 
+func (qb *SceneStore) GetMovies(ctx context.Context, id int) (ret []models.MoviesScenes, err error) {
+	ret = []models.MoviesScenes{}
+
+	if err := qb.moviesRepository().getAll(ctx, id, func(rows *sqlx.Rows) error {
+		var ms moviesScenesRow
+		if err := rows.StructScan(&ms); err != nil {
+			return err
+		}
+
+		ret = append(ret, ms.resolve(id))
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) filesRepository() *filesRepository {
 	return &filesRepository{
 		repository: repository{
@@ -1407,6 +1393,11 @@ func (qb *SceneStore) filesRepository() *filesRepository {
 			idColumn:  sceneIDColumn,
 		},
 	}
+}
+
+func (qb *SceneStore) AddFileID(ctx context.Context, id int, fileID file.ID) error {
+	const firstPrimary = false
+	return scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []file.ID{fileID})
 }
 
 func (qb *SceneStore) performersRepository() *joinRepository {
@@ -1420,6 +1411,10 @@ func (qb *SceneStore) performersRepository() *joinRepository {
 	}
 }
 
+func (qb *SceneStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.performersRepository().getIDs(ctx, id)
+}
+
 func (qb *SceneStore) tagsRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
@@ -1429,6 +1424,10 @@ func (qb *SceneStore) tagsRepository() *joinRepository {
 		},
 		fkColumn: tagIDColumn,
 	}
+}
+
+func (qb *SceneStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.tagsRepository().getIDs(ctx, id)
 }
 
 func (qb *SceneStore) galleriesRepository() *joinRepository {
@@ -1442,6 +1441,14 @@ func (qb *SceneStore) galleriesRepository() *joinRepository {
 	}
 }
 
+func (qb *SceneStore) GetGalleryIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.galleriesRepository().getIDs(ctx, id)
+}
+
+func (qb *SceneStore) AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error {
+	return scenesGalleriesTableMgr.addJoins(ctx, sceneID, galleryIDs)
+}
+
 func (qb *SceneStore) stashIDRepository() *stashIDRepository {
 	return &stashIDRepository{
 		repository{
@@ -1450,6 +1457,10 @@ func (qb *SceneStore) stashIDRepository() *stashIDRepository {
 			idColumn:  sceneIDColumn,
 		},
 	}
+}
+
+func (qb *SceneStore) GetStashIDs(ctx context.Context, sceneID int) ([]models.StashID, error) {
+	return qb.stashIDRepository().get(ctx, sceneID)
 }
 
 func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {

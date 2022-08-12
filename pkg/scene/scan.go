@@ -22,8 +22,8 @@ type CreatorUpdater interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error)
 	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Scene, error)
 	Create(ctx context.Context, newScene *models.Scene, fileIDs []file.ID) error
-	Update(ctx context.Context, updatedScene *models.Scene) error
 	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
+	AddFileID(ctx context.Context, id int, fileID file.ID) error
 }
 
 type ScanGenerator interface {
@@ -118,7 +118,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 	for _, s := range existing {
 		found := false
 		for _, sf := range s.Files {
-			if sf.ID == f.Base().ID {
+			if sf.ID == f.ID {
 				found = true
 				break
 			}
@@ -127,10 +127,10 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 		if !found {
 			logger.Infof("Adding %s to scene %s", f.Path, s.GetTitle())
 			s.Files = append(s.Files, f)
-		}
 
-		if err := h.CreatorUpdater.Update(ctx, s); err != nil {
-			return fmt.Errorf("updating scene: %w", err)
+			if err := h.CreatorUpdater.AddFileID(ctx, s.ID, f.ID); err != nil {
+				return fmt.Errorf("adding file to scene: %w", err)
+			}
 		}
 	}
 

@@ -69,6 +69,14 @@ func (t *table) byID(id interface{}) exp.Expression {
 	return t.idColumn.Eq(id)
 }
 
+func (t *table) byIDInts(ids ...int) exp.Expression {
+	ii := make([]interface{}, len(ids))
+	for i, id := range ids {
+		ii[i] = id
+	}
+	return t.idColumn.In(ii...)
+}
+
 func (t *table) idExists(ctx context.Context, id interface{}) (bool, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(t.table).Where(t.byID(id))
 

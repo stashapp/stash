@@ -46,8 +46,8 @@ var stashID = models.StashID{
 	StashID:  "StashID",
 	Endpoint: "Endpoint",
 }
-var stashIDs = []*models.StashID{
-	&stashID,
+var stashIDs = []models.StashID{
+	stashID,
 }
 
 const image = "aW1hZ2VCeXRlcw=="
@@ -107,8 +107,8 @@ func createFullJSONStudio(parentStudio, image string, aliases []string) *jsonsch
 		Image:        image,
 		Rating:       rating,
 		Aliases:      aliases,
-		StashIDs: []*models.StashID{
-			&stashID,
+		StashIDs: []models.StashID{
+			stashID,
 		},
 		IgnoreAutoTag: autoTagIgnored,
 	}

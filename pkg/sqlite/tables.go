@@ -174,3 +174,31 @@ var (
 		idColumn: goqu.T(fingerprintTable).Col(idColumn),
 	}
 )
+
+var (
+	performerTableMgr = &table{
+		table:    goqu.T(performerTable),
+		idColumn: goqu.T(performerTable).Col(idColumn),
+	}
+)
+
+var (
+	studioTableMgr = &table{
+		table:    goqu.T(studioTable),
+		idColumn: goqu.T(studioTable).Col(idColumn),
+	}
+)
+
+var (
+	tagTableMgr = &table{
+		table:    goqu.T(tagTable),
+		idColumn: goqu.T(tagTable).Col(idColumn),
+	}
+)
+
+var (
+	movieTableMgr = &table{
+		table:    goqu.T(movieTable),
+		idColumn: goqu.T(movieTable).Col(idColumn),
+	}
+)

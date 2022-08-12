@@ -56,6 +56,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 					},
 				},
 			},
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
@@ -133,8 +134,9 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	matchingPaths, falsePaths := generateTestPaths(performerName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:    i + 1,
-			Files: []*file.ImageFile{makeImageFile(p)},
+			ID:           i + 1,
+			Files:        []*file.ImageFile{makeImageFile(p)},
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
@@ -219,6 +221,7 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 					Path: v,
 				},
 			},
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 

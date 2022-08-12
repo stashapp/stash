@@ -125,9 +125,13 @@ type PerformerFilterType struct {
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
 }
 
+type PerformerFinder interface {
+	FindMany(ctx context.Context, ids []int) ([]*Performer, error)
+}
+
 type PerformerReader interface {
 	Find(ctx context.Context, id int) (*Performer, error)
-	FindMany(ctx context.Context, ids []int) ([]*Performer, error)
+	PerformerFinder
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Performer, error)
 	FindNamesBySceneID(ctx context.Context, sceneID int) ([]*Performer, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Performer, error)
@@ -143,7 +147,7 @@ type PerformerReader interface {
 	QueryForAutoTag(ctx context.Context, words []string) ([]*Performer, error)
 	Query(ctx context.Context, performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
-	GetStashIDs(ctx context.Context, performerID int) ([]*StashID, error)
+	StashIDLoader
 	GetTagIDs(ctx context.Context, performerID int) ([]int, error)
 }
 
@@ -154,7 +158,7 @@ type PerformerWriter interface {
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
 	DestroyImage(ctx context.Context, performerID int) error
-	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []*StashID) error
+	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []StashID) error
 	UpdateTags(ctx context.Context, performerID int, tagIDs []int) error
 }
 

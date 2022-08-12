@@ -128,7 +128,10 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			scene := &models.Scene{
-				ID: tt.sceneID,
+				ID:           tt.sceneID,
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 			}
 			if err := identifier.Identify(testCtx, &mocks.TxnManager{}, scene); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.Identify() error = %v, wantErr %v", err, tt.wantErr)
@@ -155,7 +158,11 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 		{
 			"empty update",
 			args{
-				&models.Scene{},
+				&models.Scene{
+					PerformerIDs: models.NewRelatedIDs([]int{}),
+					TagIDs:       models.NewRelatedIDs([]int{}),
+					StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+				},
 				&scrapeResult{
 					result: &scraper.ScrapedScene{},
 				},

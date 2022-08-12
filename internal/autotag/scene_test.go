@@ -186,6 +186,7 @@ func TestScenePerformers(t *testing.T) {
 					},
 				},
 			},
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		}
 
 		if test.Matches {
@@ -325,6 +326,7 @@ func TestSceneTags(t *testing.T) {
 					},
 				},
 			},
+			TagIDs: models.NewRelatedIDs([]int{}),
 		}
 		err := SceneTags(testCtx, &scene, mockSceneReader, mockTagReader, nil)
 

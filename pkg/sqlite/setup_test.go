@@ -975,13 +975,13 @@ func makeScene(i int) *models.Scene {
 		OCounter:     getOCounter(i),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
-		GalleryIDs:   gids,
-		PerformerIDs: pids,
-		TagIDs:       tids,
-		Movies:       movies,
-		StashIDs: []models.StashID{
+		GalleryIDs:   models.NewRelatedIDs(gids),
+		PerformerIDs: models.NewRelatedIDs(pids),
+		TagIDs:       models.NewRelatedIDs(tids),
+		Movies:       models.NewRelatedMovies(movies),
+		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			sceneStashID(i),
-		},
+		}),
 	}
 }
 
@@ -1051,9 +1051,9 @@ func makeImage(i int) *models.Image {
 		Rating:       getIntPtr(getRating(i)),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
-		GalleryIDs:   gids,
-		PerformerIDs: pids,
-		TagIDs:       tids,
+		GalleryIDs:   models.NewRelatedIDs(gids),
+		PerformerIDs: models.NewRelatedIDs(pids),
+		TagIDs:       models.NewRelatedIDs(tids),
 	}
 }
 
@@ -1135,12 +1135,12 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
-		PerformerIDs: pids,
-		TagIDs:       tids,
+		PerformerIDs: models.NewRelatedIDs(pids),
+		TagIDs:       models.NewRelatedIDs(tids),
 	}
 
 	if includeScenes {
-		ret.SceneIDs = indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(i))
+		ret.SceneIDs = models.NewRelatedIDs(indexesToIDs(sceneIDs, sceneGalleries.reverseLookup(i)))
 	}
 
 	return ret

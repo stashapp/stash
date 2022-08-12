@@ -26,36 +26,22 @@ func AddImage(ctx context.Context, qb ImageUpdater, galleryID int, imageID int) 
 	return qb.UpdateImages(ctx, galleryID, imageIDs)
 }
 
-func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Gallery, performerID int) (bool, error) {
-	if !intslice.IntInclude(o.PerformerIDs, performerID) {
-		if _, err := qb.UpdatePartial(ctx, o.ID, models.GalleryPartial{
-			PerformerIDs: &models.UpdateIDs{
-				IDs:  []int{performerID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}); err != nil {
-			return false, err
-		}
-
-		return true, nil
-	}
-
-	return false, nil
+func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Gallery, performerID int) error {
+	_, err := qb.UpdatePartial(ctx, o.ID, models.GalleryPartial{
+		PerformerIDs: &models.UpdateIDs{
+			IDs:  []int{performerID},
+			Mode: models.RelationshipUpdateModeAdd,
+		},
+	})
+	return err
 }
 
-func AddTag(ctx context.Context, qb PartialUpdater, o *models.Gallery, tagID int) (bool, error) {
-	if !intslice.IntInclude(o.TagIDs, tagID) {
-		if _, err := qb.UpdatePartial(ctx, o.ID, models.GalleryPartial{
-			TagIDs: &models.UpdateIDs{
-				IDs:  []int{tagID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}); err != nil {
-			return false, err
-		}
-
-		return true, nil
-	}
-
-	return false, nil
+func AddTag(ctx context.Context, qb PartialUpdater, o *models.Gallery, tagID int) error {
+	_, err := qb.UpdatePartial(ctx, o.ID, models.GalleryPartial{
+		TagIDs: &models.UpdateIDs{
+			IDs:  []int{tagID},
+			Mode: models.RelationshipUpdateModeAdd,
+		},
+	})
+	return err
 }

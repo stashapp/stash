@@ -441,24 +441,24 @@ type stashIDRepository struct {
 	repository
 }
 
-type stashIDs []*models.StashID
+type stashIDs []models.StashID
 
 func (s *stashIDs) Append(o interface{}) {
-	*s = append(*s, o.(*models.StashID))
+	*s = append(*s, *o.(*models.StashID))
 }
 
 func (s *stashIDs) New() interface{} {
 	return &models.StashID{}
 }
 
-func (r *stashIDRepository) get(ctx context.Context, id int) ([]*models.StashID, error) {
+func (r *stashIDRepository) get(ctx context.Context, id int) ([]models.StashID, error) {
 	query := fmt.Sprintf("SELECT stash_id, endpoint from %s WHERE %s = ?", r.tableName, r.idColumn)
 	var ret stashIDs
 	err := r.query(ctx, query, []interface{}{id}, &ret)
-	return []*models.StashID(ret), err
+	return []models.StashID(ret), err
 }
 
-func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []*models.StashID) error {
+func (r *stashIDRepository) replace(ctx context.Context, id int, newIDs []models.StashID) error {
 	if err := r.destroy(ctx, []int{id}); err != nil {
 		return err
 	}

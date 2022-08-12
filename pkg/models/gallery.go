@@ -74,14 +74,23 @@ type GalleryDestroyInput struct {
 	DeleteGenerated *bool `json:"delete_generated"`
 }
 
+type GalleryFinder interface {
+	FindMany(ctx context.Context, ids []int) ([]*Gallery, error)
+}
+
 type GalleryReader interface {
 	Find(ctx context.Context, id int) (*Gallery, error)
-	FindMany(ctx context.Context, ids []int) ([]*Gallery, error)
+	GalleryFinder
 	FindByChecksum(ctx context.Context, checksum string) ([]*Gallery, error)
 	FindByChecksums(ctx context.Context, checksums []string) ([]*Gallery, error)
 	FindByPath(ctx context.Context, path string) ([]*Gallery, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Gallery, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Gallery, error)
+
+	SceneIDLoader
+	PerformerIDLoader
+	TagIDLoader
+
 	Count(ctx context.Context) (int, error)
 	All(ctx context.Context) ([]*Gallery, error)
 	Query(ctx context.Context, galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int, error)

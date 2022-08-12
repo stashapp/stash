@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -74,15 +75,17 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*ImagePat
 }
 
 func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret []*models.Gallery, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		var err error
-		ret, err = r.repository.Gallery.FindMany(ctx, obj.GalleryIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.GalleryIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadGalleryIDs(ctx, r.repository.Image)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).GalleryByID.LoadAll(obj.GalleryIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *models.Studio, err error) {
@@ -90,34 +93,33 @@ func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *mod
 		return nil, nil
 	}
 
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Studio.Find(ctx, *obj.StudioID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return loaders.From(ctx).StudioByID.Load(*obj.StudioID)
 }
 
 func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*models.Tag, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Tag.FindMany(ctx, obj.TagIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.TagIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadTagIDs(ctx, r.repository.Image)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).TagByID.LoadAll(obj.TagIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) (ret []*models.Performer, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Performer.FindMany(ctx, obj.PerformerIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.PerformerIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadPerformerIDs(ctx, r.repository.Image)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).PerformerByID.LoadAll(obj.PerformerIDs.List())
+	return ret, firstError(errs)
 }
