@@ -17,7 +17,7 @@ import {
 import { useToast } from "src/hooks";
 import { Modal as BSModal, Form, Button, Col, Row } from "react-bootstrap";
 import { DurationUtils, FormUtils, ImageUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
@@ -432,7 +432,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
             title: intl.formatMessage({ id: "rating" }),
           })}
           <Col xs={9}>
-            <RatingStars
+            <RatingSystem
               value={formik.values.rating ?? undefined}
               onSetRating={(value) =>
                 formik.setFieldValue("rating", value ?? null)

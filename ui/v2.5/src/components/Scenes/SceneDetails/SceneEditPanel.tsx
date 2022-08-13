@@ -38,7 +38,7 @@ import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
-import { RatingStars } from "./RatingStars";
+import { RatingSystem } from "./RatingSystem";
 import {
   faSearch,
   faSyncAlt,
@@ -715,7 +715,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 title: intl.formatMessage({ id: "rating" }),
               })}
               <Col xs={9}>
-                <RatingStars
+                <RatingSystem
                   value={formik.values.rating ?? undefined}
                   onSetRating={(value) =>
                     formik.setFieldValue("rating", value ?? null)

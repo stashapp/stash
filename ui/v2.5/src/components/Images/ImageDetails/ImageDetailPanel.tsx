@@ -4,7 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { sortPerformers } from "src/core/performers";
 import { FormattedMessage, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
@@ -94,7 +94,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           {props.image.rating ? (
             <h6>
               <FormattedMessage id="rating" />:{" "}
-              <RatingStars value={props.image.rating} />
+              <RatingSystem value={props.image.rating} />
             </h6>
           ) : (
             ""

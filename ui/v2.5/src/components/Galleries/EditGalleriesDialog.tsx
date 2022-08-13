@@ -8,7 +8,7 @@ import { StudioSelect, Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
-import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "../Scenes/SceneDetails/RatingSystem";
 import {
   getAggregateInputIDs,
   getAggregateInputValue,
@@ -256,7 +256,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
               title: intl.formatMessage({ id: "rating" }),
             })}
             <Col xs={9}>
-              <RatingStars
+              <RatingSystem
                 value={rating}
                 onSetRating={(value) => setRating(value)}
                 disabled={isUpdating}

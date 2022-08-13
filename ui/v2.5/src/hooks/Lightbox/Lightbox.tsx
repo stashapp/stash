@@ -18,7 +18,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import {
   useImageUpdate,
@@ -793,7 +793,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                   value={currentImage?.o_counter ?? 0}
                 />
               </div>
-              <RatingStars
+              <RatingSystem
                 value={currentImage?.rating ?? undefined}
                 onSetRating={(v) => {
                   setRating(v ?? null);

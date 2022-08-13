@@ -6,7 +6,7 @@ import Mousetrap from "mousetrap";
 import { Icon, StudioSelect, DetailsEditNavbar } from "src/components/Shared";
 import { Button, Form, Col, Row } from "react-bootstrap";
 import { FormUtils, ImageUtils, getStashIDs } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { StringListInput } from "../../Shared/StringListInput";
@@ -295,7 +295,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
             title: intl.formatMessage({ id: "rating" }),
           })}
           <Col xs={9}>
-            <RatingStars
+            <RatingSystem
               value={formik.values.rating ?? undefined}
               onSetRating={(value) =>
                 formik.setFieldValue("rating", value ?? null)

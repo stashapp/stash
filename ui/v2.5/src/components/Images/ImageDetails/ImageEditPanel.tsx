@@ -15,7 +15,7 @@ import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 
 interface IProps {
   image: GQL.ImageDataFragment;
@@ -194,7 +194,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
                 title: intl.formatMessage({ id: "rating" }),
               })}
               <Col xs={9}>
-                <RatingStars
+                <RatingSystem
                   value={formik.values.rating ?? undefined}
                   onSetRating={(value) =>
                     formik.setFieldValue("rating", value ?? null)

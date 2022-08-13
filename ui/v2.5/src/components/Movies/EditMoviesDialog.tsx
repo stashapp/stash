@@ -6,7 +6,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Modal, StudioSelect } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
-import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "../Scenes/SceneDetails/RatingSystem";
 import {
   getAggregateInputValue,
   getAggregateRating,
@@ -124,7 +124,7 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
               title: intl.formatMessage({ id: "rating" }),
             })}
             <Col xs={9}>
-              <RatingStars
+              <RatingSystem
                 value={rating}
                 onSetRating={(value) => setRating(value)}
                 disabled={isUpdating}

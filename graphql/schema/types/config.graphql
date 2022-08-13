@@ -211,6 +211,11 @@ enum ImageLightboxScrollMode {
   PAN_Y
 }
 
+enum RatingSystem {
+  FiveStar
+  TenStar
+}
+
 input ConfigImageLightboxInput {
   slideshowDelay: Int
   displayMode: ImageLightboxDisplayMode

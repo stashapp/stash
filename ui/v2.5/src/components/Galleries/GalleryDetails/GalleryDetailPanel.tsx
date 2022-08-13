@@ -5,7 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { sortPerformers } from "src/core/performers";
 import { galleryTitle } from "src/core/galleries";
 
@@ -97,7 +97,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
           {gallery.rating ? (
             <h6>
               <FormattedMessage id="rating" />:{" "}
-              <RatingStars value={gallery.rating} />
+              <RatingSystem value={gallery.rating} />
             </h6>
           ) : (
             ""

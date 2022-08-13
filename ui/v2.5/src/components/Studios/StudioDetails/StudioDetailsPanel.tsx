@@ -3,7 +3,7 @@ import { Badge } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { TextField, URLField } from "src/utils/field";
 
 interface IStudioDetailsPanel {
@@ -24,7 +24,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
       <>
         <dt>{intl.formatMessage({ id: "rating" })}</dt>
         <dd>
-          <RatingStars value={studio.rating} disabled />
+          <RatingSystem value={studio.rating} disabled />
         </dd>
       </>
     );

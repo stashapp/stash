@@ -21,7 +21,7 @@ import {
 } from "src/components/Shared";
 import { useLightbox, useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
@@ -416,7 +416,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
               {performer.name}
               {renderClickableIcons()}
             </h2>
-            <RatingStars
+            <RatingSystem
               value={performer.rating ?? undefined}
               onSetRating={(value) => setRating(value ?? null)}
             />

@@ -32,7 +32,7 @@ import {
 import { useToast } from "src/hooks";
 import { useFormik } from "formik";
 import { FormUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
@@ -478,7 +478,7 @@ export const GalleryEditPanel: React.FC<
                 title: intl.formatMessage({ id: "rating" }),
               })}
               <Col xs={9}>
-                <RatingStars
+                <RatingSystem
                   value={formik.values.rating ?? undefined}
                   onSetRating={(value) =>
                     formik.setFieldValue("rating", value ?? null)
