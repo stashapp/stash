@@ -101,6 +101,7 @@
     "stop": "Stop",
     "submit": "Send",
     "submit_stash_box": "Send til Stash-Box",
+    "submit_update": "Send opdatering",
     "tasks": {
       "clean_confirm_message": "Er du sikker på, at du vil Rense? Dette vil slette databaseinformation og genereret indhold for alle scener og gallerier, der ikke længere findes i filsystemet.",
       "dry_mode_selected": "Tør Tilstand valgt. Ingen egentlig sletning vil finde sted, kun logning.",
@@ -734,6 +735,12 @@
   "filters": "Filtre",
   "framerate": "Billedhastighed",
   "frames_per_second": "{value} billeder i sekundet",
+  "front_page": {
+    "types": {
+      "premade_filter": "Forhåndslavet Filter",
+      "saved_filter": "Gemt Filter"
+    }
+  },
   "galleries": "Galleri",
   "gallery": "Galleri",
   "gallery_count": "Galleri Antal",
@@ -861,6 +868,8 @@
   "queue": "Kø",
   "random": "Tilfældig",
   "rating": "Bedømmelse",
+  "recently_added_objects": "Senest Tilføjet {objects}",
+  "recently_released_objects": "Senest Udgivet {objects}",
   "resolution": "Opløsning",
   "scene": "Scene",
   "sceneTagger": "Scenetagger",
@@ -962,7 +971,8 @@
     "go_review_draft": "Gå til {endpoint_name} for at gennemgå kladde.",
     "selected_stash_box": "Valgt Stash-Box endpoint",
     "submission_failed": "Indsendelse mislykkedes",
-    "submission_successful": "Indsendelse lykkedes"
+    "submission_successful": "Indsendelse lykkedes",
+    "submit_update": "Eksisterer allerede i {endpoint_name}"
   },
   "statistics": "Statistikker",
   "stats": {
@@ -985,13 +995,14 @@
   "tattoos": "Tatoveringer",
   "title": "Titel",
   "toast": {
-    "added_entity": "Tilføjet {entity}",
+    "added_entity": "Tilføjet {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "added_generation_job_to_queue": "Tilføjet generationsjob til køen",
     "created_entity": "Oprettet {entity}",
     "default_filter_set": "Standard filtersæt",
     "delete_past_tense": "Slettede {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Genererer skærmbillede…",
     "merged_tags": "Sammenlagte tags",
+    "removed_entity": "Fjerned {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "Genscanner {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Gemt {entity}",
     "started_auto_tagging": "Startede automatisk tagging",
@@ -1002,6 +1013,7 @@
   "total": "Total",
   "true": "Sandt",
   "twitter": "Twitter",
+  "type": "Type",
   "updated_at": "Opdateret Den",
   "url": "URL",
   "videos": "Videoer",
