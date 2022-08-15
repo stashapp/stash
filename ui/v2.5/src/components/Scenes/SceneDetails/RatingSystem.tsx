@@ -1,12 +1,6 @@
 import React, { useState, MouseEventHandler, useRef, FormEvent } from "react";
-import { Button } from "react-bootstrap";
-import Icon from "src/components/Shared/Icon";
-import { faStar as fasStar } from "@fortawesome/free-solid-svg-icons";
-import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
-import { faStarHalf as faStarHalf } from "@fortawesome/free-regular-svg-icons";
 import * as GQL from "src/core/generated-graphql";
 import { ConfigurationContext } from "src/hooks/Config";
-
 import Box from "@mui/material/Box";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarOutline";
@@ -29,10 +23,6 @@ export interface IRatingNumberProps {
   value?: number;
   onSetRating?: (value?: number) => void;
   disabled?: boolean;
-  precision: number;
-  maxRating: number;
-  previous: string;
-  current: { input: string };
 }
 
 export const RatingSystem: React.FC<IRatingSystemProps> = (
@@ -96,7 +86,6 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       match[4] = "0";
     }
     let value = match[1] + match[2] + "." + match[4];
-    console.log("outputval " + value);
     e.target.value = value;
     if (val.length > 0) {
       if (Number(value) > 10) {
@@ -107,6 +96,9 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       setPrevious(Number(value).toFixed(1));
       let tempVal = Number(value) * 10;
       props.onSetRating(tempVal != 0 ? tempVal : undefined);
+
+      // This is a workaround to a missing feature where you can't set cursor position in input numbers.
+      // See https://stackoverflow.com/questions/33406169/failed-to-execute-setselectionrange-on-htmlinputelement-the-input-elements
       e.target.type = "text";
       let cursorPosition = 0;
       if (match[2] && !match[4]) {
@@ -152,9 +144,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
   export const RatingStars: React.FC<IRatingStarsProps> = (
     props: IRatingStarsProps
   ) => {
-    const [hoverRating, setHoverRating] = useState<number | undefined>();
     const disabled = props.disabled || !props.onSetRating;
-
     const EmptyIcon = StarBorderIcon;
     const FilledIcon = StarIcon;
     const ratingContainerRef = useRef<HTMLInputElement>(null);
@@ -164,11 +154,8 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
     const [activeStar, setActiveStar] = useState(props.value != null && props.value != undefined ? convertFromBigScale(props.value) : -1);
     const [hoverActiveStar, setHoverActiveStar] = useState(-1);
 
-
-
     function setRating(rating: number) {
       if (!props.onSetRating) {
-        console.log('onsetrating was null');
         return;
       }
 
@@ -181,7 +168,6 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       }
       let temp = convertToBigScale(newRating);
       props.onSetRating(temp);
-      console.log('setting rating to ' + temp);
     }
 
     function convertFromBigScale(bigRating: number) {
@@ -190,28 +176,6 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
 
     function convertToBigScale(smallRating: number | undefined) {
       return smallRating == undefined ? undefined : Math.round(smallRating / maxRating * realMaxRating);
-    }
-
-    function getIcon(rating: number) {
-      if (hoverRating && hoverRating >= rating) {
-        if (hoverRating === props.value) {
-          return farStar;
-        }
-
-        return fasStar;
-      }
-
-      if (!hoverRating && props.value && props.value >= rating) {
-        return fasStar;
-      }
-
-      return farStar;
-    }
-
-    function onMouseOver(rating: number) {
-      if (!disabled) {
-        setHoverRating(rating);
-      }
     }
 
     function calculateRating(e: React.MouseEvent<Element, MouseEvent>) {
@@ -227,7 +191,6 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
         return -1;
       }
     }
-
 
     function handleClick(e: React.MouseEvent<Element, MouseEvent>) {
       if (disabled)
@@ -251,66 +214,6 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       setHoverActiveStar(-1); // Reset to default state
       setIsHovered(false);
     };
-
-    function onMouseOut(rating: number) {
-      if (disabled)
-        return;
-      if (!disabled && hoverRating === rating) {
-        setHoverRating(undefined);
-      }
-    }
-
-    function getClassName(rating: number) {
-      if (hoverRating && hoverRating >= rating) {
-        if (hoverRating === props.value) {
-          return "unsetting";
-        }
-
-        return "setting";
-      }
-
-      if (props.value && props.value >= rating) {
-        return "set";
-      }
-
-      return "unset";
-    }
-
-    function getTooltip(rating: number) {
-      if (disabled && props.value) {
-        // always return current rating for disabled control
-        return props.value.toString();
-      }
-
-      if (!disabled) {
-        return rating.toString();
-      }
-    }
-
-    const renderRatingButton = (rating: number) => (
-      <Button
-        disabled={disabled}
-        className="minimal"
-        onClick={() => setRating(rating)}
-        variant="secondary"
-        onMouseOver={() => onMouseOver(rating)}
-        onMouseOut={() => onMouseOut(rating)}
-        onFocus={() => onMouseOver(rating)}
-        onBlur={() => onMouseOut(rating)}
-        title={getTooltip(rating)}
-        key={`star-${rating}`}
-      >
-        <Icon icon={getIcon(rating)} className={getClassName(rating)} />
-      </Button>
-    );
-
-    //return (
-    //  <div className="rating-stars align-middle">
-    //    {Array.from(Array(maxRating)).map((value, index) =>
-    //      renderRatingButton(index + 1)
-    //    )}
-    //  </div>
-    //);
 
     return (
       <Box

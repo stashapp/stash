@@ -161,7 +161,7 @@ const (
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
-	RatingSystem				   = "rating_system"
+	RatingSystem                   = "rating_system"
 	defaultRatingSystem            = "five_stars"
 
 	HandyKey        = "handy_key"

@@ -296,7 +296,6 @@ func (db *Database) getDatabaseSchemaVersion() (uint, error) {
 // Migrate the database
 func (db *Database) RunMigrations() error {
 	ctx := context.Background()
-	logger.Infof("Debug 1")
 	m, err := db.getMigrate()
 	if err != nil {
 		return err
@@ -304,7 +303,6 @@ func (db *Database) RunMigrations() error {
 	defer m.Close()
 
 	databaseSchemaVersion, _, _ := m.Version()
-	logger.Infof("Schema Version %d", databaseSchemaVersion)
 	stepNumber := appSchemaVersion - databaseSchemaVersion
 	if stepNumber != 0 {
 		logger.Infof("Migrating database from version %d to %d", databaseSchemaVersion, appSchemaVersion)
