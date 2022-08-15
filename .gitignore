@@ -65,3 +65,5 @@ dist
 /package-lock.json
 /package.json
 /stash-go.sqlite
+/stash-go.sqlite-wal
+/stash-go.sqlite-shm

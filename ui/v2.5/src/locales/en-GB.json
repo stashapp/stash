@@ -456,7 +456,7 @@
             "ten_stars": "Ten star system",
             "ten_pointfive_stars": "Ten star system with half star increments",
             "ten_pointtwofive_stars": "Ten star system with quarter star increments",
-            "ten_point_decimal":  "Ten point numeric system with one decimal point",
+            "ten_point_decimal":  "Ten point numeric system with one decimal point"
           }
         },
         "heading": "Editing"
