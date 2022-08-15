@@ -97,7 +97,7 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
           {gallery.rating ? (
             <h6>
               <FormattedMessage id="rating" />:{" "}
-              <RatingSystem value={gallery.rating} />
+              <RatingSystem value={gallery.rating} disabled />
             </h6>
           ) : (
             ""

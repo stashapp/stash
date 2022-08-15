@@ -1,0 +1,1 @@
+UPDATE `scenes` SET `rating` = (`rating` * 20) WHERE `rating` < 6;

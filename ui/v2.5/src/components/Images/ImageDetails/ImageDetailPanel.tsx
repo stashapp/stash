@@ -94,7 +94,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           {props.image.rating ? (
             <h6>
               <FormattedMessage id="rating" />:{" "}
-              <RatingSystem value={props.image.rating} />
+              <RatingSystem value={props.image.rating} disabled />
             </h6>
           ) : (
             ""

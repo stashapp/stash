@@ -380,7 +380,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         <SelectSetting
           id="editing_rating_system"
           headingID="config.ui.editing.rating_system.label"
-          value={iface.ratingSystem ?? GQL.RatingSystem.FiveStar}
+          value={iface.ratingSystem ?? GQL.RatingSystem.FivePointFiveStar}
           onChange={(v) =>
             saveInterface({ ratingSystem: v as GQL.RatingSystem })
           }

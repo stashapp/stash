@@ -213,7 +213,11 @@ enum ImageLightboxScrollMode {
 
 enum RatingSystem {
   FiveStar
+  FivePointFiveStar
+  FivePointTwoFiveStar
   TenStar
+  TenPointFiveStar
+  TenPointTwoFiveStar
 }
 
 input ConfigImageLightboxInput {
