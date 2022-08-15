@@ -218,6 +218,7 @@ enum RatingSystem {
   TenStar
   TenPointFiveStar
   TenPointTwoFiveStar
+  TenPointDecimal
 }
 
 input ConfigImageLightboxInput {

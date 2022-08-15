@@ -29,9 +29,25 @@ export const imageLightboxScrollModeIntlMap = new Map<
 
 export const ratingSystemIntlMap = new Map<RatingSystem, string>([
   [RatingSystem.FiveStar, "config.ui.editing.rating_system.options.five_stars"],
-  [RatingSystem.FivePointFiveStar, "config.ui.editing.rating_system.options.five_pointfive_stars"],
-  [RatingSystem.FivePointTwoFiveStar, "config.ui.editing.rating_system.options.five_pointtwofive_stars"],
+  [
+    RatingSystem.FivePointFiveStar,
+    "config.ui.editing.rating_system.options.five_pointfive_stars",
+  ],
+  [
+    RatingSystem.FivePointTwoFiveStar,
+    "config.ui.editing.rating_system.options.five_pointtwofive_stars",
+  ],
   [RatingSystem.TenStar, "config.ui.editing.rating_system.options.ten_stars"],
-  [RatingSystem.TenPointFiveStar, "config.ui.editing.rating_system.options.ten_pointfive_stars"],
-  [RatingSystem.TenPointTwoFiveStar, "config.ui.editing.rating_system.options.ten_pointtwofive_stars"],
+  [
+    RatingSystem.TenPointFiveStar,
+    "config.ui.editing.rating_system.options.ten_pointfive_stars",
+  ],
+  [
+    RatingSystem.TenPointTwoFiveStar,
+    "config.ui.editing.rating_system.options.ten_pointtwofive_stars",
+  ],
+  [
+    RatingSystem.TenPointDecimal,
+    "config.ui.editing.rating_system.options.ten_point_decimal",
+  ],
 ]);
