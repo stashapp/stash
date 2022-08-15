@@ -6,13 +6,14 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { TaggerStateContext } from "../context";
+import { IScrapedScene, TaggerStateContext } from "../context";
 import Config from "./Config";
 import { TaggerScene } from "./TaggerScene";
 import { SceneTaggerModals } from "./sceneTaggerModals";
 import { SceneSearchResults } from "./StashSearchResult";
 import { ConfigurationContext } from "src/hooks/Config";
-import { faCog } from "@fortawesome/free-solid-svg-icons";
+import { faCog, faUnderline } from "@fortawesome/free-solid-svg-icons";
+import { distance } from "src/utils/hamming";
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -90,6 +91,30 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     );
   }
 
+  function calculatePhashComparisonScore(stashScene: GQL.SlimSceneDataFragment, scrapedScene: IScrapedScene){
+    if ( stashScene.phash == undefined)
+      return 0
+
+    const phashFingerprints = scrapedScene.fingerprints?.filter((f) => f.algorithm === "PHASH") ?? [];
+    const filteredFingerprints = phashFingerprints.filter((f) =>  distance(f.hash, stashScene.phash) <= 8 )
+
+    if (phashFingerprints.length == 0)
+      return 0
+
+    return Math.round(filteredFingerprints.length * 100 / phashFingerprints.length)
+  }
+
+  function calculateDurationComparisonScore(stashScene: GQL.SlimSceneDataFragment, scrapedScene: IScrapedScene){
+    if ( scrapedScene.fingerprints && scrapedScene.fingerprints.length > 0){
+      const stashDuration = stashScene.file.duration ?? 0;
+      const durations = scrapedScene.fingerprints.map((f) => f.duration);
+      const filteredDurations = durations.map((d) => Math.abs(d - stashDuration)).filter((duration) => duration <= 5);
+
+      return Math.round(filteredDurations.length * 100 / durations.length)
+    }
+    return 0
+  }
+
   function renderScenes() {
     const filteredScenes = !hideUnmatched
       ? scenes
@@ -106,6 +131,31 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
           id: "component_tagger.results.match_failed_no_result",
         });
       }
+      else if (searchResult && searchResult.results && searchResult.results?.length >= 2) {
+        searchResult.results?.sort((scrapedSceneA, scrapedSceneB) => {
+          // first order by phash match
+          const phashScoreMatchesA = calculatePhashComparisonScore(scene, scrapedSceneA)
+          const phashScoreMatchesB = calculatePhashComparisonScore(scene, scrapedSceneB)
+
+          if ( phashScoreMatchesA == phashScoreMatchesB ){
+            // if phash scores are identical, compare based on duration matches
+            const durationScoreA = calculateDurationComparisonScore(scene, scrapedSceneA)
+            const durationScoreB = calculateDurationComparisonScore(scene, scrapedSceneB)
+
+            if ( durationScoreA == 0){
+              return -1
+            } else if (durationScoreB == 0 ){
+              return 1
+            }
+            
+            return durationScoreB - durationScoreA
+          } else {
+            return phashScoreMatchesB - phashScoreMatchesA
+          }
+        });
+      }
+
+      
 
       return (
         <TaggerScene
