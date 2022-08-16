@@ -10,6 +10,11 @@ import {
   ILabeledIdCriterion,
   BooleanCriterion,
   BooleanCriterionOption,
+  DateCriterion,
+  DateCriterionOption,
+  TimestampCriterion,
+  TimestampCriterionOption,
+  MandatoryTimestampCriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";

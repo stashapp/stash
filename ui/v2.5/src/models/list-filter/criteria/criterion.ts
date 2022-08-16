@@ -7,6 +7,8 @@ import {
   IntCriterionInput,
   MultiCriterionInput,
   PHashDuplicationCriterionInput,
+  DateCriterionInput,
+  TimestampCriterionInput,
 } from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
 import {
@@ -16,6 +18,8 @@ import {
   ILabeledValue,
   INumberValue,
   IOptionType,
+  IDateValue,
+  ITimestampValue,
 } from "../types";
 
 export type Option = string | number | IOptionType;
@@ -23,7 +27,9 @@ export type CriterionValue =
   | string
   | ILabeledId[]
   | IHierarchicalLabelValue
-  | INumberValue;
+  | INumberValue
+  | IDateValue
+  | ITimestampValue;
 
 const modifierMessageIDs = {
   [CriterionModifier.Equals]: "criterion_modifier.equals",
@@ -499,4 +505,163 @@ export class PhashDuplicateCriterion extends StringCriterion {
       duplicated: this.value === "true",
     };
   }
+}
+
+export class DateCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName?: string,
+    options?: Option[]
+  ) {
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
+      ],
+      defaultModifier: CriterionModifier.Equals,
+      options,
+      inputType: "text",
+    });
+  }
+}
+
+export function createDateCriterionOption(value: CriterionType) {
+  return new DateCriterionOption(value, value, value);
+}
+
+export class DateCriterion extends Criterion<IDateValue> {
+  public encodeValue() {
+    return {
+      value: this.value.value,
+      value2: this.value.value2,
+    };
+  }
+
+  protected toCriterionInput(): DateCriterionInput {
+    return {
+      modifier: this.modifier,
+      value: this.value.value,
+      value2: this.value.value2,
+    };
+  }
+
+  public getLabelValue() {
+    const value = this.value.value;
+    return this.modifier === CriterionModifier.Between ||
+      this.modifier === CriterionModifier.NotBetween
+      ? `${value}, ${this.value.value2}`
+      : `${value}`;
+  }
+
+  constructor(type: CriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+}
+
+export class TimestampCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName?: string,
+    options?: Option[]
+  ) {
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
+      ],
+      defaultModifier: CriterionModifier.GreaterThan,
+      options,
+      inputType: "text",
+    });
+  }
+}
+
+export function createTimestampCriterionOption(value: CriterionType) {
+  return new TimestampCriterionOption(value, value, value);
+}
+
+export class TimestampCriterion extends Criterion<ITimestampValue> {
+  public encodeValue() {
+    return {
+      value: this.value.value,
+      value2: this.value.value2,
+    };
+  }
+
+  protected toCriterionInput(): TimestampCriterionInput {
+    return {
+      modifier: this.modifier,
+      value: this.transformValueToInput(this.value.value),
+      value2: this.value.value2
+        ? this.transformValueToInput(this.value.value2)
+        : null,
+    };
+  }
+
+  public getLabelValue() {
+    const value = this.value.value;
+    return this.modifier === CriterionModifier.Between ||
+      this.modifier === CriterionModifier.NotBetween
+      ? `${value}, ${this.value.value2}`
+      : `${value}`;
+  }
+
+  private transformValueToInput(value: string): string {
+    value = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}(( |T)\d{2}:\d{2})?$/.test(value)) {
+      return value.replace(" ", "T");
+    }
+
+    return "";
+  }
+
+  constructor(type: CriterionOption) {
+    super(type, { value: "", value2: undefined });
+  }
+}
+
+export class MandatoryTimestampCriterionOption extends CriterionOption {
+  constructor(
+    messageID: string,
+    value: CriterionType,
+    parameterName?: string,
+    options?: Option[]
+  ) {
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
+      ],
+      defaultModifier: CriterionModifier.GreaterThan,
+      options,
+      inputType: "text",
+    });
+  }
+}
+
+export function createMandatoryTimestampCriterionOption(value: CriterionType) {
+  return new MandatoryTimestampCriterionOption(value, value, value);
 }
