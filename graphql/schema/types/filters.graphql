@@ -415,6 +415,18 @@ input HierarchicalMultiCriterionInput {
   depth: Int
 }
 
+input DateCriterionInput {
+  value: String!
+  value2: String
+  modifier: CriterionModifier!
+}
+
+input TimestampCriterionInput {
+  value: String!
+  value2: String
+  modifier: CriterionModifier!
+}
+
 enum FilterMode {
   SCENES,
   PERFORMERS,
