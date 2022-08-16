@@ -872,6 +872,9 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, scenePerformerFavoriteCriterionHandler(sceneFilter.PerformerFavorite))
 	query.handleCriterion(ctx, scenePerformerAgeCriterionHandler(sceneFilter.PerformerAge))
 	query.handleCriterion(ctx, scenePhashDuplicatedCriterionHandler(sceneFilter.Duplicated, qb.addSceneFilesTable))
+	query.handleCriterion(ctx, dateCriterionHandler(sceneFilter.Date, "scenes.date"))
+	query.handleCriterion(ctx, timestampCriterionHandler(sceneFilter.CreatedAt, "scenes.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(sceneFilter.UpdatedAt, "scenes.updated_at"))
 
 	return query
 }

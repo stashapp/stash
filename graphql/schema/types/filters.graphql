@@ -178,6 +178,12 @@ input SceneFilterType {
   interactive_speed: IntCriterionInput
   """Filter by captions"""
   captions: StringCriterionInput
+  """Filter by date"""
+  date: DateCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input MovieFilterType {

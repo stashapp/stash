@@ -189,5 +189,12 @@ export function makeCriteria(type: CriterionType = "none") {
       );
     case "ignore_auto_tag":
       return new BooleanCriterion(new BooleanCriterionOption(type, type));
+    case "date":
+      return new DateCriterion(new DateCriterionOption(type, type));
+    case "created_at":
+    case "updated_at":
+      return new TimestampCriterion(
+        new MandatoryTimestampCriterionOption(type, type)
+      );
   }
 }

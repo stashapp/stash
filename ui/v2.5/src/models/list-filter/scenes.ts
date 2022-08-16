@@ -3,7 +3,7 @@ import {
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
   createDateCriterionOption,
-  createTimestampCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
@@ -85,6 +85,9 @@ const criterionOptions = [
   CaptionsCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),
   createMandatoryNumberCriterionOption("file_count"),
+  createDateCriterionOption("date"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 
 export const SceneListFilterOptions = new ListFilterOptions(
