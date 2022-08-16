@@ -575,6 +575,24 @@ func boolCriterionHandler(c *bool, column string, addJoinFn func(f *filterBuilde
 	}
 }
 
+func dateCriterionHandler(c *models.DateCriterionInput, column string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			clause, args := getDateCriterionWhereClause(column, *c)
+			f.addWhere(clause, args...)
+		}
+	}
+}
+
+func timestampCriterionHandler(c *models.TimestampCriterionInput, column string) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			clause, args := getTimestampCriterionWhereClause(column, *c)
+			f.addWhere(clause, args...)
+		}
+	}
+}
+
 // handle for MultiCriterion where there is a join table between the new
 // objects
 type joinedMultiCriterionHandlerBuilder struct {
