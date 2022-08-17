@@ -311,6 +311,9 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 
 	setBool(config.ShowScrubber, input.ShowScrubber)
 
+	setBool(config.ShowChildTaggedContent, input.ShowChildTaggedContent)
+	setBool(config.ShowChildStudioContent, input.ShowChildStudioContent)
+
 	if input.WallPlayback != nil {
 		c.Set(config.WallPlayback, *input.WallPlayback)
 	}
