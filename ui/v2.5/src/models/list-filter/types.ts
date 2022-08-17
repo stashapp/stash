@@ -151,4 +151,6 @@ export type CriterionType =
   | "file_count"
   | "date"
   | "created_at"
-  | "updated_at";
+  | "updated_at"
+  | "birthdate"
+  | "death_date";

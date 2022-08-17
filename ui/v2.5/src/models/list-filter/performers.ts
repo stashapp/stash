@@ -3,6 +3,8 @@ import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
   createBooleanCriterionOption,
+  createDateCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
@@ -83,6 +85,10 @@ const criterionOptions = [
   createBooleanCriterionOption("ignore_auto_tag"),
   ...numberCriteria.map((c) => createNumberCriterionOption(c)),
   ...stringCriteria.map((c) => createStringCriterionOption(c)),
+  createDateCriterionOption("birthdate"),
+  createDateCriterionOption("death_date"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 export const PerformerListFilterOptions = new ListFilterOptions(
   defaultSortBy,

@@ -190,6 +190,8 @@ export function makeCriteria(type: CriterionType = "none") {
     case "ignore_auto_tag":
       return new BooleanCriterion(new BooleanCriterionOption(type, type));
     case "date":
+    case "birthdate":
+    case "death_date":
       return new DateCriterion(new DateCriterionOption(type, type));
     case "created_at":
     case "updated_at":
