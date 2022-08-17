@@ -204,6 +204,12 @@ input MovieFilterType {
   url: StringCriterionInput
   """Filter to only include movies where performer appears in a scene"""
   performers: MultiCriterionInput
+  """Filter by date"""
+  date: DateCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input StudioFilterType {

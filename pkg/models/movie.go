@@ -18,6 +18,12 @@ type MovieFilterType struct {
 	URL *StringCriterionInput `json:"url"`
 	// Filter to only include movies where performer appears in a scene
 	Performers *MultiCriterionInput `json:"performers"`
+	// Filter by date
+	Date *DateCriterionInput `json:"date"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type MovieReader interface {
