@@ -993,7 +993,6 @@
     "added_generation_job_to_queue": "已將『生成作業』加入至工作排程",
     "created_entity": "已建立{entity}",
     "default_filter_set": "已設定預設過濾選項",
-    "delete_entity": "刪除{singularEntity}",
     "delete_past_tense": "已刪除{singularEntity}",
     "generating_screenshot": "產生截圖中…",
     "merged_tags": "已合併的標籤",
