@@ -31,7 +31,9 @@ export const studioFilterHook = (studio: GQL.StudioDataFragment) => {
       studioCriterion = new StudiosCriterion();
       studioCriterion.value = {
         items: [studioValue],
-        depth: config?.configuration?.interface?.showChildStudioContent ? -1 : 0,
+        depth: config?.configuration?.interface?.showChildStudioContent
+          ? -1
+          : 0,
       };
       filter.criteria.push(studioCriterion);
     }
