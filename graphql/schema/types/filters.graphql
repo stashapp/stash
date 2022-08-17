@@ -239,6 +239,10 @@ input StudioFilterType {
   aliases: StringCriterionInput
   """Filter by autotag ignore value"""
   ignore_auto_tag: Boolean
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input GalleryFilterType {

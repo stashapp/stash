@@ -250,6 +250,8 @@ func (qb *studioQueryBuilder) makeFilter(ctx context.Context, studioFilter *mode
 	query.handleCriterion(ctx, studioGalleryCountCriterionHandler(qb, studioFilter.GalleryCount))
 	query.handleCriterion(ctx, studioParentCriterionHandler(qb, studioFilter.Parents))
 	query.handleCriterion(ctx, studioAliasCriterionHandler(qb, studioFilter.Aliases))
+	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.CreatedAt, "studios.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.UpdatedAt, "studios.updated_at"))
 
 	return query
 }
