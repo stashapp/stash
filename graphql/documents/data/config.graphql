@@ -54,6 +54,8 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   wallPlayback
   showScrubber
   maximumLoopDuration
+  showChildTaggedContent
+  showChildStudioContent
   noBrowser
   notificationsEnabled
   autostartVideo

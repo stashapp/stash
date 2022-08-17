@@ -241,6 +241,24 @@ export const SettingsInterfacePanel: React.FC = () => {
           }}
         />
       </SettingSection>
+      <SettingSection headingID="config.ui.tag_panel.heading">
+        <BooleanSetting
+          id="show-child-tagged-content"
+          headingID="config.ui.tag_panel.options.show_child_tagged_content.heading"
+          subHeadingID="config.ui.tag_panel.options.show_child_tagged_content.description"
+          checked={iface.showChildTaggedContent ?? undefined}
+          onChange={(v) => saveInterface({ showChildTaggedContent: v })}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.studio_panel.heading">
+        <BooleanSetting
+          id="show-child-studio-content"
+          headingID="config.ui.studio_panel.options.show_child_studio_content.heading"
+          subHeadingID="config.ui.studio_panel.options.show_child_studio_content.description"
+          checked={iface.showChildStudioContent ?? undefined}
+          onChange={(v) => saveInterface({ showChildStudioContent: v })}
+        />
+      </SettingSection>
 
       <SettingSection headingID="config.ui.image_lightbox.heading">
         <NumberSetting
