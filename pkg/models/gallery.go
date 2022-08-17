@@ -48,6 +48,12 @@ type GalleryFilterType struct {
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
+	// Filter by date
+	Date *DateCriterionInput `json:"date"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type GalleryUpdateInput struct {

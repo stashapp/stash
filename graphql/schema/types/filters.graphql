@@ -279,6 +279,12 @@ input GalleryFilterType {
   image_count: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
+  """Filter by date"""
+  date: DateCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 input TagFilterType {
