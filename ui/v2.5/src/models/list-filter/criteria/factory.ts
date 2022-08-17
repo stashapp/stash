@@ -13,7 +13,6 @@ import {
   DateCriterion,
   DateCriterionOption,
   TimestampCriterion,
-  TimestampCriterionOption,
   MandatoryTimestampCriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";

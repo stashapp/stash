@@ -22,7 +22,7 @@ export const TimestampFilter: React.FC<ITimestampFilterProps> = ({
     event: React.ChangeEvent<HTMLInputElement>,
     property: "value" | "value2"
   ) {
-    const value = event.target.value;
+    const { value } = event.target;
     valueStage.current[property] = value;
   }
 

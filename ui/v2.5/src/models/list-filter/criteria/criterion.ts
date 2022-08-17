@@ -556,7 +556,7 @@ export class DateCriterion extends Criterion<IDateValue> {
   }
 
   public getLabelValue() {
-    const value = this.value.value;
+    const { value } = this.value;
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
       ? `${value}, ${this.value.value2}`
@@ -617,7 +617,7 @@ export class TimestampCriterion extends Criterion<ITimestampValue> {
   }
 
   public getLabelValue() {
-    const value = this.value.value;
+    const { value } = this.value;
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
       ? `${value}, ${this.value.value2}`

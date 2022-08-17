@@ -108,13 +108,13 @@ type MultiCriterionInput struct {
 }
 
 type DateCriterionInput struct {
-	Value    string                   `json:"value"`
-	Value2   *string                  `json:"value2"`
+	Value    string            `json:"value"`
+	Value2   *string           `json:"value2"`
 	Modifier CriterionModifier `json:"modifier"`
 }
 
 type TimestampCriterionInput struct {
-	Value    string                   `json:"value"`
-	Value2   *string                  `json:"value2"`
+	Value    string            `json:"value"`
+	Value2   *string           `json:"value2"`
 	Modifier CriterionModifier `json:"modifier"`
 }
