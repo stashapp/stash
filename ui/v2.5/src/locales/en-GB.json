@@ -427,6 +427,11 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
+      "custom_locales": {
+        "description": "Page must be reloaded for changes to take effect.",
+        "heading": "Custom localization",
+        "option_label": "Custom localization enabled"
+      },
       "delete_options": {
         "description": "Default settings when deleting images, galleries, and scenes.",
         "heading": "Delete Options",

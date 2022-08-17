@@ -87,7 +87,10 @@ export const App: React.FC = () => {
       const defaultMessages = (await locales[defaultMessageLanguage]()).default;
       const mergedMessages = cloneDeep(Object.assign({}, defaultMessages));
       const chosenMessages = (await locales[messageLanguage]()).default;
-      mergeWith(mergedMessages, chosenMessages, (objVal, srcVal) => {
+      const res = await fetch('./customLocales');
+      const customMessages = res.ok ? await res.json() : {};
+      
+      mergeWith(mergedMessages, chosenMessages,customMessages, (objVal, srcVal) => {
         if (srcVal === "") {
           return objVal;
         }
