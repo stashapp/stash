@@ -365,6 +365,10 @@ input ImageFilterType {
   performer_favorite: Boolean
   """Filter to only include images with these galleries"""
   galleries: MultiCriterionInput
+  """Filter by creation time"""
+  created_at: TimestampCriterionInput
+  """Filter by last update time"""
+  updated_at: TimestampCriterionInput
 }
 
 enum CriterionModifier {

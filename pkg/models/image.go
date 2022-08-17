@@ -39,6 +39,10 @@ type ImageFilterType struct {
 	PerformerFavorite *bool `json:"performer_favorite"`
 	// Filter to only include images with these galleries
 	Galleries *MultiCriterionInput `json:"galleries"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type ImageDestroyInput struct {
