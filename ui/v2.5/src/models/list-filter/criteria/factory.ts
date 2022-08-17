@@ -192,9 +192,12 @@ export function makeCriteria(type: CriterionType = "none") {
     case "date":
     case "birthdate":
     case "death_date":
+    case "scene_date":
       return new DateCriterion(new DateCriterionOption(type, type));
     case "created_at":
     case "updated_at":
+    case "scene_created_at":
+    case "scene_updated_at":
       return new TimestampCriterion(
         new MandatoryTimestampCriterionOption(type, type)
       );

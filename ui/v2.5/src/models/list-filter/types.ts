@@ -153,4 +153,7 @@ export type CriterionType =
   | "created_at"
   | "updated_at"
   | "birthdate"
-  | "death_date";
+  | "death_date"
+  | "scene_date"
+  | "scene_created_at"
+  | "scene_updated_at";
