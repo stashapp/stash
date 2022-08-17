@@ -18,7 +18,6 @@ export const localeLoader = {
   plPL: () => import("./pl-PL.json"),
   daDK: () => import("./da-DK.json"),
   koKR: () => import("./ko-KR.json"),
-  hentaiH: () => import("./hentai-H.json"),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as { [key: string]: any };
 
