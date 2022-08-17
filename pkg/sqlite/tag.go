@@ -336,6 +336,8 @@ func (qb *tagQueryBuilder) makeFilter(ctx context.Context, tagFilter *models.Tag
 	query.handleCriterion(ctx, tagChildrenCriterionHandler(qb, tagFilter.Children))
 	query.handleCriterion(ctx, tagParentCountCriterionHandler(qb, tagFilter.ParentCount))
 	query.handleCriterion(ctx, tagChildCountCriterionHandler(qb, tagFilter.ChildCount))
+	query.handleCriterion(ctx, timestampCriterionHandler(tagFilter.CreatedAt, "tags.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(tagFilter.UpdatedAt, "tags.updated_at"))
 
 	return query
 }
