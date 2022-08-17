@@ -38,7 +38,7 @@ export const tagFilterHook = (tag: GQL.TagDataFragment) => {
       tagCriterion = new TagsCriterion(TagsCriterionOption);
       tagCriterion.value = {
         items: [tagValue],
-        depth: config.configuration.interface.showChildTaggedContent ? -1 : 0,
+        depth: config?.configuration?.interface?.showChildTaggedContent ? -1 : 0,
       };
       filter.criteria.push(tagCriterion);
     }
