@@ -358,17 +358,31 @@ func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFi
 		logger.Infof("Regenerating images for %s", path)
 	}
 
-	if !thumbExists {
-		logger.Debugf("Creating thumbnail for %s", path)
-		if err := scanner.Screenshotter.GenerateThumbnail(context.TODO(), probeResult, checksum); err != nil {
-			logger.Errorf("Error creating thumbnail for %s: %v", err)
-		}
-	}
-
 	if !normalExists {
 		logger.Debugf("Creating screenshot for %s", path)
 		if err := scanner.Screenshotter.GenerateScreenshot(context.TODO(), probeResult, checksum); err != nil {
 			logger.Errorf("Error creating screenshot for %s: %v", err)
+		} else {
+			normalExists = true
+		}
+	}
+
+	if !thumbExists {
+		logger.Debugf("Creating thumbnail for %s", path)
+		if normalExists {
+			reader, err := os.Open(normalPath)
+			if err == nil {
+				defer reader.Close()
+				if err := SetThumbnail(thumbPath, reader); err == nil {
+					thumbExists = true
+				}
+			}
+		}
+
+		if !thumbExists {
+			if err := scanner.Screenshotter.GenerateThumbnail(context.TODO(), probeResult, checksum); err != nil {
+				logger.Errorf("Error creating thumbnail for %s: %v", err)
+			}
 		}
 	}
 }

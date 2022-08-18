@@ -5,6 +5,7 @@ import (
 	"context"
 	"image"
 	"image/jpeg"
+	"io"
 	"os"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -62,19 +63,7 @@ func SetScreenshot(paths *paths.Paths, checksum string, imageData []byte) error 
 	thumbPath := paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := paths.Scene.GetScreenshotPath(checksum)
 
-	img, _, err := image.Decode(bytes.NewReader(imageData))
-	if err != nil {
-		return err
-	}
-
-	// resize to 320 width maintaining aspect ratio, for the thumbnail
-	const width = 320
-	origWidth := img.Bounds().Max.X
-	origHeight := img.Bounds().Max.Y
-	height := width / origWidth * origHeight
-
-	thumbnail := imaging.Resize(img, width, height, imaging.Lanczos)
-	err = writeThumbnail(thumbPath, thumbnail)
+	err := SetThumbnail(thumbPath, bytes.NewReader(imageData))
 	if err != nil {
 		return err
 	}
@@ -82,4 +71,20 @@ func SetScreenshot(paths *paths.Paths, checksum string, imageData []byte) error 
 	err = writeImage(normalPath, imageData)
 
 	return err
+}
+
+func SetThumbnail(thumbPath string, reader io.Reader) error {
+	screenshot, _, err := image.Decode(reader)
+	if err != nil {
+		return err
+	}
+
+	// resize to 320 width maintaining aspect ratio, for the thumbnail
+	const width = 320
+	origWidth := screenshot.Bounds().Max.X
+	origHeight := screenshot.Bounds().Max.Y
+	height := width / origWidth * origHeight
+
+	thumbnail := imaging.Resize(screenshot, width, height, imaging.Lanczos)
+	return writeThumbnail(thumbPath, thumbnail)
 }
