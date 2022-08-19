@@ -91,55 +91,87 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     );
   }
 
-  function calculatePhashComparisonScore(stashScene: GQL.SlimSceneDataFragment, scrapedScene: IScrapedScene){
-    if ( stashScene.phash == undefined)
-      return [0,0]
+  function calculatePhashComparisonScore(
+    stashScene: GQL.SlimSceneDataFragment,
+    scrapedScene: IScrapedScene
+  ) {
+    if (stashScene.phash == undefined) return [0, 0];
 
-    const phashFingerprints = scrapedScene.fingerprints?.filter((f) => f.algorithm === "PHASH") ?? [];
-    const filteredFingerprints = phashFingerprints.filter((f) =>  distance(f.hash, stashScene.phash) <= 8 )
+    const phashFingerprints =
+      scrapedScene.fingerprints?.filter((f) => f.algorithm === "PHASH") ?? [];
+    const filteredFingerprints = phashFingerprints.filter(
+      (f) => distance(f.hash, stashScene.phash) <= 8
+    );
 
-    if (phashFingerprints.length == 0)
-      return [0,0]
+    if (phashFingerprints.length == 0) return [0, 0];
 
-    return [filteredFingerprints.length, Math.round(filteredFingerprints.length * 100 / phashFingerprints.length)]
+    return [
+      filteredFingerprints.length,
+      Math.round(
+        (filteredFingerprints.length * 100) / phashFingerprints.length
+      ),
+    ];
   }
 
-  function calculateDurationComparisonScore(stashScene: GQL.SlimSceneDataFragment, scrapedScene: IScrapedScene){
-    if ( scrapedScene.fingerprints && scrapedScene.fingerprints.length > 0){
+  function calculateDurationComparisonScore(
+    stashScene: GQL.SlimSceneDataFragment,
+    scrapedScene: IScrapedScene
+  ) {
+    if (scrapedScene.fingerprints && scrapedScene.fingerprints.length > 0) {
       const stashDuration = stashScene.file.duration ?? 0;
       const durations = scrapedScene.fingerprints.map((f) => f.duration);
-      const filteredDurations = durations.map((d) => Math.abs(d - stashDuration)).filter((duration) => duration <= 5);
+      const filteredDurations = durations
+        .map((d) => Math.abs(d - stashDuration))
+        .filter((duration) => duration <= 5);
 
-      return [filteredDurations.length,Math.round(filteredDurations.length * 100 / durations.length)]
+      return [
+        filteredDurations.length,
+        Math.round((filteredDurations.length * 100) / durations.length),
+      ];
     }
-    return [0,0]
+    return [0, 0];
   }
 
-  function compareScenesForSort(stashScene: GQL.SlimSceneDataFragment,sceneA :IScrapedScene, sceneB: IScrapedScene){
+  function compareScenesForSort(
+    stashScene: GQL.SlimSceneDataFragment,
+    sceneA: IScrapedScene,
+    sceneB: IScrapedScene
+  ) {
     // Compare sceneA and sceneB to each other for sorting based on similarity to stashScene
     // Order of priority is: nb. phash match > nb. duration match > ratio duration match > ratio phash match
-    if ( stashScene.phash == undefined )
-      return 0
+    if (stashScene.phash == undefined) return 0;
 
-    const [nbPhashMatchSceneA, ratioPhashMatchSceneA] = calculatePhashComparisonScore(stashScene, sceneA)
-    const [nbPhashMatchSceneB, ratioPhashMatchSceneB] = calculatePhashComparisonScore(stashScene, sceneB)
+    const [
+      nbPhashMatchSceneA,
+      ratioPhashMatchSceneA,
+    ] = calculatePhashComparisonScore(stashScene, sceneA);
+    const [
+      nbPhashMatchSceneB,
+      ratioPhashMatchSceneB,
+    ] = calculatePhashComparisonScore(stashScene, sceneB);
 
-    if ( nbPhashMatchSceneA == nbPhashMatchSceneB ){
+    if (nbPhashMatchSceneA == nbPhashMatchSceneB) {
       // Same number of phash matches, check duration
-      const [nbDurationMatchSceneA, ratioDurationMatchSceneA] = calculateDurationComparisonScore(stashScene, sceneA)
-      const [nbDurationMatchSceneB, ratioDurationMatchSceneB] = calculateDurationComparisonScore(stashScene, sceneB)
+      const [
+        nbDurationMatchSceneA,
+        ratioDurationMatchSceneA,
+      ] = calculateDurationComparisonScore(stashScene, sceneA);
+      const [
+        nbDurationMatchSceneB,
+        ratioDurationMatchSceneB,
+      ] = calculateDurationComparisonScore(stashScene, sceneB);
 
-      if ( nbDurationMatchSceneA == nbDurationMatchSceneB  ){
+      if (nbDurationMatchSceneA == nbDurationMatchSceneB) {
         // Same number of phash & duration, check duration ratio
-        if ( ratioDurationMatchSceneA == ratioDurationMatchSceneB ){
+        if (ratioDurationMatchSceneA == ratioDurationMatchSceneB) {
           // Damn this is close... Check phash ratio
-          return ratioPhashMatchSceneB - ratioPhashMatchSceneA
+          return ratioPhashMatchSceneB - ratioPhashMatchSceneA;
         }
-        return ratioDurationMatchSceneB - ratioDurationMatchSceneA
+        return ratioDurationMatchSceneB - ratioDurationMatchSceneA;
       }
-      return nbDurationMatchSceneB - nbDurationMatchSceneA
+      return nbDurationMatchSceneB - nbDurationMatchSceneA;
     }
-    return nbPhashMatchSceneB - nbPhashMatchSceneA
+    return nbPhashMatchSceneB - nbPhashMatchSceneA;
   }
 
   function renderScenes() {
@@ -157,12 +189,15 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
         errorMessage = intl.formatMessage({
           id: "component_tagger.results.match_failed_no_result",
         });
+      } else if (
+        searchResult &&
+        searchResult.results &&
+        searchResult.results?.length >= 2
+      ) {
+        searchResult.results?.sort((scrapedSceneA, scrapedSceneB) =>
+          compareScenesForSort(scene, scrapedSceneA, scrapedSceneB)
+        );
       }
-      else if (searchResult && searchResult.results && searchResult.results?.length >= 2) {
-        searchResult.results?.sort((scrapedSceneA, scrapedSceneB) => compareScenesForSort(scene, scrapedSceneA, scrapedSceneB));
-      }
-
-      
 
       return (
         <TaggerScene
