@@ -139,8 +139,8 @@
       "query_mode_label": "โหมดคิวรี่",
       "query_mode_metadata": "Metadata",
       "query_mode_metadata_desc": "ใช้ Metadata เท่านั้น",
-      "query_mode_path": "เส้นทาง (Path)",
-      "query_mode_path_desc": "ใช้เส้นทางของไฟล์ทั้งหมด (Path)",
+      "query_mode_path": "พาร์ธ (Path)",
+      "query_mode_path_desc": "ใช้พาร์ธของไฟล์ทั้งหมด (Path)",
       "set_cover_desc": "เปลี่ยน Cover ฉากหากมีการพบ",
       "set_cover_label": "ตั้ง Cover รูปภาพของฉาก",
       "set_tag_desc": "แนบแท็กกับฉาก โดยเขียนทับหรือรวมกับแท็กที่มีอยู่ในฉาก",
@@ -230,7 +230,7 @@
         },
         "generate_api_key": "สร้าง API Key",
         "log_file": "ล็อกไฟล์",
-        "log_file_desc": "เส้นทางไปยังไฟล์เพื่อบันทึกเอาต์พุตนั้นว่างเปล่าเพื่อปิดใช้งานการบันทึกไฟล์ จำเป็นต้องรีสตาร์ท",
+        "log_file_desc": "พาร์ธไปยังไฟล์เพื่อบันทึกเอาต์พุตนั้นว่างเปล่าเพื่อปิดใช้งานการบันทึกไฟล์ จำเป็นต้องรีสตาร์ท",
         "log_http": "ล็อกไฟล์ http access",
         "log_http_desc": "ล็อกไฟล์สำหรับ http access ไปยัง Terminal จำเป็นต้อง Restart",
         "log_to_terminal": "ล็อกไฟล์ไปยัง Terminal",
@@ -244,27 +244,27 @@
         "username_desc": "ยูเซอร์เนมสำหรับเข้าถึง Stash เว้นค่าว่างเพื่อปิดการยืนยันตัวตน"
       },
       "cache_location": "ตำแหน่งไดเรกทอรีของแคช",
-      "cache_path_head": "เส้นทางของ Cache",
+      "cache_path_head": "พาร์ธของ Cache",
       "calculate_md5_and_ohash_desc": "คำนวณเช็คซัม MD5 นอกเหนือจาก oshash การเปิดใช้งานจะทำให้การสแกนครั้งแรกช้าลง ต้องตั้งค่าแฮชการตั้งชื่อไฟล์เป็น oshash เพื่อปิดการคำนวณ MD5",
       "calculate_md5_and_ohash_label": "คำนวณ MD5 สำหรับวิดีโอ",
       "check_for_insecure_certificates": "ตรวจสอบใบรับรองที่ไม่ปลอดภัย",
       "check_for_insecure_certificates_desc": "บางไซต์ใช้ใบรับรอง SSL ที่ไม่ปลอดภัย เมื่อยกเลิกการเลือกมีดโกนจะข้ามการตรวจสอบใบรับรองที่ไม่ปลอดภัยและอนุญาตให้คัดลอกไซต์เหล่านั้นได้ หากคุณได้รับข้อผิดพลาดใบรับรองเมื่อ Scraping ให้ยกเลิกการเลือกนี้",
       "chrome_cdp_path": "Google Chrome CDP path",
-      "chrome_cdp_path_desc": "เส้นทางของไฟล์ไปยังไฟล์สั่งการของ Chrome หรือที่อยู่ระยะไกล (เริ่มต้นด้วย http:// หรือ https:// เช่น http://localhost:9222/json/version) ไปยังอินสแตนซ์ของ Chrome",
+      "chrome_cdp_path_desc": "พาร์ธของไฟล์ไปยังไฟล์สั่งการของ Chrome หรือที่อยู่ระยะไกล (เริ่มต้นด้วย http:// หรือ https:// เช่น http://localhost:9222/json/version) ไปยังอินสแตนซ์ของ Chrome",
       "create_galleries_from_folders_desc": "หากเป็นจริง สร้างแกลเลอรี่จากโฟลเดอร์ที่มีรูปภาพ",
       "create_galleries_from_folders_label": "สร้างแกลเลอรี่จากโฟลเดอร์ที่มีรูปภาพ",
-      "db_path_head": "เส้นทางของ Database",
+      "db_path_head": "พาร์ธของ Database",
       "directory_locations_to_your_content": "ตำแหน่งไดเรกทอรีไปยังเนื้อหาของคุณ",
-      "excluded_image_gallery_patterns_desc": "Regexps ของไฟล์รูปภาพและแกลเลอรี/เส้นทางที่จะแยกออกจากการสแกนและเพิ่มใน Clean",
+      "excluded_image_gallery_patterns_desc": "Regexps ของไฟล์รูปภาพและแกลเลอรี/พาร์ธที่จะแยกออกจากการสแกนและเพิ่มใน Clean",
       "excluded_image_gallery_patterns_head": "รูปแบบรูปภาพ/แกลเลอรีที่ยกเว้น",
-      "excluded_video_patterns_desc": "Regexps ของไฟล์วิดีโอ/เส้นทางที่จะแยกออกจากการสแกนและเพิ่มใน Clean",
+      "excluded_video_patterns_desc": "Regexps ของไฟล์วิดีโอ/พาร์ธที่จะแยกออกจากการสแกนและเพิ่มใน Clean",
       "excluded_video_patterns_head": "รูปแบบวิดีโอที่ยกเว้น",
       "gallery_ext_desc": "รายการนามสกุลไฟล์ที่คั่นด้วยเครื่องหมายจุลภาคซึ่งจะถูกระบุว่าเป็นไฟล์ zip ของแกลเลอรี",
       "gallery_ext_head": "แกลเลอรี่ zip Extensions",
       "generated_file_naming_hash_desc": "ใช้ MD5 หรือ oshash สำหรับการตั้งชื่อไฟล์ที่สร้างขึ้น การเปลี่ยนแปลงนี้กำหนดให้ฉากทั้งหมดต้องมีการเติมค่า MD5/oshash ที่เกี่ยวข้อง หลังจากเปลี่ยนค่านี้ ไฟล์ที่สร้างที่มีอยู่จะต้องถูกย้ายหรือสร้างใหม่ ดูหน้างานสำหรับการย้ายข้อมูล",
       "generated_file_naming_hash_head": "แฮชการตั้งชื่อไฟล์ที่สร้าง",
       "generated_files_location": "ตำแหน่งไดเรกทอรีสำหรับไฟล์ที่สร้างขึ้น (ตัวทำเครื่องหมายฉาก ตัวอย่างฉาก สไปรท์ ฯลฯ)",
-      "generated_path_head": "เส้นทางที่สร้างขึ้น",
+      "generated_path_head": "พาร์ธที่สร้างขึ้น",
       "hashing": "กำลัง Hash",
       "image_ext_desc": "รายการนามสกุลไฟล์ที่คั่นด้วยเครื่องหมายจุลภาคที่จะระบุเป็นรูปภาพ",
       "image_ext_head": "ส่วนเสริมรูปภาพ",
@@ -277,7 +277,7 @@
       "maximum_transcode_size_head": "ขนาดการแปลงสูงสุด",
       "metadata_path": {
         "description": "ตำแหน่งไดเร็กทอรีที่ใช้เมื่อทำการส่งออกหรือนำเข้าอย่างเต็มรูปแบบ",
-        "heading": "เส้นทางข้อมูล Metadata"
+        "heading": "พาร์ธข้อมูล Metadata"
       },
       "number_of_parallel_task_for_scan_generation_desc": "ตั้งค่าเป็น 0 สำหรับการตรวจจับอัตโนมัติ คำเตือนที่เรียกใช้งานมากกว่าที่จำเป็นเพื่อให้ใช้งานได้เต็ม 100% จะทำให้ประสิทธิภาพการทำงานลดลงและอาจทำให้เกิดปัญหาอื่นๆ",
       "number_of_parallel_task_for_scan_generation_head": "จำนวนงานคู่ขนานสำหรับการสแกน/การสร้าง",
@@ -285,17 +285,72 @@
       "preview_generation": "ดูตัวอย่างการสร้าง",
       "python_path": {
         "description": "ตำแหน่งของ python ที่สามารถเรียกทำงานได้ ใช้สำหรับตัวขูดสคริปต์และปลั๊กอิน หากว่างเปล่า python จะได้รับการแก้ไขจากสภาพแวดล้อม",
-        "heading": "เส้นทาง Python"
+        "heading": "พาร์ธ Python"
       },
       "scraper_user_agent": "Scraper User-Agent",
       "scraper_user_agent_desc": "User-Agentสตริงที่ใช้ระหว่างการร้องขอ http scrape",
       "scrapers_path": {
         "description": "ตำแหน่งไดเร็กทอรีของไฟล์การกำหนดค่า Scraper",
-        "heading": "เส้นทาง Scrapers"
+        "heading": "พาร์ธ Scrapers"
       },
       "scraping": "การ Scrap",
       "sqlite_location": "ตำแหน่งไฟล์สำหรับฐานข้อมูล SQLite (ต้องรีสตาร์ท)",
-      "video_ext_desc": "รายการนามสกุลไฟล์ที่คั่นด้วยเครื่องหมายจุลภาคซึ่งจะถูกระบุว่าเป็นวิดีโอ"
+      "video_ext_desc": "รายการนามสกุลไฟล์ที่คั่นด้วยเครื่องหมายจุลภาคซึ่งจะถูกระบุว่าเป็นวิดีโอ",
+      "video_ext_head": "ส่วนเสริมวิดีโอ",
+      "video_head": "วิดีโอ"
+    },
+    "library": {
+      "exclusions": "ไม่รวม",
+      "gallery_and_image_options": "Gallery และ ออปชันรูปภาพ",
+      "media_content_extensions": "ส่วนขยายเนื้อหาสื่อ"
+    },
+    "logs": {
+      "log_level": "ระดับ Log"
+    },
+    "plugins": {
+      "hooks": "การใช้ Hooks",
+      "triggers_on": "Triggers บน"
+    },
+    "scraping": {
+      "entity_metadata": "{entityType} Metadata",
+      "entity_scrapers": "{entityType} สแครปเปอร์",
+      "excluded_tag_patterns_desc": "Regexps ของชื่อแท็กที่จะแยกออกจากผลลัพธ์การสแครปปิ้ง",
+      "excluded_tag_patterns_head": "รูปแบบแท็กที่ยกเว้น",
+      "scraper": "สแครปปิ้ง",
+      "scrapers": "สแครปเปอร์",
+      "search_by_name": "ค้นหาตามชื่อ",
+      "supported_types": "ประเภทที่รองรับ",
+      "supported_urls": "URL"
+    },
+    "stashbox": {
+      "add_instance": "เพิ่มอินสแตนซ์ Stash-Box",
+      "api_key": "คีย์ API",
+      "description": "Stash-Box ของอํานวยความสะดวกในการติดแท็กฉากและนักแสดงโดยอัตโนมัติตามลายนิ้วมือและชื่อไฟล์\nคุณสามารถดูคีย์ปลายทางและ API ได้ในหน้าบัญชีของคุณบนอินสแตนซ์ที่ Stash-box ต้องใช้ชื่อเมื่อมีการเพิ่มอินสแตนซ์มากกว่าหนึ่งรายการ",
+      "endpoint": "เอนพอยต์",
+      "graphql_endpoint": "GraphQL เอนพอยต์",
+      "name": "ชื่อ",
+      "title": "Stash-box เอนพอยต์"
+    },
+    "system": {
+      "transcoding": "การแปลงรหัส"
+    },
+    "tasks": {
+      "added_job_to_queue": "เพิ่ม {operation_name} ในคิวงาน",
+      "auto_tag": {
+        "auto_tagging_all_paths": "ติดแท็กอัตโนมัติทุกพาร์ธ",
+        "auto_tagging_paths": "ติดแท็กอัตโนมัติตามพาร์ธต่อไปนี้"
+      },
+      "auto_tag_based_on_filenames": "ติดแท็กเนื้อหาอัตโนมัติตามชื่อไฟล์",
+      "auto_tagging": "แท็กอัตโนมัติ",
+      "backing_up_database": "กำลังสำรองข้อมูลเดต้าเบส",
+      "backup_and_download": "ทำการสำรองฐานข้อมูลและดาวน์โหลดไฟล์ผลลัพธ์",
+      "backup_database": "ดำเนินการสำรองข้อมูลของฐานข้อมูลไปยังไดเร็กทอรีเดียวกันกับฐานข้อมูล โดยมีรูปแบบชื่อไฟล์ {filename_format}",
+      "cleanup_desc": "ตรวจสอบไฟล์ที่หายไปและลบออกจากฐานข้อมูล นี่คือการกระทำที่ทำลายล้าง",
+      "data_management": "การจัดการเดต้า",
+      "defaults_set": "มีการตั้งค่าเริ่มต้นและจะใช้เมื่อคลิกปุ่ม {action} บนหน้างาน",
+      "dont_include_file_extension_as_part_of_the_title": "ไม่รวมนามสกุลไฟล์เป็นส่วนหนึ่งของชื่อ",
+      "empty_queue": "ไม่มีงานใดกำลังทำงานอยู่",
+      "export_to_json": "เอ็กซ์พอร์ตเนื้อหาฐานข้อมูลเป็นรูปแบบ JSON ในไดเร็กทอรีข้อมูล Metadata"
     }
   }
 }
