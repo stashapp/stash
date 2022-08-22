@@ -995,7 +995,7 @@
   "tattoos": "Tatouages",
   "title": "Titre",
   "toast": {
-    "added_entity": "{entity} ajouté(e)",
+    "added_entity": "{count, plural, one {{singularEntity}} ajouté.e.s sur {{pluralEntity}}}",
     "added_generation_job_to_queue": "Ajout d'une tâche de génération en file d'attente",
     "created_entity": "{entity} créé.e",
     "default_filter_set": "Filtre par défaut défini",
