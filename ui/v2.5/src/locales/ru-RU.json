@@ -150,6 +150,7 @@
     "results": {
       "duration_off": "Продолжительность отличается не менее чем на {number} сек",
       "duration_unknown": "Длительность неизвестна",
+      "fp_found": "{fpCount, plural, =0 {Новых совпадений не найдено} other {# новых совпадений найдено}}",
       "fp_matches": "Продолжительность совпадает",
       "fp_matches_multi": "Продолжительность совпадает с {matchCount}/{durationsLength} отпечатками файла(-ов)",
       "hash_matches": "{hash_type} совпадает",
@@ -161,6 +162,7 @@
     },
     "verb_matched": "Совпавший",
     "verb_scrape_all": "Скрейпить всё",
+    "verb_submit_fp": "Отправить {fpCount, plural, one{# Совпадение} other{# совпадения}}",
     "verb_toggle_config": "{toggle} {configuration}"
   },
   "config": {
@@ -374,10 +376,32 @@
         "options": {
           "video": "Видео"
         }
-      }
+      },
+      "scene_wall": {
+        "options": {
+          "display_title": "Отображать название и тэги",
+          "toggle_sound": "Включить звук"
+        }
+      },
+      "slideshow_delay": {
+        "description": "Слайд-шоу доступно в галереях, в режиме просмотра стены",
+        "heading": "Задержка показа слайдов (сек.)"
+      },
+      "title": "Пользовательский интерфейс"
     }
   },
   "configuration": "Настройки",
+  "countables": {
+    "files": "{count, plural, one {Файл} other {Файлы}}",
+    "galleries": "{count, plural, one {Галерея} other {Галереи}}",
+    "images": "{count, plural, one {Изображение} other {Изображения}}",
+    "markers": "{count, plural, one {Маркер} other {Маркеры}}",
+    "movies": "{count, plural, one {Фильм} other {Фильмы}}",
+    "performers": "{count, plural, one {Актер} other {Актеры}}",
+    "scenes": "{count, plural, one {Сцена} other {Сцены}}",
+    "studios": "{count, plural, one {Студия} other {Студии}}",
+    "tags": "{count, plural, one {Тэг} other {Тэги}}"
+  },
   "country": "Страна",
   "cover_image": "Изображение обложки",
   "criterion": {
@@ -397,8 +421,14 @@
   "detail": "Дополнительная информация",
   "details": "Подробности",
   "dialogs": {
+    "delete_alert": "Следующие {count, plural, one {{singularEntity}} other {{pluralEntity}}} будут удалены безвозвратно:",
     "delete_confirm": "Вы уверены что хотите удалить {entityName}?",
     "delete_entity_desc": "{count, plural, one {Вы уверены, что хотите удалить этот {singularEntity}? Если файл также не будет удален, этот {singularEntity} будет повторно добавлен при сканировании.} other {Вы уверены, что хотите удалить эти {pluralEntity}? Если файлы также не будут удалены, эти {pluralEntity} будут повторно добавлены при выполнении сканирования.}}",
+    "delete_entity_title": "{count, plural, one {Удалить {singularEntity}} other {Удалить {pluralEntity}}}",
+    "delete_object_desc": "Вы уверены что хотите удалить {count, plural, one {эту {singularEntity}} other {эти{pluralEntity}}}?",
+    "delete_object_overflow": "…и {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
+    "delete_object_title": "Удалить {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "edit_entity_title": "Редактировать {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_title": "Экспорт",
     "lightbox": {
       "delay": "Задержка (сек)",
@@ -434,6 +464,7 @@
   },
   "donate": "Пожертвование",
   "dupe_check": {
+    "found_sets": "{setCount, plural, one{# набор дубликатов найден.} other {# наборы дубликатов найдены.}}",
     "options": {
       "exact": "Точный",
       "high": "Высокий",
@@ -552,7 +583,28 @@
   "performer_count": "Количество актеров",
   "performer_image": "Изображение актера",
   "performer_tagger": {
-    "add_new_performers": "Добавить новых актеров"
+    "add_new_performers": "Добавить новых актеров",
+    "current_page": "Текущая страница",
+    "failed_to_save_performer": "Ошибка сохранения актера \"{performer}\"",
+    "name_already_exists": "Такое имя уже существует",
+    "network_error": "Ошибка сети",
+    "no_results_found": "Ничего не найдено.",
+    "number_of_performers_will_be_processed": "{performer_count} актер(-ы) будут обработаны",
+    "performer_already_tagged": "Актер уже помечен тэгом",
+    "performer_names_separated_by_comma": "Имена актеров, разделенные запятой",
+    "performer_selection": "Выбор актеров",
+    "performer_successfully_tagged": "Актер успешно помечен тэгом:",
+    "query_all_performers_in_the_database": "Все актеры в базе данных",
+    "refresh_tagged_performers": "Обновить помеченных тэгами актеров",
+    "refreshing_will_update_the_data": "Обновление обновит данные у всех помеченных тэгами актеров, используя stash-box.",
+    "status_tagging_job_queued": "Статус: Пометка тэгами в очереди",
+    "status_tagging_performers": "Статус: Пометка тэгами актеров",
+    "tag_status": "Статус тэга",
+    "to_use_the_performer_tagger": "Для пометки актеров тэгами, stash-box должен быть настроен.",
+    "untagged_performers": "Не помеченные актеры",
+    "update_performer": "Обновить актера",
+    "update_performers": "Обновить актеров",
+    "updating_untagged_performers_description": "При обновлении непомеченных актеров, будет предпринята попытка обновить метаданные всех участников, у которых нет StashID."
   },
   "performers": "Исполнители",
   "piercings": "Пирсинг",
@@ -560,8 +612,13 @@
   "random": "Случайный",
   "rating": "Рейтинг",
   "recently_added_objects": "Недавно добавленные {objects}",
+  "recently_released_objects": "Недавно выпущенные {objects}",
   "resolution": "Разрешение",
   "scene": "Сцена",
+  "sceneTagger": "Пометка сцен тэгами",
+  "sceneTags": "Тэги сцен",
+  "scene_count": "Количество сцен",
+  "scene_id": "ID сцены",
   "scenes": "Сцены",
   "scenes_updated_at": "Сцена обновлена в",
   "search_filter": {
@@ -573,6 +630,9 @@
   "seconds": "Секунды",
   "settings": "Настройки",
   "setup": {
+    "confirm": {
+      "configuration_file_location": "Путь к файлу конфигурации:"
+    },
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "Путь к резервной копии базы данных (оставьте пустым чтобы отключить резервное копирование):",
       "backup_recommended": "Рекомендуется создать резервную копию перед тем как выполнять перенос. Мы может сделать это за вас, создав копию базы данных по пути <code>{defaultBackupPath}</code>.",
@@ -585,6 +645,7 @@
       "where_can_stash_store_its_generated_content": "Где Stash сможет хранить сгенерированный контент?",
       "where_can_stash_store_its_generated_content_description": "Чтобы предоставить эскизы, превью и спрайты, Stash генерирует изображения и видео. Сюда также входят транскоды для неподдерживаемых форматов файлов. По умолчанию Stash создает каталог <code>generated</code> в каталоге, содержащем ваш файл конфигурации. Если вы хотите изменить место хранения сгенерированного мультимедиа, введите абсолютный или относительный (по отношению к текущему рабочему каталогу) путь. Stash создаст этот каталог, если он еще не существует."
     },
+    "stash_setup_wizard": "Мастер установки Stash",
     "welcome": {
       "config_path_logic_explained": "Stash сначала пытается найти свой файл конфигурации (<code>config.yml</code>) в текущем рабочем каталоге, и, если он не находит его там, возвращается к <code>$HOME/.stash/config.yml</code> (в Windows это будет <code>%USERPROFILE%\\.stash\\config.yml</code>). Вы также можете заставить Stash читать из определенного файла конфигурации, запустив его с параметрами <code>-c <путь к файлу конфигурации></code> или <code>--config <путь к файлу конфигурации></code>."
     },
@@ -608,6 +669,19 @@
   "tags": "Теги",
   "tattoos": "Татуировки",
   "title": "Заголовок",
+  "toast": {
+    "added_entity": "Добавлен {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "delete_past_tense": "Удален {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "generating_screenshot": "Создание скриншота…",
+    "merged_tags": "Объединенные тэги",
+    "removed_entity": "Удален {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "rescanning_entity": "Повторное сканирование {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
+    "saved_entity": "Сохранено {entity}",
+    "started_auto_tagging": "Начата автоматическая пометка тэгами",
+    "started_generating": "Генерация запущена",
+    "started_importing": "Импортирование начато",
+    "updated_entity": "Обновлен {entity}"
+  },
   "total": "Всего",
   "true": "Да",
   "twitter": "Twitter",
