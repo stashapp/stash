@@ -598,7 +598,7 @@
     "delete_entity_title": "{count, plural, one {Delete {singularEntity}} sur {Delete {pluralEntity}}}",
     "delete_galleries_extra": "…ainsi que tous fichiers image qui ne sont pas associés à une autre galerie.",
     "delete_gallery_files": "Supprime le répertoire ou l'archive zip de la galerie et toutes images qui ne sont pas associées à une autre galerie.",
-    "delete_object_desc": "Êtes-vous sûr de vouloir supprimer {count, plural, one {this {singularEntity}} other {these {pluralEntity}}} ?",
+    "delete_object_desc": "Êtes-vous sûr de vouloir supprimer {count, plural, one {this {singularEntity}} other {these {pluralEntity}}} ?",
     "delete_object_overflow": "…et {count} {count, plural, one {autre {singularEntity}} other {autres {pluralEntity}}}.",
     "delete_object_title": "Supprimer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "Éditer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
