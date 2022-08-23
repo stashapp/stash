@@ -1325,10 +1325,13 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		sort = "frame_rate"
 		addVideoFileTable()
 		query.sortAndPagination += getSort(sort, direction, videoFileTable)
-	case "size":
+	case "filesize":
 		addFileTable()
 		query.sortAndPagination += getSort(sort, direction, fileTable)
 	case "duration":
+		addVideoFileTable()
+		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+	case "interactive", "interactive_speed":
 		addVideoFileTable()
 		query.sortAndPagination += getSort(sort, direction, videoFileTable)
 	default:
