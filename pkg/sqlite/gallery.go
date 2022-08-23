@@ -962,10 +962,15 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 		query.addJoins(
 			join{
 				table:    folderTable,
-				onClause: "files.parent_folder_id = folders.id",
+				onClause: "folders.id = galleries.folder_id",
+			},
+			join{
+				table:    folderTable,
+				as:       "file_folder",
+				onClause: "files.parent_folder_id = file_folder.id",
 			},
 		)
-		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
+		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, file_folder.path %[1]s, files.basename %[1]s", direction)
 	case "file_mod_time":
 		sort = "mod_time"
 		addFileTable()
