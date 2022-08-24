@@ -3477,7 +3477,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		},
 		{
 			"file size",
-			"size",
+			"filesize",
 			models.SortDirectionEnumDesc,
 			-1,
 			-1,

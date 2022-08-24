@@ -10,7 +10,8 @@ linters:
     - deadcode
     - errcheck
     - gosimple
-    - govet
+    # removed to fix timeout error
+    # - govet
     - ineffassign
     - staticcheck
     - structcheck
