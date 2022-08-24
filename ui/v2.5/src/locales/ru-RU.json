@@ -411,7 +411,11 @@
     "between": "между",
     "equals": "есть",
     "excludes": "исключает",
-    "includes": "включает"
+    "includes": "включает",
+    "matches_regex": "соответствует регулярному выражению",
+    "not_between": "не между",
+    "not_equals": "является не",
+    "not_matches_regex": "не соответствует регулярному выражению"
   },
   "custom": "Пользовательский",
   "date": "Дата",
@@ -420,26 +424,39 @@
   "descending": "По убыванию",
   "detail": "Дополнительная информация",
   "details": "Подробности",
+  "developmentVersion": "Версия разработки",
   "dialogs": {
+    "aliases_must_be_unique": "псевдонимы должны быть уникальными",
     "delete_alert": "Следующие {count, plural, one {{singularEntity}} other {{pluralEntity}}} будут удалены безвозвратно:",
     "delete_confirm": "Вы уверены что хотите удалить {entityName}?",
     "delete_entity_desc": "{count, plural, one {Вы уверены, что хотите удалить этот {singularEntity}? Если файл также не будет удален, этот {singularEntity} будет повторно добавлен при сканировании.} other {Вы уверены, что хотите удалить эти {pluralEntity}? Если файлы также не будут удалены, эти {pluralEntity} будут повторно добавлены при выполнении сканирования.}}",
     "delete_entity_title": "{count, plural, one {Удалить {singularEntity}} other {Удалить {pluralEntity}}}",
+    "delete_galleries_extra": "…плюс любые файлы изображений, не прикрепленные ни к какой другой галерее.",
+    "delete_gallery_files": "Удалите папку/архив галереи и любые изображения, не прикрепленные к какой-либо другой галерее.",
     "delete_object_desc": "Вы уверены что хотите удалить {count, plural, one {эту {singularEntity}} other {эти{pluralEntity}}}?",
     "delete_object_overflow": "…и {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Удалить {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "edit_entity_title": "Редактировать {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "export_include_related_objects": "Включить связанные объекты в экспорт",
     "export_title": "Экспорт",
     "lightbox": {
       "delay": "Задержка (сек)",
       "display_mode": {
+        "fit_horizontally": "Выровнять по горизонтали",
         "fit_to_screen": "По размеру экрана",
         "label": "Режим отображения",
         "original": "Оригинал"
       },
       "options": "Параметры",
+      "reset_zoom_on_nav": "Сбросить масштабирование при смене изображения",
+      "scale_up": {
+        "description": "Масштабировать небольшие изображения до заполнения экрана",
+        "label": "Масштабировать, чтобы уместить"
+      },
       "scroll_mode": {
+        "description": "Зажмите shift чтобы временно использовать другой режим.",
         "label": "Режим прокрутки",
+        "pan_y": "Наклон по Y",
         "zoom": "Увеличить"
       }
     },
@@ -447,7 +464,35 @@
       "destination": "Назначение",
       "source": "Источник"
     },
+    "overwrite_filter_confirm": "Вы уверены, что хотите перезаписать существующий сохраненный запрос {entityName}?",
     "scene_gen": {
+      "force_transcodes": "Принудительно создавать перекодированные файлы",
+      "force_transcodes_tooltip": "По умолчанию перекодированные файлы генерируется только в том случае, если видеофайл не поддерживается браузером. Если этот параметр включен, перекодирование будет генерироваться, даже если видеофайл поддерживается браузером.",
+      "image_previews": "Анимированные изображения как превью",
+      "image_previews_tooltip": "Анимированные WebP превью, необходимы если тип предпросмотра выбран - Анимированные изображения.",
+      "interactive_heatmap_speed": "Создание тепловых карт и скоростей для интерактивных сцен",
+      "marker_image_previews": "Анимированный предварительный просмотр для маркеров",
+      "marker_image_previews_tooltip": "Анимированные WebP превью для маркеров, необходимы если тип предпросмотра выбран - Анимированные изображения.",
+      "marker_screenshots": "Скриншоты для маркеров",
+      "marker_screenshots_tooltip": "Статические JPG изображения маркеров, необходимы если тип предпросмотра выбран - Статичное изображение.",
+      "markers": "Превью маркера",
+      "markers_tooltip": "20-секундные видео, которые начинаются с заданного тайм-кода.",
+      "override_preview_generation_options": "Пользовательские параметры превью видео файлов",
+      "override_preview_generation_options_desc": "Пользовательские параметры для создания превью. Значения по умолчанию находятся в Система -> Создание Превью.",
+      "overwrite": "Перезаписать существующие сгенерированные файлы",
+      "phash": "Perceptual хэши (для дедупликации)",
+      "preview_exclude_end_time_desc": "Исключить последние x секунд из предварительного просмотра сцен. Это может быть значение в секундах или процент (например, 2%) от общей продолжительности сцены.",
+      "preview_exclude_end_time_head": "Исключенное время с конца файла",
+      "preview_exclude_start_time_desc": "Исключить первые x секунд из предварительного просмотра сцен. Это может быть значение в секундах или процент (например, 2%) от общей продолжительности сцены.",
+      "preview_exclude_start_time_head": "Исключенное время с начала файла",
+      "preview_generation_options": "Параметры создания\\генерации превью",
+      "preview_options": "Параметры превью",
+      "preview_preset_desc": "Предустановка регулирует размер, качество и время кодирования генерации предварительного просмотра. Предустановки с значением выше «slow» имеют незначительные преимущества и не рекомендуются.",
+      "preview_preset_head": "Предустановка кодирования превью",
+      "preview_seg_count_desc": "Количество сегментов в файлах предварительного просмотра.",
+      "preview_seg_count_head": "Количество сегментов в предварительном просмотре",
+      "preview_seg_duration_desc": "Продолжительность каждого сегмента в файлах предварительного просмотра, в секундах.",
+      "preview_seg_duration_head": "Продолжительность сегмента предварительного просмотра",
       "transcodes": "Транскоды",
       "video_previews": "Превью"
     },
@@ -671,6 +716,7 @@
   "title": "Заголовок",
   "toast": {
     "added_entity": "Добавлен {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "default_filter_set": "Стандартный набор фильтров",
     "delete_past_tense": "Удален {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Создание скриншота…",
     "merged_tags": "Объединенные тэги",
