@@ -778,8 +778,9 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 			return nil, err
 		}
 		for _, stashID := range stashIDs {
-			if stashID.Endpoint == endpoint {
-				studioDraft.ID = &stashID.StashID
+			c := stashID
+			if c.Endpoint == endpoint {
+				studioDraft.ID = &c.StashID
 				break
 			}
 		}
@@ -892,89 +893,83 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Performer, endpoint string) (*string, error) {
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
-	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
-		pqb := c.repository.Performer
-		img, _ := pqb.GetImage(ctx, performer.ID)
-		if img != nil {
-			image = bytes.NewReader(img)
-		}
+	pqb := c.repository.Performer
+	img, _ := pqb.GetImage(ctx, performer.ID)
+	if img != nil {
+		image = bytes.NewReader(img)
+	}
 
-		if performer.Name.Valid {
-			draft.Name = performer.Name.String
-		}
-		if performer.Birthdate.Valid {
-			draft.Birthdate = &performer.Birthdate.String
-		}
-		if performer.Country.Valid {
-			draft.Country = &performer.Country.String
-		}
-		if performer.Ethnicity.Valid {
-			draft.Ethnicity = &performer.Ethnicity.String
-		}
-		if performer.EyeColor.Valid {
-			draft.EyeColor = &performer.EyeColor.String
-		}
-		if performer.FakeTits.Valid {
-			draft.BreastType = &performer.FakeTits.String
-		}
-		if performer.Gender.Valid {
-			draft.Gender = &performer.Gender.String
-		}
-		if performer.HairColor.Valid {
-			draft.HairColor = &performer.HairColor.String
-		}
-		if performer.Height.Valid {
-			draft.Height = &performer.Height.String
-		}
-		if performer.Measurements.Valid {
-			draft.Measurements = &performer.Measurements.String
-		}
-		if performer.Piercings.Valid {
-			draft.Piercings = &performer.Piercings.String
-		}
-		if performer.Tattoos.Valid {
-			draft.Tattoos = &performer.Tattoos.String
-		}
-		if performer.Aliases.Valid {
-			draft.Aliases = &performer.Aliases.String
-		}
+	if performer.Name.Valid {
+		draft.Name = performer.Name.String
+	}
+	if performer.Birthdate.Valid {
+		draft.Birthdate = &performer.Birthdate.String
+	}
+	if performer.Country.Valid {
+		draft.Country = &performer.Country.String
+	}
+	if performer.Ethnicity.Valid {
+		draft.Ethnicity = &performer.Ethnicity.String
+	}
+	if performer.EyeColor.Valid {
+		draft.EyeColor = &performer.EyeColor.String
+	}
+	if performer.FakeTits.Valid {
+		draft.BreastType = &performer.FakeTits.String
+	}
+	if performer.Gender.Valid {
+		draft.Gender = &performer.Gender.String
+	}
+	if performer.HairColor.Valid {
+		draft.HairColor = &performer.HairColor.String
+	}
+	if performer.Height.Valid {
+		draft.Height = &performer.Height.String
+	}
+	if performer.Measurements.Valid {
+		draft.Measurements = &performer.Measurements.String
+	}
+	if performer.Piercings.Valid {
+		draft.Piercings = &performer.Piercings.String
+	}
+	if performer.Tattoos.Valid {
+		draft.Tattoos = &performer.Tattoos.String
+	}
+	if performer.Aliases.Valid {
+		draft.Aliases = &performer.Aliases.String
+	}
 
-		var urls []string
-		if len(strings.TrimSpace(performer.Twitter.String)) > 0 {
-			urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter.String))
-		}
-		if len(strings.TrimSpace(performer.Instagram.String)) > 0 {
-			urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram.String))
-		}
-		if len(strings.TrimSpace(performer.URL.String)) > 0 {
-			urls = append(urls, strings.TrimSpace(performer.URL.String))
-		}
-		if len(urls) > 0 {
-			draft.Urls = urls
-		}
+	var urls []string
+	if len(strings.TrimSpace(performer.Twitter.String)) > 0 {
+		urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter.String))
+	}
+	if len(strings.TrimSpace(performer.Instagram.String)) > 0 {
+		urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram.String))
+	}
+	if len(strings.TrimSpace(performer.URL.String)) > 0 {
+		urls = append(urls, strings.TrimSpace(performer.URL.String))
+	}
+	if len(urls) > 0 {
+		draft.Urls = urls
+	}
 
-		stashIDs, err := pqb.GetStashIDs(ctx, performer.ID)
-		if err != nil {
-			return err
-		}
-		var stashID *string
-		for _, v := range stashIDs {
-			c := v
-			if v.Endpoint == endpoint {
-				stashID = &c.StashID
-				break
-			}
-		}
-		draft.ID = stashID
-
-		return nil
-	}); err != nil {
+	stashIDs, err := pqb.GetStashIDs(ctx, performer.ID)
+	if err != nil {
 		return nil, err
 	}
+	var stashID *string
+	for _, v := range stashIDs {
+		c := v
+		if v.Endpoint == endpoint {
+			stashID = &c.StashID
+			break
+		}
+	}
+	draft.ID = stashID
 
 	var id *string
 	var ret graphql.SubmitPerformerDraft
-	err := c.submitDraft(ctx, graphql.SubmitPerformerDraftDocument, draft, image, &ret)
+	err = c.submitDraft(ctx, graphql.SubmitPerformerDraftDocument, draft, image, &ret)
 	id = ret.SubmitPerformerDraft.ID
 
 	return id, err
