@@ -105,7 +105,7 @@ func getCountSort(primaryTable, joinTable, primaryFK, direction string) string {
 	return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM %s WHERE %s = %s.id) %s", joinTable, primaryFK, primaryTable, getSortDirection(direction))
 }
 
-func getSearchBinding(columns []string, q string, not bool) (string, []interface{}) {
+func getStringSearchClause(columns []string, q string, not bool) sqlClause {
 	var likeClauses []string
 	var args []interface{}
 
@@ -137,7 +137,7 @@ func getSearchBinding(columns []string, q string, not bool) (string, []interface
 	}
 	likes := strings.Join(likeClauses, binaryType)
 
-	return "(" + likes + ")", args
+	return makeClause("("+likes+")", args...)
 }
 
 func getInBinding(length int) string {

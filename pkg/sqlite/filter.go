@@ -387,11 +387,9 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 			if modifier := c.Modifier; c.Modifier.IsValid() {
 				switch modifier {
 				case models.CriterionModifierIncludes:
-					clause, thisArgs := getSearchBinding([]string{column}, c.Value, false)
-					f.addWhere(clause, thisArgs...)
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, false))
 				case models.CriterionModifierExcludes:
-					clause, thisArgs := getSearchBinding([]string{column}, c.Value, true)
-					f.addWhere(clause, thisArgs...)
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, true))
 				case models.CriterionModifierEquals:
 					f.addWhere(column+" LIKE ?", c.Value)
 				case models.CriterionModifierNotEquals:

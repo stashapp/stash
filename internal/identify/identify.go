@@ -212,7 +212,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 
 		// don't update anything if nothing was set
 		if updater.IsEmpty() {
-			logger.Debugf("Nothing to set for %s", s.Path)
+			logger.Debugf("Nothing to set for %s", s.Path())
 			return nil
 		}
 
@@ -225,7 +225,7 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manage
 		if title.Ptr() != nil {
 			as = fmt.Sprintf(" as %s", title.Value)
 		}
-		logger.Infof("Successfully identified %s%s using %s", s.Path, as, result.source.Name)
+		logger.Infof("Successfully identified %s%s using %s", s.Path(), as, result.source.Name)
 
 		return nil
 	}); err != nil {
