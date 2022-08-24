@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
@@ -595,7 +596,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 		}
 	}))
 
-	query.handleCriterion(ctx, pathCriterionHandler(galleryFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
+	query.handleCriterion(ctx, qb.galleryPathCriterionHandler(galleryFilter.Path))
 	query.handleCriterion(ctx, galleryFileCountCriterionHandler(qb, galleryFilter.FileCount))
 	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating, "galleries.rating", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))
@@ -714,6 +715,71 @@ func (qb *GalleryStore) QueryCount(ctx context.Context, galleryFilter *models.Ga
 	}
 
 	return query.executeCount(ctx)
+}
+
+func (qb *GalleryStore) galleryPathCriterionHandler(c *models.StringCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			qb.addFoldersTable(f)
+			f.addLeftJoin(folderTable, "gallery_folder", "galleries.folder_id = gallery_folder.id")
+
+			const pathColumn = "folders.path"
+			const basenameColumn = "files.basename"
+			const folderPathColumn = "gallery_folder.path"
+
+			addWildcards := true
+			not := false
+
+			if modifier := c.Modifier; c.Modifier.IsValid() {
+				switch modifier {
+				case models.CriterionModifierIncludes:
+					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
+					clause2 := getStringSearchClause([]string{folderPathColumn}, c.Value, false)
+					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
+				case models.CriterionModifierExcludes:
+					not = true
+					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
+					clause2 := getStringSearchClause([]string{folderPathColumn}, c.Value, true)
+					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
+				case models.CriterionModifierEquals:
+					addWildcards = false
+					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
+					clause2 := makeClause(folderPathColumn+" LIKE ?", c.Value)
+					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
+				case models.CriterionModifierNotEquals:
+					addWildcards = false
+					not = true
+					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
+					clause2 := makeClause(folderPathColumn+" NOT LIKE ?", c.Value)
+					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
+				case models.CriterionModifierMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					clause := makeClause(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?) OR (%s IS NOT NULL AND %[2]s regexp ?)", pathColumn, basenameColumn), c.Value, c.Value)
+					clause2 := makeClause(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?)", folderPathColumn), c.Value)
+					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
+				case models.CriterionModifierNotMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?) AND (%s IS NULL OR %[2]s NOT regexp ?)", pathColumn, basenameColumn), c.Value, c.Value)
+					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?)", folderPathColumn), c.Value)
+				case models.CriterionModifierIsNull:
+					f.whereClauses = append(f.whereClauses, makeClause(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = '')", pathColumn, basenameColumn)))
+					f.whereClauses = append(f.whereClauses, makeClause(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '')", folderPathColumn)))
+				case models.CriterionModifierNotNull:
+					clause := makeClause(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != '')", pathColumn, basenameColumn))
+					clause2 := makeClause(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '')", folderPathColumn))
+					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
+				default:
+					panic("unsupported string filter modifier")
+				}
+			}
+		}
+	}
 }
 
 func galleryFileCountCriterionHandler(qb *GalleryStore, fileCount *models.IntCriterionInput) criterionHandlerFunc {
