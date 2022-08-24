@@ -61,14 +61,16 @@ func TestImporterPreImport(t *testing.T) {
 	assert.Nil(t, err)
 
 	expectedGallery := models.Gallery{
-		Title:     title,
-		Date:      &dateObj,
-		Details:   details,
-		Rating:    &rating,
-		Organized: organized,
-		URL:       url,
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		Title:        title,
+		Date:         &dateObj,
+		Details:      details,
+		Rating:       &rating,
+		Organized:    organized,
+		URL:          url,
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
 	}
 
 	assert.Equal(t, expectedGallery, i.gallery)
@@ -172,7 +174,7 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingPerformerID}, i.gallery.PerformerIDs)
+	assert.Equal(t, []int{existingPerformerID}, i.gallery.PerformerIDs.List())
 
 	i.Input.Performers = []string{existingPerformerErr}
 	err = i.PreImport(testCtx)
@@ -209,7 +211,7 @@ func TestImporterPreImportWithMissingPerformer(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingPerformerID}, i.gallery.PerformerIDs)
+	assert.Equal(t, []int{existingPerformerID}, i.gallery.PerformerIDs.List())
 
 	performerReaderWriter.AssertExpectations(t)
 }
@@ -257,7 +259,7 @@ func TestImporterPreImportWithTag(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingTagID}, i.gallery.TagIDs)
+	assert.Equal(t, []int{existingTagID}, i.gallery.TagIDs.List())
 
 	i.Input.Tags = []string{existingTagErr}
 	err = i.PreImport(testCtx)
@@ -294,7 +296,7 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingTagID}, i.gallery.TagIDs)
+	assert.Equal(t, []int{existingTagID}, i.gallery.TagIDs.List())
 
 	tagReaderWriter.AssertExpectations(t)
 }

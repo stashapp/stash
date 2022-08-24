@@ -443,7 +443,7 @@ func (qb *GalleryStore) FindByPath(ctx context.Context, p string) ([]*models.Gal
 	sq := dialect.From(table).LeftJoin(
 		galleriesFilesJoinTable,
 		goqu.On(galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn))),
-	).InnerJoin(
+	).LeftJoin(
 		filesTable,
 		goqu.On(filesTable.Col(idColumn).Eq(galleriesFilesJoinTable.Col(fileIDColumn))),
 	).LeftJoin(
@@ -519,11 +519,14 @@ func (qb *GalleryStore) CountByImageID(ctx context.Context, imageID int) (int, e
 }
 
 func (qb *GalleryStore) FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error) {
-	table := galleriesQueryTable
+	table := qb.table()
 
-	sq := dialect.From(table).Select(table.Col(idColumn)).Where(
+	sq := dialect.From(table).LeftJoin(
+		galleriesFilesJoinTable,
+		goqu.On(galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn))),
+	).Select(table.Col(idColumn)).Where(
 		table.Col("folder_id").IsNull(),
-		table.Col("file_id").IsNull(),
+		galleriesFilesJoinTable.Col("file_id").IsNull(),
 		table.Col("title").Eq(title),
 	)
 

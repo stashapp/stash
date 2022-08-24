@@ -154,7 +154,7 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingPerformerID}, i.scene.PerformerIDs)
+	assert.Equal(t, []int{existingPerformerID}, i.scene.PerformerIDs.List())
 
 	i.Input.Performers = []string{existingPerformerErr}
 	err = i.PreImport(testCtx)
@@ -191,7 +191,7 @@ func TestImporterPreImportWithMissingPerformer(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingPerformerID}, i.scene.PerformerIDs)
+	assert.Equal(t, []int{existingPerformerID}, i.scene.PerformerIDs.List())
 
 	performerReaderWriter.AssertExpectations(t)
 }
@@ -241,7 +241,7 @@ func TestImporterPreImportWithMovie(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingMovieID, i.scene.Movies[0].MovieID)
+	assert.Equal(t, existingMovieID, i.scene.Movies.List()[0].MovieID)
 
 	i.Input.Movies[0].MovieName = existingMovieErr
 	err = i.PreImport(testCtx)
@@ -281,7 +281,7 @@ func TestImporterPreImportWithMissingMovie(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingMovieID, i.scene.Movies[0].MovieID)
+	assert.Equal(t, existingMovieID, i.scene.Movies.List()[0].MovieID)
 
 	movieReaderWriter.AssertExpectations(t)
 }
@@ -331,7 +331,7 @@ func TestImporterPreImportWithTag(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingTagID}, i.scene.TagIDs)
+	assert.Equal(t, []int{existingTagID}, i.scene.TagIDs.List())
 
 	i.Input.Tags = []string{existingTagErr}
 	err = i.PreImport(testCtx)
@@ -368,7 +368,7 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingTagID}, i.scene.TagIDs)
+	assert.Equal(t, []int{existingTagID}, i.scene.TagIDs.List())
 
 	tagReaderWriter.AssertExpectations(t)
 }

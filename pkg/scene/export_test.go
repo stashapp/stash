@@ -89,9 +89,9 @@ func createFullScene(id int) models.Scene {
 		Rating:    &rating,
 		Organized: organized,
 		URL:       url,
-		StashIDs: []models.StashID{
+		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			stashID,
-		},
+		}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -100,6 +100,7 @@ func createFullScene(id int) models.Scene {
 func createEmptyScene(id int) models.Scene {
 	return models.Scene{
 		ID:        id,
+		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
 	}
@@ -313,7 +314,7 @@ type sceneMoviesTestScenario struct {
 	err      bool
 }
 
-var validMovies = []models.MoviesScenes{
+var validMovies = models.NewRelatedMovies([]models.MoviesScenes{
 	{
 		MovieID:    validMovie1,
 		SceneIndex: &movie1Scene,
@@ -322,14 +323,14 @@ var validMovies = []models.MoviesScenes{
 		MovieID:    validMovie2,
 		SceneIndex: &movie2Scene,
 	},
-}
+})
 
-var invalidMovies = []models.MoviesScenes{
+var invalidMovies = models.NewRelatedMovies([]models.MoviesScenes{
 	{
 		MovieID:    invalidMovie,
 		SceneIndex: &movie1Scene,
 	},
-}
+})
 
 var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
 	{
@@ -351,7 +352,8 @@ var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
 	},
 	{
 		models.Scene{
-			ID: noMoviesID,
+			ID:     noMoviesID,
+			Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
 		},
 		nil,
 		false,

@@ -137,7 +137,7 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingPerformerID}, i.image.PerformerIDs)
+	assert.Equal(t, []int{existingPerformerID}, i.image.PerformerIDs.List())
 
 	i.Input.Performers = []string{existingPerformerErr}
 	err = i.PreImport(testCtx)
@@ -174,7 +174,7 @@ func TestImporterPreImportWithMissingPerformer(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingPerformerID}, i.image.PerformerIDs)
+	assert.Equal(t, []int{existingPerformerID}, i.image.PerformerIDs.List())
 
 	performerReaderWriter.AssertExpectations(t)
 }
@@ -222,7 +222,7 @@ func TestImporterPreImportWithTag(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingTagID}, i.image.TagIDs)
+	assert.Equal(t, []int{existingTagID}, i.image.TagIDs.List())
 
 	i.Input.Tags = []string{existingTagErr}
 	err = i.PreImport(testCtx)
@@ -259,7 +259,7 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{existingTagID}, i.image.TagIDs)
+	assert.Equal(t, []int{existingTagID}, i.image.TagIDs.List())
 
 	tagReaderWriter.AssertExpectations(t)
 }
