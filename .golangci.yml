@@ -13,8 +13,8 @@ linters:
     # - gosimple
     - govet
     - ineffassign
-    - staticcheck
-    - structcheck
+    # - staticcheck
+    # - structcheck
     # - typecheck
     # - unused
     # - varcheck
