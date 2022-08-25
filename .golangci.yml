@@ -11,8 +11,7 @@ linters:
     - errcheck
     # Disabled due to out of memory error
     # - gosimple
-    # removed to fix timeout error
-    - govet
+    # - govet
     - ineffassign
     - staticcheck
     - structcheck
