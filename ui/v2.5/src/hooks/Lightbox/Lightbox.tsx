@@ -18,10 +18,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { LightboxImage } from "./LightboxImage";
 import { ConfigurationContext } from "../Config";
 import { Link } from "react-router-dom";
-import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import {
-  useImageUpdate,
   mutateImageIncrementO,
   mutateImageDecrementO,
   mutateImageResetO,
@@ -89,8 +87,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   pageCallback,
   hide,
 }) => {
-  const [updateImage] = useImageUpdate();
-
   const [index, setIndex] = useState<number | null>(null);
   const [movingLeft, setMovingLeft] = useState(false);
   const oldIndex = useRef<number | null>(null);
@@ -577,19 +573,6 @@ export const LightboxComponent: React.FC<IProps> = ({
   }
 
   const currentImage: ILightboxImage | undefined = images[currentIndex];
-
-  function setRating(v: number | null) {
-    if (currentImage?.id) {
-      updateImage({
-        variables: {
-          input: {
-            id: currentImage.id,
-            rating: v,
-          },
-        },
-      });
-    }
-  }
 
   async function onIncrementClick() {
     if (currentImage?.id === undefined) return;

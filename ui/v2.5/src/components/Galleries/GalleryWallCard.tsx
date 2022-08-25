@@ -3,7 +3,6 @@ import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { TruncatedText } from "src/components/Shared";
-import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
 import { TextUtils } from "src/utils";
 import { useGalleryLightbox } from "src/hooks";
 import { galleryTitle } from "src/core/galleries";

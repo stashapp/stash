@@ -1,6 +1,6 @@
 import React from "react";
 import { Badge } from "react-bootstrap";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
@@ -13,8 +13,6 @@ interface IStudioDetailsPanel {
 export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   studio,
 }) => {
-  const intl = useIntl();
-
   function renderRatingField() {
     if (!studio.rating) {
       return;
