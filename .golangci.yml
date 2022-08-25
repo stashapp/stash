@@ -10,20 +10,19 @@ linters:
     - deadcode
     - errcheck
     - gosimple
-    # removed to fix timeout error
-    # - govet
-    # - ineffassign
-    # - staticcheck
-    # - structcheck
-    # - typecheck
-    # - unused
-    # - varcheck
-    # # Linters added by the stash project.
-    # # - contextcheck
-    # - dogsled
-    # - errchkjson
-    # - errorlint
-    # # - exhaustive
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    # Linters added by the stash project.
+    # - contextcheck
+    - dogsled
+    - errchkjson
+    - errorlint
+    # - exhaustive
     # - exportloopref
     # - gocritic
     # # - goerr113
