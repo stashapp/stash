@@ -99,14 +99,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               />
             </h5>
           ) : undefined}
-          {props.scene.rating ? (
-            <h6>
-              <FormattedMessage id="rating" />:{" "}
-              <RatingSystem value={props.scene.rating} disabled />
-            </h6>
-          ) : (
-            ""
-          )}
+          <RatingSystem value={props.scene.rating ?? undefined} disabled />
           {file?.width && file?.height && (
             <h6>
               <FormattedMessage id="resolution" />:{" "}

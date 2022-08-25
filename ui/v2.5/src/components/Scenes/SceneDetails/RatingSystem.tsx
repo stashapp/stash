@@ -4,6 +4,9 @@ import { ConfigurationContext } from "src/hooks/Config";
 import Box from "@mui/material/Box";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarOutline";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Col, Form, Row } from "react-bootstrap";
+import { FormUtils } from "src/utils";
 
 export interface IRatingSystemProps {
   value?: number;
@@ -293,6 +296,8 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
 
   const { configuration: config } = React.useContext(ConfigurationContext);
   let toReturn;
+  let hidden = false;
+  const intl = useIntl();
   switch (config?.interface?.ratingSystem) {
     case GQL.RatingSystem.TenStar:
       toReturn = getRatingStars(10, 1);
@@ -321,9 +326,33 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
         />
       );
       break;
+    case GQL.RatingSystem.None:
+      return <></>;
+      break;
     default:
       toReturn = getRatingStars(5, 0.5);
       break;
   }
-  return toReturn;
+
+  if (props.disabled) {
+    return (
+          <h6>
+            <FormattedMessage id="rating" />:{" "}
+            { toReturn}
+          </h6>
+      );
+  }
+  else {
+    return (
+
+      <><Form.Group controlId="rating" as={Row}>
+            {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "rating" }),
+            })}
+            <Col xs={9}>
+              { toReturn }
+            </Col>
+        </Form.Group></>
+    );
+  }
 };

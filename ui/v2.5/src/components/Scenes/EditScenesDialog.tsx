@@ -266,18 +266,11 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         isRunning={isUpdating}
       >
         <Form>
-          <Form.Group controlId="rating" as={Row}>
-            {FormUtils.renderLabel({
-              title: intl.formatMessage({ id: "rating" }),
-            })}
-            <Col xs={9}>
-              <RatingSystem
-                value={rating}
-                onSetRating={(value) => setRating(value)}
-                disabled={isUpdating}
-              />
-            </Col>
-          </Form.Group>
+          <RatingSystem
+            value={rating}
+            onSetRating={(value) => setRating(value)}
+            disabled={isUpdating}
+          />
 
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({

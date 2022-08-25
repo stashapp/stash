@@ -53,4 +53,8 @@ export const ratingSystemIntlMap = new Map<RatingSystem, string>([
     RatingSystem.TenPointDecimal,
     "config.ui.editing.rating_system.options.ten_point_decimal",
   ],
+  [
+    RatingSystem.None,
+    "config.ui.editing.rating_system.options.none",
+  ],
 ]);
