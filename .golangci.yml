@@ -8,7 +8,7 @@ linters:
   enable:
     # Default set of linters from golangci-lint
     - deadcode
-    # - errcheck
+    - errcheck
     # - gosimple
     # removed to fix timeout error
     # - govet
