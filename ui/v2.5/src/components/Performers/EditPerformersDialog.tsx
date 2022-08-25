@@ -200,18 +200,11 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         }}
         isRunning={isUpdating}
       >
-        <Form.Group controlId="rating" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
-          })}
-          <Col xs={9}>
-            <RatingSystem
-              value={updateInput.rating ?? undefined}
-              onSetRating={(value) => setUpdateField({ rating: value })}
-              disabled={isUpdating}
-            />
-          </Col>
-        </Form.Group>
+        <RatingSystem
+          value={updateInput.rating ?? undefined}
+          onSetRating={(value) => setUpdateField({ rating: value })}
+          disabled={isUpdating}
+        />
         <Form>
           <Form.Group controlId="favorite">
             <IndeterminateCheckbox

@@ -793,12 +793,6 @@ export const LightboxComponent: React.FC<IProps> = ({
                   value={currentImage?.o_counter ?? 0}
                 />
               </div>
-              <RatingSystem
-                value={currentImage?.rating ?? undefined}
-                onSetRating={(v) => {
-                  setRating(v ?? null);
-                }}
-              />
             </>
           )}
         </div>

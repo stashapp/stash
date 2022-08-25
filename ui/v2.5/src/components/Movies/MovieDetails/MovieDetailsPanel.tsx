@@ -31,14 +31,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
       return;
     }
 
-    return (
-      <>
-        <dt>{intl.formatMessage({ id: "rating" })}</dt>
-        <dd>
-          <RatingSystem value={movie.rating} disabled />
-        </dd>
-      </>
-    );
+    return <RatingSystem value={movie.rating} disabled />;
   }
 
   // TODO: CSS class

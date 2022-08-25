@@ -290,19 +290,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
           </Col>
         </Form.Group>
 
-        <Form.Group controlId="rating" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
-          })}
-          <Col xs={9}>
-            <RatingSystem
-              value={formik.values.rating ?? undefined}
-              onSetRating={(value) =>
-                formik.setFieldValue("rating", value ?? null)
-              }
-            />
-          </Col>
-        </Form.Group>
+        <RatingSystem
+          value={formik.values.rating ?? undefined}
+          onSetRating={(value) => formik.setFieldValue("rating", value ?? null)}
+        />
 
         {renderStashIDs()}
 

@@ -473,19 +473,12 @@ export const GalleryEditPanel: React.FC<
               intl.formatMessage({ id: "date" }),
               "YYYY-MM-DD"
             )}
-            <Form.Group controlId="rating" as={Row}>
-              {FormUtils.renderLabel({
-                title: intl.formatMessage({ id: "rating" }),
-              })}
-              <Col xs={9}>
-                <RatingSystem
-                  value={formik.values.rating ?? undefined}
-                  onSetRating={(value) =>
-                    formik.setFieldValue("rating", value ?? null)
-                  }
-                />
-              </Col>
-            </Form.Group>
+            <RatingSystem
+              value={formik.values.rating ?? undefined}
+              onSetRating={(value) =>
+                formik.setFieldValue("rating", value ?? null)
+              }
+            />
 
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({

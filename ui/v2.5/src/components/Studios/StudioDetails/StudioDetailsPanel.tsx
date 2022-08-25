@@ -20,14 +20,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
       return;
     }
 
-    return (
-      <>
-        <dt>{intl.formatMessage({ id: "rating" })}</dt>
-        <dd>
-          <RatingSystem value={studio.rating} disabled />
-        </dd>
-      </>
-    );
+    return <RatingSystem value={studio.rating} disabled />;
   }
 
   function renderTagsList() {
