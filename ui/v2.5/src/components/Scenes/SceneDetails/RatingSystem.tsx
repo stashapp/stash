@@ -30,8 +30,22 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
 ) => {
   const [input, setInput] = useState<string | "0.0">();
   const [previous, setPrevious] = useState<string | "0.0">();
+  const [useValidation, setValidation] = useState<boolean | true>();
+  function stepChange() {
+    setValidation(false);
+  }
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     let val = e.target.value;
+    if (!useValidation && props.onSetRating != null) {
+      e.target.value = Number(val).toFixed(1);
+      setInput(Number(val).toFixed(1));
+      setPrevious(Number(val).toFixed(1));
+      let tempVal = Number(val) * 10;
+      props.onSetRating(tempVal != 0 ? tempVal : undefined);
+      setValidation(true);
+      return;
+    }
     const match = /(\d{0,1})(\d{0,1})(.?)((\d{0,1})?)/g.exec(val);
     const matchOld = /(\d{0,1})(\d{0,1})(.?)((\d{0,2})?)/g.exec(previous ?? "");
 
@@ -84,7 +98,10 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
     return (
       <div>
         <input
+          className="text-input"
           type="number"
+          onMouseDown={stepChange}
+          onKeyDown={stepChange}
           onChange={handleChange}
           value={input}
           defaultValue={
