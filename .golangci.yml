@@ -12,12 +12,12 @@ linters:
     # Disabled due to out of memory error
     # - gosimple
     - govet
-    # - ineffassign
-    # - staticcheck
-    # - structcheck
-    # - typecheck
-    # - unused
-    # - varcheck
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
     # # Linters added by the stash project.
     # # - contextcheck
     # - dogsled
