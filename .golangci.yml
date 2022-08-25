@@ -11,31 +11,31 @@ linters:
     - errcheck
     # Disabled due to out of memory error
     # - gosimple
-    # - govet
-    - ineffassign
-    - staticcheck
-    - structcheck
-    - typecheck
-    - unused
-    - varcheck
-    # Linters added by the stash project.
-    # - contextcheck
-    - dogsled
-    - errchkjson
-    - errorlint
-    # - exhaustive
-    - exportloopref
-    - gocritic
-    # - goerr113
-    - gofmt
-    # - gomnd
-    # - ifshort
-    - misspell
-    # - nakedret
-    - noctx
-    - revive
-    - rowserrcheck
-    - sqlclosecheck
+    - govet
+    # - ineffassign
+    # - staticcheck
+    # - structcheck
+    # - typecheck
+    # - unused
+    # - varcheck
+    # # Linters added by the stash project.
+    # # - contextcheck
+    # - dogsled
+    # - errchkjson
+    # - errorlint
+    # # - exhaustive
+    # - exportloopref
+    # - gocritic
+    # # - goerr113
+    # - gofmt
+    # # - gomnd
+    # # - ifshort
+    # - misspell
+    # # - nakedret
+    # - noctx
+    # - revive
+    # - rowserrcheck
+    # - sqlclosecheck
 
 # Project-specific linter overrides
 linters-settings:
