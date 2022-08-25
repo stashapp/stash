@@ -584,13 +584,11 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 	basename = strings.ReplaceAll(basename, "*", "%")
 	dirName = strings.ReplaceAll(dirName, "*", "%")
 
-	dir, _ := path(dirName).Value()
-
 	table := qb.table()
 	folderTable := folderTableMgr.table
 
 	q := qb.selectDataset().Prepared(true).Where(
-		folderTable.Col("path").Like(dir),
+		folderTable.Col("path").Like(dirName),
 		table.Col("basename").Like(basename),
 	)
 
@@ -607,10 +605,9 @@ func (qb *FileStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.SelectD
 
 	var conds []exp.Expression
 	for _, pp := range p {
-		dir, _ := path(pp).Value()
-		dirWildcard, _ := path(pp + string(filepath.Separator) + "%").Value()
+		ppWildcard := pp + string(filepath.Separator) + "%"
 
-		conds = append(conds, folderTable.Col("path").Eq(dir), folderTable.Col("path").Like(dirWildcard))
+		conds = append(conds, folderTable.Col("path").Eq(pp), folderTable.Col("path").Like(ppWildcard))
 	}
 
 	return q.Where(

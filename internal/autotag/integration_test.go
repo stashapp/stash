@@ -214,7 +214,7 @@ func createSceneFile(ctx context.Context, name string, folderStore file.FolderSt
 	}
 
 	if err := fileStore.Create(ctx, f); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating scene file %q: %w", name, err)
 	}
 
 	return f, nil
