@@ -491,13 +491,11 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 	filesTable := fileTableMgr.table
 	foldersTable := folderTableMgr.table
 	basename := filepath.Base(p)
-	dirStr := filepath.Dir(p)
+	dir := filepath.Dir(p)
 
 	// replace wildcards
 	basename = strings.ReplaceAll(basename, "*", "%")
-	dirStr = strings.ReplaceAll(dirStr, "*", "%")
-
-	dir, _ := path(dirStr).Value()
+	dir = strings.ReplaceAll(dir, "*", "%")
 
 	sq := dialect.From(scenesFilesJoinTable).InnerJoin(
 		filesTable,

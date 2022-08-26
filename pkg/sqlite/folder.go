@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -18,41 +17,19 @@ import (
 
 const folderTable = "folders"
 
-// path stores file paths in a platform-agnostic format and converts to platform-specific format for actual use.
-type path string
-
-func (p *path) Scan(value interface{}) error {
-	v, ok := value.(string)
-	if !ok {
-		return fmt.Errorf("invalid path type %T", value)
-	}
-
-	*p = path(filepath.FromSlash(v))
-	return nil
-}
-
-func (p path) String() string {
-	return filepath.ToSlash(string(p))
-}
-
-func (p path) Value() (driver.Value, error) {
-	return p.String(), nil
-}
-
 type folderRow struct {
-	ID file.FolderID `db:"id" goqu:"skipinsert"`
-	// Path is stored in the OS-agnostic slash format
-	Path           path      `db:"path"`
-	ZipFileID      null.Int  `db:"zip_file_id"`
-	ParentFolderID null.Int  `db:"parent_folder_id"`
-	ModTime        time.Time `db:"mod_time"`
-	CreatedAt      time.Time `db:"created_at"`
-	UpdatedAt      time.Time `db:"updated_at"`
+	ID             file.FolderID `db:"id" goqu:"skipinsert"`
+	Path           string        `db:"path"`
+	ZipFileID      null.Int      `db:"zip_file_id"`
+	ParentFolderID null.Int      `db:"parent_folder_id"`
+	ModTime        time.Time     `db:"mod_time"`
+	CreatedAt      time.Time     `db:"created_at"`
+	UpdatedAt      time.Time     `db:"updated_at"`
 }
 
 func (r *folderRow) fromFolder(o file.Folder) {
 	r.ID = o.ID
-	r.Path = path(o.Path)
+	r.Path = o.Path
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
 	r.ModTime = o.ModTime
@@ -246,9 +223,7 @@ func (qb *FolderStore) Find(ctx context.Context, id file.FolderID) (*file.Folder
 }
 
 func (qb *FolderStore) FindByPath(ctx context.Context, p string) (*file.Folder, error) {
-	dir, _ := path(p).Value()
-
-	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(dir))
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col("path").Eq(p))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -274,10 +249,9 @@ func (qb *FolderStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.Selec
 
 	var conds []exp.Expression
 	for _, pp := range p {
-		dir, _ := path(pp).Value()
-		dirWildcard, _ := path(pp + string(filepath.Separator) + "%").Value()
+		ppWildcard := pp + string(filepath.Separator) + "%"
 
-		conds = append(conds, table.Col("path").Eq(dir), table.Col("path").Like(dirWildcard))
+		conds = append(conds, table.Col("path").Eq(pp), table.Col("path").Like(ppWildcard))
 	}
 
 	return q.Where(

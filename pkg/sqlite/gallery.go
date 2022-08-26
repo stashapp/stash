@@ -438,8 +438,7 @@ func (qb *GalleryStore) FindByPath(ctx context.Context, p string) ([]*models.Gal
 	foldersTable := folderTableMgr.table
 
 	basename := filepath.Base(p)
-	dir, _ := path(filepath.Dir(p)).Value()
-	pp, _ := path(p).Value()
+	dir := filepath.Dir(p)
 
 	sq := dialect.From(table).LeftJoin(
 		galleriesFilesJoinTable,
@@ -459,7 +458,7 @@ func (qb *GalleryStore) FindByPath(ctx context.Context, p string) ([]*models.Gal
 				fileFoldersTable.Col("path").Eq(dir),
 				filesTable.Col("basename").Eq(basename),
 			),
-			foldersTable.Col("path").Eq(pp),
+			foldersTable.Col("path").Eq(p),
 		),
 	)
 
