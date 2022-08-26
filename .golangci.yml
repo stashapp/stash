@@ -9,8 +9,7 @@ linters:
     # Default set of linters from golangci-lint
     - errcheck
     - gosimple
-    # removed to fix timeout error
-    # - govet
+    - govet
     - ineffassign
     - staticcheck
     - typecheck
