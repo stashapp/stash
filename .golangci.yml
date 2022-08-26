@@ -9,17 +9,16 @@ linters:
     # Default set of linters from golangci-lint
     - deadcode
     - errcheck
-    # Disabled due to out of memory error
-    # - gosimple
-    # - staticcheck
-    # - unused
+    - gosimple
     - govet
     - ineffassign
+    - staticcheck
+    - unused
     - structcheck
     - typecheck
     - varcheck
-    # # Linters added by the stash project.
-    # # - contextcheck
+    # Linters added by the stash project.
+    # - contextcheck
     - dogsled
     - errchkjson
     - errorlint
