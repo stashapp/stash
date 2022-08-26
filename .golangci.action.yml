@@ -1,3 +1,7 @@
+# This config file is used by Lint action, since the default config
+# emits out of memory errors.
+# Disables gosimple, staticcheck and unused linters
+
 # options for analysis running
 run:
   timeout: 3m
@@ -9,13 +13,13 @@ linters:
     # Default set of linters from golangci-lint
     - deadcode
     - errcheck
-    - gosimple
+    # - gosimple
     - govet
     - ineffassign
-    - staticcheck
+    # - staticcheck
     - structcheck
     - typecheck
-    - unused
+    # - unused
     - varcheck
     # Linters added by the stash project.
     # - contextcheck
