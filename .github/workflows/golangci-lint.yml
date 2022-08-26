@@ -42,8 +42,8 @@ jobs:
           # working-directory: somedir
 
           # Optional: golangci-lint command line arguments.
-          # Disable gosimple, staticcheck and unused to avoid out of memory error
-          args: --modules-download-mode=vendor --timeout=3m -D gosimple,staticcheck,unused
+          # Use .golangci.action.yml config to avoid out of memory error
+          args: --modules-download-mode=vendor --timeout=3m -c .golangci.action.yml
 
           # Optional: show only new issues if it's a pull request. The default value is `false`.
           # only-new-issues: true
