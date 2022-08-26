@@ -20,22 +20,22 @@ linters:
     - varcheck
     # # Linters added by the stash project.
     # # - contextcheck
-    # - dogsled
-    # - errchkjson
-    # - errorlint
-    # # - exhaustive
-    # - exportloopref
-    # - gocritic
-    # # - goerr113
-    # - gofmt
-    # # - gomnd
-    # # - ifshort
-    # - misspell
-    # # - nakedret
-    # - noctx
-    # - revive
-    # - rowserrcheck
-    # - sqlclosecheck
+    - dogsled
+    - errchkjson
+    - errorlint
+    # - exhaustive
+    - exportloopref
+    - gocritic
+    # - goerr113
+    - gofmt
+    # - gomnd
+    # - ifshort
+    - misspell
+    # - nakedret
+    - noctx
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
 
 # Project-specific linter overrides
 linters-settings:
