@@ -13,9 +13,9 @@ linters:
     - govet
     - ineffassign
     - staticcheck
-    - unused
     - structcheck
     - typecheck
+    - unused
     - varcheck
     # Linters added by the stash project.
     # - contextcheck
