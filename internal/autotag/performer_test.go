@@ -1,6 +1,7 @@
 package autotag
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -28,10 +29,14 @@ func TestPerformerScenes(t *testing.T) {
 			"performer + name",
 			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		},
-		{
+	}
+
+	// trailing backslash tests only work where filepath separator is not backslash
+	if filepath.Separator != '\\' {
+		performerNames = append(performerNames, test{
 			`performer + name\`,
 			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		},
+		})
 	}
 
 	for _, p := range performerNames {
