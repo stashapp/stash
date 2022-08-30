@@ -62,8 +62,6 @@ export function makeCriteria(type: CriterionType = "none") {
       return new StringCriterion(
         new MandatoryStringCriterionOption("media_info.hash", type, type)
       );
-    case "rating":
-      return new NumberCriterion(RatingCriterionOption);
     case "organized":
       return new OrganizedCriterion();
     case "o_counter":
@@ -75,6 +73,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "performer_count":
     case "performer_age":
     case "tag_count":
+    case "rating":
     case "file_count":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(type, type)

@@ -6,7 +6,6 @@ import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
-import { RatingCriterionOption } from "./criteria/rating";
 import { AverageResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
@@ -46,7 +45,7 @@ const criterionOptions = [
     "media_info.checksum",
     "checksum"
   ),
-  RatingCriterionOption,
+  createMandatoryNumberCriterionOption("rating"),
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,
