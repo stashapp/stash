@@ -39,6 +39,10 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
     setValidation(false);
   }
 
+  function nonStepChange() {
+    setValidation(true);
+  }
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     let val = e.target.value;
     if (!useValidation && props.onSetRating != null) {
@@ -57,7 +61,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       return;
     }
 
-    if (match[2] && match[2] !== "0") {
+    if (match[2] && !(match[2] == "0" && match[1] == "1")) {
       match[2] = "";
     }
     if (match[4] == null || match[4] == "") {
@@ -105,7 +109,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
           className="text-input"
           type="number"
           onMouseDown={stepChange}
-          onKeyDown={stepChange}
+          onKeyDown={nonStepChange}
           onChange={handleChange}
           value={input}
           defaultValue={
