@@ -3,8 +3,10 @@ package gallery
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/performer"
@@ -18,6 +20,8 @@ type Importer struct {
 	StudioWriter        studio.NameFinderCreator
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
+	FileFinder          file.Getter
+	FolderFinder        file.FolderGetter
 	Input               jsonschema.Gallery
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -31,6 +35,10 @@ type FullCreatorUpdater interface {
 
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.gallery = i.galleryJSONToGallery(i.Input)
+
+	if err := i.populateFilesFolder(ctx); err != nil {
+		return err
+	}
 
 	if err := i.populateStudio(ctx); err != nil {
 		return err
@@ -238,31 +246,97 @@ func (i *Importer) createTags(ctx context.Context, names []string) ([]*models.Ta
 	return ret, nil
 }
 
+func (i *Importer) populateFilesFolder(ctx context.Context) error {
+	for _, ref := range i.Input.ZipFiles {
+		path := filepath.FromSlash(ref)
+		f, err := i.FileFinder.FindByPath(ctx, path)
+		if err != nil {
+			return fmt.Errorf("error finding file: %w", err)
+		}
+
+		if f == nil {
+			return fmt.Errorf("gallery zip file '%s' not found", path)
+		} else {
+			i.gallery.Files = append(i.gallery.Files, f)
+		}
+	}
+
+	if i.Input.FolderPath != "" {
+		path := filepath.FromSlash(i.Input.FolderPath)
+		f, err := i.FolderFinder.FindByPath(ctx, path)
+		if err != nil {
+			return fmt.Errorf("error finding folder: %w", err)
+		}
+
+		if f == nil {
+			return fmt.Errorf("gallery folder '%s' not found", path)
+		} else {
+			i.gallery.FolderID = &f.ID
+		}
+	}
+
+	return nil
+}
+
 func (i *Importer) PostImport(ctx context.Context, id int) error {
 	return nil
 }
 
 func (i *Importer) Name() string {
-	return i.Input.Path
+	if i.Input.Title != "" {
+		return i.Input.Title
+	}
+
+	if i.Input.FolderPath != "" {
+		return i.Input.FolderPath
+	}
+
+	if len(i.Input.ZipFiles) > 0 {
+		return i.Input.ZipFiles[0]
+	}
+
+	return ""
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	// TODO
-	// existing, err := i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	var existing []*models.Gallery
+	var err error
+	switch {
+	case len(i.gallery.Files) > 0:
+		for _, f := range i.gallery.Files {
+			existing, err := i.ReaderWriter.FindByFileID(ctx, f.Base().ID)
+			if err != nil {
+				return nil, err
+			}
 
-	// if existing != nil {
-	// 	id := existing.ID
-	// 	return &id, nil
-	// }
+			if existing != nil {
+				break
+			}
+		}
+	case i.gallery.FolderID != nil:
+		existing, err = i.ReaderWriter.FindByFolderID(ctx, *i.gallery.FolderID)
+	default:
+		existing, err = i.ReaderWriter.FindUserGalleryByTitle(ctx, i.gallery.Title)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(existing) > 0 {
+		id := existing[0].ID
+		return &id, nil
+	}
 
 	return nil, nil
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &i.gallery, nil)
+	var fileIDs []file.ID
+	for _, f := range i.gallery.Files {
+		fileIDs = append(fileIDs, f.Base().ID)
+	}
+	err := i.ReaderWriter.Create(ctx, &i.gallery, fileIDs)
 	if err != nil {
 		return nil, fmt.Errorf("error creating gallery: %v", err)
 	}

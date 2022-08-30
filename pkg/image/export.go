@@ -14,7 +14,6 @@ import (
 // of cover image.
 func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON := jsonschema.Image{
-		Checksum:  image.Checksum(),
 		Title:     image.Title,
 		CreatedAt: json.JSONTime{Time: image.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: image.UpdatedAt},
@@ -27,23 +26,25 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON.Organized = image.Organized
 	newImageJSON.OCounter = image.OCounter
 
-	newImageJSON.File = getImageFileJSON(image)
+	for _, f := range image.Files {
+		newImageJSON.Files = append(newImageJSON.Files, f.Base().Path)
+	}
 
 	return &newImageJSON
 }
 
-func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
-	ret := &jsonschema.ImageFile{}
+// func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
+// 	ret := &jsonschema.ImageFile{}
 
-	f := image.PrimaryFile()
+// 	f := image.PrimaryFile()
 
-	ret.ModTime = json.JSONTime{Time: f.ModTime}
-	ret.Size = f.Size
-	ret.Width = f.Width
-	ret.Height = f.Height
+// 	ret.ModTime = json.JSONTime{Time: f.ModTime}
+// 	ret.Size = f.Size
+// 	ret.Width = f.Width
+// 	ret.Height = f.Height
 
-	return ret
-}
+// 	return ret
+// }
 
 // GetStudioName returns the name of the provided image's studio. It returns an
 // empty string if there is no studio assigned to the image.

@@ -2,24 +2,37 @@
 
 The metadata given to Stash can be exported into the JSON format. This structure can be modified, or replicated by other means. The resulting data can then be imported again, giving the possibility for automatic scraping of all kinds. The format of this metadata bulk is a folder structure, containing the following folders:
   
-* `downloads`
+* `files`
 * `galleries`
+* `images`
 * `performers`
 * `scenes`
 * `studios`
 * `movies`
-  
-Additionally, it contains a `mappings.json` file.
-  
-The mappings file contains a reference to all files within the folders, by including their checksum. All files in the aforementioned folders are named by their checksum (like `967ddf2e028f10fc8d36901833c25732.json`), which (at least in the case of galleries and scenes) is generated from the file that this metadata relates to. The algorithm for the checksum is MD5. 
 
+# File naming
+
+When exported, files are named with different formats depending on the object type:
+
+| Type | Format |
+|------|--------|
+| Files/Folders | `<path depth in hex, two character width>.<basename>.<hash>.json` |
+| Galleries | `<first zip filename>.<path hash>.json` or `<folder basename>.<path hash>.json` or `<title>.json` |
+| Images | `<title or first file basename>.<hash>.json` |
+| Performers | `<name>.json` |
+| Scenes | `<title or first file basename>.<hash>.json` |
+| Studios | `<name>.json` |
+| Movies | `<name>.json` |
+
+Note that the file naming is not significant when importing. All json files will be read from the subdirectories.
+  
 # Content of the json files
 
 In the following, the values of the according jsons will be shown. If the value should be a number, it is written with after comma values (like `29.98` or `50.0`), but still as a string. The meaning from most of them should be obvious due to the previous explanation or from the possible values stash offers when editing, otherwise a short comment will be added.
 
 The json values are given as strings, if not stated otherwise. Every new line will stand for a new value in the json. If the value is a list of objects, the values of that object will be shown indented.  
 
-If a value is empty in any but the `mappings.json` file, it can be left out of the file entirely. In the `mappings.json` however, all values must be present, if there are no objects of a type (for example, no performers), the value is simply null.  
+If a value is empty in any file, it can be left out of the file entirely. 
 Many files have an `created_at` and `updated_at`, both are kept in the following format:
 ```  
 YYYY-MM-DDThh:mm:ssTZD  
@@ -27,22 +40,6 @@ YYYY-MM-DDThh:mm:ssTZD
 Example:  
 ```
 "created_at": "2019-05-03T21:36:58+01:00"
-```
-
-## `mappings.json`
-```
-performers  
-  name  
-  checksum  
-studios  
-  name  
-  checksum  
-galleries  
-  path   
-  checksum  
-scenes  
-  path   
-  checksum  
 ```
 
 ## Performer
@@ -112,100 +109,110 @@ created_at
 updated_at  
 ```
 
-## Gallery
 
-No files of this kind are generated yet.
+## Image
+```
+title  
+studio  
+rating (integer)  
+performers (list of strings, performers name)  
+tags (list of strings)  
+files (list of path strings)
+galleries
+  zip_files (list of path strings)
+  folder_path
+  title (for user-created gallery)
+created_at  
+updated_at  
+```
+
+## Gallery
+```
+title  
+studio  
+url  
+date  
+rating (integer)  
+details  
+performers (list of strings, performers name)  
+tags (list of strings)  
+zip_files (list of path strings)
+folder_path   
+created_at  
+updated_at  
+```
+
+## Files
+
+### Folder
+```
+zip_file (path to containing zip file)
+mod_time
+type (= folder)
+path
+created_at
+updated_at
+```
+
+### Video file
+```
+zip_file (path to containing zip file)
+mod_time
+type (= video)
+path
+fingerprints
+  type
+  fingerprint
+size
+format
+width
+height
+duration
+video_codec
+audio_codec
+frame
+bitrate
+interactive (bool)
+interactive_speed (integer)
+created_at
+updated_at
+```
+
+### Image file
+```
+zip_file (path to containing zip file)
+mod_time
+type (= image)
+path
+fingerprints
+  type
+  fingerprint
+size
+format
+width
+height
+created_at
+updated_at
+```
+
+### Other files
+```
+zip_file (path to containing zip file)
+mod_time
+type (= file)
+path
+fingerprints
+  type
+  fingerprint
+size
+created_at
+updated_at
+```
 
 # In JSON format
 
 For those preferring the json-format, defined [here](https://json-schema.org/), the following format may be more interesting:
 
-## mappings.json
-
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/stashapp/stash/wiki/JSON-Specification/mappings.json",
-  "title": "mappings",
-  "description": "The base file for the metadata. Referring to all other files with names, as well as providing the path to files.",
-  "type": "object",
-  "properties": {
-    "performers": {
-      "description": "Link to the performers files along with names",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "checksum": {
-            "type": "string"
-          }
-        },
-        "required": ["name", "checksum"]
-      },
-      "minItems": 0,
-      "uniqueItems": true
-    },
-    "studios": {
-      "description": "Link to the studio files along with names",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "checksum": {
-            "type": "string"
-          }
-        },
-        "required": ["name", "checksum"]
-      },
-      "minItems": 0,
-      "uniqueItems": true
-    },
-    "galleries": {
-      "description": "Link to the gallery files along with the path to the content",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "path": {
-            "type": "string"
-          },
-          "checksum": {
-            "type": "string"
-          }
-        },
-        "required": ["path", "checksum"]
-      },
-      "minItems": 0,
-      "uniqueItems": true
-    },
-    "scenes": {
-      "description": "Link to the scene files along with the path to the content",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "path": {
-            "type": "string"
-          },
-          "checksum": {
-            "type": "string"
-          }
-        },
-        "required": ["path", "checksum"]
-      },
-      "minItems": 0,
-      "uniqueItems": true
-    }
-  },
-  "required": ["performers", "studios", "galleries", "scenes"]
-}
-```
 ## performer.json
 
 ``` json
@@ -439,45 +446,14 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
       "minItems": 1,
       "uniqueItems": true
     },
-    "file": {
-      "description": "Some technical data about the scenes file.",
-      "type": "object",
-      "properties": {
-        "size": {
-          "description": "The size of the file in bytes",
-          "type": "string"
-        },
-        "duration": {
-          "description": "Duration of the scene in seconds. It is given with after comma values, such as 10.0 or 17.5",
-          "type": "string"
-        },
-        "video_codec": {
-          "description": "The coding of the video part of the scene file. An example would be h264",
-          "type": "string"
-        },
-        "audio_codec": {
-          "description": "The coding of the audio part of the scene file. An example would be aac",
-          "type": "string"
-        },
-        "width": {
-          "description": "The width of the scene in pixels",
-          "type": "integer"
-        },
-        "height": {
-          "description": "The height of the scene in pixels",
-          "type": "integer"
-        },
-        "framerate": {
-          "description": "Framerate of the scene. It is given with after comma values, such as 29.95",
-          "type": "string"
-        },
-        "bitrate": {
-          "description": "The bitrate of the video, in bits",
-          "type": "integer"
-        }
-
+    "files": {
+      "description": "A list of paths of the files for this scene",
+      "type": "array",
+      "items": {
+        "type": "string"
       },
-      "required": ["size", "duration", "video_codec", "audio_codec", "height", "width", "framerate", "bitrate"]
+      "minItems": 1,
+      "uniqueItems": true
     },
     "created_at": {
       "description": "The time this studios data was added to the database. Format is YYYY-MM-DDThh:mm:ssTZD",
@@ -491,7 +467,3 @@ For those preferring the json-format, defined [here](https://json-schema.org/), 
   "required": ["files", "created_at", "updated_at"]
 }
 ```
-
-## Gallery
-
-No files of this kind are created here yet

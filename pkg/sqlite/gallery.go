@@ -443,7 +443,7 @@ func (qb *GalleryStore) FindByPath(ctx context.Context, p string) ([]*models.Gal
 	sq := dialect.From(table).LeftJoin(
 		galleriesFilesJoinTable,
 		goqu.On(galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn))),
-	).InnerJoin(
+	).LeftJoin(
 		filesTable,
 		goqu.On(filesTable.Col(idColumn).Eq(galleriesFilesJoinTable.Col(fileIDColumn))),
 	).LeftJoin(
@@ -516,6 +516,26 @@ func (qb *GalleryStore) CountByImageID(ctx context.Context, imageID int) (int, e
 
 	q := dialect.Select(goqu.COUNT("*")).From(joinTable).Where(joinTable.Col(imageIDColumn).Eq(imageID))
 	return count(ctx, q)
+}
+
+func (qb *GalleryStore) FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error) {
+	table := qb.table()
+
+	sq := dialect.From(table).LeftJoin(
+		galleriesFilesJoinTable,
+		goqu.On(galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn))),
+	).Select(table.Col(idColumn)).Where(
+		table.Col("folder_id").IsNull(),
+		galleriesFilesJoinTable.Col("file_id").IsNull(),
+		table.Col("title").Eq(title),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting user galleries for title %s: %w", title, err)
+	}
+
+	return ret, nil
 }
 
 func (qb *GalleryStore) Count(ctx context.Context) (int, error) {
