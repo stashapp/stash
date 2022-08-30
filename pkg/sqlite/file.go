@@ -619,7 +619,14 @@ func (qb *FileStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.SelectD
 // Returns all if limit is < 0.
 // Returns all files if p is empty.
 func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]file.File, error) {
-	q := qb.selectDataset().Prepared(true)
+	table := qb.table()
+	folderTable := folderTableMgr.table
+
+	q := dialect.From(table).Prepared(true).InnerJoin(
+		folderTable,
+		goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
+	).Select(table.Col(idColumn))
+
 	q = qb.allInPaths(q, p)
 
 	if limit > -1 {
@@ -628,7 +635,7 @@ func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offs
 
 	q = q.Offset(uint(offset))
 
-	ret, err := qb.getMany(ctx, q)
+	ret, err := qb.findBySubquery(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("getting files by path %s: %w", p, err)
 	}
