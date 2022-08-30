@@ -20,6 +20,7 @@ type ImageReaderWriter interface {
 type GalleryReaderWriter interface {
 	models.GalleryReaderWriter
 	gallery.FinderCreatorUpdater
+	gallery.Finder
 }
 
 type SceneReaderWriter interface {

@@ -3,8 +3,10 @@ package image
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/performer"
@@ -13,8 +15,9 @@ import (
 	"github.com/stashapp/stash/pkg/tag"
 )
 
-type GalleryChecksumsFinder interface {
-	FindByChecksums(ctx context.Context, checksums []string) ([]*models.Gallery, error)
+type GalleryFinder interface {
+	FindByPath(ctx context.Context, p string) ([]*models.Gallery, error)
+	FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error)
 }
 
 type FullCreatorUpdater interface {
@@ -24,12 +27,12 @@ type FullCreatorUpdater interface {
 
 type Importer struct {
 	ReaderWriter        FullCreatorUpdater
+	FileFinder          file.Getter
 	StudioWriter        studio.NameFinderCreator
-	GalleryWriter       GalleryChecksumsFinder
+	GalleryFinder       GalleryFinder
 	PerformerWriter     performer.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Image
-	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
 
 	ID    int
@@ -38,6 +41,10 @@ type Importer struct {
 
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.image = i.imageJSONToImage(i.Input)
+
+	if err := i.populateFiles(ctx); err != nil {
+		return err
+	}
 
 	if err := i.populateStudio(ctx); err != nil {
 		return err
@@ -65,6 +72,12 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		GalleryIDs:   models.NewRelatedIDs([]int{}),
+
+		Title:     imageJSON.Title,
+		Organized: imageJSON.Organized,
+		OCounter:  imageJSON.OCounter,
+		CreatedAt: imageJSON.CreatedAt.GetTime(),
+		UpdatedAt: imageJSON.UpdatedAt.GetTime(),
 	}
 
 	if imageJSON.Title != "" {
@@ -74,24 +87,25 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 		newImage.Rating = &imageJSON.Rating
 	}
 
-	newImage.Organized = imageJSON.Organized
-	newImage.OCounter = imageJSON.OCounter
-	newImage.CreatedAt = imageJSON.CreatedAt.GetTime()
-	newImage.UpdatedAt = imageJSON.UpdatedAt.GetTime()
-
-	// if imageJSON.File != nil {
-	// 	if imageJSON.File.Size != 0 {
-	// 		newImage.Size = &imageJSON.File.Size
-	// 	}
-	// 	if imageJSON.File.Width != 0 {
-	// 		newImage.Width = &imageJSON.File.Width
-	// 	}
-	// 	if imageJSON.File.Height != 0 {
-	// 		newImage.Height = &imageJSON.File.Height
-	// 	}
-	// }
-
 	return newImage
+}
+
+func (i *Importer) populateFiles(ctx context.Context) error {
+	for _, ref := range i.Input.Files {
+		path := filepath.FromSlash(ref)
+		f, err := i.FileFinder.FindByPath(ctx, path)
+		if err != nil {
+			return fmt.Errorf("error finding file: %w", err)
+		}
+
+		if f == nil {
+			return fmt.Errorf("image file '%s' not found", path)
+		} else {
+			i.image.Files = append(i.image.Files, f.(*file.ImageFile))
+		}
+	}
+
+	return nil
 }
 
 func (i *Importer) populateStudio(ctx context.Context) error {
@@ -136,16 +150,45 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	return created.ID, nil
 }
 
+func (i *Importer) locateGallery(ctx context.Context, ref jsonschema.GalleryRef) (*models.Gallery, error) {
+	var galleries []*models.Gallery
+	var err error
+	switch {
+	case ref.FolderPath != "":
+		galleries, err = i.GalleryFinder.FindByPath(ctx, ref.FolderPath)
+	case len(ref.ZipFiles) > 0:
+		for _, p := range ref.ZipFiles {
+			galleries, err = i.GalleryFinder.FindByPath(ctx, p)
+			if err != nil {
+				break
+			}
+
+			if len(galleries) > 0 {
+				break
+			}
+		}
+	case ref.Title != "":
+		galleries, err = i.GalleryFinder.FindUserGalleryByTitle(ctx, ref.Title)
+	}
+
+	var ret *models.Gallery
+	if len(galleries) > 0 {
+		ret = galleries[0]
+	}
+
+	return ret, err
+}
+
 func (i *Importer) populateGalleries(ctx context.Context) error {
-	for _, checksum := range i.Input.Galleries {
-		gallery, err := i.GalleryWriter.FindByChecksums(ctx, []string{checksum})
+	for _, ref := range i.Input.Galleries {
+		gallery, err := i.locateGallery(ctx, ref)
 		if err != nil {
 			return fmt.Errorf("error finding gallery: %v", err)
 		}
 
-		if len(gallery) == 0 {
+		if gallery == nil {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
-				return fmt.Errorf("image gallery '%s' not found", i.Input.Studio)
+				return fmt.Errorf("image gallery '%s' not found", ref.String())
 			}
 
 			// we don't create galleries - just ignore
@@ -153,7 +196,7 @@ func (i *Importer) populateGalleries(ctx context.Context) error {
 				continue
 			}
 		} else {
-			i.image.GalleryIDs.Add(gallery[0].ID)
+			i.image.GalleryIDs.Add(gallery.ID)
 		}
 	}
 
@@ -242,28 +285,46 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 }
 
 func (i *Importer) Name() string {
-	return i.Path
+	if i.Input.Title != "" {
+		return i.Input.Title
+	}
+
+	if len(i.Input.Files) > 0 {
+		return i.Input.Files[0]
+	}
+
+	return ""
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	// var existing []*models.Image
-	// var err error
-	// existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
+	var existing []*models.Image
+	var err error
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	for _, f := range i.image.Files {
+		existing, err = i.ReaderWriter.FindByFileID(ctx, f.ID)
+		if err != nil {
+			return nil, err
+		}
 
-	// if len(existing) > 0 {
-	// 	id := existing[0].ID
-	// 	return &id, nil
-	// }
+		if len(existing) > 0 {
+			id := existing[0].ID
+			return &id, nil
+		}
+	}
 
 	return nil, nil
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	err := i.ReaderWriter.Create(ctx, &models.ImageCreateInput{Image: &i.image})
+	var fileIDs []file.ID
+	for _, f := range i.image.Files {
+		fileIDs = append(fileIDs, f.Base().ID)
+	}
+
+	err := i.ReaderWriter.Create(ctx, &models.ImageCreateInput{
+		Image:   &i.image,
+		FileIDs: fileIDs,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %v", err)
 	}

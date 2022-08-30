@@ -45,18 +45,6 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 		UpdatedAt: json.JSONTime{Time: scene.UpdatedAt},
 	}
 
-	// if scene.Checksum != nil {
-	// 	newSceneJSON.Checksum = *scene.Checksum
-	// }
-
-	// if scene.OSHash != nil {
-	// 	newSceneJSON.OSHash = *scene.OSHash
-	// }
-
-	// if scene.Phash != nil {
-	// 	newSceneJSON.Phash = utils.PhashToString(*scene.Phash)
-	// }
-
 	if scene.Date != nil {
 		newSceneJSON.Date = scene.Date.String()
 	}
@@ -68,7 +56,9 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	newSceneJSON.Organized = scene.Organized
 	newSceneJSON.OCounter = scene.OCounter
 
-	newSceneJSON.File = getSceneFileJSON(scene)
+	for _, f := range scene.Files {
+		newSceneJSON.Files = append(newSceneJSON.Files, f.Base().Path)
+	}
 
 	cover, err := reader.GetCover(ctx, scene.ID)
 	if err != nil {
@@ -93,52 +83,52 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	return &newSceneJSON, nil
 }
 
-func getSceneFileJSON(scene *models.Scene) *jsonschema.SceneFile {
-	ret := &jsonschema.SceneFile{}
+// func getSceneFileJSON(scene *models.Scene) *jsonschema.SceneFile {
+// 	ret := &jsonschema.SceneFile{}
 
-	// TODO
-	// if scene.FileModTime != nil {
-	// 	ret.ModTime = json.JSONTime{Time: *scene.FileModTime}
-	// }
+// TODO
+// if scene.FileModTime != nil {
+// 	ret.ModTime = json.JSONTime{Time: *scene.FileModTime}
+// }
 
-	// if scene.Size != nil {
-	// 	ret.Size = *scene.Size
-	// }
+// if scene.Size != nil {
+// 	ret.Size = *scene.Size
+// }
 
-	// if scene.Duration != nil {
-	// 	ret.Duration = getDecimalString(*scene.Duration)
-	// }
+// if scene.Duration != nil {
+// 	ret.Duration = getDecimalString(*scene.Duration)
+// }
 
-	// if scene.VideoCodec != nil {
-	// 	ret.VideoCodec = *scene.VideoCodec
-	// }
+// if scene.VideoCodec != nil {
+// 	ret.VideoCodec = *scene.VideoCodec
+// }
 
-	// if scene.AudioCodec != nil {
-	// 	ret.AudioCodec = *scene.AudioCodec
-	// }
+// if scene.AudioCodec != nil {
+// 	ret.AudioCodec = *scene.AudioCodec
+// }
 
-	// if scene.Format != nil {
-	// 	ret.Format = *scene.Format
-	// }
+// if scene.Format != nil {
+// 	ret.Format = *scene.Format
+// }
 
-	// if scene.Width != nil {
-	// 	ret.Width = *scene.Width
-	// }
+// if scene.Width != nil {
+// 	ret.Width = *scene.Width
+// }
 
-	// if scene.Height != nil {
-	// 	ret.Height = *scene.Height
-	// }
+// if scene.Height != nil {
+// 	ret.Height = *scene.Height
+// }
 
-	// if scene.Framerate != nil {
-	// 	ret.Framerate = getDecimalString(*scene.Framerate)
-	// }
+// if scene.Framerate != nil {
+// 	ret.Framerate = getDecimalString(*scene.Framerate)
+// }
 
-	// if scene.Bitrate != nil {
-	// 	ret.Bitrate = int(*scene.Bitrate)
-	// }
+// if scene.Bitrate != nil {
+// 	ret.Bitrate = int(*scene.Bitrate)
+// }
 
-	return ret
-}
+// 	return ret
+// }
 
 // GetStudioName returns the name of the provided scene's studio. It returns an
 // empty string if there is no studio assigned to the scene.

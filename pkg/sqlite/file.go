@@ -173,8 +173,8 @@ type fileQueryRow struct {
 	ParentFolderID null.Int    `db:"parent_folder_id"`
 	Size           null.Int    `db:"size"`
 	ModTime        null.Time   `db:"mod_time"`
-	CreatedAt      null.Time   `db:"created_at"`
-	UpdatedAt      null.Time   `db:"updated_at"`
+	CreatedAt      null.Time   `db:"file_created_at"`
+	UpdatedAt      null.Time   `db:"file_updated_at"`
 
 	ZipBasename   null.String `db:"zip_basename"`
 	ZipFolderPath null.String `db:"zip_folder_path"`
@@ -445,8 +445,8 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 		table.Col("parent_folder_id"),
 		table.Col("size"),
 		table.Col("mod_time"),
-		table.Col("created_at"),
-		table.Col("updated_at"),
+		table.Col("created_at").As("file_created_at"),
+		table.Col("updated_at").As("file_updated_at"),
 		folderTable.Col("path").As("parent_folder_path"),
 		fingerprintTable.Col("type").As("fingerprint_type"),
 		fingerprintTable.Col("fingerprint"),

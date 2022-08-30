@@ -40,6 +40,10 @@ type Performer struct {
 	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
 }
 
+func (s Performer) Filename() string {
+	return s.Name + ".json"
+}
+
 func LoadPerformerFile(filePath string) (*Performer, error) {
 	var performer Performer
 	file, err := os.Open(filePath)

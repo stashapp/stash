@@ -23,6 +23,10 @@ type Studio struct {
 	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
 }
 
+func (s Studio) Filename() string {
+	return s.Name + ".json"
+}
+
 func LoadStudioFile(filePath string) (*Studio, error) {
 	var studio Studio
 	file, err := os.Open(filePath)

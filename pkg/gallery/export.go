@@ -13,14 +13,17 @@ import (
 // does not convert the relationships to other objects.
 func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	newGalleryJSON := jsonschema.Gallery{
-		Title:     gallery.Title,
-		URL:       gallery.URL,
-		Details:   gallery.Details,
-		CreatedAt: json.JSONTime{Time: gallery.CreatedAt},
-		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt},
+		FolderPath: gallery.FolderPath,
+		Title:      gallery.Title,
+		URL:        gallery.URL,
+		Details:    gallery.Details,
+		CreatedAt:  json.JSONTime{Time: gallery.CreatedAt},
+		UpdatedAt:  json.JSONTime{Time: gallery.UpdatedAt},
 	}
 
-	newGalleryJSON.Path = gallery.Path()
+	for _, f := range gallery.Files {
+		newGalleryJSON.ZipFiles = append(newGalleryJSON.ZipFiles, f.Base().Path)
+	}
 
 	if gallery.Date != nil {
 		newGalleryJSON.Date = gallery.Date.String()
@@ -61,12 +64,22 @@ func GetIDs(galleries []*models.Gallery) []int {
 	return results
 }
 
-func GetChecksums(galleries []*models.Gallery) []string {
-	var results []string
+func GetRefs(galleries []*models.Gallery) []jsonschema.GalleryRef {
+	var results []jsonschema.GalleryRef
 	for _, gallery := range galleries {
-		if gallery.Checksum() != "" {
-			results = append(results, gallery.Checksum())
+		toAdd := jsonschema.GalleryRef{}
+		switch {
+		case gallery.FolderPath != "":
+			toAdd.FolderPath = gallery.FolderPath
+		case len(gallery.Files) > 0:
+			for _, f := range gallery.Files {
+				toAdd.ZipFiles = append(toAdd.ZipFiles, f.Base().Path)
+			}
+		default:
+			toAdd.Title = gallery.Title
 		}
+
+		results = append(results, toAdd)
 	}
 
 	return results

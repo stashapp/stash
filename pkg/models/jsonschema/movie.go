@@ -26,6 +26,10 @@ type Movie struct {
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
 }
 
+func (s Movie) Filename() string {
+	return s.Name + ".json"
+}
+
 // Backwards Compatible synopsis for the movie
 type MovieSynopsisBC struct {
 	Synopsis string `json:"sypnopsis,omitempty"`
