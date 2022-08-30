@@ -497,11 +497,40 @@ export class MandatoryNumberCriterionOption extends CriterionOption {
   }
 }
 
+export class NullNumberCriterionOption extends CriterionOption {
+  constructor(messageID: string, value: CriterionType, parameterName?: string) {
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+      ],
+      defaultModifier: CriterionModifier.GreaterThan,
+      inputType: "number",
+    });
+  }
+}
+
 export function createMandatoryNumberCriterionOption(
   value: CriterionType,
   messageID?: string
 ) {
   return new MandatoryNumberCriterionOption(messageID ?? value, value, value);
+}
+
+export function createNullNumberCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new NullNumberCriterionOption(messageID ?? value, value, value);
 }
 
 export class DurationCriterion extends Criterion<INumberValue> {

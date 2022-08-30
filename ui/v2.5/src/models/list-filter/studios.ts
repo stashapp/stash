@@ -2,6 +2,7 @@ import {
   createBooleanCriterionOption,
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
+  createNullNumberCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
@@ -33,7 +34,7 @@ const criterionOptions = [
   createStringCriterionOption("details"),
   ParentStudiosCriterionOption,
   StudioIsMissingCriterionOption,
-  createMandatoryNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating"),
   createBooleanCriterionOption("ignore_auto_tag"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),

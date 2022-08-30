@@ -1,5 +1,6 @@
 import {
   createMandatoryNumberCriterionOption,
+  createNullNumberCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
@@ -45,7 +46,7 @@ const criterionOptions = [
     "media_info.checksum",
     "checksum"
   ),
-  createMandatoryNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating"),
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,

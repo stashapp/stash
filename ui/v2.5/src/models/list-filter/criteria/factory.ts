@@ -5,6 +5,7 @@ import {
   DurationCriterion,
   NumberCriterionOption,
   MandatoryStringCriterionOption,
+  NullNumberCriterionOption,
   MandatoryNumberCriterionOption,
   StringCriterionOption,
   ILabeledIdCriterion,
@@ -41,7 +42,6 @@ import { MoviesCriterionOption } from "./movies";
 import { GalleriesCriterion } from "./galleries";
 import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
-import { RatingCriterionOption } from "./rating";
 import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 import { CaptionCriterion } from "./captions";
 
@@ -73,11 +73,12 @@ export function makeCriteria(type: CriterionType = "none") {
     case "performer_count":
     case "performer_age":
     case "tag_count":
-    case "rating":
     case "file_count":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(type, type)
       );
+    case "rating":
+      return new NumberCriterion(new NullNumberCriterionOption(type, type));
     case "resolution":
       return new ResolutionCriterion();
     case "average_resolution":

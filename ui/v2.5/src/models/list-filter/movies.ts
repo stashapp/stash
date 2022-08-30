@@ -1,5 +1,6 @@
 import {
   createMandatoryNumberCriterionOption,
+  createNullNumberCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
@@ -27,7 +28,7 @@ const criterionOptions = [
   createStringCriterionOption("director"),
   createStringCriterionOption("synopsis"),
   createMandatoryNumberCriterionOption("duration"),
-  createMandatoryNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating"),
   PerformersCriterionOption,
 ];
 

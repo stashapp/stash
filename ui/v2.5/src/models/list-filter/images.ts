@@ -1,6 +1,7 @@
 import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
+  createNullNumberCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
@@ -35,7 +36,7 @@ const criterionOptions = [
   ResolutionCriterionOption,
   ImageIsMissingCriterionOption,
   TagsCriterionOption,
-  createMandatoryNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating"),
   createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,
