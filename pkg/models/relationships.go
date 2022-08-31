@@ -30,6 +30,10 @@ type StashIDLoader interface {
 	GetStashIDs(ctx context.Context, relatedID int) ([]StashID, error)
 }
 
+type VideoFileLoader interface {
+	GetFiles(ctx context.Context, relatedID int) ([]*file.VideoFile, error)
+}
+
 type ImageFileLoader interface {
 	GetFiles(ctx context.Context, relatedID int) ([]*file.ImageFile, error)
 }
@@ -198,6 +202,103 @@ func (r *RelatedStashIDs) load(fn func() ([]StashID, error)) error {
 	}
 
 	r.list = ids
+
+	return nil
+}
+
+type RelatedVideoFiles struct {
+	primaryFile   *file.VideoFile
+	files         []*file.VideoFile
+	primaryLoaded bool
+}
+
+func NewRelatedVideoFiles(files []*file.VideoFile) RelatedVideoFiles {
+	ret := RelatedVideoFiles{
+		files:         files,
+		primaryLoaded: true,
+	}
+
+	if len(files) > 0 {
+		ret.primaryFile = files[0]
+	}
+
+	return ret
+}
+
+func (r *RelatedVideoFiles) SetPrimary(f *file.VideoFile) {
+	r.primaryFile = f
+	r.primaryLoaded = true
+}
+
+func (r *RelatedVideoFiles) Set(f []*file.VideoFile) {
+	r.files = f
+	if len(r.files) > 0 {
+		r.primaryFile = r.files[0]
+	}
+
+	r.primaryLoaded = true
+}
+
+// Loaded returns true if the relationship has been loaded.
+func (r RelatedVideoFiles) Loaded() bool {
+	return r.files != nil
+}
+
+// Loaded returns true if the primary file relationship has been loaded.
+func (r RelatedVideoFiles) PrimaryLoaded() bool {
+	return r.primaryLoaded
+}
+
+// List returns the related files. Panics if the relationship has not been loaded.
+func (r RelatedVideoFiles) List() []*file.VideoFile {
+	if !r.Loaded() {
+		panic("relationship has not been loaded")
+	}
+
+	return r.files
+}
+
+// Primary returns the primary file. Panics if the relationship has not been loaded.
+func (r RelatedVideoFiles) Primary() *file.VideoFile {
+	if !r.PrimaryLoaded() {
+		panic("relationship has not been loaded")
+	}
+
+	return r.primaryFile
+}
+
+func (r *RelatedVideoFiles) load(fn func() ([]*file.VideoFile, error)) error {
+	if r.Loaded() {
+		return nil
+	}
+
+	var err error
+	r.files, err = fn()
+	if err != nil {
+		return err
+	}
+
+	if len(r.files) > 0 {
+		r.primaryFile = r.files[0]
+	}
+
+	r.primaryLoaded = true
+
+	return nil
+}
+
+func (r *RelatedVideoFiles) loadPrimary(fn func() (*file.VideoFile, error)) error {
+	if r.PrimaryLoaded() {
+		return nil
+	}
+
+	var err error
+	r.primaryFile, err = fn()
+	if err != nil {
+		return err
+	}
+
+	r.primaryLoaded = true
 
 	return nil
 }

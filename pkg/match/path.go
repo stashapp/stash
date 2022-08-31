@@ -307,7 +307,7 @@ func PathToScenes(ctx context.Context, name string, paths []string, sceneReader 
 
 	r := nameToRegexp(name, useUnicode)
 	for _, p := range scenes {
-		if regexpMatchesPath(r, p.Path()) != -1 {
+		if regexpMatchesPath(r, p.Path) != -1 {
 			ret = append(ret, p)
 		}
 	}

@@ -95,7 +95,7 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 
 	// populate performers, studio and tags based on scene path
 	if err := txn.WithTxn(ctx, s.txnManager, func(ctx context.Context) error {
-		path := scene.Path()
+		path := scene.Path
 		performers, err := autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
 		if err != nil {
 			return fmt.Errorf("autotag scraper viaScene: %w", err)

@@ -41,6 +41,7 @@ type CaptionFinder interface {
 type sceneRoutes struct {
 	txnManager        txn.Manager
 	sceneFinder       SceneFinder
+	fileFinder        file.Finder
 	captionFinder     CaptionFinder
 	sceneMarkerFinder SceneMarkerFinder
 	tagFinder         scene.MarkerTagFinder
@@ -94,7 +95,12 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 	// only allow mkv streaming if the scene container is an mkv already
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	container, err := manager.GetSceneFileContainer(scene)
+	pf := scene.Files.Primary()
+	if pf == nil {
+		return
+	}
+
+	container, err := manager.GetVideoFileContainer(pf)
 	if err != nil {
 		logger.Errorf("[transcode] error getting container: %v", err)
 	}
@@ -121,10 +127,8 @@ func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	ffprobe := manager.GetInstance().FFProbe
-	videoFile, err := ffprobe.NewVideoFile(scene.Path())
-	if err != nil {
-		logger.Errorf("[stream] error reading video file: %v", err)
+	pf := scene.Files.Primary()
+	if pf == nil {
 		return
 	}
 
@@ -134,7 +138,7 @@ func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", ffmpeg.MimeHLS)
 	var str strings.Builder
 
-	ffmpeg.WriteHLSPlaylist(videoFile.Duration, r.URL.String(), &str)
+	ffmpeg.WriteHLSPlaylist(pf.Duration, r.URL.String(), &str)
 
 	requestByteRange := createByteRange(r.Header.Get("Range"))
 	if requestByteRange.RawString != "" {
@@ -157,7 +161,10 @@ func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, streamFormat ffmpeg.StreamFormat) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	f := scene.PrimaryFile()
+	f := scene.Files.Primary()
+	if f == nil {
+		return
+	}
 	logger.Debugf("Streaming as %s", streamFormat.MimeType)
 
 	// start stream based on query param, if provided
@@ -306,7 +313,7 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) Funscript(w http.ResponseWriter, r *http.Request) {
 	s := r.Context().Value(sceneKey).(*models.Scene)
-	funscript := video.GetFunscriptPath(s.Path())
+	funscript := video.GetFunscriptPath(s.Path)
 	serveFileNoCache(w, r, funscript)
 }
 
@@ -322,7 +329,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 
 	if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 		var err error
-		primaryFile := s.PrimaryFile()
+		primaryFile := s.Files.Primary()
 		if primaryFile == nil {
 			return nil
 		}
@@ -330,7 +337,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 		captions, err := rs.captionFinder.GetCaptions(ctx, primaryFile.Base().ID)
 		for _, caption := range captions {
 			if lang == caption.LanguageCode && ext == caption.CaptionType {
-				sub, err := video.ReadSubs(caption.Path(s.Path()))
+				sub, err := video.ReadSubs(caption.Path(s.Path))
 				if err == nil {
 					var b bytes.Buffer
 					err = sub.WriteToWebVTT(&b)
@@ -490,6 +497,10 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 				}
 			} else {
 				scene, _ = qb.Find(ctx, sceneID)
+			}
+
+			if scene != nil {
+				_ = scene.LoadPrimaryFile(ctx, rs.fileFinder)
 			}
 
 			return nil

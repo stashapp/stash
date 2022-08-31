@@ -13,9 +13,9 @@ type queryURLParameters map[string]string
 
 func queryURLParametersFromScene(scene *models.Scene) queryURLParameters {
 	ret := make(queryURLParameters)
-	ret["checksum"] = scene.Checksum()
-	ret["oshash"] = scene.OSHash()
-	ret["filename"] = filepath.Base(scene.Path())
+	ret["checksum"] = scene.Checksum
+	ret["oshash"] = scene.OSHash
+	ret["filename"] = filepath.Base(scene.Path)
 
 	if scene.Title != "" {
 		ret["title"] = scene.Title

@@ -358,30 +358,7 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]*file.ImageFile, 
 
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
 	const primaryOnly = true
-	rows, err := qb.filesRepository().getMany(ctx, ids, primaryOnly)
-	if err != nil {
-		return nil, err
-	}
-
-	ret := make([][]file.ID, len(ids))
-	idToIndex := make(map[int]int)
-	for i, id := range ids {
-		idToIndex[id] = i
-	}
-
-	for _, row := range rows {
-		id := row.ID
-		fileID := row.FileID
-
-		if row.Primary {
-			// prepend to list
-			ret[idToIndex[id]] = append([]file.ID{fileID}, ret[idToIndex[id]]...)
-		} else {
-			ret[idToIndex[id]] = append(ret[idToIndex[id]], row.FileID)
-		}
-	}
-
-	return ret, nil
+	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 
 func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {

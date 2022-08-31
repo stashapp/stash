@@ -206,20 +206,24 @@ func (h *cleanHandler) deleteRelatedScenes(ctx context.Context, fileDeleter *fil
 	}
 
 	for _, scene := range scenes {
+		if err := scene.LoadFiles(ctx, sceneQB); err != nil {
+			return err
+		}
+
 		// only delete if the scene has no other files
-		if len(scene.Files) <= 1 {
+		if len(scene.Files.List()) <= 1 {
 			logger.Infof("Deleting scene %q since it has no other related files", scene.GetTitle())
 			if err := mgr.SceneService.Destroy(ctx, scene, sceneFileDeleter, true, false); err != nil {
 				return err
 			}
 
-			checksum := scene.Checksum()
-			oshash := scene.OSHash()
+			checksum := scene.Checksum
+			oshash := scene.OSHash
 
 			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
 				Checksum: checksum,
 				OSHash:   oshash,
-				Path:     scene.Path(),
+				Path:     scene.Path,
 			}, nil)
 		}
 	}

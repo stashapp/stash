@@ -502,7 +502,7 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 		}
 
 		// export files
-		for _, f := range s.Files {
+		for _, f := range s.Files.List() {
 			exportFile(f, t)
 		}
 
@@ -577,13 +577,8 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
-		pf := s.PrimaryFile()
-		basename := ""
-		hash := ""
-		if pf != nil {
-			basename = pf.Basename
-			hash = s.OSHash()
-		}
+		basename := filepath.Base(s.Path)
+		hash := s.OSHash
 
 		fn := newSceneJSON.Filename(basename, hash)
 

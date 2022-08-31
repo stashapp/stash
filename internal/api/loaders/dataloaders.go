@@ -6,6 +6,7 @@
 //go:generate go run -mod=vendor github.com/vektah/dataloaden TagLoader int *github.com/stashapp/stash/pkg/models.Tag
 //go:generate go run -mod=vendor github.com/vektah/dataloaden MovieLoader int *github.com/stashapp/stash/pkg/models.Movie
 //go:generate go run -mod=vendor github.com/vektah/dataloaden FileLoader github.com/stashapp/stash/pkg/file.ID github.com/stashapp/stash/pkg/file.File
+//go:generate go run -mod=vendor github.com/vektah/dataloaden SceneFileIDsLoader int []github.com/stashapp/stash/pkg/file.ID
 //go:generate go run -mod=vendor github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/file.ID
 //go:generate go run -mod=vendor github.com/vektah/dataloaden GalleryFileIDsLoader int []github.com/stashapp/stash/pkg/file.ID
 
@@ -35,6 +36,7 @@ const (
 
 type Loaders struct {
 	SceneByID    *SceneLoader
+	SceneFiles   *SceneFileIDsLoader
 	ImageFiles   *ImageFileIDsLoader
 	GalleryFiles *GalleryFileIDsLoader
 
@@ -95,6 +97,11 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchFiles(ctx),
+			},
+			SceneFiles: &SceneFileIDsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchScenesFileIDs(ctx),
 			},
 			ImageFiles: &ImageFileIDsLoader{
 				wait:     wait,
@@ -214,6 +221,17 @@ func (m Middleware) fetchFiles(ctx context.Context) func(keys []file.ID) ([]file
 		err := m.withTxn(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.File.Find(ctx, keys...)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchScenesFileIDs(ctx context.Context) func(keys []int) ([][]file.ID, []error) {
+	return func(keys []int) (ret [][]file.ID, errs []error) {
+		err := m.withTxn(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Scene.GetManyFileIDs(ctx, keys)
 			return err
 		})
 		return ret, toErrorSlice(err)

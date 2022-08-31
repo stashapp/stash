@@ -483,7 +483,7 @@ type relatedFileRow struct {
 	Primary bool    `db:"primary"`
 }
 
-func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([]relatedFileRow, error) {
+func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([][]file.ID, error) {
 	var primaryClause string
 	if primaryOnly {
 		primaryClause = " AND `primary` = 1"
@@ -496,7 +496,7 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 		idi[i] = id
 	}
 
-	var ret []relatedFileRow
+	var fileRows []relatedFileRow
 	if err := r.queryFunc(ctx, query, idi, false, func(rows *sqlx.Rows) error {
 		var f relatedFileRow
 
@@ -504,11 +504,29 @@ func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bo
 			return err
 		}
 
-		ret = append(ret, f)
+		fileRows = append(fileRows, f)
 
 		return nil
 	}); err != nil {
 		return nil, err
+	}
+
+	ret := make([][]file.ID, len(ids))
+	idToIndex := make(map[int]int)
+	for i, id := range ids {
+		idToIndex[id] = i
+	}
+
+	for _, row := range fileRows {
+		id := row.ID
+		fileID := row.FileID
+
+		if row.Primary {
+			// prepend to list
+			ret[idToIndex[id]] = append([]file.ID{fileID}, ret[idToIndex[id]]...)
+		} else {
+			ret[idToIndex[id]] = append(ret[idToIndex[id]], row.FileID)
+		}
 	}
 
 	return ret, nil

@@ -366,9 +366,9 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	// call post hook after performing the other actions
 	r.hookExecutor.ExecutePostHooks(ctx, s.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
 		SceneDestroyInput: input,
-		Checksum:          s.Checksum(),
-		OSHash:            s.OSHash(),
-		Path:              s.Path(),
+		Checksum:          s.Checksum,
+		OSHash:            s.OSHash,
+		Path:              s.Path,
 	}, nil)
 
 	return true, nil
@@ -422,9 +422,9 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 		// call post hook after performing the other actions
 		r.hookExecutor.ExecutePostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.ScenesDestroyInput{
 			ScenesDestroyInput: input,
-			Checksum:           scene.Checksum(),
-			OSHash:             scene.OSHash(),
-			Path:               scene.Path(),
+			Checksum:           scene.Checksum,
+			OSHash:             scene.OSHash,
+			Path:               scene.Path,
 		}, nil)
 	}
 

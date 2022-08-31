@@ -60,6 +60,11 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 	if err != nil {
 		return nil, err
 	}
+
+	if f == nil {
+		return nil, nil
+	}
+
 	width := f.Width
 	height := f.Height
 	size := f.Size

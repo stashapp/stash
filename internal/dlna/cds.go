@@ -114,7 +114,7 @@ func sceneToContainer(scene *models.Scene, parent string, host string) interface
 		duration int64
 	)
 
-	f := scene.PrimaryFile()
+	f := scene.Files.Primary()
 	if f != nil {
 		size = int(f.Size)
 		bitrate = uint(f.BitRate)
@@ -362,6 +362,10 @@ func (me *contentDirectoryService) handleBrowseMetadata(obj object, host string)
 
 		if err := txn.WithTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
 			scene, err = me.repository.SceneFinder.Find(ctx, sceneID)
+			if scene != nil {
+				err = scene.LoadPrimaryFile(ctx, me.repository.FileFinder)
+			}
+
 			if err != nil {
 				return err
 			}

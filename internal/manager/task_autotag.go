@@ -699,17 +699,17 @@ func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 		if t.performers {
 			if err := autotag.ScenePerformers(ctx, t.scene, r.Scene, r.Performer, t.cache); err != nil {
-				return fmt.Errorf("error tagging scene performers for %s: %v", t.scene.Path(), err)
+				return fmt.Errorf("error tagging scene performers for %s: %v", t.scene.Path, err)
 			}
 		}
 		if t.studios {
 			if err := autotag.SceneStudios(ctx, t.scene, r.Scene, r.Studio, t.cache); err != nil {
-				return fmt.Errorf("error tagging scene studio for %s: %v", t.scene.Path(), err)
+				return fmt.Errorf("error tagging scene studio for %s: %v", t.scene.Path, err)
 			}
 		}
 		if t.tags {
 			if err := autotag.SceneTags(ctx, t.scene, r.Scene, r.Tag, t.cache); err != nil {
-				return fmt.Errorf("error tagging scene tags for %s: %v", t.scene.Path(), err)
+				return fmt.Errorf("error tagging scene tags for %s: %v", t.scene.Path, err)
 			}
 		}
 

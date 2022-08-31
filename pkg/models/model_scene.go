@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -22,7 +23,14 @@ type Scene struct {
 	StudioID  *int   `json:"studio_id"`
 
 	// transient - not persisted
-	Files []*file.VideoFile
+	Files         RelatedVideoFiles
+	PrimaryFileID *file.ID
+	// transient - path of primary file - empty if no files
+	Path string
+	// transient - oshash of primary file - empty if no files
+	OSHash string
+	// transient - checksum of primary file - empty if no files
+	Checksum string
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -32,6 +40,35 @@ type Scene struct {
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
 	Movies       RelatedMovies   `json:"movies"`
 	StashIDs     RelatedStashIDs `json:"stash_ids"`
+}
+
+func (s *Scene) LoadFiles(ctx context.Context, l VideoFileLoader) error {
+	return s.Files.load(func() ([]*file.VideoFile, error) {
+		return l.GetFiles(ctx, s.ID)
+	})
+}
+
+func (s *Scene) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
+	return s.Files.loadPrimary(func() (*file.VideoFile, error) {
+		if s.PrimaryFileID == nil {
+			return nil, nil
+		}
+
+		f, err := l.Find(ctx, *s.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
+
+		var vf *file.VideoFile
+		if len(f) > 0 {
+			var ok bool
+			vf, ok = f[0].(*file.VideoFile)
+			if !ok {
+				return nil, errors.New("not a video file")
+			}
+		}
+		return vf, nil
+	})
 }
 
 func (s *Scene) LoadGalleryIDs(ctx context.Context, l GalleryIDLoader) error {
@@ -85,87 +122,11 @@ func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 		return err
 	}
 
+	if err := s.LoadFiles(ctx, l); err != nil {
+		return err
+	}
+
 	return nil
-}
-
-func (s Scene) PrimaryFile() *file.VideoFile {
-	if len(s.Files) == 0 {
-		return nil
-	}
-
-	return s.Files[0]
-}
-
-func (s Scene) Path() string {
-	if p := s.PrimaryFile(); p != nil {
-		return p.Base().Path
-	}
-
-	return ""
-}
-
-func (s Scene) getHash(type_ string) string {
-	if p := s.PrimaryFile(); p != nil {
-		v := p.Base().Fingerprints.Get(type_)
-		if v == nil {
-			return ""
-		}
-
-		return v.(string)
-	}
-	return ""
-}
-
-func (s Scene) Checksum() string {
-	return s.getHash(file.FingerprintTypeMD5)
-}
-
-func (s Scene) OSHash() string {
-	return s.getHash(file.FingerprintTypeOshash)
-}
-
-func (s Scene) Phash() int64 {
-	if p := s.PrimaryFile(); p != nil {
-		v := p.Base().Fingerprints.Get(file.FingerprintTypePhash)
-		if v == nil {
-			return 0
-		}
-
-		return v.(int64)
-	}
-	return 0
-}
-
-func (s Scene) Duration() float64 {
-	if p := s.PrimaryFile(); p != nil {
-		return p.Duration
-	}
-
-	return 0
-}
-
-func (s Scene) Format() string {
-	if p := s.PrimaryFile(); p != nil {
-		return p.Format
-	}
-
-	return ""
-}
-
-func (s Scene) VideoCodec() string {
-	if p := s.PrimaryFile(); p != nil {
-		return p.VideoCodec
-	}
-
-	return ""
-}
-
-func (s Scene) AudioCodec() string {
-	if p := s.PrimaryFile(); p != nil {
-		return p.AudioCodec
-	}
-
-	return ""
 }
 
 // ScenePartial represents part of a Scene object. It is used to update
@@ -258,41 +219,20 @@ func (s Scene) GetTitle() string {
 		return s.Title
 	}
 
-	return filepath.Base(s.Path())
+	return filepath.Base(s.Path)
 }
 
 // GetHash returns the hash of the scene, based on the hash algorithm provided. If
 // hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
 func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
-	f := s.PrimaryFile()
-	if f == nil {
-		return ""
-	}
-
 	switch hashAlgorithm {
 	case HashAlgorithmMd5:
-		return f.Base().Fingerprints.Get(file.FingerprintTypeMD5).(string)
+		return s.Checksum
 	case HashAlgorithmOshash:
-		return f.Base().Fingerprints.Get(file.FingerprintTypeOshash).(string)
+		return s.OSHash
 	}
 
 	return ""
-}
-
-func (s Scene) GetMinResolution() int {
-	f := s.PrimaryFile()
-	if f == nil {
-		return 0
-	}
-
-	w := f.Width
-	h := f.Height
-
-	if w < h {
-		return w
-	}
-
-	return h
 }
 
 // SceneFileType represents the file metadata for a scene.

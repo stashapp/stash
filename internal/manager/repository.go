@@ -30,6 +30,7 @@ type GalleryReaderWriter interface {
 type SceneReaderWriter interface {
 	models.SceneReaderWriter
 	scene.CreatorUpdater
+	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
 }
 
 type FileReaderWriter interface {
