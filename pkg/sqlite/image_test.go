@@ -31,6 +31,22 @@ func loadImageRelationships(ctx context.Context, expected models.Image, actual *
 			return err
 		}
 	}
+	if expected.Files.Loaded() {
+		if err := actual.LoadFiles(ctx, db.Image); err != nil {
+			return err
+		}
+	}
+
+	// clear Path, Checksum, PrimaryFileID
+	if expected.Path == "" {
+		actual.Path = ""
+	}
+	if expected.Checksum == "" {
+		actual.Checksum = ""
+	}
+	if expected.PrimaryFileID == nil {
+		actual.PrimaryFileID = nil
+	}
 
 	return nil
 }
@@ -64,7 +80,6 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
 				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
-				Files:        []*file.ImageFile{},
 			},
 			false,
 		},
@@ -76,14 +91,16 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
-				Files: []*file.ImageFile{
+				Files: models.NewRelatedImageFiles([]*file.ImageFile{
 					imageFile.(*file.ImageFile),
-				},
-				CreatedAt:    createdAt,
-				UpdatedAt:    updatedAt,
-				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
-				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
+				}),
+				PrimaryFileID: &imageFile.Base().ID,
+				Path:          imageFile.Base().Path,
+				CreatedAt:     createdAt,
+				UpdatedAt:     updatedAt,
+				GalleryIDs:    models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
+				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
+				PerformerIDs:  models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
 		},
@@ -124,10 +141,11 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			assert := assert.New(t)
 
 			var fileIDs []file.ID
-			for _, f := range tt.newObject.Files {
-				fileIDs = append(fileIDs, f.ID)
+			if tt.newObject.Files.Loaded() {
+				for _, f := range tt.newObject.Files.List() {
+					fileIDs = append(fileIDs, f.ID)
+				}
 			}
-
 			s := tt.newObject
 			if err := qb.Create(ctx, &models.ImageCreateInput{
 				Image:   &s,
@@ -174,8 +192,10 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 }
 
 func clearImageFileIDs(image *models.Image) {
-	for _, f := range image.Files {
-		f.Base().ID = 0
+	if image.Files.Loaded() {
+		for _, f := range image.Files.List() {
+			f.Base().ID = 0
+		}
 	}
 }
 
@@ -202,15 +222,12 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"full",
 			&models.Image{
-				ID:        imageIDs[imageIdxWithGallery],
-				Title:     title,
-				Rating:    &rating,
-				Organized: true,
-				OCounter:  ocounter,
-				StudioID:  &studioIDs[studioIdxWithImage],
-				Files: []*file.ImageFile{
-					makeImageFileWithID(imageIdxWithGallery),
-				},
+				ID:           imageIDs[imageIdxWithGallery],
+				Title:        title,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithImage],
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
@@ -222,10 +239,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"clear nullables",
 			&models.Image{
-				ID: imageIDs[imageIdxWithGallery],
-				Files: []*file.ImageFile{
-					makeImageFileWithID(imageIdxWithGallery),
-				},
+				ID:           imageIDs[imageIdxWithGallery],
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -238,10 +252,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"clear gallery ids",
 			&models.Image{
-				ID: imageIDs[imageIdxWithGallery],
-				Files: []*file.ImageFile{
-					makeImageFileWithID(imageIdxWithGallery),
-				},
+				ID:           imageIDs[imageIdxWithGallery],
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -254,10 +265,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"clear tag ids",
 			&models.Image{
-				ID: imageIDs[imageIdxWithTag],
-				Files: []*file.ImageFile{
-					makeImageFileWithID(imageIdxWithTag),
-				},
+				ID:           imageIDs[imageIdxWithTag],
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -270,10 +278,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"clear performer ids",
 			&models.Image{
-				ID: imageIDs[imageIdxWithPerformer],
-				Files: []*file.ImageFile{
-					makeImageFileWithID(imageIdxWithPerformer),
-				},
+				ID:           imageIDs[imageIdxWithPerformer],
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -286,10 +291,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid studio id",
 			&models.Image{
-				ID: imageIDs[imageIdxWithGallery],
-				Files: []*file.ImageFile{
-					makeImageFileWithID(imageIdxWithGallery),
-				},
+				ID:        imageIDs[imageIdxWithGallery],
 				Organized: true,
 				StudioID:  &invalidID,
 				CreatedAt: createdAt,
@@ -300,10 +302,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid gallery id",
 			&models.Image{
-				ID: imageIDs[imageIdxWithGallery],
-				Files: []*file.ImageFile{
-					makeImageFileWithID(imageIdxWithGallery),
-				},
+				ID:         imageIDs[imageIdxWithGallery],
 				Organized:  true,
 				GalleryIDs: models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt:  createdAt,
@@ -314,10 +313,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid tag id",
 			&models.Image{
-				ID: imageIDs[imageIdxWithGallery],
-				Files: []*file.ImageFile{
-					makeImageFileWithID(imageIdxWithGallery),
-				},
+				ID:        imageIDs[imageIdxWithGallery],
 				Organized: true,
 				TagIDs:    models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt: createdAt,
@@ -328,10 +324,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid performer id",
 			&models.Image{
-				ID: imageIDs[imageIdxWithGallery],
-				Files: []*file.ImageFile{
-					makeImageFileWithID(imageIdxWithGallery),
-				},
+				ID:           imageIDs[imageIdxWithGallery],
 				Organized:    true,
 				PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt:    createdAt,
@@ -433,9 +426,9 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
-				Files: []*file.ImageFile{
+				Files: models.NewRelatedImageFiles([]*file.ImageFile{
 					makeImageFile(imageIdx1WithGallery),
-				},
+				}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
@@ -451,9 +444,9 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			models.Image{
 				ID:       imageIDs[imageIdx1WithGallery],
 				OCounter: getOCounter(imageIdx1WithGallery),
-				Files: []*file.ImageFile{
+				Files: models.NewRelatedImageFiles([]*file.ImageFile{
 					makeImageFile(imageIdx1WithGallery),
-				},
+				}),
 				GalleryIDs:   models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -484,12 +477,12 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				return
 			}
 
-			clearImageFileIDs(got)
 			// load relationships
 			if err := loadImageRelationships(ctx, tt.want, got); err != nil {
 				t.Errorf("loadImageRelationships() error = %v", err)
 				return
 			}
+			clearImageFileIDs(got)
 
 			assert.Equal(tt.want, *got)
 
@@ -498,12 +491,12 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				t.Errorf("imageQueryBuilder.Find() error = %v", err)
 			}
 
-			clearImageFileIDs(s)
 			// load relationships
 			if err := loadImageRelationships(ctx, tt.want, s); err != nil {
 				t.Errorf("loadImageRelationships() error = %v", err)
 				return
 			}
+			clearImageFileIDs(s)
 			assert.Equal(tt.want, *s)
 		})
 	}
@@ -952,7 +945,7 @@ func makeImageWithID(index int) *models.Image {
 	ret := makeImage(index)
 	ret.ID = imageIDs[index]
 
-	ret.Files = []*file.ImageFile{makeImageFile(index)}
+	ret.Files = models.NewRelatedImageFiles([]*file.ImageFile{makeImageFile(index)})
 
 	return ret
 }
@@ -1002,13 +995,12 @@ func Test_imageQueryBuilder_Find(t *testing.T) {
 			}
 
 			if got != nil {
-				clearImageFileIDs(got)
-
 				// load relationships
 				if err := loadImageRelationships(ctx, *tt.want, got); err != nil {
 					t.Errorf("loadImageRelationships() error = %v", err)
 					return
 				}
+				clearImageFileIDs(got)
 			}
 			assert.Equal(tt.want, got)
 		})
@@ -1017,14 +1009,13 @@ func Test_imageQueryBuilder_Find(t *testing.T) {
 
 func postFindImages(ctx context.Context, want []*models.Image, got []*models.Image) error {
 	for i, s := range got {
-		clearImageFileIDs(s)
-
 		// load relationships
 		if i < len(want) {
 			if err := loadImageRelationships(ctx, *want[i], s); err != nil {
 				return err
 			}
 		}
+		clearImageFileIDs(s)
 	}
 
 	return nil
@@ -1546,7 +1537,7 @@ func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput, ex
 		assert.Equal(t, expected, len(images), "number of returned images")
 
 		for _, image := range images {
-			verifyString(t, image.Path(), pathCriterion)
+			verifyString(t, image.Path, pathCriterion)
 		}
 
 		return nil
@@ -1582,8 +1573,8 @@ func TestImageQueryPathOr(t *testing.T) {
 			return nil
 		}
 
-		assert.Equal(t, image1Path, images[0].Path())
-		assert.Equal(t, image2Path, images[1].Path())
+		assert.Equal(t, image1Path, images[0].Path)
+		assert.Equal(t, image2Path, images[1].Path)
 
 		return nil
 	})
@@ -1613,7 +1604,7 @@ func TestImageQueryPathAndRating(t *testing.T) {
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
 		assert.Len(t, images, 1)
-		assert.Equal(t, imagePath, images[0].Path())
+		assert.Equal(t, imagePath, images[0].Path)
 		assert.Equal(t, int(imageRating.Int64), *images[0].Rating)
 
 		return nil
@@ -1648,7 +1639,7 @@ func TestImageQueryPathNotRating(t *testing.T) {
 		images := queryImages(ctx, t, sqb, &imageFilter, nil)
 
 		for _, image := range images {
-			verifyString(t, image.Path(), pathCriterion)
+			verifyString(t, image.Path, pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
 			verifyIntPtr(t, image.Rating, ratingCriterion)
 		}
@@ -1802,7 +1793,12 @@ func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
 		}
 
 		for _, image := range images {
-			verifyImageResolution(t, image.Files[0].Height, resolution)
+			if err := image.LoadPrimaryFile(ctx, db.File); err != nil {
+				t.Errorf("Error loading primary file: %s", err.Error())
+				return nil
+			}
+
+			verifyImageResolution(t, image.Files.Primary().Height, resolution)
 		}
 
 		return nil

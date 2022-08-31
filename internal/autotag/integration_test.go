@@ -721,9 +721,9 @@ func TestParsePerformerImages(t *testing.T) {
 			// title is only set on images where we expect performer to be set
 			expectedMatch := image.Title == expectedMatchTitle || image.Title == existingStudioImageName
 			if expectedMatch && len(performers) == 0 {
-				t.Errorf("Did not set performer '%s' for path '%s'", testName, image.Path())
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, image.Path)
 			} else if !expectedMatch && len(performers) > 0 {
-				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, image.Path())
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, image.Path)
 			}
 		}
 
@@ -772,13 +772,13 @@ func TestParseStudioImages(t *testing.T) {
 				// title is only set on images where we expect studio to be set
 				if image.Title == expectedMatchTitle {
 					if image.StudioID == nil {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path())
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path)
 					} else if *image.StudioID != studios[1].ID {
-						t.Errorf("Incorrect studio id %d set for path '%s'", *image.StudioID, image.Path())
+						t.Errorf("Incorrect studio id %d set for path '%s'", *image.StudioID, image.Path)
 					}
 
 				} else if image.Title != expectedMatchTitle && image.StudioID != nil && *image.StudioID == studios[1].ID {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path())
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path)
 				}
 			}
 		}
@@ -830,9 +830,9 @@ func TestParseTagImages(t *testing.T) {
 			// title is only set on images where we expect performer to be set
 			expectedMatch := image.Title == expectedMatchTitle || image.Title == existingStudioImageName
 			if expectedMatch && len(tags) == 0 {
-				t.Errorf("Did not set tag '%s' for path '%s'", testName, image.Path())
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, image.Path)
 			} else if !expectedMatch && len(tags) > 0 {
-				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, image.Path())
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, image.Path)
 			}
 		}
 

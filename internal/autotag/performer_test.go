@@ -140,7 +140,7 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
 			ID:           i + 1,
-			Files:        []*file.ImageFile{makeImageFile(p)},
+			Path:         p,
 			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}

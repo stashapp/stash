@@ -197,8 +197,8 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 	matchingPaths, falsePaths := generateTestPaths(testPathName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:    i + 1,
-			Files: []*file.ImageFile{makeImageFile(p)},
+			ID:   i + 1,
+			Path: p,
 		})
 	}
 
