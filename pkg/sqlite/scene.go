@@ -725,16 +725,8 @@ func (qb *SceneStore) All(ctx context.Context) ([]*models.Scene, error) {
 	table := qb.table()
 	fileTable := fileTableMgr.table
 	folderTable := folderTableMgr.table
-	return qb.getMany(ctx, qb.selectDataset().LeftJoin(
-		scenesFilesJoinTable,
-		goqu.On(scenesFilesJoinTable.Col(sceneIDColumn).Eq(table.Col(idColumn))),
-	).LeftJoin(
-		fileTable,
-		goqu.On(fileTable.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
-	).LeftJoin(
-		folderTable,
-		goqu.On(folderTable.Col(idColumn).Eq(fileTable.Col("parent_folder_id"))),
-	).Order(
+
+	return qb.getMany(ctx, qb.selectDataset().Order(
 		folderTable.Col("path").Asc(),
 		fileTable.Col("basename").Asc(),
 		table.Col("date").Asc(),

@@ -3,6 +3,7 @@ package scene
 import (
 	"errors"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -72,7 +73,10 @@ var stashID = models.StashID{
 	Endpoint: "Endpoint",
 }
 
-const imageBase64 = "aW1hZ2VCeXRlcw=="
+const (
+	path        = "path"
+	imageBase64 = "aW1hZ2VCeXRlcw=="
+)
 
 var (
 	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
@@ -89,6 +93,13 @@ func createFullScene(id int) models.Scene {
 		Rating:    &rating,
 		Organized: organized,
 		URL:       url,
+		Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+			{
+				BaseFile: &file.BaseFile{
+					Path: path,
+				},
+			},
+		}),
 		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			stashID,
 		}),
@@ -99,7 +110,14 @@ func createFullScene(id int) models.Scene {
 
 func createEmptyScene(id int) models.Scene {
 	return models.Scene{
-		ID:        id,
+		ID: id,
+		Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+			{
+				BaseFile: &file.BaseFile{
+					Path: path,
+				},
+			},
+		}),
 		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
@@ -109,6 +127,7 @@ func createEmptyScene(id int) models.Scene {
 func createFullJSONScene(image string) *jsonschema.Scene {
 	return &jsonschema.Scene{
 		Title:     title,
+		Files:     []string{path},
 		Date:      date,
 		Details:   details,
 		OCounter:  ocounter,
@@ -130,6 +149,7 @@ func createFullJSONScene(image string) *jsonschema.Scene {
 
 func createEmptyJSONScene() *jsonschema.Scene {
 	return &jsonschema.Scene{
+		Files: []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},

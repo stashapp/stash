@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -100,14 +99,8 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	var scenes []*models.Scene
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID: i + 1,
-			Files: []*file.VideoFile{
-				{
-					BaseFile: &file.BaseFile{
-						Path: p,
-					},
-				},
-			},
+			ID:     i + 1,
+			Path:   p,
 			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}

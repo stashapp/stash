@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -53,14 +52,8 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	matchingPaths, falsePaths := generateTestPaths(performerName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID: i + 1,
-			Files: []*file.VideoFile{
-				{
-					BaseFile: &file.BaseFile{
-						Path: p,
-					},
-				},
-			},
+			ID:           i + 1,
+			Path:         p,
 			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}

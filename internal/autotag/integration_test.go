@@ -565,9 +565,9 @@ func TestParsePerformerScenes(t *testing.T) {
 
 			// title is only set on scenes where we expect performer to be set
 			if scene.Title == expectedMatchTitle && len(performers) == 0 {
-				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path())
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path)
 			} else if scene.Title != expectedMatchTitle && len(performers) > 0 {
-				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path())
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path)
 			}
 		}
 
@@ -616,13 +616,13 @@ func TestParseStudioScenes(t *testing.T) {
 				// title is only set on scenes where we expect studio to be set
 				if scene.Title == expectedMatchTitle {
 					if scene.StudioID == nil {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path())
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
 					} else if scene.StudioID != nil && *scene.StudioID != studios[1].ID {
-						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID, scene.Path())
+						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID, scene.Path)
 					}
 
 				} else if scene.Title != expectedMatchTitle && scene.StudioID != nil && *scene.StudioID == studios[1].ID {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path())
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
 				}
 			}
 		}
@@ -673,9 +673,9 @@ func TestParseTagScenes(t *testing.T) {
 
 			// title is only set on scenes where we expect tag to be set
 			if scene.Title == expectedMatchTitle && len(tags) == 0 {
-				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path())
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path)
 			} else if (scene.Title != expectedMatchTitle) && len(tags) > 0 {
-				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path())
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path)
 			}
 		}
 
