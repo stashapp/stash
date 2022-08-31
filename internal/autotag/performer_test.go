@@ -220,12 +220,8 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	for i, p := range append(matchingPaths, falsePaths...) {
 		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID: i + 1,
-			Files: []file.File{
-				&file.BaseFile{
-					Path: v,
-				},
-			},
+			ID:           i + 1,
+			Path:         v,
 			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}

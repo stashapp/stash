@@ -3,6 +3,7 @@ package gallery
 import (
 	"errors"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -35,6 +36,7 @@ var (
 
 const (
 	studioName = "studioName"
+	path       = "path"
 )
 
 var (
@@ -44,7 +46,12 @@ var (
 
 func createFullGallery(id int) models.Gallery {
 	return models.Gallery{
-		ID:        id,
+		ID: id,
+		Files: models.NewRelatedFiles([]file.File{
+			&file.BaseFile{
+				Path: path,
+			},
+		}),
 		Title:     title,
 		Date:      &dateObj,
 		Details:   details,
@@ -64,6 +71,7 @@ func createFullJSONGallery() *jsonschema.Gallery {
 		Rating:    rating,
 		Organized: organized,
 		URL:       url,
+		ZipFiles:  []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
