@@ -452,7 +452,7 @@ func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*file.VideoFile, 
 }
 
 func (qb *SceneStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
-	const primaryOnly = true
+	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 

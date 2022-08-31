@@ -335,7 +335,7 @@ func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]file.File, erro
 }
 
 func (qb *GalleryStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
-	const primaryOnly = true
+	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 

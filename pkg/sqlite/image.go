@@ -357,7 +357,7 @@ func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]*file.ImageFile, 
 }
 
 func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
-	const primaryOnly = true
+	const primaryOnly = false
 	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 
