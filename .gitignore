@@ -67,3 +67,5 @@ dist
 /stash-go.sqlite
 /stash-go.sqlite-wal
 /stash-go.sqlite-shm
+/yarn.lock
+/generated/thumbnails
