@@ -54,8 +54,8 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       setValidation(true);
       return;
     }
-    const match = /(\d{0,1})(\d{0,1})(.?)((\d{0,1})?)/g.exec(val);
-    const matchOld = /(\d{0,1})(\d{0,1})(.?)((\d{0,2})?)/g.exec(previous ?? "");
+    const match = /(\d?)(\d?)(.?)((\d)?)/g.exec(val);
+    const matchOld = /(\d?)(\d?)(.?)((\d{0,2})?)/g.exec(previous ?? "");
 
     if (match == null || props.onSetRating == null) {
       return;
