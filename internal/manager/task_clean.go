@@ -290,15 +290,19 @@ func (h *cleanHandler) deleteRelatedImages(ctx context.Context, fileDeleter *fil
 	}
 
 	for _, i := range images {
-		if len(i.Files) <= 1 {
+		if err := i.LoadFiles(ctx, imageQB); err != nil {
+			return err
+		}
+
+		if len(i.Files.List()) <= 1 {
 			logger.Infof("Deleting image %q since it has no other related files", i.GetTitle())
 			if err := mgr.ImageService.Destroy(ctx, i, imageFileDeleter, true, false); err != nil {
 				return err
 			}
 
 			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
-				Checksum: i.Checksum(),
-				Path:     i.Path(),
+				Checksum: i.Checksum,
+				Path:     i.Path,
 			}, nil)
 		}
 	}

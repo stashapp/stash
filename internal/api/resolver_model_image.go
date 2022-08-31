@@ -2,13 +2,53 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+func (r *imageResolver) getPrimaryFile(ctx context.Context, obj *models.Image) (*file.ImageFile, error) {
+	if obj.PrimaryFileID != nil {
+		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
+
+		ret, ok := f.(*file.ImageFile)
+		if !ok {
+			return nil, fmt.Errorf("file %T is not an image file", f)
+		}
+
+		return ret, nil
+	}
+
+	return nil, nil
+}
+
+func (r *imageResolver) getFiles(ctx context.Context, obj *models.Image) ([]*file.ImageFile, error) {
+	fileIDs, err := loaders.From(ctx).ImageFiles.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
+	ret := make([]*file.ImageFile, len(files))
+	for i, bf := range files {
+		f, ok := bf.(*file.ImageFile)
+		if !ok {
+			return nil, fmt.Errorf("file %T is not an image file", f)
+		}
+
+		ret[i] = f
+	}
+
+	return ret, firstError(errs)
+}
 
 func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, error) {
 	ret := obj.GetTitle()
@@ -16,7 +56,10 @@ func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, 
 }
 
 func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFileType, error) {
-	f := obj.PrimaryFile()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	width := f.Width
 	height := f.Height
 	size := f.Size
@@ -28,9 +71,14 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 }
 
 func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageFile, error) {
-	ret := make([]*ImageFile, len(obj.Files))
+	files, err := r.getFiles(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 
-	for i, f := range obj.Files {
+	ret := make([]*ImageFile, len(files))
+
+	for i, f := range files {
 		ret[i] = &ImageFile{
 			ID:             strconv.Itoa(int(f.ID)),
 			Path:           f.Path,
@@ -55,7 +103,10 @@ func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageF
 }
 
 func (r *imageResolver) FileModTime(ctx context.Context, obj *models.Image) (*time.Time, error) {
-	f := obj.PrimaryFile()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if f != nil {
 		return &f.ModTime, nil
 	}

@@ -29,7 +29,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	c := config.GetInstance()
 
 	existingPaths := c.GetStashPaths()
-	if len(input.Stashes) > 0 {
+	if input.Stashes != nil {
 		for _, s := range input.Stashes {
 			// Only validate existence of new paths
 			isNew := true

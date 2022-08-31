@@ -477,6 +477,43 @@ type filesRepository struct {
 	repository
 }
 
+type relatedFileRow struct {
+	ID      int     `db:"id"`
+	FileID  file.ID `db:"file_id"`
+	Primary bool    `db:"primary"`
+}
+
+func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([]relatedFileRow, error) {
+	var primaryClause string
+	if primaryOnly {
+		primaryClause = " AND `primary` = 1"
+	}
+
+	query := fmt.Sprintf("SELECT %s as id, file_id, `primary` from %s WHERE %[1]s IN %[3]s%s", r.idColumn, r.tableName, getInBinding(len(ids)), primaryClause)
+
+	idi := make([]interface{}, len(ids))
+	for i, id := range ids {
+		idi[i] = id
+	}
+
+	var ret []relatedFileRow
+	if err := r.queryFunc(ctx, query, idi, false, func(rows *sqlx.Rows) error {
+		var f relatedFileRow
+
+		if err := rows.StructScan(&f); err != nil {
+			return err
+		}
+
+		ret = append(ret, f)
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (r *filesRepository) get(ctx context.Context, id int) ([]file.ID, error) {
 	query := fmt.Sprintf("SELECT file_id, `primary` from %s WHERE %s = ?", r.tableName, r.idColumn)
 

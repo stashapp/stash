@@ -5,6 +5,8 @@
 //go:generate go run -mod=vendor github.com/vektah/dataloaden StudioLoader int *github.com/stashapp/stash/pkg/models.Studio
 //go:generate go run -mod=vendor github.com/vektah/dataloaden TagLoader int *github.com/stashapp/stash/pkg/models.Tag
 //go:generate go run -mod=vendor github.com/vektah/dataloaden MovieLoader int *github.com/stashapp/stash/pkg/models.Movie
+//go:generate go run -mod=vendor github.com/vektah/dataloaden FileLoader github.com/stashapp/stash/pkg/file.ID github.com/stashapp/stash/pkg/file.File
+//go:generate go run -mod=vendor github.com/vektah/dataloaden ImageFileIDsLoader int []github.com/stashapp/stash/pkg/file.ID
 
 package loaders
 
@@ -14,6 +16,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -30,13 +33,16 @@ const (
 )
 
 type Loaders struct {
-	SceneByID     *SceneLoader
+	SceneByID  *SceneLoader
+	ImageFiles *ImageFileIDsLoader
+
 	GalleryByID   *GalleryLoader
 	ImageByID     *ImageLoader
 	PerformerByID *PerformerLoader
 	StudioByID    *StudioLoader
 	TagByID       *TagLoader
 	MovieByID     *MovieLoader
+	FileByID      *FileLoader
 }
 
 type Middleware struct {
@@ -82,6 +88,16 @@ func (m Middleware) Middleware(next http.Handler) http.Handler {
 				wait:     wait,
 				maxBatch: maxBatch,
 				fetch:    m.fetchMovies(ctx),
+			},
+			FileByID: &FileLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchFiles(ctx),
+			},
+			ImageFiles: &ImageFileIDsLoader{
+				wait:     wait,
+				maxBatch: maxBatch,
+				fetch:    m.fetchImagesFileIDs(ctx),
 			},
 		}
 
@@ -180,6 +196,28 @@ func (m Middleware) fetchMovies(ctx context.Context) func(keys []int) ([]*models
 		err := m.withTxn(ctx, func(ctx context.Context) error {
 			var err error
 			ret, err = m.Repository.Movie.FindMany(ctx, keys)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchFiles(ctx context.Context) func(keys []file.ID) ([]file.File, []error) {
+	return func(keys []file.ID) (ret []file.File, errs []error) {
+		err := m.withTxn(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.File.Find(ctx, keys...)
+			return err
+		})
+		return ret, toErrorSlice(err)
+	}
+}
+
+func (m Middleware) fetchImagesFileIDs(ctx context.Context) func(keys []int) ([][]file.ID, []error) {
+	return func(keys []int) (ret [][]file.ID, errs []error) {
+		err := m.withTxn(ctx, func(ctx context.Context) error {
+			var err error
+			ret, err = m.Repository.Image.GetManyFileIDs(ctx, keys)
 			return err
 		})
 		return ret, toErrorSlice(err)

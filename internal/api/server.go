@@ -147,6 +147,7 @@ func Start() error {
 	r.Mount("/image", imageRoutes{
 		txnManager:  txnManager,
 		imageFinder: txnManager.Image,
+		fileFinder:  txnManager.File,
 	}.Routes())
 	r.Mount("/studio", studioRoutes{
 		txnManager:   txnManager,

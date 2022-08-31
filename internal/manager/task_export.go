@@ -632,12 +632,17 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 	tagReader := repo.Tag
 
 	for s := range jobChan {
-		imageHash := s.Checksum()
+		imageHash := s.Checksum
+
+		if err := s.LoadFiles(ctx, repo.Image); err != nil {
+			logger.Errorf("[images] <%s> error getting image files: %s", imageHash, err.Error())
+			continue
+		}
 
 		newImageJSON := image.ToBasicJSON(s)
 
 		// export files
-		for _, f := range s.Files {
+		for _, f := range s.Files.List() {
 			exportFile(f, t)
 		}
 
@@ -682,15 +687,7 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
-		pf := s.PrimaryFile()
-		basename := ""
-		hash := ""
-		if pf != nil {
-			basename = pf.Basename
-			hash = s.Checksum()
-		}
-
-		fn := newImageJSON.Filename(basename, hash)
+		fn := newImageJSON.Filename(filepath.Base(s.Path), s.Checksum)
 
 		if err := t.json.saveImage(fn, newImageJSON); err != nil {
 			logger.Errorf("[images] <%s> failed to save json: %s", imageHash, err.Error())
