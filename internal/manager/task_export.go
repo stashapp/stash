@@ -328,6 +328,11 @@ func (t *ExportTask) populateGalleryImages(ctx context.Context, repo Repository)
 	}
 
 	for _, g := range galleries {
+		if err := g.LoadFiles(ctx, reader); err != nil {
+			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.GetTitle(), err.Error())
+			continue
+		}
+
 		images, err := imageReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
 			logger.Errorf("[galleries] <%s> failed to fetch images for gallery: %s", g.Checksum, err.Error())
@@ -511,6 +516,13 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene gallery checksums: %s", sceneHash, err.Error())
 			continue
+		}
+
+		for _, g := range galleries {
+			if err := g.LoadFiles(ctx, galleryReader); err != nil {
+				logger.Errorf("[scenes] <%s> error getting scene gallery files: %s", sceneHash, err.Error())
+				continue
+			}
 		}
 
 		newSceneJSON.Galleries = gallery.GetRefs(galleries)
@@ -746,6 +758,11 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 	tagReader := repo.Tag
 
 	for g := range jobChan {
+		if err := g.LoadFiles(ctx, repo.Gallery); err != nil {
+			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.GetTitle(), err.Error())
+			continue
+		}
+
 		galleryHash := g.Checksum()
 
 		newGalleryJSON, err := gallery.ToBasicJSON(g)
@@ -755,7 +772,7 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 		}
 
 		// export files
-		for _, f := range g.Files {
+		for _, f := range g.Files.List() {
 			exportFile(f, t)
 		}
 
@@ -806,16 +823,13 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
-		pf := g.PrimaryFile()
 		basename := ""
 		// use id in case multiple galleries with the same basename
 		hash := strconv.Itoa(g.ID)
 
 		switch {
-		case pf != nil:
-			basename = pf.Base().Basename
-		case g.FolderPath != "":
-			basename = filepath.Base(g.FolderPath)
+		case g.Path != "":
+			basename = filepath.Base(g.Path)
 		default:
 			basename = g.Title
 		}

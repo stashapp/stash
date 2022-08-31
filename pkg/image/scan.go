@@ -222,7 +222,7 @@ func (h *ScanHandler) associateFolderBasedGallery(ctx context.Context, newImage 
 
 	if g != nil && !intslice.IntInclude(newImage.GalleryIDs.List(), g.ID) {
 		newImage.GalleryIDs.Add(g.ID)
-		logger.Infof("Adding %s to folder-based gallery %s", f.Base().Path, g.Path())
+		logger.Infof("Adding %s to folder-based gallery %s", f.Base().Path, g.Path)
 	}
 
 	return nil

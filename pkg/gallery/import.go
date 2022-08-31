@@ -247,6 +247,8 @@ func (i *Importer) createTags(ctx context.Context, names []string) ([]*models.Ta
 }
 
 func (i *Importer) populateFilesFolder(ctx context.Context) error {
+	var files []file.File
+
 	for _, ref := range i.Input.ZipFiles {
 		path := filepath.FromSlash(ref)
 		f, err := i.FileFinder.FindByPath(ctx, path)
@@ -257,9 +259,11 @@ func (i *Importer) populateFilesFolder(ctx context.Context) error {
 		if f == nil {
 			return fmt.Errorf("gallery zip file '%s' not found", path)
 		} else {
-			i.gallery.Files = append(i.gallery.Files, f)
+			files = append(files, f)
 		}
 	}
+
+	i.gallery.Files = models.NewRelatedFiles(files)
 
 	if i.Input.FolderPath != "" {
 		path := filepath.FromSlash(i.Input.FolderPath)
@@ -302,8 +306,8 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	var existing []*models.Gallery
 	var err error
 	switch {
-	case len(i.gallery.Files) > 0:
-		for _, f := range i.gallery.Files {
+	case len(i.gallery.Files.List()) > 0:
+		for _, f := range i.gallery.Files.List() {
 			existing, err := i.ReaderWriter.FindByFileID(ctx, f.Base().ID)
 			if err != nil {
 				return nil, err
@@ -333,7 +337,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
 	var fileIDs []file.ID
-	for _, f := range i.gallery.Files {
+	for _, f := range i.gallery.Files.List() {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
 	err := i.ReaderWriter.Create(ctx, &i.gallery, fileIDs)

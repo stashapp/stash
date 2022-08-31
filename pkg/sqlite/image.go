@@ -58,7 +58,7 @@ type imageQueryRow struct {
 }
 
 func (r *imageQueryRow) resolve() *models.Image {
-	return &models.Image{
+	ret := &models.Image{
 		ID:        r.ID,
 		Title:     r.Title.String,
 		Rating:    nullIntPtr(r.Rating),
@@ -67,12 +67,17 @@ func (r *imageQueryRow) resolve() *models.Image {
 		StudioID:  nullIntPtr(r.StudioID),
 
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
-		Path:          filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String),
 		Checksum:      r.PrimaryFileChecksum.String,
 
 		CreatedAt: r.CreatedAt,
 		UpdatedAt: r.UpdatedAt,
 	}
+
+	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
+		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
+	}
+
+	return ret
 }
 
 type imageRowRecord struct {

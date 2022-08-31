@@ -68,6 +68,7 @@ type TagFinder interface {
 
 type GalleryFinder interface {
 	Find(ctx context.Context, id int) (*models.Gallery, error)
+	models.FileLoader
 }
 
 type Repository struct {
@@ -364,6 +365,11 @@ func (c Cache) getGallery(ctx context.Context, galleryID int) (*models.Gallery, 
 	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		var err error
 		ret, err = c.repository.GalleryFinder.Find(ctx, galleryID)
+
+		if ret != nil {
+			err = ret.LoadFiles(ctx, c.repository.GalleryFinder)
+		}
+
 		return err
 	}); err != nil {
 		return nil, err

@@ -23,6 +23,8 @@ type GalleryReaderWriter interface {
 	models.GalleryReaderWriter
 	gallery.FinderCreatorUpdater
 	gallery.Finder
+	models.FileLoader
+	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
 }
 
 type SceneReaderWriter interface {

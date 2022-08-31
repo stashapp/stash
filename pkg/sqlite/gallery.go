@@ -60,21 +60,38 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.UpdatedAt = o.UpdatedAt
 }
 
-func (r *galleryRow) resolve() *models.Gallery {
-	return &models.Gallery{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		URL:       r.URL.String,
-		Date:      r.Date.DatePtr(),
-		Details:   r.Details.String,
-		Rating:    nullIntPtr(r.Rating),
-		Organized: r.Organized,
-		StudioID:  nullIntPtr(r.StudioID),
-		FolderID:  nullIntFolderIDPtr(r.FolderID),
-		// FolderPath: r.FolderPath.String,
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
+type galleryQueryRow struct {
+	galleryRow
+	FolderPath            zero.String `db:"folder_path"`
+	PrimaryFileID         null.Int    `db:"primary_file_id"`
+	PrimaryFileFolderPath zero.String `db:"primary_file_folder_path"`
+	PrimaryFileBasename   zero.String `db:"primary_file_basename"`
+	PrimaryFileChecksum   zero.String `db:"primary_file_checksum"`
+}
+
+func (r *galleryQueryRow) resolve() *models.Gallery {
+	ret := &models.Gallery{
+		ID:            r.ID,
+		Title:         r.Title.String,
+		URL:           r.URL.String,
+		Date:          r.Date.DatePtr(),
+		Details:       r.Details.String,
+		Rating:        nullIntPtr(r.Rating),
+		Organized:     r.Organized,
+		StudioID:      nullIntPtr(r.StudioID),
+		FolderID:      nullIntFolderIDPtr(r.FolderID),
+		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
+		CreatedAt:     r.CreatedAt,
+		UpdatedAt:     r.UpdatedAt,
 	}
+
+	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
+		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
+	} else if r.FolderPath.Valid {
+		ret.Path = r.FolderPath.String
+	}
+
+	return ret
 }
 
 type galleryRowRecord struct {
@@ -184,13 +201,15 @@ func (qb *GalleryStore) Update(ctx context.Context, updatedObject *models.Galler
 		}
 	}
 
-	fileIDs := make([]file.ID, len(updatedObject.Files))
-	for i, f := range updatedObject.Files {
-		fileIDs[i] = f.Base().ID
-	}
+	if updatedObject.Files.Loaded() {
+		fileIDs := make([]file.ID, len(updatedObject.Files.List()))
+		for i, f := range updatedObject.Files.List() {
+			fileIDs[i] = f.Base().ID
+		}
 
-	if err := galleriesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
-		return err
+		if err := galleriesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -235,7 +254,33 @@ func (qb *GalleryStore) Destroy(ctx context.Context, id int) error {
 }
 
 func (qb *GalleryStore) selectDataset() *goqu.SelectDataset {
-	return dialect.From(qb.table()).Select(qb.table().All())
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	galleryFolder := folderTableMgr.table.As("gallery_folder")
+
+	return dialect.From(table).LeftJoin(
+		galleriesFilesJoinTable,
+		goqu.On(galleriesFilesJoinTable.Col(galleryIDColumn).Eq(table.Col(idColumn))),
+	).LeftJoin(
+		files,
+		goqu.On(
+			files.Col(idColumn).Eq(galleriesFilesJoinTable.Col(fileIDColumn)),
+			galleriesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		galleryFolder,
+		goqu.On(galleryFolder.Col(idColumn).Eq(table.Col("folder_id"))),
+	).Select(
+		qb.table().All(),
+		galleriesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		galleryFolder.Col("path").As("folder_path"),
+	)
 }
 
 func (qb *GalleryStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Gallery, error) {
@@ -255,7 +300,7 @@ func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*
 	const single = false
 	var ret []*models.Gallery
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
-		var f galleryRow
+		var f galleryQueryRow
 		if err := r.StructScan(&f); err != nil {
 			return err
 		}
@@ -268,38 +313,10 @@ func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*
 		return nil, err
 	}
 
-	for _, s := range ret {
-		if err := qb.resolveRelationships(ctx, s); err != nil {
-			return nil, err
-		}
-	}
-
 	return ret, nil
 }
 
-func (qb *GalleryStore) resolveRelationships(ctx context.Context, s *models.Gallery) error {
-	var err error
-
-	// files
-	s.Files, err = qb.getFiles(ctx, s.ID)
-	if err != nil {
-		return fmt.Errorf("resolving gallery files: %w", err)
-	}
-
-	// folder
-	if s.FolderID != nil {
-		folder, err := qb.folderStore.Find(ctx, *s.FolderID)
-		if err != nil {
-			return fmt.Errorf("resolving gallery folder: %w", err)
-		}
-
-		s.FolderPath = folder.Path
-	}
-
-	return nil
-}
-
-func (qb *GalleryStore) getFiles(ctx context.Context, id int) ([]file.File, error) {
+func (qb *GalleryStore) GetFiles(ctx context.Context, id int) ([]file.File, error) {
 	fileIDs, err := qb.filesRepository().get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -313,6 +330,34 @@ func (qb *GalleryStore) getFiles(ctx context.Context, id int) ([]file.File, erro
 
 	ret := make([]file.File, len(files))
 	copy(ret, files)
+
+	return ret, nil
+}
+
+func (qb *GalleryStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
+	const primaryOnly = true
+	rows, err := qb.filesRepository().getMany(ctx, ids, primaryOnly)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([][]file.ID, len(ids))
+	idToIndex := make(map[int]int)
+	for i, id := range ids {
+		idToIndex[id] = i
+	}
+
+	for _, row := range rows {
+		id := row.ID
+		fileID := row.FileID
+
+		if row.Primary {
+			// prepend to list
+			ret[idToIndex[id]] = append([]file.ID{fileID}, ret[idToIndex[id]]...)
+		} else {
+			ret[idToIndex[id]] = append(ret[idToIndex[id]], row.FileID)
+		}
+	}
 
 	return ret, nil
 }

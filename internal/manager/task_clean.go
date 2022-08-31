@@ -236,8 +236,12 @@ func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.I
 	}
 
 	for _, g := range galleries {
+		if err := g.LoadFiles(ctx, qb); err != nil {
+			return err
+		}
+
 		// only delete if the gallery has no other files
-		if len(g.Files) <= 1 {
+		if len(g.Files.List()) <= 1 {
 			logger.Infof("Deleting gallery %q since it has no other related files", g.GetTitle())
 			if err := qb.Destroy(ctx, g.ID); err != nil {
 				return err
@@ -245,7 +249,7 @@ func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.I
 
 			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 				Checksum: g.Checksum(),
-				Path:     g.Path(),
+				Path:     g.Path,
 			}, nil)
 		}
 	}
@@ -269,7 +273,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 
 		mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			Checksum: g.Checksum(),
-			Path:     g.Path(),
+			Path:     g.Path,
 		}, nil)
 	}
 
