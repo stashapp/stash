@@ -315,6 +315,7 @@ func (qb *ImageStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.I
 func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Image, error) {
 	const single = false
 	var ret []*models.Image
+	var lastID int
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
 		var f imageQueryRow
 		if err := r.StructScan(&f); err != nil {
@@ -322,6 +323,11 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 		}
 
 		i := f.resolve()
+
+		if i.ID == lastID {
+			return fmt.Errorf("internal error: multiple rows returned for single image id %d", i.ID)
+		}
+		lastID = i.ID
 
 		ret = append(ret, i)
 		return nil
