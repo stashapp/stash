@@ -139,6 +139,7 @@ type SceneReader interface {
 	TagIDLoader
 	SceneMovieLoader
 	StashIDLoader
+	VideoFileLoader
 
 	CountByPerformerID(ctx context.Context, performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)

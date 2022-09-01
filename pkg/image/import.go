@@ -3,7 +3,6 @@ package image
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -91,8 +90,10 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
+	files := make([]*file.ImageFile, 0)
+
 	for _, ref := range i.Input.Files {
-		path := filepath.FromSlash(ref)
+		path := ref
 		f, err := i.FileFinder.FindByPath(ctx, path)
 		if err != nil {
 			return fmt.Errorf("error finding file: %w", err)
@@ -101,9 +102,11 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 		if f == nil {
 			return fmt.Errorf("image file '%s' not found", path)
 		} else {
-			i.image.Files = append(i.image.Files, f.(*file.ImageFile))
+			files = append(files, f.(*file.ImageFile))
 		}
 	}
+
+	i.image.Files = models.NewRelatedImageFiles(files)
 
 	return nil
 }
@@ -300,7 +303,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	var existing []*models.Image
 	var err error
 
-	for _, f := range i.image.Files {
+	for _, f := range i.image.Files.List() {
 		existing, err = i.ReaderWriter.FindByFileID(ctx, f.ID)
 		if err != nil {
 			return nil, err
@@ -317,7 +320,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
 	var fileIDs []file.ID
-	for _, f := range i.image.Files {
+	for _, f := range i.image.Files.List() {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
 

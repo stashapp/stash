@@ -86,7 +86,11 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 			if err == nil {
 				result.Count = len(scenes)
 				for _, s := range scenes {
-					f := s.PrimaryFile()
+					if err = s.LoadPrimaryFile(ctx, r.repository.File); err != nil {
+						break
+					}
+
+					f := s.Files.Primary()
 					if f == nil {
 						continue
 					}

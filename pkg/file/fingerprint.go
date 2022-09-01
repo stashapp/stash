@@ -24,6 +24,26 @@ func (f Fingerprints) Get(type_ string) interface{} {
 	return nil
 }
 
+func (f Fingerprints) GetString(type_ string) string {
+	fp := f.Get(type_)
+	if fp != nil {
+		s, _ := fp.(string)
+		return s
+	}
+
+	return ""
+}
+
+func (f Fingerprints) GetInt64(type_ string) int64 {
+	fp := f.Get(type_)
+	if fp != nil {
+		v, _ := fp.(int64)
+		return v
+	}
+
+	return 0
+}
+
 // AppendUnique appends a fingerprint to the list if a Fingerprint of the same type does not already exist in the list. If one does, then it is updated with o's Fingerprint value.
 func (f Fingerprints) AppendUnique(o Fingerprint) Fingerprints {
 	ret := f

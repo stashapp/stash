@@ -33,6 +33,19 @@ func loadGalleryRelationships(ctx context.Context, expected models.Gallery, actu
 			return err
 		}
 	}
+	if expected.Files.Loaded() {
+		if err := actual.LoadFiles(ctx, db.Gallery); err != nil {
+			return err
+		}
+	}
+
+	// clear Path, Checksum, PrimaryFileID
+	if expected.Path == "" {
+		actual.Path = ""
+	}
+	if expected.PrimaryFileID == nil {
+		actual.PrimaryFileID = nil
+	}
 
 	return nil
 }
@@ -71,7 +84,6 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				SceneIDs:     models.NewRelatedIDs([]int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]}),
 				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
-				Files:        []file.File{},
 			},
 			false,
 		},
@@ -85,9 +97,9 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				Rating:    &rating,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: []file.File{
+				Files: models.NewRelatedFiles([]file.File{
 					galleryFile,
-				},
+				}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     models.NewRelatedIDs([]int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]}),
@@ -134,8 +146,8 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 
 			s := tt.newObject
 			var fileIDs []file.ID
-			if len(s.Files) > 0 {
-				fileIDs = []file.ID{s.Files[0].Base().ID}
+			if s.Files.Loaded() {
+				fileIDs = []file.ID{s.Files.List()[0].Base().ID}
 			}
 
 			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
@@ -217,9 +229,9 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				Rating:    &rating,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithScene],
-				Files: []file.File{
+				Files: models.NewRelatedFiles([]file.File{
 					makeGalleryFileWithID(galleryIdxWithScene),
-				},
+				}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     models.NewRelatedIDs([]int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]}),
@@ -231,10 +243,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"clear nullables",
 			&models.Gallery{
-				ID: galleryIDs[galleryIdxWithImage],
-				Files: []file.File{
-					makeGalleryFileWithID(galleryIdxWithImage),
-				},
+				ID:           galleryIDs[galleryIdxWithImage],
 				SceneIDs:     models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -247,10 +256,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"clear scene ids",
 			&models.Gallery{
-				ID: galleryIDs[galleryIdxWithScene],
-				Files: []file.File{
-					makeGalleryFileWithID(galleryIdxWithScene),
-				},
+				ID:           galleryIDs[galleryIdxWithScene],
 				SceneIDs:     models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -263,10 +269,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"clear tag ids",
 			&models.Gallery{
-				ID: galleryIDs[galleryIdxWithTag],
-				Files: []file.File{
-					makeGalleryFileWithID(galleryIdxWithTag),
-				},
+				ID:           galleryIDs[galleryIdxWithTag],
 				SceneIDs:     models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -279,10 +282,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"clear performer ids",
 			&models.Gallery{
-				ID: galleryIDs[galleryIdxWithPerformer],
-				Files: []file.File{
-					makeGalleryFileWithID(galleryIdxWithPerformer),
-				},
+				ID:           galleryIDs[galleryIdxWithPerformer],
 				SceneIDs:     models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -295,10 +295,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid studio id",
 			&models.Gallery{
-				ID: galleryIDs[galleryIdxWithImage],
-				Files: []file.File{
-					makeGalleryFileWithID(galleryIdxWithImage),
-				},
+				ID:        galleryIDs[galleryIdxWithImage],
 				Organized: true,
 				StudioID:  &invalidID,
 				CreatedAt: createdAt,
@@ -309,10 +306,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid scene id",
 			&models.Gallery{
-				ID: galleryIDs[galleryIdxWithImage],
-				Files: []file.File{
-					makeGalleryFileWithID(galleryIdxWithImage),
-				},
+				ID:        galleryIDs[galleryIdxWithImage],
 				Organized: true,
 				SceneIDs:  models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt: createdAt,
@@ -323,10 +317,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid tag id",
 			&models.Gallery{
-				ID: galleryIDs[galleryIdxWithImage],
-				Files: []file.File{
-					makeGalleryFileWithID(galleryIdxWithImage),
-				},
+				ID:        galleryIDs[galleryIdxWithImage],
 				Organized: true,
 				TagIDs:    models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt: createdAt,
@@ -337,10 +328,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		{
 			"invalid performer id",
 			&models.Gallery{
-				ID: galleryIDs[galleryIdxWithImage],
-				Files: []file.File{
-					makeGalleryFileWithID(galleryIdxWithImage),
-				},
+				ID:           galleryIDs[galleryIdxWithImage],
 				Organized:    true,
 				PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
 				CreatedAt:    createdAt,
@@ -385,8 +373,10 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 }
 
 func clearGalleryFileIDs(gallery *models.Gallery) {
-	for _, f := range gallery.Files {
-		f.Base().ID = 0
+	if gallery.Files.Loaded() {
+		for _, f := range gallery.Files.List() {
+			f.Base().ID = 0
+		}
 	}
 }
 
@@ -459,9 +449,9 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				Rating:    &rating,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithGallery],
-				Files: []file.File{
+				Files: models.NewRelatedFiles([]file.File{
 					makeGalleryFile(galleryIdxWithImage),
-				},
+				}),
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     models.NewRelatedIDs([]int{sceneIDs[sceneIdxWithGallery]}),
@@ -476,9 +466,9 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 			clearGalleryPartial(),
 			models.Gallery{
 				ID: galleryIDs[galleryIdxWithImage],
-				Files: []file.File{
+				Files: models.NewRelatedFiles([]file.File{
 					makeGalleryFile(galleryIdxWithImage),
-				},
+				}),
 				SceneIDs:     models.NewRelatedIDs([]int{}),
 				TagIDs:       models.NewRelatedIDs([]int{}),
 				PerformerIDs: models.NewRelatedIDs([]int{}),
@@ -509,12 +499,12 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				return
 			}
 
-			clearGalleryFileIDs(got)
 			// load relationships
 			if err := loadGalleryRelationships(ctx, tt.want, got); err != nil {
 				t.Errorf("loadGalleryRelationships() error = %v", err)
 				return
 			}
+			clearGalleryFileIDs(got)
 			assert.Equal(tt.want, *got)
 
 			s, err := qb.Find(ctx, tt.id)
@@ -522,12 +512,12 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				t.Errorf("galleryQueryBuilder.Find() error = %v", err)
 			}
 
-			clearGalleryFileIDs(s)
 			// load relationships
 			if err := loadGalleryRelationships(ctx, tt.want, s); err != nil {
 				t.Errorf("loadGalleryRelationships() error = %v", err)
 				return
 			}
+			clearGalleryFileIDs(s)
 			assert.Equal(tt.want, *s)
 		})
 	}
@@ -858,7 +848,7 @@ func makeGalleryWithID(index int) *models.Gallery {
 		ret.Date = nil
 	}
 
-	ret.Files = []file.File{makeGalleryFile(index)}
+	ret.Files = models.NewRelatedFiles([]file.File{makeGalleryFile(index)})
 
 	return ret
 }
@@ -908,13 +898,12 @@ func Test_galleryQueryBuilder_Find(t *testing.T) {
 			}
 
 			if got != nil {
-				clearGalleryFileIDs(got)
-
 				// load relationships
 				if err := loadGalleryRelationships(ctx, *tt.want, got); err != nil {
 					t.Errorf("loadGalleryRelationships() error = %v", err)
 					return
 				}
+				clearGalleryFileIDs(got)
 			}
 			assert.Equal(tt.want, got)
 		})
@@ -923,14 +912,13 @@ func Test_galleryQueryBuilder_Find(t *testing.T) {
 
 func postFindGalleries(ctx context.Context, want []*models.Gallery, got []*models.Gallery) error {
 	for i, s := range got {
-		clearGalleryFileIDs(s)
-
 		// load relationships
 		if i < len(want) {
 			if err := loadGalleryRelationships(ctx, *want[i], s); err != nil {
 				return err
 			}
 		}
+		clearGalleryFileIDs(s)
 	}
 
 	return nil
@@ -1490,7 +1478,7 @@ func TestGalleryQueryPath(t *testing.T) {
 			assert.NotEqual(t, 0, count)
 
 			for _, gallery := range got {
-				verifyString(t, gallery.Path(), tt.input)
+				verifyString(t, gallery.Path, tt.input)
 			}
 		})
 	}
@@ -1508,7 +1496,7 @@ func verifyGalleriesPath(ctx context.Context, t *testing.T, pathCriterion models
 	}
 
 	for _, gallery := range galleries {
-		verifyString(t, gallery.Path(), pathCriterion)
+		verifyString(t, gallery.Path, pathCriterion)
 	}
 }
 
@@ -1541,8 +1529,8 @@ func TestGalleryQueryPathOr(t *testing.T) {
 			return nil
 		}
 
-		assert.Equal(t, gallery1Path, galleries[0].Path())
-		assert.Equal(t, gallery2Path, galleries[1].Path())
+		assert.Equal(t, gallery1Path, galleries[0].Path)
+		assert.Equal(t, gallery2Path, galleries[1].Path)
 
 		return nil
 	})
@@ -1575,7 +1563,7 @@ func TestGalleryQueryPathAndRating(t *testing.T) {
 			return nil
 		}
 
-		assert.Equal(t, galleryPath, galleries[0].Path())
+		assert.Equal(t, galleryPath, galleries[0].Path)
 		assert.Equal(t, *galleryRating, *galleries[0].Rating)
 
 		return nil
@@ -1610,7 +1598,7 @@ func TestGalleryQueryPathNotRating(t *testing.T) {
 		galleries := queryGallery(ctx, t, sqb, &galleryFilter, nil)
 
 		for _, gallery := range galleries {
-			verifyString(t, gallery.Path(), pathCriterion)
+			verifyString(t, gallery.Path, pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
 			verifyIntPtr(t, gallery.Rating, ratingCriterion)
 		}

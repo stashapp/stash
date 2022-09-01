@@ -328,6 +328,11 @@ func (t *ExportTask) populateGalleryImages(ctx context.Context, repo Repository)
 	}
 
 	for _, g := range galleries {
+		if err := g.LoadFiles(ctx, reader); err != nil {
+			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.GetTitle(), err.Error())
+			continue
+		}
+
 		images, err := imageReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
 			logger.Errorf("[galleries] <%s> failed to fetch images for gallery: %s", g.Checksum, err.Error())
@@ -400,7 +405,7 @@ func fileToJSON(f file.File) jsonschema.DirEntry {
 		BaseDirEntry: jsonschema.BaseDirEntry{
 			Type:      jsonschema.DirEntryTypeFile,
 			ModTime:   json.JSONTime{Time: bf.ModTime},
-			Path:      filepath.ToSlash(bf.Path),
+			Path:      bf.Path,
 			CreatedAt: json.JSONTime{Time: bf.CreatedAt},
 			UpdatedAt: json.JSONTime{Time: bf.UpdatedAt},
 		},
@@ -461,7 +466,7 @@ func folderToJSON(f file.Folder) jsonschema.DirEntry {
 	base := jsonschema.BaseDirEntry{
 		Type:      jsonschema.DirEntryTypeFolder,
 		ModTime:   json.JSONTime{Time: f.ModTime},
-		Path:      filepath.ToSlash(f.Path),
+		Path:      f.Path,
 		CreatedAt: json.JSONTime{Time: f.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: f.UpdatedAt},
 	}
@@ -497,7 +502,7 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 		}
 
 		// export files
-		for _, f := range s.Files {
+		for _, f := range s.Files.List() {
 			exportFile(f, t)
 		}
 
@@ -511,6 +516,13 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene gallery checksums: %s", sceneHash, err.Error())
 			continue
+		}
+
+		for _, g := range galleries {
+			if err := g.LoadFiles(ctx, galleryReader); err != nil {
+				logger.Errorf("[scenes] <%s> error getting scene gallery files: %s", sceneHash, err.Error())
+				continue
+			}
 		}
 
 		newSceneJSON.Galleries = gallery.GetRefs(galleries)
@@ -565,13 +577,8 @@ func exportScene(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
-		pf := s.PrimaryFile()
-		basename := ""
-		hash := ""
-		if pf != nil {
-			basename = pf.Basename
-			hash = s.OSHash()
-		}
+		basename := filepath.Base(s.Path)
+		hash := s.OSHash
 
 		fn := newSceneJSON.Filename(basename, hash)
 
@@ -632,12 +639,17 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 	tagReader := repo.Tag
 
 	for s := range jobChan {
-		imageHash := s.Checksum()
+		imageHash := s.Checksum
+
+		if err := s.LoadFiles(ctx, repo.Image); err != nil {
+			logger.Errorf("[images] <%s> error getting image files: %s", imageHash, err.Error())
+			continue
+		}
 
 		newImageJSON := image.ToBasicJSON(s)
 
 		// export files
-		for _, f := range s.Files {
+		for _, f := range s.Files.List() {
 			exportFile(f, t)
 		}
 
@@ -652,6 +664,13 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 		if err != nil {
 			logger.Errorf("[images] <%s> error getting image galleries: %s", imageHash, err.Error())
 			continue
+		}
+
+		for _, g := range imageGalleries {
+			if err := g.LoadFiles(ctx, galleryReader); err != nil {
+				logger.Errorf("[images] <%s> error getting image gallery files: %s", imageHash, err.Error())
+				continue
+			}
 		}
 
 		newImageJSON.Galleries = gallery.GetRefs(imageGalleries)
@@ -682,15 +701,7 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
-		pf := s.PrimaryFile()
-		basename := ""
-		hash := ""
-		if pf != nil {
-			basename = pf.Basename
-			hash = s.Checksum()
-		}
-
-		fn := newImageJSON.Filename(basename, hash)
+		fn := newImageJSON.Filename(filepath.Base(s.Path), s.Checksum)
 
 		if err := t.json.saveImage(fn, newImageJSON); err != nil {
 			logger.Errorf("[images] <%s> failed to save json: %s", imageHash, err.Error())
@@ -749,6 +760,11 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 	tagReader := repo.Tag
 
 	for g := range jobChan {
+		if err := g.LoadFiles(ctx, repo.Gallery); err != nil {
+			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.GetTitle(), err.Error())
+			continue
+		}
+
 		galleryHash := g.Checksum()
 
 		newGalleryJSON, err := gallery.ToBasicJSON(g)
@@ -758,7 +774,7 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 		}
 
 		// export files
-		for _, f := range g.Files {
+		for _, f := range g.Files.List() {
 			exportFile(f, t)
 		}
 
@@ -809,16 +825,13 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 			t.performers.IDs = intslice.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
-		pf := g.PrimaryFile()
 		basename := ""
 		// use id in case multiple galleries with the same basename
 		hash := strconv.Itoa(g.ID)
 
 		switch {
-		case pf != nil:
-			basename = pf.Base().Basename
-		case g.FolderPath != "":
-			basename = filepath.Base(g.FolderPath)
+		case g.Path != "":
+			basename = filepath.Base(g.Path)
 		default:
 			basename = g.Title
 		}

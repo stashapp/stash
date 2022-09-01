@@ -3,7 +3,6 @@ package scene
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -109,8 +108,10 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
+	files := make([]*file.VideoFile, 0)
+
 	for _, ref := range i.Input.Files {
-		path := filepath.FromSlash(ref)
+		path := ref
 		f, err := i.FileFinder.FindByPath(ctx, path)
 		if err != nil {
 			return fmt.Errorf("error finding file: %w", err)
@@ -119,9 +120,11 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 		if f == nil {
 			return fmt.Errorf("scene file '%s' not found", path)
 		} else {
-			i.scene.Files = append(i.scene.Files, f.(*file.VideoFile))
+			files = append(files, f.(*file.VideoFile))
 		}
 	}
+
+	i.scene.Files = models.NewRelatedVideoFiles(files)
 
 	return nil
 }
@@ -374,7 +377,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	var existing []*models.Scene
 	var err error
 
-	for _, f := range i.scene.Files {
+	for _, f := range i.scene.Files.List() {
 		existing, err = i.ReaderWriter.FindByFileID(ctx, f.ID)
 		if err != nil {
 			return nil, err
@@ -391,7 +394,7 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
 	var fileIDs []file.ID
-	for _, f := range i.scene.Files {
+	for _, f := range i.scene.Files.List() {
 		fileIDs = append(fileIDs, f.Base().ID)
 	}
 	if err := i.ReaderWriter.Create(ctx, &i.scene, fileIDs); err != nil {

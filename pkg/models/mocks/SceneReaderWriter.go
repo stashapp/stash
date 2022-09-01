@@ -500,6 +500,29 @@ func (_m *SceneReaderWriter) GetCover(ctx context.Context, sceneID int) ([]byte,
 	return r0, r1
 }
 
+// GetFiles provides a mock function with given fields: ctx, relatedID
+func (_m *SceneReaderWriter) GetFiles(ctx context.Context, relatedID int) ([]*file.VideoFile, error) {
+	ret := _m.Called(ctx, relatedID)
+
+	var r0 []*file.VideoFile
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*file.VideoFile); ok {
+		r0 = rf(ctx, relatedID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*file.VideoFile)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, relatedID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetGalleryIDs provides a mock function with given fields: ctx, relatedID
 func (_m *SceneReaderWriter) GetGalleryIDs(ctx context.Context, relatedID int) ([]int, error) {
 	ret := _m.Called(ctx, relatedID)

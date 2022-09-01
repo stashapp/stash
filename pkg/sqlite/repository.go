@@ -477,6 +477,61 @@ type filesRepository struct {
 	repository
 }
 
+type relatedFileRow struct {
+	ID      int     `db:"id"`
+	FileID  file.ID `db:"file_id"`
+	Primary bool    `db:"primary"`
+}
+
+func (r *filesRepository) getMany(ctx context.Context, ids []int, primaryOnly bool) ([][]file.ID, error) {
+	var primaryClause string
+	if primaryOnly {
+		primaryClause = " AND `primary` = 1"
+	}
+
+	query := fmt.Sprintf("SELECT %s as id, file_id, `primary` from %s WHERE %[1]s IN %[3]s%s", r.idColumn, r.tableName, getInBinding(len(ids)), primaryClause)
+
+	idi := make([]interface{}, len(ids))
+	for i, id := range ids {
+		idi[i] = id
+	}
+
+	var fileRows []relatedFileRow
+	if err := r.queryFunc(ctx, query, idi, false, func(rows *sqlx.Rows) error {
+		var f relatedFileRow
+
+		if err := rows.StructScan(&f); err != nil {
+			return err
+		}
+
+		fileRows = append(fileRows, f)
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	ret := make([][]file.ID, len(ids))
+	idToIndex := make(map[int]int)
+	for i, id := range ids {
+		idToIndex[id] = i
+	}
+
+	for _, row := range fileRows {
+		id := row.ID
+		fileID := row.FileID
+
+		if row.Primary {
+			// prepend to list
+			ret[idToIndex[id]] = append([]file.ID{fileID}, ret[idToIndex[id]]...)
+		} else {
+			ret[idToIndex[id]] = append(ret[idToIndex[id]], row.FileID)
+		}
+	}
+
+	return ret, nil
+}
+
 func (r *filesRepository) get(ctx context.Context, id int) ([]file.ID, error) {
 	query := fmt.Sprintf("SELECT file_id, `primary` from %s WHERE %s = ?", r.tableName, r.idColumn)
 

@@ -18,7 +18,8 @@ import (
 const (
 	scanQueueSize = 200000
 	// maximum number of times to retry in the event of a locked database
-	maxRetries = 1000
+	// use -1 to retry forever
+	maxRetries = -1
 )
 
 // Repository provides access to storage methods for files and folders.

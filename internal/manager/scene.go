@@ -5,36 +5,37 @@ import (
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
+func GetVideoFileContainer(file *file.VideoFile) (ffmpeg.Container, error) {
 	var container ffmpeg.Container
-	format := scene.Format()
+	format := file.Format
 	if format != "" {
 		container = ffmpeg.Container(format)
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
 		ffprobe := GetInstance().FFProbe
-		tmpVideoFile, err := ffprobe.NewVideoFile(scene.Path())
+		tmpVideoFile, err := ffprobe.NewVideoFile(file.Path)
 		if err != nil {
 			return ffmpeg.Container(""), fmt.Errorf("error reading video file: %v", err)
 		}
 
-		return ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path())
+		return ffmpeg.MatchContainer(tmpVideoFile.Container, file.Path)
 	}
 
 	return container, nil
 }
 
-func includeSceneStreamPath(scene *models.Scene, streamingResolution models.StreamingResolutionEnum, maxStreamingTranscodeSize models.StreamingResolutionEnum) bool {
+func includeSceneStreamPath(f *file.VideoFile, streamingResolution models.StreamingResolutionEnum, maxStreamingTranscodeSize models.StreamingResolutionEnum) bool {
 	// convert StreamingResolutionEnum to ResolutionEnum so we can get the min
 	// resolution
 	convertedRes := models.ResolutionEnum(streamingResolution)
 
 	minResolution := convertedRes.GetMinResolution()
-	sceneResolution := scene.GetMinResolution()
+	sceneResolution := f.GetMinResolution()
 
 	// don't include if scene resolution is smaller than the streamingResolution
 	if sceneResolution != 0 && sceneResolution < minResolution {
@@ -70,6 +71,11 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 		return nil, fmt.Errorf("nil scene")
 	}
 
+	pf := scene.Files.Primary()
+	if pf == nil {
+		return nil, fmt.Errorf("nil file")
+	}
+
 	var ret []*SceneStreamEndpoint
 	mimeWebm := ffmpeg.MimeWebm
 	mimeHLS := ffmpeg.MimeHLS
@@ -80,12 +86,12 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 
 	// direct stream should only apply when the audio codec is supported
 	audioCodec := ffmpeg.MissingUnsupported
-	if scene.AudioCodec() != "" {
-		audioCodec = ffmpeg.ProbeAudioCodec(scene.AudioCodec())
+	if pf.AudioCodec != "" {
+		audioCodec = ffmpeg.ProbeAudioCodec(pf.AudioCodec)
 	}
 
 	// don't care if we can't get the container
-	container, _ := GetSceneFileContainer(scene)
+	container, _ := GetVideoFileContainer(pf)
 
 	if HasTranscode(scene, config.GetInstance().GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
 		label := "Direct stream"
@@ -128,27 +134,27 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	webmURL := directStreamURL + ".webm"
 	mp4URL := directStreamURL + ".mp4"
 
-	if includeSceneStreamPath(scene, models.StreamingResolutionEnumFourK, maxStreamingTranscodeSize) {
+	if includeSceneStreamPath(pf, models.StreamingResolutionEnumFourK, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumFourK, mimeMp4, webmLabelFourK))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumFourK, mimeMp4, mp4LabelFourK))
 	}
 
-	if includeSceneStreamPath(scene, models.StreamingResolutionEnumFullHd, maxStreamingTranscodeSize) {
+	if includeSceneStreamPath(pf, models.StreamingResolutionEnumFullHd, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumFullHd, mimeMp4, webmLabelFullHD))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumFullHd, mimeMp4, mp4LabelFullHD))
 	}
 
-	if includeSceneStreamPath(scene, models.StreamingResolutionEnumStandardHd, maxStreamingTranscodeSize) {
+	if includeSceneStreamPath(pf, models.StreamingResolutionEnumStandardHd, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumStandardHd, mimeMp4, webmLabelStandardHD))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumStandardHd, mimeMp4, mp4LabelStandardHD))
 	}
 
-	if includeSceneStreamPath(scene, models.StreamingResolutionEnumStandard, maxStreamingTranscodeSize) {
+	if includeSceneStreamPath(pf, models.StreamingResolutionEnumStandard, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumStandard, mimeMp4, webmLabelStandard))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumStandard, mimeMp4, mp4LabelStandard))
 	}
 
-	if includeSceneStreamPath(scene, models.StreamingResolutionEnumLow, maxStreamingTranscodeSize) {
+	if includeSceneStreamPath(pf, models.StreamingResolutionEnumLow, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumLow, mimeMp4, webmLabelLow))
 		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumLow, mimeMp4, mp4LabelLow))
 	}

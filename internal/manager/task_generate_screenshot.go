@@ -20,18 +20,13 @@ type GenerateScreenshotTask struct {
 }
 
 func (t *GenerateScreenshotTask) Start(ctx context.Context) {
-	scenePath := t.Scene.Path()
-	ffprobe := instance.FFProbe
-	probeResult, err := ffprobe.NewVideoFile(scenePath)
+	scenePath := t.Scene.Path
 
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
+	videoFile := t.Scene.Files.Primary()
 
 	var at float64
 	if t.ScreenshotAt == nil {
-		at = float64(probeResult.Duration) * 0.2
+		at = float64(videoFile.Duration) * 0.2
 	} else {
 		at = *t.ScreenshotAt
 	}
@@ -52,7 +47,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		Overwrite:   true,
 	}
 
-	if err := g.Screenshot(context.TODO(), probeResult.Path, checksum, probeResult.Width, probeResult.Duration, generate.ScreenshotOptions{
+	if err := g.Screenshot(context.TODO(), videoFile.Path, checksum, videoFile.Width, videoFile.Duration, generate.ScreenshotOptions{
 		At: &at,
 	}); err != nil {
 		logger.Errorf("Error generating screenshot: %v", err)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -48,17 +49,35 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.UpdatedAt = i.UpdatedAt
 }
 
-func (r *imageRow) resolve() *models.Image {
-	return &models.Image{
+type imageQueryRow struct {
+	imageRow
+	PrimaryFileID         null.Int    `db:"primary_file_id"`
+	PrimaryFileFolderPath zero.String `db:"primary_file_folder_path"`
+	PrimaryFileBasename   zero.String `db:"primary_file_basename"`
+	PrimaryFileChecksum   zero.String `db:"primary_file_checksum"`
+}
+
+func (r *imageQueryRow) resolve() *models.Image {
+	ret := &models.Image{
 		ID:        r.ID,
 		Title:     r.Title.String,
 		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
 		OCounter:  r.OCounter,
 		StudioID:  nullIntPtr(r.StudioID),
+
+		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
+		Checksum:      r.PrimaryFileChecksum.String,
+
 		CreatedAt: r.CreatedAt,
 		UpdatedAt: r.UpdatedAt,
 	}
+
+	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
+		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
+	}
+
+	return ret
 }
 
 type imageRowRecord struct {
@@ -203,15 +222,16 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 		}
 	}
 
-	fileIDs := make([]file.ID, len(updatedObject.Files))
-	for i, f := range updatedObject.Files {
-		fileIDs[i] = f.ID
-	}
+	if updatedObject.Files.Loaded() {
+		fileIDs := make([]file.ID, len(updatedObject.Files.List()))
+		for i, f := range updatedObject.Files.List() {
+			fileIDs[i] = f.ID
+		}
 
-	if err := imagesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
-		return err
+		if err := imagesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 
@@ -247,7 +267,36 @@ func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image,
 }
 
 func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
-	return dialect.From(qb.table()).Select(qb.table().All())
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	checksum := fingerprintTableMgr.table
+
+	return dialect.From(table).LeftJoin(
+		imagesFilesJoinTable,
+		goqu.On(
+			imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn)),
+			imagesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		checksum,
+		goqu.On(
+			checksum.Col(fileIDColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn)),
+			checksum.Col("type").Eq(file.FingerprintTypeMD5),
+		),
+	).Select(
+		qb.table().All(),
+		imagesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		checksum.Col("fingerprint").As("primary_file_checksum"),
+	)
 }
 
 func (qb *ImageStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Image, error) {
@@ -267,7 +316,7 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 	const single = false
 	var ret []*models.Image
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
-		var f imageRow
+		var f imageQueryRow
 		if err := r.StructScan(&f); err != nil {
 			return err
 		}
@@ -280,28 +329,10 @@ func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 		return nil, err
 	}
 
-	for _, i := range ret {
-		if err := qb.resolveRelationships(ctx, i); err != nil {
-			return nil, err
-		}
-	}
-
 	return ret, nil
 }
 
-func (qb *ImageStore) resolveRelationships(ctx context.Context, i *models.Image) error {
-	var err error
-
-	// files
-	i.Files, err = qb.getFiles(ctx, i.ID)
-	if err != nil {
-		return fmt.Errorf("resolving image files: %w", err)
-	}
-
-	return nil
-}
-
-func (qb *ImageStore) getFiles(ctx context.Context, id int) ([]*file.ImageFile, error) {
+func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]*file.ImageFile, error) {
 	fileIDs, err := qb.filesRepository().get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -323,6 +354,11 @@ func (qb *ImageStore) getFiles(ctx context.Context, id int) ([]*file.ImageFile, 
 	}
 
 	return ret, nil
+}
+
+func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
+	const primaryOnly = false
+	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 
 func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {
@@ -428,16 +464,7 @@ func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mo
 		galleriesImagesJoinTable.Col("gallery_id").Eq(galleryID),
 	)
 
-	q := qb.selectDataset().Prepared(true).LeftJoin(
-		imagesFilesJoinTable,
-		goqu.On(imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn))),
-	).LeftJoin(
-		fileTable,
-		goqu.On(fileTable.Col(idColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn))),
-	).LeftJoin(
-		folderTable,
-		goqu.On(folderTable.Col(idColumn).Eq(fileTable.Col("parent_folder_id"))),
-	).Where(
+	q := qb.selectDataset().Prepared(true).Where(
 		table.Col(idColumn).Eq(
 			sq,
 		),

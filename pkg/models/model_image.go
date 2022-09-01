@@ -2,6 +2,8 @@ package models
 
 import (
 	"context"
+	"errors"
+	"path/filepath"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -18,7 +20,12 @@ type Image struct {
 	StudioID  *int   `json:"studio_id"`
 
 	// transient - not persisted
-	Files []*file.ImageFile
+	Files         RelatedImageFiles
+	PrimaryFileID *file.ID
+	// transient - path of primary file - empty if no files
+	Path string
+	// transient - checksum of primary file - empty if no files
+	Checksum string
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -26,6 +33,35 @@ type Image struct {
 	GalleryIDs   RelatedIDs `json:"gallery_ids"`
 	TagIDs       RelatedIDs `json:"tag_ids"`
 	PerformerIDs RelatedIDs `json:"performer_ids"`
+}
+
+func (i *Image) LoadFiles(ctx context.Context, l ImageFileLoader) error {
+	return i.Files.load(func() ([]*file.ImageFile, error) {
+		return l.GetFiles(ctx, i.ID)
+	})
+}
+
+func (i *Image) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
+	return i.Files.loadPrimary(func() (*file.ImageFile, error) {
+		if i.PrimaryFileID == nil {
+			return nil, nil
+		}
+
+		f, err := l.Find(ctx, *i.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
+
+		var vf *file.ImageFile
+		if len(f) > 0 {
+			var ok bool
+			vf, ok = f[0].(*file.ImageFile)
+			if !ok {
+				return nil, errors.New("not an image file")
+			}
+		}
+		return vf, nil
+	})
 }
 
 func (i *Image) LoadGalleryIDs(ctx context.Context, l GalleryIDLoader) error {
@@ -46,34 +82,6 @@ func (i *Image) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	})
 }
 
-func (i Image) PrimaryFile() *file.ImageFile {
-	if len(i.Files) == 0 {
-		return nil
-	}
-
-	return i.Files[0]
-}
-
-func (i Image) Path() string {
-	if p := i.PrimaryFile(); p != nil {
-		return p.Path
-	}
-
-	return ""
-}
-
-func (i Image) Checksum() string {
-	if p := i.PrimaryFile(); p != nil {
-		v := p.Fingerprints.Get(file.FingerprintTypeMD5)
-		if v == nil {
-			return ""
-		}
-
-		return v.(string)
-	}
-	return ""
-}
-
 // GetTitle returns the title of the image. If the Title field is empty,
 // then the base filename is returned.
 func (i Image) GetTitle() string {
@@ -81,8 +89,8 @@ func (i Image) GetTitle() string {
 		return i.Title
 	}
 
-	if p := i.PrimaryFile(); p != nil {
-		return p.Basename
+	if i.Path != "" {
+		return filepath.Base(i.Path)
 	}
 
 	return ""

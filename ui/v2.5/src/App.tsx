@@ -171,7 +171,7 @@ export const App: React.FC = () => {
   }
 
   function maybeRenderReleaseNotes() {
-    if (setupMatch) {
+    if (setupMatch || config.loading || config.error) {
       return;
     }
 

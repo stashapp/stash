@@ -26,7 +26,7 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON.Organized = image.Organized
 	newImageJSON.OCounter = image.OCounter
 
-	for _, f := range image.Files {
+	for _, f := range image.Files.List() {
 		newImageJSON.Files = append(newImageJSON.Files, f.Base().Path)
 	}
 
