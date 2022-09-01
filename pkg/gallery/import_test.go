@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -67,7 +68,7 @@ func TestImporterPreImport(t *testing.T) {
 		Rating:       &rating,
 		Organized:    organized,
 		URL:          url,
-		Files:        models.NewRelatedFiles(nil),
+		Files:        models.NewRelatedFiles([]file.File{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		CreatedAt:    createdAt,

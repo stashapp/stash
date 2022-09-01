@@ -26,7 +26,7 @@ func (r *galleryResolver) getPrimaryFile(ctx context.Context, obj *models.Galler
 }
 
 func (r *galleryResolver) getFiles(ctx context.Context, obj *models.Gallery) ([]file.File, error) {
-	fileIDs, err := loaders.From(ctx).ImageFiles.Load(obj.ID)
+	fileIDs, err := loaders.From(ctx).GalleryFiles.Load(obj.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -274,13 +274,13 @@ func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
 
 	return dialect.From(table).LeftJoin(
 		imagesFilesJoinTable,
-		goqu.On(imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn))),
-	).LeftJoin(
-		files,
 		goqu.On(
-			files.Col(idColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn)),
+			imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn)),
 			imagesFilesJoinTable.Col("primary").Eq(1),
 		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn))),
 	).LeftJoin(
 		folders,
 		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),

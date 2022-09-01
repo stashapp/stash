@@ -91,7 +91,7 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
-	var files []*file.ImageFile
+	files := make([]*file.ImageFile, 0)
 
 	for _, ref := range i.Input.Files {
 		path := filepath.FromSlash(ref)

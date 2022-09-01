@@ -666,6 +666,13 @@ func exportImage(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *models
 			continue
 		}
 
+		for _, g := range imageGalleries {
+			if err := g.LoadFiles(ctx, galleryReader); err != nil {
+				logger.Errorf("[images] <%s> error getting image gallery files: %s", imageHash, err.Error())
+				continue
+			}
+		}
+
 		newImageJSON.Galleries = gallery.GetRefs(imageGalleries)
 
 		performers, err := performerReader.FindByImageID(ctx, s.ID)

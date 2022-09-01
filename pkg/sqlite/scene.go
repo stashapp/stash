@@ -362,13 +362,13 @@ func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
 
 	return dialect.From(table).LeftJoin(
 		scenesFilesJoinTable,
-		goqu.On(scenesFilesJoinTable.Col(sceneIDColumn).Eq(table.Col(idColumn))),
-	).LeftJoin(
-		files,
 		goqu.On(
-			files.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
+			scenesFilesJoinTable.Col(sceneIDColumn).Eq(table.Col(idColumn)),
 			scenesFilesJoinTable.Col("primary").Eq(1),
 		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
 	).LeftJoin(
 		folders,
 		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),

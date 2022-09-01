@@ -109,7 +109,7 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 }
 
 func (i *Importer) populateFiles(ctx context.Context) error {
-	var files []*file.VideoFile
+	files := make([]*file.VideoFile, 0)
 
 	for _, ref := range i.Input.Files {
 		path := filepath.FromSlash(ref)

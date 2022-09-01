@@ -247,7 +247,7 @@ func (i *Importer) createTags(ctx context.Context, names []string) ([]*models.Ta
 }
 
 func (i *Importer) populateFilesFolder(ctx context.Context) error {
-	var files []file.File
+	files := make([]file.File, 0)
 
 	for _, ref := range i.Input.ZipFiles {
 		path := filepath.FromSlash(ref)
