@@ -26,6 +26,7 @@ type FinderCreatorUpdater interface {
 	Create(ctx context.Context, newImage *models.ImageCreateInput) error
 	AddFileID(ctx context.Context, id int, fileID file.ID) error
 	models.GalleryIDLoader
+	models.ImageFileLoader
 }
 
 type GalleryFinderCreator interface {
@@ -145,8 +146,12 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 
 func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Image, f *file.ImageFile) error {
 	for _, i := range existing {
+		if err := i.LoadFiles(ctx, h.CreatorUpdater); err != nil {
+			return err
+		}
+
 		found := false
-		for _, sf := range i.Files {
+		for _, sf := range i.Files.List() {
 			if sf.ID == f.Base().ID {
 				found = true
 				break
@@ -155,7 +160,6 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 		if !found {
 			logger.Infof("Adding %s to image %s", f.Path, i.GetTitle())
-			i.Files = append(i.Files, f)
 
 			// associate with folder-based gallery if applicable
 			if h.ScanConfig.GetCreateGalleriesFromFolders() {
@@ -218,7 +222,7 @@ func (h *ScanHandler) associateFolderBasedGallery(ctx context.Context, newImage 
 
 	if g != nil && !intslice.IntInclude(newImage.GalleryIDs.List(), g.ID) {
 		newImage.GalleryIDs.Add(g.ID)
-		logger.Infof("Adding %s to folder-based gallery %s", f.Base().Path, g.Path())
+		logger.Infof("Adding %s to folder-based gallery %s", f.Base().Path, g.Path)
 	}
 
 	return nil

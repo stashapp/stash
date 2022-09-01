@@ -338,6 +338,10 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				return fmt.Errorf("gallery with id %d not found", id)
 			}
 
+			if err := gallery.LoadFiles(ctx, qb); err != nil {
+				return err
+			}
+
 			galleries = append(galleries, gallery)
 
 			imgsDestroyed, err = r.galleryService.Destroy(ctx, gallery, fileDeleter, deleteGenerated, deleteFile)
@@ -357,7 +361,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 	for _, gallery := range galleries {
 		// don't delete stash library paths
-		path := gallery.Path()
+		path := gallery.Path
 		if deleteFile && path != "" && !isStashPath(path) {
 			// try to remove the folder - it is possible that it is not empty
 			// so swallow the error if present
@@ -370,15 +374,15 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 		r.hookExecutor.ExecutePostHooks(ctx, gallery.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			GalleryDestroyInput: input,
 			Checksum:            gallery.Checksum(),
-			Path:                gallery.Path(),
+			Path:                gallery.Path,
 		}, nil)
 	}
 
 	// call image destroy post hook as well
 	for _, img := range imgsDestroyed {
 		r.hookExecutor.ExecutePostHooks(ctx, img.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
-			Checksum: img.Checksum(),
-			Path:     img.Path(),
+			Checksum: img.Checksum,
+			Path:     img.Path,
 		}, nil)
 	}
 

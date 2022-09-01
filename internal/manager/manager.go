@@ -211,6 +211,7 @@ func initialize() error {
 
 	instance.DLNAService = dlna.NewService(instance.Repository, dlna.Repository{
 		SceneFinder:     instance.Repository.Scene,
+		FileFinder:      instance.Repository.File,
 		StudioFinder:    instance.Repository.Studio,
 		TagFinder:       instance.Repository.Tag,
 		PerformerFinder: instance.Repository.Performer,

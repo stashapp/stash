@@ -206,20 +206,24 @@ func (h *cleanHandler) deleteRelatedScenes(ctx context.Context, fileDeleter *fil
 	}
 
 	for _, scene := range scenes {
+		if err := scene.LoadFiles(ctx, sceneQB); err != nil {
+			return err
+		}
+
 		// only delete if the scene has no other files
-		if len(scene.Files) <= 1 {
+		if len(scene.Files.List()) <= 1 {
 			logger.Infof("Deleting scene %q since it has no other related files", scene.GetTitle())
 			if err := mgr.SceneService.Destroy(ctx, scene, sceneFileDeleter, true, false); err != nil {
 				return err
 			}
 
-			checksum := scene.Checksum()
-			oshash := scene.OSHash()
+			checksum := scene.Checksum
+			oshash := scene.OSHash
 
 			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
 				Checksum: checksum,
 				OSHash:   oshash,
-				Path:     scene.Path(),
+				Path:     scene.Path,
 			}, nil)
 		}
 	}
@@ -236,8 +240,12 @@ func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.I
 	}
 
 	for _, g := range galleries {
+		if err := g.LoadFiles(ctx, qb); err != nil {
+			return err
+		}
+
 		// only delete if the gallery has no other files
-		if len(g.Files) <= 1 {
+		if len(g.Files.List()) <= 1 {
 			logger.Infof("Deleting gallery %q since it has no other related files", g.GetTitle())
 			if err := qb.Destroy(ctx, g.ID); err != nil {
 				return err
@@ -245,7 +253,7 @@ func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.I
 
 			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 				Checksum: g.Checksum(),
-				Path:     g.Path(),
+				Path:     g.Path,
 			}, nil)
 		}
 	}
@@ -269,7 +277,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 
 		mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			Checksum: g.Checksum(),
-			Path:     g.Path(),
+			Path:     g.Path,
 		}, nil)
 	}
 
@@ -290,15 +298,19 @@ func (h *cleanHandler) deleteRelatedImages(ctx context.Context, fileDeleter *fil
 	}
 
 	for _, i := range images {
-		if len(i.Files) <= 1 {
+		if err := i.LoadFiles(ctx, imageQB); err != nil {
+			return err
+		}
+
+		if len(i.Files.List()) <= 1 {
 			logger.Infof("Deleting image %q since it has no other related files", i.GetTitle())
 			if err := mgr.ImageService.Destroy(ctx, i, imageFileDeleter, true, false); err != nil {
 				return err
 			}
 
 			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
-				Checksum: i.Checksum(),
-				Path:     i.Path(),
+				Checksum: i.Checksum,
+				Path:     i.Path,
 			}, nil)
 		}
 	}

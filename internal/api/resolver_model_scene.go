@@ -14,9 +14,56 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+func (r *sceneResolver) getPrimaryFile(ctx context.Context, obj *models.Scene) (*file.VideoFile, error) {
+	if obj.PrimaryFileID != nil {
+		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
+
+		ret, ok := f.(*file.VideoFile)
+		if !ok {
+			return nil, fmt.Errorf("file %T is not an image file", f)
+		}
+
+		obj.Files.SetPrimary(ret)
+
+		return ret, nil
+	}
+
+	return nil, nil
+}
+
+func (r *sceneResolver) getFiles(ctx context.Context, obj *models.Scene) ([]*file.VideoFile, error) {
+	fileIDs, err := loaders.From(ctx).SceneFiles.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
+	ret := make([]*file.VideoFile, len(files))
+	for i, bf := range files {
+		f, ok := bf.(*file.VideoFile)
+		if !ok {
+			return nil, fmt.Errorf("file %T is not a video file", f)
+		}
+
+		ret[i] = f
+	}
+
+	obj.Files.Set(ret)
+
+	return ret, firstError(errs)
+}
+
 func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	if obj.PrimaryFile() != nil {
-		return &obj.PrimaryFile().ModTime, nil
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	if f != nil {
+		return &f.ModTime, nil
 	}
 	return nil, nil
 }
@@ -31,7 +78,10 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 
 // File is deprecated
 func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
-	f := obj.PrimaryFile()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if f == nil {
 		return nil, nil
 	}
@@ -52,9 +102,14 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 }
 
 func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoFile, error) {
-	ret := make([]*VideoFile, len(obj.Files))
+	files, err := r.getFiles(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 
-	for i, f := range obj.Files {
+	ret := make([]*VideoFile, len(files))
+
+	for i, f := range files {
 		ret[i] = &VideoFile{
 			ID:             strconv.Itoa(int(f.ID)),
 			Path:           f.Path,
@@ -148,7 +203,10 @@ func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (re
 }
 
 func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []*models.VideoCaption, err error) {
-	primaryFile := obj.PrimaryFile()
+	primaryFile, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if primaryFile == nil {
 		return nil, nil
 	}
@@ -265,7 +323,22 @@ func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []
 }
 
 func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {
-	phash := obj.Phash()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	if f == nil {
+		return nil, nil
+	}
+
+	val := f.Fingerprints.Get(file.FingerprintTypePhash)
+	if val == nil {
+		return nil, nil
+	}
+
+	phash, _ := val.(int64)
+
 	if phash != 0 {
 		hexval := utils.PhashToString(phash)
 		return &hexval, nil
@@ -274,6 +347,12 @@ func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, 
 }
 
 func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*manager.SceneStreamEndpoint, error) {
+	// load the primary file into the scene
+	_, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
 	config := manager.GetInstance().Config
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
@@ -283,7 +362,10 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 }
 
 func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (bool, error) {
-	primaryFile := obj.PrimaryFile()
+	primaryFile, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return false, err
+	}
 	if primaryFile == nil {
 		return false, nil
 	}
@@ -292,7 +374,10 @@ func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (boo
 }
 
 func (r *sceneResolver) InteractiveSpeed(ctx context.Context, obj *models.Scene) (*int, error) {
-	primaryFile := obj.PrimaryFile()
+	primaryFile, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if primaryFile == nil {
 		return nil, nil
 	}

@@ -565,9 +565,9 @@ func TestParsePerformerScenes(t *testing.T) {
 
 			// title is only set on scenes where we expect performer to be set
 			if scene.Title == expectedMatchTitle && len(performers) == 0 {
-				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path())
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path)
 			} else if scene.Title != expectedMatchTitle && len(performers) > 0 {
-				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path())
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path)
 			}
 		}
 
@@ -616,13 +616,13 @@ func TestParseStudioScenes(t *testing.T) {
 				// title is only set on scenes where we expect studio to be set
 				if scene.Title == expectedMatchTitle {
 					if scene.StudioID == nil {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path())
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
 					} else if scene.StudioID != nil && *scene.StudioID != studios[1].ID {
-						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID, scene.Path())
+						t.Errorf("Incorrect studio id %d set for path '%s'", scene.StudioID, scene.Path)
 					}
 
 				} else if scene.Title != expectedMatchTitle && scene.StudioID != nil && *scene.StudioID == studios[1].ID {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path())
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
 				}
 			}
 		}
@@ -673,9 +673,9 @@ func TestParseTagScenes(t *testing.T) {
 
 			// title is only set on scenes where we expect tag to be set
 			if scene.Title == expectedMatchTitle && len(tags) == 0 {
-				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path())
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path)
 			} else if (scene.Title != expectedMatchTitle) && len(tags) > 0 {
-				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path())
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path)
 			}
 		}
 
@@ -721,9 +721,9 @@ func TestParsePerformerImages(t *testing.T) {
 			// title is only set on images where we expect performer to be set
 			expectedMatch := image.Title == expectedMatchTitle || image.Title == existingStudioImageName
 			if expectedMatch && len(performers) == 0 {
-				t.Errorf("Did not set performer '%s' for path '%s'", testName, image.Path())
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, image.Path)
 			} else if !expectedMatch && len(performers) > 0 {
-				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, image.Path())
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, image.Path)
 			}
 		}
 
@@ -772,13 +772,13 @@ func TestParseStudioImages(t *testing.T) {
 				// title is only set on images where we expect studio to be set
 				if image.Title == expectedMatchTitle {
 					if image.StudioID == nil {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path())
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, image.Path)
 					} else if *image.StudioID != studios[1].ID {
-						t.Errorf("Incorrect studio id %d set for path '%s'", *image.StudioID, image.Path())
+						t.Errorf("Incorrect studio id %d set for path '%s'", *image.StudioID, image.Path)
 					}
 
 				} else if image.Title != expectedMatchTitle && image.StudioID != nil && *image.StudioID == studios[1].ID {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path())
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, image.Path)
 				}
 			}
 		}
@@ -830,9 +830,9 @@ func TestParseTagImages(t *testing.T) {
 			// title is only set on images where we expect performer to be set
 			expectedMatch := image.Title == expectedMatchTitle || image.Title == existingStudioImageName
 			if expectedMatch && len(tags) == 0 {
-				t.Errorf("Did not set tag '%s' for path '%s'", testName, image.Path())
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, image.Path)
 			} else if !expectedMatch && len(tags) > 0 {
-				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, image.Path())
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, image.Path)
 			}
 		}
 
@@ -878,9 +878,9 @@ func TestParsePerformerGalleries(t *testing.T) {
 			// title is only set on galleries where we expect performer to be set
 			expectedMatch := gallery.Title == expectedMatchTitle || gallery.Title == existingStudioGalleryName
 			if expectedMatch && len(performers) == 0 {
-				t.Errorf("Did not set performer '%s' for path '%s'", testName, gallery.Path())
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, gallery.Path)
 			} else if !expectedMatch && len(performers) > 0 {
-				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, gallery.Path())
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, gallery.Path)
 			}
 		}
 
@@ -929,13 +929,13 @@ func TestParseStudioGalleries(t *testing.T) {
 				// title is only set on galleries where we expect studio to be set
 				if gallery.Title == expectedMatchTitle {
 					if gallery.StudioID == nil {
-						t.Errorf("Did not set studio '%s' for path '%s'", testName, gallery.Path())
+						t.Errorf("Did not set studio '%s' for path '%s'", testName, gallery.Path)
 					} else if *gallery.StudioID != studios[1].ID {
-						t.Errorf("Incorrect studio id %d set for path '%s'", *gallery.StudioID, gallery.Path())
+						t.Errorf("Incorrect studio id %d set for path '%s'", *gallery.StudioID, gallery.Path)
 					}
 
 				} else if gallery.Title != expectedMatchTitle && (gallery.StudioID != nil && *gallery.StudioID == studios[1].ID) {
-					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, gallery.Path())
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, gallery.Path)
 				}
 			}
 		}
@@ -987,9 +987,9 @@ func TestParseTagGalleries(t *testing.T) {
 			// title is only set on galleries where we expect performer to be set
 			expectedMatch := gallery.Title == expectedMatchTitle || gallery.Title == existingStudioGalleryName
 			if expectedMatch && len(tags) == 0 {
-				t.Errorf("Did not set tag '%s' for path '%s'", testName, gallery.Path())
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, gallery.Path)
 			} else if !expectedMatch && len(tags) > 0 {
-				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, gallery.Path())
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, gallery.Path)
 			}
 		}
 

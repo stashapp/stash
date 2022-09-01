@@ -8,5 +8,5 @@ import (
 )
 
 func IsCover(img *models.Image) bool {
-	return strings.HasSuffix(img.Path(), "cover.jpg")
+	return strings.HasSuffix(img.Path, "cover.jpg")
 }

@@ -19,6 +19,7 @@ type FinderCreatorUpdater interface {
 	Finder
 	Create(ctx context.Context, newGallery *models.Gallery, fileIDs []file.ID) error
 	AddFileID(ctx context.Context, id int, fileID file.ID) error
+	models.FileLoader
 }
 
 type SceneFinderUpdater interface {
@@ -83,8 +84,12 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 
 func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Gallery, f file.File) error {
 	for _, i := range existing {
+		if err := i.LoadFiles(ctx, h.CreatorUpdater); err != nil {
+			return err
+		}
+
 		found := false
-		for _, sf := range i.Files {
+		for _, sf := range i.Files.List() {
 			if sf.Base().ID == f.Base().ID {
 				found = true
 				break
@@ -93,12 +98,12 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 		if !found {
 			logger.Infof("Adding %s to gallery %s", f.Base().Path, i.GetTitle())
-			i.Files = append(i.Files, f)
+
+			if err := h.CreatorUpdater.AddFileID(ctx, i.ID, f.Base().ID); err != nil {
+				return fmt.Errorf("adding file to gallery: %w", err)
+			}
 		}
 
-		if err := h.CreatorUpdater.AddFileID(ctx, i.ID, f.Base().ID); err != nil {
-			return fmt.Errorf("adding file to gallery: %w", err)
-		}
 	}
 
 	return nil

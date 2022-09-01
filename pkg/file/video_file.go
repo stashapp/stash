@@ -15,3 +15,14 @@ type VideoFile struct {
 	Interactive      bool `json:"interactive"`
 	InteractiveSpeed *int `json:"interactive_speed"`
 }
+
+func (f VideoFile) GetMinResolution() int {
+	w := f.Width
+	h := f.Height
+
+	if w < h {
+		return w
+	}
+
+	return h
+}

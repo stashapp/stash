@@ -277,7 +277,7 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 type imageThumbnailGenerator struct{}
 
 func (g *imageThumbnailGenerator) GenerateThumbnail(ctx context.Context, i *models.Image, f *file.ImageFile) error {
-	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum(), models.DefaultGthumbWidth)
+	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
 		return nil

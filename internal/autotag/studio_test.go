@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -100,14 +99,8 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 	var scenes []*models.Scene
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID: i + 1,
-			Files: []*file.VideoFile{
-				{
-					BaseFile: &file.BaseFile{
-						Path: p,
-					},
-				},
-			},
+			ID:   i + 1,
+			Path: p,
 		})
 	}
 
@@ -197,8 +190,8 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 	matchingPaths, falsePaths := generateTestPaths(testPathName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:    i + 1,
-			Files: []*file.ImageFile{makeImageFile(p)},
+			ID:   i + 1,
+			Path: p,
 		})
 	}
 
@@ -287,12 +280,8 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	for i, p := range append(matchingPaths, falsePaths...) {
 		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID: i + 1,
-			Files: []file.File{
-				&file.BaseFile{
-					Path: v,
-				},
-			},
+			ID:   i + 1,
+			Path: v,
 		})
 	}
 

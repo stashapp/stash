@@ -12,10 +12,38 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*GalleryFile, error) {
-	ret := make([]*GalleryFile, len(obj.Files))
+func (r *galleryResolver) getPrimaryFile(ctx context.Context, obj *models.Gallery) (file.File, error) {
+	if obj.PrimaryFileID != nil {
+		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
 
-	for i, f := range obj.Files {
+		return f, nil
+	}
+
+	return nil, nil
+}
+
+func (r *galleryResolver) getFiles(ctx context.Context, obj *models.Gallery) ([]file.File, error) {
+	fileIDs, err := loaders.From(ctx).GalleryFiles.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
+	return files, firstError(errs)
+}
+
+func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*GalleryFile, error) {
+	files, err := r.getFiles(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]*GalleryFile, len(files))
+
+	for i, f := range files {
 		base := f.Base()
 		ret[i] = &GalleryFile{
 			ID:             strconv.Itoa(int(base.ID)),
@@ -84,7 +112,10 @@ func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*Fol
 }
 
 func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
-	f := obj.PrimaryFile()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if f != nil {
 		return &f.Base().ModTime, nil
 	}

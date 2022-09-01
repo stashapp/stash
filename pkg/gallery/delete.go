@@ -48,7 +48,7 @@ func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, f
 	}
 
 	// for zip-based galleries, delete the images as well first
-	for _, f := range i.Files {
+	for _, f := range i.Files.List() {
 		// only do this where there are no other galleries related to the file
 		otherGalleries, err := s.Repository.FindByFileID(ctx, f.Base().ID)
 		if err != nil {

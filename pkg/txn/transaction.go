@@ -66,6 +66,7 @@ func WithDatabase(ctx context.Context, p DatabaseProvider, fn TxnFunc) error {
 
 type Retryer struct {
 	Manager Manager
+	// use value < 0 to retry forever
 	Retries int
 	OnFail  func(ctx context.Context, err error, attempt int) error
 }
@@ -73,7 +74,7 @@ type Retryer struct {
 func (r Retryer) WithTxn(ctx context.Context, fn TxnFunc) error {
 	var attempt int
 	var err error
-	for attempt = 1; attempt <= r.Retries; attempt++ {
+	for attempt = 1; attempt <= r.Retries || r.Retries < 0; attempt++ {
 		err = WithTxn(ctx, r.Manager, fn)
 
 		if err == nil {

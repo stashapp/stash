@@ -24,6 +24,7 @@ type CreatorUpdater interface {
 	Create(ctx context.Context, newScene *models.Scene, fileIDs []file.ID) error
 	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
 	AddFileID(ctx context.Context, id int, fileID file.ID) error
+	models.VideoFileLoader
 }
 
 type ScanGenerator interface {
@@ -116,8 +117,12 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 
 func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Scene, f *file.VideoFile) error {
 	for _, s := range existing {
+		if err := s.LoadFiles(ctx, h.CreatorUpdater); err != nil {
+			return err
+		}
+
 		found := false
-		for _, sf := range s.Files {
+		for _, sf := range s.Files.List() {
 			if sf.ID == f.ID {
 				found = true
 				break
@@ -126,7 +131,6 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 		if !found {
 			logger.Infof("Adding %s to scene %s", f.Path, s.GetTitle())
-			s.Files = append(s.Files, f)
 
 			if err := h.CreatorUpdater.AddFileID(ctx, s.ID, f.ID); err != nil {
 				return fmt.Errorf("adding file to scene: %w", err)

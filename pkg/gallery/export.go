@@ -13,15 +13,18 @@ import (
 // does not convert the relationships to other objects.
 func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 	newGalleryJSON := jsonschema.Gallery{
-		FolderPath: gallery.FolderPath,
-		Title:      gallery.Title,
-		URL:        gallery.URL,
-		Details:    gallery.Details,
-		CreatedAt:  json.JSONTime{Time: gallery.CreatedAt},
-		UpdatedAt:  json.JSONTime{Time: gallery.UpdatedAt},
+		Title:     gallery.Title,
+		URL:       gallery.URL,
+		Details:   gallery.Details,
+		CreatedAt: json.JSONTime{Time: gallery.CreatedAt},
+		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt},
 	}
 
-	for _, f := range gallery.Files {
+	if gallery.FolderID != nil {
+		newGalleryJSON.FolderPath = gallery.Path
+	}
+
+	for _, f := range gallery.Files.List() {
 		newGalleryJSON.ZipFiles = append(newGalleryJSON.ZipFiles, f.Base().Path)
 	}
 
@@ -69,10 +72,10 @@ func GetRefs(galleries []*models.Gallery) []jsonschema.GalleryRef {
 	for _, gallery := range galleries {
 		toAdd := jsonschema.GalleryRef{}
 		switch {
-		case gallery.FolderPath != "":
-			toAdd.FolderPath = gallery.FolderPath
-		case len(gallery.Files) > 0:
-			for _, f := range gallery.Files {
+		case gallery.FolderID != nil:
+			toAdd.FolderPath = gallery.Path
+		case len(gallery.Files.List()) > 0:
+			for _, f := range gallery.Files.List() {
 				toAdd.ZipFiles = append(toAdd.ZipFiles, f.Base().Path)
 			}
 		default:

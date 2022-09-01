@@ -15,17 +15,22 @@ import (
 type ImageReaderWriter interface {
 	models.ImageReaderWriter
 	image.FinderCreatorUpdater
+	models.ImageFileLoader
+	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
 }
 
 type GalleryReaderWriter interface {
 	models.GalleryReaderWriter
 	gallery.FinderCreatorUpdater
 	gallery.Finder
+	models.FileLoader
+	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
 }
 
 type SceneReaderWriter interface {
 	models.SceneReaderWriter
 	scene.CreatorUpdater
+	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
 }
 
 type FileReaderWriter interface {

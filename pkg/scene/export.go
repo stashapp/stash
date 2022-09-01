@@ -56,7 +56,7 @@ func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (
 	newSceneJSON.Organized = scene.Organized
 	newSceneJSON.OCounter = scene.OCounter
 
-	for _, f := range scene.Files {
+	for _, f := range scene.Files.List() {
 		newSceneJSON.Files = append(newSceneJSON.Files, f.Base().Path)
 	}
 

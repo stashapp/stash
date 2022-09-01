@@ -185,6 +185,9 @@ func (s *Manager) generateScreenshot(ctx context.Context, sceneId string, at *fl
 		if err := s.Repository.WithTxn(ctx, func(ctx context.Context) error {
 			var err error
 			scene, err = s.Repository.Scene.Find(ctx, sceneIdInt)
+			if scene != nil {
+				err = scene.LoadPrimaryFile(ctx, s.Repository.File)
+			}
 			return err
 		}); err != nil || scene == nil {
 			logger.Errorf("failed to get scene for generate: %s", err.Error())

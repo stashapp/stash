@@ -161,7 +161,7 @@ func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter 
 
 // deleteFiles deletes files from the database and file system
 func (s *Service) deleteFiles(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter) error {
-	for _, f := range scene.Files {
+	for _, f := range scene.Files.List() {
 		// only delete files where there is no other associated scene
 		otherScenes, err := s.Repository.FindByFileID(ctx, f.ID)
 		if err != nil {
