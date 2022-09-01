@@ -163,10 +163,12 @@
       "phash_matches": "{count} PHashes совпадают",
       "unnamed": "Безымянный"
     },
+    "verb_match_fp": "Сопоставить отпечаток файла",
     "verb_matched": "Совпавший",
     "verb_scrape_all": "Скрейпить всё",
     "verb_submit_fp": "Отправить {fpCount, plural, one{# Совпадение} other{# совпадения}}",
-    "verb_toggle_config": "{toggle} {configuration}"
+    "verb_toggle_config": "{toggle} {configuration}",
+    "verb_toggle_unmatched": "{toggle} не назначенные сцены"
   },
   "config": {
     "about": {
@@ -199,10 +201,12 @@
       "tools": "Инструменты"
     },
     "dlna": {
+      "allow_temp_ip": "Разрешить {tempIP}",
       "allowed_ip_addresses": "Разрешенные IP адреса",
       "allowed_ip_temporarily": "Временно разрешенные IP",
       "default_ip_whitelist": "Белый список IP по умолчанию",
       "default_ip_whitelist_desc": "Разрешенные IP адреса для доступа к DLNA. Используйте {wildcard}, чтобы разрешить все IP-адреса.",
+      "disabled_dlna_temporarily": "DLNA временно отключен",
       "disallowed_ip": "Запрещенные IP",
       "enabled_by_default": "Включено по умолчанию",
       "enabled_dlna_temporarily": "DLNA временно включен",
@@ -251,6 +255,7 @@
       "create_galleries_from_folders_label": "Генерация галлереи из папок с картинками",
       "db_path_head": "Путь к базе данных",
       "directory_locations_to_your_content": "Адреса папок с вашим контентом",
+      "excluded_image_gallery_patterns_desc": "Регулярные выражения файлов/путей изображений и галерей которые будет исключены при Санировании и добавлении в Очистку",
       "excluded_image_gallery_patterns_head": "Исключенные шаблоны изображений/галерей",
       "excluded_video_patterns_head": "Исключенные шаблоны видео",
       "gallery_ext_desc": "Список расширений через запятую, которые будут распознаны как архивы с картинками.",
