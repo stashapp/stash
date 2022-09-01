@@ -40,6 +40,10 @@ func (s *Service) Destroy(ctx context.Context, i *models.Gallery, fileDeleter *i
 }
 
 func (s *Service) destroyZipFileImages(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error) {
+	if err := i.LoadFiles(ctx, s.Repository); err != nil {
+		return nil, err
+	}
+
 	var imgsDestroyed []*models.Image
 
 	destroyer := &file.ZipDestroyer{
