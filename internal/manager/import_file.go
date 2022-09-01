@@ -38,13 +38,11 @@ func (i *fileFolderImporter) PreImport(ctx context.Context) error {
 }
 
 func (i *fileFolderImporter) folderJSONToFolder(ctx context.Context, baseJSON *jsonschema.BaseDirEntry) (*file.Folder, error) {
-	path := filepath.FromSlash(baseJSON.Path)
-
 	ret := file.Folder{
 		DirEntry: file.DirEntry{
 			ModTime: baseJSON.ModTime.GetTime(),
 		},
-		Path:      path,
+		Path:      baseJSON.Path,
 		CreatedAt: baseJSON.CreatedAt.GetTime(),
 		UpdatedAt: baseJSON.CreatedAt.GetTime(),
 	}
@@ -97,13 +95,11 @@ func (i *fileFolderImporter) fileJSONToFile(ctx context.Context, fileJSON jsonsc
 }
 
 func (i *fileFolderImporter) baseFileJSONToBaseFile(ctx context.Context, baseJSON *jsonschema.BaseFile) (*file.BaseFile, error) {
-	path := filepath.FromSlash(baseJSON.Path)
-
 	baseFile := file.BaseFile{
 		DirEntry: file.DirEntry{
 			ModTime: baseJSON.ModTime.GetTime(),
 		},
-		Basename:  filepath.Base(path),
+		Basename:  filepath.Base(baseJSON.Path),
 		Size:      baseJSON.Size,
 		CreatedAt: baseJSON.CreatedAt.GetTime(),
 		UpdatedAt: baseJSON.CreatedAt.GetTime(),
@@ -124,7 +120,7 @@ func (i *fileFolderImporter) baseFileJSONToBaseFile(ctx context.Context, baseJSO
 }
 
 func (i *fileFolderImporter) populateZipFileID(ctx context.Context, f *file.DirEntry) error {
-	zipFilePath := filepath.FromSlash(i.Input.DirEntry().ZipFile)
+	zipFilePath := i.Input.DirEntry().ZipFile
 	if zipFilePath != "" {
 		zf, err := i.ReaderWriter.FindByPath(ctx, zipFilePath)
 		if err != nil {
@@ -147,11 +143,11 @@ func (i *fileFolderImporter) PostImport(ctx context.Context, id int) error {
 }
 
 func (i *fileFolderImporter) Name() string {
-	return filepath.FromSlash(i.Input.DirEntry().Path)
+	return i.Input.DirEntry().Path
 }
 
 func (i *fileFolderImporter) FindExistingID(ctx context.Context) (*int, error) {
-	path := filepath.FromSlash(i.Input.DirEntry().Path)
+	path := i.Input.DirEntry().Path
 	existing, err := i.ReaderWriter.FindByPath(ctx, path)
 	if err != nil {
 		return nil, err
@@ -213,7 +209,7 @@ func (i *fileFolderImporter) getOrCreateFolder(ctx context.Context, path string,
 
 func (i *fileFolderImporter) Create(ctx context.Context) (*int, error) {
 	// create folder hierarchy and set parent folder id
-	path := filepath.FromSlash(i.Input.DirEntry().Path)
+	path := i.Input.DirEntry().Path
 	path = filepath.Dir(path)
 	folder, err := i.createFolderHierarchy(ctx, path)
 	if err != nil {

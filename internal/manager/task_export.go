@@ -405,7 +405,7 @@ func fileToJSON(f file.File) jsonschema.DirEntry {
 		BaseDirEntry: jsonschema.BaseDirEntry{
 			Type:      jsonschema.DirEntryTypeFile,
 			ModTime:   json.JSONTime{Time: bf.ModTime},
-			Path:      filepath.ToSlash(bf.Path),
+			Path:      bf.Path,
 			CreatedAt: json.JSONTime{Time: bf.CreatedAt},
 			UpdatedAt: json.JSONTime{Time: bf.UpdatedAt},
 		},
@@ -466,7 +466,7 @@ func folderToJSON(f file.Folder) jsonschema.DirEntry {
 	base := jsonschema.BaseDirEntry{
 		Type:      jsonschema.DirEntryTypeFolder,
 		ModTime:   json.JSONTime{Time: f.ModTime},
-		Path:      filepath.ToSlash(f.Path),
+		Path:      f.Path,
 		CreatedAt: json.JSONTime{Time: f.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: f.UpdatedAt},
 	}

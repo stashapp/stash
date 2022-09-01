@@ -3,7 +3,6 @@ package gallery
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -250,7 +249,7 @@ func (i *Importer) populateFilesFolder(ctx context.Context) error {
 	files := make([]file.File, 0)
 
 	for _, ref := range i.Input.ZipFiles {
-		path := filepath.FromSlash(ref)
+		path := ref
 		f, err := i.FileFinder.FindByPath(ctx, path)
 		if err != nil {
 			return fmt.Errorf("error finding file: %w", err)
@@ -266,7 +265,7 @@ func (i *Importer) populateFilesFolder(ctx context.Context) error {
 	i.gallery.Files = models.NewRelatedFiles(files)
 
 	if i.Input.FolderPath != "" {
-		path := filepath.FromSlash(i.Input.FolderPath)
+		path := i.Input.FolderPath
 		f, err := i.FolderFinder.FindByPath(ctx, path)
 		if err != nil {
 			return fmt.Errorf("error finding folder: %w", err)

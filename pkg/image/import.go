@@ -3,7 +3,6 @@ package image
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -94,7 +93,7 @@ func (i *Importer) populateFiles(ctx context.Context) error {
 	files := make([]*file.ImageFile, 0)
 
 	for _, ref := range i.Input.Files {
-		path := filepath.FromSlash(ref)
+		path := ref
 		f, err := i.FileFinder.FindByPath(ctx, path)
 		if err != nil {
 			return fmt.Errorf("error finding file: %w", err)
