@@ -15,6 +15,7 @@ type FinderByFile interface {
 type Repository interface {
 	FinderByFile
 	Destroy(ctx context.Context, id int) error
+	models.FileLoader
 }
 
 type ImageFinder interface {

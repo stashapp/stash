@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -94,6 +95,16 @@ func (i Image) GetTitle() string {
 	}
 
 	return ""
+}
+
+// DisplayName returns a display name for the scene for logging purposes.
+// It returns Path if not empty, otherwise it returns the ID.
+func (i Image) DisplayName() string {
+	if i.Path != "" {
+		return i.Path
+	}
+
+	return strconv.Itoa(i.ID)
 }
 
 type ImageCreateInput struct {

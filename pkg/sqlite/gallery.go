@@ -299,6 +299,7 @@ func (qb *GalleryStore) get(ctx context.Context, q *goqu.SelectDataset) (*models
 func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Gallery, error) {
 	const single = false
 	var ret []*models.Gallery
+	var lastID int
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
 		var f galleryQueryRow
 		if err := r.StructScan(&f); err != nil {
@@ -306,6 +307,11 @@ func (qb *GalleryStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*
 		}
 
 		s := f.resolve()
+
+		if s.ID == lastID {
+			return fmt.Errorf("internal error: multiple rows returned for single gallery id %d", s.ID)
+		}
+		lastID = s.ID
 
 		ret = append(ret, s)
 		return nil

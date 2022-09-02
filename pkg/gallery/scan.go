@@ -97,7 +97,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 		}
 
 		if !found {
-			logger.Infof("Adding %s to gallery %s", f.Base().Path, i.GetTitle())
+			logger.Infof("Adding %s to gallery %s", f.Base().Path, i.DisplayName())
 
 			if err := h.CreatorUpdater.AddFileID(ctx, i.ID, f.Base().ID); err != nil {
 				return fmt.Errorf("adding file to gallery: %w", err)
