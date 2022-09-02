@@ -329,7 +329,7 @@ func (t *ExportTask) populateGalleryImages(ctx context.Context, repo Repository)
 
 	for _, g := range galleries {
 		if err := g.LoadFiles(ctx, reader); err != nil {
-			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.GetTitle(), err.Error())
+			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.DisplayName(), err.Error())
 			continue
 		}
 
@@ -761,7 +761,7 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 
 	for g := range jobChan {
 		if err := g.LoadFiles(ctx, repo.Gallery); err != nil {
-			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.GetTitle(), err.Error())
+			logger.Errorf("[galleries] <%s> failed to fetch files for gallery: %s", g.DisplayName(), err.Error())
 			continue
 		}
 

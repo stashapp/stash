@@ -212,7 +212,7 @@ func (h *cleanHandler) deleteRelatedScenes(ctx context.Context, fileDeleter *fil
 
 		// only delete if the scene has no other files
 		if len(scene.Files.List()) <= 1 {
-			logger.Infof("Deleting scene %q since it has no other related files", scene.GetTitle())
+			logger.Infof("Deleting scene %q since it has no other related files", scene.DisplayName())
 			if err := mgr.SceneService.Destroy(ctx, scene, sceneFileDeleter, true, false); err != nil {
 				return err
 			}
@@ -246,7 +246,7 @@ func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.I
 
 		// only delete if the gallery has no other files
 		if len(g.Files.List()) <= 1 {
-			logger.Infof("Deleting gallery %q since it has no other related files", g.GetTitle())
+			logger.Infof("Deleting gallery %q since it has no other related files", g.DisplayName())
 			if err := qb.Destroy(ctx, g.ID); err != nil {
 				return err
 			}
@@ -270,7 +270,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 	}
 
 	for _, g := range galleries {
-		logger.Infof("Deleting folder-based gallery %q since the folder no longer exists", g.GetTitle())
+		logger.Infof("Deleting folder-based gallery %q since the folder no longer exists", g.DisplayName())
 		if err := qb.Destroy(ctx, g.ID); err != nil {
 			return err
 		}
@@ -303,7 +303,7 @@ func (h *cleanHandler) deleteRelatedImages(ctx context.Context, fileDeleter *fil
 		}
 
 		if len(i.Files.List()) <= 1 {
-			logger.Infof("Deleting image %q since it has no other related files", i.GetTitle())
+			logger.Infof("Deleting image %q since it has no other related files", i.DisplayName())
 			if err := mgr.ImageService.Destroy(ctx, i, imageFileDeleter, true, false); err != nil {
 				return err
 			}

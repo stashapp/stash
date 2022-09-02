@@ -121,11 +121,11 @@ func (t *tagger) tagScenes(ctx context.Context, paths []string, sceneReader scen
 		added, err := addFunc(p)
 
 		if err != nil {
-			return t.addError("scene", p.GetTitle(), err)
+			return t.addError("scene", p.DisplayName(), err)
 		}
 
 		if added {
-			t.addLog("scene", p.GetTitle())
+			t.addLog("scene", p.DisplayName())
 		}
 	}
 
@@ -142,11 +142,11 @@ func (t *tagger) tagImages(ctx context.Context, paths []string, imageReader imag
 		added, err := addFunc(p)
 
 		if err != nil {
-			return t.addError("image", p.GetTitle(), err)
+			return t.addError("image", p.DisplayName(), err)
 		}
 
 		if added {
-			t.addLog("image", p.GetTitle())
+			t.addLog("image", p.DisplayName())
 		}
 	}
 
@@ -163,11 +163,11 @@ func (t *tagger) tagGalleries(ctx context.Context, paths []string, galleryReader
 		added, err := addFunc(p)
 
 		if err != nil {
-			return t.addError("gallery", p.GetTitle(), err)
+			return t.addError("gallery", p.DisplayName(), err)
 		}
 
 		if added {
-			t.addLog("gallery", p.GetTitle())
+			t.addLog("gallery", p.DisplayName())
 		}
 	}
 

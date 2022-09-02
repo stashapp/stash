@@ -222,6 +222,16 @@ func (s Scene) GetTitle() string {
 	return filepath.Base(s.Path)
 }
 
+// DisplayName returns a display name for the scene for logging purposes.
+// It returns Path if not empty, otherwise it returns the ID.
+func (s Scene) DisplayName() string {
+	if s.Path != "" {
+		return s.Path
+	}
+
+	return strconv.Itoa(s.ID)
+}
+
 // GetHash returns the hash of the scene, based on the hash algorithm provided. If
 // hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
 func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {

@@ -23,7 +23,7 @@ func getImageFileTagger(s *models.Image, cache *match.Cache) tagger {
 	return tagger{
 		ID:    s.ID,
 		Type:  "image",
-		Name:  s.GetTitle(),
+		Name:  s.DisplayName(),
 		Path:  s.Path,
 		cache: cache,
 	}

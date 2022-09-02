@@ -159,7 +159,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 		}
 
 		if !found {
-			logger.Infof("Adding %s to image %s", f.Path, i.GetTitle())
+			logger.Infof("Adding %s to image %s", f.Path, i.DisplayName())
 
 			// associate with folder-based gallery if applicable
 			if h.ScanConfig.GetCreateGalleriesFromFolders() {
