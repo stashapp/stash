@@ -81,6 +81,10 @@ func (s *Service) destroyImage(ctx context.Context, i *models.Image, fileDeleter
 
 // deleteFiles deletes files for the image from the database and file system, if they are not in use by other images
 func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter *FileDeleter) error {
+	if err := i.LoadFiles(ctx, s.Repository); err != nil {
+		return err
+	}
+
 	for _, f := range i.Files.List() {
 		// only delete files where there is no other associated image
 		otherImages, err := s.Repository.FindByFileID(ctx, f.ID)

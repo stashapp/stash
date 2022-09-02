@@ -31,7 +31,7 @@ func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 	return tagger{
 		ID:      s.ID,
 		Type:    "gallery",
-		Name:    s.GetTitle(),
+		Name:    s.DisplayName(),
 		Path:    path,
 		trimExt: trimExt,
 		cache:   cache,

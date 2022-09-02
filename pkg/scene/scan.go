@@ -130,7 +130,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 		}
 
 		if !found {
-			logger.Infof("Adding %s to scene %s", f.Path, s.GetTitle())
+			logger.Infof("Adding %s to scene %s", f.Path, s.DisplayName())
 
 			if err := h.CreatorUpdater.AddFileID(ctx, s.ID, f.ID); err != nil {
 				return fmt.Errorf("adding file to scene: %w", err)

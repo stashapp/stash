@@ -410,6 +410,7 @@ func (qb *SceneStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.S
 func (qb *SceneStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Scene, error) {
 	const single = false
 	var ret []*models.Scene
+	var lastID int
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
 		var f sceneQueryRow
 		if err := r.StructScan(&f); err != nil {
@@ -417,6 +418,10 @@ func (qb *SceneStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*mo
 		}
 
 		s := f.resolve()
+		if s.ID == lastID {
+			return fmt.Errorf("internal error: multiple rows returned for single scene id %d", s.ID)
+		}
+		lastID = s.ID
 
 		ret = append(ret, s)
 		return nil

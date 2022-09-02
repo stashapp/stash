@@ -806,6 +806,10 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	fingerprints := []*graphql.FingerprintInput{}
 
 	// submit all file fingerprints
+	if err := scene.LoadFiles(ctx, r.Scene); err != nil {
+		return nil, err
+	}
+
 	for _, f := range scene.Files.List() {
 		duration := f.Duration
 
@@ -886,6 +890,10 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 				image = file
 			}
 		}
+	}
+
+	if err := scene.LoadStashIDs(ctx, r.Scene); err != nil {
+		return nil, err
 	}
 
 	stashIDs := scene.StashIDs.List()

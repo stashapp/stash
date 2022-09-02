@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -126,6 +127,20 @@ func (g Gallery) GetTitle() string {
 	}
 
 	return g.Path
+}
+
+// DisplayName returns a display name for the scene for logging purposes.
+// It returns the path or title, or otherwise it returns the ID if both of these are empty.
+func (g Gallery) DisplayName() string {
+	if g.Path != "" {
+		return g.Path
+	}
+
+	if g.Title != "" {
+		return g.Title
+	}
+
+	return strconv.Itoa(g.ID)
 }
 
 const DefaultGthumbWidth int = 640
