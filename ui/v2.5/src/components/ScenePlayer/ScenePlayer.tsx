@@ -9,6 +9,10 @@ import React, {
 } from "react";
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
+import chromecast from "@silvermine/videojs-chromecast";
+import airplay from "@silvermine/videojs-airplay";
+import "@silvermine/videojs-chromecast/dist/silvermine-videojs-chromecast.css";
+import "@silvermine/videojs-airplay/dist/silvermine-videojs-airplay.css";
 import "videojs-seek-buttons";
 import "videojs-landscape-fullscreen";
 import "./live";
@@ -174,6 +178,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const videoElement = videoRef.current;
     if (!videoElement) return;
 
+    chromecast(VideoJS);
+    airplay(VideoJS);
     const options: VideoJsPlayerOptions = {
       controls: true,
       controlBar: {
@@ -186,7 +192,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       nativeControlsForTouch: false,
       playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
       inactivityTimeout: 2000,
+      plugins: {
+        airPlay: {
+           addButtonToControlBar: true, // defaults to `true`
+        },
+        chromecast: {
+          addButtonToControlBar: true, // defaults to `true`
+       }
+     },
       preload: "none",
+      techOrder: ["chromecast", "html5"],
       userActions: {
         hotkeys: function (event) {
           const player = this as VideoJsPlayer;

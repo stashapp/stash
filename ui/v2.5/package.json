@@ -33,6 +33,8 @@
     "@fortawesome/free-regular-svg-icons": "^5.15.2",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
+    "@silvermine/videojs-airplay": "^1.1.0",
+    "@silvermine/videojs-chromecast": "^1.3.4",
     "@types/react-select": "^4.0.8",
     "ansi-regex": "^5.0.1",
     "apollo-upload-client": "^14.1.3",

@@ -1210,6 +1210,18 @@
   dependencies:
     any-observable "^0.3.0"
 
+"@silvermine/videojs-airplay@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@silvermine/videojs-airplay/-/videojs-airplay-1.1.0.tgz#3f23fe9aaa4af9041f800d88f51b56748e214fdd"
+  integrity sha512-f1N9YA9PJBVNpxv3/bfJZBbS9Qb51XL1+nnWqwOkDS1S6CbjGypan62nY6qU/uqKOHHQ+jXlRgQ5w9Dy3kbDjw==
+
+"@silvermine/videojs-chromecast@^1.3.4":
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/@silvermine/videojs-chromecast/-/videojs-chromecast-1.3.4.tgz#101b7c4c65b9887e45264caf63c9ca2e6774440d"
+  integrity sha512-4VC/WEXb18Iex2Tf679RRUR+oSJhNq7+SyMGIsawFglET0IebXnwYKtO6x4t+dVd3be/iN1p5Ny6/iUnny4ljA==
+  dependencies:
+    webcomponents.js "git+https://git@github.com/webcomponents/webcomponentsjs.git#v0.7.24"
+
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
@@ -8181,6 +8193,10 @@ warning@^4.0.0, warning@^4.0.3:
   integrity sha512-rpJyN222KWIvHJ/F53XSZv0Zl/accqHR8et1kpaMTD/fLCRxtV8iX8czMzY7sVZupTI3zcUTg8eycS2kNF9l6w==
   dependencies:
     loose-envify "^1.0.0"
+
+"webcomponents.js@git+https://git@github.com/webcomponents/webcomponentsjs.git#v0.7.24":
+  version "0.7.24"
+  resolved "git+https://git@github.com/webcomponents/webcomponentsjs.git#8a2e40557b177e2cca0def2553f84c8269c8f93e"
 
 whatwg-fetch@^3.4.1:
   version "3.6.2"
