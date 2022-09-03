@@ -194,10 +194,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       inactivityTimeout: 2000,
       plugins: {
         airPlay: {
-           addButtonToControlBar: true, // defaults to `true`
+           addButtonToControlBar: true,
         },
         chromecast: {
-          addButtonToControlBar: true, // defaults to `true`
+          addButtonToControlBar: true,
        }
      },
       preload: "none",
