@@ -9,8 +9,10 @@ import React, {
 } from "react";
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
-import chromecast from "@silvermine/videojs-chromecast";
-import airplay from "@silvermine/videojs-airplay";
+// @ts-ignore
+import { chromecast } from "@silvermine/videojs-chromecast";
+// @ts-ignore
+import { airplay } from "@silvermine/videojs-airplay";
 import "@silvermine/videojs-chromecast/dist/silvermine-videojs-chromecast.css";
 import "@silvermine/videojs-airplay/dist/silvermine-videojs-airplay.css";
 import "videojs-seek-buttons";
