@@ -256,6 +256,11 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
+	if partial.PrimaryFileID != nil {
+		if err := scenesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
+			return nil, err
+		}
+	}
 
 	return qb.Find(ctx, id)
 }

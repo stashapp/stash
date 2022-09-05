@@ -143,11 +143,12 @@ type ScenePartial struct {
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime
 
-	GalleryIDs   *UpdateIDs
-	TagIDs       *UpdateIDs
-	PerformerIDs *UpdateIDs
-	MovieIDs     *UpdateMovieIDs
-	StashIDs     *UpdateStashIDs
+	GalleryIDs    *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	MovieIDs      *UpdateMovieIDs
+	StashIDs      *UpdateStashIDs
+	PrimaryFileID *file.ID
 }
 
 func NewScenePartial() ScenePartial {

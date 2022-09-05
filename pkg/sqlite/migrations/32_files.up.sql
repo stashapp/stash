@@ -86,6 +86,7 @@ CREATE TABLE `images_files` (
 );
 
 CREATE INDEX `index_images_files_on_file_id` on `images_files` (`file_id`);
+CREATE UNIQUE INDEX `unique_index_images_files_on_primary` on `images_files` (`image_id`) WHERE `primary` = 1;
 
 CREATE TABLE `galleries_files` (
     `gallery_id` integer NOT NULL,
@@ -97,6 +98,7 @@ CREATE TABLE `galleries_files` (
 );
 
 CREATE INDEX `index_galleries_files_file_id` ON `galleries_files` (`file_id`);
+CREATE UNIQUE INDEX `unique_index_galleries_files_on_primary` on `galleries_files` (`gallery_id`) WHERE `primary` = 1;
 
 CREATE TABLE `scenes_files` (
     `scene_id` integer NOT NULL,
@@ -108,6 +110,7 @@ CREATE TABLE `scenes_files` (
 );
 
 CREATE INDEX `index_scenes_files_file_id` ON `scenes_files` (`file_id`);
+CREATE UNIQUE INDEX `unique_index_scenes_files_on_primary` on `scenes_files` (`scene_id`) WHERE `primary` = 1;
 
 PRAGMA foreign_keys=OFF;
 

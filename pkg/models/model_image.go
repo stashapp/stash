@@ -121,9 +121,10 @@ type ImagePartial struct {
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime
 
-	GalleryIDs   *UpdateIDs
-	TagIDs       *UpdateIDs
-	PerformerIDs *UpdateIDs
+	GalleryIDs    *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	PrimaryFileID *file.ID
 }
 
 func NewImagePartial() ImagePartial {

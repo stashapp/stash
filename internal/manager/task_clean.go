@@ -13,6 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 )
@@ -172,13 +173,13 @@ type cleanHandler struct {
 }
 
 func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
-	if err := h.deleteRelatedScenes(ctx, fileDeleter, fileID); err != nil {
+	if err := h.handleRelatedScenes(ctx, fileDeleter, fileID); err != nil {
 		return err
 	}
-	if err := h.deleteRelatedGalleries(ctx, fileID); err != nil {
+	if err := h.handleRelatedGalleries(ctx, fileID); err != nil {
 		return err
 	}
-	if err := h.deleteRelatedImages(ctx, fileDeleter, fileID); err != nil {
+	if err := h.handleRelatedImages(ctx, fileDeleter, fileID); err != nil {
 		return err
 	}
 
@@ -189,7 +190,7 @@ func (h *cleanHandler) HandleFolder(ctx context.Context, fileDeleter *file.Delet
 	return h.deleteRelatedFolderGalleries(ctx, folderID)
 }
 
-func (h *cleanHandler) deleteRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
 	mgr := GetInstance()
 	sceneQB := mgr.Database.Scene
 	scenes, err := sceneQB.FindByFileID(ctx, fileID)
@@ -225,13 +226,28 @@ func (h *cleanHandler) deleteRelatedScenes(ctx context.Context, fileDeleter *fil
 				OSHash:   oshash,
 				Path:     scene.Path,
 			}, nil)
+		} else {
+			// set the primary file to a remaining file
+			var newPrimaryID file.ID
+			for _, f := range scene.Files.List() {
+				if f.ID != fileID {
+					newPrimaryID = f.ID
+					break
+				}
+			}
+
+			if _, err := mgr.Repository.Scene.UpdatePartial(ctx, scene.ID, models.ScenePartial{
+				PrimaryFileID: &newPrimaryID,
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.ID) error {
 	mgr := GetInstance()
 	qb := mgr.Database.Gallery
 	galleries, err := qb.FindByFileID(ctx, fileID)
@@ -255,6 +271,21 @@ func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.I
 				Checksum: g.Checksum(),
 				Path:     g.Path,
 			}, nil)
+		} else {
+			// set the primary file to a remaining file
+			var newPrimaryID file.ID
+			for _, f := range g.Files.List() {
+				if f.Base().ID != fileID {
+					newPrimaryID = f.Base().ID
+					break
+				}
+			}
+
+			if _, err := mgr.Repository.Gallery.UpdatePartial(ctx, g.ID, models.GalleryPartial{
+				PrimaryFileID: &newPrimaryID,
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -276,15 +307,16 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 		}
 
 		mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
-			Checksum: g.Checksum(),
-			Path:     g.Path,
+			// No checksum for folders
+			// Checksum: g.Checksum(),
+			Path: g.Path,
 		}, nil)
 	}
 
 	return nil
 }
 
-func (h *cleanHandler) deleteRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
 	mgr := GetInstance()
 	imageQB := mgr.Database.Image
 	images, err := imageQB.FindByFileID(ctx, fileID)
@@ -312,6 +344,21 @@ func (h *cleanHandler) deleteRelatedImages(ctx context.Context, fileDeleter *fil
 				Checksum: i.Checksum,
 				Path:     i.Path,
 			}, nil)
+		} else {
+			// set the primary file to a remaining file
+			var newPrimaryID file.ID
+			for _, f := range i.Files.List() {
+				if f.Base().ID != fileID {
+					newPrimaryID = f.Base().ID
+					break
+				}
+			}
+
+			if _, err := mgr.Repository.Image.UpdatePartial(ctx, i.ID, models.ImagePartial{
+				PrimaryFileID: &newPrimaryID,
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
