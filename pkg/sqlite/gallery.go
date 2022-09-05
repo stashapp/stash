@@ -246,6 +246,12 @@ func (qb *GalleryStore) UpdatePartial(ctx context.Context, id int, partial model
 		}
 	}
 
+	if partial.PrimaryFileID != nil {
+		if err := galleriesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
+			return nil, err
+		}
+	}
+
 	return qb.Find(ctx, id)
 }
 
