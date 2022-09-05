@@ -3,7 +3,7 @@ package jsonschema
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -22,12 +22,12 @@ type Folder struct {
 
 func (f *Folder) Filename() string {
 	// prefix with the path depth so that we can import lower-level folders first
-	depth := strings.Count(f.Path, string("/"))
+	depth := strings.Count(f.Path, string(filepath.Separator))
 
 	// hash the full path for a unique filename
 	hash := md5.FromString(f.Path)
 
-	basename := path.Base(f.Path)
+	basename := filepath.Base(f.Path)
 
 	return fmt.Sprintf("%2x.%s.%s.json", depth, basename, hash)
 }
