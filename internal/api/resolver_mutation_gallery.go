@@ -338,6 +338,10 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				return fmt.Errorf("gallery with id %d not found", id)
 			}
 
+			if err := gallery.LoadFiles(ctx, qb); err != nil {
+				return fmt.Errorf("loading files for gallery %d", id)
+			}
+
 			galleries = append(galleries, gallery)
 
 			imgsDestroyed, err = r.galleryService.Destroy(ctx, gallery, fileDeleter, deleteGenerated, deleteFile)
