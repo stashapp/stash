@@ -11,4 +11,6 @@ export interface ILightboxImage {
   rating?: GQL.Maybe<number>;
   o_counter?: GQL.Maybe<number>;
   paths: IImagePaths;
+  height:number;
+  width: number;
 }

@@ -5,7 +5,6 @@ import { Helmet } from "react-helmet";
 import cloneDeep from "lodash-es/cloneDeep";
 import mergeWith from "lodash-es/mergeWith";
 import { ToastProvider } from "src/hooks/Toast";
-import LightboxProvider from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
 
 import locales from "src/locales";
@@ -215,7 +214,7 @@ export const App: React.FC = () => {
             {maybeRenderReleaseNotes()}
             <ToastProvider>
               <Suspense fallback={<LoadingIndicator />}>
-                <LightboxProvider>
+
                   <ManualProvider>
                     <InteractiveProvider>
                       <Helmet
@@ -228,7 +227,7 @@ export const App: React.FC = () => {
                       </div>
                     </InteractiveProvider>
                   </ManualProvider>
-                </LightboxProvider>
+
               </Suspense>
             </ToastProvider>
           </ConfigurationProvider>

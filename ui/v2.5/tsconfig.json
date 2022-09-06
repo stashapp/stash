@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "paths": { "photoswipe/lightbox": ["./node_modules/photoswipe/dist/types/photoswipe.d.ts"] },
     "target": "ESNext",
     "lib": [
       "dom",
