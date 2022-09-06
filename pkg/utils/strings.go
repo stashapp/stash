@@ -12,10 +12,11 @@ type StrFormatMap map[string]interface{}
 // StrFormatMap.
 //
 // For example,
-// StrFormat("{foo} bar {baz}", StrFormatMap{
-//     "foo": "bar",
-//     "baz": "abc",
-// })
+//
+//	StrFormat("{foo} bar {baz}", StrFormatMap{
+//	    "foo": "bar",
+//	    "baz": "abc",
+//	})
 //
 // would return: "bar bar abc"
 func StrFormat(format string, m StrFormatMap) string {
