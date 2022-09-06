@@ -7,16 +7,13 @@ linters:
   disable-all: true
   enable:
     # Default set of linters from golangci-lint
-    - deadcode
     - errcheck
     - gosimple
     - govet
     - ineffassign
     - staticcheck
-    - structcheck
     - typecheck
     - unused
-    - varcheck
     # Linters added by the stash project.
     # - contextcheck
     - dogsled
