@@ -6,8 +6,10 @@ type Image {
   o_counter: Int
   organized: Boolean!
   path: String! @deprecated(reason: "Use files.path")
+  url: String
   created_at: Time!
   updated_at: Time!
+  date: String
   
   file_mod_time: Time @deprecated(reason: "Use files.mod_time")
 
@@ -38,6 +40,8 @@ input ImageUpdateInput {
   id: ID!
   title: String
   rating: Int
+  url: String
+  date: String
   organized: Boolean
   
   studio_id: ID
@@ -51,6 +55,8 @@ input BulkImageUpdateInput {
   ids: [ID!]
   title: String
   rating: Int
+  url: String
+  date: String
   organized: Boolean
   
   studio_id: ID

@@ -2,10 +2,12 @@ fragment ImageData on Image {
   id
   title
   rating
+  url
   organized
   o_counter
   created_at
   updated_at
+  date
 
   files {
     ...ImageFileData

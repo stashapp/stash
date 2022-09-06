@@ -13,6 +13,7 @@ type Image struct {
 	Title      string        `json:"title,omitempty"`
 	Studio     string        `json:"studio,omitempty"`
 	Rating     int           `json:"rating,omitempty"`
+	URL        string        `json:"url,omitempty"`
 	Organized  bool          `json:"organized,omitempty"`
 	OCounter   int           `json:"o_counter,omitempty"`
 	Galleries  []GalleryRef  `json:"galleries,omitempty"`
@@ -21,6 +22,7 @@ type Image struct {
 	Files      []string      `json:"files,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
+	Date       json.JSONTime `json:"date,omitempty"`
 }
 
 func (s Image) Filename(basename string, hash string) string {

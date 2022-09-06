@@ -88,6 +88,11 @@ type Query {
   """Scrape for a single gallery"""
   scrapeSingleGallery(source: ScraperSourceInput!, input: ScrapeSingleGalleryInput!): [ScrapedGallery!]!
 
+  """Scrape for a single gallery"""
+  scrapeSingleImage(source: ScraperSourceInput!, input: ScrapeSingleImageInput!): [ScrapedImage!]!
+  """Scrape for a single gallery"""
+  scrapeMultiImages(source: ScraperSourceInput!, input: ScrapeMultiImagesInput!): [[ScrapedImage!]!]!
+
   """Scrape for a single movie"""
   scrapeSingleMovie(source: ScraperSourceInput!, input: ScrapeSingleMovieInput!): [ScrapedMovie!]!
 
@@ -100,6 +105,8 @@ type Query {
   scrapeSceneURL(url: String!): ScrapedScene
   """Scrapes a complete gallery record based on a URL"""
   scrapeGalleryURL(url: String!): ScrapedGallery
+  """Scrapes a complete image record based on a URL"""
+  scrapeImageURL(url: String!): ScrapedImage
   """Scrapes a complete movie record based on a URL"""
   scrapeMovieURL(url: String!): ScrapedMovie
 
@@ -148,6 +155,8 @@ type Query {
   allStudios: [Studio!]!
   allMovies: [Movie!]!
   allTags: [Tag!]!
+  allGalleries: [Gallery!]!
+  allImages: [Image!]!
 
   # Get everything with minimal metadata
 
