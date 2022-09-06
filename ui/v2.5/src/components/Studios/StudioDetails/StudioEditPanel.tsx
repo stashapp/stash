@@ -171,7 +171,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 
     return (
       <Row>
-        <Form.Label column>StashIDs</Form.Label>
+        <Form.Label column>Stash IDs</Form.Label>
         <Col xs={9}>
           <ul className="pl-0">
             {formik.values.stash_ids.map((stashID) => {
