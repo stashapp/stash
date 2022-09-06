@@ -4,7 +4,6 @@
 package desktop
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -19,7 +18,7 @@ func isService() bool {
 
 func isServerDockerized() bool {
 	_, dockerEnvErr := os.Stat("/.dockerenv")
-	cgroups, _ := ioutil.ReadFile("/proc/self/cgroup")
+	cgroups, _ := os.ReadFile("/proc/self/cgroup")
 	if !os.IsNotExist(dockerEnvErr) || strings.Contains(string(cgroups), "docker") {
 		return true
 	}

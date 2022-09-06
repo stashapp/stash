@@ -487,9 +487,7 @@ func (p *SceneFilenameParser) parseScenes(repo models.ReaderRepository, scenes [
 			}
 			p.setParserResult(repo, *sceneHolder, r)
 
-			if r != nil {
-				ret = append(ret, r)
-			}
+			ret = append(ret, r)
 		}
 	}
 
