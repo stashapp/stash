@@ -22,7 +22,7 @@ type Image struct {
 	Files      []string      `json:"files,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
-	Date       json.JSONTime `json:"date,omitempty"`
+	Date       string        `json:"date,omitempty"`
 }
 
 func (s Image) Filename(basename string, hash string) string {

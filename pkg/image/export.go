@@ -27,7 +27,7 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 		newImageJSON.URL = image.URL
 	}
 	if image.Date != nil {
-		newImageJSON.Date = json.JSONTime{Time: image.Date},
+		newImageJSON.Date = image.Date.String()
 	}
 
 	newImageJSON.Organized = image.Organized

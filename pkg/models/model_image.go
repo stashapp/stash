@@ -20,6 +20,7 @@ type Image struct {
 	Organized bool   `json:"organized"`
 	OCounter  int    `json:"o_counter"`
 	StudioID  *int   `json:"studio_id"`
+	Date      *Date  `json:"date"`
 
 	// transient - not persisted
 	Files         RelatedImageFiles
@@ -31,7 +32,6 @@ type Image struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	Date time.Time `json:"date"`
 
 	GalleryIDs   RelatedIDs `json:"gallery_ids"`
 	TagIDs       RelatedIDs `json:"tag_ids"`
@@ -116,14 +116,14 @@ type ImageCreateInput struct {
 
 type ImagePartial struct {
 	Title     OptionalString
-	URL     OptionalString
+	URL       OptionalString
 	Rating    OptionalInt
 	Organized OptionalBool
 	OCounter  OptionalInt
 	StudioID  OptionalInt
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime
-	Date OptionalTime
+	Date      OptionalDate
 
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
