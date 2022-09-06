@@ -164,6 +164,24 @@ fragment ScrapedGalleryData on ScrapedGallery {
   }
 }
 
+fragment ScrapedImageData on ScrapedImage {
+  title
+  url
+  date
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+}
+
 fragment ScrapedStashBoxSceneData on ScrapedScene {
   title
   details

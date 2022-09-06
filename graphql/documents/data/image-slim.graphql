@@ -2,8 +2,10 @@ fragment SlimImageData on Image {
   id
   title
   rating
+  url
   organized
   o_counter
+  date
 
   files {
     ...ImageFileData

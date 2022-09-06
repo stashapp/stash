@@ -13,6 +13,7 @@ enum ScrapeContentType {
   MOVIE
   PERFORMER
   SCENE
+  IMAGE
 }
 
 "Scraped Content is the forming union over the different scrapers"
@@ -22,6 +23,7 @@ union ScrapedContent = ScrapedStudio
                      | ScrapedGallery
                      | ScrapedMovie
                      | ScrapedPerformer
+                     | ScrapedImage
 
 type ScraperSpec {
     """URLs matching these can be scraped with"""
@@ -40,6 +42,9 @@ type Scraper {
     gallery: ScraperSpec
     """Details for movie scraper"""
     movie: ScraperSpec
+    """Details for gallery scraper"""
+    image: ScraperSpec
+
 }
 
 
@@ -111,6 +116,24 @@ input ScrapedGalleryInput {
   # no studio, tags or performers
 }
 
+type ScrapedImage {
+  title: String
+  url: String
+  date: String
+
+  studio: ScrapedStudio
+  tags: [ScrapedTag!]
+  performers: [ScrapedPerformer!]
+}
+
+input ScrapedImageInput {
+  title: String
+  url: String
+  date: String
+
+  # no studio, tags or performers
+}
+
 input ScraperSourceInput {
   """Index of the configured stash-box instance to use. Should be unset if scraper_id is set"""
   stash_box_index: Int @deprecated(reason: "use stash_box_endpoint")
@@ -164,6 +187,20 @@ input ScrapeSingleGalleryInput {
   gallery_id: ID
   """Instructs to query by gallery fragment"""
   gallery_input: ScrapedGalleryInput
+}
+
+input ScrapeSingleImageInput {
+  """Instructs to query by string"""
+  query: String
+  """Instructs to query by image id"""
+  image_id: ID
+  """Instructs to query by image fragment"""
+  image_input: ScrapedGalleryInput
+}
+
+input ScrapeMultiImagesInput {
+  """Instructs to query by Image fingerprints"""
+  image_ids: [ID!]
 }
 
 input ScrapeSingleMovieInput {

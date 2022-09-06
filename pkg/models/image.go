@@ -39,6 +39,21 @@ type ImageFilterType struct {
 	PerformerFavorite *bool `json:"performer_favorite"`
 	// Filter to only include images with these galleries
 	Galleries *MultiCriterionInput `json:"galleries"`
+	// Filter by url
+	URL *StringCriterionInput `json:"url"`
+}
+
+type ImageUpdateInput struct {
+	ClientMutationID *string  `json:"clientMutationId"`
+	ID               string   `json:"id"`
+	Title            *string  `json:"title"`
+	URL              *string  `json:"url"`
+	Date             *string  `json:"date"`
+	Rating           *int     `json:"rating"`
+	Organized        *bool    `json:"organized"`
+	StudioID         *string  `json:"studio_id"`
+	TagIds           []string `json:"tag_ids"`
+	PerformerIds     []string `json:"performer_ids"`
 }
 
 type ImageDestroyInput struct {

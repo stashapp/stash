@@ -59,6 +59,9 @@ func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*scraper.Scrap
 func (r *queryResolver) ListGalleryScrapers(ctx context.Context) ([]*scraper.Scraper, error) {
 	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypeGallery}), nil
 }
+func (r *queryResolver) ListImageScrapers(ctx context.Context) ([]*scraper.Scraper, error) {
+	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypeImage}), nil
+}
 
 func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*scraper.Scraper, error) {
 	return r.scraperCache().ListScrapers([]scraper.ScrapeContentType{scraper.ScrapeContentTypeMovie}), nil
@@ -218,6 +221,91 @@ func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*scra
 	return marshalScrapedGallery(content)
 }
 
+func (r *queryResolver) ScrapeImage(ctx context.Context, scraperID string, image models.ImageUpdateInput) (*scraper.ScrapedImage, error) {
+	id, err := strconv.Atoi(image.ID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: image id is not an integer: '%s'", ErrInput, image.ID)
+	}
+
+	content, err := r.scraperCache().ScrapeID(ctx, scraperID, id, scraper.ScrapeContentTypeImage)
+	if err != nil {
+		return nil, err
+	}
+
+	return marshalScrapedImage(content)
+}
+
+func (r *queryResolver) ScrapeImageURL(ctx context.Context, url string) (*scraper.ScrapedImage, error) {
+	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeImage)
+	if err != nil {
+		return nil, err
+	}
+
+	return marshalScrapedImage(content)
+}
+
+func (r *queryResolver) ScrapeImageQuery(ctx context.Context, scraperID string, query string) ([]*scraper.ScrapedImage, error) {
+	if query == "" {
+		return nil, nil
+	}
+
+	content, err := r.scraperCache().ScrapeName(ctx, scraperID, query, scraper.ScrapeContentTypeImage)
+	if err != nil {
+		return nil, err
+	}
+
+	ret, err := marshalScrapedImages(content)
+	if err != nil {
+		return nil, err
+	}
+
+	filterImageTags(ret)
+	return ret, nil
+}
+// filterImageTags removes tags matching excluded tag patterns from the provided scraped images
+func filterImageTags(images []*scraper.ScrapedImage) {
+	excludePatterns := manager.GetInstance().Config.GetScraperExcludeTagPatterns()
+	var excludeRegexps []*regexp.Regexp
+
+	for _, excludePattern := range excludePatterns {
+		reg, err := regexp.Compile(strings.ToLower(excludePattern))
+		if err != nil {
+			logger.Errorf("Invalid tag exclusion pattern: %v", err)
+		} else {
+			excludeRegexps = append(excludeRegexps, reg)
+		}
+	}
+
+	if len(excludeRegexps) == 0 {
+		return
+	}
+
+	var ignoredTags []string
+
+	for _, s := range images {
+		var newTags []*models.ScrapedTag
+		for _, t := range s.Tags {
+			ignore := false
+			for _, reg := range excludeRegexps {
+				if reg.MatchString(strings.ToLower(t.Name)) {
+					ignore = true
+					ignoredTags = stringslice.StrAppendUnique(ignoredTags, t.Name)
+					break
+				}
+			}
+
+			if !ignore {
+				newTags = append(newTags, t)
+			}
+		}
+
+		s.Tags = newTags
+	}
+
+	if len(ignoredTags) > 0 {
+		logger.Debugf("Scraping ignored tags: %s", strings.Join(ignoredTags, ", "))
+	}
+}
 func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
 	content, err := r.scraperCache().ScrapeURL(ctx, url, scraper.ScrapeContentTypeMovie)
 	if err != nil {
@@ -424,6 +512,38 @@ func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source scraper.
 	default:
 		return nil, ErrNotImplemented
 	}
+}
+func (r *queryResolver) ScrapeSingleImage(ctx context.Context, source scraper.Source, input ScrapeSingleImageInput) ([]*scraper.ScrapedImage, error) {
+	if source.StashBoxIndex != nil {
+		return nil, ErrNotSupported
+	}
+
+	if source.ScraperID == nil {
+		return nil, fmt.Errorf("%w: scraper_id must be set", ErrInput)
+	}
+
+	var c scraper.ScrapedContent
+
+	switch {
+	case input.ImageInput != nil:
+		c, err := r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Image: input.ImageInput})
+		if err != nil {
+			return nil, err
+		}
+		return marshalScrapedImages([]scraper.ScrapedContent{c})
+	default:
+		return nil, ErrNotImplemented
+	}
+}
+
+func (r *queryResolver) ScrapeMultiImages(ctx context.Context, source scraper.Source, input ScrapeMultiImagesInput) ([][]*models.ScrapedImage, error) {
+	if source.ScraperID != nil {
+		return nil, ErrNotImplemented
+	} else if source.StashBoxIndex != nil {
+		return nil, ErrNotImplemented
+	}
+
+	return nil, errors.New("scraper_id or stash_box_index must be set")
 }
 
 func (r *queryResolver) ScrapeSingleMovie(ctx context.Context, source scraper.Source, input ScrapeSingleMovieInput) ([]*models.ScrapedMovie, error) {

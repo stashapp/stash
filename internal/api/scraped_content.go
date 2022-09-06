@@ -76,6 +76,29 @@ func marshalScrapedGalleries(content []scraper.ScrapedContent) ([]*scraper.Scrap
 	return ret, nil
 }
 
+// marshalScrapedImages converts ScrapedContent into ScrapedImage. If
+// conversion fails, an error is returned.
+func marshalScrapedImages(content []scraper.ScrapedContent) ([]*scraper.ScrapedImage, error) {
+	var ret []*scraper.ScrapedImage
+	for _, c := range content {
+		if c == nil {
+			// graphql schema requires galleries to be non-nil
+			continue
+		}
+
+		switch g := c.(type) {
+		case *scraper.ScrapedImage:
+			ret = append(ret, g)
+		case scraper.ScrapedImage:
+			ret = append(ret, &g)
+		default:
+			return nil, fmt.Errorf("%w: cannot turn ScrapedContent into ScrapedImage", models.ErrConversion)
+		}
+	}
+
+	return ret, nil
+}
+
 // marshalScrapedMovies converts ScrapedContent into ScrapedMovie. If conversion
 // fails, an error is returned.
 func marshalScrapedMovies(content []scraper.ScrapedContent) ([]*models.ScrapedMovie, error) {
@@ -122,6 +145,16 @@ func marshalScrapedScene(content scraper.ScrapedContent) (*scraper.ScrapedScene,
 // marshalScrapedGallery will marshal a single scraped gallery
 func marshalScrapedGallery(content scraper.ScrapedContent) (*scraper.ScrapedGallery, error) {
 	g, err := marshalScrapedGalleries([]scraper.ScrapedContent{content})
+	if err != nil {
+		return nil, err
+	}
+
+	return g[0], nil
+}
+
+// marshalScrapedImage will marshal a single scraped image
+func marshalScrapedImage(content scraper.ScrapedContent) (*scraper.ScrapedImage, error) {
+	g, err := marshalScrapedImages([]scraper.ScrapedContent{content})
 	if err != nil {
 		return nil, err
 	}

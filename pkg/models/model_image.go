@@ -15,6 +15,7 @@ type Image struct {
 	ID int `json:"id"`
 
 	Title     string `json:"title"`
+	URL       string `json:"url"`
 	Rating    *int   `json:"rating"`
 	Organized bool   `json:"organized"`
 	OCounter  int    `json:"o_counter"`
@@ -30,6 +31,7 @@ type Image struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Date time.Time `json:"date"`
 
 	GalleryIDs   RelatedIDs `json:"gallery_ids"`
 	TagIDs       RelatedIDs `json:"tag_ids"`
@@ -114,12 +116,14 @@ type ImageCreateInput struct {
 
 type ImagePartial struct {
 	Title     OptionalString
+	URL     OptionalString
 	Rating    OptionalInt
 	Organized OptionalBool
 	OCounter  OptionalInt
 	StudioID  OptionalInt
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime
+	Date OptionalTime
 
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs

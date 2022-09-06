@@ -31,6 +31,17 @@ query ListGalleryScrapers {
   }
 }
 
+query ListImageScrapers {
+  listImageScrapers {
+    id
+    name
+    image {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
 query ListMovieScrapers {
   listMovieScrapers {
     id
@@ -87,6 +98,24 @@ query ScrapeSingleGallery($source: ScraperSourceInput!, $input: ScrapeSingleGall
 query ScrapeGalleryURL($url: String!) {
   scrapeGalleryURL(url: $url) {
     ...ScrapedGalleryData
+  }
+}
+
+query ScrapeSingleImage($source: ScraperSourceInput!, $input: ScrapeSingleImageInput!) {
+  scrapeSingleImage(source: $source, input: $input) {
+    ...ScrapedImageData
+  }
+}
+
+query ScrapeMultiImages($source: ScraperSourceInput!, $input: ScrapeMultiImagesInput!) {
+  scrapeMultiImages(source: $source, input: $input) {
+    ...ScrapedImageData
+  }
+}
+
+query ScrapeImageURL($url: String!) {
+  scrapeImageURL(url: $url) {
+    ...ScrapedImageData
   }
 }
 
