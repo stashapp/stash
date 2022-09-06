@@ -216,7 +216,7 @@ func (m *schema32Migrator) deletePlaceholderFolder(ctx context.Context) error {
 func (m *schema32Migrator) createFolderHierarchy(p string) (*int, sql.NullInt64, error) {
 	parent := filepath.Dir(p)
 
-	if parent == "." || parent == string(filepath.Separator) {
+	if parent == p {
 		// get or create this folder
 		return m.getOrCreateFolder(p, nil, sql.NullInt64{})
 	}
