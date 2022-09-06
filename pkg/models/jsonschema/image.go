@@ -5,6 +5,7 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
@@ -23,7 +24,7 @@ type Image struct {
 }
 
 func (s Image) Filename(basename string, hash string) string {
-	ret := s.Title
+	ret := fsutil.SanitiseBasename(s.Title)
 	if ret == "" {
 		ret = basename
 	}

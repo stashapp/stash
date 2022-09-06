@@ -5,6 +5,7 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 )
@@ -24,7 +25,7 @@ type Studio struct {
 }
 
 func (s Studio) Filename() string {
-	return s.Name + ".json"
+	return fsutil.SanitiseBasename(s.Name) + ".json"
 }
 
 func LoadStudioFile(filePath string) (*Studio, error) {

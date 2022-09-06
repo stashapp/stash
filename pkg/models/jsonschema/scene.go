@@ -5,6 +5,7 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 )
@@ -58,7 +59,7 @@ type Scene struct {
 }
 
 func (s Scene) Filename(basename string, hash string) string {
-	ret := s.Title
+	ret := fsutil.SanitiseBasename(s.Title)
 	if ret == "" {
 		ret = basename
 	}
