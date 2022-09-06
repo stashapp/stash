@@ -33,6 +33,7 @@ const (
 	ScrapeContentTypeMovie     ScrapeContentType = "MOVIE"
 	ScrapeContentTypePerformer ScrapeContentType = "PERFORMER"
 	ScrapeContentTypeScene     ScrapeContentType = "SCENE"
+	ScrapeContentTypeImage     ScrapeContentType = "IMAGE"
 )
 
 var AllScrapeContentType = []ScrapeContentType{
@@ -40,6 +41,7 @@ var AllScrapeContentType = []ScrapeContentType{
 	ScrapeContentTypeMovie,
 	ScrapeContentTypePerformer,
 	ScrapeContentTypeScene,
+	ScrapeContentTypeImage,
 }
 
 func (e ScrapeContentType) IsValid() bool {

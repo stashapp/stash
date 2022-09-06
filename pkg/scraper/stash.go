@@ -346,3 +346,21 @@ func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
 		Date:    dateToStringPtr(gallery.Date),
 	}
 }
+
+func imageToUpdateInput(image *models.Image) models.ImageUpdateInput {
+	dateToStringPtr := func(s *models.Date) *string {
+		if s != nil {
+			v := s.String()
+			return &v
+		}
+
+		return nil
+	}
+
+	return models.ImageUpdateInput{
+		ID:    strconv.Itoa(image.ID),
+		Title: &image.Title,
+		URL:   &image.URL,
+		Date:  dateToStringPtr(image.Date),
+	}
+}

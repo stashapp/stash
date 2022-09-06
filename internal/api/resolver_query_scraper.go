@@ -262,6 +262,7 @@ func (r *queryResolver) ScrapeImageQuery(ctx context.Context, scraperID string, 
 	filterImageTags(ret)
 	return ret, nil
 }
+
 // filterImageTags removes tags matching excluded tag patterns from the provided scraped images
 func filterImageTags(images []*scraper.ScrapedImage) {
 	excludePatterns := manager.GetInstance().Config.GetScraperExcludeTagPatterns()
@@ -476,71 +477,6 @@ func (r *queryResolver) ScrapeMultiPerformers(ctx context.Context, source scrape
 		}
 
 		return client.FindStashBoxPerformersByPerformerNames(ctx, input.PerformerIds)
-	}
-
-	return nil, errors.New("scraper_id or stash_box_index must be set")
-}
-
-func (r *queryResolver) ScrapeSingleGallery(ctx context.Context, source scraper.Source, input ScrapeSingleGalleryInput) ([]*scraper.ScrapedGallery, error) {
-	if source.StashBoxIndex != nil {
-		return nil, ErrNotSupported
-	}
-
-	if source.ScraperID == nil {
-		return nil, fmt.Errorf("%w: scraper_id must be set", ErrInput)
-	}
-
-	var c scraper.ScrapedContent
-
-	switch {
-	case input.GalleryID != nil:
-		galleryID, err := strconv.Atoi(*input.GalleryID)
-		if err != nil {
-			return nil, fmt.Errorf("%w: gallery id is not an integer: '%s'", ErrInput, *input.GalleryID)
-		}
-		c, err = r.scraperCache().ScrapeID(ctx, *source.ScraperID, galleryID, scraper.ScrapeContentTypeGallery)
-		if err != nil {
-			return nil, err
-		}
-		return marshalScrapedGalleries([]scraper.ScrapedContent{c})
-	case input.GalleryInput != nil:
-		c, err := r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Gallery: input.GalleryInput})
-		if err != nil {
-			return nil, err
-		}
-		return marshalScrapedGalleries([]scraper.ScrapedContent{c})
-	default:
-		return nil, ErrNotImplemented
-	}
-}
-func (r *queryResolver) ScrapeSingleImage(ctx context.Context, source scraper.Source, input ScrapeSingleImageInput) ([]*scraper.ScrapedImage, error) {
-	if source.StashBoxIndex != nil {
-		return nil, ErrNotSupported
-	}
-
-	if source.ScraperID == nil {
-		return nil, fmt.Errorf("%w: scraper_id must be set", ErrInput)
-	}
-
-	var c scraper.ScrapedContent
-
-	switch {
-	case input.ImageInput != nil:
-		c, err := r.scraperCache().ScrapeFragment(ctx, *source.ScraperID, scraper.Input{Image: input.ImageInput})
-		if err != nil {
-			return nil, err
-		}
-		return marshalScrapedImages([]scraper.ScrapedContent{c})
-	default:
-		return nil, ErrNotImplemented
-	}
-}
-
-func (r *queryResolver) ScrapeMultiImages(ctx context.Context, source scraper.Source, input ScrapeMultiImagesInput) ([][]*models.ScrapedImage, error) {
-	if source.ScraperID != nil {
-		return nil, ErrNotImplemented
-	} else if source.StashBoxIndex != nil {
-		return nil, ErrNotImplemented
 	}
 
 	return nil, errors.New("scraper_id or stash_box_index must be set")
