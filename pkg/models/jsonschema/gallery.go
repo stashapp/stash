@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
@@ -26,7 +27,7 @@ type Gallery struct {
 }
 
 func (s Gallery) Filename(basename string, hash string) string {
-	ret := basename
+	ret := fsutil.SanitiseBasename(basename)
 
 	if ret != "" {
 		ret += "."
