@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -196,7 +195,7 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 	logger.Info("[performers] importing")
 
 	path := t.json.json.Performers
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.Errorf("[performers] failed to read performers directory: %v", err)
@@ -239,7 +238,7 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 	logger.Info("[studios] importing")
 
 	path := t.json.json.Studios
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.Errorf("[studios] failed to read studios directory: %v", err)
@@ -328,7 +327,7 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 	logger.Info("[movies] importing")
 
 	path := t.json.json.Movies
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.Errorf("[movies] failed to read movies directory: %v", err)
@@ -373,7 +372,7 @@ func (t *ImportTask) ImportFiles(ctx context.Context) {
 	logger.Info("[files] importing")
 
 	path := t.json.json.Files
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.Errorf("[files] failed to read files directory: %v", err)
@@ -463,7 +462,7 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 	logger.Info("[galleries] importing")
 
 	path := t.json.json.Galleries
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.Errorf("[galleries] failed to read galleries directory: %v", err)
@@ -515,7 +514,7 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 	logger.Info("[tags] importing")
 
 	path := t.json.json.Tags
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.Errorf("[tags] failed to read tags directory: %v", err)
@@ -650,7 +649,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 	logger.Info("[scenes] importing")
 
 	path := t.json.json.Scenes
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.Errorf("[scenes] failed to read scenes directory: %v", err)
