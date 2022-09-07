@@ -343,8 +343,10 @@ func (s *scanJob) processQueue(ctx context.Context) error {
 	return nil
 }
 
-func (s *scanJob) incrementProgress() {
-	if s.ProgressReports != nil {
+func (s *scanJob) incrementProgress(f scanFile) {
+	// don't increment for files inside zip files since these aren't
+	// counted during the initial walking
+	if s.ProgressReports != nil && f.zipFile == nil {
 		s.ProgressReports.Increment()
 	}
 }
@@ -418,7 +420,7 @@ func (s *scanJob) handleFolder(ctx context.Context, file scanFile) error {
 	path := file.Path
 
 	return s.withTxn(ctx, func(ctx context.Context) error {
-		defer s.incrementProgress()
+		defer s.incrementProgress(file)
 
 		// determine if folder already exists in data store (by path)
 		f, err := s.Repository.FolderStore.FindByPath(ctx, path)
@@ -579,7 +581,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 		// add this file to the queue to be created later
 		if s.retrying {
 			// if we're retrying and the folder still doesn't exist, then it's a problem
-			s.incrementProgress()
+			s.incrementProgress(f)
 			return nil, fmt.Errorf("parent folder for %q doesn't exist", path)
 		}
 
@@ -591,7 +593,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	zipFileID, err := s.getZipFileID(ctx, f.zipFile)
 	if err != nil {
-		s.incrementProgress()
+		s.incrementProgress(f)
 		return nil, err
 	}
 
@@ -601,7 +603,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	fp, err := s.calculateFingerprints(f.fs, baseFile, path)
 	if err != nil {
-		s.incrementProgress()
+		s.incrementProgress(f)
 		return nil, err
 	}
 
@@ -609,7 +611,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 
 	file, err := s.fireDecorators(ctx, f.fs, baseFile)
 	if err != nil {
-		s.incrementProgress()
+		s.incrementProgress(f)
 		return nil, err
 	}
 
@@ -617,7 +619,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 	// do this after decoration so that missing fields can be populated
 	renamed, err := s.handleRename(ctx, file, fp)
 	if err != nil {
-		s.incrementProgress()
+		s.incrementProgress(f)
 		return nil, err
 	}
 
@@ -785,6 +787,63 @@ func (s *scanJob) isHandlerRequired(ctx context.Context, f File) bool {
 	return accept
 }
 
+// isMissingMetadata returns true if the provided file is missing metadata.
+// Missing metadata should only occur after the 32 schema migration.
+// Looks for special values. For numbers, this will be -1. For strings, this
+// will be 'unset'.
+// Missing metadata includes the following:
+// - file size
+// - image format, width or height
+// - video codec, audio codec, format, width, height, framerate or bitrate
+func (s *scanJob) isMissingMetadata(existing File) bool {
+	const (
+		unsetString = "unset"
+		unsetNumber = -1
+	)
+
+	if existing.Base().Size == unsetNumber {
+		return true
+	}
+
+	switch f := existing.(type) {
+	case *ImageFile:
+		return f.Format == unsetString || f.Width == unsetNumber || f.Height == unsetNumber
+	case *VideoFile:
+		return f.VideoCodec == unsetString || f.AudioCodec == unsetString ||
+			f.Format == unsetString || f.Width == unsetNumber ||
+			f.Height == unsetNumber || f.FrameRate == unsetNumber ||
+			f.BitRate == unsetNumber
+	}
+
+	return false
+}
+
+func (s *scanJob) setMissingMetadata(ctx context.Context, f scanFile, existing File) (File, error) {
+	path := existing.Base().Path
+	logger.Infof("Setting missing metadata for %s", path)
+
+	existing.Base().Size = f.Size
+
+	var err error
+	existing, err = s.fireDecorators(ctx, f.fs, existing)
+	if err != nil {
+		return nil, err
+	}
+
+	// queue file for update
+	if err := s.withTxn(ctx, func(ctx context.Context) error {
+		if err := s.Repository.Update(ctx, existing); err != nil {
+			return fmt.Errorf("updating file %q: %w", path, err)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return existing, nil
+}
+
 // returns a file only if it was updated
 func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File) (File, error) {
 	base := existing.Base()
@@ -794,6 +853,16 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	updated := !fileModTime.Equal(base.ModTime)
 
 	if !updated {
+		isMissingMetdata := s.isMissingMetadata(existing)
+		// set missing information
+		if isMissingMetdata {
+			var err error
+			existing, err = s.setMissingMetadata(ctx, f, existing)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		handlerRequired := false
 		if err := s.withDB(ctx, func(ctx context.Context) error {
 			// check if the handler needs to be run
@@ -804,7 +873,14 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 		}
 
 		if !handlerRequired {
-			s.incrementProgress()
+			s.incrementProgress(f)
+
+			// if this file is a zip file, then we need to rescan the contents
+			// as well. We do this by returning the file, instead of nil.
+			if isMissingMetdata {
+				return existing, nil
+			}
+
 			return nil, nil
 		}
 
@@ -813,10 +889,16 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 				return err
 			}
 
-			s.incrementProgress()
+			s.incrementProgress(f)
 			return nil
 		}); err != nil {
 			return nil, err
+		}
+
+		// if this file is a zip file, then we need to rescan the contents
+		// as well. We do this by returning the file, instead of nil.
+		if isMissingMetdata {
+			return existing, nil
 		}
 
 		return nil, nil
@@ -830,7 +912,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	// calculate and update fingerprints for the file
 	fp, err := s.calculateFingerprints(f.fs, base, path)
 	if err != nil {
-		s.incrementProgress()
+		s.incrementProgress(f)
 		return nil, err
 	}
 
@@ -838,7 +920,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 
 	existing, err = s.fireDecorators(ctx, f.fs, existing)
 	if err != nil {
-		s.incrementProgress()
+		s.incrementProgress(f)
 		return nil, err
 	}
 

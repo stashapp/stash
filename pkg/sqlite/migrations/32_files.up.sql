@@ -170,9 +170,9 @@ INSERT INTO `files`
   SELECT
     `path`,
     1,
-    COALESCE(`size`, 0),
-    -- set mod time to epoch so that it the format/size is calculated on scan
-    '1970-01-01 00:00:00',
+    -- special value if null so that it is recalculated
+    COALESCE(`size`, -1),
+    COALESCE(`file_mod_time`, '1970-01-01 00:00:00'),
     `created_at`,
     `updated_at`
   FROM `images`;
@@ -186,9 +186,10 @@ INSERT INTO `image_files`
   )
   SELECT
     `files`.`id`,
-    '',
-    COALESCE(`images`.`width`, 0),
-    COALESCE(`images`.`height`, 0)
+    -- special values so that they are recalculated
+    'unset',
+    COALESCE(`images`.`width`, -1),
+    COALESCE(`images`.`height`, -1)
   FROM `images` INNER JOIN `files` ON `images`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
 
 INSERT INTO `images_files`
@@ -280,8 +281,9 @@ INSERT INTO `files`
   SELECT
     `path`,
     1,
-    0,
-    '1970-01-01 00:00:00', -- set to placeholder so that size is updated
+    -- special value so that it is recalculated
+    -1,
+    COALESCE(`file_mod_time`, '1970-01-01 00:00:00'),
     `created_at`,
     `updated_at`
   FROM `galleries`
@@ -433,9 +435,9 @@ INSERT INTO `files`
   SELECT
     `path`,
     1,
-    COALESCE(`size`, 0),
-    -- set mod time to epoch so that it the format/size is calculated on scan
-    '1970-01-01 00:00:00',
+    -- special value if null so that it is recalculated
+    COALESCE(`size`, -1),
+    COALESCE(`file_mod_time`, '1970-01-01 00:00:00'),
     `created_at`,
     `updated_at`
   FROM `scenes`;
@@ -457,13 +459,14 @@ INSERT INTO `video_files`
   SELECT
     `files`.`id`,
     `scenes`.`duration`,
-    COALESCE(`scenes`.`video_codec`, ''),
-    COALESCE(`scenes`.`format`, ''),
-    COALESCE(`scenes`.`audio_codec`, ''),
-    COALESCE(`scenes`.`width`, 0),
-    COALESCE(`scenes`.`height`, 0),
-    COALESCE(`scenes`.`framerate`, 0),
-    COALESCE(`scenes`.`bitrate`, 0),
+    -- special values for unset to be updated during scan
+    COALESCE(`scenes`.`video_codec`, 'unset'),
+    COALESCE(`scenes`.`format`, 'unset'),
+    COALESCE(`scenes`.`audio_codec`, 'unset'),
+    COALESCE(`scenes`.`width`, -1),
+    COALESCE(`scenes`.`height`, -1),
+    COALESCE(`scenes`.`framerate`, -1),
+    COALESCE(`scenes`.`bitrate`, -1),
     `scenes`.`interactive`,
     `scenes`.`interactive_speed`
   FROM `scenes` INNER JOIN `files` ON `scenes`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
