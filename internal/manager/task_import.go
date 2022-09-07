@@ -727,7 +727,7 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 	logger.Info("[images] importing")
 
 	path := t.json.json.Images
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			logger.Errorf("[images] failed to read images directory: %v", err)
