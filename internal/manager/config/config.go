@@ -311,8 +311,7 @@ func (i *Instance) GetNotificationsEnabled() bool {
 
 // GetShowOneTimeMovedNotification shows whether a small notification to inform the user that Stash
 // will no longer show a terminal window, and instead will be available in the tray, should be shown.
-//
-//	It is true when an existing system is started after upgrading, and set to false forever after it is shown.
+// It is true when an existing system is started after upgrading, and set to false forever after it is shown.
 func (i *Instance) GetShowOneTimeMovedNotification() bool {
 	return i.getBool(ShowOneTimeMovedNotification)
 }
