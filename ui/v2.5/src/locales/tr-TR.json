@@ -792,6 +792,9 @@
       "something_went_wrong_description": "Hatanın sizin belirlediğiniz özel ayarlardan kaynaklanıyor olabilir, lütfen geriye giderek o ayarları değiştirin. Tekrar hata alırsanız {githubLink} veya {discordLink} adreslerini kullanarak sorunu bildirin (Şimdilik yalnızca İngilizce).",
       "something_went_wrong_while_setting_up_your_system": "Sisteminizi ayarlarken birşeyler yanlış gitti ve bu hata mesajını aldık: {error}"
     },
+    "folder": {
+      "up_dir": "Bir dizin üste çık"
+    },
     "github_repository": "Github repository",
     "migrate": {
       "backup_database_path_leave_empty_to_disable_backup": "Veritabanı yedekleme konumu (yedeklemeyi devre dışı bırakmak için bu alanı boş bırakın):",
@@ -845,10 +848,7 @@
       "next_step": "Yeni bir sistem oluşturmak için hazır olduğunuzda Sonraki düğmesine basın.",
       "unable_to_locate_specified_config": "Eğer bunu okuyorsanız, Stash yapılandırma dosyasını bulamamış demektir. Bu sihirbaz yeni bir yapılandırma sırasında size yol gösterecektir."
     },
-    "welcome_to_stash": "Stash uygulamasına hoşgeldiniz",
-    "folder": {
-      "up_dir": "Bir dizin üste çık"
-    }
+    "welcome_to_stash": "Stash uygulamasına hoşgeldiniz"
   },
   "stash_id": "Stash Kimliği (ID)",
   "stash_ids": "Stash Kimlikleri (ID)",
@@ -876,7 +876,6 @@
     "added_generation_job_to_queue": "Oluşturma işlemi kuyruğa eklendi",
     "created_entity": "{entity} oluşturuldu",
     "default_filter_set": "Varsayılan filtre ayarla",
-    "delete_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} sil",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} silindi",
     "generating_screenshot": "Ekran görüntüsü oluşturuluyor…",
     "merged_tags": "Etiketler birleştirildi",

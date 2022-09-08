@@ -14,6 +14,7 @@ type FinderByFile interface {
 type Repository interface {
 	FinderByFile
 	Destroyer
+	models.VideoFileLoader
 }
 
 type Service struct {

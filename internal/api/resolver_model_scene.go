@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
@@ -13,9 +14,56 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+func (r *sceneResolver) getPrimaryFile(ctx context.Context, obj *models.Scene) (*file.VideoFile, error) {
+	if obj.PrimaryFileID != nil {
+		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
+
+		ret, ok := f.(*file.VideoFile)
+		if !ok {
+			return nil, fmt.Errorf("file %T is not an image file", f)
+		}
+
+		obj.Files.SetPrimary(ret)
+
+		return ret, nil
+	}
+
+	return nil, nil
+}
+
+func (r *sceneResolver) getFiles(ctx context.Context, obj *models.Scene) ([]*file.VideoFile, error) {
+	fileIDs, err := loaders.From(ctx).SceneFiles.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
+	ret := make([]*file.VideoFile, len(files))
+	for i, bf := range files {
+		f, ok := bf.(*file.VideoFile)
+		if !ok {
+			return nil, fmt.Errorf("file %T is not a video file", f)
+		}
+
+		ret[i] = f
+	}
+
+	obj.Files.Set(ret)
+
+	return ret, firstError(errs)
+}
+
 func (r *sceneResolver) FileModTime(ctx context.Context, obj *models.Scene) (*time.Time, error) {
-	if obj.PrimaryFile() != nil {
-		return &obj.PrimaryFile().ModTime, nil
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	if f != nil {
+		return &f.ModTime, nil
 	}
 	return nil, nil
 }
@@ -30,7 +78,10 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 
 // File is deprecated
 func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
-	f := obj.PrimaryFile()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if f == nil {
 		return nil, nil
 	}
@@ -51,9 +102,14 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.Sc
 }
 
 func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoFile, error) {
-	ret := make([]*VideoFile, len(obj.Files))
+	files, err := r.getFiles(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 
-	for i, f := range obj.Files {
+	ret := make([]*VideoFile, len(files))
+
+	for i, f := range files {
 		ret[i] = &VideoFile{
 			ID:             strconv.Itoa(int(f.ID)),
 			Path:           f.Path,
@@ -147,7 +203,10 @@ func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (re
 }
 
 func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []*models.VideoCaption, err error) {
-	primaryFile := obj.PrimaryFile()
+	primaryFile, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if primaryFile == nil {
 		return nil, nil
 	}
@@ -163,14 +222,17 @@ func (r *sceneResolver) Captions(ctx context.Context, obj *models.Scene) (ret []
 }
 
 func (r *sceneResolver) Galleries(ctx context.Context, obj *models.Scene) (ret []*models.Gallery, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Gallery.FindMany(ctx, obj.GalleryIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.GalleryIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadGalleryIDs(ctx, r.repository.Scene)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).GalleryByID.LoadAll(obj.GalleryIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *models.Studio, err error) {
@@ -178,66 +240,105 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 		return nil, nil
 	}
 
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Studio.Find(ctx, *obj.StudioID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return loaders.From(ctx).StudioByID.Load(*obj.StudioID)
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*SceneMovie, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		mqb := r.repository.Movie
+	if !obj.Movies.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			qb := r.repository.Scene
 
-		for _, sm := range obj.Movies {
-			movie, err := mqb.Find(ctx, sm.MovieID)
-			if err != nil {
-				return err
-			}
+			return obj.LoadMovies(ctx, qb)
+		}); err != nil {
+			return nil, err
+		}
+	}
 
-			sceneIdx := sm.SceneIndex
-			sceneMovie := &SceneMovie{
-				Movie:      movie,
-				SceneIndex: sceneIdx,
-			}
+	loader := loaders.From(ctx).MovieByID
 
-			ret = append(ret, sceneMovie)
+	for _, sm := range obj.Movies.List() {
+		movie, err := loader.Load(sm.MovieID)
+		if err != nil {
+			return nil, err
 		}
 
-		return nil
-	}); err != nil {
-		return nil, err
+		sceneIdx := sm.SceneIndex
+		sceneMovie := &SceneMovie{
+			Movie:      movie,
+			SceneIndex: sceneIdx,
+		}
+
+		ret = append(ret, sceneMovie)
 	}
+
 	return ret, nil
 }
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*models.Tag, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Tag.FindMany(ctx, obj.TagIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.TagIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadTagIDs(ctx, r.repository.Scene)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).TagByID.LoadAll(obj.TagIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret []*models.Performer, err error) {
+	if !obj.PerformerIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadPerformerIDs(ctx, r.repository.Scene)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	var errs []error
+	ret, errs = loaders.From(ctx).PerformerByID.LoadAll(obj.PerformerIDs.List())
+	return ret, firstError(errs)
+}
+
+func stashIDsSliceToPtrSlice(v []models.StashID) []*models.StashID {
+	ret := make([]*models.StashID, len(v))
+	for i, vv := range v {
+		c := vv
+		ret[i] = &c
+	}
+
+	return ret
+}
+
+func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []*models.StashID, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Performer.FindMany(ctx, obj.PerformerIDs)
-		return err
+		return obj.LoadStashIDs(ctx, r.repository.Scene)
 	}); err != nil {
 		return nil, err
 	}
 
-	return ret, nil
+	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
 }
 
 func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, error) {
-	phash := obj.Phash()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	if f == nil {
+		return nil, nil
+	}
+
+	val := f.Fingerprints.Get(file.FingerprintTypePhash)
+	if val == nil {
+		return nil, nil
+	}
+
+	phash, _ := val.(int64)
+
 	if phash != 0 {
 		hexval := utils.PhashToString(phash)
 		return &hexval, nil
@@ -246,6 +347,12 @@ func (r *sceneResolver) Phash(ctx context.Context, obj *models.Scene) (*string, 
 }
 
 func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]*manager.SceneStreamEndpoint, error) {
+	// load the primary file into the scene
+	_, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
 	config := manager.GetInstance().Config
 
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
@@ -255,7 +362,10 @@ func (r *sceneResolver) SceneStreams(ctx context.Context, obj *models.Scene) ([]
 }
 
 func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (bool, error) {
-	primaryFile := obj.PrimaryFile()
+	primaryFile, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return false, err
+	}
 	if primaryFile == nil {
 		return false, nil
 	}
@@ -264,7 +374,10 @@ func (r *sceneResolver) Interactive(ctx context.Context, obj *models.Scene) (boo
 }
 
 func (r *sceneResolver) InteractiveSpeed(ctx context.Context, obj *models.Scene) (*int, error) {
-	primaryFile := obj.PrimaryFile()
+	primaryFile, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if primaryFile == nil {
 		return nil, nil
 	}

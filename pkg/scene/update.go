@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -87,53 +86,32 @@ func (u UpdateSet) UpdateInput() models.SceneUpdateInput {
 	return ret
 }
 
-func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Scene, performerID int) (bool, error) {
-	if !intslice.IntInclude(o.PerformerIDs, performerID) {
-		if _, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
-			PerformerIDs: &models.UpdateIDs{
-				IDs:  []int{performerID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}); err != nil {
-			return false, err
-		}
-
-		return true, nil
-	}
-
-	return false, nil
+func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Scene, performerID int) error {
+	_, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
+		PerformerIDs: &models.UpdateIDs{
+			IDs:  []int{performerID},
+			Mode: models.RelationshipUpdateModeAdd,
+		},
+	})
+	return err
 }
 
-func AddTag(ctx context.Context, qb PartialUpdater, o *models.Scene, tagID int) (bool, error) {
-	if !intslice.IntInclude(o.TagIDs, tagID) {
-		if _, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
-			TagIDs: &models.UpdateIDs{
-				IDs:  []int{tagID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}); err != nil {
-			return false, err
-		}
-
-		return true, nil
-	}
-
-	return false, nil
+func AddTag(ctx context.Context, qb PartialUpdater, o *models.Scene, tagID int) error {
+	_, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
+		TagIDs: &models.UpdateIDs{
+			IDs:  []int{tagID},
+			Mode: models.RelationshipUpdateModeAdd,
+		},
+	})
+	return err
 }
 
-func AddGallery(ctx context.Context, qb PartialUpdater, o *models.Scene, galleryID int) (bool, error) {
-	if !intslice.IntInclude(o.GalleryIDs, galleryID) {
-		if _, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
-			TagIDs: &models.UpdateIDs{
-				IDs:  []int{galleryID},
-				Mode: models.RelationshipUpdateModeAdd,
-			},
-		}); err != nil {
-			return false, err
-		}
-
-		return true, nil
-	}
-
-	return false, nil
+func AddGallery(ctx context.Context, qb PartialUpdater, o *models.Scene, galleryID int) error {
+	_, err := qb.UpdatePartial(ctx, o.ID, models.ScenePartial{
+		TagIDs: &models.UpdateIDs{
+			IDs:  []int{galleryID},
+			Mode: models.RelationshipUpdateModeAdd,
+		},
+	})
+	return err
 }

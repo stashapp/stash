@@ -2,10 +2,10 @@ package autotag
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -34,13 +34,10 @@ func generateNamePatterns(name, separator, ext string) []string {
 	ret = append(ret, fmt.Sprintf("%s%saaa.%s", name, separator, ext))
 	ret = append(ret, fmt.Sprintf("aaa%s%s.%s", separator, name, ext))
 	ret = append(ret, fmt.Sprintf("aaa%s%s%sbbb.%s", separator, name, separator, ext))
-	ret = append(ret, fmt.Sprintf("dir/%s%saaa.%s", name, separator, ext))
-	ret = append(ret, fmt.Sprintf("dir%sdir/%s%saaa.%s", separator, name, separator, ext))
-	ret = append(ret, fmt.Sprintf("dir\\%s%saaa.%s", name, separator, ext))
-	ret = append(ret, fmt.Sprintf("%s%saaa/dir/bbb.%s", name, separator, ext))
-	ret = append(ret, fmt.Sprintf("%s%saaa\\dir\\bbb.%s", name, separator, ext))
-	ret = append(ret, fmt.Sprintf("dir/%s%s/aaa.%s", name, separator, ext))
-	ret = append(ret, fmt.Sprintf("dir\\%s%s\\aaa.%s", name, separator, ext))
+	ret = append(ret, filepath.Join("dir", fmt.Sprintf("%s%saaa.%s", name, separator, ext)))
+	ret = append(ret, filepath.Join(fmt.Sprintf("dir%sdir", separator), fmt.Sprintf("%s%saaa.%s", name, separator, ext)))
+	ret = append(ret, filepath.Join(fmt.Sprintf("%s%saaa", name, separator), "dir", fmt.Sprintf("bbb.%s", ext)))
+	ret = append(ret, filepath.Join("dir", fmt.Sprintf("%s%s", name, separator), fmt.Sprintf("aaa.%s", ext)))
 
 	return ret
 }
@@ -91,8 +88,7 @@ func generateTestPaths(testName, ext string) (scenePatterns []string, falseScene
 	falseScenePatterns = append(falseScenePatterns, fmt.Sprintf("%saaa.%s", testName, ext))
 
 	// add path separator false scenarios
-	falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, "/", ext)...)
-	falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, "\\", ext)...)
+	falseScenePatterns = append(falseScenePatterns, generateFalseNamePatterns(testName, string(filepath.Separator), ext)...)
 
 	// split patterns only valid for ._- and whitespace
 	for _, separator := range testSeparators {
@@ -178,14 +174,9 @@ func TestScenePerformers(t *testing.T) {
 		mockPerformerReader.On("QueryForAutoTag", testCtx, mock.Anything).Return([]*models.Performer{&performer, &reversedPerformer}, nil).Once()
 
 		scene := models.Scene{
-			ID: sceneID,
-			Files: []*file.VideoFile{
-				{
-					BaseFile: &file.BaseFile{
-						Path: test.Path,
-					},
-				},
-			},
+			ID:           sceneID,
+			Path:         test.Path,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		}
 
 		if test.Matches {
@@ -238,14 +229,8 @@ func TestSceneStudios(t *testing.T) {
 		}
 
 		scene := models.Scene{
-			ID: sceneID,
-			Files: []*file.VideoFile{
-				{
-					BaseFile: &file.BaseFile{
-						Path: test.Path,
-					},
-				},
-			},
+			ID:   sceneID,
+			Path: test.Path,
 		}
 		err := SceneStudios(testCtx, &scene, mockSceneReader, mockStudioReader, nil)
 
@@ -317,14 +302,9 @@ func TestSceneTags(t *testing.T) {
 		}
 
 		scene := models.Scene{
-			ID: sceneID,
-			Files: []*file.VideoFile{
-				{
-					BaseFile: &file.BaseFile{
-						Path: test.Path,
-					},
-				},
-			},
+			ID:     sceneID,
+			Path:   test.Path,
+			TagIDs: models.NewRelatedIDs([]int{}),
 		}
 		err := SceneTags(testCtx, &scene, mockSceneReader, mockTagReader, nil)
 

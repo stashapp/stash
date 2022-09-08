@@ -699,17 +699,17 @@ func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 		if t.performers {
 			if err := autotag.ScenePerformers(ctx, t.scene, r.Scene, r.Performer, t.cache); err != nil {
-				return fmt.Errorf("error tagging scene performers for %s: %v", t.scene.Path(), err)
+				return fmt.Errorf("error tagging scene performers for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
 		if t.studios {
 			if err := autotag.SceneStudios(ctx, t.scene, r.Scene, r.Studio, t.cache); err != nil {
-				return fmt.Errorf("error tagging scene studio for %s: %v", t.scene.Path(), err)
+				return fmt.Errorf("error tagging scene studio for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
 		if t.tags {
 			if err := autotag.SceneTags(ctx, t.scene, r.Scene, r.Tag, t.cache); err != nil {
-				return fmt.Errorf("error tagging scene tags for %s: %v", t.scene.Path(), err)
+				return fmt.Errorf("error tagging scene tags for %s: %v", t.scene.DisplayName(), err)
 			}
 		}
 
@@ -736,17 +736,17 @@ func (t *autoTagImageTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 		if t.performers {
 			if err := autotag.ImagePerformers(ctx, t.image, r.Image, r.Performer, t.cache); err != nil {
-				return fmt.Errorf("error tagging image performers for %s: %v", t.image.Path(), err)
+				return fmt.Errorf("error tagging image performers for %s: %v", t.image.DisplayName(), err)
 			}
 		}
 		if t.studios {
 			if err := autotag.ImageStudios(ctx, t.image, r.Image, r.Studio, t.cache); err != nil {
-				return fmt.Errorf("error tagging image studio for %s: %v", t.image.Path(), err)
+				return fmt.Errorf("error tagging image studio for %s: %v", t.image.DisplayName(), err)
 			}
 		}
 		if t.tags {
 			if err := autotag.ImageTags(ctx, t.image, r.Image, r.Tag, t.cache); err != nil {
-				return fmt.Errorf("error tagging image tags for %s: %v", t.image.Path(), err)
+				return fmt.Errorf("error tagging image tags for %s: %v", t.image.DisplayName(), err)
 			}
 		}
 
@@ -773,17 +773,17 @@ func (t *autoTagGalleryTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
 		if t.performers {
 			if err := autotag.GalleryPerformers(ctx, t.gallery, r.Gallery, r.Performer, t.cache); err != nil {
-				return fmt.Errorf("error tagging gallery performers for %s: %v", t.gallery.Path(), err)
+				return fmt.Errorf("error tagging gallery performers for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}
 		if t.studios {
 			if err := autotag.GalleryStudios(ctx, t.gallery, r.Gallery, r.Studio, t.cache); err != nil {
-				return fmt.Errorf("error tagging gallery studio for %s: %v", t.gallery.Path(), err)
+				return fmt.Errorf("error tagging gallery studio for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}
 		if t.tags {
 			if err := autotag.GalleryTags(ctx, t.gallery, r.Gallery, r.Tag, t.cache); err != nil {
-				return fmt.Errorf("error tagging gallery tags for %s: %v", t.gallery.Path(), err)
+				return fmt.Errorf("error tagging gallery tags for %s: %v", t.gallery.DisplayName(), err)
 			}
 		}
 

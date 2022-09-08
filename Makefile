@@ -162,6 +162,10 @@ generate-frontend:
 generate-backend: touch-ui 
 	go generate -mod=vendor ./cmd/stash
 
+.PHONY: generate-dataloaders
+generate-dataloaders:
+	go generate -mod=vendor ./internal/api/loaders
+
 # Regenerates stash-box client files
 .PHONY: generate-stash-box-client
 generate-stash-box-client:

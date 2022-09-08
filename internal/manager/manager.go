@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
@@ -211,6 +210,7 @@ func initialize() error {
 
 	instance.DLNAService = dlna.NewService(instance.Repository, dlna.Repository{
 		SceneFinder:     instance.Repository.Scene,
+		FileFinder:      instance.Repository.File,
 		StudioFinder:    instance.Repository.Studio,
 		TagFinder:       instance.Repository.Tag,
 		PerformerFinder: instance.Repository.Performer,
@@ -497,7 +497,7 @@ func writeStashIcon() {
 	}
 
 	iconPath := filepath.Join(instance.Config.GetConfigPath(), "icon.png")
-	err := ioutil.WriteFile(iconPath, p.GetFaviconPng(), 0644)
+	err := os.WriteFile(iconPath, p.GetFaviconPng(), 0644)
 	if err != nil {
 		logger.Errorf("Couldn't write icon file: %s", err.Error())
 	}

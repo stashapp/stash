@@ -82,6 +82,42 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.UpdatedAt = o.UpdatedAt
 }
 
+type sceneQueryRow struct {
+	sceneRow
+	PrimaryFileID         null.Int    `db:"primary_file_id"`
+	PrimaryFileFolderPath zero.String `db:"primary_file_folder_path"`
+	PrimaryFileBasename   zero.String `db:"primary_file_basename"`
+	PrimaryFileOshash     zero.String `db:"primary_file_oshash"`
+	PrimaryFileChecksum   zero.String `db:"primary_file_checksum"`
+}
+
+func (r *sceneQueryRow) resolve() *models.Scene {
+	ret := &models.Scene{
+		ID:        r.ID,
+		Title:     r.Title.String,
+		Details:   r.Details.String,
+		URL:       r.URL.String,
+		Date:      r.Date.DatePtr(),
+		Rating:    nullIntPtr(r.Rating),
+		Organized: r.Organized,
+		OCounter:  r.OCounter,
+		StudioID:  nullIntPtr(r.StudioID),
+
+		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
+		OSHash:        r.PrimaryFileOshash.String,
+		Checksum:      r.PrimaryFileChecksum.String,
+
+		CreatedAt: r.CreatedAt,
+		UpdatedAt: r.UpdatedAt,
+	}
+
+	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
+		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
+	}
+
+	return ret
+}
+
 type sceneRowRecord struct {
 	updateRecord
 }
@@ -99,139 +135,16 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setTime("updated_at", o.UpdatedAt)
 }
 
-type sceneQueryRow struct {
-	sceneRow
-
-	relatedFileQueryRow
-
-	GalleryID   null.Int `db:"gallery_id"`
-	TagID       null.Int `db:"tag_id"`
-	PerformerID null.Int `db:"performer_id"`
-
-	moviesScenesRow
-	stashIDRow
-}
-
-func (r *sceneQueryRow) resolve() *models.Scene {
-	ret := &models.Scene{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Details:   r.Details.String,
-		URL:       r.URL.String,
-		Date:      r.Date.DatePtr(),
-		Rating:    nullIntPtr(r.Rating),
-		Organized: r.Organized,
-		OCounter:  r.OCounter,
-		StudioID:  nullIntPtr(r.StudioID),
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
-	}
-
-	r.appendRelationships(ret)
-
-	return ret
-}
-
-func movieAppendUnique(e []models.MoviesScenes, toAdd models.MoviesScenes) []models.MoviesScenes {
-	for _, ee := range e {
-		if ee.Equal(toAdd) {
-			return e
-		}
-	}
-
-	return append(e, toAdd)
-}
-
-func stashIDAppendUnique(e []models.StashID, toAdd models.StashID) []models.StashID {
-	for _, ee := range e {
-		if ee == toAdd {
-			return e
-		}
-	}
-
-	return append(e, toAdd)
-}
-
-func appendVideoFileUnique(vs []*file.VideoFile, toAdd *file.VideoFile, isPrimary bool) []*file.VideoFile {
-	// check in reverse, since it's most likely to be the last one
-	for i := len(vs) - 1; i >= 0; i-- {
-		if vs[i].Base().ID == toAdd.Base().ID {
-
-			// merge the two
-			mergeFiles(vs[i], toAdd)
-			return vs
-		}
-	}
-
-	if !isPrimary {
-		return append(vs, toAdd)
-	}
-
-	// primary should be first
-	return append([]*file.VideoFile{toAdd}, vs...)
-}
-
-func (r *sceneQueryRow) appendRelationships(i *models.Scene) {
-	if r.TagID.Valid {
-		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, int(r.TagID.Int64))
-	}
-	if r.PerformerID.Valid {
-		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, int(r.PerformerID.Int64))
-	}
-	if r.GalleryID.Valid {
-		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, int(r.GalleryID.Int64))
-	}
-	if r.MovieID.Valid {
-		i.Movies = movieAppendUnique(i.Movies, models.MoviesScenes{
-			MovieID:    int(r.MovieID.Int64),
-			SceneIndex: nullIntPtr(r.SceneIndex),
-		})
-	}
-	if r.StashID.Valid {
-		i.StashIDs = stashIDAppendUnique(i.StashIDs, models.StashID{
-			StashID:  r.StashID.String,
-			Endpoint: r.Endpoint.String,
-		})
-	}
-
-	if r.relatedFileQueryRow.FileID.Valid {
-		f := r.fileQueryRow.resolve().(*file.VideoFile)
-		i.Files = appendVideoFileUnique(i.Files, f, r.Primary.Bool)
-	}
-}
-
-type sceneQueryRows []sceneQueryRow
-
-func (r sceneQueryRows) resolve() []*models.Scene {
-	var ret []*models.Scene
-	var last *models.Scene
-	var lastID int
-
-	for _, row := range r {
-		if last == nil || lastID != row.ID {
-			f := row.resolve()
-			last = f
-			lastID = row.ID
-			ret = append(ret, last)
-			continue
-		}
-
-		// must be merging with previous row
-		row.appendRelationships(last)
-	}
-
-	return ret
-}
-
 type SceneStore struct {
 	repository
 
-	tableMgr      *table
-	queryTableMgr *table
+	tableMgr *table
 	oCounterManager
+
+	fileStore *FileStore
 }
 
-func NewSceneStore() *SceneStore {
+func NewSceneStore(fileStore *FileStore) *SceneStore {
 	return &SceneStore{
 		repository: repository{
 			tableName: sceneTable,
@@ -239,17 +152,13 @@ func NewSceneStore() *SceneStore {
 		},
 
 		tableMgr:        sceneTableMgr,
-		queryTableMgr:   sceneQueryTableMgr,
 		oCounterManager: oCounterManager{sceneTableMgr},
+		fileStore:       fileStore,
 	}
 }
 
 func (qb *SceneStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
-}
-
-func (qb *SceneStore) queryTable() exp.IdentifierExpression {
-	return qb.queryTableMgr.table
 }
 
 func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileIDs []file.ID) error {
@@ -268,20 +177,33 @@ func (qb *SceneStore) Create(ctx context.Context, newObject *models.Scene, fileI
 		}
 	}
 
-	if err := scenesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
-		return err
+	if newObject.PerformerIDs.Loaded() {
+		if err := scenesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs); err != nil {
-		return err
+	if newObject.TagIDs.Loaded() {
+		if err := scenesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs); err != nil {
-		return err
+
+	if newObject.GalleryIDs.Loaded() {
+		if err := scenesGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs); err != nil {
-		return err
+
+	if newObject.StashIDs.Loaded() {
+		if err := scenesStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs.List()); err != nil {
+			return err
+		}
 	}
-	if err := scenesMoviesTableMgr.insertJoins(ctx, id, newObject.Movies); err != nil {
-		return err
+
+	if newObject.Movies.Loaded() {
+		if err := scenesMoviesTableMgr.insertJoins(ctx, id, newObject.Movies.List()); err != nil {
+			return err
+		}
 	}
 
 	updated, err := qb.find(ctx, id)
@@ -334,6 +256,11 @@ func (qb *SceneStore) UpdatePartial(ctx context.Context, id int, partial models.
 			return nil, err
 		}
 	}
+	if partial.PrimaryFileID != nil {
+		if err := scenesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
+			return nil, err
+		}
+	}
 
 	return qb.Find(ctx, id)
 }
@@ -346,29 +273,45 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 		return err
 	}
 
-	if err := scenesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs); err != nil {
-		return err
-	}
-	if err := scenesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
-		return err
-	}
-	if err := scenesGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs); err != nil {
-		return err
-	}
-	if err := scenesStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs); err != nil {
-		return err
-	}
-	if err := scenesMoviesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Movies); err != nil {
-		return err
+	if updatedObject.PerformerIDs.Loaded() {
+		if err := scenesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
+			return err
+		}
 	}
 
-	fileIDs := make([]file.ID, len(updatedObject.Files))
-	for i, f := range updatedObject.Files {
-		fileIDs[i] = f.ID
+	if updatedObject.TagIDs.Loaded() {
+		if err := scenesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
+			return err
+		}
 	}
 
-	if err := scenesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
-		return err
+	if updatedObject.GalleryIDs.Loaded() {
+		if err := scenesGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.StashIDs.Loaded() {
+		if err := scenesStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.Movies.Loaded() {
+		if err := scenesMoviesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Movies.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.Files.Loaded() {
+		fileIDs := make([]file.ID, len(updatedObject.Files.List()))
+		for i, f := range updatedObject.Files.List() {
+			fileIDs[i] = f.ID
+		}
+
+		if err := scenesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -392,25 +335,68 @@ func (qb *SceneStore) Find(ctx context.Context, id int) (*models.Scene, error) {
 }
 
 func (qb *SceneStore) FindMany(ctx context.Context, ids []int) ([]*models.Scene, error) {
-	var scenes []*models.Scene
-	for _, id := range ids {
-		scene, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
+	table := qb.table()
+	q := qb.selectDataset().Prepared(true).Where(table.Col(idColumn).In(ids))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
 
-		if scene == nil {
-			return nil, fmt.Errorf("scene with id %d not found", id)
-		}
+	scenes := make([]*models.Scene, len(ids))
 
-		scenes = append(scenes, scene)
+	for _, s := range unsorted {
+		i := intslice.IntIndex(ids, s.ID)
+		scenes[i] = s
+	}
+
+	for i := range scenes {
+		if scenes[i] == nil {
+			return nil, fmt.Errorf("scene with id %d not found", ids[i])
+		}
 	}
 
 	return scenes, nil
 }
 
 func (qb *SceneStore) selectDataset() *goqu.SelectDataset {
-	return dialect.From(scenesQueryTable).Select(scenesQueryTable.All())
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	checksum := fingerprintTableMgr.table.As("fingerprint_md5")
+	oshash := fingerprintTableMgr.table.As("fingerprint_oshash")
+
+	return dialect.From(table).LeftJoin(
+		scenesFilesJoinTable,
+		goqu.On(
+			scenesFilesJoinTable.Col(sceneIDColumn).Eq(table.Col(idColumn)),
+			scenesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		checksum,
+		goqu.On(
+			checksum.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
+			checksum.Col("type").Eq(file.FingerprintTypeMD5),
+		),
+	).LeftJoin(
+		oshash,
+		goqu.On(
+			oshash.Col(fileIDColumn).Eq(scenesFilesJoinTable.Col(fileIDColumn)),
+			oshash.Col("type").Eq(file.FingerprintTypeOshash),
+		),
+	).Select(
+		qb.table().All(),
+		scenesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		checksum.Col("fingerprint").As("primary_file_checksum"),
+		oshash.Col("fingerprint").As("primary_file_oshash"),
+	)
 }
 
 func (qb *SceneStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Scene, error) {
@@ -428,24 +414,60 @@ func (qb *SceneStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.S
 
 func (qb *SceneStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Scene, error) {
 	const single = false
-	var rows sceneQueryRows
+	var ret []*models.Scene
+	var lastID int
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
 		var f sceneQueryRow
 		if err := r.StructScan(&f); err != nil {
 			return err
 		}
 
-		rows = append(rows, f)
+		s := f.resolve()
+		if s.ID == lastID {
+			return fmt.Errorf("internal error: multiple rows returned for single scene id %d", s.ID)
+		}
+		lastID = s.ID
+
+		ret = append(ret, s)
 		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	return rows.resolve(), nil
+	return ret, nil
+}
+
+func (qb *SceneStore) GetFiles(ctx context.Context, id int) ([]*file.VideoFile, error) {
+	fileIDs, err := qb.filesRepository().get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// use fileStore to load files
+	files, err := qb.fileStore.Find(ctx, fileIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]*file.VideoFile, len(files))
+	for i, f := range files {
+		var ok bool
+		ret[i], ok = f.(*file.VideoFile)
+		if !ok {
+			return nil, fmt.Errorf("expected file to be *file.VideoFile not %T", f)
+		}
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
+	const primaryOnly = false
+	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 
 func (qb *SceneStore) find(ctx context.Context, id int) (*models.Scene, error) {
-	q := qb.selectDataset().Where(qb.queryTableMgr.byID(id))
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
@@ -524,13 +546,11 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 	filesTable := fileTableMgr.table
 	foldersTable := folderTableMgr.table
 	basename := filepath.Base(p)
-	dirStr := filepath.Dir(p)
+	dir := filepath.Dir(p)
 
 	// replace wildcards
 	basename = strings.ReplaceAll(basename, "*", "%")
-	dirStr = strings.ReplaceAll(dirStr, "*", "%")
-
-	dir, _ := path(dirStr).Value()
+	dir = strings.ReplaceAll(dir, "*", "%")
 
 	sq := dialect.From(scenesFilesJoinTable).InnerJoin(
 		filesTable,
@@ -552,7 +572,7 @@ func (qb *SceneStore) FindByPath(ctx context.Context, p string) ([]*models.Scene
 }
 
 func (qb *SceneStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Scene, error) {
-	table := qb.queryTable()
+	table := qb.table()
 
 	q := qb.selectDataset().Where(
 		table.Col(idColumn).Eq(
@@ -706,16 +726,20 @@ func (qb *SceneStore) Wall(ctx context.Context, q *string) ([]*models.Scene, err
 		s = *q
 	}
 
-	table := qb.queryTable()
+	table := qb.table()
 	qq := qb.selectDataset().Prepared(true).Where(table.Col("details").Like("%" + s + "%")).Order(goqu.L("RANDOM()").Asc()).Limit(80)
 	return qb.getMany(ctx, qq)
 }
 
 func (qb *SceneStore) All(ctx context.Context) ([]*models.Scene, error) {
+	table := qb.table()
+	fileTable := fileTableMgr.table
+	folderTable := folderTableMgr.table
+
 	return qb.getMany(ctx, qb.selectDataset().Order(
-		qb.queryTable().Col("parent_folder_path").Asc(),
-		qb.queryTable().Col("basename").Asc(),
-		qb.queryTable().Col("date").Asc(),
+		folderTable.Col("path").Asc(),
+		fileTable.Col("basename").Asc(),
+		table.Col("date").Asc(),
 	))
 }
 
@@ -1346,10 +1370,13 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		sort = "frame_rate"
 		addVideoFileTable()
 		query.sortAndPagination += getSort(sort, direction, videoFileTable)
-	case "size":
+	case "filesize":
 		addFileTable()
 		query.sortAndPagination += getSort(sort, direction, fileTable)
 	case "duration":
+		addVideoFileTable()
+		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+	case "interactive", "interactive_speed":
 		addVideoFileTable()
 		query.sortAndPagination += getSort(sort, direction, videoFileTable)
 	default:
@@ -1388,6 +1415,39 @@ func (qb *SceneStore) moviesRepository() *repository {
 	}
 }
 
+func (qb *SceneStore) GetMovies(ctx context.Context, id int) (ret []models.MoviesScenes, err error) {
+	ret = []models.MoviesScenes{}
+
+	if err := qb.moviesRepository().getAll(ctx, id, func(rows *sqlx.Rows) error {
+		var ms moviesScenesRow
+		if err := rows.StructScan(&ms); err != nil {
+			return err
+		}
+
+		ret = append(ret, ms.resolve(id))
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) filesRepository() *filesRepository {
+	return &filesRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: scenesFilesTable,
+			idColumn:  sceneIDColumn,
+		},
+	}
+}
+
+func (qb *SceneStore) AddFileID(ctx context.Context, id int, fileID file.ID) error {
+	const firstPrimary = false
+	return scenesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []file.ID{fileID})
+}
+
 func (qb *SceneStore) performersRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
@@ -1397,6 +1457,10 @@ func (qb *SceneStore) performersRepository() *joinRepository {
 		},
 		fkColumn: performerIDColumn,
 	}
+}
+
+func (qb *SceneStore) GetPerformerIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.performersRepository().getIDs(ctx, id)
 }
 
 func (qb *SceneStore) tagsRepository() *joinRepository {
@@ -1410,6 +1474,10 @@ func (qb *SceneStore) tagsRepository() *joinRepository {
 	}
 }
 
+func (qb *SceneStore) GetTagIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.tagsRepository().getIDs(ctx, id)
+}
+
 func (qb *SceneStore) galleriesRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
@@ -1421,6 +1489,14 @@ func (qb *SceneStore) galleriesRepository() *joinRepository {
 	}
 }
 
+func (qb *SceneStore) GetGalleryIDs(ctx context.Context, id int) ([]int, error) {
+	return qb.galleriesRepository().getIDs(ctx, id)
+}
+
+func (qb *SceneStore) AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error {
+	return scenesGalleriesTableMgr.addJoins(ctx, sceneID, galleryIDs)
+}
+
 func (qb *SceneStore) stashIDRepository() *stashIDRepository {
 	return &stashIDRepository{
 		repository{
@@ -1429,6 +1505,10 @@ func (qb *SceneStore) stashIDRepository() *stashIDRepository {
 			idColumn:  sceneIDColumn,
 		},
 	}
+}
+
+func (qb *SceneStore) GetStashIDs(ctx context.Context, sceneID int) ([]models.StashID, error) {
+	return qb.stashIDRepository().get(ctx, sceneID)
 }
 
 func (qb *SceneStore) FindDuplicates(ctx context.Context, distance int) ([][]*models.Scene, error) {

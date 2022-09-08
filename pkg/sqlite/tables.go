@@ -13,9 +13,6 @@ var (
 	imagesTagsJoinTable       = goqu.T(imagesTagsTable)
 	performersImagesJoinTable = goqu.T(performersImagesTable)
 	imagesFilesJoinTable      = goqu.T(imagesFilesTable)
-	imagesQueryTable          = goqu.T("images_query")
-	galleriesQueryTable       = goqu.T("galleries_query")
-	scenesQueryTable          = goqu.T("scenes_query")
 
 	galleriesFilesJoinTable      = goqu.T(galleriesFilesTable)
 	galleriesTagsJoinTable       = goqu.T(galleriesTagsTable)
@@ -33,11 +30,6 @@ var (
 	imageTableMgr = &table{
 		table:    goqu.T(imageTable),
 		idColumn: goqu.T(imageTable).Col(idColumn),
-	}
-
-	imageQueryTableMgr = &table{
-		table:    imagesQueryTable,
-		idColumn: imagesQueryTable.Col(idColumn),
 	}
 
 	imagesFilesTableMgr = &relatedFilesTable{
@@ -78,11 +70,6 @@ var (
 		idColumn: goqu.T(galleryTable).Col(idColumn),
 	}
 
-	galleryQueryTableMgr = &table{
-		table:    galleriesQueryTable,
-		idColumn: galleriesQueryTable.Col(idColumn),
-	}
-
 	galleriesFilesTableMgr = &relatedFilesTable{
 		table: table{
 			table:    galleriesFilesJoinTable,
@@ -119,11 +106,6 @@ var (
 	sceneTableMgr = &table{
 		table:    goqu.T(sceneTable),
 		idColumn: goqu.T(sceneTable).Col(idColumn),
-	}
-
-	sceneQueryTableMgr = &table{
-		table:    scenesQueryTable,
-		idColumn: scenesQueryTable.Col(idColumn),
 	}
 
 	scenesFilesTableMgr = &relatedFilesTable{
@@ -190,5 +172,33 @@ var (
 	fingerprintTableMgr = &table{
 		table:    goqu.T(fingerprintTable),
 		idColumn: goqu.T(fingerprintTable).Col(idColumn),
+	}
+)
+
+var (
+	performerTableMgr = &table{
+		table:    goqu.T(performerTable),
+		idColumn: goqu.T(performerTable).Col(idColumn),
+	}
+)
+
+var (
+	studioTableMgr = &table{
+		table:    goqu.T(studioTable),
+		idColumn: goqu.T(studioTable).Col(idColumn),
+	}
+)
+
+var (
+	tagTableMgr = &table{
+		table:    goqu.T(tagTable),
+		idColumn: goqu.T(tagTable).Col(idColumn),
+	}
+)
+
+var (
+	movieTableMgr = &table{
+		table:    goqu.T(movieTable),
+		idColumn: goqu.T(movieTable).Col(idColumn),
 	}
 )

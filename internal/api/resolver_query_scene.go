@@ -18,6 +18,11 @@ func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*manage
 		idInt, _ := strconv.Atoi(*id)
 		var err error
 		scene, err = r.repository.Scene.Find(ctx, idInt)
+
+		if scene != nil {
+			err = scene.LoadPrimaryFile(ctx, r.repository.File)
+		}
+
 		return err
 	}); err != nil {
 		return nil, err

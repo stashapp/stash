@@ -82,6 +82,8 @@ func NewDatabase() *Database {
 		Gallery: NewGalleryStore(),
 		Scene:   NewSceneStore(),
 	}
+
+	return ret
 }
 
 // Ready returns an error if the database is not ready to begin transactions.
@@ -296,6 +298,7 @@ func (db *Database) getDatabaseSchemaVersion() (uint, error) {
 // Migrate the database
 func (db *Database) RunMigrations() error {
 	ctx := context.Background()
+
 	m, err := db.getMigrate()
 	if err != nil {
 		return err

@@ -30,13 +30,13 @@ func Test_createMissingStudio(t *testing.T) {
 		return p.Name.String == invalidName
 	})).Return(nil, errors.New("error creating performer"))
 
-	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []*models.StashID{
+	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
 		{
 			Endpoint: invalidEndpoint,
 			StashID:  remoteSiteID,
 		},
 	}).Return(errors.New("error updating stash ids"))
-	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []*models.StashID{
+	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
 		{
 			Endpoint: validEndpoint,
 			StashID:  remoteSiteID,

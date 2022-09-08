@@ -36,11 +36,27 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	}
 
 	// Populate a new performer from the input
+	performerIDs, err := stringslice.StringSliceToIntSlice(input.PerformerIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting performer ids: %w", err)
+	}
+	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+	sceneIDs, err := stringslice.StringSliceToIntSlice(input.SceneIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting scene ids: %w", err)
+	}
+
 	currentTime := time.Now()
 	newGallery := models.Gallery{
-		Title:     input.Title,
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
+		Title:        input.Title,
+		PerformerIDs: models.NewRelatedIDs(performerIDs),
+		TagIDs:       models.NewRelatedIDs(tagIDs),
+		SceneIDs:     models.NewRelatedIDs(sceneIDs),
+		CreatedAt:    currentTime,
+		UpdatedAt:    currentTime,
 	}
 	if input.URL != nil {
 		newGallery.URL = *input.URL
@@ -58,20 +74,6 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 	if input.StudioID != nil {
 		studioID, _ := strconv.Atoi(*input.StudioID)
 		newGallery.StudioID = &studioID
-	}
-
-	var err error
-	newGallery.PerformerIDs, err = stringslice.StringSliceToIntSlice(input.PerformerIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting performer ids: %w", err)
-	}
-	newGallery.TagIDs, err = stringslice.StringSliceToIntSlice(input.TagIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting tag ids: %w", err)
-	}
-	newGallery.SceneIDs, err = stringslice.StringSliceToIntSlice(input.SceneIds)
-	if err != nil {
-		return nil, fmt.Errorf("converting scene ids: %w", err)
 	}
 
 	// Start the transaction and save the gallery
@@ -336,6 +338,10 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				return fmt.Errorf("gallery with id %d not found", id)
 			}
 
+			if err := gallery.LoadFiles(ctx, qb); err != nil {
+				return fmt.Errorf("loading files for gallery %d", id)
+			}
+
 			galleries = append(galleries, gallery)
 
 			imgsDestroyed, err = r.galleryService.Destroy(ctx, gallery, fileDeleter, deleteGenerated, deleteFile)
@@ -355,7 +361,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 	for _, gallery := range galleries {
 		// don't delete stash library paths
-		path := gallery.Path()
+		path := gallery.Path
 		if deleteFile && path != "" && !isStashPath(path) {
 			// try to remove the folder - it is possible that it is not empty
 			// so swallow the error if present
@@ -368,15 +374,15 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 		r.hookExecutor.ExecutePostHooks(ctx, gallery.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			GalleryDestroyInput: input,
 			Checksum:            gallery.Checksum(),
-			Path:                gallery.Path(),
+			Path:                gallery.Path,
 		}, nil)
 	}
 
 	// call image destroy post hook as well
 	for _, img := range imgsDestroyed {
 		r.hookExecutor.ExecutePostHooks(ctx, img.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
-			Checksum: img.Checksum(),
-			Path:     img.Path(),
+			Checksum: img.Checksum,
+			Path:     img.Path,
 		}, nil)
 	}
 

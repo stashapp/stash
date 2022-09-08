@@ -14,7 +14,7 @@ type FinderImageStashIDGetter interface {
 	Finder
 	GetAliases(ctx context.Context, studioID int) ([]string, error)
 	GetImage(ctx context.Context, studioID int) ([]byte, error)
-	GetStashIDs(ctx context.Context, studioID int) ([]*models.StashID, error)
+	models.StashIDLoader
 }
 
 // ToJSON converts a Studio object into its JSON equivalent.
@@ -69,9 +69,9 @@ func ToJSON(ctx context.Context, reader FinderImageStashIDGetter, studio *models
 	}
 
 	stashIDs, _ := reader.GetStashIDs(ctx, studio.ID)
-	var ret []*models.StashID
+	var ret []models.StashID
 	for _, stashID := range stashIDs {
-		newJoin := &models.StashID{
+		newJoin := models.StashID{
 			StashID:  stashID.StashID,
 			Endpoint: stashID.Endpoint,
 		}

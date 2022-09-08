@@ -86,6 +86,7 @@ CREATE TABLE `images_files` (
 );
 
 CREATE INDEX `index_images_files_on_file_id` on `images_files` (`file_id`);
+CREATE UNIQUE INDEX `unique_index_images_files_on_primary` on `images_files` (`image_id`) WHERE `primary` = 1;
 
 CREATE TABLE `galleries_files` (
     `gallery_id` integer NOT NULL,
@@ -97,6 +98,7 @@ CREATE TABLE `galleries_files` (
 );
 
 CREATE INDEX `index_galleries_files_file_id` ON `galleries_files` (`file_id`);
+CREATE UNIQUE INDEX `unique_index_galleries_files_on_primary` on `galleries_files` (`gallery_id`) WHERE `primary` = 1;
 
 CREATE TABLE `scenes_files` (
     `scene_id` integer NOT NULL,
@@ -108,6 +110,7 @@ CREATE TABLE `scenes_files` (
 );
 
 CREATE INDEX `index_scenes_files_file_id` ON `scenes_files` (`file_id`);
+CREATE UNIQUE INDEX `unique_index_scenes_files_on_primary` on `scenes_files` (`scene_id`) WHERE `primary` = 1;
 
 PRAGMA foreign_keys=OFF;
 
@@ -167,9 +170,9 @@ INSERT INTO `files`
   SELECT
     `path`,
     1,
-    COALESCE(`size`, 0),
-    -- set mod time to epoch so that it the format/size is calculated on scan
-    '1970-01-01 00:00:00',
+    -- special value if null so that it is recalculated
+    COALESCE(`size`, -1),
+    COALESCE(`file_mod_time`, '1970-01-01 00:00:00'),
     `created_at`,
     `updated_at`
   FROM `images`;
@@ -183,9 +186,10 @@ INSERT INTO `image_files`
   )
   SELECT
     `files`.`id`,
-    '',
-    COALESCE(`images`.`width`, 0),
-    COALESCE(`images`.`height`, 0)
+    -- special values so that they are recalculated
+    'unset',
+    COALESCE(`images`.`width`, -1),
+    COALESCE(`images`.`height`, -1)
   FROM `images` INNER JOIN `files` ON `images`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
 
 INSERT INTO `images_files`
@@ -277,8 +281,9 @@ INSERT INTO `files`
   SELECT
     `path`,
     1,
-    0,
-    '1970-01-01 00:00:00', -- set to placeholder so that size is updated
+    -- special value so that it is recalculated
+    -1,
+    COALESCE(`file_mod_time`, '1970-01-01 00:00:00'),
     `created_at`,
     `updated_at`
   FROM `galleries`
@@ -430,9 +435,9 @@ INSERT INTO `files`
   SELECT
     `path`,
     1,
-    COALESCE(`size`, 0),
-    -- set mod time to epoch so that it the format/size is calculated on scan
-    '1970-01-01 00:00:00',
+    -- special value if null so that it is recalculated
+    COALESCE(`size`, -1),
+    COALESCE(`file_mod_time`, '1970-01-01 00:00:00'),
     `created_at`,
     `updated_at`
   FROM `scenes`;
@@ -454,13 +459,14 @@ INSERT INTO `video_files`
   SELECT
     `files`.`id`,
     `scenes`.`duration`,
-    COALESCE(`scenes`.`video_codec`, ''),
-    COALESCE(`scenes`.`format`, ''),
-    COALESCE(`scenes`.`audio_codec`, ''),
-    COALESCE(`scenes`.`width`, 0),
-    COALESCE(`scenes`.`height`, 0),
-    COALESCE(`scenes`.`framerate`, 0),
-    COALESCE(`scenes`.`bitrate`, 0),
+    -- special values for unset to be updated during scan
+    COALESCE(`scenes`.`video_codec`, 'unset'),
+    COALESCE(`scenes`.`format`, 'unset'),
+    COALESCE(`scenes`.`audio_codec`, 'unset'),
+    COALESCE(`scenes`.`width`, -1),
+    COALESCE(`scenes`.`height`, -1),
+    COALESCE(`scenes`.`framerate`, -1),
+    COALESCE(`scenes`.`bitrate`, -1),
     `scenes`.`interactive`,
     `scenes`.`interactive_speed`
   FROM `scenes` INNER JOIN `files` ON `scenes`.`path` = `files`.`basename` AND `files`.`parent_folder_id` = 1;
@@ -539,139 +545,3 @@ ALTER TABLE `scenes_new` rename to `scenes`;
 CREATE INDEX `index_scenes_on_studio_id` on `scenes` (`studio_id`);
 
 PRAGMA foreign_keys=ON;
-
--- create views to simplify queries
-
-CREATE VIEW `images_query` AS 
-  SELECT 
-    `images`.`id`,
-    `images`.`title`,
-    `images`.`rating`,
-    `images`.`organized`,
-    `images`.`o_counter`,
-    `images`.`studio_id`,
-    `images`.`created_at`,
-    `images`.`updated_at`,
-    `galleries_images`.`gallery_id`,
-    `images_tags`.`tag_id`,
-    `performers_images`.`performer_id`,
-    `image_files`.`format` as `image_format`,
-    `image_files`.`width` as `image_width`,
-    `image_files`.`height` as `image_height`,
-    `files`.`id` as `file_id`,
-    `files`.`basename`,
-    `files`.`size`,
-    `files`.`mod_time`,
-    `files`.`zip_file_id`,
-    `folders`.`id` as `parent_folder_id`,
-    `folders`.`path` as `parent_folder_path`,
-    `zip_files`.`basename` as `zip_basename`,
-    `zip_files_folders`.`path` as `zip_folder_path`,
-    `files_fingerprints`.`type` as `fingerprint_type`,
-    `files_fingerprints`.`fingerprint`
-  FROM `images`
-  LEFT JOIN `performers_images` ON (`images`.`id` = `performers_images`.`image_id`) 
-  LEFT JOIN `galleries_images` ON (`images`.`id` = `galleries_images`.`image_id`) 
-  LEFT JOIN `images_tags` ON (`images`.`id` = `images_tags`.`image_id`)
-  LEFT JOIN `images_files` ON (`images`.`id` = `images_files`.`image_id`) 
-  LEFT JOIN `image_files` ON (`images_files`.`file_id` = `image_files`.`file_id`) 
-  LEFT JOIN `files` ON (`images_files`.`file_id` = `files`.`id`) 
-  LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
-  LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
-  LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
-  LEFT JOIN `files_fingerprints` ON (`images_files`.`file_id` = `files_fingerprints`.`file_id`);
-
-CREATE VIEW `galleries_query` AS 
-  SELECT 
-    `galleries`.`id`,
-    `galleries`.`title`,
-    `galleries`.`url`,
-    `galleries`.`date`,
-    `galleries`.`details`,
-    `galleries`.`rating`,
-    `galleries`.`organized`,
-    `galleries`.`studio_id`,
-    `galleries`.`created_at`,
-    `galleries`.`updated_at`,
-    `galleries_tags`.`tag_id`,
-    `scenes_galleries`.`scene_id`,
-    `performers_galleries`.`performer_id`,
-    `galleries_folders`.`id` as `folder_id`,
-    `galleries_folders`.`path` as `folder_path`,
-    `files`.`id` as `file_id`,
-    `files`.`basename`,
-    `files`.`size`,
-    `files`.`mod_time`,
-    `files`.`zip_file_id`,
-    `parent_folders`.`id` as `parent_folder_id`,
-    `parent_folders`.`path` as `parent_folder_path`,
-    `zip_files`.`basename` as `zip_basename`,
-    `zip_files_folders`.`path` as `zip_folder_path`,
-    `files_fingerprints`.`type` as `fingerprint_type`,
-    `files_fingerprints`.`fingerprint`
-  FROM `galleries`
-  LEFT JOIN `performers_galleries` ON (`galleries`.`id` = `performers_galleries`.`gallery_id`) 
-  LEFT JOIN `galleries_tags` ON (`galleries`.`id` = `galleries_tags`.`gallery_id`)
-  LEFT JOIN `scenes_galleries` ON (`galleries`.`id` = `scenes_galleries`.`gallery_id`) 
-  LEFT JOIN `folders` AS `galleries_folders` ON (`galleries`.`folder_id` = `galleries_folders`.`id`) 
-  LEFT JOIN `galleries_files` ON (`galleries`.`id` = `galleries_files`.`gallery_id`) 
-  LEFT JOIN `files` ON (`galleries_files`.`file_id` = `files`.`id`) 
-  LEFT JOIN `folders` AS `parent_folders` ON (`files`.`parent_folder_id` = `parent_folders`.`id`) 
-  LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
-  LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
-  LEFT JOIN `files_fingerprints` ON (`galleries_files`.`file_id` = `files_fingerprints`.`file_id`);
-
-CREATE VIEW `scenes_query` AS 
-  SELECT 
-    `scenes`.`id`,
-    `scenes`.`title`,
-    `scenes`.`details`,
-    `scenes`.`url`,
-    `scenes`.`date`,
-    `scenes`.`rating`,
-    `scenes`.`studio_id`,
-    `scenes`.`o_counter`,
-    `scenes`.`organized`,
-    `scenes`.`created_at`,
-    `scenes`.`updated_at`,
-    `scenes_tags`.`tag_id`,
-    `scenes_galleries`.`gallery_id`,
-    `performers_scenes`.`performer_id`,
-    `movies_scenes`.`movie_id`,
-    `movies_scenes`.`scene_index`,
-    `scene_stash_ids`.`stash_id`,
-    `scene_stash_ids`.`endpoint`,
-    `video_files`.`format` as `video_format`,
-    `video_files`.`width` as `video_width`,
-    `video_files`.`height` as `video_height`,
-    `video_files`.`duration`,
-    `video_files`.`video_codec`,
-    `video_files`.`audio_codec`,
-    `video_files`.`frame_rate`,
-    `video_files`.`bit_rate`,
-    `video_files`.`interactive`,
-    `video_files`.`interactive_speed`,
-    `files`.`id` as `file_id`,
-    `files`.`basename`,
-    `files`.`size`,
-    `files`.`mod_time`,
-    `files`.`zip_file_id`,
-    `folders`.`id` as `parent_folder_id`,
-    `folders`.`path` as `parent_folder_path`,
-    `zip_files`.`basename` as `zip_basename`,
-    `zip_files_folders`.`path` as `zip_folder_path`,
-    `files_fingerprints`.`type` as `fingerprint_type`,
-    `files_fingerprints`.`fingerprint`
-  FROM `scenes`
-  LEFT JOIN `performers_scenes` ON (`scenes`.`id` = `performers_scenes`.`scene_id`) 
-  LEFT JOIN `scenes_tags` ON (`scenes`.`id` = `scenes_tags`.`scene_id`)
-  LEFT JOIN `movies_scenes` ON (`scenes`.`id` = `movies_scenes`.`scene_id`)
-  LEFT JOIN `scene_stash_ids` ON (`scenes`.`id` = `scene_stash_ids`.`scene_id`)
-  LEFT JOIN `scenes_galleries` ON (`scenes`.`id` = `scenes_galleries`.`scene_id`) 
-  LEFT JOIN `scenes_files` ON (`scenes`.`id` = `scenes_files`.`scene_id`) 
-  LEFT JOIN `video_files` ON (`scenes_files`.`file_id` = `video_files`.`file_id`) 
-  LEFT JOIN `files` ON (`scenes_files`.`file_id` = `files`.`id`) 
-  LEFT JOIN `folders` ON (`files`.`parent_folder_id` = `folders`.`id`) 
-  LEFT JOIN `files` AS `zip_files` ON (`files`.`zip_file_id` = `zip_files`.`id`)
-  LEFT JOIN `folders` AS `zip_files_folders` ON (`zip_files`.`parent_folder_id` = `zip_files_folders`.`id`)
-  LEFT JOIN `files_fingerprints` ON (`scenes_files`.`file_id` = `files_fingerprints`.`file_id`);

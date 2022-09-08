@@ -1,9 +1,9 @@
 package autotag
 
 import (
+	"path/filepath"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -18,49 +18,60 @@ type testStudioCase struct {
 	aliasRegex    string
 }
 
-var testStudioCases = []testStudioCase{
-	{
-		"studio name",
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		"studio + name",
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		`studio + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		"studio name",
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"alias name",
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-	},
-	{
-		"studio + name",
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"alias + name",
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-	},
-	{
-		`studio + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		`alias + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-	},
-}
+var (
+	testStudioCases = []testStudioCase{
+		{
+			"studio name",
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			"studio + name",
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			"studio name",
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"alias name",
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+		{
+			"studio + name",
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"alias + name",
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+	}
+
+	trailingBackslashStudioCases = []testStudioCase{
+		{
+			`studio + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			`studio + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+			`alias + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+		},
+	}
+)
 
 func TestStudioScenes(t *testing.T) {
 	t.Parallel()
 
-	for _, p := range testStudioCases {
+	tc := testStudioCases
+	// trailing backslash tests only work where filepath separator is not backslash
+	if filepath.Separator != '\\' {
+		tc = append(tc, trailingBackslashStudioCases...)
+	}
+
+	for _, p := range tc {
 		testStudioScenes(t, p)
 	}
 }
@@ -88,14 +99,8 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 	var scenes []*models.Scene
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID: i + 1,
-			Files: []*file.VideoFile{
-				{
-					BaseFile: &file.BaseFile{
-						Path: p,
-					},
-				},
-			},
+			ID:   i + 1,
+			Path: p,
 		})
 	}
 
@@ -185,8 +190,8 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 	matchingPaths, falsePaths := generateTestPaths(testPathName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:    i + 1,
-			Files: []*file.ImageFile{makeImageFile(p)},
+			ID:   i + 1,
+			Path: p,
 		})
 	}
 
@@ -275,12 +280,8 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	for i, p := range append(matchingPaths, falsePaths...) {
 		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID: i + 1,
-			Files: []file.File{
-				&file.BaseFile{
-					Path: v,
-				},
-			},
+			ID:   i + 1,
+			Path: v,
 		})
 	}
 

@@ -29,7 +29,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	c := config.GetInstance()
 
 	existingPaths := c.GetStashPaths()
-	if len(input.Stashes) > 0 {
+	if input.Stashes != nil {
 		for _, s := range input.Stashes {
 			// Only validate existence of new paths
 			isNew := true
@@ -459,7 +459,7 @@ func (r *mutationResolver) ConfigureDefaults(ctx context.Context, input ConfigDe
 	}
 
 	if input.Scan != nil {
-		c.Set(config.DefaultScanSettings, input.Scan)
+		c.Set(config.DefaultScanSettings, input.Scan.ScanMetadataOptions)
 	}
 
 	if input.AutoTag != nil {

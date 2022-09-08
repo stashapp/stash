@@ -13,6 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
 )
@@ -172,13 +173,13 @@ type cleanHandler struct {
 }
 
 func (h *cleanHandler) HandleFile(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
-	if err := h.deleteRelatedScenes(ctx, fileDeleter, fileID); err != nil {
+	if err := h.handleRelatedScenes(ctx, fileDeleter, fileID); err != nil {
 		return err
 	}
-	if err := h.deleteRelatedGalleries(ctx, fileID); err != nil {
+	if err := h.handleRelatedGalleries(ctx, fileID); err != nil {
 		return err
 	}
-	if err := h.deleteRelatedImages(ctx, fileDeleter, fileID); err != nil {
+	if err := h.handleRelatedImages(ctx, fileDeleter, fileID); err != nil {
 		return err
 	}
 
@@ -189,7 +190,7 @@ func (h *cleanHandler) HandleFolder(ctx context.Context, fileDeleter *file.Delet
 	return h.deleteRelatedFolderGalleries(ctx, folderID)
 }
 
-func (h *cleanHandler) deleteRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
 	mgr := GetInstance()
 	sceneQB := mgr.Database.Scene
 	scenes, err := sceneQB.FindByFileID(ctx, fileID)
@@ -206,28 +207,47 @@ func (h *cleanHandler) deleteRelatedScenes(ctx context.Context, fileDeleter *fil
 	}
 
 	for _, scene := range scenes {
+		if err := scene.LoadFiles(ctx, sceneQB); err != nil {
+			return err
+		}
+
 		// only delete if the scene has no other files
-		if len(scene.Files) <= 1 {
-			logger.Infof("Deleting scene %q since it has no other related files", scene.GetTitle())
+		if len(scene.Files.List()) <= 1 {
+			logger.Infof("Deleting scene %q since it has no other related files", scene.DisplayName())
 			if err := mgr.SceneService.Destroy(ctx, scene, sceneFileDeleter, true, false); err != nil {
 				return err
 			}
 
-			checksum := scene.Checksum()
-			oshash := scene.OSHash()
+			checksum := scene.Checksum
+			oshash := scene.OSHash
 
 			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
 				Checksum: checksum,
 				OSHash:   oshash,
-				Path:     scene.Path(),
+				Path:     scene.Path,
 			}, nil)
+		} else {
+			// set the primary file to a remaining file
+			var newPrimaryID file.ID
+			for _, f := range scene.Files.List() {
+				if f.ID != fileID {
+					newPrimaryID = f.ID
+					break
+				}
+			}
+
+			if _, err := mgr.Repository.Scene.UpdatePartial(ctx, scene.ID, models.ScenePartial{
+				PrimaryFileID: &newPrimaryID,
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.ID) error {
 	mgr := GetInstance()
 	qb := mgr.Database.Gallery
 	galleries, err := qb.FindByFileID(ctx, fileID)
@@ -236,17 +256,36 @@ func (h *cleanHandler) deleteRelatedGalleries(ctx context.Context, fileID file.I
 	}
 
 	for _, g := range galleries {
+		if err := g.LoadFiles(ctx, qb); err != nil {
+			return err
+		}
+
 		// only delete if the gallery has no other files
-		if len(g.Files) <= 1 {
-			logger.Infof("Deleting gallery %q since it has no other related files", g.GetTitle())
+		if len(g.Files.List()) <= 1 {
+			logger.Infof("Deleting gallery %q since it has no other related files", g.DisplayName())
 			if err := qb.Destroy(ctx, g.ID); err != nil {
 				return err
 			}
 
 			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 				Checksum: g.Checksum(),
-				Path:     g.Path(),
+				Path:     g.Path,
 			}, nil)
+		} else {
+			// set the primary file to a remaining file
+			var newPrimaryID file.ID
+			for _, f := range g.Files.List() {
+				if f.Base().ID != fileID {
+					newPrimaryID = f.Base().ID
+					break
+				}
+			}
+
+			if _, err := mgr.Repository.Gallery.UpdatePartial(ctx, g.ID, models.GalleryPartial{
+				PrimaryFileID: &newPrimaryID,
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -262,21 +301,22 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 	}
 
 	for _, g := range galleries {
-		logger.Infof("Deleting folder-based gallery %q since the folder no longer exists", g.GetTitle())
+		logger.Infof("Deleting folder-based gallery %q since the folder no longer exists", g.DisplayName())
 		if err := qb.Destroy(ctx, g.ID); err != nil {
 			return err
 		}
 
 		mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
-			Checksum: g.Checksum(),
-			Path:     g.Path(),
+			// No checksum for folders
+			// Checksum: g.Checksum(),
+			Path: g.Path,
 		}, nil)
 	}
 
 	return nil
 }
 
-func (h *cleanHandler) deleteRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
+func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *file.Deleter, fileID file.ID) error {
 	mgr := GetInstance()
 	imageQB := mgr.Database.Image
 	images, err := imageQB.FindByFileID(ctx, fileID)
@@ -290,16 +330,35 @@ func (h *cleanHandler) deleteRelatedImages(ctx context.Context, fileDeleter *fil
 	}
 
 	for _, i := range images {
-		if len(i.Files) <= 1 {
-			logger.Infof("Deleting image %q since it has no other related files", i.GetTitle())
+		if err := i.LoadFiles(ctx, imageQB); err != nil {
+			return err
+		}
+
+		if len(i.Files.List()) <= 1 {
+			logger.Infof("Deleting image %q since it has no other related files", i.DisplayName())
 			if err := mgr.ImageService.Destroy(ctx, i, imageFileDeleter, true, false); err != nil {
 				return err
 			}
 
 			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
-				Checksum: i.Checksum(),
-				Path:     i.Path(),
+				Checksum: i.Checksum,
+				Path:     i.Path,
 			}, nil)
+		} else {
+			// set the primary file to a remaining file
+			var newPrimaryID file.ID
+			for _, f := range i.Files.List() {
+				if f.Base().ID != fileID {
+					newPrimaryID = f.Base().ID
+					break
+				}
+			}
+
+			if _, err := mgr.Repository.Image.UpdatePartial(ctx, i.ID, models.ImagePartial{
+				PrimaryFileID: &newPrimaryID,
+			}); err != nil {
+				return err
+			}
 		}
 	}
 

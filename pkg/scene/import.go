@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -18,18 +19,19 @@ import (
 
 type FullCreatorUpdater interface {
 	CreatorUpdater
+	Update(ctx context.Context, updatedScene *models.Scene) error
 	Updater
 }
 
 type Importer struct {
 	ReaderWriter        FullCreatorUpdater
+	FileFinder          file.Getter
 	StudioWriter        studio.NameFinderCreator
-	GalleryWriter       gallery.ChecksumsFinder
+	GalleryFinder       gallery.Finder
 	PerformerWriter     performer.NameFinderCreator
 	MovieWriter         movie.NameFinderCreator
 	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Scene
-	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
 	FileNamingAlgorithm models.HashAlgorithm
 
@@ -40,6 +42,10 @@ type Importer struct {
 
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.scene = i.sceneJSONToScene(i.Input)
+
+	if err := i.populateFiles(ctx); err != nil {
+		return err
+	}
 
 	if err := i.populateStudio(ctx); err != nil {
 		return err
@@ -75,25 +81,15 @@ func (i *Importer) PreImport(ctx context.Context) error {
 func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
 		// Path:    i.Path,
-		Title:   sceneJSON.Title,
-		Details: sceneJSON.Details,
-		URL:     sceneJSON.URL,
+		Title:        sceneJSON.Title,
+		Details:      sceneJSON.Details,
+		URL:          sceneJSON.URL,
+		PerformerIDs: models.NewRelatedIDs([]int{}),
+		TagIDs:       models.NewRelatedIDs([]int{}),
+		GalleryIDs:   models.NewRelatedIDs([]int{}),
+		Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
+		StashIDs:     models.NewRelatedStashIDs(sceneJSON.StashIDs),
 	}
-
-	// if sceneJSON.Checksum != "" {
-	// 	newScene.Checksum = &sceneJSON.Checksum
-	// }
-	// if sceneJSON.OSHash != "" {
-	// 	newScene.OSHash = &sceneJSON.OSHash
-	// }
-
-	// if sceneJSON.Phash != "" {
-	// 	hash, err := strconv.ParseUint(sceneJSON.Phash, 16, 64)
-	// 	if err == nil {
-	// 		v := int64(hash)
-	// 		newScene.Phash = &v
-	// 	}
-	// }
 
 	if sceneJSON.Date != "" {
 		d := models.NewDate(sceneJSON.Date)
@@ -108,42 +104,29 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene.CreatedAt = sceneJSON.CreatedAt.GetTime()
 	newScene.UpdatedAt = sceneJSON.UpdatedAt.GetTime()
 
-	// if sceneJSON.File != nil {
-	// 	if sceneJSON.File.Size != "" {
-	// 		newScene.Size = &sceneJSON.File.Size
-	// 	}
-	// 	if sceneJSON.File.Duration != "" {
-	// 		duration, _ := strconv.ParseFloat(sceneJSON.File.Duration, 64)
-	// 		newScene.Duration = &duration
-	// 	}
-	// 	if sceneJSON.File.VideoCodec != "" {
-	// 		newScene.VideoCodec = &sceneJSON.File.VideoCodec
-	// 	}
-	// 	if sceneJSON.File.AudioCodec != "" {
-	// 		newScene.AudioCodec = &sceneJSON.File.AudioCodec
-	// 	}
-	// 	if sceneJSON.File.Format != "" {
-	// 		newScene.Format = &sceneJSON.File.Format
-	// 	}
-	// 	if sceneJSON.File.Width != 0 {
-	// 		newScene.Width = &sceneJSON.File.Width
-	// 	}
-	// 	if sceneJSON.File.Height != 0 {
-	// 		newScene.Height = &sceneJSON.File.Height
-	// 	}
-	// 	if sceneJSON.File.Framerate != "" {
-	// 		framerate, _ := strconv.ParseFloat(sceneJSON.File.Framerate, 64)
-	// 		newScene.Framerate = &framerate
-	// 	}
-	// 	if sceneJSON.File.Bitrate != 0 {
-	// 		v := int64(sceneJSON.File.Bitrate)
-	// 		newScene.Bitrate = &v
-	// 	}
-	// }
-
-	newScene.StashIDs = append(newScene.StashIDs, i.Input.StashIDs...)
-
 	return newScene
+}
+
+func (i *Importer) populateFiles(ctx context.Context) error {
+	files := make([]*file.VideoFile, 0)
+
+	for _, ref := range i.Input.Files {
+		path := ref
+		f, err := i.FileFinder.FindByPath(ctx, path)
+		if err != nil {
+			return fmt.Errorf("error finding file: %w", err)
+		}
+
+		if f == nil {
+			return fmt.Errorf("scene file '%s' not found", path)
+		} else {
+			files = append(files, f.(*file.VideoFile))
+		}
+	}
+
+	i.scene.Files = models.NewRelatedVideoFiles(files)
+
+	return nil
 }
 
 func (i *Importer) populateStudio(ctx context.Context) error {
@@ -188,33 +171,50 @@ func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	return created.ID, nil
 }
 
+func (i *Importer) locateGallery(ctx context.Context, ref jsonschema.GalleryRef) (*models.Gallery, error) {
+	var galleries []*models.Gallery
+	var err error
+	switch {
+	case ref.FolderPath != "":
+		galleries, err = i.GalleryFinder.FindByPath(ctx, ref.FolderPath)
+	case len(ref.ZipFiles) > 0:
+		for _, p := range ref.ZipFiles {
+			galleries, err = i.GalleryFinder.FindByPath(ctx, p)
+			if err != nil {
+				break
+			}
+
+			if len(galleries) > 0 {
+				break
+			}
+		}
+	case ref.Title != "":
+		galleries, err = i.GalleryFinder.FindUserGalleryByTitle(ctx, ref.Title)
+	}
+
+	var ret *models.Gallery
+	if len(galleries) > 0 {
+		ret = galleries[0]
+	}
+
+	return ret, err
+}
+
 func (i *Importer) populateGalleries(ctx context.Context) error {
-	if len(i.Input.Galleries) > 0 {
-		checksums := i.Input.Galleries
-		galleries, err := i.GalleryWriter.FindByChecksums(ctx, checksums)
+	for _, ref := range i.Input.Galleries {
+		gallery, err := i.locateGallery(ctx, ref)
 		if err != nil {
 			return err
 		}
 
-		var pluckedChecksums []string
-		for _, gallery := range galleries {
-			pluckedChecksums = append(pluckedChecksums, gallery.Checksum())
-		}
-
-		missingGalleries := stringslice.StrFilter(checksums, func(checksum string) bool {
-			return !stringslice.StrInclude(pluckedChecksums, checksum)
-		})
-
-		if len(missingGalleries) > 0 {
+		if gallery == nil {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
-				return fmt.Errorf("scene galleries [%s] not found", strings.Join(missingGalleries, ", "))
+				return fmt.Errorf("scene gallery '%s' not found", ref.String())
 			}
 
 			// we don't create galleries - just ignore
-		}
-
-		for _, o := range galleries {
-			i.scene.GalleryIDs = append(i.scene.GalleryIDs, o.ID)
+		} else {
+			i.scene.GalleryIDs.Add(gallery.ID)
 		}
 	}
 
@@ -259,7 +259,7 @@ func (i *Importer) populatePerformers(ctx context.Context) error {
 		}
 
 		for _, p := range performers {
-			i.scene.PerformerIDs = append(i.scene.PerformerIDs, p.ID)
+			i.scene.PerformerIDs.Add(p.ID)
 		}
 	}
 
@@ -317,7 +317,7 @@ func (i *Importer) populateMovies(ctx context.Context) error {
 				toAdd.SceneIndex = &index
 			}
 
-			i.scene.Movies = append(i.scene.Movies, toAdd)
+			i.scene.Movies.Add(toAdd)
 		}
 	}
 
@@ -344,7 +344,7 @@ func (i *Importer) populateTags(ctx context.Context) error {
 		}
 
 		for _, p := range tags {
-			i.scene.TagIDs = append(i.scene.TagIDs, p.ID)
+			i.scene.TagIDs.Add(p.ID)
 		}
 	}
 
@@ -362,37 +362,42 @@ func (i *Importer) PostImport(ctx context.Context, id int) error {
 }
 
 func (i *Importer) Name() string {
-	return i.Path
+	if i.Input.Title != "" {
+		return i.Input.Title
+	}
+
+	if len(i.Input.Files) > 0 {
+		return i.Input.Files[0]
+	}
+
+	return ""
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	// TODO
-	// var existing []*models.Scene
-	// var err error
+	var existing []*models.Scene
+	var err error
 
-	// switch i.FileNamingAlgorithm {
-	// case models.HashAlgorithmMd5:
-	// 	existing, err = i.ReaderWriter.FindByChecksum(ctx, i.Input.Checksum)
-	// case models.HashAlgorithmOshash:
-	// 	existing, err = i.ReaderWriter.FindByOSHash(ctx, i.Input.OSHash)
-	// default:
-	// 	panic("unknown file naming algorithm")
-	// }
+	for _, f := range i.scene.Files.List() {
+		existing, err = i.ReaderWriter.FindByFileID(ctx, f.ID)
+		if err != nil {
+			return nil, err
+		}
 
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// if len(existing) > 0 {
-	// 	id := existing[0].ID
-	// 	return &id, nil
-	// }
+		if len(existing) > 0 {
+			id := existing[0].ID
+			return &id, nil
+		}
+	}
 
 	return nil, nil
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	if err := i.ReaderWriter.Create(ctx, &i.scene, nil); err != nil {
+	var fileIDs []file.ID
+	for _, f := range i.scene.Files.List() {
+		fileIDs = append(fileIDs, f.Base().ID)
+	}
+	if err := i.ReaderWriter.Create(ctx, &i.scene, fileIDs); err != nil {
 		return nil, fmt.Errorf("error creating scene: %v", err)
 	}
 

@@ -26,6 +26,16 @@ func (r *mutationResolver) getPerformer(ctx context.Context, id int) (ret *model
 	return ret, nil
 }
 
+func stashIDPtrSliceToSlice(v []*models.StashID) []models.StashID {
+	ret := make([]models.StashID, len(v))
+	for i, vv := range v {
+		c := vv
+		ret[i] = *c
+	}
+
+	return ret
+}
+
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerCreateInput) (*models.Performer, error) {
 	// generate checksum from performer name rather than image
 	checksum := md5.FromString(input.Name)
@@ -152,7 +162,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 
 		// Save the stash_ids
 		if input.StashIds != nil {
-			stashIDJoins := input.StashIds
+			stashIDJoins := stashIDPtrSliceToSlice(input.StashIds)
 			if err := qb.UpdateStashIDs(ctx, performer.ID, stashIDJoins); err != nil {
 				return err
 			}
@@ -275,7 +285,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 
 		// Save the stash_ids
 		if translator.hasField("stash_ids") {
-			stashIDJoins := input.StashIds
+			stashIDJoins := stashIDPtrSliceToSlice(input.StashIds)
 			if err := qb.UpdateStashIDs(ctx, performerID, stashIDJoins); err != nil {
 				return err
 			}

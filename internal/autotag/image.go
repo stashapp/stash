@@ -6,24 +6,48 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
+
+type ImagePerformerUpdater interface {
+	models.PerformerIDLoader
+	image.PartialUpdater
+}
+
+type ImageTagUpdater interface {
+	models.TagIDLoader
+	image.PartialUpdater
+}
 
 func getImageFileTagger(s *models.Image, cache *match.Cache) tagger {
 	return tagger{
 		ID:    s.ID,
 		Type:  "image",
-		Name:  s.GetTitle(),
-		Path:  s.Path(),
+		Name:  s.DisplayName(),
+		Path:  s.Path,
 		cache: cache,
 	}
 }
 
 // ImagePerformers tags the provided image with performers whose name matches the image's path.
-func ImagePerformers(ctx context.Context, s *models.Image, rw image.PartialUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
+func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
 	t := getImageFileTagger(s, cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
-		return image.AddPerformer(ctx, rw, s, otherID)
+		if err := s.LoadPerformerIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := s.PerformerIDs.List()
+
+		if intslice.IntInclude(existing, otherID) {
+			return false, nil
+		}
+
+		if err := image.AddPerformer(ctx, rw, s, otherID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }
 
@@ -44,10 +68,23 @@ func ImageStudios(ctx context.Context, s *models.Image, rw ImageFinderUpdater, s
 }
 
 // ImageTags tags the provided image with tags whose name matches the image's path.
-func ImageTags(ctx context.Context, s *models.Image, rw image.PartialUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
+func ImageTags(ctx context.Context, s *models.Image, rw ImageTagUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
 	t := getImageFileTagger(s, cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
-		return image.AddTag(ctx, rw, s, otherID)
+		if err := s.LoadTagIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := s.TagIDs.List()
+
+		if intslice.IntInclude(existing, otherID) {
+			return false, nil
+		}
+
+		if err := image.AddTag(ctx, rw, s, otherID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }

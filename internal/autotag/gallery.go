@@ -6,7 +6,18 @@ import (
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
+
+type GalleryPerformerUpdater interface {
+	models.PerformerIDLoader
+	gallery.PartialUpdater
+}
+
+type GalleryTagUpdater interface {
+	models.TagIDLoader
+	gallery.PartialUpdater
+}
 
 func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 	var path string

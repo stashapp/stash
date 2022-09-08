@@ -1,9 +1,9 @@
 package autotag
 
 import (
+	"path/filepath"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -28,10 +28,14 @@ func TestPerformerScenes(t *testing.T) {
 			"performer + name",
 			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		},
-		{
+	}
+
+	// trailing backslash tests only work where filepath separator is not backslash
+	if filepath.Separator != '\\' {
+		performerNames = append(performerNames, test{
 			`performer + name\`,
 			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		},
+		})
 	}
 
 	for _, p := range performerNames {
@@ -48,14 +52,9 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	matchingPaths, falsePaths := generateTestPaths(performerName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID: i + 1,
-			Files: []*file.VideoFile{
-				{
-					BaseFile: &file.BaseFile{
-						Path: p,
-					},
-				},
-			},
+			ID:           i + 1,
+			Path:         p,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
@@ -133,8 +132,9 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	matchingPaths, falsePaths := generateTestPaths(performerName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:    i + 1,
-			Files: []*file.ImageFile{makeImageFile(p)},
+			ID:           i + 1,
+			Path:         p,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
@@ -213,12 +213,9 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	for i, p := range append(matchingPaths, falsePaths...) {
 		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID: i + 1,
-			Files: []file.File{
-				&file.BaseFile{
-					Path: v,
-				},
-			},
+			ID:           i + 1,
+			Path:         v,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 

@@ -1,7 +1,8 @@
 package models
 
 import (
-	"path/filepath"
+	"context"
+	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -9,10 +10,6 @@ import (
 
 type Gallery struct {
 	ID int `json:"id"`
-
-	// Path        *string    `json:"path"`
-	// Checksum    string     `json:"checksum"`
-	// Zip         bool       `json:"zip"`
 
 	Title     string `json:"title"`
 	URL       string `json:"url"`
@@ -22,42 +19,67 @@ type Gallery struct {
 	Organized bool   `json:"organized"`
 	StudioID  *int   `json:"studio_id"`
 
-	// FileModTime *time.Time `json:"file_mod_time"`
-
 	// transient - not persisted
-	Files []file.File
+	Files RelatedFiles
+	// transient - not persisted
+	PrimaryFileID *file.ID
+	// transient - path of primary file or folder
+	Path string
 
 	FolderID *file.FolderID `json:"folder_id"`
-
-	// transient - not persisted
-	FolderPath string `json:"folder_path"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	SceneIDs     []int `json:"scene_ids"`
-	TagIDs       []int `json:"tag_ids"`
-	PerformerIDs []int `json:"performer_ids"`
+	SceneIDs     RelatedIDs `json:"scene_ids"`
+	TagIDs       RelatedIDs `json:"tag_ids"`
+	PerformerIDs RelatedIDs `json:"performer_ids"`
 }
 
-func (g Gallery) PrimaryFile() file.File {
-	if len(g.Files) == 0 {
-		return nil
-	}
-
-	return g.Files[0]
+func (g *Gallery) LoadFiles(ctx context.Context, l FileLoader) error {
+	return g.Files.load(func() ([]file.File, error) {
+		return l.GetFiles(ctx, g.ID)
+	})
 }
 
-func (g Gallery) Path() string {
-	if p := g.PrimaryFile(); p != nil {
-		return p.Base().Path
-	}
+func (g *Gallery) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
+	return g.Files.loadPrimary(func() (file.File, error) {
+		if g.PrimaryFileID == nil {
+			return nil, nil
+		}
 
-	return g.FolderPath
+		f, err := l.Find(ctx, *g.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(f) > 0 {
+			return f[0], nil
+		}
+		return nil, nil
+	})
+}
+
+func (g *Gallery) LoadSceneIDs(ctx context.Context, l SceneIDLoader) error {
+	return g.SceneIDs.load(func() ([]int, error) {
+		return l.GetSceneIDs(ctx, g.ID)
+	})
+}
+
+func (g *Gallery) LoadPerformerIDs(ctx context.Context, l PerformerIDLoader) error {
+	return g.PerformerIDs.load(func() ([]int, error) {
+		return l.GetPerformerIDs(ctx, g.ID)
+	})
+}
+
+func (g *Gallery) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return g.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, g.ID)
+	})
 }
 
 func (g Gallery) Checksum() string {
-	if p := g.PrimaryFile(); p != nil {
+	if p := g.Files.Primary(); p != nil {
 		v := p.Base().Fingerprints.Get(file.FingerprintTypeMD5)
 		if v == nil {
 			return ""
@@ -85,9 +107,10 @@ type GalleryPartial struct {
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime
 
-	SceneIDs     *UpdateIDs
-	TagIDs       *UpdateIDs
-	PerformerIDs *UpdateIDs
+	SceneIDs      *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	PrimaryFileID *file.ID
 }
 
 func NewGalleryPartial() GalleryPartial {
@@ -104,15 +127,21 @@ func (g Gallery) GetTitle() string {
 		return g.Title
 	}
 
-	if len(g.Files) > 0 {
-		return filepath.Base(g.Path())
+	return g.Path
+}
+
+// DisplayName returns a display name for the scene for logging purposes.
+// It returns the path or title, or otherwise it returns the ID if both of these are empty.
+func (g Gallery) DisplayName() string {
+	if g.Path != "" {
+		return g.Path
 	}
 
-	if g.FolderPath != "" {
-		return g.FolderPath
+	if g.Title != "" {
+		return g.Title
 	}
 
-	return ""
+	return strconv.Itoa(g.ID)
 }
 
 const DefaultGthumbWidth int = 640

@@ -173,8 +173,8 @@ type fileQueryRow struct {
 	ParentFolderID null.Int    `db:"parent_folder_id"`
 	Size           null.Int    `db:"size"`
 	ModTime        null.Time   `db:"mod_time"`
-	CreatedAt      null.Time   `db:"created_at"`
-	UpdatedAt      null.Time   `db:"updated_at"`
+	CreatedAt      null.Time   `db:"file_created_at"`
+	UpdatedAt      null.Time   `db:"file_updated_at"`
 
 	ZipBasename   null.String `db:"zip_basename"`
 	ZipFolderPath null.String `db:"zip_folder_path"`
@@ -250,12 +250,6 @@ func (r *fileQueryRow) appendRelationships(i *file.BaseFile) {
 	}
 }
 
-func mergeFiles(dest file.File, src file.File) {
-	if src.Base().Fingerprints != nil {
-		dest.Base().Fingerprints = appendFingerprintsUnique(dest.Base().Fingerprints, src.Base().Fingerprints...)
-	}
-}
-
 type fileQueryRows []fileQueryRow
 
 func (r fileQueryRows) resolve() []file.File {
@@ -277,11 +271,6 @@ func (r fileQueryRows) resolve() []file.File {
 	}
 
 	return ret
-}
-
-type relatedFileQueryRow struct {
-	fileQueryRow
-	Primary null.Bool `db:"primary"`
 }
 
 type FileStore struct {
@@ -456,8 +445,8 @@ func (qb *FileStore) selectDataset() *goqu.SelectDataset {
 		table.Col("parent_folder_id"),
 		table.Col("size"),
 		table.Col("mod_time"),
-		table.Col("created_at"),
-		table.Col("updated_at"),
+		table.Col("created_at").As("file_created_at"),
+		table.Col("updated_at").As("file_updated_at"),
 		folderTable.Col("path").As("parent_folder_path"),
 		fingerprintTable.Col("type").As("fingerprint_type"),
 		fingerprintTable.Col("fingerprint"),
@@ -595,13 +584,11 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 	basename = strings.ReplaceAll(basename, "*", "%")
 	dirName = strings.ReplaceAll(dirName, "*", "%")
 
-	dir, _ := path(dirName).Value()
-
 	table := qb.table()
 	folderTable := folderTableMgr.table
 
 	q := qb.selectDataset().Prepared(true).Where(
-		folderTable.Col("path").Like(dir),
+		folderTable.Col("path").Like(dirName),
 		table.Col("basename").Like(basename),
 	)
 
@@ -618,10 +605,9 @@ func (qb *FileStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.SelectD
 
 	var conds []exp.Expression
 	for _, pp := range p {
-		dir, _ := path(pp).Value()
-		dirWildcard, _ := path(pp + string(filepath.Separator) + "%").Value()
+		ppWildcard := pp + string(filepath.Separator) + "%"
 
-		conds = append(conds, folderTable.Col("path").Eq(dir), folderTable.Col("path").Like(dirWildcard))
+		conds = append(conds, folderTable.Col("path").Eq(pp), folderTable.Col("path").Like(ppWildcard))
 	}
 
 	return q.Where(
@@ -633,7 +619,14 @@ func (qb *FileStore) allInPaths(q *goqu.SelectDataset, p []string) *goqu.SelectD
 // Returns all if limit is < 0.
 // Returns all files if p is empty.
 func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offset int) ([]file.File, error) {
-	q := qb.selectDataset().Prepared(true)
+	table := qb.table()
+	folderTable := folderTableMgr.table
+
+	q := dialect.From(table).Prepared(true).InnerJoin(
+		folderTable,
+		goqu.On(table.Col("parent_folder_id").Eq(folderTable.Col(idColumn))),
+	).Select(table.Col(idColumn))
+
 	q = qb.allInPaths(q, p)
 
 	if limit > -1 {
@@ -642,7 +635,7 @@ func (qb *FileStore) FindAllInPaths(ctx context.Context, p []string, limit, offs
 
 	q = q.Offset(uint(offset))
 
-	ret, err := qb.getMany(ctx, q)
+	ret, err := qb.findBySubquery(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("getting files by path %s: %w", p, err)
 	}

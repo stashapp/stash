@@ -1,9 +1,9 @@
 package autotag
 
 import (
+	"path/filepath"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -18,49 +18,60 @@ type testTagCase struct {
 	aliasRegex    string
 }
 
-var testTagCases = []testTagCase{
-	{
-		"tag name",
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		"tag + name",
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		`tag + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		"tag name",
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"alias name",
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-	},
-	{
-		"tag + name",
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"alias + name",
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-	},
-	{
-		`tag + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		`alias + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-	},
-}
+var (
+	testTagCases = []testTagCase{
+		{
+			"tag name",
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			"tag + name",
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			"tag name",
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"alias name",
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+		{
+			"tag + name",
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"alias + name",
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+	}
+
+	trailingBackslashCases = []testTagCase{
+		{
+			`tag + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			`tag + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+			`alias + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+		},
+	}
+)
 
 func TestTagScenes(t *testing.T) {
 	t.Parallel()
 
-	for _, p := range testTagCases {
+	tc := testTagCases
+	// trailing backslash tests only work where filepath separator is not backslash
+	if filepath.Separator != '\\' {
+		tc = append(tc, trailingBackslashCases...)
+	}
+
+	for _, p := range tc {
 		testTagScenes(t, p)
 	}
 }
@@ -88,14 +99,9 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	var scenes []*models.Scene
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID: i + 1,
-			Files: []*file.VideoFile{
-				{
-					BaseFile: &file.BaseFile{
-						Path: p,
-					},
-				},
-			},
+			ID:     i + 1,
+			Path:   p,
+			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
@@ -186,8 +192,9 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	matchingPaths, falsePaths := generateTestPaths(testPathName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:    i + 1,
-			Files: []*file.ImageFile{makeImageFile(p)},
+			ID:     i + 1,
+			Path:   p,
+			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
@@ -280,12 +287,9 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	for i, p := range append(matchingPaths, falsePaths...) {
 		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID: i + 1,
-			Files: []file.File{
-				&file.BaseFile{
-					Path: v,
-				},
-			},
+			ID:     i + 1,
+			Path:   v,
+			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 

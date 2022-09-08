@@ -51,6 +51,9 @@ func (t *GenerateSpriteTask) Start(ctx context.Context) {
 
 // required returns true if the sprite needs to be generated
 func (t GenerateSpriteTask) required() bool {
+	if t.Scene.Path == "" {
+		return false
+	}
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	return !t.doesSpriteExist(sceneHash)
 }

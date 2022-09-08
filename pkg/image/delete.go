@@ -22,7 +22,7 @@ type FileDeleter struct {
 
 // MarkGeneratedFiles marks for deletion the generated files for the provided image.
 func (d *FileDeleter) MarkGeneratedFiles(image *models.Image) error {
-	thumbPath := d.Paths.Generated.GetThumbnailPath(image.Checksum(), models.DefaultGthumbWidth)
+	thumbPath := d.Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
 	exists, _ := fsutil.FileExists(thumbPath)
 	if exists {
 		return d.Files([]string{thumbPath})
@@ -47,6 +47,10 @@ func (s *Service) DestroyZipImages(ctx context.Context, zipFile file.File, fileD
 	}
 
 	for _, img := range imgs {
+		if err := img.LoadFiles(ctx, s.Repository); err != nil {
+			return nil, err
+		}
+
 		const deleteFileInZip = false
 		if err := s.destroyImage(ctx, img, fileDeleter, deleteGenerated, deleteFileInZip); err != nil {
 			return nil, err
@@ -77,7 +81,11 @@ func (s *Service) destroyImage(ctx context.Context, i *models.Image, fileDeleter
 
 // deleteFiles deletes files for the image from the database and file system, if they are not in use by other images
 func (s *Service) deleteFiles(ctx context.Context, i *models.Image, fileDeleter *FileDeleter) error {
-	for _, f := range i.Files {
+	if err := i.LoadFiles(ctx, s.Repository); err != nil {
+		return err
+	}
+
+	for _, f := range i.Files.List() {
 		// only delete files where there is no other associated image
 		otherImages, err := s.Repository.FindByFileID(ctx, f.ID)
 		if err != nil {

@@ -3,7 +3,6 @@ package autotag
 import (
 	"testing"
 
-	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -11,14 +10,6 @@ import (
 )
 
 const imageExt = "jpg"
-
-func makeImageFile(p string) *file.ImageFile {
-	return &file.ImageFile{
-		BaseFile: &file.BaseFile{
-			Path: p,
-		},
-	}
-}
 
 func TestImagePerformers(t *testing.T) {
 	t.Parallel()
@@ -59,8 +50,9 @@ func TestImagePerformers(t *testing.T) {
 		}
 
 		image := models.Image{
-			ID:    imageID,
-			Files: []*file.ImageFile{makeImageFile(test.Path)},
+			ID:           imageID,
+			Path:         test.Path,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		}
 		err := ImagePerformers(testCtx, &image, mockImageReader, mockPerformerReader, nil)
 
@@ -101,8 +93,8 @@ func TestImageStudios(t *testing.T) {
 		}
 
 		image := models.Image{
-			ID:    imageID,
-			Files: []*file.ImageFile{makeImageFile(test.Path)},
+			ID:   imageID,
+			Path: test.Path,
 		}
 		err := ImageStudios(testCtx, &image, mockImageReader, mockStudioReader, nil)
 
@@ -174,8 +166,9 @@ func TestImageTags(t *testing.T) {
 		}
 
 		image := models.Image{
-			ID:    imageID,
-			Files: []*file.ImageFile{makeImageFile(test.Path)},
+			ID:     imageID,
+			Path:   test.Path,
+			TagIDs: models.NewRelatedIDs([]int{}),
 		}
 		err := ImageTags(testCtx, &image, mockImageReader, mockTagReader, nil)
 

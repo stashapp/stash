@@ -153,7 +153,9 @@ func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret 
 		return nil, err
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).SceneByID.LoadAll(obj.SceneIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret *models.Studio, err error) {
@@ -181,7 +183,9 @@ func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []
 		return nil, err
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).TagByID.LoadAll(obj.TagIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (ret []*models.Performer, err error) {
@@ -193,7 +197,9 @@ func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (
 		return nil, err
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).PerformerByID.LoadAll(obj.PerformerIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (ret int, err error) {

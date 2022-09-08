@@ -15,11 +15,13 @@ type FinderByFile interface {
 type Repository interface {
 	FinderByFile
 	Destroy(ctx context.Context, id int) error
+	models.FileLoader
 }
 
 type ImageFinder interface {
 	FindByFolderID(ctx context.Context, folder file.FolderID) ([]*models.Image, error)
 	FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*models.Image, error)
+	models.GalleryIDLoader
 }
 
 type ImageService interface {

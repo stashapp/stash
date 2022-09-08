@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -52,61 +51,7 @@ type schema32Migrator struct {
 	folderCache map[string]folderInfo
 }
 
-func (m *schema32Migrator) migrateFolderSlashes(ctx context.Context) error {
-	logger.Infof("Migrating folder slashes")
-	const query = "SELECT `folders`.`id`, `folders`.`path` FROM `folders`"
-
-	rows, err := m.db.Query(query)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var id int
-		var p string
-
-		err := rows.Scan(&id, &p)
-		if err != nil {
-			return err
-		}
-
-		convertedPath := filepath.ToSlash(p)
-
-		_, err = m.db.Exec("UPDATE `folders` SET `path` = ? WHERE `id` = ?", convertedPath, id)
-		if err != nil {
-			return err
-		}
-	}
-
-	if err := rows.Err(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// dir returns all but the last element of path, typically the path's directory.
-// After dropping the final element using Split, the path is Cleaned and trailing
-// slashes are removed.
-//
-// This is a re-implementation of path.Dir which changes double slash prefixed
-// paths into single slash.
-func dir(p string) string {
-	parent := path.Dir(p)
-	// restore the double slash
-	if strings.HasPrefix(p, "//") && len(parent) > 1 {
-		parent = "/" + parent
-	}
-
-	return parent
-}
-
 func (m *schema32Migrator) migrateFolders(ctx context.Context) error {
-	if err := m.migrateFolderSlashes(ctx); err != nil {
-		return err
-	}
-
 	logger.Infof("Migrating folders")
 
 	const query = "SELECT `folders`.`id`, `folders`.`path` FROM `folders` INNER JOIN `galleries` ON `galleries`.`folder_id` = `folders`.`id`"
@@ -126,7 +71,7 @@ func (m *schema32Migrator) migrateFolders(ctx context.Context) error {
 			return err
 		}
 
-		parent := dir(p)
+		parent := filepath.Dir(p)
 		parentID, zipFileID, err := m.createFolderHierarchy(parent)
 		if err != nil {
 			return err
@@ -198,9 +143,8 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 					p = strings.ReplaceAll(p, legacyZipSeparator, string(filepath.Separator))
 				}
 
-				convertedPath := filepath.ToSlash(p)
-				parent := dir(convertedPath)
-				basename := path.Base(convertedPath)
+				parent := filepath.Dir(p)
+				basename := filepath.Base(p)
 				if parent != "." {
 					parentID, zipFileID, err := m.createFolderHierarchy(parent)
 					if err != nil {
@@ -270,9 +214,9 @@ func (m *schema32Migrator) deletePlaceholderFolder(ctx context.Context) error {
 }
 
 func (m *schema32Migrator) createFolderHierarchy(p string) (*int, sql.NullInt64, error) {
-	parent := dir(p)
+	parent := filepath.Dir(p)
 
-	if parent == "." || parent == "/" {
+	if parent == p {
 		// get or create this folder
 		return m.getOrCreateFolder(p, nil, sql.NullInt64{})
 	}

@@ -50,8 +50,8 @@ var stashID = models.StashID{
 	StashID:  "StashID",
 	Endpoint: "Endpoint",
 }
-var stashIDs = []*models.StashID{
-	&stashID,
+var stashIDs = []models.StashID{
+	stashID,
 }
 
 const image = "aW1hZ2VCeXRlcw=="

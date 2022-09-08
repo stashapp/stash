@@ -12,7 +12,7 @@ import (
 
 type StudioCreator interface {
 	Create(ctx context.Context, newStudio models.Studio) (*models.Studio, error)
-	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []*models.StashID) error
+	UpdateStashIDs(ctx context.Context, studioID int, stashIDs []models.StashID) error
 }
 
 func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, studio *models.ScrapedStudio) (*int, error) {
@@ -22,7 +22,7 @@ func createMissingStudio(ctx context.Context, endpoint string, w StudioCreator, 
 	}
 
 	if endpoint != "" && studio.RemoteSiteID != nil {
-		if err := w.UpdateStashIDs(ctx, created.ID, []*models.StashID{
+		if err := w.UpdateStashIDs(ctx, created.ID, []models.StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *studio.RemoteSiteID,

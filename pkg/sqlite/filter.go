@@ -240,6 +240,7 @@ func (f *filterBuilder) addWith(sql string, args ...interface{}) {
 }
 
 // addRecursiveWith adds a with clause and arguments to the filter, and sets it to recursive
+//
 //nolint:unused
 func (f *filterBuilder) addRecursiveWith(sql string, args ...interface{}) {
 	if sql == "" {
@@ -386,11 +387,9 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 			if modifier := c.Modifier; c.Modifier.IsValid() {
 				switch modifier {
 				case models.CriterionModifierIncludes:
-					clause, thisArgs := getSearchBinding([]string{column}, c.Value, false)
-					f.addWhere(clause, thisArgs...)
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, false))
 				case models.CriterionModifierExcludes:
-					clause, thisArgs := getSearchBinding([]string{column}, c.Value, true)
-					f.addWhere(clause, thisArgs...)
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, true))
 				case models.CriterionModifierEquals:
 					f.addWhere(column+" LIKE ?", c.Value)
 				case models.CriterionModifierNotEquals:
@@ -447,13 +446,13 @@ func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, bas
 						f.setError(err)
 						return
 					}
-					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?) OR (%s IS NOT NULL AND %[2]s regexp ?)", pathColumn, basenameColumn), c.Value, c.Value)
+					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %[1]s || '%[3]s' || %[2]s regexp ?", pathColumn, basenameColumn, string(filepath.Separator)), c.Value)
 				case models.CriterionModifierNotMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
 						return
 					}
-					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?) AND (%s IS NULL OR %[2]s NOT regexp ?)", pathColumn, basenameColumn), c.Value, c.Value)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %[1]s || '%[3]s' || %[2]s NOT regexp ?", pathColumn, basenameColumn, string(filepath.Separator)), c.Value)
 				case models.CriterionModifierIsNull:
 					f.addWhere(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = '')", pathColumn, basenameColumn))
 				case models.CriterionModifierNotNull:
@@ -471,7 +470,7 @@ func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not
 	// directory plus basename
 	hasSlashes := strings.Contains(p, string(filepath.Separator))
 	trailingSlash := hasSlashes && p[len(p)-1] == filepath.Separator
-	const emptyDir = "/"
+	const emptyDir = string(filepath.Separator)
 
 	// possible values:
 	// dir/basename
@@ -481,8 +480,7 @@ func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not
 	// dirOrBasename
 
 	basename := filepath.Base(p)
-	dir := path(filepath.Dir(p)).String()
-	p = path(p).String()
+	dir := filepath.Dir(p)
 
 	if addWildcards {
 		p = "%" + p + "%"

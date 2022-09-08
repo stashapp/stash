@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -48,6 +49,37 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.UpdatedAt = i.UpdatedAt
 }
 
+type imageQueryRow struct {
+	imageRow
+	PrimaryFileID         null.Int    `db:"primary_file_id"`
+	PrimaryFileFolderPath zero.String `db:"primary_file_folder_path"`
+	PrimaryFileBasename   zero.String `db:"primary_file_basename"`
+	PrimaryFileChecksum   zero.String `db:"primary_file_checksum"`
+}
+
+func (r *imageQueryRow) resolve() *models.Image {
+	ret := &models.Image{
+		ID:        r.ID,
+		Title:     r.Title.String,
+		Rating:    nullIntPtr(r.Rating),
+		Organized: r.Organized,
+		OCounter:  r.OCounter,
+		StudioID:  nullIntPtr(r.StudioID),
+
+		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
+		Checksum:      r.PrimaryFileChecksum.String,
+
+		CreatedAt: r.CreatedAt,
+		UpdatedAt: r.UpdatedAt,
+	}
+
+	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
+		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
+	}
+
+	return ret
+}
+
 type imageRowRecord struct {
 	updateRecord
 }
@@ -62,118 +94,29 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setTime("updated_at", i.UpdatedAt)
 }
 
-type imageQueryRow struct {
-	imageRow
-
-	relatedFileQueryRow
-
-	GalleryID   null.Int `db:"gallery_id"`
-	TagID       null.Int `db:"tag_id"`
-	PerformerID null.Int `db:"performer_id"`
-}
-
-func (r *imageQueryRow) resolve() *models.Image {
-	ret := &models.Image{
-		ID:        r.ID,
-		Title:     r.Title.String,
-		Rating:    nullIntPtr(r.Rating),
-		Organized: r.Organized,
-		OCounter:  r.OCounter,
-		StudioID:  nullIntPtr(r.StudioID),
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
-	}
-
-	r.appendRelationships(ret)
-
-	return ret
-}
-
-func appendImageFileUnique(vs []*file.ImageFile, toAdd *file.ImageFile, isPrimary bool) []*file.ImageFile {
-	// check in reverse, since it's most likely to be the last one
-	for i := len(vs) - 1; i >= 0; i-- {
-		if vs[i].Base().ID == toAdd.Base().ID {
-
-			// merge the two
-			mergeFiles(vs[i], toAdd)
-			return vs
-		}
-	}
-
-	if !isPrimary {
-		return append(vs, toAdd)
-	}
-
-	// primary should be first
-	return append([]*file.ImageFile{toAdd}, vs...)
-}
-
-func (r *imageQueryRow) appendRelationships(i *models.Image) {
-	if r.GalleryID.Valid {
-		i.GalleryIDs = intslice.IntAppendUnique(i.GalleryIDs, int(r.GalleryID.Int64))
-	}
-	if r.TagID.Valid {
-		i.TagIDs = intslice.IntAppendUnique(i.TagIDs, int(r.TagID.Int64))
-	}
-	if r.PerformerID.Valid {
-		i.PerformerIDs = intslice.IntAppendUnique(i.PerformerIDs, int(r.PerformerID.Int64))
-	}
-
-	if r.relatedFileQueryRow.FileID.Valid {
-		f := r.fileQueryRow.resolve().(*file.ImageFile)
-		i.Files = appendImageFileUnique(i.Files, f, r.Primary.Bool)
-	}
-}
-
-type imageQueryRows []imageQueryRow
-
-func (r imageQueryRows) resolve() []*models.Image {
-	var ret []*models.Image
-	var last *models.Image
-	var lastID int
-
-	for _, row := range r {
-		if last == nil || lastID != row.ID {
-			f := row.resolve()
-			last = f
-			lastID = row.ID
-			ret = append(ret, last)
-			continue
-		}
-
-		// must be merging with previous row
-		row.appendRelationships(last)
-	}
-
-	return ret
-}
-
 type ImageStore struct {
 	repository
 
-	tableMgr      *table
-	queryTableMgr *table
+	tableMgr *table
 	oCounterManager
+
+	fileStore *FileStore
 }
 
-func NewImageStore() *ImageStore {
+func NewImageStore(fileStore *FileStore) *ImageStore {
 	return &ImageStore{
 		repository: repository{
 			tableName: imageTable,
 			idColumn:  idColumn,
 		},
 		tableMgr:        imageTableMgr,
-		queryTableMgr:   imageQueryTableMgr,
 		oCounterManager: oCounterManager{imageTableMgr},
+		fileStore:       fileStore,
 	}
 }
 
 func (qb *ImageStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
-}
-
-func (qb *ImageStore) queryTable() exp.IdentifierExpression {
-	return qb.queryTableMgr.table
 }
 
 func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateInput) error {
@@ -192,18 +135,19 @@ func (qb *ImageStore) Create(ctx context.Context, newObject *models.ImageCreateI
 		}
 	}
 
-	if len(newObject.GalleryIDs) > 0 {
-		if err := imageGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs); err != nil {
+	if newObject.PerformerIDs.Loaded() {
+		if err := imagesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs.List()); err != nil {
 			return err
 		}
 	}
-	if len(newObject.PerformerIDs) > 0 {
-		if err := imagesPerformersTableMgr.insertJoins(ctx, id, newObject.PerformerIDs); err != nil {
+	if newObject.TagIDs.Loaded() {
+		if err := imagesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
 			return err
 		}
 	}
-	if len(newObject.TagIDs) > 0 {
-		if err := imagesTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs); err != nil {
+
+	if newObject.GalleryIDs.Loaded() {
+		if err := imageGalleriesTableMgr.insertJoins(ctx, id, newObject.GalleryIDs.List()); err != nil {
 			return err
 		}
 	}
@@ -249,6 +193,12 @@ func (qb *ImageStore) UpdatePartial(ctx context.Context, id int, partial models.
 		}
 	}
 
+	if partial.PrimaryFileID != nil {
+		if err := imagesFilesTableMgr.setPrimary(ctx, id, *partial.PrimaryFileID); err != nil {
+			return nil, err
+		}
+	}
+
 	return qb.find(ctx, id)
 }
 
@@ -260,25 +210,34 @@ func (qb *ImageStore) Update(ctx context.Context, updatedObject *models.Image) e
 		return err
 	}
 
-	if err := imageGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs); err != nil {
-		return err
-	}
-	if err := imagesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs); err != nil {
-		return err
-	}
-	if err := imagesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs); err != nil {
-		return err
+	if updatedObject.PerformerIDs.Loaded() {
+		if err := imagesPerformersTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.PerformerIDs.List()); err != nil {
+			return err
+		}
 	}
 
-	fileIDs := make([]file.ID, len(updatedObject.Files))
-	for i, f := range updatedObject.Files {
-		fileIDs[i] = f.ID
+	if updatedObject.TagIDs.Loaded() {
+		if err := imagesTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
+			return err
+		}
 	}
 
-	if err := imagesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
-		return err
+	if updatedObject.GalleryIDs.Loaded() {
+		if err := imageGalleriesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.GalleryIDs.List()); err != nil {
+			return err
+		}
 	}
 
+	if updatedObject.Files.Loaded() {
+		fileIDs := make([]file.ID, len(updatedObject.Files.List()))
+		for i, f := range updatedObject.Files.List() {
+			fileIDs[i] = f.ID
+		}
+
+		if err := imagesFilesTableMgr.replaceJoins(ctx, updatedObject.ID, fileIDs); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -291,21 +250,59 @@ func (qb *ImageStore) Find(ctx context.Context, id int) (*models.Image, error) {
 }
 
 func (qb *ImageStore) FindMany(ctx context.Context, ids []int) ([]*models.Image, error) {
-	var images []*models.Image
-	for _, id := range ids {
-		image, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
+	q := qb.selectDataset().Prepared(true).Where(qb.table().Col(idColumn).In(ids))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
+	}
 
-		images = append(images, image)
+	images := make([]*models.Image, len(ids))
+
+	for _, s := range unsorted {
+		i := intslice.IntIndex(ids, s.ID)
+		images[i] = s
+	}
+
+	for i := range images {
+		if images[i] == nil {
+			return nil, fmt.Errorf("image with id %d not found", ids[i])
+		}
 	}
 
 	return images, nil
 }
 
 func (qb *ImageStore) selectDataset() *goqu.SelectDataset {
-	return dialect.From(imagesQueryTable).Select(imagesQueryTable.All())
+	table := qb.table()
+	files := fileTableMgr.table
+	folders := folderTableMgr.table
+	checksum := fingerprintTableMgr.table
+
+	return dialect.From(table).LeftJoin(
+		imagesFilesJoinTable,
+		goqu.On(
+			imagesFilesJoinTable.Col(imageIDColumn).Eq(table.Col(idColumn)),
+			imagesFilesJoinTable.Col("primary").Eq(1),
+		),
+	).LeftJoin(
+		files,
+		goqu.On(files.Col(idColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn))),
+	).LeftJoin(
+		folders,
+		goqu.On(folders.Col(idColumn).Eq(files.Col("parent_folder_id"))),
+	).LeftJoin(
+		checksum,
+		goqu.On(
+			checksum.Col(fileIDColumn).Eq(imagesFilesJoinTable.Col(fileIDColumn)),
+			checksum.Col("type").Eq(file.FingerprintTypeMD5),
+		),
+	).Select(
+		qb.table().All(),
+		imagesFilesJoinTable.Col(fileIDColumn).As("primary_file_id"),
+		folders.Col("path").As("primary_file_folder_path"),
+		files.Col("basename").As("primary_file_basename"),
+		checksum.Col("fingerprint").As("primary_file_checksum"),
+	)
 }
 
 func (qb *ImageStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.Image, error) {
@@ -323,24 +320,61 @@ func (qb *ImageStore) get(ctx context.Context, q *goqu.SelectDataset) (*models.I
 
 func (qb *ImageStore) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Image, error) {
 	const single = false
-	var rows imageQueryRows
+	var ret []*models.Image
+	var lastID int
 	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
 		var f imageQueryRow
 		if err := r.StructScan(&f); err != nil {
 			return err
 		}
 
-		rows = append(rows, f)
+		i := f.resolve()
+
+		if i.ID == lastID {
+			return fmt.Errorf("internal error: multiple rows returned for single image id %d", i.ID)
+		}
+		lastID = i.ID
+
+		ret = append(ret, i)
 		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	return rows.resolve(), nil
+	return ret, nil
+}
+
+func (qb *ImageStore) GetFiles(ctx context.Context, id int) ([]*file.ImageFile, error) {
+	fileIDs, err := qb.filesRepository().get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// use fileStore to load files
+	files, err := qb.fileStore.Find(ctx, fileIDs...)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]*file.ImageFile, len(files))
+	for i, f := range files {
+		var ok bool
+		ret[i], ok = f.(*file.ImageFile)
+		if !ok {
+			return nil, fmt.Errorf("expected file to be *file.ImageFile not %T", f)
+		}
+	}
+
+	return ret, nil
+}
+
+func (qb *ImageStore) GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error) {
+	const primaryOnly = false
+	return qb.filesRepository().getMany(ctx, ids, primaryOnly)
 }
 
 func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {
-	q := qb.selectDataset().Where(qb.queryTableMgr.byID(id))
+	q := qb.selectDataset().Where(qb.tableMgr.byID(id))
 
 	ret, err := qb.get(ctx, q)
 	if err != nil {
@@ -351,7 +385,7 @@ func (qb *ImageStore) find(ctx context.Context, id int) (*models.Image, error) {
 }
 
 func (qb *ImageStore) findBySubquery(ctx context.Context, sq *goqu.SelectDataset) ([]*models.Image, error) {
-	table := qb.queryTable()
+	table := qb.table()
 
 	q := qb.selectDataset().Prepared(true).Where(
 		table.Col(idColumn).Eq(
@@ -430,7 +464,8 @@ func (qb *ImageStore) FindByChecksum(ctx context.Context, checksum string) ([]*m
 
 func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*models.Image, error) {
 	table := qb.table()
-	queryTable := qb.queryTable()
+	fileTable := fileTableMgr.table
+	folderTable := folderTableMgr.table
 
 	sq := dialect.From(table).
 		InnerJoin(
@@ -442,10 +477,10 @@ func (qb *ImageStore) FindByGalleryID(ctx context.Context, galleryID int) ([]*mo
 	)
 
 	q := qb.selectDataset().Prepared(true).Where(
-		queryTable.Col(idColumn).Eq(
+		table.Col(idColumn).Eq(
 			sq,
 		),
-	).Order(queryTable.Col("parent_folder_path").Asc(), queryTable.Col("basename").Asc())
+	).Order(folderTable.Col("path").Asc(), fileTable.Col("basename").Asc())
 
 	ret, err := qb.getMany(ctx, q)
 	if err != nil {
@@ -969,7 +1004,7 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			sortClause = getCountSort(imageTable, imagesTagsTable, imageIDColumn, direction)
 		case "performer_count":
 			sortClause = getCountSort(imageTable, performersImagesTable, imageIDColumn, direction)
-		case "mod_time", "size":
+		case "mod_time", "filesize":
 			addFilesJoin()
 			sortClause = getSort(sort, direction, "files")
 		default:
@@ -991,9 +1026,24 @@ func (qb *ImageStore) galleriesRepository() *joinRepository {
 	}
 }
 
-// func (qb *imageQueryBuilder) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
-// 	return qb.galleriesRepository().getIDs(ctx, imageID)
-// }
+func (qb *ImageStore) filesRepository() *filesRepository {
+	return &filesRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: imagesFilesTable,
+			idColumn:  imageIDColumn,
+		},
+	}
+}
+
+func (qb *ImageStore) AddFileID(ctx context.Context, id int, fileID file.ID) error {
+	const firstPrimary = false
+	return imagesFilesTableMgr.insertJoins(ctx, id, firstPrimary, []file.ID{fileID})
+}
+
+func (qb *ImageStore) GetGalleryIDs(ctx context.Context, imageID int) ([]int, error) {
+	return qb.galleriesRepository().getIDs(ctx, imageID)
+}
 
 // func (qb *imageQueryBuilder) UpdateGalleries(ctx context.Context, imageID int, galleryIDs []int) error {
 // 	// Delete the existing joins and then create new ones

@@ -69,6 +69,14 @@ func (t *table) byID(id interface{}) exp.Expression {
 	return t.idColumn.Eq(id)
 }
 
+func (t *table) byIDInts(ids ...int) exp.Expression {
+	ii := make([]interface{}, len(ids))
+	for i, id := range ids {
+		ii[i] = id
+	}
+	return t.idColumn.In(ii...)
+}
+
 func (t *table) idExists(ctx context.Context, id interface{}) (bool, error) {
 	q := dialect.Select(goqu.COUNT("*")).From(t.table).Where(t.byID(id))
 
@@ -361,6 +369,7 @@ type scenesMoviesTable struct {
 }
 
 type moviesScenesRow struct {
+	SceneID    null.Int `db:"scene_id"`
 	MovieID    null.Int `db:"movie_id"`
 	SceneIndex null.Int `db:"scene_index"`
 }
@@ -513,6 +522,28 @@ func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []
 	return t.insertJoins(ctx, id, firstPrimary, fileIDs)
 }
 
+func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID file.ID) error {
+	table := t.table.table
+
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"primary": 0,
+	}).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Neq(fileID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("unsetting primary flags in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	q = dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"primary": 1,
+	}).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Eq(fileID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("setting primary flag in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
 type sqler interface {
 	ToSQL() (sql string, params []interface{}, err error)
 }
@@ -552,12 +583,8 @@ func queryFunc(ctx context.Context, query *goqu.SelectDataset, single bool, f fu
 		return err
 	}
 
-	tx, err := getDBReader(ctx)
-	if err != nil {
-		return err
-	}
-
-	rows, err := tx.QueryxContext(ctx, q, args...)
+	wrapper := dbWrapper{}
+	rows, err := wrapper.QueryxContext(ctx, q, args...)
 
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("querying `%s` [%v]: %w", q, args, err)
@@ -586,12 +613,8 @@ func querySimple(ctx context.Context, query *goqu.SelectDataset, out interface{}
 		return err
 	}
 
-	tx, err := getDBReader(ctx)
-	if err != nil {
-		return err
-	}
-
-	rows, err := tx.QueryxContext(ctx, q, args...)
+	wrapper := dbWrapper{}
+	rows, err := wrapper.QueryxContext(ctx, q, args...)
 	if err != nil {
 		return fmt.Errorf("querying `%s` [%v]: %w", q, args, err)
 	}

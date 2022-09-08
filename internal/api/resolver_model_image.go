@@ -2,12 +2,53 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+func (r *imageResolver) getPrimaryFile(ctx context.Context, obj *models.Image) (*file.ImageFile, error) {
+	if obj.PrimaryFileID != nil {
+		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
+
+		ret, ok := f.(*file.ImageFile)
+		if !ok {
+			return nil, fmt.Errorf("file %T is not an image file", f)
+		}
+
+		return ret, nil
+	}
+
+	return nil, nil
+}
+
+func (r *imageResolver) getFiles(ctx context.Context, obj *models.Image) ([]*file.ImageFile, error) {
+	fileIDs, err := loaders.From(ctx).ImageFiles.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
+	ret := make([]*file.ImageFile, len(files))
+	for i, bf := range files {
+		f, ok := bf.(*file.ImageFile)
+		if !ok {
+			return nil, fmt.Errorf("file %T is not an image file", f)
+		}
+
+		ret[i] = f
+	}
+
+	return ret, firstError(errs)
+}
 
 func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, error) {
 	ret := obj.GetTitle()
@@ -15,7 +56,15 @@ func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, 
 }
 
 func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFileType, error) {
-	f := obj.PrimaryFile()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	if f == nil {
+		return nil, nil
+	}
+
 	width := f.Width
 	height := f.Height
 	size := f.Size
@@ -27,9 +76,14 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*ImageFile
 }
 
 func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageFile, error) {
-	ret := make([]*ImageFile, len(obj.Files))
+	files, err := r.getFiles(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 
-	for i, f := range obj.Files {
+	ret := make([]*ImageFile, len(files))
+
+	for i, f := range files {
 		ret[i] = &ImageFile{
 			ID:             strconv.Itoa(int(f.ID)),
 			Path:           f.Path,
@@ -54,7 +108,10 @@ func (r *imageResolver) Files(ctx context.Context, obj *models.Image) ([]*ImageF
 }
 
 func (r *imageResolver) FileModTime(ctx context.Context, obj *models.Image) (*time.Time, error) {
-	f := obj.PrimaryFile()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if f != nil {
 		return &f.ModTime, nil
 	}
@@ -74,15 +131,17 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*ImagePat
 }
 
 func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret []*models.Gallery, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		var err error
-		ret, err = r.repository.Gallery.FindMany(ctx, obj.GalleryIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.GalleryIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadGalleryIDs(ctx, r.repository.Image)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).GalleryByID.LoadAll(obj.GalleryIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *models.Studio, err error) {
@@ -90,34 +149,33 @@ func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *mod
 		return nil, nil
 	}
 
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Studio.Find(ctx, *obj.StudioID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return loaders.From(ctx).StudioByID.Load(*obj.StudioID)
 }
 
 func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*models.Tag, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Tag.FindMany(ctx, obj.TagIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.TagIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadTagIDs(ctx, r.repository.Image)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).TagByID.LoadAll(obj.TagIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) (ret []*models.Performer, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Performer.FindMany(ctx, obj.PerformerIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.PerformerIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadPerformerIDs(ctx, r.repository.Image)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).PerformerByID.LoadAll(obj.PerformerIDs.List())
+	return ret, firstError(errs)
 }

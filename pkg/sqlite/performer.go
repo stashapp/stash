@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -92,21 +95,45 @@ func (qb *performerQueryBuilder) Find(ctx context.Context, id int) (*models.Perf
 }
 
 func (qb *performerQueryBuilder) FindMany(ctx context.Context, ids []int) ([]*models.Performer, error) {
-	var performers []*models.Performer
-	for _, id := range ids {
-		performer, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-
-		if performer == nil {
-			return nil, fmt.Errorf("performer with id %d not found", id)
-		}
-
-		performers = append(performers, performer)
+	tableMgr := performerTableMgr
+	q := goqu.Select("*").From(tableMgr.table).Where(tableMgr.byIDInts(ids...))
+	unsorted, err := qb.getMany(ctx, q)
+	if err != nil {
+		return nil, err
 	}
 
-	return performers, nil
+	ret := make([]*models.Performer, len(ids))
+
+	for _, s := range unsorted {
+		i := intslice.IntIndex(ids, s.ID)
+		ret[i] = s
+	}
+
+	for i := range ret {
+		if ret[i] == nil {
+			return nil, fmt.Errorf("performer with id %d not found", ids[i])
+		}
+	}
+
+	return ret, nil
+}
+
+func (qb *performerQueryBuilder) getMany(ctx context.Context, q *goqu.SelectDataset) ([]*models.Performer, error) {
+	const single = false
+	var ret []*models.Performer
+	if err := queryFunc(ctx, q, single, func(r *sqlx.Rows) error {
+		var f models.Performer
+		if err := r.StructScan(&f); err != nil {
+			return err
+		}
+
+		ret = append(ret, &f)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (qb *performerQueryBuilder) FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error) {
@@ -324,13 +351,9 @@ func (qb *performerQueryBuilder) Query(ctx context.Context, performerFilter *mod
 		return nil, 0, err
 	}
 
-	var performers []*models.Performer
-	for _, id := range idsResult {
-		performer, err := qb.Find(ctx, id)
-		if err != nil {
-			return nil, 0, err
-		}
-		performers = append(performers, performer)
+	performers, err := qb.FindMany(ctx, idsResult)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return performers, countResult, nil
@@ -600,11 +623,11 @@ func (qb *performerQueryBuilder) stashIDRepository() *stashIDRepository {
 	}
 }
 
-func (qb *performerQueryBuilder) GetStashIDs(ctx context.Context, performerID int) ([]*models.StashID, error) {
+func (qb *performerQueryBuilder) GetStashIDs(ctx context.Context, performerID int) ([]models.StashID, error) {
 	return qb.stashIDRepository().get(ctx, performerID)
 }
 
-func (qb *performerQueryBuilder) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []*models.StashID) error {
+func (qb *performerQueryBuilder) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error {
 	return qb.stashIDRepository().replace(ctx, performerID, stashIDs)
 }
 

@@ -117,6 +117,10 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 				if len(j.input.SceneIDs) > 0 {
 					scenes, err = qb.FindMany(ctx, sceneIDs)
 					for _, s := range scenes {
+						if err := s.LoadFiles(ctx, qb); err != nil {
+							return err
+						}
+
 						j.queueSceneJobs(ctx, g, s, queue, &totals)
 					}
 				}
@@ -207,6 +211,11 @@ func (j *GenerateJob) queueTasks(ctx context.Context, g *generate.Generator, que
 				return totals
 			}
 
+			if err := ss.LoadFiles(ctx, j.txnManager.Scene); err != nil {
+				logger.Errorf("Error encountered queuing files to scan: %s", err.Error())
+				return totals
+			}
+
 			j.queueSceneJobs(ctx, g, ss, queue, &totals)
 		}
 
@@ -277,7 +286,6 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 	options := getGeneratePreviewOptions(*generatePreviewOptions)
 
 	if utils.IsTrue(j.input.Previews) {
-
 		task := &GeneratePreviewTask{
 			Scene:               *scene,
 			ImagePreview:        utils.IsTrue(j.input.ImagePreviews),
@@ -344,7 +352,7 @@ func (j *GenerateJob) queueSceneJobs(ctx context.Context, g *generate.Generator,
 
 	if utils.IsTrue(j.input.Phashes) {
 		// generate for all files in scene
-		for _, f := range scene.Files {
+		for _, f := range scene.Files.List() {
 			task := &GeneratePhashTask{
 				File:                f,
 				fileNamingAlgorithm: j.fileNamingAlgo,

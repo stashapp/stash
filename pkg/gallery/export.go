@@ -20,7 +20,13 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 		UpdatedAt: json.JSONTime{Time: gallery.UpdatedAt},
 	}
 
-	newGalleryJSON.Path = gallery.Path()
+	if gallery.FolderID != nil {
+		newGalleryJSON.FolderPath = gallery.Path
+	}
+
+	for _, f := range gallery.Files.List() {
+		newGalleryJSON.ZipFiles = append(newGalleryJSON.ZipFiles, f.Base().Path)
+	}
 
 	if gallery.Date != nil {
 		newGalleryJSON.Date = gallery.Date.String()
@@ -61,12 +67,22 @@ func GetIDs(galleries []*models.Gallery) []int {
 	return results
 }
 
-func GetChecksums(galleries []*models.Gallery) []string {
-	var results []string
+func GetRefs(galleries []*models.Gallery) []jsonschema.GalleryRef {
+	var results []jsonschema.GalleryRef
 	for _, gallery := range galleries {
-		if gallery.Checksum() != "" {
-			results = append(results, gallery.Checksum())
+		toAdd := jsonschema.GalleryRef{}
+		switch {
+		case gallery.FolderID != nil:
+			toAdd.FolderPath = gallery.Path
+		case len(gallery.Files.List()) > 0:
+			for _, f := range gallery.Files.List() {
+				toAdd.ZipFiles = append(toAdd.ZipFiles, f.Base().Path)
+			}
+		default:
+			toAdd.Title = gallery.Title
 		}
+
+		results = append(results, toAdd)
 	}
 
 	return results

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -97,14 +98,7 @@ func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (
 		return nil, nil
 	}
 
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Studio.Find(ctx, int(obj.ParentID.Int64))
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return loaders.From(ctx).StudioByID.Load(int(obj.ParentID.Int64))
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (ret []*models.Studio, err error) {
@@ -118,15 +112,17 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 	return ret, nil
 }
 
-func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) (ret []*models.StashID, err error) {
+func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) ([]*models.StashID, error) {
+	var ret []models.StashID
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		var err error
 		ret, err = r.repository.Studio.GetStashIDs(ctx, obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
 	}
 
-	return ret, nil
+	return stashIDsSliceToPtrSlice(ret), nil
 }
 
 func (r *studioResolver) Rating(ctx context.Context, obj *models.Studio) (*int, error) {
