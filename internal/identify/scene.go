@@ -18,6 +18,9 @@ import (
 type SceneReaderUpdater interface {
 	GetCover(ctx context.Context, sceneID int) ([]byte, error)
 	scene.Updater
+	models.PerformerIDLoader
+	models.TagIDLoader
+	models.StashIDLoader
 }
 
 type TagCreator interface {
@@ -82,7 +85,7 @@ func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]
 	endpoint := g.result.source.RemoteSite
 
 	var performerIDs []int
-	originalPerformerIDs := g.scene.PerformerIDs
+	originalPerformerIDs := g.scene.PerformerIDs.List()
 
 	if strategy == FieldStrategyMerge {
 		// add to existing
@@ -129,7 +132,7 @@ func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	}
 
 	var tagIDs []int
-	originalTagIDs := target.TagIDs
+	originalTagIDs := target.TagIDs.List()
 
 	if strategy == FieldStrategyMerge {
 		// add to existing
@@ -186,7 +189,7 @@ func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, err
 	}
 
 	var stashIDs []models.StashID
-	originalStashIDs := target.StashIDs
+	originalStashIDs := target.StashIDs.List()
 
 	if strategy == FieldStrategyMerge {
 		// add to existing

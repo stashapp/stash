@@ -161,8 +161,6 @@ const (
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
-	RatingSystem                   = "rating_system"
-	defaultRatingSystem            = "five_pointfive_stars"
 
 	HandyKey        = "handy_key"
 	FunscriptOffset = "funscript_offset"
@@ -907,19 +905,6 @@ func (i *Instance) GetWallPlayback() string {
 	v := i.viper(WallPlayback)
 	if v.IsSet(WallPlayback) {
 		ret = v.GetString(WallPlayback)
-	}
-
-	return ret
-}
-
-func (i *Instance) GetRatingSystem() string {
-	i.RLock()
-	defer i.RUnlock()
-
-	ret := defaultRatingSystem
-	v := i.viper(RatingSystem)
-	if v.IsSet(RatingSystem) {
-		ret = v.GetString(RatingSystem)
 	}
 
 	return ret

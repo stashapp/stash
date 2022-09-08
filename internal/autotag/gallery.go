@@ -21,17 +21,17 @@ type GalleryTagUpdater interface {
 
 func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 	var path string
-	if s.Path() != "" {
-		path = s.Path()
+	if s.Path != "" {
+		path = s.Path
 	}
 
 	// only trim the extension if gallery is file-based
-	trimExt := s.PrimaryFile() != nil
+	trimExt := s.PrimaryFileID != nil
 
 	return tagger{
 		ID:      s.ID,
 		Type:    "gallery",
-		Name:    s.GetTitle(),
+		Name:    s.DisplayName(),
 		Path:    path,
 		trimExt: trimExt,
 		cache:   cache,
@@ -39,11 +39,24 @@ func getGalleryFileTagger(s *models.Gallery, cache *match.Cache) tagger {
 }
 
 // GalleryPerformers tags the provided gallery with performers whose name matches the gallery's path.
-func GalleryPerformers(ctx context.Context, s *models.Gallery, rw gallery.PartialUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
+func GalleryPerformers(ctx context.Context, s *models.Gallery, rw GalleryPerformerUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
 	t := getGalleryFileTagger(s, cache)
 
 	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
-		return gallery.AddPerformer(ctx, rw, s, otherID)
+		if err := s.LoadPerformerIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := s.PerformerIDs.List()
+
+		if intslice.IntInclude(existing, otherID) {
+			return false, nil
+		}
+
+		if err := gallery.AddPerformer(ctx, rw, s, otherID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }
 
@@ -64,10 +77,23 @@ func GalleryStudios(ctx context.Context, s *models.Gallery, rw GalleryFinderUpda
 }
 
 // GalleryTags tags the provided gallery with tags whose name matches the gallery's path.
-func GalleryTags(ctx context.Context, s *models.Gallery, rw gallery.PartialUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
+func GalleryTags(ctx context.Context, s *models.Gallery, rw GalleryTagUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
 	t := getGalleryFileTagger(s, cache)
 
 	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
-		return gallery.AddTag(ctx, rw, s, otherID)
+		if err := s.LoadTagIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := s.TagIDs.List()
+
+		if intslice.IntInclude(existing, otherID) {
+			return false, nil
+		}
+
+		if err := gallery.AddTag(ctx, rw, s, otherID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }
