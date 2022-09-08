@@ -4,15 +4,6 @@ import { FilterMode } from "src/core/generated-graphql";
 import { ListFilterModel } from "./list-filter/filter";
 import { SceneListFilterOptions } from "./list-filter/scenes";
 
-interface IQueryParameters {
-  qsort?: string;
-  qsortd?: string;
-  qfq?: string;
-  qfp?: string;
-  qfc?: string[];
-  qs?: string[];
-}
-
 export interface IPlaySceneOptions {
   sceneIndex?: number;
   newPage?: number;
@@ -86,7 +77,7 @@ export class SceneQueue {
 
   public static fromQueryParameters(params: string) {
     const ret = new SceneQueue();
-    const parsed = queryString.parse(params) as IQueryParameters;
+    const parsed = queryString.parse(params, { decode: false });
     const translated = {
       sortby: parsed.qsort,
       sortdir: parsed.qsortd,
@@ -96,11 +87,12 @@ export class SceneQueue {
     };
 
     if (parsed.qfp) {
+      const decoded = ListFilterModel.decodeQueryParameters(translated);
       const query = new ListFilterModel(
         FilterMode.Scenes,
-        translated as queryString.ParsedQuery,
         SceneListFilterOptions.defaultSortBy
       );
+      query.configureFromQueryParameters(decoded);
       ret.query = query;
     } else if (parsed.qs) {
       // must be scene list

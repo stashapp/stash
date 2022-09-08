@@ -47,16 +47,6 @@ export function criterionIsNumberValue(
   return typeof value === "object" && "value" in value && "value2" in value;
 }
 
-export function encodeLabel(v: string) {
-  // escape " and \ and by encoding to JSON so that it encodes to JSON correctly down the line
-  const adjustedLabel = JSON.stringify(v).slice(1, -1);
-  return encodeURIComponent(adjustedLabel);
-}
-
-export function encodeILabeledId(o: ILabeledId) {
-  return { ...o, label: encodeLabel(o.label) };
-}
-
 export interface IOptionType {
   id: string;
   name?: string;

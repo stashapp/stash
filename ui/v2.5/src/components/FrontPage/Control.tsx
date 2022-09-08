@@ -107,7 +107,7 @@ const SavedFilterResults: React.FC<ISavedFilterResults> = ({
 
     const ret = new ListFilterModel(mode);
     ret.currentPage = 1;
-    ret.configureFromQueryParameters(JSON.parse(filterJSON));
+    ret.configureFromJSON(filterJSON);
     ret.randomSeed = -1;
     return ret;
   }, [data?.findSavedFilter]);

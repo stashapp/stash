@@ -572,13 +572,14 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const defaultSort = options.defaultSort ?? filterOptions.defaultSortBy;
   const defaultDisplayMode = filterOptions.displayModeOptions[0];
   const createNewFilter = useCallback(() => {
-    return new ListFilterModel(
+    const filter = new ListFilterModel(
       options.filterMode,
-      queryString.parse(history.location.search),
       defaultSort,
       defaultDisplayMode,
       options.defaultZoomIndex
     );
+    filter.configureFromQueryString(history.location.search);
+    return filter;
   }, [
     options.filterMode,
     history,
@@ -654,9 +655,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         if (defaultFilter?.findDefaultFilter) {
           newFilter.currentPage = 1;
           try {
-            newFilter.configureFromQueryParameters(
-              JSON.parse(defaultFilter.findDefaultFilter.filter)
-            );
+            newFilter.configureFromJSON(defaultFilter.findDefaultFilter.filter);
           } catch (err) {
             console.log(err);
             // ignore
@@ -713,9 +712,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     setFilter((prevFilter) => {
       let newFilter = prevFilter.clone();
-      newFilter.configureFromQueryParameters(
-        queryString.parse(location.search)
-      );
+      newFilter.configureFromQueryString(location.search);
       if (!isEqual(newFilter, prevFilter)) {
         return newFilter;
       } else {
