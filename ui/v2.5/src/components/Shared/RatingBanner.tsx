@@ -7,7 +7,7 @@ interface IProps {
 
 export const RatingBanner: React.FC<IProps> = ({ rating }) =>
   rating ? (
-    <div className={`rating-banner rating-${Math.trunc(rating / 10)}`}>
+    <div className={`rating-banner rating-${Math.trunc(rating / 5)}`}>
       <FormattedMessage id="rating" />: {rating}
     </div>
   ) : (
