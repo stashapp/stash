@@ -350,6 +350,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 		}
 	}
 
+	if input.RatingSystem != nil {
+		c.Set(config.RatingSystem, *input.RatingSystem)
+	}
+
 	if input.CSS != nil {
 		c.SetCSS(*input.CSS)
 	}
