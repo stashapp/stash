@@ -103,11 +103,22 @@ export abstract class Criterion<V extends CriterionValue> {
   }
 
   public toJSON() {
-    const encodedCriterion = {
-      type: this.criterionOption.type,
-      value: this.value,
-      modifier: this.modifier,
-    };
+    let encodedCriterion;
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      encodedCriterion = {
+        type: this.criterionOption.type,
+        modifier: this.modifier,
+      };
+    } else {
+      encodedCriterion = {
+        type: this.criterionOption.type,
+        value: this.value,
+        modifier: this.modifier,
+      };
+    }
     return JSON.stringify(encodedCriterion);
   }
 
