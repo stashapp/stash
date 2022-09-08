@@ -406,28 +406,51 @@ div.dropdown-menu {
   margin: 0 10px;
 }
 
+.rating-10 {
+  background: #0080ff7b;
+}
+
+.rating-9 {
+  background: #00bfff7b;
+}
+
+.rating-8 {
+  background: #00ffff7b;
+}
+
+.rating-7 {
+  background: #00ffbf7b;
+}
+
+.rating-6 {
+  background: #00ff807b;
+}
+
 .rating-5 {
-  background: #ff2f39;
+  background: #40ff007b;
 }
 
 .rating-4 {
-  background: $red1;
+  background: #bfff007b;
 }
 
 .rating-3 {
-  background: $orange1;
+  background: #ffff007b;
 }
 
 .rating-2 {
-  background: $sepia1;
+  background: #ffbf007b;
 }
 
 .rating-1 {
-  background: $dark-gray5;
+  background: #ff80007b;
+}
+
+.rating-0 {
+  background: #ff00007b;
 }
 
 .rating-banner {
-  background: #0000006b;
   color: #ffffff;
   display: block;
   font-size: 1rem;
