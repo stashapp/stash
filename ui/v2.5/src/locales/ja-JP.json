@@ -446,6 +446,19 @@
           "description": "ドロップダウンセレクターからの新規オブジェクトの生成を禁止する",
           "heading": "ドロップダウンの生成を無効にする"
         },
+        "rating_system": {
+          "label": "評価システム",
+          "options": {
+            "five_stars": "五つ星システム",
+            "five_pointfive_stars": "半星刻みの 5 星系",
+            "five_pointtwofive_stars": "4 分の 1 ずつ増加する 5 つの星系",
+            "ten_stars": "10星系",
+            "ten_pointfive_stars": "半星刻みの 10 星系",
+            "ten_pointtwofive_stars": "1/4 スター単位の 10 星系",
+            "ten_point_decimal": "小数点以下 1 桁の 10 進法",
+            "none": "UI で評価を無効にする"
+          }
+        },
         "heading": "編集中"
       },
       "funscript_offset": {

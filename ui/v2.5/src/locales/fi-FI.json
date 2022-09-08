@@ -434,6 +434,19 @@
           "description": "Poistaa mahdollisuuden luoda uusia kohteita alasvetovalikoista",
           "heading": "Poista luominen alasvetovalikoista"
         },
+        "rating_system": {
+          "label": "Arviointijärjestelmä",
+          "options": {
+            "five_stars": "Viiden tähden järjestelmä",
+            "five_pointfive_stars": "Viiden tähden järjestelmä puolen tähden askelin",
+            "five_pointtwofive_stars": "Viiden tähden järjestelmä neljännestähtien askelin",
+            "ten_stars": "Kymmenen tähden järjestelmä",
+            "ten_pointfive_stars": "Kymmenen tähden järjestelmä puolen tähden askelin",
+            "ten_pointtwofive_stars": "Kymmenen tähden järjestelmä neljännestähtien askelin",
+            "ten_point_decimal": "Kymmenen pisteen numeerinen järjestelmä yhdellä desimaalilla",
+            "none": "Poista luokitus käytöstä käyttöliittymässä"
+          }
+        },
         "heading": "Muokkaaminen"
       },
       "funscript_offset": {

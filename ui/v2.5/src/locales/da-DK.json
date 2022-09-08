@@ -446,6 +446,19 @@
           "description": "Fjern muligheden for at oprette nye objekter fra rullemenuerne",
           "heading": "Deaktiver dropdown oprettelse"
         },
+        "rating_system": {
+          "label": "Bedømmelsessystem",
+          "options": {
+            "five_stars": "Femstjernet system",
+            "five_pointfive_stars": "Femstjernet system med halve stjerne intervaller",
+            "five_pointtwofive_stars": "Femstjernet system med kvart stjerne intervaller",
+            "ten_stars": "Tistjernet system",
+            "ten_pointfive_stars": "Tistjernet system med halve stjerneintervaller",
+            "ten_pointtwofive_stars": "Ti stjernet system med kvart stjerne intervaller",
+            "ten_point_decimal": "Ti-punkts numerisk system med én decimal",
+            "none": "Deaktiver vurdering i brugergrænsefladen"
+          }
+        },
         "heading": "Redigering"
       },
       "funscript_offset": {

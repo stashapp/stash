@@ -446,6 +446,19 @@
           "description": "Remover a capacidade de criar novos objetos a partir dos seletores dropdown",
           "heading": "Desabilitar criação no menu dropdown"
         },
+        "rating_system": {
+          "label": "Sistema de classificação",
+          "options": {
+            "five_stars": "Sistema cinco estrelas",
+            "five_pointfive_stars": "Sistema de cinco estrelas com incrementos de meia estrela",
+            "five_pointtwofive_stars": "Sistema de cinco estrelas com incrementos de um quarto de estrela",
+            "ten_stars": "Sistema de dez estrelas",
+            "ten_pointfive_stars": "Sistema de dez estrelas com incrementos de meia estrela",
+            "ten_pointtwofive_stars": "Sistema de dez estrelas com incrementos de um quarto de estrela",
+            "ten_point_decimal": "Sistema numérico de dez pontos com um ponto decimal",
+            "none": "Desativar classificação na interface do usuário"
+          }
+        },
         "heading": "Edição"
       },
       "funscript_offset": {

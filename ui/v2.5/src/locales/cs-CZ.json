@@ -446,6 +446,19 @@
           "description": "Zakázat funkčnost tvorby nových objektů z rozbalovacích seznamů",
           "heading": "Zakázat vytvoření z rozbalovacího seznamu"
         },
+        "rating_system": {
+          "label": "Systém hodnocení",
+          "options": {
+            "five_stars": "Pětihvězdičkový systém",
+            "five_pointfive_stars": "Pětihvězdičkový systém s polovičními hvězdičkami",
+            "five_pointtwofive_stars": "Pětihvězdičkový systém s přírůstky po čtvrtinových hvězdách",
+            "ten_stars": "Desethvězdičkový systém",
+            "ten_pointfive_stars": "Desetihvězdičkový systém s polovičními hvězdičkami",
+            "ten_pointtwofive_stars": "Desetihvězdičkový systém se čtvrtinovými přírůstky",
+            "ten_point_decimal": "Desetibodový číselný systém s jednou desetinnou čárkou",
+            "none": "Zakázat hodnocení v uživatelském rozhraní"
+          }
+        },
         "heading": "Editace"
       },
       "funscript_offset": {

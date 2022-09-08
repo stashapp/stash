@@ -446,6 +446,19 @@
           "description": "Entferne die Möglichkeit der Erstellung neuer Objekte in der Dropdown-Auswahl",
           "heading": "Entferne Dropdown Erstellung"
         },
+        "rating_system": {
+          "label": "Bewertungssystem",
+          "options": {
+            "five_stars": "Fünf-Sterne-System",
+            "five_pointfive_stars": "Fünf-Sterne-System mit Schritten von halben Sternen",
+            "five_pointtwofive_stars": "Fünf-Sterne-System mit Viertelstern-Schritten",
+            "ten_stars": "Zehn-Sterne-System",
+            "ten_pointfive_stars": "Zehn-Sterne-System mit Schritten von halben Sternen",
+            "ten_pointtwofive_stars": "Zehn-Sterne-System mit Viertelstern-Schritten",
+            "ten_point_decimal": "Zehn-Punkt-Zahlensystem mit einem Dezimalpunkt",
+            "none": "Bewertung in der Benutzeroberfläche deaktivieren"
+          }
+        },
         "heading": "Editieren"
       },
       "funscript_offset": {
