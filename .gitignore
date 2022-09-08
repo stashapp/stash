@@ -58,3 +58,12 @@ node_modules
 /stash
 dist
 .DS_Store
+/yarn.lock
+/stash-go.sqlite
+/package.json
+/package-lock.json
+/icon.png
+/generated/thumbnails
+/ffmpeg-release-essentials.zip
+/config.yml
+/.vs
