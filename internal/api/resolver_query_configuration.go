@@ -132,7 +132,6 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	wallShowTitle := config.GetWallShowTitle()
 	showScrubber := config.GetShowScrubber()
 	wallPlayback := config.GetWallPlayback()
-	ratingSystem := config.GetRatingSystem()
 	noBrowser := config.GetNoBrowser()
 	notificationsEnabled := config.GetNotificationsEnabled()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
@@ -155,7 +154,6 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		SoundOnPreview:               &soundOnPreview,
 		WallShowTitle:                &wallShowTitle,
 		WallPlayback:                 &wallPlayback,
-		RatingSystem:                 &ratingSystem,
 		ShowScrubber:                 &showScrubber,
 		MaximumLoopDuration:          &maximumLoopDuration,
 		NoBrowser:                    &noBrowser,

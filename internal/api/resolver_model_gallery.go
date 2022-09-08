@@ -5,15 +5,45 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/stashapp/stash/internal/api/loaders"
+
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*GalleryFile, error) {
-	ret := make([]*GalleryFile, len(obj.Files))
+func (r *galleryResolver) getPrimaryFile(ctx context.Context, obj *models.Gallery) (file.File, error) {
+	if obj.PrimaryFileID != nil {
+		f, err := loaders.From(ctx).FileByID.Load(*obj.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
 
-	for i, f := range obj.Files {
+		return f, nil
+	}
+
+	return nil, nil
+}
+
+func (r *galleryResolver) getFiles(ctx context.Context, obj *models.Gallery) ([]file.File, error) {
+	fileIDs, err := loaders.From(ctx).GalleryFiles.Load(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	files, errs := loaders.From(ctx).FileByID.LoadAll(fileIDs)
+	return files, firstError(errs)
+}
+
+func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*GalleryFile, error) {
+	files, err := r.getFiles(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]*GalleryFile, len(files))
+
+	for i, f := range files {
 		base := f.Base()
 		ret[i] = &GalleryFile{
 			ID:             strconv.Itoa(int(base.ID)),
@@ -82,7 +112,10 @@ func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*Fol
 }
 
 func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) (*time.Time, error) {
-	f := obj.PrimaryFile()
+	f, err := r.getPrimaryFile(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
 	if f != nil {
 		return &f.Base().ModTime, nil
 	}
@@ -145,12 +178,12 @@ func (r *galleryResolver) Date(ctx context.Context, obj *models.Gallery) (*strin
 }
 
 func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret []*models.Scene, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		var err error
-		ret, err = r.repository.Scene.FindMany(ctx, obj.SceneIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.SceneIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadSceneIDs(ctx, r.repository.Gallery)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
 	var errs []error
@@ -163,24 +196,16 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret 
 		return nil, nil
 	}
 
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		var err error
-		ret, err = r.repository.Studio.Find(ctx, *obj.StudioID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return loaders.From(ctx).StudioByID.Load(*obj.StudioID)
 }
 
 func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []*models.Tag, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		var err error
-		ret, err = r.repository.Tag.FindMany(ctx, obj.TagIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.TagIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadTagIDs(ctx, r.repository.Gallery)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
 	var errs []error
@@ -189,12 +214,12 @@ func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []
 }
 
 func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (ret []*models.Performer, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		var err error
-		ret, err = r.repository.Performer.FindMany(ctx, obj.PerformerIDs)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.PerformerIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadPerformerIDs(ctx, r.repository.Gallery)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
 	var errs []error

@@ -240,8 +240,8 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 	// call post hook after performing the other actions
 	r.hookExecutor.ExecutePostHooks(ctx, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
 		ImageDestroyInput: input,
-		Checksum:          i.Checksum(),
-		Path:              i.Path(),
+		Checksum:          i.Checksum,
+		Path:              i.Path,
 	}, nil)
 
 	return true, nil
@@ -291,8 +291,8 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 		// call post hook after performing the other actions
 		r.hookExecutor.ExecutePostHooks(ctx, image.ID, plugin.ImageDestroyPost, plugin.ImagesDestroyInput{
 			ImagesDestroyInput: input,
-			Checksum:           image.Checksum(),
-			Path:               image.Path(),
+			Checksum:           image.Checksum,
+			Path:               image.Path,
 		}, nil)
 	}
 
