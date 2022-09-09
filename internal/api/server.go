@@ -278,6 +278,11 @@ func Start() error {
 		Addr:      address,
 		Handler:   r,
 		TLSConfig: tlsConfig,
+		// disable http/2 support by default
+		// when http/2 is enabled, we are unable to hijack and close
+		// the connection/request. This is necessary to stop running
+		// streams when deleting a scene file.
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 
 	printVersion()
@@ -401,11 +406,9 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		var scheme string
-		if strings.Compare("https", r.URL.Scheme) == 0 || r.Proto == "HTTP/2.0" || r.Header.Get("X-Forwarded-Proto") == "https" {
+		scheme := "http"
+		if r.TLS != nil {
 			scheme = "https"
-		} else {
-			scheme = "http"
 		}
 		prefix := getProxyPrefix(r.Header)
 
