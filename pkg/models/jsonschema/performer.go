@@ -5,6 +5,7 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 )
@@ -41,7 +42,7 @@ type Performer struct {
 }
 
 func (s Performer) Filename() string {
-	return s.Name + ".json"
+	return fsutil.SanitiseBasename(s.Name) + ".json"
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

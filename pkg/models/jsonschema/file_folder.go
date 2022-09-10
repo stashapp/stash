@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
@@ -49,12 +49,12 @@ func (f *BaseDirEntry) IsFile() bool {
 
 func (f *BaseDirEntry) Filename() string {
 	// prefix with the path depth so that we can import lower-level files/folders first
-	depth := strings.Count(f.Path, string("/"))
+	depth := strings.Count(f.Path, string(filepath.Separator))
 
 	// hash the full path for a unique filename
 	hash := md5.FromString(f.Path)
 
-	basename := path.Base(f.Path)
+	basename := filepath.Base(f.Path)
 
 	return fmt.Sprintf("%02x.%s.%s.json", depth, basename, hash)
 }
@@ -104,7 +104,7 @@ func LoadFileFile(filePath string) (DirEntry, error) {
 	}
 	defer r.Close()
 
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}

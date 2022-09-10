@@ -23,6 +23,7 @@
     "create_entity": "Luo {entityType}",
     "create_marker": "Luo Merkkaus",
     "created_entity": "Luotu: {entityType}: {entity_name}",
+    "customise": "Kustomoi",
     "delete": "Poista",
     "delete_entity": "Poista {entityType}",
     "delete_file": "Poista tiedosto",
@@ -108,6 +109,7 @@
     },
     "temp_disable": "Poista käytöstä väliaikaisesti…",
     "temp_enable": "Ota käyttöön väliaikaisesti…",
+    "unset": "Poista valinta",
     "use_default": "Käytä oletusta",
     "view_random": "Näytä satunnainen"
   },
@@ -504,7 +506,7 @@
       },
       "slideshow_delay": {
         "description": "Kuvaesitys käytössä gallerioissa seinätilassa",
-        "heading": "Kuvaesityksen viive"
+        "heading": "Kuvaesityksen viive (sekunteina)"
       },
       "title": "Käyttöliittymä"
     }
@@ -927,7 +929,6 @@
     "added_generation_job_to_queue": "Lisätty generointi työjonoon",
     "created_entity": "Luotiin {entity}",
     "default_filter_set": "Oletussuodattimet",
-    "delete_entity": "Poista {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Poistettu {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generoidaan näyttökuvaa…",
     "merged_tags": "Yhdistetyt tunnisteet",

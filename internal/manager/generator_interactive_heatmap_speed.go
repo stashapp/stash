@@ -6,7 +6,6 @@ import (
 	"image"
 	"image/draw"
 	"image/png"
-	"io/ioutil"
 	"math"
 	"os"
 	"sort"
@@ -85,7 +84,7 @@ func (g *InteractiveHeatmapSpeedGenerator) Generate() error {
 }
 
 func (g *InteractiveHeatmapSpeedGenerator) LoadFunscriptData(path string) (Script, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return Script{}, err
 	}

@@ -60,7 +60,7 @@ export const Migrate: React.FC = () => {
       return;
 
     const notes = [];
-    for (let i = status.databaseSchema; i <= status.appSchema; ++i) {
+    for (let i = status.databaseSchema + 1; i <= status.appSchema; ++i) {
       const note = migrationNotes[i];
       if (note) {
         notes.push(note);

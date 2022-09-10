@@ -164,7 +164,7 @@ func (i *fileFolderImporter) FindExistingID(ctx context.Context) (*int, error) {
 func (i *fileFolderImporter) createFolderHierarchy(ctx context.Context, p string) (*file.Folder, error) {
 	parentPath := filepath.Dir(p)
 
-	if parentPath == "." || parentPath == string(filepath.Separator) {
+	if parentPath == p {
 		// get or create this folder
 		return i.getOrCreateFolder(ctx, p, nil)
 	}

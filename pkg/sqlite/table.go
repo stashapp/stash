@@ -522,6 +522,28 @@ func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []
 	return t.insertJoins(ctx, id, firstPrimary, fileIDs)
 }
 
+func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID file.ID) error {
+	table := t.table.table
+
+	q := dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"primary": 0,
+	}).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Neq(fileID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("unsetting primary flags in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	q = dialect.Update(table).Prepared(true).Set(goqu.Record{
+		"primary": 1,
+	}).Where(t.idColumn.Eq(id), table.Col(fileIDColumn).Eq(fileID))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("setting primary flag in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
 type sqler interface {
 	ToSQL() (sql string, params []interface{}, err error)
 }

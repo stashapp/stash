@@ -107,9 +107,10 @@ type GalleryPartial struct {
 	CreatedAt OptionalTime
 	UpdatedAt OptionalTime
 
-	SceneIDs     *UpdateIDs
-	TagIDs       *UpdateIDs
-	PerformerIDs *UpdateIDs
+	SceneIDs      *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	PrimaryFileID *file.ID
 }
 
 func NewGalleryPartial() GalleryPartial {

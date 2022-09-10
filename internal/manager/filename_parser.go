@@ -513,9 +513,7 @@ func (p *SceneFilenameParser) parseScenes(ctx context.Context, repo SceneFilenam
 			}
 			p.setParserResult(ctx, repo, *sceneHolder, r)
 
-			if r != nil {
-				ret = append(ret, r)
-			}
+			ret = append(ret, r)
 		}
 	}
 
