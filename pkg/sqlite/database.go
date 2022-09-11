@@ -346,8 +346,12 @@ func (db *Database) RunMigrations() error {
 		return fmt.Errorf("re-initializing the database: %w", err)
 	}
 
-	// run a vacuum on the database
-	logger.Info("Performing vacuum on database")
+	// optimize database after migration
+	logger.Info("Optimizing database")
+	_, err = db.db.Exec("ANALYZE")
+	if err != nil {
+		logger.Warnf("error while performing post-migration optimization: %v", err)
+	}
 	_, err = db.db.Exec("VACUUM")
 	if err != nil {
 		logger.Warnf("error while performing post-migration vacuum: %v", err)
