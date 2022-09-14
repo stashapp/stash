@@ -407,7 +407,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 
 		scheme := "http"
-		if r.TLS != nil {
+		if strings.Compare("https", r.URL.Scheme) == 0 || r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
 			scheme = "https"
 		}
 		prefix := getProxyPrefix(r.Header)
