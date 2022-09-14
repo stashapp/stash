@@ -218,3 +218,16 @@ $galleryTabWidth: 450px;
     }
   }
 }
+
+.gallery-file-card.card {
+  margin: 0;
+  padding: 0;
+
+  .card-header {
+    cursor: pointer;
+  }
+
+  dl {
+    margin-bottom: 0;
+  }
+}

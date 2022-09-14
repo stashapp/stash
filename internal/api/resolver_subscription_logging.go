@@ -5,33 +5,32 @@ import (
 
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/models"
 )
 
-func getLogLevel(logType string) models.LogLevel {
+func getLogLevel(logType string) LogLevel {
 	switch logType {
 	case "progress":
-		return models.LogLevelProgress
+		return LogLevelProgress
 	case "trace":
-		return models.LogLevelTrace
+		return LogLevelTrace
 	case "debug":
-		return models.LogLevelDebug
+		return LogLevelDebug
 	case "info":
-		return models.LogLevelInfo
+		return LogLevelInfo
 	case "warn":
-		return models.LogLevelWarning
+		return LogLevelWarning
 	case "error":
-		return models.LogLevelError
+		return LogLevelError
 	default:
-		return models.LogLevelDebug
+		return LogLevelDebug
 	}
 }
 
-func logEntriesFromLogItems(logItems []log.LogItem) []*models.LogEntry {
-	ret := make([]*models.LogEntry, len(logItems))
+func logEntriesFromLogItems(logItems []log.LogItem) []*LogEntry {
+	ret := make([]*LogEntry, len(logItems))
 
 	for i, entry := range logItems {
-		ret[i] = &models.LogEntry{
+		ret[i] = &LogEntry{
 			Time:    entry.Time,
 			Level:   getLogLevel(entry.Type),
 			Message: entry.Message,
@@ -41,8 +40,8 @@ func logEntriesFromLogItems(logItems []log.LogItem) []*models.LogEntry {
 	return ret
 }
 
-func (r *subscriptionResolver) LoggingSubscribe(ctx context.Context) (<-chan []*models.LogEntry, error) {
-	ret := make(chan []*models.LogEntry, 100)
+func (r *subscriptionResolver) LoggingSubscribe(ctx context.Context) (<-chan []*LogEntry, error) {
+	ret := make(chan []*LogEntry, 100)
 	stop := make(chan int, 1)
 	logger := manager.GetInstance().Logger
 	logSub := logger.SubscribeToLog(stop)

@@ -9,6 +9,7 @@ const ProgressIndefinite float64 = -1
 // Progress is used by JobExec to communicate updates to the job's progress to
 // the JobManager.
 type Progress struct {
+	defined      bool
 	processed    int
 	total        int
 	percent      float64
@@ -36,17 +37,38 @@ func (p *Progress) Indefinite() {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
+	p.defined = false
 	p.total = 0
 	p.calculatePercent()
 }
 
-// SetTotal sets the total number of work units. This is used to calculate the
-// progress percentage.
+// Definite notifies that the total is known.
+func (p *Progress) Definite() {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	p.defined = true
+	p.calculatePercent()
+}
+
+// SetTotal sets the total number of work units and sets definite to true.
+// This is used to calculate the progress percentage.
 func (p *Progress) SetTotal(total int) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
 	p.total = total
+	p.defined = true
+	p.calculatePercent()
+}
+
+// AddTotal adds to the total number of work units. This is used to calculate the
+// progress percentage.
+func (p *Progress) AddTotal(total int) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	p.total += total
 	p.calculatePercent()
 }
 
@@ -62,7 +84,7 @@ func (p *Progress) SetProcessed(processed int) {
 
 func (p *Progress) calculatePercent() {
 	switch {
-	case p.total <= 0:
+	case !p.defined || p.total <= 0:
 		p.percent = ProgressIndefinite
 	case p.processed < 0:
 		p.percent = 0
@@ -99,7 +121,7 @@ func (p *Progress) Increment() {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
-	if p.total <= 0 || p.processed < p.total {
+	if !p.defined || p.total <= 0 || p.processed < p.total {
 		p.processed++
 		p.calculatePercent()
 	}
@@ -112,7 +134,7 @@ func (p *Progress) AddProcessed(v int) {
 	defer p.mutex.Unlock()
 
 	newVal := v
-	if newVal > p.total {
+	if p.defined && p.total > 0 && newVal > p.total {
 		newVal = p.total
 	}
 
@@ -124,7 +146,7 @@ func (p *Progress) addTask(t *task) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
-	p.currentTasks = append(p.currentTasks, t)
+	p.currentTasks = append([]*task{t}, p.currentTasks...)
 	p.updated()
 }
 

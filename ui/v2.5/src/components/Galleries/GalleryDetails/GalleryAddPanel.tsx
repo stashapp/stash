@@ -6,9 +6,9 @@ import { ImageList } from "src/components/Images/ImageList";
 import { showWhenSelected } from "src/hooks/ListHook";
 import { mutateAddGalleryImages } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { TextUtils } from "src/utils";
 import { useIntl } from "react-intl";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { galleryTitle } from "src/core/galleries";
 
 interface IGalleryAddProps {
   gallery: GQL.GalleryDataFragment;
@@ -21,7 +21,7 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
   function filterHook(filter: ListFilterModel) {
     const galleryValue = {
       id: gallery.id,
-      label: gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? ""),
+      label: galleryTitle(gallery),
     };
     // if galleries is already present, then we modify it, otherwise add
     let galleryCriterion = filter.criteria.find((c) => {

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"reflect"
 	"testing"
 )
@@ -23,31 +22,25 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 		studioIDStr = "2"
 	)
 
+	dateObj := NewDate(date)
+
 	tests := []struct {
 		name string
+		id   int
 		s    ScenePartial
 		want SceneUpdateInput
 	}{
 		{
 			"full",
+			id,
 			ScenePartial{
-				ID:      id,
-				Title:   NullStringPtr(title),
-				Details: NullStringPtr(details),
-				URL:     NullStringPtr(url),
-				Date: &SQLiteDate{
-					String: date,
-					Valid:  true,
-				},
-				Rating: &sql.NullInt64{
-					Int64: int64(rating),
-					Valid: true,
-				},
-				Organized: &organized,
-				StudioID: &sql.NullInt64{
-					Int64: int64(studioID),
-					Valid: true,
-				},
+				Title:     NewOptionalString(title),
+				Details:   NewOptionalString(details),
+				URL:       NewOptionalString(url),
+				Date:      NewOptionalDate(dateObj),
+				Rating:    NewOptionalInt(rating),
+				Organized: NewOptionalBool(organized),
+				StudioID:  NewOptionalInt(studioID),
 			},
 			SceneUpdateInput{
 				ID:        idStr,
@@ -62,9 +55,8 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 		},
 		{
 			"empty",
-			ScenePartial{
-				ID: id,
-			},
+			id,
+			ScenePartial{},
 			SceneUpdateInput{
 				ID: idStr,
 			},
@@ -72,7 +64,7 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.s.UpdateInput(); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.s.UpdateInput(tt.id); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ScenePartial.UpdateInput() = %v, want %v", got, tt.want)
 			}
 		})

@@ -12,8 +12,6 @@ export const ScanOptions: React.FC<IScanOptions> = ({
   setOptions: setOptionsState,
 }) => {
   const {
-    useFileMetadata,
-    stripFileExtension,
     scanGeneratePreviews,
     scanGenerateImagePreviews,
     scanGenerateSprites,
@@ -62,18 +60,6 @@ export const ScanOptions: React.FC<IScanOptions> = ({
         checked={scanGenerateThumbnails ?? false}
         headingID="config.tasks.generate_thumbnails_during_scan"
         onChange={(v) => setOptions({ scanGenerateThumbnails: v })}
-      />
-      <BooleanSetting
-        id="strip-file-extension"
-        checked={stripFileExtension ?? false}
-        headingID="config.tasks.dont_include_file_extension_as_part_of_the_title"
-        onChange={(v) => setOptions({ stripFileExtension: v })}
-      />
-      <BooleanSetting
-        id="use-file-metadata"
-        checked={useFileMetadata ?? false}
-        headingID="config.tasks.set_name_date_details_from_metadata_if_present"
-        onChange={(v) => setOptions({ useFileMetadata: v })}
       />
     </>
   );

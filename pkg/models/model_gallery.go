@@ -1,92 +1,147 @@
 package models
 
 import (
-	"database/sql"
-	"path/filepath"
+	"context"
+	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/file"
 )
 
 type Gallery struct {
-	ID          int                 `db:"id" json:"id"`
-	Path        sql.NullString      `db:"path" json:"path"`
-	Checksum    string              `db:"checksum" json:"checksum"`
-	Zip         bool                `db:"zip" json:"zip"`
-	Title       sql.NullString      `db:"title" json:"title"`
-	URL         sql.NullString      `db:"url" json:"url"`
-	Date        SQLiteDate          `db:"date" json:"date"`
-	Details     sql.NullString      `db:"details" json:"details"`
-	Rating      sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   bool                `db:"organized" json:"organized"`
-	StudioID    sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	CreatedAt   SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	ID int `json:"id"`
+
+	Title     string `json:"title"`
+	URL       string `json:"url"`
+	Date      *Date  `json:"date"`
+	Details   string `json:"details"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	StudioID  *int   `json:"studio_id"`
+
+	// transient - not persisted
+	Files RelatedFiles
+	// transient - not persisted
+	PrimaryFileID *file.ID
+	// transient - path of primary file or folder
+	Path string
+
+	FolderID *file.FolderID `json:"folder_id"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	SceneIDs     RelatedIDs `json:"scene_ids"`
+	TagIDs       RelatedIDs `json:"tag_ids"`
+	PerformerIDs RelatedIDs `json:"performer_ids"`
+}
+
+func (g *Gallery) LoadFiles(ctx context.Context, l FileLoader) error {
+	return g.Files.load(func() ([]file.File, error) {
+		return l.GetFiles(ctx, g.ID)
+	})
+}
+
+func (g *Gallery) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
+	return g.Files.loadPrimary(func() (file.File, error) {
+		if g.PrimaryFileID == nil {
+			return nil, nil
+		}
+
+		f, err := l.Find(ctx, *g.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(f) > 0 {
+			return f[0], nil
+		}
+		return nil, nil
+	})
+}
+
+func (g *Gallery) LoadSceneIDs(ctx context.Context, l SceneIDLoader) error {
+	return g.SceneIDs.load(func() ([]int, error) {
+		return l.GetSceneIDs(ctx, g.ID)
+	})
+}
+
+func (g *Gallery) LoadPerformerIDs(ctx context.Context, l PerformerIDLoader) error {
+	return g.PerformerIDs.load(func() ([]int, error) {
+		return l.GetPerformerIDs(ctx, g.ID)
+	})
+}
+
+func (g *Gallery) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return g.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, g.ID)
+	})
+}
+
+func (g Gallery) Checksum() string {
+	if p := g.Files.Primary(); p != nil {
+		v := p.Base().Fingerprints.Get(file.FingerprintTypeMD5)
+		if v == nil {
+			return ""
+		}
+
+		return v.(string)
+	}
+	return ""
 }
 
 // GalleryPartial represents part of a Gallery object. It is used to update
 // the database entry. Only non-nil fields will be updated.
 type GalleryPartial struct {
-	ID          int                  `db:"id" json:"id"`
-	Path        *sql.NullString      `db:"path" json:"path"`
-	Checksum    *string              `db:"checksum" json:"checksum"`
-	Title       *sql.NullString      `db:"title" json:"title"`
-	URL         *sql.NullString      `db:"url" json:"url"`
-	Date        *SQLiteDate          `db:"date" json:"date"`
-	Details     *sql.NullString      `db:"details" json:"details"`
-	Rating      *sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   *bool                `db:"organized" json:"organized"`
-	StudioID    *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	// Path        OptionalString
+	// Checksum    OptionalString
+	// Zip         OptionalBool
+	Title     OptionalString
+	URL       OptionalString
+	Date      OptionalDate
+	Details   OptionalString
+	Rating    OptionalInt
+	Organized OptionalBool
+	StudioID  OptionalInt
+	// FileModTime OptionalTime
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
+
+	SceneIDs      *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	PrimaryFileID *file.ID
 }
 
-func (s *Gallery) File() File {
-	ret := File{
-		Path: s.Path.String,
-	}
-
-	ret.Checksum = s.Checksum
-
-	if s.FileModTime.Valid {
-		ret.FileModTime = s.FileModTime.Timestamp
-	}
-
-	return ret
-}
-
-func (s *Gallery) SetFile(f File) {
-	path := f.Path
-	s.Path = sql.NullString{
-		String: path,
-		Valid:  true,
-	}
-
-	if f.Checksum != "" {
-		s.Checksum = f.Checksum
-	}
-
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		s.FileModTime = NullSQLiteTimestamp{
-			Timestamp: f.FileModTime,
-			Valid:     true,
-		}
+func NewGalleryPartial() GalleryPartial {
+	updatedTime := time.Now()
+	return GalleryPartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
 	}
 }
 
 // GetTitle returns the title of the scene. If the Title field is empty,
 // then the base filename is returned.
-func (s Gallery) GetTitle() string {
-	if s.Title.String != "" {
-		return s.Title.String
+func (g Gallery) GetTitle() string {
+	if g.Title != "" {
+		return g.Title
 	}
 
-	if s.Path.Valid {
-		return filepath.Base(s.Path.String)
+	return g.Path
+}
+
+// DisplayName returns a display name for the scene for logging purposes.
+// It returns the path or title, or otherwise it returns the ID if both of these are empty.
+func (g Gallery) DisplayName() string {
+	if g.Path != "" {
+		return g.Path
 	}
 
-	return ""
+	if g.Title != "" {
+		return g.Title
+	}
+
+	return strconv.Itoa(g.ID)
 }
 
 const DefaultGthumbWidth int = 640

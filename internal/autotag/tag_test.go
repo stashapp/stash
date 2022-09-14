@@ -1,6 +1,7 @@
 package autotag
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/image"
@@ -17,49 +18,60 @@ type testTagCase struct {
 	aliasRegex    string
 }
 
-var testTagCases = []testTagCase{
-	{
-		"tag name",
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		"tag + name",
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		`tag + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		"tag name",
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"alias name",
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-	},
-	{
-		"tag + name",
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"alias + name",
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-	},
-	{
-		`tag + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		`alias + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-	},
-}
+var (
+	testTagCases = []testTagCase{
+		{
+			"tag name",
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			"tag + name",
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			"tag name",
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"alias name",
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+		{
+			"tag + name",
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"alias + name",
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+	}
+
+	trailingBackslashCases = []testTagCase{
+		{
+			`tag + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			`tag + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])tag[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+			`alias + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+		},
+	}
+)
 
 func TestTagScenes(t *testing.T) {
 	t.Parallel()
 
-	for _, p := range testTagCases {
+	tc := testTagCases
+	// trailing backslash tests only work where filepath separator is not backslash
+	if filepath.Separator != '\\' {
+		tc = append(tc, trailingBackslashCases...)
+	}
+
+	for _, p := range tc {
 		testTagScenes(t, p)
 	}
 }
@@ -87,8 +99,9 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	var scenes []*models.Scene
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID:   i + 1,
-			Path: p,
+			ID:     i + 1,
+			Path:   p,
+			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
@@ -113,7 +126,7 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockSceneReader.On("Query", scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
+	onNameQuery := mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
 	if aliasName == "" {
 		onNameQuery.Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	} else {
@@ -127,17 +140,21 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockSceneReader.On("Query", scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("GetTagIDs", sceneID).Return(nil, nil).Once()
-		mockSceneReader.On("UpdateTags", sceneID, []int{tagID}).Return(nil).Once()
+		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
-	err := TagScenes(&tag, nil, aliases, mockSceneReader, nil)
+	err := TagScenes(testCtx, &tag, nil, aliases, mockSceneReader, nil)
 
 	assert := assert.New(t)
 
@@ -175,8 +192,9 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	matchingPaths, falsePaths := generateTestPaths(testPathName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:   i + 1,
-			Path: p,
+			ID:     i + 1,
+			Path:   p,
+			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
@@ -201,7 +219,7 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockImageReader.On("Query", image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
+	onNameQuery := mockImageReader.On("Query", testCtx, image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
 	if aliasName == "" {
 		onNameQuery.Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	} else {
@@ -215,17 +233,22 @@ func testTagImages(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockImageReader.On("Query", image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockImageReader.On("Query", testCtx, image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("GetTagIDs", imageID).Return(nil, nil).Once()
-		mockImageReader.On("UpdateTags", imageID, []int{tagID}).Return(nil).Once()
+
+		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
-	err := TagImages(&tag, nil, aliases, mockImageReader, nil)
+	err := TagImages(testCtx, &tag, nil, aliases, mockImageReader, nil)
 
 	assert := assert.New(t)
 
@@ -262,9 +285,11 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	var galleries []*models.Gallery
 	matchingPaths, falsePaths := generateTestPaths(testPathName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
+		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID:   i + 1,
-			Path: models.NullString(p),
+			ID:     i + 1,
+			Path:   v,
+			TagIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
@@ -289,7 +314,7 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockGalleryReader.On("Query", expectedGalleryFilter, expectedFindFilter)
+	onNameQuery := mockGalleryReader.On("Query", testCtx, expectedGalleryFilter, expectedFindFilter)
 	if aliasName == "" {
 		onNameQuery.Return(galleries, len(galleries), nil).Once()
 	} else {
@@ -303,16 +328,22 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockGalleryReader.On("Query", expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+		mockGalleryReader.On("Query", testCtx, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("GetTagIDs", galleryID).Return(nil, nil).Once()
-		mockGalleryReader.On("UpdateTags", galleryID, []int{tagID}).Return(nil).Once()
+
+		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+			TagIDs: &models.UpdateIDs{
+				IDs:  []int{tagID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
+
 	}
 
-	err := TagGalleries(&tag, nil, aliases, mockGalleryReader, nil)
+	err := TagGalleries(testCtx, &tag, nil, aliases, mockGalleryReader, nil)
 
 	assert := assert.New(t)
 

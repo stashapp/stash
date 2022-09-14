@@ -10,11 +10,12 @@ import {
   TruncatedText,
 } from "src/components/Shared";
 import { PopoverCountButton } from "src/components/Shared/PopoverCountButton";
-import { NavUtils, TextUtils } from "src/utils";
+import { NavUtils } from "src/utils";
 import { ConfigurationContext } from "src/hooks/Config";
 import { PerformerPopoverButton } from "../Shared/PerformerPopoverButton";
 import { RatingBanner } from "../Shared/RatingBanner";
 import { faBox, faPlayCircle, faTag } from "@fortawesome/free-solid-svg-icons";
+import { galleryTitle } from "src/core/galleries";
 
 interface IProps {
   gallery: GQL.SlimGalleryDataFragment;
@@ -148,11 +149,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     <GridCard
       className={`gallery-card zoom-${props.zoomIndex}`}
       url={`/galleries/${props.gallery.id}`}
-      title={
-        props.gallery.title
-          ? props.gallery.title
-          : TextUtils.fileNameFromPath(props.gallery.path ?? "")
-      }
+      title={galleryTitle(props.gallery)}
       linkClassName="gallery-card-header"
       image={
         <>

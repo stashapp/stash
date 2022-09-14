@@ -1,6 +1,7 @@
 package performer
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -9,12 +10,21 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type NameFinderCreatorUpdater interface {
+	NameFinderCreator
+	UpdateFull(ctx context.Context, updatedPerformer models.Performer) (*models.Performer, error)
+	UpdateTags(ctx context.Context, performerID int, tagIDs []int) error
+	UpdateImage(ctx context.Context, performerID int, image []byte) error
+	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
+}
+
 type Importer struct {
-	ReaderWriter        models.PerformerReaderWriter
-	TagWriter           models.TagReaderWriter
+	ReaderWriter        NameFinderCreatorUpdater
+	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.Performer
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -25,10 +35,10 @@ type Importer struct {
 	tags []*models.Tag
 }
 
-func (i *Importer) PreImport() error {
+func (i *Importer) PreImport(ctx context.Context) error {
 	i.performer = performerJSONToPerformer(i.Input)
 
-	if err := i.populateTags(); err != nil {
+	if err := i.populateTags(ctx); err != nil {
 		return err
 	}
 
@@ -43,10 +53,10 @@ func (i *Importer) PreImport() error {
 	return nil
 }
 
-func (i *Importer) populateTags() error {
+func (i *Importer) populateTags(ctx context.Context) error {
 	if len(i.Input.Tags) > 0 {
 
-		tags, err := importTags(i.TagWriter, i.Input.Tags, i.MissingRefBehaviour)
+		tags, err := importTags(ctx, i.TagWriter, i.Input.Tags, i.MissingRefBehaviour)
 		if err != nil {
 			return err
 		}
@@ -57,8 +67,8 @@ func (i *Importer) populateTags() error {
 	return nil
 }
 
-func importTags(tagWriter models.TagReaderWriter, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
-	tags, err := tagWriter.FindByNames(names, false)
+func importTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string, missingRefBehaviour models.ImportMissingRefEnum) ([]*models.Tag, error) {
+	tags, err := tagWriter.FindByNames(ctx, names, false)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +88,7 @@ func importTags(tagWriter models.TagReaderWriter, names []string, missingRefBeha
 		}
 
 		if missingRefBehaviour == models.ImportMissingRefEnumCreate {
-			createdTags, err := createTags(tagWriter, missingTags)
+			createdTags, err := createTags(ctx, tagWriter, missingTags)
 			if err != nil {
 				return nil, fmt.Errorf("error creating tags: %v", err)
 			}
@@ -92,12 +102,12 @@ func importTags(tagWriter models.TagReaderWriter, names []string, missingRefBeha
 	return tags, nil
 }
 
-func createTags(tagWriter models.TagWriter, names []string) ([]*models.Tag, error) {
+func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []string) ([]*models.Tag, error) {
 	var ret []*models.Tag
 	for _, name := range names {
 		newTag := *models.NewTag(name)
 
-		created, err := tagWriter.Create(newTag)
+		created, err := tagWriter.Create(ctx, newTag)
 		if err != nil {
 			return nil, err
 		}
@@ -108,25 +118,25 @@ func createTags(tagWriter models.TagWriter, names []string) ([]*models.Tag, erro
 	return ret, nil
 }
 
-func (i *Importer) PostImport(id int) error {
+func (i *Importer) PostImport(ctx context.Context, id int) error {
 	if len(i.tags) > 0 {
 		var tagIDs []int
 		for _, t := range i.tags {
 			tagIDs = append(tagIDs, t.ID)
 		}
-		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
+		if err := i.ReaderWriter.UpdateTags(ctx, id, tagIDs); err != nil {
 			return fmt.Errorf("failed to associate tags: %v", err)
 		}
 	}
 
 	if len(i.imageData) > 0 {
-		if err := i.ReaderWriter.UpdateImage(id, i.imageData); err != nil {
+		if err := i.ReaderWriter.UpdateImage(ctx, id, i.imageData); err != nil {
 			return fmt.Errorf("error setting performer image: %v", err)
 		}
 	}
 
 	if len(i.Input.StashIDs) > 0 {
-		if err := i.ReaderWriter.UpdateStashIDs(id, i.Input.StashIDs); err != nil {
+		if err := i.ReaderWriter.UpdateStashIDs(ctx, id, i.Input.StashIDs); err != nil {
 			return fmt.Errorf("error setting stash id: %v", err)
 		}
 	}
@@ -138,9 +148,9 @@ func (i *Importer) Name() string {
 	return i.Input.Name
 }
 
-func (i *Importer) FindExistingID() (*int, error) {
+func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	const nocase = false
-	existing, err := i.ReaderWriter.FindByNames([]string{i.Name()}, nocase)
+	existing, err := i.ReaderWriter.FindByNames(ctx, []string{i.Name()}, nocase)
 	if err != nil {
 		return nil, err
 	}
@@ -153,8 +163,8 @@ func (i *Importer) FindExistingID() (*int, error) {
 	return nil, nil
 }
 
-func (i *Importer) Create() (*int, error) {
-	created, err := i.ReaderWriter.Create(i.performer)
+func (i *Importer) Create(ctx context.Context) (*int, error) {
+	created, err := i.ReaderWriter.Create(ctx, i.performer)
 	if err != nil {
 		return nil, fmt.Errorf("error creating performer: %v", err)
 	}
@@ -163,10 +173,10 @@ func (i *Importer) Create() (*int, error) {
 	return &id, nil
 }
 
-func (i *Importer) Update(id int) error {
+func (i *Importer) Update(ctx context.Context, id int) error {
 	performer := i.performer
 	performer.ID = id
-	_, err := i.ReaderWriter.UpdateFull(performer)
+	_, err := i.ReaderWriter.UpdateFull(ctx, performer)
 	if err != nil {
 		return fmt.Errorf("error updating existing performer: %v", err)
 	}

@@ -31,7 +31,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -59,8 +58,7 @@ func TestRootParentObjectID(t *testing.T) {
 
 func testHandleBrowse(argsXML string) (map[string]string, error) {
 	cds := contentDirectoryService{
-		Server:     &Server{},
-		txnManager: mocks.NewTransactionManager(),
+		Server: &Server{},
 	}
 
 	r := &http.Request{}

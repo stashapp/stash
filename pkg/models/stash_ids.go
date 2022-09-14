@@ -1,14 +1,11 @@
 package models
 
-func StashIDsFromInput(i []*StashIDInput) []StashID {
-	var ret []StashID
-	for _, stashID := range i {
-		newJoin := StashID{
-			StashID:  stashID.StashID,
-			Endpoint: stashID.Endpoint,
-		}
-		ret = append(ret, newJoin)
-	}
+type StashID struct {
+	StashID  string `db:"stash_id" json:"stash_id"`
+	Endpoint string `db:"endpoint" json:"endpoint"`
+}
 
-	return ret
+type UpdateStashIDs struct {
+	StashIDs []StashID              `json:"stash_ids"`
+	Mode     RelationshipUpdateMode `json:"mode"`
 }
