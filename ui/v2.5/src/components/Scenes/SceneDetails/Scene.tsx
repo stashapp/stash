@@ -544,6 +544,10 @@ const SceneLoader: React.FC = () => {
     ? queueScenes.findIndex((s) => s.id === id)
     : -1;
 
+  useEffect(() => {
+    setContinuePlaylist(queryParams?.continue === "true");
+  }, [queryParams]);
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind(".", () => setShowScrubber(!showScrubber));
