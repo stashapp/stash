@@ -538,6 +538,8 @@ const SceneLoader: React.FC = () => {
   }
 
   const autoplay = queryParams?.autoplay === "true";
+  const autoPlayOnSelected =
+    configuration?.interface.autostartVideoOnPlaySelected ?? false;
   const currentQueueIndex = queueScenes
     ? queueScenes.findIndex((s) => s.id === id)
     : -1;
@@ -621,7 +623,7 @@ const SceneLoader: React.FC = () => {
   function playScene(sceneID: string, newPage?: number) {
     sceneQueue.playScene(history, sceneID, {
       newPage,
-      autoPlay: true,
+      autoPlay: autoPlayOnSelected,
       continue: continuePlaylist,
     });
   }
