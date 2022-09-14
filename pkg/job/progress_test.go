@@ -14,6 +14,7 @@ func createProgress(m *Manager, j *Job) Progress {
 			job: j,
 		},
 		total:     100,
+		defined:   true,
 		processed: 10,
 		percent:   10,
 	}

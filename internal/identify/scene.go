@@ -9,19 +9,35 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type sceneRelationships struct {
-	repo         models.Repository
-	scene        *models.Scene
-	result       *scrapeResult
-	fieldOptions map[string]*models.IdentifyFieldOptionsInput
+type SceneReaderUpdater interface {
+	GetCover(ctx context.Context, sceneID int) ([]byte, error)
+	scene.Updater
+	models.PerformerIDLoader
+	models.TagIDLoader
+	models.StashIDLoader
 }
 
-func (g sceneRelationships) studio() (*int64, error) {
+type TagCreator interface {
+	Create(ctx context.Context, newTag models.Tag) (*models.Tag, error)
+}
+
+type sceneRelationships struct {
+	sceneReader      SceneReaderUpdater
+	studioCreator    StudioCreator
+	performerCreator PerformerCreator
+	tagCreator       TagCreator
+	scene            *models.Scene
+	result           *scrapeResult
+	fieldOptions     map[string]*FieldOptions
+}
+
+func (g sceneRelationships) studio(ctx context.Context) (*int, error) {
 	existingID := g.scene.StudioID
 	fieldStrategy := g.fieldOptions["studio"]
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
@@ -29,29 +45,29 @@ func (g sceneRelationships) studio() (*int64, error) {
 	scraped := g.result.result.Studio
 	endpoint := g.result.source.RemoteSite
 
-	if scraped == nil || !shouldSetSingleValueField(fieldStrategy, existingID.Valid) {
+	if scraped == nil || !shouldSetSingleValueField(fieldStrategy, existingID != nil) {
 		return nil, nil
 	}
 
 	if scraped.StoredID != nil {
 		// existing studio, just set it
-		studioID, err := strconv.ParseInt(*scraped.StoredID, 10, 64)
+		studioID, err := strconv.Atoi(*scraped.StoredID)
 		if err != nil {
 			return nil, fmt.Errorf("error converting studio ID %s: %w", *scraped.StoredID, err)
 		}
 
 		// only return value if different to current
-		if existingID.Int64 != studioID {
+		if existingID == nil || *existingID != studioID {
 			return &studioID, nil
 		}
 	} else if createMissing {
-		return createMissingStudio(endpoint, g.repo, scraped)
+		return createMissingStudio(ctx, endpoint, g.studioCreator, scraped)
 	}
 
 	return nil, nil
 }
 
-func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
+func (g sceneRelationships) performers(ctx context.Context, ignoreMale bool) ([]int, error) {
 	fieldStrategy := g.fieldOptions["performers"]
 	scraped := g.result.result.Performers
 
@@ -61,21 +77,17 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 	}
 
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
-	strategy := models.IdentifyFieldStrategyMerge
+	strategy := FieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
 	}
 
-	repo := g.repo
 	endpoint := g.result.source.RemoteSite
 
 	var performerIDs []int
-	originalPerformerIDs, err := repo.Scene().GetPerformerIDs(g.scene.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting scene performers: %w", err)
-	}
+	originalPerformerIDs := g.scene.PerformerIDs.List()
 
-	if strategy == models.IdentifyFieldStrategyMerge {
+	if strategy == FieldStrategyMerge {
 		// add to existing
 		performerIDs = originalPerformerIDs
 	}
@@ -85,7 +97,7 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 			continue
 		}
 
-		performerID, err := getPerformerID(endpoint, repo, p, createMissing)
+		performerID, err := getPerformerID(ctx, endpoint, g.performerCreator, p, createMissing)
 		if err != nil {
 			return nil, err
 		}
@@ -103,11 +115,10 @@ func (g sceneRelationships) performers(ignoreMale bool) ([]int, error) {
 	return performerIDs, nil
 }
 
-func (g sceneRelationships) tags() ([]int, error) {
+func (g sceneRelationships) tags(ctx context.Context) ([]int, error) {
 	fieldStrategy := g.fieldOptions["tags"]
 	scraped := g.result.result.Tags
 	target := g.scene
-	r := g.repo
 
 	// just check if ignored
 	if len(scraped) == 0 || !shouldSetSingleValueField(fieldStrategy, false) {
@@ -115,18 +126,15 @@ func (g sceneRelationships) tags() ([]int, error) {
 	}
 
 	createMissing := fieldStrategy != nil && utils.IsTrue(fieldStrategy.CreateMissing)
-	strategy := models.IdentifyFieldStrategyMerge
+	strategy := FieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
 	}
 
 	var tagIDs []int
-	originalTagIDs, err := r.Scene().GetTagIDs(target.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting scene tags: %w", err)
-	}
+	originalTagIDs := target.TagIDs.List()
 
-	if strategy == models.IdentifyFieldStrategyMerge {
+	if strategy == FieldStrategyMerge {
 		// add to existing
 		tagIDs = originalTagIDs
 	}
@@ -142,7 +150,7 @@ func (g sceneRelationships) tags() ([]int, error) {
 			tagIDs = intslice.IntAppendUnique(tagIDs, int(tagID))
 		} else if createMissing {
 			now := time.Now()
-			created, err := r.Tag().Create(models.Tag{
+			created, err := g.tagCreator.Create(ctx, models.Tag{
 				Name:      t.Name,
 				CreatedAt: models.SQLiteTimestamp{Timestamp: now},
 				UpdatedAt: models.SQLiteTimestamp{Timestamp: now},
@@ -163,11 +171,10 @@ func (g sceneRelationships) tags() ([]int, error) {
 	return tagIDs, nil
 }
 
-func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
+func (g sceneRelationships) stashIDs(ctx context.Context) ([]models.StashID, error) {
 	remoteSiteID := g.result.result.RemoteSiteID
 	fieldStrategy := g.fieldOptions["stash_ids"]
 	target := g.scene
-	r := g.repo
 
 	endpoint := g.result.source.RemoteSite
 
@@ -176,26 +183,18 @@ func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
 		return nil, nil
 	}
 
-	strategy := models.IdentifyFieldStrategyMerge
+	strategy := FieldStrategyMerge
 	if fieldStrategy != nil {
 		strategy = fieldStrategy.Strategy
 	}
 
-	var originalStashIDs []models.StashID
 	var stashIDs []models.StashID
-	stashIDPtrs, err := r.Scene().GetStashIDs(target.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting scene tag: %w", err)
-	}
+	originalStashIDs := target.StashIDs.List()
 
-	// convert existing to non-pointer types
-	for _, stashID := range stashIDPtrs {
-		originalStashIDs = append(originalStashIDs, *stashID)
-	}
-
-	if strategy == models.IdentifyFieldStrategyMerge {
+	if strategy == FieldStrategyMerge {
 		// add to existing
-		stashIDs = originalStashIDs
+		// make a copy so we don't modify the original
+		stashIDs = append(stashIDs, originalStashIDs...)
 	}
 
 	for i, stashID := range stashIDs {
@@ -227,14 +226,13 @@ func (g sceneRelationships) stashIDs() ([]models.StashID, error) {
 
 func (g sceneRelationships) cover(ctx context.Context) ([]byte, error) {
 	scraped := g.result.result.Image
-	r := g.repo
 
 	if scraped == nil {
 		return nil, nil
 	}
 
 	// always overwrite if present
-	existingCover, err := r.Scene().GetCover(g.scene.ID)
+	existingCover, err := g.sceneReader.GetCover(ctx, g.scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene cover: %w", err)
 	}

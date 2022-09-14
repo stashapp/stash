@@ -1,0 +1,9 @@
+.migration-notes {
+  margin: 1rem;
+
+  > div {
+    background-color: darken($color: $card-bg, $amount: 3);
+    border-radius: 3px;
+    padding: 16px;
+  }
+}

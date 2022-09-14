@@ -1,7 +1,5 @@
 fragment SceneData on Scene {
   id
-  checksum
-  oshash
   title
   details
   url
@@ -9,8 +7,6 @@ fragment SceneData on Scene {
   rating
   o_counter
   organized
-  path
-  phash
   interactive
   interactive_speed
   captions {
@@ -20,15 +16,8 @@ fragment SceneData on Scene {
   created_at
   updated_at
 
-  file {
-    size
-    duration
-    video_codec
-    audio_codec
-    width
-    height
-    framerate
-    bitrate
+  files {
+    ...VideoFileData
   }
 
   paths {

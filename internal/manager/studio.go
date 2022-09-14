@@ -1,13 +1,15 @@
 package manager
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/studio"
 )
 
-func ValidateModifyStudio(studio models.StudioPartial, qb models.StudioReader) error {
+func ValidateModifyStudio(ctx context.Context, studio models.StudioPartial, qb studio.Finder) error {
 	if studio.ParentID == nil || !studio.ParentID.Valid {
 		return nil
 	}
@@ -22,7 +24,7 @@ func ValidateModifyStudio(studio models.StudioPartial, qb models.StudioReader) e
 			return errors.New("studio cannot be an ancestor of itself")
 		}
 
-		currentStudio, err := qb.Find(int(currentParentID.Int64))
+		currentStudio, err := qb.Find(ctx, int(currentParentID.Int64))
 		if err != nil {
 			return fmt.Errorf("error finding parent studio: %v", err)
 		}

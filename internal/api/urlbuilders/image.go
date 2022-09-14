@@ -1,8 +1,9 @@
 package urlbuilders
 
 import (
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type ImageURLBuilder struct {
@@ -15,7 +16,7 @@ func NewImageURLBuilder(baseURL string, image *models.Image) ImageURLBuilder {
 	return ImageURLBuilder{
 		BaseURL:   baseURL,
 		ImageID:   strconv.Itoa(image.ID),
-		UpdatedAt: strconv.FormatInt(image.UpdatedAt.Timestamp.Unix(), 10),
+		UpdatedAt: strconv.FormatInt(image.UpdatedAt.Unix(), 10),
 	}
 }
 

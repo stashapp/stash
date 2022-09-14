@@ -26,11 +26,11 @@ import (
 
 	"github.com/go-chi/httplog"
 	"github.com/rs/cors"
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/ui"
 )
 
@@ -74,14 +74,29 @@ func Start() error {
 		return errors.New(message)
 	}
 
-	txnManager := manager.GetInstance().TxnManager
-	pluginCache := manager.GetInstance().PluginCache
-	resolver := &Resolver{
-		txnManager:   txnManager,
-		hookExecutor: pluginCache,
+	txnManager := manager.GetInstance().Repository
+
+	dataloaders := loaders.Middleware{
+		DatabaseProvider: txnManager,
+		Repository:       txnManager,
 	}
 
-	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: resolver}))
+	r.Use(dataloaders.Middleware)
+
+	pluginCache := manager.GetInstance().PluginCache
+	sceneService := manager.GetInstance().SceneService
+	imageService := manager.GetInstance().ImageService
+	galleryService := manager.GetInstance().GalleryService
+	resolver := &Resolver{
+		txnManager:     txnManager,
+		repository:     txnManager,
+		sceneService:   sceneService,
+		imageService:   imageService,
+		galleryService: galleryService,
+		hookExecutor:   pluginCache,
+	}
+
+	gqlSrv := gqlHandler.New(NewExecutableSchema(Config{Resolvers: resolver}))
 	gqlSrv.SetRecoverFunc(recoverFunc)
 	gqlSrv.AddTransport(gqlTransport.Websocket{
 		Upgrader: websocket.Upgrader{
@@ -119,22 +134,33 @@ func Start() error {
 	r.Get(loginEndPoint, getLoginHandler(loginUIBox))
 
 	r.Mount("/performer", performerRoutes{
-		txnManager: txnManager,
+		txnManager:      txnManager,
+		performerFinder: txnManager.Performer,
 	}.Routes())
 	r.Mount("/scene", sceneRoutes{
-		txnManager: txnManager,
+		txnManager:        txnManager,
+		sceneFinder:       txnManager.Scene,
+		fileFinder:        txnManager.File,
+		captionFinder:     txnManager.File,
+		sceneMarkerFinder: txnManager.SceneMarker,
+		tagFinder:         txnManager.Tag,
 	}.Routes())
 	r.Mount("/image", imageRoutes{
-		txnManager: txnManager,
+		txnManager:  txnManager,
+		imageFinder: txnManager.Image,
+		fileFinder:  txnManager.File,
 	}.Routes())
 	r.Mount("/studio", studioRoutes{
-		txnManager: txnManager,
+		txnManager:   txnManager,
+		studioFinder: txnManager.Studio,
 	}.Routes())
 	r.Mount("/movie", movieRoutes{
-		txnManager: txnManager,
+		txnManager:  txnManager,
+		movieFinder: txnManager.Movie,
 	}.Routes())
 	r.Mount("/tag", tagRoutes{
 		txnManager: txnManager,
+		tagFinder:  txnManager.Tag,
 	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
 

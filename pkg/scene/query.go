@@ -11,7 +11,11 @@ import (
 )
 
 type Queryer interface {
-	Query(options models.SceneQueryOptions) (*models.SceneQueryResult, error)
+	Query(ctx context.Context, options models.SceneQueryOptions) (*models.SceneQueryResult, error)
+}
+
+type IDFinder interface {
+	Find(ctx context.Context, id int) (*models.Scene, error)
 }
 
 // QueryOptions returns a SceneQueryOptions populated with the provided filters.
@@ -26,15 +30,15 @@ func QueryOptions(sceneFilter *models.SceneFilterType, findFilter *models.FindFi
 }
 
 // QueryWithCount queries for scenes, returning the scene objects and the total count.
-func QueryWithCount(qb Queryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
+func QueryWithCount(ctx context.Context, qb Queryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
 	// this was moved from the queryBuilder code
 	// left here so that calling functions can reference this instead
-	result, err := qb.Query(QueryOptions(sceneFilter, findFilter, true))
+	result, err := qb.Query(ctx, QueryOptions(sceneFilter, findFilter, true))
 	if err != nil {
 		return nil, 0, err
 	}
 
-	scenes, err := result.Resolve()
+	scenes, err := result.Resolve(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -43,13 +47,13 @@ func QueryWithCount(qb Queryer, sceneFilter *models.SceneFilterType, findFilter 
 }
 
 // Query queries for scenes using the provided filters.
-func Query(qb Queryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, error) {
-	result, err := qb.Query(QueryOptions(sceneFilter, findFilter, false))
+func Query(ctx context.Context, qb Queryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, error) {
+	result, err := qb.Query(ctx, QueryOptions(sceneFilter, findFilter, false))
 	if err != nil {
 		return nil, err
 	}
 
-	scenes, err := result.Resolve()
+	scenes, err := result.Resolve(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +61,7 @@ func Query(qb Queryer, sceneFilter *models.SceneFilterType, findFilter *models.F
 	return scenes, nil
 }
 
-func BatchProcess(ctx context.Context, reader models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType, fn func(scene *models.Scene) error) error {
+func BatchProcess(ctx context.Context, reader Queryer, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType, fn func(scene *models.Scene) error) error {
 	const batchSize = 1000
 
 	if findFilter == nil {
@@ -74,7 +78,7 @@ func BatchProcess(ctx context.Context, reader models.SceneReader, sceneFilter *m
 			return nil
 		}
 
-		scenes, err := Query(reader, sceneFilter, findFilter)
+		scenes, err := Query(ctx, reader, sceneFilter, findFilter)
 		if err != nil {
 			return fmt.Errorf("error querying for scenes: %w", err)
 		}

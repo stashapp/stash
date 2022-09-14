@@ -19,7 +19,7 @@ export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
     <div
       role="link"
       tabIndex={index}
-      key={file.checksum ?? index}
+      key={file.id ?? index}
       onClick={() => showLightbox(index)}
       onKeyPress={() => showLightbox(index)}
     >

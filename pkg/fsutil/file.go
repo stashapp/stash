@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -115,4 +116,26 @@ func Touch(path string) error {
 		defer file.Close()
 	}
 	return nil
+}
+
+var (
+	replaceCharsRE = regexp.MustCompile(`[&=\\/:*"?_ ]`)
+	removeCharsRE  = regexp.MustCompile(`[^[:alnum:]-.]`)
+	multiHyphenRE  = regexp.MustCompile(`\-+`)
+)
+
+// SanitiseBasename returns a file basename removing any characters that are illegal or problematic to use in the filesystem.
+func SanitiseBasename(v string) string {
+	v = strings.TrimSpace(v)
+
+	// replace illegal filename characters with -
+	v = replaceCharsRE.ReplaceAllString(v, "-")
+
+	// remove other characters
+	v = removeCharsRE.ReplaceAllString(v, "")
+
+	// remove multiple hyphens
+	v = multiHyphenRE.ReplaceAllString(v, "-")
+
+	return strings.TrimSpace(v)
 }
