@@ -54,37 +54,69 @@ type schema32Migrator struct {
 func (m *schema32Migrator) migrateFolders(ctx context.Context) error {
 	logger.Infof("Migrating folders")
 
-	const query = "SELECT `folders`.`id`, `folders`.`path` FROM `folders` INNER JOIN `galleries` ON `galleries`.`folder_id` = `folders`.`id`"
+	const (
+		limit    = 1000
+		logEvery = 10000
+	)
 
-	rows, err := m.db.Query(query)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
+	lastID := 0
+	count := 0
 
-	for rows.Next() {
-		var id int
-		var p string
+	for {
+		gotSome := false
 
-		err := rows.Scan(&id, &p)
-		if err != nil {
+		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
+			query := "SELECT `folders`.`id`, `folders`.`path` FROM `folders` INNER JOIN `galleries` ON `galleries`.`folder_id` = `folders`.`id`"
+
+			if lastID != 0 {
+				query += fmt.Sprintf("AND `folders`.`id` > %d ", lastID)
+			}
+
+			query += fmt.Sprintf("ORDER BY `folders`.`id` LIMIT %d", limit)
+
+			rows, err := m.db.Query(query)
+			if err != nil {
+				return err
+			}
+			defer rows.Close()
+
+			for rows.Next() {
+				var id int
+				var p string
+
+				err := rows.Scan(&id, &p)
+				if err != nil {
+					return err
+				}
+
+				lastID = id
+				gotSome = true
+				count++
+
+				parent := filepath.Dir(p)
+				parentID, zipFileID, err := m.createFolderHierarchy(parent)
+				if err != nil {
+					return err
+				}
+
+				_, err = m.db.Exec("UPDATE `folders` SET `parent_folder_id` = ?, `zip_file_id` = ? WHERE `id` = ?", parentID, zipFileID, id)
+				if err != nil {
+					return err
+				}
+			}
+
+			return rows.Err()
+		}); err != nil {
 			return err
 		}
 
-		parent := filepath.Dir(p)
-		parentID, zipFileID, err := m.createFolderHierarchy(parent)
-		if err != nil {
-			return err
+		if !gotSome {
+			break
 		}
 
-		_, err = m.db.Exec("UPDATE `folders` SET `parent_folder_id` = ?, `zip_file_id` = ? WHERE `id` = ?", parentID, zipFileID, id)
-		if err != nil {
-			return err
+		if count%logEvery == 0 {
+			logger.Infof("Migrated %d folders", count)
 		}
-	}
-
-	if err := rows.Err(); err != nil {
-		return err
 	}
 
 	return nil
