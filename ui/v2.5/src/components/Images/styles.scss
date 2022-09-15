@@ -43,6 +43,16 @@
     }
   }
 
+  &-rater-stars {
+    margin-bottom: 3px;
+    margin-left: 5px;
+
+    .rating-stars {
+      font-size: 1.5em;
+      height: calc(1.5em + 0.75rem + 2px);
+    }
+  }
+
   &:hover {
     .rating-banner {
       opacity: 0;

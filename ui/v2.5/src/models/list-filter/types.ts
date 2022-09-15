@@ -6,6 +6,7 @@ export enum DisplayMode {
   List,
   Wall,
   Tagger,
+  Rater,
 }
 
 export interface ILabeledId {

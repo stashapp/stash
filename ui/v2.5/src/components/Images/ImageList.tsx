@@ -19,6 +19,7 @@ import {
 } from "src/hooks/ListHook";
 
 import { ImageCard } from "./ImageCard";
+import { ImageRater } from "./ImageRater";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import "flexbin/flexbin.css";
@@ -157,6 +158,13 @@ const ImageListImages: React.FC<IImageListImages> = ({
       />
     );
   }
+  function renderImageRater(
+    image: SlimImageDataFragment,
+    selectedIds: Set<string>,
+    zoomIndex: number
+  ) {
+    return <ImageRater key={image.id} image={image} zoomIndex={zoomIndex} />;
+  }
 
   if (filter.displayMode === DisplayMode.Grid) {
     return (
@@ -176,6 +184,15 @@ const ImageListImages: React.FC<IImageListImages> = ({
         pageCount={pageCount}
         handleImageOpen={handleImageOpen}
       />
+    );
+  }
+  if (filter.displayMode === DisplayMode.Rater) {
+    return (
+      <div className="row justify-content-center">
+        {images.map((image) =>
+          renderImageRater(image, selectedIds, filter.zoomIndex)
+        )}
+      </div>
     );
   }
 

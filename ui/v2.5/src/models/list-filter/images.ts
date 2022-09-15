@@ -26,7 +26,11 @@ const sortByOptions = [
   ...MediaSortByOptions,
 ].map(ListFilterOptions.createSortBy);
 
-const displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
+const displayModeOptions = [
+  DisplayMode.Grid,
+  DisplayMode.Wall,
+  DisplayMode.Rater,
+];
 const criterionOptions = [
   createStringCriterionOption("title"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),

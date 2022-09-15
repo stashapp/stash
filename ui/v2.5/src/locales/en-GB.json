@@ -682,7 +682,8 @@
     "list": "List",
     "tagger": "Tagger",
     "unknown": "Unknown",
-    "wall": "Wall"
+    "wall": "Wall",
+    "rater": "Rater"
   },
   "donate": "Donate",
   "dupe_check": {
