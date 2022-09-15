@@ -12,6 +12,7 @@ import DurationUtils from "src/utils/duration";
 import {
   CriterionType,
   encodeILabeledId,
+  encodeLabel,
   IHierarchicalLabelValue,
   ILabeledId,
   ILabeledValue,
@@ -456,7 +457,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
 
   public getLabelValue(): string {
     const labels = decodeURI(
-      (this.value.items ?? []).map((v) => v.label).join(", ")
+      (this.value.items ?? []).map((v) => encodeLabel(v.label)).join(", ")
     );
 
     if (this.value.depth === 0) {
@@ -496,8 +497,11 @@ export class MandatoryNumberCriterionOption extends CriterionOption {
   }
 }
 
-export function createMandatoryNumberCriterionOption(value: CriterionType) {
-  return new MandatoryNumberCriterionOption(value, value, value);
+export function createMandatoryNumberCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new MandatoryNumberCriterionOption(messageID ?? value, value, value);
 }
 
 export class DurationCriterion extends Criterion<INumberValue> {

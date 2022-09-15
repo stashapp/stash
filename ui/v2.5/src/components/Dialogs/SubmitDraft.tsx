@@ -48,7 +48,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
   const [submit, { data, error, loading }] = useMutation<Query, Variables>(
     query
   );
-  const [selectedBox, setSelectedBox] = useState(0);
+  const [selectedBoxIndex, setSelectedBoxIndex] = useState(0);
   const intl = useIntl();
 
   const handleSubmit = () => {
@@ -56,20 +56,26 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
       variables: {
         input: {
           id: entity.id,
-          stash_box_index: selectedBox,
+          stash_box_index: selectedBoxIndex,
         },
       },
     });
   };
 
+  const selectedBox =
+    boxes.length > selectedBoxIndex ? boxes[selectedBoxIndex] : undefined;
+
   const handleSelectBox = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setSelectedBox(Number.parseInt(e.currentTarget.value) ?? 0);
+    setSelectedBoxIndex(Number.parseInt(e.currentTarget.value) ?? 0);
+
+  if (!selectedBox) {
+    return <></>;
+  }
 
   // If the scene has an attached stash_id from that endpoint, the operation will be an update
   const isUpdate =
-    entity.stash_ids.find(
-      (id) => id.endpoint === boxes[selectedBox].endpoint
-    ) !== undefined;
+    entity.stash_ids.find((id) => id.endpoint === selectedBox.endpoint) !==
+    undefined;
 
   return (
     <Modal
@@ -104,7 +110,7 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
               <span className="mr-2">
                 <FormattedMessage
                   id="stashbox.submit_update"
-                  values={{ endpoint_name: boxes[selectedBox].name }}
+                  values={{ endpoint_name: boxes[selectedBoxIndex].name }}
                 />
               </span>
             )}
@@ -128,12 +134,12 @@ export const SubmitStashBoxDraft: React.FC<IProps> = ({
               target="_blank"
               rel="noreferrer noopener"
               href={`${getStashboxBase(
-                boxes[selectedBox].endpoint
+                boxes[selectedBoxIndex].endpoint
               )}drafts/${getResponseId(data)}`}
             >
               <FormattedMessage
                 id="stashbox.go_review_draft"
-                values={{ endpoint_name: boxes[selectedBox].name }}
+                values={{ endpoint_name: boxes[selectedBoxIndex].name }}
               />
             </a>
           </div>

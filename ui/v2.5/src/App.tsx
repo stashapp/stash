@@ -9,7 +9,11 @@ import LightboxProvider from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
 
 import locales from "src/locales";
-import { useConfiguration, useSystemStatus } from "src/core/StashService";
+import {
+  useConfiguration,
+  useConfigureUI,
+  useSystemStatus,
+} from "src/core/StashService";
 import { flattenMessages } from "src/utils";
 import Mousetrap from "mousetrap";
 import MousetrapPause from "mousetrap-pause";
@@ -22,6 +26,9 @@ import { LoadingIndicator, TITLE_SUFFIX } from "./components/Shared";
 import { ConfigurationProvider } from "./hooks/Config";
 import { ManualProvider } from "./components/Help/context";
 import { InteractiveProvider } from "./hooks/Interactive/context";
+import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
+import { IUIConfig } from "./core/config";
+import { releaseNotes } from "./docs/en/ReleaseNotes";
 
 const Performers = lazy(() => import("./components/Performers/Performers"));
 const FrontPage = lazy(() => import("./components/FrontPage/FrontPage"));
@@ -62,6 +69,8 @@ function languageMessageString(language: string) {
 
 export const App: React.FC = () => {
   const config = useConfiguration();
+  const [saveUI] = useConfigureUI();
+
   const { data: systemStatusData } = useSystemStatus();
 
   const language =
@@ -75,9 +84,9 @@ export const App: React.FC = () => {
       const defaultMessageLanguage = languageMessageString(defaultLocale);
       const messageLanguage = languageMessageString(language);
 
-      const defaultMessages = await locales[defaultMessageLanguage]();
+      const defaultMessages = (await locales[defaultMessageLanguage]()).default;
       const mergedMessages = cloneDeep(Object.assign({}, defaultMessages));
-      const chosenMessages = await locales[messageLanguage]();
+      const chosenMessages = (await locales[messageLanguage]()).default;
       mergeWith(mergedMessages, chosenMessages, (objVal, srcVal) => {
         if (srcVal === "") {
           return objVal;
@@ -131,28 +140,63 @@ export const App: React.FC = () => {
     }
 
     return (
-      <Suspense fallback={<LoadingIndicator />}>
-        <Switch>
-          <Route exact path="/" component={FrontPage} />
-          <Route path="/scenes" component={Scenes} />
-          <Route path="/images" component={Images} />
-          <Route path="/galleries" component={Galleries} />
-          <Route path="/performers" component={Performers} />
-          <Route path="/tags" component={Tags} />
-          <Route path="/studios" component={Studios} />
-          <Route path="/movies" component={Movies} />
-          <Route path="/stats" component={Stats} />
-          <Route path="/settings" component={Settings} />
-          <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
-          <Route
-            path="/sceneDuplicateChecker"
-            component={SceneDuplicateChecker}
-          />
-          <Route path="/setup" component={Setup} />
-          <Route path="/migrate" component={Migrate} />
-          <Route component={PageNotFound} />
-        </Switch>
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingIndicator />}>
+          <Switch>
+            <Route exact path="/" component={FrontPage} />
+            <Route path="/scenes" component={Scenes} />
+            <Route path="/images" component={Images} />
+            <Route path="/galleries" component={Galleries} />
+            <Route path="/performers" component={Performers} />
+            <Route path="/tags" component={Tags} />
+            <Route path="/studios" component={Studios} />
+            <Route path="/movies" component={Movies} />
+            <Route path="/stats" component={Stats} />
+            <Route path="/settings" component={Settings} />
+            <Route
+              path="/sceneFilenameParser"
+              component={SceneFilenameParser}
+            />
+            <Route
+              path="/sceneDuplicateChecker"
+              component={SceneDuplicateChecker}
+            />
+            <Route path="/setup" component={Setup} />
+            <Route path="/migrate" component={Migrate} />
+            <Route component={PageNotFound} />
+          </Switch>
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
+  function maybeRenderReleaseNotes() {
+    if (setupMatch || config.loading || config.error) {
+      return;
+    }
+
+    const lastNoteSeen = (config.data?.configuration.ui as IUIConfig)
+      ?.lastNoteSeen;
+    const notes = releaseNotes.filter((n) => {
+      return !lastNoteSeen || n.date > lastNoteSeen;
+    });
+
+    if (notes.length === 0) return;
+
+    return (
+      <ReleaseNotesDialog
+        notes={notes.map((n) => n.content)}
+        onClose={() => {
+          saveUI({
+            variables: {
+              input: {
+                ...config.data?.configuration.ui,
+                lastNoteSeen: notes[0].date,
+              },
+            },
+          });
+        }}
+      />
     );
   }
 
@@ -168,6 +212,7 @@ export const App: React.FC = () => {
             configuration={config.data?.configuration}
             loading={config.loading}
           >
+            {maybeRenderReleaseNotes()}
             <ToastProvider>
               <Suspense fallback={<LoadingIndicator />}>
                 <LightboxProvider>

@@ -9,7 +9,6 @@ import {
   SlimGalleryDataFragment,
 } from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
-import { TextUtils } from "src/utils";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -19,6 +18,7 @@ import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
+import { galleryTitle } from "src/core/galleries";
 
 interface IGalleryList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -201,9 +201,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
                 </td>
                 <td className="d-none d-sm-block">
                   <Link to={`/galleries/${gallery.id}`}>
-                    {gallery.title ??
-                      TextUtils.fileNameFromPath(gallery.path ?? "")}{" "}
-                    ({gallery.image_count}{" "}
+                    {galleryTitle(gallery)} ({gallery.image_count}{" "}
                     {gallery.image_count === 1 ? "image" : "images"})
                   </Link>
                 </td>

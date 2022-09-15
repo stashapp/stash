@@ -1,6 +1,7 @@
 package identify
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strconv"
@@ -10,7 +11,12 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func getPerformerID(endpoint string, r models.Repository, p *models.ScrapedPerformer, createMissing bool) (*int, error) {
+type PerformerCreator interface {
+	Create(ctx context.Context, newPerformer models.Performer) (*models.Performer, error)
+	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
+}
+
+func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer, createMissing bool) (*int, error) {
 	if p.StoredID != nil {
 		// existing performer, just add it
 		performerID, err := strconv.Atoi(*p.StoredID)
@@ -20,20 +26,20 @@ func getPerformerID(endpoint string, r models.Repository, p *models.ScrapedPerfo
 
 		return &performerID, nil
 	} else if createMissing && p.Name != nil { // name is mandatory
-		return createMissingPerformer(endpoint, r, p)
+		return createMissingPerformer(ctx, endpoint, w, p)
 	}
 
 	return nil, nil
 }
 
-func createMissingPerformer(endpoint string, r models.Repository, p *models.ScrapedPerformer) (*int, error) {
-	created, err := r.Performer().Create(scrapedToPerformerInput(p))
+func createMissingPerformer(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer) (*int, error) {
+	created, err := w.Create(ctx, scrapedToPerformerInput(p))
 	if err != nil {
 		return nil, fmt.Errorf("error creating performer: %w", err)
 	}
 
 	if endpoint != "" && p.RemoteSiteID != nil {
-		if err := r.Performer().UpdateStashIDs(created.ID, []models.StashID{
+		if err := w.UpdateStashIDs(ctx, created.ID, []models.StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *p.RemoteSiteID,

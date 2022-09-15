@@ -63,7 +63,7 @@ export function getAggregatePerformerIds(state: IHasPerformers[]) {
     } else {
       const perfIds = o.performers ? o.performers.map((p) => p.id).sort() : [];
 
-      if (isEqual(ret, perfIds)) {
+      if (!isEqual(ret, perfIds)) {
         ret = [];
       }
     }
@@ -87,7 +87,7 @@ export function getAggregateTagIds(state: IHasTags[]) {
     } else {
       const tIds = o.tags ? o.tags.map((t) => t.id).sort() : [];
 
-      if (isEqual(ret, tIds)) {
+      if (!isEqual(ret, tIds)) {
         ret = [];
       }
     }
@@ -115,7 +115,7 @@ export function getAggregateMovieIds(state: IHasMovies[]) {
     } else {
       const mIds = o.movies ? o.movies.map((m) => m.movie.id).sort() : [];
 
-      if (isEqual(ret, mIds)) {
+      if (!isEqual(ret, mIds)) {
         ret = [];
       }
     }
@@ -180,7 +180,7 @@ export function getAggregateState<T>(
   newValue: T,
   first: boolean
 ) {
-  if (!first && isEqual(currentValue, newValue)) {
+  if (!first && !isEqual(currentValue, newValue)) {
     return undefined;
   }
 

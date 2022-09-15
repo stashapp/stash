@@ -76,7 +76,7 @@
     "videojs-landscape-fullscreen": "^11.33.0",
     "videojs-seek-buttons": "^2.2.0",
     "videojs-vtt-thumbnails-freetube": "^0.0.15",
-    "vite": "^2.7.1",
+    "vite": "^2.9.13",
     "vite-plugin-compression": "^0.3.5",
     "vite-tsconfig-paths": "^3.3.17",
     "ws": "^7.4.6",

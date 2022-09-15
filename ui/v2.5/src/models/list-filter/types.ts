@@ -47,10 +47,14 @@ export function criterionIsNumberValue(
   return typeof value === "object" && "value" in value && "value2" in value;
 }
 
-export function encodeILabeledId(o: ILabeledId) {
+export function encodeLabel(v: string) {
   // escape " and \ and by encoding to JSON so that it encodes to JSON correctly down the line
-  const adjustedLabel = JSON.stringify(o.label).slice(1, -1);
-  return { ...o, label: encodeURIComponent(adjustedLabel) };
+  const adjustedLabel = JSON.stringify(v).slice(1, -1);
+  return encodeURIComponent(adjustedLabel);
+}
+
+export function encodeILabeledId(o: ILabeledId) {
+  return { ...o, label: encodeLabel(o.label) };
 }
 
 export interface IOptionType {
@@ -129,4 +133,5 @@ export type CriterionType =
   | "performer_favorite"
   | "performer_age"
   | "duplicated"
-  | "ignore_auto_tag";
+  | "ignore_auto_tag"
+  | "file_count";

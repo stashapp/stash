@@ -1,6 +1,7 @@
 package scene
 
 import (
+	"context"
 	"errors"
 	"strconv"
 	"testing"
@@ -31,19 +32,10 @@ func TestUpdater_IsEmpty(t *testing.T) {
 			true,
 		},
 		{
-			"id only",
-			&UpdateSet{
-				Partial: models.ScenePartial{
-					ID: 1,
-				},
-			},
-			true,
-		},
-		{
 			"partial set",
 			&UpdateSet{
 				Partial: models.ScenePartial{
-					Organized: &organized,
+					Organized: models.NewOptionalBool(organized),
 				},
 			},
 			false,
@@ -51,21 +43,36 @@ func TestUpdater_IsEmpty(t *testing.T) {
 		{
 			"performer set",
 			&UpdateSet{
-				PerformerIDs: ids,
+				Partial: models.ScenePartial{
+					PerformerIDs: &models.UpdateIDs{
+						IDs:  ids,
+						Mode: models.RelationshipUpdateModeSet,
+					},
+				},
 			},
 			false,
 		},
 		{
 			"tags set",
 			&UpdateSet{
-				TagIDs: ids,
+				Partial: models.ScenePartial{
+					TagIDs: &models.UpdateIDs{
+						IDs:  ids,
+						Mode: models.RelationshipUpdateModeSet,
+					},
+				},
 			},
 			false,
 		},
 		{
 			"performer set",
 			&UpdateSet{
-				StashIDs: stashIDs,
+				Partial: models.ScenePartial{
+					StashIDs: &models.UpdateStashIDs{
+						StashIDs: stashIDs,
+						Mode:     models.RelationshipUpdateModeSet,
+					},
+				},
 			},
 			false,
 		},
@@ -104,16 +111,12 @@ func TestUpdater_Update(t *testing.T) {
 		tagID
 	)
 
+	ctx := context.Background()
+
 	performerIDs := []int{performerID}
 	tagIDs := []int{tagID}
 	stashID := "stashID"
 	endpoint := "endpoint"
-	stashIDs := []models.StashID{
-		{
-			StashID:  stashID,
-			Endpoint: endpoint,
-		},
-	}
 
 	title := "title"
 	cover := []byte("cover")
@@ -123,22 +126,13 @@ func TestUpdater_Update(t *testing.T) {
 	updateErr := errors.New("error updating")
 
 	qb := mocks.SceneReaderWriter{}
-	qb.On("Update", mock.MatchedBy(func(s models.ScenePartial) bool {
-		return s.ID != badUpdateID
-	})).Return(validScene, nil)
-	qb.On("Update", mock.MatchedBy(func(s models.ScenePartial) bool {
-		return s.ID == badUpdateID
-	})).Return(nil, updateErr)
+	qb.On("UpdatePartial", ctx, mock.MatchedBy(func(id int) bool {
+		return id != badUpdateID
+	}), mock.Anything).Return(validScene, nil)
+	qb.On("UpdatePartial", ctx, badUpdateID, mock.Anything).Return(nil, updateErr)
 
-	qb.On("UpdatePerformers", sceneID, performerIDs).Return(nil).Once()
-	qb.On("UpdateTags", sceneID, tagIDs).Return(nil).Once()
-	qb.On("UpdateStashIDs", sceneID, stashIDs).Return(nil).Once()
-	qb.On("UpdateCover", sceneID, cover).Return(nil).Once()
-
-	qb.On("UpdatePerformers", badPerformersID, performerIDs).Return(updateErr).Once()
-	qb.On("UpdateTags", badTagsID, tagIDs).Return(updateErr).Once()
-	qb.On("UpdateStashIDs", badStashIDsID, stashIDs).Return(updateErr).Once()
-	qb.On("UpdateCover", badCoverID, cover).Return(updateErr).Once()
+	qb.On("UpdateCover", ctx, sceneID, cover).Return(nil).Once()
+	qb.On("UpdateCover", ctx, badCoverID, cover).Return(updateErr).Once()
 
 	tests := []struct {
 		name    string
@@ -157,13 +151,24 @@ func TestUpdater_Update(t *testing.T) {
 		{
 			"update all",
 			&UpdateSet{
-				ID:           sceneID,
-				PerformerIDs: performerIDs,
-				TagIDs:       tagIDs,
-				StashIDs: []models.StashID{
-					{
-						StashID:  stashID,
-						Endpoint: endpoint,
+				ID: sceneID,
+				Partial: models.ScenePartial{
+					PerformerIDs: &models.UpdateIDs{
+						IDs:  performerIDs,
+						Mode: models.RelationshipUpdateModeSet,
+					},
+					TagIDs: &models.UpdateIDs{
+						IDs:  tagIDs,
+						Mode: models.RelationshipUpdateModeSet,
+					},
+					StashIDs: &models.UpdateStashIDs{
+						StashIDs: []models.StashID{
+							{
+								StashID:  stashID,
+								Endpoint: endpoint,
+							},
+						},
+						Mode: models.RelationshipUpdateModeSet,
 					},
 				},
 				CoverImage: cover,
@@ -176,7 +181,7 @@ func TestUpdater_Update(t *testing.T) {
 			&UpdateSet{
 				ID: sceneID,
 				Partial: models.ScenePartial{
-					Title: models.NullStringPtr(title),
+					Title: models.NewOptionalString(title),
 				},
 			},
 			false,
@@ -187,35 +192,8 @@ func TestUpdater_Update(t *testing.T) {
 			&UpdateSet{
 				ID: badUpdateID,
 				Partial: models.ScenePartial{
-					Title: models.NullStringPtr(title),
+					Title: models.NewOptionalString(title),
 				},
-			},
-			true,
-			true,
-		},
-		{
-			"error updating performers",
-			&UpdateSet{
-				ID:           badPerformersID,
-				PerformerIDs: performerIDs,
-			},
-			true,
-			true,
-		},
-		{
-			"error updating tags",
-			&UpdateSet{
-				ID:     badTagsID,
-				TagIDs: tagIDs,
-			},
-			true,
-			true,
-		},
-		{
-			"error updating stash IDs",
-			&UpdateSet{
-				ID:       badStashIDsID,
-				StashIDs: stashIDs,
 			},
 			true,
 			true,
@@ -232,7 +210,7 @@ func TestUpdater_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.u.Update(&qb, &mockScreenshotSetter{})
+			got, err := tt.u.Update(ctx, &qb, &mockScreenshotSetter{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Updater.Update() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -272,7 +250,7 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 			Endpoint: endpoint,
 		},
 	}
-	stashIDInputs := []*models.StashIDInput{
+	stashIDInputs := []models.StashID{
 		{
 			StashID:  stashID,
 			Endpoint: endpoint,
@@ -300,11 +278,22 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 		{
 			"update all",
 			UpdateSet{
-				ID:           sceneID,
-				PerformerIDs: performerIDs,
-				TagIDs:       tagIDs,
-				StashIDs:     stashIDs,
-				CoverImage:   cover,
+				ID: sceneID,
+				Partial: models.ScenePartial{
+					PerformerIDs: &models.UpdateIDs{
+						IDs:  performerIDs,
+						Mode: models.RelationshipUpdateModeSet,
+					},
+					TagIDs: &models.UpdateIDs{
+						IDs:  tagIDs,
+						Mode: models.RelationshipUpdateModeSet,
+					},
+					StashIDs: &models.UpdateStashIDs{
+						StashIDs: stashIDs,
+						Mode:     models.RelationshipUpdateModeSet,
+					},
+				},
+				CoverImage: cover,
 			},
 			models.SceneUpdateInput{
 				ID:           sceneIDStr,
@@ -319,7 +308,7 @@ func TestUpdateSet_UpdateInput(t *testing.T) {
 			UpdateSet{
 				ID: sceneID,
 				Partial: models.ScenePartial{
-					Title: models.NullStringPtr(title),
+					Title: models.NewOptionalString(title),
 				},
 			},
 			models.SceneUpdateInput{

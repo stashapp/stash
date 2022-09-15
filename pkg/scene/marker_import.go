@@ -1,18 +1,27 @@
 package scene
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/tag"
 )
+
+type MarkerCreatorUpdater interface {
+	Create(ctx context.Context, newSceneMarker models.SceneMarker) (*models.SceneMarker, error)
+	Update(ctx context.Context, updatedSceneMarker models.SceneMarker) (*models.SceneMarker, error)
+	FindBySceneID(ctx context.Context, sceneID int) ([]*models.SceneMarker, error)
+	UpdateTags(ctx context.Context, markerID int, tagIDs []int) error
+}
 
 type MarkerImporter struct {
 	SceneID             int
-	ReaderWriter        models.SceneMarkerReaderWriter
-	TagWriter           models.TagReaderWriter
+	ReaderWriter        MarkerCreatorUpdater
+	TagWriter           tag.NameFinderCreator
 	Input               jsonschema.SceneMarker
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -20,7 +29,7 @@ type MarkerImporter struct {
 	marker models.SceneMarker
 }
 
-func (i *MarkerImporter) PreImport() error {
+func (i *MarkerImporter) PreImport(ctx context.Context) error {
 	seconds, _ := strconv.ParseFloat(i.Input.Seconds, 64)
 	i.marker = models.SceneMarker{
 		Title:     i.Input.Title,
@@ -30,21 +39,21 @@ func (i *MarkerImporter) PreImport() error {
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},
 	}
 
-	if err := i.populateTags(); err != nil {
+	if err := i.populateTags(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (i *MarkerImporter) populateTags() error {
+func (i *MarkerImporter) populateTags(ctx context.Context) error {
 	// primary tag cannot be ignored
 	mrb := i.MissingRefBehaviour
 	if mrb == models.ImportMissingRefEnumIgnore {
 		mrb = models.ImportMissingRefEnumFail
 	}
 
-	primaryTag, err := importTags(i.TagWriter, []string{i.Input.PrimaryTag}, mrb)
+	primaryTag, err := importTags(ctx, i.TagWriter, []string{i.Input.PrimaryTag}, mrb)
 	if err != nil {
 		return err
 	}
@@ -52,7 +61,7 @@ func (i *MarkerImporter) populateTags() error {
 	i.marker.PrimaryTagID = primaryTag[0].ID
 
 	if len(i.Input.Tags) > 0 {
-		tags, err := importTags(i.TagWriter, i.Input.Tags, i.MissingRefBehaviour)
+		tags, err := importTags(ctx, i.TagWriter, i.Input.Tags, i.MissingRefBehaviour)
 		if err != nil {
 			return err
 		}
@@ -63,13 +72,13 @@ func (i *MarkerImporter) populateTags() error {
 	return nil
 }
 
-func (i *MarkerImporter) PostImport(id int) error {
+func (i *MarkerImporter) PostImport(ctx context.Context, id int) error {
 	if len(i.tags) > 0 {
 		var tagIDs []int
 		for _, t := range i.tags {
 			tagIDs = append(tagIDs, t.ID)
 		}
-		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
+		if err := i.ReaderWriter.UpdateTags(ctx, id, tagIDs); err != nil {
 			return fmt.Errorf("failed to associate tags: %v", err)
 		}
 	}
@@ -81,8 +90,8 @@ func (i *MarkerImporter) Name() string {
 	return fmt.Sprintf("%s (%s)", i.Input.Title, i.Input.Seconds)
 }
 
-func (i *MarkerImporter) FindExistingID() (*int, error) {
-	existingMarkers, err := i.ReaderWriter.FindBySceneID(i.SceneID)
+func (i *MarkerImporter) FindExistingID(ctx context.Context) (*int, error) {
+	existingMarkers, err := i.ReaderWriter.FindBySceneID(ctx, i.SceneID)
 
 	if err != nil {
 		return nil, err
@@ -98,8 +107,8 @@ func (i *MarkerImporter) FindExistingID() (*int, error) {
 	return nil, nil
 }
 
-func (i *MarkerImporter) Create() (*int, error) {
-	created, err := i.ReaderWriter.Create(i.marker)
+func (i *MarkerImporter) Create(ctx context.Context) (*int, error) {
+	created, err := i.ReaderWriter.Create(ctx, i.marker)
 	if err != nil {
 		return nil, fmt.Errorf("error creating marker: %v", err)
 	}
@@ -108,10 +117,10 @@ func (i *MarkerImporter) Create() (*int, error) {
 	return &id, nil
 }
 
-func (i *MarkerImporter) Update(id int) error {
+func (i *MarkerImporter) Update(ctx context.Context, id int) error {
 	marker := i.marker
 	marker.ID = id
-	_, err := i.ReaderWriter.Update(marker)
+	_, err := i.ReaderWriter.Update(ctx, marker)
 	if err != nil {
 		return fmt.Errorf("error updating existing marker: %v", err)
 	}

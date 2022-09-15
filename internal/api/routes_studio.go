@@ -8,21 +8,28 @@ import (
 	"syscall"
 
 	"github.com/go-chi/chi"
-	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type StudioFinder interface {
+	studio.Finder
+	GetImage(ctx context.Context, studioID int) ([]byte, error)
+}
+
 type studioRoutes struct {
-	txnManager models.TransactionManager
+	txnManager   txn.Manager
+	studioFinder StudioFinder
 }
 
 func (rs studioRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Route("/{studioId}", func(r chi.Router) {
-		r.Use(StudioCtx)
+		r.Use(rs.StudioCtx)
 		r.Get("/image", rs.Image)
 	})
 
@@ -35,8 +42,8 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
-			image, _ = repo.Studio().GetImage(studio.ID)
+		err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+			image, _ = rs.studioFinder.GetImage(ctx, studio.ID)
 			return nil
 		})
 		if err != nil {
@@ -58,7 +65,7 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func StudioCtx(next http.Handler) http.Handler {
+func (rs studioRoutes) StudioCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		studioID, err := strconv.Atoi(chi.URLParam(r, "studioId"))
 		if err != nil {
@@ -67,9 +74,9 @@ func StudioCtx(next http.Handler) http.Handler {
 		}
 
 		var studio *models.Studio
-		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			var err error
-			studio, err = repo.Studio().Find(studioID)
+			studio, err = rs.studioFinder.Find(ctx, studioID)
 			return err
 		}); err != nil {
 			http.Error(w, http.StatusText(404), 404)

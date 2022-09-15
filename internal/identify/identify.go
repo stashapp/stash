@@ -2,17 +2,18 @@ package identify
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type SceneScraper interface {
-	ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error)
+	ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error)
 }
 
 type SceneUpdatePostHookExecutor interface {
@@ -21,19 +22,24 @@ type SceneUpdatePostHookExecutor interface {
 
 type ScraperSource struct {
 	Name       string
-	Options    *models.IdentifyMetadataOptionsInput
+	Options    *MetadataOptions
 	Scraper    SceneScraper
 	RemoteSite string
 }
 
 type SceneIdentifier struct {
-	DefaultOptions              *models.IdentifyMetadataOptionsInput
+	SceneReaderUpdater SceneReaderUpdater
+	StudioCreator      StudioCreator
+	PerformerCreator   PerformerCreator
+	TagCreator         TagCreator
+
+	DefaultOptions              *MetadataOptions
 	Sources                     []ScraperSource
 	ScreenshotSetter            scene.ScreenshotSetter
 	SceneUpdatePostHookExecutor SceneUpdatePostHookExecutor
 }
 
-func (t *SceneIdentifier) Identify(ctx context.Context, txnManager models.TransactionManager, scene *models.Scene) error {
+func (t *SceneIdentifier) Identify(ctx context.Context, txnManager txn.Manager, scene *models.Scene) error {
 	result, err := t.scrapeScene(ctx, scene)
 	if err != nil {
 		return err
@@ -53,7 +59,7 @@ func (t *SceneIdentifier) Identify(ctx context.Context, txnManager models.Transa
 }
 
 type scrapeResult struct {
-	result *models.ScrapedScene
+	result *scraper.ScrapedScene
 	source ScraperSource
 }
 
@@ -79,12 +85,12 @@ func (t *SceneIdentifier) scrapeScene(ctx context.Context, scene *models.Scene) 
 	return nil, nil
 }
 
-func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult, repo models.Repository) (*scene.UpdateSet, error) {
+func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, result *scrapeResult) (*scene.UpdateSet, error) {
 	ret := &scene.UpdateSet{
 		ID: s.ID,
 	}
 
-	options := []models.IdentifyMetadataOptionsInput{}
+	options := []MetadataOptions{}
 	if result.source.Options != nil {
 		options = append(options, *result.source.Options)
 	}
@@ -105,24 +111,24 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	scraped := result.result
 
 	rel := sceneRelationships{
-		repo:         repo,
-		scene:        s,
-		result:       result,
-		fieldOptions: fieldOptions,
+		sceneReader:      t.SceneReaderUpdater,
+		studioCreator:    t.StudioCreator,
+		performerCreator: t.PerformerCreator,
+		tagCreator:       t.TagCreator,
+		scene:            s,
+		result:           result,
+		fieldOptions:     fieldOptions,
 	}
 
 	ret.Partial = getScenePartial(s, scraped, fieldOptions, setOrganized)
 
-	studioID, err := rel.studio()
+	studioID, err := rel.studio(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error getting studio: %w", err)
 	}
 
 	if studioID != nil {
-		ret.Partial.StudioID = &sql.NullInt64{
-			Int64: *studioID,
-			Valid: true,
-		}
+		ret.Partial.StudioID = models.NewOptionalInt(*studioID)
 	}
 
 	ignoreMale := false
@@ -133,19 +139,37 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 		}
 	}
 
-	ret.PerformerIDs, err = rel.performers(ignoreMale)
+	performerIDs, err := rel.performers(ctx, ignoreMale)
 	if err != nil {
 		return nil, err
 	}
+	if performerIDs != nil {
+		ret.Partial.PerformerIDs = &models.UpdateIDs{
+			IDs:  performerIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	}
 
-	ret.TagIDs, err = rel.tags()
+	tagIDs, err := rel.tags(ctx)
 	if err != nil {
 		return nil, err
 	}
+	if tagIDs != nil {
+		ret.Partial.TagIDs = &models.UpdateIDs{
+			IDs:  tagIDs,
+			Mode: models.RelationshipUpdateModeSet,
+		}
+	}
 
-	ret.StashIDs, err = rel.stashIDs()
+	stashIDs, err := rel.stashIDs(ctx)
 	if err != nil {
 		return nil, err
+	}
+	if stashIDs != nil {
+		ret.Partial.StashIDs = &models.UpdateStashIDs{
+			StashIDs: stashIDs,
+			Mode:     models.RelationshipUpdateModeSet,
+		}
 	}
 
 	setCoverImage := false
@@ -166,11 +190,22 @@ func (t *SceneIdentifier) getSceneUpdater(ctx context.Context, s *models.Scene, 
 	return ret, nil
 }
 
-func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.TransactionManager, s *models.Scene, result *scrapeResult) error {
+func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager txn.Manager, s *models.Scene, result *scrapeResult) error {
 	var updater *scene.UpdateSet
-	if err := txnManager.WithTxn(ctx, func(repo models.Repository) error {
+	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
+		// load scene relationships
+		if err := s.LoadPerformerIDs(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
+		if err := s.LoadTagIDs(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
+		if err := s.LoadStashIDs(ctx, t.SceneReaderUpdater); err != nil {
+			return err
+		}
+
 		var err error
-		updater, err = t.getSceneUpdater(ctx, s, result, repo)
+		updater, err = t.getSceneUpdater(ctx, s, result)
 		if err != nil {
 			return err
 		}
@@ -181,15 +216,14 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.Tra
 			return nil
 		}
 
-		_, err = updater.Update(repo.Scene(), t.ScreenshotSetter)
-		if err != nil {
+		if _, err := updater.Update(ctx, t.SceneReaderUpdater, t.ScreenshotSetter); err != nil {
 			return fmt.Errorf("error updating scene: %w", err)
 		}
 
 		as := ""
 		title := updater.Partial.Title
-		if title != nil {
-			as = fmt.Sprintf(" as %s", title.String)
+		if title.Ptr() != nil {
+			as = fmt.Sprintf(" as %s", title.Value)
 		}
 		logger.Infof("Successfully identified %s%s using %s", s.Path, as, result.source.Name)
 
@@ -208,9 +242,9 @@ func (t *SceneIdentifier) modifyScene(ctx context.Context, txnManager models.Tra
 	return nil
 }
 
-func getFieldOptions(options []models.IdentifyMetadataOptionsInput) map[string]*models.IdentifyFieldOptionsInput {
+func getFieldOptions(options []MetadataOptions) map[string]*FieldOptions {
 	// prefer source-specific field strategies, then the defaults
-	ret := make(map[string]*models.IdentifyFieldOptionsInput)
+	ret := make(map[string]*FieldOptions)
 	for _, oo := range options {
 		for _, f := range oo.FieldOptions {
 			if _, found := ret[f.Field]; !found {
@@ -222,54 +256,50 @@ func getFieldOptions(options []models.IdentifyMetadataOptionsInput) map[string]*
 	return ret
 }
 
-func getScenePartial(scene *models.Scene, scraped *models.ScrapedScene, fieldOptions map[string]*models.IdentifyFieldOptionsInput, setOrganized bool) models.ScenePartial {
-	partial := models.ScenePartial{
-		ID: scene.ID,
-	}
+func getScenePartial(scene *models.Scene, scraped *scraper.ScrapedScene, fieldOptions map[string]*FieldOptions, setOrganized bool) models.ScenePartial {
+	partial := models.ScenePartial{}
 
-	if scraped.Title != nil && scene.Title.String != *scraped.Title {
-		if shouldSetSingleValueField(fieldOptions["title"], scene.Title.String != "") {
-			partial.Title = models.NullStringPtr(*scraped.Title)
+	if scraped.Title != nil && (scene.Title != *scraped.Title) {
+		if shouldSetSingleValueField(fieldOptions["title"], scene.Title != "") {
+			partial.Title = models.NewOptionalString(*scraped.Title)
 		}
 	}
-	if scraped.Date != nil && scene.Date.String != *scraped.Date {
-		if shouldSetSingleValueField(fieldOptions["date"], scene.Date.Valid) {
-			partial.Date = &models.SQLiteDate{
-				String: *scraped.Date,
-				Valid:  true,
-			}
+	if scraped.Date != nil && (scene.Date == nil || scene.Date.String() != *scraped.Date) {
+		if shouldSetSingleValueField(fieldOptions["date"], scene.Date != nil) {
+			d := models.NewDate(*scraped.Date)
+			partial.Date = models.NewOptionalDate(d)
 		}
 	}
-	if scraped.Details != nil && scene.Details.String != *scraped.Details {
-		if shouldSetSingleValueField(fieldOptions["details"], scene.Details.String != "") {
-			partial.Details = models.NullStringPtr(*scraped.Details)
+	if scraped.Details != nil && (scene.Details != *scraped.Details) {
+		if shouldSetSingleValueField(fieldOptions["details"], scene.Details != "") {
+			partial.Details = models.NewOptionalString(*scraped.Details)
 		}
 	}
-	if scraped.URL != nil && scene.URL.String != *scraped.URL {
-		if shouldSetSingleValueField(fieldOptions["url"], scene.URL.String != "") {
-			partial.URL = models.NullStringPtr(*scraped.URL)
+	if scraped.URL != nil && (scene.URL != *scraped.URL) {
+		if shouldSetSingleValueField(fieldOptions["url"], scene.URL != "") {
+			partial.URL = models.NewOptionalString(*scraped.URL)
 		}
 	}
 
 	if setOrganized && !scene.Organized {
 		// just reuse the boolean since we know it's true
-		partial.Organized = &setOrganized
+		partial.Organized = models.NewOptionalBool(setOrganized)
 	}
 
 	return partial
 }
 
-func shouldSetSingleValueField(strategy *models.IdentifyFieldOptionsInput, hasExistingValue bool) bool {
+func shouldSetSingleValueField(strategy *FieldOptions, hasExistingValue bool) bool {
 	// if unset then default to MERGE
-	fs := models.IdentifyFieldStrategyMerge
+	fs := FieldStrategyMerge
 
 	if strategy != nil && strategy.Strategy.IsValid() {
 		fs = strategy.Strategy
 	}
 
-	if fs == models.IdentifyFieldStrategyIgnore {
+	if fs == FieldStrategyIgnore {
 		return false
 	}
 
-	return !hasExistingValue || fs == models.IdentifyFieldStrategyOverwrite
+	return !hasExistingValue || fs == FieldStrategyOverwrite
 }
