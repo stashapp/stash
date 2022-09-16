@@ -133,6 +133,11 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			if err := h.CreatorUpdater.AddFileID(ctx, s.ID, f.ID); err != nil {
 				return fmt.Errorf("adding file to scene: %w", err)
 			}
+
+			// update updated_at time
+			if _, err := h.CreatorUpdater.UpdatePartial(ctx, s.ID, models.NewScenePartial()); err != nil {
+				return fmt.Errorf("updating scene: %w", err)
+			}
 		}
 	}
 
