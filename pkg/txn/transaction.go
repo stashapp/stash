@@ -11,9 +11,6 @@ type Manager interface {
 	Rollback(ctx context.Context) error
 
 	IsLocked(err error) bool
-
-	AddPostCommitHook(ctx context.Context, hook TxnFunc)
-	AddPostRollbackHook(ctx context.Context, hook TxnFunc)
 }
 
 type DatabaseProvider interface {
@@ -26,7 +23,7 @@ type TxnFunc func(ctx context.Context) error
 // the transaction is rolled back. Otherwise it is committed.
 func WithTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 	var err error
-	ctx, err = m.Begin(ctx)
+	ctx, err = begin(ctx, m)
 	if err != nil {
 		return err
 	}
@@ -34,21 +31,51 @@ func WithTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			_ = m.Rollback(ctx)
+			rollback(ctx, m)
 			panic(p)
 		}
 
 		if err != nil {
 			// something went wrong, rollback
-			_ = m.Rollback(ctx)
+			rollback(ctx, m)
 		} else {
 			// all good, commit
-			err = m.Commit(ctx)
+			err = commit(ctx, m)
 		}
 	}()
 
 	err = fn(ctx)
 	return err
+}
+
+func begin(ctx context.Context, m Manager) (context.Context, error) {
+	var err error
+	ctx, err = m.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	hm := hookManager{}
+	ctx = hm.register(ctx)
+
+	return ctx, nil
+}
+
+func commit(ctx context.Context, m Manager) error {
+	if err := m.Commit(ctx); err != nil {
+		return err
+	}
+
+	executePostCommitHooks(ctx)
+	return nil
+}
+
+func rollback(ctx context.Context, m Manager) {
+	if err := m.Rollback(ctx); err != nil {
+		return
+	}
+
+	executePostRollbackHooks(ctx)
 }
 
 // WithDatabase executes fn with the context provided by p.WithDatabase.

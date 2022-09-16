@@ -200,8 +200,8 @@ func (c Cache) ExecutePostHooks(ctx context.Context, id int, hookType HookTrigge
 	}
 }
 
-func (c Cache) RegisterPostHooks(ctx context.Context, txnMgr txn.Manager, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
-	txnMgr.AddPostCommitHook(ctx, func(ctx context.Context) error {
+func (c Cache) RegisterPostHooks(ctx context.Context, id int, hookType HookTriggerEnum, input interface{}, inputFields []string) {
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
 		c.ExecutePostHooks(ctx, id, hookType, input, inputFields)
 		return nil
 	})

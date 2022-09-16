@@ -68,7 +68,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 			return fmt.Errorf("creating new gallery: %w", err)
 		}
 
-		h.PluginCache.ExecutePostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
+		h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
 
 		existing = []*models.Gallery{newGallery}
 	}

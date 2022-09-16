@@ -70,12 +70,12 @@ func NewDeleter() *Deleter {
 
 // RegisterHooks registers post-commit and post-rollback hooks.
 func (d *Deleter) RegisterHooks(ctx context.Context, mgr txn.Manager) {
-	mgr.AddPostCommitHook(ctx, func(ctx context.Context) error {
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
 		d.Commit()
 		return nil
 	})
 
-	mgr.AddPostRollbackHook(ctx, func(ctx context.Context) error {
+	txn.AddPostRollbackHook(ctx, func(ctx context.Context) error {
 		d.Rollback()
 		return nil
 	})
