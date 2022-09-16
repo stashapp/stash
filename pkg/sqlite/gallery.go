@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -31,17 +30,17 @@ const (
 )
 
 type galleryRow struct {
-	ID        int               `db:"id" goqu:"skipinsert"`
-	Title     zero.String       `db:"title"`
-	URL       zero.String       `db:"url"`
-	Date      models.SQLiteDate `db:"date"`
-	Details   zero.String       `db:"details"`
-	Rating    null.Int          `db:"rating"`
-	Organized bool              `db:"organized"`
-	StudioID  null.Int          `db:"studio_id,omitempty"`
-	FolderID  null.Int          `db:"folder_id,omitempty"`
-	CreatedAt time.Time         `db:"created_at"`
-	UpdatedAt time.Time         `db:"updated_at"`
+	ID        int                    `db:"id" goqu:"skipinsert"`
+	Title     zero.String            `db:"title"`
+	URL       zero.String            `db:"url"`
+	Date      models.SQLiteDate      `db:"date"`
+	Details   zero.String            `db:"details"`
+	Rating    null.Int               `db:"rating"`
+	Organized bool                   `db:"organized"`
+	StudioID  null.Int               `db:"studio_id,omitempty"`
+	FolderID  null.Int               `db:"folder_id,omitempty"`
+	CreatedAt models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
 }
 
 func (r *galleryRow) fromGallery(o models.Gallery) {
@@ -56,8 +55,8 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
 	r.FolderID = nullIntFromFolderIDPtr(o.FolderID)
-	r.CreatedAt = o.CreatedAt
-	r.UpdatedAt = o.UpdatedAt
+	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 }
 
 type galleryQueryRow struct {
@@ -81,8 +80,8 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		StudioID:      nullIntPtr(r.StudioID),
 		FolderID:      nullIntFolderIDPtr(r.FolderID),
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
-		CreatedAt:     r.CreatedAt,
-		UpdatedAt:     r.UpdatedAt,
+		CreatedAt:     r.CreatedAt.Timestamp,
+		UpdatedAt:     r.UpdatedAt.Timestamp,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {

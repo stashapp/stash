@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -53,17 +52,17 @@ ORDER BY files.size DESC
 `
 
 type sceneRow struct {
-	ID        int               `db:"id" goqu:"skipinsert"`
-	Title     zero.String       `db:"title"`
-	Details   zero.String       `db:"details"`
-	URL       zero.String       `db:"url"`
-	Date      models.SQLiteDate `db:"date"`
-	Rating    null.Int          `db:"rating"`
-	Organized bool              `db:"organized"`
-	OCounter  int               `db:"o_counter"`
-	StudioID  null.Int          `db:"studio_id,omitempty"`
-	CreatedAt time.Time         `db:"created_at"`
-	UpdatedAt time.Time         `db:"updated_at"`
+	ID        int                    `db:"id" goqu:"skipinsert"`
+	Title     zero.String            `db:"title"`
+	Details   zero.String            `db:"details"`
+	URL       zero.String            `db:"url"`
+	Date      models.SQLiteDate      `db:"date"`
+	Rating    null.Int               `db:"rating"`
+	Organized bool                   `db:"organized"`
+	OCounter  int                    `db:"o_counter"`
+	StudioID  null.Int               `db:"studio_id,omitempty"`
+	CreatedAt models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -78,8 +77,8 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Organized = o.Organized
 	r.OCounter = o.OCounter
 	r.StudioID = intFromPtr(o.StudioID)
-	r.CreatedAt = o.CreatedAt
-	r.UpdatedAt = o.UpdatedAt
+	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 }
 
 type sceneQueryRow struct {
@@ -107,8 +106,8 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		OSHash:        r.PrimaryFileOshash.String,
 		Checksum:      r.PrimaryFileChecksum.String,
 
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
+		CreatedAt: r.CreatedAt.Timestamp,
+		UpdatedAt: r.UpdatedAt.Timestamp,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
