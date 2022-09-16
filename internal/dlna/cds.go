@@ -467,6 +467,10 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 			}
 		} else {
 			for _, s := range scenes {
+				if err := s.LoadPrimaryFile(ctx, me.repository.FileFinder); err != nil {
+					return err
+				}
+
 				objs = append(objs, sceneToContainer(s, parentID, host))
 			}
 		}
