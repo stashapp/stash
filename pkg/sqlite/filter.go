@@ -744,7 +744,6 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	foreignTable string
 	foreignFK    string
 
-	derivedTable   string
 	parentFK       string
 	relationsTable string
 }
@@ -867,9 +866,15 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 
 			valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
-			f.addLeftJoin("(SELECT column1 AS root_id, column2 AS item_id FROM ("+valuesClause+"))", m.derivedTable, fmt.Sprintf("%s.item_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
-
-			addHierarchicalConditionClauses(f, criterion, m.derivedTable, "root_id")
+			switch criterion.Modifier {
+			case models.CriterionModifierIncludes:
+				f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+			case models.CriterionModifierIncludesAll:
+				f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+				f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
+			case models.CriterionModifierExcludes:
+				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+			}
 		}
 	}
 }

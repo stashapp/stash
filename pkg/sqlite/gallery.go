@@ -938,7 +938,6 @@ func galleryStudioCriterionHandler(qb *GalleryStore, studios *models.Hierarchica
 		primaryTable: galleryTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
-		derivedTable: "studio",
 		parentFK:     "parent_id",
 	}
 
