@@ -2,10 +2,12 @@ package file
 
 import (
 	"context"
+	"errors"
 	"io"
 	"io/fs"
 	"net/http"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -137,8 +139,9 @@ func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if k, err := w.Write(data); err != nil {
-			logger.Warnf("failure while serving image (wrote %v bytes out of %v): %v", k, len(data), err)
+		k, err := w.Write(data)
+		if err != nil && !errors.Is(err, syscall.EPIPE) {
+			logger.Warnf("error serving file (wrote %v bytes out of %v): %v", k, len(data), err)
 		}
 
 		return
