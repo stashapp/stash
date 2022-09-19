@@ -125,7 +125,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 			return fmt.Errorf("creating new image: %w", err)
 		}
 
-		h.PluginCache.ExecutePostHooks(ctx, newImage.ID, plugin.ImageCreatePost, nil, nil)
+		h.PluginCache.RegisterPostHooks(ctx, newImage.ID, plugin.ImageCreatePost, nil, nil)
 
 		existing = []*models.Image{newImage}
 	}

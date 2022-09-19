@@ -93,7 +93,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 			return fmt.Errorf("creating new scene: %w", err)
 		}
 
-		h.PluginCache.ExecutePostHooks(ctx, newScene.ID, plugin.SceneCreatePost, nil, nil)
+		h.PluginCache.RegisterPostHooks(ctx, newScene.ID, plugin.SceneCreatePost, nil, nil)
 
 		existing = []*models.Scene{newScene}
 	}

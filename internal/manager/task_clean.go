@@ -221,7 +221,7 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 			checksum := scene.Checksum
 			oshash := scene.OSHash
 
-			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
 				Checksum: checksum,
 				OSHash:   oshash,
 				Path:     scene.Path,
@@ -267,7 +267,7 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.I
 				return err
 			}
 
-			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 				Checksum: g.Checksum(),
 				Path:     g.Path,
 			}, nil)
@@ -306,7 +306,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 			return err
 		}
 
-		mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+		mgr.PluginCache.RegisterPostHooks(ctx, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			// No checksum for folders
 			// Checksum: g.Checksum(),
 			Path: g.Path,
@@ -340,7 +340,7 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 				return err
 			}
 
-			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
 				Checksum: i.Checksum,
 				Path:     i.Path,
 			}, nil)
