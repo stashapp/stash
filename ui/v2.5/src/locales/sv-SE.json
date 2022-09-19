@@ -189,6 +189,7 @@
     },
     "categories": {
       "about": "Om",
+      "changelog": "Ändringslogg",
       "interface": "Gränssnitt",
       "logs": "Loggar",
       "metadata_providers": "Metadataleverantörer",
@@ -518,7 +519,7 @@
         "options": {
           "auto_start_video": "Starta videouppspelning automatiskt",
           "auto_start_video_on_play_selected": {
-            "description": "Autostarta uppspelning när valda eller slumpade spelas från Scener-sidan",
+            "description": "Autostarta uppspelning från kön, valda eller slumpade från Scener-sidan",
             "heading": "Autostarta video när valda spelas"
           },
           "continue_playlist_default": {
@@ -601,6 +602,7 @@
     "delete_object_desc": "Är du säker på att du vill radera {count, plural, one {denna {singularEntity}} other {dessa {pluralEntity}}}?",
     "delete_object_overflow": "…och {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Radera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Visa inte tills nästa uppdatering",
     "edit_entity_title": "Redigera {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inkludera relaterade objekt i exporten",
     "export_title": "Exportera",
@@ -726,6 +728,7 @@
   "false": "Falsk",
   "favourite": "Favorit",
   "file": "fil",
+  "file_count": "Filantal",
   "file_info": "Filinfo",
   "file_mod_time": "Filens Modifikationstid",
   "files": "filer",
@@ -733,6 +736,7 @@
   "filter": "Filter",
   "filter_name": "Filternamn",
   "filters": "Filter",
+  "folder": "Mapp",
   "framerate": "Bildhastighet",
   "frames_per_second": "{value} bilder per sekund",
   "front_page": {
@@ -870,6 +874,7 @@
   "rating": "Betyg",
   "recently_added_objects": "Nyligen Tillagda {objects}",
   "recently_released_objects": "Nyligen Släppta {objects}",
+  "release_notes": "Versionsfakta",
   "resolution": "Upplösning",
   "scene": "Scen",
   "sceneTagger": "Scentaggaren",
@@ -919,9 +924,10 @@
       "migration_failed_error": "Följande fel stöttes på under migrationen av databasen:",
       "migration_failed_help": "Vänligen gör alla nödvändiga korrektioner och testa igen. Annars, skapa en buggrapport på {githubLink} eller sök hjälp på {githubLink}.",
       "migration_irreversible_warning": "Processen för schemamigration är ej omvändbar. När migrationen har skett kommer din databas inte längre vara kompatibel med tidigare versioner av Stash.",
+      "migration_notes": "Migrationsfakta",
       "migration_required": "Migration krävs",
       "perform_schema_migration": "Genomför schemamigration",
-      "schema_too_old": "Din nuvarande databas använder schemaversion <strong>{databaseSchema}</strong> och behöver migreras till version <strong>{appSchema}</strong>. Denna version av Stash kommer inte fungera utan en databasmigration."
+      "schema_too_old": "Din nuvarande databas använder schemaversion <strong>{databaseSchema}</strong> och behöver migreras till version <strong>{appSchema}</strong>. Denna version av Stash kommer inte fungera utan en databasmigration. Om du inte vill migrera kommer du behöva nedgradera till en version som matcher din databasschema."
     },
     "paths": {
       "database_filename_empty_for_default": "databasfilnamn (blank för standard)",
@@ -1019,5 +1025,6 @@
   "videos": "Videor",
   "view_all": "Visa Allt",
   "weight": "Vikt",
-  "years_old": "år gammal"
+  "years_old": "år gammal",
+  "zip_file_count": "Antal Zip-filer"
 }
