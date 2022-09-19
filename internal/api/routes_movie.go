@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -40,12 +41,15 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			image, _ = rs.movieFinder.GetFrontImage(ctx, movie.ID)
 			return nil
 		})
-		if err != nil {
-			logger.Warnf("read transaction error while getting front image: %v", err)
+		if errors.Is(readTxnErr, context.Canceled) {
+			return
+		}
+		if readTxnErr != nil {
+			logger.Warnf("read transaction error on fetch movie front image: %v", readTxnErr)
 		}
 	}
 
@@ -54,7 +58,7 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error serving front image: %v", err)
+		logger.Warnf("error serving movie front image: %v", err)
 	}
 }
 
@@ -63,12 +67,15 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			image, _ = rs.movieFinder.GetBackImage(ctx, movie.ID)
 			return nil
 		})
-		if err != nil {
-			logger.Warnf("read transaction error on fetch back image: %v", err)
+		if errors.Is(readTxnErr, context.Canceled) {
+			return
+		}
+		if readTxnErr != nil {
+			logger.Warnf("read transaction error on fetch movie back image: %v", readTxnErr)
 		}
 	}
 
@@ -77,7 +84,7 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := utils.ServeImage(image, w, r); err != nil {
-		logger.Warnf("error while serving image: %v", err)
+		logger.Warnf("error serving movie back image: %v", err)
 	}
 }
 
@@ -90,11 +97,11 @@ func (rs movieRoutes) MovieCtx(next http.Handler) http.Handler {
 		}
 
 		var movie *models.Movie
-		if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
-			var err error
-			movie, err = rs.movieFinder.Find(ctx, movieID)
-			return err
-		}); err != nil {
+		_ = txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+			movie, _ = rs.movieFinder.Find(ctx, movieID)
+			return nil
+		})
+		if movie == nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
 		}
