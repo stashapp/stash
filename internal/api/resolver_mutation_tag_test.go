@@ -72,17 +72,17 @@ func TestTagCreate(t *testing.T) {
 		}
 	}
 
-	tagRW.On("Query", testCtx, tagFilterForName(existingTagName), findFilter).Return([]*models.Tag{
+	tagRW.On("Query", mock.Anything, tagFilterForName(existingTagName), findFilter).Return([]*models.Tag{
 		{
 			ID:   existingTagID,
 			Name: existingTagName,
 		},
 	}, 1, nil).Once()
-	tagRW.On("Query", testCtx, tagFilterForName(errTagName), findFilter).Return(nil, 0, nil).Once()
-	tagRW.On("Query", testCtx, tagFilterForAlias(errTagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", mock.Anything, tagFilterForName(errTagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", mock.Anything, tagFilterForAlias(errTagName), findFilter).Return(nil, 0, nil).Once()
 
 	expectedErr := errors.New("TagCreate error")
-	tagRW.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(nil, expectedErr)
+	tagRW.On("Create", mock.Anything, mock.AnythingOfType("models.Tag")).Return(nil, expectedErr)
 
 	_, err := r.Mutation().TagCreate(testCtx, TagCreateInput{
 		Name: existingTagName,
@@ -100,14 +100,14 @@ func TestTagCreate(t *testing.T) {
 	r = newResolver()
 	tagRW = r.repository.Tag.(*mocks.TagReaderWriter)
 
-	tagRW.On("Query", testCtx, tagFilterForName(tagName), findFilter).Return(nil, 0, nil).Once()
-	tagRW.On("Query", testCtx, tagFilterForAlias(tagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", mock.Anything, tagFilterForName(tagName), findFilter).Return(nil, 0, nil).Once()
+	tagRW.On("Query", mock.Anything, tagFilterForAlias(tagName), findFilter).Return(nil, 0, nil).Once()
 	newTag := &models.Tag{
 		ID:   newTagID,
 		Name: tagName,
 	}
-	tagRW.On("Create", testCtx, mock.AnythingOfType("models.Tag")).Return(newTag, nil)
-	tagRW.On("Find", testCtx, newTagID).Return(newTag, nil)
+	tagRW.On("Create", mock.Anything, mock.AnythingOfType("models.Tag")).Return(newTag, nil)
+	tagRW.On("Find", mock.Anything, newTagID).Return(newTag, nil)
 
 	tag, err := r.Mutation().TagCreate(testCtx, TagCreateInput{
 		Name: tagName,
