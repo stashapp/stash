@@ -228,7 +228,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	}
 
 	// Save the movies
-	if translator.hasField("movies") {
+	if translator.hasField("movie_ids") {
 		updatedScene.MovieIDs, err = translateSceneMovieIDs(*input.MovieIds)
 		if err != nil {
 			return nil, fmt.Errorf("converting movie ids: %w", err)

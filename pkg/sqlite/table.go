@@ -442,11 +442,16 @@ func (t *scenesMoviesTable) addJoins(ctx context.Context, id int, v []models.Mov
 	// only add values that are not already present
 	var filtered []models.MoviesScenes
 	for _, vv := range v {
+		found := false
+
 		for _, e := range fks {
 			if vv.MovieID == e.MovieID {
-				continue
+				found = true
+				break
 			}
+		}
 
+		if !found {
 			filtered = append(filtered, vv)
 		}
 	}
