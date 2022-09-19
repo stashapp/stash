@@ -66,6 +66,10 @@ func (r *Repository) WithTxn(ctx context.Context, fn txn.TxnFunc) error {
 	return txn.WithTxn(ctx, r, fn)
 }
 
+func (r *Repository) WithDB(ctx context.Context, fn txn.TxnFunc) error {
+	return txn.WithDatabase(ctx, r, fn)
+}
+
 func sqliteRepository(d *sqlite.Database) Repository {
 	txnRepo := d.TxnRepository()
 

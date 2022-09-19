@@ -792,6 +792,29 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			false,
 		},
 		{
+			"add movies to empty",
+			sceneIDs[sceneIdx1WithPerformer],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: movieScenes,
+					Mode:   models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithDupName],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				}),
+			},
+			false,
+		},
+		{
 			"add stash ids",
 			sceneIDs[sceneIdxWithSpacedName],
 			models.ScenePartial{
