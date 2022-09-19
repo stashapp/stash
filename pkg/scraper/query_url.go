@@ -51,7 +51,7 @@ func queryURLParameterFromURL(url string) queryURLParameters {
 
 func queryURLParametersFromGallery(gallery *models.Gallery) queryURLParameters {
 	ret := make(queryURLParameters)
-	ret["checksum"] = gallery.Checksum()
+	ret["checksum"] = gallery.PrimaryChecksum()
 
 	if gallery.Path != "" {
 		ret["filename"] = filepath.Base(gallery.Path)

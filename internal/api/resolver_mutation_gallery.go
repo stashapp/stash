@@ -373,7 +373,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	for _, gallery := range galleries {
 		r.hookExecutor.ExecutePostHooks(ctx, gallery.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			GalleryDestroyInput: input,
-			Checksum:            gallery.Checksum(),
+			Checksum:            gallery.PrimaryChecksum(),
 			Path:                gallery.Path,
 		}, nil)
 	}
