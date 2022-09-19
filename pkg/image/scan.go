@@ -22,6 +22,7 @@ type FinderCreatorUpdater interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Image, error)
 	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Image, error)
 	Create(ctx context.Context, newImage *models.ImageCreateInput) error
+	UpdatePartial(ctx context.Context, id int, updatedImage models.ImagePartial) (*models.Image, error)
 	AddFileID(ctx context.Context, id int, fileID file.ID) error
 	models.GalleryIDLoader
 	models.ImageFileLoader
@@ -168,6 +169,10 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 			if err := h.CreatorUpdater.AddFileID(ctx, i.ID, f.ID); err != nil {
 				return fmt.Errorf("adding file to image: %w", err)
+			}
+			// update updated_at time
+			if _, err := h.CreatorUpdater.UpdatePartial(ctx, i.ID, models.NewImagePartial()); err != nil {
+				return fmt.Errorf("updating image: %w", err)
 			}
 		}
 	}
