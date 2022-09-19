@@ -268,7 +268,7 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.I
 			}
 
 			mgr.PluginCache.RegisterPostHooks(ctx, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
-				Checksum: g.Checksum(),
+				Checksum: g.PrimaryChecksum(),
 				Path:     g.Path,
 			}, nil)
 		} else {
