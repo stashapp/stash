@@ -189,6 +189,7 @@
     },
     "categories": {
       "about": "Chi siamo",
+      "changelog": "Changelog",
       "interface": "Interfaccia",
       "logs": "Log",
       "metadata_providers": "Provider dei Metadata",
@@ -518,7 +519,7 @@
         "options": {
           "auto_start_video": "Inizia a Leggere Automaticamente il video",
           "auto_start_video_on_play_selected": {
-            "description": "Avvio automatico dei video \"Avvia selezionato\" o casuale dalla pagina Scene",
+            "description": "Avvio automatico dei video quando avviati dalla coda, quando \"Avvia selezionato\" o casuale dalla pagina Scene",
             "heading": "Avvio automatico del video 'Avvia selezionato'"
           },
           "continue_playlist_default": {
@@ -601,6 +602,7 @@
     "delete_object_desc": "Sei sicuro di voler cancellare {count, plural, one {questo/a {singularEntity}} other {questi/e {pluralEntity}}}?",
     "delete_object_overflow": "…e {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Cancellazione {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Non mostrare fino al prossimo aggiornamento",
     "edit_entity_title": "Modifica {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include gli oggetti collegati nell'esportazione",
     "export_title": "Esportazione",
@@ -726,6 +728,7 @@
   "false": "Falso",
   "favourite": "Favorita",
   "file": "file",
+  "file_count": "Numero File",
   "file_info": "Informazioni File",
   "file_mod_time": "Tempo Modifica del File",
   "files": "file",
@@ -733,6 +736,7 @@
   "filter": "Filtro",
   "filter_name": "Nome Filtro",
   "filters": "Filtri",
+  "folder": "Cartella",
   "framerate": "Frequenza dei Fotogrammi",
   "frames_per_second": "{value} fotogrammi per secondo",
   "front_page": {
@@ -870,6 +874,7 @@
   "rating": "Classif.",
   "recently_added_objects": "{objects} Aggiunto Recentemente",
   "recently_released_objects": "{objects} Recentemente Distribuito",
+  "release_notes": "Note Versione",
   "resolution": "Risoluzione",
   "scene": "Scena",
   "sceneTagger": "Tagger Scena",
@@ -919,9 +924,10 @@
       "migration_failed_error": "Il seguente errore è stato riscontrato mentre si migrava il database:",
       "migration_failed_help": "Per favore fate ogni correzione necessaria e provate di nuovo. Altrimenti, compilate un bug report su {githubLink} o cercate aiuto su {discordLink}.",
       "migration_irreversible_warning": "La migrazione 'schema' non è reversibile. Una volta attuata, il vostro database sarà incompatibile con le versioni precedenti di Stash.",
+      "migration_notes": "Note Migrazione",
       "migration_required": "Migrazione richiesta",
       "perform_schema_migration": "Esegue la migrazione 'schema'",
-      "schema_too_old": "Lo 'schema version' del tuo attuale database di Stash è <strong>{databaseSchema}</strong> e dev'essere migrato alla versione <strong>{appSchema}</strong>. Questa versione di Stash non funzionerà senza aver migrato il database."
+      "schema_too_old": "Lo 'schema version' del tuo attuale database di Stash è <strong>{databaseSchema}</strong> e dev'essere migrato alla versione <strong>{appSchema}</strong>. Questa versione di Stash non funzionerà senza aver migrato il database. Se non si desidera migrare, si dovrà fare il downgrade ad una versione che corrisponda allo schema attuale."
     },
     "paths": {
       "database_filename_empty_for_default": "nome file del database (vuoto per predefinito)",
@@ -1019,5 +1025,6 @@
   "videos": "Video",
   "view_all": "Vedi Tutto",
   "weight": "Peso",
-  "years_old": "anni"
+  "years_old": "anni",
+  "zip_file_count": "Numero File Zip"
 }
