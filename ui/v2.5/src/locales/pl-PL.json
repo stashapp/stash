@@ -189,6 +189,7 @@
     },
     "categories": {
       "about": "O aplikacji",
+      "changelog": "Lista zmian",
       "interface": "Interfejs",
       "logs": "Logi",
       "metadata_providers": "Dostawcy metadanych",
@@ -518,7 +519,7 @@
         "options": {
           "auto_start_video": "Automatyczne odtwarzanie wideo",
           "auto_start_video_on_play_selected": {
-            "description": "Automatyczne odtwarzaj wideo podczas odtwarzania wybranych lub losowych scen ze strony Sceny",
+            "description": "Automatyczne odtwarzaj wideo z kolejki albo z wybranych lub losowych scen ze strony Sceny",
             "heading": "Automatyczne odtwarzanie wideo podczas odtwarzania wybranych"
           },
           "continue_playlist_default": {
@@ -601,6 +602,7 @@
     "delete_object_desc": "Czy na pewno chcesz usunąć {count, plural, one {{singularEntity}} other {{pluralEntity}}}?",
     "delete_object_overflow": "…i {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Usuń {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Nie pokazuj do następnej aktualizacji",
     "edit_entity_title": "Edytuj {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Uwzględnij powiązane obiekty w eksporcie",
     "export_title": "Eksportuj",
@@ -726,6 +728,7 @@
   "false": "Nie",
   "favourite": "Ulubione",
   "file": "plik",
+  "file_count": "Liczba plików",
   "file_info": "Info o pliku",
   "file_mod_time": "Czas modyfikacji pliku",
   "files": "pliki",
@@ -733,6 +736,7 @@
   "filter": "Filtr",
   "filter_name": "Nazwa filtra",
   "filters": "Filtry",
+  "folder": "Folder",
   "framerate": "Liczba klatek na sekundę",
   "frames_per_second": "{value} klatek na sekundę",
   "front_page": {
@@ -870,6 +874,7 @@
   "rating": "Ocena",
   "recently_added_objects": "Ostatnio dodane {objects}",
   "recently_released_objects": "Ostatnio wydane {objects}",
+  "release_notes": "Informacje o wydaniu",
   "resolution": "Rozdzielczość",
   "scene": "Scena",
   "sceneTagger": "Otagowywacz scen",
@@ -919,9 +924,10 @@
       "migration_failed_error": "Podczas migracji bazy danych napotkano następujący błąd:",
       "migration_failed_help": "Wprowadź wszelkie niezbędne poprawki i spróbuj ponownie. W przeciwnym razie zgłoś błąd na stronie {githubLink} lub poszukaj pomocy na {discordLink}.",
       "migration_irreversible_warning": "Proces migracji schematu jest nieodwracalny. Po przeprowadzeniu migracji baza danych będzie niekompatybilna z poprzednimi wersjami programu stash.",
+      "migration_notes": "Uwagi dotyczące migracji",
       "migration_required": "Wymagana migracja",
       "perform_schema_migration": "Wykonaj migrację schematów",
-      "schema_too_old": "Twoja obecna baza danych Stash to schemat w wersji <strong>{databaseSchema}</strong> i należy ją przenieść do wersji <strong>{appSchema}</strong>. Ta wersja Stash nie będzie działać bez migracji bazy danych."
+      "schema_too_old": "Twoja obecna baza danych Stash to schemat w wersji <strong>{databaseSchema}</strong> i należy ją przenieść do wersji <strong>{appSchema}</strong>. Ta wersja Stash nie będzie działać bez migracji bazy danych. Jeśli nie chcesz migrować, musisz obniżyć wersję do wersji zgodnej ze schematem bazy danych."
     },
     "paths": {
       "database_filename_empty_for_default": "nazwa pliku bazy danych (domyślnie puste)",
@@ -1019,5 +1025,6 @@
   "videos": "Filmy wideo",
   "view_all": "Pokaż Wszystko",
   "weight": "Waga",
-  "years_old": "lat(a)"
+  "years_old": "lat(a)",
+  "zip_file_count": "Liczba plików zip"
 }
