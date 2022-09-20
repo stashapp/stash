@@ -482,7 +482,14 @@ func (s *scanJob) onNewFolder(ctx context.Context, file scanFile) (*Folder, erro
 		}
 	}
 
-	logger.Infof("%s doesn't exist. Creating new folder entry...", file.Path)
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+		// log at the end so that if anything fails above due to a locked database
+		// error and the transaction must be retried, then we shouldn't get multiple
+		// logs of the same thing.
+		logger.Infof("%s doesn't exist. Creating new folder entry...", file.Path)
+		return nil
+	})
+
 	if err := s.Repository.FolderStore.Create(ctx, toCreate); err != nil {
 		return nil, fmt.Errorf("creating folder %q: %w", file.Path, err)
 	}
