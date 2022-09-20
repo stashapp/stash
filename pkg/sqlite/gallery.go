@@ -1135,7 +1135,9 @@ func (qb *GalleryStore) tagsRepository() *joinRepository {
 			tableName: galleriesTagsTable,
 			idColumn:  galleryIDColumn,
 		},
-		fkColumn: "tag_id",
+		fkColumn:     "tag_id",
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 
