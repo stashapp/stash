@@ -12,19 +12,20 @@ import (
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/models"
 	"gopkg.in/guregu/null.v4"
 )
 
 const folderTable = "folders"
 
 type folderRow struct {
-	ID             file.FolderID `db:"id" goqu:"skipinsert"`
-	Path           string        `db:"path"`
-	ZipFileID      null.Int      `db:"zip_file_id"`
-	ParentFolderID null.Int      `db:"parent_folder_id"`
-	ModTime        time.Time     `db:"mod_time"`
-	CreatedAt      time.Time     `db:"created_at"`
-	UpdatedAt      time.Time     `db:"updated_at"`
+	ID             file.FolderID          `db:"id" goqu:"skipinsert"`
+	Path           string                 `db:"path"`
+	ZipFileID      null.Int               `db:"zip_file_id"`
+	ParentFolderID null.Int               `db:"parent_folder_id"`
+	ModTime        time.Time              `db:"mod_time"`
+	CreatedAt      models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt      models.SQLiteTimestamp `db:"updated_at"`
 }
 
 func (r *folderRow) fromFolder(o file.Folder) {
@@ -33,8 +34,8 @@ func (r *folderRow) fromFolder(o file.Folder) {
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
 	r.ModTime = o.ModTime
-	r.CreatedAt = o.CreatedAt
-	r.UpdatedAt = o.UpdatedAt
+	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 }
 
 type folderQueryRow struct {
@@ -53,8 +54,8 @@ func (r *folderQueryRow) resolve() *file.Folder {
 		},
 		Path:           string(r.Path),
 		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
-		CreatedAt:      r.CreatedAt,
-		UpdatedAt:      r.UpdatedAt,
+		CreatedAt:      r.CreatedAt.Timestamp,
+		UpdatedAt:      r.UpdatedAt.Timestamp,
 	}
 
 	if ret.ZipFileID != nil && r.ZipFolderPath.Valid && r.ZipBasename.Valid {
