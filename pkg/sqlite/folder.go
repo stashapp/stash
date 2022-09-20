@@ -6,25 +6,25 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/models"
 	"gopkg.in/guregu/null.v4"
 )
 
 const folderTable = "folders"
 
 type folderRow struct {
-	ID             file.FolderID `db:"id" goqu:"skipinsert"`
-	Path           string        `db:"path"`
-	ZipFileID      null.Int      `db:"zip_file_id"`
-	ParentFolderID null.Int      `db:"parent_folder_id"`
-	ModTime        time.Time     `db:"mod_time"`
-	CreatedAt      time.Time     `db:"created_at"`
-	UpdatedAt      time.Time     `db:"updated_at"`
+	ID             file.FolderID          `db:"id" goqu:"skipinsert"`
+	Path           string                 `db:"path"`
+	ZipFileID      null.Int               `db:"zip_file_id"`
+	ParentFolderID null.Int               `db:"parent_folder_id"`
+	ModTime        models.SQLiteTimestamp `db:"mod_time"`
+	CreatedAt      models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt      models.SQLiteTimestamp `db:"updated_at"`
 }
 
 func (r *folderRow) fromFolder(o file.Folder) {
@@ -32,9 +32,9 @@ func (r *folderRow) fromFolder(o file.Folder) {
 	r.Path = o.Path
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
-	r.ModTime = o.ModTime
-	r.CreatedAt = o.CreatedAt
-	r.UpdatedAt = o.UpdatedAt
+	r.ModTime = models.SQLiteTimestamp{Timestamp: o.ModTime}
+	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 }
 
 type folderQueryRow struct {
@@ -49,12 +49,12 @@ func (r *folderQueryRow) resolve() *file.Folder {
 		ID: r.ID,
 		DirEntry: file.DirEntry{
 			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime,
+			ModTime:   r.ModTime.Timestamp,
 		},
 		Path:           string(r.Path),
 		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
-		CreatedAt:      r.CreatedAt,
-		UpdatedAt:      r.UpdatedAt,
+		CreatedAt:      r.CreatedAt.Timestamp,
+		UpdatedAt:      r.UpdatedAt.Timestamp,
 	}
 
 	if ret.ZipFileID != nil && r.ZipFolderPath.Valid && r.ZipBasename.Valid {

@@ -83,12 +83,12 @@ func (r *updateRecord) setNullInt(destField string, v models.OptionalInt) {
 // 	}
 // }
 
-func (r *updateRecord) setTime(destField string, v models.OptionalTime) {
+func (r *updateRecord) setSQLiteTimestamp(destField string, v models.OptionalTime) {
 	if v.Set {
 		if v.Null {
 			panic("null value not allowed in optional time")
 		}
-		r.set(destField, v.Value)
+		r.set(destField, models.SQLiteTimestamp{Timestamp: v.Value})
 	}
 }
 
