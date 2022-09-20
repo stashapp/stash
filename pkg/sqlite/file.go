@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -35,7 +34,7 @@ type basicFileRow struct {
 	ZipFileID      null.Int               `db:"zip_file_id"`
 	ParentFolderID file.FolderID          `db:"parent_folder_id"`
 	Size           int64                  `db:"size"`
-	ModTime        time.Time              `db:"mod_time"`
+	ModTime        models.SQLiteTimestamp `db:"mod_time"`
 	CreatedAt      models.SQLiteTimestamp `db:"created_at"`
 	UpdatedAt      models.SQLiteTimestamp `db:"updated_at"`
 }
@@ -46,7 +45,7 @@ func (r *basicFileRow) fromBasicFile(o file.BaseFile) {
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = o.ParentFolderID
 	r.Size = o.Size
-	r.ModTime = o.ModTime
+	r.ModTime = models.SQLiteTimestamp{Timestamp: o.ModTime}
 	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 }
@@ -172,7 +171,7 @@ type fileQueryRow struct {
 	ZipFileID      null.Int                   `db:"zip_file_id"`
 	ParentFolderID null.Int                   `db:"parent_folder_id"`
 	Size           null.Int                   `db:"size"`
-	ModTime        null.Time                  `db:"mod_time"`
+	ModTime        models.NullSQLiteTimestamp `db:"mod_time"`
 	CreatedAt      models.NullSQLiteTimestamp `db:"file_created_at"`
 	UpdatedAt      models.NullSQLiteTimestamp `db:"file_updated_at"`
 
@@ -190,7 +189,7 @@ func (r *fileQueryRow) resolve() file.File {
 		ID: file.ID(r.FileID.Int64),
 		DirEntry: file.DirEntry{
 			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime.Time,
+			ModTime:   r.ModTime.Timestamp,
 		},
 		Path:           filepath.Join(r.FolderPath.String, r.Basename.String),
 		ParentFolderID: file.FolderID(r.ParentFolderID.Int64),

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -23,7 +22,7 @@ type folderRow struct {
 	Path           string                 `db:"path"`
 	ZipFileID      null.Int               `db:"zip_file_id"`
 	ParentFolderID null.Int               `db:"parent_folder_id"`
-	ModTime        time.Time              `db:"mod_time"`
+	ModTime        models.SQLiteTimestamp `db:"mod_time"`
 	CreatedAt      models.SQLiteTimestamp `db:"created_at"`
 	UpdatedAt      models.SQLiteTimestamp `db:"updated_at"`
 }
@@ -33,7 +32,7 @@ func (r *folderRow) fromFolder(o file.Folder) {
 	r.Path = o.Path
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = nullIntFromFolderIDPtr(o.ParentFolderID)
-	r.ModTime = o.ModTime
+	r.ModTime = models.SQLiteTimestamp{Timestamp: o.ModTime}
 	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 }
@@ -50,7 +49,7 @@ func (r *folderQueryRow) resolve() *file.Folder {
 		ID: r.ID,
 		DirEntry: file.DirEntry{
 			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime,
+			ModTime:   r.ModTime.Timestamp,
 		},
 		Path:           string(r.Path),
 		ParentFolderID: nullIntFolderIDPtr(r.ParentFolderID),
