@@ -1076,7 +1076,9 @@ func (qb *ImageStore) tagsRepository() *joinRepository {
 			tableName: imagesTagsTable,
 			idColumn:  imageIDColumn,
 		},
-		fkColumn: tagIDColumn,
+		fkColumn:     tagIDColumn,
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 

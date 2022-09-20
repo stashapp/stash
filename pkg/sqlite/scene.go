@@ -1469,7 +1469,9 @@ func (qb *SceneStore) tagsRepository() *joinRepository {
 			tableName: scenesTagsTable,
 			idColumn:  sceneIDColumn,
 		},
-		fkColumn: tagIDColumn,
+		fkColumn:     tagIDColumn,
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 
