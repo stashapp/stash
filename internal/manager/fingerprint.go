@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/hash/oshash"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 type fingerprintCalculator struct {
@@ -58,27 +59,55 @@ func (c *fingerprintCalculator) calculateMD5(o file.Opener) (*file.Fingerprint, 
 	}, nil
 }
 
-func (c *fingerprintCalculator) CalculateFingerprints(f *file.BaseFile, o file.Opener) ([]file.Fingerprint, error) {
+func (c *fingerprintCalculator) CalculateFingerprints(f *file.BaseFile, o file.Opener, useExisting bool) ([]file.Fingerprint, error) {
 	var ret []file.Fingerprint
 	calculateMD5 := true
 
 	if isVideo(f.Basename) {
-		// calculate oshash first
-		fp, err := c.calculateOshash(f, o)
-		if err != nil {
-			return nil, err
+		var (
+			fp  *file.Fingerprint
+			err error
+		)
+
+		if useExisting {
+			fp = f.Fingerprints.For(file.FingerprintTypeOshash)
+		}
+
+		if fp == nil {
+			// calculate oshash first
+			fp, err = c.calculateOshash(f, o)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		ret = append(ret, *fp)
 
 		// only calculate MD5 if enabled in config
-		calculateMD5 = c.Config.IsCalculateMD5()
+		// always re-calculate MD5 if the file already has it
+		calculateMD5 = c.Config.IsCalculateMD5() || f.Fingerprints.For(file.FingerprintTypeMD5) != nil
 	}
 
 	if calculateMD5 {
-		fp, err := c.calculateMD5(o)
-		if err != nil {
-			return nil, err
+		var (
+			fp  *file.Fingerprint
+			err error
+		)
+
+		if useExisting {
+			fp = f.Fingerprints.For(file.FingerprintTypeMD5)
+		}
+
+		if fp == nil {
+			if useExisting {
+				// log to indicate missing fingerprint is being calculated
+				logger.Infof("Calculating checksum for %s ...", f.Path)
+			}
+
+			fp, err = c.calculateMD5(o)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		ret = append(ret, *fp)

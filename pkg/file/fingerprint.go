@@ -14,6 +14,39 @@ type Fingerprint struct {
 
 type Fingerprints []Fingerprint
 
+func (f Fingerprints) Equals(other Fingerprints) bool {
+	if len(f) != len(other) {
+		return false
+	}
+
+	for _, ff := range f {
+		found := false
+		for _, oo := range other {
+			if ff == oo {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return false
+		}
+	}
+
+	return true
+}
+
+// For returns a pointer to the first Fingerprint element matching the provided type.
+func (f Fingerprints) For(type_ string) *Fingerprint {
+	for _, fp := range f {
+		if fp.Type == type_ {
+			return &fp
+		}
+	}
+
+	return nil
+}
+
 func (f Fingerprints) Get(type_ string) interface{} {
 	for _, fp := range f {
 		if fp.Type == type_ {
@@ -59,5 +92,5 @@ func (f Fingerprints) AppendUnique(o Fingerprint) Fingerprints {
 
 // FingerprintCalculator calculates a fingerprint for the provided file.
 type FingerprintCalculator interface {
-	CalculateFingerprints(f *BaseFile, o Opener) ([]Fingerprint, error)
+	CalculateFingerprints(f *BaseFile, o Opener, useExisting bool) ([]Fingerprint, error)
 }
