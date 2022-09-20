@@ -10,14 +10,14 @@ import (
 	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-type schema33Migrator struct {
+type schema34Migrator struct {
 	migrator
 }
 
-func post33(ctx context.Context, db *sqlx.DB) error {
-	logger.Info("Running post-migration for schema version 33")
+func post34(ctx context.Context, db *sqlx.DB) error {
+	logger.Info("Running post-migration for schema version 34")
 
-	m := schema33Migrator{
+	m := schema34Migrator{
 		migrator: migrator{
 			db: db,
 		},
@@ -32,11 +32,17 @@ func post33(ctx context.Context, db *sqlx.DB) error {
 	if err := m.migrateObjects(ctx, "galleries"); err != nil {
 		return fmt.Errorf("migrating galleries: %w", err)
 	}
+	if err := m.migrateObjects(ctx, "files"); err != nil {
+		return fmt.Errorf("migrating files: %w", err)
+	}
+	if err := m.migrateObjects(ctx, "folders"); err != nil {
+		return fmt.Errorf("migrating folders: %w", err)
+	}
 
 	return nil
 }
 
-func (m *schema33Migrator) migrateObjects(ctx context.Context, table string) error {
+func (m *schema34Migrator) migrateObjects(ctx context.Context, table string) error {
 	logger.Infof("Migrating %s table", table)
 
 	const (
@@ -112,5 +118,5 @@ func (m *schema33Migrator) migrateObjects(ctx context.Context, table string) err
 }
 
 func init() {
-	sqlite.RegisterPostMigration(33, post33)
+	sqlite.RegisterPostMigration(34, post34)
 }
