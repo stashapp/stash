@@ -130,8 +130,8 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setBool("organized", o.Organized)
 	r.setInt("o_counter", o.OCounter)
 	r.setNullInt("studio_id", o.StudioID)
-	r.setTime("created_at", o.CreatedAt)
-	r.setTime("updated_at", o.UpdatedAt)
+	r.setSQLiteTimestamp("created_at", o.CreatedAt)
+	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
 }
 
 type SceneStore struct {
