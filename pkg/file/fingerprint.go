@@ -14,6 +14,18 @@ type Fingerprint struct {
 
 type Fingerprints []Fingerprint
 
+func (f *Fingerprints) Remove(type_ string) {
+	var ret Fingerprints
+
+	for _, ff := range *f {
+		if ff.Type != type_ {
+			ret = append(ret, ff)
+		}
+	}
+
+	*f = ret
+}
+
 func (f Fingerprints) Equals(other Fingerprints) bool {
 	if len(f) != len(other) {
 		return false
