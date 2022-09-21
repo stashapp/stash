@@ -885,59 +885,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	updated := !fileModTime.Equal(base.ModTime)
 
 	if !updated {
-		var err error
-
-		isMissingMetdata := s.isMissingMetadata(existing)
-		// set missing information
-		if isMissingMetdata {
-			existing, err = s.setMissingMetadata(ctx, f, existing)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		// calculate missing fingerprints
-		existing, err = s.setMissingFingerprints(ctx, f, existing)
-		if err != nil {
-			return nil, err
-		}
-
-		handlerRequired := false
-		if err := s.withDB(ctx, func(ctx context.Context) error {
-			// check if the handler needs to be run
-			handlerRequired = s.isHandlerRequired(ctx, existing)
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-
-		if !handlerRequired {
-			// if this file is a zip file, then we need to rescan the contents
-			// as well. We do this by returning the file, instead of nil.
-			if isMissingMetdata {
-				return existing, nil
-			}
-
-			return nil, nil
-		}
-
-		if err := s.withTxn(ctx, func(ctx context.Context) error {
-			if err := s.fireHandlers(ctx, existing); err != nil {
-				return err
-			}
-
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-
-		// if this file is a zip file, then we need to rescan the contents
-		// as well. We do this by returning the file, instead of nil.
-		if isMissingMetdata {
-			return existing, nil
-		}
-
-		return nil, nil
+		return s.onUnchangedFile(ctx, f, existing)
 	}
 
 	logger.Infof("%s has been updated: rescanning", path)
@@ -952,6 +900,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 		return nil, err
 	}
 
+	s.removeOutdatedFingerprints(existing, fp)
 	existing.SetFingerprints(fp)
 
 	existing, err = s.fireDecorators(ctx, f.fs, existing)
@@ -975,4 +924,87 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	}
 
 	return existing, nil
+}
+
+func (s *scanJob) removeOutdatedFingerprints(existing File, fp Fingerprints) {
+	// HACK - if no MD5 fingerprint was returned, and the oshash is changed
+	// then remove the MD5 fingerprint
+	oshash := fp.For(FingerprintTypeOshash)
+	if oshash == nil {
+		return
+	}
+
+	existingOshash := existing.Base().Fingerprints.For(FingerprintTypeOshash)
+	if existingOshash == nil || *existingOshash == *oshash {
+		// missing oshash or same oshash - nothing to do
+		return
+	}
+
+	md5 := fp.For(FingerprintTypeMD5)
+
+	if md5 != nil {
+		// nothing to do
+		return
+	}
+
+	// oshash has changed, MD5 is missing - remove MD5 from the existing fingerprints
+	logger.Infof("Removing outdated checksum from %s", existing.Base().Path)
+	existing.Base().Fingerprints.Remove(FingerprintTypeMD5)
+}
+
+// returns a file only if it was updated
+func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing File) (File, error) {
+	var err error
+
+	isMissingMetdata := s.isMissingMetadata(existing)
+	// set missing information
+	if isMissingMetdata {
+		existing, err = s.setMissingMetadata(ctx, f, existing)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// calculate missing fingerprints
+	existing, err = s.setMissingFingerprints(ctx, f, existing)
+	if err != nil {
+		return nil, err
+	}
+
+	handlerRequired := false
+	if err := s.withDB(ctx, func(ctx context.Context) error {
+		// check if the handler needs to be run
+		handlerRequired = s.isHandlerRequired(ctx, existing)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	if !handlerRequired {
+		// if this file is a zip file, then we need to rescan the contents
+		// as well. We do this by returning the file, instead of nil.
+		if isMissingMetdata {
+			return existing, nil
+		}
+
+		return nil, nil
+	}
+
+	if err := s.withTxn(ctx, func(ctx context.Context) error {
+		if err := s.fireHandlers(ctx, existing); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	// if this file is a zip file, then we need to rescan the contents
+	// as well. We do this by returning the file, instead of nil.
+	if isMissingMetdata {
+		return existing, nil
+	}
+
+	return nil, nil
 }
