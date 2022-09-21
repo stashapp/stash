@@ -493,7 +493,7 @@ func (me *contentDirectoryService) getPageVideos(sceneFilter *models.SceneFilter
 		}
 
 		var err error
-		objs, err = pager.getPageVideos(ctx, me.repository.SceneFinder, page, host)
+		objs, err = pager.getPageVideos(ctx, me.repository.SceneFinder, me.repository.FileFinder, page, host)
 		if err != nil {
 			return err
 		}
