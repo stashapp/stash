@@ -75,6 +75,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "performer_count":
     case "performer_age":
     case "tag_count":
+    case "file_count":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(type, type)
       );

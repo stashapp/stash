@@ -125,13 +125,13 @@ func (s *scriptScraper) runScraperScript(ctx context.Context, inString string, o
 	return nil
 }
 
-func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	input := `{"name": "` + name + `"}`
 
-	var ret []models.ScrapedContent
+	var ret []ScrapedContent
 	var err error
 	switch ty {
-	case models.ScrapeContentTypePerformer:
+	case ScrapeContentTypePerformer:
 		var performers []models.ScrapedPerformer
 		err = s.runScraperScript(ctx, input, &performers)
 		if err == nil {
@@ -140,8 +140,8 @@ func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty models
 				ret = append(ret, &v)
 			}
 		}
-	case models.ScrapeContentTypeScene:
-		var scenes []models.ScrapedScene
+	case ScrapeContentTypeScene:
+		var scenes []ScrapedScene
 		err = s.runScraperScript(ctx, input, &scenes)
 		if err == nil {
 			for _, s := range scenes {
@@ -156,20 +156,20 @@ func (s *scriptScraper) scrapeByName(ctx context.Context, name string, ty models
 	return ret, err
 }
 
-func (s *scriptScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
+func (s *scriptScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
 	var inString []byte
 	var err error
-	var ty models.ScrapeContentType
+	var ty ScrapeContentType
 	switch {
 	case input.Performer != nil:
 		inString, err = json.Marshal(*input.Performer)
-		ty = models.ScrapeContentTypePerformer
+		ty = ScrapeContentTypePerformer
 	case input.Gallery != nil:
 		inString, err = json.Marshal(*input.Gallery)
-		ty = models.ScrapeContentTypeGallery
+		ty = ScrapeContentTypeGallery
 	case input.Scene != nil:
 		inString, err = json.Marshal(*input.Scene)
-		ty = models.ScrapeContentTypeScene
+		ty = ScrapeContentTypeScene
 	}
 
 	if err != nil {
@@ -179,25 +179,25 @@ func (s *scriptScraper) scrapeByFragment(ctx context.Context, input Input) (mode
 	return s.scrape(ctx, string(inString), ty)
 }
 
-func (s *scriptScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (s *scriptScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
 	return s.scrape(ctx, `{"url": "`+url+`"}`, ty)
 }
 
-func (s *scriptScraper) scrape(ctx context.Context, input string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (s *scriptScraper) scrape(ctx context.Context, input string, ty ScrapeContentType) (ScrapedContent, error) {
 	switch ty {
-	case models.ScrapeContentTypePerformer:
+	case ScrapeContentTypePerformer:
 		var performer *models.ScrapedPerformer
 		err := s.runScraperScript(ctx, input, &performer)
 		return performer, err
-	case models.ScrapeContentTypeGallery:
-		var gallery *models.ScrapedGallery
+	case ScrapeContentTypeGallery:
+		var gallery *ScrapedGallery
 		err := s.runScraperScript(ctx, input, &gallery)
 		return gallery, err
-	case models.ScrapeContentTypeScene:
-		var scene *models.ScrapedScene
+	case ScrapeContentTypeScene:
+		var scene *ScrapedScene
 		err := s.runScraperScript(ctx, input, &scene)
 		return scene, err
-	case models.ScrapeContentTypeMovie:
+	case ScrapeContentTypeMovie:
 		var movie *models.ScrapedMovie
 		err := s.runScraperScript(ctx, input, &movie)
 		return movie, err
@@ -206,28 +206,28 @@ func (s *scriptScraper) scrape(ctx context.Context, input string, ty models.Scra
 	return nil, ErrNotSupported
 }
 
-func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *scriptScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
 	inString, err := json.Marshal(sceneToUpdateInput(scene))
 
 	if err != nil {
 		return nil, err
 	}
 
-	var ret *models.ScrapedScene
+	var ret *ScrapedScene
 
 	err = s.runScraperScript(ctx, string(inString), &ret)
 
 	return ret, err
 }
 
-func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *scriptScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {
 	inString, err := json.Marshal(galleryToUpdateInput(gallery))
 
 	if err != nil {
 		return nil, err
 	}
 
-	var ret *models.ScrapedGallery
+	var ret *ScrapedGallery
 
 	err = s.runScraperScript(ctx, string(inString), &ret)
 

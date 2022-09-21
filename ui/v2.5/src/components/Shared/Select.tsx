@@ -22,10 +22,11 @@ import {
   usePerformerCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { TextUtils } from "src/utils";
 import { SelectComponents } from "react-select/src/components";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
+import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -277,7 +278,7 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
 
   const galleries = data?.findGalleries.galleries ?? [];
   const items = galleries.map((g) => ({
-    label: g.title ?? TextUtils.fileNameFromPath(g.path ?? ""),
+    label: galleryTitle(g),
     value: g.id,
   }));
 
@@ -328,7 +329,7 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
 
   const scenes = data?.findScenes.scenes ?? [];
   const items = scenes.map((s) => ({
-    label: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
+    label: objectTitle(s),
     value: s.id,
   }));
 

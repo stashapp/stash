@@ -809,8 +809,8 @@ func (s mappedScraper) scrapePerformers(ctx context.Context, q mappedQuery) ([]*
 	return ret, nil
 }
 
-func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mappedResult) *models.ScrapedScene {
-	var ret models.ScrapedScene
+func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mappedResult) *ScrapedScene {
+	var ret ScrapedScene
 
 	sceneScraperConfig := s.Scene
 
@@ -884,8 +884,8 @@ func (s mappedScraper) processScene(ctx context.Context, q mappedQuery, r mapped
 	return &ret
 }
 
-func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*models.ScrapedScene, error) {
-	var ret []*models.ScrapedScene
+func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*ScrapedScene, error) {
+	var ret []*ScrapedScene
 
 	sceneScraperConfig := s.Scene
 	sceneMap := sceneScraperConfig.mappedConfig
@@ -903,8 +903,8 @@ func (s mappedScraper) scrapeScenes(ctx context.Context, q mappedQuery) ([]*mode
 	return ret, nil
 }
 
-func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.ScrapedScene, error) {
-	var ret *models.ScrapedScene
+func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*ScrapedScene, error) {
+	var ret *ScrapedScene
 
 	sceneScraperConfig := s.Scene
 	sceneMap := sceneScraperConfig.mappedConfig
@@ -921,8 +921,8 @@ func (s mappedScraper) scrapeScene(ctx context.Context, q mappedQuery) (*models.
 	return ret, nil
 }
 
-func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*models.ScrapedGallery, error) {
-	var ret *models.ScrapedGallery
+func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*ScrapedGallery, error) {
+	var ret *ScrapedGallery
 
 	galleryScraperConfig := s.Gallery
 	galleryMap := galleryScraperConfig.mappedConfig
@@ -937,7 +937,7 @@ func (s mappedScraper) scrapeGallery(ctx context.Context, q mappedQuery) (*model
 	logger.Debug(`Processing gallery:`)
 	results := galleryMap.process(ctx, q, s.Common)
 	if len(results) > 0 {
-		ret = &models.ScrapedGallery{}
+		ret = &ScrapedGallery{}
 
 		results[0].apply(ret)
 

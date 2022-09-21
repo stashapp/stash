@@ -1,6 +1,7 @@
 package autotag
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/image"
@@ -17,49 +18,60 @@ type testStudioCase struct {
 	aliasRegex    string
 }
 
-var testStudioCases = []testStudioCase{
-	{
-		"studio name",
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		"studio + name",
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		`studio + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		"",
-		"",
-	},
-	{
-		"studio name",
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"alias name",
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-	},
-	{
-		"studio + name",
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-		"alias + name",
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
-	},
-	{
-		`studio + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		`alias + name\`,
-		`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-	},
-}
+var (
+	testStudioCases = []testStudioCase{
+		{
+			"studio name",
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			"studio + name",
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			"studio name",
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"alias name",
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+		{
+			"studio + name",
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+			"alias + name",
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
+		},
+	}
+
+	trailingBackslashStudioCases = []testStudioCase{
+		{
+			`studio + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+			"",
+			"",
+		},
+		{
+			`studio + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])studio[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+			`alias + name\`,
+			`(?i)(?:^|_|[^\p{L}\d])alias[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
+		},
+	}
+)
 
 func TestStudioScenes(t *testing.T) {
 	t.Parallel()
 
-	for _, p := range testStudioCases {
+	tc := testStudioCases
+	// trailing backslash tests only work where filepath separator is not backslash
+	if filepath.Separator != '\\' {
+		tc = append(tc, trailingBackslashStudioCases...)
+	}
+
+	for _, p := range tc {
 		testStudioScenes(t, p)
 	}
 }
@@ -72,7 +84,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 
 	mockSceneReader := &mocks.SceneReaderWriter{}
 
-	const studioID = 2
+	var studioID = 2
 
 	var aliases []string
 
@@ -113,7 +125,7 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockSceneReader.On("Query", scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
+	onNameQuery := mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false))
 
 	if aliasName == "" {
 		onNameQuery.Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
@@ -128,21 +140,19 @@ func testStudioScenes(t *testing.T, tc testStudioCase) {
 			},
 		}
 
-		mockSceneReader.On("Query", scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("Find", sceneID).Return(&models.Scene{}, nil).Once()
-		expectedStudioID := models.NullInt64(studioID)
-		mockSceneReader.On("Update", models.ScenePartial{
-			ID:       sceneID,
-			StudioID: &expectedStudioID,
+		expectedStudioID := studioID
+		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+			StudioID: models.NewOptionalInt(expectedStudioID),
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioScenes(&studio, nil, aliases, mockSceneReader, nil)
+	err := StudioScenes(testCtx, &studio, nil, aliases, mockSceneReader, nil)
 
 	assert := assert.New(t)
 
@@ -166,7 +176,7 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 
 	mockImageReader := &mocks.ImageReaderWriter{}
 
-	const studioID = 2
+	var studioID = 2
 
 	var aliases []string
 
@@ -206,7 +216,7 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockImageReader.On("Query", image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
+	onNameQuery := mockImageReader.On("Query", testCtx, image.QueryOptions(expectedImageFilter, expectedFindFilter, false))
 	if aliasName == "" {
 		onNameQuery.Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	} else {
@@ -220,21 +230,19 @@ func testStudioImages(t *testing.T, tc testStudioCase) {
 			},
 		}
 
-		mockImageReader.On("Query", image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockImageReader.On("Query", testCtx, image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("Find", imageID).Return(&models.Image{}, nil).Once()
-		expectedStudioID := models.NullInt64(studioID)
-		mockImageReader.On("Update", models.ImagePartial{
-			ID:       imageID,
-			StudioID: &expectedStudioID,
+		expectedStudioID := studioID
+		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+			StudioID: models.NewOptionalInt(expectedStudioID),
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioImages(&studio, nil, aliases, mockImageReader, nil)
+	err := StudioImages(testCtx, &studio, nil, aliases, mockImageReader, nil)
 
 	assert := assert.New(t)
 
@@ -257,7 +265,7 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	aliasRegex := tc.aliasRegex
 	mockGalleryReader := &mocks.GalleryReaderWriter{}
 
-	const studioID = 2
+	var studioID = 2
 
 	var aliases []string
 
@@ -270,9 +278,10 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	var galleries []*models.Gallery
 	matchingPaths, falsePaths := generateTestPaths(testPathName, galleryExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
+		v := p
 		galleries = append(galleries, &models.Gallery{
 			ID:   i + 1,
-			Path: models.NullString(p),
+			Path: v,
 		})
 	}
 
@@ -297,7 +306,7 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 	}
 
 	// if alias provided, then don't find by name
-	onNameQuery := mockGalleryReader.On("Query", expectedGalleryFilter, expectedFindFilter)
+	onNameQuery := mockGalleryReader.On("Query", testCtx, expectedGalleryFilter, expectedFindFilter)
 	if aliasName == "" {
 		onNameQuery.Return(galleries, len(galleries), nil).Once()
 	} else {
@@ -311,20 +320,18 @@ func testStudioGalleries(t *testing.T, tc testStudioCase) {
 			},
 		}
 
-		mockGalleryReader.On("Query", expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+		mockGalleryReader.On("Query", testCtx, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("Find", galleryID).Return(&models.Gallery{}, nil).Once()
-		expectedStudioID := models.NullInt64(studioID)
-		mockGalleryReader.On("UpdatePartial", models.GalleryPartial{
-			ID:       galleryID,
-			StudioID: &expectedStudioID,
+		expectedStudioID := studioID
+		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+			StudioID: models.NewOptionalInt(expectedStudioID),
 		}).Return(nil, nil).Once()
 	}
 
-	err := StudioGalleries(&studio, nil, aliases, mockGalleryReader, nil)
+	err := StudioGalleries(testCtx, &studio, nil, aliases, mockGalleryReader, nil)
 
 	assert := assert.New(t)
 

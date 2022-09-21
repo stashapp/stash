@@ -1,11 +1,10 @@
 package plugin
 
 import (
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-func toPluginArgs(args []*models.PluginArgInput) common.ArgsMap {
+func toPluginArgs(args []*PluginArgInput) common.ArgsMap {
 	ret := make(common.ArgsMap)
 	for _, a := range args {
 		ret[a.Key] = toPluginArgValue(a.Value)
@@ -14,7 +13,7 @@ func toPluginArgs(args []*models.PluginArgInput) common.ArgsMap {
 	return ret
 }
 
-func toPluginArgValue(arg *models.PluginValueInput) common.PluginArgValue {
+func toPluginArgValue(arg *PluginValueInput) common.PluginArgValue {
 	if arg == nil {
 		return nil
 	}

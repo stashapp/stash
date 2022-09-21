@@ -999,7 +999,6 @@
     "added_generation_job_to_queue": "생성 작업을 대기열에 추가했습니다",
     "created_entity": "{entity}를 생성했습니다",
     "default_filter_set": "기본 필터 셋",
-    "delete_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} 삭제",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}}이(가) 삭제되었습니다",
     "generating_screenshot": "스크린샷을 생성하는 중…",
     "merged_tags": "병합된 태그",

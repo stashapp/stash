@@ -1,7 +1,6 @@
 package desktop
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -93,7 +92,7 @@ func writeStashIcon(faviconProvider FaviconProvider) {
 	c := config.GetInstance()
 	if !c.IsNewSystem() {
 		iconPath := path.Join(c.GetConfigPath(), "icon.png")
-		err := ioutil.WriteFile(iconPath, faviconProvider.GetFaviconPng(), 0644)
+		err := os.WriteFile(iconPath, faviconProvider.GetFaviconPng(), 0644)
 		if err != nil {
 			logger.Errorf("Couldn't write icon file: %s", err.Error())
 		}

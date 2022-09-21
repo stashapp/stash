@@ -1,0 +1,97 @@
+type Fingerprint {
+    type: String!
+    value: String!
+}
+
+type Folder {
+    id: ID!
+    path: String!
+
+    parent_folder_id: ID
+    zip_file_id: ID
+
+    mod_time: Time!
+
+    created_at: Time!
+    updated_at: Time!
+}
+
+interface BaseFile {
+    id: ID!
+    path: String!
+    basename: String!
+
+    parent_folder_id: ID!
+    zip_file_id: ID
+
+    mod_time: Time!
+    size: Int64!
+
+    fingerprints: [Fingerprint!]!
+
+    created_at: Time!
+    updated_at: Time!
+}
+
+type VideoFile implements BaseFile {
+    id: ID!
+    path: String!
+    basename: String!
+
+    parent_folder_id: ID!
+    zip_file_id: ID
+
+    mod_time: Time!
+    size: Int64!
+
+    fingerprints: [Fingerprint!]!
+
+    format: String!
+    width: Int!
+	height: Int!
+	duration: Float!
+	video_codec: String!
+	audio_codec: String!
+	frame_rate: Float!
+	bit_rate: Int!
+
+    created_at: Time!
+    updated_at: Time!
+}
+
+type ImageFile implements BaseFile {
+    id: ID!
+    path: String!
+    basename: String!
+
+    parent_folder_id: ID!
+    zip_file_id: ID
+
+    mod_time: Time!
+    size: Int64!
+
+    fingerprints: [Fingerprint!]!
+
+    width: Int!
+	height: Int!
+
+    created_at: Time!
+    updated_at: Time!
+}
+
+type GalleryFile implements BaseFile {
+    id: ID!
+    path: String!
+    basename: String!
+
+    parent_folder_id: ID!
+    zip_file_id: ID
+
+    mod_time: Time!
+    size: Int64!
+
+    fingerprints: [Fingerprint!]!
+
+    created_at: Time!
+    updated_at: Time!
+}

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 )
@@ -38,9 +39,6 @@ type SceneMovie struct {
 
 type Scene struct {
 	Title      string           `json:"title,omitempty"`
-	Checksum   string           `json:"checksum,omitempty"`
-	OSHash     string           `json:"oshash,omitempty"`
-	Phash      string           `json:"phash,omitempty"`
 	Studio     string           `json:"studio,omitempty"`
 	URL        string           `json:"url,omitempty"`
 	Date       string           `json:"date,omitempty"`
@@ -48,16 +46,29 @@ type Scene struct {
 	Organized  bool             `json:"organized,omitempty"`
 	OCounter   int              `json:"o_counter,omitempty"`
 	Details    string           `json:"details,omitempty"`
-	Galleries  []string         `json:"galleries,omitempty"`
+	Galleries  []GalleryRef     `json:"galleries,omitempty"`
 	Performers []string         `json:"performers,omitempty"`
 	Movies     []SceneMovie     `json:"movies,omitempty"`
 	Tags       []string         `json:"tags,omitempty"`
 	Markers    []SceneMarker    `json:"markers,omitempty"`
-	File       *SceneFile       `json:"file,omitempty"`
+	Files      []string         `json:"files,omitempty"`
 	Cover      string           `json:"cover,omitempty"`
 	CreatedAt  json.JSONTime    `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime    `json:"updated_at,omitempty"`
 	StashIDs   []models.StashID `json:"stash_ids,omitempty"`
+}
+
+func (s Scene) Filename(basename string, hash string) string {
+	ret := fsutil.SanitiseBasename(s.Title)
+	if ret == "" {
+		ret = basename
+	}
+
+	if hash != "" {
+		ret += "." + hash
+	}
+
+	return ret + ".json"
 }
 
 func LoadSceneFile(filePath string) (*Scene, error) {

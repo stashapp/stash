@@ -13,7 +13,11 @@ import (
 
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/tag"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 const (
@@ -47,12 +51,43 @@ func isCDPPathWS(c GlobalConfig) bool {
 	return strings.HasPrefix(c.GetScraperCDPPath(), "ws://")
 }
 
+type PerformerFinder interface {
+	match.PerformerAutoTagQueryer
+	match.PerformerFinder
+}
+
+type StudioFinder interface {
+	match.StudioAutoTagQueryer
+	match.StudioFinder
+}
+
+type TagFinder interface {
+	match.TagAutoTagQueryer
+	tag.Queryer
+}
+
+type GalleryFinder interface {
+	Find(ctx context.Context, id int) (*models.Gallery, error)
+	models.FileLoader
+}
+
+type Repository struct {
+	SceneFinder     scene.IDFinder
+	GalleryFinder   GalleryFinder
+	TagFinder       TagFinder
+	PerformerFinder PerformerFinder
+	MovieFinder     match.MovieNamesFinder
+	StudioFinder    StudioFinder
+}
+
 // Cache stores the database of scrapers
 type Cache struct {
 	client       *http.Client
 	scrapers     map[string]scraper // Scraper ID -> Scraper
 	globalConfig GlobalConfig
-	txnManager   models.TransactionManager
+	txnManager   txn.Manager
+
+	repository Repository
 }
 
 // newClient creates a scraper-local http client we use throughout the scraper subsystem.
@@ -81,30 +116,33 @@ func newClient(gc GlobalConfig) *http.Client {
 //
 // Scraper configurations are loaded from yml files in the provided scrapers
 // directory and any subdirectories.
-func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (*Cache, error) {
+func NewCache(globalConfig GlobalConfig, txnManager txn.Manager, repo Repository) (*Cache, error) {
 	// HTTP Client setup
 	client := newClient(globalConfig)
 
-	scrapers, err := loadScrapers(globalConfig, txnManager)
+	ret := &Cache{
+		client:       client,
+		globalConfig: globalConfig,
+		txnManager:   txnManager,
+		repository:   repo,
+	}
+
+	var err error
+	ret.scrapers, err = ret.loadScrapers()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Cache{
-		client:       client,
-		globalConfig: globalConfig,
-		scrapers:     scrapers,
-		txnManager:   txnManager,
-	}, nil
+	return ret, nil
 }
 
-func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManager) (map[string]scraper, error) {
-	path := globalConfig.GetScrapersPath()
+func (c *Cache) loadScrapers() (map[string]scraper, error) {
+	path := c.globalConfig.GetScrapersPath()
 	scrapers := make(map[string]scraper)
 
 	// Add built-in scrapers
-	freeOnes := getFreeonesScraper(txnManager, globalConfig)
-	autoTag := getAutoTagScraper(txnManager, globalConfig)
+	freeOnes := getFreeonesScraper(c.globalConfig)
+	autoTag := getAutoTagScraper(c.txnManager, c.repository, c.globalConfig)
 	scrapers[freeOnes.spec().ID] = freeOnes
 	scrapers[autoTag.spec().ID] = autoTag
 
@@ -113,11 +151,11 @@ func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManage
 	scraperFiles := []string{}
 	err := fsutil.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
-			c, err := loadConfigFromYAMLFile(fp)
+			conf, err := loadConfigFromYAMLFile(fp)
 			if err != nil {
 				logger.Errorf("Error loading scraper %s: %v", fp, err)
 			} else {
-				scraper := newGroupScraper(*c, txnManager, globalConfig)
+				scraper := newGroupScraper(*conf, c.globalConfig)
 				scrapers[scraper.spec().ID] = scraper
 			}
 			scraperFiles = append(scraperFiles, fp)
@@ -137,7 +175,7 @@ func loadScrapers(globalConfig GlobalConfig, txnManager models.TransactionManage
 // In the event of an error during loading, the cache will be left empty.
 func (c *Cache) ReloadScrapers() error {
 	c.scrapers = nil
-	scrapers, err := loadScrapers(c.globalConfig, c.txnManager)
+	scrapers, err := c.loadScrapers()
 	if err != nil {
 		return err
 	}
@@ -148,8 +186,8 @@ func (c *Cache) ReloadScrapers() error {
 
 // ListScrapers lists scrapers matching one of the given types.
 // Returns a list of scrapers, sorted by their ID.
-func (c Cache) ListScrapers(tys []models.ScrapeContentType) []*models.Scraper {
-	var ret []*models.Scraper
+func (c Cache) ListScrapers(tys []ScrapeContentType) []*Scraper {
+	var ret []*Scraper
 	for _, s := range c.scrapers {
 		for _, t := range tys {
 			if s.supports(t) {
@@ -168,7 +206,7 @@ func (c Cache) ListScrapers(tys []models.ScrapeContentType) []*models.Scraper {
 }
 
 // GetScraper returns the scraper matching the provided id.
-func (c Cache) GetScraper(scraperID string) *models.Scraper {
+func (c Cache) GetScraper(scraperID string) *Scraper {
 	s := c.findScraper(scraperID)
 	if s != nil {
 		spec := s.spec()
@@ -187,7 +225,7 @@ func (c Cache) findScraper(scraperID string) scraper {
 	return nil
 }
 
-func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	// find scraper with the provided id
 	s := c.findScraper(id)
 	if s == nil {
@@ -206,7 +244,7 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty models.Scrap
 }
 
 // ScrapeFragment uses the given fragment input to scrape
-func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (models.ScrapedContent, error) {
+func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (ScrapedContent, error) {
 	s := c.findScraper(id)
 	if s == nil {
 		return nil, fmt.Errorf("%w: id %s", ErrNotFound, id)
@@ -228,7 +266,7 @@ func (c Cache) ScrapeFragment(ctx context.Context, id string, input Input) (mode
 // ScrapeURL scrapes a given url for the given content. Searches the scraper cache
 // and picks the first scraper capable of scraping the given url into the desired
 // content. Returns the scraped content or an error if the scrape fails.
-func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (c Cache) ScrapeURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
 	for _, s := range c.scrapers {
 		if s.supportsURL(url, ty) {
 			ul, ok := s.(urlScraper)
@@ -251,7 +289,7 @@ func (c Cache) ScrapeURL(ctx context.Context, url string, ty models.ScrapeConten
 	return nil, nil
 }
 
-func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty ScrapeContentType) (ScrapedContent, error) {
 	s := c.findScraper(scraperID)
 	if s == nil {
 		return nil, fmt.Errorf("%w: id %s", ErrNotFound, scraperID)
@@ -261,15 +299,15 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 		return nil, fmt.Errorf("%w: cannot use scraper %s to scrape %v content", ErrNotSupported, scraperID, ty)
 	}
 
-	var ret models.ScrapedContent
+	var ret ScrapedContent
 	switch ty {
-	case models.ScrapeContentTypeScene:
+	case ScrapeContentTypeScene:
 		ss, ok := s.(sceneScraper)
 		if !ok {
 			return nil, fmt.Errorf("%w: cannot use scraper %s as a scene scraper", ErrNotSupported, scraperID)
 		}
 
-		scene, err := getScene(ctx, id, c.txnManager)
+		scene, err := c.getScene(ctx, id)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: unable to load scene id %v: %w", scraperID, id, err)
 		}
@@ -284,13 +322,13 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 		if scraped != nil {
 			ret = scraped
 		}
-	case models.ScrapeContentTypeGallery:
+	case ScrapeContentTypeGallery:
 		gs, ok := s.(galleryScraper)
 		if !ok {
 			return nil, fmt.Errorf("%w: cannot use scraper %s as a gallery scraper", ErrNotSupported, scraperID)
 		}
 
-		gallery, err := getGallery(ctx, id, c.txnManager)
+		gallery, err := c.getGallery(ctx, id)
 		if err != nil {
 			return nil, fmt.Errorf("scraper %s: unable to load gallery id %v: %w", scraperID, id, err)
 		}
@@ -308,4 +346,33 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty models
 	}
 
 	return c.postScrape(ctx, ret)
+}
+
+func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error) {
+	var ret *models.Scene
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		var err error
+		ret, err = c.repository.SceneFinder.Find(ctx, sceneID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (c Cache) getGallery(ctx context.Context, galleryID int) (*models.Gallery, error) {
+	var ret *models.Gallery
+	if err := txn.WithTxn(ctx, c.txnManager, func(ctx context.Context) error {
+		var err error
+		ret, err = c.repository.GalleryFinder.Find(ctx, galleryID)
+
+		if ret != nil {
+			err = ret.LoadFiles(ctx, c.repository.GalleryFinder)
+		}
+
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
