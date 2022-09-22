@@ -29,6 +29,7 @@ import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
 import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
+import { getPlatformURL } from "./core/createClient";
 
 const Performers = lazy(() => import("./components/Performers/Performers"));
 const FrontPage = lazy(() => import("./components/FrontPage/FrontPage"));
@@ -87,7 +88,7 @@ export const App: React.FC = () => {
       const defaultMessages = (await locales[defaultMessageLanguage]()).default;
       const mergedMessages = cloneDeep(Object.assign({}, defaultMessages));
       const chosenMessages = (await locales[messageLanguage]()).default;
-      const res = await fetch("./customLocales");
+      const res = await fetch(getPlatformURL() + "customLocales");
       let customMessages = {};
       try {
         customMessages = res.ok ? await res.json() : {};
