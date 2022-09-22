@@ -179,13 +179,13 @@ func Start() error {
 
 		http.ServeFile(w, r, fn)
 	})
-	r.HandleFunc("/customLocales", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/customlocales", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if !c.GetCustomLocalesEnabled() {
 			return
 		}
 
-		// search for custom.css in current directory, then $HOME/.stash
+		// search for custom-locales.json in current directory, then $HOME/.stash
 		fn := c.GetCustomLocalesPath()
 		exists, _ := fsutil.FileExists(fn)
 		if !exists {
