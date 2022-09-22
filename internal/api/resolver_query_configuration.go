@@ -141,6 +141,8 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	showStudioAsText := config.GetShowStudioAsText()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
+	customLocales := config.GetCustomLocales()
+	customLocalesEnabled := config.GetCustomLocalesEnabled()
 	language := config.GetLanguage()
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
@@ -164,6 +166,8 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		ContinuePlaylistDefault:      &continuePlaylistDefault,
 		CSS:                          &css,
 		CSSEnabled:                   &cssEnabled,
+		CustomLocales:                &customLocales,
+		CustomLocalesEnabled:         &customLocalesEnabled,
 		Language:                     &language,
 
 		ImageLightbox: &imageLightboxOptions,

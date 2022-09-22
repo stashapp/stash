@@ -62,6 +62,8 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   showStudioAsText
   css
   cssEnabled
+  customLocales
+  customLocalesEnabled
   language
   imageLightbox {
     slideshowDelay

@@ -408,6 +408,36 @@ export const SettingsInterfacePanel: React.FC = () => {
           }}
         />
       </SettingSection>
+      <SettingSection headingID="config.ui.custom_locales.heading">
+        <BooleanSetting
+          id="custom-locales-enabled"
+          headingID="config.ui.custom_locales.option_label"
+          checked={iface.customLocalesEnabled ?? undefined}
+          onChange={(v) => saveInterface({ customLocalesEnabled: v })}
+        />
+
+        <ModalSetting<string>
+          id="custom-locales"
+          headingID="config.ui.custom_locales.heading"
+          subHeadingID="config.ui.custom_locales.description"
+          value={iface.customLocales ?? undefined}
+          onChange={(v) => saveInterface({ customLocales: v })}
+          renderField={(value, setValue) => (
+            <Form.Control
+              as="textarea"
+              value={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setValue(e.currentTarget.value)
+              }
+              rows={16}
+              className="text-input code"
+            />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
+        />
+      </SettingSection>
 
       <SettingSection headingID="config.ui.interactive_options">
         <StringSetting

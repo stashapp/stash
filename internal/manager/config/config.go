@@ -138,6 +138,7 @@ const (
 	ContinuePlaylistDefault             = "continue_playlist_default"
 	ShowStudioAsText                    = "show_studio_as_text"
 	CSSEnabled                          = "cssEnabled"
+	CustomLocalesEnabled                = "customLocalesEnabled"
 
 	ShowScrubber        = "show_scrubber"
 	showScrubberDefault = true
@@ -1054,6 +1055,49 @@ func (i *Instance) SetCSS(css string) {
 
 func (i *Instance) GetCSSEnabled() bool {
 	return i.getBool(CSSEnabled)
+}
+
+func (i *Instance) GetCustomLocalesPath() string {
+	// use custom-locales.json in the same directory as the config file
+	configFileUsed := i.GetConfigFile()
+	configDir := filepath.Dir(configFileUsed)
+
+	fn := filepath.Join(configDir, "custom-locales.json")
+
+	return fn
+}
+
+func (i *Instance) GetCustomLocales() string {
+	fn := i.GetCustomLocalesPath()
+
+	exists, _ := fsutil.FileExists(fn)
+	if !exists {
+		return ""
+	}
+
+	buf, err := os.ReadFile(fn)
+
+	if err != nil {
+		return ""
+	}
+
+	return string(buf)
+}
+
+func (i *Instance) SetCustomLocales(customLocales string) {
+	fn := i.GetCustomLocalesPath()
+	i.Lock()
+	defer i.Unlock()
+
+	buf := []byte(customLocales)
+
+	if err := os.WriteFile(fn, buf, 0777); err != nil {
+		logger.Warnf("error while writing %v bytes to %v: %v", len(buf), fn, err)
+	}
+}
+
+func (i *Instance) GetCustomLocalesEnabled() bool {
+	return i.getBool(CustomLocalesEnabled)
 }
 
 func (i *Instance) GetHandyKey() string {

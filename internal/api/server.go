@@ -179,6 +179,21 @@ func Start() error {
 
 		http.ServeFile(w, r, fn)
 	})
+	r.HandleFunc("/customlocales", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if !c.GetCustomLocalesEnabled() {
+			return
+		}
+
+		// search for custom-locales.json in current directory, then $HOME/.stash
+		fn := c.GetCustomLocalesPath()
+		exists, _ := fsutil.FileExists(fn)
+		if !exists {
+			return
+		}
+
+		http.ServeFile(w, r, fn)
+	})
 
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
