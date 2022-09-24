@@ -427,6 +427,11 @@
         "heading": "CSS Personalizzato",
         "option_label": "CSS Personalizzato Attivo"
       },
+      "custom_locales": {
+        "description": "Sovrascrive stringhe individuali locali. Vedere https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json per la lista principale. La pagina dev'essere ricaricata per far sì che i cambiamenti abbiano effetto.",
+        "heading": "Localizzazione personalizzata",
+        "option_label": "Localizzazione personalizzata attiva"
+      },
       "delete_options": {
         "description": "Opzioni predefinite quando si cancellano immagini, gallerie e scene.",
         "heading": "Opzioni di Cancellazione",
