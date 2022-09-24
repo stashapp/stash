@@ -105,8 +105,8 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
-	r.setTime("created_at", o.CreatedAt)
-	r.setTime("updated_at", o.UpdatedAt)
+	r.setSQLiteTimestamp("created_at", o.CreatedAt)
+	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
 }
 
 type GalleryStore struct {
@@ -1135,7 +1135,9 @@ func (qb *GalleryStore) tagsRepository() *joinRepository {
 			tableName: galleriesTagsTable,
 			idColumn:  galleryIDColumn,
 		},
-		fkColumn: "tag_id",
+		fkColumn:     "tag_id",
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 

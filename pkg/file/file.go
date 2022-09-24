@@ -50,7 +50,7 @@ func (e *DirEntry) info(fs FS, path string) (fs.FileInfo, error) {
 // File represents a file in the file system.
 type File interface {
 	Base() *BaseFile
-	SetFingerprints(fp []Fingerprint)
+	SetFingerprints(fp Fingerprints)
 	Open(fs FS) (io.ReadCloser, error)
 }
 
@@ -76,7 +76,7 @@ type BaseFile struct {
 
 // SetFingerprints sets the fingerprints of the file.
 // If a fingerprint of the same type already exists, it is overwritten.
-func (f *BaseFile) SetFingerprints(fp []Fingerprint) {
+func (f *BaseFile) SetFingerprints(fp Fingerprints) {
 	for _, v := range fp {
 		f.SetFingerprint(v)
 	}

@@ -102,9 +102,9 @@ func Test_FolderStore_Create(t *testing.T) {
 func Test_FolderStore_Update(t *testing.T) {
 	var (
 		path        = "path"
-		fileModTime = time.Date(2000, 1, 2, 3, 4, 5, 6, time.UTC)
-		createdAt   = time.Date(2001, 1, 2, 3, 4, 5, 6, time.UTC)
-		updatedAt   = time.Date(2002, 1, 2, 3, 4, 5, 6, time.UTC)
+		fileModTime = time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)
+		createdAt   = time.Date(2001, 1, 2, 3, 4, 5, 0, time.UTC)
+		updatedAt   = time.Date(2002, 1, 2, 3, 4, 5, 0, time.UTC)
 	)
 
 	tests := []struct {

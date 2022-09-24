@@ -110,7 +110,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
@@ -152,7 +152,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
@@ -330,7 +330,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
@@ -588,7 +588,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 				Movies: models.NewRelatedMovies([]models.MoviesScenes{
 					{
@@ -749,9 +749,12 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				TagIDs: models.NewRelatedIDs(append(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
-					tagIDs[tagIdx1WithDupName],
-					tagIDs[tagIdx1WithGallery],
+				TagIDs: models.NewRelatedIDs(append(
+					[]int{
+						tagIDs[tagIdx1WithGallery],
+						tagIDs[tagIdx1WithDupName],
+					},
+					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
 				)),
 			},
 			false,
@@ -854,8 +857,9 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Scene{
-				TagIDs: models.NewRelatedIDs(append(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags]),
-					tagIDs[tagIdx1WithGallery],
+				TagIDs: models.NewRelatedIDs(append(
+					[]int{tagIDs[tagIdx1WithGallery]},
+					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
 				)),
 			},
 			false,

@@ -303,10 +303,24 @@ type joiner interface {
 type joinRepository struct {
 	repository
 	fkColumn string
+
+	// fields for ordering
+	foreignTable string
+	orderBy      string
 }
 
 func (r *joinRepository) getIDs(ctx context.Context, id int) ([]int, error) {
-	query := fmt.Sprintf(`SELECT %s as id from %s WHERE %s = ?`, r.fkColumn, r.tableName, r.idColumn)
+	var joinStr string
+	if r.foreignTable != "" {
+		joinStr = fmt.Sprintf(" INNER JOIN %s ON %[1]s.id = %s.%s", r.foreignTable, r.tableName, r.fkColumn)
+	}
+
+	query := fmt.Sprintf(`SELECT %[2]s.%[1]s as id from %s%s WHERE %s = ?`, r.fkColumn, r.tableName, joinStr, r.idColumn)
+
+	if r.orderBy != "" {
+		query += " ORDER BY " + r.orderBy
+	}
+
 	return r.runIdsQuery(ctx, query, []interface{}{id})
 }
 

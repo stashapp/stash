@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -30,14 +29,14 @@ const (
 )
 
 type basicFileRow struct {
-	ID             file.ID       `db:"id" goqu:"skipinsert"`
-	Basename       string        `db:"basename"`
-	ZipFileID      null.Int      `db:"zip_file_id"`
-	ParentFolderID file.FolderID `db:"parent_folder_id"`
-	Size           int64         `db:"size"`
-	ModTime        time.Time     `db:"mod_time"`
-	CreatedAt      time.Time     `db:"created_at"`
-	UpdatedAt      time.Time     `db:"updated_at"`
+	ID             file.ID                `db:"id" goqu:"skipinsert"`
+	Basename       string                 `db:"basename"`
+	ZipFileID      null.Int               `db:"zip_file_id"`
+	ParentFolderID file.FolderID          `db:"parent_folder_id"`
+	Size           int64                  `db:"size"`
+	ModTime        models.SQLiteTimestamp `db:"mod_time"`
+	CreatedAt      models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt      models.SQLiteTimestamp `db:"updated_at"`
 }
 
 func (r *basicFileRow) fromBasicFile(o file.BaseFile) {
@@ -46,9 +45,9 @@ func (r *basicFileRow) fromBasicFile(o file.BaseFile) {
 	r.ZipFileID = nullIntFromFileIDPtr(o.ZipFileID)
 	r.ParentFolderID = o.ParentFolderID
 	r.Size = o.Size
-	r.ModTime = o.ModTime
-	r.CreatedAt = o.CreatedAt
-	r.UpdatedAt = o.UpdatedAt
+	r.ModTime = models.SQLiteTimestamp{Timestamp: o.ModTime}
+	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 }
 
 type videoFileRow struct {
@@ -167,14 +166,14 @@ func (f *imageFileQueryRow) resolve() *file.ImageFile {
 }
 
 type fileQueryRow struct {
-	FileID         null.Int    `db:"file_id"`
-	Basename       null.String `db:"basename"`
-	ZipFileID      null.Int    `db:"zip_file_id"`
-	ParentFolderID null.Int    `db:"parent_folder_id"`
-	Size           null.Int    `db:"size"`
-	ModTime        null.Time   `db:"mod_time"`
-	CreatedAt      null.Time   `db:"file_created_at"`
-	UpdatedAt      null.Time   `db:"file_updated_at"`
+	FileID         null.Int                   `db:"file_id"`
+	Basename       null.String                `db:"basename"`
+	ZipFileID      null.Int                   `db:"zip_file_id"`
+	ParentFolderID null.Int                   `db:"parent_folder_id"`
+	Size           null.Int                   `db:"size"`
+	ModTime        models.NullSQLiteTimestamp `db:"mod_time"`
+	CreatedAt      models.NullSQLiteTimestamp `db:"file_created_at"`
+	UpdatedAt      models.NullSQLiteTimestamp `db:"file_updated_at"`
 
 	ZipBasename   null.String `db:"zip_basename"`
 	ZipFolderPath null.String `db:"zip_folder_path"`
@@ -190,14 +189,14 @@ func (r *fileQueryRow) resolve() file.File {
 		ID: file.ID(r.FileID.Int64),
 		DirEntry: file.DirEntry{
 			ZipFileID: nullIntFileIDPtr(r.ZipFileID),
-			ModTime:   r.ModTime.Time,
+			ModTime:   r.ModTime.Timestamp,
 		},
 		Path:           filepath.Join(r.FolderPath.String, r.Basename.String),
 		ParentFolderID: file.FolderID(r.ParentFolderID.Int64),
 		Basename:       r.Basename.String,
 		Size:           r.Size.Int64,
-		CreatedAt:      r.CreatedAt.Time,
-		UpdatedAt:      r.UpdatedAt.Time,
+		CreatedAt:      r.CreatedAt.Timestamp,
+		UpdatedAt:      r.UpdatedAt.Timestamp,
 	}
 
 	if basic.ZipFileID != nil && r.ZipFolderPath.Valid && r.ZipBasename.Valid {

@@ -89,8 +89,8 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
-	r.setTime("created_at", i.CreatedAt)
-	r.setTime("updated_at", i.UpdatedAt)
+	r.setSQLiteTimestamp("created_at", i.CreatedAt)
+	r.setSQLiteTimestamp("updated_at", i.UpdatedAt)
 }
 
 type ImageStore struct {
@@ -1076,7 +1076,9 @@ func (qb *ImageStore) tagsRepository() *joinRepository {
 			tableName: imagesTagsTable,
 			idColumn:  imageIDColumn,
 		},
-		fkColumn: tagIDColumn,
+		fkColumn:     tagIDColumn,
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 
