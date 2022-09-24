@@ -427,6 +427,11 @@
         "heading": "Własny CSS",
         "option_label": "Włączony własny CSS"
       },
+      "custom_locales": {
+        "description": "Nadpisywanie poszczególnych ciągów lokalnie. Zobacz https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json, aby uzyskać główną listę. Aby zmiany weszły w życie, strona musi zostać ponownie załadowana.",
+        "heading": "Niestandardowa lokalizacja",
+        "option_label": "Niestandardowa lokalizacja włączona"
+      },
       "delete_options": {
         "description": "Ustawienia domyślne przy usuwaniu obrazów, galerii i scen.",
         "heading": "Opcje usuwania",
