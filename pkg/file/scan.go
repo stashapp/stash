@@ -859,7 +859,7 @@ func (s *scanJob) setMissingFingerprints(ctx context.Context, f scanFile, existi
 		return nil, err
 	}
 
-	if !fp.Equals(existing.Base().Fingerprints) {
+	if fp.ContentsChanged(existing.Base().Fingerprints) {
 		existing.SetFingerprints(fp)
 
 		if err := s.withTxn(ctx, func(ctx context.Context) error {
