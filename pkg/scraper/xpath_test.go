@@ -834,6 +834,10 @@ func (mockGlobalConfig) GetPythonPath() string {
 	return ""
 }
 
+func (mockGlobalConfig) GetConcurrentGetImages() int {
+	return 4
+}
+
 func TestSubScrape(t *testing.T) {
 	retHTML := `
 	<div>
