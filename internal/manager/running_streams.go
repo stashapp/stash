@@ -1,11 +1,14 @@
 package manager
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -74,29 +77,42 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 }
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
+	const defaultSceneImage = "scene/scene.png"
+
 	filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 
 	// fall back to the scene image blob if the file isn't present
 	screenshotExists, _ := fsutil.FileExists(filepath)
 	if screenshotExists {
 		http.ServeFile(w, r, filepath)
-	} else {
-		var cover []byte
-		readTxnErr := txn.WithTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
-			cover, _ = s.SceneCoverGetter.GetCover(ctx, scene.ID)
-			return nil
-		})
-		if errors.Is(readTxnErr, context.Canceled) {
-			return
-		}
-		if readTxnErr != nil {
-			logger.Warnf("read transaction error on fetch screenshot: %v", readTxnErr)
-			http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
-			return
-		}
+		return
+	}
 
-		if err := utils.ServeImage(cover, w, r); err != nil {
-			logger.Warnf("error serving screenshot image: %v", err)
-		}
+	var cover []byte
+	readTxnErr := txn.WithTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
+		cover, _ = s.SceneCoverGetter.GetCover(ctx, scene.ID)
+		return nil
+	})
+	if errors.Is(readTxnErr, context.Canceled) {
+		return
+	}
+	if readTxnErr != nil {
+		logger.Warnf("read transaction error on fetch screenshot: %v", readTxnErr)
+		http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if cover == nil {
+		// fallback to default cover if none found
+		// should always be there
+		f, _ := static.Scene.Open(defaultSceneImage)
+		defer f.Close()
+		stat, _ := f.Stat()
+		data, _ := ioutil.ReadAll(f)
+		http.ServeContent(w, r, "", stat.ModTime(), bytes.NewReader(data))
+	}
+
+	if err := utils.ServeImage(cover, w, r); err != nil {
+		logger.Warnf("error serving screenshot image: %v", err)
 	}
 }
