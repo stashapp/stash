@@ -48,6 +48,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(VideoFileNamingAlgorithm, i.GetVideoFileNamingAlgorithm())
 				i.Set(ScrapersPath, i.GetScrapersPath())
 				i.Set(ScraperUserAgent, i.GetScraperUserAgent())
+				i.Set(ConcurrentGetImages, i.GetConcurrentGetImages())
 				i.Set(ScraperCDPPath, i.GetScraperCDPPath())
 				i.Set(ScraperCertCheck, i.GetScraperCertCheck())
 				i.Set(ScraperExcludeTagPatterns, i.GetScraperExcludeTagPatterns())

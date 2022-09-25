@@ -838,6 +838,10 @@ func (mockGlobalConfig) GetProxy() string {
 	return ""
 }
 
+func (mockGlobalConfig) GetConcurrentGetImages() int {
+	return 4
+}
+
 func TestSubScrape(t *testing.T) {
 	retHTML := `
 	<div>

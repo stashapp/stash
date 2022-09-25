@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	pkg_config "github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/match"
@@ -44,6 +43,7 @@ type GlobalConfig interface {
 	GetScraperCertCheck() bool
 	GetPythonPath() string
 	GetProxy() string
+	GetConcurrentGetImages() int
 }
 
 func isCDPPathHTTP(c GlobalConfig) bool {
@@ -262,8 +262,8 @@ func (c Cache) ScrapeName(ctx context.Context, id, query string, ty ScrapeConten
 
 	// post-scraping items concurrently
 	// post scraping may download images then it would be slow if done single threaded on a big list.
-	stashConfig := pkg_config.GetInstance()
-	concurrentGetImages := stashConfig.GetConcurrentGetImagesOrDefault()
+
+	concurrentGetImages := c.globalConfig.GetConcurrentGetImages()
 	threads := concurrentGetImages
 	// Check if the Threads is more than total results then set threads to the result's count.
 	if threads > len(content) {
