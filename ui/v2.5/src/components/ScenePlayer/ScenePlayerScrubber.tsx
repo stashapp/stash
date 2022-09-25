@@ -13,6 +13,7 @@ import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 
 interface IScenePlayerScrubberProps {
+  file: GQL.VideoFileDataFragment;
   scene: GQL.SceneDataFragment;
   position: number;
   onSeek: (seconds: number) => void;
@@ -133,14 +134,14 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
     if (!scrubberSliderEl.current) {
       return;
     }
-    const duration = Number(props.scene.file.duration);
+    const duration = Number(props.file.duration);
     const percentage = props.position / duration;
     const position =
       (scrubberSliderEl.current.scrollWidth * percentage -
         scrubberSliderEl.current.clientWidth / 2) *
       -1;
     setPosition(position, false);
-  }, [props.position, props.scene.file.duration, setPosition]);
+  }, [props.position, props.file.duration, setPosition]);
 
   useEffect(() => {
     window.addEventListener("mouseup", onMouseUp, false);
@@ -193,7 +194,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
         const offset =
           target.offsetLeft + target.clientWidth * spritePercentage;
         const percentage = offset / scrubberSliderEl.current.scrollWidth;
-        seekSeconds = percentage * (props.scene.file.duration || 0);
+        seekSeconds = percentage * (props.file.duration || 0);
       }
 
       const markerIdString = target.getAttribute("data-marker-id");
@@ -287,7 +288,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
       }
 
       const marker = props.scene.scene_markers[i];
-      const duration = Number(props.scene.file.duration);
+      const duration = Number(props.file.duration);
       const percentage = marker.seconds / duration;
 
       const left =

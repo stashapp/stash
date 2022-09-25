@@ -19,16 +19,14 @@ type jsonScraper struct {
 	config       config
 	globalConfig GlobalConfig
 	client       *http.Client
-	txnManager   models.TransactionManager
 }
 
-func newJsonScraper(scraper scraperTypeConfig, client *http.Client, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *jsonScraper {
+func newJsonScraper(scraper scraperTypeConfig, client *http.Client, config config, globalConfig GlobalConfig) *jsonScraper {
 	return &jsonScraper{
 		scraper:      scraper,
 		config:       config,
 		client:       client,
 		globalConfig: globalConfig,
-		txnManager:   txnManager,
 	}
 }
 
@@ -75,7 +73,7 @@ func (s *jsonScraper) loadURL(ctx context.Context, url string) (string, error) {
 	return docStr, err
 }
 
-func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.ScrapeContentType) (models.ScrapedContent, error) {
+func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty ScrapeContentType) (ScrapedContent, error) {
 	u := replaceURL(url, s.scraper) // allow a URL Replace for url-queries
 	doc, scraper, err := s.scrapeURL(ctx, u)
 	if err != nil {
@@ -84,20 +82,20 @@ func (s *jsonScraper) scrapeByURL(ctx context.Context, url string, ty models.Scr
 
 	q := s.getJsonQuery(doc)
 	switch ty {
-	case models.ScrapeContentTypePerformer:
+	case ScrapeContentTypePerformer:
 		return scraper.scrapePerformer(ctx, q)
-	case models.ScrapeContentTypeScene:
+	case ScrapeContentTypeScene:
 		return scraper.scrapeScene(ctx, q)
-	case models.ScrapeContentTypeGallery:
+	case ScrapeContentTypeGallery:
 		return scraper.scrapeGallery(ctx, q)
-	case models.ScrapeContentTypeMovie:
+	case ScrapeContentTypeMovie:
 		return scraper.scrapeMovie(ctx, q)
 	}
 
 	return nil, ErrNotSupported
 }
 
-func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.ScrapeContentType) ([]models.ScrapedContent, error) {
+func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty ScrapeContentType) ([]ScrapedContent, error) {
 	scraper := s.getJsonScraper()
 
 	if scraper == nil {
@@ -121,9 +119,9 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.S
 	q := s.getJsonQuery(doc)
 	q.setType(SearchQuery)
 
-	var content []models.ScrapedContent
+	var content []ScrapedContent
 	switch ty {
-	case models.ScrapeContentTypePerformer:
+	case ScrapeContentTypePerformer:
 		performers, err := scraper.scrapePerformers(ctx, q)
 		if err != nil {
 			return nil, err
@@ -134,7 +132,7 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.S
 		}
 
 		return content, nil
-	case models.ScrapeContentTypeScene:
+	case ScrapeContentTypeScene:
 		scenes, err := scraper.scrapeScenes(ctx, q)
 		if err != nil {
 			return nil, err
@@ -150,7 +148,7 @@ func (s *jsonScraper) scrapeByName(ctx context.Context, name string, ty models.S
 	return nil, ErrNotSupported
 }
 
-func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*models.ScrapedScene, error) {
+func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scene) (*ScrapedScene, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromScene(scene)
 	if s.scraper.QueryURLReplacements != nil {
@@ -174,7 +172,7 @@ func (s *jsonScraper) scrapeSceneByScene(ctx context.Context, scene *models.Scen
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (models.ScrapedContent, error) {
+func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (ScrapedContent, error) {
 	switch {
 	case input.Gallery != nil:
 		return nil, fmt.Errorf("%w: cannot use a json scraper as a gallery fragment scraper", ErrNotSupported)
@@ -209,7 +207,7 @@ func (s *jsonScraper) scrapeByFragment(ctx context.Context, input Input) (models
 	return scraper.scrapeScene(ctx, q)
 }
 
-func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*models.ScrapedGallery, error) {
+func (s *jsonScraper) scrapeGalleryByGallery(ctx context.Context, gallery *models.Gallery) (*ScrapedGallery, error) {
 	// construct the URL
 	queryURL := queryURLParametersFromGallery(gallery)
 	if s.scraper.QueryURLReplacements != nil {

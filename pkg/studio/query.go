@@ -1,8 +1,20 @@
 package studio
 
-import "github.com/stashapp/stash/pkg/models"
+import (
+	"context"
 
-func ByName(qb models.StudioReader, name string) (*models.Studio, error) {
+	"github.com/stashapp/stash/pkg/models"
+)
+
+type Finder interface {
+	Find(ctx context.Context, id int) (*models.Studio, error)
+}
+
+type Queryer interface {
+	Query(ctx context.Context, studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error)
+}
+
+func ByName(ctx context.Context, qb Queryer, name string) (*models.Studio, error) {
 	f := &models.StudioFilterType{
 		Name: &models.StringCriterionInput{
 			Value:    name,
@@ -11,7 +23,7 @@ func ByName(qb models.StudioReader, name string) (*models.Studio, error) {
 	}
 
 	pp := 1
-	ret, count, err := qb.Query(f, &models.FindFilterType{
+	ret, count, err := qb.Query(ctx, f, &models.FindFilterType{
 		PerPage: &pp,
 	})
 
@@ -26,7 +38,7 @@ func ByName(qb models.StudioReader, name string) (*models.Studio, error) {
 	return nil, nil
 }
 
-func ByAlias(qb models.StudioReader, alias string) (*models.Studio, error) {
+func ByAlias(ctx context.Context, qb Queryer, alias string) (*models.Studio, error) {
 	f := &models.StudioFilterType{
 		Aliases: &models.StringCriterionInput{
 			Value:    alias,
@@ -35,7 +47,7 @@ func ByAlias(qb models.StudioReader, alias string) (*models.Studio, error) {
 	}
 
 	pp := 1
-	ret, count, err := qb.Query(f, &models.FindFilterType{
+	ret, count, err := qb.Query(ctx, f, &models.FindFilterType{
 		PerPage: &pp,
 	})
 

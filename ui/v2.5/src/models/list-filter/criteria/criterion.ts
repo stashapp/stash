@@ -11,7 +11,6 @@ import {
 import DurationUtils from "src/utils/duration";
 import {
   CriterionType,
-  encodeILabeledId,
   IHierarchicalLabelValue,
   ILabeledId,
   ILabeledValue,
@@ -53,7 +52,14 @@ export abstract class Criterion<V extends CriterionValue> {
 
   public criterionOption: CriterionOption;
   public modifier: CriterionModifier;
-  public value: V;
+
+  protected _value!: V;
+  public get value(): V {
+    return this._value;
+  }
+  public set value(newValue: V) {
+    this._value = newValue;
+  }
 
   public abstract getLabelValue(): string;
 
@@ -96,24 +102,23 @@ export abstract class Criterion<V extends CriterionValue> {
     return `${this.criterionOption.parameterName}-${this.modifier.toString()}`; // TODO add values?
   }
 
-  public encodeValue(): V {
-    return this.value;
-  }
-
-  public decodeValue(value: V) {
-    this.value = value;
-  }
-
   public toJSON() {
-    const encodedCriterion = {
-      type: this.criterionOption.type,
-      // #394 - the presence of a # symbol results in the query URL being
-      // malformed. We could set encode: true in the queryString.stringify
-      // call below, but this results in a URL that gets pretty long and ugly.
-      // Instead, we'll encode the criteria values.
-      value: this.encodeValue(),
-      modifier: this.modifier,
-    };
+    let encodedCriterion;
+    if (
+      this.modifier === CriterionModifier.IsNull ||
+      this.modifier === CriterionModifier.NotNull
+    ) {
+      encodedCriterion = {
+        type: this.criterionOption.type,
+        modifier: this.modifier,
+      };
+    } else {
+      encodedCriterion = {
+        type: this.criterionOption.type,
+        value: this.value,
+        modifier: this.modifier,
+      };
+    }
     return JSON.stringify(encodedCriterion);
   }
 
@@ -206,31 +211,12 @@ export function createStringCriterionOption(
 }
 
 export class StringCriterion extends Criterion<string> {
-  public getLabelValue() {
-    let ret = this.value;
-    ret = StringCriterion.unreplaceSpecialCharacter(ret, "&");
-    ret = StringCriterion.unreplaceSpecialCharacter(ret, "+");
-    return ret;
-  }
-
-  public encodeValue() {
-    // replace certain characters
-    let ret = this.value;
-    ret = StringCriterion.replaceSpecialCharacter(ret, "&");
-    ret = StringCriterion.replaceSpecialCharacter(ret, "+");
-    return ret;
-  }
-
-  private static replaceSpecialCharacter(str: string, c: string) {
-    return str.replaceAll(c, encodeURIComponent(c));
-  }
-
-  private static unreplaceSpecialCharacter(str: string, c: string) {
-    return str.replaceAll(encodeURIComponent(c), c);
-  }
-
   constructor(type: CriterionOption) {
     super(type, "");
+  }
+
+  public getLabelValue() {
+    return this.value;
   }
 }
 
@@ -336,37 +322,39 @@ export function createNumberCriterionOption(value: CriterionType) {
 }
 
 export class NumberCriterion extends Criterion<INumberValue> {
-  private getValue() {
-    // backwards compatibility - if this.value is a number, use that
-    if (typeof this.value !== "object") {
-      return this.value as number;
-    }
-
-    return this.value.value;
+  public get value(): INumberValue {
+    return this._value;
   }
-
-  public encodeValue() {
-    return {
-      value: this.getValue(),
-      value2: this.value.value2,
-    };
+  public set value(newValue: number | INumberValue) {
+    // backwards compatibility - if this.value is a number, use that
+    if (typeof newValue !== "object") {
+      this._value = {
+        value: newValue,
+        value2: undefined,
+      };
+    } else {
+      this._value = newValue;
+    }
   }
 
   protected toCriterionInput(): IntCriterionInput {
-    // backwards compatibility - if this.value is a number, use that
     return {
       modifier: this.modifier,
-      value: this.getValue(),
+      value: this.value.value,
       value2: this.value.value2,
     };
   }
 
   public getLabelValue() {
-    const value = this.getValue();
-    return this.modifier === CriterionModifier.Between ||
+    const { value, value2 } = this.value;
+    if (
+      this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
-      ? `${value}, ${this.value.value2 ?? 0}`
-      : `${value}`;
+    ) {
+      return `${value}, ${value2 ?? 0}`;
+    } else {
+      return `${value}`;
+    }
   }
 
   constructor(type: CriterionOption) {
@@ -416,36 +404,12 @@ export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
     };
   }
 
-  public encodeValue() {
-    return this.value.map((o) => {
-      return encodeILabeledId(o);
-    });
-  }
-
   constructor(type: CriterionOption) {
     super(type, []);
   }
 }
 
 export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabelValue> {
-  public encodeValue() {
-    return {
-      items: this.value.items.map((o) => {
-        return encodeILabeledId(o);
-      }),
-      depth: this.value.depth,
-    };
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public decodeValue(value: any) {
-    if (Array.isArray(value)) {
-      this.value.items = value;
-    } else {
-      this.value = value;
-    }
-  }
-
   protected toCriterionInput(): HierarchicalMultiCriterionInput {
     return {
       value: (this.value.items ?? []).map((v) => v.id),
@@ -455,9 +419,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
   }
 
   public getLabelValue(): string {
-    const labels = decodeURI(
-      (this.value.items ?? []).map((v) => v.label).join(", ")
-    );
+    const labels = (this.value.items ?? []).map((v) => v.label).join(", ");
 
     if (this.value.depth === 0) {
       return labels;
@@ -496,20 +458,16 @@ export class MandatoryNumberCriterionOption extends CriterionOption {
   }
 }
 
-export function createMandatoryNumberCriterionOption(value: CriterionType) {
-  return new MandatoryNumberCriterionOption(value, value, value);
+export function createMandatoryNumberCriterionOption(
+  value: CriterionType,
+  messageID?: string
+) {
+  return new MandatoryNumberCriterionOption(messageID ?? value, value, value);
 }
 
 export class DurationCriterion extends Criterion<INumberValue> {
   constructor(type: CriterionOption) {
     super(type, { value: 0, value2: undefined });
-  }
-
-  public encodeValue() {
-    return {
-      value: this.value.value,
-      value2: this.value.value2,
-    };
   }
 
   protected toCriterionInput(): IntCriterionInput {

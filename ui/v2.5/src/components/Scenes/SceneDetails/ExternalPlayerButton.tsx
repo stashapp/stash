@@ -3,8 +3,8 @@ import React from "react";
 import { Button } from "react-bootstrap";
 import { useIntl } from "react-intl";
 import Icon from "src/components/Shared/Icon";
+import { objectTitle } from "src/core/files";
 import { SceneDataFragment } from "src/core/generated-graphql";
-import TextUtils from "src/utils/text";
 
 export interface IExternalPlayerButtonProps {
   scene: SceneDataFragment;
@@ -17,20 +17,20 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({
   const isAppleDevice = /(ipod|iphone|ipad)/i.test(navigator.userAgent);
   const intl = useIntl();
 
-  const { paths, path, title } = scene;
+  const { paths } = scene;
 
   if (!paths || !paths.stream || (!isAndroid && !isAppleDevice))
     return <span />;
 
   const { stream } = paths;
-  const sceneTitle = title ?? TextUtils.fileNameFromPath(path);
+  const title = objectTitle(scene);
 
   let url;
   const streamURL = new URL(stream);
   if (isAndroid) {
     const scheme = streamURL.protocol.slice(0, -1);
     streamURL.hash = `Intent;action=android.intent.action.VIEW;scheme=${scheme};type=video/mp4;S.title=${encodeURI(
-      sceneTitle
+      title
     )};end`;
     streamURL.protocol = "intent";
     url = streamURL.toString();

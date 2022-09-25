@@ -31,10 +31,11 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { useFormik } from "formik";
-import { FormUtils, TextUtils } from "src/utils";
+import { FormUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { galleryTitle } from "src/core/galleries";
 
 interface IProps {
   isVisible: boolean;
@@ -43,7 +44,7 @@ interface IProps {
 
 interface INewProps {
   isNew: true;
-  gallery: undefined;
+  gallery?: Partial<GQL.GalleryDataFragment>;
 }
 
 interface IExistingProps {
@@ -60,7 +61,7 @@ export const GalleryEditPanel: React.FC<
   const [scenes, setScenes] = useState<{ id: string; title: string }[]>(
     (gallery?.scenes ?? []).map((s) => ({
       id: s.id,
-      title: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
+      title: galleryTitle(s),
     }))
   );
 
@@ -239,7 +240,7 @@ export const GalleryEditPanel: React.FC<
   }
 
   async function onScrapeClicked(scraper: GQL.Scraper) {
-    if (!gallery) return;
+    if (!gallery || !gallery.id) return;
 
     setIsLoading(true);
     try {

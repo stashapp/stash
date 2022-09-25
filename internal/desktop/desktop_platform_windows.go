@@ -28,10 +28,10 @@ func isService() bool {
 }
 
 // Detect if windows golang executable file is running via double click or from cmd/shell terminator
-//  https://stackoverflow.com/questions/8610489/distinguish-if-program-runs-by-clicking-on-the-icon-typing-its-name-in-the-cons?rq=1
-//  https://github.com/shirou/w32/blob/master/kernel32.go
-//  https://github.com/kbinani/win/blob/master/kernel32.go#L3268
-//  win.GetConsoleProcessList(new(uint32), win.DWORD(2))
+// https://stackoverflow.com/questions/8610489/distinguish-if-program-runs-by-clicking-on-the-icon-typing-its-name-in-the-cons?rq=1
+// https://github.com/shirou/w32/blob/master/kernel32.go
+// https://github.com/kbinani/win/blob/master/kernel32.go#L3268
+// win.GetConsoleProcessList(new(uint32), win.DWORD(2))
 // from https://gist.github.com/yougg/213250cc04a52e2b853590b06f49d865
 func isDoubleClickLaunched() bool {
 	lp := kernel32.NewProc("GetConsoleProcessList")

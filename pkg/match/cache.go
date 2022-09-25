@@ -1,6 +1,10 @@
 package match
 
-import "github.com/stashapp/stash/pkg/models"
+import (
+	"context"
+
+	"github.com/stashapp/stash/pkg/models"
+)
 
 const singleFirstCharacterRegex = `^[\p{L}][.\-_ ]`
 
@@ -16,14 +20,14 @@ type Cache struct {
 // against. This means that performers with single-letter words in their names could potentially
 // be missed.
 // This query is expensive, so it's queried once and cached, if the cache if provided.
-func getSingleLetterPerformers(c *Cache, reader models.PerformerReader) ([]*models.Performer, error) {
+func getSingleLetterPerformers(ctx context.Context, c *Cache, reader PerformerAutoTagQueryer) ([]*models.Performer, error) {
 	if c == nil {
 		c = &Cache{}
 	}
 
 	if c.singleCharPerformers == nil {
 		pp := -1
-		performers, _, err := reader.Query(&models.PerformerFilterType{
+		performers, _, err := reader.Query(ctx, &models.PerformerFilterType{
 			Name: &models.StringCriterionInput{
 				Value:    singleFirstCharacterRegex,
 				Modifier: models.CriterionModifierMatchesRegex,
@@ -49,14 +53,14 @@ func getSingleLetterPerformers(c *Cache, reader models.PerformerReader) ([]*mode
 
 // getSingleLetterStudios returns all studios with names that start with single character words.
 // See getSingleLetterPerformers for details.
-func getSingleLetterStudios(c *Cache, reader models.StudioReader) ([]*models.Studio, error) {
+func getSingleLetterStudios(ctx context.Context, c *Cache, reader StudioAutoTagQueryer) ([]*models.Studio, error) {
 	if c == nil {
 		c = &Cache{}
 	}
 
 	if c.singleCharStudios == nil {
 		pp := -1
-		studios, _, err := reader.Query(&models.StudioFilterType{
+		studios, _, err := reader.Query(ctx, &models.StudioFilterType{
 			Name: &models.StringCriterionInput{
 				Value:    singleFirstCharacterRegex,
 				Modifier: models.CriterionModifierMatchesRegex,
@@ -82,14 +86,14 @@ func getSingleLetterStudios(c *Cache, reader models.StudioReader) ([]*models.Stu
 
 // getSingleLetterTags returns all tags with names that start with single character words.
 // See getSingleLetterPerformers for details.
-func getSingleLetterTags(c *Cache, reader models.TagReader) ([]*models.Tag, error) {
+func getSingleLetterTags(ctx context.Context, c *Cache, reader TagAutoTagQueryer) ([]*models.Tag, error) {
 	if c == nil {
 		c = &Cache{}
 	}
 
 	if c.singleCharTags == nil {
 		pp := -1
-		tags, _, err := reader.Query(&models.TagFilterType{
+		tags, _, err := reader.Query(ctx, &models.TagFilterType{
 			Name: &models.StringCriterionInput{
 				Value:    singleFirstCharacterRegex,
 				Modifier: models.CriterionModifierMatchesRegex,

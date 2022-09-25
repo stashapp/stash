@@ -23,8 +23,8 @@ func Test_getPerformerID(t *testing.T) {
 	validStoredID := 1
 	name := "name"
 
-	repo := mocks.NewTransactionManager()
-	repo.PerformerMock().On("Create", mock.Anything).Return(&models.Performer{
+	mockPerformerReaderWriter := mocks.PerformerReaderWriter{}
+	mockPerformerReaderWriter.On("Create", testCtx, mock.Anything).Return(&models.Performer{
 		ID: validStoredID,
 	}, nil)
 
@@ -110,7 +110,7 @@ func Test_getPerformerID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getPerformerID(tt.args.endpoint, repo, tt.args.p, tt.args.createMissing)
+			got, err := getPerformerID(testCtx, tt.args.endpoint, &mockPerformerReaderWriter, tt.args.p, tt.args.createMissing)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPerformerID() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -131,23 +131,23 @@ func Test_createMissingPerformer(t *testing.T) {
 	invalidName := "invalidName"
 	performerID := 1
 
-	repo := mocks.NewTransactionManager()
-	repo.PerformerMock().On("Create", mock.MatchedBy(func(p models.Performer) bool {
+	mockPerformerReaderWriter := mocks.PerformerReaderWriter{}
+	mockPerformerReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Performer) bool {
 		return p.Name.String == validName
 	})).Return(&models.Performer{
 		ID: performerID,
 	}, nil)
-	repo.PerformerMock().On("Create", mock.MatchedBy(func(p models.Performer) bool {
+	mockPerformerReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Performer) bool {
 		return p.Name.String == invalidName
 	})).Return(nil, errors.New("error creating performer"))
 
-	repo.PerformerMock().On("UpdateStashIDs", performerID, []models.StashID{
+	mockPerformerReaderWriter.On("UpdateStashIDs", testCtx, performerID, []models.StashID{
 		{
 			Endpoint: invalidEndpoint,
 			StashID:  remoteSiteID,
 		},
 	}).Return(errors.New("error updating stash ids"))
-	repo.PerformerMock().On("UpdateStashIDs", performerID, []models.StashID{
+	mockPerformerReaderWriter.On("UpdateStashIDs", testCtx, performerID, []models.StashID{
 		{
 			Endpoint: validEndpoint,
 			StashID:  remoteSiteID,
@@ -213,7 +213,7 @@ func Test_createMissingPerformer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := createMissingPerformer(tt.args.endpoint, repo, tt.args.p)
+			got, err := createMissingPerformer(testCtx, tt.args.endpoint, &mockPerformerReaderWriter, tt.args.p)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("createMissingPerformer() error = %v, wantErr %v", err, tt.wantErr)
 				return

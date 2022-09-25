@@ -4,7 +4,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
@@ -59,11 +58,11 @@ func (m *ipWhitelistManager) getRecent() []string {
 	return m.recentIPAddresses
 }
 
-func (m *ipWhitelistManager) getTempAllowed() []*models.Dlnaip {
+func (m *ipWhitelistManager) getTempAllowed() []*Dlnaip {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	var ret []*models.Dlnaip
+	var ret []*Dlnaip
 
 	now := time.Now()
 	removeExpired := false
@@ -73,7 +72,7 @@ func (m *ipWhitelistManager) getTempAllowed() []*models.Dlnaip {
 			continue
 		}
 
-		ret = append(ret, &models.Dlnaip{
+		ret = append(ret, &Dlnaip{
 			IPAddress: a.pattern,
 			Until:     a.until,
 		})

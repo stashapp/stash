@@ -51,6 +51,43 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
     );
   }
 
+  function renderStashIDs() {
+    if (!studio.stash_ids?.length) {
+      return;
+    }
+
+    return (
+      <>
+        <dt>
+          <FormattedMessage id="StashIDs" />
+        </dt>
+        <dd>
+          <ul className="pl-0">
+            {studio.stash_ids.map((stashID) => {
+              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+              const link = base ? (
+                <a
+                  href={`${base}studios/${stashID.stash_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {stashID.stash_id}
+                </a>
+              ) : (
+                stashID.stash_id
+              );
+              return (
+                <li key={stashID.stash_id} className="row no-gutters">
+                  {link}
+                </li>
+              );
+            })}
+          </ul>
+        </dd>
+      </>
+    );
+  }
+
   return (
     <div className="studio-details">
       <div>
@@ -76,6 +113,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
 
         {renderRatingField()}
         {renderTagsList()}
+        {renderStashIDs()}
       </dl>
     </div>
   );

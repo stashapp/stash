@@ -53,6 +53,18 @@ func IntExclude(vs []int, toExclude []int) []int {
 	return ret
 }
 
+// IntIntercect returns a slice of ints containing values that exist in both provided slices.
+func IntIntercect(v1, v2 []int) []int {
+	var ret []int
+	for _, v := range v1 {
+		if IntInclude(v2, v) {
+			ret = append(ret, v)
+		}
+	}
+
+	return ret
+}
+
 // IntSliceToStringSlice converts a slice of ints to a slice of strings.
 func IntSliceToStringSlice(ss []int) []string {
 	ret := make([]string, len(ss))

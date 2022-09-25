@@ -17,8 +17,8 @@ import (
 )
 
 func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.Studio, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Studio().Find(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Studio.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (r *mutationResolver) getStudio(ctx context.Context, id int) (ret *models.S
 	return ret, nil
 }
 
-func (r *mutationResolver) StudioCreate(ctx context.Context, input models.StudioCreateInput) (*models.Studio, error) {
+func (r *mutationResolver) StudioCreate(ctx context.Context, input StudioCreateInput) (*models.Studio, error) {
 	// generate checksum from studio name rather than image
 	checksum := md5.FromString(input.Name)
 
@@ -72,36 +72,36 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 	// Start the transaction and save the studio
 	var s *models.Studio
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Studio()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Studio
 
 		var err error
-		s, err = qb.Create(newStudio)
+		s, err = qb.Create(ctx, newStudio)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(s.ID, imageData); err != nil {
+			if err := qb.UpdateImage(ctx, s.ID, imageData); err != nil {
 				return err
 			}
 		}
 
 		// Save the stash_ids
 		if input.StashIds != nil {
-			stashIDJoins := models.StashIDsFromInput(input.StashIds)
-			if err := qb.UpdateStashIDs(s.ID, stashIDJoins); err != nil {
+			stashIDJoins := stashIDPtrSliceToSlice(input.StashIds)
+			if err := qb.UpdateStashIDs(ctx, s.ID, stashIDJoins); err != nil {
 				return err
 			}
 		}
 
 		if len(input.Aliases) > 0 {
-			if err := studio.EnsureAliasesUnique(s.ID, input.Aliases, qb); err != nil {
+			if err := studio.EnsureAliasesUnique(ctx, s.ID, input.Aliases, qb); err != nil {
 				return err
 			}
 
-			if err := qb.UpdateAliases(s.ID, input.Aliases); err != nil {
+			if err := qb.UpdateAliases(ctx, s.ID, input.Aliases); err != nil {
 				return err
 			}
 		}
@@ -115,7 +115,7 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	return r.getStudio(ctx, s.ID)
 }
 
-func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
+func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateInput) (*models.Studio, error) {
 	// Populate studio from the input
 	studioID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -155,45 +155,45 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 	// Start the transaction and save the studio
 	var s *models.Studio
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Studio()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Studio
 
-		if err := manager.ValidateModifyStudio(updatedStudio, qb); err != nil {
+		if err := manager.ValidateModifyStudio(ctx, updatedStudio, qb); err != nil {
 			return err
 		}
 
 		var err error
-		s, err = qb.Update(updatedStudio)
+		s, err = qb.Update(ctx, updatedStudio)
 		if err != nil {
 			return err
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(s.ID, imageData); err != nil {
+			if err := qb.UpdateImage(ctx, s.ID, imageData); err != nil {
 				return err
 			}
 		} else if imageIncluded {
 			// must be unsetting
-			if err := qb.DestroyImage(s.ID); err != nil {
+			if err := qb.DestroyImage(ctx, s.ID); err != nil {
 				return err
 			}
 		}
 
 		// Save the stash_ids
 		if translator.hasField("stash_ids") {
-			stashIDJoins := models.StashIDsFromInput(input.StashIds)
-			if err := qb.UpdateStashIDs(studioID, stashIDJoins); err != nil {
+			stashIDJoins := stashIDPtrSliceToSlice(input.StashIds)
+			if err := qb.UpdateStashIDs(ctx, studioID, stashIDJoins); err != nil {
 				return err
 			}
 		}
 
 		if translator.hasField("aliases") {
-			if err := studio.EnsureAliasesUnique(studioID, input.Aliases, qb); err != nil {
+			if err := studio.EnsureAliasesUnique(ctx, studioID, input.Aliases, qb); err != nil {
 				return err
 			}
 
-			if err := qb.UpdateAliases(studioID, input.Aliases); err != nil {
+			if err := qb.UpdateAliases(ctx, studioID, input.Aliases); err != nil {
 				return err
 			}
 		}
@@ -207,14 +207,14 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	return r.getStudio(ctx, s.ID)
 }
 
-func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
+func (r *mutationResolver) StudioDestroy(ctx context.Context, input StudioDestroyInput) (bool, error) {
 	id, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		return repo.Studio().Destroy(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		return r.repository.Studio.Destroy(ctx, id)
 	}); err != nil {
 		return false, err
 	}
@@ -230,10 +230,10 @@ func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []strin
 		return false, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Studio()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Studio
 		for _, id := range ids {
-			if err := qb.Destroy(id); err != nil {
+			if err := qb.Destroy(ctx, id); err != nil {
 				return err
 			}
 		}

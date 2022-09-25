@@ -1,16 +1,12 @@
 fragment SlimImageData on Image {
   id
-  checksum
   title
   rating
   organized
   o_counter
-  path
 
-  file {
-    size
-    width
-    height
+  files {
+    ...ImageFileData
   }
 
   paths {
@@ -20,8 +16,13 @@ fragment SlimImageData on Image {
 
   galleries {
     id
-    path
     title
+    files {
+      path
+    }
+    folder {
+      path
+    }
   }
 
   studio {

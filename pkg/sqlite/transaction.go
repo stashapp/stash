@@ -2,209 +2,118 @@ package sqlite
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
+	"github.com/mattn/go-sqlite3"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type dbi interface {
-	Get(dest interface{}, query string, args ...interface{}) error
-	Select(dest interface{}, query string, args ...interface{}) error
-	Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
-	NamedExec(query string, arg interface{}) (sql.Result, error)
-	Exec(query string, args ...interface{}) (sql.Result, error)
-}
+type key int
 
-type transaction struct {
-	Ctx context.Context
-	tx  *sqlx.Tx
-}
+const (
+	txnKey key = iota + 1
+	dbKey
+)
 
-func (t *transaction) Begin() error {
-	if t.tx != nil {
-		return errors.New("transaction already begun")
+func (db *Database) WithDatabase(ctx context.Context) (context.Context, error) {
+	// if we are already in a transaction or have a database already, just use it
+	if tx, _ := getDBReader(ctx); tx != nil {
+		return ctx, nil
 	}
 
-	if err := database.Ready(); err != nil {
+	return context.WithValue(ctx, dbKey, db.db), nil
+}
+
+func (db *Database) Begin(ctx context.Context) (context.Context, error) {
+	if tx, _ := getTx(ctx); tx != nil {
+		// log the stack trace so we can see
+		logger.Error(string(debug.Stack()))
+
+		return nil, fmt.Errorf("already in transaction")
+	}
+
+	tx, err := db.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("beginning transaction: %w", err)
+	}
+
+	return context.WithValue(ctx, txnKey, tx), nil
+}
+
+func (db *Database) Commit(ctx context.Context) error {
+	tx, err := getTx(ctx)
+	if err != nil {
 		return err
 	}
 
-	var err error
-	t.tx, err = database.DB.BeginTxx(t.Ctx, nil)
-	if err != nil {
-		return fmt.Errorf("error starting transaction: %v", err)
-	}
-
-	return nil
-}
-
-func (t *transaction) Rollback() error {
-	if t.tx == nil {
-		return errors.New("not in transaction")
-	}
-
-	err := t.tx.Rollback()
-	if err != nil {
-		return fmt.Errorf("error rolling back transaction: %v", err)
-	}
-	t.tx = nil
-
-	return nil
-}
-
-func (t *transaction) Commit() error {
-	if t.tx == nil {
-		return errors.New("not in transaction")
-	}
-
-	err := t.tx.Commit()
-	if err != nil {
-		return fmt.Errorf("error committing transaction: %v", err)
-	}
-	t.tx = nil
-
-	return nil
-}
-
-func (t *transaction) Repository() models.Repository {
-	return t
-}
-
-func (t *transaction) ensureTx() {
-	if t.tx == nil {
-		panic("tx is nil")
-	}
-}
-
-func (t *transaction) Gallery() models.GalleryReaderWriter {
-	t.ensureTx()
-	return NewGalleryReaderWriter(t.tx)
-}
-
-func (t *transaction) Image() models.ImageReaderWriter {
-	t.ensureTx()
-	return NewImageReaderWriter(t.tx)
-}
-
-func (t *transaction) Movie() models.MovieReaderWriter {
-	t.ensureTx()
-	return NewMovieReaderWriter(t.tx)
-}
-
-func (t *transaction) Performer() models.PerformerReaderWriter {
-	t.ensureTx()
-	return NewPerformerReaderWriter(t.tx)
-}
-
-func (t *transaction) SceneMarker() models.SceneMarkerReaderWriter {
-	t.ensureTx()
-	return NewSceneMarkerReaderWriter(t.tx)
-}
-
-func (t *transaction) Scene() models.SceneReaderWriter {
-	t.ensureTx()
-	return NewSceneReaderWriter(t.tx)
-}
-
-func (t *transaction) ScrapedItem() models.ScrapedItemReaderWriter {
-	t.ensureTx()
-	return NewScrapedItemReaderWriter(t.tx)
-}
-
-func (t *transaction) Studio() models.StudioReaderWriter {
-	t.ensureTx()
-	return NewStudioReaderWriter(t.tx)
-}
-
-func (t *transaction) Tag() models.TagReaderWriter {
-	t.ensureTx()
-	return NewTagReaderWriter(t.tx)
-}
-
-func (t *transaction) SavedFilter() models.SavedFilterReaderWriter {
-	t.ensureTx()
-	return NewSavedFilterReaderWriter(t.tx)
-}
-
-type ReadTransaction struct{}
-
-func (t *ReadTransaction) Begin() error {
-	if err := database.Ready(); err != nil {
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (t *ReadTransaction) Rollback() error {
+func (db *Database) Rollback(ctx context.Context) error {
+	tx, err := getTx(ctx)
+	if err != nil {
+		return err
+	}
+
+	if err := tx.Rollback(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (t *ReadTransaction) Commit() error {
-	return nil
+func getTx(ctx context.Context) (*sqlx.Tx, error) {
+	tx, ok := ctx.Value(txnKey).(*sqlx.Tx)
+	if !ok || tx == nil {
+		return nil, fmt.Errorf("not in transaction")
+	}
+	return tx, nil
 }
 
-func (t *ReadTransaction) Repository() models.ReaderRepository {
-	return t
+func getDBReader(ctx context.Context) (dbReader, error) {
+	// get transaction first if present
+	tx, ok := ctx.Value(txnKey).(*sqlx.Tx)
+	if !ok || tx == nil {
+		// try to get database if present
+		db, ok := ctx.Value(dbKey).(*sqlx.DB)
+		if !ok || db == nil {
+			return nil, fmt.Errorf("not in transaction")
+		}
+		return db, nil
+	}
+	return tx, nil
 }
 
-func (t *ReadTransaction) Gallery() models.GalleryReader {
-	return NewGalleryReaderWriter(database.DB)
+func (db *Database) IsLocked(err error) bool {
+	var sqliteError sqlite3.Error
+	if errors.As(err, &sqliteError) {
+		return sqliteError.Code == sqlite3.ErrBusy
+	}
+	return false
 }
 
-func (t *ReadTransaction) Image() models.ImageReader {
-	return NewImageReaderWriter(database.DB)
-}
-
-func (t *ReadTransaction) Movie() models.MovieReader {
-	return NewMovieReaderWriter(database.DB)
-}
-
-func (t *ReadTransaction) Performer() models.PerformerReader {
-	return NewPerformerReaderWriter(database.DB)
-}
-
-func (t *ReadTransaction) SceneMarker() models.SceneMarkerReader {
-	return NewSceneMarkerReaderWriter(database.DB)
-}
-
-func (t *ReadTransaction) Scene() models.SceneReader {
-	return NewSceneReaderWriter(database.DB)
-}
-
-func (t *ReadTransaction) ScrapedItem() models.ScrapedItemReader {
-	return NewScrapedItemReaderWriter(database.DB)
-}
-
-func (t *ReadTransaction) Studio() models.StudioReader {
-	return NewStudioReaderWriter(database.DB)
-}
-
-func (t *ReadTransaction) Tag() models.TagReader {
-	return NewTagReaderWriter(database.DB)
-}
-
-func (t *ReadTransaction) SavedFilter() models.SavedFilterReader {
-	return NewSavedFilterReaderWriter(database.DB)
-}
-
-type TransactionManager struct {
-}
-
-func NewTransactionManager() *TransactionManager {
-	return &TransactionManager{}
-}
-
-func (t *TransactionManager) WithTxn(ctx context.Context, fn func(r models.Repository) error) error {
-	database.WriteMu.Lock()
-	defer database.WriteMu.Unlock()
-	return models.WithTxn(&transaction{Ctx: ctx}, fn)
-}
-
-func (t *TransactionManager) WithReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
-	return models.WithROTxn(&ReadTransaction{}, fn)
+func (db *Database) TxnRepository() models.Repository {
+	return models.Repository{
+		TxnManager:  db,
+		File:        db.File,
+		Folder:      db.Folder,
+		Gallery:     db.Gallery,
+		Image:       db.Image,
+		Movie:       MovieReaderWriter,
+		Performer:   PerformerReaderWriter,
+		Scene:       db.Scene,
+		SceneMarker: SceneMarkerReaderWriter,
+		ScrapedItem: ScrapedItemReaderWriter,
+		Studio:      StudioReaderWriter,
+		Tag:         TagReaderWriter,
+		SavedFilter: SavedFilterReaderWriter,
+	}
 }

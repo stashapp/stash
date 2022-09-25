@@ -47,24 +47,23 @@ export const ListOperationButtons: React.FC<IListOperationButtonsProps> = ({
     Mousetrap.bind("s a", () => onSelectAll?.());
     Mousetrap.bind("s n", () => onSelectNone?.());
 
-    if (itemsSelected) {
-      Mousetrap.bind("e", () => {
+    Mousetrap.bind("e", () => {
+      if (itemsSelected) {
         onEdit?.();
-      });
+      }
+    });
 
-      Mousetrap.bind("d d", () => {
+    Mousetrap.bind("d d", () => {
+      if (itemsSelected) {
         onDelete?.();
-      });
-    }
+      }
+    });
 
     return () => {
       Mousetrap.unbind("s a");
       Mousetrap.unbind("s n");
-
-      if (itemsSelected) {
-        Mousetrap.unbind("e");
-        Mousetrap.unbind("d d");
-      }
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
     };
   });
 

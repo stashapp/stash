@@ -32,14 +32,14 @@ func toSnakeCase(v string) string {
 
 func fromSnakeCase(v string) string {
 	var buf bytes.Buffer
-	cap := false
+	capvar := false
 	for i, c := range v {
 		switch {
 		case c == '_' && i > 0:
-			cap = true
-		case cap:
+			capvar = true
+		case capvar:
 			buf.WriteRune(unicode.ToUpper(c))
-			cap = false
+			capvar = false
 		default:
 			buf.WriteRune(c)
 		}
