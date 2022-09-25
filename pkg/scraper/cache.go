@@ -229,7 +229,7 @@ func (c Cache) findScraper(scraperID string) scraper {
 
 type PostScrapedItem struct {
 	index int
-	item  models.ScrapedContent
+	item  ScrapedContent
 	err   error
 }
 
