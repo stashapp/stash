@@ -1065,6 +1065,20 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 		)
 	}
 
+	addFolderTable := func() {
+		query.addJoins(
+			join{
+				table:    folderTable,
+				onClause: "folders.id = galleries.folder_id",
+			},
+			join{
+				table:    folderTable,
+				as:       "file_folder",
+				onClause: "files.parent_folder_id = file_folder.id",
+			},
+		)
+	}
+
 	switch sort {
 	case "file_count":
 		query.sortAndPagination += getCountSort(galleryTable, galleriesFilesTable, galleryIDColumn, direction)
@@ -1077,22 +1091,16 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	case "path":
 		// special handling for path
 		addFileTable()
-		query.addJoins(
-			join{
-				table:    folderTable,
-				onClause: "folders.id = galleries.folder_id",
-			},
-			join{
-				table:    folderTable,
-				as:       "file_folder",
-				onClause: "files.parent_folder_id = file_folder.id",
-			},
-		)
+		addFolderTable()
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, file_folder.path %[1]s, files.basename %[1]s", direction)
 	case "file_mod_time":
 		sort = "mod_time"
 		addFileTable()
 		query.sortAndPagination += getSort(sort, direction, fileTable)
+	case "title":
+		addFileTable()
+		addFolderTable()
+		query.sortAndPagination += " ORDER BY galleries.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", file_folder.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "galleries")
 	}
