@@ -119,7 +119,7 @@ func (h *ScanHandler) associateScene(ctx context.Context, existing []*models.Gal
 	}
 
 	path := f.Base().Path
-	withoutExt := strings.TrimSuffix(path, filepath.Ext(path))
+	withoutExt := strings.TrimSuffix(path, filepath.Ext(path)) + ".*"
 
 	// find scenes with a file that matches
 	scenes, err := h.SceneFinderUpdater.FindByPath(ctx, withoutExt)
@@ -129,6 +129,7 @@ func (h *ScanHandler) associateScene(ctx context.Context, existing []*models.Gal
 
 	for _, scene := range scenes {
 		// found related Scene
+		logger.Infof("associate: Gallery %s is related to scene: %d", path, scene.ID)
 		if err := h.SceneFinderUpdater.AddGalleryIDs(ctx, scene.ID, galleryIDs); err != nil {
 			return err
 		}
