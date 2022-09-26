@@ -72,7 +72,7 @@ const PerformerSearchResultDetails: React.FC<IPerformerSearchResultDetailsProps>
           <h4>{performer.name}{performer.disambiguation && ` (${performer.disambiguation})`}</h4>
           <h5>
             {performer.gender &&
-              genderToString(stringToGender(performer.gender))}
+              genderToString(stringToGender(performer.gender, true))}
             {performer.gender && calculated_age && ` • `}
             {calculated_age}
             {calculated_age && " "}
