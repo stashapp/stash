@@ -1008,9 +1008,5 @@ func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing File
 
 	// if this file is a zip file, then we need to rescan the contents
 	// as well. We do this by returning the file, instead of nil.
-	if isMissingMetdata {
-		return existing, nil
-	}
-
-	return nil, nil
+	return existing, nil
 }

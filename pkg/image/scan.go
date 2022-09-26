@@ -110,23 +110,11 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 			GalleryIDs: models.NewRelatedIDs([]int{}),
 		}
 
-		// if the file is in a zip, then associate it with the gallery
-		if imageFile.ZipFileID != nil {
-			g, err := h.GalleryFinder.FindByFileID(ctx, *imageFile.ZipFileID)
-			if err != nil {
-				return fmt.Errorf("finding gallery for zip file id %d: %w", *imageFile.ZipFileID, err)
-			}
-
-			for _, gg := range g {
-				newImage.GalleryIDs.Add(gg.ID)
-			}
-		} else if h.ScanConfig.GetCreateGalleriesFromFolders() {
-			if err := h.associateFolderBasedGallery(ctx, newImage, imageFile); err != nil {
-				return err
-			}
-		}
-
 		logger.Infof("%s doesn't exist. Creating new image...", f.Base().Path)
+
+		if err := h.associateGallery(ctx, newImage, imageFile); err != nil {
+			return err
+		}
 
 		if err := h.CreatorUpdater.Create(ctx, &models.ImageCreateInput{
 			Image:   newImage,
@@ -182,7 +170,7 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 
 			// associate with folder-based gallery if applicable
 			if h.ScanConfig.GetCreateGalleriesFromFolders() {
-				if err := h.associateFolderBasedGallery(ctx, i, f); err != nil {
+				if err := h.associateGallery(ctx, i, f); err != nil {
 					return err
 				}
 			}
@@ -205,11 +193,6 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 }
 
 func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f file.File) (*models.Gallery, error) {
-	// don't create folder-based galleries for files in zip file
-	if f.Base().ZipFileID != nil {
-		return nil, nil
-	}
-
 	folderID := f.Base().ParentFolderID
 	g, err := h.GalleryFinder.FindByFolderID(ctx, folderID)
 	if err != nil {
@@ -237,8 +220,48 @@ func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f file.
 	return newGallery, nil
 }
 
-func (h *ScanHandler) associateFolderBasedGallery(ctx context.Context, newImage *models.Image, f file.File) error {
-	g, err := h.getOrCreateFolderBasedGallery(ctx, f)
+func (h *ScanHandler) getOrCreateZipBasedGallery(ctx context.Context, zipFile file.File) (*models.Gallery, error) {
+	g, err := h.GalleryFinder.FindByFileID(ctx, zipFile.Base().ID)
+	if err != nil {
+		return nil, fmt.Errorf("finding zip based gallery: %w", err)
+	}
+
+	if len(g) > 0 {
+		gg := g[0]
+		return gg, nil
+	}
+
+	// create a new zip-based gallery
+	now := time.Now()
+	newGallery := &models.Gallery{
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	logger.Infof("%s doesn't exist. Creating new gallery...", zipFile.Base().Path)
+
+	if err := h.GalleryFinder.Create(ctx, newGallery, []file.ID{zipFile.Base().ID}); err != nil {
+		return nil, fmt.Errorf("creating zip-based gallery: %w", err)
+	}
+
+	return newGallery, nil
+}
+
+func (h *ScanHandler) getOrCreateGallery(ctx context.Context, f file.File) (*models.Gallery, error) {
+	// don't create folder-based galleries for files in zip file
+	if f.Base().ZipFile != nil {
+		return h.getOrCreateZipBasedGallery(ctx, f.Base().ZipFile)
+	}
+
+	if h.ScanConfig.GetCreateGalleriesFromFolders() {
+		return h.getOrCreateFolderBasedGallery(ctx, f)
+	}
+
+	return nil, nil
+}
+
+func (h *ScanHandler) associateGallery(ctx context.Context, newImage *models.Image, f file.File) error {
+	g, err := h.getOrCreateGallery(ctx, f)
 	if err != nil {
 		return err
 	}
@@ -249,7 +272,7 @@ func (h *ScanHandler) associateFolderBasedGallery(ctx context.Context, newImage 
 
 	if g != nil && !intslice.IntInclude(newImage.GalleryIDs.List(), g.ID) {
 		newImage.GalleryIDs.Add(g.ID)
-		logger.Infof("Adding %s to folder-based gallery %s", f.Base().Path, g.Path)
+		logger.Infof("Adding %s to gallery %s", f.Base().Path, g.Path)
 	}
 
 	return nil

@@ -256,6 +256,7 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 			Handler: &gallery.ScanHandler{
 				CreatorUpdater:     db.Gallery,
 				SceneFinderUpdater: db.Scene,
+				ImageFinderUpdater: db.Image,
 				PluginCache:        pluginCache,
 			},
 		},
