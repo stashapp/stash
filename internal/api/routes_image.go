@@ -127,7 +127,13 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 			}
 
 			if image != nil {
-				_ = image.LoadPrimaryFile(ctx, rs.fileFinder)
+				if err := image.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error loading primary file for image %d: %v", imageID, err)
+					}
+					// set image to nil so that it doesn't try to use the primary file
+					image = nil
+				}
 			}
 
 			return nil

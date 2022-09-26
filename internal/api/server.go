@@ -181,18 +181,16 @@ func Start() error {
 	})
 	r.HandleFunc("/customlocales", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		if !c.GetCustomLocalesEnabled() {
-			return
+		if c.GetCustomLocalesEnabled() {
+			// search for custom-locales.json in current directory, then $HOME/.stash
+			fn := c.GetCustomLocalesPath()
+			exists, _ := fsutil.FileExists(fn)
+			if exists {
+				http.ServeFile(w, r, fn)
+				return
+			}
 		}
-
-		// search for custom-locales.json in current directory, then $HOME/.stash
-		fn := c.GetCustomLocalesPath()
-		exists, _ := fsutil.FileExists(fn)
-		if !exists {
-			return
-		}
-
-		http.ServeFile(w, r, fn)
+		_, _ = w.Write([]byte("{}"))
 	})
 
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
