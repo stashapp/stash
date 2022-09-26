@@ -34,7 +34,7 @@ type ScanHandler struct {
 	PluginCache *plugin.Cache
 }
 
-func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
+func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File) error {
 	baseFile := f.Base()
 
 	// try to match the file to a gallery
@@ -52,7 +52,8 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	}
 
 	if len(existing) > 0 {
-		if err := h.associateExisting(ctx, existing, f); err != nil {
+		updateExisting := oldFile != nil
+		if err := h.associateExisting(ctx, existing, f, updateExisting); err != nil {
 			return err
 		}
 	} else {
@@ -81,7 +82,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	return nil
 }
 
-func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Gallery, f file.File) error {
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Gallery, f file.File, updateExisting bool) error {
 	for _, i := range existing {
 		if err := i.LoadFiles(ctx, h.CreatorUpdater); err != nil {
 			return err
@@ -107,6 +108,9 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			}
 		}
 
+		if !found || updateExisting {
+			h.PluginCache.RegisterPostHooks(ctx, i.ID, plugin.GalleryUpdatePost, nil, nil)
+		}
 	}
 
 	return nil

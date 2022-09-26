@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
@@ -48,6 +50,8 @@ type ScanHandler struct {
 	ScanConfig ScanConfig
 
 	PluginCache *plugin.Cache
+
+	Paths *paths.Paths
 }
 
 func (h *ScanHandler) validate() error {
@@ -60,11 +64,14 @@ func (h *ScanHandler) validate() error {
 	if h.ScanConfig == nil {
 		return errors.New("ScanConfig is required")
 	}
+	if h.Paths == nil {
+		return errors.New("Paths is required")
+	}
 
 	return nil
 }
 
-func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
+func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File) error {
 	if err := h.validate(); err != nil {
 		return err
 	}
@@ -89,7 +96,9 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	}
 
 	if len(existing) > 0 {
-		if err := h.associateExisting(ctx, existing, imageFile); err != nil {
+		updateExisting := oldFile != nil
+
+		if err := h.associateExisting(ctx, existing, imageFile, updateExisting); err != nil {
 			return err
 		}
 	} else {
@@ -131,6 +140,17 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 		existing = []*models.Image{newImage}
 	}
 
+	// remove the old thumbnail if the checksum changed - we'll regenerate it
+	if oldFile != nil {
+		oldHash := oldFile.Base().Fingerprints.GetString(file.FingerprintTypeMD5)
+		newHash := f.Base().Fingerprints.GetString(file.FingerprintTypeMD5)
+
+		if oldHash != "" && newHash != "" && oldHash != newHash {
+			// remove cache dir of gallery
+			_ = os.Remove(h.Paths.Generated.GetThumbnailPath(oldHash, models.DefaultGthumbWidth))
+		}
+	}
+
 	if h.ScanConfig.IsGenerateThumbnails() {
 		for _, s := range existing {
 			if err := h.ThumbnailGenerator.GenerateThumbnail(ctx, s, imageFile); err != nil {
@@ -143,7 +163,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	return nil
 }
 
-func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Image, f *file.ImageFile) error {
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Image, f *file.ImageFile, updateExisting bool) error {
 	for _, i := range existing {
 		if err := i.LoadFiles(ctx, h.CreatorUpdater); err != nil {
 			return err
@@ -174,6 +194,10 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			if _, err := h.CreatorUpdater.UpdatePartial(ctx, i.ID, models.NewImagePartial()); err != nil {
 				return fmt.Errorf("updating image: %w", err)
 			}
+		}
+
+		if !found || updateExisting {
+			h.PluginCache.RegisterPostHooks(ctx, i.ID, plugin.ImageUpdatePost, nil, nil)
 		}
 	}
 

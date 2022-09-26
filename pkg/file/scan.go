@@ -638,7 +638,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 			return fmt.Errorf("creating file %q: %w", path, err)
 		}
 
-		if err := s.fireHandlers(ctx, file); err != nil {
+		if err := s.fireHandlers(ctx, file, nil); err != nil {
 			return err
 		}
 
@@ -662,9 +662,9 @@ func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, erro
 	return f, nil
 }
 
-func (s *scanJob) fireHandlers(ctx context.Context, f File) error {
+func (s *scanJob) fireHandlers(ctx context.Context, f File, oldFile File) error {
 	for _, h := range s.handlers {
-		if err := h.Handle(ctx, f); err != nil {
+		if err := h.Handle(ctx, f, oldFile); err != nil {
 			return err
 		}
 	}
@@ -772,6 +772,10 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
 		if err := s.Repository.Update(ctx, f); err != nil {
 			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
+		}
+
+		if err := s.fireHandlers(ctx, f, other); err != nil {
+			return err
 		}
 
 		return nil
@@ -888,6 +892,8 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 		return s.onUnchangedFile(ctx, f, existing)
 	}
 
+	oldBase := *base
+
 	logger.Infof("%s has been updated: rescanning", path)
 	base.ModTime = fileModTime
 	base.Size = f.Size
@@ -914,7 +920,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 			return fmt.Errorf("updating file %q: %w", path, err)
 		}
 
-		if err := s.fireHandlers(ctx, existing); err != nil {
+		if err := s.fireHandlers(ctx, existing, &oldBase); err != nil {
 			return err
 		}
 
@@ -991,7 +997,7 @@ func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing File
 	}
 
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.fireHandlers(ctx, existing); err != nil {
+		if err := s.fireHandlers(ctx, existing, nil); err != nil {
 			return err
 		}
 

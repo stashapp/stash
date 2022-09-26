@@ -248,6 +248,7 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 					isGenerateThumbnails: options.ScanGenerateThumbnails,
 				},
 				PluginCache: pluginCache,
+				Paths:       instance.Paths,
 			},
 		},
 		&file.FilteredHandler{
@@ -269,6 +270,8 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 					taskQueue: taskQueue,
 					progress:  progress,
 				},
+				FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
+				Paths:               instance.Paths,
 			},
 		},
 	}
