@@ -10,3 +10,6 @@ var PerformerMale embed.FS
 
 //go:embed scene
 var Scene embed.FS
+
+//go:embed image
+var Image embed.FS
