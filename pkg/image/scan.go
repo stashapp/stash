@@ -168,18 +168,22 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 		if !found {
 			logger.Infof("Adding %s to image %s", f.Path, i.DisplayName())
 
-			// associate with folder-based gallery if applicable
-			if h.ScanConfig.GetCreateGalleriesFromFolders() {
-				if err := h.associateGallery(ctx, i, f); err != nil {
-					return err
-				}
+			// associate with gallery if applicable
+			if err := h.associateGallery(ctx, i, f); err != nil {
+				return err
 			}
 
 			if err := h.CreatorUpdater.AddFileID(ctx, i.ID, f.ID); err != nil {
 				return fmt.Errorf("adding file to image: %w", err)
 			}
 			// update updated_at time
-			if _, err := h.CreatorUpdater.UpdatePartial(ctx, i.ID, models.NewImagePartial()); err != nil {
+			if _, err := h.CreatorUpdater.UpdatePartial(ctx, i.ID, models.ImagePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  i.GalleryIDs.List(),
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				UpdatedAt: models.NewOptionalTime(time.Now()),
+			}); err != nil {
 				return fmt.Errorf("updating image: %w", err)
 			}
 		}
