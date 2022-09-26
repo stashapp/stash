@@ -1,10 +1,9 @@
 package manager
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/stashapp/stash/internal/manager/config"
@@ -77,7 +76,7 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 }
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
-	const defaultSceneImage = "scene/scene.png"
+	const defaultSceneImage = "scene/scene.svg"
 
 	filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 
@@ -108,8 +107,7 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 		f, _ := static.Scene.Open(defaultSceneImage)
 		defer f.Close()
 		stat, _ := f.Stat()
-		data, _ := ioutil.ReadAll(f)
-		http.ServeContent(w, r, "", stat.ModTime(), bytes.NewReader(data))
+		http.ServeContent(w, r, "scene.svg", stat.ModTime(), f.(io.ReadSeeker))
 	}
 
 	if err := utils.ServeImage(cover, w, r); err != nil {
