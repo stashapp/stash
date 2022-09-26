@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -253,8 +254,11 @@ func (db *Database) DatabasePath() string {
 	return db.dbPath
 }
 
-func (db *Database) DatabaseBackupPath() string {
-	return fmt.Sprintf("%s.%d.%s", db.dbPath, db.schemaVersion, time.Now().Format("20060102_150405"))
+func (db *Database) DatabaseBackupPath(backupDirectoryPath string) string {
+	if backupDirectoryPath == "" {
+		return fmt.Sprintf("%s.%d.%s", db.dbPath, db.schemaVersion, time.Now().Format("20060102_150405"))
+	}
+	return filepath.Join(backupDirectoryPath, fmt.Sprintf("%s.%d.%s", db.dbPath, db.schemaVersion, time.Now().Format("20060102_150405")))
 }
 
 func (db *Database) Version() uint {

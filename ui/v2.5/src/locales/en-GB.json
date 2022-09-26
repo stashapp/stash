@@ -244,6 +244,10 @@
         "username": "Username",
         "username_desc": "Username to access Stash. Leave blank to disable user authentication"
       },
+      "backup_directory_path": {
+        "description": "Directory location for SQLite database file backups",
+        "heading": "Backup Directory Path"
+      },
       "cache_location": "Directory location of the cache",
       "cache_path_head": "Cache Path",
       "calculate_md5_and_ohash_desc": "Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower. File naming hash must be set to oshash to disable MD5 calculation.",
