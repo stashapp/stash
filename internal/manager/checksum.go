@@ -4,42 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/txn"
 )
-
-type SceneCounter interface {
-	Count(ctx context.Context) (int, error)
-}
-
-func setInitialMD5Config(ctx context.Context, txnManager txn.Manager, counter SceneCounter) {
-	// if there are no scene files in the database, then default the
-	// VideoFileNamingAlgorithm config setting to oshash and calculateMD5 to
-	// false, otherwise set them to true for backwards compatibility purposes
-	var count int
-	if err := txn.WithTxn(ctx, txnManager, func(ctx context.Context) error {
-		var err error
-		count, err = counter.Count(ctx)
-		return err
-	}); err != nil {
-		logger.Errorf("Error while counting scenes: %s", err.Error())
-		return
-	}
-
-	usingMD5 := count != 0
-	defaultAlgorithm := models.HashAlgorithmOshash
-	if usingMD5 {
-		defaultAlgorithm = models.HashAlgorithmMd5
-	}
-
-	config := config.GetInstance()
-	config.SetChecksumDefaultValues(defaultAlgorithm, usingMD5)
-	if err := config.Write(); err != nil {
-		logger.Errorf("Error while writing configuration file: %s", err.Error())
-	}
-}
 
 type SceneMissingHashCounter interface {
 	CountMissingChecksum(ctx context.Context) (int, error)

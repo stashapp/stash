@@ -326,6 +326,12 @@ func (i *Instance) Set(key string, value interface{}) {
 	i.main.Set(key, value)
 }
 
+func (i *Instance) SetDefault(key string, value interface{}) {
+	i.Lock()
+	defer i.Unlock()
+	i.main.SetDefault(key, value)
+}
+
 func (i *Instance) SetPassword(value string) {
 	// if blank, don't bother hashing; we want it to be blank
 	if value == "" {
@@ -1302,13 +1308,6 @@ func (i *Instance) Validate() error {
 	}
 
 	return nil
-}
-
-func (i *Instance) SetChecksumDefaultValues(defaultAlgorithm models.HashAlgorithm, usingMD5 bool) {
-	i.Lock()
-	defer i.Unlock()
-	i.main.SetDefault(VideoFileNamingAlgorithm, defaultAlgorithm)
-	i.main.SetDefault(CalculateMD5, usingMD5)
 }
 
 func (i *Instance) setDefaultValues(write bool) error {
