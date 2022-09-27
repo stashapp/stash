@@ -78,6 +78,14 @@ func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
 			found = len(emptyGalleries) > 0
 
 			for _, g := range emptyGalleries {
+				if g.Path == "" {
+					continue
+				}
+
+				if len(j.input.Paths) > 0 && !fsutil.IsPathInDirs(j.input.Paths, g.Path) {
+					continue
+				}
+
 				logger.Infof("Gallery has 0 images. Marking to clean: %s", g.DisplayName())
 				toClean = append(toClean, g.ID)
 			}
