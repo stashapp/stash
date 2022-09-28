@@ -124,7 +124,7 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatab
 		backupPath = f.Name()
 		f.Close()
 	} else {
-		backupDirectoryPath := mgr.Config.GetBackupDirectoryPath()
+		backupDirectoryPath := mgr.Config.GetBackupDirectoryPathOrDefault()
 		if backupDirectoryPath != "" {
 			if err := fsutil.EnsureDir(backupDirectoryPath); err != nil {
 				return nil, fmt.Errorf("could not create backup directory %v: %w", backupDirectoryPath, err)

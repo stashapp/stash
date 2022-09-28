@@ -530,6 +530,15 @@ func (i *Instance) GetBackupDirectoryPath() string {
 	return i.getString(BackupDirectoryPath)
 }
 
+func (i *Instance) GetBackupDirectoryPathOrDefault() string {
+	ret := i.GetBackupDirectoryPath()
+	if ret == "" {
+		return i.GetConfigPath()
+	}
+
+	return ret
+}
+
 func (i *Instance) GetJWTSignKey() []byte {
 	return []byte(i.getString(JWTSignKey))
 }
@@ -1320,7 +1329,6 @@ func (i *Instance) setDefaultValues(write bool) error {
 	defaultDatabaseFilePath := i.GetDefaultDatabaseFilePath()
 	defaultScrapersPath := i.GetDefaultScrapersPath()
 	defaultPluginsPath := i.GetDefaultPluginsPath()
-	defaultBackupDirectoryPath := i.GetConfigPath()
 
 	i.Lock()
 	defer i.Unlock()
@@ -1359,7 +1367,6 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(PluginsPath, defaultPluginsPath)
 
 	// Set default backup directory path
-	i.main.SetDefault(BackupDirectoryPath, defaultBackupDirectoryPath)
 	if write {
 		return i.main.WriteConfig()
 	}
