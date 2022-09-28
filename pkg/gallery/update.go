@@ -20,7 +20,7 @@ type ImageUpdater interface {
 // It returns an error if the gallery does not support adding images, or if
 // the operation fails.
 func (s *Service) AddImages(ctx context.Context, g *models.Gallery, toAdd ...int) error {
-	if err := ValidateContentChange(g); err != nil {
+	if err := validateContentChange(g); err != nil {
 		return err
 	}
 
@@ -32,7 +32,7 @@ func (s *Service) AddImages(ctx context.Context, g *models.Gallery, toAdd ...int
 // It returns an error if the gallery does not support removing images, or if
 // the operation fails.
 func (s *Service) RemoveImages(ctx context.Context, g *models.Gallery, toRemove ...int) error {
-	if err := ValidateContentChange(g); err != nil {
+	if err := validateContentChange(g); err != nil {
 		return err
 	}
 

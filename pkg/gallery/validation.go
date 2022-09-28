@@ -21,9 +21,9 @@ func (e *ContentsChangedError) Error() string {
 	return fmt.Sprintf("cannot change contents of %s gallery %q", typ, e.Gallery.GetTitle())
 }
 
-// ValidateContentChange returns an error if a gallery cannot have its contents changed.
+// validateContentChange returns an error if a gallery cannot have its contents changed.
 // Only manually created galleries can have images changed.
-func ValidateContentChange(g *models.Gallery) error {
+func validateContentChange(g *models.Gallery) error {
 	if g.FolderID != nil || g.PrimaryFileID != nil {
 		return &ContentsChangedError{
 			Gallery: g,
@@ -51,7 +51,7 @@ func (s *Service) ValidateImageGalleryChange(ctx context.Context, i *models.Imag
 	}
 
 	for _, g := range galleries {
-		if err := ValidateContentChange(g); err != nil {
+		if err := validateContentChange(g); err != nil {
 			return fmt.Errorf("changing galleries of image %q: %w", i.GetTitle(), err)
 		}
 	}
