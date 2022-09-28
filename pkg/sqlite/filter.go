@@ -873,7 +873,7 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 				f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
 				f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
 			case models.CriterionModifierExcludes:
-				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause))
 			}
 		}
 	}
