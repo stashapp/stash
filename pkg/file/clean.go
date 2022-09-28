@@ -338,7 +338,9 @@ func (j *cleanJob) shouldCleanFolder(ctx context.Context, f *Folder) bool {
 	path := f.Path
 
 	info, err := f.Info(j.FS)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	// ErrInvalid can occur in zip files where the zip file path changed
+	// and the underlying folder did not
+	if err != nil && !errors.Is(err, fs.ErrNotExist) && !errors.Is(err, fs.ErrInvalid) {
 		logger.Errorf("error getting folder info for %q, not cleaning: %v", path, err)
 		return false
 	}
