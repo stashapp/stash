@@ -45,7 +45,7 @@ export interface ISettingsContextState {
   saveDefaults: (input: Partial<GQL.ConfigDefaultSettingsInput>) => void;
   saveScraping: (input: Partial<GQL.ConfigScrapingInput>) => void;
   saveDLNA: (input: Partial<GQL.ConfigDlnaInput>) => void;
-  saveUI: (input: IUIConfig) => void;
+  saveUI: (input: Partial<IUIConfig>) => void;
 }
 
 export const SettingStateContext = React.createContext<ISettingsContextState>({
@@ -443,7 +443,11 @@ export const SettingsContext: React.FC = ({ children }) => {
 
     setPendingUI((current) => {
       if (!current) {
-        return input;
+        // use full UI object to ensure nothing is wiped
+        return {
+          ...ui,
+          ...input,
+        };
       }
       return {
         ...current,

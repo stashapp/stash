@@ -8,6 +8,7 @@ import {
 import { ListFilterModel } from "src/models/list-filter/filter";
 import React from "react";
 import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "./config";
 
 export const tagFilterHook = (tag: GQL.TagDataFragment) => {
   return (filter: ListFilterModel) => {
@@ -38,7 +39,7 @@ export const tagFilterHook = (tag: GQL.TagDataFragment) => {
       tagCriterion = new TagsCriterion(TagsCriterionOption);
       tagCriterion.value = {
         items: [tagValue],
-        depth: config?.configuration?.interface?.showChildTaggedContent
+        depth: (config?.configuration?.ui as IUIConfig)?.showChildTagContent
           ? -1
           : 0,
       };

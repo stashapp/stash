@@ -142,12 +142,6 @@ const (
 	ShowScrubber        = "show_scrubber"
 	showScrubberDefault = true
 
-	ShowChildTaggedContent        = "show_child_tagged_content"
-	showChildTaggedContentDefault = false
-
-	ShowChildStudioContent        = "show_child_studio_content"
-	showChildStudioContentDefault = false
-
 	WallPlayback        = "wall_playback"
 	defaultWallPlayback = "video"
 
@@ -918,14 +912,6 @@ func (i *Instance) GetWallPlayback() string {
 
 func (i *Instance) GetShowScrubber() bool {
 	return i.getBoolDefault(ShowScrubber, showScrubberDefault)
-}
-
-func (i *Instance) GetShowChildTaggedContent() bool {
-	return i.getBoolDefault(ShowChildTaggedContent, showChildTaggedContentDefault)
-}
-
-func (i *Instance) GetShowChildStudioContent() bool {
-	return i.getBoolDefault(ShowChildStudioContent, showChildStudioContentDefault)
 }
 
 func (i *Instance) GetMaximumLoopDuration() int {
