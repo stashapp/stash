@@ -646,6 +646,13 @@ func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
 	backupPath := input.BackupPath
 	if backupPath == "" {
 		backupPath = database.DatabaseBackupPath(s.Config.GetBackupDirectoryPath())
+	} else {
+		// check if backup path is a filename or path
+		// filename goes into backup directory, path is kept as is
+		filename := filepath.Base(backupPath)
+		if backupPath == filename {
+			backupPath = filepath.Join(s.Config.GetBackupDirectoryPathOrDefault(), filename)
+		}
 	}
 
 	// perform database backup
