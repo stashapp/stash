@@ -27,14 +27,19 @@ type SceneFinderUpdater interface {
 	AddGalleryIDs(ctx context.Context, sceneID int, galleryIDs []int) error
 }
 
+type ImageFinderUpdater interface {
+	FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]*models.Image, error)
+	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
+}
+
 type ScanHandler struct {
 	CreatorUpdater     FullCreatorUpdater
 	SceneFinderUpdater SceneFinderUpdater
-
-	PluginCache *plugin.Cache
+	ImageFinderUpdater ImageFinderUpdater
+	PluginCache        *plugin.Cache
 }
 
-func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
+func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File) error {
 	baseFile := f.Base()
 
 	// try to match the file to a gallery
@@ -52,10 +57,23 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	}
 
 	if len(existing) > 0 {
-		if err := h.associateExisting(ctx, existing, f); err != nil {
+		updateExisting := oldFile != nil
+		if err := h.associateExisting(ctx, existing, f, updateExisting); err != nil {
 			return err
 		}
 	} else {
+		// only create galleries if there is something to put in them
+		// otherwise, they will be created on the fly when an image is created
+		images, err := h.ImageFinderUpdater.FindByZipFileID(ctx, f.Base().ID)
+		if err != nil {
+			return err
+		}
+
+		if len(images) == 0 {
+			// don't create an empty gallery
+			return nil
+		}
+
 		// create a new gallery
 		now := time.Now()
 		newGallery := &models.Gallery{
@@ -71,6 +89,19 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 
 		h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
 
+		// associate all the images in the zip file with the gallery
+		for _, i := range images {
+			if _, err := h.ImageFinderUpdater.UpdatePartial(ctx, i.ID, models.ImagePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{newGallery.ID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+				UpdatedAt: models.NewOptionalTime(now),
+			}); err != nil {
+				return fmt.Errorf("adding image %s to gallery: %w", i.Path, err)
+			}
+		}
+
 		existing = []*models.Gallery{newGallery}
 	}
 
@@ -81,7 +112,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	return nil
 }
 
-func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Gallery, f file.File) error {
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Gallery, f file.File, updateExisting bool) error {
 	for _, i := range existing {
 		if err := i.LoadFiles(ctx, h.CreatorUpdater); err != nil {
 			return err
@@ -107,6 +138,9 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			}
 		}
 
+		if !found || updateExisting {
+			h.PluginCache.RegisterPostHooks(ctx, i.ID, plugin.GalleryUpdatePost, nil, nil)
+		}
 	}
 
 	return nil

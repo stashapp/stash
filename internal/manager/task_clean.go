@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type cleaner interface {
@@ -49,9 +50,93 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 		return
 	}
 
+	j.cleanEmptyGalleries(ctx)
+
 	j.scanSubs.notify()
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Finished Cleaning (%s)", elapsed))
+}
+
+func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
+	const batchSize = 1000
+	var toClean []int
+	findFilter := models.BatchFindFilter(batchSize)
+	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+		found := true
+		for found {
+			emptyGalleries, _, err := j.txnManager.Gallery.Query(ctx, &models.GalleryFilterType{
+				ImageCount: &models.IntCriterionInput{
+					Value:    0,
+					Modifier: models.CriterionModifierEquals,
+				},
+			}, findFilter)
+
+			if err != nil {
+				return err
+			}
+
+			found = len(emptyGalleries) > 0
+
+			for _, g := range emptyGalleries {
+				if g.Path == "" {
+					continue
+				}
+
+				if len(j.input.Paths) > 0 && !fsutil.IsPathInDirs(j.input.Paths, g.Path) {
+					continue
+				}
+
+				logger.Infof("Gallery has 0 images. Marking to clean: %s", g.DisplayName())
+				toClean = append(toClean, g.ID)
+			}
+
+			*findFilter.Page++
+		}
+
+		return nil
+	}); err != nil {
+		logger.Errorf("Error finding empty galleries: %v", err)
+		return
+	}
+
+	if !j.input.DryRun {
+		for _, id := range toClean {
+			j.deleteGallery(ctx, id)
+		}
+	}
+}
+
+func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
+	pluginCache := GetInstance().PluginCache
+	qb := j.txnManager.Gallery
+
+	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+		g, err := qb.Find(ctx, id)
+		if err != nil {
+			return err
+		}
+
+		if g == nil {
+			return fmt.Errorf("gallery not found: %d", id)
+		}
+
+		if err := g.LoadPrimaryFile(ctx, j.txnManager.File); err != nil {
+			return err
+		}
+
+		if err := qb.Destroy(ctx, id); err != nil {
+			return err
+		}
+
+		pluginCache.RegisterPostHooks(ctx, id, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+			Checksum: g.PrimaryChecksum(),
+			Path:     g.Path,
+		}, nil)
+
+		return nil
+	}); err != nil {
+		logger.Errorf("Error deleting gallery from database: %s", err.Error())
+	}
 }
 
 type cleanFilter struct {
