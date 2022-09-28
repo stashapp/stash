@@ -139,7 +139,8 @@ INSERT INTO `scene_markers_tags_new`
   SELECT 
     `scene_marker_id`,
     `tag_id`
-  FROM `scene_markers_tags`;
+  FROM `scene_markers_tags` WHERE true
+  ON CONFLICT (`scene_marker_id`, `tag_id`) DO NOTHING;
 
 DROP TABLE `scene_markers_tags`;
 ALTER TABLE `scene_markers_tags_new` rename to `scene_markers_tags`;
@@ -166,7 +167,8 @@ INSERT INTO `scenes_tags_new`
   SELECT 
     `scene_id`,
     `tag_id`
-  FROM `scenes_tags`;
+  FROM `scenes_tags` WHERE true
+  ON CONFLICT (`scene_id`, `tag_id`) DO NOTHING;
 
 DROP TABLE `scenes_tags`;
 ALTER TABLE `scenes_tags_new` rename to `scenes_tags`;
@@ -273,7 +275,8 @@ INSERT INTO `images_tags_new`
   SELECT 
     `image_id`,
     `tag_id`
-  FROM `images_tags`;
+  FROM `images_tags` WHERE true
+  ON CONFLICT (`image_id`, `tag_id`) DO NOTHING;
 
 DROP TABLE `images_tags`;
 ALTER TABLE `images_tags_new` rename to `images_tags`;
@@ -462,7 +465,8 @@ INSERT INTO `galleries_tags_new`
   SELECT 
     `gallery_id`,
     `tag_id`
-  FROM `galleries_tags`;
+  FROM `galleries_tags` WHERE true
+  ON CONFLICT (`gallery_id`, `tag_id`) DO NOTHING;
 
 DROP TABLE `galleries_tags`;
 ALTER TABLE `galleries_tags_new` rename to `galleries_tags`;
@@ -489,7 +493,8 @@ INSERT INTO `performers_tags_new`
   SELECT 
     `performer_id`,
     `tag_id`
-  FROM `performers_tags`;
+  FROM `performers_tags` WHERE true
+  ON CONFLICT (`performer_id`, `tag_id`) DO NOTHING;
 
 DROP TABLE `performers_tags`;
 ALTER TABLE `performers_tags_new` rename to `performers_tags`;
