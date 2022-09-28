@@ -13,6 +13,7 @@ const (
 type hookManager struct {
 	postCommitHooks   []TxnFunc
 	postRollbackHooks []TxnFunc
+	postCompleteHooks []TxnFunc
 }
 
 func (m *hookManager) register(ctx context.Context) context.Context {
@@ -27,20 +28,26 @@ func hookManagerCtx(ctx context.Context) *hookManager {
 	return m
 }
 
-func executePostCommitHooks(ctx context.Context) {
-	m := hookManagerCtx(ctx)
-	for _, h := range m.postCommitHooks {
+func executeHooks(ctx context.Context, hooks []TxnFunc) {
+	for _, h := range hooks {
 		// ignore errors
 		_ = h(ctx)
 	}
 }
 
+func executePostCommitHooks(ctx context.Context) {
+	m := hookManagerCtx(ctx)
+	executeHooks(ctx, m.postCommitHooks)
+}
+
 func executePostRollbackHooks(ctx context.Context) {
 	m := hookManagerCtx(ctx)
-	for _, h := range m.postRollbackHooks {
-		// ignore errors
-		_ = h(ctx)
-	}
+	executeHooks(ctx, m.postRollbackHooks)
+}
+
+func executePostCompleteHooks(ctx context.Context) {
+	m := hookManagerCtx(ctx)
+	executeHooks(ctx, m.postCompleteHooks)
 }
 
 func AddPostCommitHook(ctx context.Context, hook TxnFunc) {
@@ -51,4 +58,9 @@ func AddPostCommitHook(ctx context.Context, hook TxnFunc) {
 func AddPostRollbackHook(ctx context.Context, hook TxnFunc) {
 	m := hookManagerCtx(ctx)
 	m.postRollbackHooks = append(m.postRollbackHooks, hook)
+}
+
+func AddPostCompleteHook(ctx context.Context, hook TxnFunc) {
+	m := hookManagerCtx(ctx)
+	m.postCompleteHooks = append(m.postCompleteHooks, hook)
 }

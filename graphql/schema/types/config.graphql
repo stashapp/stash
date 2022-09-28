@@ -259,6 +259,10 @@ input ConfigInterfaceInput {
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
+
+  """Custom Locales"""
+  customLocales: String
+  customLocalesEnabled: Boolean
   
   """Interface language"""
   language: String
@@ -322,6 +326,10 @@ type ConfigInterfaceResult {
   css: String
   cssEnabled: Boolean
 
+  """Custom Locales"""
+  customLocales: String
+  customLocalesEnabled: Boolean
+  
   """Interface language"""
   language: String
 

@@ -544,7 +544,13 @@ func (rs sceneRoutes) SceneCtx(next http.Handler) http.Handler {
 			}
 
 			if scene != nil {
-				_ = scene.LoadPrimaryFile(ctx, rs.fileFinder)
+				if err := scene.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error loading primary file for scene %d: %v", sceneID, err)
+					}
+					// set scene to nil so that it doesn't try to use the primary file
+					scene = nil
+				}
 			}
 
 			return nil
