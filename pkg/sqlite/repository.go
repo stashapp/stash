@@ -324,9 +324,53 @@ func (r *joinRepository) getIDs(ctx context.Context, id int) ([]int, error) {
 	return r.runIdsQuery(ctx, query, []interface{}{id})
 }
 
-func (r *joinRepository) insert(ctx context.Context, id, foreignID int) (sql.Result, error) {
-	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)", r.tableName, r.idColumn, r.fkColumn)
-	return r.tx.Exec(ctx, stmt, id, foreignID)
+func (r *joinRepository) insert(ctx context.Context, id int, foreignIDs ...int) error {
+	stmt, err := r.tx.Prepare(ctx, fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)", r.tableName, r.idColumn, r.fkColumn))
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	for _, fk := range foreignIDs {
+		if _, err := r.tx.ExecStmt(ctx, stmt, id, fk); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// insertOrIgnore inserts a join into the table, silently failing in the event that a conflict occurs (ie when the join already exists)
+func (r *joinRepository) insertOrIgnore(ctx context.Context, id int, foreignIDs ...int) error {
+	stmt, err := r.tx.Prepare(ctx, fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?) ON CONFLICT (%[2]s, %s) DO NOTHING", r.tableName, r.idColumn, r.fkColumn))
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	for _, fk := range foreignIDs {
+		if _, err := r.tx.ExecStmt(ctx, stmt, id, fk); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *joinRepository) destroyJoins(ctx context.Context, id int, foreignIDs ...int) error {
+	stmt := fmt.Sprintf("DELETE FROM %s WHERE %s = ? AND %s IN %s", r.tableName, r.idColumn, r.fkColumn, getInBinding(len(foreignIDs)))
+
+	args := make([]interface{}, len(foreignIDs)+1)
+	args[0] = id
+	for i, v := range foreignIDs {
+		args[i+1] = v
+	}
+
+	if _, err := r.tx.Exec(ctx, stmt, args...); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *joinRepository) replace(ctx context.Context, id int, foreignIDs []int) error {
@@ -335,7 +379,7 @@ func (r *joinRepository) replace(ctx context.Context, id int, foreignIDs []int) 
 	}
 
 	for _, fk := range foreignIDs {
-		if _, err := r.insert(ctx, id, fk); err != nil {
+		if err := r.insert(ctx, id, fk); err != nil {
 			return err
 		}
 	}

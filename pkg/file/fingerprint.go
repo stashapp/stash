@@ -14,6 +14,19 @@ type Fingerprint struct {
 
 type Fingerprints []Fingerprint
 
+func (f *Fingerprints) Remove(type_ string) {
+	var ret Fingerprints
+
+	for _, ff := range *f {
+		if ff.Type != type_ {
+			ret = append(ret, ff)
+		}
+	}
+
+	*f = ret
+}
+
+// Equals returns true if the contents of this slice are equal to those in the other slice.
 func (f Fingerprints) Equals(other Fingerprints) bool {
 	if len(f) != len(other) {
 		return false
@@ -34,6 +47,18 @@ func (f Fingerprints) Equals(other Fingerprints) bool {
 	}
 
 	return true
+}
+
+// ContentsChanged returns true if this Fingerprints slice contains any Fingerprints that different Fingerprint values for the matching type in other, or if this slice contains any Fingerprint types that are not in other.
+func (f Fingerprints) ContentsChanged(other Fingerprints) bool {
+	for _, ff := range f {
+		oo := other.For(ff.Type)
+		if oo == nil || oo.Fingerprint != ff.Fingerprint {
+			return true
+		}
+	}
+
+	return false
 }
 
 // For returns a pointer to the first Fingerprint element matching the provided type.

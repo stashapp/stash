@@ -84,8 +84,7 @@ func (c *fingerprintCalculator) CalculateFingerprints(f *file.BaseFile, o file.O
 		ret = append(ret, *fp)
 
 		// only calculate MD5 if enabled in config
-		// always re-calculate MD5 if the file already has it
-		calculateMD5 = c.Config.IsCalculateMD5() || f.Fingerprints.For(file.FingerprintTypeMD5) != nil
+		calculateMD5 = c.Config.IsCalculateMD5()
 	}
 
 	if calculateMD5 {

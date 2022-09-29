@@ -22,6 +22,11 @@ type TxnFunc func(ctx context.Context) error
 // WithTxn executes fn in a transaction. If fn returns an error then
 // the transaction is rolled back. Otherwise it is committed.
 func WithTxn(ctx context.Context, m Manager, fn TxnFunc) error {
+	const execComplete = true
+	return withTxn(ctx, m, fn, execComplete)
+}
+
+func withTxn(ctx context.Context, m Manager, fn TxnFunc, execCompleteOnLocked bool) error {
 	var err error
 	ctx, err = begin(ctx, m)
 	if err != nil {
@@ -38,10 +43,16 @@ func WithTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 		if err != nil {
 			// something went wrong, rollback
 			rollback(ctx, m)
+
+			if execCompleteOnLocked || !m.IsLocked(err) {
+				executePostCompleteHooks(ctx)
+			}
 		} else {
 			// all good, commit
 			err = commit(ctx, m)
+			executePostCompleteHooks(ctx)
 		}
+
 	}()
 
 	err = fn(ctx)
@@ -102,7 +113,8 @@ func (r Retryer) WithTxn(ctx context.Context, fn TxnFunc) error {
 	var attempt int
 	var err error
 	for attempt = 1; attempt <= r.Retries || r.Retries < 0; attempt++ {
-		err = WithTxn(ctx, r.Manager, fn)
+		const execComplete = false
+		err = withTxn(ctx, r.Manager, fn, execComplete)
 
 		if err == nil {
 			return nil

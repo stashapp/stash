@@ -638,7 +638,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 			return fmt.Errorf("creating file %q: %w", path, err)
 		}
 
-		if err := s.fireHandlers(ctx, file); err != nil {
+		if err := s.fireHandlers(ctx, file, nil); err != nil {
 			return err
 		}
 
@@ -662,9 +662,9 @@ func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, erro
 	return f, nil
 }
 
-func (s *scanJob) fireHandlers(ctx context.Context, f File) error {
+func (s *scanJob) fireHandlers(ctx context.Context, f File, oldFile File) error {
 	for _, h := range s.handlers {
-		if err := h.Handle(ctx, f); err != nil {
+		if err := h.Handle(ctx, f, oldFile); err != nil {
 			return err
 		}
 	}
@@ -774,6 +774,10 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
 		}
 
+		if err := s.fireHandlers(ctx, f, other); err != nil {
+			return err
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err
@@ -859,7 +863,7 @@ func (s *scanJob) setMissingFingerprints(ctx context.Context, f scanFile, existi
 		return nil, err
 	}
 
-	if !fp.Equals(existing.Base().Fingerprints) {
+	if fp.ContentsChanged(existing.Base().Fingerprints) {
 		existing.SetFingerprints(fp)
 
 		if err := s.withTxn(ctx, func(ctx context.Context) error {
@@ -885,60 +889,10 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 	updated := !fileModTime.Equal(base.ModTime)
 
 	if !updated {
-		var err error
-
-		isMissingMetdata := s.isMissingMetadata(existing)
-		// set missing information
-		if isMissingMetdata {
-			existing, err = s.setMissingMetadata(ctx, f, existing)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		// calculate missing fingerprints
-		existing, err = s.setMissingFingerprints(ctx, f, existing)
-		if err != nil {
-			return nil, err
-		}
-
-		handlerRequired := false
-		if err := s.withDB(ctx, func(ctx context.Context) error {
-			// check if the handler needs to be run
-			handlerRequired = s.isHandlerRequired(ctx, existing)
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-
-		if !handlerRequired {
-			// if this file is a zip file, then we need to rescan the contents
-			// as well. We do this by returning the file, instead of nil.
-			if isMissingMetdata {
-				return existing, nil
-			}
-
-			return nil, nil
-		}
-
-		if err := s.withTxn(ctx, func(ctx context.Context) error {
-			if err := s.fireHandlers(ctx, existing); err != nil {
-				return err
-			}
-
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-
-		// if this file is a zip file, then we need to rescan the contents
-		// as well. We do this by returning the file, instead of nil.
-		if isMissingMetdata {
-			return existing, nil
-		}
-
-		return nil, nil
+		return s.onUnchangedFile(ctx, f, existing)
 	}
+
+	oldBase := *base
 
 	logger.Infof("%s has been updated: rescanning", path)
 	base.ModTime = fileModTime
@@ -952,6 +906,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 		return nil, err
 	}
 
+	s.removeOutdatedFingerprints(existing, fp)
 	existing.SetFingerprints(fp)
 
 	existing, err = s.fireDecorators(ctx, f.fs, existing)
@@ -965,7 +920,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 			return fmt.Errorf("updating file %q: %w", path, err)
 		}
 
-		if err := s.fireHandlers(ctx, existing); err != nil {
+		if err := s.fireHandlers(ctx, existing, &oldBase); err != nil {
 			return err
 		}
 
@@ -974,5 +929,84 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 		return nil, err
 	}
 
+	return existing, nil
+}
+
+func (s *scanJob) removeOutdatedFingerprints(existing File, fp Fingerprints) {
+	// HACK - if no MD5 fingerprint was returned, and the oshash is changed
+	// then remove the MD5 fingerprint
+	oshash := fp.For(FingerprintTypeOshash)
+	if oshash == nil {
+		return
+	}
+
+	existingOshash := existing.Base().Fingerprints.For(FingerprintTypeOshash)
+	if existingOshash == nil || *existingOshash == *oshash {
+		// missing oshash or same oshash - nothing to do
+		return
+	}
+
+	md5 := fp.For(FingerprintTypeMD5)
+
+	if md5 != nil {
+		// nothing to do
+		return
+	}
+
+	// oshash has changed, MD5 is missing - remove MD5 from the existing fingerprints
+	logger.Infof("Removing outdated checksum from %s", existing.Base().Path)
+	existing.Base().Fingerprints.Remove(FingerprintTypeMD5)
+}
+
+// returns a file only if it was updated
+func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing File) (File, error) {
+	var err error
+
+	isMissingMetdata := s.isMissingMetadata(existing)
+	// set missing information
+	if isMissingMetdata {
+		existing, err = s.setMissingMetadata(ctx, f, existing)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// calculate missing fingerprints
+	existing, err = s.setMissingFingerprints(ctx, f, existing)
+	if err != nil {
+		return nil, err
+	}
+
+	handlerRequired := false
+	if err := s.withDB(ctx, func(ctx context.Context) error {
+		// check if the handler needs to be run
+		handlerRequired = s.isHandlerRequired(ctx, existing)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	if !handlerRequired {
+		// if this file is a zip file, then we need to rescan the contents
+		// as well. We do this by returning the file, instead of nil.
+		if isMissingMetdata {
+			return existing, nil
+		}
+
+		return nil, nil
+	}
+
+	if err := s.withTxn(ctx, func(ctx context.Context) error {
+		if err := s.fireHandlers(ctx, existing, nil); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	// if this file is a zip file, then we need to rescan the contents
+	// as well. We do this by returning the file, instead of nil.
 	return existing, nil
 }

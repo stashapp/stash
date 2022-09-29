@@ -1323,6 +1323,15 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		)
 	}
 
+	addFolderTable := func() {
+		query.addJoins(
+			join{
+				table:    folderTable,
+				onClause: "files.parent_folder_id = folders.id",
+			},
+		)
+	}
+
 	direction := findFilter.GetDirection()
 	switch sort {
 	case "movie_scene_number":
@@ -1337,12 +1346,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "path":
 		// special handling for path
 		addFileTable()
-		query.addJoins(
-			join{
-				table:    folderTable,
-				onClause: "files.parent_folder_id = folders.id",
-			},
-		)
+		addFolderTable()
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
 	case "perceptual_similarity":
 		// special handling for phash
@@ -1377,6 +1381,10 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "interactive", "interactive_speed":
 		addVideoFileTable()
 		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+	case "title":
+		addFileTable()
+		addFolderTable()
+		query.sortAndPagination += " ORDER BY scenes.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}

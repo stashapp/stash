@@ -356,6 +356,12 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 
 	setBool(config.CSSEnabled, input.CSSEnabled)
 
+	if input.CustomLocales != nil {
+		c.SetCustomLocales(*input.CustomLocales)
+	}
+
+	setBool(config.CustomLocalesEnabled, input.CustomLocalesEnabled)
+
 	if input.DisableDropdownCreate != nil {
 		ddc := input.DisableDropdownCreate
 		setBool(config.DisableDropdownCreatePerformer, ddc.Performer)

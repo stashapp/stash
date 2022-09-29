@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
@@ -35,6 +36,9 @@ type ScanHandler struct {
 	CoverGenerator CoverGenerator
 	ScanGenerator  ScanGenerator
 	PluginCache    *plugin.Cache
+
+	FileNamingAlgorithm models.HashAlgorithm
+	Paths               *paths.Paths
 }
 
 func (h *ScanHandler) validate() error {
@@ -47,11 +51,17 @@ func (h *ScanHandler) validate() error {
 	if h.ScanGenerator == nil {
 		return errors.New("ScanGenerator is required")
 	}
+	if !h.FileNamingAlgorithm.IsValid() {
+		return errors.New("FileNamingAlgorithm is required")
+	}
+	if h.Paths == nil {
+		return errors.New("Paths is required")
+	}
 
 	return nil
 }
 
-func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
+func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File) error {
 	if err := h.validate(); err != nil {
 		return err
 	}
@@ -76,7 +86,8 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	}
 
 	if len(existing) > 0 {
-		if err := h.associateExisting(ctx, existing, videoFile); err != nil {
+		updateExisting := oldFile != nil
+		if err := h.associateExisting(ctx, existing, videoFile, updateExisting); err != nil {
 			return err
 		}
 	} else {
@@ -98,6 +109,16 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 		existing = []*models.Scene{newScene}
 	}
 
+	if oldFile != nil {
+		// migrate hashes from the old file to the new
+		oldHash := GetHash(oldFile, h.FileNamingAlgorithm)
+		newHash := GetHash(f, h.FileNamingAlgorithm)
+
+		if oldHash != "" && newHash != "" && oldHash != newHash {
+			MigrateHash(h.Paths, oldHash, newHash)
+		}
+	}
+
 	for _, s := range existing {
 		if err := h.CoverGenerator.GenerateCover(ctx, s, videoFile); err != nil {
 			// just log if cover generation fails. We can try again on rescan
@@ -113,7 +134,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File) error {
 	return nil
 }
 
-func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Scene, f *file.VideoFile) error {
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Scene, f *file.VideoFile, updateExisting bool) error {
 	for _, s := range existing {
 		if err := s.LoadFiles(ctx, h.CreatorUpdater); err != nil {
 			return err
@@ -138,6 +159,10 @@ func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.
 			if _, err := h.CreatorUpdater.UpdatePartial(ctx, s.ID, models.NewScenePartial()); err != nil {
 				return fmt.Errorf("updating scene: %w", err)
 			}
+		}
+
+		if !found || updateExisting {
+			h.PluginCache.RegisterPostHooks(ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 		}
 	}
 
