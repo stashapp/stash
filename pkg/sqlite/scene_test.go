@@ -1160,24 +1160,24 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 
 			// only compare fields that were in the partial
 			if tt.partial.PerformerIDs != nil {
-				assert.Equal(tt.want.PerformerIDs, got.PerformerIDs)
-				assert.Equal(tt.want.PerformerIDs, s.PerformerIDs)
+				assert.ElementsMatch(tt.want.PerformerIDs.List(), got.PerformerIDs.List())
+				assert.ElementsMatch(tt.want.PerformerIDs.List(), s.PerformerIDs.List())
 			}
 			if tt.partial.TagIDs != nil {
-				assert.Equal(tt.want.TagIDs, got.TagIDs)
-				assert.Equal(tt.want.TagIDs, s.TagIDs)
+				assert.ElementsMatch(tt.want.TagIDs.List(), got.TagIDs.List())
+				assert.ElementsMatch(tt.want.TagIDs.List(), s.TagIDs.List())
 			}
 			if tt.partial.GalleryIDs != nil {
-				assert.Equal(tt.want.GalleryIDs, got.GalleryIDs)
-				assert.Equal(tt.want.GalleryIDs, s.GalleryIDs)
+				assert.ElementsMatch(tt.want.GalleryIDs.List(), got.GalleryIDs.List())
+				assert.ElementsMatch(tt.want.GalleryIDs.List(), s.GalleryIDs.List())
 			}
 			if tt.partial.MovieIDs != nil {
-				assert.Equal(tt.want.Movies, got.Movies)
-				assert.Equal(tt.want.Movies, s.Movies)
+				assert.ElementsMatch(tt.want.Movies.List(), got.Movies.List())
+				assert.ElementsMatch(tt.want.Movies.List(), s.Movies.List())
 			}
 			if tt.partial.StashIDs != nil {
-				assert.Equal(tt.want.StashIDs, got.StashIDs)
-				assert.Equal(tt.want.StashIDs, s.StashIDs)
+				assert.ElementsMatch(tt.want.StashIDs.List(), got.StashIDs.List())
+				assert.ElementsMatch(tt.want.StashIDs.List(), s.StashIDs.List())
 			}
 		})
 	}

@@ -13,7 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -422,13 +421,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 			return errors.New("gallery not found")
 		}
 
-		newIDs, err := qb.GetImageIDs(ctx, galleryID)
-		if err != nil {
-			return err
-		}
-
-		newIDs = intslice.IntAppendUniques(newIDs, imageIDs)
-		return qb.UpdateImages(ctx, galleryID, newIDs)
+		return r.galleryService.AddImages(ctx, gallery, imageIDs...)
 	}); err != nil {
 		return false, err
 	}
@@ -458,13 +451,7 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 			return errors.New("gallery not found")
 		}
 
-		newIDs, err := qb.GetImageIDs(ctx, galleryID)
-		if err != nil {
-			return err
-		}
-
-		newIDs = intslice.IntExclude(newIDs, imageIDs)
-		return qb.UpdateImages(ctx, galleryID, newIDs)
+		return r.galleryService.RemoveImages(ctx, gallery, imageIDs...)
 	}); err != nil {
 		return false, err
 	}

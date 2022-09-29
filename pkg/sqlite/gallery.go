@@ -1168,6 +1168,14 @@ func (qb *GalleryStore) GetImageIDs(ctx context.Context, galleryID int) ([]int, 
 	return qb.imagesRepository().getIDs(ctx, galleryID)
 }
 
+func (qb *GalleryStore) AddImages(ctx context.Context, galleryID int, imageIDs ...int) error {
+	return qb.imagesRepository().insertOrIgnore(ctx, galleryID, imageIDs...)
+}
+
+func (qb *GalleryStore) RemoveImages(ctx context.Context, galleryID int, imageIDs ...int) error {
+	return qb.imagesRepository().destroyJoins(ctx, galleryID, imageIDs...)
+}
+
 func (qb *GalleryStore) UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.imagesRepository().replace(ctx, galleryID, imageIDs)

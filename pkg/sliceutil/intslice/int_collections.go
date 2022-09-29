@@ -65,6 +65,24 @@ func IntIntercect(v1, v2 []int) []int {
 	return ret
 }
 
+// IntNotIntersect returns a slice of ints containing values that do not exist in both provided slices.
+func IntNotIntersect(v1, v2 []int) []int {
+	var ret []int
+	for _, v := range v1 {
+		if !IntInclude(v2, v) {
+			ret = append(ret, v)
+		}
+	}
+
+	for _, v := range v2 {
+		if !IntInclude(v1, v) {
+			ret = append(ret, v)
+		}
+	}
+
+	return ret
+}
+
 // IntSliceToStringSlice converts a slice of ints to a slice of strings.
 func IntSliceToStringSlice(ss []int) []string {
 	ret := make([]string, len(ss))
