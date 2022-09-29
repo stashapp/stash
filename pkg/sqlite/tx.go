@@ -21,6 +21,11 @@ type dbReader interface {
 	QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error)
 }
 
+type stmt struct {
+	*sql.Stmt
+	query string
+}
+
 func logSQL(start time.Time, query string, args ...interface{}) {
 	since := time.Since(start)
 	if since >= slowLogTime {
@@ -116,4 +121,36 @@ func (*dbWrapper) Exec(ctx context.Context, query string, args ...interface{}) (
 	logSQL(start, query, args...)
 
 	return ret, sqlError(err, query, args...)
+}
+
+// Prepare creates a prepared statement.
+func (*dbWrapper) Prepare(ctx context.Context, query string, args ...interface{}) (*stmt, error) {
+	tx, err := getTx(ctx)
+	if err != nil {
+		return nil, sqlError(err, query, args...)
+	}
+
+	// nolint:sqlclosecheck
+	ret, err := tx.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, sqlError(err, query, args...)
+	}
+
+	return &stmt{
+		query: query,
+		Stmt:  ret,
+	}, nil
+}
+
+func (*dbWrapper) ExecStmt(ctx context.Context, stmt *stmt, args ...interface{}) (sql.Result, error) {
+	_, err := getTx(ctx)
+	if err != nil {
+		return nil, sqlError(err, stmt.query, args...)
+	}
+
+	start := time.Now()
+	ret, err := stmt.ExecContext(ctx, args...)
+	logSQL(start, stmt.query, args...)
+
+	return ret, sqlError(err, stmt.query, args...)
 }
