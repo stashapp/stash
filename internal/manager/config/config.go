@@ -1366,7 +1366,6 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)
 	i.main.SetDefault(PluginsPath, defaultPluginsPath)
 
-	// Set default backup directory path
 	if write {
 		return i.main.WriteConfig()
 	}
