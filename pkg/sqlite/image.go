@@ -922,7 +922,6 @@ func imageStudioCriterionHandler(qb *ImageStore, studios *models.HierarchicalMul
 		primaryTable: imageTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
-		derivedTable: "studio",
 		parentFK:     "parent_id",
 	}
 
