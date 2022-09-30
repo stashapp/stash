@@ -244,6 +244,10 @@
         "username": "Nome Utente",
         "username_desc": "Nome Utente per accedere a Stash. Lasciare vuoto per disabilitare l'autenticazione"
       },
+      "backup_directory_path": {
+        "description": "Percorso della directory per i file di backup del database SQLite",
+        "heading": "Percorso Directory di Backup"
+      },
       "cache_location": "Percorso della Cartella cache",
       "cache_path_head": "Percorso Cache",
       "calculate_md5_and_ohash_desc": "Calcola l'MD5 checksum oltre l'oshash. Attivare la funzione causerà una prima scansione più lenta. L'hash dei nomi file dev'essere impostata su oshash per disabilitare il calcolo MD5.",
@@ -548,6 +552,24 @@
       "slideshow_delay": {
         "description": "La presentazione è disponibile nelle gallerie quando in modalità muro",
         "heading": "Ritardo Presentazione (secondi)"
+      },
+      "studio_panel": {
+        "heading": "Vista Studio",
+        "options": {
+          "show_child_studio_content": {
+            "description": "Nella vista studio, visualizza anche il contenuto dei sub-studio",
+            "heading": "Visualizza contenuto sub-studio"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Vista Tag",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "Nella vista tag, visualizza anche il contenuto delle subtag",
+            "heading": "Visualizza contenuto subtag"
+          }
+        }
       },
       "title": "Interfaccia Utente"
     }
