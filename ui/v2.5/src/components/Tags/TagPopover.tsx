@@ -35,7 +35,8 @@ export const TagPopoverCard: React.FC<ITagPopoverCardProps> = ({ id }) => {
 export const TagPopover: React.FC<ITagPopoverProps> = ({ id, children }) => {
   const { configuration: config } = React.useContext(ConfigurationContext);
 
-  const showTagCardOnHover = (config?.ui as IUIConfig)?.showTagCardOnHover ?? true;
+  const showTagCardOnHover =
+    (config?.ui as IUIConfig)?.showTagCardOnHover ?? true;
 
   if (!id || !showTagCardOnHover) {
     return <>{children}</>;
