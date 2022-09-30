@@ -7,6 +7,7 @@ import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { FormattedMessage } from "react-intl";
+import { objectTitle } from "src/core/files";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -47,6 +48,10 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       : `/scenes/${scene.id}`;
 
     let shiftKey = false;
+
+    const file = scene.files.length > 0 ? scene.files[0] : undefined;
+
+    const title = objectTitle(scene);
     return (
       <tr key={scene.id}>
         <td>
@@ -73,21 +78,18 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
           <Link to={sceneLink}>
             <img
               className="image-thumbnail"
-              alt={scene.title ?? ""}
+              alt={title}
               src={scene.paths.screenshot ?? ""}
             />
           </Link>
         </td>
         <td className="text-left">
           <Link to={sceneLink}>
-            <h5>{scene.title ?? TextUtils.fileNameFromPath(scene.path)}</h5>
+            <h5>{title}</h5>
           </Link>
         </td>
         <td>{scene.rating ? scene.rating : ""}</td>
-        <td>
-          {scene.file.duration &&
-            TextUtils.secondsToTimestamp(scene.file.duration)}
-        </td>
+        <td>{file?.duration && TextUtils.secondsToTimestamp(file.duration)}</td>
         <td>{renderTags(scene.tags)}</td>
         <td>{renderPerformers(scene.performers)}</td>
         <td>

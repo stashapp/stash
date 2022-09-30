@@ -8,16 +8,19 @@ import (
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stretchr/testify/mock"
 )
 
+var testCtx = context.Background()
+
 type mockSceneScraper struct {
 	errIDs  []int
-	results map[int]*models.ScrapedScene
+	results map[int]*scraper.ScrapedScene
 }
 
-func (s mockSceneScraper) ScrapeScene(ctx context.Context, sceneID int) (*models.ScrapedScene, error) {
+func (s mockSceneScraper) ScrapeScene(ctx context.Context, sceneID int) (*scraper.ScrapedScene, error) {
 	if intslice.IntInclude(s.errIDs, sceneID) {
 		return nil, errors.New("scrape scene error")
 	}
@@ -42,12 +45,12 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 
 	var scrapedTitle = "scrapedTitle"
 
-	defaultOptions := &models.IdentifyMetadataOptionsInput{}
+	defaultOptions := &MetadataOptions{}
 	sources := []ScraperSource{
 		{
 			Scraper: mockSceneScraper{
 				errIDs: []int{errID1},
-				results: map[int]*models.ScrapedScene{
+				results: map[int]*scraper.ScrapedScene{
 					found1ID: {
 						Title: &scrapedTitle,
 					},
@@ -57,7 +60,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		{
 			Scraper: mockSceneScraper{
 				errIDs: []int{errID2},
-				results: map[int]*models.ScrapedScene{
+				results: map[int]*scraper.ScrapedScene{
 					found2ID: {
 						Title: &scrapedTitle,
 					},
@@ -69,13 +72,14 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 		},
 	}
 
-	repo := mocks.NewTransactionManager()
-	repo.Scene().(*mocks.SceneReaderWriter).On("Update", mock.MatchedBy(func(partial models.ScenePartial) bool {
-		return partial.ID != errUpdateID
-	})).Return(nil, nil)
-	repo.Scene().(*mocks.SceneReaderWriter).On("Update", mock.MatchedBy(func(partial models.ScenePartial) bool {
-		return partial.ID == errUpdateID
-	})).Return(nil, errors.New("update error"))
+	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
+
+	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
+		return id == errUpdateID
+	}), mock.Anything).Return(nil, errors.New("update error"))
+	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
+		return id != errUpdateID
+	}), mock.Anything).Return(nil, nil)
 
 	tests := []struct {
 		name    string
@@ -115,6 +119,7 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	}
 
 	identifier := SceneIdentifier{
+		SceneReaderUpdater:          mockSceneReaderWriter,
 		DefaultOptions:              defaultOptions,
 		Sources:                     sources,
 		SceneUpdatePostHookExecutor: mockHookExecutor{},
@@ -123,9 +128,12 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			scene := &models.Scene{
-				ID: tt.sceneID,
+				ID:           tt.sceneID,
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
 			}
-			if err := identifier.Identify(context.TODO(), repo, scene); (err != nil) != tt.wantErr {
+			if err := identifier.Identify(testCtx, &mocks.TxnManager{}, scene); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.Identify() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -133,7 +141,9 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 }
 
 func TestSceneIdentifier_modifyScene(t *testing.T) {
-	repo := mocks.NewTransactionManager()
+	repo := models.Repository{
+		TxnManager: &mocks.TxnManager{},
+	}
 	tr := &SceneIdentifier{}
 
 	type args struct {
@@ -148,9 +158,13 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 		{
 			"empty update",
 			args{
-				&models.Scene{},
+				&models.Scene{
+					PerformerIDs: models.NewRelatedIDs([]int{}),
+					TagIDs:       models.NewRelatedIDs([]int{}),
+					StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+				},
 				&scrapeResult{
-					result: &models.ScrapedScene{},
+					result: &scraper.ScrapedScene{},
 				},
 			},
 			false,
@@ -158,7 +172,7 @@ func TestSceneIdentifier_modifyScene(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tr.modifyScene(context.TODO(), repo, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
+			if err := tr.modifyScene(testCtx, repo, tt.args.scene, tt.args.result); (err != nil) != tt.wantErr {
 				t.Errorf("SceneIdentifier.modifyScene() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -173,55 +187,55 @@ func Test_getFieldOptions(t *testing.T) {
 	)
 
 	type args struct {
-		options []models.IdentifyMetadataOptionsInput
+		options []MetadataOptions
 	}
 	tests := []struct {
 		name string
 		args args
-		want map[string]*models.IdentifyFieldOptionsInput
+		want map[string]*FieldOptions
 	}{
 		{
 			"simple",
 			args{
-				[]models.IdentifyMetadataOptionsInput{
+				[]MetadataOptions{
 					{
-						FieldOptions: []*models.IdentifyFieldOptionsInput{
+						FieldOptions: []*FieldOptions{
 							{
 								Field:    inFirst,
-								Strategy: models.IdentifyFieldStrategyIgnore,
+								Strategy: FieldStrategyIgnore,
 							},
 							{
 								Field:    inBoth,
-								Strategy: models.IdentifyFieldStrategyIgnore,
+								Strategy: FieldStrategyIgnore,
 							},
 						},
 					},
 					{
-						FieldOptions: []*models.IdentifyFieldOptionsInput{
+						FieldOptions: []*FieldOptions{
 							{
 								Field:    inSecond,
-								Strategy: models.IdentifyFieldStrategyMerge,
+								Strategy: FieldStrategyMerge,
 							},
 							{
 								Field:    inBoth,
-								Strategy: models.IdentifyFieldStrategyMerge,
+								Strategy: FieldStrategyMerge,
 							},
 						},
 					},
 				},
 			},
-			map[string]*models.IdentifyFieldOptionsInput{
+			map[string]*FieldOptions{
 				inFirst: {
 					Field:    inFirst,
-					Strategy: models.IdentifyFieldStrategyIgnore,
+					Strategy: FieldStrategyIgnore,
 				},
 				inSecond: {
 					Field:    inSecond,
-					Strategy: models.IdentifyFieldStrategyMerge,
+					Strategy: FieldStrategyMerge,
 				},
 				inBoth: {
 					Field:    inBoth,
-					Strategy: models.IdentifyFieldStrategyIgnore,
+					Strategy: FieldStrategyIgnore,
 				},
 			},
 		},
@@ -238,26 +252,26 @@ func Test_getFieldOptions(t *testing.T) {
 func Test_getScenePartial(t *testing.T) {
 	var (
 		originalTitle   = "originalTitle"
-		originalDate    = "originalDate"
+		originalDate    = "2001-01-01"
 		originalDetails = "originalDetails"
 		originalURL     = "originalURL"
 	)
 
 	var (
 		scrapedTitle   = "scrapedTitle"
-		scrapedDate    = "scrapedDate"
+		scrapedDate    = "2002-02-02"
 		scrapedDetails = "scrapedDetails"
 		scrapedURL     = "scrapedURL"
 	)
 
+	originalDateObj := models.NewDate(originalDate)
+	scrapedDateObj := models.NewDate(scrapedDate)
+
 	originalScene := &models.Scene{
-		Title: models.NullString(originalTitle),
-		Date: models.SQLiteDate{
-			String: originalDate,
-			Valid:  true,
-		},
-		Details: models.NullString(originalDetails),
-		URL:     models.NullString(originalURL),
+		Title:   originalTitle,
+		Date:    &originalDateObj,
+		Details: originalDetails,
+		URL:     originalURL,
 	}
 
 	organisedScene := *originalScene
@@ -266,31 +280,28 @@ func Test_getScenePartial(t *testing.T) {
 	emptyScene := &models.Scene{}
 
 	postPartial := models.ScenePartial{
-		Title: models.NullStringPtr(scrapedTitle),
-		Date: &models.SQLiteDate{
-			String: scrapedDate,
-			Valid:  true,
-		},
-		Details: models.NullStringPtr(scrapedDetails),
-		URL:     models.NullStringPtr(scrapedURL),
+		Title:   models.NewOptionalString(scrapedTitle),
+		Date:    models.NewOptionalDate(scrapedDateObj),
+		Details: models.NewOptionalString(scrapedDetails),
+		URL:     models.NewOptionalString(scrapedURL),
 	}
 
-	scrapedScene := &models.ScrapedScene{
+	scrapedScene := &scraper.ScrapedScene{
 		Title:   &scrapedTitle,
 		Date:    &scrapedDate,
 		Details: &scrapedDetails,
 		URL:     &scrapedURL,
 	}
 
-	scrapedUnchangedScene := &models.ScrapedScene{
+	scrapedUnchangedScene := &scraper.ScrapedScene{
 		Title:   &originalTitle,
 		Date:    &originalDate,
 		Details: &originalDetails,
 		URL:     &originalURL,
 	}
 
-	makeFieldOptions := func(input *models.IdentifyFieldOptionsInput) map[string]*models.IdentifyFieldOptionsInput {
-		return map[string]*models.IdentifyFieldOptionsInput{
+	makeFieldOptions := func(input *FieldOptions) map[string]*FieldOptions {
+		return map[string]*FieldOptions{
 			"title":   input,
 			"date":    input,
 			"details": input,
@@ -298,22 +309,22 @@ func Test_getScenePartial(t *testing.T) {
 		}
 	}
 
-	overwriteAll := makeFieldOptions(&models.IdentifyFieldOptionsInput{
-		Strategy: models.IdentifyFieldStrategyOverwrite,
+	overwriteAll := makeFieldOptions(&FieldOptions{
+		Strategy: FieldStrategyOverwrite,
 	})
-	ignoreAll := makeFieldOptions(&models.IdentifyFieldOptionsInput{
-		Strategy: models.IdentifyFieldStrategyIgnore,
+	ignoreAll := makeFieldOptions(&FieldOptions{
+		Strategy: FieldStrategyIgnore,
 	})
-	mergeAll := makeFieldOptions(&models.IdentifyFieldOptionsInput{
-		Strategy: models.IdentifyFieldStrategyMerge,
+	mergeAll := makeFieldOptions(&FieldOptions{
+		Strategy: FieldStrategyMerge,
 	})
 
 	setOrganised := true
 
 	type args struct {
 		scene        *models.Scene
-		scraped      *models.ScrapedScene
-		fieldOptions map[string]*models.IdentifyFieldOptionsInput
+		scraped      *scraper.ScrapedScene
+		fieldOptions map[string]*FieldOptions
 		setOrganized bool
 	}
 	tests := []struct {
@@ -380,7 +391,7 @@ func Test_getScenePartial(t *testing.T) {
 				true,
 			},
 			models.ScenePartial{
-				Organized: &setOrganised,
+				Organized: models.NewOptionalBool(setOrganised),
 			},
 		},
 		{
@@ -407,7 +418,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 	const invalid = "invalid"
 
 	type args struct {
-		strategy         *models.IdentifyFieldOptionsInput
+		strategy         *FieldOptions
 		hasExistingValue bool
 	}
 	tests := []struct {
@@ -418,8 +429,8 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"ignore",
 			args{
-				&models.IdentifyFieldOptionsInput{
-					Strategy: models.IdentifyFieldStrategyIgnore,
+				&FieldOptions{
+					Strategy: FieldStrategyIgnore,
 				},
 				false,
 			},
@@ -428,8 +439,8 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"merge existing",
 			args{
-				&models.IdentifyFieldOptionsInput{
-					Strategy: models.IdentifyFieldStrategyMerge,
+				&FieldOptions{
+					Strategy: FieldStrategyMerge,
 				},
 				true,
 			},
@@ -438,8 +449,8 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"merge absent",
 			args{
-				&models.IdentifyFieldOptionsInput{
-					Strategy: models.IdentifyFieldStrategyMerge,
+				&FieldOptions{
+					Strategy: FieldStrategyMerge,
 				},
 				false,
 			},
@@ -448,8 +459,8 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"overwrite",
 			args{
-				&models.IdentifyFieldOptionsInput{
-					Strategy: models.IdentifyFieldStrategyOverwrite,
+				&FieldOptions{
+					Strategy: FieldStrategyOverwrite,
 				},
 				true,
 			},
@@ -458,7 +469,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"nil (merge) existing",
 			args{
-				&models.IdentifyFieldOptionsInput{},
+				&FieldOptions{},
 				true,
 			},
 			false,
@@ -466,7 +477,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"nil (merge) absent",
 			args{
-				&models.IdentifyFieldOptionsInput{},
+				&FieldOptions{},
 				false,
 			},
 			true,
@@ -474,7 +485,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"invalid (merge) existing",
 			args{
-				&models.IdentifyFieldOptionsInput{
+				&FieldOptions{
 					Strategy: invalid,
 				},
 				true,
@@ -484,7 +495,7 @@ func Test_shouldSetSingleValueField(t *testing.T) {
 		{
 			"invalid (merge) absent",
 			args{
-				&models.IdentifyFieldOptionsInput{
+				&FieldOptions{
 					Strategy: invalid,
 				},
 				false,

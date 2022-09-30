@@ -2,10 +2,19 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared";
 import { PerformerEditPanel } from "./PerformerEditPanel";
+import { useLocation } from "react-router-dom";
 
 const PerformerCreate: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
+
+  function useQuery() {
+    const { search } = useLocation();
+    return React.useMemo(() => new URLSearchParams(search), [search]);
+  }
+
+  const query = useQuery();
+  const nameQuery = query.get("name");
 
   const activeImage = imagePreview ?? "";
   const intl = useIntl();
@@ -41,7 +50,7 @@ const PerformerCreate: React.FC = () => {
           />
         </h2>
         <PerformerEditPanel
-          performer={{}}
+          performer={{ name: nameQuery ?? "" }}
           isVisible
           isNew
           onImageChange={onImageChange}

@@ -27,6 +27,9 @@ export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 
 export interface IUIConfig {
   frontPageContent?: FrontPageContent[];
+  lastNoteSeen?: number;
+  showChildTagContent?: boolean;
+  showChildStudioContent?: boolean;
 }
 
 function recentlyReleased(

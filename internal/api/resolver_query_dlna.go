@@ -3,10 +3,10 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *queryResolver) DlnaStatus(ctx context.Context) (*models.DLNAStatus, error) {
+func (r *queryResolver) DlnaStatus(ctx context.Context) (*dlna.Status, error) {
 	return manager.GetInstance().DLNAService.Status(), nil
 }

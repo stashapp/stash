@@ -1,51 +1,90 @@
 package autotag
 
 import (
+	"context"
+
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
+
+type ImagePerformerUpdater interface {
+	models.PerformerIDLoader
+	image.PartialUpdater
+}
+
+type ImageTagUpdater interface {
+	models.TagIDLoader
+	image.PartialUpdater
+}
 
 func getImageFileTagger(s *models.Image, cache *match.Cache) tagger {
 	return tagger{
 		ID:    s.ID,
 		Type:  "image",
-		Name:  s.GetTitle(),
+		Name:  s.DisplayName(),
 		Path:  s.Path,
 		cache: cache,
 	}
 }
 
 // ImagePerformers tags the provided image with performers whose name matches the image's path.
-func ImagePerformers(s *models.Image, rw models.ImageReaderWriter, performerReader models.PerformerReader, cache *match.Cache) error {
+func ImagePerformers(ctx context.Context, s *models.Image, rw ImagePerformerUpdater, performerReader match.PerformerAutoTagQueryer, cache *match.Cache) error {
 	t := getImageFileTagger(s, cache)
 
-	return t.tagPerformers(performerReader, func(subjectID, otherID int) (bool, error) {
-		return image.AddPerformer(rw, subjectID, otherID)
+	return t.tagPerformers(ctx, performerReader, func(subjectID, otherID int) (bool, error) {
+		if err := s.LoadPerformerIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := s.PerformerIDs.List()
+
+		if intslice.IntInclude(existing, otherID) {
+			return false, nil
+		}
+
+		if err := image.AddPerformer(ctx, rw, s, otherID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }
 
 // ImageStudios tags the provided image with the first studio whose name matches the image's path.
 //
 // Images will not be tagged if studio is already set.
-func ImageStudios(s *models.Image, rw models.ImageReaderWriter, studioReader models.StudioReader, cache *match.Cache) error {
-	if s.StudioID.Valid {
+func ImageStudios(ctx context.Context, s *models.Image, rw ImageFinderUpdater, studioReader match.StudioAutoTagQueryer, cache *match.Cache) error {
+	if s.StudioID != nil {
 		// don't modify
 		return nil
 	}
 
 	t := getImageFileTagger(s, cache)
 
-	return t.tagStudios(studioReader, func(subjectID, otherID int) (bool, error) {
-		return addImageStudio(rw, subjectID, otherID)
+	return t.tagStudios(ctx, studioReader, func(subjectID, otherID int) (bool, error) {
+		return addImageStudio(ctx, rw, s, otherID)
 	})
 }
 
 // ImageTags tags the provided image with tags whose name matches the image's path.
-func ImageTags(s *models.Image, rw models.ImageReaderWriter, tagReader models.TagReader, cache *match.Cache) error {
+func ImageTags(ctx context.Context, s *models.Image, rw ImageTagUpdater, tagReader match.TagAutoTagQueryer, cache *match.Cache) error {
 	t := getImageFileTagger(s, cache)
 
-	return t.tagTags(tagReader, func(subjectID, otherID int) (bool, error) {
-		return image.AddTag(rw, subjectID, otherID)
+	return t.tagTags(ctx, tagReader, func(subjectID, otherID int) (bool, error) {
+		if err := s.LoadTagIDs(ctx, rw); err != nil {
+			return false, err
+		}
+		existing := s.TagIDs.List()
+
+		if intslice.IntInclude(existing, otherID) {
+			return false, nil
+		}
+
+		if err := image.AddTag(ctx, rw, s, otherID); err != nil {
+			return false, err
+		}
+
+		return true, nil
 	})
 }

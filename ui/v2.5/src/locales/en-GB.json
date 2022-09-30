@@ -189,6 +189,7 @@
     },
     "categories": {
       "about": "About",
+      "changelog": "Changelog",
       "interface": "Interface",
       "logs": "Logs",
       "metadata_providers": "Metadata Providers",
@@ -242,6 +243,10 @@
         "stash-box_integration": "Stash-box integration",
         "username": "Username",
         "username_desc": "Username to access Stash. Leave blank to disable user authentication"
+      },
+      "backup_directory_path": {
+        "description": "Directory location for SQLite database file backups",
+        "heading": "Backup Directory Path"
       },
       "cache_location": "Directory location of the cache",
       "cache_path_head": "Cache Path",
@@ -426,6 +431,11 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
+      "custom_locales": {
+        "description": "Override individual locale strings. See https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json for the master list. Page must be reloaded for changes to take effect.",
+        "heading": "Custom localisation",
+        "option_label": "Custom localisation enabled"
+      },
       "delete_options": {
         "description": "Default settings when deleting images, galleries, and scenes.",
         "heading": "Delete Options",
@@ -518,7 +528,7 @@
         "options": {
           "auto_start_video": "Auto-start video",
           "auto_start_video_on_play_selected": {
-            "description": "Auto-start scene videos when playing selected or random from Scenes page",
+            "description": "Auto-start scene videos when playing from queue, or playing selected or random from Scenes page",
             "heading": "Auto-start video when playing selected"
           },
           "continue_playlist_default": {
@@ -542,6 +552,24 @@
       "slideshow_delay": {
         "description": "Slideshow is available in galleries when in wall view mode",
         "heading": "Slideshow Delay (seconds)"
+      },
+      "tag_panel": {
+        "heading": "Tag view",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "In the tag view, display content from the subtags as well",
+            "heading": "Display subtag content"
+          }
+        }
+      },
+      "studio_panel": {
+        "heading": "Studio view",
+        "options": {
+          "show_child_studio_content": {
+            "description": "In the studio view, display content from the sub-studios as well",
+            "heading": "Display sub-studios content"
+          }
+        }
       },
       "title": "User Interface"
     }
@@ -604,6 +632,7 @@
     "edit_entity_title": "Edit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include related objects in export",
     "export_title": "Export",
+    "dont_show_until_updated": "Don't show until next update",
     "lightbox": {
       "delay": "Delay (Sec)",
       "display_mode": {
@@ -726,6 +755,7 @@
   "false": "False",
   "favourite": "Favourite",
   "file": "file",
+  "file_count": "File Count",
   "file_info": "File Info",
   "file_mod_time": "File Modification Time",
   "files": "files",
@@ -733,6 +763,7 @@
   "filter": "Filter",
   "filter_name": "Filter name",
   "filters": "Filters",
+  "folder": "Folder",
   "framerate": "Frame Rate",
   "frames_per_second": "{value} frames per second",
   "front_page": {
@@ -870,6 +901,7 @@
   "rating": "Rating",
   "recently_added_objects": "Recently Added {objects}",
   "recently_released_objects": "Recently Released {objects}",
+  "release_notes": "Release Notes",
   "resolution": "Resolution",
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
@@ -919,9 +951,10 @@
       "migration_failed_error": "The following error was encountered while migrating the database:",
       "migration_failed_help": "Please make any necessary corrections and try again. Otherwise, raise a bug on the {githubLink} or seek help in the {discordLink}.",
       "migration_irreversible_warning": "The schema migration process is not reversible. Once the migration is performed, your database will be incompatible with previous versions of stash.",
+      "migration_notes": "Migration Notes",
       "migration_required": "Migration required",
       "perform_schema_migration": "Perform schema migration",
-      "schema_too_old": "Your current stash database is schema version <strong>{databaseSchema}</strong> and needs to be migrated to version <strong>{appSchema}</strong>. This version of Stash will not function without migrating the database."
+      "schema_too_old": "Your current stash database is schema version <strong>{databaseSchema}</strong> and needs to be migrated to version <strong>{appSchema}</strong>. This version of Stash will not function without migrating the database. If you do not wish to migrate, you will need to downgrade to a version that matches your database schema."
     },
     "paths": {
       "database_filename_empty_for_default": "database filename (empty for default)",
@@ -1019,5 +1052,6 @@
   "videos": "Videos",
   "view_all": "View All",
   "weight": "Weight",
-  "years_old": "years old"
+  "years_old": "years old",
+  "zip_file_count": "Zip File Count"
 }

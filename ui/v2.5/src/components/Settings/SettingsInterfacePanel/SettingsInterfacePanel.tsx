@@ -39,9 +39,14 @@ const allMenuItems = [
 export const SettingsInterfacePanel: React.FC = () => {
   const intl = useIntl();
 
-  const { interface: iface, saveInterface, loading, error } = React.useContext(
-    SettingStateContext
-  );
+  const {
+    interface: iface,
+    saveInterface,
+    ui,
+    saveUI,
+    loading,
+    error,
+  } = React.useContext(SettingStateContext);
 
   const {
     interactive,
@@ -241,6 +246,24 @@ export const SettingsInterfacePanel: React.FC = () => {
           }}
         />
       </SettingSection>
+      <SettingSection headingID="config.ui.tag_panel.heading">
+        <BooleanSetting
+          id="show-child-tagged-content"
+          headingID="config.ui.tag_panel.options.show_child_tagged_content.heading"
+          subHeadingID="config.ui.tag_panel.options.show_child_tagged_content.description"
+          checked={ui.showChildTagContent ?? undefined}
+          onChange={(v) => saveUI({ showChildTagContent: v })}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.studio_panel.heading">
+        <BooleanSetting
+          id="show-child-studio-content"
+          headingID="config.ui.studio_panel.options.show_child_studio_content.heading"
+          subHeadingID="config.ui.studio_panel.options.show_child_studio_content.description"
+          checked={ui.showChildStudioContent ?? undefined}
+          onChange={(v) => saveUI({ showChildStudioContent: v })}
+        />
+      </SettingSection>
 
       <SettingSection headingID="config.ui.image_lightbox.heading">
         <NumberSetting
@@ -392,6 +415,36 @@ export const SettingsInterfacePanel: React.FC = () => {
           subHeadingID="config.ui.custom_css.description"
           value={iface.css ?? undefined}
           onChange={(v) => saveInterface({ css: v })}
+          renderField={(value, setValue) => (
+            <Form.Control
+              as="textarea"
+              value={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setValue(e.currentTarget.value)
+              }
+              rows={16}
+              className="text-input code"
+            />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.custom_locales.heading">
+        <BooleanSetting
+          id="custom-locales-enabled"
+          headingID="config.ui.custom_locales.option_label"
+          checked={iface.customLocalesEnabled ?? undefined}
+          onChange={(v) => saveInterface({ customLocalesEnabled: v })}
+        />
+
+        <ModalSetting<string>
+          id="custom-locales"
+          headingID="config.ui.custom_locales.heading"
+          subHeadingID="config.ui.custom_locales.description"
+          value={iface.customLocales ?? undefined}
+          onChange={(v) => saveInterface({ customLocales: v })}
           renderField={(value, setValue) => (
             <Form.Control
               as="textarea"

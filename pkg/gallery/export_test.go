@@ -3,6 +3,7 @@ package gallery
 import (
 	"errors"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -21,16 +22,13 @@ const (
 	errStudioID     = 6
 
 	// noTagsID  = 11
-	errTagsID = 12
 )
 
-const (
-	path      = "path"
-	isZip     = true
+var (
 	url       = "url"
-	checksum  = "checksum"
 	title     = "title"
 	date      = "2001-01-01"
+	dateObj   = models.NewDate(date)
 	rating    = 5
 	organized = true
 	details   = "details"
@@ -38,6 +36,7 @@ const (
 
 const (
 	studioName = "studioName"
+	path       = "path"
 )
 
 var (
@@ -47,39 +46,32 @@ var (
 
 func createFullGallery(id int) models.Gallery {
 	return models.Gallery{
-		ID:       id,
-		Path:     models.NullString(path),
-		Zip:      isZip,
-		Title:    models.NullString(title),
-		Checksum: checksum,
-		Date: models.SQLiteDate{
-			String: date,
-			Valid:  true,
-		},
-		Details:   models.NullString(details),
-		Rating:    models.NullInt64(rating),
+		ID: id,
+		Files: models.NewRelatedFiles([]file.File{
+			&file.BaseFile{
+				Path: path,
+			},
+		}),
+		Title:     title,
+		Date:      &dateObj,
+		Details:   details,
+		Rating:    &rating,
 		Organized: organized,
-		URL:       models.NullString(url),
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		URL:       url,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
 func createFullJSONGallery() *jsonschema.Gallery {
 	return &jsonschema.Gallery{
 		Title:     title,
-		Path:      path,
-		Zip:       isZip,
-		Checksum:  checksum,
 		Date:      date,
 		Details:   details,
 		Rating:    rating,
 		Organized: organized,
 		URL:       url,
+		ZipFiles:  []string{path},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
@@ -121,7 +113,7 @@ func TestToJSON(t *testing.T) {
 
 func createStudioGallery(studioID int) models.Gallery {
 	return models.Gallery{
-		StudioID: models.NullInt64(int64(studioID)),
+		StudioID: &studioID,
 	}
 }
 
@@ -154,15 +146,15 @@ func TestGetStudioName(t *testing.T) {
 
 	studioErr := errors.New("error getting image")
 
-	mockStudioReader.On("Find", studioID).Return(&models.Studio{
+	mockStudioReader.On("Find", testCtx, studioID).Return(&models.Studio{
 		Name: models.NullString(studioName),
 	}, nil).Once()
-	mockStudioReader.On("Find", missingStudioID).Return(nil, nil).Once()
-	mockStudioReader.On("Find", errStudioID).Return(nil, studioErr).Once()
+	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil).Once()
+	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr).Once()
 
 	for i, s := range getStudioScenarios {
 		gallery := s.input
-		json, err := GetStudioName(mockStudioReader, &gallery)
+		json, err := GetStudioName(testCtx, mockStudioReader, &gallery)
 
 		switch {
 		case !s.err && err != nil:

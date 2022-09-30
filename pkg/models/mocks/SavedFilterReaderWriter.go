@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	models "github.com/stashapp/stash/pkg/models"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -12,13 +14,13 @@ type SavedFilterReaderWriter struct {
 	mock.Mock
 }
 
-// All provides a mock function with given fields:
-func (_m *SavedFilterReaderWriter) All() ([]*models.SavedFilter, error) {
-	ret := _m.Called()
+// All provides a mock function with given fields: ctx
+func (_m *SavedFilterReaderWriter) All(ctx context.Context) ([]*models.SavedFilter, error) {
+	ret := _m.Called(ctx)
 
 	var r0 []*models.SavedFilter
-	if rf, ok := ret.Get(0).(func() []*models.SavedFilter); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) []*models.SavedFilter); ok {
+		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.SavedFilter)
@@ -26,8 +28,8 @@ func (_m *SavedFilterReaderWriter) All() ([]*models.SavedFilter, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -35,13 +37,13 @@ func (_m *SavedFilterReaderWriter) All() ([]*models.SavedFilter, error) {
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: obj
-func (_m *SavedFilterReaderWriter) Create(obj models.SavedFilter) (*models.SavedFilter, error) {
-	ret := _m.Called(obj)
+// Create provides a mock function with given fields: ctx, obj
+func (_m *SavedFilterReaderWriter) Create(ctx context.Context, obj models.SavedFilter) (*models.SavedFilter, error) {
+	ret := _m.Called(ctx, obj)
 
 	var r0 *models.SavedFilter
-	if rf, ok := ret.Get(0).(func(models.SavedFilter) *models.SavedFilter); ok {
-		r0 = rf(obj)
+	if rf, ok := ret.Get(0).(func(context.Context, models.SavedFilter) *models.SavedFilter); ok {
+		r0 = rf(ctx, obj)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.SavedFilter)
@@ -49,8 +51,8 @@ func (_m *SavedFilterReaderWriter) Create(obj models.SavedFilter) (*models.Saved
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.SavedFilter) error); ok {
-		r1 = rf(obj)
+	if rf, ok := ret.Get(1).(func(context.Context, models.SavedFilter) error); ok {
+		r1 = rf(ctx, obj)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -58,13 +60,13 @@ func (_m *SavedFilterReaderWriter) Create(obj models.SavedFilter) (*models.Saved
 	return r0, r1
 }
 
-// Destroy provides a mock function with given fields: id
-func (_m *SavedFilterReaderWriter) Destroy(id int) error {
-	ret := _m.Called(id)
+// Destroy provides a mock function with given fields: ctx, id
+func (_m *SavedFilterReaderWriter) Destroy(ctx context.Context, id int) error {
+	ret := _m.Called(ctx, id)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -72,13 +74,13 @@ func (_m *SavedFilterReaderWriter) Destroy(id int) error {
 	return r0
 }
 
-// Find provides a mock function with given fields: id
-func (_m *SavedFilterReaderWriter) Find(id int) (*models.SavedFilter, error) {
-	ret := _m.Called(id)
+// Find provides a mock function with given fields: ctx, id
+func (_m *SavedFilterReaderWriter) Find(ctx context.Context, id int) (*models.SavedFilter, error) {
+	ret := _m.Called(ctx, id)
 
 	var r0 *models.SavedFilter
-	if rf, ok := ret.Get(0).(func(int) *models.SavedFilter); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) *models.SavedFilter); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.SavedFilter)
@@ -86,8 +88,8 @@ func (_m *SavedFilterReaderWriter) Find(id int) (*models.SavedFilter, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -95,13 +97,13 @@ func (_m *SavedFilterReaderWriter) Find(id int) (*models.SavedFilter, error) {
 	return r0, r1
 }
 
-// FindByMode provides a mock function with given fields: mode
-func (_m *SavedFilterReaderWriter) FindByMode(mode models.FilterMode) ([]*models.SavedFilter, error) {
-	ret := _m.Called(mode)
+// FindByMode provides a mock function with given fields: ctx, mode
+func (_m *SavedFilterReaderWriter) FindByMode(ctx context.Context, mode models.FilterMode) ([]*models.SavedFilter, error) {
+	ret := _m.Called(ctx, mode)
 
 	var r0 []*models.SavedFilter
-	if rf, ok := ret.Get(0).(func(models.FilterMode) []*models.SavedFilter); ok {
-		r0 = rf(mode)
+	if rf, ok := ret.Get(0).(func(context.Context, models.FilterMode) []*models.SavedFilter); ok {
+		r0 = rf(ctx, mode)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.SavedFilter)
@@ -109,8 +111,8 @@ func (_m *SavedFilterReaderWriter) FindByMode(mode models.FilterMode) ([]*models
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.FilterMode) error); ok {
-		r1 = rf(mode)
+	if rf, ok := ret.Get(1).(func(context.Context, models.FilterMode) error); ok {
+		r1 = rf(ctx, mode)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -118,13 +120,13 @@ func (_m *SavedFilterReaderWriter) FindByMode(mode models.FilterMode) ([]*models
 	return r0, r1
 }
 
-// FindDefault provides a mock function with given fields: mode
-func (_m *SavedFilterReaderWriter) FindDefault(mode models.FilterMode) (*models.SavedFilter, error) {
-	ret := _m.Called(mode)
+// FindDefault provides a mock function with given fields: ctx, mode
+func (_m *SavedFilterReaderWriter) FindDefault(ctx context.Context, mode models.FilterMode) (*models.SavedFilter, error) {
+	ret := _m.Called(ctx, mode)
 
 	var r0 *models.SavedFilter
-	if rf, ok := ret.Get(0).(func(models.FilterMode) *models.SavedFilter); ok {
-		r0 = rf(mode)
+	if rf, ok := ret.Get(0).(func(context.Context, models.FilterMode) *models.SavedFilter); ok {
+		r0 = rf(ctx, mode)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.SavedFilter)
@@ -132,8 +134,8 @@ func (_m *SavedFilterReaderWriter) FindDefault(mode models.FilterMode) (*models.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.FilterMode) error); ok {
-		r1 = rf(mode)
+	if rf, ok := ret.Get(1).(func(context.Context, models.FilterMode) error); ok {
+		r1 = rf(ctx, mode)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -141,13 +143,13 @@ func (_m *SavedFilterReaderWriter) FindDefault(mode models.FilterMode) (*models.
 	return r0, r1
 }
 
-// FindMany provides a mock function with given fields: ids, ignoreNotFound
-func (_m *SavedFilterReaderWriter) FindMany(ids []int, ignoreNotFound bool) ([]*models.SavedFilter, error) {
-	ret := _m.Called(ids, ignoreNotFound)
+// FindMany provides a mock function with given fields: ctx, ids, ignoreNotFound
+func (_m *SavedFilterReaderWriter) FindMany(ctx context.Context, ids []int, ignoreNotFound bool) ([]*models.SavedFilter, error) {
+	ret := _m.Called(ctx, ids, ignoreNotFound)
 
 	var r0 []*models.SavedFilter
-	if rf, ok := ret.Get(0).(func([]int, bool) []*models.SavedFilter); ok {
-		r0 = rf(ids, ignoreNotFound)
+	if rf, ok := ret.Get(0).(func(context.Context, []int, bool) []*models.SavedFilter); ok {
+		r0 = rf(ctx, ids, ignoreNotFound)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.SavedFilter)
@@ -155,8 +157,8 @@ func (_m *SavedFilterReaderWriter) FindMany(ids []int, ignoreNotFound bool) ([]*
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]int, bool) error); ok {
-		r1 = rf(ids, ignoreNotFound)
+	if rf, ok := ret.Get(1).(func(context.Context, []int, bool) error); ok {
+		r1 = rf(ctx, ids, ignoreNotFound)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -164,13 +166,13 @@ func (_m *SavedFilterReaderWriter) FindMany(ids []int, ignoreNotFound bool) ([]*
 	return r0, r1
 }
 
-// SetDefault provides a mock function with given fields: obj
-func (_m *SavedFilterReaderWriter) SetDefault(obj models.SavedFilter) (*models.SavedFilter, error) {
-	ret := _m.Called(obj)
+// SetDefault provides a mock function with given fields: ctx, obj
+func (_m *SavedFilterReaderWriter) SetDefault(ctx context.Context, obj models.SavedFilter) (*models.SavedFilter, error) {
+	ret := _m.Called(ctx, obj)
 
 	var r0 *models.SavedFilter
-	if rf, ok := ret.Get(0).(func(models.SavedFilter) *models.SavedFilter); ok {
-		r0 = rf(obj)
+	if rf, ok := ret.Get(0).(func(context.Context, models.SavedFilter) *models.SavedFilter); ok {
+		r0 = rf(ctx, obj)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.SavedFilter)
@@ -178,8 +180,8 @@ func (_m *SavedFilterReaderWriter) SetDefault(obj models.SavedFilter) (*models.S
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.SavedFilter) error); ok {
-		r1 = rf(obj)
+	if rf, ok := ret.Get(1).(func(context.Context, models.SavedFilter) error); ok {
+		r1 = rf(ctx, obj)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -187,13 +189,13 @@ func (_m *SavedFilterReaderWriter) SetDefault(obj models.SavedFilter) (*models.S
 	return r0, r1
 }
 
-// Update provides a mock function with given fields: obj
-func (_m *SavedFilterReaderWriter) Update(obj models.SavedFilter) (*models.SavedFilter, error) {
-	ret := _m.Called(obj)
+// Update provides a mock function with given fields: ctx, obj
+func (_m *SavedFilterReaderWriter) Update(ctx context.Context, obj models.SavedFilter) (*models.SavedFilter, error) {
+	ret := _m.Called(ctx, obj)
 
 	var r0 *models.SavedFilter
-	if rf, ok := ret.Get(0).(func(models.SavedFilter) *models.SavedFilter); ok {
-		r0 = rf(obj)
+	if rf, ok := ret.Get(0).(func(context.Context, models.SavedFilter) *models.SavedFilter); ok {
+		r0 = rf(ctx, obj)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.SavedFilter)
@@ -201,8 +203,8 @@ func (_m *SavedFilterReaderWriter) Update(obj models.SavedFilter) (*models.Saved
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.SavedFilter) error); ok {
-		r1 = rf(obj)
+	if rf, ok := ret.Get(1).(func(context.Context, models.SavedFilter) error); ok {
+		r1 = rf(ctx, obj)
 	} else {
 		r1 = ret.Error(1)
 	}

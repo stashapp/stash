@@ -13,8 +13,8 @@ func (r *queryResolver) FindGallery(ctx context.Context, id string) (ret *models
 		return nil, err
 	}
 
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Gallery().Find(idInt)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Gallery.Find(ctx, idInt)
 		return err
 	}); err != nil {
 		return nil, err
@@ -23,14 +23,14 @@ func (r *queryResolver) FindGallery(ctx context.Context, id string) (ret *models
 	return ret, nil
 }
 
-func (r *queryResolver) FindGalleries(ctx context.Context, galleryFilter *models.GalleryFilterType, filter *models.FindFilterType) (ret *models.FindGalleriesResultType, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		galleries, total, err := repo.Gallery().Query(galleryFilter, filter)
+func (r *queryResolver) FindGalleries(ctx context.Context, galleryFilter *models.GalleryFilterType, filter *models.FindFilterType) (ret *FindGalleriesResultType, err error) {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		galleries, total, err := r.repository.Gallery.Query(ctx, galleryFilter, filter)
 		if err != nil {
 			return err
 		}
 
-		ret = &models.FindGalleriesResultType{
+		ret = &FindGalleriesResultType{
 			Count:     total,
 			Galleries: galleries,
 		}

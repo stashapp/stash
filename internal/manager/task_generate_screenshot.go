@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -17,22 +16,17 @@ type GenerateScreenshotTask struct {
 	Scene               models.Scene
 	ScreenshotAt        *float64
 	fileNamingAlgorithm models.HashAlgorithm
-	txnManager          models.TransactionManager
+	txnManager          Repository
 }
 
 func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	scenePath := t.Scene.Path
-	ffprobe := instance.FFProbe
-	probeResult, err := ffprobe.NewVideoFile(scenePath)
 
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
+	videoFile := t.Scene.Files.Primary()
 
 	var at float64
 	if t.ScreenshotAt == nil {
-		at = float64(probeResult.Duration) * 0.2
+		at = float64(videoFile.Duration) * 0.2
 	} else {
 		at = *t.ScreenshotAt
 	}
@@ -53,7 +47,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		Overwrite:   true,
 	}
 
-	if err := g.Screenshot(context.TODO(), probeResult.Path, checksum, probeResult.Width, probeResult.Duration, generate.ScreenshotOptions{
+	if err := g.Screenshot(context.TODO(), videoFile.Path, checksum, videoFile.Width, videoFile.Duration, generate.ScreenshotOptions{
 		At: &at,
 	}); err != nil {
 		logger.Errorf("Error generating screenshot: %v", err)
@@ -74,25 +68,21 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		return
 	}
 
-	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
-		qb := r.Scene()
-		updatedTime := time.Now()
-		updatedScene := models.ScenePartial{
-			ID:        t.Scene.ID,
-			UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
-		}
+	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		qb := t.txnManager.Scene
+		updatedScene := models.NewScenePartial()
 
 		if err := scene.SetScreenshot(instance.Paths, checksum, coverImageData); err != nil {
 			return fmt.Errorf("error writing screenshot: %v", err)
 		}
 
 		// update the scene cover table
-		if err := qb.UpdateCover(t.Scene.ID, coverImageData); err != nil {
+		if err := qb.UpdateCover(ctx, t.Scene.ID, coverImageData); err != nil {
 			return fmt.Errorf("error setting screenshot: %v", err)
 		}
 
 		// update the scene with the update date
-		_, err = qb.Update(updatedScene)
+		_, err = qb.UpdatePartial(ctx, t.Scene.ID, updatedScene)
 		if err != nil {
 			return fmt.Errorf("error updating scene: %v", err)
 		}

@@ -1,6 +1,7 @@
 package tag
 
 import (
+	"context"
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -106,33 +107,34 @@ func initTestTable() {
 func TestToJSON(t *testing.T) {
 	initTestTable()
 
+	ctx := context.Background()
 	mockTagReader := &mocks.TagReaderWriter{}
 
 	imageErr := errors.New("error getting image")
 	aliasErr := errors.New("error getting aliases")
 	parentsErr := errors.New("error getting parents")
 
-	mockTagReader.On("GetAliases", tagID).Return([]string{"alias"}, nil).Once()
-	mockTagReader.On("GetAliases", noImageID).Return(nil, nil).Once()
-	mockTagReader.On("GetAliases", errImageID).Return(nil, nil).Once()
-	mockTagReader.On("GetAliases", errAliasID).Return(nil, aliasErr).Once()
-	mockTagReader.On("GetAliases", withParentsID).Return(nil, nil).Once()
-	mockTagReader.On("GetAliases", errParentsID).Return(nil, nil).Once()
+	mockTagReader.On("GetAliases", ctx, tagID).Return([]string{"alias"}, nil).Once()
+	mockTagReader.On("GetAliases", ctx, noImageID).Return(nil, nil).Once()
+	mockTagReader.On("GetAliases", ctx, errImageID).Return(nil, nil).Once()
+	mockTagReader.On("GetAliases", ctx, errAliasID).Return(nil, aliasErr).Once()
+	mockTagReader.On("GetAliases", ctx, withParentsID).Return(nil, nil).Once()
+	mockTagReader.On("GetAliases", ctx, errParentsID).Return(nil, nil).Once()
 
-	mockTagReader.On("GetImage", tagID).Return(imageBytes, nil).Once()
-	mockTagReader.On("GetImage", noImageID).Return(nil, nil).Once()
-	mockTagReader.On("GetImage", errImageID).Return(nil, imageErr).Once()
-	mockTagReader.On("GetImage", withParentsID).Return(imageBytes, nil).Once()
-	mockTagReader.On("GetImage", errParentsID).Return(nil, nil).Once()
+	mockTagReader.On("GetImage", ctx, tagID).Return(imageBytes, nil).Once()
+	mockTagReader.On("GetImage", ctx, noImageID).Return(nil, nil).Once()
+	mockTagReader.On("GetImage", ctx, errImageID).Return(nil, imageErr).Once()
+	mockTagReader.On("GetImage", ctx, withParentsID).Return(imageBytes, nil).Once()
+	mockTagReader.On("GetImage", ctx, errParentsID).Return(nil, nil).Once()
 
-	mockTagReader.On("FindByChildTagID", tagID).Return(nil, nil).Once()
-	mockTagReader.On("FindByChildTagID", noImageID).Return(nil, nil).Once()
-	mockTagReader.On("FindByChildTagID", withParentsID).Return([]*models.Tag{{Name: "parent"}}, nil).Once()
-	mockTagReader.On("FindByChildTagID", errParentsID).Return(nil, parentsErr).Once()
+	mockTagReader.On("FindByChildTagID", ctx, tagID).Return(nil, nil).Once()
+	mockTagReader.On("FindByChildTagID", ctx, noImageID).Return(nil, nil).Once()
+	mockTagReader.On("FindByChildTagID", ctx, withParentsID).Return([]*models.Tag{{Name: "parent"}}, nil).Once()
+	mockTagReader.On("FindByChildTagID", ctx, errParentsID).Return(nil, parentsErr).Once()
 
 	for i, s := range scenarios {
 		tag := s.tag
-		json, err := ToJSON(mockTagReader, &tag)
+		json, err := ToJSON(ctx, mockTagReader, &tag)
 
 		switch {
 		case !s.err && err != nil:

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
@@ -16,6 +17,10 @@ type Tag struct {
 	IgnoreAutoTag bool          `json:"ignore_auto_tag,omitempty"`
 	CreatedAt     json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt     json.JSONTime `json:"updated_at,omitempty"`
+}
+
+func (s Tag) Filename() string {
+	return fsutil.SanitiseBasename(s.Name) + ".json"
 }
 
 func LoadTagFile(filePath string) (*Tag, error) {
