@@ -246,6 +246,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
             position={"relative"}
             sx={{
               cursor: "pointer",
+              transform: disabled ? "" : "translateY(25%)",
             }}
             key={index}
           >
@@ -261,7 +262,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
                     }%`
                   : "0%",
                 overflow: "hidden",
-                position: "absolute",
+                position: "fixed",
               }}
             >
               <FilledIcon sx={{ color: "gold" }} />
