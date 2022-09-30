@@ -244,6 +244,10 @@
         "username": "Nazwa użytkownika",
         "username_desc": "Nazwa użytkownika umożliwiająca dostęp do Stash. Pozostaw puste, aby wyłączyć uwierzytelnianie użytkownika"
       },
+      "backup_directory_path": {
+        "description": "Lokalizacja katalogu kopii zapasowych plików bazy danych SQLite",
+        "heading": "Ścieżka katalogu kopii zapasowych"
+      },
       "cache_location": "Lokalizacja katalogu pamięci podręcznej",
       "cache_path_head": "Ścieżka pamięci podręcznej",
       "calculate_md5_and_ohash_desc": "Oblicz sumę kontrolną MD5 jako dodatek do oshash. Włączenie spowoduje, że początkowe skanowanie będzie wolniejsze. Aby wyłączyć obliczanie MD5, hash nazwy pliku musi być ustawiony na oshash.",
@@ -548,6 +552,24 @@
       "slideshow_delay": {
         "description": "Pokaz slajdów jest dostępny w galeriach w trybie widoku ściany",
         "heading": "Opóźnienie pokazu slajdów (sekundy)"
+      },
+      "studio_panel": {
+        "heading": "Widok studia",
+        "options": {
+          "show_child_studio_content": {
+            "description": "W widoku studia wyświetlaj także zawartość z podstudiów",
+            "heading": "Wyświetlaj zawartość z podstudiów"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Widok tagu",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "W widoku tagu wyświetlaj również zawartość z podtagów",
+            "heading": "Wyświetlaj zawartość z podtagów"
+          }
+        }
       },
       "title": "Interfejs użytkownika"
     }
