@@ -352,6 +352,16 @@ ALTER TABLE `performer_stash_ids_new` rename to `performer_stash_ids`;
 -- CREATE INDEX `index_performer_stash_ids_on_performer_id` ON `performer_stash_ids` (`performer_id`);
 
 
+-- delete identical rows from studio_stash_ids before performing this
+-- translation
+DELETE FROM `studio_stash_ids` WHERE
+  rowid > (
+    SELECT MIN(rowid) FROM `studio_stash_ids` d
+	  WHERE `studio_stash_ids`.`studio_id` = d.`studio_id` AND
+	  `studio_stash_ids`.`endpoint` = d.`endpoint` AND
+	  `studio_stash_ids`.`stash_id` = d.`stash_id`
+);
+
 CREATE TABLE `studio_stash_ids_new` (
   `studio_id` integer NOT NULL,
   `endpoint` varchar(255) NOT NULL,
