@@ -933,14 +933,14 @@ func (i *Instance) GetWallPlayback() string {
 	return ret
 }
 
-func (i *Instance) GetRatingSystem() string {
+func (i *Instance) GetRatingSystem() RatingSystem {
 	i.RLock()
 	defer i.RUnlock()
 
 	ret := defaultRatingSystem
 	v := i.viper(RatingSystem)
 	if v.IsSet(RatingSystem) {
-		ret = v.GetString(RatingSystem)
+		ret = v
 	}
 
 	return ret
