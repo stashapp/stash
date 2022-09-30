@@ -553,6 +553,24 @@
         "description": "Slideshow is available in galleries when in wall view mode",
         "heading": "Slideshow Delay (seconds)"
       },
+      "tag_panel": {
+        "heading": "Tag view",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "In the tag view, display content from the subtags as well",
+            "heading": "Display subtag content"
+          }
+        }
+      },
+      "studio_panel": {
+        "heading": "Studio view",
+        "options": {
+          "show_child_studio_content": {
+            "description": "In the studio view, display content from the sub-studios as well",
+            "heading": "Display sub-studios content"
+          }
+        }
+      },
       "title": "User Interface"
     }
   },

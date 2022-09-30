@@ -39,9 +39,14 @@ const allMenuItems = [
 export const SettingsInterfacePanel: React.FC = () => {
   const intl = useIntl();
 
-  const { interface: iface, saveInterface, loading, error } = React.useContext(
-    SettingStateContext
-  );
+  const {
+    interface: iface,
+    saveInterface,
+    ui,
+    saveUI,
+    loading,
+    error,
+  } = React.useContext(SettingStateContext);
 
   const {
     interactive,
@@ -239,6 +244,24 @@ export const SettingsInterfacePanel: React.FC = () => {
           renderValue={(v) => {
             return <span>{DurationUtils.secondsToString(v ?? 0)}</span>;
           }}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.tag_panel.heading">
+        <BooleanSetting
+          id="show-child-tagged-content"
+          headingID="config.ui.tag_panel.options.show_child_tagged_content.heading"
+          subHeadingID="config.ui.tag_panel.options.show_child_tagged_content.description"
+          checked={ui.showChildTagContent ?? undefined}
+          onChange={(v) => saveUI({ showChildTagContent: v })}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.studio_panel.heading">
+        <BooleanSetting
+          id="show-child-studio-content"
+          headingID="config.ui.studio_panel.options.show_child_studio_content.heading"
+          subHeadingID="config.ui.studio_panel.options.show_child_studio_content.description"
+          checked={ui.showChildStudioContent ?? undefined}
+          onChange={(v) => saveUI({ showChildStudioContent: v })}
         />
       </SettingSection>
 
