@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/jmoiron/sqlx"
@@ -30,6 +31,11 @@ type schema32PreMigrator struct {
 }
 
 func (m *schema32PreMigrator) migrate(ctx context.Context) error {
+	const (
+		limit    = 1000
+		logEvery = 10000
+	)
+
 	// query for galleries with zip = 0 and path not null
 	result := struct {
 		Count int `db:"count"`
@@ -45,48 +51,73 @@ func (m *schema32PreMigrator) migrate(ctx context.Context) error {
 
 	logger.Infof("Checking %d galleries for incorrect zip value...", result.Count)
 
-	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-		const query = "SELECT `id`, `path` FROM `galleries` WHERE `zip` = '0' AND `path` IS NOT NULL ORDER BY `id`"
-		rows, err := m.db.Query(query)
-		if err != nil {
+	lastID := 0
+	count := 0
+
+	for {
+		gotSome := false
+
+		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
+			query := "SELECT `id`, `path` FROM `galleries` WHERE `zip` = '0' AND `path` IS NOT NULL "
+			if lastID != 0 {
+				query += fmt.Sprintf("AND `id` > %d ", lastID)
+			}
+
+			query += fmt.Sprintf("ORDER BY `id` LIMIT %d", limit)
+
+			rows, err := m.db.Query(query)
+			if err != nil {
+				return err
+			}
+			defer rows.Close()
+
+			for rows.Next() {
+				var id int
+				var p string
+
+				err := rows.Scan(&id, &p)
+				if err != nil {
+					return err
+				}
+
+				gotSome = true
+				lastID = id
+				count++
+
+				// if path does not exist, make no changes
+				// if it does exist and is a folder, then we ignore it
+				// otherwise set zip to 1
+				info, err := os.Stat(p)
+				if err != nil {
+					logger.Warnf("unable to verify if %q is a folder due to error %v. Assuming folder-based.", p, err)
+					continue
+				}
+
+				if info.IsDir() {
+					// ignore it
+					continue
+				}
+
+				logger.Infof("Correcting %q gallery to be zip-based.", p)
+
+				_, err = m.db.Exec("UPDATE `galleries` SET `zip` = '1' WHERE `id` = ?", id)
+				if err != nil {
+					return err
+				}
+			}
+
+			return rows.Err()
+		}); err != nil {
 			return err
 		}
-		defer rows.Close()
 
-		for rows.Next() {
-			var id int
-			var p string
-
-			err := rows.Scan(&id, &p)
-			if err != nil {
-				return err
-			}
-
-			// if path does not exist, assume that it is a file and not a folder
-			// if it does exist and is a folder, then we ignore it
-			// otherwise set zip to 1
-			info, err := os.Stat(p)
-			if err != nil {
-				logger.Warnf("unable to verify if %q is a folder due to error %v. Not migrating.", p, err)
-				continue
-			}
-
-			if info.IsDir() {
-				// ignore it
-				continue
-			}
-
-			logger.Infof("Correcting %q gallery to be zip-based.", p)
-
-			_, err = m.db.Exec("UPDATE `galleries` SET `zip` = '1' WHERE `id` = ?", id)
-			if err != nil {
-				return err
-			}
+		if !gotSome {
+			break
 		}
 
-		return rows.Err()
-	}); err != nil {
-		return err
+		if count%logEvery == 0 {
+			logger.Infof("Checked %d galleries", count)
+		}
 	}
 
 	return nil

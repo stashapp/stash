@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os/exec"
 	"strconv"
+	"syscall"
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/internal/manager"
@@ -84,11 +85,11 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		if manager.GetInstance().Config.IsWriteImageThumbnails() {
 			logger.Debugf("writing thumbnail to disk: %s", img.Path)
 			if err := fsutil.WriteFile(filepath, data); err != nil {
-				logger.Errorf("error writing thumbnail for image %s: %s", img.Path, err)
+				logger.Errorf("error writing thumbnail for image %s: %v", img.Path, err)
 			}
 		}
-		if n, err := w.Write(data); err != nil {
-			logger.Errorf("error writing thumbnail response. Wrote %v bytes: %v", n, err)
+		if n, err := w.Write(data); err != nil && !errors.Is(err, syscall.EPIPE) {
+			logger.Errorf("error serving thumbnail (wrote %v bytes out of %v): %v", n, len(data), err)
 		}
 	}
 }
@@ -114,7 +115,7 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.imageFinder
 			if imageID == 0 {
 				images, _ := qb.FindByChecksum(ctx, imageIdentifierQueryParam)
@@ -126,15 +127,17 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 			}
 
 			if image != nil {
-				_ = image.LoadPrimaryFile(ctx, rs.fileFinder)
+				if err := image.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error loading primary file for image %d: %v", imageID, err)
+					}
+					// set image to nil so that it doesn't try to use the primary file
+					image = nil
+				}
 			}
 
 			return nil
 		})
-		if readTxnErr != nil {
-			logger.Warnf("read transaction failure while trying to read image by id: %v", readTxnErr)
-		}
-
 		if image == nil {
 			http.Error(w, http.StatusText(404), 404)
 			return

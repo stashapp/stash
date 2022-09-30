@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/stashapp/stash/internal/manager/config"
@@ -81,16 +82,21 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 		http.ServeFile(w, r, filepath)
 	} else {
 		var cover []byte
-		err := txn.WithTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
+		readTxnErr := txn.WithTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
 			cover, _ = s.SceneCoverGetter.GetCover(ctx, scene.ID)
 			return nil
 		})
-		if err != nil {
-			logger.Warnf("read transaction failed while serving screenshot: %v", err)
+		if errors.Is(readTxnErr, context.Canceled) {
+			return
+		}
+		if readTxnErr != nil {
+			logger.Warnf("read transaction error on fetch screenshot: %v", readTxnErr)
+			http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		if err = utils.ServeImage(cover, w, r); err != nil {
-			logger.Warnf("unable to serve screenshot image: %v", err)
+		if err := utils.ServeImage(cover, w, r); err != nil {
+			logger.Warnf("error serving screenshot image: %v", err)
 		}
 	}
 }

@@ -17,7 +17,6 @@ type key int
 const (
 	txnKey key = iota + 1
 	dbKey
-	hookManagerKey
 )
 
 func (db *Database) WithDatabase(ctx context.Context) (context.Context, error) {
@@ -42,9 +41,6 @@ func (db *Database) Begin(ctx context.Context) (context.Context, error) {
 		return nil, fmt.Errorf("beginning transaction: %w", err)
 	}
 
-	hookMgr := &hookManager{}
-	ctx = hookMgr.register(ctx)
-
 	return context.WithValue(ctx, txnKey, tx), nil
 }
 
@@ -58,9 +54,6 @@ func (db *Database) Commit(ctx context.Context) error {
 		return err
 	}
 
-	// execute post-commit hooks
-	db.executePostCommitHooks(ctx)
-
 	return nil
 }
 
@@ -73,9 +66,6 @@ func (db *Database) Rollback(ctx context.Context) error {
 	if err := tx.Rollback(); err != nil {
 		return err
 	}
-
-	// execute post-rollback hooks
-	db.executePostRollbackHooks(ctx)
 
 	return nil
 }

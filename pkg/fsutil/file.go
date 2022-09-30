@@ -84,14 +84,10 @@ func FileExists(path string) (bool, error) {
 func WriteFile(path string, file []byte) error {
 	pathErr := EnsureDirAll(filepath.Dir(path))
 	if pathErr != nil {
-		return fmt.Errorf("cannot ensure path %s", pathErr)
+		return fmt.Errorf("cannot ensure path exists: %w", pathErr)
 	}
 
-	err := os.WriteFile(path, file, 0755)
-	if err != nil {
-		return fmt.Errorf("write error for thumbnail %s: %s ", path, err)
-	}
-	return nil
+	return os.WriteFile(path, file, 0755)
 }
 
 // GetNameFromPath returns the name of a file from its path

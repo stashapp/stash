@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useIntl } from "react-intl";
 
 import * as GQL from "src/core/generated-graphql";
@@ -12,6 +12,15 @@ import { StudioEditPanel } from "./StudioEditPanel";
 const StudioCreate: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
+
+  function useQuery() {
+    const { search } = useLocation();
+    return React.useMemo(() => new URLSearchParams(search), [search]);
+  }
+
+  const query = useQuery();
+  const nameQuery = query.get("name");
+
   const intl = useIntl();
 
   // Studio state
@@ -65,7 +74,7 @@ const StudioCreate: React.FC = () => {
           )}
         </div>
         <StudioEditPanel
-          studio={{}}
+          studio={{ name: nameQuery ?? "" }}
           onSubmit={onSave}
           onImageChange={setImage}
           onCancel={() => history.push("/studios")}

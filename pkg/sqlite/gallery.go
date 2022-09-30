@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -31,17 +30,17 @@ const (
 )
 
 type galleryRow struct {
-	ID        int               `db:"id" goqu:"skipinsert"`
-	Title     zero.String       `db:"title"`
-	URL       zero.String       `db:"url"`
-	Date      models.SQLiteDate `db:"date"`
-	Details   zero.String       `db:"details"`
-	Rating    null.Int          `db:"rating"`
-	Organized bool              `db:"organized"`
-	StudioID  null.Int          `db:"studio_id,omitempty"`
-	FolderID  null.Int          `db:"folder_id,omitempty"`
-	CreatedAt time.Time         `db:"created_at"`
-	UpdatedAt time.Time         `db:"updated_at"`
+	ID        int                    `db:"id" goqu:"skipinsert"`
+	Title     zero.String            `db:"title"`
+	URL       zero.String            `db:"url"`
+	Date      models.SQLiteDate      `db:"date"`
+	Details   zero.String            `db:"details"`
+	Rating    null.Int               `db:"rating"`
+	Organized bool                   `db:"organized"`
+	StudioID  null.Int               `db:"studio_id,omitempty"`
+	FolderID  null.Int               `db:"folder_id,omitempty"`
+	CreatedAt models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
 }
 
 func (r *galleryRow) fromGallery(o models.Gallery) {
@@ -56,8 +55,8 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
 	r.FolderID = nullIntFromFolderIDPtr(o.FolderID)
-	r.CreatedAt = o.CreatedAt
-	r.UpdatedAt = o.UpdatedAt
+	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 }
 
 type galleryQueryRow struct {
@@ -81,8 +80,8 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		StudioID:      nullIntPtr(r.StudioID),
 		FolderID:      nullIntFolderIDPtr(r.FolderID),
 		PrimaryFileID: nullIntFileIDPtr(r.PrimaryFileID),
-		CreatedAt:     r.CreatedAt,
-		UpdatedAt:     r.UpdatedAt,
+		CreatedAt:     r.CreatedAt.Timestamp,
+		UpdatedAt:     r.UpdatedAt.Timestamp,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
@@ -106,8 +105,8 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
-	r.setTime("created_at", o.CreatedAt)
-	r.setTime("updated_at", o.UpdatedAt)
+	r.setSQLiteTimestamp("created_at", o.CreatedAt)
+	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
 }
 
 type GalleryStore struct {
@@ -939,7 +938,6 @@ func galleryStudioCriterionHandler(qb *GalleryStore, studios *models.Hierarchica
 		primaryTable: galleryTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
-		derivedTable: "studio",
 		parentFK:     "parent_id",
 	}
 
@@ -1066,6 +1064,20 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 		)
 	}
 
+	addFolderTable := func() {
+		query.addJoins(
+			join{
+				table:    folderTable,
+				onClause: "folders.id = galleries.folder_id",
+			},
+			join{
+				table:    folderTable,
+				as:       "file_folder",
+				onClause: "files.parent_folder_id = file_folder.id",
+			},
+		)
+	}
+
 	switch sort {
 	case "file_count":
 		query.sortAndPagination += getCountSort(galleryTable, galleriesFilesTable, galleryIDColumn, direction)
@@ -1078,22 +1090,16 @@ func (qb *GalleryStore) setGallerySort(query *queryBuilder, findFilter *models.F
 	case "path":
 		// special handling for path
 		addFileTable()
-		query.addJoins(
-			join{
-				table:    folderTable,
-				onClause: "folders.id = galleries.folder_id",
-			},
-			join{
-				table:    folderTable,
-				as:       "file_folder",
-				onClause: "files.parent_folder_id = file_folder.id",
-			},
-		)
+		addFolderTable()
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, file_folder.path %[1]s, files.basename %[1]s", direction)
 	case "file_mod_time":
 		sort = "mod_time"
 		addFileTable()
 		query.sortAndPagination += getSort(sort, direction, fileTable)
+	case "title":
+		addFileTable()
+		addFolderTable()
+		query.sortAndPagination += " ORDER BY galleries.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", file_folder.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "galleries")
 	}
@@ -1136,7 +1142,9 @@ func (qb *GalleryStore) tagsRepository() *joinRepository {
 			tableName: galleriesTagsTable,
 			idColumn:  galleryIDColumn,
 		},
-		fkColumn: "tag_id",
+		fkColumn:     "tag_id",
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 
@@ -1157,6 +1165,14 @@ func (qb *GalleryStore) imagesRepository() *joinRepository {
 
 func (qb *GalleryStore) GetImageIDs(ctx context.Context, galleryID int) ([]int, error) {
 	return qb.imagesRepository().getIDs(ctx, galleryID)
+}
+
+func (qb *GalleryStore) AddImages(ctx context.Context, galleryID int, imageIDs ...int) error {
+	return qb.imagesRepository().insertOrIgnore(ctx, galleryID, imageIDs...)
+}
+
+func (qb *GalleryStore) RemoveImages(ctx context.Context, galleryID int, imageIDs ...int) error {
+	return qb.imagesRepository().destroyJoins(ctx, galleryID, imageIDs...)
 }
 
 func (qb *GalleryStore) UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error {

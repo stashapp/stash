@@ -2,10 +2,12 @@ package file
 
 import (
 	"context"
+	"errors"
 	"io"
 	"io/fs"
 	"net/http"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -48,7 +50,7 @@ func (e *DirEntry) info(fs FS, path string) (fs.FileInfo, error) {
 // File represents a file in the file system.
 type File interface {
 	Base() *BaseFile
-	SetFingerprints(fp []Fingerprint)
+	SetFingerprints(fp Fingerprints)
 	Open(fs FS) (io.ReadCloser, error)
 }
 
@@ -74,7 +76,7 @@ type BaseFile struct {
 
 // SetFingerprints sets the fingerprints of the file.
 // If a fingerprint of the same type already exists, it is overwritten.
-func (f *BaseFile) SetFingerprints(fp []Fingerprint) {
+func (f *BaseFile) SetFingerprints(fp Fingerprints) {
 	for _, v := range fp {
 		f.SetFingerprint(v)
 	}
@@ -137,8 +139,9 @@ func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if k, err := w.Write(data); err != nil {
-			logger.Warnf("failure while serving image (wrote %v bytes out of %v): %v", k, len(data), err)
+		k, err := w.Write(data)
+		if err != nil && !errors.Is(err, syscall.EPIPE) {
+			logger.Warnf("error serving file (wrote %v bytes out of %v): %v", k, len(data), err)
 		}
 
 		return
