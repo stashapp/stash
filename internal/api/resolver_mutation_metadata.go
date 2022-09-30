@@ -124,7 +124,13 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatab
 		backupPath = f.Name()
 		f.Close()
 	} else {
-		backupPath = database.DatabaseBackupPath()
+		backupDirectoryPath := mgr.Config.GetBackupDirectoryPathOrDefault()
+		if backupDirectoryPath != "" {
+			if err := fsutil.EnsureDir(backupDirectoryPath); err != nil {
+				return nil, fmt.Errorf("could not create backup directory %v: %w", backupDirectoryPath, err)
+			}
+		}
+		backupPath = database.DatabaseBackupPath(backupDirectoryPath)
 	}
 
 	err := database.Backup(backupPath)
@@ -141,7 +147,7 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input BackupDatab
 
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 
-		fn := filepath.Base(database.DatabaseBackupPath())
+		fn := filepath.Base(database.DatabaseBackupPath(""))
 		ret := baseURL + "/downloads/" + downloadHash + "/" + fn
 		return &ret, nil
 	} else {

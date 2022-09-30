@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -53,17 +52,17 @@ ORDER BY files.size DESC
 `
 
 type sceneRow struct {
-	ID        int               `db:"id" goqu:"skipinsert"`
-	Title     zero.String       `db:"title"`
-	Details   zero.String       `db:"details"`
-	URL       zero.String       `db:"url"`
-	Date      models.SQLiteDate `db:"date"`
-	Rating    null.Int          `db:"rating"`
-	Organized bool              `db:"organized"`
-	OCounter  int               `db:"o_counter"`
-	StudioID  null.Int          `db:"studio_id,omitempty"`
-	CreatedAt time.Time         `db:"created_at"`
-	UpdatedAt time.Time         `db:"updated_at"`
+	ID        int                    `db:"id" goqu:"skipinsert"`
+	Title     zero.String            `db:"title"`
+	Details   zero.String            `db:"details"`
+	URL       zero.String            `db:"url"`
+	Date      models.SQLiteDate      `db:"date"`
+	Rating    null.Int               `db:"rating"`
+	Organized bool                   `db:"organized"`
+	OCounter  int                    `db:"o_counter"`
+	StudioID  null.Int               `db:"studio_id,omitempty"`
+	CreatedAt models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -78,8 +77,8 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.Organized = o.Organized
 	r.OCounter = o.OCounter
 	r.StudioID = intFromPtr(o.StudioID)
-	r.CreatedAt = o.CreatedAt
-	r.UpdatedAt = o.UpdatedAt
+	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
+	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
 }
 
 type sceneQueryRow struct {
@@ -107,8 +106,8 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		OSHash:        r.PrimaryFileOshash.String,
 		Checksum:      r.PrimaryFileChecksum.String,
 
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
+		CreatedAt: r.CreatedAt.Timestamp,
+		UpdatedAt: r.UpdatedAt.Timestamp,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
@@ -131,8 +130,8 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setBool("organized", o.Organized)
 	r.setInt("o_counter", o.OCounter)
 	r.setNullInt("studio_id", o.StudioID)
-	r.setTime("created_at", o.CreatedAt)
-	r.setTime("updated_at", o.UpdatedAt)
+	r.setSQLiteTimestamp("created_at", o.CreatedAt)
+	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
 }
 
 type SceneStore struct {
@@ -1245,7 +1244,6 @@ func sceneStudioCriterionHandler(qb *SceneStore, studios *models.HierarchicalMul
 		primaryTable: sceneTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
-		derivedTable: "studio",
 		parentFK:     "parent_id",
 	}
 
@@ -1325,6 +1323,15 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 		)
 	}
 
+	addFolderTable := func() {
+		query.addJoins(
+			join{
+				table:    folderTable,
+				onClause: "files.parent_folder_id = folders.id",
+			},
+		)
+	}
+
 	direction := findFilter.GetDirection()
 	switch sort {
 	case "movie_scene_number":
@@ -1339,12 +1346,7 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "path":
 		// special handling for path
 		addFileTable()
-		query.addJoins(
-			join{
-				table:    folderTable,
-				onClause: "files.parent_folder_id = folders.id",
-			},
-		)
+		addFolderTable()
 		query.sortAndPagination += fmt.Sprintf(" ORDER BY folders.path %s, files.basename %[1]s", direction)
 	case "perceptual_similarity":
 		// special handling for phash
@@ -1379,6 +1381,10 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	case "interactive", "interactive_speed":
 		addVideoFileTable()
 		query.sortAndPagination += getSort(sort, direction, videoFileTable)
+	case "title":
+		addFileTable()
+		addFolderTable()
+		query.sortAndPagination += " ORDER BY scenes.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
 	default:
 		query.sortAndPagination += getSort(sort, direction, "scenes")
 	}
@@ -1470,7 +1476,9 @@ func (qb *SceneStore) tagsRepository() *joinRepository {
 			tableName: scenesTagsTable,
 			idColumn:  sceneIDColumn,
 		},
-		fkColumn: tagIDColumn,
+		fkColumn:     tagIDColumn,
+		foreignTable: tagTable,
+		orderBy:      "tags.name ASC",
 	}
 }
 

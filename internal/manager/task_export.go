@@ -335,7 +335,7 @@ func (t *ExportTask) populateGalleryImages(ctx context.Context, repo Repository)
 
 		images, err := imageReader.FindByGalleryID(ctx, g.ID)
 		if err != nil {
-			logger.Errorf("[galleries] <%s> failed to fetch images for gallery: %s", g.Checksum(), err.Error())
+			logger.Errorf("[galleries] <%s> failed to fetch images for gallery: %s", g.PrimaryChecksum(), err.Error())
 			continue
 		}
 
@@ -765,7 +765,7 @@ func exportGallery(ctx context.Context, wg *sync.WaitGroup, jobChan <-chan *mode
 			continue
 		}
 
-		galleryHash := g.Checksum()
+		galleryHash := g.PrimaryChecksum()
 
 		newGalleryJSON, err := gallery.ToBasicJSON(g)
 		if err != nil {

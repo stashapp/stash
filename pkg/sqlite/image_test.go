@@ -78,7 +78,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -99,7 +99,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 				CreatedAt:     createdAt,
 				UpdatedAt:     updatedAt,
 				GalleryIDs:    models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:        models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
 				PerformerIDs:  models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -231,7 +231,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -432,7 +432,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithImage]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithImage], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithImage]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithImage], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -537,9 +537,12 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				TagIDs: models.NewRelatedIDs(append(indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
-					tagIDs[tagIdx1WithDupName],
-					tagIDs[tagIdx1WithGallery],
+				TagIDs: models.NewRelatedIDs(append(
+					[]int{
+						tagIDs[tagIdx1WithGallery],
+						tagIDs[tagIdx1WithDupName],
+					},
+					indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags])...,
 				)),
 			},
 			false,
@@ -587,8 +590,9 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				},
 			},
 			models.Image{
-				TagIDs: models.NewRelatedIDs(append(indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags]),
-					tagIDs[tagIdx1WithGallery],
+				TagIDs: models.NewRelatedIDs(append(
+					[]int{tagIDs[tagIdx1WithGallery]},
+					indexesToIDs(tagIDs, imageTags[imageIdxWithTwoTags])...,
 				)),
 			},
 			false,
@@ -764,16 +768,16 @@ func Test_imageQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 
 			// only compare fields that were in the partial
 			if tt.partial.PerformerIDs != nil {
-				assert.Equal(tt.want.PerformerIDs, got.PerformerIDs)
-				assert.Equal(tt.want.PerformerIDs, s.PerformerIDs)
+				assert.ElementsMatch(tt.want.PerformerIDs.List(), got.PerformerIDs.List())
+				assert.ElementsMatch(tt.want.PerformerIDs.List(), s.PerformerIDs.List())
 			}
 			if tt.partial.TagIDs != nil {
-				assert.Equal(tt.want.TagIDs, got.TagIDs)
-				assert.Equal(tt.want.TagIDs, s.TagIDs)
+				assert.ElementsMatch(tt.want.TagIDs.List(), got.TagIDs.List())
+				assert.ElementsMatch(tt.want.TagIDs.List(), s.TagIDs.List())
 			}
 			if tt.partial.GalleryIDs != nil {
-				assert.Equal(tt.want.GalleryIDs, got.GalleryIDs)
-				assert.Equal(tt.want.GalleryIDs, s.GalleryIDs)
+				assert.ElementsMatch(tt.want.GalleryIDs.List(), got.GalleryIDs.List())
+				assert.ElementsMatch(tt.want.GalleryIDs.List(), s.GalleryIDs.List())
 			}
 		})
 	}

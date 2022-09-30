@@ -82,7 +82,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     models.NewRelatedIDs([]int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -103,7 +103,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     models.NewRelatedIDs([]int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -235,7 +235,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				CreatedAt:    createdAt,
 				UpdatedAt:    updatedAt,
 				SceneIDs:     models.NewRelatedIDs([]int{sceneIDs[sceneIdx1WithPerformer], sceneIDs[sceneIdx1WithStudio]}),
-				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
 				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
 			},
 			false,
@@ -785,16 +785,16 @@ func Test_galleryQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 
 			// only compare fields that were in the partial
 			if tt.partial.PerformerIDs != nil {
-				assert.Equal(tt.want.PerformerIDs, got.PerformerIDs)
-				assert.Equal(tt.want.PerformerIDs, s.PerformerIDs)
+				assert.ElementsMatch(tt.want.PerformerIDs.List(), got.PerformerIDs.List())
+				assert.ElementsMatch(tt.want.PerformerIDs.List(), s.PerformerIDs.List())
 			}
 			if tt.partial.TagIDs != nil {
-				assert.Equal(tt.want.TagIDs, got.TagIDs)
-				assert.Equal(tt.want.TagIDs, s.TagIDs)
+				assert.ElementsMatch(tt.want.TagIDs.List(), got.TagIDs.List())
+				assert.ElementsMatch(tt.want.TagIDs.List(), s.TagIDs.List())
 			}
 			if tt.partial.SceneIDs != nil {
-				assert.Equal(tt.want.SceneIDs, got.SceneIDs)
-				assert.Equal(tt.want.SceneIDs, s.SceneIDs)
+				assert.ElementsMatch(tt.want.SceneIDs.List(), got.SceneIDs.List())
+				assert.ElementsMatch(tt.want.SceneIDs.List(), s.SceneIDs.List())
 			}
 		})
 	}
@@ -2398,6 +2398,164 @@ func TestGalleryQuerySorting(t *testing.T) {
 			if tt.lastGalleryIdx != -1 {
 				lastID := galleryIDs[tt.lastGalleryIdx]
 				assert.Equal(lastID, lastGallery.ID)
+			}
+		})
+	}
+}
+
+func TestGalleryStore_AddImages(t *testing.T) {
+	tests := []struct {
+		name      string
+		galleryID int
+		imageIDs  []int
+		wantErr   bool
+	}{
+		{
+			"single",
+			galleryIDs[galleryIdx1WithImage],
+			[]int{imageIDs[imageIdx1WithPerformer]},
+			false,
+		},
+		{
+			"multiple",
+			galleryIDs[galleryIdx1WithImage],
+			[]int{imageIDs[imageIdx1WithPerformer], imageIDs[imageIdx1WithStudio]},
+			false,
+		},
+		{
+			"invalid gallery id",
+			invalidID,
+			[]int{imageIDs[imageIdx1WithPerformer]},
+			true,
+		},
+		{
+			"single invalid",
+			galleryIDs[galleryIdx1WithImage],
+			[]int{invalidID},
+			true,
+		},
+		{
+			"one invalid",
+			galleryIDs[galleryIdx1WithImage],
+			[]int{imageIDs[imageIdx1WithPerformer], invalidID},
+			true,
+		},
+		{
+			"existing",
+			galleryIDs[galleryIdx1WithImage],
+			[]int{imageIDs[imageIdxWithGallery]},
+			false,
+		},
+		{
+			"one new",
+			galleryIDs[galleryIdx1WithImage],
+			[]int{imageIDs[imageIdx1WithPerformer], imageIDs[imageIdxWithGallery]},
+			false,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			if err := qb.AddImages(ctx, tt.galleryID, tt.imageIDs...); (err != nil) != tt.wantErr {
+				t.Errorf("GalleryStore.AddImages() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			// ensure image was added
+			imageIDs, err := qb.GetImageIDs(ctx, tt.galleryID)
+			if err != nil {
+				t.Errorf("GalleryStore.GetImageIDs() error = %v", err)
+				return
+			}
+
+			assert := assert.New(t)
+			for _, wantedID := range tt.imageIDs {
+				assert.Contains(imageIDs, wantedID)
+			}
+		})
+	}
+}
+
+func TestGalleryStore_RemoveImages(t *testing.T) {
+	tests := []struct {
+		name      string
+		galleryID int
+		imageIDs  []int
+		wantErr   bool
+	}{
+		{
+			"single",
+			galleryIDs[galleryIdxWithTwoImages],
+			[]int{imageIDs[imageIdx1WithGallery]},
+			false,
+		},
+		{
+			"multiple",
+			galleryIDs[galleryIdxWithTwoImages],
+			[]int{imageIDs[imageIdx1WithGallery], imageIDs[imageIdx2WithGallery]},
+			false,
+		},
+		{
+			"invalid gallery id",
+			invalidID,
+			[]int{imageIDs[imageIdx1WithGallery]},
+			false,
+		},
+		{
+			"single invalid",
+			galleryIDs[galleryIdxWithTwoImages],
+			[]int{invalidID},
+			false,
+		},
+		{
+			"one invalid",
+			galleryIDs[galleryIdxWithTwoImages],
+			[]int{imageIDs[imageIdx1WithGallery], invalidID},
+			false,
+		},
+		{
+			"not existing",
+			galleryIDs[galleryIdxWithTwoImages],
+			[]int{imageIDs[imageIdxWithPerformer]},
+			false,
+		},
+		{
+			"one existing",
+			galleryIDs[galleryIdxWithTwoImages],
+			[]int{imageIDs[imageIdx1WithPerformer], imageIDs[imageIdx1WithGallery]},
+			false,
+		},
+	}
+
+	qb := db.Gallery
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			if err := qb.RemoveImages(ctx, tt.galleryID, tt.imageIDs...); (err != nil) != tt.wantErr {
+				t.Errorf("GalleryStore.RemoveImages() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			// ensure image was removed
+			imageIDs, err := qb.GetImageIDs(ctx, tt.galleryID)
+			if err != nil {
+				t.Errorf("GalleryStore.GetImageIDs() error = %v", err)
+				return
+			}
+
+			assert := assert.New(t)
+			for _, excludedID := range tt.imageIDs {
+				assert.NotContains(imageIDs, excludedID)
 			}
 		})
 	}

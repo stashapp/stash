@@ -6,13 +6,14 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { OperationButton } from "src/components/Shared/OperationButton";
-import { TaggerStateContext } from "../context";
+import { IScrapedScene, TaggerStateContext } from "../context";
 import Config from "./Config";
 import { TaggerScene } from "./TaggerScene";
 import { SceneTaggerModals } from "./sceneTaggerModals";
 import { SceneSearchResults } from "./StashSearchResult";
 import { ConfigurationContext } from "src/hooks/Config";
 import { faCog } from "@fortawesome/free-solid-svg-icons";
+import { distance } from "src/utils/hamming";
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -90,6 +91,139 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
     );
   }
 
+  function minDistance(hash: string, stashScene: GQL.SlimSceneDataFragment) {
+    let ret = 9999;
+    stashScene.files.forEach((cv) => {
+      if (ret === 0) return;
+
+      const stashHash = cv.fingerprints.find((fp) => fp.type === "phash");
+      if (!stashHash) {
+        return;
+      }
+
+      const d = distance(hash, stashHash.value);
+      if (d < ret) {
+        ret = d;
+      }
+    });
+
+    return ret;
+  }
+
+  function calculatePhashComparisonScore(
+    stashScene: GQL.SlimSceneDataFragment,
+    scrapedScene: IScrapedScene
+  ) {
+    const phashFingerprints =
+      scrapedScene.fingerprints?.filter((f) => f.algorithm === "PHASH") ?? [];
+    const filteredFingerprints = phashFingerprints.filter(
+      (f) => minDistance(f.hash, stashScene) <= 8
+    );
+
+    if (phashFingerprints.length == 0) return [0, 0];
+
+    return [
+      filteredFingerprints.length,
+      filteredFingerprints.length / phashFingerprints.length,
+    ];
+  }
+
+  function minDurationDiff(
+    stashScene: GQL.SlimSceneDataFragment,
+    duration: number
+  ) {
+    let ret = 9999;
+    stashScene.files.forEach((cv) => {
+      if (ret === 0) return;
+
+      const d = Math.abs(duration - cv.duration);
+      if (d < ret) {
+        ret = d;
+      }
+    });
+
+    return ret;
+  }
+
+  function calculateDurationComparisonScore(
+    stashScene: GQL.SlimSceneDataFragment,
+    scrapedScene: IScrapedScene
+  ) {
+    if (scrapedScene.fingerprints && scrapedScene.fingerprints.length > 0) {
+      const durations = scrapedScene.fingerprints.map((f) => f.duration);
+      const diffs = durations.map((d) => minDurationDiff(stashScene, d));
+      const filteredDurations = diffs.filter((duration) => duration <= 5);
+
+      const minDiff = Math.min(...diffs);
+
+      return [
+        filteredDurations.length,
+        filteredDurations.length / durations.length,
+        minDiff,
+      ];
+    }
+    return [0, 0, 0];
+  }
+
+  function compareScenesForSort(
+    stashScene: GQL.SlimSceneDataFragment,
+    sceneA: IScrapedScene,
+    sceneB: IScrapedScene
+  ) {
+    // Compare sceneA and sceneB to each other for sorting based on similarity to stashScene
+    // Order of priority is: nb. phash match > nb. duration match > ratio duration match > ratio phash match
+
+    // scenes without any fingerprints should be sorted to the end
+    if (!sceneA.fingerprints?.length && sceneB.fingerprints?.length) {
+      return 1;
+    }
+    if (!sceneB.fingerprints?.length && sceneA.fingerprints?.length) {
+      return -1;
+    }
+
+    const [
+      nbPhashMatchSceneA,
+      ratioPhashMatchSceneA,
+    ] = calculatePhashComparisonScore(stashScene, sceneA);
+    const [
+      nbPhashMatchSceneB,
+      ratioPhashMatchSceneB,
+    ] = calculatePhashComparisonScore(stashScene, sceneB);
+
+    if (nbPhashMatchSceneA != nbPhashMatchSceneB) {
+      return nbPhashMatchSceneB - nbPhashMatchSceneA;
+    }
+
+    // Same number of phash matches, check duration
+    const [
+      nbDurationMatchSceneA,
+      ratioDurationMatchSceneA,
+      minDurationDiffSceneA,
+    ] = calculateDurationComparisonScore(stashScene, sceneA);
+    const [
+      nbDurationMatchSceneB,
+      ratioDurationMatchSceneB,
+      minDurationDiffSceneB,
+    ] = calculateDurationComparisonScore(stashScene, sceneB);
+
+    if (nbDurationMatchSceneA != nbDurationMatchSceneB) {
+      return nbDurationMatchSceneB - nbDurationMatchSceneA;
+    }
+
+    // Same number of phash & duration, check duration ratio
+    if (ratioDurationMatchSceneA != ratioDurationMatchSceneB) {
+      return ratioDurationMatchSceneB - ratioDurationMatchSceneA;
+    }
+
+    // Damn this is close... Check phash ratio
+    if (ratioPhashMatchSceneA !== ratioPhashMatchSceneB) {
+      return ratioPhashMatchSceneB - ratioPhashMatchSceneA;
+    }
+
+    // fall back to duration difference - less is better
+    return minDurationDiffSceneA - minDurationDiffSceneB;
+  }
+
   function renderScenes() {
     const filteredScenes = !hideUnmatched
       ? scenes
@@ -105,6 +239,14 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes, queue }) => {
         errorMessage = intl.formatMessage({
           id: "component_tagger.results.match_failed_no_result",
         });
+      } else if (
+        searchResult &&
+        searchResult.results &&
+        searchResult.results?.length >= 2
+      ) {
+        searchResult.results?.sort((scrapedSceneA, scrapedSceneB) =>
+          compareScenesForSort(scene, scrapedSceneA, scrapedSceneB)
+        );
       }
 
       return (

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 )
 
 type PartialUpdater interface {
@@ -13,17 +12,31 @@ type PartialUpdater interface {
 
 type ImageUpdater interface {
 	GetImageIDs(ctx context.Context, galleryID int) ([]int, error)
-	UpdateImages(ctx context.Context, galleryID int, imageIDs []int) error
+	AddImages(ctx context.Context, galleryID int, imageIDs ...int) error
+	RemoveImages(ctx context.Context, galleryID int, imageIDs ...int) error
 }
 
-func AddImage(ctx context.Context, qb ImageUpdater, galleryID int, imageID int) error {
-	imageIDs, err := qb.GetImageIDs(ctx, galleryID)
-	if err != nil {
+// AddImages adds images to the provided gallery.
+// It returns an error if the gallery does not support adding images, or if
+// the operation fails.
+func (s *Service) AddImages(ctx context.Context, g *models.Gallery, toAdd ...int) error {
+	if err := validateContentChange(g); err != nil {
 		return err
 	}
 
-	imageIDs = intslice.IntAppendUnique(imageIDs, imageID)
-	return qb.UpdateImages(ctx, galleryID, imageIDs)
+	return s.Repository.AddImages(ctx, g.ID, toAdd...)
+}
+
+// RemoveImages removes images from the provided gallery.
+// It does not validate if the images are part of the gallery.
+// It returns an error if the gallery does not support removing images, or if
+// the operation fails.
+func (s *Service) RemoveImages(ctx context.Context, g *models.Gallery, toRemove ...int) error {
+	if err := validateContentChange(g); err != nil {
+		return err
+	}
+
+	return s.Repository.RemoveImages(ctx, g.ID, toRemove...)
 }
 
 func AddPerformer(ctx context.Context, qb PartialUpdater, o *models.Gallery, performerID int) error {

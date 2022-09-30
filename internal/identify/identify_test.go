@@ -74,10 +74,10 @@ func TestSceneIdentifier_Identify(t *testing.T) {
 
 	mockSceneReaderWriter := &mocks.SceneReaderWriter{}
 
-	mockSceneReaderWriter.On("UpdatePartial", testCtx, mock.MatchedBy(func(id int) bool {
+	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id == errUpdateID
 	}), mock.Anything).Return(nil, errors.New("update error"))
-	mockSceneReaderWriter.On("UpdatePartial", testCtx, mock.MatchedBy(func(id int) bool {
+	mockSceneReaderWriter.On("UpdatePartial", mock.Anything, mock.MatchedBy(func(id int) bool {
 		return id != errUpdateID
 	}), mock.Anything).Return(nil, nil)
 

@@ -758,6 +758,16 @@ func (c Client) GetUser(ctx context.Context) (*graphql.Me, error) {
 	return c.client.Me(ctx)
 }
 
+func appendFingerprintUnique(v []*graphql.FingerprintInput, toAdd *graphql.FingerprintInput) []*graphql.FingerprintInput {
+	for _, vv := range v {
+		if vv.Algorithm == toAdd.Algorithm && vv.Hash == toAdd.Hash {
+			return v
+		}
+	}
+
+	return append(v, toAdd)
+}
+
 func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpoint string, imagePath string) (*string, error) {
 	draft := graphql.SceneDraftInput{}
 	var image io.Reader
@@ -820,7 +830,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 					Algorithm: graphql.FingerprintAlgorithmOshash,
 					Duration:  int(duration),
 				}
-				fingerprints = append(fingerprints, &fingerprint)
+				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
 			}
 
 			if checksum := f.Fingerprints.GetString(file.FingerprintTypeMD5); checksum != "" {
@@ -829,7 +839,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 					Algorithm: graphql.FingerprintAlgorithmMd5,
 					Duration:  int(duration),
 				}
-				fingerprints = append(fingerprints, &fingerprint)
+				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
 			}
 
 			if phash := f.Fingerprints.GetInt64(file.FingerprintTypePhash); phash != 0 {
@@ -838,7 +848,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 					Algorithm: graphql.FingerprintAlgorithmPhash,
 					Duration:  int(duration),
 				}
-				fingerprints = append(fingerprints, &fingerprint)
+				fingerprints = appendFingerprintUnique(fingerprints, &fingerprint)
 			}
 		}
 	}

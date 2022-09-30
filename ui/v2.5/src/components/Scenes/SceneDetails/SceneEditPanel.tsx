@@ -64,10 +64,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const intl = useIntl();
   const Toast = useToast();
   const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
-    scene.galleries.map((g) => ({
-      id: g.id,
-      title: objectTitle(g),
-    }))
+    []
   );
 
   const Scrapers = useListSceneScrapers();
@@ -89,6 +86,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
   useEffect(() => {
     setCoverImagePreview(scene.paths.screenshot ?? undefined);
   }, [scene.paths.screenshot]);
+
+  useEffect(() => {
+    setGalleries(
+      scene.galleries.map((g) => ({
+        id: g.id,
+        title: objectTitle(g),
+      }))
+    );
+  }, [scene.galleries]);
 
   const { configuration: stashConfig } = React.useContext(ConfigurationContext);
 

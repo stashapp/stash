@@ -6,6 +6,7 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 )
@@ -59,7 +60,7 @@ func (p *scenePager) getPages(ctx context.Context, r scene.Queryer, total int) (
 	return objs, nil
 }
 
-func (p *scenePager) getPageVideos(ctx context.Context, r SceneFinder, page int, host string) ([]interface{}, error) {
+func (p *scenePager) getPageVideos(ctx context.Context, r SceneFinder, f file.Finder, page int, host string) ([]interface{}, error) {
 	var objs []interface{}
 
 	sort := "title"
@@ -75,6 +76,10 @@ func (p *scenePager) getPageVideos(ctx context.Context, r SceneFinder, page int,
 	}
 
 	for _, s := range scenes {
+		if err := s.LoadPrimaryFile(ctx, f); err != nil {
+			return nil, err
+		}
+
 		objs = append(objs, sceneToContainer(s, p.parentID, host))
 	}
 

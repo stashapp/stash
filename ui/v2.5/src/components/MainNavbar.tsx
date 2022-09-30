@@ -217,8 +217,14 @@ export const MainNavbar: React.FC = () => {
     [history]
   );
 
-  const { pathname } = location;
-  const newPath = newPathsList.includes(pathname) ? `${pathname}/new` : null;
+  const pathname = location.pathname.replace(/\/$/, "");
+  let newPath = newPathsList.includes(pathname) ? `${pathname}/new` : null;
+  if (newPath != null) {
+    let queryParam = new URLSearchParams(location.search).get("q");
+    if (queryParam != null) {
+      newPath += "?name=" + encodeURIComponent(queryParam);
+    }
+  }
 
   // set up hotkeys
   useEffect(() => {
@@ -230,7 +236,7 @@ export const MainNavbar: React.FC = () => {
     );
 
     if (newPath) {
-      Mousetrap.bind("n", () => history.push(newPath));
+      Mousetrap.bind("n", () => history.push(String(newPath)));
     }
 
     return () => {
