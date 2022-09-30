@@ -1244,7 +1244,6 @@ func sceneStudioCriterionHandler(qb *SceneStore, studios *models.HierarchicalMul
 		primaryTable: sceneTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
-		derivedTable: "studio",
 		parentFK:     "parent_id",
 	}
 

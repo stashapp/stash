@@ -85,6 +85,7 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 	return &ConfigGeneralResult{
 		Stashes:                      config.GetStashPaths(),
 		DatabasePath:                 config.GetDatabasePath(),
+		BackupDirectoryPath:          config.GetBackupDirectoryPath(),
 		GeneratedPath:                config.GetGeneratedPath(),
 		MetadataPath:                 config.GetMetadataPath(),
 		ConfigFilePath:               config.GetConfigFile(),
@@ -147,7 +148,6 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	handyKey := config.GetHandyKey()
 	scriptOffset := config.GetFunscriptOffset()
 	imageLightboxOptions := config.GetImageLightboxOptions()
-
 	// FIXME - misnamed output field means we have redundant fields
 	disableDropdownCreate := config.GetDisableDropdownCreate()
 
