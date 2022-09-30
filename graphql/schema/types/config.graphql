@@ -216,8 +216,8 @@ enum ImageLightboxScrollMode {
 }
 
 enum RatingSystem {
-  FiveStar
   FivePointFiveStar
+  FiveStar
   FivePointTwoFiveStar
   TenStar
   TenPointFiveStar

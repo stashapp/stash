@@ -9,14 +9,14 @@ import (
 type RatingSystem string
 
 const (
-	FiveStar RatingSystem = "five_stars"
-	FivePointFiveStar RatingSystem = "five_pointfive_stars"
-	FivePointTwoFiveStar RatingSystem = "five_pointtwofive_stars"
-	TenStar RatingSystem = "ten_stars"
-	TenPointFiveStar RatingSystem = "ten_pointfive_stars"
-	TenPointTwoFiveStar RatingSystem = "ten_pointtwofive_stars"
-	TenPointDecimal RatingSystem = "ten_point_decimal"
-	None RatingSystem = "none"
+	FivePointFiveStar = "FivePointFiveStar"
+	FiveStar = "FiveStar"
+	FivePointTwoFiveStar = "FivePointTwoFiveStar"
+	TenStar = "TenStar"
+	TenPointFiveStar = "TenPointFiveStar"
+	TenPointTwoFiveStar = "TenPointTwoFiveStar"
+	TenPointDecimal = "TenPointDecimal"
+	None = "None"
 )
 
 func (e RatingSystem) IsValid() bool {
