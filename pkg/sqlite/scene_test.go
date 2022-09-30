@@ -1787,9 +1787,9 @@ func TestSceneCountByPerformerID(t *testing.T) {
 }
 
 func scenesToIDs(i []*models.Scene) []int {
-	var ret []int
-	for _, ii := range i {
-		ret = append(ret, ii.ID)
+	ret := make([]int, len(i))
+	for i, v := range i {
+		ret[i] = v.ID
 	}
 
 	return ret
@@ -3304,43 +3304,73 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 }
 
 func TestSceneQueryStudio(t *testing.T) {
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Scene
-		studioCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithScene]),
+	tests := []struct {
+		name            string
+		q               string
+		studioCriterion models.HierarchicalMultiCriterionInput
+		expectedIDs     []int
+		wantErr         bool
+	}{
+		{
+			"includes",
+			"",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		sceneFilter := models.SceneFilterType{
-			Studios: &studioCriterion,
-		}
-
-		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
-
-		assert.Len(t, scenes, 1)
-
-		// ensure id is correct
-		assert.Equal(t, sceneIDs[sceneIdxWithStudio], scenes[0].ID)
-
-		studioCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithScene]),
+			[]int{sceneIDs[sceneIdxWithStudio]},
+			false,
+		},
+		{
+			"excludes",
+			getSceneStringValue(sceneIdxWithStudio, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierExcludes,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			[]int{},
+			false,
+		},
+		{
+			"excludes includes null",
+			getSceneStringValue(sceneIdxWithGallery, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierExcludes,
+			},
+			[]int{sceneIDs[sceneIdxWithGallery]},
+			false,
+		},
+	}
 
-		q := getSceneStringValue(sceneIdxWithStudio, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	qb := db.Scene
 
-		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 0)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			studioCriterion := tt.studioCriterion
 
-		return nil
-	})
+			sceneFilter := models.SceneFilterType{
+				Studios: &studioCriterion,
+			}
+
+			var findFilter *models.FindFilterType
+			if tt.q != "" {
+				findFilter = &models.FindFilterType{
+					Q: &tt.q,
+				}
+			}
+
+			scenes := queryScene(ctx, t, qb, &sceneFilter, findFilter)
+
+			assert.ElementsMatch(t, scenesToIDs(scenes), tt.expectedIDs)
+		})
+	}
 }
 
 func TestSceneQueryStudioDepth(t *testing.T) {
