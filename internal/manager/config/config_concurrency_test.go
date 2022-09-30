@@ -26,6 +26,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.GetConfigFile()
 				i.GetConfigPath()
 				i.GetDefaultDatabaseFilePath()
+				i.Set(BackupDirectoryPath, i.GetBackupDirectoryPath())
 				i.GetStashPaths()
 				_ = i.ValidateStashBoxes(nil)
 				_ = i.Validate()

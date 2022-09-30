@@ -26,15 +26,16 @@ import (
 var officialBuild string
 
 const (
-	Stash         = "stash"
-	Cache         = "cache"
-	Generated     = "generated"
-	Metadata      = "metadata"
-	Downloads     = "downloads"
-	ApiKey        = "api_key"
-	Username      = "username"
-	Password      = "password"
-	MaxSessionAge = "max_session_age"
+	Stash               = "stash"
+	Cache               = "cache"
+	BackupDirectoryPath = "backup_directory_path"
+	Generated           = "generated"
+	Metadata            = "metadata"
+	Downloads           = "downloads"
+	ApiKey              = "api_key"
+	Username            = "username"
+	Password            = "password"
+	MaxSessionAge       = "max_session_age"
 
 	DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
@@ -523,6 +524,19 @@ func (i *Instance) GetMetadataPath() string {
 
 func (i *Instance) GetDatabasePath() string {
 	return i.getString(Database)
+}
+
+func (i *Instance) GetBackupDirectoryPath() string {
+	return i.getString(BackupDirectoryPath)
+}
+
+func (i *Instance) GetBackupDirectoryPathOrDefault() string {
+	ret := i.GetBackupDirectoryPath()
+	if ret == "" {
+		return i.GetConfigPath()
+	}
+
+	return ret
 }
 
 func (i *Instance) GetJWTSignKey() []byte {
@@ -1351,6 +1365,7 @@ func (i *Instance) setDefaultValues(write bool) error {
 	// Set default scrapers and plugins paths
 	i.main.SetDefault(ScrapersPath, defaultScrapersPath)
 	i.main.SetDefault(PluginsPath, defaultPluginsPath)
+
 	if write {
 		return i.main.WriteConfig()
 	}
