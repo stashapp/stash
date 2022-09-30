@@ -189,6 +189,10 @@ func (t *joinTable) insertJoins(ctx context.Context, id int, foreignIDs []int) e
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
+
+	// eliminate duplicates
+	foreignIDs = intslice.IntAppendUniques(nil, foreignIDs)
 
 	for _, fk := range foreignIDs {
 		if _, err := tx.ExecStmt(ctx, stmt, id, fk); err != nil {
