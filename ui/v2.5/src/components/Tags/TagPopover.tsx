@@ -4,6 +4,7 @@ import { HoverPopover } from "src/components/Shared";
 import { useFindTag } from "../../core/StashService";
 import { TagCard } from "./TagCard";
 import { ConfigurationContext } from "../../hooks/Config";
+import { IUIConfig } from "src/core/config";
 
 interface ITagPopoverProps {
   id?: string;
@@ -34,7 +35,7 @@ export const TagPopoverCard: React.FC<ITagPopoverCardProps> = ({ id }) => {
 export const TagPopover: React.FC<ITagPopoverProps> = ({ id, children }) => {
   const { configuration: config } = React.useContext(ConfigurationContext);
 
-  const showTagCardOnHover = config?.interface.showTagCardOnHover ?? true;
+  const showTagCardOnHover = (config?.ui as IUIConfig)?.showTagCardOnHover ?? true;
 
   if (!id || !showTagCardOnHover) {
     return <>{children}</>;

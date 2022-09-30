@@ -237,9 +237,6 @@ input ConfigInterfaceInput {
   """Ordered list of items that should be shown in the menu"""
   menuItems: [String!]
 
-  """Show tag card when hovering tags"""
-  showTagCardOnHover: Boolean
-
   """Enable sound on mouseover previews"""
   soundOnPreview: Boolean
   
@@ -301,9 +298,6 @@ type ConfigDisableDropdownCreate {
 type ConfigInterfaceResult {
   """Ordered list of items that should be shown in the menu"""
   menuItems: [String!]
-
-  """Show tag card when hovering tags"""
-  showTagCardOnHover: Boolean
 
   """Enable sound on mouseover previews"""
   soundOnPreview: Boolean

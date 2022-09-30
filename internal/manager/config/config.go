@@ -126,8 +126,6 @@ const (
 	// Interface options
 	MenuItems = "menu_items"
 
-	ShowTagCardOnHover = "show_tag_card_on_hover"
-
 	SoundOnPreview = "sound_on_preview"
 
 	WallShowTitle        = "wall_show_title"
@@ -898,10 +896,6 @@ func (i *Instance) GetMenuItems() []string {
 		return v.GetStringSlice(MenuItems)
 	}
 	return defaultMenuItems
-}
-
-func (i *Instance) GetShowTagCardOnHover() bool {
-	return i.getBool(ShowTagCardOnHover)
 }
 
 func (i *Instance) GetSoundOnPreview() bool {

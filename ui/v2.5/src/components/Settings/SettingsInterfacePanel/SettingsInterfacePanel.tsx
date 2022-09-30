@@ -135,14 +135,6 @@ export const SettingsInterfacePanel: React.FC = () => {
             onChange={(v) => saveInterface({ menuItems: v })}
           />
         </div>
-
-        <BooleanSetting
-          id="show-tag-card-on-hover"
-          headingID="config.ui.show_tag_card_on_hover.heading"
-          subHeadingID="config.ui.show_tag_card_on_hover.description"
-          checked={iface.showTagCardOnHover ?? undefined}
-          onChange={(v) => saveInterface({ showTagCardOnHover: v })}
-        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.desktop_integration.desktop_integration">
@@ -255,6 +247,13 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
       <SettingSection headingID="config.ui.tag_panel.heading">
+        <BooleanSetting
+          id="show-tag-card-on-hover"
+          headingID="config.ui.show_tag_card_on_hover.heading"
+          subHeadingID="config.ui.show_tag_card_on_hover.description"
+          checked={ui.showTagCardOnHover ?? true}
+          onChange={(v) => saveUI({ showTagCardOnHover: v })}
+        />
         <BooleanSetting
           id="show-child-tagged-content"
           headingID="config.ui.tag_panel.options.show_child_tagged_content.heading"

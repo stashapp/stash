@@ -129,7 +129,6 @@ func makeConfigGeneralResult() *ConfigGeneralResult {
 func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	config := config.GetInstance()
 	menuItems := config.GetMenuItems()
-	showTagCardOnHover := config.GetShowTagCardOnHover()
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
 	showScrubber := config.GetShowScrubber()
@@ -154,7 +153,6 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 
 	return &ConfigInterfaceResult{
 		MenuItems:                    menuItems,
-		ShowTagCardOnHover:           &showTagCardOnHover,
 		SoundOnPreview:               &soundOnPreview,
 		WallShowTitle:                &wallShowTitle,
 		WallPlayback:                 &wallPlayback,
