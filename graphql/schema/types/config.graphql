@@ -291,7 +291,7 @@ input ConfigInterfaceInput {
   disableDropdownCreate: ConfigDisableDropdownCreateInput
 
   """Rating System Type"""
-  ratingSystem: String
+  ratingSystem: RatingSystem
   
   """Handy Connection Key"""
   handyKey: String
@@ -322,7 +322,7 @@ type ConfigInterfaceResult {
   wallPlayback: String
 
   """Rating System Type"""
-  ratingSystem: String
+  ratingSystem: RatingSystem
 
   """Show scene scrubber by default"""
   showScrubber: Boolean

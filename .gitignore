@@ -23,6 +23,12 @@ ui/v2.5/src/core/generated-*.tsx
 # Jetbrains
 ####
 
+
+####
+# Visual Studio
+####
+/.vs
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
@@ -58,14 +64,3 @@ node_modules
 /stash
 dist
 .DS_Store
-/.vs
-*.yml
-/ffmpeg-release-essentials.zip
-/icon.png
-/package-lock.json
-/package.json
-/stash-go.sqlite
-/stash-go.sqlite-wal
-/stash-go.sqlite-shm
-/yarn.lock
-/generated/thumbnails
