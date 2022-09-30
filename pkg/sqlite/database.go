@@ -255,7 +255,7 @@ func (db *Database) DatabasePath() string {
 }
 
 func (db *Database) DatabaseBackupPath(backupDirectoryPath string) string {
-	fn := fmt.Sprintf("%s.%d.%s", db.dbPath, db.schemaVersion, time.Now().Format("20060102_150405"))
+	fn := fmt.Sprintf("%s.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
 
 	if backupDirectoryPath != "" {
 		return filepath.Join(backupDirectoryPath, fn)
