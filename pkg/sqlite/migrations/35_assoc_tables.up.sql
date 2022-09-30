@@ -112,7 +112,7 @@ INSERT INTO `performers_scenes_new`
   SELECT 
     `performer_id`,
     `scene_id`
-  FROM `performers_scenes`
+  FROM `performers_scenes` WHERE true
   ON CONFLICT (`scene_id`, `performer_id`) DO NOTHING;
 
 DROP TABLE `performers_scenes`;
