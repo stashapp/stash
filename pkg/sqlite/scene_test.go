@@ -740,6 +740,22 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			false,
 		},
 		{
+			"add identical galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdx1WithImage], galleryIDs[galleryIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				GalleryIDs: models.NewRelatedIDs(append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
+					galleryIDs[galleryIdx1WithImage],
+				)),
+			},
+			false,
+		},
+		{
 			"add tags",
 			sceneIDs[sceneIdxWithTwoTags],
 			models.ScenePartial{
@@ -760,6 +776,25 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 			false,
 		},
 		{
+			"add identical tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				TagIDs: models.NewRelatedIDs(append(
+					[]int{
+						tagIDs[tagIdx1WithDupName],
+					},
+					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
+				)),
+			},
+			false,
+		},
+		{
 			"add performers",
 			sceneIDs[sceneIdxWithTwoPerformers],
 			models.ScenePartial{
@@ -772,6 +807,22 @@ func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
 				PerformerIDs: models.NewRelatedIDs(append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
 					performerIDs[performerIdx1WithDupName],
 					performerIDs[performerIdx1WithGallery],
+				)),
+			},
+			false,
+		},
+		{
+			"add identical performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName], performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				PerformerIDs: models.NewRelatedIDs(append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithDupName],
 				)),
 			},
 			false,

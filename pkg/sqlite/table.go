@@ -179,21 +179,19 @@ func (t *joinTable) get(ctx context.Context, id int) ([]int, error) {
 	return ret, nil
 }
 
-func (t *joinTable) insertJoin(ctx context.Context, id, foreignID int) (sql.Result, error) {
-	q := dialect.Insert(t.table.table).Cols(t.idColumn.GetCol(), t.fkColumn.GetCol()).Vals(
-		goqu.Vals{id, foreignID},
-	)
-	ret, err := exec(ctx, q)
+func (t *joinTable) insertJoins(ctx context.Context, id int, foreignIDs []int) error {
+	// manually create SQL so that we can prepare once
+	// ignore duplicates
+	q := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?) ON CONFLICT (%[2]s, %s) DO NOTHING", t.table.table.GetTable(), t.idColumn.GetCol(), t.fkColumn.GetCol())
+
+	tx := dbWrapper{}
+	stmt, err := tx.Prepare(ctx, q)
 	if err != nil {
-		return nil, fmt.Errorf("inserting into %s: %w", t.table.table.GetTable(), err)
+		return err
 	}
 
-	return ret, nil
-}
-
-func (t *joinTable) insertJoins(ctx context.Context, id int, foreignIDs []int) error {
 	for _, fk := range foreignIDs {
-		if _, err := t.insertJoin(ctx, id, fk); err != nil {
+		if _, err := tx.ExecStmt(ctx, stmt, id, fk); err != nil {
 			return err
 		}
 	}
