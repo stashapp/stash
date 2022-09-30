@@ -684,12 +684,15 @@ func (qb *tagQueryBuilder) Merge(ctx context.Context, source []int, destination 
 	inBinding := getInBinding(len(source))
 
 	args := []interface{}{destination}
-	for _, id := range source {
+	srcArgs := make([]interface{}, len(source))
+	for i, id := range source {
 		if id == destination {
 			return errors.New("cannot merge where source == destination")
 		}
-		args = append(args, id)
+		srcArgs[i] = id
 	}
+
+	args = append(args, srcArgs...)
 
 	tagTables := map[string]string{
 		scenesTagsTable:      sceneIDColumn,
@@ -701,13 +704,18 @@ func (qb *tagQueryBuilder) Merge(ctx context.Context, source []int, destination 
 
 	args = append(args, destination)
 	for table, idColumn := range tagTables {
-		_, err := qb.tx.Exec(ctx, `UPDATE `+table+`
+		_, err := qb.tx.Exec(ctx, `UPDATE OR IGNORE `+table+`
 SET tag_id = ?
 WHERE tag_id IN `+inBinding+`
 AND NOT EXISTS(SELECT 1 FROM `+table+` o WHERE o.`+idColumn+` = `+table+`.`+idColumn+` AND o.tag_id = ?)`,
 			args...,
 		)
 		if err != nil {
+			return err
+		}
+
+		// delete source tag ids from the table where they couldn't be set
+		if _, err := qb.tx.Exec(ctx, `DELETE FROM `+table+` WHERE tag_id IN `+inBinding, srcArgs...); err != nil {
 			return err
 		}
 	}

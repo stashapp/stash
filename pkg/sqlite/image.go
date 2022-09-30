@@ -922,7 +922,6 @@ func imageStudioCriterionHandler(qb *ImageStore, studios *models.HierarchicalMul
 		primaryTable: imageTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
-		derivedTable: "studio",
 		parentFK:     "parent_id",
 	}
 
@@ -989,13 +988,17 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 			)
 		}
 
-		switch sort {
-		case "path":
-			addFilesJoin()
+		addFolderJoin := func() {
 			q.addJoins(join{
 				table:    folderTable,
 				onClause: "files.parent_folder_id = folders.id",
 			})
+		}
+
+		switch sort {
+		case "path":
+			addFilesJoin()
+			addFolderJoin()
 			sortClause = " ORDER BY folders.path " + direction + ", files.basename " + direction
 		case "file_count":
 			sortClause = getCountSort(imageTable, imagesFilesTable, imageIDColumn, direction)
@@ -1006,6 +1009,10 @@ func (qb *ImageStore) setImageSortAndPagination(q *queryBuilder, findFilter *mod
 		case "mod_time", "filesize":
 			addFilesJoin()
 			sortClause = getSort(sort, direction, "files")
+		case "title":
+			addFilesJoin()
+			addFolderJoin()
+			sortClause = " ORDER BY images.title COLLATE NATURAL_CS " + direction + ", folders.path " + direction + ", files.basename COLLATE NATURAL_CS " + direction
 		default:
 			sortClause = getSort(sort, direction, "images")
 		}

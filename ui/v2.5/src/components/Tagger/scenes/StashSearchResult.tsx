@@ -37,9 +37,7 @@ const getDurationStatus = (
       ?.map((f) => f.duration)
       .map((d) => Math.abs(d - stashDuration)) ?? [];
 
-  const sceneDuration = scene.duration ?? 0;
-
-  if (!sceneDuration && durations.length === 0) return "";
+  if (!scene.duration && durations.length === 0) return "";
 
   const matchCount = durations.filter((duration) => duration <= 5).length;
 
@@ -51,7 +49,7 @@ const getDurationStatus = (
         values={{ matchCount, durationsLength: durations.length }}
       />
     );
-  else if (Math.abs(sceneDuration - stashDuration) < 5)
+  else if (scene.duration && Math.abs(scene.duration - stashDuration) < 5)
     match = <FormattedMessage id="component_tagger.results.fp_matches" />;
 
   if (match)
@@ -62,10 +60,11 @@ const getDurationStatus = (
       </div>
     );
 
-  const minDiff = Math.min(
-    Math.abs(sceneDuration - stashDuration),
-    ...durations
-  );
+  let minDiff = Math.min(...durations);
+  if (scene.duration) {
+    minDiff = Math.min(minDiff, Math.abs(scene.duration - stashDuration));
+  }
+
   return (
     <FormattedMessage
       id="component_tagger.results.duration_off"

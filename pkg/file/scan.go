@@ -638,7 +638,7 @@ func (s *scanJob) onNewFile(ctx context.Context, f scanFile) (File, error) {
 			return fmt.Errorf("creating file %q: %w", path, err)
 		}
 
-		if err := s.fireHandlers(ctx, file); err != nil {
+		if err := s.fireHandlers(ctx, file, nil); err != nil {
 			return err
 		}
 
@@ -662,9 +662,9 @@ func (s *scanJob) fireDecorators(ctx context.Context, fs FS, f File) (File, erro
 	return f, nil
 }
 
-func (s *scanJob) fireHandlers(ctx context.Context, f File) error {
+func (s *scanJob) fireHandlers(ctx context.Context, f File, oldFile File) error {
 	for _, h := range s.handlers {
-		if err := h.Handle(ctx, f); err != nil {
+		if err := h.Handle(ctx, f, oldFile); err != nil {
 			return err
 		}
 	}
@@ -774,6 +774,10 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 			return fmt.Errorf("updating file for rename %q: %w", fBase.Path, err)
 		}
 
+		if err := s.fireHandlers(ctx, f, other); err != nil {
+			return err
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err
@@ -859,7 +863,7 @@ func (s *scanJob) setMissingFingerprints(ctx context.Context, f scanFile, existi
 		return nil, err
 	}
 
-	if !fp.Equals(existing.Base().Fingerprints) {
+	if fp.ContentsChanged(existing.Base().Fingerprints) {
 		existing.SetFingerprints(fp)
 
 		if err := s.withTxn(ctx, func(ctx context.Context) error {
@@ -888,6 +892,8 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 		return s.onUnchangedFile(ctx, f, existing)
 	}
 
+	oldBase := *base
+
 	logger.Infof("%s has been updated: rescanning", path)
 	base.ModTime = fileModTime
 	base.Size = f.Size
@@ -914,7 +920,7 @@ func (s *scanJob) onExistingFile(ctx context.Context, f scanFile, existing File)
 			return fmt.Errorf("updating file %q: %w", path, err)
 		}
 
-		if err := s.fireHandlers(ctx, existing); err != nil {
+		if err := s.fireHandlers(ctx, existing, &oldBase); err != nil {
 			return err
 		}
 
@@ -991,7 +997,7 @@ func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing File
 	}
 
 	if err := s.withTxn(ctx, func(ctx context.Context) error {
-		if err := s.fireHandlers(ctx, existing); err != nil {
+		if err := s.fireHandlers(ctx, existing, nil); err != nil {
 			return err
 		}
 
@@ -1002,9 +1008,5 @@ func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing File
 
 	// if this file is a zip file, then we need to rescan the contents
 	// as well. We do this by returning the file, instead of nil.
-	if isMissingMetdata {
-		return existing, nil
-	}
-
-	return nil, nil
+	return existing, nil
 }

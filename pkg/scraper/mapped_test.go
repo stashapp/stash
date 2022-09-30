@@ -2,7 +2,9 @@ package scraper
 
 import (
 	"context"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
@@ -57,5 +59,59 @@ func TestFeetToCM(t *testing.T) {
 
 	for _, test := range feetToCMTests {
 		assert.Equal(t, test.out, pp.Apply(context.Background(), test.in, q))
+	}
+}
+
+func Test_postProcessParseDate_Apply(t *testing.T) {
+	const internalDateFormat = "2006-01-02"
+
+	unixDate := time.Date(2021, 9, 4, 1, 2, 3, 4, time.Local)
+
+	tests := []struct {
+		name  string
+		arg   postProcessParseDate
+		value string
+		want  string
+	}{
+		{
+			"simple",
+			"2006=01=02",
+			"2001=03=23",
+			"2001-03-23",
+		},
+		{
+			"today",
+			"",
+			"today",
+			time.Now().Format(internalDateFormat),
+		},
+		{
+			"yesterday",
+			"",
+			"yesterday",
+			time.Now().Add(-24 * time.Hour).Format(internalDateFormat),
+		},
+		{
+			"unix",
+			"unix",
+			strconv.FormatInt(unixDate.Unix(), 10),
+			unixDate.Format(internalDateFormat),
+		},
+		{
+			"invalid",
+			"invalid",
+			"2001=03=23",
+			"2001=03=23",
+		},
+	}
+
+	ctx := context.Background()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.arg.Apply(ctx, tt.value, nil); got != tt.want {
+				t.Errorf("postProcessParseDate.Apply() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

@@ -484,10 +484,6 @@ func (s *Manager) PostInit(ctx context.Context) error {
 		return err
 	}
 
-	if database.Ready() == nil {
-		s.PostMigrate(ctx)
-	}
-
 	return nil
 }
 
@@ -649,7 +645,14 @@ func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
 	// migration fails
 	backupPath := input.BackupPath
 	if backupPath == "" {
-		backupPath = database.DatabaseBackupPath()
+		backupPath = database.DatabaseBackupPath(s.Config.GetBackupDirectoryPath())
+	} else {
+		// check if backup path is a filename or path
+		// filename goes into backup directory, path is kept as is
+		filename := filepath.Base(backupPath)
+		if backupPath == filename {
+			backupPath = filepath.Join(s.Config.GetBackupDirectoryPathOrDefault(), filename)
+		}
 	}
 
 	// perform database backup
@@ -670,9 +673,6 @@ func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
 
 		return errors.New(errStr)
 	}
-
-	// perform post-migration operations
-	s.PostMigrate(ctx)
 
 	// if no backup path was provided, then delete the created backup
 	if input.BackupPath == "" {

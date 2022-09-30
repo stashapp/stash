@@ -35,7 +35,9 @@ fragment SlimSceneData on Scene {
 
   galleries {
     id
-    path
+    files {
+      path
+    }
     title
   }
 
