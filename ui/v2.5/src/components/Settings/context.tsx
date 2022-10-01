@@ -135,7 +135,7 @@ export const SettingsContext: React.FC = ({ children }) => {
     setDefaults({ ...withoutTypename(data.configuration.defaults) });
     setScraping({ ...withoutTypename(data.configuration.scraping) });
     setDLNA({ ...withoutTypename(data.configuration.dlna) });
-    setUI({ ...withoutTypename(data.configuration.ui) });
+    setUI(data.configuration.ui);
     setApiKey(data.configuration.general.apiKey);
   }, [data, error]);
 

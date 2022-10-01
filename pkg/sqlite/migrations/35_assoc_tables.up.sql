@@ -112,7 +112,8 @@ INSERT INTO `performers_scenes_new`
   SELECT 
     `performer_id`,
     `scene_id`
-  FROM `performers_scenes`;
+  FROM `performers_scenes` WHERE true
+  ON CONFLICT (`scene_id`, `performer_id`) DO NOTHING;
 
 DROP TABLE `performers_scenes`;
 ALTER TABLE `performers_scenes_new` rename to `performers_scenes`;
@@ -312,60 +313,6 @@ ALTER TABLE `scene_stash_ids_new` rename to `scene_stash_ids`;
 
 -- the following index is removed in favour of primary key
 -- CREATE INDEX `index_scene_stash_ids_on_scene_id` ON `scene_stash_ids` (`scene_id`);
-
-
-CREATE TABLE `performer_stash_ids_new` (
-  `performer_id` integer NOT NULL,
-  `endpoint` varchar(255) NOT NULL,
-  `stash_id` varchar(36) NOT NULL,
-  foreign key(`performer_id`) references `performers`(`id`) on delete CASCADE,
-  PRIMARY KEY(`performer_id`, `endpoint`)
-);
-
-INSERT INTO `performer_stash_ids_new`
-  (
-    `performer_id`,
-    `endpoint`,
-    `stash_id`
-  )
-  SELECT 
-    `performer_id`,
-    `endpoint`,
-    `stash_id`
-  FROM `performer_stash_ids`;
-
-DROP TABLE `performer_stash_ids`;
-ALTER TABLE `performer_stash_ids_new` rename to `performer_stash_ids`;
-
--- the following index is removed in favour of primary key
--- CREATE INDEX `index_performer_stash_ids_on_performer_id` ON `performer_stash_ids` (`performer_id`);
-
-
-CREATE TABLE `studio_stash_ids_new` (
-  `studio_id` integer NOT NULL,
-  `endpoint` varchar(255) NOT NULL,
-  `stash_id` varchar(36) NOT NULL,
-  foreign key(`studio_id`) references `studios`(`id`) on delete CASCADE,
-  PRIMARY KEY(`studio_id`, `endpoint`)
-);
-
-INSERT INTO `studio_stash_ids_new`
-  (
-    `studio_id`,
-    `endpoint`,
-    `stash_id`
-  )
-  SELECT 
-    `studio_id`,
-    `endpoint`,
-    `stash_id`
-  FROM `studio_stash_ids`;
-
-DROP TABLE `studio_stash_ids`;
-ALTER TABLE `studio_stash_ids_new` rename to `studio_stash_ids`;
-
--- the following index is removed in favour of primary key
--- CREATE INDEX `index_studio_stash_ids_on_studio_id` ON `studio_stash_ids` (`studio_id`);
 
 
 CREATE TABLE `scenes_galleries_new` (
