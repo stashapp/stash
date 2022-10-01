@@ -244,6 +244,10 @@
         "username": "Användarnamn",
         "username_desc": "Användarnamn till Stash. Lämna tom för att inaktivera användarautentisering"
       },
+      "backup_directory_path": {
+        "description": "Filsökväg för SQLite-databas backupfil",
+        "heading": "Backup filsökväg"
+      },
       "cache_location": "Mappsökväg till cache",
       "cache_path_head": "Cache-sökväg",
       "calculate_md5_and_ohash_desc": "Beräkna MD5 checksumma i tillägg med ohash. Aktivering kan sakta ner första skanningar. Hashen måste vara vald till ohash för att avaktivera MD5-beräkning.",
@@ -548,6 +552,24 @@
       "slideshow_delay": {
         "description": "Bildspel är tillgängligt för gallerier i väggvisningsläge",
         "heading": "Bildspelsfördröjning (sekunder)"
+      },
+      "studio_panel": {
+        "heading": "Studiovy",
+        "options": {
+          "show_child_studio_content": {
+            "description": "Visa också innehåll från underordnade studior i studiovyn",
+            "heading": "Visa underordnade studiors innehåll"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Taggvy",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "Visa också innehåll från underordnade taggar i taggvyn",
+            "heading": "Visa underordande taggars innehåll"
+          }
+        }
       },
       "title": "Användargränssnitt"
     }
