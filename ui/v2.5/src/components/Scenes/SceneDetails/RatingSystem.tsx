@@ -335,7 +335,7 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
       return <></>;
       break;
     default:
-      toReturn = getRatingStars(5, 0.5);
+      toReturn = getRatingStars(5, 1);
       break;
   }
 

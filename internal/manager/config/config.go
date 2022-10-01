@@ -164,7 +164,7 @@ const (
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
 	RatingSystem                   = "rating_system"
-	defaultRatingSystem            = "FivePointFiveStars"
+	defaultRatingSystem            = "FiveStar"
 
 	HandyKey        = "handy_key"
 	FunscriptOffset = "funscript_offset"

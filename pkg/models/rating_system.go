@@ -9,8 +9,8 @@ import (
 type RatingSystem string
 
 const (
-	FivePointFiveStar = "FivePointFiveStar"
 	FiveStar = "FiveStar"
+	FivePointFiveStar = "FivePointFiveStar"
 	FivePointTwoFiveStar = "FivePointTwoFiveStar"
 	TenStar = "TenStar"
 	TenPointFiveStar = "TenPointFiveStar"
