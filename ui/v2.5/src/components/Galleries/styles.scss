@@ -73,14 +73,14 @@
     }
   }
 
-  @media(hover: hover) and (pointer: fine) {
+  @media (hover: hover) and (pointer: fine) {
     .wall-popovers:hover {
       opacity: 0.8;
     }
   }
-    .wall-popovers:focus {
-      opacity: 0.8;
-    }
+  .wall-popovers:focus {
+    opacity: 0.8;
+  }
 }
 
 $galleryTabWidth: 450px;
@@ -146,8 +146,7 @@ $galleryTabWidth: 450px;
   overflow: auto;
 }
 
-@media (min-width: 1200px),
-(max-width: 575px) {
+@media (min-width: 1200px), (max-width: 575px) {
   .gallery-performers {
     .performer-card {
       width: 15rem;

@@ -111,16 +111,15 @@ export const ImageWall: React.FC<IImageWallProps> = ({
     }
     const ref = useRef(null);
     const handleTouchEnd = (event) => {
-        if(ref.current === document.activeElement){
-            alert("If i would to display this, it would be nice!")
-        }
-        else{
-            ref.current.focus();
-            console.log(ref.current)
-        }
-        event.stopPropagation()
-        event.preventDefault();
-      }; 
+      if (ref.current === document.activeElement) {
+        alert("If i would to display this, it would be nice!");
+      } else {
+        ref.current.focus();
+        console.log(ref.current);
+      }
+      event.stopPropagation();
+      event.preventDefault();
+    };
     function renderPopoverButtonGroup() {
       if (
         image.tags.length > 0 ||
