@@ -136,7 +136,7 @@
       "query_mode_dir_desc": "Utilise uniquement le répertoire parent du fichier vidéo",
       "query_mode_filename": "Nom de fichier",
       "query_mode_filename_desc": "Utilise uniquement le nom du fichier",
-      "query_mode_label": "Mode de recherche",
+      "query_mode_label": "Mode de requête",
       "query_mode_metadata": "Métadonnées",
       "query_mode_metadata_desc": "Utilise uniquement les métadonnées",
       "query_mode_path": "Chemin",
@@ -189,6 +189,7 @@
     },
     "categories": {
       "about": "A propos",
+      "changelog": "Journal des modifications",
       "interface": "Interface",
       "logs": "Journaux",
       "metadata_providers": "Fournisseurs de métadonnées",
@@ -242,6 +243,10 @@
         "stash-box_integration": "Intégration de Stash-Box",
         "username": "Nom d'utilisateur",
         "username_desc": "Nom d'utilisateur pour accéder à Stash. Laisser vide pour désactiver l'authentification utilisateur"
+      },
+      "backup_directory_path": {
+        "description": "Emplacement du répertoire de sauvegarde des bases de données SQLite",
+        "heading": "Chemin du répertoire de sauvegarde"
       },
       "cache_location": "Emplacement du répertoire du cache",
       "cache_path_head": "Chemin du cache",
@@ -426,6 +431,11 @@
         "heading": "CSS personnalisé",
         "option_label": "Activer le CSS personnalisé"
       },
+      "custom_locales": {
+        "description": "Remplacer individuellement des chaines linguistiques. Voir https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json pour la liste principale. La page doit être rechargée pour que les changements prennent effet.",
+        "heading": "Traduction personnalisée",
+        "option_label": "Traduction personnalisée activée"
+      },
       "delete_options": {
         "description": "Réglages par défaut lors de la suppression d'images, galeries, et scènes.",
         "heading": "Options de suppression",
@@ -470,7 +480,7 @@
         "heading": "Visionneuse d'images"
       },
       "images": {
-        "heading": "Photos",
+        "heading": "Images",
         "options": {
           "write_image_thumbnails": {
             "description": "Écrire les vignettes des images sur le disque lorsqu'elles sont générées à la volée",
@@ -518,7 +528,7 @@
         "options": {
           "auto_start_video": "Démarrer automatiquement la vidéo",
           "auto_start_video_on_play_selected": {
-            "description": "Démarrer automatiquement les scènes vidéo lorsque lecture est sélectionnée ou aléatoire à partir de la page Scènes",
+            "description": "Démarrage automatique des scènes vidéo lorsqu'elles sont lues à partir de la file d'attente, d'une sélection ou aléatoires à partir de la page Scènes",
             "heading": "Démarrer automatiquement la vidéo lorsque lecture est sélectionnée"
           },
           "continue_playlist_default": {
@@ -542,6 +552,24 @@
       "slideshow_delay": {
         "description": "Le diaporama est disponible dans galerie en mode de vue mural",
         "heading": "Délai du diaporama (secondes)"
+      },
+      "studio_panel": {
+        "heading": "Vue studio",
+        "options": {
+          "show_child_studio_content": {
+            "description": "Dans la vue studio, afficher également le contenu des sous-studios",
+            "heading": "Afficher le contenu des sous-studios"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Vue étiquette",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "Dans la vue étiquette, afficher également le contenu des sous-étiquettes",
+            "heading": "Afficher le contenu des sous-étiquettes"
+          }
+        }
       },
       "title": "Interface utilisateur"
     }
@@ -601,6 +629,7 @@
     "delete_object_desc": "Êtes-vous sûr de vouloir supprimer {count, plural, one {this {singularEntity}} other {these {pluralEntity}}} ?",
     "delete_object_overflow": "…et {count} {count, plural, one {autre {singularEntity}} other {autres {pluralEntity}}}.",
     "delete_object_title": "Supprimer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Ne pas montrer avant la prochaine mise à jour",
     "edit_entity_title": "Éditer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inclure les objets liés dans l'exportation",
     "export_title": "Exporter",
@@ -684,7 +713,7 @@
   },
   "donate": "Faire un don",
   "dupe_check": {
-    "description": "Les niveaux en-deça de \"Exact\" peuvent prendre plus de temps à calculer. Des faux positifs peuvent également être retournés à de faibles précisions.",
+    "description": "Les niveaux en-deça de \"Exacte\" peuvent prendre plus de temps à calculer. Des faux positifs peuvent également être retournés à de faibles précisions.",
     "found_sets": "{setCount, plural, one{# ensemble de doublons trouvé.} other {# ensembles de doublons trouvés.}}",
     "options": {
       "exact": "Exacte",
@@ -692,7 +721,7 @@
       "low": "Basse",
       "medium": "Moyenne"
     },
-    "search_accuracy_label": "La pertinence de la recherche",
+    "search_accuracy_label": "Pertinence de recherche",
     "title": "Scènes dupliquées"
   },
   "duplicated_phash": "Empreinte dupliquée",
@@ -726,6 +755,7 @@
   "false": "Faux",
   "favourite": "Favoris",
   "file": "fichier",
+  "file_count": "Nombre de fichiers",
   "file_info": "Infos fichier",
   "file_mod_time": "Date de modification du fichier",
   "files": "fichiers",
@@ -733,6 +763,7 @@
   "filter": "Filtre",
   "filter_name": "Nom du filtre",
   "filters": "Filtres",
+  "folder": "Répertoire",
   "framerate": "Fréquence",
   "frames_per_second": "{value} images par seconde",
   "front_page": {
@@ -769,7 +800,7 @@
   "ignore_auto_tag": "Ignorer l'étiquetage automatique",
   "image": "Image",
   "image_count": "Nombre d'Images",
-  "images": "Photos",
+  "images": "Images",
   "include_parent_tags": "Inclure les étiquettes parentes",
   "include_sub_studios": "Inclure les studios affiliés",
   "include_sub_tags": "Inclure les sous-étiquettes",
@@ -870,6 +901,7 @@
   "rating": "Note",
   "recently_added_objects": "{objects} récemment ajoutés",
   "recently_released_objects": "{objects} récemment ajoutées",
+  "release_notes": "Notes de publication",
   "resolution": "Résolution",
   "scene": "Scène",
   "sceneTagger": "Étiqueteuse de scènes",
@@ -919,9 +951,10 @@
       "migration_failed_error": "L'erreur suivante a été rencontrée lors de la migration de la base de données :",
       "migration_failed_help": "Veuillez apporter les corrections nécessaires et réessayer. Sinon, signalez un bogue sur {githubLink} ou demandez de l'aide sur {discordLink}.",
       "migration_irreversible_warning": "Le processus de migration des schémas n'est pas réversible. Une fois la migration effectuée, votre base de données sera incompatible avec les versions précédentes de Stash.",
+      "migration_notes": "Notes de migration",
       "migration_required": "Migration requise",
       "perform_schema_migration": "Procéder à la migration du schéma",
-      "schema_too_old": "La version du schéma de votre base de données Stash actuelle est <strong>{databaseSchema}</strong> et doit être migrée vers la version <strong>{appSchema}</strong>. Cette version de Stash ne fonctionnera pas sans migration de la base de données."
+      "schema_too_old": "La version du schéma de votre base de données Stash actuelle est <strong>{databaseSchema}</strong> et doit être migrée vers la version <strong>{appSchema}</strong>. Cette version de Stash ne fonctionnera pas sans migration de la base de données. Si vous souhaitez ne pas migrer, vous devrez rétrograder vers une version qui correspond au schéma de votre base de données."
     },
     "paths": {
       "database_filename_empty_for_default": "Nom de fichier de la base de données (vide par défaut)",
@@ -1019,5 +1052,6 @@
   "videos": "Vidéos",
   "view_all": "Tout voir",
   "weight": "Poids",
-  "years_old": "ans"
+  "years_old": "ans",
+  "zip_file_count": "Nombre de fichiers Zip"
 }
