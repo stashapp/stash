@@ -81,6 +81,9 @@
   .wall-popovers:focus {
     opacity: 0.8;
   }
+  .wall-popovers:focus-visible {
+    outline: none;
+  }
 }
 
 $galleryTabWidth: 450px;

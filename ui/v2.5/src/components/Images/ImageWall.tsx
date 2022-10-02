@@ -109,16 +109,18 @@ export const ImageWall: React.FC<IImageWallProps> = ({
         </div>
       );
     }
-    const ref = useRef(null);
-    const handleTouchEnd = (event) => {
-      if (ref.current === document.activeElement) {
-        alert("If i would to display this, it would be nice!");
-      } else {
+    const ref = useRef<HTMLDivElement>(null);
+    const handleTouchEnd = (event: any) => {
+      if (
+        ref.current !== document.activeElement &&
+        ref != null &&
+        ref.current != null
+      ) {
         ref.current.focus();
-        console.log(ref.current);
+
+        event.preventDefault();
       }
       event.stopPropagation();
-      event.preventDefault();
     };
     function renderPopoverButtonGroup() {
       if (
@@ -135,7 +137,7 @@ export const ImageWall: React.FC<IImageWallProps> = ({
               onClick={(e) => e.stopPropagation()}
               onTouchEnd={handleTouchEnd}
             >
-              <ButtonGroup className="wall-popovers" ref={ref}>
+              <ButtonGroup className="wall-popovers" ref={ref} tabIndex={0}>
                 {maybeRenderTagPopoverButton()}
                 {maybeRenderPerformerPopoverButton()}
                 {maybeRenderOCounter()}
@@ -153,7 +155,7 @@ export const ImageWall: React.FC<IImageWallProps> = ({
               onClick={(e) => e.stopPropagation()}
               onTouchEnd={handleTouchEnd}
             >
-              <ButtonGroup className="wall-popovers">
+              <ButtonGroup className="wall-popovers" ref={ref} tabIndex={0}>
                 {renderEdit()}
               </ButtonGroup>
             </Link>
