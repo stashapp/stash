@@ -56,6 +56,33 @@
   word-wrap: break-word;
 }
 
+.wall-image {
+  .wall-popovers {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: $card-bg;
+    display: inline-block;
+    text-align: center;
+    opacity: 0;
+    transition: opacity, ease, 0.3s;
+
+    div {
+      display: inline-block;
+    }
+  }
+
+  @media(hover: hover) and (pointer: fine) {
+    .wall-popovers:hover {
+      opacity: 0.8;
+    }
+  }
+    .wall-popovers:focus {
+      opacity: 0.8;
+    }
+}
+
 $galleryTabWidth: 450px;
 
 @media (min-width: 1200px) {
@@ -119,7 +146,8 @@ $galleryTabWidth: 450px;
   overflow: auto;
 }
 
-@media (min-width: 1200px), (max-width: 575px) {
+@media (min-width: 1200px),
+(max-width: 575px) {
   .gallery-performers {
     .performer-card {
       width: 15rem;
@@ -189,9 +217,11 @@ $galleryTabWidth: 450px;
   @media (min-width: 576px) {
     @include galleryWidth(96vw);
   }
+
   @media (min-width: 768px) {
     @include galleryWidth(48vw);
   }
+
   @media (min-width: 1200px) {
     @include galleryWidth(32vw);
   }
