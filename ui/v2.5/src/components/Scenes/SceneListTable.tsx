@@ -53,26 +53,29 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
     const title = objectTitle(scene);
     return (
-      <tr key={scene.id}>
-        <td>
-          <Form.Control
-            type="checkbox"
-            checked={props.selectedIds.has(scene.id)}
-            onChange={() =>
-              props.onSelectChange!(
-                scene.id,
-                !props.selectedIds.has(scene.id),
-                shiftKey
-              )
-            }
-            onClick={(
-              event: React.MouseEvent<HTMLInputElement, MouseEvent>
-            ) => {
-              // eslint-disable-next-line prefer-destructuring
-              shiftKey = event.shiftKey;
-              event.stopPropagation();
-            }}
-          />
+      <tr className="h-100" key={scene.id}>
+        <td className="h-100 p-0">
+          <label className="h-100 m-0 d-block">
+            <Form.Control
+              type="checkbox"
+              checked={props.selectedIds.has(scene.id)}
+              className="h-100"
+              onChange={() =>
+                props.onSelectChange!(
+                  scene.id,
+                  !props.selectedIds.has(scene.id),
+                  shiftKey
+                )
+              }
+              onClick={(
+                event: React.MouseEvent<HTMLInputElement, MouseEvent>
+              ) => {
+                // eslint-disable-next-line prefer-destructuring
+                shiftKey = event.shiftKey;
+                event.stopPropagation();
+              }}
+            />
+          </label>
         </td>
         <td>
           <Link to={sceneLink}>
@@ -115,7 +118,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   return (
     <div className="row table-list justify-content-center">
-      <Table striped bordered>
+      <Table striped bordered className="h-100">
         <thead>
           <tr>
             <th />
