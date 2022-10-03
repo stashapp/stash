@@ -30,6 +30,7 @@ type SceneParserResult struct {
 	URL          *string         `json:"url"`
 	Date         *string         `json:"date"`
 	Rating       *int            `json:"rating"`
+	Rating100    *int            `json:"rating100"`
 	StudioID     *string         `json:"studio_id"`
 	GalleryIds   []string        `json:"gallery_ids"`
 	PerformerIds []string        `json:"performer_ids"`

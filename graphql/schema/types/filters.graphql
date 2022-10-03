@@ -135,7 +135,9 @@ input SceneFilterType {
   """Filter by file count"""
   file_count: IntCriterionInput
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by o-counter"""
