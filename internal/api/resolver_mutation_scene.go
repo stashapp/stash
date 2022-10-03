@@ -104,6 +104,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	updatedScene.URL = translator.optionalString(input.URL, "url")
 	updatedScene.Date = translator.optionalDate(input.Date, "date")
 	updatedScene.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedScene.Rating100 = translator.optionalInt(input.Rating100, "rating100")
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -199,6 +200,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneU
 	updatedScene.URL = translator.optionalString(input.URL, "url")
 	updatedScene.Date = translator.optionalDate(input.Date, "date")
 	updatedScene.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedScene.Rating100 = translator.optionalInt(input.Rating100, "rating100")
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)

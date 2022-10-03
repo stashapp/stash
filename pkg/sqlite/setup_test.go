@@ -823,7 +823,7 @@ func getSceneTitle(index int) string {
 
 func getRating(index int) sql.NullInt64 {
 	rating := index % 6
-	return sql.NullInt64{Int64: int64(rating), Valid: rating > 0}
+	return sql.NullInt64{Int64: int64(rating * 20), Valid: rating > 0}
 }
 
 func getIntPtr(r sql.NullInt64) *int {
@@ -967,11 +967,18 @@ func makeScene(i int) *models.Scene {
 		}
 	}
 
+	rating100 := getRating(i)
+	rating5 := rating100
+	if rating5.Valid {
+		rating5.Int64 = int64(models.Rating100To5(int(rating5.Int64)))
+	}
+
 	return &models.Scene{
 		Title:        title,
 		Details:      details,
 		URL:          getSceneEmptyString(i, urlField),
-		Rating:       getIntPtr(getRating(i)),
+		Rating100:    getIntPtr(rating100),
+		Rating:       getIntPtr(rating5),
 		OCounter:     getOCounter(i),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,

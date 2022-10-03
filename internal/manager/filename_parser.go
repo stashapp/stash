@@ -112,6 +112,7 @@ func initParserFields() {
 
 	ret["d"] = newParserField("d", `(?:\.|-|_)`, false)
 	ret["rating"] = newParserField("rating", `\d`, true)
+	ret["rating100"] = newParserField("rating100", `\d`, true)
 	ret["performer"] = newParserField("performer", ".*", true)
 	ret["studio"] = newParserField("studio", ".*", true)
 	ret["movie"] = newParserField("movie", ".*", true)
@@ -255,6 +256,10 @@ func validateRating(rating int) bool {
 	return rating >= 1 && rating <= 5
 }
 
+func validateRating100(rating100 int) bool {
+	return rating100 >= 1 && rating100 <= 100
+}
+
 func validateDate(dateStr string) bool {
 	splits := strings.Split(dateStr, "-")
 	if len(splits) != 3 {
@@ -347,6 +352,11 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 		rating, _ := strconv.Atoi(value.(string))
 		if validateRating(rating) {
 			h.result.Rating = &rating
+		}
+	case "rating100":
+		rating, _ := strconv.Atoi(value.(string))
+		if validateRating100(rating) {
+			h.result.Rating100 = &rating
 		}
 	case "performer":
 		// add performer to list
@@ -704,6 +714,9 @@ func (p *SceneFilenameParser) setParserResult(ctx context.Context, repo SceneFil
 
 	if h.result.Rating != nil {
 		result.Rating = h.result.Rating
+	}
+	if h.result.Rating100 != nil {
+		result.Rating100 = h.result.Rating100
 	}
 
 	if len(h.performers) > 0 {
