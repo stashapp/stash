@@ -557,8 +557,8 @@
         "heading": "Vue studio",
         "options": {
           "show_child_studio_content": {
-            "description": "Dans la vue studio, afficher également le contenu des sous-studios",
-            "heading": "Afficher le contenu des sous-studios"
+            "description": "Dans la vue studio, afficher également le contenu des studios affiliés",
+            "heading": "Afficher le contenu des studios affiliés"
           }
         }
       },
