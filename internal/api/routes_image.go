@@ -60,7 +60,6 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	} else {
 		const useDefault = true
 
-		// don't return anything if there is no file
 		f := img.Files.Primary()
 		if f == nil {
 			rs.serveImage(w, r, img, useDefault)
