@@ -9,24 +9,22 @@ import (
 type RatingSystem string
 
 const (
-	FiveStar = "FiveStar"
-	FivePointFiveStar = "FivePointFiveStar"
+	FiveStar             = "FiveStar"
+	FivePointFiveStar    = "FivePointFiveStar"
 	FivePointTwoFiveStar = "FivePointTwoFiveStar"
-	TenStar = "TenStar"
-	TenPointFiveStar = "TenPointFiveStar"
-	TenPointTwoFiveStar = "TenPointTwoFiveStar"
-	TenPointDecimal = "TenPointDecimal"
-	None = "None"
+	TenStar              = "TenStar"
+	TenPointFiveStar     = "TenPointFiveStar"
+	TenPointTwoFiveStar  = "TenPointTwoFiveStar"
+	TenPointDecimal      = "TenPointDecimal"
 )
 
 func (e RatingSystem) IsValid() bool {
 	switch e {
-	case FiveStar, FivePointFiveStar, FivePointTwoFiveStar, TenStar, TenPointFiveStar, TenPointTwoFiveStar, TenPointDecimal, None:
+	case FiveStar, FivePointFiveStar, FivePointTwoFiveStar, TenStar, TenPointFiveStar, TenPointTwoFiveStar, TenPointDecimal:
 		return true
 	}
 	return false
 }
-
 
 func (e RatingSystem) String() string {
 	return string(e)
