@@ -199,7 +199,8 @@ INSERT INTO `movies_scenes_new`
     `movie_id`,
     `scene_id`,
     `scene_index`
-  FROM `movies_scenes`;
+  FROM `movies_scenes` WHERE true
+  ON CONFLICT (`movie_id`, `scene_id`) DO NOTHING;
 
 DROP TABLE `movies_scenes`;
 ALTER TABLE `movies_scenes_new` rename to `movies_scenes`;
