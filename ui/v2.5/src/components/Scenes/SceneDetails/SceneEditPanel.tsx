@@ -108,7 +108,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     details: yup.string().optional().nullable(),
     url: yup.string().optional().nullable(),
     date: yup.string().optional().nullable(),
-    rating: yup.number().optional().nullable(),
+    rating100: yup.number().optional().nullable(),
     gallery_ids: yup.array(yup.string().required()).optional().nullable(),
     studio_id: yup.string().optional().nullable(),
     performer_ids: yup.array(yup.string().required()).optional().nullable(),
@@ -130,7 +130,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       details: scene.details ?? "",
       url: scene.url ?? "",
       date: scene.date ?? "",
-      rating: scene.rating ?? null,
+      rating100: scene.rating100 ?? null,
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
@@ -154,7 +154,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   });
 
   function setRating(v: number) {
-    formik.setFieldValue("rating", v);
+    formik.setFieldValue("rating100", v);
   }
 
   interface IGallerySelectValue {
@@ -259,7 +259,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         variables: {
           input: {
             ...input,
-            rating: input.rating ?? null,
+            rating100: input.rating100 ?? null,
           },
         },
       });
@@ -717,9 +717,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
               "YYYY-MM-DD"
             )}
             <RatingSystem
-              value={formik.values.rating ?? undefined}
+              value={formik.values.rating100 ?? undefined}
               onSetRating={(value) =>
-                formik.setFieldValue("rating", value ?? null)
+                formik.setFieldValue("rating100", value ?? null)
               }
             />
             <Form.Group controlId="galleries" as={Row}>
