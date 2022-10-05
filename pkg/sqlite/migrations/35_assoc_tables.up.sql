@@ -386,7 +386,8 @@ INSERT INTO `performers_galleries_new`
   SELECT 
     `performer_id`,
     `gallery_id`
-  FROM `performers_galleries`;
+  FROM `performers_galleries` WHERE true
+  ON CONFLICT (`gallery_id`, `performer_id`) DO NOTHING;
 
 DROP TABLE `performers_galleries`;
 ALTER TABLE `performers_galleries_new` rename to `performers_galleries`;
