@@ -807,24 +807,11 @@ func (s *scanJob) isHandlerRequired(ctx context.Context, f File) bool {
 // - file size
 // - image format, width or height
 // - video codec, audio codec, format, width, height, framerate or bitrate
-func (s *scanJob) isMissingMetadata(existing File) bool {
-	const (
-		unsetString = "unset"
-		unsetNumber = -1
-	)
-
-	if existing.Base().Size == unsetNumber {
-		return true
-	}
-
-	switch f := existing.(type) {
-	case *ImageFile:
-		return f.Format == unsetString || f.Width == unsetNumber || f.Height == unsetNumber
-	case *VideoFile:
-		return f.VideoCodec == unsetString || f.AudioCodec == unsetString ||
-			f.Format == unsetString || f.Width == unsetNumber ||
-			f.Height == unsetNumber || f.FrameRate == unsetNumber ||
-			f.BitRate == unsetNumber
+func (s *scanJob) isMissingMetadata(ctx context.Context, f scanFile, existing File) bool {
+	for _, h := range s.FileDecorators {
+		if h.IsMissingMetadata(ctx, f.fs, existing) {
+			return true
+		}
 	}
 
 	return false
@@ -832,7 +819,7 @@ func (s *scanJob) isMissingMetadata(existing File) bool {
 
 func (s *scanJob) setMissingMetadata(ctx context.Context, f scanFile, existing File) (File, error) {
 	path := existing.Base().Path
-	logger.Infof("Setting missing metadata for %s", path)
+	logger.Infof("Updating metadata for %s", path)
 
 	existing.Base().Size = f.Size
 
@@ -962,7 +949,7 @@ func (s *scanJob) removeOutdatedFingerprints(existing File, fp Fingerprints) {
 func (s *scanJob) onUnchangedFile(ctx context.Context, f scanFile, existing File) (File, error) {
 	var err error
 
-	isMissingMetdata := s.isMissingMetadata(existing)
+	isMissingMetdata := s.isMissingMetadata(ctx, f, existing)
 	// set missing information
 	if isMissingMetdata {
 		existing, err = s.setMissingMetadata(ctx, f, existing)

@@ -195,6 +195,7 @@ type Store interface {
 // Decorator wraps the Decorate method to add additional functionality while scanning files.
 type Decorator interface {
 	Decorate(ctx context.Context, fs FS, f File) (File, error)
+	IsMissingMetadata(ctx context.Context, fs FS, f File) bool
 }
 
 type FilteredDecorator struct {
@@ -208,4 +209,12 @@ func (d *FilteredDecorator) Decorate(ctx context.Context, fs FS, f File) (File, 
 		return d.Decorator.Decorate(ctx, fs, f)
 	}
 	return f, nil
+}
+
+func (d *FilteredDecorator) IsMissingMetadata(ctx context.Context, fs FS, f File) bool {
+	if d.Accept(ctx, f) {
+		return d.Decorator.IsMissingMetadata(ctx, fs, f)
+	}
+
+	return false
 }
