@@ -27,6 +27,7 @@ import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
+import { TagPopover } from "../Tags/TagPopover";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -659,7 +660,11 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
       };
     }
 
-    return <reactSelectComponents.Option {...thisOptionProps} />;
+    return (
+      <TagPopover id={optionProps.data.value}>
+        <reactSelectComponents.Option {...thisOptionProps} />
+      </TagPopover>
+    );
   };
 
   const filterOption = (option: Option, rawInput: string): boolean => {

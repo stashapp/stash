@@ -30,6 +30,7 @@ export interface IUIConfig {
   lastNoteSeen?: number;
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
+  showTagCardOnHover?: boolean;
 }
 
 function recentlyReleased(
