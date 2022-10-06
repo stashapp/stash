@@ -101,5 +101,10 @@ type ImageService interface {
 }
 
 type GalleryService interface {
+	AddImages(ctx context.Context, g *models.Gallery, toAdd ...int) error
+	RemoveImages(ctx context.Context, g *models.Gallery, toRemove ...int) error
+
 	Destroy(ctx context.Context, i *models.Gallery, fileDeleter *image.FileDeleter, deleteGenerated, deleteFile bool) ([]*models.Image, error)
+
+	ValidateImageGalleryChange(ctx context.Context, i *models.Image, updateIDs models.UpdateIDs) error
 }

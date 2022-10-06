@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -21,7 +22,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-var appSchemaVersion uint = 34
+var appSchemaVersion uint = 36
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -253,8 +254,14 @@ func (db *Database) DatabasePath() string {
 	return db.dbPath
 }
 
-func (db *Database) DatabaseBackupPath() string {
-	return fmt.Sprintf("%s.%d.%s", db.dbPath, db.schemaVersion, time.Now().Format("20060102_150405"))
+func (db *Database) DatabaseBackupPath(backupDirectoryPath string) string {
+	fn := fmt.Sprintf("%s.%d.%s", filepath.Base(db.dbPath), db.schemaVersion, time.Now().Format("20060102_150405"))
+
+	if backupDirectoryPath != "" {
+		return filepath.Join(backupDirectoryPath, fn)
+	}
+
+	return fn
 }
 
 func (db *Database) Version() uint {
