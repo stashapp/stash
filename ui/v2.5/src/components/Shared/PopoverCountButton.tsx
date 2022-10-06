@@ -29,7 +29,8 @@ export const PopoverCountButton: React.FC<IProps> = ({
   count,
 }) => {
   const { configuration } = React.useContext(ConfigurationContext);
-  const abbreviateCounter = (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
+  const abbreviateCounter =
+    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
   const intl = useIntl();
 

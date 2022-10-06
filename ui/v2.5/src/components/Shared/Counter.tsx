@@ -8,7 +8,10 @@ interface IProps {
   count: number;
 }
 
-export const Counter: React.FC<IProps> = ({ abbreviateCounter = false, count }) => {
+export const Counter: React.FC<IProps> = ({
+  abbreviateCounter = false,
+  count,
+}) => {
   const intl = useIntl();
 
   if (abbreviateCounter) {

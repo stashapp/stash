@@ -55,7 +55,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const abbreviateCounter = (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
+  const abbreviateCounter =
+    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);

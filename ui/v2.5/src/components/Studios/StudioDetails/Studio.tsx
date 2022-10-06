@@ -49,7 +49,8 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const abbreviateCounter = (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
+  const abbreviateCounter =
+    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);

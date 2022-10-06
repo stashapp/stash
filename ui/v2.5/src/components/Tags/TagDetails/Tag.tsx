@@ -54,7 +54,8 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const abbreviateCounter = (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
+  const abbreviateCounter =
+    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
   const { tab = "scenes" } = useParams<ITabParams>();
 
