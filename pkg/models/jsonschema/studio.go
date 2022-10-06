@@ -5,6 +5,7 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 )
@@ -21,6 +22,10 @@ type Studio struct {
 	Aliases       []string         `json:"aliases,omitempty"`
 	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
 	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
+}
+
+func (s Studio) Filename() string {
+	return fsutil.SanitiseBasename(s.Name) + ".json"
 }
 
 func LoadStudioFile(filePath string) (*Studio, error) {

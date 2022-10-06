@@ -1,10 +1,12 @@
 package dlna
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 )
@@ -18,7 +20,7 @@ func (p *scenePager) getPageID(page int) string {
 	return p.parentID + "/page/" + strconv.Itoa(page)
 }
 
-func (p *scenePager) getPages(r models.ReaderRepository, total int) ([]interface{}, error) {
+func (p *scenePager) getPages(ctx context.Context, r scene.Queryer, total int) ([]interface{}, error) {
 	var objs []interface{}
 
 	// get the first scene of each page to set an appropriate title
@@ -37,7 +39,7 @@ func (p *scenePager) getPages(r models.ReaderRepository, total int) ([]interface
 		if pages <= 10 || (page-1)%(pages/10) == 0 {
 			thisPage := ((page - 1) * pageSize) + 1
 			findFilter.Page = &thisPage
-			scenes, err := scene.Query(r.Scene(), p.sceneFilter, findFilter)
+			scenes, err := scene.Query(ctx, r, p.sceneFilter, findFilter)
 			if err != nil {
 				return nil, err
 			}
@@ -58,7 +60,7 @@ func (p *scenePager) getPages(r models.ReaderRepository, total int) ([]interface
 	return objs, nil
 }
 
-func (p *scenePager) getPageVideos(r models.ReaderRepository, page int, host string) ([]interface{}, error) {
+func (p *scenePager) getPageVideos(ctx context.Context, r SceneFinder, f file.Finder, page int, host string) ([]interface{}, error) {
 	var objs []interface{}
 
 	sort := "title"
@@ -68,12 +70,16 @@ func (p *scenePager) getPageVideos(r models.ReaderRepository, page int, host str
 		Sort:    &sort,
 	}
 
-	scenes, err := scene.Query(r.Scene(), p.sceneFilter, findFilter)
+	scenes, err := scene.Query(ctx, r, p.sceneFilter, findFilter)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, s := range scenes {
+		if err := s.LoadPrimaryFile(ctx, f); err != nil {
+			return nil, err
+		}
+
 		objs = append(objs, sceneToContainer(s, p.parentID, host))
 	}
 

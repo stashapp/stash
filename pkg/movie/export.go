@@ -1,16 +1,23 @@
 package movie
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type ImageGetter interface {
+	GetFrontImage(ctx context.Context, movieID int) ([]byte, error)
+	GetBackImage(ctx context.Context, movieID int) ([]byte, error)
+}
+
 // ToJSON converts a Movie into its JSON equivalent.
-func ToJSON(reader models.MovieReader, studioReader models.StudioReader, movie *models.Movie) (*jsonschema.Movie, error) {
+func ToJSON(ctx context.Context, reader ImageGetter, studioReader studio.Finder, movie *models.Movie) (*jsonschema.Movie, error) {
 	newMovieJSON := jsonschema.Movie{
 		CreatedAt: json.JSONTime{Time: movie.CreatedAt.Timestamp},
 		UpdatedAt: json.JSONTime{Time: movie.UpdatedAt.Timestamp},
@@ -45,7 +52,7 @@ func ToJSON(reader models.MovieReader, studioReader models.StudioReader, movie *
 	}
 
 	if movie.StudioID.Valid {
-		studio, err := studioReader.Find(int(movie.StudioID.Int64))
+		studio, err := studioReader.Find(ctx, int(movie.StudioID.Int64))
 		if err != nil {
 			return nil, fmt.Errorf("error getting movie studio: %v", err)
 		}
@@ -55,7 +62,7 @@ func ToJSON(reader models.MovieReader, studioReader models.StudioReader, movie *
 		}
 	}
 
-	frontImage, err := reader.GetFrontImage(movie.ID)
+	frontImage, err := reader.GetFrontImage(ctx, movie.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting movie front image: %v", err)
 	}
@@ -64,7 +71,7 @@ func ToJSON(reader models.MovieReader, studioReader models.StudioReader, movie *
 		newMovieJSON.FrontImage = utils.GetBase64StringFromData(frontImage)
 	}
 
-	backImage, err := reader.GetBackImage(movie.ID)
+	backImage, err := reader.GetBackImage(ctx, movie.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting movie back image: %v", err)
 	}

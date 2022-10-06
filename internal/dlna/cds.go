@@ -41,6 +41,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 var pageSize = 100
@@ -56,7 +57,6 @@ type browse struct {
 type contentDirectoryService struct {
 	*Server
 	upnp.Eventing
-	txnManager models.TransactionManager
 }
 
 func formatDurationSexagesimal(d time.Duration) string {
@@ -108,9 +108,18 @@ func sceneToContainer(scene *models.Scene, parent string, host string) interface
 	}
 
 	mimeType := "video/mp4"
-	size, _ := strconv.Atoi(scene.Size.String)
+	var (
+		size     int
+		bitrate  uint
+		duration int64
+	)
 
-	duration := int64(scene.Duration.Float64)
+	f := scene.Files.Primary()
+	if f != nil {
+		size = int(f.Size)
+		bitrate = uint(f.BitRate)
+		duration = int64(f.Duration)
+	}
 
 	item.Res = append(item.Res, upnpav.Resource{
 		URL: (&url.URL{
@@ -124,8 +133,7 @@ func sceneToContainer(scene *models.Scene, parent string, host string) interface
 		ProtocolInfo: fmt.Sprintf("http-get:*:%s:%s", mimeType, dlna.ContentFeatures{
 			SupportRange: true,
 		}.String()),
-		Bitrate: uint(scene.Bitrate.Int64),
-		// TODO - make %d:%02d:%02d string
+		Bitrate:  bitrate,
 		Duration: formatDurationSexagesimal(time.Duration(duration) * time.Second),
 		Size:     uint64(size),
 		// Resolution: resolution,
@@ -352,8 +360,12 @@ func (me *contentDirectoryService) handleBrowseMetadata(obj object, host string)
 	} else {
 		var scene *models.Scene
 
-		if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-			scene, err = r.Scene().Find(sceneID)
+		if err := txn.WithTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
+			scene, err = me.repository.SceneFinder.Find(ctx, sceneID)
+			if scene != nil {
+				err = scene.LoadPrimaryFile(ctx, me.repository.FileFinder)
+			}
+
 			if err != nil {
 				return err
 			}
@@ -370,7 +382,7 @@ func (me *contentDirectoryService) handleBrowseMetadata(obj object, host string)
 			// http://upnp.org/specs/av/UPnP-av-ContentDirectory-v1-Service.pdf
 			// maximum update ID is 2**32, then rolls back to 0
 			const maxUpdateID int64 = 1 << 32
-			updateID = fmt.Sprint(scene.UpdatedAt.Timestamp.Unix() % maxUpdateID)
+			updateID = fmt.Sprint(scene.UpdatedAt.Unix() % maxUpdateID)
 		} else {
 			return nil, upnp.Errorf(upnpav.NoSuchObjectErrorCode, "scene not found")
 		}
@@ -431,14 +443,14 @@ func getRootObjects() []interface{} {
 func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType, parentID string, host string) []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := txn.WithTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
 		sort := "title"
 		findFilter := &models.FindFilterType{
 			PerPage: &pageSize,
 			Sort:    &sort,
 		}
 
-		scenes, total, err := scene.QueryWithCount(r.Scene(), sceneFilter, findFilter)
+		scenes, total, err := scene.QueryWithCount(ctx, me.repository.SceneFinder, sceneFilter, findFilter)
 		if err != nil {
 			return err
 		}
@@ -449,12 +461,16 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 				parentID:    parentID,
 			}
 
-			objs, err = pager.getPages(r, total)
+			objs, err = pager.getPages(ctx, me.repository.SceneFinder, total)
 			if err != nil {
 				return err
 			}
 		} else {
 			for _, s := range scenes {
+				if err := s.LoadPrimaryFile(ctx, me.repository.FileFinder); err != nil {
+					return err
+				}
+
 				objs = append(objs, sceneToContainer(s, parentID, host))
 			}
 		}
@@ -470,14 +486,14 @@ func (me *contentDirectoryService) getVideos(sceneFilter *models.SceneFilterType
 func (me *contentDirectoryService) getPageVideos(sceneFilter *models.SceneFilterType, parentID string, page int, host string) []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+	if err := txn.WithTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
 		pager := scenePager{
 			sceneFilter: sceneFilter,
 			parentID:    parentID,
 		}
 
 		var err error
-		objs, err = pager.getPageVideos(r, page, host)
+		objs, err = pager.getPageVideos(ctx, me.repository.SceneFinder, me.repository.FileFinder, page, host)
 		if err != nil {
 			return err
 		}
@@ -511,8 +527,8 @@ func (me *contentDirectoryService) getAllScenes(host string) []interface{} {
 func (me *contentDirectoryService) getStudios() []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		studios, err := r.Studio().All()
+	if err := txn.WithTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
+		studios, err := me.repository.StudioFinder.All(ctx)
 		if err != nil {
 			return err
 		}
@@ -550,8 +566,8 @@ func (me *contentDirectoryService) getStudioScenes(paths []string, host string) 
 func (me *contentDirectoryService) getTags() []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		tags, err := r.Tag().All()
+	if err := txn.WithTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
+		tags, err := me.repository.TagFinder.All(ctx)
 		if err != nil {
 			return err
 		}
@@ -589,8 +605,8 @@ func (me *contentDirectoryService) getTagScenes(paths []string, host string) []i
 func (me *contentDirectoryService) getPerformers() []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		performers, err := r.Performer().All()
+	if err := txn.WithTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
+		performers, err := me.repository.PerformerFinder.All(ctx)
 		if err != nil {
 			return err
 		}
@@ -628,8 +644,8 @@ func (me *contentDirectoryService) getPerformerScenes(paths []string, host strin
 func (me *contentDirectoryService) getMovies() []interface{} {
 	var objs []interface{}
 
-	if err := me.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-		movies, err := r.Movie().All()
+	if err := txn.WithTxn(context.TODO(), me.txnManager, func(ctx context.Context) error {
+		movies, err := me.repository.MovieFinder.All(ctx)
 		if err != nil {
 			return err
 		}

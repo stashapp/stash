@@ -73,12 +73,6 @@
   }
 }
 
-.file-info-panel {
-  div {
-    margin-bottom: 0.5rem;
-  }
-}
-
 textarea.scene-description {
   min-height: 150px;
 }
@@ -629,5 +623,18 @@ input[type="range"].blue-slider {
 
   li {
     cursor: pointer;
+  }
+}
+
+.scene-file-card.card {
+  margin: 0;
+  padding: 0;
+
+  .card-header {
+    cursor: pointer;
+  }
+
+  dl {
+    margin-bottom: 0;
   }
 }

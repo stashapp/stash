@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -15,42 +16,39 @@ type savedFilterQueryBuilder struct {
 	repository
 }
 
-func NewSavedFilterReaderWriter(tx dbi) *savedFilterQueryBuilder {
-	return &savedFilterQueryBuilder{
-		repository{
-			tx:        tx,
-			tableName: savedFilterTable,
-			idColumn:  idColumn,
-		},
-	}
+var SavedFilterReaderWriter = &savedFilterQueryBuilder{
+	repository{
+		tableName: savedFilterTable,
+		idColumn:  idColumn,
+	},
 }
 
-func (qb *savedFilterQueryBuilder) Create(newObject models.SavedFilter) (*models.SavedFilter, error) {
+func (qb *savedFilterQueryBuilder) Create(ctx context.Context, newObject models.SavedFilter) (*models.SavedFilter, error) {
 	var ret models.SavedFilter
-	if err := qb.insertObject(newObject, &ret); err != nil {
+	if err := qb.insertObject(ctx, newObject, &ret); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
 }
 
-func (qb *savedFilterQueryBuilder) Update(updatedObject models.SavedFilter) (*models.SavedFilter, error) {
+func (qb *savedFilterQueryBuilder) Update(ctx context.Context, updatedObject models.SavedFilter) (*models.SavedFilter, error) {
 	const partial = false
-	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(ctx, updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
 	var ret models.SavedFilter
-	if err := qb.get(updatedObject.ID, &ret); err != nil {
+	if err := qb.getByID(ctx, updatedObject.ID, &ret); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
 }
 
-func (qb *savedFilterQueryBuilder) SetDefault(obj models.SavedFilter) (*models.SavedFilter, error) {
+func (qb *savedFilterQueryBuilder) SetDefault(ctx context.Context, obj models.SavedFilter) (*models.SavedFilter, error) {
 	// find the existing default
-	existing, err := qb.FindDefault(obj.Mode)
+	existing, err := qb.FindDefault(ctx, obj.Mode)
 
 	if err != nil {
 		return nil, err
@@ -60,19 +58,19 @@ func (qb *savedFilterQueryBuilder) SetDefault(obj models.SavedFilter) (*models.S
 
 	if existing != nil {
 		obj.ID = existing.ID
-		return qb.Update(obj)
+		return qb.Update(ctx, obj)
 	}
 
-	return qb.Create(obj)
+	return qb.Create(ctx, obj)
 }
 
-func (qb *savedFilterQueryBuilder) Destroy(id int) error {
-	return qb.destroyExisting([]int{id})
+func (qb *savedFilterQueryBuilder) Destroy(ctx context.Context, id int) error {
+	return qb.destroyExisting(ctx, []int{id})
 }
 
-func (qb *savedFilterQueryBuilder) Find(id int) (*models.SavedFilter, error) {
+func (qb *savedFilterQueryBuilder) Find(ctx context.Context, id int) (*models.SavedFilter, error) {
 	var ret models.SavedFilter
-	if err := qb.get(id, &ret); err != nil {
+	if err := qb.getByID(ctx, id, &ret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -81,10 +79,10 @@ func (qb *savedFilterQueryBuilder) Find(id int) (*models.SavedFilter, error) {
 	return &ret, nil
 }
 
-func (qb *savedFilterQueryBuilder) FindMany(ids []int, ignoreNotFound bool) ([]*models.SavedFilter, error) {
+func (qb *savedFilterQueryBuilder) FindMany(ctx context.Context, ids []int, ignoreNotFound bool) ([]*models.SavedFilter, error) {
 	var filters []*models.SavedFilter
 	for _, id := range ids {
-		filter, err := qb.Find(id)
+		filter, err := qb.Find(ctx, id)
 		if err != nil {
 			return nil, err
 		}
@@ -99,24 +97,24 @@ func (qb *savedFilterQueryBuilder) FindMany(ids []int, ignoreNotFound bool) ([]*
 	return filters, nil
 }
 
-func (qb *savedFilterQueryBuilder) FindByMode(mode models.FilterMode) ([]*models.SavedFilter, error) {
+func (qb *savedFilterQueryBuilder) FindByMode(ctx context.Context, mode models.FilterMode) ([]*models.SavedFilter, error) {
 	// exclude empty-named filters - these are the internal default filters
 
 	query := fmt.Sprintf(`SELECT * FROM %s WHERE mode = ? AND name != ?`, savedFilterTable)
 
 	var ret models.SavedFilters
-	if err := qb.query(query, []interface{}{mode, savedFilterDefaultName}, &ret); err != nil {
+	if err := qb.query(ctx, query, []interface{}{mode, savedFilterDefaultName}, &ret); err != nil {
 		return nil, err
 	}
 
 	return []*models.SavedFilter(ret), nil
 }
 
-func (qb *savedFilterQueryBuilder) FindDefault(mode models.FilterMode) (*models.SavedFilter, error) {
+func (qb *savedFilterQueryBuilder) FindDefault(ctx context.Context, mode models.FilterMode) (*models.SavedFilter, error) {
 	query := fmt.Sprintf(`SELECT * FROM %s WHERE mode = ? AND name = ?`, savedFilterTable)
 
 	var ret models.SavedFilters
-	if err := qb.query(query, []interface{}{mode, savedFilterDefaultName}, &ret); err != nil {
+	if err := qb.query(ctx, query, []interface{}{mode, savedFilterDefaultName}, &ret); err != nil {
 		return nil, err
 	}
 
@@ -127,9 +125,9 @@ func (qb *savedFilterQueryBuilder) FindDefault(mode models.FilterMode) (*models.
 	return nil, nil
 }
 
-func (qb *savedFilterQueryBuilder) All() ([]*models.SavedFilter, error) {
+func (qb *savedFilterQueryBuilder) All(ctx context.Context) ([]*models.SavedFilter, error) {
 	var ret models.SavedFilters
-	if err := qb.query(selectAll(savedFilterTable), nil, &ret); err != nil {
+	if err := qb.query(ctx, selectAll(savedFilterTable), nil, &ret); err != nil {
 		return nil, err
 	}
 

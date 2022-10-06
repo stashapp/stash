@@ -4,79 +4,1820 @@
 package sqlite_test
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"math"
+	"path/filepath"
+	"reflect"
 	"regexp"
 	"strconv"
 	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/intslice"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestSceneFind(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		// assume that the first scene is sceneWithGalleryPath
-		sqb := r.Scene()
-
-		const sceneIdx = 0
-		sceneID := sceneIDs[sceneIdx]
-		scene, err := sqb.Find(sceneID)
-
-		if err != nil {
-			t.Errorf("Error finding scene: %s", err.Error())
+func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *models.Scene) error {
+	if expected.GalleryIDs.Loaded() {
+		if err := actual.LoadGalleryIDs(ctx, db.Scene); err != nil {
+			return err
 		}
-
-		assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
-
-		sceneID = 0
-		scene, err = sqb.Find(sceneID)
-
-		if err != nil {
-			t.Errorf("Error finding scene: %s", err.Error())
+	}
+	if expected.TagIDs.Loaded() {
+		if err := actual.LoadTagIDs(ctx, db.Scene); err != nil {
+			return err
 		}
+	}
+	if expected.PerformerIDs.Loaded() {
+		if err := actual.LoadPerformerIDs(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
+	if expected.Movies.Loaded() {
+		if err := actual.LoadMovies(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
+	if expected.StashIDs.Loaded() {
+		if err := actual.LoadStashIDs(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
+	if expected.Files.Loaded() {
+		if err := actual.LoadFiles(ctx, db.Scene); err != nil {
+			return err
+		}
+	}
 
-		assert.Nil(t, scene)
+	// clear Path, Checksum, PrimaryFileID
+	if expected.Path == "" {
+		actual.Path = ""
+	}
+	if expected.Checksum == "" {
+		actual.Checksum = ""
+	}
+	if expected.OSHash == "" {
+		actual.OSHash = ""
+	}
+	if expected.PrimaryFileID == nil {
+		actual.PrimaryFileID = nil
+	}
 
-		return nil
-	})
+	return nil
 }
 
-func TestSceneFindByPath(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+func Test_sceneQueryBuilder_Create(t *testing.T) {
+	var (
+		title       = "title"
+		details     = "details"
+		url         = "url"
+		rating      = 3
+		ocounter    = 5
+		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex  = 123
+		sceneIndex2 = 234
+		endpoint1   = "endpoint1"
+		endpoint2   = "endpoint2"
+		stashID1    = "stashid1"
+		stashID2    = "stashid2"
 
-		const sceneIdx = 1
-		scenePath := getSceneStringValue(sceneIdx, "Path")
-		scene, err := sqb.FindByPath(scenePath)
+		date = models.NewDate("2003-02-01")
 
-		if err != nil {
-			t.Errorf("Error finding scene: %s", err.Error())
+		videoFile = makeFileWithID(fileIdxStartVideoFiles)
+	)
+
+	tests := []struct {
+		name      string
+		newObject models.Scene
+		wantErr   bool
+	}{
+		{
+			"full",
+			models.Scene{
+				Title:        title,
+				Details:      details,
+				URL:          url,
+				Date:         &date,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithScene],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				}),
+			},
+			false,
+		},
+		{
+			"with file",
+			models.Scene{
+				Title:     title,
+				Details:   details,
+				URL:       url,
+				Date:      &date,
+				Rating:    &rating,
+				Organized: true,
+				OCounter:  ocounter,
+				StudioID:  &studioIDs[studioIdxWithScene],
+				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+					videoFile.(*file.VideoFile),
+				}),
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithScene],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				}),
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			models.Scene{
+				StudioID: &invalidID,
+			},
+			true,
+		},
+		{
+			"invalid gallery id",
+			models.Scene{
+				GalleryIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			models.Scene{
+				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			models.Scene{
+				PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
+		},
+		{
+			"invalid movie id",
+			models.Scene{
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+					{
+						MovieID:    invalidID,
+						SceneIndex: &sceneIndex,
+					},
+				}),
+			},
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			var fileIDs []file.ID
+			if tt.newObject.Files.Loaded() {
+				for _, f := range tt.newObject.Files.List() {
+					fileIDs = append(fileIDs, f.ID)
+				}
+			}
+
+			s := tt.newObject
+			if err := qb.Create(ctx, &s, fileIDs); (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.Create() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				assert.Zero(s.ID)
+				return
+			}
+
+			assert.NotZero(s.ID)
+
+			copy := tt.newObject
+			copy.ID = s.ID
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, copy, &s); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(copy, s)
+
+			// ensure can find the scene
+			found, err := qb.Find(ctx, s.ID)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			if !assert.NotNil(found) {
+				return
+			}
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, copy, found); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+			assert.Equal(copy, *found)
+
+			return
+		})
+	}
+}
+
+func clearSceneFileIDs(scene *models.Scene) {
+	if scene.Files.Loaded() {
+		for _, f := range scene.Files.List() {
+			f.Base().ID = 0
+		}
+	}
+}
+
+func makeSceneFileWithID(i int) *file.VideoFile {
+	ret := makeSceneFile(i)
+	ret.ID = sceneFileIDs[i]
+	return ret
+}
+
+func Test_sceneQueryBuilder_Update(t *testing.T) {
+	var (
+		title       = "title"
+		details     = "details"
+		url         = "url"
+		rating      = 3
+		ocounter    = 5
+		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex  = 123
+		sceneIndex2 = 234
+		endpoint1   = "endpoint1"
+		endpoint2   = "endpoint2"
+		stashID1    = "stashid1"
+		stashID2    = "stashid2"
+
+		date = models.NewDate("2003-02-01")
+	)
+
+	tests := []struct {
+		name          string
+		updatedObject *models.Scene
+		wantErr       bool
+	}{
+		{
+			"full",
+			&models.Scene{
+				ID:           sceneIDs[sceneIdxWithGallery],
+				Title:        title,
+				Details:      details,
+				URL:          url,
+				Date:         &date,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithScene],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				}),
+			},
+			false,
+		},
+		{
+			"clear nullables",
+			&models.Scene{
+				ID:           sceneIDs[sceneIdxWithSpacedName],
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			false,
+		},
+		{
+			"clear gallery ids",
+			&models.Scene{
+				ID:         sceneIDs[sceneIdxWithGallery],
+				GalleryIDs: models.NewRelatedIDs([]int{}),
+			},
+			false,
+		},
+		{
+			"clear tag ids",
+			&models.Scene{
+				ID:     sceneIDs[sceneIdxWithTag],
+				TagIDs: models.NewRelatedIDs([]int{}),
+			},
+			false,
+		},
+		{
+			"clear performer ids",
+			&models.Scene{
+				ID:           sceneIDs[sceneIdxWithPerformer],
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+			},
+			false,
+		},
+		{
+			"clear movies",
+			&models.Scene{
+				ID:     sceneIDs[sceneIdxWithMovie],
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
+			},
+			false,
+		},
+		{
+			"invalid studio id",
+			&models.Scene{
+				ID:       sceneIDs[sceneIdxWithGallery],
+				StudioID: &invalidID,
+			},
+			true,
+		},
+		{
+			"invalid gallery id",
+			&models.Scene{
+				ID:         sceneIDs[sceneIdxWithGallery],
+				GalleryIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
+		},
+		{
+			"invalid tag id",
+			&models.Scene{
+				ID:     sceneIDs[sceneIdxWithGallery],
+				TagIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
+		},
+		{
+			"invalid performer id",
+			&models.Scene{
+				ID:           sceneIDs[sceneIdxWithGallery],
+				PerformerIDs: models.NewRelatedIDs([]int{invalidID}),
+			},
+			true,
+		},
+		{
+			"invalid movie id",
+			&models.Scene{
+				ID: sceneIDs[sceneIdxWithSpacedName],
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+					{
+						MovieID:    invalidID,
+						SceneIndex: &sceneIndex,
+					},
+				}),
+			},
+			true,
+		},
+	}
+
+	qb := db.Scene
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			copy := *tt.updatedObject
+
+			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, copy, s); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(copy, *s)
+		})
+	}
+}
+
+func clearScenePartial() models.ScenePartial {
+	// leave mandatory fields
+	return models.ScenePartial{
+		Title:        models.OptionalString{Set: true, Null: true},
+		Details:      models.OptionalString{Set: true, Null: true},
+		URL:          models.OptionalString{Set: true, Null: true},
+		Date:         models.OptionalDate{Set: true, Null: true},
+		Rating:       models.OptionalInt{Set: true, Null: true},
+		StudioID:     models.OptionalInt{Set: true, Null: true},
+		GalleryIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
+		StashIDs:     &models.UpdateStashIDs{Mode: models.RelationshipUpdateModeSet},
+	}
+}
+
+func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
+	var (
+		title       = "title"
+		details     = "details"
+		url         = "url"
+		rating      = 3
+		ocounter    = 5
+		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex  = 123
+		sceneIndex2 = 234
+		endpoint1   = "endpoint1"
+		endpoint2   = "endpoint2"
+		stashID1    = "stashid1"
+		stashID2    = "stashid2"
+
+		date = models.NewDate("2003-02-01")
+	)
+
+	tests := []struct {
+		name    string
+		id      int
+		partial models.ScenePartial
+		want    models.Scene
+		wantErr bool
+	}{
+		{
+			"full",
+			sceneIDs[sceneIdxWithSpacedName],
+			models.ScenePartial{
+				Title:     models.NewOptionalString(title),
+				Details:   models.NewOptionalString(details),
+				URL:       models.NewOptionalString(url),
+				Date:      models.NewOptionalDate(date),
+				Rating:    models.NewOptionalInt(rating),
+				Organized: models.NewOptionalBool(true),
+				OCounter:  models.NewOptionalInt(ocounter),
+				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithScene]),
+				CreatedAt: models.NewOptionalTime(createdAt),
+				UpdatedAt: models.NewOptionalTime(updatedAt),
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithScene]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: []models.MoviesScenes{
+						{
+							MovieID:    movieIDs[movieIdxWithScene],
+							SceneIndex: &sceneIndex,
+						},
+						{
+							MovieID:    movieIDs[movieIdxWithStudio],
+							SceneIndex: &sceneIndex2,
+						},
+					},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: []models.StashID{
+						{
+							StashID:  stashID1,
+							Endpoint: endpoint1,
+						},
+						{
+							StashID:  stashID2,
+							Endpoint: endpoint2,
+						},
+					},
+					Mode: models.RelationshipUpdateModeSet,
+				},
+			},
+			models.Scene{
+				ID: sceneIDs[sceneIdxWithSpacedName],
+				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+					makeSceneFile(sceneIdxWithSpacedName),
+				}),
+				Title:        title,
+				Details:      details,
+				URL:          url,
+				Date:         &date,
+				Rating:       &rating,
+				Organized:    true,
+				OCounter:     ocounter,
+				StudioID:     &studioIDs[studioIdxWithScene],
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+				GalleryIDs:   models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+				TagIDs:       models.NewRelatedIDs([]int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithScene]}),
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithDupName]}),
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithScene],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				}),
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
+					{
+						StashID:  stashID1,
+						Endpoint: endpoint1,
+					},
+					{
+						StashID:  stashID2,
+						Endpoint: endpoint2,
+					},
+				}),
+			},
+			false,
+		},
+		{
+			"clear all",
+			sceneIDs[sceneIdxWithSpacedName],
+			clearScenePartial(),
+			models.Scene{
+				ID: sceneIDs[sceneIdxWithSpacedName],
+				Files: models.NewRelatedVideoFiles([]*file.VideoFile{
+					makeSceneFile(sceneIdxWithSpacedName),
+				}),
+				GalleryIDs:   models.NewRelatedIDs([]int{}),
+				TagIDs:       models.NewRelatedIDs([]int{}),
+				PerformerIDs: models.NewRelatedIDs([]int{}),
+				Movies:       models.NewRelatedMovies([]models.MoviesScenes{}),
+				StashIDs:     models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			false,
+		},
+		{
+			"invalid id",
+			invalidID,
+			models.ScenePartial{},
+			models.Scene{},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Scene
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+
+			// ignore file ids
+			clearSceneFileIDs(got)
+
+			assert.Equal(tt.want, *got)
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, tt.want, s); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+			// ignore file ids
+			clearSceneFileIDs(s)
+
+			assert.Equal(tt.want, *s)
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_UpdatePartialRelationships(t *testing.T) {
+	var (
+		sceneIndex  = 123
+		sceneIndex2 = 234
+		endpoint1   = "endpoint1"
+		endpoint2   = "endpoint2"
+		stashID1    = "stashid1"
+		stashID2    = "stashid2"
+
+		movieScenes = []models.MoviesScenes{
+			{
+				MovieID:    movieIDs[movieIdxWithDupName],
+				SceneIndex: &sceneIndex,
+			},
+			{
+				MovieID:    movieIDs[movieIdxWithStudio],
+				SceneIndex: &sceneIndex2,
+			},
 		}
 
-		assert.Equal(t, sceneIDs[sceneIdx], scene.ID)
-		assert.Equal(t, scenePath, scene.Path)
-
-		scenePath = "not exist"
-		scene, err = sqb.FindByPath(scenePath)
-
-		if err != nil {
-			t.Errorf("Error finding scene: %s", err.Error())
+		stashIDs = []models.StashID{
+			{
+				StashID:  stashID1,
+				Endpoint: endpoint1,
+			},
+			{
+				StashID:  stashID2,
+				Endpoint: endpoint2,
+			},
 		}
+	)
 
-		assert.Nil(t, scene)
+	tests := []struct {
+		name    string
+		id      int
+		partial models.ScenePartial
+		want    models.Scene
+		wantErr bool
+	}{
+		{
+			"add galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdx1WithImage], galleryIDs[galleryIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				GalleryIDs: models.NewRelatedIDs(append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
+					galleryIDs[galleryIdx1WithImage],
+					galleryIDs[galleryIdx1WithPerformer],
+				)),
+			},
+			false,
+		},
+		{
+			"add identical galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdx1WithImage], galleryIDs[galleryIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				GalleryIDs: models.NewRelatedIDs(append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
+					galleryIDs[galleryIdx1WithImage],
+				)),
+			},
+			false,
+		},
+		{
+			"add tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				TagIDs: models.NewRelatedIDs(append(
+					[]int{
+						tagIDs[tagIdx1WithGallery],
+						tagIDs[tagIdx1WithDupName],
+					},
+					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
+				)),
+			},
+			false,
+		},
+		{
+			"add identical tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithDupName], tagIDs[tagIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				TagIDs: models.NewRelatedIDs(append(
+					[]int{
+						tagIDs[tagIdx1WithDupName],
+					},
+					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
+				)),
+			},
+			false,
+		},
+		{
+			"add performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName], performerIDs[performerIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				PerformerIDs: models.NewRelatedIDs(append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithDupName],
+					performerIDs[performerIdx1WithGallery],
+				)),
+			},
+			false,
+		},
+		{
+			"add identical performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName], performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				PerformerIDs: models.NewRelatedIDs(append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithDupName],
+				)),
+			},
+			false,
+		},
+		{
+			"add movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: movieScenes,
+					Mode:   models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				Movies: models.NewRelatedMovies(append([]models.MoviesScenes{
+					{
+						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
+					},
+				}, movieScenes...)),
+			},
+			false,
+		},
+		{
+			"add movies to empty",
+			sceneIDs[sceneIdx1WithPerformer],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: movieScenes,
+					Mode:   models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+					{
+						MovieID:    movieIDs[movieIdxWithDupName],
+						SceneIndex: &sceneIndex,
+					},
+					{
+						MovieID:    movieIDs[movieIdxWithStudio],
+						SceneIndex: &sceneIndex2,
+					},
+				}),
+			},
+			false,
+		},
+		{
+			"add stash ids",
+			sceneIDs[sceneIdxWithSpacedName],
+			models.ScenePartial{
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: stashIDs,
+					Mode:     models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				StashIDs: models.NewRelatedStashIDs(append([]models.StashID{sceneStashID(sceneIdxWithSpacedName)}, stashIDs...)),
+			},
+			false,
+		},
+		{
+			"add duplicate galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithScene], galleryIDs[galleryIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				GalleryIDs: models.NewRelatedIDs(append(indexesToIDs(galleryIDs, sceneGalleries[sceneIdxWithGallery]),
+					galleryIDs[galleryIdx1WithPerformer],
+				)),
+			},
+			false,
+		},
+		{
+			"add duplicate tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithScene], tagIDs[tagIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				TagIDs: models.NewRelatedIDs(append(
+					[]int{tagIDs[tagIdx1WithGallery]},
+					indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])...,
+				)),
+			},
+			false,
+		},
+		{
+			"add duplicate performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithScene], performerIDs[performerIdx1WithGallery]},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				PerformerIDs: models.NewRelatedIDs(append(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers]),
+					performerIDs[performerIdx1WithGallery],
+				)),
+			},
+			false,
+		},
+		{
+			"add duplicate movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: append([]models.MoviesScenes{
+						{
+							MovieID:    movieIDs[movieIdxWithScene],
+							SceneIndex: &sceneIndex,
+						},
+					},
+						movieScenes...,
+					),
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				Movies: models.NewRelatedMovies(append([]models.MoviesScenes{
+					{
+						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
+					},
+				}, movieScenes...)),
+			},
+			false,
+		},
+		{
+			"add duplicate stash ids",
+			sceneIDs[sceneIdxWithSpacedName],
+			models.ScenePartial{
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: []models.StashID{
+						sceneStashID(sceneIdxWithSpacedName),
+					},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{sceneStashID(sceneIdxWithSpacedName)}),
+			},
+			false,
+		},
+		{
+			"add invalid galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{},
+			true,
+		},
+		{
+			"add invalid tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{},
+			true,
+		},
+		{
+			"add invalid performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{invalidID},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{},
+			true,
+		},
+		{
+			"add invalid movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: []models.MoviesScenes{
+						{
+							MovieID: invalidID,
+						},
+					},
+					Mode: models.RelationshipUpdateModeAdd,
+				},
+			},
+			models.Scene{},
+			true,
+		},
+		{
+			"remove galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdxWithScene]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				GalleryIDs: models.NewRelatedIDs([]int{}),
+			},
+			false,
+		},
+		{
+			"remove tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithScene]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				TagIDs: models.NewRelatedIDs([]int{tagIDs[tagIdx2WithScene]}),
+			},
+			false,
+		},
+		{
+			"remove performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithScene]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				PerformerIDs: models.NewRelatedIDs([]int{performerIDs[performerIdx2WithScene]}),
+			},
+			false,
+		},
+		{
+			"remove movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: []models.MoviesScenes{
+						{
+							MovieID: movieIDs[movieIdxWithScene],
+						},
+					},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{}),
+			},
+			false,
+		},
+		{
+			"remove stash ids",
+			sceneIDs[sceneIdxWithSpacedName],
+			models.ScenePartial{
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: []models.StashID{sceneStashID(sceneIdxWithSpacedName)},
+					Mode:     models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
+			},
+			false,
+		},
+		{
+			"remove unrelated galleries",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				GalleryIDs: &models.UpdateIDs{
+					IDs:  []int{galleryIDs[galleryIdx1WithImage]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				GalleryIDs: models.NewRelatedIDs([]int{galleryIDs[galleryIdxWithScene]}),
+			},
+			false,
+		},
+		{
+			"remove unrelated tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			models.ScenePartial{
+				TagIDs: &models.UpdateIDs{
+					IDs:  []int{tagIDs[tagIdx1WithPerformer]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				TagIDs: models.NewRelatedIDs(indexesToIDs(tagIDs, sceneTags[sceneIdxWithTwoTags])),
+			},
+			false,
+		},
+		{
+			"remove unrelated performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			models.ScenePartial{
+				PerformerIDs: &models.UpdateIDs{
+					IDs:  []int{performerIDs[performerIdx1WithDupName]},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				PerformerIDs: models.NewRelatedIDs(indexesToIDs(performerIDs, scenePerformers[sceneIdxWithTwoPerformers])),
+			},
+			false,
+		},
+		{
+			"remove unrelated movies",
+			sceneIDs[sceneIdxWithMovie],
+			models.ScenePartial{
+				MovieIDs: &models.UpdateMovieIDs{
+					Movies: []models.MoviesScenes{
+						{
+							MovieID: movieIDs[movieIdxWithDupName],
+						},
+					},
+					Mode: models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				Movies: models.NewRelatedMovies([]models.MoviesScenes{
+					{
+						MovieID: indexesToIDs(movieIDs, sceneMovies[sceneIdxWithMovie])[0],
+					},
+				}),
+			},
+			false,
+		},
+		{
+			"remove unrelated stash ids",
+			sceneIDs[sceneIdxWithGallery],
+			models.ScenePartial{
+				StashIDs: &models.UpdateStashIDs{
+					StashIDs: stashIDs,
+					Mode:     models.RelationshipUpdateModeRemove,
+				},
+			},
+			models.Scene{
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{sceneStashID(sceneIdxWithGallery)}),
+			},
+			false,
+		},
+	}
 
-		return nil
-	})
+	for _, tt := range tests {
+		qb := db.Scene
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.Find() error = %v", err)
+			}
+
+			// load relationships
+			if err := loadSceneRelationships(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+			if err := loadSceneRelationships(ctx, tt.want, s); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+
+			// only compare fields that were in the partial
+			if tt.partial.PerformerIDs != nil {
+				assert.ElementsMatch(tt.want.PerformerIDs.List(), got.PerformerIDs.List())
+				assert.ElementsMatch(tt.want.PerformerIDs.List(), s.PerformerIDs.List())
+			}
+			if tt.partial.TagIDs != nil {
+				assert.ElementsMatch(tt.want.TagIDs.List(), got.TagIDs.List())
+				assert.ElementsMatch(tt.want.TagIDs.List(), s.TagIDs.List())
+			}
+			if tt.partial.GalleryIDs != nil {
+				assert.ElementsMatch(tt.want.GalleryIDs.List(), got.GalleryIDs.List())
+				assert.ElementsMatch(tt.want.GalleryIDs.List(), s.GalleryIDs.List())
+			}
+			if tt.partial.MovieIDs != nil {
+				assert.ElementsMatch(tt.want.Movies.List(), got.Movies.List())
+				assert.ElementsMatch(tt.want.Movies.List(), s.Movies.List())
+			}
+			if tt.partial.StashIDs != nil {
+				assert.ElementsMatch(tt.want.StashIDs.List(), got.StashIDs.List())
+				assert.ElementsMatch(tt.want.StashIDs.List(), s.StashIDs.List())
+			}
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_IncrementOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"increment",
+			sceneIDs[1],
+			2,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.IncrementOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.IncrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("sceneQueryBuilder.IncrementOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_DecrementOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"decrement",
+			sceneIDs[2],
+			1,
+			false,
+		},
+		{
+			"zero",
+			sceneIDs[0],
+			0,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.DecrementOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.DecrementOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("sceneQueryBuilder.DecrementOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_ResetOCounter(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    int
+		wantErr bool
+	}{
+		{
+			"decrement",
+			sceneIDs[2],
+			0,
+			false,
+		},
+		{
+			"zero",
+			sceneIDs[0],
+			0,
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.ResetOCounter(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.ResetOCounter() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("sceneQueryBuilder.ResetOCounter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_Destroy(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		wantErr bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdxWithGallery],
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			withRollbackTxn(func(ctx context.Context) error {
+				if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				// ensure cannot be found
+				i, err := qb.Find(ctx, tt.id)
+
+				assert.NotNil(err)
+				assert.Nil(i)
+				return nil
+			})
+		})
+	}
+}
+
+func makeSceneWithID(index int) *models.Scene {
+	ret := makeScene(index)
+	ret.ID = sceneIDs[index]
+
+	if ret.Date != nil && ret.Date.IsZero() {
+		ret.Date = nil
+	}
+
+	ret.Files = models.NewRelatedVideoFiles([]*file.VideoFile{makeSceneFile(index)})
+
+	return ret
+}
+
+func Test_sceneQueryBuilder_Find(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		want    *models.Scene
+		wantErr bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdxWithSpacedName],
+			makeSceneWithID(sceneIdxWithSpacedName),
+			false,
+		},
+		{
+			"invalid",
+			invalidID,
+			nil,
+			true,
+		},
+		{
+			"with galleries",
+			sceneIDs[sceneIdxWithGallery],
+			makeSceneWithID(sceneIdxWithGallery),
+			false,
+		},
+		{
+			"with performers",
+			sceneIDs[sceneIdxWithTwoPerformers],
+			makeSceneWithID(sceneIdxWithTwoPerformers),
+			false,
+		},
+		{
+			"with tags",
+			sceneIDs[sceneIdxWithTwoTags],
+			makeSceneWithID(sceneIdxWithTwoTags),
+			false,
+		},
+		{
+			"with movies",
+			sceneIDs[sceneIdxWithMovie],
+			makeSceneWithID(sceneIdxWithMovie),
+			false,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.Find(ctx, tt.id)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+
+				if got != nil {
+					// load relationships
+					if err := loadSceneRelationships(ctx, *tt.want, got); err != nil {
+						t.Errorf("loadSceneRelationships() error = %v", err)
+						return nil
+					}
+
+					clearSceneFileIDs(got)
+				}
+
+				assert.Equal(tt.want, got)
+				return nil
+			})
+		})
+	}
+}
+
+func postFindScenes(ctx context.Context, want []*models.Scene, got []*models.Scene) error {
+	for i, s := range got {
+		// load relationships
+		if i < len(want) {
+			if err := loadSceneRelationships(ctx, *want[i], s); err != nil {
+				return err
+			}
+		}
+		clearSceneFileIDs(s)
+	}
+
+	return nil
+}
+
+func Test_sceneQueryBuilder_FindMany(t *testing.T) {
+	tests := []struct {
+		name    string
+		ids     []int
+		want    []*models.Scene
+		wantErr bool
+	}{
+		{
+			"valid with relationships",
+			[]int{
+				sceneIDs[sceneIdxWithGallery],
+				sceneIDs[sceneIdxWithTwoPerformers],
+				sceneIDs[sceneIdxWithTwoTags],
+				sceneIDs[sceneIdxWithMovie],
+			},
+			[]*models.Scene{
+				makeSceneWithID(sceneIdxWithGallery),
+				makeSceneWithID(sceneIdxWithTwoPerformers),
+				makeSceneWithID(sceneIdxWithTwoTags),
+				makeSceneWithID(sceneIdxWithMovie),
+			},
+			false,
+		},
+		{
+			"invalid",
+			[]int{sceneIDs[sceneIdxWithGallery], sceneIDs[sceneIdxWithTwoPerformers], invalidID},
+			nil,
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindMany(ctx, tt.ids)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindMany() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_FindByChecksum(t *testing.T) {
+	getChecksum := func(index int) string {
+		return getSceneStringValue(index, checksumField)
+	}
+
+	tests := []struct {
+		name     string
+		checksum string
+		want     []*models.Scene
+		wantErr  bool
+	}{
+		{
+			"valid",
+			getChecksum(sceneIdxWithSpacedName),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
+			false,
+		},
+		{
+			"invalid",
+			"invalid checksum",
+			nil,
+			false,
+		},
+		{
+			"with galleries",
+			getChecksum(sceneIdxWithGallery),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGallery)},
+			false,
+		},
+		{
+			"with performers",
+			getChecksum(sceneIdxWithTwoPerformers),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoPerformers)},
+			false,
+		},
+		{
+			"with tags",
+			getChecksum(sceneIdxWithTwoTags),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoTags)},
+			false,
+		},
+		{
+			"with movies",
+			getChecksum(sceneIdxWithMovie),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithMovie)},
+			false,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			withTxn(func(ctx context.Context) error {
+				assert := assert.New(t)
+				got, err := qb.FindByChecksum(ctx, tt.checksum)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+
+				if err := postFindScenes(ctx, tt.want, got); err != nil {
+					t.Errorf("loadSceneRelationships() error = %v", err)
+					return nil
+				}
+
+				assert.Equal(tt.want, got)
+
+				return nil
+			})
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
+	getOSHash := func(index int) string {
+		return getSceneStringValue(index, "oshash")
+	}
+
+	tests := []struct {
+		name    string
+		oshash  string
+		want    []*models.Scene
+		wantErr bool
+	}{
+		{
+			"valid",
+			getOSHash(sceneIdxWithSpacedName),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
+			false,
+		},
+		{
+			"invalid",
+			"invalid oshash",
+			nil,
+			false,
+		},
+		{
+			"with galleries",
+			getOSHash(sceneIdxWithGallery),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGallery)},
+			false,
+		},
+		{
+			"with performers",
+			getOSHash(sceneIdxWithTwoPerformers),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoPerformers)},
+			false,
+		},
+		{
+			"with tags",
+			getOSHash(sceneIdxWithTwoTags),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoTags)},
+			false,
+		},
+		{
+			"with movies",
+			getOSHash(sceneIdxWithMovie),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithMovie)},
+			false,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			withTxn(func(ctx context.Context) error {
+				got, err := qb.FindByOSHash(ctx, tt.oshash)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.FindByOSHash() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+
+				if err := postFindScenes(ctx, tt.want, got); err != nil {
+					t.Errorf("loadSceneRelationships() error = %v", err)
+					return nil
+				}
+
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("sceneQueryBuilder.FindByOSHash() = %v, want %v", got, tt.want)
+				}
+				return nil
+			})
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
+	getPath := func(index int) string {
+		return getFilePath(folderIdxWithSceneFiles, getSceneBasename(index))
+	}
+
+	tests := []struct {
+		name    string
+		path    string
+		want    []*models.Scene
+		wantErr bool
+	}{
+		{
+			"valid",
+			getPath(sceneIdxWithSpacedName),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithSpacedName)},
+			false,
+		},
+		{
+			"invalid",
+			"invalid path",
+			nil,
+			false,
+		},
+		{
+			"with galleries",
+			getPath(sceneIdxWithGallery),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGallery)},
+			false,
+		},
+		{
+			"with performers",
+			getPath(sceneIdxWithTwoPerformers),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoPerformers)},
+			false,
+		},
+		{
+			"with tags",
+			getPath(sceneIdxWithTwoTags),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithTwoTags)},
+			false,
+		},
+		{
+			"with movies",
+			getPath(sceneIdxWithMovie),
+			[]*models.Scene{makeSceneWithID(sceneIdxWithMovie)},
+			false,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			withTxn(func(ctx context.Context) error {
+				assert := assert.New(t)
+				got, err := qb.FindByPath(ctx, tt.path)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("sceneQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+					return nil
+				}
+
+				if err := postFindScenes(ctx, tt.want, got); err != nil {
+					t.Errorf("loadSceneRelationships() error = %v", err)
+					return nil
+				}
+
+				assert.Equal(tt.want, got)
+
+				return nil
+			})
+		})
+	}
+}
+
+func Test_sceneQueryBuilder_FindByGalleryID(t *testing.T) {
+	tests := []struct {
+		name      string
+		galleryID int
+		want      []*models.Scene
+		wantErr   bool
+	}{
+		{
+			"valid",
+			galleryIDs[galleryIdxWithScene],
+			[]*models.Scene{makeSceneWithID(sceneIdxWithGallery)},
+			false,
+		},
+		{
+			"none",
+			galleryIDs[galleryIdx1WithPerformer],
+			nil,
+			false,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByGalleryID(ctx, tt.galleryID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindByGalleryID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+			return
+		})
+	}
 }
 
 func TestSceneCountByPerformerID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
-		count, err := sqb.CountByPerformerID(performerIDs[performerIdxWithScene])
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		count, err := sqb.CountByPerformerID(ctx, performerIDs[performerIdxWithScene])
 
 		if err != nil {
 			t.Errorf("Error counting scenes: %s", err.Error())
@@ -84,7 +1825,7 @@ func TestSceneCountByPerformerID(t *testing.T) {
 
 		assert.Equal(t, 1, count)
 
-		count, err = sqb.CountByPerformerID(0)
+		count, err = sqb.CountByPerformerID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("Error counting scenes: %s", err.Error())
@@ -96,28 +1837,177 @@ func TestSceneCountByPerformerID(t *testing.T) {
 	})
 }
 
+func scenesToIDs(i []*models.Scene) []int {
+	ret := make([]int, len(i))
+	for i, v := range i {
+		ret[i] = v.ID
+	}
+
+	return ret
+}
+
+func Test_sceneStore_FindByFileID(t *testing.T) {
+	tests := []struct {
+		name    string
+		fileID  file.ID
+		include []int
+		exclude []int
+	}{
+		{
+			"valid",
+			sceneFileIDs[sceneIdx1WithPerformer],
+			[]int{sceneIdx1WithPerformer},
+			nil,
+		},
+		{
+			"invalid",
+			invalidFileID,
+			nil,
+			[]int{sceneIdx1WithPerformer},
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.FindByFileID(ctx, tt.fileID)
+			if err != nil {
+				t.Errorf("SceneStore.FindByFileID() error = %v", err)
+				return
+			}
+			for _, f := range got {
+				clearSceneFileIDs(f)
+			}
+
+			ids := scenesToIDs(got)
+			include := indexesToIDs(galleryIDs, tt.include)
+			exclude := indexesToIDs(galleryIDs, tt.exclude)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
+func Test_sceneStore_CountByFileID(t *testing.T) {
+	tests := []struct {
+		name   string
+		fileID file.ID
+		want   int
+	}{
+		{
+			"valid",
+			sceneFileIDs[sceneIdxWithTwoPerformers],
+			1,
+		},
+		{
+			"invalid",
+			invalidFileID,
+			0,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.CountByFileID(ctx, tt.fileID)
+			if err != nil {
+				t.Errorf("SceneStore.CountByFileID() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_sceneStore_CountMissingChecksum(t *testing.T) {
+	tests := []struct {
+		name string
+		want int
+	}{
+		{
+			"valid",
+			0,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.CountMissingChecksum(ctx)
+			if err != nil {
+				t.Errorf("SceneStore.CountMissingChecksum() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
+func Test_sceneStore_CountMissingOshash(t *testing.T) {
+	tests := []struct {
+		name string
+		want int
+	}{
+		{
+			"valid",
+			0,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.CountMissingOSHash(ctx)
+			if err != nil {
+				t.Errorf("SceneStore.CountMissingOSHash() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
+
 func TestSceneWall(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
 		const sceneIdx = 2
 		wallQuery := getSceneStringValue(sceneIdx, "Details")
-		scenes, err := sqb.Wall(&wallQuery)
+		scenes, err := sqb.Wall(ctx, &wallQuery)
 
 		if err != nil {
 			t.Errorf("Error finding scenes: %s", err.Error())
+			return nil
 		}
 
 		assert.Len(t, scenes, 1)
 		scene := scenes[0]
 		assert.Equal(t, sceneIDs[sceneIdx], scene.ID)
-		assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
+		scenePath := getFilePath(folderIdxWithSceneFiles, getSceneBasename(sceneIdx))
+		assert.Equal(t, scenePath, scene.Path)
 
 		wallQuery = "not exist"
-		scenes, err = sqb.Wall(&wallQuery)
+		scenes, err = sqb.Wall(ctx, &wallQuery)
 
 		if err != nil {
 			t.Errorf("Error finding scene: %s", err.Error())
+			return nil
 		}
 
 		assert.Len(t, scenes, 0)
@@ -131,28 +2021,32 @@ func TestSceneQueryQ(t *testing.T) {
 
 	q := getSceneStringValue(sceneIdx, titleField)
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
-		sceneQueryQ(t, sqb, q, sceneIdx)
+		sceneQueryQ(ctx, t, sqb, q, sceneIdx)
 
 		return nil
 	})
 }
 
-func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) []*models.Scene {
+func queryScene(ctx context.Context, t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) []*models.Scene {
 	t.Helper()
-	result, err := sqb.Query(models.SceneQueryOptions{
+	result, err := sqb.Query(ctx, models.SceneQueryOptions{
 		QueryOptions: models.QueryOptions{
 			FindFilter: findFilter,
+			Count:      true,
 		},
-		SceneFilter: sceneFilter,
+		SceneFilter:   sceneFilter,
+		TotalDuration: true,
+		TotalSize:     true,
 	})
 	if err != nil {
 		t.Errorf("Error querying scene: %v", err)
+		return nil
 	}
 
-	scenes, err := result.Resolve()
+	scenes, err := result.Resolve(ctx)
 	if err != nil {
 		t.Errorf("Error resolving scenes: %v", err)
 	}
@@ -160,51 +2054,205 @@ func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneF
 	return scenes
 }
 
-func sceneQueryQ(t *testing.T, sqb models.SceneReader, q string, expectedSceneIdx int) {
+func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q string, expectedSceneIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,
 	}
-	scenes := queryScene(t, sqb, nil, &filter)
+	scenes := queryScene(ctx, t, sqb, nil, &filter)
 
-	assert.Len(t, scenes, 1)
+	if !assert.Len(t, scenes, 1) {
+		return
+	}
 	scene := scenes[0]
 	assert.Equal(t, sceneIDs[expectedSceneIdx], scene.ID)
 
 	// no Q should return all results
 	filter.Q = nil
-	scenes = queryScene(t, sqb, nil, &filter)
+	scenes = queryScene(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, scenes, totalScenes)
 }
 
 func TestSceneQueryPath(t *testing.T) {
-	const sceneIdx = 1
-	scenePath := getSceneStringValue(sceneIdx, "Path")
+	const (
+		sceneIdx      = 1
+		otherSceneIdx = 2
+	)
+	folder := folderPaths[folderIdxWithSceneFiles]
+	basename := getSceneBasename(sceneIdx)
+	scenePath := getFilePath(folderIdxWithSceneFiles, getSceneBasename(sceneIdx))
 
-	pathCriterion := models.StringCriterionInput{
-		Value:    scenePath,
-		Modifier: models.CriterionModifierEquals,
+	tests := []struct {
+		name        string
+		input       models.StringCriterionInput
+		mustInclude []int
+		mustExclude []int
+	}{
+		{
+			"equals full path",
+			models.StringCriterionInput{
+				Value:    scenePath,
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			[]int{otherSceneIdx},
+		},
+		{
+			"equals folder name",
+			models.StringCriterionInput{
+				Value:    folder,
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"equals folder name trailing slash",
+			models.StringCriterionInput{
+				Value:    folder + string(filepath.Separator),
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"equals base name",
+			models.StringCriterionInput{
+				Value:    basename,
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"equals base name leading slash",
+			models.StringCriterionInput{
+				Value:    string(filepath.Separator) + basename,
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"equals full path wildcard",
+			models.StringCriterionInput{
+				Value:    filepath.Join(folder, "scene_0001_%"),
+				Modifier: models.CriterionModifierEquals,
+			},
+			[]int{sceneIdx},
+			[]int{otherSceneIdx},
+		},
+		{
+			"not equals full path",
+			models.StringCriterionInput{
+				Value:    scenePath,
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			[]int{otherSceneIdx},
+			[]int{sceneIdx},
+		},
+		{
+			"not equals folder name",
+			models.StringCriterionInput{
+				Value:    folder,
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			nil,
+			[]int{sceneIdx},
+		},
+		{
+			"not equals basename",
+			models.StringCriterionInput{
+				Value:    basename,
+				Modifier: models.CriterionModifierNotEquals,
+			},
+			nil,
+			[]int{sceneIdx},
+		},
+		{
+			"includes folder name",
+			models.StringCriterionInput{
+				Value:    folder,
+				Modifier: models.CriterionModifierIncludes,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"includes base name",
+			models.StringCriterionInput{
+				Value:    basename,
+				Modifier: models.CriterionModifierIncludes,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"includes full path",
+			models.StringCriterionInput{
+				Value:    scenePath,
+				Modifier: models.CriterionModifierIncludes,
+			},
+			[]int{sceneIdx},
+			[]int{otherSceneIdx},
+		},
+		{
+			"matches regex",
+			models.StringCriterionInput{
+				Value:    "scene_.*1_Path",
+				Modifier: models.CriterionModifierMatchesRegex,
+			},
+			[]int{sceneIdx},
+			nil,
+		},
+		{
+			"not matches regex",
+			models.StringCriterionInput{
+				Value:    "scene_.*1_Path",
+				Modifier: models.CriterionModifierNotMatchesRegex,
+			},
+			nil,
+			[]int{sceneIdx},
+		},
 	}
 
-	verifyScenesPath(t, pathCriterion)
+	qb := db.Scene
 
-	pathCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyScenesPath(t, pathCriterion)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: &models.SceneFilterType{
+					Path: &tt.input,
+				},
+			})
 
-	pathCriterion.Modifier = models.CriterionModifierMatchesRegex
-	pathCriterion.Value = "scene_.*1_Path"
-	verifyScenesPath(t, pathCriterion)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.TestSceneQueryPath() error = %v", err)
+				return
+			}
 
-	pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
-	verifyScenesPath(t, pathCriterion)
+			mustInclude := indexesToIDs(sceneIDs, tt.mustInclude)
+			mustExclude := indexesToIDs(sceneIDs, tt.mustExclude)
+
+			missing := intslice.IntExclude(mustInclude, got.IDs)
+			if len(missing) > 0 {
+				t.Errorf("SceneStore.TestSceneQueryPath() missing expected IDs: %v", missing)
+			}
+
+			notExcluded := intslice.IntIntercect(mustExclude, got.IDs)
+			if len(notExcluded) > 0 {
+				t.Errorf("SceneStore.TestSceneQueryPath() expected IDs to be excluded: %v", notExcluded)
+			}
+		})
+	}
 }
 
 func TestSceneQueryURL(t *testing.T) {
 	const sceneIdx = 1
-	scenePath := getSceneStringValue(sceneIdx, urlField)
+	sceneURL := getSceneStringValue(sceneIdx, urlField)
 
 	urlCriterion := models.StringCriterionInput{
-		Value:    scenePath,
+		Value:    sceneURL,
 		Modifier: models.CriterionModifierEquals,
 	}
 
@@ -214,7 +2262,7 @@ func TestSceneQueryURL(t *testing.T) {
 
 	verifyFn := func(s *models.Scene) {
 		t.Helper()
-		verifyNullString(t, s.URL, urlCriterion)
+		verifyString(t, s.URL, urlCriterion)
 	}
 
 	verifySceneQuery(t, filter, verifyFn)
@@ -241,8 +2289,8 @@ func TestSceneQueryPathOr(t *testing.T) {
 	const scene1Idx = 1
 	const scene2Idx = 2
 
-	scene1Path := getSceneStringValue(scene1Idx, "Path")
-	scene2Path := getSceneStringValue(scene2Idx, "Path")
+	scene1Path := getFilePath(folderIdxWithSceneFiles, getSceneBasename(scene1Idx))
+	scene2Path := getFilePath(folderIdxWithSceneFiles, getSceneBasename(scene2Idx))
 
 	sceneFilter := models.SceneFilterType{
 		Path: &models.StringCriterionInput{
@@ -257,12 +2305,14 @@ func TestSceneQueryPathOr(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
-		assert.Len(t, scenes, 2)
+		if !assert.Len(t, scenes, 2) {
+			return nil
+		}
 		assert.Equal(t, scene1Path, scenes[0].Path)
 		assert.Equal(t, scene2Path, scenes[1].Path)
 
@@ -272,8 +2322,8 @@ func TestSceneQueryPathOr(t *testing.T) {
 
 func TestSceneQueryPathAndRating(t *testing.T) {
 	const sceneIdx = 1
-	scenePath := getSceneStringValue(sceneIdx, "Path")
-	sceneRating := getRating(sceneIdx)
+	scenePath := getFilePath(folderIdxWithSceneFiles, getSceneBasename(sceneIdx))
+	sceneRating := int(getRating(sceneIdx).Int64)
 
 	sceneFilter := models.SceneFilterType{
 		Path: &models.StringCriterionInput{
@@ -282,20 +2332,22 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 		},
 		And: &models.SceneFilterType{
 			Rating: &models.IntCriterionInput{
-				Value:    int(sceneRating.Int64),
+				Value:    sceneRating,
 				Modifier: models.CriterionModifierEquals,
 			},
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
-		assert.Len(t, scenes, 1)
+		if !assert.Len(t, scenes, 1) {
+			return nil
+		}
 		assert.Equal(t, scenePath, scenes[0].Path)
-		assert.Equal(t, sceneRating.Int64, scenes[0].Rating.Int64)
+		assert.Equal(t, sceneRating, *scenes[0].Rating)
 
 		return nil
 	})
@@ -323,15 +2375,15 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 		},
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
 			verifyString(t, scene.Path, pathCriterion)
 			ratingCriterion.Modifier = models.CriterionModifierNotEquals
-			verifyInt64(t, scene.Rating, ratingCriterion)
+			verifyIntPtr(t, scene.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -354,24 +2406,24 @@ func TestSceneIllegalQuery(t *testing.T) {
 		Or:  &subFilter,
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
 		queryOptions := models.SceneQueryOptions{
 			SceneFilter: sceneFilter,
 		}
 
-		_, err := sqb.Query(queryOptions)
+		_, err := sqb.Query(ctx, queryOptions)
 		assert.NotNil(err)
 
 		sceneFilter.Or = nil
 		sceneFilter.Not = &subFilter
-		_, err = sqb.Query(queryOptions)
+		_, err = sqb.Query(ctx, queryOptions)
 		assert.NotNil(err)
 
 		sceneFilter.And = nil
 		sceneFilter.Or = &subFilter
-		_, err = sqb.Query(queryOptions)
+		_, err = sqb.Query(ctx, queryOptions)
 		assert.NotNil(err)
 
 		return nil
@@ -379,11 +2431,12 @@ func TestSceneIllegalQuery(t *testing.T) {
 }
 
 func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func(s *models.Scene)) {
-	withTxn(func(r models.Repository) error {
+	t.Helper()
+	withTxn(func(ctx context.Context) error {
 		t.Helper()
-		sqb := r.Scene()
+		sqb := db.Scene
 
-		scenes := queryScene(t, sqb, &filter, nil)
+		scenes := queryScene(ctx, t, sqb, &filter, nil)
 
 		// assume it should find at least one
 		assert.Greater(t, len(scenes), 0)
@@ -397,13 +2450,13 @@ func verifySceneQuery(t *testing.T, filter models.SceneFilterType, verifyFn func
 }
 
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Path: &pathCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
 			verifyString(t, scene.Path, pathCriterion)
@@ -446,20 +2499,55 @@ func verifyNullString(t *testing.T, value sql.NullString, criterion models.Strin
 	}
 }
 
+func verifyStringPtr(t *testing.T, value *string, criterion models.StringCriterionInput) {
+	t.Helper()
+	assert := assert.New(t)
+	if criterion.Modifier == models.CriterionModifierIsNull {
+		if value != nil && *value == "" {
+			// correct
+			return
+		}
+		assert.Nil(value, "expect is null values to be null")
+	}
+	if criterion.Modifier == models.CriterionModifierNotNull {
+		assert.NotNil(value, "expect is null values to be null")
+		assert.Greater(len(*value), 0)
+	}
+	if criterion.Modifier == models.CriterionModifierEquals {
+		assert.Equal(criterion.Value, *value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotEquals {
+		assert.NotEqual(criterion.Value, *value)
+	}
+	if criterion.Modifier == models.CriterionModifierMatchesRegex {
+		assert.NotNil(value)
+		assert.Regexp(regexp.MustCompile(criterion.Value), *value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
+		if value == nil {
+			// correct
+			return
+		}
+		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
+	}
+}
+
 func verifyString(t *testing.T, value string, criterion models.StringCriterionInput) {
 	t.Helper()
 	assert := assert.New(t)
-	if criterion.Modifier == models.CriterionModifierEquals {
+	switch criterion.Modifier {
+	case models.CriterionModifierEquals:
 		assert.Equal(criterion.Value, value)
-	}
-	if criterion.Modifier == models.CriterionModifierNotEquals {
+	case models.CriterionModifierNotEquals:
 		assert.NotEqual(criterion.Value, value)
-	}
-	if criterion.Modifier == models.CriterionModifierMatchesRegex {
+	case models.CriterionModifierMatchesRegex:
 		assert.Regexp(regexp.MustCompile(criterion.Value), value)
-	}
-	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
+	case models.CriterionModifierNotMatchesRegex:
 		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
+	case models.CriterionModifierIsNull:
+		assert.Equal("", value)
+	case models.CriterionModifierNotNull:
+		assert.NotEqual("", value)
 	}
 }
 
@@ -489,16 +2577,16 @@ func TestSceneQueryRating(t *testing.T) {
 }
 
 func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Rating: &ratingCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			verifyInt64(t, scene.Rating, ratingCriterion)
+			verifyIntPtr(t, scene.Rating, ratingCriterion)
 		}
 
 		return nil
@@ -528,6 +2616,29 @@ func verifyInt64(t *testing.T, value sql.NullInt64, criterion models.IntCriterio
 	}
 }
 
+func verifyIntPtr(t *testing.T, value *int, criterion models.IntCriterionInput) {
+	t.Helper()
+	assert := assert.New(t)
+	if criterion.Modifier == models.CriterionModifierIsNull {
+		assert.Nil(value, "expect is null values to be null")
+	}
+	if criterion.Modifier == models.CriterionModifierNotNull {
+		assert.NotNil(value, "expect is null values to be null")
+	}
+	if criterion.Modifier == models.CriterionModifierEquals {
+		assert.Equal(criterion.Value, *value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotEquals {
+		assert.NotEqual(criterion.Value, *value)
+	}
+	if criterion.Modifier == models.CriterionModifierGreaterThan {
+		assert.True(*value > criterion.Value)
+	}
+	if criterion.Modifier == models.CriterionModifierLessThan {
+		assert.True(*value < criterion.Value)
+	}
+}
+
 func TestSceneQueryOCounter(t *testing.T) {
 	const oCounter = 1
 	oCounterCriterion := models.IntCriterionInput{
@@ -548,13 +2659,13 @@ func TestSceneQueryOCounter(t *testing.T) {
 }
 
 func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			OCounter: &oCounterCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
 			verifyInt(t, scene.OCounter, oCounterCriterion)
@@ -607,21 +2718,27 @@ func TestSceneQueryDuration(t *testing.T) {
 }
 
 func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Duration: &durationCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
+			if err := scene.LoadPrimaryFile(ctx, db.File); err != nil {
+				t.Errorf("Error querying scene files: %v", err)
+				return nil
+			}
+
+			duration := scene.Files.Primary().Duration
 			if durationCriterion.Modifier == models.CriterionModifierEquals {
-				assert.True(t, scene.Duration.Float64 >= float64(durationCriterion.Value) && scene.Duration.Float64 < float64(durationCriterion.Value+1))
+				assert.True(t, duration >= float64(durationCriterion.Value) && duration < float64(durationCriterion.Value+1))
 			} else if durationCriterion.Modifier == models.CriterionModifierNotEquals {
-				assert.True(t, scene.Duration.Float64 < float64(durationCriterion.Value) || scene.Duration.Float64 >= float64(durationCriterion.Value+1))
+				assert.True(t, duration < float64(durationCriterion.Value) || duration >= float64(durationCriterion.Value+1))
 			} else {
-				verifyFloat64(t, scene.Duration, durationCriterion)
+				verifyFloat64(t, duration, durationCriterion)
 			}
 		}
 
@@ -629,25 +2746,37 @@ func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInp
 	})
 }
 
-func verifyFloat64(t *testing.T, value sql.NullFloat64, criterion models.IntCriterionInput) {
+func verifyFloat64(t *testing.T, value float64, criterion models.IntCriterionInput) {
 	assert := assert.New(t)
-	if criterion.Modifier == models.CriterionModifierIsNull {
-		assert.False(value.Valid, "expect is null values to be null")
-	}
-	if criterion.Modifier == models.CriterionModifierNotNull {
-		assert.True(value.Valid, "expect is null values to be null")
-	}
 	if criterion.Modifier == models.CriterionModifierEquals {
-		assert.Equal(float64(criterion.Value), value.Float64)
+		assert.Equal(float64(criterion.Value), value)
 	}
 	if criterion.Modifier == models.CriterionModifierNotEquals {
-		assert.NotEqual(float64(criterion.Value), value.Float64)
+		assert.NotEqual(float64(criterion.Value), value)
 	}
 	if criterion.Modifier == models.CriterionModifierGreaterThan {
-		assert.True(value.Float64 > float64(criterion.Value))
+		assert.True(value > float64(criterion.Value))
 	}
 	if criterion.Modifier == models.CriterionModifierLessThan {
-		assert.True(value.Float64 < float64(criterion.Value))
+		assert.True(value < float64(criterion.Value))
+	}
+}
+
+func verifyFloat64Ptr(t *testing.T, value *float64, criterion models.IntCriterionInput) {
+	assert := assert.New(t)
+	switch criterion.Modifier {
+	case models.CriterionModifierIsNull:
+		assert.Nil(value, "expect is null values to be null")
+	case models.CriterionModifierNotNull:
+		assert.NotNil(value, "expect is not null values to not be null")
+	case models.CriterionModifierEquals:
+		assert.EqualValues(float64(criterion.Value), value)
+	case models.CriterionModifierNotEquals:
+		assert.NotEqualValues(float64(criterion.Value), value)
+	case models.CriterionModifierGreaterThan:
+		assert.True(value != nil && *value > float64(criterion.Value))
+	case models.CriterionModifierLessThan:
+		assert.True(value != nil && *value < float64(criterion.Value))
 	}
 }
 
@@ -661,8 +2790,8 @@ func TestSceneQueryResolution(t *testing.T) {
 }
 
 func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Resolution: &models.ResolutionCriterionInput{
 				Value:    resolution,
@@ -670,19 +2799,37 @@ func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
 			},
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		for _, scene := range scenes {
-			verifySceneResolution(t, scene.Height, resolution)
+			if err := scene.LoadPrimaryFile(ctx, db.File); err != nil {
+				t.Errorf("Error querying scene files: %v", err)
+				return nil
+			}
+			f := scene.Files.Primary()
+			height := 0
+			if f != nil {
+				height = f.Height
+			}
+			verifySceneResolution(t, &height, resolution)
 		}
 
 		return nil
 	})
 }
 
-func verifySceneResolution(t *testing.T, height sql.NullInt64, resolution models.ResolutionEnum) {
+func verifySceneResolution(t *testing.T, height *int, resolution models.ResolutionEnum) {
+	if !resolution.IsValid() {
+		return
+	}
+
 	assert := assert.New(t)
-	h := height.Int64
+	assert.NotNil(height)
+	if t.Failed() {
+		return
+	}
+
+	h := *height
 
 	switch resolution {
 	case models.ResolutionEnumLow:
@@ -706,20 +2853,20 @@ func TestAllResolutionsHaveResolutionRange(t *testing.T) {
 }
 
 func TestSceneQueryResolutionModifiers(t *testing.T) {
-	if err := withRollbackTxn(func(r models.Repository) error {
-		qb := r.Scene()
-		sceneNoResolution, _ := createScene(qb, 0, 0)
-		firstScene540P, _ := createScene(qb, 960, 540)
-		secondScene540P, _ := createScene(qb, 1280, 719)
-		firstScene720P, _ := createScene(qb, 1280, 720)
-		secondScene720P, _ := createScene(qb, 1280, 721)
-		thirdScene720P, _ := createScene(qb, 1920, 1079)
-		scene1080P, _ := createScene(qb, 1920, 1080)
+	if err := withRollbackTxn(func(ctx context.Context) error {
+		qb := db.Scene
+		sceneNoResolution, _ := createScene(ctx, 0, 0)
+		firstScene540P, _ := createScene(ctx, 960, 540)
+		secondScene540P, _ := createScene(ctx, 1280, 719)
+		firstScene720P, _ := createScene(ctx, 1280, 720)
+		secondScene720P, _ := createScene(ctx, 1280, 721)
+		thirdScene720P, _ := createScene(ctx, 1920, 1079)
+		scene1080P, _ := createScene(ctx, 1920, 1080)
 
-		scenesEqualTo720P := queryScenes(t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierEquals)
-		scenesNotEqualTo720P := queryScenes(t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierNotEquals)
-		scenesGreaterThan720P := queryScenes(t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierGreaterThan)
-		scenesLessThan720P := queryScenes(t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierLessThan)
+		scenesEqualTo720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierEquals)
+		scenesNotEqualTo720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierNotEquals)
+		scenesGreaterThan720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierGreaterThan)
+		scenesLessThan720P := queryScenes(ctx, t, qb, models.ResolutionEnumStandardHd, models.CriterionModifierLessThan)
 
 		assert.Subset(t, scenesEqualTo720P, []*models.Scene{firstScene720P, secondScene720P, thirdScene720P})
 		assert.NotSubset(t, scenesEqualTo720P, []*models.Scene{sceneNoResolution, firstScene540P, secondScene540P, scene1080P})
@@ -739,7 +2886,7 @@ func TestSceneQueryResolutionModifiers(t *testing.T) {
 	}
 }
 
-func queryScenes(t *testing.T, queryBuilder models.SceneReaderWriter, resolution models.ResolutionEnum, modifier models.CriterionModifier) []*models.Scene {
+func queryScenes(ctx context.Context, t *testing.T, queryBuilder models.SceneReaderWriter, resolution models.ResolutionEnum, modifier models.CriterionModifier) []*models.Scene {
 	sceneFilter := models.SceneFilterType{
 		Resolution: &models.ResolutionCriterionInput{
 			Value:    resolution,
@@ -747,30 +2894,37 @@ func queryScenes(t *testing.T, queryBuilder models.SceneReaderWriter, resolution
 		},
 	}
 
-	return queryScene(t, queryBuilder, &sceneFilter, nil)
+	return queryScene(ctx, t, queryBuilder, &sceneFilter, nil)
 }
 
-func createScene(queryBuilder models.SceneReaderWriter, width int64, height int64) (*models.Scene, error) {
+func createScene(ctx context.Context, width int, height int) (*models.Scene, error) {
 	name := fmt.Sprintf("TestSceneQueryResolutionModifiers %d %d", width, height)
-	scene := models.Scene{
-		Path: name,
-		Width: sql.NullInt64{
-			Int64: width,
-			Valid: true,
+
+	sceneFile := &file.VideoFile{
+		BaseFile: &file.BaseFile{
+			Basename:       name,
+			ParentFolderID: folderIDs[folderIdxWithSceneFiles],
 		},
-		Height: sql.NullInt64{
-			Int64: height,
-			Valid: true,
-		},
-		Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
+		Width:  width,
+		Height: height,
 	}
 
-	return queryBuilder.Create(scene)
+	if err := db.File.Create(ctx, sceneFile); err != nil {
+		return nil, err
+	}
+
+	scene := &models.Scene{}
+
+	if err := db.Scene.Create(ctx, scene, []file.ID{sceneFile.ID}); err != nil {
+		return nil, err
+	}
+
+	return scene, nil
 }
 
 func TestSceneQueryHasMarkers(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		hasMarkers := "true"
 		sceneFilter := models.SceneFilterType{
 			HasMarkers: &hasMarkers,
@@ -781,17 +2935,17 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithMarkers], scenes[0].ID)
 
 		hasMarkers = "false"
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.NotEqual(t, 0, len(scenes))
 
@@ -805,8 +2959,8 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingGallery(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		isMissing := "galleries"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -817,12 +2971,12 @@ func TestSceneQueryIsMissingGallery(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		// ensure non of the ids equal the one with gallery
 		for _, scene := range scenes {
@@ -834,8 +2988,8 @@ func TestSceneQueryIsMissingGallery(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingStudio(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		isMissing := "studio"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -846,12 +3000,12 @@ func TestSceneQueryIsMissingStudio(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		// ensure non of the ids equal the one with studio
 		for _, scene := range scenes {
@@ -863,8 +3017,8 @@ func TestSceneQueryIsMissingStudio(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingMovies(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		isMissing := "movie"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -875,12 +3029,12 @@ func TestSceneQueryIsMissingMovies(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		// ensure non of the ids equal the one with movies
 		for _, scene := range scenes {
@@ -892,8 +3046,8 @@ func TestSceneQueryIsMissingMovies(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingPerformers(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		isMissing := "performers"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -904,12 +3058,12 @@ func TestSceneQueryIsMissingPerformers(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.True(t, len(scenes) > 0)
 
@@ -923,21 +3077,21 @@ func TestSceneQueryIsMissingPerformers(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingDate(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		isMissing := "date"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		// three in four scenes have no date
 		assert.Len(t, scenes, int(math.Ceil(float64(totalScenes)/4*3)))
 
 		// ensure date is null, empty or "0001-01-01"
 		for _, scene := range scenes {
-			assert.True(t, !scene.Date.Valid || scene.Date.String == "" || scene.Date.String == "0001-01-01")
+			assert.True(t, scene.Date == nil || scene.Date.Time == time.Time{})
 		}
 
 		return nil
@@ -945,8 +3099,8 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		isMissing := "tags"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
@@ -957,12 +3111,12 @@ func TestSceneQueryIsMissingTags(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.Len(t, scenes, 0)
 
 		findFilter.Q = nil
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 
 		assert.True(t, len(scenes) > 0)
 
@@ -971,29 +3125,49 @@ func TestSceneQueryIsMissingTags(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingRating(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		isMissing := "rating"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.True(t, len(scenes) > 0)
 
 		// ensure date is null, empty or "0001-01-01"
 		for _, scene := range scenes {
-			assert.True(t, !scene.Rating.Valid)
+			assert.Nil(t, scene.Rating)
 		}
 
 		return nil
 	})
 }
 
+func TestSceneQueryIsMissingPhash(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		isMissing := "phash"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
+
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
+
+		if !assert.Len(t, scenes, 1) {
+			return nil
+		}
+
+		assert.Equal(t, sceneIDs[sceneIdxMissingPhash], scenes[0].ID)
+
+		return nil
+	})
+}
+
 func TestSceneQueryPerformers(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		performerCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(performerIDs[performerIdxWithScene]),
@@ -1006,7 +3180,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 			Performers: &performerCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 2)
 
@@ -1023,7 +3197,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithTwoPerformers], scenes[0].ID)
@@ -1040,7 +3214,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1048,8 +3222,8 @@ func TestSceneQueryPerformers(t *testing.T) {
 }
 
 func TestSceneQueryTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithScene]),
@@ -1062,7 +3236,7 @@ func TestSceneQueryTags(t *testing.T) {
 			Tags: &tagCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 2)
 
 		// ensure ids are correct
@@ -1078,7 +3252,7 @@ func TestSceneQueryTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithTwoTags], scenes[0].ID)
@@ -1095,7 +3269,7 @@ func TestSceneQueryTags(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1103,8 +3277,8 @@ func TestSceneQueryTags(t *testing.T) {
 }
 
 func TestSceneQueryPerformerTags(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		tagCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
@@ -1117,7 +3291,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			PerformerTags: &tagCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 2)
 
 		// ensure ids are correct
@@ -1133,7 +3307,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			Modifier: models.CriterionModifierIncludesAll,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTwoTags], scenes[0].ID)
@@ -1150,7 +3324,7 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		tagCriterion = models.HierarchicalMultiCriterionInput{
@@ -1158,22 +3332,22 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 		}
 		q = getSceneStringValue(sceneIdx1WithPerformer, titleField)
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdx1WithPerformer], scenes[0].ID)
 
 		q = getSceneStringValue(sceneIdxWithPerformerTag, titleField)
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		tagCriterion.Modifier = models.CriterionModifierNotNull
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithPerformerTag], scenes[0].ID)
 
 		q = getSceneStringValue(sceneIdx1WithPerformer, titleField)
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1181,48 +3355,78 @@ func TestSceneQueryPerformerTags(t *testing.T) {
 }
 
 func TestSceneQueryStudio(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
-		studioCriterion := models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithScene]),
+	tests := []struct {
+		name            string
+		q               string
+		studioCriterion models.HierarchicalMultiCriterionInput
+		expectedIDs     []int
+		wantErr         bool
+	}{
+		{
+			"includes",
+			"",
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierIncludes,
 			},
-			Modifier: models.CriterionModifierIncludes,
-		}
-
-		sceneFilter := models.SceneFilterType{
-			Studios: &studioCriterion,
-		}
-
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
-
-		assert.Len(t, scenes, 1)
-
-		// ensure id is correct
-		assert.Equal(t, sceneIDs[sceneIdxWithStudio], scenes[0].ID)
-
-		studioCriterion = models.HierarchicalMultiCriterionInput{
-			Value: []string{
-				strconv.Itoa(studioIDs[studioIdxWithScene]),
+			[]int{sceneIDs[sceneIdxWithStudio]},
+			false,
+		},
+		{
+			"excludes",
+			getSceneStringValue(sceneIdxWithStudio, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierExcludes,
 			},
-			Modifier: models.CriterionModifierExcludes,
-		}
+			[]int{},
+			false,
+		},
+		{
+			"excludes includes null",
+			getSceneStringValue(sceneIdxWithGallery, titleField),
+			models.HierarchicalMultiCriterionInput{
+				Value: []string{
+					strconv.Itoa(studioIDs[studioIdxWithScene]),
+				},
+				Modifier: models.CriterionModifierExcludes,
+			},
+			[]int{sceneIDs[sceneIdxWithGallery]},
+			false,
+		},
+	}
 
-		q := getSceneStringValue(sceneIdxWithStudio, titleField)
-		findFilter := models.FindFilterType{
-			Q: &q,
-		}
+	qb := db.Scene
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
-		assert.Len(t, scenes, 0)
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			studioCriterion := tt.studioCriterion
 
-		return nil
-	})
+			sceneFilter := models.SceneFilterType{
+				Studios: &studioCriterion,
+			}
+
+			var findFilter *models.FindFilterType
+			if tt.q != "" {
+				findFilter = &models.FindFilterType{
+					Q: &tt.q,
+				}
+			}
+
+			scenes := queryScene(ctx, t, qb, &sceneFilter, findFilter)
+
+			assert.ElementsMatch(t, scenesToIDs(scenes), tt.expectedIDs)
+		})
+	}
 }
 
 func TestSceneQueryStudioDepth(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		depth := 2
 		studioCriterion := models.HierarchicalMultiCriterionInput{
 			Value: []string{
@@ -1236,16 +3440,16 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 			Studios: &studioCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 1)
 
 		depth = 1
 
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 0)
 
 		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
-		scenes = queryScene(t, sqb, &sceneFilter, nil)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Len(t, scenes, 1)
 
 		// ensure id is correct
@@ -1265,15 +3469,15 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		depth = 1
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 1)
 
 		studioCriterion.Value = []string{strconv.Itoa(studioIDs[studioIdxWithParentAndChild])}
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
@@ -1281,8 +3485,8 @@ func TestSceneQueryStudioDepth(t *testing.T) {
 }
 
 func TestSceneQueryMovies(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		movieCriterion := models.MultiCriterionInput{
 			Value: []string{
 				strconv.Itoa(movieIDs[movieIdxWithScene]),
@@ -1294,7 +3498,7 @@ func TestSceneQueryMovies(t *testing.T) {
 			Movies: &movieCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
 		assert.Len(t, scenes, 1)
 
@@ -1313,44 +3517,141 @@ func TestSceneQueryMovies(t *testing.T) {
 			Q: &q,
 		}
 
-		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, &findFilter)
 		assert.Len(t, scenes, 0)
 
 		return nil
 	})
 }
 
-func TestSceneQuerySorting(t *testing.T) {
-	sort := titleField
-	direction := models.SortDirectionEnumAsc
-	findFilter := models.FindFilterType{
-		Sort:      &sort,
-		Direction: &direction,
-	}
+func TestSceneQueryPhashDuplicated(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		duplicated := true
+		phashCriterion := models.PHashDuplicationCriterionInput{
+			Duplicated: &duplicated,
+		}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
-		scenes := queryScene(t, sqb, nil, &findFilter)
+		sceneFilter := models.SceneFilterType{
+			Duplicated: &phashCriterion,
+		}
 
-		// scenes should be in same order as indexes
-		firstScene := scenes[0]
-		lastScene := scenes[len(scenes)-1]
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 
-		assert.Equal(t, sceneIDs[0], firstScene.ID)
-		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], lastScene.ID)
+		assert.Len(t, scenes, dupeScenePhashes*2)
 
-		// sort in descending order
-		direction = models.SortDirectionEnumDesc
+		duplicated = false
 
-		scenes = queryScene(t, sqb, nil, &findFilter)
-		firstScene = scenes[0]
-		lastScene = scenes[len(scenes)-1]
-
-		assert.Equal(t, sceneIDs[sceneIdxWithSpacedName], firstScene.ID)
-		assert.Equal(t, sceneIDs[0], lastScene.ID)
+		scenes = queryScene(ctx, t, sqb, &sceneFilter, nil)
+		// -1 for missing phash
+		assert.Len(t, scenes, totalScenes-(dupeScenePhashes*2)-1)
 
 		return nil
 	})
+}
+
+func TestSceneQuerySorting(t *testing.T) {
+	tests := []struct {
+		name          string
+		sortBy        string
+		dir           models.SortDirectionEnum
+		firstSceneIdx int // -1 to ignore
+		lastSceneIdx  int
+	}{
+		{
+			"bitrate",
+			"bitrate",
+			models.SortDirectionEnumAsc,
+			-1,
+			-1,
+		},
+		{
+			"duration",
+			"duration",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"file mod time",
+			"file_mod_time",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"file size",
+			"filesize",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"frame rate",
+			"framerate",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"path",
+			"path",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+		{
+			"perceptual_similarity",
+			"perceptual_similarity",
+			models.SortDirectionEnumDesc,
+			-1,
+			-1,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.Query(ctx, models.SceneQueryOptions{
+				QueryOptions: models.QueryOptions{
+					FindFilter: &models.FindFilterType{
+						Sort:      &tt.sortBy,
+						Direction: &tt.dir,
+					},
+				},
+			})
+
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.TestSceneQuerySorting() error = %v", err)
+				return
+			}
+
+			scenes, err := got.Resolve(ctx)
+			if err != nil {
+				t.Errorf("sceneQueryBuilder.TestSceneQuerySorting() error = %v", err)
+				return
+			}
+
+			if !assert.Greater(len(scenes), 0) {
+				return
+			}
+
+			// scenes should be in same order as indexes
+			firstScene := scenes[0]
+			lastScene := scenes[len(scenes)-1]
+
+			if tt.firstSceneIdx != -1 {
+				firstSceneID := sceneIDs[tt.firstSceneIdx]
+				assert.Equal(firstSceneID, firstScene.ID)
+			}
+			if tt.lastSceneIdx != -1 {
+				lastSceneID := sceneIDs[tt.lastSceneIdx]
+				assert.Equal(lastSceneID, lastScene.ID)
+			}
+		})
+	}
 }
 
 func TestSceneQueryPagination(t *testing.T) {
@@ -1359,9 +3660,9 @@ func TestSceneQueryPagination(t *testing.T) {
 		PerPage: &perPage,
 	}
 
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
-		scenes := queryScene(t, sqb, nil, &findFilter)
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		scenes := queryScene(ctx, t, sqb, nil, &findFilter)
 
 		assert.Len(t, scenes, 1)
 
@@ -1369,7 +3670,7 @@ func TestSceneQueryPagination(t *testing.T) {
 
 		page := 2
 		findFilter.Page = &page
-		scenes = queryScene(t, sqb, nil, &findFilter)
+		scenes = queryScene(ctx, t, sqb, nil, &findFilter)
 
 		assert.Len(t, scenes, 1)
 		secondID := scenes[0].ID
@@ -1378,7 +3679,7 @@ func TestSceneQueryPagination(t *testing.T) {
 		perPage = 2
 		page = 1
 
-		scenes = queryScene(t, sqb, nil, &findFilter)
+		scenes = queryScene(ctx, t, sqb, nil, &findFilter)
 		assert.Len(t, scenes, 2)
 		assert.Equal(t, firstID, scenes[0].ID)
 		assert.Equal(t, secondID, scenes[1].ID)
@@ -1407,21 +3708,21 @@ func TestSceneQueryTagCount(t *testing.T) {
 }
 
 func verifyScenesTagCount(t *testing.T, tagCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			TagCount: &tagCountCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Greater(t, len(scenes), 0)
 
 		for _, scene := range scenes {
-			ids, err := sqb.GetTagIDs(scene.ID)
-			if err != nil {
-				return err
+			if err := scene.LoadTagIDs(ctx, sqb); err != nil {
+				t.Errorf("scene.LoadTagIDs() error = %v", err)
+				return nil
 			}
-			verifyInt(t, len(ids), tagCountCriterion)
+			verifyInt(t, len(scene.TagIDs.List()), tagCountCriterion)
 		}
 
 		return nil
@@ -1448,21 +3749,22 @@ func TestSceneQueryPerformerCount(t *testing.T) {
 }
 
 func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.IntCriterionInput) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			PerformerCount: &performerCountCriterion,
 		}
 
-		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
 		assert.Greater(t, len(scenes), 0)
 
 		for _, scene := range scenes {
-			ids, err := sqb.GetPerformerIDs(scene.ID)
-			if err != nil {
-				return err
+			if err := scene.LoadPerformerIDs(ctx, sqb); err != nil {
+				t.Errorf("scene.LoadPerformerIDs() error = %v", err)
+				return nil
 			}
-			verifyInt(t, len(ids), performerCountCriterion)
+
+			verifyInt(t, len(scene.PerformerIDs.List()), performerCountCriterion)
 		}
 
 		return nil
@@ -1470,10 +3772,10 @@ func verifyScenesPerformerCount(t *testing.T, performerCountCriterion models.Int
 }
 
 func TestSceneCountByTagID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
-		sceneCount, err := sqb.CountByTagID(tagIDs[tagIdxWithScene])
+		sceneCount, err := sqb.CountByTagID(ctx, tagIDs[tagIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling CountByTagID: %s", err.Error())
@@ -1481,7 +3783,7 @@ func TestSceneCountByTagID(t *testing.T) {
 
 		assert.Equal(t, 1, sceneCount)
 
-		sceneCount, err = sqb.CountByTagID(0)
+		sceneCount, err = sqb.CountByTagID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling CountByTagID: %s", err.Error())
@@ -1494,10 +3796,10 @@ func TestSceneCountByTagID(t *testing.T) {
 }
 
 func TestSceneCountByMovieID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
-		sceneCount, err := sqb.CountByMovieID(movieIDs[movieIdxWithScene])
+		sceneCount, err := sqb.CountByMovieID(ctx, movieIDs[movieIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling CountByMovieID: %s", err.Error())
@@ -1505,7 +3807,7 @@ func TestSceneCountByMovieID(t *testing.T) {
 
 		assert.Equal(t, 1, sceneCount)
 
-		sceneCount, err = sqb.CountByMovieID(0)
+		sceneCount, err = sqb.CountByMovieID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling CountByMovieID: %s", err.Error())
@@ -1518,10 +3820,10 @@ func TestSceneCountByMovieID(t *testing.T) {
 }
 
 func TestSceneCountByStudioID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
-		sceneCount, err := sqb.CountByStudioID(studioIDs[studioIdxWithScene])
+		sceneCount, err := sqb.CountByStudioID(ctx, studioIDs[studioIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling CountByStudioID: %s", err.Error())
@@ -1529,7 +3831,7 @@ func TestSceneCountByStudioID(t *testing.T) {
 
 		assert.Equal(t, 1, sceneCount)
 
-		sceneCount, err = sqb.CountByStudioID(0)
+		sceneCount, err = sqb.CountByStudioID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling CountByStudioID: %s", err.Error())
@@ -1542,10 +3844,10 @@ func TestSceneCountByStudioID(t *testing.T) {
 }
 
 func TestFindByMovieID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
-		scenes, err := sqb.FindByMovieID(movieIDs[movieIdxWithScene])
+		scenes, err := sqb.FindByMovieID(ctx, movieIDs[movieIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling FindByMovieID: %s", err.Error())
@@ -1554,7 +3856,7 @@ func TestFindByMovieID(t *testing.T) {
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
 
-		scenes, err = sqb.FindByMovieID(0)
+		scenes, err = sqb.FindByMovieID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling FindByMovieID: %s", err.Error())
@@ -1567,10 +3869,10 @@ func TestFindByMovieID(t *testing.T) {
 }
 
 func TestFindByPerformerID(t *testing.T) {
-	withTxn(func(r models.Repository) error {
-		sqb := r.Scene()
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
 
-		scenes, err := sqb.FindByPerformerID(performerIDs[performerIdxWithScene])
+		scenes, err := sqb.FindByPerformerID(ctx, performerIDs[performerIdxWithScene])
 
 		if err != nil {
 			t.Errorf("error calling FindByPerformerID: %s", err.Error())
@@ -1579,7 +3881,7 @@ func TestFindByPerformerID(t *testing.T) {
 		assert.Len(t, scenes, 1)
 		assert.Equal(t, sceneIDs[sceneIdxWithPerformer], scenes[0].ID)
 
-		scenes, err = sqb.FindByPerformerID(0)
+		scenes, err = sqb.FindByPerformerID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("error calling FindByPerformerID: %s", err.Error())
@@ -1592,35 +3894,25 @@ func TestFindByPerformerID(t *testing.T) {
 }
 
 func TestSceneUpdateSceneCover(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Scene()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := db.Scene
 
-		// create performer to test against
-		const name = "TestSceneUpdateSceneCover"
-		scene := models.Scene{
-			Path:     name,
-			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
-		}
-		created, err := qb.Create(scene)
-		if err != nil {
-			return fmt.Errorf("Error creating scene: %s", err.Error())
-		}
+		sceneID := sceneIDs[sceneIdxWithGallery]
 
 		image := []byte("image")
-		err = qb.UpdateCover(created.ID, image)
-		if err != nil {
+		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
 			return fmt.Errorf("Error updating scene cover: %s", err.Error())
 		}
 
 		// ensure image set
-		storedImage, err := qb.GetCover(created.ID)
+		storedImage, err := qb.GetCover(ctx, sceneID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
 		assert.Equal(t, storedImage, image)
 
 		// set nil image
-		err = qb.UpdateCover(created.ID, nil)
+		err = qb.UpdateCover(ctx, sceneID, nil)
 		if err == nil {
 			return fmt.Errorf("Expected error setting nil image")
 		}
@@ -1632,33 +3924,22 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 }
 
 func TestSceneDestroySceneCover(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Scene()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := db.Scene
 
-		// create performer to test against
-		const name = "TestSceneDestroySceneCover"
-		scene := models.Scene{
-			Path:     name,
-			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
-		}
-		created, err := qb.Create(scene)
-		if err != nil {
-			return fmt.Errorf("Error creating scene: %s", err.Error())
-		}
+		sceneID := sceneIDs[sceneIdxWithGallery]
 
 		image := []byte("image")
-		err = qb.UpdateCover(created.ID, image)
-		if err != nil {
+		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
 			return fmt.Errorf("Error updating scene image: %s", err.Error())
 		}
 
-		err = qb.DestroyCover(created.ID)
-		if err != nil {
+		if err := qb.DestroyCover(ctx, sceneID); err != nil {
 			return fmt.Errorf("Error destroying scene cover: %s", err.Error())
 		}
 
 		// image should be nil
-		storedImage, err := qb.GetCover(created.ID)
+		storedImage, err := qb.GetCover(ctx, sceneID)
 		if err != nil {
 			return fmt.Errorf("Error getting image: %s", err.Error())
 		}
@@ -1671,30 +3952,84 @@ func TestSceneDestroySceneCover(t *testing.T) {
 }
 
 func TestSceneStashIDs(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Scene()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := db.Scene
 
 		// create scene to test against
 		const name = "TestSceneStashIDs"
-		scene := models.Scene{
-			Path:     name,
-			Checksum: sql.NullString{String: md5.FromString(name), Valid: true},
+		scene := &models.Scene{
+			Title: name,
 		}
-		created, err := qb.Create(scene)
-		if err != nil {
+		if err := qb.Create(ctx, scene, nil); err != nil {
 			return fmt.Errorf("Error creating scene: %s", err.Error())
 		}
 
-		testStashIDReaderWriter(t, qb, created.ID)
+		if err := scene.LoadStashIDs(ctx, qb); err != nil {
+			return err
+		}
+
+		testSceneStashIDs(ctx, t, scene)
 		return nil
 	}); err != nil {
 		t.Error(err.Error())
 	}
 }
 
+func testSceneStashIDs(ctx context.Context, t *testing.T, s *models.Scene) {
+	// ensure no stash IDs to begin with
+	assert.Len(t, s.StashIDs.List(), 0)
+
+	// add stash ids
+	const stashIDStr = "stashID"
+	const endpoint = "endpoint"
+	stashID := models.StashID{
+		StashID:  stashIDStr,
+		Endpoint: endpoint,
+	}
+
+	qb := db.Scene
+
+	// update stash ids and ensure was updated
+	var err error
+	s, err = qb.UpdatePartial(ctx, s.ID, models.ScenePartial{
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeSet,
+		},
+	})
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := s.LoadStashIDs(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Equal(t, []models.StashID{stashID}, s.StashIDs.List())
+
+	// remove stash ids and ensure was updated
+	s, err = qb.UpdatePartial(ctx, s.ID, models.ScenePartial{
+		StashIDs: &models.UpdateStashIDs{
+			StashIDs: []models.StashID{stashID},
+			Mode:     models.RelationshipUpdateModeRemove,
+		},
+	})
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := s.LoadStashIDs(ctx, qb); err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	assert.Len(t, s.StashIDs.List(), 0)
+}
+
 func TestSceneQueryQTrim(t *testing.T) {
-	if err := withTxn(func(r models.Repository) error {
-		qb := r.Scene()
+	if err := withTxn(func(ctx context.Context) error {
+		qb := db.Scene
 
 		expectedID := sceneIDs[sceneIdxWithSpacedName]
 
@@ -1717,7 +4052,7 @@ func TestSceneQueryQTrim(t *testing.T) {
 			f := models.FindFilterType{
 				Q: &tst.query,
 			}
-			scenes := queryScene(t, qb, nil, &f)
+			scenes := queryScene(ctx, t, qb, nil, &f)
 
 			assert.Len(t, scenes, tst.count)
 			if len(scenes) > 0 {
@@ -1726,7 +4061,7 @@ func TestSceneQueryQTrim(t *testing.T) {
 		}
 
 		findFilter := models.FindFilterType{}
-		scenes := queryScene(t, qb, nil, &findFilter)
+		scenes := queryScene(ctx, t, qb, nil, &findFilter)
 		assert.NotEqual(t, 0, len(scenes))
 
 		return nil
@@ -1735,12 +4070,48 @@ func TestSceneQueryQTrim(t *testing.T) {
 	}
 }
 
-// TODO Update
-// TODO IncrementOCounter
-// TODO DecrementOCounter
-// TODO ResetOCounter
-// TODO Destroy
-// TODO FindByChecksum
+func TestSceneStore_All(t *testing.T) {
+	qb := db.Scene
+
+	withRollbackTxn(func(ctx context.Context) error {
+		got, err := qb.All(ctx)
+		if err != nil {
+			t.Errorf("SceneStore.All() error = %v", err)
+			return nil
+		}
+
+		// it's possible that other tests have created scenes
+		assert.GreaterOrEqual(t, len(got), len(sceneIDs))
+
+		return nil
+	})
+}
+
+func TestSceneStore_FindDuplicates(t *testing.T) {
+	qb := db.Scene
+
+	withRollbackTxn(func(ctx context.Context) error {
+		distance := 0
+		got, err := qb.FindDuplicates(ctx, distance)
+		if err != nil {
+			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
+			return nil
+		}
+
+		assert.Len(t, got, dupeScenePhashes)
+
+		distance = 1
+		got, err = qb.FindDuplicates(ctx, distance)
+		if err != nil {
+			t.Errorf("SceneStore.FindDuplicates() error = %v", err)
+			return nil
+		}
+
+		assert.Len(t, got, dupeScenePhashes)
+
+		return nil
+	})
+}
+
 // TODO Count
 // TODO SizeCount
-// TODO All

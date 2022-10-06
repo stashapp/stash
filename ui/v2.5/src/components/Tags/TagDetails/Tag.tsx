@@ -274,6 +274,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
               renderImage()
             )}
             <h2>{tag.name}</h2>
+            <p>{tag.description}</p>
           </div>
           {!isEditing ? (
             <>

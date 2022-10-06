@@ -8,9 +8,34 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 )
+
+type Repository struct {
+	SceneFinder     SceneFinder
+	FileFinder      file.Finder
+	StudioFinder    StudioFinder
+	TagFinder       TagFinder
+	PerformerFinder PerformerFinder
+	MovieFinder     MovieFinder
+}
+
+type Status struct {
+	Running bool `json:"running"`
+	// If not currently running, time until it will be started. If running, time until it will be stopped
+	Until              *time.Time `json:"until"`
+	RecentIPAddresses  []string   `json:"recentIPAddresses"`
+	AllowedIPAddresses []*Dlnaip  `json:"allowedIPAddresses"`
+}
+
+type Dlnaip struct {
+	IPAddress string `json:"ipAddress"`
+	// Time until IP will be no longer allowed/disallowed
+	Until *time.Time `json:"until"`
+}
 
 type dmsConfig struct {
 	Path                string
@@ -34,7 +59,8 @@ type Config interface {
 }
 
 type Service struct {
-	txnManager     models.TransactionManager
+	txnManager     txn.Manager
+	repository     Repository
 	config         Config
 	sceneServer    sceneServer
 	ipWhitelistMgr *ipWhitelistManager
@@ -107,6 +133,7 @@ func (s *Service) init() error {
 	s.server = &Server{
 		txnManager:         s.txnManager,
 		sceneServer:        s.sceneServer,
+		repository:         s.repository,
 		ipWhitelistManager: s.ipWhitelistMgr,
 		Interfaces:         interfaces,
 		HTTPConn: func() net.Listener {
@@ -167,9 +194,10 @@ func (s *Service) init() error {
 // }
 
 // NewService initialises and returns a new DLNA service.
-func NewService(txnManager models.TransactionManager, cfg Config, sceneServer sceneServer) *Service {
+func NewService(txnManager txn.Manager, repo Repository, cfg Config, sceneServer sceneServer) *Service {
 	ret := &Service{
 		txnManager:  txnManager,
+		repository:  repo,
 		sceneServer: sceneServer,
 		config:      cfg,
 		ipWhitelistMgr: &ipWhitelistManager{
@@ -273,11 +301,11 @@ func (s *Service) IsRunning() bool {
 	return s.running
 }
 
-func (s *Service) Status() *models.DLNAStatus {
+func (s *Service) Status() *Status {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	ret := &models.DLNAStatus{
+	ret := &Status{
 		Running:            s.running,
 		RecentIPAddresses:  s.ipWhitelistMgr.getRecent(),
 		AllowedIPAddresses: s.ipWhitelistMgr.getTempAllowed(),

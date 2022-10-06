@@ -10,8 +10,7 @@ import (
 type JSONPaths struct {
 	Metadata string
 
-	MappingsFile string
-	ScrapedFile  string
+	ScrapedFile string
 
 	Performers string
 	Scenes     string
@@ -20,12 +19,12 @@ type JSONPaths struct {
 	Studios    string
 	Tags       string
 	Movies     string
+	Files      string
 }
 
 func newJSONPaths(baseDir string) *JSONPaths {
 	jp := JSONPaths{}
 	jp.Metadata = baseDir
-	jp.MappingsFile = filepath.Join(baseDir, "mappings.json")
 	jp.ScrapedFile = filepath.Join(baseDir, "scraped.json")
 	jp.Performers = filepath.Join(baseDir, "performers")
 	jp.Scenes = filepath.Join(baseDir, "scenes")
@@ -34,12 +33,25 @@ func newJSONPaths(baseDir string) *JSONPaths {
 	jp.Studios = filepath.Join(baseDir, "studios")
 	jp.Movies = filepath.Join(baseDir, "movies")
 	jp.Tags = filepath.Join(baseDir, "tags")
+	jp.Files = filepath.Join(baseDir, "files")
 	return &jp
 }
 
 func GetJSONPaths(baseDir string) *JSONPaths {
 	jp := newJSONPaths(baseDir)
 	return jp
+}
+
+func EmptyJSONDirs(baseDir string) {
+	jsonPaths := GetJSONPaths(baseDir)
+	_ = fsutil.EmptyDir(jsonPaths.Scenes)
+	_ = fsutil.EmptyDir(jsonPaths.Images)
+	_ = fsutil.EmptyDir(jsonPaths.Galleries)
+	_ = fsutil.EmptyDir(jsonPaths.Performers)
+	_ = fsutil.EmptyDir(jsonPaths.Studios)
+	_ = fsutil.EmptyDir(jsonPaths.Movies)
+	_ = fsutil.EmptyDir(jsonPaths.Tags)
+	_ = fsutil.EmptyDir(jsonPaths.Files)
 }
 
 func EnsureJSONDirs(baseDir string) {
@@ -68,32 +80,7 @@ func EnsureJSONDirs(baseDir string) {
 	if err := fsutil.EnsureDir(jsonPaths.Tags); err != nil {
 		logger.Warnf("couldn't create directories for Tags: %v", err)
 	}
-}
-
-func (jp *JSONPaths) PerformerJSONPath(checksum string) string {
-	return filepath.Join(jp.Performers, checksum+".json")
-}
-
-func (jp *JSONPaths) SceneJSONPath(checksum string) string {
-	return filepath.Join(jp.Scenes, checksum+".json")
-}
-
-func (jp *JSONPaths) ImageJSONPath(checksum string) string {
-	return filepath.Join(jp.Images, checksum+".json")
-}
-
-func (jp *JSONPaths) GalleryJSONPath(checksum string) string {
-	return filepath.Join(jp.Galleries, checksum+".json")
-}
-
-func (jp *JSONPaths) StudioJSONPath(checksum string) string {
-	return filepath.Join(jp.Studios, checksum+".json")
-}
-
-func (jp *JSONPaths) TagJSONPath(checksum string) string {
-	return filepath.Join(jp.Tags, checksum+".json")
-}
-
-func (jp *JSONPaths) MovieJSONPath(checksum string) string {
-	return filepath.Join(jp.Movies, checksum+".json")
+	if err := fsutil.EnsureDir(jsonPaths.Files); err != nil {
+		logger.Warnf("couldn't create directories for Files: %v", err)
+	}
 }

@@ -1,10 +1,14 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type Tag struct {
 	ID            int             `db:"id" json:"id"`
 	Name          string          `db:"name" json:"name"` // TODO make schema not null
+	Description   sql.NullString  `db:"description" json:"description"`
 	IgnoreAutoTag bool            `db:"ignore_auto_tag" json:"ignore_auto_tag"`
 	CreatedAt     SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt     SQLiteTimestamp `db:"updated_at" json:"updated_at"`
@@ -13,6 +17,7 @@ type Tag struct {
 type TagPartial struct {
 	ID            int              `db:"id" json:"id"`
 	Name          *string          `db:"name" json:"name"` // TODO make schema not null
+	Description   *sql.NullString  `db:"description" json:"description"`
 	IgnoreAutoTag *bool            `db:"ignore_auto_tag" json:"ignore_auto_tag"`
 	CreatedAt     *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt     *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
