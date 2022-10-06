@@ -178,8 +178,9 @@ type SceneUpdateInput struct {
 	Movies           []*SceneMovieInput `json:"movies"`
 	TagIds           []string           `json:"tag_ids"`
 	// This should be a URL or a base64 encoded data URL
-	CoverImage *string   `json:"cover_image"`
-	StashIds   []StashID `json:"stash_ids"`
+	CoverImage    *string   `json:"cover_image"`
+	StashIds      []StashID `json:"stash_ids"`
+	PrimaryFileID *string   `json:"primary_file_id"`
 }
 
 // UpdateInput constructs a SceneUpdateInput using the populated fields in the ScenePartial object.

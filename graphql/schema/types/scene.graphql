@@ -90,6 +90,8 @@ input SceneUpdateInput {
   """This should be a URL or a base64 encoded data URL"""
   cover_image: String
   stash_ids: [StashIDInput!]
+
+  primary_file_id: ID
 }
 
 enum BulkUpdateIdMode {
