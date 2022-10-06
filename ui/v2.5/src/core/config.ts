@@ -31,6 +31,7 @@ export interface IUIConfig {
   showChildTagContent?: boolean;
   showChildStudioContent?: boolean;
   showTagCardOnHover?: boolean;
+  abbreviateCounters?: boolean;
 }
 
 function recentlyReleased(

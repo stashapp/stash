@@ -38,6 +38,7 @@ import {
   faHeart,
   faLink,
 } from "@fortawesome/free-solid-svg-icons";
+import { IUIConfig } from "src/core/config";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -54,7 +55,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const formatCounter = configuration?.interface.formatCounters ?? false;
+  const abbreviateCounter = (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
@@ -202,7 +203,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             <React.Fragment>
               {intl.formatMessage({ id: "scenes" })}
               <Counter
-                formatCounter={formatCounter}
+                abbreviateCounter={abbreviateCounter}
                 count={performer.scene_count ?? 0}
               />
             </React.Fragment>
@@ -216,7 +217,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             <React.Fragment>
               {intl.formatMessage({ id: "galleries" })}
               <Counter
-                formatCounter={formatCounter}
+                abbreviateCounter={abbreviateCounter}
                 count={performer.gallery_count ?? 0}
               />
             </React.Fragment>
@@ -230,7 +231,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             <React.Fragment>
               {intl.formatMessage({ id: "images" })}
               <Counter
-                formatCounter={formatCounter}
+                abbreviateCounter={abbreviateCounter}
                 count={performer.image_count ?? 0}
               />
             </React.Fragment>
@@ -244,7 +245,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             <React.Fragment>
               {intl.formatMessage({ id: "movies" })}
               <Counter
-                formatCounter={formatCounter}
+                abbreviateCounter={abbreviateCounter}
                 count={performer.movie_count ?? 0}
               />
             </React.Fragment>

@@ -31,6 +31,7 @@ import { StudioEditPanel } from "./StudioEditPanel";
 import { StudioDetailsPanel } from "./StudioDetailsPanel";
 import { StudioMoviesPanel } from "./StudioMoviesPanel";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { IUIConfig } from "src/core/config";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -48,7 +49,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const formatCounter = configuration?.interface.formatCounters ?? false;
+  const abbreviateCounter = (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -229,7 +230,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <React.Fragment>
                 {intl.formatMessage({ id: "scenes" })}
                 <Counter
-                  formatCounter={formatCounter}
+                  abbreviateCounter={abbreviateCounter}
                   count={studio.scene_count ?? 0}
                 />
               </React.Fragment>
@@ -243,7 +244,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <React.Fragment>
                 {intl.formatMessage({ id: "galleries" })}
                 <Counter
-                  formatCounter={formatCounter}
+                  abbreviateCounter={abbreviateCounter}
                   count={studio.gallery_count ?? 0}
                 />
               </React.Fragment>
@@ -257,7 +258,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <React.Fragment>
                 {intl.formatMessage({ id: "images" })}
                 <Counter
-                  formatCounter={formatCounter}
+                  abbreviateCounter={abbreviateCounter}
                   count={studio.image_count ?? 0}
                 />
               </React.Fragment>
@@ -277,7 +278,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <React.Fragment>
                 {intl.formatMessage({ id: "movies" })}
                 <Counter
-                  formatCounter={formatCounter}
+                  abbreviateCounter={abbreviateCounter}
                   count={studio.movie_count ?? 0}
                 />
               </React.Fragment>
@@ -291,7 +292,7 @@ const StudioPage: React.FC<IProps> = ({ studio }) => {
               <React.Fragment>
                 {intl.formatMessage({ id: "subsidiary_studios" })}
                 <Counter
-                  formatCounter={false}
+                  abbreviateCounter={false}
                   count={studio.child_studios?.length ?? 0}
                 />
               </React.Fragment>

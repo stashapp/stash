@@ -37,6 +37,7 @@ import {
   faSignOutAlt,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import { IUIConfig } from "src/core/config";
 
 interface IProps {
   tag: GQL.TagDataFragment;
@@ -53,7 +54,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
 
   // Configuration settings
   const { configuration } = React.useContext(ConfigurationContext);
-  const formatCounter = configuration?.interface.formatCounters ?? false;
+  const abbreviateCounter = (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
   const { tab = "scenes" } = useParams<ITabParams>();
 
@@ -317,7 +318,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "scenes" })}
                   <Counter
-                    formatCounter={formatCounter}
+                    abbreviateCounter={abbreviateCounter}
                     count={tag.scene_count ?? 0}
                   />
                 </React.Fragment>
@@ -331,7 +332,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "images" })}
                   <Counter
-                    formatCounter={formatCounter}
+                    abbreviateCounter={abbreviateCounter}
                     count={tag.image_count ?? 0}
                   />
                 </React.Fragment>
@@ -345,7 +346,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "galleries" })}
                   <Counter
-                    formatCounter={formatCounter}
+                    abbreviateCounter={abbreviateCounter}
                     count={tag.gallery_count ?? 0}
                   />
                 </React.Fragment>
@@ -359,7 +360,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "markers" })}
                   <Counter
-                    formatCounter={formatCounter}
+                    abbreviateCounter={abbreviateCounter}
                     count={tag.scene_marker_count ?? 0}
                   />
                 </React.Fragment>
@@ -373,7 +374,7 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
                 <React.Fragment>
                   {intl.formatMessage({ id: "performers" })}
                   <Counter
-                    formatCounter={formatCounter}
+                    abbreviateCounter={abbreviateCounter}
                     count={tag.performer_count ?? 0}
                   />
                 </React.Fragment>

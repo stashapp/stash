@@ -137,11 +137,11 @@ export const SettingsInterfacePanel: React.FC = () => {
         </div>
 
         <BooleanSetting
-          id="format-counters"
-          headingID="config.ui.format_counters.heading"
-          subHeadingID="config.ui.format_counters.description"
-          checked={iface.formatCounters ?? undefined}
-          onChange={(v) => saveInterface({ formatCounters: v })}
+          id="abbreviate-counters"
+          headingID="config.ui.abbreviate_counters.heading"
+          subHeadingID="config.ui.abbreviate_counters.description"
+          checked={ui.abbreviateCounters ?? undefined}
+          onChange={(v) => saveUI({ abbreviateCounters: v })}
         />
       </SettingSection>
 

@@ -308,7 +308,7 @@ const capitalize = (val: string) =>
 type CountUnit = "" | "K" | "M" | "B";
 const CountUnits: CountUnit[] = ["", "K", "M", "B"];
 
-const formatCounter = (counter: number = 0) => {
+const abbreviateCounter = (counter: number = 0) => {
   if (Number.isNaN(parseFloat(String(counter))) || !Number.isFinite(counter))
     return { size: 0, unit: CountUnits[0] };
 
@@ -345,7 +345,7 @@ const TextUtils = {
   formatDateTime,
   capitalize,
   secondsAsTimeString,
-  formatCounter,
+  abbreviateCounter,
 };
 
 export default TextUtils;
