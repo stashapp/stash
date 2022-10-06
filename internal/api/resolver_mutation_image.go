@@ -118,6 +118,22 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 
 		converted := file.ID(primaryFileID)
 		updatedImage.PrimaryFileID = &converted
+
+		if err := i.LoadFiles(ctx, r.repository.Image); err != nil {
+			return nil, err
+		}
+
+		// ensure that new primary file is associated with scene
+		var f *file.ImageFile
+		for _, ff := range i.Files.List() {
+			if ff.ID == converted {
+				f = ff
+			}
+		}
+
+		if f == nil {
+			return nil, fmt.Errorf("file with id %d not associated with image", converted)
+		}
 	}
 
 	if translator.hasField("gallery_ids") {
