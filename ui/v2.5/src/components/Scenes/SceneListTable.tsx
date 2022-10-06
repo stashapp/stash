@@ -53,13 +53,12 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
     const title = objectTitle(scene);
     return (
-      <tr className="h-100" key={scene.id}>
-        <td className="h-100 p-0">
-          <label className="h-100 m-0 d-block">
+      <tr key={scene.id}>
+        <td>
+          <label>
             <Form.Control
               type="checkbox"
               checked={props.selectedIds.has(scene.id)}
-              className="h-100"
               onChange={() =>
                 props.onSelectChange!(
                   scene.id,
@@ -117,8 +116,8 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   };
 
   return (
-    <div className="row table-list justify-content-center">
-      <Table striped bordered className="h-100">
+    <div className="row scene-table table-list justify-content-center">
+      <Table striped bordered>
         <thead>
           <tr>
             <th />
