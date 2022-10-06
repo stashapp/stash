@@ -458,6 +458,10 @@
         },
         "heading": "Editing"
       },
+      "abbreviate_counters": {
+        "description": "Abbreviate counters in cards and details view pages, for example \"1831\" will get formated to \"1.8K\".",
+        "heading": "Abbreviate counters"
+      },
       "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"

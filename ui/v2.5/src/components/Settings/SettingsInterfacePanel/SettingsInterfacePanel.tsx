@@ -135,6 +135,14 @@ export const SettingsInterfacePanel: React.FC = () => {
             onChange={(v) => saveInterface({ menuItems: v })}
           />
         </div>
+
+        <BooleanSetting
+          id="abbreviate-counters"
+          headingID="config.ui.abbreviate_counters.heading"
+          subHeadingID="config.ui.abbreviate_counters.description"
+          checked={ui.abbreviateCounters ?? undefined}
+          onChange={(v) => saveUI({ abbreviateCounters: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.desktop_integration.desktop_integration">
