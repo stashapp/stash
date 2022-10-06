@@ -250,7 +250,8 @@ INSERT INTO `performers_images_new`
   SELECT 
     `performer_id`,
     `image_id`
-  FROM `performers_images`;
+  FROM `performers_images` WHERE true
+  ON CONFLICT (`image_id`, `performer_id`) DO NOTHING;
 
 DROP TABLE `performers_images`;
 ALTER TABLE `performers_images_new` rename to `performers_images`;
@@ -332,7 +333,8 @@ INSERT INTO `scenes_galleries_new`
   SELECT 
     `scene_id`,
     `gallery_id`
-  FROM `scenes_galleries`;
+  FROM `scenes_galleries` WHERE true
+  ON CONFLICT (`scene_id`, `gallery_id`) DO NOTHING;
 
 DROP TABLE `scenes_galleries`;
 ALTER TABLE `scenes_galleries_new` rename to `scenes_galleries`;
@@ -359,7 +361,8 @@ INSERT INTO `galleries_images_new`
   SELECT 
     `gallery_id`,
     `image_id`
-  FROM `galleries_images`;
+  FROM `galleries_images` WHERE true
+  ON CONFLICT (`gallery_id`, `image_id`) DO NOTHING;
 
 DROP TABLE `galleries_images`;
 ALTER TABLE `galleries_images_new` rename to `galleries_images`;
