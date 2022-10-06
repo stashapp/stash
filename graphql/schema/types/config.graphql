@@ -259,7 +259,7 @@ input ConfigInterfaceInput {
   
   """If true, studio overlays will be shown as text instead of logo images"""
   showStudioAsText: Boolean
-
+  
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
