@@ -29,7 +29,7 @@ func setPerformerImage(ctx context.Context, client *http.Client, p *models.Scrap
 	return nil
 }
 
-func setSceneImage(ctx context.Context, client *http.Client, s *models.ScrapedScene, globalConfig GlobalConfig) error {
+func setSceneImage(ctx context.Context, client *http.Client, s *ScrapedScene, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
 	if s.Image == nil || !strings.HasPrefix(*s.Image, "http") {
 		// nothing to do

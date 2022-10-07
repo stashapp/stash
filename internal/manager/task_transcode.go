@@ -32,20 +32,27 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 		return
 	}
 
+	f := t.Scene.Files.Primary()
+
 	ffprobe := instance.FFProbe
 	var container ffmpeg.Container
 
 	var err error
-	container, err = GetSceneFileContainer(&t.Scene)
+	container, err = GetVideoFileContainer(f)
 	if err != nil {
 		logger.Errorf("[transcode] error getting scene container: %s", err.Error())
 		return
 	}
 
-	videoCodec := t.Scene.VideoCodec.String
+	var videoCodec string
+
+	if f.VideoCodec != "" {
+		videoCodec = f.VideoCodec
+	}
+
 	audioCodec := ffmpeg.MissingUnsupported
-	if t.Scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.ProbeAudioCodec(t.Scene.AudioCodec.String)
+	if f.AudioCodec != "" {
+		audioCodec = ffmpeg.ProbeAudioCodec(f.AudioCodec)
 	}
 
 	if !t.Force && ffmpeg.IsStreamable(videoCodec, audioCodec, container) == nil {
@@ -54,7 +61,7 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 
 	// TODO - move transcode generation logic elsewhere
 
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
+	videoFile, err := ffprobe.NewVideoFile(f.Path)
 	if err != nil {
 		logger.Errorf("[transcode] error reading video file: %s", err.Error())
 		return
@@ -95,6 +102,11 @@ func (t *GenerateTranscodeTask) Start(ctc context.Context) {
 // used only when counting files to generate, doesn't affect the actual transcode generation
 // if container is missing from DB it is treated as non supported in order not to delay the user
 func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
+	f := t.Scene.Files.Primary()
+	if f == nil {
+		return false
+	}
+
 	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
 	if !t.Overwrite && hasTranscode {
 		return false
@@ -104,15 +116,18 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 		return true
 	}
 
-	videoCodec := t.Scene.VideoCodec.String
+	var videoCodec string
+	if f.VideoCodec != "" {
+		videoCodec = f.VideoCodec
+	}
 	container := ""
 	audioCodec := ffmpeg.MissingUnsupported
-	if t.Scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.ProbeAudioCodec(t.Scene.AudioCodec.String)
+	if f.AudioCodec != "" {
+		audioCodec = ffmpeg.ProbeAudioCodec(f.AudioCodec)
 	}
 
-	if t.Scene.Format.Valid {
-		container = t.Scene.Format.String
+	if f.Format != "" {
+		container = f.Format
 	}
 
 	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container)) == nil {

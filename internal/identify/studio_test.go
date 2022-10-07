@@ -18,25 +18,25 @@ func Test_createMissingStudio(t *testing.T) {
 	validName := "validName"
 	invalidName := "invalidName"
 	createdID := 1
-	createdID64 := int64(createdID)
 
-	repo := mocks.NewTransactionManager()
-	repo.StudioMock().On("Create", mock.MatchedBy(func(p models.Studio) bool {
+	repo := mocks.NewTxnRepository()
+	mockStudioReaderWriter := repo.Studio.(*mocks.StudioReaderWriter)
+	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Studio) bool {
 		return p.Name.String == validName
 	})).Return(&models.Studio{
 		ID: createdID,
 	}, nil)
-	repo.StudioMock().On("Create", mock.MatchedBy(func(p models.Studio) bool {
+	mockStudioReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Studio) bool {
 		return p.Name.String == invalidName
 	})).Return(nil, errors.New("error creating performer"))
 
-	repo.StudioMock().On("UpdateStashIDs", createdID, []models.StashID{
+	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
 		{
 			Endpoint: invalidEndpoint,
 			StashID:  remoteSiteID,
 		},
 	}).Return(errors.New("error updating stash ids"))
-	repo.StudioMock().On("UpdateStashIDs", createdID, []models.StashID{
+	mockStudioReaderWriter.On("UpdateStashIDs", testCtx, createdID, []models.StashID{
 		{
 			Endpoint: validEndpoint,
 			StashID:  remoteSiteID,
@@ -50,7 +50,7 @@ func Test_createMissingStudio(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *int64
+		want    *int
 		wantErr bool
 	}{
 		{
@@ -61,7 +61,7 @@ func Test_createMissingStudio(t *testing.T) {
 					Name: validName,
 				},
 			},
-			&createdID64,
+			&createdID,
 			false,
 		},
 		{
@@ -84,7 +84,7 @@ func Test_createMissingStudio(t *testing.T) {
 					RemoteSiteID: &remoteSiteID,
 				},
 			},
-			&createdID64,
+			&createdID,
 			false,
 		},
 		{
@@ -102,13 +102,13 @@ func Test_createMissingStudio(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := createMissingStudio(tt.args.endpoint, repo, tt.args.studio)
+			got, err := createMissingStudio(testCtx, tt.args.endpoint, mockStudioReaderWriter, tt.args.studio)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("createMissingStudio() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("createMissingStudio() = %v, want %v", got, tt.want)
+				t.Errorf("createMissingStudio() = %d, want %d", got, tt.want)
 			}
 		})
 	}

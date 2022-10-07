@@ -37,6 +37,8 @@ input ConfigGeneralInput {
   stashes: [StashConfigInput!]
   """Path to the SQLite database"""
   databasePath: String
+  """Path to backup directory"""
+  backupDirectoryPath: String
   """Path to generated files"""
   generatedPath: String
   """Path to import/export files"""
@@ -116,6 +118,8 @@ type ConfigGeneralResult {
   stashes: [StashConfig!]!
   """Path to the SQLite database"""
   databasePath: String!
+  """Path to backup directory"""
+  backupDirectoryPath: String!
   """Path to generated files"""
   generatedPath: String!
   """Path to import/export files"""
@@ -259,6 +263,10 @@ input ConfigInterfaceInput {
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
+
+  """Custom Locales"""
+  customLocales: String
+  customLocalesEnabled: Boolean
   
   """Interface language"""
   language: String
@@ -322,6 +330,10 @@ type ConfigInterfaceResult {
   css: String
   cssEnabled: Boolean
 
+  """Custom Locales"""
+  customLocales: String
+  customLocalesEnabled: Boolean
+  
   """Interface language"""
   language: String
 

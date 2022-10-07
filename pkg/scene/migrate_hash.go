@@ -2,7 +2,6 @@ package scene
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -68,7 +67,7 @@ func migrateSceneFiles(oldName, newName string) {
 
 // #2481: migrate vtt file contents in addition to renaming
 func migrateVttFile(vttPath, oldSpritePath, newSpritePath string) {
-	contents, err := ioutil.ReadFile(vttPath)
+	contents, err := os.ReadFile(vttPath)
 	if err != nil {
 		logger.Errorf("Error reading %s for vtt migration: %v", vttPath, err)
 		return
@@ -79,7 +78,7 @@ func migrateVttFile(vttPath, oldSpritePath, newSpritePath string) {
 
 	contents = bytes.ReplaceAll(contents, []byte(oldSpriteBasename), []byte(newSpriteBasename))
 
-	if err := ioutil.WriteFile(vttPath, contents, 0644); err != nil {
+	if err := os.WriteFile(vttPath, contents, 0644); err != nil {
 		logger.Errorf("Error writing %s for vtt migration: %v", vttPath, err)
 		return
 	}

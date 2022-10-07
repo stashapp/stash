@@ -10,11 +10,11 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type StashBoxPerformerTagTask struct {
-	txnManager      models.TransactionManager
 	box             *models.StashBox
 	name            *string
 	performer       *models.Performer
@@ -41,12 +41,17 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 	var performer *models.ScrapedPerformer
 	var err error
 
-	client := stashbox.NewClient(*t.box, t.txnManager)
+	client := stashbox.NewClient(*t.box, instance.Repository, stashbox.Repository{
+		Scene:     instance.Repository.Scene,
+		Performer: instance.Repository.Performer,
+		Tag:       instance.Repository.Tag,
+		Studio:    instance.Repository.Studio,
+	})
 
 	if t.refresh {
 		var performerID string
-		txnErr := t.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-			stashids, _ := r.Performer().GetStashIDs(t.performer.ID)
+		txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+			stashids, _ := instance.Repository.Performer.GetStashIDs(ctx, t.performer.ID)
 			for _, id := range stashids {
 				if id.Endpoint == t.box.Endpoint {
 					performerID = id.StashID
@@ -156,11 +161,12 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				partial.URL = &value
 			}
 
-			txnErr := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
-				_, err := r.Performer().Update(partial)
+			txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				r := instance.Repository
+				_, err := r.Performer.Update(ctx, partial)
 
 				if !t.refresh {
-					err = r.Performer().UpdateStashIDs(t.performer.ID, []models.StashID{
+					err = r.Performer.UpdateStashIDs(ctx, t.performer.ID, []models.StashID{
 						{
 							Endpoint: t.box.Endpoint,
 							StashID:  *performer.RemoteSiteID,
@@ -176,7 +182,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 					if err != nil {
 						return err
 					}
-					err = r.Performer().UpdateImage(t.performer.ID, image)
+					err = r.Performer.UpdateImage(ctx, t.performer.ID, image)
 					if err != nil {
 						return err
 					}
@@ -218,13 +224,14 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				URL:          getNullString(performer.URL),
 				UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 			}
-			err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
-				createdPerformer, err := r.Performer().Create(newPerformer)
+			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				r := instance.Repository
+				createdPerformer, err := r.Performer.Create(ctx, newPerformer)
 				if err != nil {
 					return err
 				}
 
-				err = r.Performer().UpdateStashIDs(createdPerformer.ID, []models.StashID{
+				err = r.Performer.UpdateStashIDs(ctx, createdPerformer.ID, []models.StashID{
 					{
 						Endpoint: t.box.Endpoint,
 						StashID:  *performer.RemoteSiteID,
@@ -239,7 +246,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 					if imageErr != nil {
 						return imageErr
 					}
-					err = r.Performer().UpdateImage(createdPerformer.ID, image)
+					err = r.Performer.UpdateImage(ctx, createdPerformer.ID, image)
 				}
 				return err
 			})

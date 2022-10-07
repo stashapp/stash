@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 
 import * as GQL from "src/core/generated-graphql";
 import { useTagCreate } from "src/core/StashService";
@@ -12,6 +12,14 @@ import { TagEditPanel } from "./TagEditPanel";
 const TagCreate: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
+
+  function useQuery() {
+    const { search } = useLocation();
+    return React.useMemo(() => new URLSearchParams(search), [search]);
+  }
+
+  const query = useQuery();
+  const nameQuery = query.get("name");
 
   // Editing tag state
   const [image, setImage] = useState<string | null>();
@@ -78,6 +86,7 @@ const TagCreate: React.FC = () => {
           )}
         </div>
         <TagEditPanel
+          tag={{ name: nameQuery ?? "" }}
           onSubmit={onSave}
           onCancel={() => history.push("/tags")}
           onDelete={() => {}}

@@ -1,8 +1,8 @@
 """Gallery type"""
 type Gallery {
   id: ID!
-  checksum: String!
-  path: String
+  checksum: String! @deprecated(reason: "Use files.fingerprints")
+  path: String @deprecated(reason: "Use files.path")
   title: String
   url: String
   date: String
@@ -11,7 +11,10 @@ type Gallery {
   organized: Boolean!
   created_at: Time!
   updated_at: Time!
-  file_mod_time: Time
+  file_mod_time: Time @deprecated(reason: "Use files.mod_time")
+
+  files: [GalleryFile!]!
+  folder: Folder
 
   scenes: [Scene!]!
   studio: Studio
@@ -22,12 +25,6 @@ type Gallery {
   """The images in the gallery"""
   images: [Image!]! # Resolver
   cover: Image
-}
-
-type GalleryFilesType {
-  index: Int!
-  name: String
-  path: String
 }
 
 input GalleryCreateInput {
@@ -56,6 +53,8 @@ input GalleryUpdateInput {
   studio_id: ID
   tag_ids: [ID!]
   performer_ids: [ID!]
+
+  primary_file_id: ID
 }
 
 input BulkGalleryUpdateInput {

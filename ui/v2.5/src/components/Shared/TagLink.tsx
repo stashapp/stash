@@ -8,10 +8,23 @@ import {
   TagDataFragment,
   MovieDataFragment,
   SceneDataFragment,
-  GalleryDataFragment,
 } from "src/core/generated-graphql";
 import NavUtils from "src/utils/navigation";
 import TextUtils from "src/utils/text";
+import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
+import * as GQL from "src/core/generated-graphql";
+import { TagPopover } from "../Tags/TagPopover";
+
+interface IFile {
+  path: string;
+}
+interface IGallery {
+  id: string;
+  files: IFile[];
+  folder?: GQL.Maybe<IFile>;
+  title: GQL.Maybe<string>;
+}
 
 interface IProps {
   tag?: Partial<TagDataFragment>;
@@ -19,12 +32,13 @@ interface IProps {
   performer?: Partial<PerformerDataFragment>;
   marker?: Partial<SceneMarkerDataFragment>;
   movie?: Partial<MovieDataFragment>;
-  scene?: Partial<SceneDataFragment>;
-  gallery?: Partial<GalleryDataFragment>;
+  scene?: Partial<Pick<SceneDataFragment, "id" | "title" | "files">>;
+  gallery?: Partial<IGallery>;
   className?: string;
 }
 
 export const TagLink: React.FC<IProps> = (props: IProps) => {
+  let id: string = "";
   let link: string = "#";
   let title: string = "";
   if (props.tag) {
@@ -43,6 +57,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
         link = NavUtils.makeTagImagesUrl(props.tag);
         break;
     }
+    id = props.tag.id || "";
     title = props.tag.name || "";
   } else if (props.performer) {
     link = NavUtils.makePerformerScenesUrl(props.performer);
@@ -57,18 +72,16 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     } - ${TextUtils.secondsToTimestamp(props.marker.seconds || 0)}`;
   } else if (props.gallery) {
     link = `/galleries/${props.gallery.id}`;
-    title = props.gallery.title
-      ? props.gallery.title
-      : TextUtils.fileNameFromPath(props.gallery.path ?? "");
+    title = galleryTitle(props.gallery);
   } else if (props.scene) {
     link = `/scenes/${props.scene.id}`;
-    title = props.scene.title
-      ? props.scene.title
-      : TextUtils.fileNameFromPath(props.scene.path ?? "");
+    title = objectTitle(props.scene);
   }
   return (
     <Badge className={cx("tag-item", props.className)} variant="secondary">
-      <Link to={link}>{title}</Link>
+      <TagPopover id={id}>
+        <Link to={link}>{title}</Link>
+      </TagPopover>
     </Badge>
   );
 };

@@ -23,6 +23,7 @@
     "create_entity": "创建 {entityType}",
     "create_marker": "创建标记",
     "created_entity": "已经创建 {entity_type}: {entity_name}",
+    "customise": "自定义",
     "delete": "删除",
     "delete_entity": "删除 {entityType}",
     "delete_file": "删除文件",
@@ -100,6 +101,7 @@
     "stop": "停止",
     "submit": "提交",
     "submit_stash_box": "提交给 Stash-Box",
+    "submit_update": "提交更新",
     "tasks": {
       "clean_confirm_message": "确定要清除吗？ 这将删除系统中不存在的所有短片和图库的数据库信息和已经生成的内容。",
       "dry_mode_selected": "已经选择了模拟删除模式。不会实际删除文件，只会写下记录。",
@@ -121,6 +123,7 @@
   "birth_year": "出生年份",
   "birthdate": "出生日期",
   "bitrate": "比特率",
+  "captions": "字幕",
   "career_length": "工龄",
   "component_tagger": {
     "config": {
@@ -451,6 +454,12 @@
       },
       "handy_connection": {
         "connect": "连接",
+        "server_offset": {
+          "heading": "服务器偏差值"
+        },
+        "status": {
+          "heading": "Handy 连接状态"
+        },
         "sync": "同步"
       },
       "handy_connection_key": {
@@ -525,6 +534,10 @@
           "display_title": "显示标题和标签",
           "toggle_sound": "播放声音"
         }
+      },
+      "scroll_attempts_before_change": {
+        "description": "在转到下/上一项前需要尝试滑动的次数。仅适用于垂直滚动的模式。",
+        "heading": "转变所需的滑动尝试次数"
       },
       "slideshow_delay": {
         "description": "在影音墙模式下，图库可用幻灯片功能",
@@ -705,6 +718,7 @@
     "scale": "大小",
     "warmth": "色温"
   },
+  "empty_server": "增加一些短片到服务器以看到本页面的推荐。",
   "ethnicity": "人种",
   "existing_value": "现值",
   "eye_color": "瞳孔颜色",
@@ -721,6 +735,12 @@
   "filters": "过滤器",
   "framerate": "帧率",
   "frames_per_second": "{value} 帧每秒",
+  "front_page": {
+    "types": {
+      "premade_filter": "预制的过滤器",
+      "saved_filter": "已保存的过滤器"
+    }
+  },
   "galleries": "图库",
   "gallery": "图库",
   "gallery_count": "图库数量",
@@ -737,7 +757,11 @@
   "handy_connection_status": {
     "connecting": "连接中",
     "disconnected": "连接已断开",
-    "syncing": "正在和服务器同步"
+    "error": "连接到 Handy 时出错",
+    "missing": "无",
+    "ready": "准备好",
+    "syncing": "正在和服务器同步",
+    "uploading": "上传脚本中"
   },
   "hasMarkers": "含有章节标记",
   "height": "身高",
@@ -844,6 +868,8 @@
   "queue": "序列",
   "random": "随机",
   "rating": "评分",
+  "recently_added_objects": "最近新增的 {objects}",
+  "recently_released_objects": "最近发行的 {objects}",
   "resolution": "分辨率",
   "scene": "短片",
   "sceneTagger": "短片标记器",
@@ -945,7 +971,8 @@
     "go_review_draft": "去 {endpoint_name} 检阅草稿。",
     "selected_stash_box": "选择的 Stash-Box 终端",
     "submission_failed": "提交失败",
-    "submission_successful": "成功提交"
+    "submission_successful": "成功提交",
+    "submit_update": "已存在于 {endpoint_name}"
   },
   "statistics": "统计",
   "stats": {
@@ -968,14 +995,14 @@
   "tattoos": "纹身",
   "title": "标题",
   "toast": {
-    "added_entity": "已添加{entity}",
+    "added_entity": "已添加 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "added_generation_job_to_queue": "已添加生成工作至队列",
     "created_entity": "已经创建{entity}",
     "default_filter_set": "默认过滤器",
-    "delete_entity": "删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "已经删除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "正在生成截图…",
     "merged_tags": "已经合并标签",
+    "removed_entity": "已移除 {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "正在重新扫描 {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "已经保存 {entity}",
     "started_auto_tagging": "已经开始自动生成标签",
@@ -986,6 +1013,7 @@
   "total": "总共",
   "true": "真",
   "twitter": "推特",
+  "type": "类别",
   "updated_at": "更新时间",
   "url": "链接",
   "videos": "视频",

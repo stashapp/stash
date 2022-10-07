@@ -1,12 +1,30 @@
 package gallery
 
 import (
+	"context"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func CountByPerformerID(r models.GalleryReader, id int) (int, error) {
+type Queryer interface {
+	Query(ctx context.Context, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int, error)
+}
+
+type CountQueryer interface {
+	QueryCount(ctx context.Context, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) (int, error)
+}
+
+type Finder interface {
+	FindByPath(ctx context.Context, p string) ([]*models.Gallery, error)
+	FindUserGalleryByTitle(ctx context.Context, title string) ([]*models.Gallery, error)
+	FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Gallery, error)
+	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Gallery, error)
+	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Gallery, error)
+}
+
+func CountByPerformerID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.GalleryFilterType{
 		Performers: &models.MultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -14,10 +32,10 @@ func CountByPerformerID(r models.GalleryReader, id int) (int, error) {
 		},
 	}
 
-	return r.QueryCount(filter, nil)
+	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByStudioID(r models.GalleryReader, id int) (int, error) {
+func CountByStudioID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.GalleryFilterType{
 		Studios: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -25,10 +43,10 @@ func CountByStudioID(r models.GalleryReader, id int) (int, error) {
 		},
 	}
 
-	return r.QueryCount(filter, nil)
+	return r.QueryCount(ctx, filter, nil)
 }
 
-func CountByTagID(r models.GalleryReader, id int) (int, error) {
+func CountByTagID(ctx context.Context, r CountQueryer, id int) (int, error) {
 	filter := &models.GalleryFilterType{
 		Tags: &models.HierarchicalMultiCriterionInput{
 			Value:    []string{strconv.Itoa(id)},
@@ -36,5 +54,5 @@ func CountByTagID(r models.GalleryReader, id int) (int, error) {
 		},
 	}
 
-	return r.QueryCount(filter, nil)
+	return r.QueryCount(ctx, filter, nil)
 }

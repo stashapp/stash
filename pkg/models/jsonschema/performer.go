@@ -5,6 +5,7 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 )
@@ -38,6 +39,10 @@ type Performer struct {
 	Weight        int              `json:"weight,omitempty"`
 	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
 	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
+}
+
+func (s Performer) Filename() string {
+	return fsutil.SanitiseBasename(s.Name) + ".json"
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

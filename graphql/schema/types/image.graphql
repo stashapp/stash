@@ -1,16 +1,18 @@
 type Image {
   id: ID!
-  checksum: String
+  checksum: String @deprecated(reason: "Use files.fingerprints")
   title: String
   rating: Int
   o_counter: Int
   organized: Boolean!
-  path: String!
+  path: String! @deprecated(reason: "Use files.path")
   created_at: Time!
   updated_at: Time!
-  file_mod_time: Time
+  
+  file_mod_time: Time @deprecated(reason: "Use files.mod_time")
 
-  file: ImageFileType! # Resolver
+  file: ImageFileType! @deprecated(reason: "Use files.mod_time")
+  files: [ImageFile!]!
   paths: ImagePathsType! # Resolver
 
   galleries: [Gallery!]!
@@ -20,9 +22,10 @@ type Image {
 }
 
 type ImageFileType {
-  size: Int
-  width: Int
-  height: Int
+  mod_time: Time!
+  size: Int!
+  width: Int!
+  height: Int!
 }
 
 type ImagePathsType {
@@ -41,6 +44,8 @@ input ImageUpdateInput {
   performer_ids: [ID!]
   tag_ids: [ID!]
   gallery_ids: [ID!]
+
+  primary_file_id: ID
 }
 
 input BulkImageUpdateInput {

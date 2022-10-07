@@ -2,7 +2,6 @@ import React from "react";
 import { useStats } from "src/core/StashService";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared";
-import Changelog from "src/components/Changelog/Changelog";
 import { TextUtils } from "src/utils";
 
 export const Stats: React.FC = () => {
@@ -114,9 +113,6 @@ export const Stats: React.FC = () => {
             <FormattedMessage id="tags" />
           </p>
         </div>
-      </div>
-      <div className="changelog col col-sm-8 mx-sm-auto">
-        <Changelog />
       </div>
     </div>
   );

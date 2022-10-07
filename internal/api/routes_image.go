@@ -3,27 +3,40 @@ package api
 import (
 	"context"
 	"errors"
+	"io"
+	"io/fs"
 	"net/http"
 	"os/exec"
 	"strconv"
+	"syscall"
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/internal/static"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
+type ImageFinder interface {
+	Find(ctx context.Context, id int) (*models.Image, error)
+	FindByChecksum(ctx context.Context, checksum string) ([]*models.Image, error)
+}
+
 type imageRoutes struct {
-	txnManager models.TransactionManager
+	txnManager  txn.Manager
+	imageFinder ImageFinder
+	fileFinder  file.Finder
 }
 
 func (rs imageRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Route("/{imageId}", func(r chi.Router) {
-		r.Use(ImageCtx)
+		r.Use(rs.ImageCtx)
 
 		r.Get("/image", rs.Image)
 		r.Get("/thumbnail", rs.Thumbnail)
@@ -45,12 +58,21 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	if exists {
 		http.ServeFile(w, r, filepath)
 	} else {
+		const useDefault = true
+
+		f := img.Files.Primary()
+		if f == nil {
+			rs.serveImage(w, r, img, useDefault)
+			return
+		}
+
 		encoder := image.NewThumbnailEncoder(manager.GetInstance().FFMPEG)
-		data, err := encoder.GetThumbnail(img, models.DefaultGthumbWidth)
+		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {
 			// don't log for unsupported image format
-			if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
-				logger.Errorf("error generating thumbnail for image: %s", err.Error())
+			// don't log for file not found - can optionally be logged in serveImage
+			if !errors.Is(err, image.ErrNotSupportedForThumbnail) && !errors.Is(err, fs.ErrNotExist) {
+				logger.Errorf("error generating thumbnail for %s: %v", f.Path, err)
 
 				var exitErr *exec.ExitError
 				if errors.As(err, &exitErr) {
@@ -59,7 +81,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// backwards compatibility - fallback to original image instead
-			rs.Image(w, r)
+			rs.serveImage(w, r, img, useDefault)
 			return
 		}
 
@@ -67,11 +89,11 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		if manager.GetInstance().Config.IsWriteImageThumbnails() {
 			logger.Debugf("writing thumbnail to disk: %s", img.Path)
 			if err := fsutil.WriteFile(filepath, data); err != nil {
-				logger.Errorf("error writing thumbnail for image %s: %s", img.Path, err)
+				logger.Errorf("error writing thumbnail for image %s: %v", img.Path, err)
 			}
 		}
-		if n, err := w.Write(data); err != nil {
-			logger.Errorf("error writing thumbnail response. Wrote %v bytes: %v", n, err)
+		if n, err := w.Write(data); err != nil && !errors.Is(err, syscall.EPIPE) {
+			logger.Errorf("error serving thumbnail (wrote %v bytes out of %v): %v", n, len(data), err)
 		}
 	}
 }
@@ -79,32 +101,71 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	i := r.Context().Value(imageKey).(*models.Image)
 
-	// if image is in a zip file, we need to serve it specifically
-	image.Serve(w, r, i.Path)
+	const useDefault = false
+	rs.serveImage(w, r, i, useDefault)
+}
+
+func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *models.Image, useDefault bool) {
+	const defaultImageImage = "image/image.svg"
+
+	if i.Files.Primary() != nil {
+		err := i.Files.Primary().Serve(&file.OsFS{}, w, r)
+		if err == nil {
+			return
+		}
+
+		if !useDefault {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// only log in debug since it can get noisy
+		logger.Debugf("Error serving %s: %v", i.DisplayName(), err)
+	}
+
+	if !useDefault {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	// fall back to static image
+	f, _ := static.Image.Open(defaultImageImage)
+	defer f.Close()
+	stat, _ := f.Stat()
+	http.ServeContent(w, r, "image.svg", stat.ModTime(), f.(io.ReadSeeker))
 }
 
 // endregion
 
-func ImageCtx(next http.Handler) http.Handler {
+func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		imageIdentifierQueryParam := chi.URLParam(r, "imageId")
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		readTxnErr := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
-			qb := repo.Image()
+		_ = txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+			qb := rs.imageFinder
 			if imageID == 0 {
-				image, _ = qb.FindByChecksum(imageIdentifierQueryParam)
+				images, _ := qb.FindByChecksum(ctx, imageIdentifierQueryParam)
+				if len(images) > 0 {
+					image = images[0]
+				}
 			} else {
-				image, _ = qb.Find(imageID)
+				image, _ = qb.Find(ctx, imageID)
+			}
+
+			if image != nil {
+				if err := image.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error loading primary file for image %d: %v", imageID, err)
+					}
+					// set image to nil so that it doesn't try to use the primary file
+					image = nil
+				}
 			}
 
 			return nil
 		})
-		if readTxnErr != nil {
-			logger.Warnf("read transaction failure while trying to read image by id: %v", readTxnErr)
-		}
-
 		if image == nil {
 			http.Error(w, http.StatusText(404), 404)
 			return

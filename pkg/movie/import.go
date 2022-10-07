@@ -1,18 +1,26 @@
 package movie
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type NameFinderCreatorUpdater interface {
+	NameFinderCreator
+	UpdateFull(ctx context.Context, updatedMovie models.Movie) (*models.Movie, error)
+	UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error
+}
+
 type Importer struct {
-	ReaderWriter        models.MovieReaderWriter
-	StudioWriter        models.StudioReaderWriter
+	ReaderWriter        NameFinderCreatorUpdater
+	StudioWriter        studio.NameFinderCreator
 	Input               jsonschema.Movie
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -21,10 +29,10 @@ type Importer struct {
 	backImageData  []byte
 }
 
-func (i *Importer) PreImport() error {
+func (i *Importer) PreImport(ctx context.Context) error {
 	i.movie = i.movieJSONToMovie(i.Input)
 
-	if err := i.populateStudio(); err != nil {
+	if err := i.populateStudio(ctx); err != nil {
 		return err
 	}
 
@@ -71,9 +79,9 @@ func (i *Importer) movieJSONToMovie(movieJSON jsonschema.Movie) models.Movie {
 	return newMovie
 }
 
-func (i *Importer) populateStudio() error {
+func (i *Importer) populateStudio(ctx context.Context) error {
 	if i.Input.Studio != "" {
-		studio, err := i.StudioWriter.FindByName(i.Input.Studio, false)
+		studio, err := i.StudioWriter.FindByName(ctx, i.Input.Studio, false)
 		if err != nil {
 			return fmt.Errorf("error finding studio by name: %v", err)
 		}
@@ -88,7 +96,7 @@ func (i *Importer) populateStudio() error {
 			}
 
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
-				studioID, err := i.createStudio(i.Input.Studio)
+				studioID, err := i.createStudio(ctx, i.Input.Studio)
 				if err != nil {
 					return err
 				}
@@ -105,10 +113,10 @@ func (i *Importer) populateStudio() error {
 	return nil
 }
 
-func (i *Importer) createStudio(name string) (int, error) {
+func (i *Importer) createStudio(ctx context.Context, name string) (int, error) {
 	newStudio := *models.NewStudio(name)
 
-	created, err := i.StudioWriter.Create(newStudio)
+	created, err := i.StudioWriter.Create(ctx, newStudio)
 	if err != nil {
 		return 0, err
 	}
@@ -116,9 +124,9 @@ func (i *Importer) createStudio(name string) (int, error) {
 	return created.ID, nil
 }
 
-func (i *Importer) PostImport(id int) error {
+func (i *Importer) PostImport(ctx context.Context, id int) error {
 	if len(i.frontImageData) > 0 {
-		if err := i.ReaderWriter.UpdateImages(id, i.frontImageData, i.backImageData); err != nil {
+		if err := i.ReaderWriter.UpdateImages(ctx, id, i.frontImageData, i.backImageData); err != nil {
 			return fmt.Errorf("error setting movie images: %v", err)
 		}
 	}
@@ -130,9 +138,9 @@ func (i *Importer) Name() string {
 	return i.Input.Name
 }
 
-func (i *Importer) FindExistingID() (*int, error) {
+func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 	const nocase = false
-	existing, err := i.ReaderWriter.FindByName(i.Name(), nocase)
+	existing, err := i.ReaderWriter.FindByName(ctx, i.Name(), nocase)
 	if err != nil {
 		return nil, err
 	}
@@ -145,8 +153,8 @@ func (i *Importer) FindExistingID() (*int, error) {
 	return nil, nil
 }
 
-func (i *Importer) Create() (*int, error) {
-	created, err := i.ReaderWriter.Create(i.movie)
+func (i *Importer) Create(ctx context.Context) (*int, error) {
+	created, err := i.ReaderWriter.Create(ctx, i.movie)
 	if err != nil {
 		return nil, fmt.Errorf("error creating movie: %v", err)
 	}
@@ -155,10 +163,10 @@ func (i *Importer) Create() (*int, error) {
 	return &id, nil
 }
 
-func (i *Importer) Update(id int) error {
+func (i *Importer) Update(ctx context.Context, id int) error {
 	movie := i.movie
 	movie.ID = id
-	_, err := i.ReaderWriter.UpdateFull(movie)
+	_, err := i.ReaderWriter.UpdateFull(ctx, movie)
 	if err != nil {
 		return fmt.Errorf("error updating existing movie: %v", err)
 	}

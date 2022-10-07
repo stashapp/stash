@@ -26,11 +26,11 @@ import (
 
 	"github.com/go-chi/httplog"
 	"github.com/rs/cors"
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/ui"
 )
 
@@ -74,14 +74,29 @@ func Start() error {
 		return errors.New(message)
 	}
 
-	txnManager := manager.GetInstance().TxnManager
-	pluginCache := manager.GetInstance().PluginCache
-	resolver := &Resolver{
-		txnManager:   txnManager,
-		hookExecutor: pluginCache,
+	txnManager := manager.GetInstance().Repository
+
+	dataloaders := loaders.Middleware{
+		DatabaseProvider: txnManager,
+		Repository:       txnManager,
 	}
 
-	gqlSrv := gqlHandler.New(models.NewExecutableSchema(models.Config{Resolvers: resolver}))
+	r.Use(dataloaders.Middleware)
+
+	pluginCache := manager.GetInstance().PluginCache
+	sceneService := manager.GetInstance().SceneService
+	imageService := manager.GetInstance().ImageService
+	galleryService := manager.GetInstance().GalleryService
+	resolver := &Resolver{
+		txnManager:     txnManager,
+		repository:     txnManager,
+		sceneService:   sceneService,
+		imageService:   imageService,
+		galleryService: galleryService,
+		hookExecutor:   pluginCache,
+	}
+
+	gqlSrv := gqlHandler.New(NewExecutableSchema(Config{Resolvers: resolver}))
 	gqlSrv.SetRecoverFunc(recoverFunc)
 	gqlSrv.AddTransport(gqlTransport.Websocket{
 		Upgrader: websocket.Upgrader{
@@ -119,22 +134,33 @@ func Start() error {
 	r.Get(loginEndPoint, getLoginHandler(loginUIBox))
 
 	r.Mount("/performer", performerRoutes{
-		txnManager: txnManager,
+		txnManager:      txnManager,
+		performerFinder: txnManager.Performer,
 	}.Routes())
 	r.Mount("/scene", sceneRoutes{
-		txnManager: txnManager,
+		txnManager:        txnManager,
+		sceneFinder:       txnManager.Scene,
+		fileFinder:        txnManager.File,
+		captionFinder:     txnManager.File,
+		sceneMarkerFinder: txnManager.SceneMarker,
+		tagFinder:         txnManager.Tag,
 	}.Routes())
 	r.Mount("/image", imageRoutes{
-		txnManager: txnManager,
+		txnManager:  txnManager,
+		imageFinder: txnManager.Image,
+		fileFinder:  txnManager.File,
 	}.Routes())
 	r.Mount("/studio", studioRoutes{
-		txnManager: txnManager,
+		txnManager:   txnManager,
+		studioFinder: txnManager.Studio,
 	}.Routes())
 	r.Mount("/movie", movieRoutes{
-		txnManager: txnManager,
+		txnManager:  txnManager,
+		movieFinder: txnManager.Movie,
 	}.Routes())
 	r.Mount("/tag", tagRoutes{
 		txnManager: txnManager,
+		tagFinder:  txnManager.Tag,
 	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
 
@@ -152,6 +178,19 @@ func Start() error {
 		}
 
 		http.ServeFile(w, r, fn)
+	})
+	r.HandleFunc("/customlocales", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if c.GetCustomLocalesEnabled() {
+			// search for custom-locales.json in current directory, then $HOME/.stash
+			fn := c.GetCustomLocalesPath()
+			exists, _ := fsutil.FileExists(fn)
+			if exists {
+				http.ServeFile(w, r, fn)
+				return
+			}
+		}
+		_, _ = w.Write([]byte("{}"))
 	})
 
 	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
@@ -227,7 +266,7 @@ func Start() error {
 
 			prefix := getProxyPrefix(r.Header)
 			if prefix != "" {
-				r.URL.Path = strings.Replace(r.URL.Path, prefix, "", 1)
+				r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
 			}
 			r.URL.Path = uiRootDir + r.URL.Path
 
@@ -252,6 +291,11 @@ func Start() error {
 		Addr:      address,
 		Handler:   r,
 		TLSConfig: tlsConfig,
+		// disable http/2 support by default
+		// when http/2 is enabled, we are unable to hijack and close
+		// the connection/request. This is necessary to stop running
+		// streams when deleting a scene file.
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 
 	printVersion()
@@ -375,11 +419,9 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		var scheme string
-		if strings.Compare("https", r.URL.Scheme) == 0 || r.Proto == "HTTP/2.0" || r.Header.Get("X-Forwarded-Proto") == "https" {
+		scheme := "http"
+		if strings.Compare("https", r.URL.Scheme) == 0 || r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
 			scheme = "https"
-		} else {
-			scheme = "http"
 		}
 		prefix := getProxyPrefix(r.Header)
 

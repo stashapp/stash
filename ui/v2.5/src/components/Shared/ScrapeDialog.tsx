@@ -45,8 +45,11 @@ export class ScrapeResult<T> {
     const ret = clone(this);
 
     ret.newValue = value;
-    ret.useNewValue = isEqual(ret.newValue, ret.originalValue);
-    ret.scraped = ret.useNewValue;
+    ret.useNewValue = !isEqual(ret.newValue, ret.originalValue);
+
+    // #2691 - if we're setting the value, assume it should be treated as
+    // scraped
+    ret.scraped = true;
 
     return ret;
   }
