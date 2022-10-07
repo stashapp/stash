@@ -34,6 +34,7 @@ fragment PerformerData on Performer {
     endpoint
   }
   rating
+  rating100
   details
   death_date
   hair_color

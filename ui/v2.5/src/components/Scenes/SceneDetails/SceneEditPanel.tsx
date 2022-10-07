@@ -187,11 +187,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
         }
 
         Mousetrap.bind("0", () => setRating(NaN));
-        Mousetrap.bind("1", () => setRating(1));
-        Mousetrap.bind("2", () => setRating(2));
-        Mousetrap.bind("3", () => setRating(3));
-        Mousetrap.bind("4", () => setRating(4));
-        Mousetrap.bind("5", () => setRating(5));
+        Mousetrap.bind("1", () => setRating(20));
+        Mousetrap.bind("2", () => setRating(40));
+        Mousetrap.bind("3", () => setRating(60));
+        Mousetrap.bind("4", () => setRating(80));
+        Mousetrap.bind("5", () => setRating(100));
 
         setTimeout(() => {
           Mousetrap.unbind("0");

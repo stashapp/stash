@@ -29,7 +29,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
 ) => {
   const intl = useIntl();
   const Toast = useToast();
-  const [rating, setRating] = useState<number>();
+  const [rating100, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
   const [
     performerMode,
@@ -64,7 +64,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       }),
     };
 
-    galleryInput.rating = getAggregateInputValue(rating, aggregateRating);
+    galleryInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     galleryInput.studio_id = getAggregateInputValue(
       studioId,
       aggregateStudioId
@@ -121,7 +121,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     let first = true;
 
     state.forEach((gallery: GQL.SlimGalleryDataFragment) => {
-      const galleryRating = gallery.rating;
+      const galleryRating = gallery.rating100;
       const GalleriestudioID = gallery?.studio?.id;
       const galleryPerformerIDs = (gallery.performers ?? [])
         .map((p) => p.id)
@@ -252,7 +252,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       >
         <Form>
           <RatingSystem
-            value={rating}
+            value={rating100}
             onSetRating={(value) => setRating(value)}
             disabled={isUpdating}
           />

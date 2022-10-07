@@ -27,6 +27,7 @@ fragment SlimPerformerData on Performer {
     stash_id
   }
   rating
+  rating100
   death_date
   weight
 }

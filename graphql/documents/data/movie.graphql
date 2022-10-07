@@ -6,6 +6,7 @@ fragment MovieData on Movie {
   duration
   date
   rating
+  rating100
   director
 
   studio {

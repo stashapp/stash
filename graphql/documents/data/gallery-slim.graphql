@@ -5,6 +5,7 @@ fragment SlimGalleryData on Gallery {
   url
   details
   rating
+  rating100
   organized
   files {
     ...GalleryFileData

@@ -29,7 +29,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
 ) => {
   const intl = useIntl();
   const Toast = useToast();
-  const [rating, setRating] = useState<number>();
+  const [rating100, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
   const [
     performerMode,
@@ -64,7 +64,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       }),
     };
 
-    imageInput.rating = getAggregateInputValue(rating, aggregateRating);
+    imageInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     imageInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
 
     imageInput.performer_ids = getAggregateInputIDs(
@@ -112,7 +112,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     let first = true;
 
     state.forEach((image: GQL.SlimImageDataFragment) => {
-      const imageRating = image.rating;
+      const imageRating = image.rating100;
       const imageStudioID = image?.studio?.id;
       const imagePerformerIDs = (image.performers ?? [])
         .map((p) => p.id)
@@ -242,7 +242,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       >
         <Form>
           <RatingSystem
-            value={rating}
+            value={rating100}
             onSetRating={(value) => setRating(value)}
             disabled={isUpdating}
           />

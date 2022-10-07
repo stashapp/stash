@@ -27,11 +27,11 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
   }
 
   function renderRatingField() {
-    if (!movie.rating) {
+    if (!movie.rating100) {
       return;
     }
 
-    return <RatingSystem value={movie.rating} disabled />;
+    return <RatingSystem value={movie.rating100} disabled />;
   }
 
   // TODO: CSS class
