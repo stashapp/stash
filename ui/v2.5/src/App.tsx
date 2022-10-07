@@ -29,7 +29,7 @@ import { InteractiveProvider } from "./hooks/Interactive/context";
 import { ReleaseNotesDialog } from "./components/Dialogs/ReleaseNotesDialog";
 import { IUIConfig } from "./core/config";
 import { releaseNotes } from "./docs/en/ReleaseNotes";
-import { getPlatformURL } from "./core/createClient";
+import { getPlatformURL, getBaseURL } from "./core/createClient";
 
 const Performers = lazy(() => import("./components/Performers/Performers"));
 const FrontPage = lazy(() => import("./components/FrontPage/FrontPage"));
@@ -121,22 +121,24 @@ export const App: React.FC = () => {
       return;
     }
 
+    const baseURL = getBaseURL();
+
     if (
-      window.location.pathname !== "/setup" &&
+      window.location.pathname !== baseURL + "setup" &&
       systemStatusData.systemStatus.status === GQL.SystemStatusEnum.Setup
     ) {
       // redirect to setup page
-      const newURL = new URL("/setup", window.location.toString());
+      const newURL = new URL("setup", window.location.origin + baseURL);
       window.location.href = newURL.toString();
     }
 
     if (
-      window.location.pathname !== "/migrate" &&
+      window.location.pathname !== baseURL + "migrate" &&
       systemStatusData.systemStatus.status ===
         GQL.SystemStatusEnum.NeedsMigration
     ) {
       // redirect to setup page
-      const newURL = new URL("/migrate", window.location.toString());
+      const newURL = new URL("migrate", window.location.origin + baseURL);
       window.location.href = newURL.toString();
     }
   }, [systemStatusData]);
