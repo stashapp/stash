@@ -55,6 +55,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 	var (
 		title     = "title"
 		rating    = 3
+		rating100 = 60
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -72,6 +73,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			models.Image{
 				Title:        title,
 				Rating:       &rating,
+				Rating100:    &rating100,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithImage],
@@ -88,6 +90,7 @@ func Test_imageQueryBuilder_Create(t *testing.T) {
 			models.Image{
 				Title:     title,
 				Rating:    &rating,
+				Rating100:    &rating100,
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],
@@ -209,6 +212,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 	var (
 		title     = "title"
 		rating    = 3
+		rating100 = 60
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -225,6 +229,7 @@ func Test_imageQueryBuilder_Update(t *testing.T) {
 				ID:           imageIDs[imageIdxWithGallery],
 				Title:        title,
 				Rating:       &rating,
+				Rating100:    &rating100,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithImage],
@@ -372,6 +377,7 @@ func clearImagePartial() models.ImagePartial {
 	return models.ImagePartial{
 		Title:        models.OptionalString{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
+		Rating100:    models.OptionalInt{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
 		GalleryIDs:   &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
@@ -383,6 +389,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
 		title     = "title"
 		rating    = 3
+		rating100 = 60
 		ocounter  = 5
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -401,6 +408,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 			models.ImagePartial{
 				Title:     models.NewOptionalString(title),
 				Rating:    models.NewOptionalInt(rating),
+				Rating100:    models.NewOptionalInt(rating100),
 				Organized: models.NewOptionalBool(true),
 				OCounter:  models.NewOptionalInt(ocounter),
 				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithImage]),
@@ -423,6 +431,7 @@ func Test_imageQueryBuilder_UpdatePartial(t *testing.T) {
 				ID:        imageIDs[imageIdx1WithGallery],
 				Title:     title,
 				Rating:    &rating,
+				Rating100: &rating100,
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithImage],

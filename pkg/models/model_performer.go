@@ -30,6 +30,7 @@ type Performer struct {
 	CreatedAt     SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt     SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Rating        sql.NullInt64   `db:"rating" json:"rating"`
+	Rating100     sql.NullInt64   `db:"rating100" json:"rating100"`
 	Details       sql.NullString  `db:"details" json:"details"`
 	DeathDate     SQLiteDate      `db:"death_date" json:"death_date"`
 	HairColor     sql.NullString  `db:"hair_color" json:"hair_color"`
@@ -60,6 +61,7 @@ type PerformerPartial struct {
 	CreatedAt     *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt     *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Rating        *sql.NullInt64   `db:"rating" json:"rating"`
+	Rating100     *sql.NullInt64   `db:"rating100" json:"rating100"`
 	Details       *sql.NullString  `db:"details" json:"details"`
 	DeathDate     *SQLiteDate      `db:"death_date" json:"death_date"`
 	HairColor     *sql.NullString  `db:"hair_color" json:"hair_color"`

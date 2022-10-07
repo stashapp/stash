@@ -29,6 +29,7 @@ const (
 type imageRow struct {
 	ID        int                    `db:"id" goqu:"skipinsert"`
 	Title     zero.String            `db:"title"`
+	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
 	Organized bool                   `db:"organized"`
 	OCounter  int                    `db:"o_counter"`
@@ -40,7 +41,15 @@ type imageRow struct {
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
-	r.Rating = intFromPtr(i.Rating)
+
+	// prefer rating100 over rating
+	if o.Rating100 != nil {
+		r.Rating = intFromPtr(o.Rating100)
+	} else if o.Rating != nil {
+		rating100 := models.Rating5To100(*o.Rating)
+		r.Rating = null.IntFrom(int64(rating100))
+	}
+
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)
@@ -60,7 +69,7 @@ func (r *imageQueryRow) resolve() *models.Image {
 	ret := &models.Image{
 		ID:        r.ID,
 		Title:     r.Title.String,
-		Rating:    nullIntPtr(r.Rating),
+		Rating100:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
 		OCounter:  r.OCounter,
 		StudioID:  nullIntPtr(r.StudioID),
@@ -76,6 +85,11 @@ func (r *imageQueryRow) resolve() *models.Image {
 		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
 	}
 
+	if r.Rating.Valid {
+		rating5 := models.Rating100To5(int(r.Rating.Int64))
+		ret.Rating = &rating5
+	}
+
 	return ret
 }
 
@@ -85,7 +99,18 @@ type imageRowRecord struct {
 
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
-	r.setNullInt("rating", i.Rating)
+
+	// prefer rating100 over rating
+	if o.Rating100.Set {
+		r.setNullInt("rating", o.Rating100)
+	} else if o.Rating.Set {
+		v := o.Rating
+		if v.Value != 0 {
+			v.Value = models.Rating5To100(v.Value)
+		}
+		r.setNullInt("rating", v)
+	}
+
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)
@@ -631,7 +656,9 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 
 	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
-	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating100, "images.rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(imageFilter.Rating, "images.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
 

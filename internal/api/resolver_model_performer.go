@@ -212,6 +212,7 @@ func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer)
 	return stashIDsSliceToPtrSlice(ret), nil
 }
 
+// TODO Anything to do here or in similar places??
 func (r *performerResolver) Rating(ctx context.Context, obj *models.Performer) (*int, error) {
 	if obj.Rating.Valid {
 		rating := int(obj.Rating.Int64)

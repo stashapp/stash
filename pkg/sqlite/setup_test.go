@@ -1053,9 +1053,16 @@ func makeImage(i int) *models.Image {
 	pids := indexesToIDs(performerIDs, imagePerformers[i])
 	tids := indexesToIDs(tagIDs, imageTags[i])
 
+	rating100 := getRating(i)
+	rating5 := rating100
+	if rating5.Valid {
+		rating5.Int64 = int64(models.Rating100To5(int(rating5.Int64)))
+	}
+
 	return &models.Image{
 		Title:        title,
-		Rating:       getIntPtr(getRating(i)),
+		Rating100:    getIntPtr(rating100),
+		Rating:       getIntPtr(rating5),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
@@ -1136,10 +1143,18 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	pids := indexesToIDs(performerIDs, galleryPerformers[i])
 	tids := indexesToIDs(tagIDs, galleryTags[i])
 
+	rating100 := getRating(i)
+	rating5 := rating100
+	if rating5.Valid {
+		rating5.Int64 = int64(models.Rating100To5(int(rating5.Int64)))
+	}
+
+
 	ret := &models.Gallery{
 		Title:        getGalleryStringValue(i, titleField),
 		URL:          getGalleryNullStringValue(i, urlField).String,
-		Rating:       getIntPtr(getRating(i)),
+		Rating100:    getIntPtr(rating100),
+		Rating:       getIntPtr(rating5),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
 		PerformerIDs: models.NewRelatedIDs(pids),
@@ -1291,6 +1306,12 @@ func createPerformers(ctx context.Context, pqb models.PerformerReaderWriter, n i
 		} // so count backwards to 0 as needed
 		// performers [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
+		rating100 := getRating(i)
+		rating5 := rating100
+		if rating5.Valid {
+			rating5.Int64 = int64(models.Rating100To5(int(rating5.Int64)))
+		}
+
 		performer := models.Performer{
 			Name:     sql.NullString{String: getPerformerStringValue(index, name), Valid: true},
 			Checksum: getPerformerStringValue(i, checksumField),
@@ -1303,7 +1324,8 @@ func createPerformers(ctx context.Context, pqb models.PerformerReaderWriter, n i
 			DeathDate:     getPerformerDeathDate(i),
 			Details:       sql.NullString{String: getPerformerStringValue(i, "Details"), Valid: true},
 			Ethnicity:     sql.NullString{String: getPerformerStringValue(i, "Ethnicity"), Valid: true},
-			Rating:        getRating(i),
+			Rating100:    getIntPtr(rating100),
+			Rating:       getIntPtr(rating5),
 			IgnoreAutoTag: getIgnoreAutoTag(i),
 		}
 

@@ -188,6 +188,7 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 	updatedGallery.URL = translator.optionalString(input.URL, "url")
 	updatedGallery.Date = translator.optionalDate(input.Date, "date")
 	updatedGallery.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedGallery.Rating100 = translator.optionalInt(input.Rating100, "rating100")
 	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -237,7 +238,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input BulkGall
 	updatedGallery.URL = translator.optionalString(input.URL, "url")
 	updatedGallery.Date = translator.optionalDate(input.Date, "date")
 	updatedGallery.Rating = translator.optionalInt(input.Rating, "rating")
-
+	updatedGallery.Rating100 = translator.optionalInt(input.Rating100, "rating100")
 	var err error
 	updatedGallery.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
