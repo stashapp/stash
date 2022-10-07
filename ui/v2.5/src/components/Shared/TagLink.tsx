@@ -14,6 +14,7 @@ import TextUtils from "src/utils/text";
 import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import * as GQL from "src/core/generated-graphql";
+import { TagPopover } from "../Tags/TagPopover";
 
 interface IFile {
   path: string;
@@ -37,6 +38,7 @@ interface IProps {
 }
 
 export const TagLink: React.FC<IProps> = (props: IProps) => {
+  let id: string = "";
   let link: string = "#";
   let title: string = "";
   if (props.tag) {
@@ -55,6 +57,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
         link = NavUtils.makeTagImagesUrl(props.tag);
         break;
     }
+    id = props.tag.id || "";
     title = props.tag.name || "";
   } else if (props.performer) {
     link = NavUtils.makePerformerScenesUrl(props.performer);
@@ -76,7 +79,9 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
   }
   return (
     <Badge className={cx("tag-item", props.className)} variant="secondary">
-      <Link to={link}>{title}</Link>
+      <TagPopover id={id}>
+        <Link to={link}>{title}</Link>
+      </TagPopover>
     </Badge>
   );
 };

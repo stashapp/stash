@@ -155,6 +155,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
           value={general.pythonPath ?? undefined}
           onChange={(v) => saveGeneral({ pythonPath: v })}
         />
+
+        <StringSetting
+          id="backup-directory-path"
+          headingID="config.general.backup_directory_path.heading"
+          subHeadingID="config.general.backup_directory_path.description"
+          value={general.backupDirectoryPath ?? undefined}
+          onChange={(v) => saveGeneral({ backupDirectoryPath: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.general.hashing">

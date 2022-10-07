@@ -28,6 +28,10 @@ export type FrontPageContent = ISavedFilterRow | ICustomFilter;
 export interface IUIConfig {
   frontPageContent?: FrontPageContent[];
   lastNoteSeen?: number;
+  showChildTagContent?: boolean;
+  showChildStudioContent?: boolean;
+  showTagCardOnHover?: boolean;
+  abbreviateCounters?: boolean;
 }
 
 function recentlyReleased(

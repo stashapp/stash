@@ -13,7 +13,6 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -194,6 +193,32 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 		return nil, fmt.Errorf("converting studio id: %w", err)
 	}
 	updatedGallery.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if input.PrimaryFileID != nil {
+		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
+		if err != nil {
+			return nil, fmt.Errorf("converting primary file id: %w", err)
+		}
+
+		converted := file.ID(primaryFileID)
+		updatedGallery.PrimaryFileID = &converted
+
+		if err := originalGallery.LoadFiles(ctx, r.repository.Gallery); err != nil {
+			return nil, err
+		}
+
+		// ensure that new primary file is associated with scene
+		var f file.File
+		for _, ff := range originalGallery.Files.List() {
+			if ff.Base().ID == converted {
+				f = ff
+			}
+		}
+
+		if f == nil {
+			return nil, fmt.Errorf("file with id %d not associated with gallery", converted)
+		}
+	}
 
 	if translator.hasField("performer_ids") {
 		updatedGallery.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
@@ -422,13 +447,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input GalleryAd
 			return errors.New("gallery not found")
 		}
 
-		newIDs, err := qb.GetImageIDs(ctx, galleryID)
-		if err != nil {
-			return err
-		}
-
-		newIDs = intslice.IntAppendUniques(newIDs, imageIDs)
-		return qb.UpdateImages(ctx, galleryID, newIDs)
+		return r.galleryService.AddImages(ctx, gallery, imageIDs...)
 	}); err != nil {
 		return false, err
 	}
@@ -458,13 +477,7 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input Galler
 			return errors.New("gallery not found")
 		}
 
-		newIDs, err := qb.GetImageIDs(ctx, galleryID)
-		if err != nil {
-			return err
-		}
-
-		newIDs = intslice.IntExclude(newIDs, imageIDs)
-		return qb.UpdateImages(ctx, galleryID, newIDs)
+		return r.galleryService.RemoveImages(ctx, gallery, imageIDs...)
 	}); err != nil {
 		return false, err
 	}

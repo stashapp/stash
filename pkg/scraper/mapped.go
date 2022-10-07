@@ -394,6 +394,19 @@ func (p *postProcessParseDate) Apply(ctx context.Context, value string, q mapped
 		return value
 	}
 
+	if parseDate == "unix" {
+		// try to parse the date using unix timestamp format
+		// if it fails, then just fall back to the original value
+		timeAsInt, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			logger.Warnf("Error parsing date string '%s' using unix timestamp format : %s", value, err.Error())
+			return value
+		}
+		parsedValue := time.Unix(timeAsInt, 0)
+
+		return parsedValue.Format(internalDateFormat)
+	}
+
 	// try to parse the date using the pattern
 	// if it fails, then just fall back to the original value
 	parsedValue, err := time.Parse(parseDate, value)

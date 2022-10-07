@@ -1,5 +1,5 @@
 import React, { lazy, useEffect, useMemo, useState } from "react";
-import { Badge, Button, Col, Row, Tab, Tabs } from "react-bootstrap";
+import { Badge, Button, Tabs, Tab, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useHistory, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -13,6 +13,7 @@ import {
   usePerformerUpdate,
 } from "src/core/StashService";
 import {
+  Counter,
   CountryFlag,
   DetailsEditNavbar,
   ErrorMessage,
@@ -20,6 +21,7 @@ import {
   LoadingIndicator,
 } from "src/components/Shared";
 import { useLightbox, useToast } from "src/hooks";
+import { ConfigurationContext } from "src/hooks/Config";
 import { TextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
@@ -35,7 +37,9 @@ import {
   faHeart,
   faLink,
 } from "@fortawesome/free-solid-svg-icons";
+
 import { ConfigurationContext } from "../../../hooks/Config";
+import { IUIConfig } from "src/core/config";
 
 const PerformerEditPanel = lazy(() => import("./PerformerEditPanel"));
 
@@ -52,6 +56,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const history = useHistory();
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
+
+  // Configuration settings
+  const { configuration } = React.useContext(ConfigurationContext);
+  const abbreviateCounter =
+    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
@@ -198,9 +207,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "scenes" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.scene_count ?? 0)}
-              </Badge>
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.scene_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -211,9 +221,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "galleries" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.gallery_count ?? 0)}
-              </Badge>
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.gallery_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -224,9 +235,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "images" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.image_count ?? 0)}
-              </Badge>
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.image_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -237,9 +249,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "movies" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.movie_count ?? 0)}
-              </Badge>
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.movie_count ?? 0}
+              />
             </React.Fragment>
           }
         >

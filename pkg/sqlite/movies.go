@@ -218,7 +218,6 @@ func movieStudioCriterionHandler(qb *movieQueryBuilder, studios *models.Hierarch
 		primaryTable: movieTable,
 		foreignTable: studioTable,
 		foreignFK:    studioIDColumn,
-		derivedTable: "studio",
 		parentFK:     "parent_id",
 	}
 

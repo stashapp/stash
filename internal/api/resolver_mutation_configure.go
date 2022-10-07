@@ -84,6 +84,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.Database, input.DatabasePath)
 	}
 
+	existingBackupDirectoryPath := c.GetBackupDirectoryPath()
+	if input.BackupDirectoryPath != nil && existingBackupDirectoryPath != *input.BackupDirectoryPath {
+		if err := validateDir(config.BackupDirectoryPath, *input.BackupDirectoryPath, true); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		c.Set(config.BackupDirectoryPath, input.BackupDirectoryPath)
+	}
+
 	existingGeneratedPath := c.GetGeneratedPath()
 	if input.GeneratedPath != nil && existingGeneratedPath != *input.GeneratedPath {
 		if err := validateDir(config.Generated, *input.GeneratedPath, false); err != nil {

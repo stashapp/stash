@@ -10,6 +10,13 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string, error) {
+	if obj.Description.Valid {
+		return &obj.Description.String, nil
+	}
+	return nil, nil
+}
+
 func (r *tagResolver) Parents(ctx context.Context, obj *models.Tag) (ret []*models.Tag, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Tag.FindByChildTagID(ctx, obj.ID)

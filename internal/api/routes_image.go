@@ -3,6 +3,8 @@ package api
 import (
 	"context"
 	"errors"
+	"io"
+	"io/fs"
 	"net/http"
 	"os/exec"
 	"strconv"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/internal/manager"
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/image"
@@ -55,11 +58,11 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	if exists {
 		http.ServeFile(w, r, filepath)
 	} else {
-		// don't return anything if there is no file
+		const useDefault = true
+
 		f := img.Files.Primary()
 		if f == nil {
-			// TODO - probably want to return a placeholder
-			http.Error(w, http.StatusText(404), 404)
+			rs.serveImage(w, r, img, useDefault)
 			return
 		}
 
@@ -67,7 +70,8 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 		data, err := encoder.GetThumbnail(f, models.DefaultGthumbWidth)
 		if err != nil {
 			// don't log for unsupported image format
-			if !errors.Is(err, image.ErrNotSupportedForThumbnail) {
+			// don't log for file not found - can optionally be logged in serveImage
+			if !errors.Is(err, image.ErrNotSupportedForThumbnail) && !errors.Is(err, fs.ErrNotExist) {
 				logger.Errorf("error generating thumbnail for %s: %v", f.Path, err)
 
 				var exitErr *exec.ExitError
@@ -77,7 +81,7 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// backwards compatibility - fallback to original image instead
-			rs.Image(w, r)
+			rs.serveImage(w, r, img, useDefault)
 			return
 		}
 
@@ -97,14 +101,38 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	i := r.Context().Value(imageKey).(*models.Image)
 
-	// if image is in a zip file, we need to serve it specifically
+	const useDefault = false
+	rs.serveImage(w, r, i, useDefault)
+}
 
-	if i.Files.Primary() == nil {
+func (rs imageRoutes) serveImage(w http.ResponseWriter, r *http.Request, i *models.Image, useDefault bool) {
+	const defaultImageImage = "image/image.svg"
+
+	if i.Files.Primary() != nil {
+		err := i.Files.Primary().Serve(&file.OsFS{}, w, r)
+		if err == nil {
+			return
+		}
+
+		if !useDefault {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// only log in debug since it can get noisy
+		logger.Debugf("Error serving %s: %v", i.DisplayName(), err)
+	}
+
+	if !useDefault {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
-	i.Files.Primary().Serve(&file.OsFS{}, w, r)
+	// fall back to static image
+	f, _ := static.Image.Open(defaultImageImage)
+	defer f.Close()
+	stat, _ := f.Stat()
+	http.ServeContent(w, r, "image.svg", stat.ModTime(), f.(io.ReadSeeker))
 }
 
 // endregion
@@ -128,7 +156,9 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 
 			if image != nil {
 				if err := image.LoadPrimaryFile(ctx, rs.fileFinder); err != nil {
-					logger.Errorf("error loading primary file for image %d: %v", imageID, err)
+					if !errors.Is(err, context.Canceled) {
+						logger.Errorf("error loading primary file for image %d: %v", imageID, err)
+					}
 					// set image to nil so that it doesn't try to use the primary file
 					image = nil
 				}

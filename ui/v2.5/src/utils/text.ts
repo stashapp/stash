@@ -305,6 +305,29 @@ const capitalize = (val: string) =>
     .replace(/^[-_]*(.)/, (_, c) => c.toUpperCase())
     .replace(/[-_]+(.)/g, (_, c) => ` ${c.toUpperCase()}`);
 
+type CountUnit = "" | "K" | "M" | "B";
+const CountUnits: CountUnit[] = ["", "K", "M", "B"];
+
+const abbreviateCounter = (counter: number = 0) => {
+  if (Number.isNaN(parseFloat(String(counter))) || !Number.isFinite(counter))
+    return { size: 0, unit: CountUnits[0] };
+
+  let unit = 0;
+  let digits = 0;
+  let count = counter;
+  while (count >= 1000 && unit + 1 < CountUnits.length) {
+    count /= 1000;
+    unit++;
+    digits = 1;
+  }
+
+  return {
+    size: count,
+    unit: CountUnits[unit],
+    digits: digits,
+  };
+};
+
 const TextUtils = {
   fileSize,
   formatFileSizeUnit,
@@ -322,6 +345,7 @@ const TextUtils = {
   formatDateTime,
   capitalize,
   secondsAsTimeString,
+  abbreviateCounter,
 };
 
 export default TextUtils;
