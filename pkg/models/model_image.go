@@ -116,7 +116,7 @@ type ImageCreateInput struct {
 type ImagePartial struct {
 	Title     OptionalString
 	Rating    OptionalInt
-	Rating100    OptionalInt
+	Rating100 OptionalInt
 	Organized OptionalBool
 	OCounter  OptionalInt
 	StudioID  OptionalInt

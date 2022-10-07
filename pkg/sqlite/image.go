@@ -31,6 +31,7 @@ type imageRow struct {
 	Title     zero.String            `db:"title"`
 	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
+	Rating100 null.Int               `db:"rating100"`
 	Organized bool                   `db:"organized"`
 	OCounter  int                    `db:"o_counter"`
 	StudioID  null.Int               `db:"studio_id,omitempty"`
@@ -43,10 +44,10 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.Title = zero.StringFrom(i.Title)
 
 	// prefer rating100 over rating
-	if o.Rating100 != nil {
-		r.Rating = intFromPtr(o.Rating100)
-	} else if o.Rating != nil {
-		rating100 := models.Rating5To100(*o.Rating)
+	if i.Rating100 != nil {
+		r.Rating = intFromPtr(i.Rating100)
+	} else if i.Rating != nil {
+		rating100 := models.Rating5To100(*i.Rating)
 		r.Rating = null.IntFrom(int64(rating100))
 	}
 
@@ -101,10 +102,10 @@ func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
 
 	// prefer rating100 over rating
-	if o.Rating100.Set {
-		r.setNullInt("rating", o.Rating100)
-	} else if o.Rating.Set {
-		v := o.Rating
+	if i.Rating100.Set {
+		r.setNullInt("rating", i.Rating100)
+	} else if i.Rating.Set {
+		v := i.Rating
 		if v.Value != 0 {
 			v.Value = models.Rating5To100(v.Value)
 		}

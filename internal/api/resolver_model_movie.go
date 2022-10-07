@@ -55,6 +55,14 @@ func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, er
 	return nil, nil
 }
 
+func (r *movieResolver) Rating100(ctx context.Context, obj *models.Movie) (*int, error) {
+	if obj.Rating100.Valid {
+		rating100 := int(obj.Rating100.Int64)
+		return &rating100, nil
+	}
+	return nil, nil
+}
+
 func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (ret *models.Studio, err error) {
 	if obj.StudioID.Valid {
 		return loaders.From(ctx).StudioByID.Load(int(obj.StudioID.Int64))

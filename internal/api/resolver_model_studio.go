@@ -133,6 +133,14 @@ func (r *studioResolver) Rating(ctx context.Context, obj *models.Studio) (*int, 
 	return nil, nil
 }
 
+func (r *studioResolver) Rating100(ctx context.Context, obj *models.Studio) (*int, error) {
+	if obj.Rating100.Valid {
+		rating100 := int(obj.Rating100.Int64)
+		return &rating100, nil
+	}
+	return nil, nil
+}
+
 func (r *studioResolver) Details(ctx context.Context, obj *models.Studio) (*string, error) {
 	if obj.Details.Valid {
 		return &obj.Details.String, nil

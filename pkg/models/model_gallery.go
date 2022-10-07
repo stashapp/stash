@@ -103,7 +103,7 @@ type GalleryPartial struct {
 	Date      OptionalDate
 	Details   OptionalString
 	Rating    OptionalInt
-	Rating100    OptionalInt
+	Rating100 OptionalInt
 	Organized OptionalBool
 	StudioID  OptionalInt
 	// FileModTime OptionalTime
