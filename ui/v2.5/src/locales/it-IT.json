@@ -54,6 +54,7 @@
     "import": "Importa…",
     "import_from_file": "Importa dal file",
     "logout": "Esci",
+    "make_primary": "Rendi Primario",
     "merge": "Unisci",
     "merge_from": "Unisci da",
     "merge_into": "Unisci in",
@@ -425,6 +426,10 @@
       "scene_tools": "Strumenti Scena"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Abbrevia i contatori nelle carte e dettagli delle pagine, per esempio \"1831\" sarà formattato in \"1.8K\".",
+        "heading": "Abbrevia contatori"
+      },
       "basic_settings": "Opzioni Base",
       "custom_css": {
         "description": "La pagina dev'essere ricaricata per applicare i cambiamenti.",
@@ -549,6 +554,10 @@
         "description": "Numero di tentativi di scorrimento prima di passare al prossimo/precedente oggetto. Si applica solo al modo di scorrimento Pan Y.",
         "heading": "Tentativi di scorrimento prima della transizione"
       },
+      "show_tag_card_on_hover": {
+        "description": "Mostra la carta della tag quando si passa il mouse sopra le badge tag",
+        "heading": "Carta tag popup"
+      },
       "slideshow_delay": {
         "description": "La presentazione è disponibile nelle gallerie quando in modalità muro",
         "heading": "Ritardo Presentazione (secondi)"
@@ -615,6 +624,7 @@
   "death_date": "Data Morte",
   "death_year": "Anno della Morte",
   "descending": "Discendente",
+  "description": "Descrizione",
   "detail": "Dettaglio",
   "details": "Dettagli",
   "developmentVersion": "Versione Sviluppo",
@@ -623,6 +633,7 @@
     "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
     "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
     "delete_entity_desc": "{count, plural, one {Sei sicuro di voler cancellare questo/a {singularEntity}? A meno che anche il file venga cancellato, questo/a {singularEntity} sarà riaggiunto quando la scansione verrà effettuata.} other {Sei sicuro di voler cancellare questi/e {pluralEntity}? A meno che anche i file vengano cancellati, questi/e {pluralEntity} verranno riaggiunti quando la scansione verrà effettuata.}}",
+    "delete_entity_simple_desc": "{count, plural, one {Sei sicuro di voler cancellare questa/o {singularEntity}?} other {Sei sicuro di voler cancellare questi/e {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Cancellazione {singularEntity}} other {Cancellazione {pluralEntity}}}",
     "delete_galleries_extra": "...in più qualsiasi immagine non inclusa in nessun'altra galleria.",
     "delete_gallery_files": "Cancella gallerie cartella/zip e qualsiasi immagino non inclusa in altre gallerie.",
@@ -896,6 +907,7 @@
   },
   "performers": "Attori",
   "piercings": "Piercing",
+  "primary_file": "File primario",
   "queue": "Coda",
   "random": "Casuale",
   "rating": "Classif.",
