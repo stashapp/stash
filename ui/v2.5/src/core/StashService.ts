@@ -495,6 +495,18 @@ export const useSceneGenerateScreenshot = () =>
     update: deleteCache([GQL.FindScenesDocument]),
   });
 
+export const mutateSceneSetPrimaryFile = (id: string, fileID: string) =>
+  client.mutate<GQL.SceneUpdateMutation>({
+    mutation: GQL.SceneUpdateDocument,
+    variables: {
+      input: {
+        id,
+        primary_file_id: fileID,
+      },
+    },
+    update: deleteCache(sceneMutationImpactedQueries),
+  });
+
 const imageMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
@@ -617,6 +629,18 @@ export const mutateImageResetO = (id: string) =>
     },
   });
 
+export const mutateImageSetPrimaryFile = (id: string, fileID: string) =>
+  client.mutate<GQL.ImageUpdateMutation>({
+    mutation: GQL.ImageUpdateDocument,
+    variables: {
+      input: {
+        id,
+        primary_file_id: fileID,
+      },
+    },
+    update: deleteCache(imageMutationImpactedQueries),
+  });
+
 const galleryMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
@@ -665,12 +689,42 @@ export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
+export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>
+  client.mutate<GQL.GalleryUpdateMutation>({
+    mutation: GQL.GalleryUpdateDocument,
+    variables: {
+      input: {
+        id,
+        primary_file_id: fileID,
+      },
+    },
+    update: deleteCache(galleryMutationImpactedQueries),
+  });
+
 export const studioMutationImpactedQueries = [
   GQL.FindStudiosDocument,
   GQL.FindSceneDocument,
   GQL.FindScenesDocument,
   GQL.AllStudiosForFilterDocument,
 ];
+
+export const mutateDeleteFiles = (ids: string[]) =>
+  client.mutate<GQL.DeleteFilesMutation>({
+    mutation: GQL.DeleteFilesDocument,
+    variables: {
+      ids,
+    },
+    update: deleteCache([
+      ...sceneMutationImpactedQueries,
+      ...imageMutationImpactedQueries,
+      ...galleryMutationImpactedQueries,
+    ]),
+    refetchQueries: getQueryNames([
+      GQL.FindSceneDocument,
+      GQL.FindImageDocument,
+      GQL.FindGalleryDocument,
+    ]),
+  });
 
 export const useStudioCreate = () =>
   GQL.useStudioCreateMutation({

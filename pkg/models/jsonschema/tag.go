@@ -11,6 +11,7 @@ import (
 
 type Tag struct {
 	Name          string        `json:"name,omitempty"`
+	Description   string        `json:"description,omitempty"`
 	Aliases       []string      `json:"aliases,omitempty"`
 	Image         string        `json:"image,omitempty"`
 	Parents       []string      `json:"parents,omitempty"`

@@ -54,6 +54,7 @@
     "import": "Import…",
     "import_from_file": "Import from file",
     "logout": "Log out",
+    "make_primary": "Make Primary",
     "merge": "Merge",
     "merge_from": "Merge from",
     "merge_into": "Merge into",
@@ -458,6 +459,10 @@
         },
         "heading": "Editing"
       },
+      "abbreviate_counters": {
+        "description": "Abbreviate counters in cards and details view pages, for example \"1831\" will get formated to \"1.8K\".",
+        "heading": "Abbreviate counters"
+      },
       "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
         "heading": "Funscript Offset (ms)"
@@ -499,6 +504,10 @@
       "menu_items": {
         "description": "Show or hide different types of content on the navigation bar",
         "heading": "Menu Items"
+      },
+      "show_tag_card_on_hover": {
+        "description": "Show tag card when hovering tag badges",
+        "heading": "Tag card tooltips"
       },
       "performers": {
         "options": {
@@ -615,6 +624,7 @@
   "death_date": "Death Date",
   "death_year": "Death Year",
   "descending": "Descending",
+  "description": "Description",
   "detail": "Detail",
   "details": "Details",
   "developmentVersion": "Development Version",
@@ -623,6 +633,7 @@
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
     "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
+    "delete_entity_simple_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}?} other {Are you sure you want to delete these {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Delete {singularEntity}} other {Delete {pluralEntity}}}",
     "delete_galleries_extra": "…plus any image files not attached to any other gallery.",
     "delete_gallery_files": "Delete gallery folder/zip file and any images not attached to any other gallery.",
@@ -896,6 +907,7 @@
   },
   "performers": "Performers",
   "piercings": "Piercings",
+  "primary_file": "Primary file",
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",

@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -96,6 +97,17 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
+	qb := r.repository.Scene
+
+	s, err := qb.Find(ctx, sceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	if s == nil {
+		return nil, fmt.Errorf("scene with id %d not found", sceneID)
+	}
+
 	var coverImageData []byte
 
 	updatedScene := models.NewScenePartial()
@@ -110,6 +122,46 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if input.PrimaryFileID != nil {
+		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
+		if err != nil {
+			return nil, fmt.Errorf("converting primary file id: %w", err)
+		}
+
+		converted := file.ID(primaryFileID)
+		updatedScene.PrimaryFileID = &converted
+
+		// if file hash has changed, we should migrate generated files
+		// after commit
+		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+			return nil, err
+		}
+
+		// ensure that new primary file is associated with scene
+		var f *file.VideoFile
+		for _, ff := range s.Files.List() {
+			if ff.ID == converted {
+				f = ff
+			}
+		}
+
+		if f == nil {
+			return nil, fmt.Errorf("file with id %d not associated with scene", converted)
+		}
+
+		fileNamingAlgorithm := config.GetInstance().GetVideoFileNamingAlgorithm()
+		oldHash := scene.GetHash(s.Files.Primary(), fileNamingAlgorithm)
+		newHash := scene.GetHash(f, fileNamingAlgorithm)
+
+		if oldHash != "" && newHash != "" && oldHash != newHash {
+			// perform migration after commit
+			txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+				scene.MigrateHash(manager.GetInstance().Paths, oldHash, newHash)
+				return nil
+			})
+		}
+	}
 
 	if translator.hasField("performer_ids") {
 		updatedScene.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
@@ -158,8 +210,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		// update the cover after updating the scene
 	}
 
-	qb := r.repository.Scene
-	s, err := qb.UpdatePartial(ctx, sceneID, updatedScene)
+	s, err = qb.UpdatePartial(ctx, sceneID, updatedScene)
 	if err != nil {
 		return nil, err
 	}

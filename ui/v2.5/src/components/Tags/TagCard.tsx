@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils } from "src/utils";
 import { FormattedMessage } from "react-intl";
-import { Icon } from "../Shared";
+import { Icon, TruncatedText } from "../Shared";
 import { GridCard } from "../Shared/GridCard";
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import { faMapMarkerAlt, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -24,6 +24,18 @@ export const TagCard: React.FC<IProps> = ({
   selected,
   onSelectedChanged,
 }) => {
+  function maybeRenderDescription() {
+    if (tag.description) {
+      return (
+        <TruncatedText
+          className="tag-description"
+          text={tag.description}
+          lineCount={3}
+        />
+      );
+    }
+  }
+
   function maybeRenderParents() {
     if (tag.parents.length === 1) {
       const parent = tag.parents[0];
@@ -181,6 +193,7 @@ export const TagCard: React.FC<IProps> = ({
       }
       details={
         <>
+          {maybeRenderDescription()}
           {maybeRenderParents()}
           {maybeRenderChildren()}
           {maybeRenderPopoverButtonGroup()}

@@ -38,6 +38,7 @@ type FileReaderWriter interface {
 	file.Finder
 	Query(ctx context.Context, options models.FileQueryOptions) (*models.FileQueryResult, error)
 	GetCaptions(ctx context.Context, fileID file.ID) ([]*models.VideoCaption, error)
+	IsPrimary(ctx context.Context, fileID file.ID) (bool, error)
 }
 
 type FolderReaderWriter interface {

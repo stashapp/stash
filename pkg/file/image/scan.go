@@ -37,3 +37,17 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 		Height:   c.Height,
 	}, nil
 }
+
+func (d *Decorator) IsMissingMetadata(ctx context.Context, fs file.FS, f file.File) bool {
+	const (
+		unsetString = "unset"
+		unsetNumber = -1
+	)
+
+	imf, ok := f.(*file.ImageFile)
+	if !ok {
+		return true
+	}
+
+	return imf.Format == unsetString || imf.Width == unsetNumber || imf.Height == unsetNumber
+}
