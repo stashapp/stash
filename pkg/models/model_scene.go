@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"path/filepath"
 	"strconv"
@@ -35,9 +34,6 @@ type Scene struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-
-	Projection sql.NullString `json:"projection"`
-	StereoMode sql.NullString `json:"stereo_mode"`
 
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`

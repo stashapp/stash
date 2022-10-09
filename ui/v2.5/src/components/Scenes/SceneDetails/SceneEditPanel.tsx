@@ -142,8 +142,18 @@ export const SceneEditPanel: React.FC<IProps> = ({
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
-      projection: scene.projection ?? undefined,
-      stereo_mode: scene.stereo_mode ?? undefined,
+      projection:
+        scene.files.length > 0 &&
+        scene.files[0].projection &&
+        scene.files[0].projection.length > 0
+          ? scene.files[0].projection
+          : undefined,
+      stereo_mode:
+        scene.files.length > 0 &&
+        scene.files[0].stereo_mode &&
+        scene.files[0].stereo_mode.length > 0
+          ? scene.files[0].stereo_mode
+          : undefined,
       movies: (scene.movies ?? []).map((m) => {
         return { movie_id: m.movie.id, scene_index: m.scene_index };
       }),

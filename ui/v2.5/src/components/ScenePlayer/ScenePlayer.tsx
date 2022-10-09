@@ -555,7 +555,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (scene) {
       player.vrmode(scene);
     }
-    
+
     player.currentTime(0);
 
     const looping =

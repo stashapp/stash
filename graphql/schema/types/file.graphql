@@ -3,6 +3,25 @@ type Fingerprint {
     value: String!
 }
 
+enum ProjectionEnum {
+  AUTO
+  FLAT
+  DOME
+  SPHERE
+  FISHEYE
+  MKX200
+  RF52
+  CUBE
+  EAC
+}
+
+enum StereoModeEnum {
+  AUTO
+  MONO
+  TOP_BOTTOM
+  LEFT_RIGHT
+}
+
 type Folder {
     id: ID!
     path: String!
@@ -54,6 +73,8 @@ type VideoFile implements BaseFile {
 	audio_codec: String!
 	frame_rate: Float!
 	bit_rate: Int!
+    projection: ProjectionEnum
+    stereo_mode: StereoModeEnum
 
     created_at: Time!
     updated_at: Time!

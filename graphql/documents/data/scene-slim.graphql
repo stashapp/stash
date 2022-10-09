@@ -10,9 +10,6 @@ fragment SlimSceneData on Scene {
   interactive
   interactive_speed
 
-  projection
-  stereo_mode
-
   files {
     ...VideoFileData
   }

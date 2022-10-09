@@ -13,52 +13,53 @@ const vrmode = function (this: VideoJsPlayer, scene: GQL.SceneDataFragment) {
   const player = this;
   let projection;
   let stereo_mode;
-  let lowercaseSceneTags = scene.tags.map((tag) => tag.name.toLowerCase());
+  let lowercaseTags = scene.tags.map((tag) => tag.name.toLowerCase());
+  let file = scene.files[0];
 
   if (!isVrDevice()) {
     if (
-      scene.projection &&
-      scene.projection !== "AUTO" &&
-      projectionStrings.includes(scene.projection)
+      file.projection &&
+      file.projection !== "AUTO" &&
+      projectionStrings.includes(file.projection)
     ) {
-      ({ projection } = scene);
+      ({ projection } = file);
     } else {
       if (
-        lowercaseSceneTags.filter((tag) =>
+        lowercaseTags.filter((tag) =>
           /^vr$|virtual reality|^vr porn|^3d$/.exec(tag)
         ).length > 0
       ) {
         if (
-          lowercaseSceneTags.filter((tag) => /^dome|^180$|^180\D$/.exec(tag))
+          lowercaseTags.filter((tag) => /^dome|^180$|^180\D$/.exec(tag))
             .length > 0
         ) {
           projection = "DOME";
         } else if (
-          lowercaseSceneTags.filter((tag) =>
+          lowercaseTags.filter((tag) =>
             /^sphere$|^equirectangular$|^360$|^360[\D\-_]/.exec(tag)
           ).length > 0
         ) {
           projection = "SPHERE";
         } else if (
-          lowercaseSceneTags.filter((tag) => /^mkx200$/.exec(tag)).length > 0
+          lowercaseTags.filter((tag) => /^mkx200$/.exec(tag)).length > 0
         ) {
           projection = "MKX200";
         } else if (
-          lowercaseSceneTags.filter((tag) => /^cube$/.exec(tag)).length > 0
+          lowercaseTags.filter((tag) => /^cube$/.exec(tag)).length > 0
         ) {
           projection = "CUBE";
         } else if (
-          lowercaseSceneTags.filter((tag) =>
+          lowercaseTags.filter((tag) =>
             /^eac$|^eac[\-_]|^equi[\-_\s]?angular[\-_\s]?cube[\-_\s]?/.exec(tag)
           ).length > 0
         ) {
           projection = "EAC";
         } else if (
-          lowercaseSceneTags.filter((tag) => /^rf52$/.exec(tag)).length > 0
+          lowercaseTags.filter((tag) => /^rf52$/.exec(tag)).length > 0
         ) {
           projection = "RF52";
         } else if (
-          lowercaseSceneTags.filter((tag) => /^fisheye$/.exec(tag)).length > 0
+          lowercaseTags.filter((tag) => /^fisheye$/.exec(tag)).length > 0
         ) {
           projection = "FISHEYE";
         } else {
@@ -68,25 +69,25 @@ const vrmode = function (this: VideoJsPlayer, scene: GQL.SceneDataFragment) {
     }
 
     if (
-      scene.stereo_mode &&
-      scene.stereo_mode !== "AUTO" &&
-      stereoModeStrings.includes(scene.stereo_mode)
+      file.stereo_mode &&
+      file.stereo_mode !== "AUTO" &&
+      stereoModeStrings.includes(file.stereo_mode)
     ) {
-      ({ stereo_mode } = scene);
+      ({ stereo_mode } = file);
     } else {
       if (
-        lowercaseSceneTags.filter((tag) =>
+        lowercaseTags.filter((tag) =>
           /^vr$|virtual reality|^vr porn|^3d$/.exec(tag)
         ).length > 0
       ) {
         if (
-          lowercaseSceneTags.filter((tag) =>
+          lowercaseTags.filter((tag) =>
             /^mono$|^monoscopic$|^[0-9]{1,3}[\D\-_]mono$/.exec(tag)
           ).length > 0
         ) {
           stereo_mode = "MONO";
         } else if (
-          lowercaseSceneTags.filter((tag) =>
+          lowercaseTags.filter((tag) =>
             /^stereo$|^stereoscopic|^[0-9]{1,3}[\D\-_]lr$|^[0-9]{1,3}[\D\-_]left[\D\-_]right$/.exec(
               tag
             )
@@ -94,7 +95,7 @@ const vrmode = function (this: VideoJsPlayer, scene: GQL.SceneDataFragment) {
         ) {
           stereo_mode = "LEFT_RIGHT";
         } else if (
-          lowercaseSceneTags.filter((tag) =>
+          lowercaseTags.filter((tag) =>
             /^top[\D\-_]bottom$|^tb$|^[0-9]{1,3}[\D\-_]tb$|^[0-9]{1,3}[\D\-_]top[\D\-_]bottom$/.exec(
               tag
             )

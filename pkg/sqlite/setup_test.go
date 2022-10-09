@@ -1382,7 +1382,7 @@ func getTagChildCount(id int) int {
 	return 0
 }
 
-//createTags creates n tags with plain Name and o tags with camel cased NaMe included
+// createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"

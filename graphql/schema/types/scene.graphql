@@ -22,25 +22,6 @@ type ScenePathsType {
   caption: String # Resolver
 }
 
-enum ProjectionEnum {
-  AUTO
-  FLAT
-  DOME
-  SPHERE
-  FISHEYE
-  MKX200
-  RF52
-  CUBE
-  EAC
-}
-
-enum StereoModeEnum {
-  AUTO
-  MONO
-  TOP_BOTTOM
-  LEFT_RIGHT
-}
-
 type SceneMovie {
   movie: Movie!
   scene_index: Int
@@ -70,9 +51,6 @@ type Scene {
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time
-
-  projection: ProjectionEnum
-  stereo_mode: StereoModeEnum
 
   file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!

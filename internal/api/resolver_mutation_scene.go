@@ -123,14 +123,28 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	updatedScene.Organized = translator.optionalBool(input.Organized, "organized")
 
-	if translator.hasField("projection") {
-		projection := input.Projection.String()
-		updatedScene.Projection = translator.optionalString(&projection, "projection")
-	}
+	// Update projection and stereo mode for the primary file
+	if translator.hasField("projection") || translator.hasField("stereo_mode") {
+		fqb := r.repository.File
+		if err := s.LoadPrimaryFile(ctx, r.repository.File); err != nil {
+			return nil, err
+		}
+		pf := s.Files.Primary()
 
-	if translator.hasField("stereo_mode") {
-		stereoMode := input.StereoMode.String()
-		updatedScene.StereoMode = translator.optionalString(&stereoMode, "stereo_mode")
+		if translator.hasField("projection") {
+			projection := input.Projection.String()
+			pf.Projection = projection
+		}
+
+		if translator.hasField("stereo_mode") {
+			stereMode := input.StereoMode.String()
+			pf.StereoMode = stereMode
+		}
+
+		err := fqb.Update(ctx, pf)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if input.PrimaryFileID != nil {

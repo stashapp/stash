@@ -76,32 +76,6 @@ func (r *sceneResolver) Date(ctx context.Context, obj *models.Scene) (*string, e
 	return nil, nil
 }
 
-func (r *sceneResolver) Projection(ctx context.Context, obj *models.Scene) (*models.ProjectionEnum, error) {
-	var ret models.ProjectionEnum
-
-	if obj.Projection.Valid {
-		ret = models.ProjectionEnum(obj.Projection.String)
-		if ret.IsValid() {
-			return &ret, nil
-		}
-	}
-
-	return nil, nil
-}
-
-func (r *sceneResolver) StereoMode(ctx context.Context, obj *models.Scene) (*models.StereoModeEnum, error) {
-	var ret models.StereoModeEnum
-
-	if obj.StereoMode.Valid {
-		ret = models.StereoModeEnum(obj.StereoMode.String)
-		if ret.IsValid() {
-			return &ret, nil
-		}
-	}
-
-	return nil, nil
-}
-
 // File is deprecated
 func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
 	f, err := r.getPrimaryFile(ctx, obj)
@@ -154,6 +128,8 @@ func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoF
 			CreatedAt:      f.CreatedAt,
 			UpdatedAt:      f.UpdatedAt,
 			Fingerprints:   resolveFingerprints(f.Base()),
+			Projection:     resolveProjection(f),
+			StereoMode:     resolveStereoMode(f),
 		}
 
 		if f.ZipFileID != nil {
@@ -185,6 +161,32 @@ func formatFingerprint(fp interface{}) string {
 	default:
 		return fmt.Sprintf("%v", fp)
 	}
+}
+
+func resolveProjection(obj *file.VideoFile) *models.ProjectionEnum {
+	var ret models.ProjectionEnum
+
+	if obj.Projection != "" {
+		ret = models.ProjectionEnum(obj.Projection)
+		if ret.IsValid() {
+			return &ret
+		}
+	}
+
+	return nil
+}
+
+func resolveStereoMode(obj *file.VideoFile) *models.StereoModeEnum {
+	var ret models.StereoModeEnum
+
+	if obj.StereoMode != "" {
+		ret = models.StereoModeEnum(obj.StereoMode)
+		if ret.IsValid() {
+			return &ret
+		}
+	}
+
+	return nil
 }
 
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*ScenePathsType, error) {

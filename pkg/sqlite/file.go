@@ -62,6 +62,8 @@ type videoFileRow struct {
 	BitRate          int64    `db:"bit_rate"`
 	Interactive      bool     `db:"interactive"`
 	InteractiveSpeed null.Int `db:"interactive_speed"`
+	Projection       string   `db:"projection"`
+	StereoMode       string   `db:"stereo_mode"`
 }
 
 func (f *videoFileRow) fromVideoFile(ff file.VideoFile) {
@@ -76,6 +78,8 @@ func (f *videoFileRow) fromVideoFile(ff file.VideoFile) {
 	f.BitRate = ff.BitRate
 	f.Interactive = ff.Interactive
 	f.InteractiveSpeed = intFromPtr(ff.InteractiveSpeed)
+	f.Projection = ff.Projection
+	f.StereoMode = ff.StereoMode
 }
 
 type imageFileRow struct {
@@ -106,6 +110,8 @@ type videoFileQueryRow struct {
 	BitRate          null.Int    `db:"bit_rate"`
 	Interactive      null.Bool   `db:"interactive"`
 	InteractiveSpeed null.Int    `db:"interactive_speed"`
+	Projection       null.String `db:"projection"`
+	StereoMode       null.String `db:"stereo_mode"`
 }
 
 func (f *videoFileQueryRow) resolve() *file.VideoFile {
@@ -120,6 +126,8 @@ func (f *videoFileQueryRow) resolve() *file.VideoFile {
 		BitRate:          f.BitRate.Int64,
 		Interactive:      f.Interactive.Bool,
 		InteractiveSpeed: nullIntPtr(f.InteractiveSpeed),
+		Projection:       f.Projection.String,
+		StereoMode:       f.StereoMode.String,
 	}
 }
 
@@ -137,6 +145,9 @@ func videoFileQueryColumns() []interface{} {
 		table.Col("bit_rate"),
 		table.Col("interactive"),
 		table.Col("interactive_speed"),
+		table.Col("interactive_speed"),
+		table.Col("projection"),
+		table.Col("stereo_mode"),
 	}
 }
 
