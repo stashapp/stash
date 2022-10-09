@@ -367,7 +367,7 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 
 	for _, caption := range captions {
 		if lang != caption.LanguageCode || ext != caption.CaptionType {
-			return
+			continue
 		}
 
 		sub, err := video.ReadSubs(caption.Path(s.Path))
