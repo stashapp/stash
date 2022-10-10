@@ -196,7 +196,15 @@ func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
 	hash := scene.GetHash(fileNamingAlgo)
 
 	segment, _ := strconv.Atoi(chi.URLParam(r, "segment"))
-	handler := streamManager.StreamTS(scene.Path, hash, segment, ffmpeg.VideoCodec(r.Form.Get("videoCodec")))
+
+	var maxResolution int
+	if resolution := r.Form.Get("resolution"); resolution != "" {
+		maxResolution = models.StreamingResolutionEnum(resolution).GetMaxResolution()
+	} else {
+		maxResolution = config.GetInstance().GetMaxStreamingTranscodeSize().GetMaxResolution()
+	}
+
+	handler := streamManager.StreamTS(scene.Path, hash, segment, maxResolution)
 
 	handler(w, r)
 }

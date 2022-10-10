@@ -562,7 +562,7 @@ func (s *Manager) RefreshStreamManager() {
 	// only create the stream manager if cache path is set
 	cacheDir := s.Config.GetCachePath()
 	if cacheDir != "" {
-		s.StreamManager = ffmpeg.NewStreamManager(cacheDir, s.FFMPEG, s.FFProbe, s.Config)
+		s.StreamManager = ffmpeg.NewStreamManager(cacheDir, s.FFMPEG, s.FFProbe, s.Config, s.ReadLockManager)
 	} else {
 		logger.Warn("cache directory is not set. Live transcoding will be disabled")
 	}

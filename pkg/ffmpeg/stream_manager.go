@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -27,14 +28,17 @@ const (
 
 	// number of segments to wait to be generated before we
 	// restart the transcode process at the requested segment
-	maxSegmentWaitGap = 5
+	maxSegmentWaitGap = 3
 
 	// number of segments ahead of the currently streaming segment
 	// before we stop the transcode process to save CPU
 	maxSegmentStopGap = 15
 
-	maxIdleTime     = 10 * time.Second
+	maxIdleTime     = 30 * time.Second
 	monitorInterval = 2 * time.Second
+
+	// Cancel timeout for ffmpeg so there are no corrupted segments
+	cancelTimeout = 2 * time.Second
 )
 
 type StreamManagerConfig interface {
@@ -43,10 +47,10 @@ type StreamManagerConfig interface {
 
 type transcodeProcess struct {
 	cmd          *exec.Cmd
+	context      context.Context
 	path         string
 	cancel       context.CancelFunc
 	cancelled    bool
-	hash         string
 	startSegment int
 }
 
@@ -57,10 +61,11 @@ type runningStream struct {
 }
 
 type StreamManager struct {
-	cacheDir string
-	encoder  FFMpeg
-	ffprobe  FFProbe
-	config   StreamManagerConfig
+	cacheDir    string
+	encoder     FFMpeg
+	ffprobe     FFProbe
+	config      StreamManagerConfig
+	lockManager *fsutil.ReadLockManager
 
 	context    context.Context
 	cancelFunc context.CancelFunc
@@ -72,7 +77,7 @@ type StreamManager struct {
 	streamsMutex   sync.Mutex
 }
 
-func NewStreamManager(cacheDir string, encoder FFMpeg, ffprobe FFProbe, config StreamManagerConfig) *StreamManager {
+func NewStreamManager(cacheDir string, encoder FFMpeg, ffprobe FFProbe, config StreamManagerConfig, lockManager *fsutil.ReadLockManager) *StreamManager {
 	if cacheDir == "" {
 		panic("cache directory is not set")
 	}
@@ -84,6 +89,7 @@ func NewStreamManager(cacheDir string, encoder FFMpeg, ffprobe FFProbe, config S
 		encoder:           encoder,
 		ffprobe:           ffprobe,
 		config:            config,
+		lockManager:       lockManager,
 		context:           ctx,
 		cancelFunc:        cancel,
 		runningTranscodes: make(map[string]*transcodeProcess),
@@ -129,12 +135,12 @@ func (sm *StreamManager) WriteHLSPlaylist(duration float64, urlFormat string, w 
 	fmt.Fprint(w, "#EXT-X-ENDLIST\n")
 }
 
-func (sm *StreamManager) segmentDirectory(hash string) string {
-	return filepath.Join(sm.cacheDir, hash)
+func (sm *StreamManager) segmentDirectory(hashResolution string) string {
+	return filepath.Join(sm.cacheDir, hashResolution)
 }
 
-func (sm *StreamManager) segmentFilename(hash string, segment int) string {
-	return filepath.Join(sm.segmentDirectory(hash), fmt.Sprintf("%d.ts", segment))
+func (sm *StreamManager) segmentFilename(hashResolution string, segment int) string {
+	return filepath.Join(sm.segmentDirectory(hashResolution), fmt.Sprintf("%d.ts", segment))
 }
 
 func (sm *StreamManager) segmentExists(segmentFilename string) bool {
@@ -143,8 +149,8 @@ func (sm *StreamManager) segmentExists(segmentFilename string) bool {
 }
 
 // lastTranscodedSegment returns the most recent segment file created. Returns -1 if no files are found.
-func (sm *StreamManager) lastTranscodedSegment(hash string) int {
-	files, _ := ioutil.ReadDir(sm.segmentDirectory(hash))
+func (sm *StreamManager) lastTranscodedSegment(hashResolution string) int {
+	files, _ := ioutil.ReadDir(sm.segmentDirectory(hashResolution))
 
 	var mostRecent fs.FileInfo
 	for _, f := range files {
@@ -166,56 +172,52 @@ func (sm *StreamManager) lastTranscodedSegment(hash string) int {
 	return segment
 }
 
-func (sm *StreamManager) streamNotify(ctx context.Context, hash string, segment int) {
+func (sm *StreamManager) streamNotify(ctx context.Context, hashResolution string, segment int) {
 	sm.streamsMutex.Lock()
-	sm.runningStreams[hash] = runningStream{
+	defer sm.streamsMutex.Unlock()
+	sm.runningStreams[hashResolution] = runningStream{
 		running: true,
 		segment: segment,
 	}
-	sm.streamsMutex.Unlock()
 
 	go func() {
 		<-ctx.Done()
 
 		sm.streamsMutex.Lock()
-		sm.runningStreams[hash] = runningStream{
+		defer sm.streamsMutex.Unlock()
+		sm.runningStreams[hashResolution] = runningStream{
 			lastAccessed: time.Now(),
 			segment:      segment,
 		}
-		sm.streamsMutex.Unlock()
 	}()
 }
 
-func (sm *StreamManager) streamTSFunc(hash string, segment int) http.HandlerFunc {
-	fn := sm.segmentFilename(hash, segment)
+func (sm *StreamManager) streamTSFunc(hashResolution string, segment int) http.HandlerFunc {
+	fn := sm.segmentFilename(hashResolution, segment)
 	return func(w http.ResponseWriter, r *http.Request) {
-		sm.streamNotify(r.Context(), hash, segment)
-		w.Header().Set("Content-Type", "video/mp2t")
-		http.ServeFile(w, r, fn)
-	}
-}
-
-func (sm *StreamManager) waitAndStreamTSFunc(hash string, segment int) http.HandlerFunc {
-	fn := sm.segmentFilename(hash, segment)
-	started := time.Now()
-
-	logger.Debugf("waiting for segment file %q to be generated", fn)
-	for {
-		if sm.segmentExists(fn) {
-			// TODO - may need to wait for transcode process to finish writing the file first
-			return sm.streamTSFunc(hash, segment)
-		}
-
-		now := time.Now()
-		if started.Add(maxSegmentWait).Before(now) {
-			logger.Warnf("timed out waiting for segment file %q to be generated", fn)
-
-			return func(w http.ResponseWriter, r *http.Request) {
-				http.Error(w, "timed out waiting for segment file to be generated", http.StatusInternalServerError)
+		started := time.Now()
+		for {
+			select {
+			case <-r.Context().Done():
+				logger.Trace("exiting streamTSFunc because context is done")
+				return
+			case <-time.After(segmentCheckInterval):
+				now := time.Now()
+				switch {
+				case sm.segmentExists(fn):
+					logger.Tracef("streaming segment %d hashResolution %s", segment, hashResolution)
+					sm.streamNotify(r.Context(), hashResolution, segment)
+					w.Header().Set("Content-Type", "video/mp2t")
+					http.ServeFile(w, r, fn)
+				case started.Add(maxSegmentWait).Before(now):
+					logger.Warnf("timed out waiting for segment file %q to be generated", fn)
+					http.Error(w, "timed out waiting for segment file to be generated", http.StatusInternalServerError)
+				default:
+					continue
+				}
+				return
 			}
 		}
-
-		time.Sleep(segmentCheckInterval)
 	}
 }
 
@@ -224,7 +226,9 @@ func (sm *StreamManager) waitAndStreamTSFunc(hash string, segment int) http.Hand
 // Otherwise, a transcode process will be started for the provided segment. If
 // a transcode process is running already, then it will be killed before the new
 // process is started.
-func (sm *StreamManager) StreamTS(src string, hash string, segment int, videoCodec VideoCodec) http.HandlerFunc {
+// resolution is the max resolution
+// cannot use copy because keyframe interval is unable to be determined prior to encoding
+func (sm *StreamManager) StreamTS(src string, hash string, segment int, resolution int) http.HandlerFunc {
 	if sm.cacheDir == "" {
 		logger.Error("cannot live transcode files because cache dir is empty")
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -247,63 +251,55 @@ func (sm *StreamManager) StreamTS(src string, hash string, segment int, videoCod
 		}
 	}
 
-	segmentFilename := sm.segmentFilename(hash, segment)
+	hashResolution := fmt.Sprintf("%s%d", hash, resolution)
+
+	segmentFilename := sm.segmentFilename(hashResolution, segment)
 
 	// check if transcoded file already exists
 	// TODO - may need to wait for transcode process to finish writing the file first
 	// if so, return it
 	if sm.segmentExists(segmentFilename) {
-		return sm.streamTSFunc(hash, segment)
+		return sm.streamTSFunc(hashResolution, segment)
 	}
 
 	// check if transcoding process is already running
 	// lock the mutex here to ensure we don't start multiple processes
 	sm.transcodesMutex.Lock()
+	defer sm.transcodesMutex.Unlock()
 
-	tp := sm.runningTranscodes[hash]
+	tp := sm.runningTranscodes[hashResolution]
 
-	// if not, start one at the applicable time, wait and return stream
-	if tp == nil {
-		var err error
-		_, err = sm.startTranscode(src, hash, segment, videoCodec)
-		sm.transcodesMutex.Unlock()
+	if tp != nil {
+		// check if transcoding process is about to transcode the necessary segment
+		lastSegment := sm.lastTranscodedSegment(hashResolution)
 
-		if err != nil {
-			return onTranscodeError(err)
+		if (lastSegment <= segment && lastSegment+maxSegmentWaitGap >= segment) || tp.startSegment == segment {
+			// if so, wait and return
+			return sm.streamTSFunc(hashResolution, segment)
 		}
 
-		return sm.waitAndStreamTSFunc(hash, segment)
+		logger.Debugf("restarting transcode since up to segment #%d and #%d was requested", lastSegment, segment)
+
+		// otherwise, stop the existing transcoding process, restart at the applicable time
+		sm.stopTranscode(hashResolution)
 	}
 
-	// check if transcoding process is about to transcode the necessary segment
-	lastSegment := sm.lastTranscodedSegment(hash)
-
-	if lastSegment <= segment && lastSegment+maxSegmentWaitGap >= segment {
-		// if so, wait and return
-		sm.transcodesMutex.Unlock()
-		return sm.waitAndStreamTSFunc(hash, segment)
-	}
-
-	logger.Debugf("restarting transcode since up to segment #%d and #%d was requested", lastSegment, segment)
-
-	// otherwise, stop the existing transcoding process, restart at the applicable time
-	// wait and return stream
-	sm.stopTranscode(hash)
-
-	_, err := sm.startTranscode(src, hash, segment, videoCodec)
-	sm.transcodesMutex.Unlock()
+	// no transcode processes exist now, so start a new one
+	// start one at the applicable time, wait and return stream
+	_, err := sm.startTranscode(src, hash, resolution, segment)
 
 	if err != nil {
 		return onTranscodeError(err)
 	}
-	return sm.waitAndStreamTSFunc(hash, segment)
+
+	return sm.streamTSFunc(hashResolution, segment)
 }
 
 func (sm *StreamManager) segmentToTime(segment int) float64 {
 	return float64(segment * hlsSegmentLength)
 }
 
-func (sm *StreamManager) getTranscodeArgs(probeResult *VideoFile, outputPath string, segment int, videoCodec VideoCodec) Args {
+func (sm *StreamManager) getTranscodeArgs(probeResult *VideoFile, outputPath string, segment int, resolution int) Args {
 	var args Args
 	args = append(args, "-hide_banner")
 	args = args.LogLevel(LogLevelError)
@@ -316,26 +312,24 @@ func (sm *StreamManager) getTranscodeArgs(probeResult *VideoFile, outputPath str
 
 	args = args.Input(probeResult.Path)
 
-	args = args.VideoCodec(videoCodec)
+	args = args.VideoCodec(VideoCodecLibX264)
 
-	if videoCodec != VideoCodecCopy {
-		args = append(args,
-			"-c:v", "libx264",
-			"-pix_fmt", "yuv420p",
-			"-profile:v", "high",
-			"-level", "4.2",
-			"-preset", "superfast",
-			"-crf", "23",
-			"-r", "30",
-			"-g", "60",
-			"-x264-params", "no-scenecut=1",
-			"-force_key_frames", "0")
+	args = append(args,
+		"-c:v", "libx264",
+		"-pix_fmt", "yuv420p",
+		"-profile:v", "high",
+		"-level", "4.2",
+		"-preset", "veryfast",
+		"-crf", "23",
+		"-r", "30",
+		"-g", "60",
+		"-x264-params", "no-scenecut=1",
+		"-force_key_frames", "0")
 
-		// don't set scale when copying video stream
-		var videoFilter VideoFilter
-		videoFilter = videoFilter.ScaleMax(probeResult.Width, probeResult.Height, sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution())
-		args = args.VideoFilter(videoFilter)
-	}
+	// don't set scale when copying video stream
+	var videoFilter VideoFilter
+	videoFilter = videoFilter.ScaleMax(probeResult.Width, probeResult.Height, resolution)
+	args = args.VideoFilter(videoFilter)
 
 	args = args.AudioCodec(AudioCodecAAC)
 
@@ -352,6 +346,7 @@ func (sm *StreamManager) getTranscodeArgs(probeResult *VideoFile, outputPath str
 		"-hls_playlist_type", "vod",
 		"-hls_list_size", "0",
 		"-hls_segment_filename", filepath.Join(outputPath, "%d.ts"),
+		"-hls_flags", "temp_file",
 		filepath.Join(outputPath, "playlist.m3u8"),
 	)
 
@@ -359,21 +354,23 @@ func (sm *StreamManager) getTranscodeArgs(probeResult *VideoFile, outputPath str
 }
 
 // assumes mutex is held
-func (sm *StreamManager) startTranscode(src string, hash string, segment int, videoCodec VideoCodec) (*transcodeProcess, error) {
+func (sm *StreamManager) startTranscode(src string, hash string, resolution int, segment int) (*transcodeProcess, error) {
 	probeResult, err := sm.ffprobe.NewVideoFile(src)
 	if err != nil {
 		return nil, err
 	}
 
-	outputPath := sm.segmentDirectory(hash)
+	hashResolution := fmt.Sprintf("%s%d", hash, resolution)
+
+	outputPath := sm.segmentDirectory(hashResolution)
 	if err := os.MkdirAll(outputPath, os.ModePerm); err != nil {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithCancel(sm.context)
+	lockCtx := sm.lockManager.ReadLock(sm.context, probeResult.Path)
 
-	args := sm.getTranscodeArgs(probeResult, outputPath, segment, videoCodec)
-	cmd := sm.encoder.Command(ctx, args)
+	args := sm.getTranscodeArgs(probeResult, outputPath, segment, resolution)
+	cmd := sm.encoder.Command(lockCtx, args)
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -387,44 +384,57 @@ func (sm *StreamManager) startTranscode(src string, hash string, segment int, vi
 
 	logger.Tracef("running %s", cmd.String())
 	if err := cmd.Start(); err != nil {
-		cancel()
+		lockCtx.Cancel()
 		return nil, err
 	}
 
-	// TODO - handle lock manager stuff
-
 	p := &transcodeProcess{
 		cmd:          cmd,
+		context:      lockCtx,
 		path:         probeResult.Path,
-		cancel:       cancel,
-		hash:         hash,
+		cancel:       lockCtx.Cancel,
 		startSegment: segment,
 	}
-	sm.runningTranscodes[hash] = p
+	sm.runningTranscodes[hashResolution] = p
 
 	// mark the stream as accessed to ensure it is not immediately cleaned up
 	sm.streamsMutex.Lock()
-	sm.runningStreams[hash] = runningStream{
+	defer sm.streamsMutex.Unlock()
+	sm.runningStreams[hashResolution] = runningStream{
 		lastAccessed: time.Now(),
+		segment:      segment,
 	}
-	sm.streamsMutex.Unlock()
 
-	go sm.waitAndDeregister(hash, p, stdout, stderr)
+	go sm.waitAndDeregister(hashResolution, p, stdout, stderr)
 
 	return p, nil
 }
 
 // assumes mutex is held
-func (sm *StreamManager) stopTranscode(hash string) {
-	p := sm.runningTranscodes[hash]
+func (sm *StreamManager) stopTranscode(hashResolution string) {
+	p := sm.runningTranscodes[hashResolution]
 	if p != nil {
-		p.cancel()
+		go func() {
+			// Windows doesn't support Interrupt
+			if runtime.GOOS != "windows" {
+				_ = p.cmd.Process.Signal(os.Interrupt)
+				select {
+				case <-p.context.Done():
+					logger.Trace("ffmpeg process exited cleanly")
+					break
+				case <-time.After(cancelTimeout):
+					logger.Warn("ffmpeg process exited uncleanly")
+					break
+				}
+			}
+			p.cancel()
+		}()
 		p.cancelled = true
-		delete(sm.runningTranscodes, hash)
+		delete(sm.runningTranscodes, hashResolution)
 	}
 }
 
-func (sm *StreamManager) waitAndDeregister(hash string, p *transcodeProcess, stdout, stderr io.Reader) {
+func (sm *StreamManager) waitAndDeregister(hashResolution string, p *transcodeProcess, stdout, stderr io.Reader) {
 	cmd := p.cmd
 
 	errStr, _ := io.ReadAll(stderr)
@@ -434,8 +444,6 @@ func (sm *StreamManager) waitAndDeregister(hash string, p *transcodeProcess, std
 
 	// make sure that cancel is called to prevent memory leaks
 	p.cancel()
-
-	// TODO - handle lock manager stuff
 
 	// don't log error if cancelled
 	if !p.cancelled && err != nil {
@@ -457,8 +465,8 @@ func (sm *StreamManager) waitAndDeregister(hash string, p *transcodeProcess, std
 	defer sm.transcodesMutex.Unlock()
 
 	// only delete if is the same process
-	if sm.runningTranscodes[hash] == p {
-		delete(sm.runningTranscodes, hash)
+	if sm.runningTranscodes[hashResolution] == p {
+		delete(sm.runningTranscodes, hashResolution)
 	}
 }
 
@@ -479,51 +487,55 @@ func (sm *StreamManager) monitorStreams() {
 func (sm *StreamManager) removeStaleFiles() {
 	// check for the last time a stream was accessed
 	// remove anything over a certain age
+	// lock both streams and transcodes mutex to prevent deadlock when
+	// starting a transcode (uses both streams and transcodes) and removing stale files
+	// must call transcode mutex before streams mutex as transcode mutex is locked first
+	// and will result in a deadlock if a request is made while removing files
+	sm.transcodesMutex.Lock()
+	defer sm.transcodesMutex.Unlock()
 	sm.streamsMutex.Lock()
 	defer sm.streamsMutex.Unlock()
 
 	var toRemove []string
 
 	now := time.Now()
-	for hash, stream := range sm.runningStreams {
+	for hashResolution, stream := range sm.runningStreams {
 		if !stream.running && stream.lastAccessed.Add(maxIdleTime).Before(now) {
 			// Stream expired. Cancel the transcode process and delete the files
-			logger.Debugf("stream for hash %q not accessed recently. Cancelling transcode and removing files", hash)
-			func() {
-				sm.transcodesMutex.Lock()
-				defer sm.transcodesMutex.Unlock()
+			logger.Debugf("stream for hashResolution %q not accessed recently. Cancelling transcode and removing files", hashResolution)
 
-				sm.stopAndRemoveTranscodeFiles(hash)
+			sm.stopAndRemoveTranscodeFiles(hashResolution)
 
-				toRemove = append(toRemove, hash)
-			}()
+			toRemove = append(toRemove, hashResolution)
 		} else {
 			// check if the last transcoded file is way ahead of the current streaming one
 			// if so, stop the transcode to save CPU
-			lastGenerated := sm.lastTranscodedSegment(hash)
-			sm.transcodesMutex.Lock()
-			if sm.runningTranscodes[hash] != nil && stream.segment+maxSegmentStopGap < lastGenerated {
-				logger.Debugf("stopping transcode for hash %q as last generated segment %d is too far ahead of current segment %d", hash, lastGenerated, stream.segment)
-				sm.stopTranscode(hash)
+			lastGenerated := sm.lastTranscodedSegment(hashResolution)
+
+			// prevent stoppping the stream if we just scrubbed to it
+			if sm.runningTranscodes[hashResolution] != nil &&
+				sm.runningTranscodes[hashResolution].startSegment != stream.segment &&
+				stream.segment+maxSegmentStopGap < lastGenerated {
+				logger.Debugf("stopping transcode for hashResolution %q as last generated segment %d is too far ahead of current segment %d", hashResolution, lastGenerated, stream.segment)
+				sm.stopTranscode(hashResolution)
 			}
-			sm.transcodesMutex.Unlock()
 		}
 	}
 
-	for _, hash := range toRemove {
-		delete(sm.runningStreams, hash)
+	for _, hashResolution := range toRemove {
+		delete(sm.runningStreams, hashResolution)
 	}
 }
 
 // stopAndRemoveAll stops all current streams and removes all cache files
 func (sm *StreamManager) stopAndRemoveAll() {
-	sm.streamsMutex.Lock()
 	sm.transcodesMutex.Lock()
-	defer sm.streamsMutex.Unlock()
 	defer sm.transcodesMutex.Unlock()
+	sm.streamsMutex.Lock()
+	defer sm.streamsMutex.Unlock()
 
-	for hash := range sm.runningStreams {
-		sm.stopAndRemoveTranscodeFiles(hash)
+	for hashResolution := range sm.runningStreams {
+		sm.stopAndRemoveTranscodeFiles(hashResolution)
 	}
 
 	// ensure nothing else can use the map
@@ -532,10 +544,10 @@ func (sm *StreamManager) stopAndRemoveAll() {
 }
 
 // assume lock is held
-func (sm *StreamManager) stopAndRemoveTranscodeFiles(hash string) {
-	sm.stopTranscode(hash)
+func (sm *StreamManager) stopAndRemoveTranscodeFiles(hashResolution string) {
+	sm.stopTranscode(hashResolution)
 
-	dir := sm.segmentDirectory(hash)
+	dir := sm.segmentDirectory(hashResolution)
 	if err := os.RemoveAll(dir); err != nil {
 		logger.Warnf("error removing segment directory %q: %v", dir, err)
 	}
