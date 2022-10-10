@@ -54,6 +54,7 @@
     "import": "Importowanie…",
     "import_from_file": "Import z pliku",
     "logout": "Wyloguj się",
+    "make_primary": "Ustaw jako główny",
     "merge": "Połącz",
     "merge_from": "Scal z",
     "merge_into": "Scal w",
@@ -425,6 +426,10 @@
       "scene_tools": "Narzędzia scen"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Skracanie liczników na kartach i stronach podglądu szczegółów, na przykład \"1831\" zostanie skrócone do \"1.8K\".",
+        "heading": "Skracaj liczby"
+      },
       "basic_settings": "Ustawienia podstawowe",
       "custom_css": {
         "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać.",
@@ -549,6 +554,10 @@
         "description": "Ilość prób przewijania przed przejściem do następnej/poprzedniej pozycji. Ma zastosowanie tylko w trybie Pan Y.",
         "heading": "Próby przewijania przed przejściem"
       },
+      "show_tag_card_on_hover": {
+        "description": "Pokazuj kartę tagu po najechaniu na plakietkę tagu",
+        "heading": "Karty tagów"
+      },
       "slideshow_delay": {
         "description": "Pokaz slajdów jest dostępny w galeriach w trybie widoku ściany",
         "heading": "Opóźnienie pokazu slajdów (sekundy)"
@@ -615,6 +624,7 @@
   "death_date": "Data śmierci",
   "death_year": "Rok śmierci",
   "descending": "Malejąco",
+  "description": "Opis",
   "detail": "Szczegół",
   "details": "Szczegóły",
   "developmentVersion": "Wersja deweloperska",
@@ -623,6 +633,7 @@
     "delete_alert": "Następujące elementy {count, plural, one {{singularEntity}} other {{pluralEntity}}} zostaną trwale usunięte:",
     "delete_confirm": "Czy na pewno chcesz usunąć {entityName}?",
     "delete_entity_desc": "{count, plural, one {Czy na pewno chcesz usunąć {singularEntity}? Jeśli plik nie zostanie usunięty, {singularEntity} zostanie ponownie dodane podczas skanowania.} other {Czy na pewno chcesz usunąć {pluralEntity}? Jeśli te pliki nie zostaną usunięte, {pluralEntity} zostaną ponownie dodane podczas skanowania.}}",
+    "delete_entity_simple_desc": "{count, plural, one {Czy na pewno chcesz usunąć {singularEntity}?} other {Czy na pewno chcesz usunąć {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Usuń {singularEntity}} other {Usuń {pluralEntity}}}",
     "delete_galleries_extra": "…oraz wszystkie pliki obrazów, które nie są dołączone do żadnej innej galerii.",
     "delete_gallery_files": "Usuń folder galerii/plik zip i wszystkie obrazy, które nie są dołączone do żadnej innej galerii..",
@@ -896,6 +907,7 @@
   },
   "performers": "Aktorzy",
   "piercings": "Kolczyki",
+  "primary_file": "Główny plik",
   "queue": "Kolejka",
   "random": "Losowo",
   "rating": "Ocena",
