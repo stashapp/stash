@@ -191,7 +191,7 @@ func TestTagQuerySort(t *testing.T) {
 
 		sortBy = "scene_markers_count"
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
-		assert.Equal(tagIDs[tagIdxWithMarkers], tags[0].ID)
+		assert.Equal(tagIDs[tagIdxWithPrimaryMarkers], tags[0].ID)
 
 		sortBy = "images_count"
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
