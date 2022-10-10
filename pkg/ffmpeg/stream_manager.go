@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -150,7 +149,7 @@ func (sm *StreamManager) segmentExists(segmentFilename string) bool {
 
 // lastTranscodedSegment returns the most recent segment file created. Returns -1 if no files are found.
 func (sm *StreamManager) lastTranscodedSegment(hashResolution string) int {
-	files, _ := ioutil.ReadDir(sm.segmentDirectory(hashResolution))
+	files, _ := os.ReadDir(sm.segmentDirectory(hashResolution))
 
 	var mostRecent fs.FileInfo
 	for _, f := range files {
@@ -159,8 +158,13 @@ func (sm *StreamManager) lastTranscodedSegment(hashResolution string) int {
 			continue
 		}
 
-		if mostRecent == nil || f.ModTime().After(mostRecent.ModTime()) {
-			mostRecent = f
+		info, _ := f.Info()
+		if info == nil {
+			continue
+		}
+
+		if mostRecent == nil || info.ModTime().After(mostRecent.ModTime()) {
+			mostRecent = info
 		}
 	}
 
