@@ -277,6 +277,13 @@ func TestTagQueryAlias(t *testing.T) {
 
 	aliasCriterion.Modifier = models.CriterionModifierNotMatchesRegex
 	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierIsNull
+	aliasCriterion.Value = ""
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierNotNull
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
 }
 
 func verifyTagQuery(t *testing.T, tagFilter *models.TagFilterType, findFilter *models.FindFilterType, verifyFn func(ctx context.Context, t *models.Tag)) {

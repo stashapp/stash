@@ -800,6 +800,7 @@ func TestStudioQueryAlias(t *testing.T) {
 	}
 
 	verifyFn := func(ctx context.Context, studio *models.Studio) {
+		t.Helper()
 		aliases, err := sqlite.StudioReaderWriter.GetAliases(ctx, studio.ID)
 		if err != nil {
 			t.Errorf("Error querying studios: %s", err.Error())
@@ -823,6 +824,13 @@ func TestStudioQueryAlias(t *testing.T) {
 	verifyStudioQuery(t, studioFilter, verifyFn)
 
 	aliasCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyStudioQuery(t, studioFilter, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierIsNull
+	aliasCriterion.Value = ""
+	verifyStudioQuery(t, studioFilter, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierNotNull
 	verifyStudioQuery(t, studioFilter, verifyFn)
 }
 
