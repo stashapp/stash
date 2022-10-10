@@ -229,8 +229,9 @@ func TestStudioQueryForAutoTag(t *testing.T) {
 			t.Errorf("Error finding studios: %s", err.Error())
 		}
 
-		assert.Len(t, studios, 1)
-		assert.Equal(t, studioIDs[studioIdxWithMovie], studios[0].ID)
+		if assert.Len(t, studios, 1) {
+			assert.Equal(t, studioIDs[studioIdxWithMovie], studios[0].ID)
+		}
 
 		return nil
 	})
@@ -787,7 +788,7 @@ func TestStudioQueryName(t *testing.T) {
 }
 
 func TestStudioQueryAlias(t *testing.T) {
-	const studioIdx = 1
+	const studioIdx = studioIdxWithMovie
 	studioName := getStudioStringValue(studioIdx, "Alias")
 
 	aliasCriterion := &models.StringCriterionInput{
@@ -820,7 +821,7 @@ func TestStudioQueryAlias(t *testing.T) {
 	verifyStudioQuery(t, studioFilter, verifyFn)
 
 	aliasCriterion.Modifier = models.CriterionModifierMatchesRegex
-	aliasCriterion.Value = "studio_.*1_Alias"
+	aliasCriterion.Value = "studio_.*2_Alias"
 	verifyStudioQuery(t, studioFilter, verifyFn)
 
 	aliasCriterion.Modifier = models.CriterionModifierNotMatchesRegex
