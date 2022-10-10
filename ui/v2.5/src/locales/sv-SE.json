@@ -54,6 +54,7 @@
     "import": "Importera…",
     "import_from_file": "Importera från fil",
     "logout": "Logga ut",
+    "make_primary": "Gör primär",
     "merge": "Slå samman",
     "merge_from": "Slå samman från",
     "merge_into": "Slå samman till",
@@ -425,6 +426,10 @@
       "scene_tools": "Scenverktyg"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Förkorta siffror i kort- och detaljvyn, t.ex. \"1831\" kommer formateras \"1.8k\".",
+        "heading": "Förkorta siffror"
+      },
       "basic_settings": "Grundinställningar",
       "custom_css": {
         "description": "Sidan måste laddas om för att ändringar ska ta effekt.",
@@ -549,6 +554,10 @@
         "description": "Antal gånger att försöka bläddra innan flytt till nästa/tidigare objekt. Används bara för Pan Y-läget.",
         "heading": "Bläddringsförsök innan flytt"
       },
+      "show_tag_card_on_hover": {
+        "description": "Visa taggkortet när pekaren är på taggmärken",
+        "heading": "Taggkort"
+      },
       "slideshow_delay": {
         "description": "Bildspel är tillgängligt för gallerier i väggvisningsläge",
         "heading": "Bildspelsfördröjning (sekunder)"
@@ -615,6 +624,7 @@
   "death_date": "Dödsdatum",
   "death_year": "Dödsår",
   "descending": "Fallande",
+  "description": "Beskrivning",
   "detail": "Beskrivning",
   "details": "Beskrivningar",
   "developmentVersion": "Utvecklingsversion",
@@ -623,6 +633,7 @@
     "delete_alert": "De följande {count, plural, one {{singularEntity}} andra {{pluralEntity}}} kommer raderas permanent:",
     "delete_confirm": "Är du säker på att du vill radera {entityName}?",
     "delete_entity_desc": "{count, plural, one {Är du säker att du vill radera detta {singularEntity}? Sålänge filen inte också raderas, kommer {singularEntity} att läggas till igen vid nästa skanning.} other {Är du säker att du vill radera dessa {pluralEntity}? Sålänge filen inte också raderas, kommer dessa {pluralEntity} att läggas till igen vid nästa skanning.}}",
+    "delete_entity_simple_desc": "{count,plural,one {Är du säker att du vill radera denna {singularEntity}?} other {Är du säker att du vill radera dessa {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Radera {singularEntity}} other {Radera {pluralEntity}}}",
     "delete_galleries_extra": "... och alla bildfiler som inte är kopplade till något annat galleri.",
     "delete_gallery_files": "Radera gallerimapp/zip-fil och alla bilder som inte är kopplade till något annat galleri.",
@@ -896,6 +907,7 @@
   },
   "performers": "Stjärnor",
   "piercings": "Piercingar",
+  "primary_file": "Primär fil",
   "queue": "Kö",
   "random": "Slumpad",
   "rating": "Betyg",
