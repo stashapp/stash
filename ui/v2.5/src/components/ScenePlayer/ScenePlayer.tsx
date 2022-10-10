@@ -311,10 +311,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     function handleOffset(player: VideoJsPlayer) {
       if (!scene || !file) return;
 
-      const currentSrc = player.currentSrc();
+      const currentSrc = new URL(player.currentSrc());
 
       const isDirect =
-        currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
+        currentSrc.pathname.endsWith("/stream") ||
+        currentSrc.pathname.endsWith("/stream.m3u8");
 
       const curTime = player.currentTime();
       if (!isDirect) {
