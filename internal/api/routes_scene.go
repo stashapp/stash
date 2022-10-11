@@ -206,7 +206,10 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	lm := manager.GetInstance().ReadLockManager
 	streamRequestCtx := manager.NewStreamRequestContext(w, r)
 	lockCtx := lm.ReadLock(streamRequestCtx, f.Path)
-	defer lockCtx.Cancel()
+
+	// hijacking and closing the connection here causes video playback to hang in Chrome
+	// due to ERR_INCOMPLETE_CHUNKED_ENCODING
+	// We trust that the request context will be closed, so we don't need to call Cancel on the returned context here.
 
 	stream, err := encoder.GetTranscodeStream(lockCtx, options)
 
@@ -222,6 +225,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, st
 	lockCtx.AttachCommand(stream.Cmd)
 
 	stream.Serve(w, r)
+	w.(http.Flusher).Flush()
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
