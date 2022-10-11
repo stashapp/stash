@@ -54,6 +54,7 @@
     "import": "Importer…",
     "import_from_file": "Importation depuis un fichier",
     "logout": "Déconnecter",
+    "make_primary": "Rendre primaire",
     "merge": "Fusionner",
     "merge_from": "Fusionner depuis",
     "merge_into": "Fusionner dans",
@@ -425,6 +426,9 @@
       "scene_tools": "Outils de scène"
     },
     "ui": {
+      "abbreviate_counters": {
+        "heading": "Abréger les compteurs"
+      },
       "basic_settings": "Paramètres de base",
       "custom_css": {
         "description": "La page doit être rafraichie pour que les changements prennent effet.",
@@ -615,6 +619,7 @@
   "death_date": "Date du décès",
   "death_year": "Année du décès",
   "descending": "Descendant",
+  "description": "Description",
   "detail": "Détail",
   "details": "Détails",
   "developmentVersion": "Version de développement",
@@ -896,6 +901,7 @@
   },
   "performers": "Performeurs",
   "piercings": "Perçages",
+  "primary_file": "Fichier principal",
   "queue": "Liste de lecture",
   "random": "Aléatoire",
   "rating": "Note",
