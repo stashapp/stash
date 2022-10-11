@@ -103,14 +103,21 @@ type galleryFinder interface {
 	FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Gallery, error)
 }
 
+type sceneFinder interface {
+	fileCounter
+	FindByPrimaryFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error)
+}
+
 // handlerRequiredFilter returns true if a File's handler needs to be executed despite the file not being updated.
 type handlerRequiredFilter struct {
 	extensionConfig
-	SceneFinder   fileCounter
+	SceneFinder   sceneFinder
 	ImageFinder   fileCounter
 	GalleryFinder galleryFinder
 
 	FolderCache *lru.LRU
+
+	videoFileNamingAlgorithm models.HashAlgorithm
 }
 
 func newHandlerRequiredFilter(c *config.Instance) *handlerRequiredFilter {
@@ -118,11 +125,12 @@ func newHandlerRequiredFilter(c *config.Instance) *handlerRequiredFilter {
 	processes := c.GetParallelTasksWithAutoDetection()
 
 	return &handlerRequiredFilter{
-		extensionConfig: newExtensionConfig(c),
-		SceneFinder:     db.Scene,
-		ImageFinder:     db.Image,
-		GalleryFinder:   db.Gallery,
-		FolderCache:     lru.New(processes * 2),
+		extensionConfig:          newExtensionConfig(c),
+		SceneFinder:              db.Scene,
+		ImageFinder:              db.Image,
+		GalleryFinder:            db.Gallery,
+		FolderCache:              lru.New(processes * 2),
+		videoFileNamingAlgorithm: c.GetVideoFileNamingAlgorithm(),
 	}
 }
 
@@ -177,6 +185,25 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 		if len(g) == 0 {
 			// no folder gallery. Return true so that it creates one.
 			return true
+		}
+	}
+
+	if isVideoFile {
+		// check if the screenshot file exists
+		hash := scene.GetHash(ff, f.videoFileNamingAlgorithm)
+		ssPath := instance.Paths.Scene.GetScreenshotPath(hash)
+		if exists, _ := fsutil.FileExists(ssPath); !exists {
+			// if not, check if the file is a primary file for a scene
+			scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, ff.Base().ID)
+			if err != nil {
+				// just ignore
+				return false
+			}
+
+			if len(scenes) > 0 {
+				// if it is, then it needs to be re-generated
+				return true
+			}
 		}
 	}
 

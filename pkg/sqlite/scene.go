@@ -489,6 +489,20 @@ func (qb *SceneStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*mode
 	return ret, nil
 }
 
+func (qb *SceneStore) FindByPrimaryFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error) {
+	sq := dialect.From(scenesFilesJoinTable).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
+		scenesFilesJoinTable.Col(fileIDColumn).Eq(fileID),
+		scenesFilesJoinTable.Col("primary").Eq(1),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting scenes by primary file id %d: %w", fileID, err)
+	}
+
+	return ret, nil
+}
+
 func (qb *SceneStore) CountByFileID(ctx context.Context, fileID file.ID) (int, error) {
 	joinTable := scenesFilesJoinTable
 
