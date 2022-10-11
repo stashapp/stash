@@ -350,7 +350,7 @@
       "auto_tagging": "Étiquetage automatique",
       "backing_up_database": "Sauvegarde de la base de données",
       "backup_and_download": "Effectue une sauvegarde de la base de données et télécharge le fichier résultant.",
-      "backup_database": "Effectue une sauvegarde de la base de données dans le même répertoire que celle-ci, avec le format de nom de fichier {filename_format}",
+      "backup_database": "Effectue une sauvegarde de la base de données dans le répertoire de sauvegarde, avec le format de nom de fichier {filename_format}",
       "cleanup_desc": "Vérifier les fichiers manquants et les supprimer de la base de données. Cette action est destructive.",
       "data_management": "Gestion des données",
       "defaults_set": "Les valeurs par défaut ont été définies et seront utilisées en cliquant sur le bouton {action} de la page Tâches.",
@@ -427,6 +427,7 @@
     },
     "ui": {
       "abbreviate_counters": {
+        "description": "Abréger les compteurs dans les cartes et les pages de vue détaillée, par exemple \"1831\" sera formaté en \"1.8K\".",
         "heading": "Abréger les compteurs"
       },
       "basic_settings": "Paramètres de base",
@@ -553,6 +554,10 @@
         "description": "Nombre de tentatives de défilement avant de passer à l'élément suivant/précédent. S'applique uniquement au mode de défilement Pan Y.",
         "heading": "Tentatives de défilement avant transition"
       },
+      "show_tag_card_on_hover": {
+        "description": "Afficher la carte des étiquettes lors du survol des badges d'étiquettes",
+        "heading": "Infobulles des cartes d'étiquettes"
+      },
       "slideshow_delay": {
         "description": "Le diaporama est disponible dans galerie en mode de vue mural",
         "heading": "Délai du diaporama (secondes)"
@@ -628,6 +633,7 @@
     "delete_alert": "Le·s {count, plural, one {{singularEntity}} suivant·s sur {{pluralEntity}}} sera·ont supprimé·s définitivement :",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer {entityName} ?",
     "delete_entity_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity} ? À moins que le fichier ne soit également supprimé, cette {singularEntity} sera ajoutée à nouveau lors de la prochaine analyse.} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity} ? À moins que les fichiers ne soient également supprimés, ces {pluralEntity} seront ajoutées à nouveau lors de la prochaine analyse.}}",
+    "delete_entity_simple_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity}?} other {Êtes-vous sûr de vouloir supprimer ces  {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Delete {singularEntity}} sur {Delete {pluralEntity}}}",
     "delete_galleries_extra": "…ainsi que tous fichiers image qui ne sont pas associés à une autre galerie.",
     "delete_gallery_files": "Supprime le répertoire ou l'archive zip de la galerie et toutes images qui ne sont pas associées à une autre galerie.",
