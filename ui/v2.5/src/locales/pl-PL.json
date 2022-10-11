@@ -350,7 +350,7 @@
       "auto_tagging": "Automatyczne tagowanie",
       "backing_up_database": "Tworzenie kopii zapasowej bazy danych",
       "backup_and_download": "Wykonuje kopię zapasową bazy danych i pobiera plik wynikowy.",
-      "backup_database": "Wykonuje kopię zapasową bazy danych w tym samym katalogu, w którym znajduje się baza danych, z nazwą pliku w formacie {filename_format}",
+      "backup_database": "Wykonuje kopię zapasową bazy danych do katalogu kopii zapasowych, z nazwą pliku w formacie {filename_format}",
       "cleanup_desc": "Sprawdza, czy nie ma brakujących plików i usuwa je z bazy danych. Jest to działanie destrukcyjne.",
       "data_management": "Zarządzanie danymi",
       "defaults_set": "Zostały ustawione wartości domyślne, które będą używane po kliknięciu przycisku {action} na stronie Zadania.",
