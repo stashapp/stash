@@ -95,7 +95,13 @@ function matchPhashes(
     }
   });
 
-  return matches;
+  // convert to tuple and sort by distance descending
+  const entries = Object.entries(matches);
+  entries.sort((a, b) => {
+    return a[1] - b[1];
+  });
+
+  return entries;
 }
 
 const getFingerprintStatus = (
@@ -122,7 +128,7 @@ const getFingerprintStatus = (
 
   const phashList = (
     <div className="m-2">
-      {Object.entries(phashMatches).map((fp) => {
+      {phashMatches.map((fp: [string, number]) => {
         const hash = fp[0];
         const d = fp[1];
         return (
@@ -137,37 +143,43 @@ const getFingerprintStatus = (
 
   if (checksumMatch || phashMatches.length > 0)
     return (
-      <div className="font-weight-bold">
-        <SuccessIcon className="mr-2" />
-        {phashMatches.length > 0 ? (
-          <HoverPopover
-            placement="bottom"
-            content={phashList}
-            className="PHashPopover"
-          >
-            {phashMatches.length > 1 ? (
-              <FormattedMessage
-                id="component_tagger.results.phash_matches"
-                values={{
-                  count: phashMatches.length,
-                }}
-              />
-            ) : (
-              <FormattedMessage
-                id="component_tagger.results.hash_matches"
-                values={{
-                  hash_type: <FormattedMessage id="media_info.phash" />,
-                }}
-              />
-            )}
-          </HoverPopover>
-        ) : (
-          <FormattedMessage
-            id="component_tagger.results.hash_matches"
-            values={{
-              hash_type: <FormattedMessage id="media_info.checksum" />,
-            }}
-          />
+      <div>
+        {phashMatches.length > 0 && (
+          <div className="font-weight-bold">
+            <SuccessIcon className="mr-2" />
+            <HoverPopover
+              placement="bottom"
+              content={phashList}
+              className="PHashPopover"
+            >
+              {phashMatches.length > 1 ? (
+                <FormattedMessage
+                  id="component_tagger.results.phash_matches"
+                  values={{
+                    count: phashMatches.length,
+                  }}
+                />
+              ) : (
+                <FormattedMessage
+                  id="component_tagger.results.hash_matches"
+                  values={{
+                    hash_type: <FormattedMessage id="media_info.phash" />,
+                  }}
+                />
+              )}
+            </HoverPopover>
+          </div>
+        )}
+        {checksumMatch && (
+          <div className="font-weight-bold">
+            <SuccessIcon className="mr-2" />
+            <FormattedMessage
+              id="component_tagger.results.hash_matches"
+              values={{
+                hash_type: <FormattedMessage id="media_info.checksum" />,
+              }}
+            />
+          </div>
         )}
       </div>
     );
