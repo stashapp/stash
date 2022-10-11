@@ -264,9 +264,11 @@ const makeTagImagesUrl = (tag: Partial<GQL.TagDataFragment>) => {
   return `/images?${filter.makeQueryParameters()}`;
 };
 
-const makeSceneMarkerUrl = (
-  sceneMarker: Partial<GQL.SceneMarkerDataFragment>
-) => {
+type SceneMarkerDataFragment = Pick<GQL.SceneMarker, "id" | "seconds"> & {
+  scene: Pick<GQL.Scene, "id">;
+};
+
+const makeSceneMarkerUrl = (sceneMarker: SceneMarkerDataFragment) => {
   if (!sceneMarker.id || !sceneMarker.scene) return "#";
   return `/scenes/${sceneMarker.scene.id}?t=${sceneMarker.seconds}`;
 };
