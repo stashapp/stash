@@ -191,7 +191,7 @@ func TestTagQuerySort(t *testing.T) {
 
 		sortBy = "scene_markers_count"
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
-		assert.Equal(tagIDs[tagIdxWithMarkers], tags[0].ID)
+		assert.Equal(tagIDs[tagIdxWithPrimaryMarkers], tags[0].ID)
 
 		sortBy = "images_count"
 		tags = queryTags(ctx, t, sqb, nil, findFilter)
@@ -276,6 +276,13 @@ func TestTagQueryAlias(t *testing.T) {
 	verifyTagQuery(t, tagFilter, nil, verifyFn)
 
 	aliasCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierIsNull
+	aliasCriterion.Value = ""
+	verifyTagQuery(t, tagFilter, nil, verifyFn)
+
+	aliasCriterion.Modifier = models.CriterionModifierNotNull
 	verifyTagQuery(t, tagFilter, nil, verifyFn)
 }
 

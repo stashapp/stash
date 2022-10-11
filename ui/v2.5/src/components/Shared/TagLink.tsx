@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import cx from "classnames";
 import {
   PerformerDataFragment,
-  SceneMarkerDataFragment,
   TagDataFragment,
   MovieDataFragment,
   SceneDataFragment,
@@ -15,6 +14,7 @@ import { objectTitle } from "src/core/files";
 import { galleryTitle } from "src/core/galleries";
 import * as GQL from "src/core/generated-graphql";
 import { TagPopover } from "../Tags/TagPopover";
+import { markerTitle } from "src/core/markers";
 
 interface IFile {
   path: string;
@@ -26,11 +26,16 @@ interface IGallery {
   title: GQL.Maybe<string>;
 }
 
+type SceneMarkerFragment = Pick<GQL.SceneMarker, "id" | "title" | "seconds"> & {
+  scene: Pick<GQL.Scene, "id">;
+  primary_tag: Pick<GQL.Tag, "id" | "name">;
+};
+
 interface IProps {
   tag?: Partial<TagDataFragment>;
   tagType?: "performer" | "scene" | "gallery" | "image";
   performer?: Partial<PerformerDataFragment>;
-  marker?: Partial<SceneMarkerDataFragment>;
+  marker?: SceneMarkerFragment;
   movie?: Partial<MovieDataFragment>;
   scene?: Partial<Pick<SceneDataFragment, "id" | "title" | "files">>;
   gallery?: Partial<IGallery>;
@@ -67,9 +72,9 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     title = props.movie.name || "";
   } else if (props.marker) {
     link = NavUtils.makeSceneMarkerUrl(props.marker);
-    title = `${
-      props.marker.title || props.marker.primary_tag?.name || ""
-    } - ${TextUtils.secondsToTimestamp(props.marker.seconds || 0)}`;
+    title = `${markerTitle(props.marker)} - ${TextUtils.secondsToTimestamp(
+      props.marker.seconds || 0
+    )}`;
   } else if (props.gallery) {
     link = `/galleries/${props.gallery.id}`;
     title = galleryTitle(props.gallery);

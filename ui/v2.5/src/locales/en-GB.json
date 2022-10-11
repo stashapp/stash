@@ -350,7 +350,7 @@
       "auto_tagging": "Auto Tagging",
       "backing_up_database": "Backing up database",
       "backup_and_download": "Performs a backup of the database and downloads the resulting file.",
-      "backup_database": "Performs a backup of the database to the same directory as the database, with the filename format {filename_format}",
+      "backup_database": "Performs a backup of the database to the backups directory, with the filename format {filename_format}",
       "cleanup_desc": "Check for missing files and remove them from the database. This is a destructive action.",
       "data_management": "Data management",
       "defaults_set": "Defaults have been set and will be used when clicking the {action} button on the Tasks page.",

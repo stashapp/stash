@@ -197,7 +197,9 @@ func (s *scanJob) queueFiles(ctx context.Context, paths []string) error {
 func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs.WalkDirFunc {
 	return func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return err
+			// don't let errors prevent scanning
+			logger.Errorf("error scanning %s: %v", path, err)
+			return nil
 		}
 
 		if err = ctx.Err(); err != nil {

@@ -491,6 +491,8 @@ func translateGender(gender *graphql.GenderEnum) *string {
 		res = models.GenderEnumTransgenderFemale
 	case graphql.GenderEnumTransgenderMale:
 		res = models.GenderEnumTransgenderMale
+	case graphql.GenderEnumNonBinary:
+		res = models.GenderEnumNonBinary
 	}
 
 	if res != "" {

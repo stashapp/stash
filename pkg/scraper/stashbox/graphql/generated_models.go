@@ -88,9 +88,9 @@ type DraftEntity struct {
 	ID   *string `json:"id,omitempty"`
 }
 
-func (DraftEntity) IsSceneDraftPerformer() {}
 func (DraftEntity) IsSceneDraftStudio()    {}
 func (DraftEntity) IsSceneDraftTag()       {}
+func (DraftEntity) IsSceneDraftPerformer() {}
 
 type DraftEntityInput struct {
 	Name string  `json:"name"`
@@ -583,6 +583,17 @@ type QueryEditsResultType struct {
 	Edits []*Edit `json:"edits,omitempty"`
 }
 
+type QueryExistingSceneInput struct {
+	Title        *string             `json:"title,omitempty"`
+	StudioID     *string             `json:"studio_id,omitempty"`
+	Fingerprints []*FingerprintInput `json:"fingerprints,omitempty"`
+}
+
+type QueryExistingSceneResult struct {
+	Edits  []*Edit  `json:"edits,omitempty"`
+	Scenes []*Scene `json:"scenes,omitempty"`
+}
+
 type QueryPerformersResultType struct {
 	Count      int          `json:"count"`
 	Performers []*Performer `json:"performers,omitempty"`
@@ -737,8 +748,7 @@ type SceneEditDetailsInput struct {
 type SceneEditInput struct {
 	Edit *EditInput `json:"edit,omitempty"`
 	// Not required for destroy type
-	Details  *SceneEditDetailsInput `json:"details,omitempty"`
-	Duration *int                   `json:"duration,omitempty"`
+	Details *SceneEditDetailsInput `json:"details,omitempty"`
 }
 
 type SceneQueryInput struct {
@@ -762,10 +772,12 @@ type SceneQueryInput struct {
 	Alias *StringCriterionInput `json:"alias,omitempty"`
 	// Filter to only include scenes with these fingerprints
 	Fingerprints *MultiStringCriterionInput `json:"fingerprints,omitempty"`
-	Page         int                        `json:"page"`
-	PerPage      int                        `json:"per_page"`
-	Direction    SortDirectionEnum          `json:"direction"`
-	Sort         SceneSortEnum              `json:"sort"`
+	// Filter by favorited entity
+	Favorites *FavoriteFilter   `json:"favorites,omitempty"`
+	Page      int               `json:"page"`
+	PerPage   int               `json:"per_page"`
+	Direction SortDirectionEnum `json:"direction"`
+	Sort      SceneSortEnum     `json:"sort"`
 }
 
 type SceneUpdateInput struct {
@@ -846,8 +858,8 @@ type Studio struct {
 	Updated      time.Time `json:"updated"`
 }
 
-func (Studio) IsEditTarget()       {}
 func (Studio) IsSceneDraftStudio() {}
+func (Studio) IsEditTarget()       {}
 
 type StudioCreateInput struct {
 	Name     string      `json:"name"`
@@ -924,8 +936,8 @@ type Tag struct {
 	Updated     time.Time    `json:"updated"`
 }
 
-func (Tag) IsEditTarget()    {}
 func (Tag) IsSceneDraftTag() {}
+func (Tag) IsEditTarget()    {}
 
 type TagCategory struct {
 	ID          string       `json:"id"`
@@ -1467,6 +1479,49 @@ func (e EyeColorEnum) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type FavoriteFilter string
+
+const (
+	FavoriteFilterPerformer FavoriteFilter = "PERFORMER"
+	FavoriteFilterStudio    FavoriteFilter = "STUDIO"
+	FavoriteFilterAll       FavoriteFilter = "ALL"
+)
+
+var AllFavoriteFilter = []FavoriteFilter{
+	FavoriteFilterPerformer,
+	FavoriteFilterStudio,
+	FavoriteFilterAll,
+}
+
+func (e FavoriteFilter) IsValid() bool {
+	switch e {
+	case FavoriteFilterPerformer, FavoriteFilterStudio, FavoriteFilterAll:
+		return true
+	}
+	return false
+}
+
+func (e FavoriteFilter) String() string {
+	return string(e)
+}
+
+func (e *FavoriteFilter) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = FavoriteFilter(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid FavoriteFilter", str)
+	}
+	return nil
+}
+
+func (e FavoriteFilter) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type FingerprintAlgorithm string
 
 const (
@@ -1518,6 +1573,7 @@ const (
 	GenderEnumTransgenderMale   GenderEnum = "TRANSGENDER_MALE"
 	GenderEnumTransgenderFemale GenderEnum = "TRANSGENDER_FEMALE"
 	GenderEnumIntersex          GenderEnum = "INTERSEX"
+	GenderEnumNonBinary         GenderEnum = "NON_BINARY"
 )
 
 var AllGenderEnum = []GenderEnum{
@@ -1526,11 +1582,12 @@ var AllGenderEnum = []GenderEnum{
 	GenderEnumTransgenderMale,
 	GenderEnumTransgenderFemale,
 	GenderEnumIntersex,
+	GenderEnumNonBinary,
 }
 
 func (e GenderEnum) IsValid() bool {
 	switch e {
-	case GenderEnumMale, GenderEnumFemale, GenderEnumTransgenderMale, GenderEnumTransgenderFemale, GenderEnumIntersex:
+	case GenderEnumMale, GenderEnumFemale, GenderEnumTransgenderMale, GenderEnumTransgenderFemale, GenderEnumIntersex, GenderEnumNonBinary:
 		return true
 	}
 	return false
@@ -1566,6 +1623,7 @@ const (
 	GenderFilterEnumTransgenderMale   GenderFilterEnum = "TRANSGENDER_MALE"
 	GenderFilterEnumTransgenderFemale GenderFilterEnum = "TRANSGENDER_FEMALE"
 	GenderFilterEnumIntersex          GenderFilterEnum = "INTERSEX"
+	GenderFilterEnumNonBinary         GenderFilterEnum = "NON_BINARY"
 )
 
 var AllGenderFilterEnum = []GenderFilterEnum{
@@ -1575,11 +1633,12 @@ var AllGenderFilterEnum = []GenderFilterEnum{
 	GenderFilterEnumTransgenderMale,
 	GenderFilterEnumTransgenderFemale,
 	GenderFilterEnumIntersex,
+	GenderFilterEnumNonBinary,
 }
 
 func (e GenderFilterEnum) IsValid() bool {
 	switch e {
-	case GenderFilterEnumUnknown, GenderFilterEnumMale, GenderFilterEnumFemale, GenderFilterEnumTransgenderMale, GenderFilterEnumTransgenderFemale, GenderFilterEnumIntersex:
+	case GenderFilterEnumUnknown, GenderFilterEnumMale, GenderFilterEnumFemale, GenderFilterEnumTransgenderMale, GenderFilterEnumTransgenderFemale, GenderFilterEnumIntersex, GenderFilterEnumNonBinary:
 		return true
 	}
 	return false
