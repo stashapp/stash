@@ -350,7 +350,7 @@
       "auto_tagging": "Tag Automatico",
       "backing_up_database": "Backup del database",
       "backup_and_download": "Esegue il backup del database e scarica il file risultante.",
-      "backup_database": "Esegue il backup del database nella stessa cartella del database, con il formato nome file {filename_format}",
+      "backup_database": "Esegue il backup del database nella cartella dei backup, nel formato {filename_format}",
       "cleanup_desc": "Controlla il database per file mancanti e li rimuove. Questa è un'azione distruttiva.",
       "data_management": "Gestione dati",
       "defaults_set": "I default sono stati scelti e saranno usati quando si clicca il bottone {action} nella pagina Attività.",
