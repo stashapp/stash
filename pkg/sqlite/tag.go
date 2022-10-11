@@ -600,7 +600,7 @@ func (qb *tagQueryBuilder) getTagSort(query *queryBuilder, findFilter *models.Fi
 		case "scenes_count":
 			return getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 		case "scene_markers_count":
-			return getCountSort(tagTable, "scene_markers_tags", tagIDColumn, direction)
+			return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
 		case "images_count":
 			return getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
 		case "galleries_count":
