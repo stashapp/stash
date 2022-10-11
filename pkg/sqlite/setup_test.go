@@ -1482,9 +1482,12 @@ func createStudios(ctx context.Context, sqb models.StudioReaderWriter, n int, o 
 		}
 
 		// add alias
-		alias := getStudioStringValue(i, "Alias")
-		if err := sqb.UpdateAliases(ctx, created.ID, []string{alias}); err != nil {
-			return fmt.Errorf("error setting studio alias: %s", err.Error())
+		// only add aliases for some scenes
+		if i == studioIdxWithMovie || i%5 == 0 {
+			alias := getStudioStringValue(i, "Alias")
+			if err := sqb.UpdateAliases(ctx, created.ID, []string{alias}); err != nil {
+				return fmt.Errorf("error setting studio alias: %s", err.Error())
+			}
 		}
 
 		studioIDs = append(studioIDs, created.ID)

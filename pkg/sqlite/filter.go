@@ -729,7 +729,7 @@ type stringListCriterionHandlerBuilder struct {
 
 func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil && len(criterion.Value) > 0 {
+		if criterion != nil {
 			m.addJoinTable(f)
 
 			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(ctx, f)
