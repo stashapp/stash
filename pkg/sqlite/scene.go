@@ -1427,14 +1427,14 @@ func (qb *SceneStore) DestroyCover(ctx context.Context, sceneID int) error {
 	return qb.imageRepository().destroy(ctx, []int{sceneID})
 }
 
-func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileID file.ID) error {
+func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []file.ID) error {
 	// assuming a file can only be assigned to a single scene
-	if err := scenesFilesTableMgr.destroyJoins(ctx, []file.ID{fileID}); err != nil {
+	if err := scenesFilesTableMgr.destroyJoins(ctx, fileIDs); err != nil {
 		return err
 	}
 
 	const firstPrimary = false
-	return scenesFilesTableMgr.insertJoins(ctx, sceneID, firstPrimary, []file.ID{fileID})
+	return scenesFilesTableMgr.insertJoins(ctx, sceneID, firstPrimary, fileIDs)
 }
 
 func (qb *SceneStore) moviesRepository() *repository {

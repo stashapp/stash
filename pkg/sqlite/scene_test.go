@@ -4145,7 +4145,7 @@ func TestSceneStore_AssignFiles(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			withRollbackTxn(func(ctx context.Context) error {
-				if err := qb.AssignFiles(ctx, tt.sceneID, tt.fileID); (err != nil) != tt.wantErr {
+				if err := qb.AssignFiles(ctx, tt.sceneID, []file.ID{tt.fileID}); (err != nil) != tt.wantErr {
 					t.Errorf("SceneStore.AssignFiles() error = %v, wantErr %v", err, tt.wantErr)
 				}
 

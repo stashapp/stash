@@ -14,7 +14,7 @@ type FinderByFile interface {
 }
 
 type FileAssigner interface {
-	AssignFiles(ctx context.Context, sceneID int, fileID file.ID) error
+	AssignFiles(ctx context.Context, sceneID int, fileID []file.ID) error
 }
 
 type Creator interface {
@@ -38,13 +38,21 @@ type Repository interface {
 	models.VideoFileLoader
 	FileAssigner
 	CoverUpdater
+	models.SceneReader
+}
+
+type MarkerRepository interface {
+	MarkerFinder
+	MarkerDestroyer
+
+	Update(ctx context.Context, updatedObject models.SceneMarker) (*models.SceneMarker, error)
 }
 
 type Service struct {
-	File            file.Store
-	Repository      Repository
-	MarkerDestroyer MarkerDestroyer
-	PluginCache     *plugin.Cache
+	File             file.Store
+	Repository       Repository
+	MarkerRepository MarkerRepository
+	PluginCache      *plugin.Cache
 
 	Paths  *paths.Paths
 	Config Config

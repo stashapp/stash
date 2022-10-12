@@ -209,3 +209,10 @@ input AssignSceneFileInput {
   scene_id: ID!
   file_id: ID!
 }
+
+input SceneMergeInput {
+  """If destination scene has no files, then the primary file of the
+  first source scene will be assigned as primary"""
+  source: [ID!]!
+  destination: ID!
+}

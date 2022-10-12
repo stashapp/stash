@@ -41,6 +41,16 @@ func (u *UpdateMovieIDs) SceneMovieInputs() []*SceneMovieInput {
 	return ret
 }
 
+func (u *UpdateMovieIDs) AddUnique(v MoviesScenes) {
+	for _, vv := range u.Movies {
+		if vv.MovieID == v.MovieID {
+			return
+		}
+	}
+
+	u.Movies = append(u.Movies, v)
+}
+
 func UpdateMovieIDsFromInput(i []*SceneMovieInput) (*UpdateMovieIDs, error) {
 	ret := &UpdateMovieIDs{
 		Mode: RelationshipUpdateModeSet,

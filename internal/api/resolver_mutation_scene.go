@@ -588,6 +588,32 @@ func (r *mutationResolver) SceneAssignFile(ctx context.Context, input AssignScen
 	return true, nil
 }
 
+func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput) (*models.Scene, error) {
+	srcIDs, err := stringslice.StringSliceToIntSlice(input.Source)
+	if err != nil {
+		return nil, fmt.Errorf("converting source IDs: %w", err)
+	}
+
+	destID, err := strconv.Atoi(input.Destination)
+	if err != nil {
+		return nil, fmt.Errorf("converting destination ID %s: %w", input.Destination, err)
+	}
+
+	var ret *models.Scene
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID); err != nil {
+			return err
+		}
+
+		ret, err = r.Resolver.repository.Scene.Find(ctx, destID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (r *mutationResolver) getSceneMarker(ctx context.Context, id int) (ret *models.SceneMarker, err error) {
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SceneMarker.Find(ctx, id)

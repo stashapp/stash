@@ -138,5 +138,5 @@ func (s *Service) AssignFile(ctx context.Context, sceneID int, fileID file.ID) e
 		return errors.New("cannot reassign primary file")
 	}
 
-	return s.Repository.AssignFiles(ctx, sceneID, fileID)
+	return s.Repository.AssignFiles(ctx, sceneID, []file.ID{fileID})
 }
