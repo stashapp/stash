@@ -132,6 +132,9 @@ export class ListFilterModel {
       } else {
         searchTerm = params.q;
       }
+      
+      // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURIComponent#decoding_query_parameters_from_a_url
+      searchTerm = searchTerm.replaceAll("+", " ");
       params.q = decodeURIComponent(searchTerm);
     }
     if (params.c !== undefined) {
