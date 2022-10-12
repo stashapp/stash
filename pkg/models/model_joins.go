@@ -46,16 +46,28 @@ func UpdateMovieIDsFromInput(i []*SceneMovieInput) (*UpdateMovieIDs, error) {
 		Mode: RelationshipUpdateModeSet,
 	}
 
-	for _, v := range i {
+	var err error
+	ret.Movies, err = MoviesScenesFromInput(i)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func MoviesScenesFromInput(input []*SceneMovieInput) ([]MoviesScenes, error) {
+	ret := make([]MoviesScenes, len(input))
+
+	for i, v := range input {
 		mID, err := strconv.Atoi(v.MovieID)
 		if err != nil {
 			return nil, fmt.Errorf("invalid movie ID: %s", v.MovieID)
 		}
 
-		ret.Movies = append(ret.Movies, MoviesScenes{
+		ret[i] = MoviesScenes{
 			MovieID:    mID,
 			SceneIndex: v.SceneIndex,
-		})
+		}
 	}
 
 	return ret, nil

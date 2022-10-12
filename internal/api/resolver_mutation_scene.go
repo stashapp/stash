@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -31,7 +32,74 @@ func (r *mutationResolver) getScene(ctx context.Context, id int) (ret *models.Sc
 }
 
 func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInput) (ret *models.Scene, err error) {
-	panic("not implemented")
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	performerIDs, err := stringslice.StringSliceToIntSlice(input.PerformerIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting performer ids: %w", err)
+	}
+	tagIDs, err := stringslice.StringSliceToIntSlice(input.TagIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting tag ids: %w", err)
+	}
+	galleryIDs, err := stringslice.StringSliceToIntSlice(input.GalleryIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting gallery ids: %w", err)
+	}
+
+	moviesScenes, err := models.MoviesScenesFromInput(input.Movies)
+	if err != nil {
+		return nil, fmt.Errorf("converting movies scenes: %w", err)
+	}
+
+	fileIDsInt, err := stringslice.StringSliceToIntSlice(input.FileIds)
+	if err != nil {
+		return nil, fmt.Errorf("converting file ids: %w", err)
+	}
+
+	fileIDs := make([]file.ID, len(fileIDsInt))
+	for i, v := range fileIDsInt {
+		fileIDs[i] = file.ID(v)
+	}
+
+	newScene := models.Scene{
+		Title:        translator.string(input.Title, "title"),
+		Details:      translator.string(input.Details, "details"),
+		URL:          translator.string(input.URL, "url"),
+		Date:         translator.datePtr(input.Date, "date"),
+		Rating:       input.Rating,
+		Organized:    translator.bool(input.Organized, "organized"),
+		PerformerIDs: models.NewRelatedIDs(performerIDs),
+		TagIDs:       models.NewRelatedIDs(tagIDs),
+		GalleryIDs:   models.NewRelatedIDs(galleryIDs),
+		Movies:       models.NewRelatedMovies(moviesScenes),
+		StashIDs:     models.NewRelatedStashIDs(stashIDPtrSliceToSlice(input.StashIds)),
+	}
+
+	newScene.StudioID, err = translator.intPtrFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+
+	var coverImageData []byte
+	if input.CoverImage != nil && *input.CoverImage != "" {
+		var err error
+		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.Resolver.sceneService.Create(ctx, &newScene, fileIDs, coverImageData)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (ret *models.Scene, err error) {
@@ -116,6 +184,18 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	updatedScene := models.NewScenePartial()
 	updatedScene.Title = translator.optionalString(input.Title, "title")
+
+	// ensure that title is set where scene has no file
+	if updatedScene.Title.Set && updatedScene.Title.Value == "" {
+		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+			return nil, err
+		}
+
+		if len(s.Files.List()) == 0 {
+			return nil, errors.New("title must be set if scene has no files")
+		}
+	}
+
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.URL = translator.optionalString(input.URL, "url")
 	updatedScene.Date = translator.optionalDate(input.Date, "date")

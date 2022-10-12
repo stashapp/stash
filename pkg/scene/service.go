@@ -5,6 +5,8 @@ import (
 
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/paths"
+	"github.com/stashapp/stash/pkg/plugin"
 )
 
 type FinderByFile interface {
@@ -15,15 +17,35 @@ type FileAssigner interface {
 	AssignFiles(ctx context.Context, sceneID int, fileID file.ID) error
 }
 
+type Creator interface {
+	Create(ctx context.Context, newScene *models.Scene, fileIDs []file.ID) error
+}
+
+type CoverUpdater interface {
+	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
+}
+
+type Config interface {
+	GetVideoFileNamingAlgorithm() models.HashAlgorithm
+}
+
 type Repository interface {
+	IDFinder
 	FinderByFile
+	Creator
+	PartialUpdater
 	Destroyer
 	models.VideoFileLoader
 	FileAssigner
+	CoverUpdater
 }
 
 type Service struct {
 	File            file.Store
 	Repository      Repository
 	MarkerDestroyer MarkerDestroyer
+	PluginCache     *plugin.Cache
+
+	Paths  *paths.Paths
+	Config Config
 }

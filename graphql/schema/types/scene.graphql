@@ -89,7 +89,8 @@ input SceneCreateInput {
   cover_image: String
   stash_ids: [StashIDInput!]
 
-  # the first id will be assigned as primary
+  """The first id will be assigned as primary. Files will be reassigned from
+  existing scenes if applicable. Files must not already be primary for another scene"""
   file_ids: [ID!]
 }
 

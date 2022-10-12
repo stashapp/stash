@@ -90,6 +90,14 @@ func (t changesetTranslator) nullString(value *string, field string) *sql.NullSt
 	return ret
 }
 
+func (t changesetTranslator) string(value *string, field string) string {
+	if value == nil {
+		return ""
+	}
+
+	return *value
+}
+
 func (t changesetTranslator) optionalString(value *string, field string) models.OptionalString {
 	if !t.hasField(field) {
 		return models.OptionalString{}
@@ -126,6 +134,27 @@ func (t changesetTranslator) optionalDate(value *string, field string) models.Op
 	}
 
 	return models.NewOptionalDate(models.NewDate(*value))
+}
+
+func (t changesetTranslator) datePtr(value *string, field string) *models.Date {
+	if value == nil {
+		return nil
+	}
+
+	d := models.NewDate(*value)
+	return &d
+}
+
+func (t changesetTranslator) intPtrFromString(value *string, field string) (*int, error) {
+	if value == nil || *value == "" {
+		return nil, nil
+	}
+
+	vv, err := strconv.Atoi(*value)
+	if err != nil {
+		return nil, fmt.Errorf("converting %v to int: %w", *value, err)
+	}
+	return &vv, nil
 }
 
 func (t changesetTranslator) nullInt64(value *int, field string) *sql.NullInt64 {
@@ -198,6 +227,14 @@ func (t changesetTranslator) nullBool(value *bool, field string) *sql.NullBool {
 	}
 
 	return ret
+}
+
+func (t changesetTranslator) bool(value *bool, field string) bool {
+	if value == nil {
+		return false
+	}
+
+	return *value
 }
 
 func (t changesetTranslator) optionalBool(value *bool, field string) models.OptionalBool {
