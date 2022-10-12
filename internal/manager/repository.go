@@ -31,7 +31,6 @@ type SceneReaderWriter interface {
 	models.SceneReaderWriter
 	scene.CreatorUpdater
 	GetManyFileIDs(ctx context.Context, ids []int) ([][]file.ID, error)
-	AssignFiles(ctx context.Context, sceneID int, fileID file.ID) error
 }
 
 type FileReaderWriter interface {
@@ -93,6 +92,7 @@ func sqliteRepository(d *sqlite.Database) Repository {
 }
 
 type SceneService interface {
+	AssignFile(ctx context.Context, sceneID int, fileID file.ID) error
 	Destroy(ctx context.Context, scene *models.Scene, fileDeleter *scene.FileDeleter, deleteGenerated, deleteFile bool) error
 }
 

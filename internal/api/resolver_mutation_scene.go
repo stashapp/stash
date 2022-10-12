@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -501,27 +500,7 @@ func (r *mutationResolver) SceneAssignFile(ctx context.Context, input AssignScen
 	fileID := file.ID(fileIDInt)
 
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		// ensure file isn't a primary file and that it is a video file
-		f, err := r.repository.File.Find(ctx, fileID)
-		if err != nil {
-			return err
-		}
-
-		ff := f[0]
-		if _, ok := ff.(*file.VideoFile); !ok {
-			return fmt.Errorf("%s is not a video file", ff.Base().Path)
-		}
-
-		isPrimary, err := r.repository.File.IsPrimary(ctx, fileID)
-		if err != nil {
-			return err
-		}
-
-		if isPrimary {
-			return errors.New("cannot reassign primary file")
-		}
-
-		return r.repository.Scene.AssignFiles(ctx, sceneID, fileID)
+		return r.Resolver.sceneService.AssignFile(ctx, sceneID, fileID)
 	}); err != nil {
 		return false, fmt.Errorf("assigning file to scene: %w", err)
 	}
