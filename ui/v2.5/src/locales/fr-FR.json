@@ -633,7 +633,7 @@
     "delete_alert": "Le·s {count, plural, one {{singularEntity}} suivant·s sur {{pluralEntity}}} sera·ont supprimé·s définitivement :",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer {entityName} ?",
     "delete_entity_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity} ? À moins que le fichier ne soit également supprimé, cette {singularEntity} sera ajoutée à nouveau lors de la prochaine analyse.} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity} ? À moins que les fichiers ne soient également supprimés, ces {pluralEntity} seront ajoutées à nouveau lors de la prochaine analyse.}}",
-    "delete_entity_simple_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity}?} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity}?}}",
+    "delete_entity_simple_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer ce {singularEntity}?} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Delete {singularEntity}} sur {Delete {pluralEntity}}}",
     "delete_galleries_extra": "…ainsi que tous fichiers image qui ne sont pas associés à une autre galerie.",
     "delete_gallery_files": "Supprime le répertoire ou l'archive zip de la galerie et toutes images qui ne sont pas associées à une autre galerie.",
