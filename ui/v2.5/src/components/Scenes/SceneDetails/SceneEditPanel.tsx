@@ -53,18 +53,14 @@ const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
 
 interface IProps {
   scene: Partial<GQL.SceneDataFragment>;
-  isNew: boolean;
+  isNew?: boolean;
   isVisible: boolean;
   onDelete?: () => void;
 }
 
-interface ISceneEditParams {
-  file_id: string;
-}
-
 export const SceneEditPanel: React.FC<IProps> = ({
   scene,
-  isNew,
+  isNew = false,
   isVisible,
   onDelete,
 }) => {
@@ -72,9 +68,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const Toast = useToast();
   const history = useHistory();
 
-  const queryParams = useMemo(() => queryString.parse(location.search), [
-    location.search,
-  ]);
+  const queryParams = queryString.parse(location.search);
 
   const fileID = (queryParams?.file_id ?? "") as string;
 
@@ -104,10 +98,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   useEffect(() => {
     setGalleries(
-      scene.galleries.map((g) => ({
+      scene.galleries?.map((g) => ({
         id: g.id,
         title: objectTitle(g),
-      }))
+      })) ?? []
     );
   }, [scene.galleries]);
 
@@ -293,7 +287,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
           Toast.success({
             content: intl.formatMessage(
               { id: "toast.updated_entity" },
-              { entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase() }
+              {
+                entity: intl.formatMessage({ id: "scene" }).toLocaleLowerCase(),
+              }
             ),
           });
         }
@@ -695,7 +691,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const image = useMemo(() => {
     if (imageEncoding) {
-      return <LoadingIndicator message="Encoding image..." />
+      return <LoadingIndicator message="Encoding image..." />;
     }
 
     if (coverImagePreview) {
@@ -709,7 +705,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     }
 
     return <div></div>;
-  }, [imageEncoding, coverImagePreview]);
+  }, [imageEncoding, coverImagePreview, intl]);
 
   if (isLoading) return <LoadingIndicator />;
 

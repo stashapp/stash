@@ -1,17 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { LoadingIndicator } from "src/components/Shared";
-import SceneEditPanel from "./SceneEditPanel";
-import * as GQL from "src/core/generated-graphql";
+import { SceneEditPanel } from "./SceneEditPanel";
 
 const SceneCreate: React.FC = () => {
   const intl = useIntl();
 
   return (
-    <div className="row new-view" id="scene-page">
-      {/* <div className="performer-image-container col-md-4 text-center">
-        {renderPerformerImage()}
-      </div> */}
+    <div className="row new-view justify-content-center" id="create-scene-page">
       <div className="col-md-8">
         <h2>
           <FormattedMessage
@@ -19,11 +14,7 @@ const SceneCreate: React.FC = () => {
             values={{ entityType: intl.formatMessage({ id: "scene" }) }}
           />
         </h2>
-        <SceneEditPanel
-          scene={{}}
-          isVisible
-          isNew
-        />
+        <SceneEditPanel scene={{}} isVisible isNew />
       </div>
     </div>
   );
