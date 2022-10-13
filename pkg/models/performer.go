@@ -109,6 +109,8 @@ type PerformerFilterType struct {
 	GalleryCount *IntCriterionInput `json:"gallery_count"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
+	// Filter by StashID Endpoint
+	StashIDEndpoint *StringCriterionInput `json:"stash_id_endpoint"`
 	// Filter by rating
 	Rating *IntCriterionInput `json:"rating"`
 	// Filter by url
