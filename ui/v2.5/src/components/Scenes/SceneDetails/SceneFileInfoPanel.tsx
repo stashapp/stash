@@ -53,7 +53,9 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
 
   function onSplit() {
-    history.push(`/scenes/new?from_scene_id=${props.sceneID}&file_id=${props.file.id}`);
+    history.push(
+      `/scenes/new?from_scene_id=${props.sceneID}&file_id=${props.file.id}`
+    );
   }
 
   return (
@@ -235,7 +237,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
 
     if (props.scene.files.length === 1) {
-      return <FileInfoPanel sceneID={props.scene.id} file={props.scene.files[0]} />;
+      return (
+        <FileInfoPanel sceneID={props.scene.id} file={props.scene.files[0]} />
+      );
     }
 
     async function onSetPrimaryFile(fileID: string) {

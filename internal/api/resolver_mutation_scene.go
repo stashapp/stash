@@ -320,7 +320,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	// only update the cover image if provided and everything else was successful
-	if coverImageData != nil {
+	if coverImageData != nil && s.Path != "" {
 		err = scene.SetScreenshot(manager.GetInstance().Paths, s.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
 		if err != nil {
 			return nil, err

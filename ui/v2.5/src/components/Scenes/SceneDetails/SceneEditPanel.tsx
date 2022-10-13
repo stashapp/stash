@@ -724,7 +724,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             <Button
               className="edit-button"
               variant="primary"
-              disabled={!formik.dirty}
+              disabled={!isNew && !formik.dirty}
               onClick={() => formik.submitForm()}
             >
               <FormattedMessage id="actions.save" />

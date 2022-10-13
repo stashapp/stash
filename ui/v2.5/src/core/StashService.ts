@@ -534,7 +534,10 @@ export const mutateSceneMerge = (
         values,
       },
     },
-    update: deleteCache(sceneMutationImpactedQueries),
+    update: deleteCache([
+      ...sceneMutationImpactedQueries,
+      GQL.FindSceneDocument,
+    ]),
     refetchQueries: getQueryNames([GQL.FindSceneDocument]),
   });
 
