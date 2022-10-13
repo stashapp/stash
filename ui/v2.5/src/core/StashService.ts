@@ -520,6 +520,24 @@ export const mutateSceneAssignFile = (sceneID: string, fileID: string) =>
     refetchQueries: getQueryNames([GQL.FindSceneDocument]),
   });
 
+export const mutateSceneMerge = (
+  destination: string,
+  source: string[],
+  values: GQL.SceneUpdateInput
+) =>
+  client.mutate<GQL.SceneMergeMutation>({
+    mutation: GQL.SceneMergeDocument,
+    variables: {
+      input: {
+        source,
+        destination,
+        values,
+      },
+    },
+    update: deleteCache(sceneMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+  });
+
 export const mutateCreateScene = (input: GQL.SceneCreateInput) =>
   client.mutate<GQL.SceneCreateMutation>({
     mutation: GQL.SceneCreateDocument,

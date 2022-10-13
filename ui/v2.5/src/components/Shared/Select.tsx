@@ -801,3 +801,106 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
   ) : (
     <TagSelect {...props} creatable={false} />
   );
+
+interface IStringListSelect {
+  options?: string[];
+  value: string[];
+}
+
+export const StringListSelect: React.FC<IStringListSelect> = ({
+  options = [],
+  value,
+}) => {
+  const translatedOptions = useMemo(() => {
+    return options.map((o) => {
+      return { label: o, value: o };
+    });
+  }, [options]);
+  const translatedValue = useMemo(() => {
+    return value.map((o) => {
+      return { label: o, value: o };
+    });
+  }, [value]);
+
+  const styles: Partial<Styles<Option, true>> = {
+    option: (base) => ({
+      ...base,
+      color: "#000",
+    }),
+    container: (base, props) => ({
+      ...base,
+      zIndex: props.selectProps.isFocused ? 10 : base.zIndex,
+    }),
+    multiValueRemove: (base, props) => ({
+      ...base,
+      color: props.selectProps.isFocused ? base.color : "#333333",
+    }),
+  };
+
+  return (
+    <Select
+      classNamePrefix="react-select"
+      className="form-control react-select"
+      options={translatedOptions}
+      value={translatedValue}
+      isMulti
+      isDisabled
+      styles={styles}
+      components={{
+        IndicatorSeparator: () => null,
+        ...{ DropdownIndicator: () => null },
+        ...{ MultiValueRemove: () => null },
+      }}
+    />
+  );
+};
+
+interface IListSelect<T> {
+  options?: T[];
+  value: T[];
+  toOptionType: (v: T) => { label: string; value: string };
+  fromOptionType?: (o: { label: string; value: string }) => T;
+}
+
+export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
+  const { options = [], value, toOptionType } = props;
+
+  const translatedOptions = useMemo(() => {
+    return options.map(toOptionType);
+  }, [options, toOptionType]);
+  const translatedValue = useMemo(() => {
+    return value.map(toOptionType);
+  }, [value, toOptionType]);
+
+  const styles: Partial<Styles<{ label: string; value: string }, true>> = {
+    option: (base) => ({
+      ...base,
+      color: "#000",
+    }),
+    container: (base, p) => ({
+      ...base,
+      zIndex: p.selectProps.isFocused ? 10 : base.zIndex,
+    }),
+    multiValueRemove: (base, p) => ({
+      ...base,
+      color: p.selectProps.isFocused ? base.color : "#333333",
+    }),
+  };
+
+  return (
+    <Select
+      classNamePrefix="react-select"
+      className="form-control react-select"
+      options={translatedOptions}
+      value={translatedValue}
+      isMulti
+      isDisabled
+      styles={styles}
+      components={{
+        IndicatorSeparator: () => null,
+        ...{ DropdownIndicator: () => null },
+        ...{ MultiValueRemove: () => null },
+      }}
+    />
+  );
+};

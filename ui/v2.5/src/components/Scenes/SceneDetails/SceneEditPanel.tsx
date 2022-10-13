@@ -297,7 +297,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         const createValues = getCreateValues(input);
         const result = await mutateCreateScene({
           ...createValues,
-          file_ids: [fileID as string],
+          file_ids: fileID ? [fileID as string] : undefined,
         });
         if (result.data?.sceneCreate?.id) {
           history.push(`/scenes/${result.data?.sceneCreate.id}`);

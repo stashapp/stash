@@ -668,6 +668,10 @@
         "zoom": "Zoom"
       }
     },
+    "merge": {
+      "destination": "Destination",
+      "source": "Source"
+    },
     "merge_tags": {
       "destination": "Destination",
       "source": "Source"
@@ -1053,6 +1057,7 @@
     "default_filter_set": "Default filter set",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generating screenshot…",
+    "merged_scenes": "Merged scenes",
     "merged_tags": "Merged tags",
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "reassign_past_tense": "File reassigned",

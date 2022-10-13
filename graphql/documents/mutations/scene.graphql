@@ -55,3 +55,9 @@ mutation SceneGenerateScreenshot($id: ID!, $at: Float) {
 mutation SceneAssignFile($input: AssignSceneFileInput!) {
   sceneAssignFile(input: $input)
 }
+
+mutation SceneMerge($input: SceneMergeInput!) {
+  sceneMerge(input: $input) {
+    id
+  }
+}
