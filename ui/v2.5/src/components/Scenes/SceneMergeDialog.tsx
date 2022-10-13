@@ -238,6 +238,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           result={galleries}
           renderOriginalField={() => (
             <GallerySelect
+              className="form-control react-select"
               selected={originalGalleries ?? []}
               onSelect={() => {}}
               disabled
@@ -245,6 +246,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           )}
           renderNewField={() => (
             <GallerySelect
+              className="form-control react-select"
               selected={newGalleries ?? []}
               onSelect={() => {}}
               disabled

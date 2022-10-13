@@ -96,6 +96,7 @@ interface IFilterSelectProps<T extends boolean>
 
 type TitledObject = { id: string; title: string };
 interface ITitledSelect {
+  className?: string;
   selected: TitledObject[];
   onSelect: (items: TitledObject[]) => void;
   isMulti?: boolean;
@@ -300,6 +301,7 @@ export const GallerySelect: React.FC<ITitledSelect> = (props) => {
 
   return (
     <SelectComponent
+      className={props.className}
       onChange={onChange}
       onInputChange={onInputChange}
       isLoading={loading}
