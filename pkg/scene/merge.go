@@ -51,17 +51,23 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int,
 		}
 	}
 
-	// don't change primary file via partial
-	scenePartial.PrimaryFileID = nil
-	if _, err := s.Repository.UpdatePartial(ctx, destinationID, scenePartial); err != nil {
-		return fmt.Errorf("updating scene: %w", err)
-	}
-
 	// move files to destination scene
 	if len(fileIDs) > 0 {
 		if err := s.Repository.AssignFiles(ctx, destinationID, fileIDs); err != nil {
 			return fmt.Errorf("moving files to destination scene: %w", err)
 		}
+
+		// if scene didn't already have a primary file, then set it now
+		if dest.PrimaryFileID == nil {
+			scenePartial.PrimaryFileID = &fileIDs[0]
+		} else {
+			// don't allow changing primary file ID from the input values
+			scenePartial.PrimaryFileID = nil
+		}
+	}
+
+	if _, err := s.Repository.UpdatePartial(ctx, destinationID, scenePartial); err != nil {
+		return fmt.Errorf("updating scene: %w", err)
 	}
 
 	// delete old scenes
