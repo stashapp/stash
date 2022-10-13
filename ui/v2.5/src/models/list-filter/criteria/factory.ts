@@ -157,6 +157,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "aliases":
     case "url":
     case "stash_id":
+    case "stash_id_endpoint":
     case "details":
     case "title":
     case "director":

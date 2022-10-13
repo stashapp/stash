@@ -243,6 +243,12 @@ func (qb *studioQueryBuilder) makeFilter(ctx context.Context, studioFilter *mode
 			stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
 		}
 	}))
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if studioFilter.StashIDEndpoint != nil {
+			qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
+			stringCriterionHandler(studioFilter.StashIDEndpoint, "studio_stash_ids.endpoint")(ctx, f)
+		}
+	}))
 
 	query.handleCriterion(ctx, studioIsMissingCriterionHandler(qb, studioFilter.IsMissing))
 	query.handleCriterion(ctx, studioSceneCountCriterionHandler(qb, studioFilter.SceneCount))

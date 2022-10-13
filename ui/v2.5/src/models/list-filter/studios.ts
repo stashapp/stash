@@ -41,6 +41,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("gallery_count"),
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
+  createStringCriterionOption("stash_id_endpoint"),
   createStringCriterionOption("aliases"),
 ];
 

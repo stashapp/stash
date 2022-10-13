@@ -306,6 +306,12 @@ func (qb *performerQueryBuilder) makeFilter(ctx context.Context, filter *models.
 			stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
 		}
 	}))
+	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
+		if filter.StashIDEndpoint != nil {
+			qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
+			stringCriterionHandler(filter.StashIDEndpoint, "performer_stash_ids.endpoint")(ctx, f)
+		}
+	}))
 
 	// TODO - need better handling of aliases
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Aliases, tableName+".aliases"))

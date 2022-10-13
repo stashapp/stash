@@ -89,6 +89,8 @@ input PerformerFilterType {
   gallery_count: IntCriterionInput
   """Filter by StashID"""
   stash_id: StringCriterionInput
+  """Filter by StashID Endpoint"""
+  stash_id_endpoint: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
   """Filter by url"""
@@ -170,6 +172,8 @@ input SceneFilterType {
   performer_count: IntCriterionInput
   """Filter by StashID"""
   stash_id: StringCriterionInput
+  """Filter by StashID Endpoint"""
+  stash_id_endpoint: StringCriterionInput
   """Filter by url"""
   url: StringCriterionInput
   """Filter by interactive"""
@@ -211,6 +215,8 @@ input StudioFilterType {
   parents: MultiCriterionInput
   """Filter by StashID"""
   stash_id: StringCriterionInput
+  """Filter by StashBox Endpoint"""
+  stash_id_endpoint: StringCriterionInput
   """Filter to only include studios missing this property"""
   is_missing: String
   """Filter by rating"""

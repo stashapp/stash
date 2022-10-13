@@ -79,6 +79,7 @@ const criterionOptions = [
   MoviesCriterionOption,
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
+  createStringCriterionOption("stash_id_endpoint"),
   InteractiveCriterionOption,
   CaptionsCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),

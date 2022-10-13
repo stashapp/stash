@@ -66,6 +66,7 @@ const stringCriteria: CriterionType[] = [
   "piercings",
   "aliases",
   "stash_id",
+  "stash_id_endpoint",
 ];
 
 const criterionOptions = [
