@@ -859,7 +859,15 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.StashIDEndpoint != nil {
 			qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
-			stringCriterionHandler(sceneFilter.StashIDEndpoint, "scene_stash_ids.endpoint")(ctx, f)
+			endpoint := sceneFilter.StashIDEndpoint.Value
+			switch sceneFilter.StashIDEndpoint.Modifier {
+			case models.CriterionModifierExcludes:
+				f.addWhere(fmt.Sprintf("scenes.id NOT IN (SELECT scene_id FROM scene_stash_ids WHERE endpoint LIKE \"%%%s%%\")", endpoint))
+			case models.CriterionModifierNotEquals:
+				f.addWhere(fmt.Sprintf("scenes.id NOT IN (SELECT scene_id FROM scene_stash_ids WHERE endpoint = \"%s\")", endpoint))
+			default:
+				stringCriterionHandler(sceneFilter.StashIDEndpoint, "scene_stash_ids.endpoint")(ctx, f)
+			}
 		}
 	}))
 
