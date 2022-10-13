@@ -12,6 +12,7 @@ import { NavUtils, TextUtils, getStashboxBase } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
 
 interface IFileInfoPanelProps {
+  sceneID: string;
   file: GQL.VideoFileDataFragment;
   primary?: boolean;
   ofMany?: boolean;
@@ -52,7 +53,7 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
 
   function onSplit() {
-    history.push(`/scenes/new?file_id=${props.file.id}`);
+    history.push(`/scenes/new?from_scene_id=${props.sceneID}&file_id=${props.file.id}`);
   }
 
   return (
@@ -234,7 +235,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     }
 
     if (props.scene.files.length === 1) {
-      return <FileInfoPanel file={props.scene.files[0]} />;
+      return <FileInfoPanel sceneID={props.scene.id} file={props.scene.files[0]} />;
     }
 
     async function onSetPrimaryFile(fileID: string) {
@@ -270,6 +271,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
             <Accordion.Collapse eventKey={file.id}>
               <Card.Body>
                 <FileInfoPanel
+                  sceneID={props.scene.id}
                   file={file}
                   primary={index === 0}
                   ofMany
