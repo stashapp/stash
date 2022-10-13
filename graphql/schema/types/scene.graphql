@@ -215,4 +215,6 @@ input SceneMergeInput {
   first source scene will be assigned as primary"""
   source: [ID!]!
   destination: ID!
+  # values defined here will override values in the destination
+  values: SceneUpdateInput
 }

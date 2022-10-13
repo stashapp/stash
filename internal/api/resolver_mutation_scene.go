@@ -162,44 +162,14 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 	return newRet, nil
 }
 
-func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator) (*models.Scene, error) {
-	// Populate scene from the input
-	sceneID, err := strconv.Atoi(input.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	qb := r.repository.Scene
-
-	s, err := qb.Find(ctx, sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	if s == nil {
-		return nil, fmt.Errorf("scene with id %d not found", sceneID)
-	}
-
-	var coverImageData []byte
-
+func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTranslator) (*models.ScenePartial, error) {
 	updatedScene := models.NewScenePartial()
 	updatedScene.Title = translator.optionalString(input.Title, "title")
-
-	// ensure that title is set where scene has no file
-	if updatedScene.Title.Set && updatedScene.Title.Value == "" {
-		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
-			return nil, err
-		}
-
-		if len(s.Files.List()) == 0 {
-			return nil, errors.New("title must be set if scene has no files")
-		}
-	}
-
 	updatedScene.Details = translator.optionalString(input.Details, "details")
 	updatedScene.URL = translator.optionalString(input.URL, "url")
 	updatedScene.Date = translator.optionalDate(input.Date, "date")
 	updatedScene.Rating = translator.optionalInt(input.Rating, "rating")
+	var err error
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
 		return nil, fmt.Errorf("converting studio id: %w", err)
@@ -215,36 +185,6 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 		converted := file.ID(primaryFileID)
 		updatedScene.PrimaryFileID = &converted
-
-		// if file hash has changed, we should migrate generated files
-		// after commit
-		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
-			return nil, err
-		}
-
-		// ensure that new primary file is associated with scene
-		var f *file.VideoFile
-		for _, ff := range s.Files.List() {
-			if ff.ID == converted {
-				f = ff
-			}
-		}
-
-		if f == nil {
-			return nil, fmt.Errorf("file with id %d not associated with scene", converted)
-		}
-
-		fileNamingAlgorithm := config.GetInstance().GetVideoFileNamingAlgorithm()
-		oldHash := scene.GetHash(s.Files.Primary(), fileNamingAlgorithm)
-		newHash := scene.GetHash(f, fileNamingAlgorithm)
-
-		if oldHash != "" && newHash != "" && oldHash != newHash {
-			// perform migration after commit
-			txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
-				scene.MigrateHash(manager.GetInstance().Paths, oldHash, newHash)
-				return nil
-			})
-		}
 	}
 
 	if translator.hasField("performer_ids") {
@@ -284,6 +224,79 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		}
 	}
 
+	return &updatedScene, nil
+}
+
+func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUpdateInput, translator changesetTranslator) (*models.Scene, error) {
+	// Populate scene from the input
+	sceneID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	qb := r.repository.Scene
+
+	s, err := qb.Find(ctx, sceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	if s == nil {
+		return nil, fmt.Errorf("scene with id %d not found", sceneID)
+	}
+
+	var coverImageData []byte
+
+	updatedScene, err := scenePartialFromInput(input, translator)
+	if err != nil {
+		return nil, err
+	}
+
+	// ensure that title is set where scene has no file
+	if updatedScene.Title.Set && updatedScene.Title.Value == "" {
+		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+			return nil, err
+		}
+
+		if len(s.Files.List()) == 0 {
+			return nil, errors.New("title must be set if scene has no files")
+		}
+	}
+
+	if updatedScene.PrimaryFileID != nil {
+		newPrimaryFileID := *updatedScene.PrimaryFileID
+
+		// if file hash has changed, we should migrate generated files
+		// after commit
+		if err := s.LoadFiles(ctx, r.repository.Scene); err != nil {
+			return nil, err
+		}
+
+		// ensure that new primary file is associated with scene
+		var f *file.VideoFile
+		for _, ff := range s.Files.List() {
+			if ff.ID == newPrimaryFileID {
+				f = ff
+			}
+		}
+
+		if f == nil {
+			return nil, fmt.Errorf("file with id %d not associated with scene", newPrimaryFileID)
+		}
+
+		fileNamingAlgorithm := config.GetInstance().GetVideoFileNamingAlgorithm()
+		oldHash := scene.GetHash(s.Files.Primary(), fileNamingAlgorithm)
+		newHash := scene.GetHash(f, fileNamingAlgorithm)
+
+		if oldHash != "" && newHash != "" && oldHash != newHash {
+			// perform migration after commit
+			txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+				scene.MigrateHash(manager.GetInstance().Paths, oldHash, newHash)
+				return nil
+			})
+		}
+	}
+
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
 		coverImageData, err = utils.ProcessImageInput(ctx, *input.CoverImage)
@@ -294,7 +307,7 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		// update the cover after updating the scene
 	}
 
-	s, err = qb.UpdatePartial(ctx, sceneID, updatedScene)
+	s, err = qb.UpdatePartial(ctx, sceneID, *updatedScene)
 	if err != nil {
 		return nil, err
 	}
@@ -599,9 +612,24 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		return nil, fmt.Errorf("converting destination ID %s: %w", input.Destination, err)
 	}
 
+	var values *models.ScenePartial
+	if input.Values != nil {
+		translator := changesetTranslator{
+			inputMap: getNamedUpdateInputMap(ctx, "input.values"),
+		}
+
+		values, err = scenePartialFromInput(*input.Values, translator)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		v := models.NewScenePartial()
+		values = &v
+	}
+
 	var ret *models.Scene
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID); err != nil {
+		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, *values); err != nil {
 			return err
 		}
 

@@ -14,7 +14,7 @@ import (
 	"github.com/stashapp/stash/pkg/txn"
 )
 
-func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int) error {
+func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int, scenePartial models.ScenePartial) error {
 	// ensure source ids are unique
 	sourceIDs = intslice.IntAppendUniques(nil, sourceIDs)
 
@@ -34,7 +34,6 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int)
 	}
 
 	var fileIDs []file.ID
-	scenePartial := models.NewScenePartial()
 
 	for _, src := range sources {
 		// TODO - delete generated files as needed
@@ -47,13 +46,13 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int)
 			fileIDs = append(fileIDs, f.Base().ID)
 		}
 
-		mergeSceneFields(&scenePartial, dest, src)
-
 		if err := s.mergeSceneMarkers(ctx, dest, src); err != nil {
 			return err
 		}
 	}
 
+	// don't change primary file via partial
+	scenePartial.PrimaryFileID = nil
 	if _, err := s.Repository.UpdatePartial(ctx, destinationID, scenePartial); err != nil {
 		return fmt.Errorf("updating scene: %w", err)
 	}
@@ -73,72 +72,6 @@ func (s *Service) Merge(ctx context.Context, sourceIDs []int, destinationID int)
 	}
 
 	return nil
-}
-
-func mergeSceneFields(scenePartial *models.ScenePartial, dest *models.Scene, src *models.Scene) {
-	// copy fields if they are not set
-	scenePartial.Title.Merge(dest.Title, src.Title)
-	scenePartial.Details.Merge(dest.Details, src.Details)
-	scenePartial.URL.Merge(dest.URL, src.URL)
-	scenePartial.Date.MergePtr(dest.Date, src.Date)
-	scenePartial.Rating.MergePtr(dest.Rating, src.Rating)
-	scenePartial.Organized.Merge(dest.Organized, src.Organized)
-	scenePartial.StudioID.MergePtr(dest.StudioID, src.StudioID)
-
-	// add o-counters
-	if src.OCounter > 0 {
-		if !scenePartial.OCounter.Set {
-			scenePartial.OCounter = models.NewOptionalInt(dest.OCounter)
-		}
-
-		scenePartial.OCounter.Value += src.OCounter
-	}
-
-	scenePartial.GalleryIDs = mergeUpdateIDs(scenePartial.GalleryIDs, src.GalleryIDs)
-	scenePartial.TagIDs = mergeUpdateIDs(scenePartial.TagIDs, src.TagIDs)
-	scenePartial.PerformerIDs = mergeUpdateIDs(scenePartial.PerformerIDs, src.PerformerIDs)
-
-	if len(src.Movies.List()) > 0 {
-		if scenePartial.MovieIDs == nil {
-			scenePartial.MovieIDs = &models.UpdateMovieIDs{
-				// use set so that we can avoid duplicates
-				Mode:   models.RelationshipUpdateModeSet,
-				Movies: dest.Movies.List(),
-			}
-		}
-
-		for _, v := range src.Movies.List() {
-			scenePartial.MovieIDs.AddUnique(v)
-		}
-	}
-
-	if len(src.StashIDs.List()) > 0 {
-		if scenePartial.StashIDs == nil {
-			scenePartial.StashIDs = &models.UpdateStashIDs{
-				Mode:     models.RelationshipUpdateModeSet,
-				StashIDs: dest.StashIDs.List(),
-			}
-		}
-
-		for _, v := range src.StashIDs.List() {
-			scenePartial.StashIDs.AddUnique(v)
-		}
-	}
-}
-
-func mergeUpdateIDs(dest *models.UpdateIDs, src models.RelatedIDs) *models.UpdateIDs {
-	if len(src.List()) == 0 {
-		return dest
-	}
-
-	if dest == nil {
-		dest = &models.UpdateIDs{
-			Mode: models.RelationshipUpdateModeAdd,
-		}
-	}
-
-	dest.IDs = intslice.IntAppendUniques(dest.IDs, src.List())
-	return dest
 }
 
 func (s *Service) mergeSceneMarkers(ctx context.Context, dest *models.Scene, src *models.Scene) error {

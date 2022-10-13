@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/models"
@@ -19,19 +20,35 @@ func getArgumentMap(ctx context.Context) map[string]interface{} {
 }
 
 func getUpdateInputMap(ctx context.Context) map[string]interface{} {
+	return getNamedUpdateInputMap(ctx, updateInputField)
+}
+
+func getNamedUpdateInputMap(ctx context.Context, field string) map[string]interface{} {
 	args := getArgumentMap(ctx)
 
-	input := args[updateInputField]
-	var ret map[string]interface{}
-	if input != nil {
-		ret, _ = input.(map[string]interface{})
+	// field can be qualified
+	fields := strings.Split(field, ".")
+
+	currArgs := args
+
+	for _, f := range fields {
+		v, found := currArgs[f]
+		if !found {
+			currArgs = nil
+			break
+		}
+
+		currArgs, _ = v.(map[string]interface{})
+		if currArgs == nil {
+			break
+		}
 	}
 
-	if ret == nil {
-		ret = make(map[string]interface{})
+	if currArgs != nil {
+		return currArgs
 	}
 
-	return ret
+	return make(map[string]interface{})
 }
 
 func getUpdateInputMaps(ctx context.Context) []map[string]interface{} {
