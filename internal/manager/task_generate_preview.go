@@ -73,6 +73,10 @@ func (t GeneratePreviewTask) generateWebp(videoChecksum string) error {
 }
 
 func (t GeneratePreviewTask) required() bool {
+	if t.Scene.Path == "" {
+		return false
+	}
+
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	videoExists := t.doesVideoPreviewExist(sceneHash)
 	imageExists := !t.ImagePreview || t.doesImagePreviewExist(sceneHash)

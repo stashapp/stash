@@ -697,6 +697,11 @@ func (t *autoTagSceneTask) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	r := t.txnManager
 	if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if t.scene.Path == "" {
+			// nothing to do
+			return nil
+		}
+
 		if t.performers {
 			if err := autotag.ScenePerformers(ctx, t.scene, r.Scene, r.Performer, t.cache); err != nil {
 				return fmt.Errorf("error tagging scene performers for %s: %v", t.scene.DisplayName(), err)
