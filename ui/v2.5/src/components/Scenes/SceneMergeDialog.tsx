@@ -1,8 +1,9 @@
-import { Form, Col, Row } from "react-bootstrap";
+import { Form, Col, Row, Button } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import {
   GallerySelect,
+  Icon,
   Modal,
   SceneSelect,
   StringListSelect,
@@ -11,7 +12,7 @@ import { FormUtils } from "src/utils";
 import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";
 import { useIntl } from "react-intl";
 import { useToast } from "src/hooks";
-import { faSignInAlt } from "@fortawesome/free-solid-svg-icons";
+import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
   ScrapeDialog,
   ScrapeDialogRow,
@@ -171,7 +172,21 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     );
 
     setStashIDs(
-      new ScrapeResult(dest.stash_ids, uniq(all.map((s) => s.stash_ids).flat()))
+      new ScrapeResult(
+        dest.stash_ids,
+        all
+          .map((s) => s.stash_ids)
+          .flat()
+          .filter((s, index, a) => {
+            // remove duplicates
+            return (
+              index ===
+              a.findIndex(
+                (ss) => ss.endpoint === s.endpoint && ss.stash_id === s.stash_id
+              )
+            );
+          })
+      )
     );
   }, [sources, dest]);
 
@@ -429,6 +444,14 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
     return sourceScenes.length > 0 && destScene.length !== 0;
   }
 
+  function switchScenes() {
+    if (sourceScenes.length && destScene.length) {
+      const newDest = sourceScenes[0];
+      setSourceScenes([...sourceScenes.slice(1), destScene[0]]);
+      setDestScene([newDest]);
+    }
+  }
+
   if (secondStep && destScene.length > 0) {
     return (
       <SceneMergeDetails
@@ -479,6 +502,20 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
                 selected={sourceScenes}
               />
             </Col>
+          </Form.Group>
+          <Form.Group
+            controlId="switch"
+            as={Row}
+            className="justify-content-center"
+          >
+            <Button
+              variant="secondary"
+              onClick={() => switchScenes()}
+              disabled={!sourceScenes.length || !destScene.length}
+              title={intl.formatMessage({ id: "actions.swap" })}
+            >
+              <Icon className="fa-fw" icon={faExchangeAlt} />
+            </Button>
           </Form.Group>
           <Form.Group controlId="destination" as={Row}>
             {FormUtils.renderLabel({
