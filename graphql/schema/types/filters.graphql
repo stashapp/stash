@@ -424,6 +424,7 @@ input ImageFilterType {
   rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
   rating100: IntCriterionInput
+  url: StringCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by o-counter"""

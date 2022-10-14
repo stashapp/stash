@@ -1,6 +1,8 @@
 fragment SlimImageData on Image {
   id
   title
+  date
+  url
   rating100
   organized
   o_counter

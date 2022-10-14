@@ -44,6 +44,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("performer_count"),
   PerformerFavoriteCriterionOption,
   StudiosCriterionOption,
+  createStringCriterionOption("url"),
   createMandatoryNumberCriterionOption("file_count"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),

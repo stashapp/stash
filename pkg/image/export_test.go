@@ -25,6 +25,7 @@ const (
 var (
 	title     = "title"
 	rating    = 5
+	url       = "http://a.com"
 	organized = true
 	ocounter  = 2
 )
@@ -52,6 +53,7 @@ func createFullImage(id int) models.Image {
 		Title:     title,
 		OCounter:  ocounter,
 		Rating:    &rating,
+		URL:       url,
 		Organized: organized,
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
@@ -63,6 +65,7 @@ func createFullJSONImage() *jsonschema.Image {
 		Title:     title,
 		OCounter:  ocounter,
 		Rating:    rating,
+		URL:       url,
 		Organized: organized,
 		Files:     []string{path},
 		CreatedAt: json.JSONTime{

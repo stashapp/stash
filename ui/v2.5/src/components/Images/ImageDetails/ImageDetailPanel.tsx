@@ -6,7 +6,7 @@ import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
 
 interface IImageDetailProps {
@@ -91,6 +91,15 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
               <TruncatedText text={objectTitle(props.image)} />
             </h3>
           </div>
+          {props.image.date ? (
+            <h5>
+              <FormattedDate
+                value={props.image.date}
+                format="long"
+                timeZone="utc"
+              />
+            </h5>
+          ) : undefined}
           {props.image.rating100 ? (
             <h6>
               <FormattedMessage id="rating" />:{" "}

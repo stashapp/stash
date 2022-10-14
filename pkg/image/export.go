@@ -15,6 +15,8 @@ import (
 func ToBasicJSON(image *models.Image) *jsonschema.Image {
 	newImageJSON := jsonschema.Image{
 		Title:     image.Title,
+		URL:       image.URL,
+		Date:      image.Date.Time.String(),
 		CreatedAt: json.JSONTime{Time: image.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: image.UpdatedAt},
 	}

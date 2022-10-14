@@ -10,6 +10,7 @@ import {
   TagSelect,
   StudioSelect,
   LoadingIndicator,
+  URLField,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
@@ -39,6 +40,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const schema = yup.object({
     title: yup.string().optional().nullable(),
     rating100: yup.number().optional().nullable(),
+    url: yup.string().optional().nullable(),
+    date: yup.string().optional().nullable(),
     studio_id: yup.string().optional().nullable(),
     performer_ids: yup.array(yup.string().required()).optional().nullable(),
     tag_ids: yup.array(yup.string().required()).optional().nullable(),
@@ -47,6 +50,8 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const initialValues = {
     title: image.title ?? "",
     rating100: image.rating100 ?? null,
+    url: image?.url ?? "",
+    date: image?.date ?? "",
     studio_id: image.studio?.id,
     performer_ids: (image.performers ?? []).map((p) => p.id),
     tag_ids: (image.tags ?? []).map((t) => t.id),
@@ -189,6 +194,28 @@ export const ImageEditPanel: React.FC<IProps> = ({
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
+            <Form.Group controlId="url" as={Row}>
+              <Col xs={3} className="pr-0 url-label">
+                <Form.Label className="col-form-label">
+                  <FormattedMessage id="url" />
+                </Form.Label>
+              </Col>
+              <Col xs={9}>
+                <URLField
+                  {...formik.getFieldProps("url")}
+                  onScrapeClick={() => {}}
+                  urlScrapable={(url) => {
+                    return false;
+                  }}
+                  isInvalid={!!formik.getFieldMeta("url").error}
+                />
+              </Col>
+            </Form.Group>
+            {renderTextField(
+              "date",
+              intl.formatMessage({ id: "date" }),
+              "YYYY-MM-DD"
+            )}
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "rating" }),
