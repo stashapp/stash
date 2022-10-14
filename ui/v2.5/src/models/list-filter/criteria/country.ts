@@ -1,3 +1,4 @@
+import { getCountryByISO } from "src/utils";
 import { StringCriterion, StringCriterionOption } from "./criterion";
 
 const countryCriterionOption = new StringCriterionOption(
@@ -9,5 +10,9 @@ const countryCriterionOption = new StringCriterionOption(
 export class CountryCriterion extends StringCriterion {
   constructor() {
     super(countryCriterionOption);
+  }
+
+  public getLabelValue() {
+    return getCountryByISO(this.value) ?? this.value;
   }
 }

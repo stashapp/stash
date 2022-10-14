@@ -28,6 +28,8 @@ import { LabeledIdFilter } from "./Filters/LabeledIdFilter";
 import { HierarchicalLabelValueFilter } from "./Filters/HierarchicalLabelValueFilter";
 import { OptionsFilter } from "./Filters/OptionsFilter";
 import { InputFilter } from "./Filters/InputFilter";
+import { CountryCriterion } from "src/models/list-filter/criteria/country";
+import { CountrySelect } from "../Shared";
 
 interface IAddFilterProps {
   onAddCriterion: (
@@ -171,6 +173,14 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       if (criterion instanceof NumberCriterion) {
         return (
           <NumberFilter criterion={criterion} onValueChanged={onValueChanged} />
+        );
+      }
+      if (criterion instanceof CountryCriterion) {
+        return (
+          <CountrySelect
+            value={criterion.value}
+            onChange={(v) => onValueChanged(v)}
+          />
         );
       }
       return (
