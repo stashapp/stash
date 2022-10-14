@@ -244,6 +244,10 @@
         "username": "用戶名",
         "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證"
       },
+      "backup_directory_path": {
+        "description": "SQLite 資料庫備份的檔案位置",
+        "heading": "備份目錄位置"
+      },
       "cache_location": "快取的檔案位置",
       "cache_path_head": "快取路徑",
       "calculate_md5_and_ohash_desc": "除 oshash 外，同時也計算 MD5 的雜湊值。開啟後，可能會影響初次掃描的速度。若要關閉 MD5 計算，請將『生成檔案名所使用的雜湊演算法』設為 oshash。",
