@@ -1,7 +1,7 @@
-UPDATE performers
-SET country = CASE
-  WHEN LENGTH(TRIM(country)) == 2 THEN TRIM(country)
-  ELSE CASE country
+UPDATE `performers`
+SET `country` = CASE
+  WHEN LENGTH(TRIM(`country`)) == 2 THEN TRIM(`country`)
+  ELSE CASE `country`
 		WHEN 'Afghanistan' THEN 'AF'
 		WHEN 'Albania' THEN 'AL'
 		WHEN 'Algeria' THEN 'DZ'
@@ -264,6 +264,6 @@ SET country = CASE
 		WHEN 'Sint Maarten (Dutch part)' THEN 'SX'
 		WHEN 'South Sudan' THEN 'SS'
 		WHEN 'Kosovo' THEN 'XK'
-		ELSE NULL
+		ELSE `country`
 	END
 END;
