@@ -106,6 +106,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
       <div className="queue-controls">
         <div>
           <Form.Check
+            id="continue-checkbox"
             checked={continuePlaylist}
             label={intl.formatMessage({ id: "actions.continue" })}
             onChange={() => {
