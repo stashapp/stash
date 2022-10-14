@@ -415,7 +415,9 @@ export const ScrapedCountryRow: React.FC<IScrapedCountryRowProps> = ({
     result={result}
     renderOriginalField={() => (
       <FormControl
-        value={getCountryByISO(result.originalValue, locale)}
+        value={
+          getCountryByISO(result.originalValue, locale) ?? result.originalValue
+        }
         readOnly
         className="bg-secondary text-white border-secondary"
       />
