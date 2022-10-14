@@ -116,7 +116,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       <TextField id="eye_color" value={performer.eye_color} />
       <TextField
         id="country"
-        value={getCountryByISO(performer.country, intl.locale)}
+        value={
+          getCountryByISO(performer.country, intl.locale) ?? performer.country
+        }
       />
       <TextField id="height" value={formatHeight(performer.height)} />
       <TextField id="weight" value={formatWeight(performer.weight)} />

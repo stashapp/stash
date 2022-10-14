@@ -1,5 +1,5 @@
 import React from "react";
-import Select from "react-select";
+import Creatable from "react-select/creatable";
 import { useIntl } from "react-intl";
 import { getCountries } from "src/utils";
 import CountryLabel from "./CountryLabel";
@@ -23,10 +23,13 @@ const CountrySelect: React.FC<IProps> = ({
 }) => {
   const { locale } = useIntl();
   const options = getCountries(locale);
-  const selected = options.find((opt) => opt.value === value);
+  const selected = options.find((opt) => opt.value === value) ?? {
+    label: value,
+    value,
+  };
 
   return (
-    <Select
+    <Creatable
       classNamePrefix="react-select"
       value={selected}
       isClearable={isClearable}

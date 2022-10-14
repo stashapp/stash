@@ -7,16 +7,22 @@ interface ICountryFlag {
   className?: string;
 }
 
-const CountryFlag: React.FC<ICountryFlag> = ({ className, country }) => {
+const CountryFlag: React.FC<ICountryFlag> = ({
+  className,
+  country: isoCountry,
+}) => {
   const { locale } = useIntl();
-  if (!country) return <></>;
+
+  const country = getCountryByISO(isoCountry, locale);
+
+  if (!isoCountry || !country) return <></>;
 
   return (
     <span
       className={`${
         className ?? ""
-      } flag-icon flag-icon-${country.toLowerCase()}`}
-      title={getCountryByISO(country, locale)}
+      } flag-icon flag-icon-${isoCountry.toLowerCase()}`}
+      title={country}
     />
   );
 };

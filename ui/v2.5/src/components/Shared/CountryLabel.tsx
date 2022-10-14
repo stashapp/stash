@@ -11,10 +11,12 @@ interface IProps {
 const CountryLabel: React.FC<IProps> = ({ country, showFlag = true }) => {
   const { locale } = useIntl();
 
+  const fromISO = getCountryByISO(country, locale);
+
   return (
     <div>
-      {showFlag && <CountryFlag country={country} />}
-      <span className="ml-2">{getCountryByISO(country, locale)}</span>
+      {showFlag && <CountryFlag className="mr-2" country={country} />}
+      <span>{fromISO ?? country}</span>
     </div>
   );
 };
