@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/file/video"
@@ -57,11 +58,13 @@ func (j *ScanJob) Execute(ctx context.Context, progress *job.Progress) {
 	}
 
 	j.scanner.Scan(ctx, getScanHandlers(j.input, taskQueue, progress), file.ScanOptions{
-		Paths:                  paths,
-		ScanFilters:            []file.PathFilter{newScanFilter(instance.Config, minModTime)},
-		ZipFileExtensions:      instance.Config.GetGalleryExtensions(),
-		ParallelTasks:          instance.Config.GetParallelTasksWithAutoDetection(),
-		HandlerRequiredFilters: []file.Filter{newHandlerRequiredFilter(instance.Config)},
+		Paths:             paths,
+		ScanFilters:       []file.PathFilter{newScanFilter(instance.Config, minModTime)},
+		ZipFileExtensions: instance.Config.GetGalleryExtensions(),
+		ParallelTasks:     instance.Config.GetParallelTasksWithAutoDetection(),
+		HandlerRequiredFilters: []file.Filter{
+			newHandlerRequiredFilter(instance.Config),
+		},
 	}, progress)
 
 	taskQueue.Close()
@@ -95,22 +98,31 @@ type fileCounter interface {
 	CountByFileID(ctx context.Context, fileID file.ID) (int, error)
 }
 
+type galleryFinder interface {
+	fileCounter
+	FindByFolderID(ctx context.Context, folderID file.FolderID) ([]*models.Gallery, error)
+}
+
 // handlerRequiredFilter returns true if a File's handler needs to be executed despite the file not being updated.
 type handlerRequiredFilter struct {
 	extensionConfig
 	SceneFinder   fileCounter
 	ImageFinder   fileCounter
-	GalleryFinder fileCounter
+	GalleryFinder galleryFinder
+
+	FolderCache *lru.LRU
 }
 
 func newHandlerRequiredFilter(c *config.Instance) *handlerRequiredFilter {
 	db := instance.Database
+	processes := c.GetParallelTasksWithAutoDetection()
 
 	return &handlerRequiredFilter{
 		extensionConfig: newExtensionConfig(c),
 		SceneFinder:     db.Scene,
 		ImageFinder:     db.Image,
 		GalleryFinder:   db.Gallery,
+		FolderCache:     lru.New(processes * 2),
 	}
 }
 
@@ -143,7 +155,32 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 	}
 
 	// execute handler if there are no related objects
-	return n == 0
+	if n == 0 {
+		return true
+	}
+
+	// if create galleries from folder is enabled and the file is not in a zip
+	// file, then check if there is a folder-based gallery for the file's
+	// directory
+	if isImageFile && instance.Config.GetCreateGalleriesFromFolders() && ff.Base().ZipFileID == nil {
+		// only do this for the first time it encounters the folder
+		// the first instance should create the gallery
+		_, found := f.FolderCache.Get(ctx, ff.Base().ParentFolderID.String())
+		if found {
+			// should already be handled
+			return false
+		}
+
+		g, _ := f.GalleryFinder.FindByFolderID(ctx, ff.Base().ParentFolderID)
+		f.FolderCache.Add(ctx, ff.Base().ParentFolderID.String(), true)
+
+		if len(g) == 0 {
+			// no folder gallery. Return true so that it creates one.
+			return true
+		}
+	}
+
+	return false
 }
 
 type scanFilter struct {
@@ -248,6 +285,7 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 					isGenerateThumbnails: options.ScanGenerateThumbnails,
 				},
 				PluginCache: pluginCache,
+				Paths:       instance.Paths,
 			},
 		},
 		&file.FilteredHandler{
@@ -255,6 +293,7 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 			Handler: &gallery.ScanHandler{
 				CreatorUpdater:     db.Gallery,
 				SceneFinderUpdater: db.Scene,
+				ImageFinderUpdater: db.Image,
 				PluginCache:        pluginCache,
 			},
 		},
@@ -269,6 +308,8 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 					taskQueue: taskQueue,
 					progress:  progress,
 				},
+				FileNamingAlgorithm: instance.Config.GetVideoFileNamingAlgorithm(),
+				Paths:               instance.Paths,
 			},
 		},
 	}

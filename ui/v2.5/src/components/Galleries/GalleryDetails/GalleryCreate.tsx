@@ -1,9 +1,18 @@
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useLocation } from "react-router-dom";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 
 const GalleryCreate: React.FC = () => {
   const intl = useIntl();
+
+  function useQuery() {
+    const { search } = useLocation();
+    return React.useMemo(() => new URLSearchParams(search), [search]);
+  }
+
+  const query = useQuery();
+  const nameQuery = query.get("name");
 
   return (
     <div className="row new-view">
@@ -16,7 +25,7 @@ const GalleryCreate: React.FC = () => {
         </h2>
         <GalleryEditPanel
           isNew
-          gallery={undefined}
+          gallery={{ title: nameQuery ?? "" }}
           isVisible
           onDelete={() => {}}
         />

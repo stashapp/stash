@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strconv"
 	"time"
@@ -32,6 +33,10 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input TagCreateInput) 
 		Name:      input.Name,
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+	}
+
+	if input.Description != nil {
+		newTag.Description = sql.NullString{String: *input.Description, Valid: true}
 	}
 
 	if input.IgnoreAutoTag != nil {
@@ -194,6 +199,8 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input TagUpdateInput) 
 
 			updatedTag.Name = input.Name
 		}
+
+		updatedTag.Description = translator.nullString(input.Description, "description")
 
 		t, err = qb.Update(ctx, updatedTag)
 		if err != nil {

@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -40,12 +41,15 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		readTxnErr := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			image, _ = rs.tagFinder.GetImage(ctx, tag.ID)
 			return nil
 		})
-		if err != nil {
-			logger.Warnf("read transaction error while getting tag image: %v", err)
+		if errors.Is(readTxnErr, context.Canceled) {
+			return
+		}
+		if readTxnErr != nil {
+			logger.Warnf("read transaction error on fetch tag image: %v", readTxnErr)
 		}
 	}
 
@@ -67,11 +71,12 @@ func (rs tagRoutes) TagCtx(next http.Handler) http.Handler {
 		}
 
 		var tag *models.Tag
-		if err := txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			var err error
 			tag, err = rs.tagFinder.Find(ctx, tagID)
 			return err
-		}); err != nil {
+		})
+		if tag == nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
 		}

@@ -54,6 +54,7 @@
     "import": "Import…",
     "import_from_file": "Import from file",
     "logout": "Log out",
+    "make_primary": "Make Primary",
     "merge": "Merge",
     "merge_from": "Merge from",
     "merge_into": "Merge into",
@@ -244,6 +245,10 @@
         "username": "Username",
         "username_desc": "Username to access Stash. Leave blank to disable user authentication"
       },
+      "backup_directory_path": {
+        "description": "Directory location for SQLite database file backups",
+        "heading": "Backup Directory Path"
+      },
       "cache_location": "Directory location of the cache",
       "cache_path_head": "Cache Path",
       "calculate_md5_and_ohash_desc": "Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower. File naming hash must be set to oshash to disable MD5 calculation.",
@@ -427,6 +432,11 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
+      "custom_locales": {
+        "description": "Override individual locale strings. See https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json for the master list. Page must be reloaded for changes to take effect.",
+        "heading": "Custom localisation",
+        "option_label": "Custom localisation enabled"
+      },
       "delete_options": {
         "description": "Default settings when deleting images, galleries, and scenes.",
         "heading": "Delete Options",
@@ -448,6 +458,10 @@
           "heading": "Disable dropdown create"
         },
         "heading": "Editing"
+      },
+      "abbreviate_counters": {
+        "description": "Abbreviate counters in cards and details view pages, for example \"1831\" will get formated to \"1.8K\".",
+        "heading": "Abbreviate counters"
       },
       "funscript_offset": {
         "description": "Time offset in milliseconds for interactive scripts playback.",
@@ -491,6 +505,10 @@
         "description": "Show or hide different types of content on the navigation bar",
         "heading": "Menu Items"
       },
+      "show_tag_card_on_hover": {
+        "description": "Show tag card when hovering tag badges",
+        "heading": "Tag card tooltips"
+      },
       "performers": {
         "options": {
           "image_location": {
@@ -519,7 +537,7 @@
         "options": {
           "auto_start_video": "Auto-start video",
           "auto_start_video_on_play_selected": {
-            "description": "Auto-start scene videos when playing selected or random from Scenes page",
+            "description": "Auto-start scene videos when playing from queue, or playing selected or random from Scenes page",
             "heading": "Auto-start video when playing selected"
           },
           "continue_playlist_default": {
@@ -543,6 +561,24 @@
       "slideshow_delay": {
         "description": "Slideshow is available in galleries when in wall view mode",
         "heading": "Slideshow Delay (seconds)"
+      },
+      "tag_panel": {
+        "heading": "Tag view",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "In the tag view, display content from the subtags as well",
+            "heading": "Display subtag content"
+          }
+        }
+      },
+      "studio_panel": {
+        "heading": "Studio view",
+        "options": {
+          "show_child_studio_content": {
+            "description": "In the studio view, display content from the sub-studios as well",
+            "heading": "Display sub-studios content"
+          }
+        }
       },
       "title": "User Interface"
     }
@@ -588,6 +624,7 @@
   "death_date": "Death Date",
   "death_year": "Death Year",
   "descending": "Descending",
+  "description": "Description",
   "detail": "Detail",
   "details": "Details",
   "developmentVersion": "Development Version",
@@ -596,6 +633,7 @@
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
     "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
+    "delete_entity_simple_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}?} other {Are you sure you want to delete these {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Delete {singularEntity}} other {Delete {pluralEntity}}}",
     "delete_galleries_extra": "…plus any image files not attached to any other gallery.",
     "delete_gallery_files": "Delete gallery folder/zip file and any images not attached to any other gallery.",
@@ -869,6 +907,7 @@
   },
   "performers": "Performers",
   "piercings": "Piercings",
+  "primary_file": "Primary file",
   "queue": "Queue",
   "random": "Random",
   "rating": "Rating",

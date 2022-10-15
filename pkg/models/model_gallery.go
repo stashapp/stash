@@ -78,7 +78,8 @@ func (g *Gallery) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
 	})
 }
 
-func (g Gallery) Checksum() string {
+func (g Gallery) PrimaryChecksum() string {
+	// renamed from Checksum to prevent gqlgen from using it in the resolver
 	if p := g.Files.Primary(); p != nil {
 		v := p.Base().Fingerprints.Get(file.FingerprintTypeMD5)
 		if v == nil {

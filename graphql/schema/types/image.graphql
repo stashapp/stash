@@ -44,6 +44,8 @@ input ImageUpdateInput {
   performer_ids: [ID!]
   tag_ids: [ID!]
   gallery_ids: [ID!]
+
+  primary_file_id: ID
 }
 
 input BulkImageUpdateInput {

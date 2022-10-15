@@ -34,7 +34,7 @@ func makeClause(sql string, args ...interface{}) sqlClause {
 	}
 }
 
-func orClauses(clauses ...sqlClause) sqlClause {
+func joinClauses(joinType string, clauses ...sqlClause) sqlClause {
 	var ret []string
 	var args []interface{}
 
@@ -43,7 +43,15 @@ func orClauses(clauses ...sqlClause) sqlClause {
 		args = append(args, clause.args...)
 	}
 
-	return sqlClause{sql: strings.Join(ret, " OR "), args: args}
+	return sqlClause{sql: strings.Join(ret, " "+joinType+" "), args: args}
+}
+
+func orClauses(clauses ...sqlClause) sqlClause {
+	return joinClauses("OR", clauses...)
+}
+
+func andClauses(clauses ...sqlClause) sqlClause {
+	return joinClauses("AND", clauses...)
 }
 
 type criterionHandler interface {
@@ -430,10 +438,10 @@ func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, bas
 			if modifier := c.Modifier; c.Modifier.IsValid() {
 				switch modifier {
 				case models.CriterionModifierIncludes:
-					f.whereClauses = append(f.whereClauses, getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not))
+					f.whereClauses = append(f.whereClauses, getPathSearchClauseMany(pathColumn, basenameColumn, c.Value, addWildcards, not))
 				case models.CriterionModifierExcludes:
 					not = true
-					f.whereClauses = append(f.whereClauses, getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not))
+					f.whereClauses = append(f.whereClauses, getPathSearchClauseMany(pathColumn, basenameColumn, c.Value, addWildcards, not))
 				case models.CriterionModifierEquals:
 					addWildcards = false
 					f.whereClauses = append(f.whereClauses, getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not))
@@ -512,6 +520,32 @@ func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not
 	}
 
 	return ret
+}
+
+// getPathSearchClauseMany splits the query string p on whitespace
+// Used for backwards compatibility for the includes/excludes modifiers
+func getPathSearchClauseMany(pathColumn, basenameColumn, p string, addWildcards, not bool) sqlClause {
+	q := strings.TrimSpace(p)
+	trimmedQuery := strings.Trim(q, "\"")
+
+	if trimmedQuery == q {
+		q = regexp.MustCompile(`\s+`).ReplaceAllString(q, " ")
+		queryWords := strings.Split(q, " ")
+
+		var ret []sqlClause
+		// Search for any word
+		for _, word := range queryWords {
+			ret = append(ret, getPathSearchClause(pathColumn, basenameColumn, word, addWildcards, not))
+		}
+
+		if !not {
+			return orClauses(ret...)
+		}
+
+		return andClauses(ret...)
+	}
+
+	return getPathSearchClause(pathColumn, basenameColumn, trimmedQuery, addWildcards, not)
 }
 
 func intCriterionHandler(c *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
@@ -710,7 +744,6 @@ type hierarchicalMultiCriterionHandlerBuilder struct {
 	foreignTable string
 	foreignFK    string
 
-	derivedTable   string
 	parentFK       string
 	relationsTable string
 }
@@ -833,9 +866,15 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 
 			valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
-			f.addLeftJoin("(SELECT column1 AS root_id, column2 AS item_id FROM ("+valuesClause+"))", m.derivedTable, fmt.Sprintf("%s.item_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
-
-			addHierarchicalConditionClauses(f, criterion, m.derivedTable, "root_id")
+			switch criterion.Modifier {
+			case models.CriterionModifierIncludes:
+				f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+			case models.CriterionModifierIncludesAll:
+				f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+				f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
+			case models.CriterionModifierExcludes:
+				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause))
+			}
 		}
 	}
 }

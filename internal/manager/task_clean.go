@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 type cleaner interface {
@@ -49,9 +50,93 @@ func (j *cleanJob) Execute(ctx context.Context, progress *job.Progress) {
 		return
 	}
 
+	j.cleanEmptyGalleries(ctx)
+
 	j.scanSubs.notify()
 	elapsed := time.Since(start)
 	logger.Info(fmt.Sprintf("Finished Cleaning (%s)", elapsed))
+}
+
+func (j *cleanJob) cleanEmptyGalleries(ctx context.Context) {
+	const batchSize = 1000
+	var toClean []int
+	findFilter := models.BatchFindFilter(batchSize)
+	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+		found := true
+		for found {
+			emptyGalleries, _, err := j.txnManager.Gallery.Query(ctx, &models.GalleryFilterType{
+				ImageCount: &models.IntCriterionInput{
+					Value:    0,
+					Modifier: models.CriterionModifierEquals,
+				},
+			}, findFilter)
+
+			if err != nil {
+				return err
+			}
+
+			found = len(emptyGalleries) > 0
+
+			for _, g := range emptyGalleries {
+				if g.Path == "" {
+					continue
+				}
+
+				if len(j.input.Paths) > 0 && !fsutil.IsPathInDirs(j.input.Paths, g.Path) {
+					continue
+				}
+
+				logger.Infof("Gallery has 0 images. Marking to clean: %s", g.DisplayName())
+				toClean = append(toClean, g.ID)
+			}
+
+			*findFilter.Page++
+		}
+
+		return nil
+	}); err != nil {
+		logger.Errorf("Error finding empty galleries: %v", err)
+		return
+	}
+
+	if !j.input.DryRun {
+		for _, id := range toClean {
+			j.deleteGallery(ctx, id)
+		}
+	}
+}
+
+func (j *cleanJob) deleteGallery(ctx context.Context, id int) {
+	pluginCache := GetInstance().PluginCache
+	qb := j.txnManager.Gallery
+
+	if err := txn.WithTxn(ctx, j.txnManager, func(ctx context.Context) error {
+		g, err := qb.Find(ctx, id)
+		if err != nil {
+			return err
+		}
+
+		if g == nil {
+			return fmt.Errorf("gallery not found: %d", id)
+		}
+
+		if err := g.LoadPrimaryFile(ctx, j.txnManager.File); err != nil {
+			return err
+		}
+
+		if err := qb.Destroy(ctx, id); err != nil {
+			return err
+		}
+
+		pluginCache.RegisterPostHooks(ctx, id, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+			Checksum: g.PrimaryChecksum(),
+			Path:     g.Path,
+		}, nil)
+
+		return nil
+	}); err != nil {
+		logger.Errorf("Error deleting gallery from database: %s", err.Error())
+	}
 }
 
 type cleanFilter struct {
@@ -221,7 +306,7 @@ func (h *cleanHandler) handleRelatedScenes(ctx context.Context, fileDeleter *fil
 			checksum := scene.Checksum
 			oshash := scene.OSHash
 
-			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, scene.ID, plugin.SceneDestroyPost, plugin.SceneDestroyInput{
 				Checksum: checksum,
 				OSHash:   oshash,
 				Path:     scene.Path,
@@ -267,8 +352,8 @@ func (h *cleanHandler) handleRelatedGalleries(ctx context.Context, fileID file.I
 				return err
 			}
 
-			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
-				Checksum: g.Checksum(),
+			mgr.PluginCache.RegisterPostHooks(ctx, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+				Checksum: g.PrimaryChecksum(),
 				Path:     g.Path,
 			}, nil)
 		} else {
@@ -306,7 +391,7 @@ func (h *cleanHandler) deleteRelatedFolderGalleries(ctx context.Context, folderI
 			return err
 		}
 
-		mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
+		mgr.PluginCache.RegisterPostHooks(ctx, g.ID, plugin.GalleryDestroyPost, plugin.GalleryDestroyInput{
 			// No checksum for folders
 			// Checksum: g.Checksum(),
 			Path: g.Path,
@@ -340,7 +425,7 @@ func (h *cleanHandler) handleRelatedImages(ctx context.Context, fileDeleter *fil
 				return err
 			}
 
-			mgr.PluginCache.RegisterPostHooks(ctx, mgr.Database, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
+			mgr.PluginCache.RegisterPostHooks(ctx, i.ID, plugin.ImageDestroyPost, plugin.ImageDestroyInput{
 				Checksum: i.Checksum,
 				Path:     i.Path,
 			}, nil)

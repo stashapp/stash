@@ -44,7 +44,7 @@ interface IProps {
 
 interface INewProps {
   isNew: true;
-  gallery: undefined;
+  gallery?: Partial<GQL.GalleryDataFragment>;
 }
 
 interface IExistingProps {
@@ -240,7 +240,7 @@ export const GalleryEditPanel: React.FC<
   }
 
   async function onScrapeClicked(scraper: GQL.Scraper) {
-    if (!gallery) return;
+    if (!gallery || !gallery.id) return;
 
     setIsLoading(true);
     try {

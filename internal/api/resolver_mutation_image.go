@@ -92,6 +92,15 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 		return nil, err
 	}
 
+	i, err := r.repository.Image.Find(ctx, imageID)
+	if err != nil {
+		return nil, err
+	}
+
+	if i == nil {
+		return nil, fmt.Errorf("image not found %d", imageID)
+	}
+
 	updatedImage := models.NewImagePartial()
 	updatedImage.Title = translator.optionalString(input.Title, "title")
 	updatedImage.Rating = translator.optionalInt(input.Rating, "rating")
@@ -101,10 +110,45 @@ func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInp
 	}
 	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
 
+	if input.PrimaryFileID != nil {
+		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
+		if err != nil {
+			return nil, fmt.Errorf("converting primary file id: %w", err)
+		}
+
+		converted := file.ID(primaryFileID)
+		updatedImage.PrimaryFileID = &converted
+
+		if err := i.LoadFiles(ctx, r.repository.Image); err != nil {
+			return nil, err
+		}
+
+		// ensure that new primary file is associated with scene
+		var f *file.ImageFile
+		for _, ff := range i.Files.List() {
+			if ff.ID == converted {
+				f = ff
+			}
+		}
+
+		if f == nil {
+			return nil, fmt.Errorf("file with id %d not associated with image", converted)
+		}
+	}
+
 	if translator.hasField("gallery_ids") {
 		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds, models.RelationshipUpdateModeSet)
 		if err != nil {
 			return nil, fmt.Errorf("converting gallery ids: %w", err)
+		}
+
+		// ensure gallery IDs are loaded
+		if err := i.LoadGalleryIDs(ctx, r.repository.Image); err != nil {
+			return nil, err
+		}
+
+		if err := r.galleryService.ValidateImageGalleryChange(ctx, i, *updatedImage.GalleryIDs); err != nil {
+			return nil, err
 		}
 	}
 
@@ -178,6 +222,26 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageU
 		qb := r.repository.Image
 
 		for _, imageID := range imageIDs {
+			i, err := r.repository.Image.Find(ctx, imageID)
+			if err != nil {
+				return err
+			}
+
+			if i == nil {
+				return fmt.Errorf("image not found %d", imageID)
+			}
+
+			if updatedImage.GalleryIDs != nil {
+				// ensure gallery IDs are loaded
+				if err := i.LoadGalleryIDs(ctx, r.repository.Image); err != nil {
+					return err
+				}
+
+				if err := r.galleryService.ValidateImageGalleryChange(ctx, i, *updatedImage.GalleryIDs); err != nil {
+					return err
+				}
+			}
+
 			image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
 			if err != nil {
 				return err

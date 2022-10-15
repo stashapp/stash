@@ -49,6 +49,7 @@ func NewStore(c SessionConfig) *Store {
 	}
 
 	ret.sessionStore.MaxAge(c.GetMaxSessionAge())
+	ret.sessionStore.Options.SameSite = http.SameSiteLaxMode
 
 	return ret
 }

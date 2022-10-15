@@ -2,10 +2,12 @@ package file
 
 import (
 	"context"
+	"errors"
 	"io"
 	"io/fs"
 	"net/http"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -48,7 +50,7 @@ func (e *DirEntry) info(fs FS, path string) (fs.FileInfo, error) {
 // File represents a file in the file system.
 type File interface {
 	Base() *BaseFile
-	SetFingerprints(fp []Fingerprint)
+	SetFingerprints(fp Fingerprints)
 	Open(fs FS) (io.ReadCloser, error)
 }
 
@@ -74,7 +76,7 @@ type BaseFile struct {
 
 // SetFingerprints sets the fingerprints of the file.
 // If a fingerprint of the same type already exists, it is overwritten.
-func (f *BaseFile) SetFingerprints(fp []Fingerprint) {
+func (f *BaseFile) SetFingerprints(fp Fingerprints) {
 	for _, v := range fp {
 		f.SetFingerprint(v)
 	}
@@ -116,14 +118,12 @@ func (f *BaseFile) Info(fs FS) (fs.FileInfo, error) {
 	return f.info(fs, f.Path)
 }
 
-func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) {
+func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week
 
 	reader, err := f.Open(fs)
 	if err != nil {
-		// assume not found
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
+		return err
 	}
 
 	defer reader.Close()
@@ -133,18 +133,19 @@ func (f *BaseFile) Serve(fs FS, w http.ResponseWriter, r *http.Request) {
 		// fallback to direct copy
 		data, err := io.ReadAll(reader)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			return err
 		}
 
-		if k, err := w.Write(data); err != nil {
-			logger.Warnf("failure while serving image (wrote %v bytes out of %v): %v", k, len(data), err)
+		k, err := w.Write(data)
+		if err != nil && !errors.Is(err, syscall.EPIPE) {
+			logger.Warnf("error serving file (wrote %v bytes out of %v): %v", k, len(data), err)
 		}
 
-		return
+		return nil
 	}
 
 	http.ServeContent(w, r, f.Basename, f.ModTime, rsc)
+	return nil
 }
 
 type Finder interface {
@@ -194,6 +195,7 @@ type Store interface {
 // Decorator wraps the Decorate method to add additional functionality while scanning files.
 type Decorator interface {
 	Decorate(ctx context.Context, fs FS, f File) (File, error)
+	IsMissingMetadata(ctx context.Context, fs FS, f File) bool
 }
 
 type FilteredDecorator struct {
@@ -207,4 +209,12 @@ func (d *FilteredDecorator) Decorate(ctx context.Context, fs FS, f File) (File, 
 		return d.Decorator.Decorate(ctx, fs, f)
 	}
 	return f, nil
+}
+
+func (d *FilteredDecorator) IsMissingMetadata(ctx context.Context, fs FS, f File) bool {
+	if d.Accept(ctx, f) {
+		return d.Decorator.IsMissingMetadata(ctx, fs, f)
+	}
+
+	return false
 }

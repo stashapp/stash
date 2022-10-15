@@ -124,7 +124,7 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 	for _, performerId := range performerIds {
 		var performers []*models.Performer
 
-		if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := j.txnManager.WithDB(ctx, func(ctx context.Context) error {
 			performerQuery := j.txnManager.Performer
 			ignoreAutoTag := false
 			perPage := -1
@@ -200,7 +200,7 @@ func (j *autoTagJob) autoTagStudios(ctx context.Context, progress *job.Progress,
 	for _, studioId := range studioIds {
 		var studios []*models.Studio
 
-		if err := r.WithTxn(ctx, func(ctx context.Context) error {
+		if err := r.WithDB(ctx, func(ctx context.Context) error {
 			studioQuery := r.Studio
 			ignoreAutoTag := false
 			perPage := -1
@@ -279,7 +279,7 @@ func (j *autoTagJob) autoTagTags(ctx context.Context, progress *job.Progress, pa
 
 	for _, tagId := range tagIds {
 		var tags []*models.Tag
-		if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := j.txnManager.WithDB(ctx, func(ctx context.Context) error {
 			tagQuery := r.Tag
 			ignoreAutoTag := false
 			perPage := -1

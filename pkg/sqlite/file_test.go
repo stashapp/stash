@@ -613,3 +613,52 @@ func TestFileStore_FindByFingerprint(t *testing.T) {
 		})
 	}
 }
+
+func TestFileStore_IsPrimary(t *testing.T) {
+	tests := []struct {
+		name   string
+		fileID file.ID
+		want   bool
+	}{
+		{
+			"scene file",
+			sceneFileIDs[sceneIdx1WithPerformer],
+			true,
+		},
+		{
+			"image file",
+			imageFileIDs[imageIdx1WithGallery],
+			true,
+		},
+		{
+			"gallery file",
+			galleryFileIDs[galleryIdx1WithImage],
+			true,
+		},
+		{
+			"orphan file",
+			fileIDs[fileIdxZip],
+			false,
+		},
+		{
+			"invalid file",
+			invalidFileID,
+			false,
+		},
+	}
+
+	qb := db.File
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+			got, err := qb.IsPrimary(ctx, tt.fileID)
+			if err != nil {
+				t.Errorf("FileStore.IsPrimary() error = %v", err)
+				return
+			}
+
+			assert.Equal(tt.want, got)
+		})
+	}
+}
