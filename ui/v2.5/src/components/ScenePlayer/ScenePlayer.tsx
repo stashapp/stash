@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
+import useScript from "src/hooks/useScript";
 // @ts-ignore
 import airplay from "@silvermine/videojs-airplay";
 // @ts-ignore
@@ -160,6 +161,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const started = useRef(false);
   const interactiveReady = useRef(false);
 
+  useScript('https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1');
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
     [scene]
