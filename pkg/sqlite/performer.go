@@ -280,11 +280,7 @@ func (qb *performerQueryBuilder) makeFilter(ctx context.Context, filter *models.
 
 	query.handleCriterion(ctx, performerAgeFilterCriterionHandler(filter.Age))
 
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if gender := filter.Gender; gender != nil {
-			f.addWhere(tableName+".gender = ?", gender.Value.String())
-		}
-	}))
+	query.handleCriterion(ctx, performerGenderCriterionHandler(filter.Gender))
 
 	query.handleCriterion(ctx, performerIsMissingCriterionHandler(qb, filter.IsMissing))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Ethnicity, tableName+".ethnicity"))
@@ -659,4 +655,25 @@ func (qb *performerQueryBuilder) FindByStashIDStatus(ctx context.Context, hasSta
 
 	args := []interface{}{stashboxEndpoint}
 	return qb.queryPerformers(ctx, query, args)
+}
+
+func performerGenderCriterionHandler(genders *models.GenderCriterionInput) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if genders != nil {
+			//format array into string like ("list", "of", "items")
+			glist := fmt.Sprintf("%+q", genders.Value)
+			glist = strings.Replace(glist, "[", "(", 1)
+			glist = strings.Replace(glist, "]", ")", 1)
+			switch genders.Modifier {
+			case models.CriterionModifierIsNull:
+				f.addWhere(fmt.Sprintf("performers.gender IS NULL"))
+			case models.CriterionModifierNotNull:
+				f.addWhere(fmt.Sprintf("performers.gender NOT NULL"))
+			case models.CriterionModifierIncludes:
+				f.addWhere(fmt.Sprintf("performers.gender IN (%s)", glist))
+			case models.CriterionModifierExcludes:
+				f.addWhere(fmt.Sprintf("performers.gender NOT IN (%s)", glist))
+			}
+		}
+	}
 }
