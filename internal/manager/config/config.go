@@ -138,6 +138,12 @@ const (
 	autostartVideoOnPlaySelectedDefault = true
 	ContinuePlaylistDefault             = "continue_playlist_default"
 	ShowStudioAsText                    = "show_studio_as_text"
+	PrivacyKeyboardCustomization        = "privacy_keyboard_customization"
+	privacyKeyboardCustomizationDefault = false
+	PrivacyShowTitle                    = "privacy_show_title"
+	privacyShowTitleDefault             = false
+	VideoBackgroundPlayback             = "video_background_playback"
+	videoBackgroundPlaybackDefault      = true
 	CSSEnabled                          = "cssEnabled"
 	CustomLocalesEnabled                = "customLocalesEnabled"
 
@@ -1034,6 +1040,18 @@ func (i *Instance) SetUIConfiguration(v map[string]interface{}) {
 	i.viper(UI).Set(UI, toSnakeCaseMap(v))
 }
 
+func (i *Instance) GetPrivacyKeyboardCustomization() bool {
+	return i.getBool(PrivacyKeyboardCustomization)
+}
+
+func (i *Instance) GetPrivacyShowTitle() bool {
+	return i.getBool(PrivacyShowTitle)
+}
+
+func (i *Instance) GetVideoBackgroundPlayback() bool {
+	return i.getBool(VideoBackgroundPlayback)
+}
+
 func (i *Instance) GetCSSPath() string {
 	// use custom.css in the same directory as the config file
 	configFileUsed := i.GetConfigFile()
@@ -1345,6 +1363,9 @@ func (i *Instance) setDefaultValues(write bool) error {
 	i.main.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
 	i.main.SetDefault(PreviewAudio, previewAudioDefault)
 	i.main.SetDefault(SoundOnPreview, false)
+	i.main.SetDefault(PrivacyKeyboardCustomization, privacyKeyboardCustomizationDefault)
+	i.main.SetDefault(PrivacyShowTitle, privacyShowTitleDefault)
+	i.main.SetDefault(VideoBackgroundPlayback, videoBackgroundPlaybackDefault)
 
 	i.main.SetDefault(ThemeColor, DefaultThemeColor)
 

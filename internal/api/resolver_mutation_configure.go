@@ -122,6 +122,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		c.Set(config.Metadata, input.MetadataPath)
 	}
 
+	refreshStreamManager := false
 	existingCachePath := c.GetCachePath()
 	if input.CachePath != nil && existingCachePath != *input.CachePath {
 		if err := validateDir(config.Cache, *input.CachePath, true); err != nil {
@@ -129,6 +130,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 		}
 
 		c.Set(config.Cache, input.CachePath)
+		refreshStreamManager = true
 	}
 
 	if input.VideoFileNamingAlgorithm != nil && *input.VideoFileNamingAlgorithm != c.GetVideoFileNamingAlgorithm() {
@@ -288,6 +290,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input ConfigGen
 	if refreshScraperCache {
 		manager.GetInstance().RefreshScraperCache()
 	}
+	if refreshStreamManager {
+		manager.GetInstance().RefreshStreamManager()
+	}
 
 	return makeConfigGeneralResult(), nil
 }
@@ -358,6 +363,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 			c.Set(config.ImageLightboxScrollAttemptsBeforeChange, *options.ScrollAttemptsBeforeChange)
 		}
 	}
+
+	setBool(config.PrivacyKeyboardCustomization, input.PrivacyKeyboardCustomization)
+	setBool(config.PrivacyShowTitle, input.PrivacyShowTitle)
+	setBool(config.VideoBackgroundPlayback, input.VideoBackgroundPlayback)
 
 	if input.CSS != nil {
 		c.SetCSS(*input.CSS)

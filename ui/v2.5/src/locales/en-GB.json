@@ -526,6 +526,17 @@
           "video": "Video"
         }
       },
+      "privacy": {
+        "heading": "Privacy",
+        "keyboard_customization": {
+          "heading": "Keyboard Customization",
+          "description": "Disable keyboard personalization on mobile devices"
+        },
+        "show_title": {
+          "heading": "Page Title",
+          "description": "Disable showing sensitive information in page titles"
+        }
+      },
       "scene_list": {
         "heading": "Scene List",
         "options": {
@@ -539,6 +550,10 @@
           "auto_start_video_on_play_selected": {
             "description": "Auto-start scene videos when playing from queue, or playing selected or random from Scenes page",
             "heading": "Auto-start video when playing selected"
+          },
+          "background_playback": {
+            "description": "Continue playing video in the background/when the screen is off",
+            "heading": "Background Playback"
           },
           "continue_playlist_default": {
             "description": "Play next scene in queue when video finishes",

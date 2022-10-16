@@ -69,6 +69,7 @@ interface IProps {
   collapsed: boolean;
   setCollapsed: (state: boolean) => void;
   setContinuePlaylist: (value: boolean) => void;
+  privacyShowTitle: boolean;
 }
 
 const ScenePage: React.FC<IProps> = ({
@@ -88,6 +89,7 @@ const ScenePage: React.FC<IProps> = ({
   collapsed,
   setCollapsed,
   setContinuePlaylist,
+  privacyShowTitle,
 }) => {
   const history = useHistory();
   const Toast = useToast();
@@ -110,6 +112,8 @@ const ScenePage: React.FC<IProps> = ({
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
+  const title = objectTitle(scene);
+  
   const onIncrementClick = async () => {
     try {
       await incrementO();
@@ -217,6 +221,16 @@ const ScenePage: React.FC<IProps> = ({
     setIsDeleteAlertOpen(false);
     if (deleted) {
       history.push("/scenes");
+    }
+  }
+
+  function maybeRenderScenePageTitle() {
+    if (!privacyShowTitle) {
+      return (
+        <Helmet>
+          <title>{title}</title>
+        </Helmet>
+      );
     }
   }
 
@@ -452,13 +466,9 @@ const ScenePage: React.FC<IProps> = ({
     return collapsed ? ">" : "<";
   }
 
-  const title = objectTitle(scene);
-
   return (
     <>
-      <Helmet>
-        <title>{title}</title>
-      </Helmet>
+      {maybeRenderScenePageTitle()}
       {maybeRenderSceneGenerateDialog()}
       {maybeRenderDeleteDialog()}
       <div
@@ -514,6 +524,7 @@ const SceneLoader: React.FC = () => {
   const [showScrubber, setShowScrubber] = useState(
     configuration?.interface.showScrubber ?? true
   );
+  const privacyShowTitle = configuration?.interface.privacyShowTitle ?? false;
 
   const sceneQueue = useMemo(
     () => SceneQueue.fromQueryParameters(location.search),
@@ -705,6 +716,7 @@ const SceneLoader: React.FC = () => {
           collapsed={collapsed}
           setCollapsed={setCollapsed}
           setContinuePlaylist={setContinuePlaylist}
+          privacyShowTitle={privacyShowTitle}
         />
       ) : (
         <div className="scene-tabs" />

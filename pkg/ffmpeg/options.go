@@ -96,6 +96,11 @@ func (a Args) MaxMuxingQueueSize(s int) Args {
 	return append(a, "-max_muxing_queue_size", fmt.Sprint(s))
 }
 
+// OutputTSOffset adds a output_ts_offset (-output_ts_offset) to the given seconds and returns the result.
+func (a Args) OutputTSOffset(seconds float64) Args {
+	return append(a, "-output_ts_offset", fmt.Sprint(seconds))
+}
+
 // SkipAudio adds the skip audio flag (-an) and returns the result.
 func (a Args) SkipAudio() Args {
 	return append(a, "-an")

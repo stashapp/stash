@@ -59,7 +59,7 @@ var (
 		extraArgs: []string{
 			"-acodec", "aac",
 			"-pix_fmt", "yuv420p",
-			"-preset", "veryfast",
+			"-preset", "ultrafast",
 			"-crf", "25",
 		},
 		hls: true,
@@ -185,6 +185,12 @@ func (o TranscodeStreamOptions) getStreamArgs() Args {
 	)
 
 	args = args.Format(o.Codec.format)
+
+	if o.StartTime != 0 && o.Codec.hls {
+		// hls segment start time is relative to the start of the stream
+		args = args.OutputTSOffset(o.StartTime)
+	}
+
 	args = args.Output("pipe:")
 
 	return args

@@ -37,6 +37,7 @@ $sceneTabWidth: 450px;
   }
 
   .vjs-big-button-group {
+    pointer-events: none;
     display: none;
     height: 80px;
     justify-content: space-around;
@@ -53,6 +54,27 @@ $sceneTabWidth: 450px;
       .vjs-icon-placeholder::before {
         height: 100%;
         line-height: 80px;
+      }
+
+      @at-root {
+        .VideoPlayer .vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group .vjs-button.vjs-big-play-pause-button {
+          pointer-events: none;
+        }
+      }
+
+      &.vjs-big-play-pause-button {
+        pointer-events: auto;
+      }
+      
+      &.vjs-seek-button {
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .5s cubic-bezier(.62,0,.95,.04) 0s;
+
+        &.visible {
+          opacity: 1;
+          transition: opacity .1s ease-in 0s;
+        }
       }
     }
   }
@@ -94,7 +116,11 @@ $sceneTabWidth: 450px;
   }
 
   // make controls a little more compact on smaller screens
-  @media (max-width: 576px) {
+  @media (max-height: 449px), (max-width: 576px) {
+    div.vjs-control-bar::before {
+        height: 5rem;
+      }
+
     .vjs-control-bar {
       .vjs-control:not(.vjs-progress-control) {
         width: 2.5em;
@@ -291,7 +317,17 @@ $sceneTabWidth: 450px;
 /* hide scrubber when height is < 450px or width < 576 */
 @media (max-height: 449px), (max-width: 575px) {
   .scrubber-wrapper {
-    display: none;
+    $scrubberMargin: 2.5px;
+    $scrubberWidth: 35px;
+
+    .scrubber-content {
+      margin: $scrubberMargin;
+      width: calc(100% - #{$scrubberWidth} * 2 - #{$scrubberMargin} * 2);
+    }
+
+    .scrubber-button {
+      width: #{$scrubberWidth};
+    }
   }
 }
 
@@ -449,6 +485,22 @@ $sceneTabWidth: 450px;
   .vjs-button > .vjs-icon-placeholder::before {
     content: "\f110";
     font-family: VideoJS;
+  }
+}
+
+.vjs-menu-button-popup .vjs-menu {
+  @media (max-width: 576px) {
+    left: -5em;
+  }
+
+  .vjs-menu-content {
+    z-index: 1;
+    @media (max-width: 480px) {
+      max-height: 10em;
+    }
+    @media (min-width: 576px) and (max-width: 767px) {
+      max-height: 14em;
+    }
   }
 }
 

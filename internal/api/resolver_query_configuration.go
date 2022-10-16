@@ -140,6 +140,9 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	autostartVideoOnPlaySelected := config.GetAutostartVideoOnPlaySelected()
 	continuePlaylistDefault := config.GetContinuePlaylistDefault()
 	showStudioAsText := config.GetShowStudioAsText()
+	privacyKeyboardCustomization := config.GetPrivacyKeyboardCustomization()
+	privacyShowTitle := config.GetPrivacyShowTitle()
+	videoBackgroundPlayback := config.GetVideoBackgroundPlayback()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
 	customLocales := config.GetCustomLocales()
@@ -164,6 +167,9 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		ShowStudioAsText:             &showStudioAsText,
 		AutostartVideoOnPlaySelected: &autostartVideoOnPlaySelected,
 		ContinuePlaylistDefault:      &continuePlaylistDefault,
+		PrivacyKeyboardCustomization: &privacyKeyboardCustomization,
+		PrivacyShowTitle:             &privacyShowTitle,
+		VideoBackgroundPlayback:      &videoBackgroundPlayback,
 		CSS:                          &css,
 		CSSEnabled:                   &cssEnabled,
 		CustomLocales:                &customLocales,

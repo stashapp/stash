@@ -231,6 +231,14 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
 
         <BooleanSetting
+          id="background-playback-selected"
+          headingID="config.ui.scene_player.options.background_playback.heading"
+          subHeadingID="config.ui.scene_player.options.background_playback.description"
+          checked={iface.videoBackgroundPlayback ?? undefined}
+          onChange={(v) => saveInterface({ videoBackgroundPlayback: v })}
+        />
+
+        <BooleanSetting
           id="continue-playlist-default"
           headingID="config.ui.scene_player.options.continue_playlist_default.heading"
           subHeadingID="config.ui.scene_player.options.continue_playlist_default.description"
@@ -415,6 +423,22 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
         </div>
+      </SettingSection>
+      <SettingSection headingID="config.ui.privacy.heading">
+        <BooleanSetting
+          id="privacy-keyboard-customization"
+          headingID="config.ui.privacy.keyboard_customization.heading"
+          subHeadingID="config.ui.privacy.keyboard_customization.description"
+          checked={iface.privacyKeyboardCustomization ?? undefined}
+          onChange={(v) => saveInterface({ privacyKeyboardCustomization: v })}
+        />
+        <BooleanSetting
+          id="privacy-show-title"
+          headingID="config.ui.privacy.show_title.heading"
+          subHeadingID="config.ui.privacy.show_title.description"
+          checked={iface.privacyShowTitle ?? undefined}
+          onChange={(v) => saveInterface({ privacyShowTitle: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.custom_css.heading">

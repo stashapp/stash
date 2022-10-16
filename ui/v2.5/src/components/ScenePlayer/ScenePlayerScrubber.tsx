@@ -78,7 +78,12 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
   const mouseDown = useRef(false);
   const lastMouseEvent = useRef<MouseEvent | null>(null);
   const startMouseEvent = useRef<MouseEvent | null>(null);
-  const velocity = useRef(0);
+  const mouseVelocity = useRef(0);
+
+  const touchStart = useRef(false);
+  const lastTouchEvent = useRef<TouchEvent | null>(null);
+  const startTouchEvent = useRef<TouchEvent | null>(null);
+  const touchVelocity = useRef(0);
 
   const _position = useRef(0);
   const getPosition = useCallback(() => _position.current, []);
@@ -145,8 +150,10 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
 
   useEffect(() => {
     window.addEventListener("mouseup", onMouseUp, false);
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
     return () => {
       window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("touchend", onTouchEnd);
     };
   });
 
@@ -156,11 +163,13 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
     }
     const el = contentEl.current;
     el.addEventListener("mousedown", onMouseDown, false);
+    el.addEventListener("touchstart", onTouchDown, { passive: false });
     return () => {
       if (!el) {
         return;
       }
       el.removeEventListener("mousedown", onMouseDown);
+      el.removeEventListener("touchstart", onTouchDown);
     };
   });
 
@@ -170,27 +179,66 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
     }
     const el = contentEl.current;
     el.addEventListener("mousemove", onMouseMove, false);
+    el.addEventListener("touchmove", onTouchMove, { passive: true });
     return () => {
       if (!el) {
         return;
       }
       el.removeEventListener("mousemove", onMouseMove);
+      el.removeEventListener("touchmove", onTouchMove);
     };
   });
 
   function onMouseUp(this: Window, event: MouseEvent) {
-    if (!startMouseEvent.current || !scrubberSliderEl.current) {
+    if (!startMouseEvent.current) {
       return;
     }
+
     mouseDown.current = false;
-    const delta = Math.abs(event.clientX - startMouseEvent.current.clientX);
-    if (delta < 1 && event.target instanceof HTMLDivElement) {
-      const { target } = event;
+    handleInputUp(
+      event.target,
+      event.clientX,
+      startMouseEvent.current.clientX,
+      event.offsetX,
+      mouseVelocity.current
+    );
+  }
+
+  function onTouchEnd(this: Window, event: TouchEvent) {
+    if (!startTouchEvent.current) {
+      return;
+    }
+
+    const offsetX = event.changedTouches[0].pageX - (event.target as HTMLDivElement).getBoundingClientRect().left;
+    
+    touchStart.current = false;
+    handleInputUp(
+      event.target,
+      event.changedTouches[0].clientX,
+      startTouchEvent.current.changedTouches[0].clientX,
+      offsetX,
+      touchVelocity.current
+    );
+  }
+
+  function handleInputUp(
+    target: EventTarget | null,
+    inputX: number,
+    startX: number,
+    offsetX: number,
+    velocity: number
+  ) {
+    if (!scrubberSliderEl.current) {
+      return;
+    }
+
+    const delta = Math.abs(inputX - startX);
+    if (delta < 1 && target instanceof HTMLDivElement) {
       let seekSeconds: number | undefined;
 
       const spriteIdString = target.getAttribute("data-sprite-item-id");
       if (spriteIdString != null) {
-        const spritePercentage = event.offsetX / target.clientWidth;
+        const spritePercentage = offsetX / target.clientWidth;
         const offset =
           target.offsetLeft + target.clientWidth * spritePercentage;
         const percentage = offset / scrubberSliderEl.current.scrollWidth;
@@ -206,10 +254,10 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
       if (seekSeconds) {
         props.onSeek(seekSeconds);
       }
-    } else if (Math.abs(velocity.current) > 25) {
-      const newPosition = getPosition() + velocity.current * 10;
+    } else if (Math.abs(velocity) > 25) {
+      const newPosition = getPosition() + velocity * 10;
       setPosition(newPosition);
-      velocity.current = 0;
+      velocity = 0;
     }
   }
 
@@ -218,7 +266,15 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
     mouseDown.current = true;
     lastMouseEvent.current = event;
     startMouseEvent.current = event;
-    velocity.current = 0;
+    mouseVelocity.current = 0;
+  }
+
+  function onTouchDown(this: HTMLDivElement, event: TouchEvent) {
+    event.preventDefault();
+    touchStart.current = true;
+    lastTouchEvent.current = event;
+    startTouchEvent.current = event;
+    touchVelocity.current = 0;
   }
 
   function onMouseMove(this: HTMLDivElement, event: MouseEvent) {
@@ -229,12 +285,32 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
     // negative dragging right (past), positive left (future)
     const delta = event.clientX - (lastMouseEvent.current?.clientX ?? 0);
 
-    const movement = event.movementX;
-    velocity.current = movement;
+    mouseVelocity.current = event.movementX;
+    lastMouseEvent.current = event;
+
+    handleInputMove(delta);
+  }
+
+  function onTouchMove(this: HTMLDivElement, event: TouchEvent) {
+    if (!touchStart.current) {
+      return;
+    }
+
+    // negative dragging right (past), positive left (future)
+    const delta =
+      event.changedTouches[0].clientX -
+      (lastTouchEvent.current?.changedTouches[0].clientX ?? 0);
+
+    touchVelocity.current = delta;
+    lastTouchEvent.current = event;
 
     const newPostion = getPosition() + delta;
     setPosition(newPostion);
-    lastMouseEvent.current = event;
+  }
+
+  function handleInputMove(delta: number) {
+    const newPostion = getPosition() + delta;
+    setPosition(newPostion);
   }
 
   function getBounds(): number {
@@ -358,7 +434,6 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
   return (
     <div className="scrubber-wrapper">
       <Button
-        variant="link"
         className="scrubber-button"
         id="scrubber-back"
         onClick={() => goBack()}

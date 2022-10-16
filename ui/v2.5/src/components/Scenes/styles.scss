@@ -210,29 +210,44 @@ textarea.scene-description {
     margin-bottom: 1rem;
   }
 
-  &:hover,
-  &:active {
-    .scene-specs-overlay,
-    .rating-banner,
-    .scene-studio-overlay {
+  @mixin scene-card-hover-active {
+    .rating-banner {
       opacity: 0;
-      transition: opacity 0.5s;
-    }
-
-    .scene-studio-overlay:hover,
-    .scene-studio-overlay:active {
-      opacity: 0.75;
-      transition: opacity 0.5s;
-    }
-
-    .scene-card-check {
-      opacity: 0.75;
       transition: opacity 0.5s;
     }
 
     .scene-card-preview-video {
       top: 0;
       transition-delay: 0.2s;
+    }
+  }
+
+  @media (pointer: fine) {
+    &:hover,
+    &:active {
+      @include scene-card-hover-active;
+
+      .scene-specs-overlay,
+      .scene-studio-overlay {
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+
+      .scene-studio-overlay:hover,
+      .scene-studio-overlay:active,
+      .scene-specs-overlay:hover,
+      .scene-specs-overlay:active {
+        opacity: 0.75;
+        transition: opacity 0.5s;
+      }
+    }
+  }
+
+  &-touch-active {
+    @include scene-card-hover-active;
+    .card-check.touch-active {
+      opacity: 0.75;
+      transition: opacity 0.5s;
     }
   }
 }

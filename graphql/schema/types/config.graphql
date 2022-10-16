@@ -260,6 +260,15 @@ input ConfigInterfaceInput {
   """If true, studio overlays will be shown as text instead of logo images"""
   showStudioAsText: Boolean
   
+  """If true, use temporary password field for inputs to prevent autofill"""
+  privacyKeyboardCustomization: Boolean
+
+  """If true, prevent showing scene title in page title"""
+  privacyShowTitle: Boolean
+
+  """If true, allow the video the play in the background"""
+  videoBackgroundPlayback: Boolean
+  
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
@@ -325,6 +334,15 @@ type ConfigInterfaceResult {
 
   """If true, studio overlays will be shown as text instead of logo images"""
   showStudioAsText: Boolean
+  
+  """If true, use temporary password field for inputs to prevent autofill"""
+  privacyKeyboardCustomization: Boolean
+
+  """If true, prevent showing scene title in page title"""
+  privacyShowTitle: Boolean
+
+  """If true, allow the video the play in the background"""
+  videoBackgroundPlayback: Boolean
 
   """Custom CSS"""
   css: String

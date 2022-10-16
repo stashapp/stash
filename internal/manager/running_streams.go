@@ -28,6 +28,7 @@ func NewStreamRequestContext(w http.ResponseWriter, r *http.Request) *StreamRequ
 }
 
 func (c *StreamRequestContext) Cancel() {
+	logger.Debug("Hijaacking stream request context")
 	hj, ok := (c.ResponseWriter).(http.Hijacker)
 	if !ok {
 		return

@@ -27,6 +27,11 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
   if (!result.loading && !cardCount) {
     return null;
   }
+  
+  const [touchPreviewActive, setTouchPreviewActive] = React.useState("");
+  function handleTouchPreview(key: string) {
+    setTouchPreviewActive(key);
+  }
 
   return (
     <RecommendationRow
@@ -55,6 +60,8 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
                 queue={queue}
                 index={index}
                 zoomIndex={1}
+                isTouchPreviewActive={props.isTouch && touchPreviewActive === scene.id}
+                onTouchPreview={() => handleTouchPreview(scene.id)}
               />
             ))}
       </Slider>

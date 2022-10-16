@@ -78,7 +78,7 @@
 
 .folder-list {
   margin-top: 0.5rem 0 0 0;
-  max-height: 30vw;
+  max-height: calc(100vh - 200px - 14px * 2);
   overflow-x: auto;
 }
 
@@ -182,9 +182,11 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     }
   }
 
-  &:hover .card-check {
-    opacity: 0.75;
-    transition: opacity 0.5s;
+  @media (pointer: fine) {
+    &:hover .card-check {
+      opacity: 0.75;
+      transition: opacity 0.5s;
+    }
   }
 }
 
