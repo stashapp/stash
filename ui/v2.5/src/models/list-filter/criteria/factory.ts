@@ -184,5 +184,6 @@ export function makeCriteria(type: CriterionType = "none") {
       );
     case "ignore_auto_tag":
       return new BooleanCriterion(new BooleanCriterionOption(type, type));
+    case "description":
   }
 }
