@@ -161,6 +161,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "title":
     case "director":
     case "synopsis":
+    case "description":
       return new StringCriterion(new StringCriterionOption(type, type));
     case "interactive":
       return new InteractiveCriterion();
@@ -184,6 +185,5 @@ export function makeCriteria(type: CriterionType = "none") {
       );
     case "ignore_auto_tag":
       return new BooleanCriterion(new BooleanCriterionOption(type, type));
-    case "description":
   }
 }
