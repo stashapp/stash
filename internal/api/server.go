@@ -122,7 +122,9 @@ func Start() error {
 
 	// register GQL handler with plugin cache
 	// chain the visited plugin handler
-	manager.GetInstance().PluginCache.RegisterGQLHandler(visitedPluginHandler(http.HandlerFunc(gqlHandlerFunc)))
+	// also requires the dataloader middleware
+	gqlHandler := visitedPluginHandler(dataloaders.Middleware(http.HandlerFunc(gqlHandlerFunc)))
+	manager.GetInstance().PluginCache.RegisterGQLHandler(gqlHandler)
 
 	r.HandleFunc("/graphql", gqlHandlerFunc)
 	r.HandleFunc("/playground", gqlPlayground.Handler("GraphQL playground", "/graphql"))
