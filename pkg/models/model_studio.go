@@ -16,7 +16,6 @@ type Studio struct {
 	CreatedAt     SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt     SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Rating        sql.NullInt64   `db:"rating" json:"rating"`
-	Rating100     sql.NullInt64   `db:"rating100" json:"rating100"`
 	Details       sql.NullString  `db:"details" json:"details"`
 	IgnoreAutoTag bool            `db:"ignore_auto_tag" json:"ignore_auto_tag"`
 }
@@ -30,7 +29,6 @@ type StudioPartial struct {
 	CreatedAt     *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt     *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 	Rating        OptionalInt      `db:"rating" json:"rating"`
-	Rating100     OptionalInt      `db:"rating100" json:"rating100"`
 	Details       *sql.NullString  `db:"details" json:"details"`
 	IgnoreAutoTag *bool            `db:"ignore_auto_tag" json:"ignore_auto_tag"`
 }

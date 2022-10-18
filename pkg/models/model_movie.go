@@ -15,7 +15,6 @@ type Movie struct {
 	Duration  sql.NullInt64   `db:"duration" json:"duration"`
 	Date      SQLiteDate      `db:"date" json:"date"`
 	Rating    sql.NullInt64   `db:"rating" json:"rating"`
-	Rating100 sql.NullInt64   `db:"rating100" json:"rating100"`
 	StudioID  sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
 	Director  sql.NullString  `db:"director" json:"director"`
 	Synopsis  sql.NullString  `db:"synopsis" json:"synopsis"`
@@ -32,7 +31,6 @@ type MoviePartial struct {
 	Duration  *sql.NullInt64   `db:"duration" json:"duration"`
 	Date      *SQLiteDate      `db:"date" json:"date"`
 	Rating    OptionalInt      `db:"rating" json:"rating"`
-	Rating100 OptionalInt      `db:"rating100" json:"rating100"`
 	StudioID  *sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
 	Director  *sql.NullString  `db:"director" json:"director"`
 	Synopsis  *sql.NullString  `db:"synopsis" json:"synopsis"`
