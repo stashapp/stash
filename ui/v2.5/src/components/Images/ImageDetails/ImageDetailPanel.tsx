@@ -8,7 +8,6 @@ import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
 import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
-import { URLField } from "src/utils/field";
 interface IImageDetailProps {
   image: GQL.ImageDataFragment;
 }
@@ -108,14 +107,6 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           ) : (
             ""
           )}
-          {props.image.url ? (
-            <h6>
-              <FormattedMessage id="url" />:{" "}
-              <a href={TextUtils.sanitiseURL(props.image.url)}>
-                {TextUtils.domainFromURL(props.image.url)}
-              </a>
-            </h6>
-          ) : undefined}
 
           {renderGalleries()}
           {file?.width && file?.height ? (

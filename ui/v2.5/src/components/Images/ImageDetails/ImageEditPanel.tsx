@@ -204,7 +204,7 @@ export const ImageEditPanel: React.FC<IProps> = ({
                 <URLField
                   {...formik.getFieldProps("url")}
                   onScrapeClick={() => {}}
-                  urlScrapable={(url) => {
+                  urlScrapable={() => {
                     return false;
                   }}
                   isInvalid={!!formik.getFieldMeta("url").error}
