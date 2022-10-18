@@ -109,12 +109,12 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
             ""
           )}
           {props.image.url ? (
-          <URLField
-          id="url"
-          url={`file://${props.image.url}`}
-          value={`file://${props.image.url}`}
-          truncate
-        />
+            <h6>
+              <FormattedMessage id="url" />:{" "}
+              <a href={TextUtils.sanitiseURL(props.image.url)}>
+                {TextUtils.domainFromURL(props.image.url)}
+              </a>
+            </h6>
           ) : undefined}
 
           {renderGalleries()}
