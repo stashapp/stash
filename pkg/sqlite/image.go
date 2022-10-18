@@ -648,7 +648,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 	query.handleCriterion(ctx, rating5CriterionHandler(imageFilter.Rating, "images.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
-	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.URL, "galleries.url"))
+	query.handleCriterion(ctx, stringCriterionHandler(imageFilter.URL, "images.url"))
 
 	query.handleCriterion(ctx, resolutionCriterionHandler(imageFilter.Resolution, "image_files.height", "image_files.width", qb.addImageFilesTable))
 	query.handleCriterion(ctx, imageIsMissingCriterionHandler(qb, imageFilter.IsMissing))

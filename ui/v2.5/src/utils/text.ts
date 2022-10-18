@@ -259,6 +259,25 @@ const resolution = (width: number, height: number) => {
 
 const twitterURL = new URL("https://www.twitter.com");
 const instagramURL = new URL("https://www.instagram.com");
+const domainFromURL = (urlString?: string, url?: URL) => {
+  if (url) {
+    return url.hostname;
+  } else if (urlString) {
+    var urlDomain = "";
+    try {
+      var sanitizedUrl = sanitiseURL(urlString);
+      if (sanitizedUrl) {
+        urlString = sanitizedUrl;
+      }
+      urlDomain = new URL(urlString).hostname;
+    } catch {
+      urlDomain = urlString; //We cant determine the hostname so we return the base string
+    }
+    return urlDomain;
+  } else {
+    return "";
+  }
+};
 
 const sanitiseURL = (url?: string, siteURL?: URL) => {
   if (!url) {
@@ -339,6 +358,7 @@ const TextUtils = {
   bitRate,
   resolution,
   sanitiseURL,
+  domainFromURL,
   twitterURL,
   instagramURL,
   formatDate,
