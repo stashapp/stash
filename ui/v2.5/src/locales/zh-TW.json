@@ -447,8 +447,8 @@
       "desktop_integration": {
         "desktop_integration": "桌面整合",
         "notifications_enabled": "開啟通知",
-        "send_desktop_notifications_for_events": "當事件發生時，傳送瀏覽器通知",
-        "skip_opening_browser": "關閉瀏覽器自動開啟",
+        "send_desktop_notifications_for_events": "當事件發生時發送通知",
+        "skip_opening_browser": "停用自動開啟瀏覽器",
         "skip_opening_browser_on_startup": "伺服器啟動時，不要自動開啟瀏覽器"
       },
       "editing": {
@@ -552,6 +552,13 @@
       "slideshow_delay": {
         "description": "幻燈片功能僅適用於「圖庫」種類下的預覽牆模式",
         "heading": "幻燈片延遲 (秒)"
+      },
+      "studio_panel": {
+        "options": {
+          "show_child_studio_content": {
+            "heading": "顯示子工作室內容"
+          }
+        }
       },
       "title": "使用者介面"
     }
@@ -1032,7 +1039,7 @@
   "updated_at": "更新於",
   "url": "連結",
   "videos": "影片",
-  "view_all": "檢視所有",
+  "view_all": "顯示全部",
   "weight": "體重",
   "years_old": "歲",
   "zip_file_count": "壓縮檔內容數量"
