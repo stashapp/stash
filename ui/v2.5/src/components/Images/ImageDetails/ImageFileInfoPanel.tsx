@@ -120,6 +120,8 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
   if (props.image.files.length === 1) {
     return (
       <>
+        <FileInfoPanel file={props.image.files[0]} />
+
         {props.image.url ? (
           <dl className="container image-file-info details-list">
             <URLField
@@ -132,8 +134,6 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
         ) : (
           ""
         )}
-
-        <FileInfoPanel file={props.image.files[0]} />
       </>
     );
   }
