@@ -1,4 +1,5 @@
 import queryString, { ParsedQuery } from "query-string";
+import clone from "lodash-es/clone";
 import {
   FilterMode,
   FindFilterType,
@@ -42,26 +43,24 @@ export class ListFilterModel {
 
   public constructor(
     mode: FilterMode,
-    rawParms?: ParsedQuery<string>,
     defaultSort?: string,
     defaultDisplayMode?: DisplayMode,
     defaultZoomIndex?: number
   ) {
     this.mode = mode;
-    const params = rawParms as IQueryParameters;
     this.sortBy = defaultSort;
     if (defaultDisplayMode !== undefined) this.displayMode = defaultDisplayMode;
     if (defaultZoomIndex !== undefined) {
       this.defaultZoomIndex = defaultZoomIndex;
       this.zoomIndex = defaultZoomIndex;
     }
-    if (params) this.configureFromQueryParameters(params);
   }
 
   public clone() {
     return Object.assign(new ListFilterModel(this.mode), this);
   }
 
+  // Does not decode any URL-encoding in parameters
   public configureFromQueryParameters(params: IQueryParameters) {
     if (params.sortby !== undefined) {
       this.sortBy = params.sortby;
@@ -102,20 +101,15 @@ export class ListFilterModel {
 
     this.criteria = [];
     if (params.c !== undefined) {
-      let jsonParameters: string[];
-      if (params.c instanceof Array) {
-        jsonParameters = params.c;
-      } else {
-        jsonParameters = [params.c];
-      }
-
-      jsonParameters.forEach((jsonString) => {
+      params.c.forEach((jsonString) => {
         try {
           const encodedCriterion = JSON.parse(jsonString);
           const criterion = makeCriteria(encodedCriterion.type);
           // it's possible that we have unsupported criteria. Just skip if so.
           if (criterion) {
-            criterion.decodeValue(encodedCriterion.value);
+            if (encodedCriterion.value !== undefined) {
+              criterion.value = encodedCriterion.value;
+            }
             criterion.modifier = encodedCriterion.modifier;
             this.criteria.push(criterion);
           }
@@ -125,6 +119,52 @@ export class ListFilterModel {
         }
       });
     }
+  }
+
+  public static decodeQueryParameters(
+    parsedQuery: ParsedQuery<string>
+  ): IQueryParameters {
+    const params = clone(parsedQuery);
+    if (params.q) {
+      let searchTerm: string;
+      if (params.q instanceof Array) {
+        searchTerm = params.q[0];
+      } else {
+        searchTerm = params.q;
+      }
+
+      // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURIComponent#decoding_query_parameters_from_a_url
+      searchTerm = searchTerm.replaceAll("+", " ");
+      params.q = decodeURIComponent(searchTerm);
+    }
+    if (params.c !== undefined) {
+      let jsonParameters: string[];
+      if (params.c instanceof Array) {
+        jsonParameters = params.c;
+      } else {
+        jsonParameters = [params.c!];
+      }
+      params.c = jsonParameters.map((jsonString) => {
+        let decodedJson = jsonString;
+        // replace () back to {}
+        decodedJson = decodedJson.replaceAll("(", "{");
+        decodedJson = decodedJson.replaceAll(")", "}");
+        // decode all other characters
+        decodedJson = decodeURIComponent(decodedJson);
+        return decodedJson;
+      });
+    }
+    return params;
+  }
+
+  public configureFromQueryString(query: string) {
+    const parsed = queryString.parse(query, { decode: false });
+    const decoded = ListFilterModel.decodeQueryParameters(parsed);
+    this.configureFromQueryParameters(decoded);
+  }
+
+  public configureFromJSON(json: string) {
+    this.configureFromQueryParameters(JSON.parse(json));
   }
 
   private setRandomSeed() {
@@ -149,36 +189,55 @@ export class ListFilterModel {
     return this.sortBy;
   }
 
-  public getQueryParameters() {
-    const encodedCriteria: string[] = this.criteria.map((criterion) =>
-      criterion.toJSON()
-    );
+  // Returns query parameters with necessary parts encoded
+  public getQueryParameters(): IQueryParameters {
+    const encodedCriteria: string[] = this.criteria.map((criterion) => {
+      let str = criterion.toJSON();
+      // URL-encode other characters
+      str = encodeURI(str);
+      // force URL-encode existing ()
+      str = str.replaceAll("(", "%28");
+      str = str.replaceAll(")", "%29");
+      // replace JSON '{'(%7B) '}'(%7D) with explicitly unreserved ()
+      str = str.replaceAll("%7B", "(");
+      str = str.replaceAll("%7D", ")");
+      // only the reserved characters ?#&;=+ need to be URL-encoded
+      // as they have special meaning in query strings
+      str = str.replaceAll("?", encodeURIComponent("?"));
+      str = str.replaceAll("#", encodeURIComponent("#"));
+      str = str.replaceAll("&", encodeURIComponent("&"));
+      str = str.replaceAll(";", encodeURIComponent(";"));
+      str = str.replaceAll("=", encodeURIComponent("="));
+      str = str.replaceAll("+", encodeURIComponent("+"));
+      return str;
+    });
 
-    const result = {
+    return {
       perPage:
         this.itemsPerPage !== DEFAULT_PARAMS.itemsPerPage
-          ? this.itemsPerPage
+          ? String(this.itemsPerPage)
           : undefined,
       sortby: this.getSortBy() ?? undefined,
       sortdir:
         this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
       disp:
         this.displayMode !== DEFAULT_PARAMS.displayMode
-          ? this.displayMode
+          ? String(this.displayMode)
           : undefined,
       q: this.searchTerm ? encodeURIComponent(this.searchTerm) : undefined,
       p:
         this.currentPage !== DEFAULT_PARAMS.currentPage
-          ? this.currentPage
+          ? String(this.currentPage)
           : undefined,
-      z: this.zoomIndex !== this.defaultZoomIndex ? this.zoomIndex : undefined,
+      z:
+        this.zoomIndex !== this.defaultZoomIndex
+          ? String(this.zoomIndex)
+          : undefined,
       c: encodedCriteria,
     };
-
-    return result;
   }
 
-  public getSavedQueryParameters() {
+  public makeSavedFilterJSON() {
     const encodedCriteria: string[] = this.criteria.map((criterion) =>
       criterion.toJSON()
     );
@@ -194,7 +253,7 @@ export class ListFilterModel {
       c: encodedCriteria,
     };
 
-    return result;
+    return JSON.stringify(result);
   }
 
   public makeQueryParameters(): string {

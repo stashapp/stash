@@ -25,6 +25,10 @@ const sortByOptions = ["date", ...MediaSortByOptions]
       messageID: "image_count",
       value: "images_count",
     },
+    {
+      messageID: "zip_file_count",
+      value: "file_count",
+    },
   ]);
 
 const displayModeOptions = [
@@ -56,6 +60,7 @@ const criterionOptions = [
   createStringCriterionOption("image_count"),
   StudiosCriterionOption,
   createStringCriterionOption("url"),
+  createMandatoryNumberCriterionOption("file_count", "zip_file_count"),
 ];
 
 export const GalleryListFilterOptions = new ListFilterOptions(

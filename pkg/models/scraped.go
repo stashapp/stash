@@ -1,15 +1,18 @@
 package models
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 var ErrScraperSource = errors.New("invalid ScraperSource")
 
 type ScrapedItemReader interface {
-	All() ([]*ScrapedItem, error)
+	All(ctx context.Context) ([]*ScrapedItem, error)
 }
 
 type ScrapedItemWriter interface {
-	Create(newObject ScrapedItem) (*ScrapedItem, error)
+	Create(ctx context.Context, newObject ScrapedItem) (*ScrapedItem, error)
 }
 
 type ScrapedItemReaderWriter interface {

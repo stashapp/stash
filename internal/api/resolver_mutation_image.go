@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/stashapp/stash/internal/manager"
 	"github.com/stashapp/stash/pkg/file"
@@ -16,8 +15,8 @@ import (
 )
 
 func (r *mutationResolver) getImage(ctx context.Context, id int) (ret *models.Image, err error) {
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		ret, err = repo.Image().Find(id)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.repository.Image.Find(ctx, id)
 		return err
 	}); err != nil {
 		return nil, err
@@ -26,14 +25,14 @@ func (r *mutationResolver) getImage(ctx context.Context, id int) (ret *models.Im
 	return ret, nil
 }
 
-func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUpdateInput) (ret *models.Image, err error) {
+func (r *mutationResolver) ImageUpdate(ctx context.Context, input ImageUpdateInput) (ret *models.Image, err error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
 	// Start the transaction and save the image
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		ret, err = r.imageUpdate(input, translator, repo)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		ret, err = r.imageUpdate(ctx, input, translator)
 		return err
 	}); err != nil {
 		return nil, err
@@ -44,17 +43,17 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUp
 	return r.getImage(ctx, ret.ID)
 }
 
-func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.ImageUpdateInput) (ret []*models.Image, err error) {
+func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*ImageUpdateInput) (ret []*models.Image, err error) {
 	inputMaps := getUpdateInputMaps(ctx)
 
 	// Start the transaction and save the image
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		for i, image := range input {
 			translator := changesetTranslator{
 				inputMap: inputMaps[i],
 			}
 
-			thisImage, err := r.imageUpdate(*image, translator, repo)
+			thisImage, err := r.imageUpdate(ctx, *image, translator)
 			if err != nil {
 				return err
 			}
@@ -86,148 +85,169 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.Ima
 	return newRet, nil
 }
 
-func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Image, error) {
+func (r *mutationResolver) imageUpdate(ctx context.Context, input ImageUpdateInput, translator changesetTranslator) (*models.Image, error) {
 	// Populate image from the input
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	updatedTime := time.Now()
-	updatedImage := models.ImagePartial{
-		ID:        imageID,
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
-	}
-
-	updatedImage.Title = translator.nullString(input.Title, "title")
-	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedImage.Organized = input.Organized
-
-	qb := repo.Image()
-	image, err := qb.Update(updatedImage)
+	i, err := r.repository.Image.Find(ctx, imageID)
 	if err != nil {
 		return nil, err
 	}
 
+	if i == nil {
+		return nil, fmt.Errorf("image not found %d", imageID)
+	}
+
+	updatedImage := models.NewImagePartial()
+	updatedImage.Title = translator.optionalString(input.Title, "title")
+	updatedImage.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if input.PrimaryFileID != nil {
+		primaryFileID, err := strconv.Atoi(*input.PrimaryFileID)
+		if err != nil {
+			return nil, fmt.Errorf("converting primary file id: %w", err)
+		}
+
+		converted := file.ID(primaryFileID)
+		updatedImage.PrimaryFileID = &converted
+
+		if err := i.LoadFiles(ctx, r.repository.Image); err != nil {
+			return nil, err
+		}
+
+		// ensure that new primary file is associated with scene
+		var f *file.ImageFile
+		for _, ff := range i.Files.List() {
+			if ff.ID == converted {
+				f = ff
+			}
+		}
+
+		if f == nil {
+			return nil, fmt.Errorf("file with id %d not associated with image", converted)
+		}
+	}
+
 	if translator.hasField("gallery_ids") {
-		if err := r.updateImageGalleries(qb, imageID, input.GalleryIds); err != nil {
+		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting gallery ids: %w", err)
+		}
+
+		// ensure gallery IDs are loaded
+		if err := i.LoadGalleryIDs(ctx, r.repository.Image); err != nil {
+			return nil, err
+		}
+
+		if err := r.galleryService.ValidateImageGalleryChange(ctx, i, *updatedImage.GalleryIDs); err != nil {
 			return nil, err
 		}
 	}
 
-	// Save the performers
 	if translator.hasField("performer_ids") {
-		if err := r.updateImagePerformers(qb, imageID, input.PerformerIds); err != nil {
-			return nil, err
+		updatedImage.PerformerIDs, err = translateUpdateIDs(input.PerformerIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
 		}
 	}
 
-	// Save the tags
 	if translator.hasField("tag_ids") {
-		if err := r.updateImageTags(qb, imageID, input.TagIds); err != nil {
-			return nil, err
+		updatedImage.TagIDs, err = translateUpdateIDs(input.TagIds, models.RelationshipUpdateModeSet)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
 		}
+	}
+
+	qb := r.repository.Image
+	image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
+	if err != nil {
+		return nil, err
 	}
 
 	return image, nil
 }
 
-func (r *mutationResolver) updateImageGalleries(qb models.ImageReaderWriter, imageID int, galleryIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(galleryIDs)
-	if err != nil {
-		return err
-	}
-	return qb.UpdateGalleries(imageID, ids)
-}
-
-func (r *mutationResolver) updateImagePerformers(qb models.ImageReaderWriter, imageID int, performerIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(performerIDs)
-	if err != nil {
-		return err
-	}
-	return qb.UpdatePerformers(imageID, ids)
-}
-
-func (r *mutationResolver) updateImageTags(qb models.ImageReaderWriter, imageID int, tagsIDs []string) error {
-	ids, err := stringslice.StringSliceToIntSlice(tagsIDs)
-	if err != nil {
-		return err
-	}
-	return qb.UpdateTags(imageID, ids)
-}
-
-func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.BulkImageUpdateInput) (ret []*models.Image, err error) {
+func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input BulkImageUpdateInput) (ret []*models.Image, err error) {
 	imageIDs, err := stringslice.StringSliceToIntSlice(input.Ids)
 	if err != nil {
 		return nil, err
 	}
 
 	// Populate image from the input
-	updatedTime := time.Now()
-
-	updatedImage := models.ImagePartial{
-		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
-	}
+	updatedImage := models.NewImagePartial()
 
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	updatedImage.Title = translator.nullString(input.Title, "title")
-	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
-	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedImage.Organized = input.Organized
+	updatedImage.Title = translator.optionalString(input.Title, "title")
+	updatedImage.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedImage.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
+	if err != nil {
+		return nil, fmt.Errorf("converting studio id: %w", err)
+	}
+	updatedImage.Organized = translator.optionalBool(input.Organized, "organized")
+
+	if translator.hasField("gallery_ids") {
+		updatedImage.GalleryIDs, err = translateUpdateIDs(input.GalleryIds.Ids, input.GalleryIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting gallery ids: %w", err)
+		}
+	}
+
+	if translator.hasField("performer_ids") {
+		updatedImage.PerformerIDs, err = translateUpdateIDs(input.PerformerIds.Ids, input.PerformerIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting performer ids: %w", err)
+		}
+	}
+
+	if translator.hasField("tag_ids") {
+		updatedImage.TagIDs, err = translateUpdateIDs(input.TagIds.Ids, input.TagIds.Mode)
+		if err != nil {
+			return nil, fmt.Errorf("converting tag ids: %w", err)
+		}
+	}
 
 	// Start the transaction and save the image marker
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
 		for _, imageID := range imageIDs {
-			updatedImage.ID = imageID
+			i, err := r.repository.Image.Find(ctx, imageID)
+			if err != nil {
+				return err
+			}
 
-			image, err := qb.Update(updatedImage)
+			if i == nil {
+				return fmt.Errorf("image not found %d", imageID)
+			}
+
+			if updatedImage.GalleryIDs != nil {
+				// ensure gallery IDs are loaded
+				if err := i.LoadGalleryIDs(ctx, r.repository.Image); err != nil {
+					return err
+				}
+
+				if err := r.galleryService.ValidateImageGalleryChange(ctx, i, *updatedImage.GalleryIDs); err != nil {
+					return err
+				}
+			}
+
+			image, err := qb.UpdatePartial(ctx, imageID, updatedImage)
 			if err != nil {
 				return err
 			}
 
 			ret = append(ret, image)
-
-			// Save the galleries
-			if translator.hasField("gallery_ids") {
-				galleryIDs, err := adjustImageGalleryIDs(qb, imageID, *input.GalleryIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateGalleries(imageID, galleryIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the performers
-			if translator.hasField("performer_ids") {
-				performerIDs, err := adjustImagePerformerIDs(qb, imageID, *input.PerformerIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdatePerformers(imageID, performerIDs); err != nil {
-					return err
-				}
-			}
-
-			// Save the tags
-			if translator.hasField("tag_ids") {
-				tagIDs, err := adjustImageTagIDs(qb, imageID, *input.TagIds)
-				if err != nil {
-					return err
-				}
-
-				if err := qb.UpdateTags(imageID, tagIDs); err != nil {
-					return err
-				}
-			}
 		}
 
 		return nil
@@ -251,33 +271,6 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 	return newRet, nil
 }
 
-func adjustImageGalleryIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetGalleryIDs(imageID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func adjustImagePerformerIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetPerformerIDs(imageID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func adjustImageTagIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
-	ret, err = qb.GetTagIDs(imageID)
-	if err != nil {
-		return nil, err
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
 func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageDestroyInput) (ret bool, err error) {
 	imageID, err := strconv.Atoi(input.ID)
 	if err != nil {
@@ -286,13 +279,11 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 
 	var i *models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *file.NewDeleter(),
+		Deleter: file.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
-
-		i, err = qb.Find(imageID)
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		i, err = r.repository.Image.Find(ctx, imageID)
 		if err != nil {
 			return err
 		}
@@ -301,7 +292,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 			return fmt.Errorf("image with id %d not found", imageID)
 		}
 
-		return image.Destroy(i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile))
+		return r.imageService.Destroy(ctx, i, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile))
 	}); err != nil {
 		fileDeleter.Rollback()
 		return false, err
@@ -328,15 +319,14 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 	var images []*models.Image
 	fileDeleter := &image.FileDeleter{
-		Deleter: *file.NewDeleter(),
+		Deleter: file.NewDeleter(),
 		Paths:   manager.GetInstance().Paths,
 	}
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
 		for _, imageID := range imageIDs {
-
-			i, err := qb.Find(imageID)
+			i, err := qb.Find(ctx, imageID)
 			if err != nil {
 				return err
 			}
@@ -347,7 +337,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 
 			images = append(images, i)
 
-			if err := image.Destroy(i, qb, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile)); err != nil {
+			if err := r.imageService.Destroy(ctx, i, fileDeleter, utils.IsTrue(input.DeleteGenerated), utils.IsTrue(input.DeleteFile)); err != nil {
 				return err
 			}
 		}
@@ -379,10 +369,10 @@ func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (ret 
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
-		ret, err = qb.IncrementOCounter(imageID)
+		ret, err = qb.IncrementOCounter(ctx, imageID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -397,10 +387,10 @@ func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (ret 
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
-		ret, err = qb.DecrementOCounter(imageID)
+		ret, err = qb.DecrementOCounter(ctx, imageID)
 		return err
 	}); err != nil {
 		return 0, err
@@ -415,10 +405,10 @@ func (r *mutationResolver) ImageResetO(ctx context.Context, id string) (ret int,
 		return 0, err
 	}
 
-	if err := r.withTxn(ctx, func(repo models.Repository) error {
-		qb := repo.Image()
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Image
 
-		ret, err = qb.ResetOCounter(imageID)
+		ret, err = qb.ResetOCounter(ctx, imageID)
 		return err
 	}); err != nil {
 		return 0, err

@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -16,20 +17,90 @@ import (
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file"
+	file_image "github.com/stashapp/stash/pkg/file/image"
+	"github.com/stashapp/stash/pkg/file/video"
 	"github.com/stashapp/stash/pkg/fsutil"
+	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/job"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/scene/generate"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stashapp/stash/ui"
+
+	// register custom migrations
+	_ "github.com/stashapp/stash/pkg/sqlite/migrations"
 )
+
+type SystemStatus struct {
+	DatabaseSchema *int             `json:"databaseSchema"`
+	DatabasePath   *string          `json:"databasePath"`
+	ConfigPath     *string          `json:"configPath"`
+	AppSchema      int              `json:"appSchema"`
+	Status         SystemStatusEnum `json:"status"`
+}
+
+type SystemStatusEnum string
+
+const (
+	SystemStatusEnumSetup          SystemStatusEnum = "SETUP"
+	SystemStatusEnumNeedsMigration SystemStatusEnum = "NEEDS_MIGRATION"
+	SystemStatusEnumOk             SystemStatusEnum = "OK"
+)
+
+var AllSystemStatusEnum = []SystemStatusEnum{
+	SystemStatusEnumSetup,
+	SystemStatusEnumNeedsMigration,
+	SystemStatusEnumOk,
+}
+
+func (e SystemStatusEnum) IsValid() bool {
+	switch e {
+	case SystemStatusEnumSetup, SystemStatusEnumNeedsMigration, SystemStatusEnumOk:
+		return true
+	}
+	return false
+}
+
+func (e SystemStatusEnum) String() string {
+	return string(e)
+}
+
+func (e *SystemStatusEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = SystemStatusEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid SystemStatusEnum", str)
+	}
+	return nil
+}
+
+func (e SystemStatusEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type SetupInput struct {
+	// Empty to indicate $HOME/.stash/config.yml default
+	ConfigLocation string                     `json:"configLocation"`
+	Stashes        []*config.StashConfigInput `json:"stashes"`
+	// Empty to indicate default
+	DatabaseFile string `json:"databaseFile"`
+	// Empty to indicate default
+	GeneratedLocation string `json:"generatedLocation"`
+}
 
 type Manager struct {
 	Config *config.Instance
@@ -53,7 +124,15 @@ type Manager struct {
 
 	DLNAService *dlna.Service
 
-	TxnManager models.TransactionManager
+	Database   *sqlite.Database
+	Repository Repository
+
+	SceneService   SceneService
+	ImageService   ImageService
+	GalleryService GalleryService
+
+	Scanner *file.Scanner
+	Cleaner *file.Cleaner
 
 	scanSubs *subscriptionManager
 }
@@ -88,6 +167,8 @@ func initialize() error {
 	l := initLog()
 	initProfiling(cfg.GetCPUProfilePath())
 
+	db := sqlite.NewDatabase()
+
 	instance = &Manager{
 		Config:          cfg,
 		Logger:          l,
@@ -95,17 +176,46 @@ func initialize() error {
 		DownloadStore:   NewDownloadStore(),
 		PluginCache:     plugin.NewCache(cfg),
 
-		TxnManager: sqlite.NewTransactionManager(),
+		Database:   db,
+		Repository: sqliteRepository(db),
 
 		scanSubs: &subscriptionManager{},
+	}
+
+	instance.SceneService = &scene.Service{
+		File:            db.File,
+		Repository:      db.Scene,
+		MarkerDestroyer: instance.Repository.SceneMarker,
+	}
+
+	instance.ImageService = &image.Service{
+		File:       db.File,
+		Repository: db.Image,
+	}
+
+	instance.GalleryService = &gallery.Service{
+		Repository:   db.Gallery,
+		ImageFinder:  db.Image,
+		ImageService: instance.ImageService,
+		File:         db.File,
+		Folder:       db.Folder,
 	}
 
 	instance.JobManager = initJobManager()
 
 	sceneServer := SceneServer{
-		TXNManager: instance.TxnManager,
+		TxnManager:       instance.Repository,
+		SceneCoverGetter: instance.Repository.Scene,
 	}
-	instance.DLNAService = dlna.NewService(instance.TxnManager, instance.Config, &sceneServer)
+
+	instance.DLNAService = dlna.NewService(instance.Repository, dlna.Repository{
+		SceneFinder:     instance.Repository.Scene,
+		FileFinder:      instance.Repository.File,
+		StudioFinder:    instance.Repository.Studio,
+		TagFinder:       instance.Repository.Tag,
+		PerformerFinder: instance.Repository.Performer,
+		MovieFinder:     instance.Repository.Movie,
+	}, instance.Config, &sceneServer)
 
 	if !cfg.IsNewSystem() {
 		logger.Infof("using config file: %s", cfg.GetConfigFile())
@@ -116,8 +226,15 @@ func initialize() error {
 
 		if err != nil {
 			return fmt.Errorf("error initializing configuration: %w", err)
-		} else if err := instance.PostInit(ctx); err != nil {
-			return err
+		}
+
+		if err := instance.PostInit(ctx); err != nil {
+			var migrationNeededErr *sqlite.MigrationNeededError
+			if errors.As(err, &migrationNeededErr) {
+				logger.Warn(err.Error())
+			} else {
+				return err
+			}
 		}
 
 		initSecurity(cfg)
@@ -138,6 +255,9 @@ func initialize() error {
 		logger.Warnf("could not initialize FFMPEG subsystem: %v", err)
 	}
 
+	instance.Scanner = makeScanner(db, instance.PluginCache)
+	instance.Cleaner = makeCleaner(db, instance.PluginCache)
+
 	// if DLNA is enabled, start it now
 	if instance.Config.GetDLNADefaultEnabled() {
 		if err := instance.DLNAService.Start(nil); err != nil {
@@ -146,6 +266,71 @@ func initialize() error {
 	}
 
 	return nil
+}
+
+func videoFileFilter(ctx context.Context, f file.File) bool {
+	return isVideo(f.Base().Basename)
+}
+
+func imageFileFilter(ctx context.Context, f file.File) bool {
+	return isImage(f.Base().Basename)
+}
+
+func galleryFileFilter(ctx context.Context, f file.File) bool {
+	return isZip(f.Base().Basename)
+}
+
+type coverGenerator struct {
+}
+
+func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene, f *file.VideoFile) error {
+	gg := generate.Generator{
+		Encoder:     instance.FFMPEG,
+		LockManager: instance.ReadLockManager,
+		ScenePaths:  instance.Paths.Scene,
+	}
+
+	return gg.Screenshot(ctx, f.Path, scene.GetHash(instance.Config.GetVideoFileNamingAlgorithm()), f.Width, f.Duration, generate.ScreenshotOptions{})
+}
+
+func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {
+	return &file.Scanner{
+		Repository: file.Repository{
+			Manager:          db,
+			DatabaseProvider: db,
+			Store:            db.File,
+			FolderStore:      db.Folder,
+		},
+		FileDecorators: []file.Decorator{
+			&file.FilteredDecorator{
+				Decorator: &video.Decorator{
+					FFProbe: instance.FFProbe,
+				},
+				Filter: file.FilterFunc(videoFileFilter),
+			},
+			&file.FilteredDecorator{
+				Decorator: &file_image.Decorator{},
+				Filter:    file.FilterFunc(imageFileFilter),
+			},
+		},
+		FingerprintCalculator: &fingerprintCalculator{instance.Config},
+		FS:                    &file.OsFS{},
+	}
+}
+
+func makeCleaner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Cleaner {
+	return &file.Cleaner{
+		FS: &file.OsFS{},
+		Repository: file.Repository{
+			Manager:          db,
+			DatabaseProvider: db,
+			Store:            db.File,
+			FolderStore:      db.Folder,
+		},
+		Handlers: []file.CleanHandler{
+			&cleanHandler{},
+		},
+	}
 }
 
 func initJobManager() *job.Manager {
@@ -280,8 +465,12 @@ func (s *Manager) PostInit(ctx context.Context) error {
 			if err := fsutil.EmptyDir(instance.Paths.Generated.Downloads); err != nil {
 				logger.Warnf("could not empty Downloads directory: %v", err)
 			}
-			if err := fsutil.EmptyDir(instance.Paths.Generated.Tmp); err != nil {
-				logger.Warnf("could not empty Tmp directory: %v", err)
+			if err := fsutil.EnsureDir(instance.Paths.Generated.Tmp); err != nil {
+				logger.Warnf("could not create Tmp directory: %v", err)
+			} else {
+				if err := fsutil.EmptyDir(instance.Paths.Generated.Tmp); err != nil {
+					logger.Warnf("could not empty Tmp directory: %v", err)
+				}
 			}
 		}, deleteTimeout, func(done chan struct{}) {
 			logger.Info("Please wait. Deleting temporary files...") // print
@@ -290,12 +479,9 @@ func (s *Manager) PostInit(ctx context.Context) error {
 		})
 	}
 
-	if err := database.Initialize(s.Config.GetDatabasePath()); err != nil {
+	database := s.Database
+	if err := database.Open(s.Config.GetDatabasePath()); err != nil {
 		return err
-	}
-
-	if database.Ready() == nil {
-		s.PostMigrate(ctx)
 	}
 
 	return nil
@@ -307,7 +493,7 @@ func writeStashIcon() {
 	}
 
 	iconPath := filepath.Join(instance.Config.GetConfigPath(), "icon.png")
-	err := ioutil.WriteFile(iconPath, p.GetFaviconPng(), 0644)
+	err := os.WriteFile(iconPath, p.GetFaviconPng(), 0644)
 	if err != nil {
 		logger.Errorf("Couldn't write icon file: %s", err.Error())
 	}
@@ -315,7 +501,14 @@ func writeStashIcon() {
 
 // initScraperCache initializes a new scraper cache and returns it.
 func (s *Manager) initScraperCache() *scraper.Cache {
-	ret, err := scraper.NewCache(config.GetInstance(), s.TxnManager)
+	ret, err := scraper.NewCache(config.GetInstance(), s.Repository, scraper.Repository{
+		SceneFinder:     s.Repository.Scene,
+		GalleryFinder:   s.Repository.Gallery,
+		TagFinder:       s.Repository.Tag,
+		PerformerFinder: s.Repository.Performer,
+		MovieFinder:     s.Repository.Movie,
+		StudioFinder:    s.Repository.Studio,
+	})
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
@@ -355,7 +548,7 @@ func (s *Manager) RefreshScraperCache() {
 	s.ScraperCache = s.initScraperCache()
 }
 
-func setSetupDefaults(input *models.SetupInput) {
+func setSetupDefaults(input *SetupInput) {
 	if input.ConfigLocation == "" {
 		input.ConfigLocation = filepath.Join(fsutil.GetHomeDirectory(), ".stash", "config.yml")
 	}
@@ -370,7 +563,7 @@ func setSetupDefaults(input *models.SetupInput) {
 	}
 }
 
-func (s *Manager) Setup(ctx context.Context, input models.SetupInput) error {
+func (s *Manager) Setup(ctx context.Context, input SetupInput) error {
 	setSetupDefaults(&input)
 	c := s.Config
 
@@ -414,7 +607,12 @@ func (s *Manager) Setup(ctx context.Context, input models.SetupInput) error {
 
 	// initialise the database
 	if err := s.PostInit(ctx); err != nil {
-		return fmt.Errorf("error initializing the database: %v", err)
+		var migrationNeededErr *sqlite.MigrationNeededError
+		if errors.As(err, &migrationNeededErr) {
+			logger.Warn(err.Error())
+		} else {
+			return fmt.Errorf("error initializing the database: %v", err)
+		}
 	}
 
 	s.Config.FinalizeSetup()
@@ -422,6 +620,8 @@ func (s *Manager) Setup(ctx context.Context, input models.SetupInput) error {
 	if err := initFFMPEG(ctx); err != nil {
 		return fmt.Errorf("error initializing FFMPEG subsystem: %v", err)
 	}
+
+	instance.Scanner = makeScanner(instance.Database, instance.PluginCache)
 
 	return nil
 }
@@ -434,16 +634,29 @@ func (s *Manager) validateFFMPEG() error {
 	return nil
 }
 
-func (s *Manager) Migrate(ctx context.Context, input models.MigrateInput) error {
+type MigrateInput struct {
+	BackupPath string `json:"backupPath"`
+}
+
+func (s *Manager) Migrate(ctx context.Context, input MigrateInput) error {
+	database := s.Database
+
 	// always backup so that we can roll back to the previous version if
 	// migration fails
 	backupPath := input.BackupPath
 	if backupPath == "" {
-		backupPath = database.DatabaseBackupPath()
+		backupPath = database.DatabaseBackupPath(s.Config.GetBackupDirectoryPath())
+	} else {
+		// check if backup path is a filename or path
+		// filename goes into backup directory, path is kept as is
+		filename := filepath.Base(backupPath)
+		if backupPath == filename {
+			backupPath = filepath.Join(s.Config.GetBackupDirectoryPathOrDefault(), filename)
+		}
 	}
 
 	// perform database backup
-	if err := database.Backup(database.DB, backupPath); err != nil {
+	if err := database.Backup(backupPath); err != nil {
 		return fmt.Errorf("error backing up database: %s", err)
 	}
 
@@ -461,9 +674,6 @@ func (s *Manager) Migrate(ctx context.Context, input models.MigrateInput) error 
 		return errors.New(errStr)
 	}
 
-	// perform post-migration operations
-	s.PostMigrate(ctx)
-
 	// if no backup path was provided, then delete the created backup
 	if input.BackupPath == "" {
 		if err := os.Remove(backupPath); err != nil {
@@ -474,20 +684,21 @@ func (s *Manager) Migrate(ctx context.Context, input models.MigrateInput) error 
 	return nil
 }
 
-func (s *Manager) GetSystemStatus() *models.SystemStatus {
-	status := models.SystemStatusEnumOk
+func (s *Manager) GetSystemStatus() *SystemStatus {
+	database := s.Database
+	status := SystemStatusEnumOk
 	dbSchema := int(database.Version())
 	dbPath := database.DatabasePath()
 	appSchema := int(database.AppSchemaVersion())
 	configFile := s.Config.GetConfigFile()
 
 	if s.Config.IsNewSystem() {
-		status = models.SystemStatusEnumSetup
+		status = SystemStatusEnumSetup
 	} else if dbSchema < appSchema {
-		status = models.SystemStatusEnumNeedsMigration
+		status = SystemStatusEnumNeedsMigration
 	}
 
-	return &models.SystemStatus{
+	return &SystemStatus{
 		DatabaseSchema: &dbSchema,
 		DatabasePath:   &dbPath,
 		AppSchema:      appSchema,
@@ -503,7 +714,7 @@ func (s *Manager) Shutdown(code int) {
 
 	// TODO: Each part of the manager needs to gracefully stop at some point
 	// for now, we just close the database.
-	err := database.Close()
+	err := s.Database.Close()
 	if err != nil {
 		logger.Errorf("Error closing database: %s", err)
 		if code == 0 {

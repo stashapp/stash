@@ -82,11 +82,14 @@
       flex: 1;
 
       &:nth-child(2) {
+        overflow-wrap: anywhere;
         text-align: center;
       }
     }
 
     .rating-stars {
+      display: flex;
+      flex-wrap: nowrap;
       padding-left: 0.38rem;
     }
 

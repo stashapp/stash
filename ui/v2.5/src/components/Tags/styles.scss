@@ -43,3 +43,28 @@
 #tag-merge-menu .dropdown-item {
   align-items: center;
 }
+
+.tag-card {
+  .tag-description + div {
+    margin-top: 1rem;
+  }
+}
+
+.tag-popover-card-placeholder {
+  display: flex;
+  max-width: 240px;
+  min-height: 314px;
+  width: calc(100vw - 2rem);
+}
+
+.tag-popover-card {
+  padding: 0.5rem;
+  text-align: left;
+
+  .card {
+    background: transparent;
+    box-shadow: none;
+    max-width: calc(100vw - 2rem);
+    padding: 0;
+  }
+}

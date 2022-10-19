@@ -37,9 +37,7 @@ const getDurationStatus = (
       ?.map((f) => f.duration)
       .map((d) => Math.abs(d - stashDuration)) ?? [];
 
-  const sceneDuration = scene.duration ?? 0;
-
-  if (!sceneDuration && durations.length === 0) return "";
+  if (!scene.duration && durations.length === 0) return "";
 
   const matchCount = durations.filter((duration) => duration <= 5).length;
 
@@ -51,7 +49,7 @@ const getDurationStatus = (
         values={{ matchCount, durationsLength: durations.length }}
       />
     );
-  else if (Math.abs(sceneDuration - stashDuration) < 5)
+  else if (scene.duration && Math.abs(scene.duration - stashDuration) < 5)
     match = <FormattedMessage id="component_tagger.results.fp_matches" />;
 
   if (match)
@@ -62,10 +60,11 @@ const getDurationStatus = (
       </div>
     );
 
-  const minDiff = Math.min(
-    Math.abs(sceneDuration - stashDuration),
-    ...durations
-  );
+  let minDiff = Math.min(...durations);
+  if (scene.duration) {
+    minDiff = Math.min(minDiff, Math.abs(scene.duration - stashDuration));
+  }
+
   return (
     <FormattedMessage
       id="component_tagger.results.duration_off"
@@ -74,66 +73,113 @@ const getDurationStatus = (
   );
 };
 
+function matchPhashes(
+  scenePhashes: Pick<GQL.Fingerprint, "type" | "value">[],
+  fingerprints: GQL.StashBoxFingerprint[]
+) {
+  const phashes = fingerprints.filter((f) => f.algorithm === "PHASH");
+
+  const matches: { [key: string]: number } = {};
+  phashes.forEach((p) => {
+    let bestMatch = -1;
+    scenePhashes.forEach((fp) => {
+      const d = distance(p.hash, fp.value);
+
+      if (d <= 8 && (bestMatch === -1 || d < bestMatch)) {
+        bestMatch = d;
+      }
+    });
+
+    if (bestMatch !== -1) {
+      matches[p.hash] = bestMatch;
+    }
+  });
+
+  // convert to tuple and sort by distance descending
+  const entries = Object.entries(matches);
+  entries.sort((a, b) => {
+    return a[1] - b[1];
+  });
+
+  return entries;
+}
+
 const getFingerprintStatus = (
   scene: IScrapedScene,
   stashScene: GQL.SlimSceneDataFragment
 ) => {
-  const checksumMatch = scene.fingerprints?.some(
-    (f) => f.hash === stashScene.checksum || f.hash === stashScene.oshash
+  const checksumMatch = scene.fingerprints?.some((f) =>
+    stashScene.files.some((ff) =>
+      ff.fingerprints.some(
+        (fp) =>
+          fp.value === f.hash && (fp.type === "oshash" || fp.type === "md5")
+      )
+    )
   );
-  const phashMatches = stashScene.phash
-    ? scene.fingerprints?.filter(
-        (f) =>
-          f.algorithm === "PHASH" && distance(f.hash, stashScene.phash) <= 8
-      ) ?? []
-    : [];
+
+  const allPhashes = stashScene.files.reduce(
+    (pv: Pick<GQL.Fingerprint, "type" | "value">[], cv) => {
+      return [...pv, ...cv.fingerprints.filter((f) => f.type === "phash")];
+    },
+    []
+  );
+
+  const phashMatches = matchPhashes(allPhashes, scene.fingerprints ?? []);
 
   const phashList = (
     <div className="m-2">
-      {phashMatches.map((fp) => (
-        <div key={fp.hash}>
-          <b>{fp.hash}</b>
-          {fp.hash === stashScene.phash
-            ? ", Exact match"
-            : `, distance ${distance(fp.hash, stashScene.phash)}`}
-        </div>
-      ))}
+      {phashMatches.map((fp: [string, number]) => {
+        const hash = fp[0];
+        const d = fp[1];
+        return (
+          <div key={hash}>
+            <b>{hash}</b>
+            {d === 0 ? ", Exact match" : `, distance ${d}`}
+          </div>
+        );
+      })}
     </div>
   );
 
   if (checksumMatch || phashMatches.length > 0)
     return (
-      <div className="font-weight-bold">
-        <SuccessIcon className="mr-2" />
-        {phashMatches.length > 0 ? (
-          <HoverPopover
-            placement="bottom"
-            content={phashList}
-            className="PHashPopover"
-          >
-            {phashMatches.length > 1 ? (
-              <FormattedMessage
-                id="component_tagger.results.phash_matches"
-                values={{
-                  count: phashMatches.length,
-                }}
-              />
-            ) : (
-              <FormattedMessage
-                id="component_tagger.results.hash_matches"
-                values={{
-                  hash_type: <FormattedMessage id="media_info.phash" />,
-                }}
-              />
-            )}
-          </HoverPopover>
-        ) : (
-          <FormattedMessage
-            id="component_tagger.results.hash_matches"
-            values={{
-              hash_type: <FormattedMessage id="media_info.checksum" />,
-            }}
-          />
+      <div>
+        {phashMatches.length > 0 && (
+          <div className="font-weight-bold">
+            <SuccessIcon className="mr-2" />
+            <HoverPopover
+              placement="bottom"
+              content={phashList}
+              className="PHashPopover"
+            >
+              {phashMatches.length > 1 ? (
+                <FormattedMessage
+                  id="component_tagger.results.phash_matches"
+                  values={{
+                    count: phashMatches.length,
+                  }}
+                />
+              ) : (
+                <FormattedMessage
+                  id="component_tagger.results.hash_matches"
+                  values={{
+                    hash_type: <FormattedMessage id="media_info.phash" />,
+                  }}
+                />
+              )}
+            </HoverPopover>
+          </div>
+        )}
+        {checksumMatch && (
+          <div className="font-weight-bold">
+            <SuccessIcon className="mr-2" />
+            <FormattedMessage
+              id="component_tagger.results.hash_matches"
+              values={{
+                hash_type: <FormattedMessage id="media_info.checksum" />,
+              }}
+            />
+          </div>
         )}
       </div>
     );
@@ -624,6 +670,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     return <LoadingIndicator card />;
   }
 
+  const stashSceneFile =
+    stashScene.files.length > 0 ? stashScene.files[0] : undefined;
+
   return (
     <>
       <div className={isActive ? "col-lg-6" : ""}>
@@ -640,7 +689,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             )}
 
             {maybeRenderDateField()}
-            {getDurationStatus(scene, stashScene.file?.duration)}
+            {getDurationStatus(scene, stashSceneFile?.duration)}
             {getFingerprintStatus(scene, stashScene)}
           </div>
         </div>

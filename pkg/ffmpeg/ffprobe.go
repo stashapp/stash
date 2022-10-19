@@ -167,6 +167,9 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 		} else {
 			framerate, _ = strconv.ParseFloat(videoStream.AvgFrameRate, 64)
 		}
+		if math.IsNaN(framerate) {
+			framerate = 0
+		}
 		result.FrameRate = math.Round(framerate*100) / 100
 		if rotate, err := strconv.ParseInt(videoStream.Tags.Rotate, 10, 64); err == nil && rotate != 180 {
 			result.Width = videoStream.Height
@@ -197,11 +200,21 @@ func (v *VideoFile) getVideoStream() *FFProbeStream {
 }
 
 func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
+	ret := -1
 	for i, stream := range probeJSON.Streams {
-		if stream.CodecType == fileType {
-			return i
+		// skip cover art/thumbnails
+		if stream.CodecType == fileType && stream.Disposition.AttachedPic == 0 {
+			// prefer default stream
+			if stream.Disposition.Default == 1 {
+				return i
+			}
+
+			// backwards compatible behaviour - fallback to first matching stream
+			if ret == -1 {
+				ret = i
+			}
 		}
 	}
 
-	return -1
+	return ret
 }

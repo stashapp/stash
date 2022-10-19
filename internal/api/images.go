@@ -32,6 +32,10 @@ func newImageBox(box fs.FS) (*imageBox, error) {
 	}
 
 	err := fs.WalkDir(box, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if d.IsDir() {
 			return nil
 		}

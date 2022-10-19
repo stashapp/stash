@@ -2,12 +2,16 @@ package manager
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net/http"
 
 	"github.com/stashapp/stash/internal/manager/config"
+	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -30,8 +34,21 @@ func (c *StreamRequestContext) Cancel() {
 	}
 
 	// hijack and close the connection
-	conn, _, _ := hj.Hijack()
+	conn, bw, _ := hj.Hijack()
 	if conn != nil {
+		if bw != nil {
+			// notify end of stream
+			_, err := bw.WriteString("0\r\n")
+			if err != nil {
+				logger.Warnf("unable to write end of stream: %v", err)
+			}
+			_, err = bw.WriteString("\r\n")
+			if err != nil {
+				logger.Warnf("unable to write end of stream: %v", err)
+			}
+			_ = bw.Flush()
+		}
+
 		conn.Close()
 	}
 }
@@ -49,8 +66,13 @@ func KillRunningStreams(scene *models.Scene, fileNamingAlgo models.HashAlgorithm
 	instance.ReadLockManager.Cancel(transcodePath)
 }
 
+type SceneCoverGetter interface {
+	GetCover(ctx context.Context, sceneID int) ([]byte, error)
+}
+
 type SceneServer struct {
-	TXNManager models.TransactionManager
+	TxnManager       txn.Manager
+	SceneCoverGetter SceneCoverGetter
 }
 
 func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
@@ -67,24 +89,41 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 }
 
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
+	const defaultSceneImage = "scene/scene.svg"
+
 	filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 
 	// fall back to the scene image blob if the file isn't present
 	screenshotExists, _ := fsutil.FileExists(filepath)
 	if screenshotExists {
 		http.ServeFile(w, r, filepath)
-	} else {
-		var cover []byte
-		err := s.TXNManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
-			cover, _ = repo.Scene().GetCover(scene.ID)
-			return nil
-		})
-		if err != nil {
-			logger.Warnf("read transaction failed while serving screenshot: %v", err)
-		}
+		return
+	}
 
-		if err = utils.ServeImage(cover, w, r); err != nil {
-			logger.Warnf("unable to serve screenshot image: %v", err)
-		}
+	var cover []byte
+	readTxnErr := txn.WithTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
+		cover, _ = s.SceneCoverGetter.GetCover(ctx, scene.ID)
+		return nil
+	})
+	if errors.Is(readTxnErr, context.Canceled) {
+		return
+	}
+	if readTxnErr != nil {
+		logger.Warnf("read transaction error on fetch screenshot: %v", readTxnErr)
+		http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if cover == nil {
+		// fallback to default cover if none found
+		// should always be there
+		f, _ := static.Scene.Open(defaultSceneImage)
+		defer f.Close()
+		stat, _ := f.Stat()
+		http.ServeContent(w, r, "scene.svg", stat.ModTime(), f.(io.ReadSeeker))
+	}
+
+	if err := utils.ServeImage(cover, w, r); err != nil {
+		logger.Warnf("error serving screenshot image: %v", err)
 	}
 }

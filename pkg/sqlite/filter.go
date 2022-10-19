@@ -1,8 +1,10 @@
 package sqlite
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -18,6 +20,13 @@ type sqlClause struct {
 	args []interface{}
 }
 
+func (c sqlClause) not() sqlClause {
+	return sqlClause{
+		sql:  "NOT (" + c.sql + ")",
+		args: c.args,
+	}
+}
+
 func makeClause(sql string, args ...interface{}) sqlClause {
 	return sqlClause{
 		sql:  sql,
@@ -25,14 +34,34 @@ func makeClause(sql string, args ...interface{}) sqlClause {
 	}
 }
 
-type criterionHandler interface {
-	handle(f *filterBuilder)
+func joinClauses(joinType string, clauses ...sqlClause) sqlClause {
+	var ret []string
+	var args []interface{}
+
+	for _, clause := range clauses {
+		ret = append(ret, "("+clause.sql+")")
+		args = append(args, clause.args...)
+	}
+
+	return sqlClause{sql: strings.Join(ret, " "+joinType+" "), args: args}
 }
 
-type criterionHandlerFunc func(f *filterBuilder)
+func orClauses(clauses ...sqlClause) sqlClause {
+	return joinClauses("OR", clauses...)
+}
 
-func (h criterionHandlerFunc) handle(f *filterBuilder) {
-	h(f)
+func andClauses(clauses ...sqlClause) sqlClause {
+	return joinClauses("AND", clauses...)
+}
+
+type criterionHandler interface {
+	handle(ctx context.Context, f *filterBuilder)
+}
+
+type criterionHandlerFunc func(ctx context.Context, f *filterBuilder)
+
+func (h criterionHandlerFunc) handle(ctx context.Context, f *filterBuilder) {
+	h(ctx, f)
 }
 
 type join struct {
@@ -219,6 +248,7 @@ func (f *filterBuilder) addWith(sql string, args ...interface{}) {
 }
 
 // addRecursiveWith adds a with clause and arguments to the filter, and sets it to recursive
+//
 //nolint:unused
 func (f *filterBuilder) addRecursiveWith(sql string, args ...interface{}) {
 	if sql == "" {
@@ -330,8 +360,8 @@ func (f *filterBuilder) getError() error {
 
 // handleCriterion calls the handle function on the provided criterionHandler,
 // providing itself.
-func (f *filterBuilder) handleCriterion(handler criterionHandler) {
-	handler.handle(f)
+func (f *filterBuilder) handleCriterion(ctx context.Context, handler criterionHandler) {
+	handler.handle(ctx, f)
 }
 
 func (f *filterBuilder) setError(e error) {
@@ -360,16 +390,14 @@ func (f *filterBuilder) andClauses(input []sqlClause) (string, []interface{}) {
 }
 
 func stringCriterionHandler(c *models.StringCriterionInput, column string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
 			if modifier := c.Modifier; c.Modifier.IsValid() {
 				switch modifier {
 				case models.CriterionModifierIncludes:
-					clause, thisArgs := getSearchBinding([]string{column}, c.Value, false)
-					f.addWhere(clause, thisArgs...)
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, false))
 				case models.CriterionModifierExcludes:
-					clause, thisArgs := getSearchBinding([]string{column}, c.Value, true)
-					f.addWhere(clause, thisArgs...)
+					f.whereClauses = append(f.whereClauses, getStringSearchClause([]string{column}, c.Value, true))
 				case models.CriterionModifierEquals:
 					f.addWhere(column+" LIKE ?", c.Value)
 				case models.CriterionModifierNotEquals:
@@ -398,8 +426,130 @@ func stringCriterionHandler(c *models.StringCriterionInput, column string) crite
 	}
 }
 
-func intCriterionHandler(c *models.IntCriterionInput, column string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, basenameColumn string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
+		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
+			addWildcards := true
+			not := false
+
+			if modifier := c.Modifier; c.Modifier.IsValid() {
+				switch modifier {
+				case models.CriterionModifierIncludes:
+					f.whereClauses = append(f.whereClauses, getPathSearchClauseMany(pathColumn, basenameColumn, c.Value, addWildcards, not))
+				case models.CriterionModifierExcludes:
+					not = true
+					f.whereClauses = append(f.whereClauses, getPathSearchClauseMany(pathColumn, basenameColumn, c.Value, addWildcards, not))
+				case models.CriterionModifierEquals:
+					addWildcards = false
+					f.whereClauses = append(f.whereClauses, getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not))
+				case models.CriterionModifierNotEquals:
+					addWildcards = false
+					not = true
+					f.whereClauses = append(f.whereClauses, getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not))
+				case models.CriterionModifierMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %[1]s || '%[3]s' || %[2]s regexp ?", pathColumn, basenameColumn, string(filepath.Separator)), c.Value)
+				case models.CriterionModifierNotMatchesRegex:
+					if _, err := regexp.Compile(c.Value); err != nil {
+						f.setError(err)
+						return
+					}
+					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %[1]s || '%[3]s' || %[2]s NOT regexp ?", pathColumn, basenameColumn, string(filepath.Separator)), c.Value)
+				case models.CriterionModifierIsNull:
+					f.addWhere(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = '')", pathColumn, basenameColumn))
+				case models.CriterionModifierNotNull:
+					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != '')", pathColumn, basenameColumn))
+				default:
+					panic("unsupported string filter modifier")
+				}
+			}
+		}
+	}
+}
+
+func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not bool) sqlClause {
+	// if path value has slashes, then we're potentially searching directory only or
+	// directory plus basename
+	hasSlashes := strings.Contains(p, string(filepath.Separator))
+	trailingSlash := hasSlashes && p[len(p)-1] == filepath.Separator
+	const emptyDir = string(filepath.Separator)
+
+	// possible values:
+	// dir/basename
+	// dir1/subdir
+	// dir/
+	// /basename
+	// dirOrBasename
+
+	basename := filepath.Base(p)
+	dir := filepath.Dir(p)
+
+	if addWildcards {
+		p = "%" + p + "%"
+		basename += "%"
+		dir = "%" + dir
+	}
+
+	var ret sqlClause
+
+	switch {
+	case !hasSlashes:
+		// dir or basename
+		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %s LIKE ?", pathColumn, basenameColumn), p, p)
+	case dir != emptyDir && !trailingSlash:
+		// (path like %dir AND basename like basename%) OR path like %p%
+		c1 := makeClause(fmt.Sprintf("%s LIKE ? AND %s LIKE ?", pathColumn, basenameColumn), dir, basename)
+		c2 := makeClause(fmt.Sprintf("%s LIKE ?", pathColumn), p)
+		ret = orClauses(c1, c2)
+	case dir == emptyDir && !trailingSlash:
+		// path like %p% OR basename like basename%
+		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %s LIKE ?", pathColumn, basenameColumn), p, basename)
+	case dir != emptyDir && trailingSlash:
+		// path like %p% OR path like %dir
+		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %[1]s LIKE ?", pathColumn), p, dir)
+	}
+
+	if not {
+		ret = ret.not()
+	}
+
+	return ret
+}
+
+// getPathSearchClauseMany splits the query string p on whitespace
+// Used for backwards compatibility for the includes/excludes modifiers
+func getPathSearchClauseMany(pathColumn, basenameColumn, p string, addWildcards, not bool) sqlClause {
+	q := strings.TrimSpace(p)
+	trimmedQuery := strings.Trim(q, "\"")
+
+	if trimmedQuery == q {
+		q = regexp.MustCompile(`\s+`).ReplaceAllString(q, " ")
+		queryWords := strings.Split(q, " ")
+
+		var ret []sqlClause
+		// Search for any word
+		for _, word := range queryWords {
+			ret = append(ret, getPathSearchClause(pathColumn, basenameColumn, word, addWildcards, not))
+		}
+
+		if !not {
+			return orClauses(ret...)
+		}
+
+		return andClauses(ret...)
+	}
+
+	return getPathSearchClause(pathColumn, basenameColumn, trimmedQuery, addWildcards, not)
+}
+
+func intCriterionHandler(c *models.IntCriterionInput, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
 			clause, args := getIntCriterionWhereClause(column, *c)
 			f.addWhere(clause, args...)
@@ -407,9 +557,12 @@ func intCriterionHandler(c *models.IntCriterionInput, column string) criterionHa
 	}
 }
 
-func boolCriterionHandler(c *bool, column string) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+func boolCriterionHandler(c *bool, column string, addJoinFn func(f *filterBuilder)) criterionHandlerFunc {
+	return func(ctx context.Context, f *filterBuilder) {
 		if c != nil {
+			if addJoinFn != nil {
+				addJoinFn(f)
+			}
 			var v string
 			if *c {
 				v = "1"
@@ -440,7 +593,7 @@ type joinedMultiCriterionHandlerBuilder struct {
 }
 
 func (m *joinedMultiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			joinAlias := m.joinAs
 			if joinAlias == "" {
@@ -510,7 +663,7 @@ type multiCriterionHandlerBuilder struct {
 }
 
 func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
@@ -555,7 +708,7 @@ type countCriterionHandlerBuilder struct {
 }
 
 func (m *countCriterionHandlerBuilder) handler(criterion *models.IntCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			clause, args := getCountCriterionClause(m.primaryTable, m.joinTable, m.primaryFK, *criterion)
 
@@ -575,28 +728,27 @@ type stringListCriterionHandlerBuilder struct {
 }
 
 func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
-		if criterion != nil && len(criterion.Value) > 0 {
+	return func(ctx context.Context, f *filterBuilder) {
+		if criterion != nil {
 			m.addJoinTable(f)
 
-			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(f)
+			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(ctx, f)
 		}
 	}
 }
 
 type hierarchicalMultiCriterionHandlerBuilder struct {
-	tx dbi
+	tx dbWrapper
 
 	primaryTable string
 	foreignTable string
 	foreignFK    string
 
-	derivedTable   string
 	parentFK       string
 	relationsTable string
 }
 
-func getHierarchicalValues(tx dbi, values []string, table, relationsTable, parentFK string, depth *int) string {
+func getHierarchicalValues(ctx context.Context, tx dbWrapper, values []string, table, relationsTable, parentFK string, depth *int) string {
 	var args []interface{}
 
 	depthVal := 0
@@ -669,7 +821,7 @@ WHERE id in {inBinding}
 	query := fmt.Sprintf("WITH RECURSIVE %s SELECT 'VALUES' || GROUP_CONCAT('(' || root_id || ', ' || item_id || ')') AS val FROM items", withClause)
 
 	var valuesClause string
-	err := tx.Get(&valuesClause, query, args...)
+	err := tx.Get(ctx, &valuesClause, query, args...)
 	if err != nil {
 		logger.Error(err)
 		// return record which never matches so we don't have to handle error here
@@ -692,7 +844,7 @@ func addHierarchicalConditionClauses(f *filterBuilder, criterion *models.Hierarc
 }
 
 func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			if criterion.Modifier == models.CriterionModifierIsNull || criterion.Modifier == models.CriterionModifierNotNull {
 				var notClause string
@@ -712,17 +864,23 @@ func (m *hierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.Hie
 				return
 			}
 
-			valuesClause := getHierarchicalValues(m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+			valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
-			f.addLeftJoin("(SELECT column1 AS root_id, column2 AS item_id FROM ("+valuesClause+"))", m.derivedTable, fmt.Sprintf("%s.item_id = %s.%s", m.derivedTable, m.primaryTable, m.foreignFK))
-
-			addHierarchicalConditionClauses(f, criterion, m.derivedTable, "root_id")
+			switch criterion.Modifier {
+			case models.CriterionModifierIncludes:
+				f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+			case models.CriterionModifierIncludesAll:
+				f.addWhere(fmt.Sprintf("%s.%s IN (SELECT column2 FROM (%s))", m.primaryTable, m.foreignFK, valuesClause))
+				f.addHaving(fmt.Sprintf("count(distinct %s.%s) IS %d", m.primaryTable, m.foreignFK, len(criterion.Value)))
+			case models.CriterionModifierExcludes:
+				f.addWhere(fmt.Sprintf("%s.%s NOT IN (SELECT column2 FROM (%s)) OR %[1]s.%[2]s IS NULL", m.primaryTable, m.foreignFK, valuesClause))
+			}
 		}
 	}
 }
 
 type joinedHierarchicalMultiCriterionHandlerBuilder struct {
-	tx dbi
+	tx dbWrapper
 
 	primaryTable string
 	foreignTable string
@@ -737,7 +895,7 @@ type joinedHierarchicalMultiCriterionHandlerBuilder struct {
 }
 
 func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
-	return func(f *filterBuilder) {
+	return func(ctx context.Context, f *filterBuilder) {
 		if criterion != nil {
 			joinAlias := m.joinAs
 
@@ -761,7 +919,7 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 				return
 			}
 
-			valuesClause := getHierarchicalValues(m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
+			valuesClause := getHierarchicalValues(ctx, m.tx, criterion.Value, m.foreignTable, m.relationsTable, m.parentFK, criterion.Depth)
 
 			joinTable := utils.StrFormat(`(
 	SELECT j.*, d.column1 AS root_id, d.column2 AS item_id FROM {joinTable} AS j

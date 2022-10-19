@@ -2,378 +2,169 @@ package scene
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
-	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
-const mutexType = "scene"
+var (
+	ErrNotVideoFile = errors.New("not a video file")
+)
 
-type videoFileCreator interface {
-	NewVideoFile(path string) (*ffmpeg.VideoFile, error)
+type CreatorUpdater interface {
+	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error)
+	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Scene, error)
+	Create(ctx context.Context, newScene *models.Scene, fileIDs []file.ID) error
+	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
+	AddFileID(ctx context.Context, id int, fileID file.ID) error
+	models.VideoFileLoader
 }
 
-type Scanner struct {
-	file.Scanner
+type ScanGenerator interface {
+	Generate(ctx context.Context, s *models.Scene, f *file.VideoFile) error
+}
 
-	StripFileExtension  bool
-	UseFileMetadata     bool
+type ScanHandler struct {
+	CreatorUpdater CreatorUpdater
+
+	CoverGenerator CoverGenerator
+	ScanGenerator  ScanGenerator
+	PluginCache    *plugin.Cache
+
 	FileNamingAlgorithm models.HashAlgorithm
-
-	CaseSensitiveFs  bool
-	TxnManager       models.TransactionManager
-	Paths            *paths.Paths
-	Screenshotter    screenshotter
-	VideoFileCreator videoFileCreator
-	PluginCache      *plugin.Cache
-	MutexManager     *utils.MutexManager
+	Paths               *paths.Paths
 }
 
-func FileScanner(hasher file.Hasher, fileNamingAlgorithm models.HashAlgorithm, calculateMD5 bool) file.Scanner {
-	return file.Scanner{
-		Hasher:          hasher,
-		CalculateOSHash: true,
-		CalculateMD5:    fileNamingAlgorithm == models.HashAlgorithmMd5 || calculateMD5,
+func (h *ScanHandler) validate() error {
+	if h.CreatorUpdater == nil {
+		return errors.New("CreatorUpdater is required")
 	}
-}
-
-func (scanner *Scanner) ScanExisting(ctx context.Context, existing file.FileBased, file file.SourceFile) (err error) {
-	scanned, err := scanner.Scanner.ScanExisting(existing, file)
-	if err != nil {
-		return err
+	if h.CoverGenerator == nil {
+		return errors.New("CoverGenerator is required")
 	}
-
-	s := existing.(*models.Scene)
-
-	path := scanned.New.Path
-	interactive := getInteractive(path)
-
-	oldHash := s.GetHash(scanner.FileNamingAlgorithm)
-	changed := false
-
-	var videoFile *ffmpeg.VideoFile
-
-	if scanned.ContentsChanged() {
-		logger.Infof("%s has been updated: rescanning", path)
-
-		s.SetFile(*scanned.New)
-
-		videoFile, err = scanner.VideoFileCreator.NewVideoFile(path)
-		if err != nil {
-			return err
-		}
-
-		if err := videoFileToScene(s, videoFile); err != nil {
-			return err
-		}
-		changed = true
-	} else if scanned.FileUpdated() || s.Interactive != interactive {
-		logger.Infof("Updated scene file %s", path)
-
-		// update fields as needed
-		s.SetFile(*scanned.New)
-		changed = true
+	if h.ScanGenerator == nil {
+		return errors.New("ScanGenerator is required")
 	}
-
-	// check for container
-	if !s.Format.Valid {
-		if videoFile == nil {
-			videoFile, err = scanner.VideoFileCreator.NewVideoFile(path)
-			if err != nil {
-				return err
-			}
-		}
-		container, err := ffmpeg.MatchContainer(videoFile.Container, path)
-		if err != nil {
-			return fmt.Errorf("getting container for %s: %w", path, err)
-		}
-		logger.Infof("Adding container %s to file %s", container, path)
-		s.Format = models.NullString(string(container))
-		changed = true
+	if !h.FileNamingAlgorithm.IsValid() {
+		return errors.New("FileNamingAlgorithm is required")
 	}
-
-	if err := scanner.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-		var err error
-		sqb := r.Scene()
-
-		captions, er := sqb.GetCaptions(s.ID)
-		if er == nil {
-			if len(captions) > 0 {
-				clean, altered := CleanCaptions(s.Path, captions)
-				if altered {
-					er = sqb.UpdateCaptions(s.ID, clean)
-					if er == nil {
-						logger.Debugf("Captions for %s cleaned: %s -> %s", path, captions, clean)
-					}
-				}
-			}
-		}
-		return err
-	}); err != nil {
-		logger.Error(err.Error())
+	if h.Paths == nil {
+		return errors.New("Paths is required")
 	}
-
-	if changed {
-		// we are operating on a checksum now, so grab a mutex on the checksum
-		done := make(chan struct{})
-		if scanned.New.OSHash != "" {
-			scanner.MutexManager.Claim(mutexType, scanned.New.OSHash, done)
-		}
-		if scanned.New.Checksum != "" {
-			scanner.MutexManager.Claim(mutexType, scanned.New.Checksum, done)
-		}
-
-		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-			defer close(done)
-			qb := r.Scene()
-
-			// ensure no clashes of hashes
-			if scanned.New.Checksum != "" && scanned.Old.Checksum != scanned.New.Checksum {
-				dupe, _ := qb.FindByChecksum(s.Checksum.String)
-				if dupe != nil {
-					return fmt.Errorf("MD5 for file %s is the same as that of %s", path, dupe.Path)
-				}
-			}
-
-			if scanned.New.OSHash != "" && scanned.Old.OSHash != scanned.New.OSHash {
-				dupe, _ := qb.FindByOSHash(scanned.New.OSHash)
-				if dupe != nil {
-					return fmt.Errorf("OSHash for file %s is the same as that of %s", path, dupe.Path)
-				}
-			}
-
-			s.Interactive = interactive
-			s.UpdatedAt = models.SQLiteTimestamp{Timestamp: time.Now()}
-
-			_, err := qb.UpdateFull(*s)
-			return err
-		}); err != nil {
-			return err
-		}
-
-		// Migrate any generated files if the hash has changed
-		newHash := s.GetHash(scanner.FileNamingAlgorithm)
-		if newHash != oldHash {
-			MigrateHash(scanner.Paths, oldHash, newHash)
-		}
-
-		scanner.PluginCache.ExecutePostHooks(ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
-	}
-
-	// We already have this item in the database
-	// check for thumbnails, screenshots
-	scanner.makeScreenshots(path, videoFile, s.GetHash(scanner.FileNamingAlgorithm))
 
 	return nil
 }
 
-func (scanner *Scanner) ScanNew(ctx context.Context, file file.SourceFile) (retScene *models.Scene, err error) {
-	scanned, err := scanner.Scanner.ScanNew(file)
+func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File) error {
+	if err := h.validate(); err != nil {
+		return err
+	}
+
+	videoFile, ok := f.(*file.VideoFile)
+	if !ok {
+		return ErrNotVideoFile
+	}
+
+	// try to match the file to a scene
+	existing, err := h.CreatorUpdater.FindByFileID(ctx, f.Base().ID)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("finding existing scene: %w", err)
 	}
 
-	path := file.Path()
-	checksum := scanned.Checksum
-	oshash := scanned.OSHash
-
-	// grab a mutex on the checksum and oshash
-	done := make(chan struct{})
-	if oshash != "" {
-		scanner.MutexManager.Claim(mutexType, oshash, done)
-	}
-	if checksum != "" {
-		scanner.MutexManager.Claim(mutexType, checksum, done)
-	}
-
-	defer close(done)
-
-	// check for scene by checksum and oshash - MD5 should be
-	// redundant, but check both
-	var s *models.Scene
-	if err := scanner.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		qb := r.Scene()
-		if checksum != "" {
-			s, _ = qb.FindByChecksum(checksum)
+	if len(existing) == 0 {
+		// try also to match file by fingerprints
+		existing, err = h.CreatorUpdater.FindByFingerprints(ctx, videoFile.Fingerprints)
+		if err != nil {
+			return fmt.Errorf("finding existing scene by fingerprints: %w", err)
 		}
-
-		if s == nil {
-			s, _ = qb.FindByOSHash(oshash)
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
 	}
 
-	sceneHash := oshash
-
-	if scanner.FileNamingAlgorithm == models.HashAlgorithmMd5 {
-		sceneHash = checksum
-	}
-
-	interactive := getInteractive(file.Path())
-
-	if s != nil {
-		exists, _ := fsutil.FileExists(s.Path)
-		if !scanner.CaseSensitiveFs {
-			// #1426 - if file exists but is a case-insensitive match for the
-			// original filename, then treat it as a move
-			if exists && strings.EqualFold(path, s.Path) {
-				exists = false
-			}
-		}
-
-		if exists {
-			logger.Infof("%s already exists. Duplicate of %s", path, s.Path)
-		} else {
-			logger.Infof("%s already exists. Updating path...", path)
-			scenePartial := models.ScenePartial{
-				ID:          s.ID,
-				Path:        &path,
-				Interactive: &interactive,
-			}
-			if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-				_, err := r.Scene().Update(scenePartial)
-				return err
-			}); err != nil {
-				return nil, err
-			}
-
-			scanner.makeScreenshots(path, nil, sceneHash)
-			scanner.PluginCache.ExecutePostHooks(ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
+	if len(existing) > 0 {
+		updateExisting := oldFile != nil
+		if err := h.associateExisting(ctx, existing, videoFile, updateExisting); err != nil {
+			return err
 		}
 	} else {
-		logger.Infof("%s doesn't exist. Creating new item...", path)
-		currentTime := time.Now()
-
-		videoFile, err := scanner.VideoFileCreator.NewVideoFile(path)
-		if err != nil {
-			return nil, err
+		// create a new scene
+		now := time.Now()
+		newScene := &models.Scene{
+			CreatedAt: now,
+			UpdatedAt: now,
 		}
 
-		title := filepath.Base(path)
-		if scanner.StripFileExtension {
-			title = stripExtension(title)
+		logger.Infof("%s doesn't exist. Creating new scene...", f.Base().Path)
+
+		if err := h.CreatorUpdater.Create(ctx, newScene, []file.ID{videoFile.ID}); err != nil {
+			return fmt.Errorf("creating new scene: %w", err)
 		}
 
-		if scanner.UseFileMetadata && videoFile.Title != "" {
-			title = videoFile.Title
-		}
+		h.PluginCache.RegisterPostHooks(ctx, newScene.ID, plugin.SceneCreatePost, nil, nil)
 
-		newScene := models.Scene{
-			Checksum: sql.NullString{String: checksum, Valid: checksum != ""},
-			OSHash:   sql.NullString{String: oshash, Valid: oshash != ""},
-			Path:     path,
-			FileModTime: models.NullSQLiteTimestamp{
-				Timestamp: scanned.FileModTime,
-				Valid:     true,
-			},
-			Title:       sql.NullString{String: title, Valid: true},
-			CreatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt:   models.SQLiteTimestamp{Timestamp: currentTime},
-			Interactive: interactive,
-		}
-
-		if err := videoFileToScene(&newScene, videoFile); err != nil {
-			return nil, err
-		}
-
-		if scanner.UseFileMetadata {
-			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
-			_ = newScene.Date.Scan(videoFile.CreationTime)
-		}
-
-		if err := scanner.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-			var err error
-			retScene, err = r.Scene().Create(newScene)
-			return err
-		}); err != nil {
-			return nil, err
-		}
-
-		scanner.makeScreenshots(path, videoFile, sceneHash)
-		scanner.PluginCache.ExecutePostHooks(ctx, retScene.ID, plugin.SceneCreatePost, nil, nil)
+		existing = []*models.Scene{newScene}
 	}
 
-	return retScene, nil
-}
+	if oldFile != nil {
+		// migrate hashes from the old file to the new
+		oldHash := GetHash(oldFile, h.FileNamingAlgorithm)
+		newHash := GetHash(f, h.FileNamingAlgorithm)
 
-func stripExtension(path string) string {
-	ext := filepath.Ext(path)
-	return strings.TrimSuffix(path, ext)
-}
-
-func videoFileToScene(s *models.Scene, videoFile *ffmpeg.VideoFile) error {
-	container, err := ffmpeg.MatchContainer(videoFile.Container, s.Path)
-	if err != nil {
-		return fmt.Errorf("matching container: %w", err)
+		if oldHash != "" && newHash != "" && oldHash != newHash {
+			MigrateHash(h.Paths, oldHash, newHash)
+		}
 	}
 
-	s.Duration = sql.NullFloat64{Float64: videoFile.Duration, Valid: true}
-	s.VideoCodec = sql.NullString{String: videoFile.VideoCodec, Valid: true}
-	s.AudioCodec = sql.NullString{String: videoFile.AudioCodec, Valid: true}
-	s.Format = sql.NullString{String: string(container), Valid: true}
-	s.Width = sql.NullInt64{Int64: int64(videoFile.Width), Valid: true}
-	s.Height = sql.NullInt64{Int64: int64(videoFile.Height), Valid: true}
-	s.Framerate = sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true}
-	s.Bitrate = sql.NullInt64{Int64: videoFile.Bitrate, Valid: true}
-	s.Size = sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true}
+	for _, s := range existing {
+		if err := h.CoverGenerator.GenerateCover(ctx, s, videoFile); err != nil {
+			// just log if cover generation fails. We can try again on rescan
+			logger.Errorf("Error generating cover for %s: %v", videoFile.Path, err)
+		}
+
+		if err := h.ScanGenerator.Generate(ctx, s, videoFile); err != nil {
+			// just log if cover generation fails. We can try again on rescan
+			logger.Errorf("Error generating content for %s: %v", videoFile.Path, err)
+		}
+	}
 
 	return nil
 }
 
-func (scanner *Scanner) makeScreenshots(path string, probeResult *ffmpeg.VideoFile, checksum string) {
-	thumbPath := scanner.Paths.Scene.GetThumbnailScreenshotPath(checksum)
-	normalPath := scanner.Paths.Scene.GetScreenshotPath(checksum)
-
-	thumbExists, _ := fsutil.FileExists(thumbPath)
-	normalExists, _ := fsutil.FileExists(normalPath)
-
-	if thumbExists && normalExists {
-		return
-	}
-
-	if probeResult == nil {
-		var err error
-		probeResult, err = scanner.VideoFileCreator.NewVideoFile(path)
-
-		if err != nil {
-			logger.Error(err.Error())
-			return
+func (h *ScanHandler) associateExisting(ctx context.Context, existing []*models.Scene, f *file.VideoFile, updateExisting bool) error {
+	for _, s := range existing {
+		if err := s.LoadFiles(ctx, h.CreatorUpdater); err != nil {
+			return err
 		}
-		logger.Infof("Regenerating images for %s", path)
-	}
 
-	if !thumbExists {
-		logger.Debugf("Creating thumbnail for %s", path)
-		if err := scanner.Screenshotter.GenerateThumbnail(context.TODO(), probeResult, checksum); err != nil {
-			logger.Errorf("Error creating thumbnail for %s: %v", err)
+		found := false
+		for _, sf := range s.Files.List() {
+			if sf.ID == f.ID {
+				found = true
+				break
+			}
 		}
-	}
 
-	if !normalExists {
-		logger.Debugf("Creating screenshot for %s", path)
-		if err := scanner.Screenshotter.GenerateScreenshot(context.TODO(), probeResult, checksum); err != nil {
-			logger.Errorf("Error creating screenshot for %s: %v", err)
+		if !found {
+			logger.Infof("Adding %s to scene %s", f.Path, s.DisplayName())
+
+			if err := h.CreatorUpdater.AddFileID(ctx, s.ID, f.ID); err != nil {
+				return fmt.Errorf("adding file to scene: %w", err)
+			}
+
+			// update updated_at time
+			if _, err := h.CreatorUpdater.UpdatePartial(ctx, s.ID, models.NewScenePartial()); err != nil {
+				return fmt.Errorf("updating scene: %w", err)
+			}
+		}
+
+		if !found || updateExisting {
+			h.PluginCache.RegisterPostHooks(ctx, s.ID, plugin.SceneUpdatePost, nil, nil)
 		}
 	}
-}
 
-func getInteractive(path string) bool {
-	_, err := os.Stat(GetFunscriptPath(path))
-	return err == nil
+	return nil
 }

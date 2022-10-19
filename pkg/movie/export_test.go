@@ -55,7 +55,7 @@ var (
 	backImageBytes  = []byte("backImageBytes")
 )
 
-var studio models.Studio = models.Studio{
+var movieStudio models.Studio = models.Studio{
 	Name: models.NullString(studioName),
 }
 
@@ -189,30 +189,30 @@ func TestToJSON(t *testing.T) {
 
 	imageErr := errors.New("error getting image")
 
-	mockMovieReader.On("GetFrontImage", movieID).Return(frontImageBytes, nil).Once()
-	mockMovieReader.On("GetFrontImage", missingStudioMovieID).Return(frontImageBytes, nil).Once()
-	mockMovieReader.On("GetFrontImage", emptyID).Return(nil, nil).Once().Maybe()
-	mockMovieReader.On("GetFrontImage", errFrontImageID).Return(nil, imageErr).Once()
-	mockMovieReader.On("GetFrontImage", errBackImageID).Return(frontImageBytes, nil).Once()
+	mockMovieReader.On("GetFrontImage", testCtx, movieID).Return(frontImageBytes, nil).Once()
+	mockMovieReader.On("GetFrontImage", testCtx, missingStudioMovieID).Return(frontImageBytes, nil).Once()
+	mockMovieReader.On("GetFrontImage", testCtx, emptyID).Return(nil, nil).Once().Maybe()
+	mockMovieReader.On("GetFrontImage", testCtx, errFrontImageID).Return(nil, imageErr).Once()
+	mockMovieReader.On("GetFrontImage", testCtx, errBackImageID).Return(frontImageBytes, nil).Once()
 
-	mockMovieReader.On("GetBackImage", movieID).Return(backImageBytes, nil).Once()
-	mockMovieReader.On("GetBackImage", missingStudioMovieID).Return(backImageBytes, nil).Once()
-	mockMovieReader.On("GetBackImage", emptyID).Return(nil, nil).Once()
-	mockMovieReader.On("GetBackImage", errBackImageID).Return(nil, imageErr).Once()
-	mockMovieReader.On("GetBackImage", errFrontImageID).Return(backImageBytes, nil).Maybe()
-	mockMovieReader.On("GetBackImage", errStudioMovieID).Return(backImageBytes, nil).Maybe()
+	mockMovieReader.On("GetBackImage", testCtx, movieID).Return(backImageBytes, nil).Once()
+	mockMovieReader.On("GetBackImage", testCtx, missingStudioMovieID).Return(backImageBytes, nil).Once()
+	mockMovieReader.On("GetBackImage", testCtx, emptyID).Return(nil, nil).Once()
+	mockMovieReader.On("GetBackImage", testCtx, errBackImageID).Return(nil, imageErr).Once()
+	mockMovieReader.On("GetBackImage", testCtx, errFrontImageID).Return(backImageBytes, nil).Maybe()
+	mockMovieReader.On("GetBackImage", testCtx, errStudioMovieID).Return(backImageBytes, nil).Maybe()
 
 	mockStudioReader := &mocks.StudioReaderWriter{}
 
 	studioErr := errors.New("error getting studio")
 
-	mockStudioReader.On("Find", studioID).Return(&studio, nil)
-	mockStudioReader.On("Find", missingStudioID).Return(nil, nil)
-	mockStudioReader.On("Find", errStudioID).Return(nil, studioErr)
+	mockStudioReader.On("Find", testCtx, studioID).Return(&movieStudio, nil)
+	mockStudioReader.On("Find", testCtx, missingStudioID).Return(nil, nil)
+	mockStudioReader.On("Find", testCtx, errStudioID).Return(nil, studioErr)
 
 	for i, s := range scenarios {
 		movie := s.movie
-		json, err := ToJSON(mockMovieReader, mockStudioReader, &movie)
+		json, err := ToJSON(testCtx, mockMovieReader, mockStudioReader, &movie)
 
 		switch {
 		case !s.err && err != nil:

@@ -1,7 +1,5 @@
 fragment SlimSceneData on Scene {
   id
-  checksum
-  oshash
   title
   details
   url
@@ -9,24 +7,11 @@ fragment SlimSceneData on Scene {
   rating
   o_counter
   organized
-  path
-  phash
   interactive
   interactive_speed
-  captions {
-    language_code
-    caption_type
-  }
 
-  file {
-    size
-    duration
-    video_codec
-    audio_codec
-    width
-    height
-    framerate
-    bitrate
+  files {
+    ...VideoFileData
   }
 
   paths {
@@ -46,11 +31,17 @@ fragment SlimSceneData on Scene {
     id
     title
     seconds
+    primary_tag {
+      id
+      name
+    }
   }
 
   galleries {
     id
-    path
+    files {
+      path
+    }
     title
   }
 

@@ -27,15 +27,15 @@ type SceneMovie {
   scene_index: Int
 }
 
-type SceneCaption {
+type VideoCaption {
   language_code: String!
   caption_type: String!
 }
 
 type Scene {
   id: ID!
-  checksum: String
-  oshash: String
+  checksum: String @deprecated(reason: "Use files.fingerprints")
+  oshash: String @deprecated(reason: "Use files.fingerprints")
   title: String
   details: String
   url: String
@@ -43,16 +43,17 @@ type Scene {
   rating: Int
   organized: Boolean!
   o_counter: Int
-  path: String!
-  phash: String
+  path: String! @deprecated(reason: "Use files.path")
+  phash: String @deprecated(reason: "Use files.fingerprints")
   interactive: Boolean!
   interactive_speed: Int
-  captions: [SceneCaption!]
+  captions: [VideoCaption!]
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time
 
-  file: SceneFileType! # Resolver
+  file: SceneFileType! @deprecated(reason: "Use files")
+  files: [VideoFile!]!
   paths: ScenePathsType! # Resolver
 
   scene_markers: [SceneMarker!]!
@@ -89,6 +90,8 @@ input SceneUpdateInput {
   """This should be a URL or a base64 encoded data URL"""
   cover_image: String
   stash_ids: [StashIDInput!]
+
+  primary_file_id: ID
 }
 
 enum BulkUpdateIdMode {

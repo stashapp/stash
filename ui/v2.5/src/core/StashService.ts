@@ -65,11 +65,12 @@ export const useFindDefaultFilter = (mode: GQL.FilterMode) =>
     },
   });
 
-export const useFindGalleries = (filter: ListFilterModel) =>
+export const useFindGalleries = (filter?: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
+    skip: filter === undefined,
     variables: {
-      filter: filter.makeFindFilter(),
-      gallery_filter: filter.makeFilter(),
+      filter: filter?.makeFindFilter(),
+      gallery_filter: filter?.makeFilter(),
     },
   });
 
@@ -82,11 +83,12 @@ export const queryFindGalleries = (filter: ListFilterModel) =>
     },
   });
 
-export const useFindScenes = (filter: ListFilterModel) =>
+export const useFindScenes = (filter?: ListFilterModel) =>
   GQL.useFindScenesQuery({
+    skip: filter === undefined,
     variables: {
-      filter: filter.makeFindFilter(),
-      scene_filter: filter.makeFilter(),
+      filter: filter?.makeFindFilter(),
+      scene_filter: filter?.makeFilter(),
     },
   });
 
@@ -107,11 +109,12 @@ export const queryFindScenesByID = (sceneIDs: number[]) =>
     },
   });
 
-export const useFindSceneMarkers = (filter: ListFilterModel) =>
+export const useFindSceneMarkers = (filter?: ListFilterModel) =>
   GQL.useFindSceneMarkersQuery({
+    skip: filter === undefined,
     variables: {
-      filter: filter.makeFindFilter(),
-      scene_marker_filter: filter.makeFilter(),
+      filter: filter?.makeFindFilter(),
+      scene_marker_filter: filter?.makeFilter(),
     },
   });
 
@@ -124,11 +127,12 @@ export const queryFindSceneMarkers = (filter: ListFilterModel) =>
     },
   });
 
-export const useFindImages = (filter: ListFilterModel) =>
+export const useFindImages = (filter?: ListFilterModel) =>
   GQL.useFindImagesQuery({
+    skip: filter === undefined,
     variables: {
-      filter: filter.makeFindFilter(),
-      image_filter: filter.makeFilter(),
+      filter: filter?.makeFindFilter(),
+      image_filter: filter?.makeFilter(),
     },
   });
 
@@ -141,11 +145,12 @@ export const queryFindImages = (filter: ListFilterModel) =>
     },
   });
 
-export const useFindStudios = (filter: ListFilterModel) =>
+export const useFindStudios = (filter?: ListFilterModel) =>
   GQL.useFindStudiosQuery({
+    skip: filter === undefined,
     variables: {
-      filter: filter.makeFindFilter(),
-      studio_filter: filter.makeFilter(),
+      filter: filter?.makeFindFilter(),
+      studio_filter: filter?.makeFilter(),
     },
   });
 
@@ -158,11 +163,12 @@ export const queryFindStudios = (filter: ListFilterModel) =>
     },
   });
 
-export const useFindMovies = (filter: ListFilterModel) =>
+export const useFindMovies = (filter?: ListFilterModel) =>
   GQL.useFindMoviesQuery({
+    skip: filter === undefined,
     variables: {
-      filter: filter.makeFindFilter(),
-      movie_filter: filter.makeFilter(),
+      filter: filter?.makeFindFilter(),
+      movie_filter: filter?.makeFilter(),
     },
   });
 
@@ -175,19 +181,21 @@ export const queryFindMovies = (filter: ListFilterModel) =>
     },
   });
 
-export const useFindPerformers = (filter: ListFilterModel) =>
+export const useFindPerformers = (filter?: ListFilterModel) =>
   GQL.useFindPerformersQuery({
+    skip: filter === undefined,
     variables: {
-      filter: filter.makeFindFilter(),
-      performer_filter: filter.makeFilter(),
+      filter: filter?.makeFindFilter(),
+      performer_filter: filter?.makeFilter(),
     },
   });
 
-export const useFindTags = (filter: ListFilterModel) =>
+export const useFindTags = (filter?: ListFilterModel) =>
   GQL.useFindTagsQuery({
+    skip: filter === undefined,
     variables: {
-      filter: filter.makeFindFilter(),
-      tag_filter: filter.makeFilter(),
+      filter: filter?.makeFindFilter(),
+      tag_filter: filter?.makeFilter(),
     },
   });
 
@@ -487,6 +495,18 @@ export const useSceneGenerateScreenshot = () =>
     update: deleteCache([GQL.FindScenesDocument]),
   });
 
+export const mutateSceneSetPrimaryFile = (id: string, fileID: string) =>
+  client.mutate<GQL.SceneUpdateMutation>({
+    mutation: GQL.SceneUpdateDocument,
+    variables: {
+      input: {
+        id,
+        primary_file_id: fileID,
+      },
+    },
+    update: deleteCache(sceneMutationImpactedQueries),
+  });
+
 const imageMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
@@ -609,6 +629,18 @@ export const mutateImageResetO = (id: string) =>
     },
   });
 
+export const mutateImageSetPrimaryFile = (id: string, fileID: string) =>
+  client.mutate<GQL.ImageUpdateMutation>({
+    mutation: GQL.ImageUpdateDocument,
+    variables: {
+      input: {
+        id,
+        primary_file_id: fileID,
+      },
+    },
+    update: deleteCache(imageMutationImpactedQueries),
+  });
+
 const galleryMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
@@ -657,12 +689,42 @@ export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
+export const mutateGallerySetPrimaryFile = (id: string, fileID: string) =>
+  client.mutate<GQL.GalleryUpdateMutation>({
+    mutation: GQL.GalleryUpdateDocument,
+    variables: {
+      input: {
+        id,
+        primary_file_id: fileID,
+      },
+    },
+    update: deleteCache(galleryMutationImpactedQueries),
+  });
+
 export const studioMutationImpactedQueries = [
   GQL.FindStudiosDocument,
   GQL.FindSceneDocument,
   GQL.FindScenesDocument,
   GQL.AllStudiosForFilterDocument,
 ];
+
+export const mutateDeleteFiles = (ids: string[]) =>
+  client.mutate<GQL.DeleteFilesMutation>({
+    mutation: GQL.DeleteFilesDocument,
+    variables: {
+      ids,
+    },
+    update: deleteCache([
+      ...sceneMutationImpactedQueries,
+      ...imageMutationImpactedQueries,
+      ...galleryMutationImpactedQueries,
+    ]),
+    refetchQueries: getQueryNames([
+      GQL.FindSceneDocument,
+      GQL.FindImageDocument,
+      GQL.FindGalleryDocument,
+    ]),
+  });
 
 export const useStudioCreate = () =>
   GQL.useStudioCreateMutation({

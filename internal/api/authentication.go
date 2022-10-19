@@ -26,7 +26,8 @@ const (
 )
 
 func allowUnauthenticated(r *http.Request) bool {
-	return strings.HasPrefix(r.URL.Path, loginEndPoint) || r.URL.Path == "/css"
+	// #2715 - allow access to UI files
+	return strings.HasPrefix(r.URL.Path, loginEndPoint) || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/assets")
 }
 
 func authenticateHandler() func(http.Handler) http.Handler {

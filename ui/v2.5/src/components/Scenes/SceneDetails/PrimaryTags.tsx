@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { Button, Badge, Card } from "react-bootstrap";
 import TextUtils from "src/utils/text";
+import { markerTitle } from "src/core/markers";
 
 interface IPrimaryTags {
   sceneMarkers: GQL.SceneMarkerDataFragment[];
@@ -40,7 +41,7 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
           <hr />
           <div className="row">
             <Button variant="link" onClick={() => onClickMarker(marker)}>
-              {marker.title}
+              {markerTitle(marker)}
             </Button>
             <Button
               variant="link"

@@ -1,104 +1,137 @@
 package models
 
 import (
-	"database/sql"
+	"context"
+	"errors"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/file"
 )
 
 // Image stores the metadata for a single image.
 type Image struct {
-	ID          int                 `db:"id" json:"id"`
-	Checksum    string              `db:"checksum" json:"checksum"`
-	Path        string              `db:"path" json:"path"`
-	Title       sql.NullString      `db:"title" json:"title"`
-	Rating      sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   bool                `db:"organized" json:"organized"`
-	OCounter    int                 `db:"o_counter" json:"o_counter"`
-	Size        sql.NullInt64       `db:"size" json:"size"`
-	Width       sql.NullInt64       `db:"width" json:"width"`
-	Height      sql.NullInt64       `db:"height" json:"height"`
-	StudioID    sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	CreatedAt   SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+	ID int `json:"id"`
+
+	Title     string `json:"title"`
+	Rating    *int   `json:"rating"`
+	Organized bool   `json:"organized"`
+	OCounter  int    `json:"o_counter"`
+	StudioID  *int   `json:"studio_id"`
+
+	// transient - not persisted
+	Files         RelatedImageFiles
+	PrimaryFileID *file.ID
+	// transient - path of primary file - empty if no files
+	Path string
+	// transient - checksum of primary file - empty if no files
+	Checksum string
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	GalleryIDs   RelatedIDs `json:"gallery_ids"`
+	TagIDs       RelatedIDs `json:"tag_ids"`
+	PerformerIDs RelatedIDs `json:"performer_ids"`
 }
 
-// ImagePartial represents part of a Image object. It is used to update
-// the database entry. Only non-nil fields will be updated.
-type ImagePartial struct {
-	ID          int                  `db:"id" json:"id"`
-	Checksum    *string              `db:"checksum" json:"checksum"`
-	Path        *string              `db:"path" json:"path"`
-	Title       *sql.NullString      `db:"title" json:"title"`
-	Rating      *sql.NullInt64       `db:"rating" json:"rating"`
-	Organized   *bool                `db:"organized" json:"organized"`
-	Size        *sql.NullInt64       `db:"size" json:"size"`
-	Width       *sql.NullInt64       `db:"width" json:"width"`
-	Height      *sql.NullInt64       `db:"height" json:"height"`
-	StudioID    *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
-	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
-	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
+func (i *Image) LoadFiles(ctx context.Context, l ImageFileLoader) error {
+	return i.Files.load(func() ([]*file.ImageFile, error) {
+		return l.GetFiles(ctx, i.ID)
+	})
 }
 
-func (i *Image) File() File {
-	ret := File{
-		Path: i.Path,
-	}
-
-	ret.Checksum = i.Checksum
-	if i.FileModTime.Valid {
-		ret.FileModTime = i.FileModTime.Timestamp
-	}
-	if i.Size.Valid {
-		ret.Size = strconv.FormatInt(i.Size.Int64, 10)
-	}
-
-	return ret
-}
-
-func (i *Image) SetFile(f File) {
-	path := f.Path
-	i.Path = path
-
-	if f.Checksum != "" {
-		i.Checksum = f.Checksum
-	}
-	zeroTime := time.Time{}
-	if f.FileModTime != zeroTime {
-		i.FileModTime = NullSQLiteTimestamp{
-			Timestamp: f.FileModTime,
-			Valid:     true,
+func (i *Image) LoadPrimaryFile(ctx context.Context, l file.Finder) error {
+	return i.Files.loadPrimary(func() (*file.ImageFile, error) {
+		if i.PrimaryFileID == nil {
+			return nil, nil
 		}
-	}
-	if f.Size != "" {
-		size, err := strconv.ParseInt(f.Size, 10, 64)
-		if err == nil {
-			i.Size = sql.NullInt64{
-				Int64: size,
-				Valid: true,
+
+		f, err := l.Find(ctx, *i.PrimaryFileID)
+		if err != nil {
+			return nil, err
+		}
+
+		var vf *file.ImageFile
+		if len(f) > 0 {
+			var ok bool
+			vf, ok = f[0].(*file.ImageFile)
+			if !ok {
+				return nil, errors.New("not an image file")
 			}
 		}
-	}
+		return vf, nil
+	})
+}
+
+func (i *Image) LoadGalleryIDs(ctx context.Context, l GalleryIDLoader) error {
+	return i.GalleryIDs.load(func() ([]int, error) {
+		return l.GetGalleryIDs(ctx, i.ID)
+	})
+}
+
+func (i *Image) LoadPerformerIDs(ctx context.Context, l PerformerIDLoader) error {
+	return i.PerformerIDs.load(func() ([]int, error) {
+		return l.GetPerformerIDs(ctx, i.ID)
+	})
+}
+
+func (i *Image) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return i.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, i.ID)
+	})
 }
 
 // GetTitle returns the title of the image. If the Title field is empty,
 // then the base filename is returned.
-func (i *Image) GetTitle() string {
-	if i.Title.String != "" {
-		return i.Title.String
+func (i Image) GetTitle() string {
+	if i.Title != "" {
+		return i.Title
 	}
 
-	return filepath.Base(i.Path)
+	if i.Path != "" {
+		return filepath.Base(i.Path)
+	}
+
+	return ""
 }
 
-// ImageFileType represents the file metadata for an image.
-type ImageFileType struct {
-	Size   *int `graphql:"size" json:"size"`
-	Width  *int `graphql:"width" json:"width"`
-	Height *int `graphql:"height" json:"height"`
+// DisplayName returns a display name for the scene for logging purposes.
+// It returns Path if not empty, otherwise it returns the ID.
+func (i Image) DisplayName() string {
+	if i.Path != "" {
+		return i.Path
+	}
+
+	return strconv.Itoa(i.ID)
+}
+
+type ImageCreateInput struct {
+	*Image
+	FileIDs []file.ID
+}
+
+type ImagePartial struct {
+	Title     OptionalString
+	Rating    OptionalInt
+	Organized OptionalBool
+	OCounter  OptionalInt
+	StudioID  OptionalInt
+	CreatedAt OptionalTime
+	UpdatedAt OptionalTime
+
+	GalleryIDs    *UpdateIDs
+	TagIDs        *UpdateIDs
+	PerformerIDs  *UpdateIDs
+	PrimaryFileID *file.ID
+}
+
+func NewImagePartial() ImagePartial {
+	updatedTime := time.Now()
+	return ImagePartial{
+		UpdatedAt: NewOptionalTime(updatedTime),
+	}
 }
 
 type Images []*Image

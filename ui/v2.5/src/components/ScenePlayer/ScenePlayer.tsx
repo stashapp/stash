@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -117,6 +118,7 @@ interface IScenePlayerProps {
   scene: GQL.SceneDataFragment | undefined | null;
   timestamp: number;
   autoplay?: boolean;
+  permitLoop?: boolean;
   onComplete?: () => void;
   onNext?: () => void;
   onPrevious?: () => void;
@@ -127,6 +129,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   autoplay,
   scene,
   timestamp,
+  permitLoop = true,
   onComplete,
   onNext,
   onPrevious,
@@ -153,7 +156,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const started = useRef(false);
   const interactiveReady = useRef(false);
 
+  const file = useMemo(
+    () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
+    [scene]
+  );
+
   const maxLoopDuration = config?.maximumLoopDuration ?? 0;
+
+  const looping = useMemo(
+    () =>
+      !!file &&
+      !!file.duration &&
+      permitLoop &&
+      maxLoopDuration !== 0 &&
+      file.duration < maxLoopDuration,
+    [file, permitLoop, maxLoopDuration]
+  );
 
   useEffect(() => {
     if (playerRef.current && timestamp >= 0) {
@@ -163,6 +181,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       });
     }
   }, [timestamp]);
+
+  useEffect(() => {
+    if (playerRef.current) {
+      const player = playerRef.current;
+      player.loop(looping);
+      interactiveClient.setLooping(looping);
+    }
+  }, [looping, interactiveClient]);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -303,16 +329,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     function handleOffset(player: VideoJsPlayer) {
-      if (!scene) return;
+      if (!scene || !file) return;
 
-      const currentSrc = player.currentSrc();
+      const currentSrc = new URL(player.currentSrc());
 
       const isDirect =
-        currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
+        currentSrc.pathname.endsWith("/stream") ||
+        currentSrc.pathname.endsWith("/stream.m3u8");
 
       const curTime = player.currentTime();
       if (!isDirect) {
-        (player as any).setOffsetDuration(scene.file.duration);
+        (player as any).setOffsetDuration(file.duration);
       } else {
         (player as any).clearOffsetDuration();
       }
@@ -487,7 +514,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.on("loadedmetadata", loadedmetadata);
 
     // don't re-initialise the player unless the scene has changed
-    if (!scene || scene.id === sceneId.current) return;
+    if (!scene || !file || scene.id === sceneId.current) return;
     sceneId.current = scene.id;
 
     // always stop the interactive client on initialisation
@@ -499,10 +526,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
     else player.poster("");
 
-    const isLandscape =
-      scene.file.height &&
-      scene.file.width &&
-      scene.file.width > scene.file.height;
+    const isLandscape = file.height && file.width && file.width > file.height;
 
     if (isLandscape) {
       (player as any).landscapeFullscreen({
@@ -550,14 +574,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.currentTime(0);
 
-    const looping =
-      !!scene.file.duration &&
-      maxLoopDuration !== 0 &&
-      scene.file.duration < maxLoopDuration;
     player.loop(looping);
     interactiveClient.setLooping(looping);
 
     player.load();
+    player.focus();
 
     if ((player as any).vttThumbnails?.src)
       (player as any).vttThumbnails?.src(scene?.paths.vtt);
@@ -587,8 +608,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     };
   }, [
     scene,
+    file,
     config?.autostartVideo,
-    maxLoopDuration,
+    looping,
     initialTimestamp,
     autoplay,
     interactiveClient,
@@ -648,10 +670,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   };
 
   const isPortrait =
-    scene &&
-    scene.file.height &&
-    scene.file.width &&
-    scene.file.height > scene.file.width;
+    scene && file && file.height && file.width && file.height > file.width;
 
   return (
     <div className={cx("VideoPlayer", { portrait: isPortrait })}>
@@ -666,8 +685,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       {scene?.interactive &&
         (interactiveState !== ConnectionState.Ready ||
           playerRef.current?.paused()) && <SceneInteractiveStatus />}
-      {scene && (
+      {scene && file && (
         <ScenePlayerScrubber
+          file={file}
           scene={scene}
           position={time}
           onSeek={onScrubberSeek}

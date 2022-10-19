@@ -32,6 +32,8 @@ func (g Generator) Screenshot(ctx context.Context, input string, hash string, vi
 		}
 	}
 
+	logger.Infof("Creating screenshot for %s", input)
+
 	at := screenshotDurationProportion * videoDuration
 	if options.At != nil {
 		at = *options.At

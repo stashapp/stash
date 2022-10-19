@@ -19,9 +19,8 @@ import {
 
 import Icon from "src/components/Shared/Icon";
 import { useToast } from "src/hooks";
-import SceneQueue from "src/models/sceneQueue";
+import SceneQueue, { QueuedScene } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import TextUtils from "src/utils/text";
 import Mousetrap from "mousetrap";
 import { OCounterButton } from "./OCounterButton";
 import { OrganizedButton } from "./OrganizedButton";
@@ -51,12 +50,13 @@ const SceneGalleriesPanel = lazy(() => import("./SceneGalleriesPanel"));
 const DeleteScenesDialog = lazy(() => import("../DeleteScenesDialog"));
 const GenerateDialog = lazy(() => import("../../Dialogs/GenerateDialog"));
 const SceneVideoFilterPanel = lazy(() => import("./SceneVideoFilterPanel"));
+import { objectPath, objectTitle } from "src/core/files";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
   refetch: () => void;
   setTimestamp: (num: number) => void;
-  queueScenes: GQL.SceneDataFragment[];
+  queueScenes: QueuedScene[];
   onQueueNext: () => void;
   onQueuePrevious: () => void;
   onQueueRandom: () => void;
@@ -185,7 +185,7 @@ const ScenePage: React.FC<IProps> = ({
 
   async function onRescan() {
     await mutateMetadataScan({
-      paths: [scene.path],
+      paths: [objectPath(scene)],
     });
 
     Toast.success({
@@ -452,10 +452,12 @@ const ScenePage: React.FC<IProps> = ({
     return collapsed ? ">" : "<";
   }
 
+  const title = objectTitle(scene);
+
   return (
     <>
       <Helmet>
-        <title>{scene.title ?? TextUtils.fileNameFromPath(scene.path)}</title>
+        <title>{title}</title>
       </Helmet>
       {maybeRenderSceneGenerateDialog()}
       {maybeRenderDeleteDialog()}
@@ -476,9 +478,7 @@ const ScenePage: React.FC<IProps> = ({
               </Link>
             </h1>
           )}
-          <h3 className="scene-header">
-            {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
-          </h3>
+          <h3 className="scene-header">{title}</h3>
         </div>
         {renderTabs()}
       </div>
@@ -519,7 +519,7 @@ const SceneLoader: React.FC = () => {
     () => SceneQueue.fromQueryParameters(location.search),
     [location.search]
   );
-  const [queueScenes, setQueueScenes] = useState<GQL.SceneDataFragment[]>([]);
+  const [queueScenes, setQueueScenes] = useState<QueuedScene[]>([]);
 
   const [queueTotal, setQueueTotal] = useState(0);
   const [queueStart, setQueueStart] = useState(1);
@@ -538,9 +538,15 @@ const SceneLoader: React.FC = () => {
   }
 
   const autoplay = queryParams?.autoplay === "true";
+  const autoPlayOnSelected =
+    configuration?.interface.autostartVideoOnPlaySelected ?? false;
   const currentQueueIndex = queueScenes
     ? queueScenes.findIndex((s) => s.id === id)
     : -1;
+
+  useEffect(() => {
+    setContinuePlaylist(queryParams?.continue === "true");
+  }, [queryParams]);
 
   // set up hotkeys
   useEffect(() => {
@@ -592,7 +598,7 @@ const SceneLoader: React.FC = () => {
     const { scenes } = query.data.findScenes;
 
     // prepend scenes to scene list
-    const newScenes = scenes.concat(queueScenes);
+    const newScenes = (scenes as QueuedScene[]).concat(queueScenes);
     setQueueScenes(newScenes);
     setQueueStart(newStart);
   }
@@ -613,7 +619,7 @@ const SceneLoader: React.FC = () => {
     const { scenes } = query.data.findScenes;
 
     // append scenes to scene list
-    const newScenes = scenes.concat(queueScenes);
+    const newScenes = (scenes as QueuedScene[]).concat(queueScenes);
     setQueueScenes(newScenes);
     // don't change queue start
   }
@@ -621,7 +627,7 @@ const SceneLoader: React.FC = () => {
   function playScene(sceneID: string, newPage?: number) {
     sceneQueue.playScene(history, sceneID, {
       newPage,
-      autoPlay: true,
+      autoPlay: autoPlayOnSelected,
       continue: continuePlaylist,
     });
   }
@@ -714,6 +720,7 @@ const SceneLoader: React.FC = () => {
           scene={scene}
           timestamp={timestamp}
           autoplay={autoplay}
+          permitLoop={!continuePlaylist}
           onComplete={onComplete}
           onNext={
             currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1

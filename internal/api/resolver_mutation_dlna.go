@@ -5,10 +5,9 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/internal/manager"
-	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *mutationResolver) EnableDlna(ctx context.Context, input models.EnableDLNAInput) (bool, error) {
+func (r *mutationResolver) EnableDlna(ctx context.Context, input EnableDLNAInput) (bool, error) {
 	err := manager.GetInstance().DLNAService.Start(parseMinutes(input.Duration))
 	if err != nil {
 		return false, err
@@ -16,17 +15,17 @@ func (r *mutationResolver) EnableDlna(ctx context.Context, input models.EnableDL
 	return true, nil
 }
 
-func (r *mutationResolver) DisableDlna(ctx context.Context, input models.DisableDLNAInput) (bool, error) {
+func (r *mutationResolver) DisableDlna(ctx context.Context, input DisableDLNAInput) (bool, error) {
 	manager.GetInstance().DLNAService.Stop(parseMinutes(input.Duration))
 	return true, nil
 }
 
-func (r *mutationResolver) AddTempDlnaip(ctx context.Context, input models.AddTempDLNAIPInput) (bool, error) {
+func (r *mutationResolver) AddTempDlnaip(ctx context.Context, input AddTempDLNAIPInput) (bool, error) {
 	manager.GetInstance().DLNAService.AddTempDLNAIP(input.Address, parseMinutes(input.Duration))
 	return true, nil
 }
 
-func (r *mutationResolver) RemoveTempDlnaip(ctx context.Context, input models.RemoveTempDLNAIPInput) (bool, error) {
+func (r *mutationResolver) RemoveTempDlnaip(ctx context.Context, input RemoveTempDLNAIPInput) (bool, error) {
 	ret := manager.GetInstance().DLNAService.RemoveTempDLNAIP(input.Address)
 	return ret, nil
 }

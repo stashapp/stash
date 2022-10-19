@@ -1,12 +1,14 @@
 package file
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 const deleteFileSuffix = ".delete"
@@ -64,6 +66,19 @@ func NewDeleter() *Deleter {
 			StatFn:      os.Stat,
 		},
 	}
+}
+
+// RegisterHooks registers post-commit and post-rollback hooks.
+func (d *Deleter) RegisterHooks(ctx context.Context, mgr txn.Manager) {
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+		d.Commit()
+		return nil
+	})
+
+	txn.AddPostRollbackHook(ctx, func(ctx context.Context) error {
+		d.Rollback()
+		return nil
+	})
 }
 
 // Files designates files to be deleted. Each file marked will be renamed to add
@@ -158,4 +173,62 @@ func (d *Deleter) renameForDelete(path string) error {
 
 func (d *Deleter) renameForRestore(path string) error {
 	return d.RenamerRemover.Rename(path+deleteFileSuffix, path)
+}
+
+func Destroy(ctx context.Context, destroyer Destroyer, f File, fileDeleter *Deleter, deleteFile bool) error {
+	if err := destroyer.Destroy(ctx, f.Base().ID); err != nil {
+		return err
+	}
+
+	// don't delete files in zip files
+	if deleteFile && f.Base().ZipFileID == nil {
+		if err := fileDeleter.Files([]string{f.Base().Path}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type ZipDestroyer struct {
+	FileDestroyer   GetterDestroyer
+	FolderDestroyer FolderGetterDestroyer
+}
+
+func (d *ZipDestroyer) DestroyZip(ctx context.Context, f File, fileDeleter *Deleter, deleteFile bool) error {
+	// destroy contained files
+	files, err := d.FileDestroyer.FindByZipFileID(ctx, f.Base().ID)
+	if err != nil {
+		return err
+	}
+
+	for _, ff := range files {
+		if err := d.FileDestroyer.Destroy(ctx, ff.Base().ID); err != nil {
+			return err
+		}
+	}
+
+	// destroy contained folders
+	folders, err := d.FolderDestroyer.FindByZipFileID(ctx, f.Base().ID)
+	if err != nil {
+		return err
+	}
+
+	for _, ff := range folders {
+		if err := d.FolderDestroyer.Destroy(ctx, ff.ID); err != nil {
+			return err
+		}
+	}
+
+	if err := d.FileDestroyer.Destroy(ctx, f.Base().ID); err != nil {
+		return err
+	}
+
+	if deleteFile {
+		if err := fileDeleter.Files([]string{f.Base().Path}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

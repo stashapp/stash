@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	context "context"
+
 	models "github.com/stashapp/stash/pkg/models"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -12,13 +14,13 @@ type MovieReaderWriter struct {
 	mock.Mock
 }
 
-// All provides a mock function with given fields:
-func (_m *MovieReaderWriter) All() ([]*models.Movie, error) {
-	ret := _m.Called()
+// All provides a mock function with given fields: ctx
+func (_m *MovieReaderWriter) All(ctx context.Context) ([]*models.Movie, error) {
+	ret := _m.Called(ctx)
 
 	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func() []*models.Movie); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) []*models.Movie); ok {
+		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Movie)
@@ -26,8 +28,8 @@ func (_m *MovieReaderWriter) All() ([]*models.Movie, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -35,20 +37,20 @@ func (_m *MovieReaderWriter) All() ([]*models.Movie, error) {
 	return r0, r1
 }
 
-// Count provides a mock function with given fields:
-func (_m *MovieReaderWriter) Count() (int, error) {
-	ret := _m.Called()
+// Count provides a mock function with given fields: ctx
+func (_m *MovieReaderWriter) Count(ctx context.Context) (int, error) {
+	ret := _m.Called(ctx)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) int); ok {
+		r0 = rf(ctx)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,20 +58,20 @@ func (_m *MovieReaderWriter) Count() (int, error) {
 	return r0, r1
 }
 
-// CountByPerformerID provides a mock function with given fields: performerID
-func (_m *MovieReaderWriter) CountByPerformerID(performerID int) (int, error) {
-	ret := _m.Called(performerID)
+// CountByPerformerID provides a mock function with given fields: ctx, performerID
+func (_m *MovieReaderWriter) CountByPerformerID(ctx context.Context, performerID int) (int, error) {
+	ret := _m.Called(ctx, performerID)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(int) int); ok {
-		r0 = rf(performerID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, performerID)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(performerID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, performerID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -77,20 +79,20 @@ func (_m *MovieReaderWriter) CountByPerformerID(performerID int) (int, error) {
 	return r0, r1
 }
 
-// CountByStudioID provides a mock function with given fields: studioID
-func (_m *MovieReaderWriter) CountByStudioID(studioID int) (int, error) {
-	ret := _m.Called(studioID)
+// CountByStudioID provides a mock function with given fields: ctx, studioID
+func (_m *MovieReaderWriter) CountByStudioID(ctx context.Context, studioID int) (int, error) {
+	ret := _m.Called(ctx, studioID)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func(int) int); ok {
-		r0 = rf(studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, studioID)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(studioID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, studioID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -98,13 +100,13 @@ func (_m *MovieReaderWriter) CountByStudioID(studioID int) (int, error) {
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: newMovie
-func (_m *MovieReaderWriter) Create(newMovie models.Movie) (*models.Movie, error) {
-	ret := _m.Called(newMovie)
+// Create provides a mock function with given fields: ctx, newMovie
+func (_m *MovieReaderWriter) Create(ctx context.Context, newMovie models.Movie) (*models.Movie, error) {
+	ret := _m.Called(ctx, newMovie)
 
 	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(models.Movie) *models.Movie); ok {
-		r0 = rf(newMovie)
+	if rf, ok := ret.Get(0).(func(context.Context, models.Movie) *models.Movie); ok {
+		r0 = rf(ctx, newMovie)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Movie)
@@ -112,8 +114,8 @@ func (_m *MovieReaderWriter) Create(newMovie models.Movie) (*models.Movie, error
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.Movie) error); ok {
-		r1 = rf(newMovie)
+	if rf, ok := ret.Get(1).(func(context.Context, models.Movie) error); ok {
+		r1 = rf(ctx, newMovie)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -121,13 +123,13 @@ func (_m *MovieReaderWriter) Create(newMovie models.Movie) (*models.Movie, error
 	return r0, r1
 }
 
-// Destroy provides a mock function with given fields: id
-func (_m *MovieReaderWriter) Destroy(id int) error {
-	ret := _m.Called(id)
+// Destroy provides a mock function with given fields: ctx, id
+func (_m *MovieReaderWriter) Destroy(ctx context.Context, id int) error {
+	ret := _m.Called(ctx, id)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -135,13 +137,13 @@ func (_m *MovieReaderWriter) Destroy(id int) error {
 	return r0
 }
 
-// DestroyImages provides a mock function with given fields: movieID
-func (_m *MovieReaderWriter) DestroyImages(movieID int) error {
-	ret := _m.Called(movieID)
+// DestroyImages provides a mock function with given fields: ctx, movieID
+func (_m *MovieReaderWriter) DestroyImages(ctx context.Context, movieID int) error {
+	ret := _m.Called(ctx, movieID)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(movieID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) error); ok {
+		r0 = rf(ctx, movieID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -149,13 +151,13 @@ func (_m *MovieReaderWriter) DestroyImages(movieID int) error {
 	return r0
 }
 
-// Find provides a mock function with given fields: id
-func (_m *MovieReaderWriter) Find(id int) (*models.Movie, error) {
-	ret := _m.Called(id)
+// Find provides a mock function with given fields: ctx, id
+func (_m *MovieReaderWriter) Find(ctx context.Context, id int) (*models.Movie, error) {
+	ret := _m.Called(ctx, id)
 
 	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(int) *models.Movie); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(context.Context, int) *models.Movie); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Movie)
@@ -163,8 +165,8 @@ func (_m *MovieReaderWriter) Find(id int) (*models.Movie, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -172,13 +174,13 @@ func (_m *MovieReaderWriter) Find(id int) (*models.Movie, error) {
 	return r0, r1
 }
 
-// FindByName provides a mock function with given fields: name, nocase
-func (_m *MovieReaderWriter) FindByName(name string, nocase bool) (*models.Movie, error) {
-	ret := _m.Called(name, nocase)
+// FindByName provides a mock function with given fields: ctx, name, nocase
+func (_m *MovieReaderWriter) FindByName(ctx context.Context, name string, nocase bool) (*models.Movie, error) {
+	ret := _m.Called(ctx, name, nocase)
 
 	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(string, bool) *models.Movie); ok {
-		r0 = rf(name, nocase)
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) *models.Movie); ok {
+		r0 = rf(ctx, name, nocase)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Movie)
@@ -186,8 +188,8 @@ func (_m *MovieReaderWriter) FindByName(name string, nocase bool) (*models.Movie
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
-		r1 = rf(name, nocase)
+	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
+		r1 = rf(ctx, name, nocase)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -195,13 +197,13 @@ func (_m *MovieReaderWriter) FindByName(name string, nocase bool) (*models.Movie
 	return r0, r1
 }
 
-// FindByNames provides a mock function with given fields: names, nocase
-func (_m *MovieReaderWriter) FindByNames(names []string, nocase bool) ([]*models.Movie, error) {
-	ret := _m.Called(names, nocase)
+// FindByNames provides a mock function with given fields: ctx, names, nocase
+func (_m *MovieReaderWriter) FindByNames(ctx context.Context, names []string, nocase bool) ([]*models.Movie, error) {
+	ret := _m.Called(ctx, names, nocase)
 
 	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func([]string, bool) []*models.Movie); ok {
-		r0 = rf(names, nocase)
+	if rf, ok := ret.Get(0).(func(context.Context, []string, bool) []*models.Movie); ok {
+		r0 = rf(ctx, names, nocase)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Movie)
@@ -209,8 +211,8 @@ func (_m *MovieReaderWriter) FindByNames(names []string, nocase bool) ([]*models
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]string, bool) error); ok {
-		r1 = rf(names, nocase)
+	if rf, ok := ret.Get(1).(func(context.Context, []string, bool) error); ok {
+		r1 = rf(ctx, names, nocase)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -218,13 +220,13 @@ func (_m *MovieReaderWriter) FindByNames(names []string, nocase bool) ([]*models
 	return r0, r1
 }
 
-// FindByPerformerID provides a mock function with given fields: performerID
-func (_m *MovieReaderWriter) FindByPerformerID(performerID int) ([]*models.Movie, error) {
-	ret := _m.Called(performerID)
+// FindByPerformerID provides a mock function with given fields: ctx, performerID
+func (_m *MovieReaderWriter) FindByPerformerID(ctx context.Context, performerID int) ([]*models.Movie, error) {
+	ret := _m.Called(ctx, performerID)
 
 	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func(int) []*models.Movie); ok {
-		r0 = rf(performerID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Movie); ok {
+		r0 = rf(ctx, performerID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Movie)
@@ -232,8 +234,8 @@ func (_m *MovieReaderWriter) FindByPerformerID(performerID int) ([]*models.Movie
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(performerID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, performerID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -241,13 +243,13 @@ func (_m *MovieReaderWriter) FindByPerformerID(performerID int) ([]*models.Movie
 	return r0, r1
 }
 
-// FindByStudioID provides a mock function with given fields: studioID
-func (_m *MovieReaderWriter) FindByStudioID(studioID int) ([]*models.Movie, error) {
-	ret := _m.Called(studioID)
+// FindByStudioID provides a mock function with given fields: ctx, studioID
+func (_m *MovieReaderWriter) FindByStudioID(ctx context.Context, studioID int) ([]*models.Movie, error) {
+	ret := _m.Called(ctx, studioID)
 
 	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func(int) []*models.Movie); ok {
-		r0 = rf(studioID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []*models.Movie); ok {
+		r0 = rf(ctx, studioID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Movie)
@@ -255,8 +257,8 @@ func (_m *MovieReaderWriter) FindByStudioID(studioID int) ([]*models.Movie, erro
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(studioID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, studioID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -264,13 +266,13 @@ func (_m *MovieReaderWriter) FindByStudioID(studioID int) ([]*models.Movie, erro
 	return r0, r1
 }
 
-// FindMany provides a mock function with given fields: ids
-func (_m *MovieReaderWriter) FindMany(ids []int) ([]*models.Movie, error) {
-	ret := _m.Called(ids)
+// FindMany provides a mock function with given fields: ctx, ids
+func (_m *MovieReaderWriter) FindMany(ctx context.Context, ids []int) ([]*models.Movie, error) {
+	ret := _m.Called(ctx, ids)
 
 	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func([]int) []*models.Movie); ok {
-		r0 = rf(ids)
+	if rf, ok := ret.Get(0).(func(context.Context, []int) []*models.Movie); ok {
+		r0 = rf(ctx, ids)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Movie)
@@ -278,8 +280,8 @@ func (_m *MovieReaderWriter) FindMany(ids []int) ([]*models.Movie, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]int) error); ok {
-		r1 = rf(ids)
+	if rf, ok := ret.Get(1).(func(context.Context, []int) error); ok {
+		r1 = rf(ctx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -287,13 +289,13 @@ func (_m *MovieReaderWriter) FindMany(ids []int) ([]*models.Movie, error) {
 	return r0, r1
 }
 
-// GetBackImage provides a mock function with given fields: movieID
-func (_m *MovieReaderWriter) GetBackImage(movieID int) ([]byte, error) {
-	ret := _m.Called(movieID)
+// GetBackImage provides a mock function with given fields: ctx, movieID
+func (_m *MovieReaderWriter) GetBackImage(ctx context.Context, movieID int) ([]byte, error) {
+	ret := _m.Called(ctx, movieID)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(int) []byte); ok {
-		r0 = rf(movieID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []byte); ok {
+		r0 = rf(ctx, movieID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -301,8 +303,8 @@ func (_m *MovieReaderWriter) GetBackImage(movieID int) ([]byte, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(movieID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, movieID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -310,13 +312,13 @@ func (_m *MovieReaderWriter) GetBackImage(movieID int) ([]byte, error) {
 	return r0, r1
 }
 
-// GetFrontImage provides a mock function with given fields: movieID
-func (_m *MovieReaderWriter) GetFrontImage(movieID int) ([]byte, error) {
-	ret := _m.Called(movieID)
+// GetFrontImage provides a mock function with given fields: ctx, movieID
+func (_m *MovieReaderWriter) GetFrontImage(ctx context.Context, movieID int) ([]byte, error) {
+	ret := _m.Called(ctx, movieID)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func(int) []byte); ok {
-		r0 = rf(movieID)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []byte); ok {
+		r0 = rf(ctx, movieID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -324,8 +326,8 @@ func (_m *MovieReaderWriter) GetFrontImage(movieID int) ([]byte, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int) error); ok {
-		r1 = rf(movieID)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, movieID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -333,13 +335,13 @@ func (_m *MovieReaderWriter) GetFrontImage(movieID int) ([]byte, error) {
 	return r0, r1
 }
 
-// Query provides a mock function with given fields: movieFilter, findFilter
-func (_m *MovieReaderWriter) Query(movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
-	ret := _m.Called(movieFilter, findFilter)
+// Query provides a mock function with given fields: ctx, movieFilter, findFilter
+func (_m *MovieReaderWriter) Query(ctx context.Context, movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
+	ret := _m.Called(ctx, movieFilter, findFilter)
 
 	var r0 []*models.Movie
-	if rf, ok := ret.Get(0).(func(*models.MovieFilterType, *models.FindFilterType) []*models.Movie); ok {
-		r0 = rf(movieFilter, findFilter)
+	if rf, ok := ret.Get(0).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) []*models.Movie); ok {
+		r0 = rf(ctx, movieFilter, findFilter)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Movie)
@@ -347,15 +349,15 @@ func (_m *MovieReaderWriter) Query(movieFilter *models.MovieFilterType, findFilt
 	}
 
 	var r1 int
-	if rf, ok := ret.Get(1).(func(*models.MovieFilterType, *models.FindFilterType) int); ok {
-		r1 = rf(movieFilter, findFilter)
+	if rf, ok := ret.Get(1).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) int); ok {
+		r1 = rf(ctx, movieFilter, findFilter)
 	} else {
 		r1 = ret.Get(1).(int)
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(*models.MovieFilterType, *models.FindFilterType) error); ok {
-		r2 = rf(movieFilter, findFilter)
+	if rf, ok := ret.Get(2).(func(context.Context, *models.MovieFilterType, *models.FindFilterType) error); ok {
+		r2 = rf(ctx, movieFilter, findFilter)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -363,13 +365,13 @@ func (_m *MovieReaderWriter) Query(movieFilter *models.MovieFilterType, findFilt
 	return r0, r1, r2
 }
 
-// Update provides a mock function with given fields: updatedMovie
-func (_m *MovieReaderWriter) Update(updatedMovie models.MoviePartial) (*models.Movie, error) {
-	ret := _m.Called(updatedMovie)
+// Update provides a mock function with given fields: ctx, updatedMovie
+func (_m *MovieReaderWriter) Update(ctx context.Context, updatedMovie models.MoviePartial) (*models.Movie, error) {
+	ret := _m.Called(ctx, updatedMovie)
 
 	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(models.MoviePartial) *models.Movie); ok {
-		r0 = rf(updatedMovie)
+	if rf, ok := ret.Get(0).(func(context.Context, models.MoviePartial) *models.Movie); ok {
+		r0 = rf(ctx, updatedMovie)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Movie)
@@ -377,8 +379,8 @@ func (_m *MovieReaderWriter) Update(updatedMovie models.MoviePartial) (*models.M
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.MoviePartial) error); ok {
-		r1 = rf(updatedMovie)
+	if rf, ok := ret.Get(1).(func(context.Context, models.MoviePartial) error); ok {
+		r1 = rf(ctx, updatedMovie)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -386,13 +388,13 @@ func (_m *MovieReaderWriter) Update(updatedMovie models.MoviePartial) (*models.M
 	return r0, r1
 }
 
-// UpdateFull provides a mock function with given fields: updatedMovie
-func (_m *MovieReaderWriter) UpdateFull(updatedMovie models.Movie) (*models.Movie, error) {
-	ret := _m.Called(updatedMovie)
+// UpdateFull provides a mock function with given fields: ctx, updatedMovie
+func (_m *MovieReaderWriter) UpdateFull(ctx context.Context, updatedMovie models.Movie) (*models.Movie, error) {
+	ret := _m.Called(ctx, updatedMovie)
 
 	var r0 *models.Movie
-	if rf, ok := ret.Get(0).(func(models.Movie) *models.Movie); ok {
-		r0 = rf(updatedMovie)
+	if rf, ok := ret.Get(0).(func(context.Context, models.Movie) *models.Movie); ok {
+		r0 = rf(ctx, updatedMovie)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.Movie)
@@ -400,8 +402,8 @@ func (_m *MovieReaderWriter) UpdateFull(updatedMovie models.Movie) (*models.Movi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(models.Movie) error); ok {
-		r1 = rf(updatedMovie)
+	if rf, ok := ret.Get(1).(func(context.Context, models.Movie) error); ok {
+		r1 = rf(ctx, updatedMovie)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -409,13 +411,13 @@ func (_m *MovieReaderWriter) UpdateFull(updatedMovie models.Movie) (*models.Movi
 	return r0, r1
 }
 
-// UpdateImages provides a mock function with given fields: movieID, frontImage, backImage
-func (_m *MovieReaderWriter) UpdateImages(movieID int, frontImage []byte, backImage []byte) error {
-	ret := _m.Called(movieID, frontImage, backImage)
+// UpdateImages provides a mock function with given fields: ctx, movieID, frontImage, backImage
+func (_m *MovieReaderWriter) UpdateImages(ctx context.Context, movieID int, frontImage []byte, backImage []byte) error {
+	ret := _m.Called(ctx, movieID, frontImage, backImage)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int, []byte, []byte) error); ok {
-		r0 = rf(movieID, frontImage, backImage)
+	if rf, ok := ret.Get(0).(func(context.Context, int, []byte, []byte) error); ok {
+		r0 = rf(ctx, movieID, frontImage, backImage)
 	} else {
 		r0 = ret.Error(0)
 	}
