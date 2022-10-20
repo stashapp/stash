@@ -56,6 +56,7 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
     case 13: // enter
       if (player.paused()) player.play();
       else player.pause();
+      event.preventDefault();
       break;
     case 77: // m
       player.muted(!player.muted());
