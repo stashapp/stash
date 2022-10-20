@@ -2,6 +2,14 @@ $scrubberHeight: 120px;
 $menuHeight: 4rem;
 $sceneTabWidth: 450px;
 
+// Copied from https://github.com/videojs/video.js/blob/main/src/css/components/_control-bar.scss#L24
+@mixin hide-player-controls {
+  visibility: visible;
+  opacity: 0;
+  pointer-events: none;
+  transition: visibility 1.0s, opacity 1.0s;
+}
+
 .VideoPlayer {
   display: flex;
   flex-direction: column;
@@ -57,8 +65,9 @@ $sceneTabWidth: 450px;
       }
 
       @at-root {
-        .VideoPlayer .vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group .vjs-button.vjs-big-play-pause-button {
-          pointer-events: none;
+        .VideoPlayer .vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group .vjs-button.vjs-big-play-pause-button,
+        .VideoPlayer .vjs-has-started.vjs-user-inactive.vjs-paused .vjs-big-button-group .vjs-button.vjs-big-play-pause-button {
+          @include hide-player-controls;
         }
       }
 
@@ -171,6 +180,12 @@ $sceneTabWidth: 450px;
       height: 10rem;
       position: absolute;
       width: 100%;
+    }
+
+    @at-root {
+      .video-js.vjs-has-started.vjs-user-inactive.vjs-paused .vjs-control-bar {
+        @include hide-player-controls;
+      }
     }
   }
 
