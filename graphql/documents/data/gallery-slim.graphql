@@ -4,7 +4,6 @@ fragment SlimGalleryData on Gallery {
   date
   url
   details
-  rating
   rating100
   organized
   files {

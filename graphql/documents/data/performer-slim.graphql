@@ -26,7 +26,6 @@ fragment SlimPerformerData on Performer {
     endpoint
     stash_id
   }
-  rating
   rating100
   death_date
   weight

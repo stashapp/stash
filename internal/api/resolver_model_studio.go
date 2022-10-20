@@ -127,8 +127,7 @@ func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) ([]*m
 
 func (r *studioResolver) Rating(ctx context.Context, obj *models.Studio) (*int, error) {
 	if obj.Rating.Valid {
-		val := math.Round((float64(obj.Rating.Int64) / 20))
-	    rating := int(math.Max(1, math.Min(5, val)))
+		rating := models.Rating100To5(int(obj.Rating.Int64))
 		return &rating, nil
 	}
 	return nil, nil

@@ -214,8 +214,7 @@ func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer)
 
 func (r *performerResolver) Rating(ctx context.Context, obj *models.Performer) (*int, error) {
 	if obj.Rating.Valid {
-		val := math.Round((float64(obj.Rating.Int64) / 20))
-	    rating := int(math.Max(1, math.Min(5, val)))
+		rating := models.Rating100To5(int(obj.Rating.Int64))
 		return &rating, nil
 	}
 	return nil, nil

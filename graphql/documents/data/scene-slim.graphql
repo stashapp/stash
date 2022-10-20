@@ -4,7 +4,6 @@ fragment SlimSceneData on Scene {
   details
   url
   date
-  rating
   rating100
   o_counter
   organized
