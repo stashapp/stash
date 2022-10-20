@@ -581,7 +581,7 @@ func (t *ImportTask) ImportTag(ctx context.Context, tagJSON *jsonschema.Tag, pen
 		if err := t.ImportTag(ctx, childTagJSON, pendingParent, fail, readerWriter); err != nil {
 			var parentError tag.ParentTagNotExistError
 			if errors.As(err, &parentError) {
-				pendingParent[parentError.MissingParent()] = append(pendingParent[parentError.MissingParent()], tagJSON)
+				pendingParent[parentError.MissingParent()] = append(pendingParent[parentError.MissingParent()], childTagJSON)
 				continue
 			}
 
