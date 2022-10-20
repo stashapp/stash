@@ -3,6 +3,7 @@ import { Overlay, Tooltip } from "react-bootstrap";
 import { Placement } from "react-bootstrap/Overlay";
 import debounce from "lodash-es/debounce";
 import cx from "classnames";
+import { ConfigurationContext } from "src/hooks/Config";
 
 const CLASSNAME = "TruncatedText";
 const CLASSNAME_TOOLTIP = `${CLASSNAME}-tooltip`;
@@ -24,23 +25,40 @@ const TruncatedText: React.FC<ITruncatedTextProps> = ({
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const target = useRef(null);
+  const { isTouch } = React.useContext(ConfigurationContext);
 
   if (!text) return <></>;
 
-  const startShowingTooltip = debounce(() => setShowTooltip(true), delay);
+  const startDeferredShowingTooltip = debounce(
+    () => setShowTooltip(true),
+    delay
+  );
 
-  const handleFocus = (element: HTMLElement) => {
+  const handleFocus = (element: HTMLElement, defer: boolean = true) => {
     // Check if visible size is smaller than the content size
     if (
       element.offsetWidth < element.scrollWidth ||
       element.offsetHeight + 10 < element.scrollHeight
-    )
-      startShowingTooltip();
+    ) {
+      if (defer) {
+        startDeferredShowingTooltip();
+      } else {
+        setShowTooltip(true);
+      }
+    }
   };
 
   const handleBlur = () => {
-    startShowingTooltip.cancel();
+    startDeferredShowingTooltip.cancel();
     setShowTooltip(false);
+  };
+
+  const handleClick = (element: HTMLElement) => {
+    if (showTooltip) {
+      handleBlur();
+    } else {
+      handleFocus(element, false);
+    }
   };
 
   const overlay = (
@@ -51,7 +69,17 @@ const TruncatedText: React.FC<ITruncatedTextProps> = ({
     </Overlay>
   );
 
-  return (
+  return isTouch ? (
+    <div
+      className={cx(CLASSNAME, className)}
+      style={{ WebkitLineClamp: lineCount }}
+      ref={target}
+      onClick={(e) => handleClick(e.currentTarget)}
+    >
+      {text}
+      {overlay}
+    </div>
+  ) : (
     <div
       className={cx(CLASSNAME, className)}
       style={{ WebkitLineClamp: lineCount }}
