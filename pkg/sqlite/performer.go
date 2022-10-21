@@ -660,15 +660,15 @@ func (qb *performerQueryBuilder) FindByStashIDStatus(ctx context.Context, hasSta
 func performerGenderCriterionHandler(genders *models.GenderCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
 		if genders != nil {
-			//format array into string like ("list", "of", "items")
+			// format array into string like ("list", "of", "items")
 			glist := fmt.Sprintf("%+q", genders.Value)
 			glist = strings.Replace(glist, "[", "(", 1)
 			glist = strings.Replace(glist, "]", ")", 1)
 			switch genders.Modifier {
 			case models.CriterionModifierIsNull:
-				f.addWhere(fmt.Sprintf("performers.gender IS NULL"))
+				f.addWhere("performers.gender IS NULL")
 			case models.CriterionModifierNotNull:
-				f.addWhere(fmt.Sprintf("performers.gender NOT NULL"))
+				f.addWhere("performers.gender NOT NULL")
 			case models.CriterionModifierIncludes:
 				f.addWhere(fmt.Sprintf("performers.gender IN (%s)", glist))
 			case models.CriterionModifierExcludes:
