@@ -12,6 +12,7 @@ import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
 import "./live";
 import "./full-screen";
+import "./seek-handler";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
@@ -241,6 +242,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     (player as any).markers();
     (player as any).offset();
+    player.seekHandler();
     (player as any).sourceSelector();
     (player as any).persistVolume();
     player.bigButtons();
