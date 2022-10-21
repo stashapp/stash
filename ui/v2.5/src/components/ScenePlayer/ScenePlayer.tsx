@@ -228,7 +228,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     (player as any).offset();
     (player as any).sourceSelector();
     (player as any).persistVolume();
-    (player as any).bigButtons();
+    player.bigButtons();
+    player.touchControls();
 
     player.focus();
     playerRef.current = player;

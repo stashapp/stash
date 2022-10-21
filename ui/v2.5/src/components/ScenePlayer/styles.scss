@@ -49,6 +49,7 @@ $sceneTabWidth: 450px;
     height: 80px;
     justify-content: space-around;
     opacity: 0;
+    pointer-events: none;
     position: absolute;
     top: calc(50% - 40px);
     width: 100%;
@@ -61,6 +62,34 @@ $sceneTabWidth: 450px;
       .vjs-icon-placeholder::before {
         height: 100%;
         line-height: 80px;
+      }
+
+      @at-root {
+        .VideoPlayer
+          .vjs-has-started.vjs-user-inactive.vjs-playing
+          .vjs-big-button-group
+          .vjs-button.vjs-big-play-pause-button,
+        .VideoPlayer
+          .vjs-has-started.vjs-user-inactive.vjs-paused
+          .vjs-big-button-group
+          .vjs-button.vjs-big-play-pause-button {
+          @include hide-player-controls;
+        }
+      }
+
+      &.vjs-big-play-pause-button {
+        pointer-events: auto;
+      }
+
+      &.vjs-seek-button {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s cubic-bezier(0.62, 0, 0.95, 0.04) 0s;
+
+        &.visible {
+          opacity: 1;
+          transition: opacity 0.1s ease-in 0s;
+        }
       }
     }
   }
