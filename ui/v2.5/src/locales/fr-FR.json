@@ -331,7 +331,7 @@
     "stashbox": {
       "add_instance": "Ajouter une instance Stash-Box",
       "api_key": "Clé API",
-      "description": "Stash-Box simplifie l'étiquetage automatique des scènes et des performeurs en se basant sur les empreintes digitales et les noms de fichiers.\nLe point de connexion et la clé API se trouvent sur la page de votre compte de l'instance de stash-box. Les noms sont requis lorsque plusieurs instances sont ajoutées.",
+      "description": "Stash-Box simplifie l'étiquetage automatique des scènes et performeurs en se basant sur des empreintes numériques et noms de fichiers.\nLe point de connexion et la clé API se trouvent sur la page de votre compte d'instance stash-box. Les noms sont requis lorsque plusieurs instances sont ajoutées.",
       "endpoint": "Point de connexion",
       "graphql_endpoint": "Point de connexion GraphQL",
       "name": "Nom",
