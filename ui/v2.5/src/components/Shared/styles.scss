@@ -78,7 +78,7 @@
 
 .folder-list {
   margin-top: 0.5rem 0 0 0;
-  max-height: 30vw;
+  max-height: calc(100vh - 200px - 14px * 2);
   overflow-x: auto;
 }
 
