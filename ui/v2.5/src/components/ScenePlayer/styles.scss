@@ -452,6 +452,23 @@ $sceneTabWidth: 450px;
   }
 }
 
+.vjs-menu-button-popup .vjs-menu {
+  @media (max-width: 576px) {
+    left: -5em;
+  }
+
+  .vjs-menu-content {
+    z-index: 1;
+
+    @media (max-width: 480px) {
+      max-height: 10em;
+    }
+    @media (min-width: 576px) and (max-width: 767px) {
+      max-height: 14em;
+    }
+  }
+}
+
 .vjs-marker {
   background-color: rgba(33, 33, 33, 0.8);
   bottom: 0;
