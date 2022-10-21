@@ -53,7 +53,11 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
   );
 
   const handleClick = () => {
-    show ? handleMouseLeave() : handleMouseEnter();
+    if (show) {
+      handleMouseLeave();
+    } else {
+      handleMouseEnter();
+    }
   };
 
   return (

@@ -54,7 +54,11 @@ const TruncatedText: React.FC<ITruncatedTextProps> = ({
   };
 
   const handleClick = (element: HTMLElement) => {
-    showTooltip ? handleBlur() : handleFocus(element, false);
+    if (showTooltip) {
+      handleBlur();
+    } else {
+      handleFocus(element, false);
+    }
   };
 
   const overlay = (

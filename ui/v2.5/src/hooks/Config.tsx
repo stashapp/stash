@@ -7,7 +7,9 @@ interface IContext {
   isTouch: boolean;
 }
 
-export const ConfigurationContext = React.createContext<IContext>({});
+export const ConfigurationContext = React.createContext<IContext>({
+  isTouch: false,
+});
 
 export const ConfigurationProvider: React.FC<IContext> = ({
   loading,

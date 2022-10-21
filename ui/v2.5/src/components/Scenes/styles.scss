@@ -245,6 +245,7 @@ textarea.scene-description {
 
   &-touch-active {
     @include scene-card-hover-active;
+
     .card-check.touch-active {
       opacity: 0.75;
       transition: opacity 0.5s;

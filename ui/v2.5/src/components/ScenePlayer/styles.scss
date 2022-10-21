@@ -4,10 +4,10 @@ $sceneTabWidth: 450px;
 
 // Copied from https://github.com/videojs/video.js/blob/main/src/css/components/_control-bar.scss#L24
 @mixin hide-player-controls {
-  visibility: visible;
   opacity: 0;
   pointer-events: none;
-  transition: visibility 1.0s, opacity 1.0s;
+  transition: visibility 1s, opacity 1s;
+  visibility: visible;
 }
 
 .VideoPlayer {
@@ -45,11 +45,11 @@ $sceneTabWidth: 450px;
   }
 
   .vjs-big-button-group {
-    pointer-events: none;
     display: none;
     height: 80px;
     justify-content: space-around;
     opacity: 0;
+    pointer-events: none;
     position: absolute;
     top: calc(50% - 40px);
     width: 100%;
@@ -65,8 +65,14 @@ $sceneTabWidth: 450px;
       }
 
       @at-root {
-        .VideoPlayer .vjs-has-started.vjs-user-inactive.vjs-playing .vjs-big-button-group .vjs-button.vjs-big-play-pause-button,
-        .VideoPlayer .vjs-has-started.vjs-user-inactive.vjs-paused .vjs-big-button-group .vjs-button.vjs-big-play-pause-button {
+        .VideoPlayer
+          .vjs-has-started.vjs-user-inactive.vjs-playing
+          .vjs-big-button-group
+          .vjs-button.vjs-big-play-pause-button,
+        .VideoPlayer
+          .vjs-has-started.vjs-user-inactive.vjs-paused
+          .vjs-big-button-group
+          .vjs-button.vjs-big-play-pause-button {
           @include hide-player-controls;
         }
       }
@@ -74,15 +80,15 @@ $sceneTabWidth: 450px;
       &.vjs-big-play-pause-button {
         pointer-events: auto;
       }
-      
+
       &.vjs-seek-button {
-        pointer-events: none;
         opacity: 0;
-        transition: opacity .5s cubic-bezier(.62,0,.95,.04) 0s;
+        pointer-events: none;
+        transition: opacity 0.5s cubic-bezier(0.62, 0, 0.95, 0.04) 0s;
 
         &.visible {
           opacity: 1;
-          transition: opacity .1s ease-in 0s;
+          transition: opacity 0.1s ease-in 0s;
         }
       }
     }
@@ -127,8 +133,8 @@ $sceneTabWidth: 450px;
   // make controls a little more compact on smaller screens
   @media (max-height: 449px), (max-width: 576px) {
     div.vjs-control-bar::before {
-        height: 5rem;
-      }
+      height: 5rem;
+    }
 
     .vjs-control-bar {
       .vjs-control:not(.vjs-progress-control) {
@@ -510,6 +516,7 @@ $sceneTabWidth: 450px;
 
   .vjs-menu-content {
     z-index: 1;
+
     @media (max-width: 480px) {
       max-height: 10em;
     }

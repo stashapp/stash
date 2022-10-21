@@ -209,8 +209,10 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
       return;
     }
 
-    const offsetX = event.changedTouches[0].pageX - (event.target as HTMLDivElement).getBoundingClientRect().left;
-    
+    const offsetX =
+      event.changedTouches[0].pageX -
+      (event.target as HTMLDivElement).getBoundingClientRect().left;
+
     touchStart.current = false;
     handleInputUp(
       event.target,

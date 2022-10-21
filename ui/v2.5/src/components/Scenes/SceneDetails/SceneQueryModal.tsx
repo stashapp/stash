@@ -126,7 +126,8 @@ export const SceneQueryModal: React.FC<IProps> = ({
   onSelectScene,
 }) => {
   const { configuration } = React.useContext(ConfigurationContext);
-  const privacyKeyboardCustomization = configuration?.interface.privacyKeyboardCustomization ?? false;
+  const privacyKeyboardCustomization =
+    configuration?.interface.privacyKeyboardCustomization ?? false;
 
   const CLASSNAME = "SceneScrapeModal";
   const CLASSNAME_LIST = `${CLASSNAME}-list`;

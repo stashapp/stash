@@ -1,8 +1,8 @@
 import videojs, { VideoJsPlayer } from "video.js";
 
-const BigPlayButton = videojs.getComponent("BigPlayButton");
+const IBigPlayButton = videojs.getComponent("BigPlayButton");
 
-class BigPlayPauseButton extends BigPlayButton {
+class BigPlayPauseButton extends IBigPlayButton {
   handleClick(event: videojs.EventTarget.Event) {
     if (this.player().paused()) {
       // @ts-ignore for some reason handleClick isn't defined in BigPlayButton type. Not sure why
@@ -17,7 +17,7 @@ class BigPlayPauseButton extends BigPlayButton {
   }
 }
 
-interface BigButtonGroupEvent {
+interface IBigButtonGroupEvent {
   direction: "forward" | "backward";
 }
 
@@ -32,7 +32,7 @@ class BigButtonGroup extends videojs.getComponent("Component") {
 
     const forwardButton = this.addChild("seekButton", { direction: "forward" });
 
-    this.on("display", (e: BigButtonGroupEvent) => {
+    this.on("display", (e: IBigButtonGroupEvent) => {
       let el = e.direction === "forward" ? forwardButton : backButton;
       el.addClass("visible");
       setTimeout(() => {
@@ -49,10 +49,10 @@ class BigButtonGroup extends videojs.getComponent("Component") {
 }
 
 class touchControls extends videojs.getPlugin("plugin") {
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   timer: NodeJS.Timeout | null = null;
   bigButtonGroup: BigButtonGroup | undefined;
 
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   constructor(player: VideoJsPlayer, options: any) {
     super(player, options);
 
@@ -85,10 +85,10 @@ class touchControls extends videojs.getPlugin("plugin") {
     this.timer = null;
 
     if (touchPercent > 0.65) {
-      this.bigButtonGroup?.trigger({type: "display", direction: "forward" });
+      this.bigButtonGroup?.trigger({ type: "display", direction: "forward" });
       this.player.currentTime(this.player.currentTime() + 10);
     } else if (touchPercent < 0.35) {
-      this.bigButtonGroup?.trigger({type: "display", direction: "backward" });
+      this.bigButtonGroup?.trigger({ type: "display", direction: "backward" });
       this.player.currentTime(Math.max(0, this.player.currentTime() - 10));
     }
   }
@@ -105,6 +105,7 @@ videojs.registerPlugin("bigButtons", bigButtons);
 videojs.registerPlugin("touchControls", touchControls);
 
 declare module "video.js" {
+  /* eslint-disable-next-line @typescript-eslint/naming-convention */
   export interface VideoJsPlayer {
     bigButtons: () => typeof bigButtons;
     touchControls: () => touchControls;

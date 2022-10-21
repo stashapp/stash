@@ -3,6 +3,7 @@ import videojs, { VideoJsPlayer } from "video.js";
 // Most of this was copied directly from the video.js source code.
 // This prevents the player from requesting video data until the mouse is released.
 const seekHandler = function (this: VideoJsPlayer) {
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const SeekBar = videojs.getComponent("SeekBar") as any;
 
   if (!SeekBar.__super__ || !SeekBar.__super__.__seekHandlerInit) {
@@ -12,12 +13,16 @@ const seekHandler = function (this: VideoJsPlayer) {
       handleMouseUp: SeekBar.prototype.handleMouseUp,
     };
 
-    SeekBar.prototype.handleMouseMove = function (event, seek: boolean) {
+    SeekBar.prototype.handleMouseMove = function (
+      event: videojs.EventTarget.Event,
+      seek: boolean
+    ) {
       if (!videojs.dom.isSingleLeftClick(event)) {
         return;
       }
       let newTime;
       const distance = this.calculateDistance(event);
+      /* eslint-disable-next-line prefer-destructuring */
       const liveTracker = this.player_.liveTracker;
 
       if (!liveTracker || !liveTracker.isLive()) {
@@ -72,7 +77,9 @@ const seekHandler = function (this: VideoJsPlayer) {
       // EDIT: End
     };
 
-    SeekBar.prototype.handleMouseUp = function (event) {
+    SeekBar.prototype.handleMouseUp = function (
+      event: videojs.EventTarget.Event
+    ) {
       Object.getPrototypeOf(SeekBar).prototype.handleMouseUp.call(this, event); // Stop event propagation to prevent double fire in progress-control.js
 
       // Stop event propagation to prevent double fire in progress-control.js
@@ -113,6 +120,7 @@ const seekHandler = function (this: VideoJsPlayer) {
 videojs.registerPlugin("seekHandler", seekHandler);
 
 declare module "video.js" {
+  /* eslint-disable-next-line @typescript-eslint/naming-convention */
   export interface VideoJsPlayer {
     seekHandler: () => typeof seekHandler;
   }

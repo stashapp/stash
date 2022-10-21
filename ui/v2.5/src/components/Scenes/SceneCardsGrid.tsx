@@ -20,9 +20,6 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
   onSelectChange,
 }) => {
   const [touchPreviewActive, setTouchPreviewActive] = React.useState("");
-  function handleTouchPreview(key: string) {
-    setTouchPreviewActive(key);
-  }
   const { isTouch } = React.useContext(ConfigurationContext);
 
   return (
@@ -40,7 +37,9 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
             onSelectChange(scene.id, selected, shiftKey)
           }
           isTouchPreviewActive={isTouch && touchPreviewActive === scene.id}
-          onTouchPreview={() => handleTouchPreview(scene.id)}
+          onTouchPreview={() => {
+            setTouchPreviewActive(scene.id);
+          }}
         />
       ))}
     </div>

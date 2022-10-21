@@ -218,7 +218,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
         // prevents touch from triggering play/pause in weird circumstances
         // @ts-ignore click isn't defined for some reason
-        click: function (event) {
+        click: function () {
           if (isTouch) {
             return;
           }
@@ -251,7 +251,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.focus();
     playerRef.current = player;
-  }, []);
+  }, [isTouch]);
 
   useEffect(() => {
     if (scene?.interactive && interactiveInitialised) {
@@ -559,6 +559,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     autoplay,
     interactiveClient,
     start,
+    backgroundPlayback,
   ]);
 
   useEffect(() => {

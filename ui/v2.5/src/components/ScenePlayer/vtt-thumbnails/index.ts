@@ -1,1 +1,1 @@
-export * from "./videojs-vtt-thumbnails";
+export { default } from "./videojs-vtt-thumbnails";

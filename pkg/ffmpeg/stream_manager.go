@@ -205,15 +205,16 @@ func (sm *StreamManager) streamTSFunc(hashResolution string, segment int) http.H
 				return
 			case <-time.After(segmentCheckInterval):
 				now := time.Now()
-				if sm.segmentExists(fn) {
-					logger.Debugf("streaming segment %d hashResolution %s", segment, hashResolution)
+				switch {
+				case sm.segmentExists(fn):
+					logger.Tracef("streaming segment %d hashResolution %s", segment, hashResolution)
 					sm.streamNotify(r.Context(), hashResolution, segment)
 					w.Header().Set("Content-Type", "video/mp2t")
 					http.ServeFile(w, r, fn)
-				} else if started.Add(maxSegmentWait).Before(now) {
+				case started.Add(maxSegmentWait).Before(now):
 					logger.Warnf("timed out waiting for segment file %q to be generated", fn)
 					http.Error(w, "timed out waiting for segment file to be generated", http.StatusInternalServerError)
-				} else {
+				default:
 					continue
 				}
 				return
@@ -412,7 +413,7 @@ func (sm *StreamManager) stopTranscode(hashResolution string) {
 		go func() {
 			// Windows doesn't support Interrupt
 			if runtime.GOOS != "windows" {
-				p.cmd.Process.Signal(os.Interrupt)
+				_ = p.cmd.Process.Signal(os.Interrupt)
 				select {
 				case <-p.context.Done():
 					logger.Trace("ffmpeg process exited cleanly")
