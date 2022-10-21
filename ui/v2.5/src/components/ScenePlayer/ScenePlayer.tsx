@@ -250,7 +250,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.focus();
     playerRef.current = player;
-  }, []);
+  }, [isTouch]);
 
   useEffect(() => {
     if (scene?.interactive && interactiveInitialised) {
