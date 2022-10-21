@@ -10,8 +10,8 @@ import React, {
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
-import "videojs-landscape-fullscreen";
 import "./live";
+import "./full-screen";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
@@ -529,14 +529,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const isLandscape = file.height && file.width && file.width > file.height;
 
     if (isLandscape) {
-      (player as any).landscapeFullscreen({
-        fullscreen: {
-          enterOnRotate: true,
-          exitOnRotate: true,
-          alwaysInLandscapeMode: true,
-          iOS: false,
-        },
-      });
+      player.fullscreenLock();
     }
 
     // clear the offset before loading anything new.
