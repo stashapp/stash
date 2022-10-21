@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Overlay, Popover, OverlayProps } from "react-bootstrap";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IHoverPopover {
   enterDelay?: number;
@@ -25,6 +26,7 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
   const triggerRef = useRef<HTMLDivElement>(null);
   const enterTimer = useRef<number>();
   const leaveTimer = useRef<number>();
+  const { isTouch } = React.useContext(ConfigurationContext);
 
   const handleMouseEnter = useCallback(() => {
     window.clearTimeout(leaveTimer.current);
@@ -50,12 +52,17 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
     []
   );
 
+  const handleClick = () => {
+    show ? handleMouseLeave() : handleMouseEnter();
+  };
+
   return (
     <>
       <div
         className={className}
-        onMouseEnter={handleMouseEnter}
+        onMouseEnter={isTouch ? undefined : handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onClick={isTouch ? handleClick : undefined}
         ref={triggerRef}
       >
         {children}
@@ -63,8 +70,9 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
       {triggerRef.current && (
         <Overlay show={show} placement={placement} target={triggerRef.current}>
           <Popover
-            onMouseEnter={handleMouseEnter}
+            onMouseEnter={isTouch ? undefined : handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            onClick={isTouch ? handleClick : undefined}
             id="popover"
             className="hover-popover-content"
           >

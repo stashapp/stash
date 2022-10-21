@@ -54,11 +54,7 @@ const TruncatedText: React.FC<ITruncatedTextProps> = ({
   };
 
   const handleClick = (element: HTMLElement) => {
-    if (showTooltip) {
-      handleBlur();
-    } else {
-      handleFocus(element, false);
-    }
+    showTooltip ? handleBlur() : handleFocus(element, false);
   };
 
   const overlay = (
@@ -69,25 +65,16 @@ const TruncatedText: React.FC<ITruncatedTextProps> = ({
     </Overlay>
   );
 
-  return isTouch ? (
+  return (
     <div
       className={cx(CLASSNAME, className)}
       style={{ WebkitLineClamp: lineCount }}
       ref={target}
-      onClick={(e) => handleClick(e.currentTarget)}
-    >
-      {text}
-      {overlay}
-    </div>
-  ) : (
-    <div
-      className={cx(CLASSNAME, className)}
-      style={{ WebkitLineClamp: lineCount }}
-      ref={target}
-      onMouseEnter={(e) => handleFocus(e.currentTarget)}
-      onFocus={(e) => handleFocus(e.currentTarget)}
+      onMouseEnter={isTouch ? undefined : (e) => handleFocus(e.currentTarget)}
+      onFocus={isTouch ? undefined : (e) => handleFocus(e.currentTarget)}
       onMouseLeave={handleBlur}
       onBlur={handleBlur}
+      onClick={isTouch ? (e) => handleClick(e.currentTarget) : undefined}
     >
       {text}
       {overlay}
