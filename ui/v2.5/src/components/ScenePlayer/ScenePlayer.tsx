@@ -134,7 +134,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   onNext,
   onPrevious,
 }) => {
-  const { configuration } = useContext(ConfigurationContext);
+  const { isTouch, configuration } = useContext(ConfigurationContext);
   const config = configuration?.interface;
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<VideoJsPlayer | undefined>();
@@ -212,6 +212,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           const player = this as VideoJsPlayer;
           handleHotkeys(player, event);
         },
+        // prevents touch from triggering play/pause in weird circumstances
+        // @ts-ignore click isn't defined for some reason
+        click: function () {
+          if (isTouch) {
+            return;
+          }
+          const player = this as VideoJsPlayer;
+          if (player.paused()) {
+            player.play()?.catch(() => {});
+          } else {
+            player.pause();
+          }
+        },
+        doubleClick: isTouch ? false : true,
       },
     };
 
