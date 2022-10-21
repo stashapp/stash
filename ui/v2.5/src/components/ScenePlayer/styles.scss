@@ -94,7 +94,11 @@ $sceneTabWidth: 450px;
   }
 
   // make controls a little more compact on smaller screens
-  @media (max-width: 576px) {
+  @media (max-height: 449px), (max-width: 576px) {
+    div.vjs-control-bar::before {
+      height: 5rem;
+    }
+
     .vjs-control-bar {
       .vjs-control:not(.vjs-progress-control) {
         width: 2.5em;
