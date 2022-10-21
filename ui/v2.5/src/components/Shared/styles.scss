@@ -182,9 +182,11 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     }
   }
 
-  &:hover .card-check {
-    opacity: 0.75;
-    transition: opacity 0.5s;
+  @media (pointer: fine) {
+    &:hover .card-check {
+      opacity: 0.75;
+      transition: opacity 0.5s;
+    }
   }
 }
 

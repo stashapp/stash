@@ -32,6 +32,8 @@ interface IScenePreviewProps {
   image?: string;
   video?: string;
   soundActive: boolean;
+  isTouchPreviewActive: boolean;
+  onTouchPreview: () => void;
 }
 
 export const ScenePreview: React.FC<IScenePreviewProps> = ({
@@ -39,30 +41,45 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
   video,
   isPortrait,
   soundActive,
+  isTouchPreviewActive,
+  onTouchPreview,
 }) => {
+  const { isTouch } = React.useContext(ConfigurationContext);
   const videoEl = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  function setIsPlayingEvent(state: boolean) {
+    if (isTouch) {
+      return;
+    }
+    setIsPlaying(state);
+  }
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.intersectionRatio > 0)
-          // Catch is necessary due to DOMException if user hovers before clicking on page
-          videoEl.current?.play()?.catch(() => {});
-        else videoEl.current?.pause();
-      });
-    });
-
-    if (videoEl.current) observer.observe(videoEl.current);
-  });
-
-  useEffect(() => {
-    if (videoEl?.current?.volume)
+    if (videoEl.current?.volume)
       videoEl.current.volume = soundActive ? 0.05 : 0;
   }, [soundActive]);
 
-  return (
-    <div className={cx("scene-card-preview", { portrait: isPortrait })}>
-      <img className="scene-card-preview-image" src={image} alt="" />
+  useEffect(() => {
+    if (isTouchPreviewActive) {
+      setIsPlaying(true);
+    } else {
+      setIsPlaying(false);
+    }
+  }, [isTouchPreviewActive]);
+
+  useEffect(() => {
+    if (videoEl.current) {
+      // Catch is necessary due to DOMException if user hovers before clicking on page
+      videoEl.current.play()?.catch(() => {});
+    }
+  });
+
+  function maybeRenderVideo(showVideo: boolean) {
+    if (!showVideo) {
+      return;
+    }
+
+    return (
       <video
         disableRemotePlayback
         playsInline
@@ -73,6 +90,19 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
         ref={videoEl}
         src={video}
       />
+    );
+  }
+
+  // conditionally render video prevents issues with too many videos playing on mobile
+  return (
+    <div
+      onTouchStart={onTouchPreview}
+      onMouseEnter={() => setIsPlayingEvent(true)}
+      onMouseLeave={() => setIsPlayingEvent(false)}
+      className={cx("scene-card-preview", { portrait: isPortrait })}
+    >
+      <img className="scene-card-preview-image" src={image} alt="" />
+      {maybeRenderVideo(isPlaying)}
     </div>
   );
 };
@@ -86,6 +116,8 @@ interface ISceneCardProps {
   selected?: boolean | undefined;
   zoomIndex?: number;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  isTouchPreviewActive: boolean;
+  onTouchPreview: () => void;
 }
 
 export const SceneCard: React.FC<ISceneCardProps> = (
@@ -362,6 +394,12 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  function touchPreviewActive() {
+    if (props.isTouchPreviewActive) {
+      return "scene-card-touch-active";
+    }
+  }
+
   const cont = configuration?.interface.continuePlaylistDefault ?? false;
 
   const sceneLink = props.queue
@@ -373,7 +411,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   return (
     <GridCard
-      className={`scene-card ${zoomIndex()}`}
+      className={`scene-card ${zoomIndex()} ${touchPreviewActive()}`}
       url={sceneLink}
       title={objectTitle(props.scene)}
       linkClassName="scene-card-link"
@@ -390,6 +428,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             video={props.scene.paths.preview ?? undefined}
             isPortrait={isPortrait()}
             soundActive={configuration?.interface?.soundOnPreview ?? false}
+            isTouchPreviewActive={props.isTouchPreviewActive}
+            onTouchPreview={props.onTouchPreview}
           />
           <RatingBanner rating={props.scene.rating} />
           {maybeRenderSceneSpecsOverlay()}
