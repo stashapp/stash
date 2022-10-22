@@ -779,7 +779,7 @@
   "frames_per_second": "{value} images par seconde",
   "front_page": {
     "types": {
-      "premade_filter": "Filtre primaire",
+      "premade_filter": "Filtre prédéfini",
       "saved_filter": "Filtre sauvegardé"
     }
   },
