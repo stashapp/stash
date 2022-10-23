@@ -632,7 +632,7 @@
     "aliases_must_be_unique": "Les alias doivent être uniques",
     "delete_alert": "{count, plural, one {Le {singularEntity} suivant sera supprimé} other {Les {pluralEntity} suivants seront supprimés}} définitivement :",
     "delete_confirm": "Êtes-vous sûr de vouloir supprimer {entityName} ?",
-    "delete_entity_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity} ? À moins que le fichier ne soit également supprimé, cette {singularEntity} sera ajoutée à nouveau lors de la prochaine analyse.} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity} ? À moins que les fichiers ne soient également supprimés, ces {pluralEntity} seront ajoutées à nouveau lors de la prochaine analyse.}}",
+    "delete_entity_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer cette {singularEntity} ? Si le fichier n'est pas également supprimé, cette {singularEntity} sera ajoutée à nouveau lors de la prochaine analyse.} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity} ? Si les fichiers ne sont pas également supprimés, ces {pluralEntity} seront ajoutées à nouveau lors de la prochaine analyse.}}",
     "delete_entity_simple_desc": "{count, plural, one {Êtes-vous sûr de vouloir supprimer ce {singularEntity}?} other {Êtes-vous sûr de vouloir supprimer ces {pluralEntity}?}}",
     "delete_entity_title": "Supprimer {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_galleries_extra": "…ainsi que tous fichiers image qui ne sont pas associés à une autre galerie.",
@@ -1021,9 +1021,9 @@
   },
   "statistics": "Statistiques",
   "stats": {
-    "image_size": "Taille des images",
+    "image_size": "Poids des images",
     "scenes_duration": "Durée des scènes",
-    "scenes_size": "Taille des scènes"
+    "scenes_size": "Poids des scènes"
   },
   "status": "Statut : {statusText}",
   "studio": "Studio",
