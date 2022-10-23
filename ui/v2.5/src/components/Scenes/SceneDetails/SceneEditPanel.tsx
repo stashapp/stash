@@ -476,7 +476,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
           setScraper(undefined);
           onSceneSelected(s);
         }}
-        name={formik.values.title || ""}
+        name={formik.values.title || objectTitle(scene) || ""}
       />
     );
   };
