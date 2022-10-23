@@ -218,20 +218,10 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 			return nil
 		}
 
-		var zipFileID *ID
-		if zipFile != nil {
-			zipFileID, err = s.getZipFileID(ctx, zipFile)
-			if err != nil {
-				return err
-			}
-		}
-
 		ff := scanFile{
 			BaseFile: &BaseFile{
 				DirEntry: DirEntry{
-					ModTime:   modTime(info),
-					ZipFileID: zipFileID,
-					ZipFile:   zipFile,
+					ModTime: modTime(info),
 				},
 				Path:     path,
 				Basename: filepath.Base(path),
@@ -239,6 +229,15 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 			},
 			fs:   f,
 			info: info,
+		}
+
+		if zipFile != nil {
+			zipFileID, err := s.getZipFileID(ctx, zipFile)
+			if err != nil {
+				return err
+			}
+			ff.ZipFileID = zipFileID
+			ff.ZipFile = zipFile
 		}
 
 		if info.IsDir() {
