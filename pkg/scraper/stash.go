@@ -319,9 +319,12 @@ func sceneToUpdateInput(scene *models.Scene) models.SceneUpdateInput {
 		return nil
 	}
 
+	// fallback to file basename if title is empty
+	title := scene.GetTitle()
+
 	return models.SceneUpdateInput{
 		ID:      strconv.Itoa(scene.ID),
-		Title:   &scene.Title,
+		Title:   &title,
 		Details: &scene.Details,
 		URL:     &scene.URL,
 		Date:    dateToStringPtr(scene.Date),
@@ -338,9 +341,12 @@ func galleryToUpdateInput(gallery *models.Gallery) models.GalleryUpdateInput {
 		return nil
 	}
 
+	// fallback to file basename if title is empty
+	title := gallery.GetTitle()
+
 	return models.GalleryUpdateInput{
 		ID:      strconv.Itoa(gallery.ID),
-		Title:   &gallery.Title,
+		Title:   &title,
 		Details: &gallery.Details,
 		URL:     &gallery.URL,
 		Date:    dateToStringPtr(gallery.Date),
