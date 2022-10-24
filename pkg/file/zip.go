@@ -65,7 +65,7 @@ func (f *ZipFS) rel(name string) (string, error) {
 	return relName, nil
 }
 
-func (f *ZipFS) Lstat(name string) (fs.FileInfo, error) {
+func (f *ZipFS) Stat(name string) (fs.FileInfo, error) {
 	reader, err := f.Open(name)
 	if err != nil {
 		return nil, err
@@ -73,6 +73,10 @@ func (f *ZipFS) Lstat(name string) (fs.FileInfo, error) {
 	defer reader.Close()
 
 	return reader.Stat()
+}
+
+func (f *ZipFS) Lstat(name string) (fs.FileInfo, error) {
+	return f.Stat(name)
 }
 
 func (f *ZipFS) OpenZip(name string) (*ZipFS, error) {

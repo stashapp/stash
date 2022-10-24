@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -210,6 +211,19 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 			return fmt.Errorf("reading info for %q: %w", path, err)
 		}
 
+		var size int64
+
+		// #2196/#3042 - replace size with target size if file is a symlink
+		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			targetInfo, err := f.Stat(path)
+			if err != nil {
+				return fmt.Errorf("reading info for symlink %q: %w", path, err)
+			}
+			size = targetInfo.Size()
+		} else {
+			size = info.Size()
+		}
+
 		if !s.acceptEntry(ctx, path, info) {
 			if info.IsDir() {
 				return fs.SkipDir
@@ -225,7 +239,7 @@ func (s *scanJob) queueFileFunc(ctx context.Context, f FS, zipFile *scanFile) fs
 				},
 				Path:     path,
 				Basename: filepath.Base(path),
-				Size:     info.Size(),
+				Size:     size,
 			},
 			fs:   f,
 			info: info,
