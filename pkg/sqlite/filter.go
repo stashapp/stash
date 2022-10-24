@@ -476,46 +476,12 @@ func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, bas
 }
 
 func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not bool) sqlClause {
-	// if path value has slashes, then we're potentially searching directory only or
-	// directory plus basename
-	hasSlashes := strings.Contains(p, string(filepath.Separator))
-	trailingSlash := hasSlashes && p[len(p)-1] == filepath.Separator
-	const emptyDir = string(filepath.Separator)
-
-	// possible values:
-	// dir/basename
-	// dir1/subdir
-	// dir/
-	// /basename
-	// dirOrBasename
-
-	basename := filepath.Base(p)
-	dir := filepath.Dir(p)
-
 	if addWildcards {
 		p = "%" + p + "%"
-		basename += "%"
-		dir = "%" + dir
 	}
 
-	var ret sqlClause
-
-	switch {
-	case !hasSlashes:
-		// dir or basename
-		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %s LIKE ?", pathColumn, basenameColumn), p, p)
-	case dir != emptyDir && !trailingSlash:
-		// (path like %dir AND basename like basename%) OR path like %p%
-		c1 := makeClause(fmt.Sprintf("%s LIKE ? AND %s LIKE ?", pathColumn, basenameColumn), dir, basename)
-		c2 := makeClause(fmt.Sprintf("%s LIKE ?", pathColumn), p)
-		ret = orClauses(c1, c2)
-	case dir == emptyDir && !trailingSlash:
-		// path like %p% OR basename like basename%
-		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %s LIKE ?", pathColumn, basenameColumn), p, basename)
-	case dir != emptyDir && trailingSlash:
-		// path like %p% OR path like %dir
-		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %[1]s LIKE ?", pathColumn), p, dir)
-	}
+	filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
+	ret := makeClause(fmt.Sprintf("%s LIKE ?", filepathColumn), p)
 
 	if not {
 		ret = ret.not()
