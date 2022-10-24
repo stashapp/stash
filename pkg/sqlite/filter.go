@@ -454,17 +454,19 @@ func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, bas
 						f.setError(err)
 						return
 					}
-					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %[1]s || '%[3]s' || %[2]s regexp ?", pathColumn, basenameColumn, string(filepath.Separator)), c.Value)
+					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
+					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %s regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
 				case models.CriterionModifierNotMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
 						return
 					}
-					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %[1]s || '%[3]s' || %[2]s NOT regexp ?", pathColumn, basenameColumn, string(filepath.Separator)), c.Value)
+					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %s NOT regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
 				case models.CriterionModifierIsNull:
-					f.addWhere(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = '')", pathColumn, basenameColumn))
+					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = ''", pathColumn, basenameColumn))
 				case models.CriterionModifierNotNull:
-					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != '')", pathColumn, basenameColumn))
+					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != ''", pathColumn, basenameColumn))
 				default:
 					panic("unsupported string filter modifier")
 				}
