@@ -73,7 +73,9 @@ func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *
 func Test_sceneQueryBuilder_Create(t *testing.T) {
 	var (
 		title       = "title"
+		code        = "1337"
 		details     = "details"
+		director    = "director"
 		url         = "url"
 		rating      = 3
 		ocounter    = 5
@@ -100,7 +102,9 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 			"full",
 			models.Scene{
 				Title:        title,
+				Code:         code,
 				Details:      details,
+				Director:     director,
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
@@ -139,7 +143,9 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 			"with file",
 			models.Scene{
 				Title:     title,
+				Code:      code,
 				Details:   details,
+				Director:  director,
 				URL:       url,
 				Date:      &date,
 				Rating:    &rating,
@@ -294,7 +300,9 @@ func makeSceneFileWithID(i int) *file.VideoFile {
 func Test_sceneQueryBuilder_Update(t *testing.T) {
 	var (
 		title       = "title"
+		code        = "1337"
 		details     = "details"
+		director    = "director"
 		url         = "url"
 		rating      = 3
 		ocounter    = 5
@@ -320,7 +328,9 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID:           sceneIDs[sceneIdxWithGallery],
 				Title:        title,
+				Code:         code,
 				Details:      details,
+				Director:     director,
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
@@ -481,7 +491,9 @@ func clearScenePartial() models.ScenePartial {
 	// leave mandatory fields
 	return models.ScenePartial{
 		Title:        models.OptionalString{Set: true, Null: true},
+		Code:         models.OptionalString{Set: true, Null: true},
 		Details:      models.OptionalString{Set: true, Null: true},
+		Director:     models.OptionalString{Set: true, Null: true},
 		URL:          models.OptionalString{Set: true, Null: true},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
@@ -496,7 +508,9 @@ func clearScenePartial() models.ScenePartial {
 func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
 		title       = "title"
+		code        = "1337"
 		details     = "details"
+		director    = "director"
 		url         = "url"
 		rating      = 3
 		ocounter    = 5
@@ -524,7 +538,9 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			sceneIDs[sceneIdxWithSpacedName],
 			models.ScenePartial{
 				Title:     models.NewOptionalString(title),
+				Code:      models.NewOptionalString(code),
 				Details:   models.NewOptionalString(details),
+				Director:  models.NewOptionalString(director),
 				URL:       models.NewOptionalString(url),
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
@@ -578,7 +594,9 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
 				Title:        title,
+				Code:         code,
 				Details:      details,
+				Director:     director,
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,

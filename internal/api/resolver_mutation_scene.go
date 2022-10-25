@@ -112,7 +112,9 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 
 	updatedScene := models.NewScenePartial()
 	updatedScene.Title = translator.optionalString(input.Title, "title")
+	updatedScene.Code = translator.optionalString(input.Code, "code")
 	updatedScene.Details = translator.optionalString(input.Details, "details")
+	updatedScene.Director = translator.optionalString(input.Director, "director")
 	updatedScene.URL = translator.optionalString(input.URL, "url")
 	updatedScene.Date = translator.optionalDate(input.Date, "date")
 	updatedScene.Rating = translator.optionalInt(input.Rating, "rating")
