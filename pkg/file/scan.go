@@ -740,7 +740,6 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 
 	for _, other := range others {
 		// if file does not exist, then update it to the new path
-		// TODO - handle #1426 scenario
 		fs, err := s.getFileFS(other.Base())
 		if err != nil {
 			missing = append(missing, other)
@@ -749,6 +748,14 @@ func (s *scanJob) handleRename(ctx context.Context, f File, fp []Fingerprint) (F
 
 		if _, err := fs.Lstat(other.Base().Path); err != nil {
 			missing = append(missing, other)
+		} else if strings.EqualFold(f.Base().Path, other.Base().Path) {
+			// #1426 - if file exists but is a case-insensitive match for the
+			// original filename, and the filesystem is case-insensitive
+			// then treat it as a move
+			if caseSensitive, _ := fs.IsPathCaseSensitive(other.Base().Path); !caseSensitive {
+				// treat as a move
+				missing = append(missing, other)
+			}
 		}
 	}
 
