@@ -1,4 +1,4 @@
-import { Form, Col, Row, Button } from "react-bootstrap";
+import { Form, Col, Row, Button, FormControl } from "react-bootstrap";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -62,6 +62,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   );
 
   const [rating, setRating] = useState(new ScrapeResult<number>(dest.rating));
+  const [oCounter, setOCounter] = useState(
+    new ScrapeResult<number>(dest.o_counter)
+  );
   const [studio, setStudio] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.studio?.id)
   );
@@ -170,6 +173,13 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       )
     );
 
+    setOCounter(
+      new ScrapeResult(
+        dest.o_counter ?? 0,
+        all.map((s) => s.o_counter ?? 0).reduce((pv, cv) => pv + cv, 0)
+      )
+    );
+
     setStashIDs(
       new ScrapeResult(
         dest.stash_ids,
@@ -248,6 +258,27 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           onChange={(value) => setRating(value)}
         />
         <ScrapeDialogRow
+          title={intl.formatMessage({ id: "o_counter" })}
+          result={oCounter}
+          renderOriginalField={() => (
+            <FormControl
+              value={oCounter.originalValue ?? 0}
+              readOnly
+              onChange={() => {}}
+              className="bg-secondary text-white border-secondary"
+            />
+          )}
+          renderNewField={() => (
+            <FormControl
+              value={oCounter.newValue ?? 0}
+              readOnly
+              onChange={() => {}}
+              className="bg-secondary text-white border-secondary"
+            />
+          )}
+          onChange={(value) => setRating(value)}
+        />
+        <ScrapeDialogRow
           title={intl.formatMessage({ id: "galleries" })}
           result={galleries}
           renderOriginalField={() => (
@@ -317,6 +348,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       url: url.getNewValue(),
       date: date.getNewValue(),
       rating: rating.getNewValue(),
+      o_counter: oCounter.getNewValue(),
       gallery_ids: galleries.getNewValue(),
       studio_id: studio.getNewValue(),
       performer_ids: performers.getNewValue(),
