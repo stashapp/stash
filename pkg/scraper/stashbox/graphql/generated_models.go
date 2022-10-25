@@ -88,9 +88,9 @@ type DraftEntity struct {
 	ID   *string `json:"id,omitempty"`
 }
 
+func (DraftEntity) IsSceneDraftPerformer() {}
 func (DraftEntity) IsSceneDraftStudio()    {}
 func (DraftEntity) IsSceneDraftTag()       {}
-func (DraftEntity) IsSceneDraftPerformer() {}
 
 type DraftEntityInput struct {
 	Name string  `json:"name"`
@@ -858,8 +858,8 @@ type Studio struct {
 	Updated      time.Time `json:"updated"`
 }
 
-func (Studio) IsSceneDraftStudio() {}
 func (Studio) IsEditTarget()       {}
+func (Studio) IsSceneDraftStudio() {}
 
 type StudioCreateInput struct {
 	Name     string      `json:"name"`
@@ -936,8 +936,8 @@ type Tag struct {
 	Updated     time.Time    `json:"updated"`
 }
 
-func (Tag) IsSceneDraftTag() {}
 func (Tag) IsEditTarget()    {}
+func (Tag) IsSceneDraftTag() {}
 
 type TagCategory struct {
 	ID          string       `json:"id"`
