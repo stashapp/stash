@@ -22,7 +22,7 @@ import (
 const (
 	hlsSegmentLength = 2
 
-	maxSegmentWait       = 5 * time.Second
+	maxSegmentWait       = 10 * time.Second
 	segmentCheckInterval = 100 * time.Millisecond
 
 	// number of segments to wait to be generated before we
@@ -31,7 +31,11 @@ const (
 
 	// number of segments ahead of the currently streaming segment
 	// before we stop the transcode process to save CPU
-	maxSegmentStopGap = 15
+	maxSegmentStopGap = 30
+
+	// number of segments ahead of the currently streaming segment
+	// before we restart the transcode process
+	maxSegmentRestartGap = 15
 
 	maxIdleTime     = 30 * time.Second
 	monitorInterval = 2 * time.Second
@@ -219,6 +223,8 @@ func (sm *StreamManager) streamTSFunc(hashResolution string, segment int) http.H
 					logger.Warnf("timed out waiting for segment file %q to be generated", fn)
 					http.Error(w, "timed out waiting for segment file to be generated", http.StatusInternalServerError)
 				default:
+					// notify that we're still waiting so it doesn't get cleaned up
+					sm.streamNotify(r.Context(), hashResolution, segment)
 					continue
 				}
 				return
@@ -259,19 +265,26 @@ func (sm *StreamManager) StreamTS(src string, hash string, segment int, resoluti
 
 	segmentFilename := sm.segmentFilename(hash+resolution, segment)
 
+	tp := sm.runningTranscodes[hash+resolution]
+	transcodeStartSegment := segment
 	// check if transcoded file already exists
 	// TODO - may need to wait for transcode process to finish writing the file first
 	// if so, return it
 	if sm.segmentExists(segmentFilename) {
-		return sm.streamTSFunc(hash+resolution, segment)
+		lastTranscodedSegment := sm.lastTranscodedSegment(hash + resolution)
+		// Don't need to start transcode process yet
+		if tp != nil || lastTranscodedSegment >= segment+maxSegmentRestartGap {
+			return sm.streamTSFunc(hash+resolution, segment)
+		} else {
+			logger.Debugf("restarting transcode since last transcoded segment %d is close to requested segment %d", lastTranscodedSegment, segment)
+			transcodeStartSegment = sm.lastTranscodedSegment(hash+resolution) + 1
+		}
 	}
 
 	// check if transcoding process is already running
 	// lock the mutex here to ensure we don't start multiple processes
 	sm.transcodesMutex.Lock()
 	defer sm.transcodesMutex.Unlock()
-
-	tp := sm.runningTranscodes[hash+resolution]
 
 	if tp != nil {
 		// check if transcoding process is about to transcode the necessary segment
@@ -290,7 +303,7 @@ func (sm *StreamManager) StreamTS(src string, hash string, segment int, resoluti
 
 	// no transcode processes exist now, so start a new one
 	// start one at the applicable time, wait and return stream
-	_, err := sm.startTranscode(src, hash, resolution, segment)
+	_, err := sm.startTranscode(src, hash, resolution, transcodeStartSegment)
 
 	if err != nil {
 		return onTranscodeError(err)
