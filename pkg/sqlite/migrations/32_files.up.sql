@@ -458,7 +458,7 @@ INSERT INTO `video_files`
   )
   SELECT
     `files`.`id`,
-    `scenes`.`duration`,
+    COALESCE(`scenes`.`duration`, -1),
     -- special values for unset to be updated during scan
     COALESCE(`scenes`.`video_codec`, 'unset'),
     COALESCE(`scenes`.`format`, 'unset'),

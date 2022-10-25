@@ -261,7 +261,10 @@ func (t *ExportTask) zipWalkFunc(outDir string, z *zip.Writer) filepath.WalkFunc
 func (t *ExportTask) zipFile(fn, outDir string, z *zip.Writer) error {
 	bn := filepath.Base(fn)
 
-	f, err := z.Create(filepath.Join(outDir, bn))
+	p := filepath.Join(outDir, bn)
+	p = filepath.ToSlash(p)
+
+	f, err := z.Create(p)
 	if err != nil {
 		return fmt.Errorf("error creating zip entry for %s: %s", fn, err.Error())
 	}
