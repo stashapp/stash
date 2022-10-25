@@ -171,6 +171,7 @@ type SceneUpdateInput struct {
 	URL              *string            `json:"url"`
 	Date             *string            `json:"date"`
 	Rating           *int               `json:"rating"`
+	OCounter         *int               `json:"o_counter"`
 	Organized        *bool              `json:"organized"`
 	StudioID         *string            `json:"studio_id"`
 	GalleryIds       []string           `json:"gallery_ids"`

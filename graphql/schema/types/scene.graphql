@@ -102,6 +102,7 @@ input SceneUpdateInput {
   url: String
   date: String
   rating: Int
+  o_counter: Int
   organized: Boolean
   studio_id: ID
   gallery_ids: [ID!]
