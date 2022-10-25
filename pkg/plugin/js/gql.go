@@ -89,10 +89,11 @@ func gqlRequestFunc(ctx context.Context, vm *otto.Otto, cookie *http.Cookie, gql
 			throw(vm, fmt.Sprintf("could not unmarshal object %s: %s", output, err.Error()))
 		}
 
-		retErr, hasErr := obj["error"]
+		retErr, hasErr := obj["errors"]
 
 		if hasErr {
-			throw(vm, fmt.Sprintf("graphql error: %v", retErr))
+			errOut, _ := json.Marshal(retErr)
+			throw(vm, fmt.Sprintf("graphql error: %s", string(errOut)))
 		}
 
 		v, err := vm.ToValue(obj["data"])
