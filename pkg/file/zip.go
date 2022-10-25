@@ -83,6 +83,10 @@ func (f *ZipFS) OpenZip(name string) (*ZipFS, error) {
 	return nil, errZipFSOpenZip
 }
 
+func (f *ZipFS) IsPathCaseSensitive(path string) (bool, error) {
+	return true, nil
+}
+
 type zipReadDirFile struct {
 	fs.File
 }
