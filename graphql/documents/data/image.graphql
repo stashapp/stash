@@ -1,7 +1,7 @@
 fragment ImageData on Image {
   id
   title
-  rating
+  rating100
   organized
   o_counter
   created_at

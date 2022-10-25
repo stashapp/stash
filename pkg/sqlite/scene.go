@@ -52,11 +52,12 @@ ORDER BY files.size DESC
 `
 
 type sceneRow struct {
-	ID        int                    `db:"id" goqu:"skipinsert"`
-	Title     zero.String            `db:"title"`
-	Details   zero.String            `db:"details"`
-	URL       zero.String            `db:"url"`
-	Date      models.SQLiteDate      `db:"date"`
+	ID      int               `db:"id" goqu:"skipinsert"`
+	Title   zero.String       `db:"title"`
+	Details zero.String       `db:"details"`
+	URL     zero.String       `db:"url"`
+	Date    models.SQLiteDate `db:"date"`
+	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
 	Organized bool                   `db:"organized"`
 	OCounter  int                    `db:"o_counter"`
@@ -73,7 +74,15 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	if o.Date != nil {
 		_ = r.Date.Scan(o.Date.Time)
 	}
-	r.Rating = intFromPtr(o.Rating)
+
+	// prefer rating100 over rating
+	if o.Rating100 != nil {
+		r.Rating = intFromPtr(o.Rating100)
+	} else if o.Rating != nil {
+		rating100 := models.Rating5To100(*o.Rating)
+		r.Rating = null.IntFrom(int64(rating100))
+	}
+
 	r.Organized = o.Organized
 	r.OCounter = o.OCounter
 	r.StudioID = intFromPtr(o.StudioID)
@@ -97,7 +106,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Details:   r.Details.String,
 		URL:       r.URL.String,
 		Date:      r.Date.DatePtr(),
-		Rating:    nullIntPtr(r.Rating),
+		Rating100: nullIntPtr(r.Rating),
 		Organized: r.Organized,
 		OCounter:  r.OCounter,
 		StudioID:  nullIntPtr(r.StudioID),
@@ -114,6 +123,11 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
 	}
 
+	if r.Rating.Valid {
+		rating5 := models.Rating100To5(int(r.Rating.Int64))
+		ret.Rating = &rating5
+	}
+
 	return ret
 }
 
@@ -126,7 +140,18 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("details", o.Details)
 	r.setNullString("url", o.URL)
 	r.setSQLiteDate("date", o.Date)
-	r.setNullInt("rating", o.Rating)
+
+	// prefer rating100 over rating
+	if o.Rating100.Set {
+		r.setNullInt("rating", o.Rating100)
+	} else if o.Rating.Set {
+		v := o.Rating
+		if v.Value != 0 {
+			v.Value = models.Rating5To100(v.Value)
+		}
+		r.setNullInt("rating", v)
+	}
+
 	r.setBool("organized", o.Organized)
 	r.setInt("o_counter", o.OCounter)
 	r.setNullInt("studio_id", o.StudioID)
@@ -825,7 +850,9 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 		}
 	}))
 
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating, "scenes.rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(sceneFilter.Rating, "scenes.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Organized, "scenes.organized", nil))
 

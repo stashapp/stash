@@ -331,9 +331,6 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
         />
       );
       break;
-    case GQL.RatingSystem.None:
-      return <></>;
-      break;
     default:
       toReturn = getRatingStars(5, 1);
       break;

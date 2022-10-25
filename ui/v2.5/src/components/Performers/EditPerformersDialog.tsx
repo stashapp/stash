@@ -31,7 +31,7 @@ const performerFields = [
   "url",
   "instagram",
   "twitter",
-  "rating",
+  "rating100",
   "gender",
   "birthdate",
   "death_date",
@@ -89,9 +89,9 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
 
     // we don't have unset functionality for the rating star control
     // so need to determine if we are setting a rating or not
-    performerInput.rating = getAggregateInputValue(
-      updateInput.rating,
-      aggregateState.rating
+    performerInput.rating100 = getAggregateInputValue(
+      updateInput.rating100,
+      aggregateState.rating100
     );
 
     // gender dropdown doesn't have unset functionality
@@ -200,8 +200,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         isRunning={isUpdating}
       >
         <RatingSystem
-          value={updateInput.rating ?? undefined}
-          onSetRating={(value) => setUpdateField({ rating: value })}
+          value={updateInput.rating100 ?? undefined}
+          onSetRating={(value) => setUpdateField({ rating100: value })}
           disabled={isUpdating}
         />
         <Form>

@@ -76,6 +76,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		details     = "details"
 		url         = "url"
 		rating      = 3
+		rating100   = 60
 		ocounter    = 5
 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -104,6 +105,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
+				Rating100:    &rating100,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithScene],
@@ -143,6 +145,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 				URL:       url,
 				Date:      &date,
 				Rating:    &rating,
+				Rating100: &rating100,
 				Organized: true,
 				OCounter:  ocounter,
 				StudioID:  &studioIDs[studioIdxWithScene],
@@ -297,6 +300,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		details     = "details"
 		url         = "url"
 		rating      = 3
+		rating100   = 60
 		ocounter    = 5
 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -324,6 +328,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
+				Rating100:    &rating100,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithScene],
@@ -499,6 +504,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		details     = "details"
 		url         = "url"
 		rating      = 3
+		rating100   = 60
 		ocounter    = 5
 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -582,6 +588,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
+				Rating100:    &rating100,
 				Organized:    true,
 				OCounter:     ocounter,
 				StudioID:     &studioIDs[studioIdxWithScene],
@@ -2331,7 +2338,7 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 			Modifier: models.CriterionModifierEquals,
 		},
 		And: &models.SceneFilterType{
-			Rating: &models.IntCriterionInput{
+			Rating100: &models.IntCriterionInput{
 				Value:    sceneRating,
 				Modifier: models.CriterionModifierEquals,
 			},
@@ -2347,7 +2354,7 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 			return nil
 		}
 		assert.Equal(t, scenePath, scenes[0].Path)
-		assert.Equal(t, sceneRating, *scenes[0].Rating)
+		assert.Equal(t, sceneRating, *scenes[0].Rating100)
 
 		return nil
 	})

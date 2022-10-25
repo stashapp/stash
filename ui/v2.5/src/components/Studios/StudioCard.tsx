@@ -154,7 +154,7 @@ export const StudioCard: React.FC<IProps> = ({
         <div className="studio-card__details">
           {maybeRenderParent(studio, hideParent)}
           {maybeRenderChildren(studio)}
-          <RatingBanner rating={studio.rating} />
+          <RatingBanner rating={studio.rating100} />
           {maybeRenderPopoverButtonGroup()}
         </div>
       }

@@ -13,7 +13,10 @@ type Studio {
   image_count: Int # Resolver
   gallery_count: Int # Resolver
   stash_ids: [StashID!]!
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   details: String
   created_at: Time!
   updated_at: Time!
@@ -28,7 +31,10 @@ input StudioCreateInput {
   """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   details: String
   aliases: [String!]
   ignore_auto_tag: Boolean
@@ -42,7 +48,10 @@ input StudioUpdateInput {
   """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   details: String
   aliases: [String!]
   ignore_auto_tag: Boolean

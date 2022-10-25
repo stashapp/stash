@@ -14,11 +14,11 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   studio,
 }) => {
   function renderRatingField() {
-    if (!studio.rating) {
+    if (!studio.rating100) {
       return;
     }
 
-    return <RatingSystem value={studio.rating} disabled />;
+    return <RatingSystem value={studio.rating100} disabled />;
   }
 
   function renderTagsList() {

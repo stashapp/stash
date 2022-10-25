@@ -55,6 +55,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 		title     = "title"
 		url       = "url"
 		rating    = 3
+		rating100 = 60
 		details   = "details"
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -77,6 +78,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				Date:         &date,
 				Details:      details,
 				Rating:       &rating,
+				Rating100:    &rating100,
 				Organized:    true,
 				StudioID:     &studioIDs[studioIdxWithScene],
 				CreatedAt:    createdAt,
@@ -95,6 +97,7 @@ func Test_galleryQueryBuilder_Create(t *testing.T) {
 				Date:      &date,
 				Details:   details,
 				Rating:    &rating,
+				Rating100: &rating100,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithScene],
 				Files: models.NewRelatedFiles([]file.File{
@@ -206,6 +209,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 		title     = "title"
 		url       = "url"
 		rating    = 3
+		rating100 = 60
 		details   = "details"
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -227,6 +231,7 @@ func Test_galleryQueryBuilder_Update(t *testing.T) {
 				Date:      &date,
 				Details:   details,
 				Rating:    &rating,
+				Rating100:    &rating100,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithScene],
 				Files: models.NewRelatedFiles([]file.File{
@@ -388,6 +393,7 @@ func clearGalleryPartial() models.GalleryPartial {
 		URL:          models.OptionalString{Set: true, Null: true},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
+		Rating100:    models.OptionalInt{Set: true, Null: true},
 		StudioID:     models.OptionalInt{Set: true, Null: true},
 		TagIDs:       &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
 		PerformerIDs: &models.UpdateIDs{Mode: models.RelationshipUpdateModeSet},
@@ -400,6 +406,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 		details   = "details"
 		url       = "url"
 		rating    = 3
+		rating100 = 60
 		createdAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -422,6 +429,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				URL:       models.NewOptionalString(url),
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
+				Rating100: models.NewOptionalInt(rating100),
 				Organized: models.NewOptionalBool(true),
 				StudioID:  models.NewOptionalInt(studioIDs[studioIdxWithGallery]),
 				CreatedAt: models.NewOptionalTime(createdAt),
@@ -447,6 +455,7 @@ func Test_galleryQueryBuilder_UpdatePartial(t *testing.T) {
 				URL:       url,
 				Date:      &date,
 				Rating:    &rating,
+				Rating100:    &rating100,
 				Organized: true,
 				StudioID:  &studioIDs[studioIdxWithGallery],
 				Files: models.NewRelatedFiles([]file.File{
