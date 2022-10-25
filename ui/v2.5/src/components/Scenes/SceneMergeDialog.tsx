@@ -27,7 +27,6 @@ import {
   ScrapedStudioRow,
   ScrapedTagsRow,
 } from "./SceneDetails/SceneScrapeDialog";
-import { useHistory } from "react-router-dom";
 import { galleryTitle } from "src/core/galleries";
 import { RatingStars } from "./SceneDetails/RatingStars";
 
@@ -361,7 +360,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
 
 interface ISceneMergeModalProps {
   show: boolean;
-  onClose: () => void;
+  onClose: (mergedID?: string) => void;
   scenes: { id: string; title: string }[];
 }
 
@@ -387,7 +386,6 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
 
   const intl = useIntl();
   const Toast = useToast();
-  const history = useHistory();
 
   const title = intl.formatMessage({
     id: "actions.merge",
@@ -429,8 +427,7 @@ export const SceneMergeModal: React.FC<ISceneMergeModalProps> = ({
         });
         // refetch the scene
         await queryFindScenesByID([parseInt(destScene[0].id)]);
-        onClose();
-        history.push(`/scenes/${destScene[0].id}`);
+        onClose(destScene[0].id);
       }
       onClose();
     } catch (e) {

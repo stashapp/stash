@@ -270,7 +270,12 @@ export const SceneList: React.FC<ISceneList> = ({
       return (
         <SceneMergeModal
           scenes={mergeScenes}
-          onClose={() => setMergeScenes(undefined)}
+          onClose={(mergedID?: string) => {
+            setMergeScenes(undefined);
+            if (mergedID) {
+              history.push(`/scenes/${mergedID}`);
+            }
+          }}
           show
         />
       );
