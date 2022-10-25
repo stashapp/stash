@@ -1,6 +1,11 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
+import {
+  FormattedDate,
+  FormattedMessage,
+  FormattedNumber,
+  useIntl,
+} from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import TextUtils from "src/utils/text";
 import { TagLink } from "src/components/Shared/TagLink";
@@ -129,6 +134,12 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           {props.scene.director && (
             <h6>
               <FormattedMessage id="director" />: {props.scene.director}{" "}
+            </h6>
+          )}
+          {props.scene.files.length > 1 && (
+            <h6 className="text-warning">
+              <FormattedMessage id="duplicated_file_count" />:{" "}
+              <FormattedNumber value={props.scene.files.length} />{" "}
             </h6>
           )}
         </div>
