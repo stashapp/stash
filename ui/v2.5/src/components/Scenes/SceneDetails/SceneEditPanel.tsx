@@ -341,7 +341,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
     try {
       const input: GQL.ScrapedSceneInput = {
         date: fragment.date,
+        code: fragment.code,
         details: fragment.details,
+        director: fragment.director,
         remote_site_id: fragment.remote_site_id,
         title: fragment.title,
         url: fragment.url,

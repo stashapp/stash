@@ -182,7 +182,9 @@ type FingerprintFragment struct {
 type SceneFragment struct {
 	ID           string                         "json:\"id\" graphql:\"id\""
 	Title        *string                        "json:\"title\" graphql:\"title\""
+	Code         *string                        "json:\"code\" graphql:\"code\""
 	Details      *string                        "json:\"details\" graphql:\"details\""
+	Director     *string                        "json:\"director\" graphql:\"director\""
 	Duration     *int                           "json:\"duration\" graphql:\"duration\""
 	Date         *string                        "json:\"date\" graphql:\"date\""
 	Urls         []*URLFragment                 "json:\"urls\" graphql:\"urls\""
