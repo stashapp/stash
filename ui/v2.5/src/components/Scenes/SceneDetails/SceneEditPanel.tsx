@@ -721,7 +721,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
               intl.formatMessage({ id: "date" }),
               "YYYY-MM-DD"
             )}
-            {renderTextField("director", intl.formatMessage({ id: "director" }))}
+            {renderTextField(
+              "director",
+              intl.formatMessage({ id: "director" })
+            )}
             <Form.Group controlId="rating" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "rating" }),

@@ -14,9 +14,9 @@ import (
 type Scene struct {
 	ID        int    `json:"id"`
 	Title     string `json:"title"`
-	Code      string `json:code`
+	Code      string `json:"code"`
 	Details   string `json:"details"`
-	Director  string `json:director`
+	Director  string `json:"director"`
 	URL       string `json:"url"`
 	Date      *Date  `json:"date"`
 	Rating    *int   `json:"rating"`

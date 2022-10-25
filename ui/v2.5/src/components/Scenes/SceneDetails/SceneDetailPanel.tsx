@@ -123,15 +123,13 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           </h6>
           {props.scene.code && (
             <h6>
-            <FormattedMessage id="scene_code" />:{" "}
-            {props.scene.code}{" "}
-          </h6>
+              <FormattedMessage id="scene_code" />: {props.scene.code}{" "}
+            </h6>
           )}
           {props.scene.director && (
             <h6>
-            <FormattedMessage id="director" />:{" "}
-            {props.scene.director}{" "}
-          </h6>
+              <FormattedMessage id="director" />: {props.scene.director}{" "}
+            </h6>
           )}
         </div>
         {props.scene.studio && (
