@@ -573,7 +573,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
-          title={intl.formatMessage({ id: "code" })}
+          title={intl.formatMessage({ id: "scene_code" })}
           result={code}
           onChange={(value) => setCode(value)}
         />

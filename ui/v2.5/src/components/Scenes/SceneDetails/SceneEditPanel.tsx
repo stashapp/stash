@@ -542,8 +542,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("title", updatedScene.title);
     }
 
+    if (updatedScene.code) {
+      formik.setFieldValue("code", updatedScene.code);
+    }
+
     if (updatedScene.details) {
       formik.setFieldValue("details", updatedScene.details);
+    }
+
+    if (updatedScene.director) {
+      formik.setFieldValue("director", updatedScene.director);
     }
 
     if (updatedScene.date) {
