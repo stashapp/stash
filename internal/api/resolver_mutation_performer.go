@@ -231,11 +231,14 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.nullInt64(input.Rating, "rating100")
-	if input.Rating != nil {
-		temp := models.Rating5To100(int(*input.Rating))
-		updatedPerformer.Rating = translator.nullInt64(&temp, "rating")
+	legacyRating := translator.nullInt64(input.Rating, "rating")
+	if legacyRating != nil {
+		if legacyRating.Valid {
+			legacyRating.Int64 = int64(models.Rating5To100(int(legacyRating.Int64)))
+		}
+		updatedPerformer.Rating = legacyRating
 	}
+	updatedPerformer.Rating = translator.nullInt64(input.Rating, "rating100")
 	updatedPerformer.Details = translator.nullString(input.Details, "details")
 	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
@@ -344,11 +347,14 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.nullInt64(input.Rating100, "rating100")
-	if input.Rating != nil {
-		temp := models.Rating5To100(int(*input.Rating))
-		updatedPerformer.Rating = translator.nullInt64(&temp, "rating")
+	legacyRating := translator.nullInt64(input.Rating, "rating")
+	if legacyRating != nil {
+		if legacyRating.Valid {
+			legacyRating.Int64 = int64(models.Rating5To100(int(legacyRating.Int64)))
+		}
+		updatedPerformer.Rating = legacyRating
 	}
+	updatedPerformer.Rating = translator.nullInt64(input.Rating100, "rating100")
 	updatedPerformer.Details = translator.nullString(input.Details, "details")
 	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")

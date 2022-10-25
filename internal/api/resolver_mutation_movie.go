@@ -166,11 +166,14 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedMovie.Aliases = translator.nullString(input.Aliases, "aliases")
 	updatedMovie.Duration = translator.nullInt64(input.Duration, "duration")
 	updatedMovie.Date = translator.sqliteDate(input.Date, "date")
-	updatedMovie.Rating = translator.nullInt64(input.Rating100, "rating100")
-	if input.Rating != nil {
-		temp := models.Rating5To100(int(*input.Rating))
-		updatedMovie.Rating = translator.nullInt64(&temp, "rating")
+	legacyRating := translator.nullInt64(input.Rating, "rating")
+	if legacyRating != nil {
+		if legacyRating.Valid {
+			legacyRating.Int64 = int64(models.Rating5To100(int(legacyRating.Int64)))
+		}
+		updatedMovie.Rating = legacyRating
 	}
+	updatedMovie.Rating = translator.nullInt64(input.Rating100, "rating100")
 	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedMovie.Director = translator.nullString(input.Director, "director")
 	updatedMovie.Synopsis = translator.nullString(input.Synopsis, "synopsis")
@@ -243,9 +246,12 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
 
-	if input.Rating != nil {
-		temp := models.Rating5To100(int(*input.Rating))
-		updatedMovie.Rating = translator.nullInt64(&temp, "rating")
+	legacyRating := translator.nullInt64(input.Rating, "rating")
+	if legacyRating != nil {
+		if legacyRating.Valid {
+			legacyRating.Int64 = int64(models.Rating5To100(int(legacyRating.Int64)))
+		}
+		updatedMovie.Rating = legacyRating
 	}
 	updatedMovie.Rating = translator.nullInt64(input.Rating100, "rating100")
 	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
