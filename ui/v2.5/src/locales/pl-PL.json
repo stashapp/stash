@@ -54,6 +54,7 @@
     "import": "Importowanie…",
     "import_from_file": "Import z pliku",
     "logout": "Wyloguj się",
+    "make_primary": "Ustaw jako główny",
     "merge": "Połącz",
     "merge_from": "Scal z",
     "merge_into": "Scal w",
@@ -189,6 +190,7 @@
     },
     "categories": {
       "about": "O aplikacji",
+      "changelog": "Lista zmian",
       "interface": "Interfejs",
       "logs": "Logi",
       "metadata_providers": "Dostawcy metadanych",
@@ -242,6 +244,10 @@
         "stash-box_integration": "Integracja ze Stash-box",
         "username": "Nazwa użytkownika",
         "username_desc": "Nazwa użytkownika umożliwiająca dostęp do Stash. Pozostaw puste, aby wyłączyć uwierzytelnianie użytkownika"
+      },
+      "backup_directory_path": {
+        "description": "Lokalizacja katalogu kopii zapasowych plików bazy danych SQLite",
+        "heading": "Ścieżka katalogu kopii zapasowych"
       },
       "cache_location": "Lokalizacja katalogu pamięci podręcznej",
       "cache_path_head": "Ścieżka pamięci podręcznej",
@@ -344,7 +350,7 @@
       "auto_tagging": "Automatyczne tagowanie",
       "backing_up_database": "Tworzenie kopii zapasowej bazy danych",
       "backup_and_download": "Wykonuje kopię zapasową bazy danych i pobiera plik wynikowy.",
-      "backup_database": "Wykonuje kopię zapasową bazy danych w tym samym katalogu, w którym znajduje się baza danych, z nazwą pliku w formacie {filename_format}",
+      "backup_database": "Wykonuje kopię zapasową bazy danych do katalogu kopii zapasowych, z nazwą pliku w formacie {filename_format}",
       "cleanup_desc": "Sprawdza, czy nie ma brakujących plików i usuwa je z bazy danych. Jest to działanie destrukcyjne.",
       "data_management": "Zarządzanie danymi",
       "defaults_set": "Zostały ustawione wartości domyślne, które będą używane po kliknięciu przycisku {action} na stronie Zadania.",
@@ -420,11 +426,20 @@
       "scene_tools": "Narzędzia scen"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Skracanie liczników na kartach i stronach podglądu szczegółów, na przykład \"1831\" zostanie skrócone do \"1.8K\".",
+        "heading": "Skracaj liczby"
+      },
       "basic_settings": "Ustawienia podstawowe",
       "custom_css": {
         "description": "Strona musi zostać ponownie załadowana, aby zmiany zaczęły obowiązywać.",
         "heading": "Własny CSS",
         "option_label": "Włączony własny CSS"
+      },
+      "custom_locales": {
+        "description": "Nadpisywanie poszczególnych ciągów lokalnie. Zobacz https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json, aby uzyskać główną listę. Aby zmiany weszły w życie, strona musi zostać ponownie załadowana.",
+        "heading": "Niestandardowa lokalizacja",
+        "option_label": "Niestandardowa lokalizacja włączona"
       },
       "delete_options": {
         "description": "Ustawienia domyślne przy usuwaniu obrazów, galerii i scen.",
@@ -518,7 +533,7 @@
         "options": {
           "auto_start_video": "Automatyczne odtwarzanie wideo",
           "auto_start_video_on_play_selected": {
-            "description": "Automatyczne odtwarzaj wideo podczas odtwarzania wybranych lub losowych scen ze strony Sceny",
+            "description": "Automatyczne odtwarzaj wideo z kolejki albo z wybranych lub losowych scen ze strony Sceny",
             "heading": "Automatyczne odtwarzanie wideo podczas odtwarzania wybranych"
           },
           "continue_playlist_default": {
@@ -539,9 +554,31 @@
         "description": "Ilość prób przewijania przed przejściem do następnej/poprzedniej pozycji. Ma zastosowanie tylko w trybie Pan Y.",
         "heading": "Próby przewijania przed przejściem"
       },
+      "show_tag_card_on_hover": {
+        "description": "Pokazuj kartę tagu po najechaniu na plakietkę tagu",
+        "heading": "Karty tagów"
+      },
       "slideshow_delay": {
         "description": "Pokaz slajdów jest dostępny w galeriach w trybie widoku ściany",
         "heading": "Opóźnienie pokazu slajdów (sekundy)"
+      },
+      "studio_panel": {
+        "heading": "Widok studia",
+        "options": {
+          "show_child_studio_content": {
+            "description": "W widoku studia wyświetlaj także zawartość z podstudiów",
+            "heading": "Wyświetlaj zawartość z podstudiów"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Widok tagu",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "W widoku tagu wyświetlaj również zawartość z podtagów",
+            "heading": "Wyświetlaj zawartość z podtagów"
+          }
+        }
       },
       "title": "Interfejs użytkownika"
     }
@@ -587,6 +624,7 @@
   "death_date": "Data śmierci",
   "death_year": "Rok śmierci",
   "descending": "Malejąco",
+  "description": "Opis",
   "detail": "Szczegół",
   "details": "Szczegóły",
   "developmentVersion": "Wersja deweloperska",
@@ -595,12 +633,14 @@
     "delete_alert": "Następujące elementy {count, plural, one {{singularEntity}} other {{pluralEntity}}} zostaną trwale usunięte:",
     "delete_confirm": "Czy na pewno chcesz usunąć {entityName}?",
     "delete_entity_desc": "{count, plural, one {Czy na pewno chcesz usunąć {singularEntity}? Jeśli plik nie zostanie usunięty, {singularEntity} zostanie ponownie dodane podczas skanowania.} other {Czy na pewno chcesz usunąć {pluralEntity}? Jeśli te pliki nie zostaną usunięte, {pluralEntity} zostaną ponownie dodane podczas skanowania.}}",
+    "delete_entity_simple_desc": "{count, plural, one {Czy na pewno chcesz usunąć {singularEntity}?} other {Czy na pewno chcesz usunąć {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Usuń {singularEntity}} other {Usuń {pluralEntity}}}",
     "delete_galleries_extra": "…oraz wszystkie pliki obrazów, które nie są dołączone do żadnej innej galerii.",
     "delete_gallery_files": "Usuń folder galerii/plik zip i wszystkie obrazy, które nie są dołączone do żadnej innej galerii..",
     "delete_object_desc": "Czy na pewno chcesz usunąć {count, plural, one {{singularEntity}} other {{pluralEntity}}}?",
     "delete_object_overflow": "…i {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Usuń {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Nie pokazuj do następnej aktualizacji",
     "edit_entity_title": "Edytuj {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Uwzględnij powiązane obiekty w eksporcie",
     "export_title": "Eksportuj",
@@ -726,6 +766,7 @@
   "false": "Nie",
   "favourite": "Ulubione",
   "file": "plik",
+  "file_count": "Liczba plików",
   "file_info": "Info o pliku",
   "file_mod_time": "Czas modyfikacji pliku",
   "files": "pliki",
@@ -733,6 +774,7 @@
   "filter": "Filtr",
   "filter_name": "Nazwa filtra",
   "filters": "Filtry",
+  "folder": "Folder",
   "framerate": "Liczba klatek na sekundę",
   "frames_per_second": "{value} klatek na sekundę",
   "front_page": {
@@ -865,11 +907,13 @@
   },
   "performers": "Aktorzy",
   "piercings": "Kolczyki",
+  "primary_file": "Główny plik",
   "queue": "Kolejka",
   "random": "Losowo",
   "rating": "Ocena",
   "recently_added_objects": "Ostatnio dodane {objects}",
   "recently_released_objects": "Ostatnio wydane {objects}",
+  "release_notes": "Informacje o wydaniu",
   "resolution": "Rozdzielczość",
   "scene": "Scena",
   "sceneTagger": "Otagowywacz scen",
@@ -919,9 +963,10 @@
       "migration_failed_error": "Podczas migracji bazy danych napotkano następujący błąd:",
       "migration_failed_help": "Wprowadź wszelkie niezbędne poprawki i spróbuj ponownie. W przeciwnym razie zgłoś błąd na stronie {githubLink} lub poszukaj pomocy na {discordLink}.",
       "migration_irreversible_warning": "Proces migracji schematu jest nieodwracalny. Po przeprowadzeniu migracji baza danych będzie niekompatybilna z poprzednimi wersjami programu stash.",
+      "migration_notes": "Uwagi dotyczące migracji",
       "migration_required": "Wymagana migracja",
       "perform_schema_migration": "Wykonaj migrację schematów",
-      "schema_too_old": "Twoja obecna baza danych Stash to schemat w wersji <strong>{databaseSchema}</strong> i należy ją przenieść do wersji <strong>{appSchema}</strong>. Ta wersja Stash nie będzie działać bez migracji bazy danych."
+      "schema_too_old": "Twoja obecna baza danych Stash to schemat w wersji <strong>{databaseSchema}</strong> i należy ją przenieść do wersji <strong>{appSchema}</strong>. Ta wersja Stash nie będzie działać bez migracji bazy danych. Jeśli nie chcesz migrować, musisz obniżyć wersję do wersji zgodnej ze schematem bazy danych."
     },
     "paths": {
       "database_filename_empty_for_default": "nazwa pliku bazy danych (domyślnie puste)",
@@ -1019,5 +1064,6 @@
   "videos": "Filmy wideo",
   "view_all": "Pokaż Wszystko",
   "weight": "Waga",
-  "years_old": "lat(a)"
+  "years_old": "lat(a)",
+  "zip_file_count": "Liczba plików zip"
 }
