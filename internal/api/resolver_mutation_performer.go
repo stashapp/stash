@@ -238,7 +238,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 		}
 		updatedPerformer.Rating = legacyRating
 	}
-	updatedPerformer.Rating = translator.nullInt64(input.Rating, "rating100")
+	updatedPerformer.Rating = translator.nullInt64(input.Rating100, "rating100")
 	updatedPerformer.Details = translator.nullString(input.Details, "details")
 	updatedPerformer.DeathDate = translator.sqliteDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.nullString(input.HairColor, "hair_color")
