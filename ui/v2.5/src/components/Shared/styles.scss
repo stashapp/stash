@@ -167,6 +167,13 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     text-decoration: none;
   }
 
+  .progress-bar {
+    bottom: 5px;
+    display: block;
+    height: 5px;
+    position: absolute;
+  }
+
   .card-check {
     left: 0.5rem;
     margin-top: -12px;

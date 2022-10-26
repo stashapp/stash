@@ -35,6 +35,7 @@ const sortByOptions = [
   "duration",
   "framerate",
   "bitrate",
+  "last_played_at",
   "movie_scene_number",
   "interactive",
   "interactive_speed",

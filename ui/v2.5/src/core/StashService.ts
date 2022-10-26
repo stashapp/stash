@@ -830,6 +830,9 @@ export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
     update: deleteCache(tagMutationImpactedQueries),
   });
 
+export const useSceneSaveContinuePosition = () =>
+  GQL.useSceneContinuePositionMutation();
+
 export const savedFilterMutationImpactedQueries = [
   GQL.FindSavedFiltersDocument,
 ];

@@ -217,6 +217,12 @@ export const SettingsInterfacePanel: React.FC = () => {
           onChange={(v) => saveInterface({ showScrubber: v })}
         />
         <BooleanSetting
+          id="always-start-from-beginning"
+          headingID="config.ui.scene_player.options.always_start_from_beginning"
+          checked={iface.alwaysStartFromBeginning ?? undefined}
+          onChange={(v) => saveInterface({ alwaysStartFromBeginning: v })}
+        />
+        <BooleanSetting
           id="auto-start-video"
           headingID="config.ui.scene_player.options.auto_start_video"
           checked={iface.autostartVideo ?? undefined}

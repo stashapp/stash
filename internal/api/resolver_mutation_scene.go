@@ -679,6 +679,24 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 	return sceneMarker, nil
 }
 
+func (r *mutationResolver) SceneContinuePosition(ctx context.Context, id string, continuePosition float64) (ret float64, err error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		ret, err = qb.SaveContinuePosition(ctx, sceneID, continuePosition)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
 func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {

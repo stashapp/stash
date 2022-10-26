@@ -18,6 +18,8 @@ interface ICardProps {
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
+  continuePosition?: number;
+  duration?: number;
   interactiveHeatmap?: string;
 }
 
@@ -91,6 +93,19 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
     }
   }
 
+  function maybeRenderProgressBar() {
+    if (props.continuePosition && props.duration && props.duration > props.continuePosition) {
+      var percent = ((100 / props.duration) * props.continuePosition) + "%"
+      return (
+        <span
+          title={props.title}
+          style={{ width: percent }}
+          className="progress-bar"
+        />
+      );
+    }
+  }
+
   return (
     <Card
       className={cx(props.className, "grid-card")}
@@ -110,6 +125,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
           {props.image}
         </Link>
         {props.overlays}
+        {maybeRenderProgressBar()}
       </div>
       {maybeRenderInteractiveHeatmap()}
       <div className="card-section">

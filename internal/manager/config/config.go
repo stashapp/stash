@@ -136,6 +136,7 @@ const (
 	AutostartVideo                      = "autostart_video"
 	AutostartVideoOnPlaySelected        = "autostart_video_on_play_selected"
 	autostartVideoOnPlaySelectedDefault = true
+	AlwaysStartFromBeginning            = "always_start_from_beginning"
 	ContinuePlaylistDefault             = "continue_playlist_default"
 	ShowStudioAsText                    = "show_studio_as_text"
 	CSSEnabled                          = "cssEnabled"
@@ -945,6 +946,10 @@ func (i *Instance) GetAutostartVideo() bool {
 
 func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
 	return i.getBoolDefault(AutostartVideoOnPlaySelected, autostartVideoOnPlaySelectedDefault)
+}
+
+func (i *Instance) GetAlwaysStartFromBeginning() bool {
+	return i.getBool(AlwaysStartFromBeginning)
 }
 
 func (i *Instance) GetContinuePlaylistDefault() bool {

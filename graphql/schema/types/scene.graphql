@@ -51,6 +51,8 @@ type Scene {
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time
+  last_played_at: Time
+  continue_position: Float
 
   file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!

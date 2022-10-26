@@ -18,6 +18,9 @@ import "./persist-volume";
 import "./markers";
 import "./big-buttons";
 import cx from "classnames";
+import {
+  useSceneSaveContinuePosition,
+} from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
@@ -140,6 +143,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const playerRef = useRef<VideoJsPlayer | undefined>();
   const sceneId = useRef<string | undefined>();
   const skipButtonsRef = useRef<any>();
+  const [sceneSaveContinuePosition] = useSceneSaveContinuePosition();
 
   const [time, setTime] = useState(0);
 
@@ -162,7 +166,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   );
 
   const maxLoopDuration = config?.maximumLoopDuration ?? 0;
-
+  
   const looping = useMemo(
     () =>
       !!file &&
@@ -270,6 +274,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // Video player destructor
     return () => {
+      const id = scene?.id!
+      const continue_position = player?.currentTime()!
+      if(scene) {
+        sceneSaveContinuePosition({
+          variables: {
+            id,
+            continue_position,
+          },
+        });
+      }
       if (playerRef.current) {
         playerRef.current.dispose();
         playerRef.current = undefined;
@@ -526,6 +540,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (!auto && scene.paths?.screenshot) player.poster(scene.paths.screenshot);
     else player.poster("");
 
+    const alwaysStartFromBeginning = config?.alwaysStartFromBeginning ?? false;
+
     const isLandscape = file.height && file.width && file.width > file.height;
 
     if (isLandscape) {
@@ -572,7 +588,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       loadCaptions(player);
     }
 
-    player.currentTime(0);
+    var startPosition = 0
+    if (!alwaysStartFromBeginning && file.duration > scene.continue_position!) {
+      startPosition = scene.continue_position!
+    }
+    player.currentTime(startPosition);
 
     player.loop(looping);
     interactiveClient.setLooping(looping);

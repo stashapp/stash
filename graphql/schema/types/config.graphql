@@ -254,6 +254,8 @@ input ConfigInterfaceInput {
   autostartVideo: Boolean
   """If true, video will autostart when loading from play random or play selected"""
   autostartVideoOnPlaySelected: Boolean
+  """If true continue scene will always play from the beginning"""
+  alwaysStartFromBeginning: Boolean
   """If true, next scene in playlist will be played at video end by default"""
   continuePlaylistDefault: Boolean
   
@@ -320,6 +322,8 @@ type ConfigInterfaceResult {
   autostartVideo: Boolean
   """If true, video will autostart when loading from play random or play selected"""
   autostartVideoOnPlaySelected: Boolean
+  """If true continue scene will always play from the beginning"""
+  alwaysStartFromBeginning: Boolean
   """If true, next scene in playlist will be played at video end by default"""
   continuePlaylistDefault: Boolean
 

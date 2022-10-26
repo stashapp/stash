@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -52,17 +53,19 @@ ORDER BY files.size DESC
 `
 
 type sceneRow struct {
-	ID        int                    `db:"id" goqu:"skipinsert"`
-	Title     zero.String            `db:"title"`
-	Details   zero.String            `db:"details"`
-	URL       zero.String            `db:"url"`
-	Date      models.SQLiteDate      `db:"date"`
-	Rating    null.Int               `db:"rating"`
-	Organized bool                   `db:"organized"`
-	OCounter  int                    `db:"o_counter"`
-	StudioID  null.Int               `db:"studio_id,omitempty"`
-	CreatedAt models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt models.SQLiteTimestamp `db:"updated_at"`
+	ID               int                    `db:"id" goqu:"skipinsert"`
+	Title            zero.String            `db:"title"`
+	Details          zero.String            `db:"details"`
+	URL              zero.String            `db:"url"`
+	Date             models.SQLiteDate      `db:"date"`
+	Rating           null.Int               `db:"rating"`
+	Organized        bool                   `db:"organized"`
+	OCounter         int                    `db:"o_counter"`
+	StudioID         null.Int               `db:"studio_id,omitempty"`
+	CreatedAt        models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt        models.SQLiteTimestamp `db:"updated_at"`
+	LastPlayedAt     models.SQLiteTimestamp `db:"last_played_at"`
+	ContinuePosition float64                `db:"continue_position"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -108,6 +111,9 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
+
+		LastPlayedAt:     r.LastPlayedAt.Timestamp,
+		ContinuePosition: r.ContinuePosition,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
@@ -132,6 +138,8 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullInt("studio_id", o.StudioID)
 	r.setSQLiteTimestamp("created_at", o.CreatedAt)
 	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
+	r.setSQLiteTimestamp("last_played_at ", o.LastPlayedAt)
+	r.setFloat64("continue_position", o.ContinuePosition)
 }
 
 type SceneStore struct {
@@ -1413,6 +1421,43 @@ func (qb *SceneStore) imageRepository() *imageRepository {
 		},
 		imageColumn: "cover",
 	}
+}
+
+func (qb *SceneStore) getContinuePosition(ctx context.Context, id int) (float64, error) {
+	q := dialect.From(qb.tableMgr.table).Select("continue_position").Where(goqu.Ex{"id": id})
+
+	const single = true
+	var ret float64
+	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+		if err := rows.Scan(&ret); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) SaveContinuePosition(ctx context.Context, id int, continuePosition float64) (float64, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"continue_position": continuePosition,
+	}); err != nil {
+		return 0, err
+	}
+
+	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"last_played_at": time.Now(),
+	}); err != nil {
+		return 0, err
+	}
+
+	return qb.getContinuePosition(ctx, id)
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {

@@ -175,6 +175,9 @@ type Mutation {
   """Resets the o-counter for a scene to 0. Returns the new value"""
   sceneResetO(id: ID!): Int!
 
+  """Updates continue position"""
+  sceneContinuePosition(id: ID!, continue_position: Float!): Float!
+
   """Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"""
   sceneGenerateScreenshot(id: ID!, at: Float): String!
 

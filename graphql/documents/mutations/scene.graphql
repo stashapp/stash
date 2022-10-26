@@ -20,6 +20,10 @@ mutation ScenesUpdate($input : [SceneUpdateInput!]!) {
   }
 }
 
+mutation SceneContinuePosition($id: ID!, $continue_position: Float!) {
+  sceneContinuePosition(id: $id, continue_position: $continue_position) 
+}
+
 mutation SceneIncrementO($id: ID!) {
   sceneIncrementO(id: $id) 
 }

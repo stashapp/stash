@@ -638,6 +638,27 @@ func (_m *SceneReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]in
 	return r0, r1
 }
 
+// SaveContinuePosition provides a mock function with given fields: ctx, id, conitnuePos
+func (_m *SceneReaderWriter) SaveContinuePosition(ctx context.Context, id int, conitnuePosition float64) (float64, error) {
+	ret := _m.Called(ctx, id)
+
+	var r0 float64
+	if rf, ok := ret.Get(0).(func(context.Context, int) float64); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(float64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // IncrementOCounter provides a mock function with given fields: ctx, id
 func (_m *SceneReaderWriter) IncrementOCounter(ctx context.Context, id int) (int, error) {
 	ret := _m.Called(ctx, id)

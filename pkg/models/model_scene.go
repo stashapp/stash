@@ -35,6 +35,9 @@ type Scene struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
+	LastPlayedAt     time.Time `json:"last_played_at"`
+	ContinuePosition float64   `json:"continue_position"`
+
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
@@ -132,16 +135,18 @@ func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 // ScenePartial represents part of a Scene object. It is used to update
 // the database entry.
 type ScenePartial struct {
-	Title     OptionalString
-	Details   OptionalString
-	URL       OptionalString
-	Date      OptionalDate
-	Rating    OptionalInt
-	Organized OptionalBool
-	OCounter  OptionalInt
-	StudioID  OptionalInt
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
+	Title            OptionalString
+	Details          OptionalString
+	URL              OptionalString
+	Date             OptionalDate
+	Rating           OptionalInt
+	Organized        OptionalBool
+	OCounter         OptionalInt
+	StudioID         OptionalInt
+	CreatedAt        OptionalTime
+	UpdatedAt        OptionalTime
+	ContinuePosition OptionalFloat64
+	LastPlayedAt     OptionalTime
 
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs

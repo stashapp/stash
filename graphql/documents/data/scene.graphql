@@ -15,7 +15,9 @@ fragment SceneData on Scene {
   }
   created_at
   updated_at
-
+  continue_position
+  last_played_at
+  
   files {
     ...VideoFileData
   }

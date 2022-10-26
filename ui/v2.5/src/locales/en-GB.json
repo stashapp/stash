@@ -535,6 +535,7 @@
       "scene_player": {
         "heading": "Scene Player",
         "options": {
+          "always_start_from_beginning": "Always start video from beginning",
           "auto_start_video": "Auto-start video",
           "auto_start_video_on_play_selected": {
             "description": "Auto-start scene videos when playing from queue, or playing selected or random from Scenes page",
@@ -819,6 +820,7 @@
   "interactive": "Interactive",
   "interactive_speed": "Interactive speed",
   "isMissing": "Is Missing",
+  "last_played_at": "Last Played At",
   "library": "Library",
   "loading": {
     "generic": "Loading…"

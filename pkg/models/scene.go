@@ -166,6 +166,7 @@ type SceneWriter interface {
 	IncrementOCounter(ctx context.Context, id int) (int, error)
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)
+	SaveContinuePosition(ctx context.Context, id int, continuePosition float64) (float64, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 	DestroyCover(ctx context.Context, sceneID int) error
