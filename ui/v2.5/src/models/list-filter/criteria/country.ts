@@ -1,3 +1,4 @@
+import { CriterionModifier } from "src/core/generated-graphql";
 import { getCountryByISO } from "src/utils";
 import { StringCriterion, StringCriterionOption } from "./criterion";
 
@@ -13,6 +14,13 @@ export class CountryCriterion extends StringCriterion {
   }
 
   public getLabelValue() {
-    return getCountryByISO(this.value) ?? this.value;
+    if (
+      this.modifier === CriterionModifier.Equals ||
+      this.modifier === CriterionModifier.NotEquals
+    ) {
+      return getCountryByISO(this.value) ?? this.value;
+    }
+
+    return super.getLabelValue();
   }
 }
