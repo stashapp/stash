@@ -175,7 +175,11 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
           <NumberFilter criterion={criterion} onValueChanged={onValueChanged} />
         );
       }
-      if (criterion instanceof CountryCriterion) {
+      if (
+        criterion instanceof CountryCriterion &&
+        (criterion.modifier === CriterionModifier.Equals ||
+          criterion.modifier === CriterionModifier.NotEquals)
+      ) {
         return (
           <CountrySelect
             value={criterion.value}
