@@ -272,9 +272,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // Video player destructor
     return () => {
-      const id = scene?.id!;
-      const continue_position = player?.currentTime()!;
-      if (scene) {
+      const id = sceneId.current;
+      if (id) {
+        const continue_position = player?.currentTime()!;
         sceneSaveContinuePosition({
           variables: {
             id,
@@ -287,7 +287,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         playerRef.current = undefined;
       }
     };
-  }, []);
+  }, [sceneSaveContinuePosition]);
 
   const start = useCallback(() => {
     const player = playerRef.current;
@@ -628,6 +628,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     scene,
     file,
     config?.autostartVideo,
+    config?.alwaysStartFromBeginning,
     looping,
     initialTimestamp,
     autoplay,
