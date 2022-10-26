@@ -318,7 +318,7 @@
       "triggers_on": "Déclenche sur"
     },
     "scraping": {
-      "entity_metadata": "{entityType} Métadonnées",
+      "entity_metadata": "Métadonnées {entityType}",
       "entity_scrapers": "{entityType} extraits",
       "excluded_tag_patterns_desc": "Expressions régulières de noms d'étiquettes à exclure des résultats de scraping",
       "excluded_tag_patterns_head": "Modèles d'étiquette excluse",
@@ -361,11 +361,11 @@
         "generating_from_paths": "Génération pour les scènes à partir des chemins suivants",
         "generating_scenes": "Génération pour {num} {scene}"
       },
-      "generate_desc": "Générer les images associées, images animées, vidéos, sous-titres *.vtt et autres fichiers.",
+      "generate_desc": "Générer les images, images animées, vidéos, sous-titres *.vtt et autres fichiers associés.",
       "generate_phashes_during_scan": "Générer des empreintes perceptuelles",
       "generate_phashes_during_scan_tooltip": "Pour la déduplication et l'identification de scènes.",
       "generate_previews_during_scan": "Générer des aperçus d'images animées",
-      "generate_previews_during_scan_tooltip": "Générer des aperçus WebP animés, requis uniquement si le type d'aperçu est défini sur Image animée.",
+      "generate_previews_during_scan_tooltip": "Générer des aperçus WebP animés, requis uniquement si le mode d'aperçu est défini sur Image animée.",
       "generate_sprites_during_scan": "Générer les images animées de progression",
       "generate_thumbnails_during_scan": "Générer des vignettes pour les images",
       "generate_video_previews_during_scan": "Générer les aperçus",
@@ -375,7 +375,7 @@
         "and_create_missing": "et créer les manquants",
         "create_missing": "Créer les manquants",
         "default_options": "Options par défaut",
-        "description": "Définir automatiquement les métadonnées de la scène en utilisant les sources Stash-Box et extracteur de contenu.",
+        "description": "Définir automatiquement les métadonnées des scènes en utilisant les sources Stash-Box et extracteur de contenu.",
         "explicit_set_description": "Les options suivantes seront utilisées si elles ne sont pas remplacées par les options spécifiques à la source.",
         "field": "Champ",
         "field_behaviour": "{strategy} {field}",
@@ -515,7 +515,7 @@
       },
       "preview_type": {
         "description": "Configuration des éléments du mur",
-        "heading": "Type d'aperçu",
+        "heading": "Mode d'aperçu",
         "options": {
           "animated": "Image animée",
           "static": "Image fixe",
