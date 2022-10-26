@@ -124,4 +124,5 @@ export type CriterionType =
   | "performer_age"
   | "duplicated"
   | "ignore_auto_tag"
-  | "file_count";
+  | "file_count"
+  | "description";

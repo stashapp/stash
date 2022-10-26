@@ -933,7 +933,8 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 			},
 		)
 
-		searchColumns := []string{"scenes.title", "scenes.details", "folders.path", "files.basename", "files_fingerprints.fingerprint", "scene_markers.title"}
+		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		searchColumns := []string{"scenes.title", "scenes.details", filepathColumn, "files_fingerprints.fingerprint", "scene_markers.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
