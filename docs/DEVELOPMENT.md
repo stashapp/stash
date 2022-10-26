@@ -43,9 +43,10 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW. For examp
 
 ## Building a release
 
-1. Run `make generate` to create generated files
-2. Run `make ui` to compile the frontend
-3. Run `make build` to build the executable for your current platform
+1. Run `make pre-ui` to install UI dependencies
+2. Run `make generate` to create generated files
+3. Run `make ui` to compile the frontend
+4. Run `make build` to build the executable for your current platform
 
 ## Cross compiling
 

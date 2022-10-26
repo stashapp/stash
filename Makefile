@@ -31,7 +31,7 @@ export CGO_ENABLED = 1
 
 .PHONY: release pre-build
 
-release: generate ui build-release
+release: pre-ui generate ui build-release
 
 pre-build:
 ifndef BUILD_DATE
