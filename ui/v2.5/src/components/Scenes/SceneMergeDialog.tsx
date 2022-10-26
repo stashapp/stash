@@ -10,10 +10,11 @@ import {
 } from "src/components/Shared";
 import { FormUtils } from "src/utils";
 import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks";
 import { faExchangeAlt, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import {
+  hasScrapedValues,
   ScrapeDialog,
   ScrapeDialogRow,
   ScrapedInputGroupRow,
@@ -227,7 +228,47 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     return convertGalleries(galleries.newValue);
   }, [galleries, convertGalleries]);
 
+  // ensure this is updated if fields are changed
+  const hasValues = useMemo(() => {
+    return hasScrapedValues([
+      title,
+      url,
+      date,
+      rating,
+      oCounter,
+      galleries,
+      studio,
+      performers,
+      movies,
+      tags,
+      details,
+      stashIDs,
+    ]);
+  }, [
+    title,
+    url,
+    date,
+    rating,
+    oCounter,
+    galleries,
+    studio,
+    performers,
+    movies,
+    tags,
+    details,
+    stashIDs,
+  ]);
+
   function renderScrapeRows() {
+    // ensure this is updated if we add more values
+    if (!hasValues) {
+      return (
+        <div>
+          <FormattedMessage id="dialogs.merge.empty_results" />
+        </div>
+      );
+    }
+
     return (
       <>
         <ScrapedInputGroupRow
@@ -373,11 +414,18 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     id: "actions.merge",
   });
 
+  const destinationLabel = !hasValues
+    ? ""
+    : intl.formatMessage({ id: "dialogs.merge.destination" });
+  const sourceLabel = !hasValues
+    ? ""
+    : intl.formatMessage({ id: "dialogs.merge.source" });
+
   return (
     <ScrapeDialog
       title={dialogTitle}
-      existingLabel={intl.formatMessage({ id: "dialogs.merge.destination" })}
-      scrapedLabel={intl.formatMessage({ id: "dialogs.merge.source" })}
+      existingLabel={destinationLabel}
+      scrapedLabel={sourceLabel}
       renderScrapeRows={renderScrapeRows}
       onClose={(apply) => {
         if (!apply) {

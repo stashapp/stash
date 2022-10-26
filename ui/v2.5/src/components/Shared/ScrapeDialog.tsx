@@ -65,6 +65,11 @@ export class ScrapeResult<T> {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function hasScrapedValues(values: ScrapeResult<any>[]) {
+  return values.some((r) => r.scraped);
+}
+
 export interface IHasName {
   name: string | undefined;
 }
