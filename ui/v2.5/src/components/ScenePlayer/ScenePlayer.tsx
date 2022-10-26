@@ -18,9 +18,7 @@ import "./persist-volume";
 import "./markers";
 import "./big-buttons";
 import cx from "classnames";
-import {
-  useSceneSaveContinuePosition,
-} from "src/core/StashService";
+import { useSceneSaveContinuePosition } from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
@@ -166,7 +164,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   );
 
   const maxLoopDuration = config?.maximumLoopDuration ?? 0;
-  
+
   const looping = useMemo(
     () =>
       !!file &&
@@ -274,9 +272,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // Video player destructor
     return () => {
-      const id = scene?.id!
-      const continue_position = player?.currentTime()!
-      if(scene) {
+      const id = scene?.id!;
+      const continue_position = player?.currentTime()!;
+      if (scene) {
         sceneSaveContinuePosition({
           variables: {
             id,
@@ -588,9 +586,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       loadCaptions(player);
     }
 
-    var startPosition = 0
+    var startPosition = 0;
     if (!alwaysStartFromBeginning && file.duration > scene.continue_position!) {
-      startPosition = scene.continue_position!
+      startPosition = scene.continue_position!;
     }
     player.currentTime(startPosition);
 

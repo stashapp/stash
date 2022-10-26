@@ -94,8 +94,12 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
   }
 
   function maybeRenderProgressBar() {
-    if (props.continuePosition && props.duration && props.duration > props.continuePosition) {
-      var percent = ((100 / props.duration) * props.continuePosition) + "%"
+    if (
+      props.continuePosition &&
+      props.duration &&
+      props.duration > props.continuePosition
+    ) {
+      var percent = (100 / props.duration) * props.continuePosition + "%";
       return (
         <span
           title={props.title}
