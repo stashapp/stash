@@ -286,6 +286,9 @@ input TagFilterType {
   """Filter by tag aliases"""
   aliases: StringCriterionInput
 
+  """Filter by tag description"""
+  description: StringCriterionInput
+
   """Filter to only include tags missing this property"""
   is_missing: String
 
