@@ -17,6 +17,7 @@ const SceneCreate: React.FC = () => {
     if (data?.findScene) {
       return {
         ...data.findScene,
+        paths: undefined,
         id: undefined,
       };
     }
