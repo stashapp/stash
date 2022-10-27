@@ -1,1 +1,9 @@
-{}
+{
+  "actions": {
+    "add": "Lisa",
+    "add_directory": "Lisa Kataloog",
+    "add_entity": "Lisa {entityType}",
+    "allow": "Luba",
+    "allow_temporarily": "Luba ajutiselt"
+  }
+}
