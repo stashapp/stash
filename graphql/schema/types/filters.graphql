@@ -178,6 +178,8 @@ input SceneFilterType {
   interactive_speed: IntCriterionInput
   """Filter by captions"""
   captions: StringCriterionInput
+  """Filter by continue position"""
+  continue_position: IntCriterionInput
   """Filter by view count"""
   view_count: IntCriterionInput
   """Filter by watch time (in seconds)"""

@@ -72,6 +72,8 @@ type SceneFilterType struct {
 	InteractiveSpeed *IntCriterionInput `json:"interactive_speed"`
 	// Filter by captions
 	Captions *StringCriterionInput `json:"captions"`
+	// Filter by continue position
+	ContinuePosition *IntCriterionInput `json:"continue_position"`
 	// Filter by view count
 	ViewCount *IntCriterionInput `json:"view_count"`
 	// Filter by watch time (in seconds)

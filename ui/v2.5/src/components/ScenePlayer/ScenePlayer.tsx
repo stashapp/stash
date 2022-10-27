@@ -265,10 +265,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   useEffect(() => {
     const player = playerRef.current;
     var watchTimer = window.setInterval(() => {
-      console.log(`trackTime: ${trackTime.current}`);
       if (trackTime.current) {
         watchTimeRef.current++;
-        console.log(`watchTime: ${watchTimeRef.current}`);
       }
     }, 1000); // when scene is playing incrememt watchTime every second
 
@@ -289,9 +287,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
       if (watchTimer) {
         clearInterval(watchTimer);
-        console.log(`destroyed timer`);
       }
-      console.log(`Stopped at watchTime`);
       if (id && watchTimeRef.current > ignoreInterval) {
         var watchTime = watchTimeRef.current;
         const continue_position = player?.currentTime()!;
@@ -488,7 +484,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function onPlay(this: VideoJsPlayer) {
       this.poster("");
-      console.log(`play hit.`);
       trackTime.current = true;
       if (scene?.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
@@ -615,6 +610,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
     player.currentTime(startPosition);
     watchTimeRef.current = 0;
+    trackTime.current = false;
 
     player.loop(looping);
     interactiveClient.setLooping(looping);

@@ -84,6 +84,7 @@ export function makeCriteria(type: CriterionType = "none") {
       return new ResolutionCriterion();
     case "average_resolution":
       return new AverageResolutionCriterion();
+    case "continue_position":
     case "duration":
     case "watch_time":
       return new DurationCriterion(new NumberCriterionOption(type, type));

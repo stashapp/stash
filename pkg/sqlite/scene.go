@@ -84,6 +84,7 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.StudioID = intFromPtr(o.StudioID)
 	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
+	r.ContinuePosition = o.ContinuePosition
 	r.WatchTime = o.WatchTime
 	r.ViewCount = o.ViewCount
 }
@@ -878,8 +879,9 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, sceneCaptionCriterionHandler(qb, sceneFilter.Captions))
 
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.ViewCount, "scenes.view_count", nil))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.ContinuePosition, "scenes.continue_position", nil))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.WatchTime, "scenes.watch_time", nil))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.ViewCount, "scenes.view_count", nil))
 
 	query.handleCriterion(ctx, sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
@@ -1434,39 +1436,39 @@ func (qb *SceneStore) imageRepository() *imageRepository {
 	}
 }
 
-func (qb *SceneStore) getContinuePosition(ctx context.Context, id int) (float64, error) {
-	q := dialect.From(qb.tableMgr.table).Select("continue_position").Where(goqu.Ex{"id": id})
+// func (qb *SceneStore) getContinuePosition(ctx context.Context, id int) (float64, error) {
+// 	q := dialect.From(qb.tableMgr.table).Select("continue_position").Where(goqu.Ex{"id": id})
 
-	const single = true
-	var ret float64
-	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		if err := rows.Scan(&ret); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return 0, err
-	}
+// 	const single = true
+// 	var ret float64
+// 	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+// 		if err := rows.Scan(&ret); err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	}); err != nil {
+// 		return 0, err
+// 	}
 
-	return ret, nil
-}
+// 	return ret, nil
+// }
 
-func (qb *SceneStore) getWatchTime(ctx context.Context, id int) (float64, error) {
-	q := dialect.From(qb.tableMgr.table).Select("watch_time").Where(goqu.Ex{"id": id})
+// func (qb *SceneStore) getWatchTime(ctx context.Context, id int) (float64, error) {
+// 	q := dialect.From(qb.tableMgr.table).Select("watch_time").Where(goqu.Ex{"id": id})
 
-	const single = true
-	var ret float64
-	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
-		if err := rows.Scan(&ret); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
-		return 0, err
-	}
+// 	const single = true
+// 	var ret float64
+// 	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
+// 		if err := rows.Scan(&ret); err != nil {
+// 			return err
+// 		}
+// 		return nil
+// 	}); err != nil {
+// 		return 0, err
+// 	}
 
-	return ret, nil
-}
+// 	return ret, nil
+// }
 
 func (qb *SceneStore) getViewCount(ctx context.Context, id int) (int, error) {
 	q := dialect.From(qb.tableMgr.table).Select("view_count").Where(goqu.Ex{"id": id})

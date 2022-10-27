@@ -589,6 +589,7 @@
     }
   },
   "configuration": "Configuration",
+  "continue_position": "Continue Position",
   "countables": {
     "files": "{count, plural, one {File} other {Files}}",
     "galleries": "{count, plural, one {Gallery} other {Galleries}}",
