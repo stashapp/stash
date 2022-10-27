@@ -37,6 +37,8 @@ type Scene struct {
 
 	LastPlayedAt     time.Time `json:"last_played_at"`
 	ContinuePosition float64   `json:"continue_position"`
+	WatchTime        float64   `json:"watch_time"`
+	ViewCount        int       `json:"view_count"`
 
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
@@ -146,6 +148,8 @@ type ScenePartial struct {
 	CreatedAt        OptionalTime
 	UpdatedAt        OptionalTime
 	ContinuePosition OptionalFloat64
+	WatchTime        OptionalFloat64
+	ViewCount        OptionalInt
 	LastPlayedAt     OptionalTime
 
 	GalleryIDs    *UpdateIDs

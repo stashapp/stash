@@ -61,6 +61,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   autostartVideoOnPlaySelected
   continuePlaylistDefault
   alwaysStartFromBeginning
+  ignoreInterval
   showStudioAsText
   css
   cssEnabled

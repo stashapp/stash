@@ -55,6 +55,8 @@ type Scene struct {
 	Cover      string           `json:"cover,omitempty"`
 	CreatedAt  json.JSONTime    `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime    `json:"updated_at,omitempty"`
+	ViewCount  int              `json:"view_count,omitempty"`
+	WatchTime  string           `json:"watch_time,omitempty"`
 	StashIDs   []models.StashID `json:"stash_ids,omitempty"`
 }
 

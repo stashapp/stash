@@ -17,7 +17,9 @@ fragment SceneData on Scene {
   updated_at
   continue_position
   last_played_at
-  
+  watch_time
+  view_count
+
   files {
     ...VideoFileData
   }

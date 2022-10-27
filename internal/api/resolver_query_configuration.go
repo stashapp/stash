@@ -139,6 +139,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 	autostartVideo := config.GetAutostartVideo()
 	autostartVideoOnPlaySelected := config.GetAutostartVideoOnPlaySelected()
 	alwaysStartFromBeginning := config.GetAlwaysStartFromBeginning()
+	ignoreInterval := config.GetIgnoreInterval()
 	continuePlaylistDefault := config.GetContinuePlaylistDefault()
 	showStudioAsText := config.GetShowStudioAsText()
 	css := config.GetCSS()
@@ -165,6 +166,7 @@ func makeConfigInterfaceResult() *ConfigInterfaceResult {
 		ShowStudioAsText:             &showStudioAsText,
 		AutostartVideoOnPlaySelected: &autostartVideoOnPlaySelected,
 		AlwaysStartFromBeginning:     &alwaysStartFromBeginning,
+		IgnoreInterval:               &ignoreInterval,
 		ContinuePlaylistDefault:      &continuePlaylistDefault,
 		CSS:                          &css,
 		CSSEnabled:                   &cssEnabled,

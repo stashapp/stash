@@ -18,7 +18,7 @@ import "./persist-volume";
 import "./markers";
 import "./big-buttons";
 import cx from "classnames";
-import { useSceneSaveContinuePosition } from "src/core/StashService";
+import { useSceneSaveActivity } from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
@@ -141,7 +141,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const playerRef = useRef<VideoJsPlayer | undefined>();
   const sceneId = useRef<string | undefined>();
   const skipButtonsRef = useRef<any>();
-  const [sceneSaveContinuePosition] = useSceneSaveContinuePosition();
+  const [sceneSaveActivity] = useSceneSaveActivity();
 
   const [time, setTime] = useState(0);
 
@@ -157,6 +157,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const [ready, setReady] = useState(false);
   const started = useRef(false);
   const interactiveReady = useRef(false);
+
+  const watchTimeRef = useRef(0);
+  const trackTime = useRef(false);
+
+  const ignoreInterval = config?.ignoreInterval ?? 0;
 
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
@@ -259,6 +264,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
     const player = playerRef.current;
+    var watchTimer = window.setInterval(() => {
+      console.log(`trackTime: ${trackTime.current}`);
+      if (trackTime.current) {
+        watchTimeRef.current++;
+        console.log(`watchTime: ${watchTimeRef.current}`);
+      }
+    }, 1000); // when scene is playing incrememt watchTime every second
+
     if (player) {
       player.seekButtons({
         forward: 10,
@@ -273,12 +286,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // Video player destructor
     return () => {
       const id = sceneId.current;
-      if (id) {
+
+      if (watchTimer) {
+        clearInterval(watchTimer);
+        console.log(`destroyed timer`);
+      }
+      console.log(`Stopped at watchTime`);
+      if (id && watchTimeRef.current > ignoreInterval) {
+        var watchTime = watchTimeRef.current;
         const continue_position = player?.currentTime()!;
-        sceneSaveContinuePosition({
+        sceneSaveActivity({
           variables: {
             id,
             continue_position,
+            watchTime,
           },
         });
       }
@@ -287,7 +308,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         playerRef.current = undefined;
       }
     };
-  }, [sceneSaveContinuePosition]);
+  }, [sceneSaveActivity, ignoreInterval]);
 
   const start = useCallback(() => {
     const player = playerRef.current;
@@ -467,6 +488,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function onPlay(this: VideoJsPlayer) {
       this.poster("");
+      console.log(`play hit.`);
+      trackTime.current = true;
       if (scene?.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
       }
@@ -474,6 +497,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     function pause() {
       interactiveClient.pause();
+      trackTime.current = false;
     }
 
     function timeupdate(this: VideoJsPlayer) {
@@ -585,12 +609,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (scene.captions?.length! > 0) {
       loadCaptions(player);
     }
-
     var startPosition = 0;
     if (!alwaysStartFromBeginning && file.duration > scene.continue_position!) {
       startPosition = scene.continue_position!;
     }
     player.currentTime(startPosition);
+    watchTimeRef.current = 0;
 
     player.loop(looping);
     interactiveClient.setLooping(looping);

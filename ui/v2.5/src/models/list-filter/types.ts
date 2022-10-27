@@ -108,6 +108,8 @@ export type CriterionType =
   | "interactive"
   | "interactive_speed"
   | "captions"
+  | "view_count"
+  | "watch_time"
   | "name"
   | "details"
   | "title"

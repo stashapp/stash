@@ -20,8 +20,8 @@ mutation ScenesUpdate($input : [SceneUpdateInput!]!) {
   }
 }
 
-mutation SceneContinuePosition($id: ID!, $continue_position: Float!) {
-  sceneContinuePosition(id: $id, continue_position: $continue_position) 
+mutation SceneSaveActivity($id: ID!, $continue_position: Float!, $watchTime: Float!) {
+  sceneSaveActivity(id: $id, continue_position: $continue_position, watchTime: $watchTime) 
 }
 
 mutation SceneIncrementO($id: ID!) {

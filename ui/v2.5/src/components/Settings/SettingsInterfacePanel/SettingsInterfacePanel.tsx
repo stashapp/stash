@@ -222,6 +222,22 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={iface.alwaysStartFromBeginning ?? undefined}
           onChange={(v) => saveInterface({ alwaysStartFromBeginning: v })}
         />
+        <ModalSetting<number>
+          id="ignore-interval"
+          headingID="config.ui.ignore_interval.heading"
+          subHeadingID="config.ui.ignore_interval.description"
+          value={iface.ignoreInterval ?? undefined}
+          onChange={(v) => saveInterface({ ignoreInterval: v })}
+          renderField={(value, setValue) => (
+            <DurationInput
+              numericValue={value}
+              onValueChange={(interval) => setValue(interval ?? 0)}
+            />
+          )}
+          renderValue={(v) => {
+            return <span>{DurationUtils.secondsToString(v ?? 0)}</span>;
+          }}
+        />
         <BooleanSetting
           id="auto-start-video"
           headingID="config.ui.scene_player.options.auto_start_video"

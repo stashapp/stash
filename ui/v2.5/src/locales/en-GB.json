@@ -481,6 +481,10 @@
         "description": "Handy connection key to use for interactive scenes. Setting this key will allow Stash to share your current scene information with handyfeeling.com",
         "heading": "Handy Connection Key"
       },
+      "ignore_interval": {
+        "description": "The interval (in seconds) in which a scene must be played before activity is tracked",
+        "heading": "Ignore Interval"
+      },
       "image_lightbox": {
         "heading": "Image Lightbox"
       },
@@ -1065,6 +1069,8 @@
   "url": "URL",
   "videos": "Videos",
   "view_all": "View All",
+  "view_count": "View Count",
+  "watch_time": "Watch Time",
   "weight": "Weight",
   "years_old": "years old",
   "zip_file_count": "Zip File Count"
