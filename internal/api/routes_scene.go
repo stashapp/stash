@@ -377,14 +377,14 @@ func (rs sceneRoutes) Caption(w http.ResponseWriter, r *http.Request, lang strin
 		sub, err := video.ReadSubs(caption.Path(s.Path))
 		if err != nil {
 			logger.Warnf("error while reading subs: %v", err)
-			http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		var b bytes.Buffer
 		err = sub.WriteToWebVTT(&b)
 		if err != nil {
-			http.Error(w, readTxnErr.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
