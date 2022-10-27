@@ -250,13 +250,15 @@ const ScenePage: React.FC<IProps> = ({
         <Icon icon={faEllipsisV} />
       </Dropdown.Toggle>
       <Dropdown.Menu className="bg-secondary text-white">
-        <Dropdown.Item
-          key="rescan"
-          className="bg-secondary text-white"
-          onClick={() => onRescan()}
-        >
-          <FormattedMessage id="actions.rescan" />
-        </Dropdown.Item>
+        {!!scene.files.length && (
+          <Dropdown.Item
+            key="rescan"
+            className="bg-secondary text-white"
+            onClick={() => onRescan()}
+          >
+            <FormattedMessage id="actions.rescan" />
+          </Dropdown.Item>
+        )}
         <Dropdown.Item
           key="generate"
           className="bg-secondary text-white"
