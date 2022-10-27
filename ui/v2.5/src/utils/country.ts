@@ -1,27 +1,5 @@
 import Countries from "i18n-iso-countries";
-import EN from "i18n-iso-countries/langs/en.json";
-import DE from "i18n-iso-countries/langs/de.json";
-import ES from "i18n-iso-countries/langs/es.json";
-import IT from "i18n-iso-countries/langs/it.json";
-import PT from "i18n-iso-countries/langs/pt.json";
-import SV from "i18n-iso-countries/langs/sv.json";
-import ZH from "i18n-iso-countries/langs/zh.json";
-import TW from "src/locales/countryNames/zh-TW.json";
-
-Countries.registerLocale(EN);
-Countries.registerLocale(DE);
-Countries.registerLocale(ES);
-Countries.registerLocale(IT);
-Countries.registerLocale(PT);
-Countries.registerLocale(SV);
-Countries.registerLocale(ZH);
-Countries.registerLocale(TW);
-
-const getLocaleCode = (code: string) => {
-  if (code === "zh-CN") return "zh";
-  if (code === "zh-TW") return "tw";
-  return code.slice(0, 2);
-};
+import { getLocaleCode } from "src/locales";
 
 export const getCountryByISO = (
   iso: string | null | undefined,
@@ -29,13 +7,26 @@ export const getCountryByISO = (
 ): string | undefined => {
   if (!iso) return;
 
-  return Countries.getName(iso, getLocaleCode(locale));
+  const ret = Countries.getName(iso, getLocaleCode(locale));
+  if (ret) {
+    return ret;
+  }
+
+  // fallback to english if locale is not en
+  if (locale !== "en") {
+    return Countries.getName(iso, "en");
+  }
 };
 
-export const getCountries = (locale: string = "en") =>
-  Object.entries(Countries.getNames(getLocaleCode(locale))).map(
-    ([code, name]) => ({
-      label: name,
-      value: code,
-    })
-  );
+export const getCountries = (locale: string = "en") => {
+  let countries = Countries.getNames(getLocaleCode(locale));
+
+  if (!countries.length) {
+    countries = Countries.getNames("en");
+  }
+
+  return Object.entries(countries).map(([code, name]) => ({
+    label: name,
+    value: code,
+  }));
+};

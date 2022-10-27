@@ -1,3 +1,4 @@
+import { IntlShape } from "react-intl";
 import { CriterionModifier } from "src/core/generated-graphql";
 import { getCountryByISO } from "src/utils";
 import { StringCriterion, StringCriterionOption } from "./criterion";
@@ -13,14 +14,14 @@ export class CountryCriterion extends StringCriterion {
     super(countryCriterionOption);
   }
 
-  public getLabelValue() {
+  public getLabelValue(intl: IntlShape) {
     if (
       this.modifier === CriterionModifier.Equals ||
       this.modifier === CriterionModifier.NotEquals
     ) {
-      return getCountryByISO(this.value) ?? this.value;
+      return getCountryByISO(this.value, intl.locale) ?? this.value;
     }
 
-    return super.getLabelValue();
+    return super.getLabelValue(intl);
   }
 }
