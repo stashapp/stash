@@ -60,7 +60,7 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 
 	performer := models.Performer{
 		ID:   performerID,
-		Name: models.NullString(performerName),
+		Name: performerName,
 	}
 
 	organized := false
@@ -140,7 +140,7 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 
 	performer := models.Performer{
 		ID:   performerID,
-		Name: models.NullString(performerName),
+		Name: performerName,
 	}
 
 	organized := false
@@ -221,7 +221,7 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 
 	performer := models.Performer{
 		ID:   performerID,
-		Name: models.NullString(performerName),
+		Name: performerName,
 	}
 
 	organized := false

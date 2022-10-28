@@ -22,14 +22,14 @@ func TestGalleryPerformers(t *testing.T) {
 	const performerID = 2
 	performer := models.Performer{
 		ID:   performerID,
-		Name: models.NullString(performerName),
+		Name: performerName,
 	}
 
 	const reversedPerformerName = "name performer"
 	const reversedPerformerID = 3
 	reversedPerformer := models.Performer{
 		ID:   reversedPerformerID,
-		Name: models.NullString(reversedPerformerName),
+		Name: reversedPerformerName,
 	}
 
 	testTables := generateTestTable(performerName, galleryExt)

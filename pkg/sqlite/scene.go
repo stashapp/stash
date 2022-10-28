@@ -317,12 +317,6 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 }
 
 func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
-	// delete all related table rows
-	// TODO - this should be handled by a delete cascade
-	if err := qb.performersRepository().destroy(ctx, []int{id}); err != nil {
-		return err
-	}
-
 	// scene markers should be handled prior to calling destroy
 	// galleries should be handled prior to calling destroy
 
