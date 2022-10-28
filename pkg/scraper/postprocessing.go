@@ -66,6 +66,8 @@ func (c Cache) postScrapePerformer(ctx context.Context, p models.ScrapedPerforme
 		logger.Warnf("Could not set image using URL %s: %s", *p.Image, err.Error())
 	}
 
+	p.Country = resolveCountryName(p.Country)
+
 	return p, nil
 }
 
@@ -97,6 +99,8 @@ func (c Cache) postScrapeScenePerformer(ctx context.Context, p models.ScrapedPer
 		return err
 	}
 	p.Tags = tags
+
+	p.Country = resolveCountryName(p.Country)
 
 	return nil
 }

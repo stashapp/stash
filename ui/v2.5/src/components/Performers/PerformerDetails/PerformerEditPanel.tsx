@@ -20,9 +20,9 @@ import {
   CollapseButton,
   TagSelect,
   URLField,
+  CountrySelect,
 } from "src/components/Shared";
 import { ImageUtils, getStashIDs } from "src/utils";
-import { getCountryByISO } from "src/utils/country";
 import { useToast } from "src/hooks";
 import { Prompt, useHistory } from "react-router-dom";
 import { useFormik } from "formik";
@@ -545,7 +545,6 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     const result: GQL.ScrapedPerformerDataFragment = {
       ...performerResult,
       images: performerResult.images ?? undefined,
-      country: getCountryByISO(performerResult.country),
       __typename: "ScrapedPerformer",
     };
 
@@ -880,7 +879,19 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
         {renderTextField("birthdate", "Birthdate", "YYYY-MM-DD")}
         {renderTextField("death_date", "Death Date", "YYYY-MM-DD")}
-        {renderTextField("country", "Country")}
+
+        <Form.Group as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="country" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <CountrySelect
+              value={formik.getFieldProps("country").value}
+              onChange={(value) => formik.setFieldValue("country", value)}
+            />
+          </Col>
+        </Form.Group>
+
         {renderTextField("ethnicity", "Ethnicity")}
         {renderTextField("hair_color", "Hair Color")}
         {renderTextField("eye_color", "Eye Color")}
