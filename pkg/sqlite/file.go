@@ -796,7 +796,8 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 	distinctIDs(&query, fileTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"folders.path", "files.basename"}
+		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		searchColumns := []string{filepathColumn}
 		query.parseQueryString(searchColumns, *q)
 	}
 
