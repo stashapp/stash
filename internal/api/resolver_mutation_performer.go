@@ -62,7 +62,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 		newPerformer.URL = *input.URL
 	}
 	if input.Gender != nil {
-		newPerformer.Gender = input.Gender.String()
+		newPerformer.Gender = *input.Gender
 	}
 	if input.Birthdate != nil {
 		d := models.NewDate(*input.Birthdate)

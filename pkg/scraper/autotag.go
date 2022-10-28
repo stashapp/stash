@@ -41,8 +41,9 @@ func autotagMatchPerformers(ctx context.Context, path string, performerReader ma
 			Name:     &pp.Name,
 			StoredID: &id,
 		}
-		if pp.Gender != "" {
-			sp.Gender = &pp.Gender
+		if pp.Gender.IsValid() {
+			v := pp.Gender.String()
+			sp.Gender = &v
 		}
 
 		ret = append(ret, sp)

@@ -69,7 +69,7 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 		ret.DeathDate = &d
 	}
 	if performer.Gender != nil {
-		ret.Gender = *performer.Gender
+		ret.Gender = models.GenderEnum(*performer.Gender)
 	}
 	if performer.Ethnicity != nil {
 		ret.Ethnicity = *performer.Ethnicity

@@ -279,7 +279,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Checksum:     md5,
 				Birthdate:    dateToDatePtr(models.NewDate(*nextVal())),
 				DeathDate:    dateToDatePtr(models.NewDate(*nextVal())),
-				Gender:       *nextVal(),
+				Gender:       models.GenderEnum(*nextVal()),
 				Ethnicity:    *nextVal(),
 				Country:      *nextVal(),
 				EyeColor:     *nextVal(),

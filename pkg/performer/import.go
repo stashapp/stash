@@ -189,7 +189,7 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	newPerformer := models.Performer{
 		Name:          performerJSON.Name,
 		Checksum:      checksum,
-		Gender:        performerJSON.Gender,
+		Gender:        models.GenderEnum(performerJSON.Gender),
 		URL:           performerJSON.URL,
 		Ethnicity:     performerJSON.Ethnicity,
 		Country:       performerJSON.Country,

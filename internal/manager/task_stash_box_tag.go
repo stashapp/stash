@@ -191,7 +191,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				Ethnicity:    getString(performer.Ethnicity),
 				EyeColor:     getString(performer.EyeColor),
 				FakeTits:     getString(performer.FakeTits),
-				Gender:       getString(performer.Gender),
+				Gender:       models.GenderEnum(getString(performer.Gender)),
 				Height:       getString(performer.Height),
 				Instagram:    getString(performer.Instagram),
 				Measurements: getString(performer.Measurements),

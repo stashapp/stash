@@ -966,8 +966,9 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.FakeTits != "" {
 		draft.BreastType = &performer.FakeTits
 	}
-	if performer.Gender != "" {
-		draft.Gender = &performer.Gender
+	if performer.Gender.IsValid() {
+		v := performer.Gender.String()
+		draft.Gender = &v
 	}
 	if performer.HairColor != "" {
 		draft.HairColor = &performer.HairColor

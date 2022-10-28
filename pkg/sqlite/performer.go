@@ -55,7 +55,9 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
 	r.Checksum = o.Checksum
 	r.Name = zero.StringFrom(o.Name)
-	r.Gender = zero.StringFrom(o.Gender)
+	if o.Gender.IsValid() {
+		r.Gender = zero.StringFrom(o.Gender.String())
+	}
 	r.URL = zero.StringFrom(o.URL)
 	r.Twitter = zero.StringFrom(o.Twitter)
 	r.Instagram = zero.StringFrom(o.Instagram)
@@ -90,7 +92,7 @@ func (r *performerRow) resolve() *models.Performer {
 		ID:            r.ID,
 		Checksum:      r.Checksum,
 		Name:          r.Name.String,
-		Gender:        r.Gender.String,
+		Gender:        models.GenderEnum(r.Gender.String),
 		URL:           r.URL.String,
 		Twitter:       r.Twitter.String,
 		Instagram:     r.Instagram.String,

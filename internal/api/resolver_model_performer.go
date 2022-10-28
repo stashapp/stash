@@ -9,19 +9,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*models.GenderEnum, error) {
-	var ret models.GenderEnum
-
-	if obj.Gender != "" {
-		ret = models.GenderEnum(obj.Gender)
-		if ret.IsValid() {
-			return &ret, nil
-		}
-	}
-
-	return nil, nil
-}
-
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.Birthdate != nil {
 		ret := obj.Birthdate.String()

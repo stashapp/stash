@@ -19,7 +19,7 @@ type ImageStashIDGetter interface {
 func ToJSON(ctx context.Context, reader ImageStashIDGetter, performer *models.Performer) (*jsonschema.Performer, error) {
 	newPerformerJSON := jsonschema.Performer{
 		Name:          performer.Name,
-		Gender:        performer.Gender,
+		Gender:        performer.Gender.String(),
 		URL:           performer.URL,
 		Ethnicity:     performer.Ethnicity,
 		Country:       performer.Country,
