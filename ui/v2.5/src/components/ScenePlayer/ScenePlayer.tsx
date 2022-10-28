@@ -264,7 +264,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
     const player = playerRef.current;
-    var playDurationr = window.setInterval(() => {
+    var playDurationHandler = window.setInterval(() => {
       if (trackTime.current) {
         playDurationRef.current++;
       }
@@ -284,9 +284,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // Video player destructor
     return () => {
       if (playerRef.current) {
-        if (playDurationr) {
-          clearInterval(playDurationr);
-        }
+        clearInterval(playDurationHandler);
         const id = sceneId.current;
         if (id && playDurationRef.current > ignoreInterval) {
           var playDuration = playDurationRef.current;
