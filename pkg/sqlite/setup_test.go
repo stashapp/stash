@@ -1275,6 +1275,13 @@ func getIgnoreAutoTag(index int) bool {
 	return index%5 == 0
 }
 
+func performerStashID(i int) models.StashID {
+	return models.StashID{
+		StashID:  getPerformerStringValue(i, "stashid"),
+		Endpoint: getPerformerStringValue(i, "endpoint"),
+	}
+}
+
 // createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(ctx context.Context, n int, o int) error {
 	pqb := db.Performer
@@ -1315,6 +1322,14 @@ func createPerformers(ctx context.Context, n int, o int) error {
 
 		if err != nil {
 			return fmt.Errorf("Error creating performer %v+: %s", performer, err.Error())
+		}
+
+		if (index+1)%5 != 0 {
+			if err := pqb.UpdateStashIDs(ctx, performer.ID, []models.StashID{
+				performerStashID(i),
+			}); err != nil {
+				return fmt.Errorf("setting performer stash ids: %w", err)
+			}
 		}
 
 		performerIDs = append(performerIDs, performer.ID)

@@ -830,7 +830,11 @@ func (qb *PerformerStore) FindByStashID(ctx context.Context, stashID models.Stas
 }
 
 func (qb *PerformerStore) FindByStashIDStatus(ctx context.Context, hasStashID bool, stashboxEndpoint string) ([]*models.Performer, error) {
-	sq := dialect.From(performersStashIDsJoinTable).Select(performersStashIDsJoinTable.Col(performerIDColumn))
+	table := qb.table()
+	sq := dialect.From(table).LeftJoin(
+		performersStashIDsJoinTable,
+		goqu.On(table.Col(idColumn).Eq(performersStashIDsJoinTable.Col(performerIDColumn))),
+	).Select(table.Col(idColumn))
 
 	if hasStashID {
 		sq = sq.Where(

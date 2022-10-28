@@ -12,11 +12,242 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
+
+func Test_PerformerStore_Update(t *testing.T) {
+	var (
+		name          = "name"
+		gender        = models.GenderEnumFemale
+		checksum      = "checksum"
+		details       = "details"
+		url           = "url"
+		twitter       = "twitter"
+		instagram     = "instagram"
+		rating        = 3
+		ethnicity     = "ethnicity"
+		country       = "country"
+		eyeColor      = "eyeColor"
+		height        = "height"
+		measurements  = "measurements"
+		fakeTits      = "fakeTits"
+		careerLength  = "careerLength"
+		tattoos       = "tattoos"
+		piercings     = "piercings"
+		aliases       = "aliases"
+		hairColor     = "hairColor"
+		weight        = 123
+		ignoreAutoTag = true
+		favorite      = true
+		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		birthdate = models.NewDate("2003-02-01")
+		deathdate = models.NewDate("2023-02-01")
+	)
+
+	tests := []struct {
+		name          string
+		updatedObject *models.Performer
+		wantErr       bool
+	}{
+		{
+			"full",
+			&models.Performer{
+				ID:            performerIDs[performerIdxWithGallery],
+				Name:          name,
+				Checksum:      checksum,
+				Gender:        gender,
+				URL:           url,
+				Twitter:       twitter,
+				Instagram:     instagram,
+				Birthdate:     &birthdate,
+				Ethnicity:     ethnicity,
+				Country:       country,
+				EyeColor:      eyeColor,
+				Height:        height,
+				Measurements:  measurements,
+				FakeTits:      fakeTits,
+				CareerLength:  careerLength,
+				Tattoos:       tattoos,
+				Piercings:     piercings,
+				Aliases:       aliases,
+				Favorite:      favorite,
+				Rating:        &rating,
+				Details:       details,
+				DeathDate:     &deathdate,
+				HairColor:     hairColor,
+				Weight:        &weight,
+				IgnoreAutoTag: ignoreAutoTag,
+				CreatedAt:     createdAt,
+				UpdatedAt:     updatedAt,
+			},
+			false,
+		},
+		{
+			"clear all",
+			&models.Performer{
+				ID: performerIDs[performerIdxWithGallery],
+			},
+			false,
+		},
+	}
+
+	qb := db.Performer
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			copy := *tt.updatedObject
+
+			if err := qb.Update(ctx, tt.updatedObject); (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Update() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			s, err := qb.Find(ctx, tt.updatedObject.ID)
+			if err != nil {
+				t.Errorf("PerformerStore.Find() error = %v", err)
+			}
+
+			assert.Equal(copy, *s)
+		})
+	}
+}
+
+func Test_PerformerStore_UpdatePartial(t *testing.T) {
+	var (
+		name          = "name"
+		gender        = models.GenderEnumFemale
+		checksum      = "checksum"
+		details       = "details"
+		url           = "url"
+		twitter       = "twitter"
+		instagram     = "instagram"
+		rating        = 3
+		ethnicity     = "ethnicity"
+		country       = "country"
+		eyeColor      = "eyeColor"
+		height        = "height"
+		measurements  = "measurements"
+		fakeTits      = "fakeTits"
+		careerLength  = "careerLength"
+		tattoos       = "tattoos"
+		piercings     = "piercings"
+		aliases       = "aliases"
+		hairColor     = "hairColor"
+		weight        = 123
+		ignoreAutoTag = true
+		favorite      = true
+		createdAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt     = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+
+		birthdate = models.NewDate("2003-02-01")
+		deathdate = models.NewDate("2023-02-01")
+	)
+
+	tests := []struct {
+		name    string
+		id      int
+		partial models.PerformerPartial
+		want    models.Performer
+		wantErr bool
+	}{
+		{
+			"full",
+			performerIDs[performerIdxWithDupName],
+			models.PerformerPartial{
+				Name:          models.NewOptionalString(name),
+				Checksum:      models.NewOptionalString(checksum),
+				Gender:        models.NewOptionalString(gender.String()),
+				URL:           models.NewOptionalString(url),
+				Twitter:       models.NewOptionalString(twitter),
+				Instagram:     models.NewOptionalString(instagram),
+				Birthdate:     models.NewOptionalDate(birthdate),
+				Ethnicity:     models.NewOptionalString(ethnicity),
+				Country:       models.NewOptionalString(country),
+				EyeColor:      models.NewOptionalString(eyeColor),
+				Height:        models.NewOptionalString(height),
+				Measurements:  models.NewOptionalString(measurements),
+				FakeTits:      models.NewOptionalString(fakeTits),
+				CareerLength:  models.NewOptionalString(careerLength),
+				Tattoos:       models.NewOptionalString(tattoos),
+				Piercings:     models.NewOptionalString(piercings),
+				Aliases:       models.NewOptionalString(aliases),
+				Favorite:      models.NewOptionalBool(favorite),
+				Rating:        models.NewOptionalInt(rating),
+				Details:       models.NewOptionalString(details),
+				DeathDate:     models.NewOptionalDate(deathdate),
+				HairColor:     models.NewOptionalString(hairColor),
+				Weight:        models.NewOptionalInt(weight),
+				IgnoreAutoTag: models.NewOptionalBool(ignoreAutoTag),
+				CreatedAt:     models.NewOptionalTime(createdAt),
+				UpdatedAt:     models.NewOptionalTime(updatedAt),
+			},
+			models.Performer{
+				ID:            performerIDs[performerIdxWithDupName],
+				Name:          name,
+				Checksum:      checksum,
+				Gender:        gender,
+				URL:           url,
+				Twitter:       twitter,
+				Instagram:     instagram,
+				Birthdate:     &birthdate,
+				Ethnicity:     ethnicity,
+				Country:       country,
+				EyeColor:      eyeColor,
+				Height:        height,
+				Measurements:  measurements,
+				FakeTits:      fakeTits,
+				CareerLength:  careerLength,
+				Tattoos:       tattoos,
+				Piercings:     piercings,
+				Aliases:       aliases,
+				Favorite:      favorite,
+				Rating:        &rating,
+				Details:       details,
+				DeathDate:     &deathdate,
+				HairColor:     hairColor,
+				Weight:        &weight,
+				IgnoreAutoTag: ignoreAutoTag,
+				CreatedAt:     createdAt,
+				UpdatedAt:     updatedAt,
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		qb := db.Performer
+
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			got, err := qb.UpdatePartial(ctx, tt.id, tt.partial)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.UpdatePartial() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			assert.Equal(tt.want, *got)
+
+			s, err := qb.Find(ctx, tt.id)
+			if err != nil {
+				t.Errorf("PerformerStore.Find() error = %v", err)
+			}
+
+			assert.Equal(tt.want, *s)
+		})
+	}
+}
 
 func TestPerformerFindBySceneID(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
@@ -29,12 +260,77 @@ func TestPerformerFindBySceneID(t *testing.T) {
 			t.Errorf("Error finding performer: %s", err.Error())
 		}
 
-		assert.Equal(t, 1, len(performers))
+		if !assert.Equal(t, 1, len(performers)) {
+			return nil
+		}
+
 		performer := performers[0]
 
 		assert.Equal(t, getPerformerStringValue(performerIdxWithScene, "Name"), performer.Name)
 
 		performers, err = pqb.FindBySceneID(ctx, 0)
+
+		if err != nil {
+			t.Errorf("Error finding performer: %s", err.Error())
+		}
+
+		assert.Equal(t, 0, len(performers))
+
+		return nil
+	})
+}
+
+func TestPerformerFindByImageID(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		pqb := db.Performer
+		imageID := imageIDs[imageIdxWithPerformer]
+
+		performers, err := pqb.FindByImageID(ctx, imageID)
+
+		if err != nil {
+			t.Errorf("Error finding performer: %s", err.Error())
+		}
+
+		if !assert.Equal(t, 1, len(performers)) {
+			return nil
+		}
+
+		performer := performers[0]
+
+		assert.Equal(t, getPerformerStringValue(performerIdxWithImage, "Name"), performer.Name)
+
+		performers, err = pqb.FindByImageID(ctx, 0)
+
+		if err != nil {
+			t.Errorf("Error finding performer: %s", err.Error())
+		}
+
+		assert.Equal(t, 0, len(performers))
+
+		return nil
+	})
+}
+
+func TestPerformerFindByGalleryID(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		pqb := db.Performer
+		galleryID := galleryIDs[galleryIdxWithPerformer]
+
+		performers, err := pqb.FindByGalleryID(ctx, galleryID)
+
+		if err != nil {
+			t.Errorf("Error finding performer: %s", err.Error())
+		}
+
+		if !assert.Equal(t, 1, len(performers)) {
+			return nil
+		}
+
+		performer := performers[0]
+
+		assert.Equal(t, getPerformerStringValue(performerIdxWithGallery, "Name"), performer.Name)
+
+		performers, err = pqb.FindByGalleryID(ctx, 0)
 
 		if err != nil {
 			t.Errorf("Error finding performer: %s", err.Error())
@@ -274,7 +570,7 @@ func TestPerformerQueryForAutoTag(t *testing.T) {
 }
 
 func TestPerformerUpdatePerformerImage(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
+	if err := withRollbackTxn(func(ctx context.Context) error {
 		qb := db.Performer
 
 		// create performer to test against
@@ -314,7 +610,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 }
 
 func TestPerformerDestroyPerformerImage(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
+	if err := withRollbackTxn(func(ctx context.Context) error {
 		qb := db.Performer
 
 		// create performer to test against
@@ -824,7 +1120,7 @@ func TestPerformerQueryStudio(t *testing.T) {
 }
 
 func TestPerformerStashIDs(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
+	if err := withRollbackTxn(func(ctx context.Context) error {
 		qb := db.Performer
 
 		// create performer to test against
@@ -970,10 +1266,173 @@ func TestPerformerQuerySortScenesCount(t *testing.T) {
 	})
 }
 
+func TestPerformerCountByTagID(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Performer
+		count, err := sqb.CountByTagID(ctx, tagIDs[tagIdxWithPerformer])
+
+		if err != nil {
+			t.Errorf("Error counting performers: %s", err.Error())
+		}
+
+		assert.Equal(t, 1, count)
+
+		count, err = sqb.CountByTagID(ctx, 0)
+
+		if err != nil {
+			t.Errorf("Error counting performers: %s", err.Error())
+		}
+
+		assert.Equal(t, 0, count)
+
+		return nil
+	})
+}
+
+func TestPerformerCount(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Performer
+		count, err := sqb.Count(ctx)
+
+		if err != nil {
+			t.Errorf("Error counting performers: %s", err.Error())
+		}
+
+		assert.Equal(t, totalPerformers, count)
+
+		return nil
+	})
+}
+
+func TestPerformerAll(t *testing.T) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Performer
+		all, err := sqb.All(ctx)
+
+		if err != nil {
+			t.Errorf("Error counting performers: %s", err.Error())
+		}
+
+		assert.Len(t, all, totalPerformers)
+
+		return nil
+	})
+}
+
+func performersToIDs(i []*models.Performer) []int {
+	ret := make([]int, len(i))
+	for i, v := range i {
+		ret[i] = v.ID
+	}
+
+	return ret
+}
+
+func TestPerformerStore_FindByStashID(t *testing.T) {
+	type args struct {
+		stashID models.StashID
+	}
+	tests := []struct {
+		name        string
+		stashID     models.StashID
+		expectedIDs []int
+		wantErr     bool
+	}{
+		{
+			name:        "existing",
+			stashID:     performerStashID(performerIdxWithScene),
+			expectedIDs: []int{performerIDs[performerIdxWithScene]},
+			wantErr:     false,
+		},
+		{
+			name: "non-existing",
+			stashID: models.StashID{
+				StashID:  getPerformerStringValue(performerIdxWithScene, "stashid"),
+				Endpoint: "non-existing",
+			},
+			expectedIDs: []int{},
+			wantErr:     false,
+		},
+	}
+
+	qb := db.Performer
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.FindByStashID(ctx, tt.stashID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.FindByStashID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			assert.ElementsMatch(t, performersToIDs(got), tt.expectedIDs)
+		})
+	}
+}
+
+func TestPerformerStore_FindByStashIDStatus(t *testing.T) {
+	type args struct {
+		stashID models.StashID
+	}
+	tests := []struct {
+		name             string
+		hasStashID       bool
+		stashboxEndpoint string
+		include          []int
+		exclude          []int
+		wantErr          bool
+	}{
+		{
+			name:             "existing",
+			hasStashID:       true,
+			stashboxEndpoint: getPerformerStringValue(performerIdxWithScene, "endpoint"),
+			include:          []int{performerIdxWithScene},
+			wantErr:          false,
+		},
+		{
+			name:             "non-existing",
+			hasStashID:       true,
+			stashboxEndpoint: getPerformerStringValue(performerIdxWithScene, "non-existing"),
+			exclude:          []int{performerIdxWithScene},
+			wantErr:          false,
+		},
+		{
+			name:             "!hasStashID",
+			hasStashID:       false,
+			stashboxEndpoint: getPerformerStringValue(performerIdxWithScene, "endpoint"),
+			include:          []int{performerIdxWithImage},
+			exclude:          []int{performerIdx2WithScene},
+			wantErr:          false,
+		},
+	}
+
+	qb := db.Performer
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			got, err := qb.FindByStashIDStatus(ctx, tt.hasStashID, tt.stashboxEndpoint)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.FindByStashIDStatus() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			include := indexesToIDs(performerIDs, tt.include)
+			exclude := indexesToIDs(performerIDs, tt.exclude)
+
+			ids := performersToIDs(got)
+
+			assert := assert.New(t)
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 // TODO Update
 // TODO Destroy
 // TODO Find
-// TODO Count
-// TODO All
-// TODO AllSlim
 // TODO Query
