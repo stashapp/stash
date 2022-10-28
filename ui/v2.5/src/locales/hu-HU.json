@@ -247,19 +247,6 @@
         "notifications_enabled": "Értesítések Engedélyezése"
       },
       "editing": {
-        "rating_system": {
-          "label": "Osztályozási rendszer",
-          "options": {
-            "five_stars": "Ötcsillagos rendszer",
-            "five_pointfive_stars": "Ötcsillagos rendszer félcsillagos lépésekkel",
-            "five_pointtwofive_stars": "Ötcsillagos rendszer negyedcsillagos lépésekkel",
-            "ten_stars": "Tíz csillagos rendszer",
-            "ten_pointfive_stars": "Tíz csillagos rendszer fél csillagos lépésekkel",
-            "ten_pointtwofive_stars": "Tíz csillagos rendszer negyed csillagos lépésekkel",
-            "ten_point_decimal": "Tízpontos numerikus rendszer egy tizedesvesszővel",
-            "none": "Az értékelés letiltása a felhasználói felületen"
-          }
-        },
         "heading": "Szerkesztés"
       },
       "handy_connection": {

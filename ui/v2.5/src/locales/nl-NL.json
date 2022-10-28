@@ -446,19 +446,6 @@
           "description": "Verwijder de mogelijkheid om nieuwe objecten te maken uit de dropdown menu",
           "heading": "Schakel het maken van dropdowns uit"
         },
-        "rating_system": {
-          "label": "Beoordelingssysteem",
-          "options": {
-            "five_stars": "Vijfsterrensysteem",
-            "five_pointfive_stars": "Vijfsterrensysteem met stappen van een halve ster",
-            "five_pointtwofive_stars": "Vijfsterrensysteem met stappen van kwartsterren",
-            "ten_stars": "Tien sterren systeem",
-            "ten_pointfive_stars": "Tiensterrensysteem met stappen van een halve ster",
-            "ten_pointtwofive_stars": "Tiensterrensysteem met stappen van kwartsterren",
-            "ten_point_decimal": "Tien-punts numeriek systeem met één decimaal",
-            "none": "Schakel beoordeling uit in de gebruikersinterface"
-          }
-        },
         "heading": "Aanpassen"
       },
       "funscript_offset": {

@@ -446,19 +446,6 @@
           "description": "關閉下拉選單建立物件功能",
           "heading": "關閉下拉選單建立"
         },
-        "rating_system": {
-          "label": "评分系统",
-          "options": {
-            "five_stars": "五星级系统",
-            "five_pointfive_stars": "五星系统，半星增量",
-            "five_pointtwofive_stars": "五星系统，四分之一星增量",
-            "ten_stars": "十星系统",
-            "ten_pointfive_stars": "十星系统，半星增量",
-            "ten_pointtwofive_stars": "十星系统，四分之一星增量",
-            "ten_point_decimal": "十点数字系统，带一个小数点",
-            "none": "在 UI 中禁用评分"
-          }
-        },
         "heading": "編輯"
       },
       "funscript_offset": {

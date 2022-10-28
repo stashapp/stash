@@ -446,19 +446,6 @@
           "description": "Supprimer la possibilité de créer de nouveaux objets à partir des sélecteurs de liste déroulante",
           "heading": "Désactiver la création depuis la liste déroulante"
         },
-        "rating_system": {
-          "label": "Système de notation",
-          "options": {
-            "five_stars": "Système cinq étoiles",
-            "five_pointfive_stars": "Système cinq étoiles avec incréments d'une demi-étoile",
-            "five_pointtwofive_stars": "Système cinq étoiles avec incréments d'un quart d'étoile",
-            "ten_stars": "Système des dix étoiles",
-            "ten_pointfive_stars": "Système à dix étoiles avec incréments d'une demi-étoile",
-            "ten_pointtwofive_stars": "Système à dix étoiles avec incréments d'un quart d'étoile",
-            "ten_point_decimal": "Système numérique à dix points avec un point décimal",
-            "none": "Désactiver l'évaluation dans l'interface utilisateur"
-          }
-        },
         "heading": "Édition"
       },
       "funscript_offset": {

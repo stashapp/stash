@@ -446,19 +446,6 @@
           "description": "dropdown selector에서 새로운 오브젝트를 추가하지 않습니다",
           "heading": "Dropdown 생성 비활성화"
         },
-        "rating_system": {
-          "label": "등급 시스템",
-          "options": {
-            "five_stars": "5성 시스템",
-            "five_pointfive_stars": "5개 별 시스템(별 5개 증분 포함)",
-            "five_pointtwofive_stars": "1/4 별 증분의 5성 시스템",
-            "ten_stars": "텐 스타 시스템",
-            "ten_pointfive_stars": "별 1/2씩 증가하는 10성 시스템",
-            "ten_pointtwofive_stars": "4분의 1이 증가하는 10개의 별 시스템",
-            "ten_point_decimal": "소수점이 하나인 10포인트 숫자 체계",
-            "none": "UI에서 평가 비활성화"
-          }
-        },
         "heading": "수정하기"
       },
       "funscript_offset": {

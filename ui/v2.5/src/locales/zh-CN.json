@@ -446,19 +446,6 @@
           "description": "禁止下拉的选择器建立新的对象",
           "heading": "禁止下拉菜单建立"
         },
-        "rating_system": {
-          "label": "評分系統",
-          "options": {
-            "five_stars": "五星級系統",
-            "five_pointfive_stars": "五星系統，半星增量",
-            "five_pointtwofive_stars": "五星系統，四分之一星增量",
-            "ten_stars": "十星系統",
-            "ten_pointfive_stars": "十星系統，半星增量",
-            "ten_pointtwofive_stars": "十星系統，四分之一星增量",
-            "ten_point_decimal": "十點數字系統，帶一個小數點",
-            "none": "在 UI 中禁用評分"
-          }
-        },
         "heading": "编辑"
       },
       "funscript_offset": {

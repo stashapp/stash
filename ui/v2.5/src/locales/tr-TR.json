@@ -420,19 +420,6 @@
           "description": "Açılır menülerden yeni veri oluşturma özelliğini kapatır",
           "heading": "Açılır menüden yeni veri oluşturmayı devre dışı bırak"
         },
-        "rating_system": {
-          "label": "Derecelendirme Sistemi",
-          "options": {
-            "five_stars": "Beş yıldızlı sistem",
-            "five_pointfive_stars": "Yarım yıldızlı artışlarla beş yıldızlı sistem",
-            "five_pointtwofive_stars": "Çeyrek yıldızlı artışlarla beş yıldızlı sistem",
-            "ten_stars": "On yıldızlı sistem",
-            "ten_pointfive_stars": "Yarım yıldızlı artışlarla on yıldız sistemi",
-            "ten_pointtwofive_stars": "Çeyrek yıldızlı artışlarla on yıldız sistemi",
-            "ten_point_decimal": "Bir ondalık noktalı on noktalı sayısal sistem",
-            "none": "Kullanıcı arayüzünde derecelendirmeyi devre dışı bırak"
-          }
-        },
         "heading": "Düzenleme"
       },
       "funscript_offset": {

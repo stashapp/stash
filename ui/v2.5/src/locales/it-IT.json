@@ -446,19 +446,6 @@
           "description": "Rimuove la possibilità di creare nuovi oggetti dai menù a tendina",
           "heading": "Disabilita crezione menù a tendina"
         },
-        "rating_system": {
-          "label": "Sistema di valutazione",
-          "options": {
-            "five_stars": "Sistema a cinque stelle",
-            "five_pointfive_stars": "Sistema a cinque stelle con incrementi di mezza stella",
-            "five_pointtwofive_stars": "Sistema a cinque stelle con incrementi di un quarto di stella",
-            "ten_stars": "Sistema a dieci stelle",
-            "ten_pointfive_stars": "Sistema a dieci stelle con incrementi di mezza stella",
-            "ten_pointtwofive_stars": "Sistema a dieci stelle con incrementi di un quarto di stella",
-            "ten_point_decimal": "Sistema numerico a dieci punti con un punto decimale",
-            "none": "Disattiva valutazione nell'interfaccia utente"
-          }
-        },
         "heading": "Modifiche"
       },
       "funscript_offset": {

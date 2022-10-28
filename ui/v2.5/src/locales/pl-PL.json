@@ -446,19 +446,6 @@
           "description": "Usunięcie możliwości tworzenia nowych obiektów z poziomu listy rozwijanej",
           "heading": "Wyłącz tworzenie za pomocą rozwijanej listy"
         },
-        "rating_system": {
-          "label": "System ocen",
-          "options": {
-            "five_stars": "System pięciogwiazdkowy",
-            "five_pointfive_stars": "Pięciogwiazdkowy system z przyrostami o pół gwiazdki",
-            "five_pointtwofive_stars": "Układ pięciogwiazdkowy z przyrostami ćwierćgwiazdkowymi",
-            "ten_stars": "System dziesięciu gwiazdek",
-            "ten_pointfive_stars": "System dziesięciogwiazdkowy z przyrostami o pół gwiazdki",
-            "ten_pointtwofive_stars": "System dziesięciogwiazdkowy z przyrostami ćwierćgwiazdkowymi",
-            "ten_point_decimal": "Dziesięciopunktowy system numeryczny z jednym miejscem po przecinku",
-            "none": "Wyłącz ocenę w interfejsie użytkownika"
-          }
-        },
         "heading": "Edytowanie"
       },
       "funscript_offset": {

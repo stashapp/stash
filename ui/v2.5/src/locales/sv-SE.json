@@ -446,19 +446,6 @@
           "description": "Ta bort möjligheten att skapa nya objekt från dropdown-menyer",
           "heading": "Stäng av skapande via dropdowns"
         },
-        "rating_system": {
-          "label": "Betygssystem",
-          "options": {
-            "five_stars": "Femstjärnigt system",
-            "five_pointfive_stars": "Femstjärnigt system med halv stjärna steg",
-            "five_pointtwofive_stars": "Femstjärnigt system med kvartsstjärna steg",
-            "ten_stars": "Tiostjärnigt system",
-            "ten_pointfive_stars": "Tiostjärnigt system med halv stjärna steg",
-            "ten_pointtwofive_stars": "Tiostjärnigt system med kvartsstjärna steg",
-            "ten_point_decimal": "Tiopunkters numeriskt system med en decimalkomma",
-            "none": "Inaktivera betyg i användargränssnittet"
-          }
-        },
         "heading": "Redigering"
       },
       "funscript_offset": {

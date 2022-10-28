@@ -446,19 +446,6 @@
           "description": "Eliminar la capacidad de crear nuevos recursos desde los selectores de formulario desplegables",
           "heading": "Deshabilitar creación en menú desplegable"
         },
-        "rating_system": {
-          "label": "Sistema de clasificación",
-          "options": {
-            "five_stars": "Sistema de cinco estrellas",
-            "five_pointfive_stars": "Sistema de cinco estrellas con incrementos de media estrella",
-            "five_pointtwofive_stars": "Sistema de cinco estrellas con incrementos de un cuarto de estrella",
-            "ten_stars": "Sistema de diez estrellas",
-            "ten_pointfive_stars": "Sistema de diez estrellas con incrementos de media estrella",
-            "ten_pointtwofive_stars": "Sistema de diez estrellas con incrementos de un cuarto de estrella",
-            "ten_point_decimal": "Sistema numérico de diez puntos con un punto decimal",
-            "none": "Deshabilitar calificación en la interfaz de usuario"
-          }
-        },
         "heading": "Edición"
       },
       "funscript_offset": {
