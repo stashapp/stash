@@ -86,7 +86,7 @@ export const App: React.FC = () => {
       const messageLanguage = languageMessageString(language);
 
       // register countries for the chosen language
-      await registerCountry(messageLanguage);
+      await registerCountry(language);
 
       const defaultMessages = (await locales[defaultMessageLanguage]()).default;
       const mergedMessages = cloneDeep(Object.assign({}, defaultMessages));
