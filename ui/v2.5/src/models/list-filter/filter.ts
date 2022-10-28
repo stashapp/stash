@@ -145,47 +145,67 @@ export class ListFilterModel {
         jsonParameters = [params.c!];
       }
       params.c = jsonParameters.map((jsonString) => {
-        let inString = false;
-        let escape = false;
-        return [...decodeURIComponent(jsonString)]
-          .map((c) => {
-            if (escape) {
-              // this character has been escaped, skip
-              escape = false;
-              return c;
-            }
-
-            switch (c) {
-              case "\\":
-                // escape the next character if in a string
-                if (inString) {
-                  escape = true;
-                }
-                break;
-              case '"':
-                // unescaped quote, toggle inString
-                inString = !inString;
-                break;
-              case "(":
-                // restore ( to { if not in a string
-                if (!inString) {
-                  return "{";
-                }
-                break;
-              case ")":
-                // restore ) to } if not in a string
-                if (!inString) {
-                  return "}";
-                }
-                break;
-            }
-
-            return c;
-          })
-          .join("");
+        const decoding = true;
+        return ListFilterModel.translateSpecialCharacters(
+          decodeURIComponent(jsonString),
+          decoding
+        );
       });
     }
     return params;
+  }
+
+  private static translateSpecialCharacters(input: string, decoding: boolean) {
+    let inString = false;
+    let escape = false;
+    return [...input]
+      .map((c) => {
+        if (escape) {
+          // this character has been escaped, skip
+          escape = false;
+          return c;
+        }
+
+        switch (c) {
+          case "\\":
+            // escape the next character if in a string
+            if (inString) {
+              escape = true;
+            }
+            break;
+          case '"':
+            // unescaped quote, toggle inString
+            inString = !inString;
+            break;
+          case "(":
+            // decode only: restore ( to { if not in a string
+            if (decoding && !inString) {
+              return "{";
+            }
+            break;
+          case ")":
+            // decode only: restore ) to } if not in a string
+            if (decoding && !inString) {
+              return "}";
+            }
+            break;
+          case "{":
+            // encode only: replace { with ( if not in a string
+            if (!decoding && !inString) {
+              return "(";
+            }
+            break;
+          case "}":
+            // encode only: replace } with ) if not in a string
+            if (!decoding && !inString) {
+              return ")";
+            }
+            break;
+        }
+
+        return c;
+      })
+      .join("");
   }
 
   public configureFromQueryString(query: string) {
@@ -223,44 +243,11 @@ export class ListFilterModel {
   // Returns query parameters with necessary parts encoded
   public getQueryParameters(): IQueryParameters {
     const encodedCriteria: string[] = this.criteria.map((criterion) => {
-      let inString = false;
-      let escape = false;
-      let str = [...criterion.toJSON()]
-        .map((c) => {
-          if (escape) {
-            // this character has been escaped, skip
-            escape = false;
-            return c;
-          }
-
-          switch (c) {
-            case "\\":
-              // escape the next character if in a string
-              if (inString) {
-                escape = true;
-              }
-              break;
-            case '"':
-              // unescaped quote, toggle inString
-              inString = !inString;
-              break;
-            case "{":
-              // replace { with ( if not in a string
-              if (!inString) {
-                return "(";
-              }
-              break;
-            case "}":
-              // replace } with ) if not in a string
-              if (!inString) {
-                return ")";
-              }
-              break;
-          }
-
-          return c;
-        })
-        .join("");
+      const decoding = false;
+      let str = ListFilterModel.translateSpecialCharacters(
+        criterion.toJSON(),
+        decoding
+      );
 
       // URL-encode other characters
       str = encodeURI(str);
