@@ -90,7 +90,9 @@ input PerformerFilterType {
   """Filter by StashID"""
   stash_id: StringCriterionInput
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by url"""
   url: StringCriterionInput
   """Filter by hair color"""
@@ -135,7 +137,9 @@ input SceneFilterType {
   """Filter by file count"""
   file_count: IntCriterionInput
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by o-counter"""
@@ -189,7 +193,9 @@ input MovieFilterType {
   """Filter by duration (in seconds)"""
   duration: IntCriterionInput
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter to only include movies with this studio"""
   studios: HierarchicalMultiCriterionInput
   """Filter to only include movies missing this property"""
@@ -214,7 +220,9 @@ input StudioFilterType {
   """Filter to only include studios missing this property"""
   is_missing: String
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by scene count"""
   scene_count: IntCriterionInput
   """Filter by image count"""
@@ -248,7 +256,9 @@ input GalleryFilterType {
   """Filter to include/exclude galleries that were created from zip"""
   is_zip: Boolean
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by average image resolution"""
@@ -334,7 +344,9 @@ input ImageFilterType {
   """Filter by file count"""
   file_count: IntCriterionInput
   """Filter by rating"""
-  rating: IntCriterionInput
+  rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: IntCriterionInput
   """Filter by organized"""
   organized: Boolean
   """Filter by o-counter"""

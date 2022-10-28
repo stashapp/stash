@@ -28,7 +28,7 @@ type StudioPartial struct {
 	ParentID      *sql.NullInt64   `db:"parent_id,omitempty" json:"parent_id"`
 	CreatedAt     *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt     *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
-	Rating        *sql.NullInt64   `db:"rating" json:"rating"`
+	Rating        *sql.NullInt64      `db:"rating" json:"rating"`
 	Details       *sql.NullString  `db:"details" json:"details"`
 	IgnoreAutoTag *bool            `db:"ignore_auto_tag" json:"ignore_auto_tag"`
 }

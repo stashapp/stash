@@ -35,6 +35,7 @@ type galleryRow struct {
 	URL       zero.String            `db:"url"`
 	Date      models.SQLiteDate      `db:"date"`
 	Details   zero.String            `db:"details"`
+	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
 	Organized bool                   `db:"organized"`
 	StudioID  null.Int               `db:"studio_id,omitempty"`
@@ -51,7 +52,15 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 		_ = r.Date.Scan(o.Date.Time)
 	}
 	r.Details = zero.StringFrom(o.Details)
-	r.Rating = intFromPtr(o.Rating)
+
+	// prefer rating100 over rating
+	if o.Rating100 != nil {
+		r.Rating = intFromPtr(o.Rating100)
+	} else if o.Rating != nil {
+		rating100 := models.Rating5To100(*o.Rating)
+		r.Rating = null.IntFrom(int64(rating100))
+	}
+
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
 	r.FolderID = nullIntFromFolderIDPtr(o.FolderID)
@@ -75,7 +84,7 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		URL:           r.URL.String,
 		Date:          r.Date.DatePtr(),
 		Details:       r.Details.String,
-		Rating:        nullIntPtr(r.Rating),
+		Rating100:     nullIntPtr(r.Rating),
 		Organized:     r.Organized,
 		StudioID:      nullIntPtr(r.StudioID),
 		FolderID:      nullIntFolderIDPtr(r.FolderID),
@@ -90,6 +99,11 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		ret.Path = r.FolderPath.String
 	}
 
+	if r.Rating.Valid {
+		rating5 := models.Rating100To5(int(r.Rating.Int64))
+		ret.Rating = &rating5
+	}
+
 	return ret
 }
 
@@ -102,7 +116,18 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("url", o.URL)
 	r.setSQLiteDate("date", o.Date)
 	r.setNullString("details", o.Details)
-	r.setNullInt("rating", o.Rating)
+
+	// prefer rating100 over rating	
+	if o.Rating100.Set {
+		r.setNullInt("rating", o.Rating100)
+	} else if o.Rating.Set {
+		v := o.Rating
+		if v.Value != 0 {
+			v.Value = models.Rating5To100(v.Value)
+		}
+		r.setNullInt("rating", v)
+	}
+
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
 	r.setSQLiteTimestamp("created_at", o.CreatedAt)
@@ -650,7 +675,9 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 
 	query.handleCriterion(ctx, qb.galleryPathCriterionHandler(galleryFilter.Path))
 	query.handleCriterion(ctx, galleryFileCountCriterionHandler(qb, galleryFilter.FileCount))
-	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating, "galleries.rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating100, "galleries.rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(galleryFilter.Rating, "galleries.rating", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))
 	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized", nil))
 	query.handleCriterion(ctx, galleryIsMissingCriterionHandler(qb, galleryFilter.IsMissing))

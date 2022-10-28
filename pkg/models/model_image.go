@@ -16,6 +16,7 @@ type Image struct {
 
 	Title     string `json:"title"`
 	Rating    *int   `json:"rating"`
+	Rating100 *int   `json:"rating100"`
 	Organized bool   `json:"organized"`
 	OCounter  int    `json:"o_counter"`
 	StudioID  *int   `json:"studio_id"`
@@ -115,6 +116,7 @@ type ImageCreateInput struct {
 type ImagePartial struct {
 	Title     OptionalString
 	Rating    OptionalInt
+	Rating100 OptionalInt
 	Organized OptionalBool
 	OCounter  OptionalInt
 	StudioID  OptionalInt

@@ -4,7 +4,7 @@ fragment SceneData on Scene {
   details
   url
   date
-  rating
+  rating100
   o_counter
   organized
   interactive
