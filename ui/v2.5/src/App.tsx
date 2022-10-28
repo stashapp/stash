@@ -8,7 +8,7 @@ import { ToastProvider } from "src/hooks/Toast";
 import LightboxProvider from "src/hooks/Lightbox/context";
 import { initPolyfills } from "src/polyfills";
 
-import locales from "src/locales";
+import locales, { registerCountry } from "src/locales";
 import {
   useConfiguration,
   useConfigureUI,
@@ -84,6 +84,9 @@ export const App: React.FC = () => {
     const setLocale = async () => {
       const defaultMessageLanguage = languageMessageString(defaultLocale);
       const messageLanguage = languageMessageString(language);
+
+      // register countries for the chosen language
+      await registerCountry(language);
 
       const defaultMessages = (await locales[defaultMessageLanguage]()).default;
       const mergedMessages = cloneDeep(Object.assign({}, defaultMessages));

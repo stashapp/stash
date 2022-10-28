@@ -1,41 +1,32 @@
 import Countries from "i18n-iso-countries";
-import english from "i18n-iso-countries/langs/en.json";
+import { getLocaleCode } from "src/locales";
 
-Countries.registerLocale(english);
+export const getCountryByISO = (
+  iso: string | null | undefined,
+  locale: string = "en"
+): string | undefined => {
+  if (!iso) return;
 
-const fuzzyDict: Record<string, string> = {
-  USA: "US",
-  "United States": "US",
-  America: "US",
-  American: "US",
-  Czechia: "CZ",
-  England: "GB",
-  "United Kingdom": "GB",
-  Russia: "RU",
-  "Slovak Republic": "SK",
-  Iran: "IR",
-  Moldova: "MD",
-  Laos: "LA",
+  const ret = Countries.getName(iso, getLocaleCode(locale));
+  if (ret) {
+    return ret;
+  }
+
+  // fallback to english if locale is not en
+  if (locale !== "en") {
+    return Countries.getName(iso, "en");
+  }
 };
 
-const getISOCountry = (country: string | null | undefined) => {
-  if (!country) return null;
+export const getCountries = (locale: string = "en") => {
+  let countries = Countries.getNames(getLocaleCode(locale));
 
-  const code =
-    fuzzyDict[country] ?? Countries.getAlpha2Code(country, "en") ?? country;
-  // Check if code is valid alpha2 iso
-  if (!Countries.alpha2ToAlpha3(code)) return null;
+  if (!countries.length) {
+    countries = Countries.getNames("en");
+  }
 
-  return {
-    code,
-    name: Countries.getName(code, "en"),
-  };
+  return Object.entries(countries).map(([code, name]) => ({
+    label: name,
+    value: code,
+  }));
 };
-
-export const getCountryByISO = (iso: string | null | undefined) => {
-  if (!iso) return null;
-
-  return Countries.getName(iso, "en") ?? null;
-};
-
-export default getISOCountry;

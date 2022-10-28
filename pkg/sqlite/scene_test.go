@@ -2098,42 +2098,6 @@ func TestSceneQueryPath(t *testing.T) {
 			[]int{otherSceneIdx},
 		},
 		{
-			"equals folder name",
-			models.StringCriterionInput{
-				Value:    folder,
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
-			"equals folder name trailing slash",
-			models.StringCriterionInput{
-				Value:    folder + string(filepath.Separator),
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
-			"equals base name",
-			models.StringCriterionInput{
-				Value:    basename,
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
-			"equals base name leading slash",
-			models.StringCriterionInput{
-				Value:    string(filepath.Separator) + basename,
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
 			"equals full path wildcard",
 			models.StringCriterionInput{
 				Value:    filepath.Join(folder, "scene_0001_%"),
@@ -2149,24 +2113,6 @@ func TestSceneQueryPath(t *testing.T) {
 				Modifier: models.CriterionModifierNotEquals,
 			},
 			[]int{otherSceneIdx},
-			[]int{sceneIdx},
-		},
-		{
-			"not equals folder name",
-			models.StringCriterionInput{
-				Value:    folder,
-				Modifier: models.CriterionModifierNotEquals,
-			},
-			nil,
-			[]int{sceneIdx},
-		},
-		{
-			"not equals basename",
-			models.StringCriterionInput{
-				Value:    basename,
-				Modifier: models.CriterionModifierNotEquals,
-			},
-			nil,
 			[]int{sceneIdx},
 		},
 		{
