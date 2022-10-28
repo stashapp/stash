@@ -9,9 +9,9 @@ fragment SlimSceneData on Scene {
   organized
   interactive
   interactive_speed
-  continue_position
-  watch_time
-  view_count
+  resume_time
+  play_duration
+  play_count
 
   files {
     ...VideoFileData

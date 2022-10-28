@@ -679,7 +679,7 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 	return sceneMarker, nil
 }
 
-func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, continuePosition float64, watchTime float64) (ret int, err error) {
+func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, resumeTime float64, playDuration float64) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, err
@@ -688,7 +688,7 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, con
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.SaveActivity(ctx, sceneID, continuePosition, watchTime)
+		ret, err = qb.SaveActivity(ctx, sceneID, resumeTime, playDuration)
 		return err
 	}); err != nil {
 		return 0, err

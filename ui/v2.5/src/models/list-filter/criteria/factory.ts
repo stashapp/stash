@@ -76,7 +76,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "performer_age":
     case "tag_count":
     case "file_count":
-    case "view_count":
+    case "play_count":
       return new NumberCriterion(
         new MandatoryNumberCriterionOption(type, type)
       );
@@ -84,9 +84,9 @@ export function makeCriteria(type: CriterionType = "none") {
       return new ResolutionCriterion();
     case "average_resolution":
       return new AverageResolutionCriterion();
-    case "continue_position":
+    case "resume_time":
     case "duration":
-    case "watch_time":
+    case "play_duration":
       return new DurationCriterion(new NumberCriterionOption(type, type));
     case "favorite":
       return new FavoriteCriterion();

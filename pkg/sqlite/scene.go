@@ -53,21 +53,21 @@ ORDER BY files.size DESC
 `
 
 type sceneRow struct {
-	ID               int                    `db:"id" goqu:"skipinsert"`
-	Title            zero.String            `db:"title"`
-	Details          zero.String            `db:"details"`
-	URL              zero.String            `db:"url"`
-	Date             models.SQLiteDate      `db:"date"`
-	Rating           null.Int               `db:"rating"`
-	Organized        bool                   `db:"organized"`
-	OCounter         int                    `db:"o_counter"`
-	StudioID         null.Int               `db:"studio_id,omitempty"`
-	CreatedAt        models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt        models.SQLiteTimestamp `db:"updated_at"`
-	LastPlayedAt     models.SQLiteTimestamp `db:"last_played_at"`
-	ContinuePosition float64                `db:"continue_position"`
-	WatchTime        float64                `db:"watch_time"`
-	ViewCount        int                    `db:"view_count"`
+	ID           int                    `db:"id" goqu:"skipinsert"`
+	Title        zero.String            `db:"title"`
+	Details      zero.String            `db:"details"`
+	URL          zero.String            `db:"url"`
+	Date         models.SQLiteDate      `db:"date"`
+	Rating       null.Int               `db:"rating"`
+	Organized    bool                   `db:"organized"`
+	OCounter     int                    `db:"o_counter"`
+	StudioID     null.Int               `db:"studio_id,omitempty"`
+	CreatedAt    models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt    models.SQLiteTimestamp `db:"updated_at"`
+	LastPlayedAt models.SQLiteTimestamp `db:"last_played_at"`
+	ResumeTime   float64                `db:"resume_time"`
+	PlayDuration float64                `db:"play_duration"`
+	PlayCount    int                    `db:"play_count"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -84,9 +84,9 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	r.StudioID = intFromPtr(o.StudioID)
 	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
-	r.ContinuePosition = o.ContinuePosition
-	r.WatchTime = o.WatchTime
-	r.ViewCount = o.ViewCount
+	r.ResumeTime = o.ResumeTime
+	r.PlayDuration = o.PlayDuration
+	r.PlayCount = o.PlayCount
 }
 
 type sceneQueryRow struct {
@@ -117,10 +117,10 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		CreatedAt: r.CreatedAt.Timestamp,
 		UpdatedAt: r.UpdatedAt.Timestamp,
 
-		LastPlayedAt:     r.LastPlayedAt.Timestamp,
-		ContinuePosition: r.ContinuePosition,
-		WatchTime:        r.WatchTime,
-		ViewCount:        r.ViewCount,
+		LastPlayedAt: r.LastPlayedAt.Timestamp,
+		ResumeTime:   r.ResumeTime,
+		PlayDuration: r.PlayDuration,
+		PlayCount:    r.PlayCount,
 	}
 
 	if r.PrimaryFileFolderPath.Valid && r.PrimaryFileBasename.Valid {
@@ -146,9 +146,9 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setSQLiteTimestamp("created_at", o.CreatedAt)
 	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
 	r.setSQLiteTimestamp("last_played_at ", o.LastPlayedAt)
-	r.setFloat64("continue_position", o.ContinuePosition)
-	r.setFloat64("watch_time", o.WatchTime)
-	r.setInt("view_count", o.ViewCount)
+	r.setFloat64("resume_time", o.ResumeTime)
+	r.setFloat64("play_duration", o.PlayDuration)
+	r.setInt("play_count", o.PlayCount)
 }
 
 type SceneStore struct {
@@ -879,9 +879,9 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 
 	query.handleCriterion(ctx, sceneCaptionCriterionHandler(qb, sceneFilter.Captions))
 
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.ContinuePosition, "scenes.continue_position", nil))
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.WatchTime, "scenes.watch_time", nil))
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.ViewCount, "scenes.view_count", nil))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.ResumeTime, "scenes.resume_time", nil))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.PlayDuration, "scenes.play_duration", nil))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.PlayCount, "scenes.play_count", nil))
 
 	query.handleCriterion(ctx, sceneTagsCriterionHandler(qb, sceneFilter.Tags))
 	query.handleCriterion(ctx, sceneTagCountCriterionHandler(qb, sceneFilter.TagCount))
@@ -1436,8 +1436,8 @@ func (qb *SceneStore) imageRepository() *imageRepository {
 	}
 }
 
-// func (qb *SceneStore) getContinuePosition(ctx context.Context, id int) (float64, error) {
-// 	q := dialect.From(qb.tableMgr.table).Select("continue_position").Where(goqu.Ex{"id": id})
+// func (qb *SceneStore) getResumeTime(ctx context.Context, id int) (float64, error) {
+// 	q := dialect.From(qb.tableMgr.table).Select("resume_time").Where(goqu.Ex{"id": id})
 
 // 	const single = true
 // 	var ret float64
@@ -1453,8 +1453,8 @@ func (qb *SceneStore) imageRepository() *imageRepository {
 // 	return ret, nil
 // }
 
-// func (qb *SceneStore) getWatchTime(ctx context.Context, id int) (float64, error) {
-// 	q := dialect.From(qb.tableMgr.table).Select("watch_time").Where(goqu.Ex{"id": id})
+// func (qb *SceneStore) getPlayDuration(ctx context.Context, id int) (float64, error) {
+// 	q := dialect.From(qb.tableMgr.table).Select("play_duration").Where(goqu.Ex{"id": id})
 
 // 	const single = true
 // 	var ret float64
@@ -1470,8 +1470,8 @@ func (qb *SceneStore) imageRepository() *imageRepository {
 // 	return ret, nil
 // }
 
-func (qb *SceneStore) getViewCount(ctx context.Context, id int) (int, error) {
-	q := dialect.From(qb.tableMgr.table).Select("view_count").Where(goqu.Ex{"id": id})
+func (qb *SceneStore) getPlayCount(ctx context.Context, id int) (int, error) {
+	q := dialect.From(qb.tableMgr.table).Select("play_count").Where(goqu.Ex{"id": id})
 
 	const single = true
 	var ret int
@@ -1487,25 +1487,25 @@ func (qb *SceneStore) getViewCount(ctx context.Context, id int) (int, error) {
 	return ret, nil
 }
 
-func (qb *SceneStore) SaveActivity(ctx context.Context, id int, continuePosition float64, watchTime float64) (int, error) {
+func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime float64, playDuration float64) (int, error) {
 	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return 0, err
 	}
 
 	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"continue_position": continuePosition,
+		"resume_time": resumeTime,
 	}); err != nil {
 		return 0, err
 	}
 
 	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"watch_time": goqu.L("watch_time + ?", watchTime),
+		"play_duration": goqu.L("play_duration + ?", playDuration),
 	}); err != nil {
 		return 0, err
 	}
 
 	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"view_count": goqu.L("view_count + 1"),
+		"play_count": goqu.L("play_count + 1"),
 	}); err != nil {
 		return 0, err
 	}
@@ -1516,7 +1516,7 @@ func (qb *SceneStore) SaveActivity(ctx context.Context, id int, continuePosition
 		return 0, err
 	}
 
-	return qb.getViewCount(ctx, id)
+	return qb.getPlayCount(ctx, id)
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {

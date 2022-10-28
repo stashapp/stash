@@ -158,7 +158,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const started = useRef(false);
   const interactiveReady = useRef(false);
 
-  const watchTimeRef = useRef(0);
+  const playDurationRef = useRef(0);
   const trackTime = useRef(false);
 
   const ignoreInterval = config?.ignoreInterval ?? 0;
@@ -264,11 +264,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   useEffect(() => {
     const player = playerRef.current;
-    var watchTimer = window.setInterval(() => {
+    var playDurationr = window.setInterval(() => {
       if (trackTime.current) {
-        watchTimeRef.current++;
+        playDurationRef.current++;
       }
-    }, 1000); // when scene is playing incrememt watchTime every second
+    }, 1000); // when scene is playing incrememt playDuration every second
 
     if (player) {
       player.seekButtons({
@@ -285,17 +285,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     return () => {
       const id = sceneId.current;
 
-      if (watchTimer) {
-        clearInterval(watchTimer);
+      if (playDurationr) {
+        clearInterval(playDurationr);
       }
-      if (id && watchTimeRef.current > ignoreInterval) {
-        var watchTime = watchTimeRef.current;
-        const continue_position = player?.currentTime()!;
+      if (id && playDurationRef.current > ignoreInterval) {
+        var playDuration = playDurationRef.current;
+        const resume_time = player?.currentTime()!;
         sceneSaveActivity({
           variables: {
             id,
-            continue_position,
-            watchTime,
+            resume_time,
+            playDuration,
           },
         });
       }
@@ -605,11 +605,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       loadCaptions(player);
     }
     var startPosition = 0;
-    if (!alwaysStartFromBeginning && file.duration > scene.continue_position!) {
-      startPosition = scene.continue_position!;
+    if (!alwaysStartFromBeginning && file.duration > scene.resume_time!) {
+      startPosition = scene.resume_time!;
     }
     player.currentTime(startPosition);
-    watchTimeRef.current = 0;
+    playDurationRef.current = 0;
     trackTime.current = false;
 
     player.loop(looping);

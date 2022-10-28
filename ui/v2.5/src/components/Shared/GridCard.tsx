@@ -18,7 +18,7 @@ interface ICardProps {
   selecting?: boolean;
   selected?: boolean;
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
-  continuePosition?: number;
+  resumeTime?: number;
   duration?: number;
   interactiveHeatmap?: string;
 }
@@ -95,11 +95,11 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
 
   function maybeRenderProgressBar() {
     if (
-      props.continuePosition &&
+      props.resumeTime &&
       props.duration &&
-      props.duration > props.continuePosition
+      props.duration > props.resumeTime
     ) {
-      var percent = (100 / props.duration) * props.continuePosition + "%";
+      var percent = (100 / props.duration) * props.resumeTime + "%";
       return (
         <span
           title={props.title}

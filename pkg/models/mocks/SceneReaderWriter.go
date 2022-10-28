@@ -639,19 +639,19 @@ func (_m *SceneReaderWriter) GetTagIDs(ctx context.Context, relatedID int) ([]in
 }
 
 // SaveActivity provides a mock function with given fields: ctx, id, conitnuePos
-func (_m *SceneReaderWriter) SaveActivity(ctx context.Context, id int, conitnuePosition float64, watchTime float64) (int, error) {
-	ret := _m.Called(ctx, id, conitnuePosition, watchTime)
+func (_m *SceneReaderWriter) SaveActivity(ctx context.Context, id int, resumeTime float64, playDuration float64) (int, error) {
+	ret := _m.Called(ctx, id, resumeTime, playDuration)
 
 	var r0 int
 	if rf, ok := ret.Get(0).(func(context.Context, int, float64, float64) int); ok {
-		r0 = rf(ctx, id, conitnuePosition, watchTime)
+		r0 = rf(ctx, id, resumeTime, playDuration)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int, float64, float64) error); ok {
-		r1 = rf(ctx, id, conitnuePosition, watchTime)
+		r1 = rf(ctx, id, resumeTime, playDuration)
 	} else {
 		r1 = ret.Error(1)
 	}

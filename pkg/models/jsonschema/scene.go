@@ -38,27 +38,27 @@ type SceneMovie struct {
 }
 
 type Scene struct {
-	Title            string           `json:"title,omitempty"`
-	Studio           string           `json:"studio,omitempty"`
-	URL              string           `json:"url,omitempty"`
-	Date             string           `json:"date,omitempty"`
-	Rating           int              `json:"rating,omitempty"`
-	Organized        bool             `json:"organized,omitempty"`
-	OCounter         int              `json:"o_counter,omitempty"`
-	Details          string           `json:"details,omitempty"`
-	Galleries        []GalleryRef     `json:"galleries,omitempty"`
-	Performers       []string         `json:"performers,omitempty"`
-	Movies           []SceneMovie     `json:"movies,omitempty"`
-	Tags             []string         `json:"tags,omitempty"`
-	Markers          []SceneMarker    `json:"markers,omitempty"`
-	Files            []string         `json:"files,omitempty"`
-	Cover            string           `json:"cover,omitempty"`
-	CreatedAt        json.JSONTime    `json:"created_at,omitempty"`
-	UpdatedAt        json.JSONTime    `json:"updated_at,omitempty"`
-	ContinuePosition string           `json:"continue_position,omitempty"`
-	ViewCount        int              `json:"view_count,omitempty"`
-	WatchTime        string           `json:"watch_time,omitempty"`
-	StashIDs         []models.StashID `json:"stash_ids,omitempty"`
+	Title        string           `json:"title,omitempty"`
+	Studio       string           `json:"studio,omitempty"`
+	URL          string           `json:"url,omitempty"`
+	Date         string           `json:"date,omitempty"`
+	Rating       int              `json:"rating,omitempty"`
+	Organized    bool             `json:"organized,omitempty"`
+	OCounter     int              `json:"o_counter,omitempty"`
+	Details      string           `json:"details,omitempty"`
+	Galleries    []GalleryRef     `json:"galleries,omitempty"`
+	Performers   []string         `json:"performers,omitempty"`
+	Movies       []SceneMovie     `json:"movies,omitempty"`
+	Tags         []string         `json:"tags,omitempty"`
+	Markers      []SceneMarker    `json:"markers,omitempty"`
+	Files        []string         `json:"files,omitempty"`
+	Cover        string           `json:"cover,omitempty"`
+	CreatedAt    json.JSONTime    `json:"created_at,omitempty"`
+	UpdatedAt    json.JSONTime    `json:"updated_at,omitempty"`
+	ResumeTime   string           `json:"resume_time,omitempty"`
+	PlayCount    int              `json:"play_count,omitempty"`
+	PlayDuration string           `json:"play_duration,omitempty"`
+	StashIDs     []models.StashID `json:"stash_ids,omitempty"`
 }
 
 func (s Scene) Filename(basename string, hash string) string {

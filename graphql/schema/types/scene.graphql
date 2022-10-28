@@ -52,9 +52,9 @@ type Scene {
   updated_at: Time!
   file_mod_time: Time
   last_played_at: Time
-  continue_position: Float
-  watch_time: Float
-  view_count: Int
+  resume_time: Float
+  play_duration: Float
+  play_count: Int
 
   file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!
