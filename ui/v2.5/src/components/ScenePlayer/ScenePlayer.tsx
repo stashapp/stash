@@ -283,23 +283,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // Video player destructor
     return () => {
-      const id = sceneId.current;
-
-      if (playDurationr) {
-        clearInterval(playDurationr);
-      }
-      if (id && playDurationRef.current > ignoreInterval) {
-        var playDuration = playDurationRef.current;
-        const resume_time = player?.currentTime()!;
-        sceneSaveActivity({
-          variables: {
-            id,
-            resume_time,
-            playDuration,
-          },
-        });
-      }
       if (playerRef.current) {
+        if (playDurationr) {
+          clearInterval(playDurationr);
+        }
+        const id = sceneId.current;
+        if (id && playDurationRef.current > ignoreInterval) {
+          var playDuration = playDurationRef.current;
+          const resume_time = playerRef.current.currentTime()!;
+          sceneSaveActivity({
+            variables: {
+              id,
+              resume_time,
+              playDuration,
+            },
+          });
+        }
         playerRef.current.dispose();
         playerRef.current = undefined;
       }
