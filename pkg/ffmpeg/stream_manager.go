@@ -331,7 +331,7 @@ func (sm *StreamManager) getTranscodeArgs(probeResult *VideoFile, outputPath str
 
 	args = append(args, "-i", probeResult.Path)
 
-	scale := fmt.Sprintf("%s:-2", resolution)
+	scale := fmt.Sprintf("-1:%s", resolution)
 	args = append(args,
 		"-c:v", "libx264",
 		"-pix_fmt", "yuv420p",
