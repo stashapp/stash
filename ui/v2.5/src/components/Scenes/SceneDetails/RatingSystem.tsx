@@ -29,6 +29,44 @@ export interface IRatingNumberProps {
   disabled?: boolean;
 }
 
+function round(value: number, step: number) {
+  step || (step = 1.0);
+  var inv = 1.0 / step;
+  return Math.round(value * inv) / inv;
+}
+
+export function ConvertToRatingFormat(rating: number) {
+  const { configuration: config } = React.useContext(ConfigurationContext);
+  let toReturn;
+  switch (config?.interface?.ratingSystem) {
+    case GQL.RatingSystem.TenStar:
+      toReturn = round(rating / 10, 1);
+      break;
+    case GQL.RatingSystem.TenPointFiveStar:
+      toReturn = round(rating / 10, 0.5);
+      break;
+    case GQL.RatingSystem.TenPointTwoFiveStar:
+      toReturn = round(rating / 10, 0.25);
+      break;
+    case GQL.RatingSystem.FiveStar:
+      toReturn = round(rating / 20, 1);
+      break;
+    case GQL.RatingSystem.FivePointFiveStar:
+      toReturn = round(rating / 20, 0.5);
+      break;
+    case GQL.RatingSystem.FivePointTwoFiveStar:
+      toReturn = round(rating / 20, 0.25);
+      break;
+    case GQL.RatingSystem.TenPointDecimal:
+      toReturn = round(rating / 10, 0.1);
+      break;
+    default:
+      toReturn = round(rating / 20, 1);
+      break;
+  }
+  return toReturn;
+}
+
 export const RatingNumber: React.FC<IRatingNumberProps> = (
   props: IRatingNumberProps
 ) => {
