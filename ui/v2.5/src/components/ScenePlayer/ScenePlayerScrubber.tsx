@@ -11,6 +11,7 @@ import { Button } from "react-bootstrap";
 import axios from "axios";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
+import { WebVTT } from "videojs-vtt.js";
 
 interface IScenePlayerScrubberProps {
   file: GQL.VideoFileDataFragment;
@@ -21,6 +22,7 @@ interface IScenePlayerScrubberProps {
 }
 
 interface ISceneSpriteItem {
+  url: string;
   start: number;
   end: number;
   x: number;
@@ -32,41 +34,27 @@ interface ISceneSpriteItem {
 async function fetchSpriteInfo(vttPath: string) {
   const response = await axios.get<string>(vttPath, { responseType: "text" });
 
-  // TODO: This is gnarly
-  const lines = response.data.split("\n");
-  if (lines.shift() !== "WEBVTT") {
-    return;
-  }
-  if (lines.shift() !== "") {
-    return;
-  }
-  let item: ISceneSpriteItem = { start: 0, end: 0, x: 0, y: 0, w: 0, h: 0 };
-  const newSpriteItems: ISceneSpriteItem[] = [];
-  while (lines.length) {
-    const line = lines.shift();
-    if (line !== undefined) {
-      if (line.includes("#") && line.includes("=") && line.includes(",")) {
-        const size = line.split("#")[1].split("=")[1].split(",");
-        item.x = Number(size[0]);
-        item.y = Number(size[1]);
-        item.w = Number(size[2]);
-        item.h = Number(size[3]);
+  const sprites: ISceneSpriteItem[] = [];
 
-        newSpriteItems.push(item);
-        item = { start: 0, end: 0, x: 0, y: 0, w: 0, h: 0 };
-      } else if (line.includes(" --> ")) {
-        const times = line.split(" --> ");
+  const parser = new WebVTT.Parser(window, WebVTT.StringDecoder());
+  parser.oncue = (cue: VTTCue) => {
+    const match = cue.text.match(/^([^#]*)#xywh=(\d+),(\d+),(\d+),(\d+)$/i);
+    if (!match) return;
 
-        const start = times[0].split(":");
-        item.start = +start[0] * 60 * 60 + +start[1] * 60 + +start[2];
+    sprites.push({
+      url: new URL(match[1], vttPath).href,
+      start: cue.startTime,
+      end: cue.endTime,
+      x: Number(match[2]),
+      y: Number(match[3]),
+      w: Number(match[4]),
+      h: Number(match[5]),
+    });
+  };
+  parser.parse(response.data);
+  parser.flush();
 
-        const end = times[1].split(":");
-        item.end = +end[0] * 60 * 60 + +end[1] * 60 + +end[2];
-      }
-    }
-  }
-
-  return newSpriteItems;
+  return sprites;
 }
 
 export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
@@ -324,13 +312,12 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
       }
       const sprite = spriteItems[index];
       const left = sprite.w * index;
-      const path = props.scene.paths.vtt.replace("_thumbs.vtt", "_sprite.jpg"); // TODO: Gnarly
       return {
         width: `${sprite.w}px`,
         height: `${sprite.h}px`,
         margin: "0px auto",
         backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,
-        backgroundImage: `url(${path})`,
+        backgroundImage: `url(${sprite.url})`,
         left: `${left}px`,
       };
     }
