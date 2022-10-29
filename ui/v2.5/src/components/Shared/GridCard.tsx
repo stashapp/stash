@@ -99,10 +99,11 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
       props.duration &&
       props.duration > props.resumeTime
     ) {
-      var percent = (100 / props.duration) * props.resumeTime + "%";
+      const percentValue = (100 / props.duration) * props.resumeTime;
+      const percentStr = percentValue + "%";
       return (
-        <div title={props.title} className="progress-bar">
-          <div style={{ width: percent }} className="progress-indicator" />
+        <div title={Math.round(percentValue) + "%"} className="progress-bar">
+          <div style={{ width: percentStr }} className="progress-indicator" />
         </div>
       );
     }
