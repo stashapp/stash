@@ -260,7 +260,7 @@
       "create_galleries_from_folders_desc": "Coché, crée des galeries à partir de dossiers contenant des images.",
       "create_galleries_from_folders_label": "Créer des galeries à partir de dossiers contenant des images",
       "db_path_head": "Chemin de la base de données",
-      "directory_locations_to_your_content": "Emplacements du répertoire de votre contenu",
+      "directory_locations_to_your_content": "Emplacements de votre contenu",
       "excluded_image_gallery_patterns_desc": "Expression régulière de fichiers images et galeries ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
       "excluded_image_gallery_patterns_head": "Modèles d'image ou galerie exclués",
       "excluded_video_patterns_desc": "Expressions régulières de fichiers vidéo ou de chemins d'accès à exclure de l'analyse et à ajouter au nettoyage",
@@ -363,10 +363,10 @@
       },
       "generate_desc": "Générer les images, images animées, vidéos, sous-titres *.vtt et autres fichiers associés.",
       "generate_phashes_during_scan": "Générer des empreintes perceptuelles",
-      "generate_phashes_during_scan_tooltip": "Pour la déduplication et l'identification de scènes.",
+      "generate_phashes_during_scan_tooltip": "Pour la déduplication et l'identification des scènes.",
       "generate_previews_during_scan": "Générer des aperçus d'images animées",
       "generate_previews_during_scan_tooltip": "Générer des aperçus WebP animés, requis uniquement si le mode d'aperçu est défini sur Image animée.",
-      "generate_sprites_during_scan": "Générer les images animées de progression",
+      "generate_sprites_during_scan": "Générer les images de progression",
       "generate_thumbnails_during_scan": "Générer des vignettes pour les images",
       "generate_video_previews_during_scan": "Générer les aperçus",
       "generate_video_previews_during_scan_tooltip": "Générer des aperçus vidéo joués lors du survol d'une scène",
@@ -446,7 +446,7 @@
         "heading": "Options de suppression",
         "options": {
           "delete_file": "Supprimer le fichier par défaut",
-          "delete_generated_supporting_files": "Supprimer par défaut les fichiers associés générés"
+          "delete_generated_supporting_files": "Supprimer par défaut les fichiers générés associés"
         }
       },
       "desktop_integration": {
@@ -537,7 +537,7 @@
             "heading": "Démarrer automatiquement la vidéo lorsque lecture est sélectionnée"
           },
           "continue_playlist_default": {
-            "description": "Lire la scène suivante dans la file d'attente lorsque la vidéo se termine",
+            "description": "Lire la scène suivante de la file d'attente lorsque une vidéo se termine",
             "heading": "Continuer la liste de lecture par défaut"
           },
           "show_scrubber": "Montrer la barre de progression"
@@ -551,7 +551,7 @@
         }
       },
       "scroll_attempts_before_change": {
-        "description": "Nombre de tentatives de défilement avant de passer à l'élément suivant/précédent. S'applique uniquement au mode de défilement Pan Y.",
+        "description": "Nombre de tentatives de défilement avant de passer à l'élément suivant/précédent. S'applique uniquement au mode de défilement Panoramique Y.",
         "heading": "Tentatives de défilement avant transition"
       },
       "show_tag_card_on_hover": {
@@ -698,7 +698,7 @@
       "preview_seg_count_head": "Nombre de segments dans l'aperçu",
       "preview_seg_duration_desc": "Durée de chaque segment d'aperçu, en secondes.",
       "preview_seg_duration_head": "Durée du segment d'aperçu",
-      "sprites": "Sprites de progression de scène",
+      "sprites": "Images de progression de scène",
       "sprites_tooltip": "Sprites (pour la progression de scène)",
       "transcodes": "Transcoder",
       "transcodes_tooltip": "Conversion en MP4 des formats vidéo non pris en charge",
