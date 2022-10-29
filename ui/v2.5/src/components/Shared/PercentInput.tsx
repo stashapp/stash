@@ -42,7 +42,7 @@ export const PercentInput: React.FC<IProps> = (props: IProps) => {
     }
 
     let percent = PercentUtils.stringToNumber(value);
-    if (percent >= 101) {
+    if (percent >= 100) {
       percent = 0;
     } else {
       percent += 1;
@@ -57,7 +57,7 @@ export const PercentInput: React.FC<IProps> = (props: IProps) => {
 
     let percent = PercentUtils.stringToNumber(value);
     if (percent <= 0) {
-      percent = 101;
+      percent = 100;
     } else {
       percent -= 1;
     }

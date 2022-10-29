@@ -82,6 +82,7 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(MaximumLoopDuration, i.GetMaximumLoopDuration())
 				i.Set(AutostartVideo, i.GetAutostartVideo())
 				i.Set(AlwaysStartFromBeginning, i.GetAlwaysStartFromBeginning())
+				i.Set(TrackActivity, i.GetTrackActivity())
 				i.Set(IgnoreInterval, i.GetIgnoreInterval())
 				i.Set(ShowStudioAsText, i.GetShowStudioAsText())
 				i.Set(legacyImageLightboxSlideshowDelay, *i.GetImageLightboxOptions().SlideshowDelay)

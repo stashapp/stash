@@ -137,6 +137,7 @@ const (
 	AutostartVideoOnPlaySelected        = "autostart_video_on_play_selected"
 	autostartVideoOnPlaySelectedDefault = true
 	AlwaysStartFromBeginning            = "always_start_from_beginning"
+	TrackActivity                       = "track_activity"
 	IgnoreInterval                      = "ignore_interval"
 	ContinuePlaylistDefault             = "continue_playlist_default"
 	ShowStudioAsText                    = "show_studio_as_text"
@@ -951,6 +952,10 @@ func (i *Instance) GetAutostartVideoOnPlaySelected() bool {
 
 func (i *Instance) GetAlwaysStartFromBeginning() bool {
 	return i.getBool(AlwaysStartFromBeginning)
+}
+
+func (i *Instance) GetTrackActivity() bool {
+	return i.getBool(TrackActivity)
 }
 
 func (i *Instance) GetIgnoreInterval() int {

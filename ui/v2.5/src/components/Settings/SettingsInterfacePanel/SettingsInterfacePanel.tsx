@@ -84,6 +84,29 @@ export const SettingsInterfacePanel: React.FC = () => {
     });
   }
 
+  function renderIgnoreInterval() {
+    if (iface.trackActivity) {
+      return (
+        <ModalSetting<number>
+          id="ignore-interval"
+          headingID="config.ui.ignore_interval.heading"
+          subHeadingID="config.ui.ignore_interval.description"
+          value={iface.ignoreInterval ?? 0}
+          onChange={(v) => saveInterface({ ignoreInterval: v })}
+          renderField={(value, setValue) => (
+            <PercentInput
+              numericValue={value}
+              onValueChange={(interval) => setValue(interval ?? 0)}
+            />
+          )}
+          renderValue={(v) => {
+            return <span>{v}%</span>;
+          }}
+        />
+      );
+    }
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
@@ -226,22 +249,13 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={iface.alwaysStartFromBeginning ?? undefined}
           onChange={(v) => saveInterface({ alwaysStartFromBeginning: v })}
         />
-        <ModalSetting<number>
-          id="ignore-interval"
-          headingID="config.ui.ignore_interval.heading"
-          subHeadingID="config.ui.ignore_interval.description"
-          value={iface.ignoreInterval ?? 0}
-          onChange={(v) => saveInterface({ ignoreInterval: v })}
-          renderField={(value, setValue) => (
-            <PercentInput
-              numericValue={value}
-              onValueChange={(interval) => setValue(interval ?? 0)}
-            />
-          )}
-          renderValue={(v) => {
-            return <span>{v}%</span>;
-          }}
+        <BooleanSetting
+          id="track-activity"
+          headingID="config.ui.scene_player.options.track_activity"
+          checked={iface.trackActivity ?? undefined}
+          onChange={(v) => saveInterface({ trackActivity: v })}
         />
+        {renderIgnoreInterval()}
         <NumberSetting
           headingID="config.ui.slideshow_delay.heading"
           subHeadingID="config.ui.slideshow_delay.description"

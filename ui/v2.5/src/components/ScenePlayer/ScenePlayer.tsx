@@ -162,6 +162,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const trackTime = useRef(false);
 
   const ignoreInterval = config?.ignoreInterval ?? 0;
+  const trackActivity = config?.trackActivity ?? false;
 
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
@@ -285,7 +286,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     return () => {
       if (playerRef.current) {
         clearInterval(playDurationHandler);
-        if (ignoreInterval <= 100) {
+        if (trackActivity) {
           const id = sceneId.current;
           const playDuration = playDurationRef.current;
           const videoDuration = playerRef.current.duration();

@@ -332,6 +332,7 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 	setBool(config.ShowStudioAsText, input.ShowStudioAsText)
 	setBool(config.AutostartVideoOnPlaySelected, input.AutostartVideoOnPlaySelected)
 	setBool(config.AlwaysStartFromBeginning, input.AlwaysStartFromBeginning)
+	setBool(config.TrackActivity, input.TrackActivity)
 	if input.IgnoreInterval != nil {
 		c.Set(config.IgnoreInterval, *input.IgnoreInterval)
 	}

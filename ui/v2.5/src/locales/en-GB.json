@@ -482,7 +482,7 @@
         "heading": "Handy Connection Key"
       },
       "ignore_interval": {
-        "description": "The percentage of time in which a scene must be played before activity is tracked. Specify a value greater than 100 to disable activity tracking.",
+        "description": "The percentage of time in which a scene must be played before activity is tracked.",
         "heading": "Ignore Interval"
       },
       "image_lightbox": {
@@ -549,7 +549,8 @@
             "description": "Play next scene in queue when video finishes",
             "heading": "Continue playlist by default"
           },
-          "show_scrubber": "Show Scrubber"
+          "show_scrubber": "Show Scrubber",
+          "track_activity": "Track Activity"
         }
       },
       "scene_wall": {

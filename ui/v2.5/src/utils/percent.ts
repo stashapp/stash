@@ -1,5 +1,3 @@
-import TextUtils from "./text";
-
 const numberToString = (seconds: number) => {
   return seconds + "%";
 };
