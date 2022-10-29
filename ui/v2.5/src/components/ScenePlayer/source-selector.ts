@@ -85,8 +85,7 @@ class SourceMenuButton extends MenuButton {
 
       const currentTime = player.currentTime();
 
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      (player as any).clearOffsetDuration();
+      player.offset().clearOffsetDuration();
       player.src(currentSources);
       player.currentTime(currentTime);
       player.play();
@@ -118,33 +117,37 @@ class SourceMenuButton extends MenuButton {
   }
 }
 
-const sourceSelector = function (this: VideoJsPlayer) {
-  const player = this;
+class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
+  constructor(player: VideoJsPlayer) {
+    super(player);
 
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const PlayerConstructor = this.constructor as any;
-  if (!PlayerConstructor.__sourceSelector) {
-    PlayerConstructor.__sourceSelector = {
-      selectSource: PlayerConstructor.prototype.selectSource,
-    };
+    videojs.registerComponent("SourceMenuButton", SourceMenuButton);
+
+    player.on("loadedmetadata", () => {
+      const { controlBar } = player;
+      const fullscreenToggle = controlBar.getChild("fullscreenToggle")!.el();
+
+      const existingMenuButton = controlBar.getChild("SourceMenuButton");
+      if (existingMenuButton) controlBar.removeChild(existingMenuButton);
+
+      const menuButton = controlBar.addChild("SourceMenuButton");
+
+      controlBar.el().insertBefore(menuButton.el(), fullscreenToggle);
+    });
   }
-
-  videojs.registerComponent("SourceMenuButton", SourceMenuButton);
-
-  player.on("loadedmetadata", function () {
-    const { controlBar } = player;
-    const fullscreenToggle = controlBar.getChild("fullscreenToggle")!.el();
-
-    const existingMenuButton = controlBar.getChild("SourceMenuButton");
-    if (existingMenuButton) controlBar.removeChild(existingMenuButton);
-
-    const menuButton = controlBar.addChild("SourceMenuButton");
-
-    controlBar.el().insertBefore(menuButton.el(), fullscreenToggle);
-  });
-};
+}
 
 // Register the plugin with video.js.
-videojs.registerPlugin("sourceSelector", sourceSelector);
+videojs.registerPlugin("sourceSelector", SourceSelectorPlugin);
 
-export default sourceSelector;
+/* eslint-disable @typescript-eslint/naming-convention */
+declare module "video.js" {
+  interface VideoJsPlayer {
+    sourceSelector: () => SourceSelectorPlugin;
+  }
+  interface VideoJsPlayerPluginOptions {
+    sourceSelector?: {};
+  }
+}
+
+export default SourceSelectorPlugin;

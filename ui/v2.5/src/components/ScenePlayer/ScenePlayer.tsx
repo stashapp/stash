@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   useCallback,
   useContext,
@@ -7,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
 import "videojs-landscape-fullscreen";
@@ -30,7 +29,7 @@ import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
 
-function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
+function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   function seekPercent(percent: number) {
     const duration = player.duration();
     const time = duration * percent;
@@ -139,7 +138,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<VideoJsPlayer | undefined>();
   const sceneId = useRef<string | undefined>();
-  const skipButtonsRef = useRef<any>();
 
   const [time, setTime] = useState(0);
 
@@ -213,22 +211,32 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           handleHotkeys(player, event);
         },
       },
+      plugins: {
+        vttThumbnails: {
+          showTimestamp: true,
+        },
+        markers: {},
+        offset: {},
+        sourceSelector: {},
+        persistVolume: {},
+        bigButtons: {},
+        seekButtons: {
+          forward: 10,
+          back: 10,
+        },
+        skipButtons: {},
+      },
     };
 
-    const player = VideoJS(videoElement, options);
+    const player = videojs(videoElement, options);
 
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const settings = (player as any).textTrackSettings;
     settings.setValues({
       backgroundColor: "#000",
       backgroundOpacity: "0.5",
     });
     settings.updateDisplay();
-
-    (player as any).markers();
-    (player as any).offset();
-    (player as any).sourceSelector();
-    (player as any).persistVolume();
-    (player as any).bigButtons();
 
     player.focus();
     playerRef.current = player;
@@ -249,22 +257,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   ]);
 
   useEffect(() => {
-    if (skipButtonsRef.current) {
-      skipButtonsRef.current.setForwardHandler(onNext);
-      skipButtonsRef.current.setBackwardHandler(onPrevious);
-    }
+    const player = playerRef.current;
+    if (!player) return;
+    const skipButtons = player.skipButtons();
+    skipButtons.setForwardHandler(onNext);
+    skipButtons.setBackwardHandler(onPrevious);
   }, [onNext, onPrevious]);
 
   useEffect(() => {
     const player = playerRef.current;
     if (player) {
-      player.seekButtons({
-        forward: 10,
-        back: 10,
-      });
-
-      skipButtonsRef.current = player.skipButtons() ?? undefined;
-
       player.focus();
     }
 
@@ -339,9 +341,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
       const curTime = player.currentTime();
       if (!isDirect) {
-        (player as any).setOffsetDuration(file.duration);
+        player.offset().setOffsetDuration(file.duration);
       } else {
-        (player as any).clearOffsetDuration();
+        player.offset().clearOffsetDuration();
       }
 
       if (curTime != prevCaptionOffset) {
@@ -529,7 +531,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const isLandscape = file.height && file.width && file.width > file.height;
 
     if (isLandscape) {
-      (player as any).landscapeFullscreen({
+      player.landscapeFullscreen({
         fullscreen: {
           enterOnRotate: true,
           exitOnRotate: true,
@@ -542,10 +544,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // clear the offset before loading anything new.
     // otherwise, the offset will be applied to the next file when
     // currentTime is called.
-    (player as any).clearOffsetDuration();
+    player.offset().clearOffsetDuration();
 
     const tracks = player.remoteTextTracks();
     for (let i = 0; i < tracks.length; i++) {
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
       player.removeRemoteTextTrack(tracks[i] as any);
     }
 
@@ -580,13 +583,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.load();
     player.focus();
 
-    if ((player as any).vttThumbnails?.src)
-      (player as any).vttThumbnails?.src(scene?.paths.vtt);
-    else
-      (player as any).vttThumbnails({
-        src: scene?.paths.vtt,
-        showTimestamp: true,
-      });
+    player.ready(() => {
+      player.vttThumbnails.src(scene.paths.vtt ?? undefined);
+    });
 
     setReady(true);
     started.current = false;

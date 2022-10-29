@@ -104,4 +104,14 @@ const markers = function (this: VideoJsPlayer) {
 // Register the plugin with video.js.
 videojs.registerPlugin("markers", markers);
 
+/* eslint-disable @typescript-eslint/naming-convention */
+declare module "video.js" {
+  interface VideoJsPlayer {
+    markers: typeof markers;
+  }
+  interface VideoJsPlayerPluginOptions {
+    markers?: {};
+  }
+}
+
 export default markers;

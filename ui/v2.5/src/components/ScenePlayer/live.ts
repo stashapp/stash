@@ -1,83 +1,92 @@
 import videojs, { VideoJsPlayer } from "video.js";
 
-const offset = function (this: VideoJsPlayer) {
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const Player = this.constructor as any;
+class OffsetPlugin extends videojs.getPlugin("plugin") {
+  private offsetDuration?: number;
+  private offsetStart?: number;
 
-  if (!Player.__super__ || !Player.__super__.__offsetInit) {
-    Player.__super__ = {
-      __offsetInit: true,
-      duration: Player.prototype.duration,
-      currentTime: Player.prototype.currentTime,
-      remainingTime: Player.prototype.remainingTime,
-      getCache: Player.prototype.getCache,
-    };
+  constructor(player: VideoJsPlayer) {
+    super(player);
 
-    Player.prototype.clearOffsetDuration = function () {
-      this._offsetDuration = undefined;
-      this._offsetStart = undefined;
-    };
+    const plugin = this;
 
-    Player.prototype.setOffsetDuration = function (duration: number) {
-      this._offsetDuration = duration;
-    };
-
-    Player.prototype.duration = function () {
-      if (this._offsetDuration !== undefined) {
-        return this._offsetDuration;
+    const _duration = player.duration.bind(player);
+    function duration(this: VideoJsPlayer): number;
+    function duration(this: VideoJsPlayer, seconds: number): void;
+    function duration(this: VideoJsPlayer, seconds?: number) {
+      if (seconds !== undefined) {
+        return _duration(seconds);
       }
-      return Player.__super__.duration.apply(this, arguments);
-    };
-
-    Player.prototype.currentTime = function (seconds: number) {
-      if (seconds !== undefined && this._offsetDuration !== undefined) {
-        this._offsetStart = seconds;
-
-        const srcUrl = new URL(this.src());
-        srcUrl.searchParams.delete("start");
-        srcUrl.searchParams.append("start", seconds.toString());
-        const currentSrc = this.currentSource();
-        const newSources = this.currentSources().map(
-          (source: videojs.Tech.SourceObject) => {
-            return {
-              ...source,
-              src:
-                source.src === currentSrc.src ? srcUrl.toString() : source.src,
-            };
-          }
-        );
-        this.src(newSources);
-        this.play();
-
-        return seconds;
+      if (plugin.offsetDuration !== undefined) {
+        return plugin.offsetDuration;
       }
-      return (
-        (this._offsetStart ?? 0) +
-        Player.__super__.currentTime.apply(this, arguments)
+      return _duration();
+    }
+    player.duration = duration;
+
+    const _currentTime = player.currentTime.bind(player);
+    function currentTime(this: VideoJsPlayer): number;
+    function currentTime(this: VideoJsPlayer, seconds: number): void;
+    function currentTime(this: VideoJsPlayer, seconds?: number) {
+      if (seconds === undefined) {
+        return (plugin.offsetStart ?? 0) + _currentTime();
+      }
+      if (plugin.offsetDuration === undefined) {
+        return _currentTime(seconds);
+      }
+
+      plugin.offsetStart = seconds;
+
+      const srcUrl = new URL(this.src());
+      srcUrl.searchParams.delete("start");
+      srcUrl.searchParams.append("start", seconds.toString());
+      const currentSrc = this.currentSource();
+      const newSources = this.currentSources().map(
+        (source: videojs.Tech.SourceObject) => {
+          return {
+            ...source,
+            src: source.src === currentSrc.src ? srcUrl.toString() : source.src,
+          };
+        }
       );
-    };
+      this.src(newSources);
+      this.play();
+    }
+    player.currentTime = currentTime;
 
-    Player.prototype.getCache = function () {
-      const cache = Player.__super__.getCache.apply(this);
-      if (this._offsetDuration !== undefined)
+    const _getCache = player.getCache.bind(player);
+    function getCache(this: VideoJsPlayer) {
+      const cache = _getCache();
+      if (plugin.offsetDuration !== undefined)
         return {
           ...cache,
-          currentTime:
-            (this._offsetStart ?? 0) + Player.__super__.currentTime.apply(this),
+          currentTime: player.currentTime(),
         };
       return cache;
-    };
-
-    Player.prototype.remainingTime = function () {
-      if (this._offsetDuration !== undefined) {
-        return this._offsetDuration - this.currentTime();
-      }
-      return this.duration() - this.currentTime();
-    };
+    }
+    player.getCache = getCache;
   }
-};
+
+  setOffsetDuration(duration: number) {
+    this.offsetDuration = duration;
+  }
+
+  clearOffsetDuration() {
+    this.offsetDuration = undefined;
+    this.offsetStart = undefined;
+  }
+}
 
 // Register the plugin with video.js.
-videojs.registerPlugin("offset", offset);
+videojs.registerPlugin("offset", OffsetPlugin);
 
-export default offset;
+/* eslint-disable @typescript-eslint/naming-convention */
+declare module "video.js" {
+  interface VideoJsPlayer {
+    offset: () => OffsetPlugin;
+  }
+  interface VideoJsPlayerPluginOptions {
+    offset?: {};
+  }
+}
+
+export default OffsetPlugin;
