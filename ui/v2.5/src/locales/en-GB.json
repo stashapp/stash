@@ -482,7 +482,7 @@
         "heading": "Handy Connection Key"
       },
       "ignore_interval": {
-        "description": "The interval (in seconds) in which a scene must be played before activity is tracked",
+        "description": "The percentage of time in which a scene must be played before activity is tracked. Specify a value greater than 100 to disable activity tracking.",
         "heading": "Ignore Interval"
       },
       "image_lightbox": {

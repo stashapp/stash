@@ -1,7 +1,11 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { DurationInput, LoadingIndicator } from "src/components/Shared";
+import {
+  DurationInput,
+  PercentInput,
+  LoadingIndicator,
+} from "src/components/Shared";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { SettingSection } from "../SettingSection";
 import {
@@ -226,17 +230,23 @@ export const SettingsInterfacePanel: React.FC = () => {
           id="ignore-interval"
           headingID="config.ui.ignore_interval.heading"
           subHeadingID="config.ui.ignore_interval.description"
-          value={iface.ignoreInterval ?? undefined}
+          value={iface.ignoreInterval ?? 0}
           onChange={(v) => saveInterface({ ignoreInterval: v })}
           renderField={(value, setValue) => (
-            <DurationInput
+            <PercentInput
               numericValue={value}
               onValueChange={(interval) => setValue(interval ?? 0)}
             />
           )}
           renderValue={(v) => {
-            return <span>{DurationUtils.secondsToString(v ?? 0)}</span>;
+            return <span>{v}%</span>;
           }}
+        />
+        <NumberSetting
+          headingID="config.ui.slideshow_delay.heading"
+          subHeadingID="config.ui.slideshow_delay.description"
+          value={iface.imageLightbox?.slideshowDelay ?? undefined}
+          onChange={(v) => saveLightboxSettings({ slideshowDelay: v })}
         />
         <BooleanSetting
           id="auto-start-video"

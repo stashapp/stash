@@ -59,12 +59,15 @@
   }
 }
 
-.duration-input {
-  .duration-control {
+.duration-input,
+.percent-input {
+  .duration-control,
+  .percent-control {
     min-width: 3rem;
   }
 
-  .duration-button {
+  .duration-button,
+  .percent-button {
     border-bottom-left-radius: 0;
     border-top-left-radius: 0;
     line-height: 10px;

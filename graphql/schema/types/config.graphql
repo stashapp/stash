@@ -256,7 +256,7 @@ input ConfigInterfaceInput {
   autostartVideoOnPlaySelected: Boolean
   """If true continue scene will always play from the beginning"""
   alwaysStartFromBeginning: Boolean
-  """The interval (in seconds) in which a scene must be played before activity is tracked"""
+  """The percentage of time which a scene must be played before activity is tracked"""
   ignoreInterval: Int
   """If true, next scene in playlist will be played at video end by default"""
   continuePlaylistDefault: Boolean
@@ -326,7 +326,7 @@ type ConfigInterfaceResult {
   autostartVideoOnPlaySelected: Boolean
   """If true continue scene will always play from the beginning"""
   alwaysStartFromBeginning: Boolean
-  """The interval (in seconds) in which a scene must be played before activity is tracked"""
+  """The percentage of time in which a scene must be played before activity is tracked"""
   ignoreInterval: Int
   """If true, next scene in playlist will be played at video end by default"""
   continuePlaylistDefault: Boolean

@@ -285,17 +285,21 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     return () => {
       if (playerRef.current) {
         clearInterval(playDurationHandler);
-        const id = sceneId.current;
-        if (id && playDurationRef.current > ignoreInterval) {
-          var playDuration = playDurationRef.current;
-          const resume_time = playerRef.current.currentTime()!;
-          sceneSaveActivity({
-            variables: {
-              id,
-              resume_time,
-              playDuration,
-            },
-          });
+        if (ignoreInterval <= 100) {
+          const id = sceneId.current;
+          const playDuration = playDurationRef.current;
+          const videoDuration = playerRef.current.duration();
+          const percentPlayed = (100 / videoDuration) * playDuration;
+          if (id && percentPlayed >= ignoreInterval) {
+            const resume_time = playerRef.current.currentTime()!;
+            sceneSaveActivity({
+              variables: {
+                id,
+                resume_time,
+                playDuration,
+              },
+            });
+          }
         }
         playerRef.current.dispose();
         playerRef.current = undefined;
