@@ -155,7 +155,7 @@ type Query {
   version: Version!
 
   # LatestVersion
-  latestversion: ShortVersion!
+  latestversion: LatestVersion!
 }
 
 type Mutation {
