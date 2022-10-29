@@ -171,10 +171,17 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   }
 
   .progress-bar {
+    background-color: #73859f80;
     bottom: 5px;
     display: block;
     height: 5px;
     position: absolute;
+    width: 100%;
+  }
+
+  .progress-indicator {
+    background-color: #137cbd;
+    height: 5px;
   }
 
   .card-check {

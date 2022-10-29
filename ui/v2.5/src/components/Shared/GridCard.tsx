@@ -101,11 +101,9 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
     ) {
       var percent = (100 / props.duration) * props.resumeTime + "%";
       return (
-        <span
-          title={props.title}
-          style={{ width: percent }}
-          className="progress-bar"
-        />
+        <div title={props.title} className="progress-bar">
+          <div style={{ width: percent }} className="progress-indicator" />
+        </div>
       );
     }
   }
