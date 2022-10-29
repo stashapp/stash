@@ -85,8 +85,6 @@ class SourceMenuButton extends MenuButton {
 
       const currentTime = player.currentTime();
 
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      (player as any).clearOffsetDuration();
       player.src(currentSources);
       player.currentTime(currentTime);
       player.play();
