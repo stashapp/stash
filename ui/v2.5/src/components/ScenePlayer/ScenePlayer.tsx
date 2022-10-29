@@ -7,7 +7,6 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
-import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
 import "videojs-landscape-fullscreen";
 import "./live";
@@ -15,6 +14,7 @@ import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
 import "./markers";
+import "./vtt-thumbnails";
 import "./big-buttons";
 import cx from "classnames";
 
@@ -470,7 +470,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     player.focus();
 
     player.ready(() => {
-      player.vttThumbnails.src(scene.paths.vtt ?? undefined);
+      player.vttThumbnails().src(scene.paths.vtt ?? null);
     });
 
     started.current = false;

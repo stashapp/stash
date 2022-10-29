@@ -30,12 +30,6 @@ $sceneTabWidth: 450px;
     outline: none;
   }
 
-  .vjs-vtt-thumbnail-display {
-    // default opacity to 0, it gets set to 1 when moused-over.
-    // prevents the border from showing up when initially loaded
-    opacity: 0;
-  }
-
   .vjs-big-button-group {
     display: none;
     height: 80px;
@@ -182,7 +176,11 @@ $sceneTabWidth: 450px;
     border: 2px solid white;
     border-radius: 2px;
     bottom: 90px;
+    box-shadow: 0 0 7px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    pointer-events: none;
     position: absolute;
+    transition: opacity 0.2s;
   }
 
   .vjs-big-play-button,
