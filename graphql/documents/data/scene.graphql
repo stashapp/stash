@@ -26,7 +26,6 @@ fragment SceneData on Scene {
     stream
     webp
     vtt
-    chapters_vtt
     sprite
     funscript
     interactive_heatmap

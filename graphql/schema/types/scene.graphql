@@ -15,7 +15,6 @@ type ScenePathsType {
   stream: String # Resolver
   webp: String # Resolver
   vtt: String # Resolver
-  chapters_vtt: String # Resolver
   sprite: String # Resolver
   funscript: String # Resolver
   interactive_heatmap: String # Resolver
