@@ -306,7 +306,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         playerRef.current = undefined;
       }
     };
-  }, [sceneSaveActivity, ignoreInterval]);
+  }, [sceneSaveActivity, ignoreInterval, trackActivity]);
 
   const start = useCallback(() => {
     const player = playerRef.current;
