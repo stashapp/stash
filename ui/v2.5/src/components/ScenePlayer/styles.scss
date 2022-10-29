@@ -284,17 +284,6 @@ $sceneTabWidth: 450px;
   position: relative;
 }
 
-.hide-scrubber .scrubber-wrapper {
-  display: none;
-}
-
-/* hide scrubber when height is < 450px or width < 576 */
-@media (max-height: 449px), (max-width: 575px) {
-  .scrubber-wrapper {
-    display: none;
-  }
-}
-
 #scrubber-back {
   float: left;
 }
@@ -362,7 +351,6 @@ $sceneTabWidth: 450px;
   height: 100%;
   left: 0;
   position: absolute;
-  transition: 333ms ease-out;
   width: 100%;
 }
 
@@ -384,12 +372,19 @@ $sceneTabWidth: 450px;
   background-color: #000;
   cursor: pointer;
   font-size: 10px;
+  height: 20px;
   padding: 0 10px;
   position: absolute;
+  transform: translateX(-50%);
   white-space: nowrap;
 
   &:hover {
     background-color: #444;
+    z-index: 1;
+  }
+
+  &:hover::after {
+    border-top: solid 5px #444;
     z-index: 1;
   }
 
@@ -410,7 +405,7 @@ $sceneTabWidth: 450px;
   cursor: pointer;
   display: flex;
   font-size: 10px;
-  margin-right: 10px;
+  margin: 0 auto;
   position: absolute;
   text-align: center;
   text-shadow: 1px 1px black;
