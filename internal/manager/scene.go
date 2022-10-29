@@ -59,14 +59,39 @@ type SceneStreamEndpoint struct {
 	Label    *string `json:"label"`
 }
 
-func makeStreamEndpoint(streamURL *url.URL, streamingResolution models.StreamingResolutionEnum, mimeType, label string) *SceneStreamEndpoint {
-	urlCopy := *streamURL
-	v := urlCopy.Query()
-	v.Set("resolution", streamingResolution.String())
-	urlCopy.RawQuery = v.Encode()
+func makeDASHStreamEndpoint(directStreamURL *url.URL, label string, resolution models.StreamingResolutionEnum) *SceneStreamEndpoint {
+	mimeType := ffmpeg.MimeDASH
+
+	url := *directStreamURL
+	url.Path += ".mpd"
+
+	if resolution != "" {
+		v := url.Query()
+		v.Set("resolution", resolution.String())
+		url.RawQuery = v.Encode()
+	}
 
 	return &SceneStreamEndpoint{
-		URL:      urlCopy.String(),
+		URL:      url.String(),
+		MimeType: &mimeType,
+		Label:    &label,
+	}
+}
+
+func makeHLSStreamEndpoint(directStreamURL *url.URL, label string, resolution models.StreamingResolutionEnum) *SceneStreamEndpoint {
+	mimeType := ffmpeg.MimeHLS
+
+	url := *directStreamURL
+	url.Path += ".m3u8"
+
+	if resolution != "" {
+		v := url.Query()
+		v.Set("resolution", resolution.String())
+		url.RawQuery = v.Encode()
+	}
+
+	return &SceneStreamEndpoint{
+		URL:      url.String(),
 		MimeType: &mimeType,
 		Label:    &label,
 	}
@@ -82,13 +107,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 		return nil, fmt.Errorf("nil file")
 	}
 
-	var ret []*SceneStreamEndpoint
-	mimeWebm := ffmpeg.MimeWebm
-	mimeHLS := ffmpeg.MimeHLS
-	mimeMp4 := ffmpeg.MimeMp4
-
-	labelWebm := "webm"
-	labelHLS := "HLS"
+	var endpoints []*SceneStreamEndpoint
 
 	// direct stream should only apply when the audio codec is supported
 	audioCodec := ffmpeg.MissingUnsupported
@@ -99,99 +118,83 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 	// don't care if we can't get the container
 	container, _ := GetVideoFileContainer(pf)
 
-	replaceSuffix := func(suffix string) *url.URL {
-		urlCopy := *directStreamURL
-		urlCopy.Path += suffix
-		return &urlCopy
-	}
-
 	if HasTranscode(scene, config.GetInstance().GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
 		label := "Direct stream"
-		ret = append(ret, &SceneStreamEndpoint{
+		mimeType := ffmpeg.MimeMp4Video
+		endpoints = append(endpoints, &SceneStreamEndpoint{
 			URL:      directStreamURL.String(),
-			MimeType: &mimeMp4,
+			MimeType: &mimeType,
 			Label:    &label,
 		})
 	}
 
-	// only add mkv stream endpoint if the scene container is an mkv already
-	if container == ffmpeg.Matroska {
-		label := "mkv"
-		ret = append(ret, &SceneStreamEndpoint{
-			URL: replaceSuffix(".mkv").String(),
-			// set mkv to mp4 to trick the client, since many clients won't try mkv
-			MimeType: &mimeMp4,
+	// only add mkv hls stream endpoint if the scene container is an mkv already
+	// hls also only supports H264 (with mpeg-ts) and AAC/MP3
+	// this endpoint will copy the streams directly without re-encoding for hls,
+	// so playing/scrubbing might not work perfectly everywhere
+	if container == ffmpeg.Matroska && pf.VideoCodec == ffmpeg.H264 && (audioCodec == ffmpeg.Aac || audioCodec == ffmpeg.Mp3) {
+		url := *directStreamURL
+		url.Path += ".mkv"
+
+		label := "MKV"
+		mimeType := ffmpeg.MimeHLS
+		endpoints = append(endpoints, &SceneStreamEndpoint{
+			URL:      url.String(),
+			MimeType: &mimeType,
 			Label:    &label,
 		})
 	}
 
-	// WEBM quality transcoding options
-	// Note: These have the wrong mime type intentionally to allow jwplayer to selection between mp4/webm
-	webmLabelFourK := "WEBM 4K (2160p)"         // "FOUR_K"
-	webmLabelFullHD := "WEBM Full HD (1080p)"   // "FULL_HD"
-	webmLabelStandardHD := "WEBM HD (720p)"     // "STANDARD_HD"
-	webmLabelStandard := "WEBM Standard (480p)" // "STANDARD"
-	webmLabelLow := "WEBM Low (240p)"           // "LOW"
+	dashLabel := "DASH (VP9)"
+	dashLabelFourK := "DASH 4K (2160p)"         // "FOUR_K"
+	dashLabelFullHD := "DASH Full HD (1080p)"   // "FULL_HD"
+	dashLabelStandardHD := "DASH HD (720p)"     // "STANDARD_HD"
+	dashLabelStandard := "DASH Standard (480p)" // "STANDARD"
+	dashLabelLow := "DASH Low (240p)"           // "LOW"
 
-	// Setup up lower quality transcoding options (MP4)
-	mp4LabelFourK := "MP4 4K (2160p)"         // "FOUR_K"
-	mp4LabelFullHD := "MP4 Full HD (1080p)"   // "FULL_HD"
-	mp4LabelStandardHD := "MP4 HD (720p)"     // "STANDARD_HD"
-	mp4LabelStandard := "MP4 Standard (480p)" // "STANDARD"
-	mp4LabelLow := "MP4 Low (240p)"           // "LOW"
+	hlsLabel := "HLS (MP4)"
+	hlsLabelFourK := "HLS 4K (2160p)"         // "FOUR_K"
+	hlsLabelFullHD := "HLS Full HD (1080p)"   // "FULL_HD"
+	hlsLabelStandardHD := "HLS HD (720p)"     // "STANDARD_HD"
+	hlsLabelStandard := "HLS Standard (480p)" // "STANDARD"
+	hlsLabelLow := "HLS Low (240p)"           // "LOW"
 
-	var webmStreams []*SceneStreamEndpoint
-	var mp4Streams []*SceneStreamEndpoint
-
-	webmURL := replaceSuffix(".webm")
-	mp4URL := replaceSuffix(".mp4")
+	dashStreams := []*SceneStreamEndpoint{
+		makeDASHStreamEndpoint(directStreamURL, dashLabel, ""),
+	}
+	hlsStreams := []*SceneStreamEndpoint{
+		makeHLSStreamEndpoint(directStreamURL, hlsLabel, ""),
+	}
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumFourK, maxStreamingTranscodeSize) {
-		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumFourK, mimeMp4, webmLabelFourK))
-		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumFourK, mimeMp4, mp4LabelFourK))
+		dashStreams = append(dashStreams, makeDASHStreamEndpoint(directStreamURL, dashLabelFourK, models.StreamingResolutionEnumFourK))
+		hlsStreams = append(hlsStreams, makeHLSStreamEndpoint(directStreamURL, hlsLabelFourK, models.StreamingResolutionEnumFourK))
 	}
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumFullHd, maxStreamingTranscodeSize) {
-		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumFullHd, mimeMp4, webmLabelFullHD))
-		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumFullHd, mimeMp4, mp4LabelFullHD))
+		dashStreams = append(dashStreams, makeDASHStreamEndpoint(directStreamURL, dashLabelFullHD, models.StreamingResolutionEnumFullHd))
+		hlsStreams = append(hlsStreams, makeHLSStreamEndpoint(directStreamURL, hlsLabelFullHD, models.StreamingResolutionEnumFullHd))
 	}
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumStandardHd, maxStreamingTranscodeSize) {
-		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumStandardHd, mimeMp4, webmLabelStandardHD))
-		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumStandardHd, mimeMp4, mp4LabelStandardHD))
+		dashStreams = append(dashStreams, makeDASHStreamEndpoint(directStreamURL, dashLabelStandardHD, models.StreamingResolutionEnumStandardHd))
+		hlsStreams = append(hlsStreams, makeHLSStreamEndpoint(directStreamURL, hlsLabelStandardHD, models.StreamingResolutionEnumStandardHd))
 	}
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumStandard, maxStreamingTranscodeSize) {
-		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumStandard, mimeMp4, webmLabelStandard))
-		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumStandard, mimeMp4, mp4LabelStandard))
+		dashStreams = append(dashStreams, makeDASHStreamEndpoint(directStreamURL, dashLabelStandard, models.StreamingResolutionEnumStandard))
+		hlsStreams = append(hlsStreams, makeHLSStreamEndpoint(directStreamURL, hlsLabelStandard, models.StreamingResolutionEnumStandard))
 	}
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumLow, maxStreamingTranscodeSize) {
-		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumLow, mimeMp4, webmLabelLow))
-		mp4Streams = append(mp4Streams, makeStreamEndpoint(mp4URL, models.StreamingResolutionEnumLow, mimeMp4, mp4LabelLow))
+		dashStreams = append(dashStreams, makeDASHStreamEndpoint(directStreamURL, dashLabelLow, models.StreamingResolutionEnumLow))
+		hlsStreams = append(hlsStreams, makeHLSStreamEndpoint(directStreamURL, hlsLabelLow, models.StreamingResolutionEnumLow))
 	}
 
-	ret = append(ret, webmStreams...)
-	ret = append(ret, mp4Streams...)
+	endpoints = append(endpoints, dashStreams...)
+	endpoints = append(endpoints, hlsStreams...)
 
-	defaultStreams := []*SceneStreamEndpoint{
-		{
-			URL:      replaceSuffix(".webm").String(),
-			MimeType: &mimeWebm,
-			Label:    &labelWebm,
-		},
-	}
-
-	ret = append(ret, defaultStreams...)
-
-	hls := SceneStreamEndpoint{
-		URL:      replaceSuffix(".m3u8").String(),
-		MimeType: &mimeHLS,
-		Label:    &labelHLS,
-	}
-	ret = append(ret, &hls)
-
-	return ret, nil
+	return endpoints, nil
 }
 
 // HasTranscode returns true if a transcoded video exists for the provided

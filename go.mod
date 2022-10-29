@@ -58,6 +58,7 @@ require (
 	github.com/vearutop/statigz v1.1.6
 	github.com/vektah/dataloaden v0.3.0
 	github.com/vektah/gqlparser/v2 v2.4.1
+	github.com/zencoder/go-dash/v3 v3.0.2
 	gopkg.in/guregu/null.v4 v4.0.0
 )
 

@@ -398,6 +398,10 @@ github.com/vektra/mockery/v2/cmd
 github.com/vektra/mockery/v2/pkg
 github.com/vektra/mockery/v2/pkg/config
 github.com/vektra/mockery/v2/pkg/logging
+# github.com/zencoder/go-dash/v3 v3.0.2
+## explicit; go 1.13
+github.com/zencoder/go-dash/v3/helpers/ptrs
+github.com/zencoder/go-dash/v3/mpd
 # go.uber.org/atomic v1.7.0
 ## explicit; go 1.13
 go.uber.org/atomic
@@ -488,8 +492,6 @@ golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/packagesinternal
 golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
-# golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f
-## explicit; go 1.17
 # gopkg.in/guregu/null.v4 v4.0.0
 ## explicit
 gopkg.in/guregu/null.v4
