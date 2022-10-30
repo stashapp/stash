@@ -231,18 +231,17 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
 
 	// Start the transaction and save the p
-	var p *models.Performer
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Performer
 
 		// need to get existing performer
-		existing, err := qb.Find(ctx, updatedPerformer.ID)
+		existing, err := qb.Find(ctx, performerID)
 		if err != nil {
 			return err
 		}
 
 		if existing == nil {
-			return fmt.Errorf("performer with id %d not found", updatedPerformer.ID)
+			return fmt.Errorf("performer with id %d not found", performerID)
 		}
 
 		if err := performer.ValidateDeathDate(existing, input.Birthdate, input.DeathDate); err != nil {
@@ -251,26 +250,26 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 			}
 		}
 
-		p, err = qb.UpdatePartial(ctx, performerID, updatedPerformer)
+		_, err = qb.UpdatePartial(ctx, performerID, updatedPerformer)
 		if err != nil {
 			return err
 		}
 
 		// Save the tags
 		if translator.hasField("tag_ids") {
-			if err := r.updatePerformerTags(ctx, p.ID, input.TagIds); err != nil {
+			if err := r.updatePerformerTags(ctx, performerID, input.TagIds); err != nil {
 				return err
 			}
 		}
 
 		// update image table
 		if len(imageData) > 0 {
-			if err := qb.UpdateImage(ctx, p.ID, imageData); err != nil {
+			if err := qb.UpdateImage(ctx, performerID, imageData); err != nil {
 				return err
 			}
 		} else if imageIncluded {
 			// must be unsetting
-			if err := qb.DestroyImage(ctx, p.ID); err != nil {
+			if err := qb.DestroyImage(ctx, performerID); err != nil {
 				return err
 			}
 		}
@@ -288,8 +287,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 		return nil, err
 	}
 
-	r.hookExecutor.ExecutePostHooks(ctx, p.ID, plugin.PerformerUpdatePost, input, translator.getFields())
-	return r.getPerformer(ctx, p.ID)
+	r.hookExecutor.ExecutePostHooks(ctx, performerID, plugin.PerformerUpdatePost, input, translator.getFields())
+	return r.getPerformer(ctx, performerID)
 }
 
 func (r *mutationResolver) updatePerformerTags(ctx context.Context, performerID int, tagsIDs []string) error {
