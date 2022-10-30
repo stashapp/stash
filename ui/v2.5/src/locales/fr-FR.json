@@ -294,7 +294,7 @@
         "heading": "Chemin de Python"
       },
       "scraper_user_agent": "Agent utilisateur de l'extracteur",
-      "scraper_user_agent_desc": "Chaîne agent utilisateur utilisée dans les requêtes http lors de l'extraction de contenu",
+      "scraper_user_agent_desc": "Chaîne agent utilisateur utilisée par les requêtes http lors de l'extraction de contenu",
       "scrapers_path": {
         "description": "Emplacement du répertoire des fichiers de configuration de l'extracteur de contenu",
         "heading": "Chemin des extracteurs de contenu"
