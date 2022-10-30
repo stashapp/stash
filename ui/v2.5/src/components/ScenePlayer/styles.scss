@@ -172,6 +172,13 @@ $sceneTabWidth: 450px;
     z-index: 1;
   }
 
+  /* stylelint-disable declaration-no-important */
+  .vjs-slider {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  /* stylelint-enable declaration-no-important */
+
   .vjs-vtt-thumbnail-display {
     border: 2px solid white;
     border-radius: 2px;
