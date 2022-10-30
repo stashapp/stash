@@ -41,23 +41,29 @@ class BigButtonGroup extends videojs.getComponent("Component") {
   }
 }
 
-function bigButtons(this: VideoJsPlayer) {
-  this.addChild("BigButtonGroup");
+class BigButtonsPlugin extends videojs.getPlugin("plugin") {
+  constructor(player: VideoJsPlayer) {
+    super(player);
+
+    player.ready(() => {
+      player.addChild("BigButtonGroup");
+    });
+  }
 }
 
 // Register the plugin with video.js.
 videojs.registerComponent("BigButtonGroup", BigButtonGroup);
 videojs.registerComponent("BigPlayPauseButton", BigPlayPauseButton);
-videojs.registerPlugin("bigButtons", bigButtons);
+videojs.registerPlugin("bigButtons", BigButtonsPlugin);
 
 /* eslint-disable @typescript-eslint/naming-convention */
 declare module "video.js" {
   interface VideoJsPlayer {
-    bigButtons: typeof bigButtons;
+    bigButtons: () => BigButtonsPlugin;
   }
   interface VideoJsPlayerPluginOptions {
     bigButtons?: {};
   }
 }
 
-export default bigButtons;
+export default BigButtonsPlugin;

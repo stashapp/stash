@@ -38,6 +38,7 @@ $sceneTabWidth: 450px;
     position: absolute;
     top: calc(50% - 40px);
     width: 100%;
+    z-index: 1;
 
     .vjs-button {
       font-size: 4em;
