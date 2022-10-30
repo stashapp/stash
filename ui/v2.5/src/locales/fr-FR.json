@@ -294,7 +294,7 @@
         "heading": "Chemin de Python"
       },
       "scraper_user_agent": "Agent utilisateur de l'extracteur",
-      "scraper_user_agent_desc": "Chaîne utilisateur utilisée dans les requêtes http lors de l'extraction de contenu",
+      "scraper_user_agent_desc": "Chaîne agent utilisateur utilisée dans les requêtes http lors de l'extraction de contenu",
       "scrapers_path": {
         "description": "Emplacement du répertoire des fichiers de configuration de l'extracteur de contenu",
         "heading": "Chemin des extracteurs de contenu"
@@ -319,7 +319,7 @@
     },
     "scraping": {
       "entity_metadata": "Métadonnées {entityType}",
-      "entity_scrapers": "{entityType} extraits",
+      "entity_scrapers": "Extracteurs de {entityType}s",
       "excluded_tag_patterns_desc": "Expressions régulières de noms d'étiquettes à exclure des résultats de scraping",
       "excluded_tag_patterns_head": "Modèles d'étiquette excluse",
       "scraper": "Extracteur",
@@ -331,11 +331,11 @@
     "stashbox": {
       "add_instance": "Ajouter une instance Stash-Box",
       "api_key": "Clé API",
-      "description": "Stash-Box simplifie l'étiquetage automatique des scènes et performeurs en se basant sur des empreintes numériques et noms de fichiers.\nLe point de connexion et la clé API se trouvent sur la page de votre compte d'instance stash-box. Les noms sont requis lorsque plusieurs instances sont ajoutées.",
-      "endpoint": "Point de connexion",
-      "graphql_endpoint": "Point de connexion GraphQL",
+      "description": "Stash-Box simplifie l'étiquetage automatique des scènes et performeurs en se basant sur des empreintes numériques et noms de fichiers.\nLe point de terminaison et la clé API se trouvent sur la page de votre compte d'instance stash-box. Les noms sont requis lorsque plusieurs instances sont ajoutées.",
+      "endpoint": "Point de terminaison",
+      "graphql_endpoint": "Point de terminaison GraphQL",
       "name": "Nom",
-      "title": "Points de connexion Stash-Box"
+      "title": "Points de terminaison Stash-Box"
     },
     "system": {
       "transcoding": "Transcodage"
@@ -1014,7 +1014,7 @@
   "stash_ids": "IDs Stash",
   "stashbox": {
     "go_review_draft": "Allez à {endpoint_name} pour revoir le brouillon.",
-    "selected_stash_box": "Point de connexion Stash-Box sélectionné",
+    "selected_stash_box": "Point de terminaison Stash-Box sélectionné",
     "submission_failed": "Envoi échoué",
     "submission_successful": "Envoi réussi",
     "submit_update": "Existe déjà dans {endpoint_name}"
