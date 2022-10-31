@@ -105,9 +105,15 @@ class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
       const loadSources = [...this.sources];
       const selectedSrc = loadSources.splice(this.selectedIndex, 1)[0];
       loadSources.unshift(selectedSrc);
-      this.player.src(loadSources);
 
-      player.currentTime(currentTime);
+      const paused = player.paused();
+      player.src(loadSources);
+      player.one("canplay", () => {
+        if (paused) {
+          player.pause();
+        }
+        player.currentTime(currentTime);
+      });
       player.play();
     });
 
