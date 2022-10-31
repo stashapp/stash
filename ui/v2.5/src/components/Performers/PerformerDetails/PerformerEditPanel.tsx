@@ -797,7 +797,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  function renderTextField(field: string, title: string, placeholder?: string) {
+  function renderField(
+    field: string,
+    title: string,
+    type?: string,
+    placeholder?: string
+  ) {
     return (
       <Form.Group controlId={field} as={Row}>
         <Form.Label column xs={labelXS} xl={labelXL}>
@@ -806,6 +811,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         <Col xs={fieldXS} xl={fieldXL}>
           <Form.Control
             className="text-input"
+            type={type || "text"}
             placeholder={placeholder ?? title}
             {...formik.getFieldProps(field)}
             isInvalid={!!formik.getFieldMeta(field).error}
@@ -877,8 +883,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("birthdate", "Birthdate", "YYYY-MM-DD")}
-        {renderTextField("death_date", "Death Date", "YYYY-MM-DD")}
+        {renderField("birthdate", "Birthdate", "YYYY-MM-DD")}
+        {renderField("death_date", "Death Date", "YYYY-MM-DD")}
 
         <Form.Group as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
@@ -892,13 +898,13 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("ethnicity", "Ethnicity")}
-        {renderTextField("hair_color", "Hair Color")}
-        {renderTextField("eye_color", "Eye Color")}
-        {renderTextField("height_cm", "Height (cm)")}
-        {renderTextField("weight", "Weight (kg)")}
-        {renderTextField("measurements", "Measurements")}
-        {renderTextField("fake_tits", "Fake Tits")}
+        {renderField("ethnicity", "Ethnicity")}
+        {renderField("hair_color", "Hair Color")}
+        {renderField("eye_color", "Eye Color")}
+        {renderField("height_cm", "Height (cm)", "number")}
+        {renderField("weight", "Weight (kg)", "number")}
+        {renderField("measurements", "Measurements")}
+        {renderField("fake_tits", "Fake Tits")}
 
         <Form.Group controlId="tattoos" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
@@ -928,7 +934,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("career_length", "Career Length")}
+        {renderField("career_length", "Career Length")}
 
         <Form.Group controlId="url" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
@@ -943,8 +949,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("twitter", "Twitter")}
-        {renderTextField("instagram", "Instagram")}
+        {renderField("twitter", "Twitter")}
+        {renderField("instagram", "Instagram")}
         <Form.Group controlId="details" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
             <FormattedMessage id="details" />
