@@ -182,7 +182,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       <>
         <dt>StashIDs</dt>
         <dd>
-          <ul>
+          <dl>
             {props.scene.stash_ids.map((stashID) => {
               const base = getStashboxBase(stashID.endpoint);
               const link = base ? (
@@ -197,12 +197,12 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
                 stashID.stash_id
               );
               return (
-                <li key={stashID.stash_id} className="row no-gutters">
+                <dd key={stashID.stash_id} className="row no-gutters">
                   {link}
-                </li>
+                </dd>
               );
             })}
-          </ul>
+          </dl>
         </dd>
       </>
     );

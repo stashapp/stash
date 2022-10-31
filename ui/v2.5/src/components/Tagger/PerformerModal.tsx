@@ -132,7 +132,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       birthdate: performer.birthdate,
       ethnicity: performer.ethnicity,
       eye_color: performer.eye_color,
-      country: getCountryByISO(performer.country),
+      country: performer.country,
       height: performer.height,
       measurements: performer.measurements,
       fake_tits: performer.fake_tits,
