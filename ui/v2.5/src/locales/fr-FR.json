@@ -1013,7 +1013,7 @@
   "stash_id": "ID Stash",
   "stash_ids": "ID Stash",
   "stashbox": {
-    "go_review_draft": "Allez à {endpoint_name} pour examiner le projet.",
+    "go_review_draft": "Allez à {endpoint_name} pour examiner l'ébauche.",
     "selected_stash_box": "Point de terminaison Stash-Box sélectionné",
     "submission_failed": "Envoi échoué",
     "submission_successful": "Envoi réussi",
