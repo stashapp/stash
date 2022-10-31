@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -96,45 +95,18 @@ func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) StreamDASH(w http.ResponseWriter, r *http.Request) {
-	rs.streamManifest(w, r, ffmpeg.MimeDASH,
-		func(sm *ffmpeg.StreamManager, w io.Writer, sceneID int, pf *file.VideoFile) {
-			baseUrl := *r.URL
-			baseUrl.RawQuery = ""
-
-			logger.Debugf("Returning DASH playlist for scene %d", sceneID)
-
-			sm.WriteDASHManifest(w, pf.Duration, baseUrl.String(), r.URL.RawQuery)
-		},
-	)
+	rs.streamManifest(w, r, ffmpeg.StreamTypeDASHVideo, "DASH")
 }
 
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
-	rs.streamManifest(w, r, ffmpeg.MimeHLS,
-		func(sm *ffmpeg.StreamManager, w io.Writer, sceneID int, pf *file.VideoFile) {
-			baseUrl := *r.URL
-			baseUrl.RawQuery = ""
-
-			logger.Debugf("Returning HLS playlist for scene %d", sceneID)
-
-			sm.WriteHLSManifest(w, pf.Duration, baseUrl.String(), r.URL.RawQuery)
-		},
-	)
+	rs.streamManifest(w, r, ffmpeg.StreamTypeHLS, "HLS")
 }
 
 func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
-	rs.streamManifest(w, r, ffmpeg.MimeHLS,
-		func(sm *ffmpeg.StreamManager, w io.Writer, sceneID int, pf *file.VideoFile) {
-			baseUrl := *r.URL
-			baseUrl.RawQuery = ""
-
-			logger.Debugf("Returning MKV HLS playlist for scene %d", sceneID)
-
-			sm.WriteHLSManifest(w, pf.Duration, baseUrl.String(), r.URL.RawQuery)
-		},
-	)
+	rs.streamManifest(w, r, ffmpeg.StreamTypeHLSCopy, "MKV HLS")
 }
 
-func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, contentType string, writeManifest func(sm *ffmpeg.StreamManager, w io.Writer, sceneID int, pf *file.VideoFile)) {
+func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, streamType ffmpeg.StreamType, logName string) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	streamManager := manager.GetInstance().StreamManager
@@ -148,10 +120,24 @@ func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, con
 		return
 	}
 
-	w.Header().Set("Content-Type", contentType)
+	if err := r.ParseForm(); err != nil {
+		logger.Warnf("[transcode] error parsing query form: %v", err)
+	}
+
+	resolution := r.Form.Get("resolution")
+
+	w.Header().Set("Content-Type", streamType.ManifestMimeType())
 	var str strings.Builder
 
-	writeManifest(streamManager, &str, scene.ID, pf)
+	baseUrl := *r.URL
+	baseUrl.RawQuery = ""
+	logger.Debugf("Returning %s manifest for scene %d", logName, scene.ID)
+	err := streamType.WriteManifest(streamManager, &str, pf, baseUrl.String(), resolution)
+	if err != nil {
+		logger.Warnf("[transcode] error writing manifest: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	requestByteRange := createByteRange(r.Header.Get("Range"))
 	if requestByteRange.RawString != "" {
@@ -180,7 +166,6 @@ func (rs sceneRoutes) StreamHLSSegment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) StreamMKVSegment(w http.ResponseWriter, r *http.Request) {
-	r.FormValue("")
 	rs.streamSegment(w, r, ffmpeg.StreamTypeHLSCopy)
 }
 
@@ -208,21 +193,11 @@ func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, stre
 	segment := chi.URLParam(r, "segment")
 	requestedSize := r.Form.Get("resolution")
 
-	audioCodec := ffmpeg.MissingUnsupported
-	if f.AudioCodec != "" {
-		audioCodec = ffmpeg.ProbeAudioCodec(f.AudioCodec)
-	}
-
 	options := ffmpeg.TranscodeStreamOptions{
 		Type: streamType,
 
-		Input:     f.Path,
+		VideoFile: f,
 		Hash:      hash,
-		VideoOnly: audioCodec == ffmpeg.MissingUnsupported,
-
-		VideoDuration: f.Duration,
-		VideoWidth:    f.Width,
-		VideoHeight:   f.Height,
 
 		MaxTranscodeSize: config.GetInstance().GetMaxStreamingTranscodeSize().GetMaxResolution(),
 	}

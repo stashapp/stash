@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -53,7 +54,7 @@ const (
 	maxIdleTime = 30 * time.Second
 
 	// Cancel timeout for ffmpeg to prevent corrupted segments
-	cancelTimeout = 2 * time.Second
+	cancelTimeout = 3 * time.Second
 )
 
 // StreamType represents a transcode stream codec.
@@ -73,23 +74,9 @@ var ErrInvalidSegment = errors.New("invalid segment")
 type TranscodeStreamOptions struct {
 	Type StreamType
 
-	Input            string
+	VideoFile        *file.VideoFile
 	Hash             string
 	MaxTranscodeSize int
-
-	// original video metadata
-	VideoDuration float64
-	VideoWidth    int
-	VideoHeight   int
-
-	// transcode the video, remove the audio
-	// in some videos where the audio codec is not supported by ffmpeg
-	// ffmpeg fails if you try to transcode the audio
-	VideoOnly bool
-}
-
-type StreamManagerConfig interface {
-	GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 }
 
 type transcodeProcess struct {
@@ -108,8 +95,10 @@ type runningStream struct {
 }
 
 type StreamManager struct {
-	cacheDir    string
-	encoder     FFMpeg
+	cacheDir string
+	encoder  FFMpeg
+	ffprobe  FFProbe
+
 	config      StreamManagerConfig
 	lockManager *fsutil.ReadLockManager
 
@@ -118,6 +107,10 @@ type StreamManager struct {
 
 	runningStreams map[string]*runningStream
 	streamsMutex   sync.Mutex
+}
+
+type StreamManagerConfig interface {
+	GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 }
 
 type transcodedSegment struct {
@@ -134,7 +127,7 @@ func (c StreamType) String() string {
 	case StreamTypeHLSCopy:
 		return "hls-copy"
 	}
-	return ""
+	return string(c)
 }
 
 func (c StreamType) MimeType() string {
@@ -149,34 +142,55 @@ func (c StreamType) MimeType() string {
 	return ""
 }
 
-func (c StreamType) VideoCodec() VideoCodec {
+func (c StreamType) WriteManifest(sm *StreamManager, w io.Writer, vf *file.VideoFile, baseURL, resolution string) error {
 	switch c {
 	case StreamTypeDASHVideo, StreamTypeDASHAudio:
-		return VideoCodecVP9
-	case StreamTypeHLS:
-		return VideoCodecLibX264
-	case StreamTypeHLSCopy:
-		return VideoCodecCopy
+		return sm.WriteDASHManifest(w, vf, baseURL, resolution)
+	case StreamTypeHLS, StreamTypeHLSCopy:
+		return sm.WriteHLSManifest(w, vf, baseURL, resolution)
+	}
+	return fmt.Errorf("invalid stream type %s", string(c))
+}
+
+func (c StreamType) ManifestMimeType() string {
+	switch c {
+	case StreamTypeDASHVideo, StreamTypeDASHAudio:
+		return MimeDASH
+	case StreamTypeHLS, StreamTypeHLSCopy:
+		return MimeHLS
 	}
 	return ""
 }
 
-func (c StreamType) Args(segment int, outputDir string) []string {
-	// segment length in frames
-	segmentFrames := fmt.Sprint(segmentLength * 30)
+func (c StreamType) Args(vf *file.VideoFile, maxScale, segment int, outputDir string) (args Args) {
+	args = append(args, "-hide_banner")
+	args = args.LogLevel(LogLevelError)
+
+	if segment > 0 {
+		args = args.Seek(segmentToTime(segment))
+	}
+
+	args = args.Input(vf.Path)
+
+	videoOnly := ProbeAudioCodec(vf.AudioCodec) == MissingUnsupported
+
+	var videoFilter VideoFilter
+	videoFilter = videoFilter.ScaleMax(vf.Width, vf.Height, maxScale)
 
 	switch c {
 	case StreamTypeDASHVideo, StreamTypeDASHAudio:
-		return []string{
+		args = append(args, []string{
+			"-c:v", "libvpx-vp9",
 			"-pix_fmt", "yuv420p",
 			"-deadline", "realtime",
 			"-cpu-used", "5",
 			"-row-mt", "1",
 			"-crf", "30",
 			"-b:v", "0",
-			"-r", "30",
-			"-g", segmentFrames,
-			"-keyint_min", segmentFrames,
+			"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d)", segmentLength),
+		}...)
+		args = args.VideoFilter(videoFilter)
+		args = append(args, []string{
 			"-copyts",
 			"-avoid_negative_ts", "disabled",
 			"-map", "0:v:0",
@@ -184,29 +198,41 @@ func (c StreamType) Args(segment int, outputDir string) []string {
 			"-chunk_start_index", fmt.Sprint(segment),
 			"-header", filepath.Join(outputDir, "init_v.webm"),
 			filepath.Join(outputDir, "%d_v.webm"),
-			"-c:a", "libopus",
-			"-ar", "48000",
-			"-copyts",
-			"-avoid_negative_ts", "disabled",
-			"-map", "0:a:0",
-			"-f", "webm_chunk",
-			"-chunk_start_index", fmt.Sprint(segment),
-			"-audio_chunk_duration", "2000",
-			"-header", filepath.Join(outputDir, "init_a.webm"),
-			filepath.Join(outputDir, "%d_a.webm"),
+		}...)
+		if !videoOnly {
+			args = append(args, []string{
+				"-c:a", "libopus",
+				"-b:a", "96000",
+				"-ar", "48000",
+				"-copyts",
+				"-avoid_negative_ts", "disabled",
+				"-map", "0:a:0",
+				"-f", "webm_chunk",
+				"-chunk_start_index", fmt.Sprint(segment),
+				"-audio_chunk_duration", fmt.Sprint(segmentLength * 1000),
+				"-header", filepath.Join(outputDir, "init_a.webm"),
+				filepath.Join(outputDir, "%d_a.webm"),
+			}...)
 		}
 	case StreamTypeHLS:
-		return []string{
+		args = append(args, []string{
+			"-c:v", "libx264",
 			"-pix_fmt", "yuv420p",
 			"-preset", "veryfast",
 			"-crf", "25",
-			"-r", "30",
-			"-g", segmentFrames,
-			"-keyint_min", segmentFrames,
 			"-flags", "+cgop",
 			"-force_key_frames", fmt.Sprintf("expr:gte(t,n_forced*%d)", segmentLength),
-			"-c:a", "aac",
-			"-ac", "2",
+		}...)
+		args = args.VideoFilter(videoFilter)
+		if videoOnly {
+			args = append(args, "-an")
+		} else {
+			args = append(args, []string{
+				"-c:a", "aac",
+				"-ac", "2",
+			}...)
+		}
+		args = append(args, []string{
 			"-sn",
 			"-copyts",
 			"-avoid_negative_ts", "disabled",
@@ -219,9 +245,20 @@ func (c StreamType) Args(segment int, outputDir string) []string {
 			"-hls_flags", "temp_file",
 			"-hls_segment_filename", filepath.Join(outputDir, "%d.ts"),
 			filepath.Join(outputDir, "manifest.m3u8"),
-		}
+		}...)
 	case StreamTypeHLSCopy:
-		return []string{
+		args = append(args, []string{
+			"-c:v", "copy",
+		}...)
+		if videoOnly {
+			args = append(args, "-an")
+		} else {
+			args = append(args, []string{
+				"-c:a", "aac",
+				"-ac", "2",
+			}...)
+		}
+		args = append(args, []string{
 			"-sn",
 			"-copyts",
 			"-avoid_negative_ts", "disabled",
@@ -234,9 +271,10 @@ func (c StreamType) Args(segment int, outputDir string) []string {
 			"-hls_flags", "temp_file",
 			"-hls_segment_filename", filepath.Join(outputDir, "%d.ts"),
 			filepath.Join(outputDir, "manifest.m3u8"),
-		}
+		}...)
 	}
-	return []string{}
+
+	return
 }
 
 func (c StreamType) Segment(str string) (segment int, err error) {
@@ -308,6 +346,10 @@ func (c StreamType) FileSegment(filename string, segment *int) bool {
 	return false
 }
 
+func (o *TranscodeStreamOptions) StreamArgs(segment int, outputDir string) Args {
+	return o.Type.Args(o.VideoFile, o.MaxTranscodeSize, segment, outputDir)
+}
+
 func (o *TranscodeStreamOptions) FileDir() string {
 	resolution := o.MaxTranscodeSize
 	if resolution == 0 {
@@ -322,10 +364,10 @@ func (o *TranscodeStreamOptions) FilePath(segment int) string {
 }
 
 func (o *TranscodeStreamOptions) LastSegment() int {
-	return int(math.Ceil(o.VideoDuration/segmentLength)) - 1
+	return int(math.Ceil(o.VideoFile.Duration/segmentLength)) - 1
 }
 
-func NewStreamManager(cacheDir string, encoder FFMpeg, config StreamManagerConfig, lockManager *fsutil.ReadLockManager) *StreamManager {
+func NewStreamManager(cacheDir string, encoder FFMpeg, ffprobe FFProbe, config StreamManagerConfig, lockManager *fsutil.ReadLockManager) *StreamManager {
 	if cacheDir == "" {
 		panic("cache directory is not set")
 	}
@@ -335,6 +377,7 @@ func NewStreamManager(cacheDir string, encoder FFMpeg, config StreamManagerConfi
 	ret := &StreamManager{
 		cacheDir:       cacheDir,
 		encoder:        encoder,
+		ffprobe:        ffprobe,
 		config:         config,
 		lockManager:    lockManager,
 		context:        ctx,
@@ -354,9 +397,15 @@ func (sm *StreamManager) Shutdown() {
 
 // WriteHLSManifest writes an HLS playlist manifest to w. The URLs for the segments
 // are of the form {baseURL}/%d.ts{?urlQuery} where %d is the segment index.
-func (sm *StreamManager) WriteHLSManifest(w io.Writer, duration float64, baseURL, urlQuery string) {
-	if urlQuery != "" {
-		urlQuery = "?" + urlQuery
+func (sm *StreamManager) WriteHLSManifest(w io.Writer, vf *file.VideoFile, baseURL, resolution string) error {
+	probeResult, err := sm.ffprobe.NewVideoFile(vf.Path)
+	if err != nil {
+		return err
+	}
+
+	var urlQuery string
+	if resolution != "" {
+		urlQuery = fmt.Sprintf("?resolution=%s", resolution)
 	}
 
 	fmt.Fprint(w, "#EXTM3U\n")
@@ -366,7 +415,7 @@ func (sm *StreamManager) WriteHLSManifest(w io.Writer, duration float64, baseURL
 	fmt.Fprintf(w, "#EXT-X-TARGETDURATION:%d\n", segmentLength)
 	fmt.Fprint(w, "#EXT-X-PLAYLIST-TYPE:VOD\n")
 
-	leftover := duration
+	leftover := probeResult.Duration
 	segment := 0
 
 	for leftover > 0 {
@@ -383,28 +432,84 @@ func (sm *StreamManager) WriteHLSManifest(w io.Writer, duration float64, baseURL
 	}
 
 	fmt.Fprint(w, "#EXT-X-ENDLIST\n")
+
+	return nil
 }
 
 // WriteDASHManifest writes an DASH playlist manifest to w. The base URL of the playlist is set to baseURL.
-func (sm *StreamManager) WriteDASHManifest(w io.Writer, duration float64, baseURL, urlQuery string) {
-	mediaDuration := mpd.Duration(time.Duration(duration) * time.Second)
+func (sm *StreamManager) WriteDASHManifest(w io.Writer, vf *file.VideoFile, baseURL, resolution string) error {
+	probeResult, err := sm.ffprobe.NewVideoFile(vf.Path)
+	if err != nil {
+		return err
+	}
+
+	var framerate string
+	var videoWidth int
+	var videoHeight int
+	videoStream := probeResult.VideoStream
+	if videoStream != nil {
+		framerate = videoStream.AvgFrameRate
+		videoWidth = videoStream.Width
+		videoHeight = videoStream.Height
+	} else {
+		// extract the framerate fraction from the file framerate
+		// framerates 0.1% below round numbers are common,
+		// attempt to infer when this is the case
+		fileFramerate := vf.FrameRate
+		rate1001, off1001 := math.Modf(fileFramerate * 1.001)
+		var numerator int
+		var denominator int
+		switch {
+		case off1001 < 0.005:
+			numerator = int(rate1001) * 1000
+			denominator = 1001
+		case off1001 > 0.995:
+			numerator = (int(rate1001) + 1) * 1000
+			denominator = 1001
+		default:
+			numerator = int(fileFramerate * 1000)
+			denominator = 1000
+		}
+		framerate = fmt.Sprintf("%d/%d", numerator, denominator)
+		videoHeight = vf.Height
+		videoWidth = vf.Width
+	}
+
+	var urlQuery string
+	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
+	if resolution != "" {
+		maxTranscodeSize = models.StreamingResolutionEnum(resolution).GetMaxResolution()
+		urlQuery = fmt.Sprintf("?resolution=%s", resolution)
+	}
+	if maxTranscodeSize != 0 {
+		videoSize := videoHeight
+		if videoWidth < videoSize {
+			videoSize = videoWidth
+		}
+
+		if maxTranscodeSize < videoSize {
+			scaleFactor := float64(maxTranscodeSize) / float64(videoSize)
+			videoWidth = int(float64(videoWidth) * scaleFactor)
+			videoHeight = int(float64(videoHeight) * scaleFactor)
+		}
+	}
+
+	mediaDuration := mpd.Duration(time.Duration(probeResult.Duration * float64(time.Second)))
 	m := mpd.NewMPD(mpd.DASH_PROFILE_LIVE, mediaDuration.String(), "PT4.0S")
 	m.BaseURL = baseURL + "/"
-
-	if urlQuery != "" {
-		urlQuery = "?" + urlQuery
-	}
 
 	video, _ := m.AddNewAdaptationSetVideo("video/webm", "progressive", true, 1)
 
 	_, _ = video.SetNewSegmentTemplate(2, "init_v.webm"+urlQuery, "$Number$_v.webm"+urlQuery, 0, 1)
-	_, _ = video.AddNewRepresentationVideo(200000, "vp09.00.40.08", "0", "30/1", 1920, 1080)
+	_, _ = video.AddNewRepresentationVideo(200000, "vp09.00.40.08", "0", framerate, int64(videoWidth), int64(videoHeight))
 
-	audio, _ := m.AddNewAdaptationSetAudio("audio/webm", true, 1, "und")
-	_, _ = audio.SetNewSegmentTemplate(2, "init_a.webm"+urlQuery, "$Number$_a.webm"+urlQuery, 0, 1)
-	_, _ = audio.AddNewRepresentationAudio(48000, 96000, "opus", "1")
+	if ProbeAudioCodec(vf.AudioCodec) != MissingUnsupported {
+		audio, _ := m.AddNewAdaptationSetAudio("audio/webm", true, 1, "und")
+		_, _ = audio.SetNewSegmentTemplate(2, "init_a.webm"+urlQuery, "$Number$_a.webm"+urlQuery, 0, 1)
+		_, _ = audio.AddNewRepresentationAudio(48000, 96000, "opus", "1")
+	}
 
-	_ = m.Write(w)
+	return m.Write(w)
 }
 
 func segmentExists(path string) bool {
@@ -578,38 +683,6 @@ func (sm *StreamManager) StreamSegment(options *TranscodeStreamOptions, segmentS
 	return sm.streamSegmentFunc(stream, options, segment)
 }
 
-func (sm *StreamManager) getTranscodeArgs(options *TranscodeStreamOptions, segment int, outputDir string) []string {
-	var args Args
-	args = append(args, "-hide_banner")
-	args.LogLevel(LogLevelError)
-
-	if segment > 0 {
-		args = args.Seek(segmentToTime(segment))
-	}
-
-	args = args.Input(options.Input)
-
-	codec := options.Type.VideoCodec()
-	codecArgs := options.Type.Args(segment, outputDir)
-
-	args = args.VideoCodec(codec)
-
-	// don't set scale when copying video stream
-	if codec != VideoCodecCopy {
-		var videoFilter VideoFilter
-		videoFilter = videoFilter.ScaleMax(options.VideoWidth, options.VideoHeight, options.MaxTranscodeSize)
-		args = args.VideoFilter(videoFilter)
-	}
-
-	if options.VideoOnly {
-		args = args.SkipAudio()
-	}
-
-	args = append(args, codecArgs...)
-
-	return args
-}
-
 // assume lock is held
 func (sm *StreamManager) startTranscode(stream *runningStream, segment int) error {
 	options := stream.options
@@ -627,9 +700,9 @@ func (sm *StreamManager) startTranscode(stream *runningStream, segment int) erro
 		return err
 	}
 
-	lockCtx := sm.lockManager.ReadLock(sm.context, options.Input)
+	lockCtx := sm.lockManager.ReadLock(sm.context, options.VideoFile.Path)
 
-	args := sm.getTranscodeArgs(options, segment, outputDir)
+	args := options.StreamArgs(segment, outputDir)
 	cmd := sm.encoder.Command(lockCtx, args)
 
 	stderr, err := cmd.StderrPipe()
