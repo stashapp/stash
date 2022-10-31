@@ -1,9 +1,10 @@
 import { ConvertFromRatingFormat, ConvertToRatingFormat } from "../../../components/Scenes/SceneDetails/RatingSystem";
-import { CriterionModifier, IntCriterionInput } from "../../../core/generated-graphql";
+import { ConfigDataFragment, CriterionModifier, IntCriterionInput } from "../../../core/generated-graphql";
 import { INumberValue } from "../types";
 import { Criterion, CriterionOption } from "./criterion";
 
 export class RatingCriterion extends Criterion<INumberValue> {
+  config: ConfigDataFragment | undefined;
   public get value(): INumberValue {
     return this._value;
   }
@@ -11,10 +12,10 @@ export class RatingCriterion extends Criterion<INumberValue> {
     // backwards compatibility - if this.value is a number, use that
     if (typeof newValue !== "object") {
       this._value = {
-        value: newValue,
+        value: ConvertFromRatingFormat(newValue, this.config?.interface?.ratingSystem),
         value2: undefined,
       };
-      this._value.value = ConvertFromRatingFormat(this._value.value);
+      //this._value.value = ConvertFromRatingFormat(this._value.value, );
     } else {
       this._value = newValue;
     }
@@ -40,7 +41,8 @@ export class RatingCriterion extends Criterion<INumberValue> {
     }
   }
 
-  constructor(type: CriterionOption) {
+  constructor(type: CriterionOption, config: ConfigDataFragment | undefined) {
     super(type, { value: 0, value2: undefined });
+    this.config = config;
   }
 }

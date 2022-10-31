@@ -7,6 +7,8 @@ import StarBorderIcon from "@mui/icons-material/StarOutline";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Col, Form, Row } from "react-bootstrap";
 import { FormUtils } from "src/utils";
+import { SettingStateContext } from "../../Settings/context";
+import { Maybe } from "src/core/generated-graphql";
 
 export interface IRatingSystemProps {
   value?: number;
@@ -67,11 +69,10 @@ export function ConvertToRatingFormat(rating: number) {
   return toReturn;
 }
 
-export function ConvertFromRatingFormat(rating: number) {
+export function ConvertFromRatingFormat(rating: number, ratingSystem: Maybe<GQL.RatingSystem> | undefined) {
   console.log("dummy");
-  const { configuration: config } = React.useContext(ConfigurationContext);
   let toReturn;
-  switch (config?.interface?.ratingSystem) {
+  switch (ratingSystem) {
     case GQL.RatingSystem.TenStar:
       toReturn = Math.round(rating * 10);
       break;

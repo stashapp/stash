@@ -45,6 +45,8 @@ import { InteractiveCriterion } from "./interactive";
 import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 import { CaptionCriterion } from "./captions";
 import { RatingCriterion } from "./rating";
+import React from "react";
+import { ConfigurationContext } from "../../../hooks/Config";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -81,7 +83,10 @@ export function makeCriteria(type: CriterionType = "none") {
     case "rating":
       return new NumberCriterion(new NullNumberCriterionOption(type, type));
     case "rating100":
-      return new RatingCriterion(new NullNumberCriterionOption(type, type));
+      {
+        const { configuration: config } = React.useContext(ConfigurationContext);
+        return new RatingCriterion(new NullNumberCriterionOption(type, type), config);
+      }
     case "resolution":
       return new ResolutionCriterion();
     case "average_resolution":
