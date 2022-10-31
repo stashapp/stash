@@ -164,6 +164,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "director":
     case "synopsis":
     case "description":
+    case "code":
       return new StringCriterion(new StringCriterionOption(type, type));
     case "interactive":
       return new InteractiveCriterion();
