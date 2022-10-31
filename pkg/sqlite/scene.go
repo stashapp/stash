@@ -1434,7 +1434,13 @@ func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []fi
 		return err
 	}
 
-	const firstPrimary = false
+	// assign primary only if destination has no files
+	existingFileIDs, err := qb.filesRepository().get(ctx, sceneID)
+	if err != nil {
+		return err
+	}
+
+	firstPrimary := len(existingFileIDs) == 0
 	return scenesFilesTableMgr.insertJoins(ctx, sceneID, firstPrimary, fileIDs)
 }
 
