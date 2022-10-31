@@ -2,6 +2,7 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createNullNumberCriterionOption,
+  createRatingCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
@@ -62,7 +63,7 @@ const criterionOptions = [
   PhashCriterionOption,
   DuplicatedCriterionOption,
   OrganizedCriterionOption,
-  createNullNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating100"),
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   createMandatoryNumberCriterionOption("duration"),

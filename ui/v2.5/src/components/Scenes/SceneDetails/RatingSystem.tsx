@@ -67,6 +67,40 @@ export function ConvertToRatingFormat(rating: number) {
   return toReturn;
 }
 
+export function ConvertFromRatingFormat(rating: number) {
+  console.log("dummy");
+  const { configuration: config } = React.useContext(ConfigurationContext);
+  let toReturn;
+  switch (config?.interface?.ratingSystem) {
+    case GQL.RatingSystem.TenStar:
+      toReturn = Math.round(rating * 10);
+      break;
+    case GQL.RatingSystem.TenPointFiveStar:
+      toReturn = Math.round(rating * 10);
+      break;
+    case GQL.RatingSystem.TenPointTwoFiveStar:
+      toReturn = Math.round(rating * 10);
+      break;
+    case GQL.RatingSystem.FiveStar:
+      toReturn = Math.round(rating * 20);
+      break;
+    case GQL.RatingSystem.FivePointFiveStar:
+      toReturn = Math.round(rating * 20);
+      break;
+    case GQL.RatingSystem.FivePointTwoFiveStar:
+      toReturn = Math.round(rating * 20);
+      break;
+    case GQL.RatingSystem.TenPointDecimal:
+      toReturn = Math.round(rating * 10);
+      break;
+    default:
+      toReturn = Math.round(rating * 20);
+      break;
+  }
+  console.log("Returning " + toReturn);
+  return toReturn;
+}
+
 export const RatingNumber: React.FC<IRatingNumberProps> = (
   props: IRatingNumberProps
 ) => {
@@ -381,7 +415,7 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
   if (props.disabled) {
     return (
       <h6>
-        <FormattedMessage id="rating" />: {toReturn}
+        <FormattedMessage id="rating100" />: {toReturn}
       </h6>
     );
   } else {
@@ -389,7 +423,7 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
       <>
         <Form.Group controlId="rating" as={Row}>
           {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating" }),
+            title: intl.formatMessage({ id: "rating100" }),
           })}
           <Col xs={9}>{toReturn}</Col>
         </Form.Group>

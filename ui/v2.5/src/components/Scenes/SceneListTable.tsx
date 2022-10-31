@@ -124,7 +124,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
               <FormattedMessage id="title" />
             </th>
             <th>
-              <FormattedMessage id="rating" />
+              <FormattedMessage id="rating100" />
             </th>
             <th>
               <FormattedMessage id="duration" />

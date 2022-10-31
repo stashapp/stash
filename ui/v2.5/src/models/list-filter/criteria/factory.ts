@@ -44,6 +44,7 @@ import { CriterionType } from "../types";
 import { InteractiveCriterion } from "./interactive";
 import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 import { CaptionCriterion } from "./captions";
+import { RatingCriterion } from "./rating";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -79,6 +80,8 @@ export function makeCriteria(type: CriterionType = "none") {
       );
     case "rating":
       return new NumberCriterion(new NullNumberCriterionOption(type, type));
+    case "rating100":
+      return new RatingCriterion(new NullNumberCriterionOption(type, type));
     case "resolution":
       return new ResolutionCriterion();
     case "average_resolution":

@@ -164,7 +164,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
   function getMovieInput(values: InputValues) {
     const input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
       ...values,
-      rating: values.rating100 ?? null,
+      rating100: values.rating100 ?? null,
       studio_id: values.studio_id ?? null,
     };
 
