@@ -612,7 +612,7 @@ func (me *contentDirectoryService) getPerformers() []interface{} {
 		}
 
 		for _, s := range performers {
-			objs = append(objs, makeStorageFolder("performers/"+strconv.Itoa(s.ID), s.Name.String, "performers"))
+			objs = append(objs, makeStorageFolder("performers/"+strconv.Itoa(s.ID), s.Name, "performers"))
 		}
 
 		return nil
