@@ -971,7 +971,7 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 	aggregateQuery := qb.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(temp.id) as total")
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
 	if options.TotalDuration {
