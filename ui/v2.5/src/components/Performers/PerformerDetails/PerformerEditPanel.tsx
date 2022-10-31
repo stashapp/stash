@@ -106,7 +106,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ethnicity: yup.string().optional(),
     eye_color: yup.string().optional(),
     country: yup.string().optional(),
-    height: yup.string().optional(),
+    height_cm: yup.number().optional(),
     measurements: yup.string().optional(),
     fake_tits: yup.string().optional(),
     career_length: yup.string().optional(),
@@ -133,7 +133,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ethnicity: performer.ethnicity ?? "",
     eye_color: performer.eye_color ?? "",
     country: performer.country ?? "",
-    height: performer.height ?? "",
+    height_cm: performer.height_cm ?? undefined,
     measurements: performer.measurements ?? "",
     fake_tits: performer.fake_tits ?? "",
     career_length: performer.career_length ?? "",
@@ -279,7 +279,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       formik.setFieldValue("eye_color", state.eye_color);
     }
     if (state.height) {
-      formik.setFieldValue("height", state.height);
+      formik.setFieldValue("height_cm", parseInt(state.height, 10));
     }
     if (state.measurements) {
       formik.setFieldValue("measurements", state.measurements);
@@ -895,7 +895,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderTextField("ethnicity", "Ethnicity")}
         {renderTextField("hair_color", "Hair Color")}
         {renderTextField("eye_color", "Eye Color")}
-        {renderTextField("height", "Height (cm)")}
+        {renderTextField("height_cm", "Height (cm)")}
         {renderTextField("weight", "Weight (kg)")}
         {renderTextField("measurements", "Measurements")}
         {renderTextField("fake_tits", "Fake Tits")}
