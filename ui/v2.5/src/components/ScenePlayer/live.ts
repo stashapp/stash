@@ -10,127 +10,31 @@ interface ICue extends TextTrackCue {
   _endTime?: number;
 }
 
-class OffsetPlugin extends videojs.getPlugin("plugin") {
-  private offsetDuration?: number;
-  private offsetStart = 0;
-  private currentSrc: string | null = null;
+function offsetMiddleware() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- allow access to private tech methods
+  let tech: any;
+  let source: ISource;
+  let offsetStart: number | undefined;
+  let seeking = 0;
 
-  constructor(player: VideoJsPlayer) {
-    super(player);
-
-    const plugin = this;
-
-    const _src = player.src.bind(player);
-    function src(this: VideoJsPlayer): string;
-    function src(
-      this: VideoJsPlayer,
-      source: string | videojs.Tech.SourceObject | videojs.Tech.SourceObject[]
-    ): void;
-    function src(
-      this: VideoJsPlayer,
-      source?: string | videojs.Tech.SourceObject | videojs.Tech.SourceObject[]
-    ) {
-      if (source === undefined) {
-        return _src();
-      }
-
-      plugin.currentSrc = null;
-      plugin.offsetDuration = undefined;
-      plugin.updateOffsetStart(0);
-
-      return _src(source);
+  function initCues(cues: TextTrackCueList) {
+    const offset = offsetStart ?? 0;
+    for (let j = 0; j < cues.length; j++) {
+      const cue = cues[j] as ICue;
+      cue._startTime = cue.startTime;
+      cue.startTime = cue._startTime - offset;
+      cue._endTime = cue.endTime;
+      cue.endTime = cue._endTime - offset;
     }
-    player.src = src;
-
-    const _duration = player.duration.bind(player);
-    function duration(this: VideoJsPlayer): number;
-    function duration(this: VideoJsPlayer, seconds: number): void;
-    function duration(this: VideoJsPlayer, seconds?: number) {
-      if (seconds !== undefined) {
-        return _duration(seconds);
-      }
-      if (plugin.offsetDuration !== undefined) {
-        return plugin.offsetDuration;
-      }
-      return _duration();
-    }
-    player.duration = duration;
-
-    const _currentTime = player.currentTime.bind(player);
-    function currentTime(this: VideoJsPlayer): number;
-    function currentTime(this: VideoJsPlayer, seconds: number): void;
-    function currentTime(this: VideoJsPlayer, seconds?: number) {
-      if (seconds === undefined) {
-        return plugin.offsetStart + _currentTime();
-      }
-      if (plugin.offsetDuration === undefined) {
-        return _currentTime(seconds);
-      }
-
-      if (seconds === _currentTime()) return;
-
-      plugin.updateOffsetStart(seconds);
-
-      const currentSource = this.currentSource();
-      const newSources = this.currentSources();
-      for (const source of newSources) {
-        if (source.src === currentSource.src) {
-          const srcUrl = new URL(currentSource.src);
-          srcUrl.searchParams.set("start", seconds.toString());
-          source.src = srcUrl.toString();
-          plugin.currentSrc = source.src;
-        }
-      }
-      const playbackRate = this.playbackRate();
-      _src(newSources);
-      this.play()?.then(() => {
-        this.playbackRate(playbackRate);
-      });
-    }
-    player.currentTime = currentTime;
-
-    const _addRemoteTextTrack = player.addRemoteTextTrack.bind(player);
-    function addRemoteTextTrack(
-      this: VideoJsPlayer,
-      options: videojs.TextTrackOptions,
-      manualCleanup: boolean
-    ) {
-      const textTrack = _addRemoteTextTrack(options, manualCleanup);
-      textTrack.addEventListener("load", () => {
-        const { cues } = textTrack.track;
-        if (cues) {
-          for (let j = 0; j < cues.length; j++) {
-            const cue = cues[j] as ICue;
-            cue._startTime = cue.startTime;
-            cue.startTime = cue._startTime - plugin.offsetStart;
-            cue._endTime = cue.endTime;
-            cue.endTime = cue._endTime - plugin.offsetStart;
-          }
-        }
-      });
-
-      return textTrack;
-    }
-    player.addRemoteTextTrack = addRemoteTextTrack;
-
-    player.on("loadstart", () => {
-      const source = player.currentSource() as ISource;
-      if (source.src === this.currentSrc) return;
-
-      this.currentSrc = source.src;
-      if (source.offset && source.duration) {
-        plugin.offsetDuration = source.duration;
-      } else {
-        plugin.offsetDuration = undefined;
-      }
-      this.updateOffsetStart(0);
-    });
   }
 
-  private updateOffsetStart(offset: number) {
-    this.offsetStart = offset;
+  function updateOffsetStart(offset: number | undefined) {
+    offsetStart = offset;
 
-    const tracks = this.player.remoteTextTracks();
+    if (!tech) return;
+    offset = offset ?? 0;
+
+    const tracks = tech.remoteTextTracks();
     for (let i = 0; i < tracks.length; i++) {
       const { cues } = tracks[i];
       if (cues) {
@@ -145,19 +49,130 @@ class OffsetPlugin extends videojs.getPlugin("plugin") {
       }
     }
   }
+
+  return {
+    setTech(newTech: videojs.Tech) {
+      tech = newTech;
+
+      const _addRemoteTextTrack = tech.addRemoteTextTrack.bind(tech);
+      function addRemoteTextTrack(
+        this: VideoJsPlayer,
+        options: videojs.TextTrackOptions,
+        manualCleanup: boolean
+      ) {
+        const textTrack = _addRemoteTextTrack(options, manualCleanup);
+        textTrack.addEventListener("load", () => {
+          const { cues } = textTrack.track;
+          if (cues) {
+            initCues(cues);
+          }
+        });
+
+        return textTrack;
+      }
+      tech.addRemoteTextTrack = addRemoteTextTrack;
+
+      const trackEls: HTMLTrackElement[] = tech.remoteTextTrackEls();
+      for (let i = 0; i < trackEls.length; i++) {
+        const trackEl = trackEls[i];
+        const { track } = trackEl;
+        if (track.cues) {
+          initCues(track.cues);
+        } else {
+          trackEl.addEventListener("load", () => {
+            if (track.cues) {
+              initCues(track.cues);
+            }
+          });
+        }
+      }
+    },
+    setSource(
+      srcObj: ISource,
+      next: (err: unknown, src: videojs.Tech.SourceObject) => void
+    ) {
+      if (srcObj.offset && srcObj.duration) {
+        updateOffsetStart(0);
+      } else {
+        updateOffsetStart(undefined);
+      }
+      source = srcObj;
+      next(null, srcObj);
+    },
+    duration(seconds: number) {
+      if (source.duration) {
+        return source.duration;
+      } else {
+        return seconds;
+      }
+    },
+    buffered(buffers: TimeRanges) {
+      if (offsetStart === undefined) {
+        return buffers;
+      }
+
+      const timeRanges: number[][] = [];
+      for (let i = 0; i < buffers.length; i++) {
+        const start = buffers.start(i) + offsetStart;
+        const end = buffers.end(i) + offsetStart;
+
+        timeRanges.push([start, end]);
+      }
+
+      // types for createTimeRanges are incorrect, should be number[][] not TimeRange[]
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return videojs.createTimeRanges(timeRanges as any);
+    },
+    currentTime(seconds: number) {
+      return (offsetStart ?? 0) + seconds;
+    },
+    setCurrentTime(seconds: number) {
+      if (offsetStart === undefined) {
+        return seconds;
+      }
+
+      const offsetSeconds = seconds - offsetStart;
+      const buffers = tech.buffered() as TimeRanges;
+      for (let i = 0; i < buffers.length; i++) {
+        const start = buffers.start(i);
+        const end = buffers.end(i);
+        // seek point is in buffer, just seek normally
+        if (start <= offsetSeconds && offsetSeconds <= end) {
+          return offsetSeconds;
+        }
+      }
+
+      updateOffsetStart(seconds);
+
+      const srcUrl = new URL(source.src);
+      srcUrl.searchParams.set("start", seconds.toString());
+      source.src = srcUrl.toString();
+
+      const playbackRate = tech.playbackRate();
+      seeking = tech.paused() ? 1 : 2;
+      tech.setSource(source);
+      tech.setPlaybackRate(playbackRate);
+      tech.one("canplay", () => {
+        if (seeking === 1) {
+          tech.pause();
+        }
+        seeking = 0;
+      });
+      tech.play();
+
+      return 0;
+    },
+    paused(paused: boolean) {
+      if (seeking) return false;
+      return paused;
+    },
+    callPlay() {
+      if (seeking) {
+        seeking = 2;
+        return videojs.middleware.TERMINATOR;
+      }
+    },
+  };
 }
 
-// Register the plugin with video.js.
-videojs.registerPlugin("offset", OffsetPlugin);
-
-/* eslint-disable @typescript-eslint/naming-convention */
-declare module "video.js" {
-  interface VideoJsPlayer {
-    offset: () => OffsetPlugin;
-  }
-  interface VideoJsPlayerPluginOptions {
-    offset?: {};
-  }
-}
-
-export default OffsetPlugin;
+videojs.use("*", offsetMiddleware);

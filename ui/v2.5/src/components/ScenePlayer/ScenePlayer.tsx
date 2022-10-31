@@ -230,7 +230,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           showTimestamp: true,
         },
         markers: {},
-        offset: {},
         sourceSelector: {},
         persistVolume: {},
         bigButtons: {},
