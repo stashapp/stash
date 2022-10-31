@@ -516,7 +516,10 @@ export const mutateSceneAssignFile = (sceneID: string, fileID: string) =>
         file_id: fileID,
       },
     },
-    update: deleteCache(sceneMutationImpactedQueries),
+    update: deleteCache([
+      ...sceneMutationImpactedQueries,
+      GQL.FindSceneDocument,
+    ]),
     refetchQueries: getQueryNames([GQL.FindSceneDocument]),
   });
 
@@ -534,10 +537,20 @@ export const mutateSceneMerge = (
         values,
       },
     },
-    update: deleteCache([
-      ...sceneMutationImpactedQueries,
-      GQL.FindSceneDocument,
-    ]),
+    update: (cache) => {
+      // evict the merged scenes from the cache so that they are reloaded
+      cache.evict({
+        id: cache.identify({ __typename: "Scene", id: destination }),
+      });
+      source.forEach((id) =>
+        cache.evict({ id: cache.identify({ __typename: "Scene", id }) })
+      );
+      cache.gc();
+
+      deleteCache([...sceneMutationImpactedQueries, GQL.FindSceneDocument])(
+        cache
+      );
+    },
     refetchQueries: getQueryNames([GQL.FindSceneDocument]),
   });
 
