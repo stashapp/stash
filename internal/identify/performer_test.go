@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -233,13 +234,19 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 	md5 := "b068931cc450442b63f5b3d276ea4297"
 
 	var stringValues []string
-	for i := 0; i < 16; i++ {
+	for i := 0; i < 17; i++ {
 		stringValues = append(stringValues, strconv.Itoa(i))
 	}
 
 	upTo := 0
 	nextVal := func() *string {
 		ret := stringValues[upTo]
+		upTo = (upTo + 1) % len(stringValues)
+		return &ret
+	}
+
+	nextIntVal := func() *int {
+		ret := upTo
 		upTo = (upTo + 1) % len(stringValues)
 		return &ret
 	}
@@ -265,6 +272,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				EyeColor:     nextVal(),
 				HairColor:    nextVal(),
 				Height:       nextVal(),
+				Weight:       nextVal(),
 				Measurements: nextVal(),
 				FakeTits:     nextVal(),
 				CareerLength: nextVal(),
@@ -284,7 +292,8 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Country:      *nextVal(),
 				EyeColor:     *nextVal(),
 				HairColor:    *nextVal(),
-				Height:       *nextVal(),
+				Height:       nextIntVal(),
+				Weight:       nextIntVal(),
 				Measurements: *nextVal(),
 				FakeTits:     *nextVal(),
 				CareerLength: *nextVal(),
@@ -314,9 +323,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 			got.CreatedAt = time.Time{}
 			got.UpdatedAt = got.CreatedAt
 
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("scrapedToPerformerInput() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
