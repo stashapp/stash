@@ -304,8 +304,6 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		if err != nil {
 			return nil, err
 		}
-
-		// update the cover after updating the scene
 	}
 
 	s, err = qb.UpdatePartial(ctx, sceneID, *updatedScene)
@@ -313,22 +311,31 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		return nil, err
 	}
 
-	// update cover table
-	if len(coverImageData) > 0 {
-		if err := qb.UpdateCover(ctx, sceneID, coverImageData); err != nil {
-			return nil, err
-		}
-	}
-
-	// only update the cover image if provided and everything else was successful
-	if coverImageData != nil && s.Path != "" {
-		err = scene.SetScreenshot(manager.GetInstance().Paths, s.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
-		if err != nil {
-			return nil, err
-		}
+	if err := r.sceneUpdateCoverImage(ctx, s, coverImageData); err != nil {
+		return nil, err
 	}
 
 	return s, nil
+}
+
+func (r *mutationResolver) sceneUpdateCoverImage(ctx context.Context, s *models.Scene, coverImageData []byte) error {
+	if len(coverImageData) > 0 {
+		qb := r.repository.Scene
+
+		// update cover table
+		if err := qb.UpdateCover(ctx, s.ID, coverImageData); err != nil {
+			return err
+		}
+
+		if s.Path != "" {
+			// update the file-based screenshot after commit
+			txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+				return scene.SetScreenshot(manager.GetInstance().Paths, s.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()), coverImageData)
+			})
+		}
+	}
+
+	return nil
 }
 
 func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input BulkSceneUpdateInput) ([]*models.Scene, error) {
@@ -628,6 +635,16 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		values = &v
 	}
 
+	var coverImageData []byte
+
+	if input.Values.CoverImage != nil && *input.Values.CoverImage != "" {
+		var err error
+		coverImageData, err = utils.ProcessImageInput(ctx, *input.Values.CoverImage)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	var ret *models.Scene
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		if err := r.Resolver.sceneService.Merge(ctx, srcIDs, destID, *values); err != nil {
@@ -635,6 +652,11 @@ func (r *mutationResolver) SceneMerge(ctx context.Context, input SceneMergeInput
 		}
 
 		ret, err = r.Resolver.repository.Scene.Find(ctx, destID)
+
+		if err == nil && ret != nil {
+			err = r.sceneUpdateCoverImage(ctx, ret, coverImageData)
+		}
+
 		return err
 	}); err != nil {
 		return nil, err

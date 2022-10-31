@@ -4,11 +4,12 @@ import * as GQL from "src/core/generated-graphql";
 import {
   GallerySelect,
   Icon,
+  LoadingIndicator,
   Modal,
   SceneSelect,
   StringListSelect,
 } from "src/components/Shared";
-import { FormUtils } from "src/utils";
+import { FormUtils, ImageUtils } from "src/utils";
 import { mutateSceneMerge, queryFindScenesByID } from "src/core/StashService";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToast } from "src/hooks";
@@ -17,6 +18,7 @@ import {
   hasScrapedValues,
   ScrapeDialog,
   ScrapeDialogRow,
+  ScrapedImageRow,
   ScrapedInputGroupRow,
   ScrapedTextAreaRow,
   ScrapeResult,
@@ -51,6 +53,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
   onClose,
 }) => {
   const intl = useIntl();
+
+  const [loading, setLoading] = useState(true);
 
   const [title, setTitle] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(dest.title)
@@ -106,9 +110,27 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
 
   const [stashIDs, setStashIDs] = useState(new ScrapeResult<GQL.StashId[]>([]));
 
+  const [image, setImage] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(dest.paths.screenshot)
+  );
+
   // calculate the values for everything
   // uses the first set value for single value fields, and combines all
   useEffect(() => {
+    async function loadImages() {
+      const src = sources.find((s) => s.paths.screenshot);
+      if (!dest.paths.screenshot || !src) return;
+
+      setLoading(true);
+
+      const destData = await ImageUtils.imageToDataURL(dest.paths.screenshot);
+      const srcData = await ImageUtils.imageToDataURL(src.paths!.screenshot!);
+
+      setImage(new ScrapeResult(destData, srcData));
+
+      setLoading(false);
+    }
+
     const all = [dest, ...sources];
 
     setTitle(
@@ -198,6 +220,8 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           })
       )
     );
+
+    loadImages();
   }, [sources, dest]);
 
   const convertGalleries = useCallback(
@@ -243,6 +267,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       tags,
       details,
       stashIDs,
+      image,
     ]);
   }, [
     title,
@@ -257,10 +282,18 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     tags,
     details,
     stashIDs,
+    image,
   ]);
 
   function renderScrapeRows() {
-    // ensure this is updated if we add more values
+    if (loading) {
+      return (
+        <div>
+          <LoadingIndicator />
+        </div>
+      );
+    }
+
     if (!hasValues) {
       return (
         <div>
@@ -376,12 +409,21 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           )}
           onChange={(value) => setStashIDs(value)}
         />
+        <ScrapedImageRow
+          title={intl.formatMessage({ id: "cover_image" })}
+          className="scene-cover"
+          result={image}
+          onChange={(value) => setImage(value)}
+        />
       </>
     );
   }
 
   function createValues(): GQL.SceneUpdateInput {
     const all = [dest, ...sources];
+
+    // only set the cover image if it's different from the existing cover image
+    const coverImage = image.useNewValue ? image.getNewValue() : undefined;
 
     return {
       id: dest.id,
@@ -407,6 +449,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       tag_ids: tags.getNewValue(),
       details: details.getNewValue(),
       stash_ids: stashIDs.getNewValue(),
+      cover_image: coverImage,
     };
   }
 
