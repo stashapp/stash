@@ -53,6 +53,7 @@ const SceneQueryModal = lazy(() => import("./SceneQueryModal"));
 
 interface IProps {
   scene: Partial<GQL.SceneDataFragment>;
+  initialCoverImage?: string;
   isNew?: boolean;
   isVisible: boolean;
   onDelete?: () => void;
@@ -60,6 +61,7 @@ interface IProps {
 
 export const SceneEditPanel: React.FC<IProps> = ({
   scene,
+  initialCoverImage,
   isNew = false,
   isVisible,
   onDelete,
@@ -93,8 +95,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
   >();
 
   useEffect(() => {
-    setCoverImagePreview(scene.paths?.screenshot ?? undefined);
-  }, [scene.paths?.screenshot]);
+    setCoverImagePreview(
+      initialCoverImage ?? scene.paths?.screenshot ?? undefined
+    );
+  }, [scene.paths?.screenshot, initialCoverImage]);
 
   useEffect(() => {
     setGalleries(
@@ -147,10 +151,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
         return { movie_id: m.movie.id, scene_index: m.scene_index };
       }),
       tag_ids: (scene.tags ?? []).map((t) => t.id),
-      cover_image: undefined,
+      cover_image: initialCoverImage,
       stash_ids: getStashIDs(scene.stash_ids),
     }),
-    [scene]
+    [scene, initialCoverImage]
   );
 
   type InputValues = typeof initialValues;

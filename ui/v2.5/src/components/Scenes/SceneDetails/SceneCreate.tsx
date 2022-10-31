@@ -1,8 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { SceneEditPanel } from "./SceneEditPanel";
 import queryString from "query-string";
 import { useFindScene } from "src/core/StashService";
+import { ImageUtils } from "src/utils";
+import { LoadingIndicator } from "src/components/Shared";
 
 const SceneCreate: React.FC = () => {
   const intl = useIntl();
@@ -12,6 +14,8 @@ const SceneCreate: React.FC = () => {
 
   const fromSceneID = (queryParams?.from_scene_id ?? "") as string;
   const { data, loading } = useFindScene(fromSceneID ?? "");
+  const [loadingCoverImage, setLoadingCoverImage] = useState(false);
+  const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
 
   const scene = useMemo(() => {
     if (data?.findScene) {
@@ -25,8 +29,26 @@ const SceneCreate: React.FC = () => {
     return {};
   }, [data?.findScene]);
 
-  if (loading) {
-    return <></>;
+  useEffect(() => {
+    async function fetchCoverImage() {
+      const srcScene = data?.findScene;
+      if (srcScene?.paths.screenshot) {
+        setLoadingCoverImage(true);
+        const imageData = await ImageUtils.imageToDataURL(
+          srcScene.paths.screenshot
+        );
+        setCoverImage(imageData);
+        setLoadingCoverImage(false);
+      } else {
+        setCoverImage(undefined);
+      }
+    }
+
+    fetchCoverImage();
+  }, [data?.findScene]);
+
+  if (loading || loadingCoverImage) {
+    return <LoadingIndicator />;
   }
 
   return (
@@ -38,7 +60,12 @@ const SceneCreate: React.FC = () => {
             values={{ entityType: intl.formatMessage({ id: "scene" }) }}
           />
         </h2>
-        <SceneEditPanel scene={scene} isVisible isNew />
+        <SceneEditPanel
+          scene={scene}
+          initialCoverImage={coverImage}
+          isVisible
+          isNew
+        />
       </div>
     </div>
   );
