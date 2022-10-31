@@ -176,7 +176,7 @@ func (j *autoTagJob) autoTagPerformers(ctx context.Context, progress *job.Progre
 
 					return nil
 				}); err != nil {
-					return fmt.Errorf("error auto-tagging performer '%s': %s", performer.Name.String, err.Error())
+					return fmt.Errorf("error auto-tagging performer '%s': %s", performer.Name, err.Error())
 				}
 
 				progress.Increment()

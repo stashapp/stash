@@ -237,11 +237,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.PerformerReaderWriter{}
 
 	performer := models.Performer{
-		Name: models.NullString(performerName),
+		Name: performerName,
 	}
 
 	performerErr := models.Performer{
-		Name: models.NullString(performerNameErr),
+		Name: performerNameErr,
 	}
 
 	i := Importer{
@@ -250,10 +250,11 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", testCtx, performer).Return(&models.Performer{
-		ID: performerID,
-	}, nil).Once()
-	readerWriter.On("Create", testCtx, performerErr).Return(nil, errCreate).Once()
+	readerWriter.On("Create", testCtx, &performer).Run(func(args mock.Arguments) {
+		arg := args.Get(1).(*models.Performer)
+		arg.ID = performerID
+	}).Return(nil).Once()
+	readerWriter.On("Create", testCtx, &performerErr).Return(errCreate).Once()
 
 	id, err := i.Create(testCtx)
 	assert.Equal(t, performerID, *id)
@@ -271,11 +272,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.PerformerReaderWriter{}
 
 	performer := models.Performer{
-		Name: models.NullString(performerName),
+		Name: performerName,
 	}
 
 	performerErr := models.Performer{
-		Name: models.NullString(performerNameErr),
+		Name: performerNameErr,
 	}
 
 	i := Importer{
@@ -287,7 +288,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	performer.ID = performerID
-	readerWriter.On("UpdateFull", testCtx, performer).Return(nil, nil).Once()
+	readerWriter.On("Update", testCtx, &performer).Return(nil).Once()
 
 	err := i.Update(testCtx, performerID)
 	assert.Nil(t, err)
@@ -296,7 +297,7 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	performerErr.ID = errImageID
-	readerWriter.On("UpdateFull", testCtx, performerErr).Return(nil, errUpdate).Once()
+	readerWriter.On("Update", testCtx, &performerErr).Return(errUpdate).Once()
 
 	err = i.Update(testCtx, errImageID)
 	assert.NotNil(t, err)

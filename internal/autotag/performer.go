@@ -33,7 +33,7 @@ func getPerformerTagger(p *models.Performer, cache *match.Cache) tagger {
 	return tagger{
 		ID:    p.ID,
 		Type:  "performer",
-		Name:  p.Name.String,
+		Name:  p.Name,
 		cache: cache,
 	}
 }
