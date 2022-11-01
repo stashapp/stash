@@ -70,7 +70,6 @@ export function ConvertToRatingFormat(rating: number) {
 }
 
 export function ConvertFromRatingFormat(rating: number, ratingSystem: Maybe<GQL.RatingSystem> | undefined) {
-  console.log("dummy");
   let toReturn;
   switch (ratingSystem) {
     case GQL.RatingSystem.TenStar:

@@ -28,6 +28,7 @@ import { LabeledIdFilter } from "./Filters/LabeledIdFilter";
 import { HierarchicalLabelValueFilter } from "./Filters/HierarchicalLabelValueFilter";
 import { OptionsFilter } from "./Filters/OptionsFilter";
 import { InputFilter } from "./Filters/InputFilter";
+import { ConfigurationContext } from "../../hooks/Config";
 
 interface IAddFilterProps {
   onAddCriterion: (
@@ -61,7 +62,8 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
   // Configure if we are editing an existing criterion
   useEffect(() => {
     if (!editingCriterion) {
-      setCriterion(makeCriteria());
+      const { configuration: config } = React.useContext(ConfigurationContext);
+      setCriterion(makeCriteria("none", config));
     } else {
       setCriterion(editingCriterion);
     }
@@ -73,7 +75,8 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
 
   function onChangedCriteriaType(event: React.ChangeEvent<HTMLSelectElement>) {
     const newCriterionType = event.target.value as CriterionType;
-    const newCriterion = makeCriteria(newCriterionType);
+    const { configuration: config } = React.useContext(ConfigurationContext);
+    const newCriterion = makeCriteria(newCriterionType, config);
     setCriterion(newCriterion);
   }
 

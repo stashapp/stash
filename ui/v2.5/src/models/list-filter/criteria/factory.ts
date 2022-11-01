@@ -46,9 +46,9 @@ import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 import { CaptionCriterion } from "./captions";
 import { RatingCriterion } from "./rating";
 import React from "react";
-import { ConfigurationContext } from "../../../hooks/Config";
+import { ConfigDataFragment } from "../../../core/generated-graphql";
 
-export function makeCriteria(type: CriterionType = "none") {
+export function makeCriteria(type: CriterionType = "none", config: ConfigDataFragment | undefined) {
   switch (type) {
     case "none":
       return new NoneCriterion();
@@ -84,7 +84,6 @@ export function makeCriteria(type: CriterionType = "none") {
       return new NumberCriterion(new NullNumberCriterionOption(type, type));
     case "rating100":
       {
-        const { configuration: config } = React.useContext(ConfigurationContext);
         return new RatingCriterion(new NullNumberCriterionOption(type, type), config);
       }
     case "resolution":
