@@ -8,8 +8,6 @@ import {
 import { Criterion, CriterionValue } from "./criteria/criterion";
 import { makeCriteria } from "./criteria/factory";
 import { DisplayMode } from "./types";
-import { ConfigurationContext } from "../../hooks/Config";
-import React from "react";
 
 interface IQueryParameters {
   perPage?: string;
@@ -106,8 +104,7 @@ export class ListFilterModel {
       params.c.forEach((jsonString) => {
         try {
           const encodedCriterion = JSON.parse(jsonString);
-          const { configuration: config } = React.useContext(ConfigurationContext);
-          const criterion = makeCriteria(encodedCriterion.type, config);
+          const criterion = makeCriteria(encodedCriterion.type);
           // it's possible that we have unsupported criteria. Just skip if so.
           if (criterion) {
             if (encodedCriterion.value !== undefined) {
