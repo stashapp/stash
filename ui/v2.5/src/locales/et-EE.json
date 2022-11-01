@@ -69,7 +69,7 @@
     "previous_action": "Tagasi",
     "refresh": "Värskenda",
     "reload_plugins": "Lae pluginad uuesti",
-    "reload_scrapers": "Lae detailide otsijad uuesti",
+    "reload_scrapers": "Lae kraapijad uuesti",
     "remove": "Eemalda",
     "remove_from_gallery": "Eemalda Galeriist",
     "rename_gen_files": "Nimeta genereeritud failid ümber",
@@ -80,10 +80,10 @@
     "save_delete_settings": "Kasuta neid sätteid kustutamisel tavasätetena",
     "save_filter": "Salvesta filter",
     "scan": "Skänni",
-    "scrape": "Otsi Detaile",
-    "scrape_query": "Detailide otsingu päring",
-    "scrape_scene_fragment": "Otsi tüki järgi",
-    "scrape_with": "Otsi kasutades…",
+    "scrape": "Kraabi",
+    "scrape_query": "Kraapimispäring",
+    "scrape_scene_fragment": "Kraabi fragmentide kaupa",
+    "scrape_with": "Kraabi kasutades…",
     "search": "Otsi",
     "select_all": "Vali Kõik",
     "select_entity": "Vali {entityType}",
@@ -166,7 +166,7 @@
     },
     "verb_match_fp": "Leia Sõrmejälje Kattuvusi",
     "verb_matched": "Kokkusobitatud",
-    "verb_scrape_all": "Otsi Detaile Kõikjalt",
+    "verb_scrape_all": "Kraabi Kõikjalt",
     "verb_submit_fp": "Esita {fpCount, plural, one{# Sõrmejälg} other{# Sõrmejälge}}",
     "verb_toggle_config": "{toggle} {configuration}",
     "verb_toggle_unmatched": "{toggle} kokkusobitamata stseenid"
@@ -179,9 +179,9 @@
       "latest_version": "Uusim Versioon",
       "latest_version_build_hash": "Uusima Versiooni Ehituse Hash:",
       "new_version_notice": "[UUS]",
-      "stash_discord": "Liitu meie {url} kanaliga",
-      "stash_home": "Stashi kodu {url}-il",
-      "stash_open_collective": "Toeta meid läbi {url}",
+      "stash_discord": "Liitu meie {url}i kanaliga",
+      "stash_home": "Stashi kodu {url}-is",
+      "stash_open_collective": "Toeta meid läbi {url}-i",
       "stash_wiki": "Stashi {url} leht",
       "version": "Versioon"
     },
@@ -195,7 +195,7 @@
       "logs": "Logid",
       "metadata_providers": "Metaandmete Pakkujad",
       "plugins": "Pluginad",
-      "scraping": "Detailide Otsimine",
+      "scraping": "Kraapimine",
       "security": "Turvalisus",
       "services": "Teenused",
       "system": "Süsteem",
@@ -213,7 +213,7 @@
       "enabled_by_default": "Vaikimisi lubatud",
       "enabled_dlna_temporarily": "DLNA ajutiselt lubatud",
       "network_interfaces": "Kasutajaliidesed",
-      "network_interfaces_desc": "Kasutajaliidesed DLNA serveri paljastamiseks. Tühi nimekiri lubab jooksmist kõigil kasutajaliidestel. Vajalik DLNA taaskäivitus peale muutmist.",
+      "network_interfaces_desc": "Kasutajaliidesed DLNA serveri paljastamiseks. Tühi nimekiri lubab jooksutamist kõigil kasutajaliidestel. Vajalik DLNA taaskäivitus peale muutmist.",
       "recent_ip_addresses": "Hiljutised IP aadressid",
       "server_display_name": "Serveri Nimi",
       "server_display_name_desc": "DLNA server nimi. Vaikimisi {server_name}, kui midagi pole sisestatud.",
@@ -254,7 +254,7 @@
       "calculate_md5_and_ohash_desc": "Kalkuleeri MD5 checksum lisaks oshashile. Lubamine põhjustab aeglasemat esmast skännimist. Faili nimetuse hash peab olema sätitud oshashiks, et keelata MD5 kalkuleerimine.",
       "calculate_md5_and_ohash_label": "Kalkuleeri MD5 videote jaoks",
       "check_for_insecure_certificates": "Otsi ebaturvalisi sertifikaate",
-      "check_for_insecure_certificates_desc": "Mõned lehed kasutavad ebaturvalisi ssl sertifikaate. Kui märkimata, detailide otsija jätab sertifikaadi kontrollimise vahele ning võimaldab nendelt lehtedelt detaile otsida. Kui otsingu ajal esineb sertifikaadivigu, eemalda linnuke.",
+      "check_for_insecure_certificates_desc": "Mõned lehed kasutavad ebaturvalisi ssl sertifikaate. Kui märkimata, kraapija jätab sertifikaadi kontrollimise vahele ning võimaldab nendelt lehtedelt andmeid kraapida. Kui kraapimise ajal esineb sertifikaadivigu, eemalda linnuke.",
       "chrome_cdp_path": "Chrome CDP tee",
       "chrome_cdp_path_desc": "Failitee Chrome käivitajani, või kaugaadress (algab http:// või https:// -iga, näiteks http://localhost:9222/json/version) Chrome'i eksemplarini.",
       "create_galleries_from_folders_desc": "Kui lubatud, loob galeriisid pilte sisaldavatest kaustadest.",
@@ -290,16 +290,16 @@
       "parallel_scan_head": "Paralleelne Skännimine/Generatsioon",
       "preview_generation": "Eelvaate Genereerimine",
       "python_path": {
-        "description": "Pythoni käivitataja asukoht. Kasutatakse skriptipõhiste detailiotsijate ja pluginate jaoks. Kui see on tühi, lahendatakse python keskkonnast",
+        "description": "Pythoni käivitataja asukoht. Kasutatakse skriptipõhiste kraapijate ja pluginate jaoks. Kui see on tühi, lahendatakse python keskkonnast",
         "heading": "Pythoni Failitee"
       },
-      "scraper_user_agent": "Detailide Otsija Kasutajaagent",
-      "scraper_user_agent_desc": "Kasutajaagendi stringi, mida kasutatakse HTTP-päringute käigus",
+      "scraper_user_agent": "Kraapija Kasutajaagent",
+      "scraper_user_agent_desc": "Kasutajaagendi string, mida kasutatakse kraapimise HTTP-päringute käigus",
       "scrapers_path": {
-        "description": "Failitee detailide otsijate sättefailide jaoks",
-        "heading": "Detailide Otsijate Failitee"
+        "description": "Failitee kraapijate sättefailide jaoks",
+        "heading": "Kraapijate Failitee"
       },
-      "scraping": "Detailide Otsimine",
+      "scraping": "Kraapimine",
       "sqlite_location": "Failitee asukoht SQLite andmebaasi jaoks (vajab taaskäivitust)",
       "video_ext_desc": "Komadega eraldatud faililaiendite loend, mis tuvastatakse videotena.",
       "video_ext_head": "Videolaiendused",
@@ -319,11 +319,11 @@
     },
     "scraping": {
       "entity_metadata": "{entityType} Metaandmed",
-      "entity_scrapers": "{entityType} detailide otsija",
-      "excluded_tag_patterns_desc": "Sildinimede regexpid, mida detailide otsimisest välja jätta",
+      "entity_scrapers": "{entityType} kraapijad",
+      "excluded_tag_patterns_desc": "Sildinimede regexpid, mida kraapise tulemustest välja jätta",
       "excluded_tag_patterns_head": "Välistatud Siltide Mustrid",
-      "scraper": "Detailide Otsija",
-      "scrapers": "Detailide Otsijad",
+      "scraper": "Kraapija",
+      "scrapers": "Kraapijad",
       "search_by_name": "Otsi nime järgi",
       "supported_types": "Toetatud tüübid",
       "supported_urls": "URL-id"
@@ -375,7 +375,7 @@
         "and_create_missing": "ja loo puuduv",
         "create_missing": "Loo puuduv",
         "default_options": "Vaikesätted",
-        "description": "Stseeni metaandmete automaatne määramine stash-kasti ja detailide otsingu allikate abil.",
+        "description": "Stseeni metaandmete automaatne määramine stash-kasti ja kraapija allikate abil.",
         "explicit_set_description": "Kui allikaspetsiifilistes suvandites neid ei alistata, kasutatakse järgmisi valikuid.",
         "field": "Väli",
         "field_behaviour": "{strategy} {field}",
@@ -407,7 +407,7 @@
       "set_name_date_details_from_metadata_if_present": "Määra nimi, kuupäev, detailid failisisestest metaandmetest"
     },
     "tools": {
-      "scene_duplicate_checker": "Stseeni Duplikaatide Kontroll",
+      "scene_duplicate_checker": "Duplikaatstseenide Kontroll",
       "scene_filename_parser": {
         "add_field": "Lisa Väli",
         "capitalize_title": "Pealkirja kirjutamine suurtähtedega",
@@ -419,7 +419,7 @@
         "ignored_words": "Ignoreeritud sõnad",
         "matches_with": "Kattub {i}-ga",
         "select_parser_recipe": "Valige Skänneerija Retsept",
-        "title": "Stseeni Failinime Skänneerija",
+        "title": "Stseeni Failinimede Skänneerija",
         "whitespace_chars": "Tühikumärgid",
         "whitespace_chars_desc": "Need märgid asendatakse pealkirjas tühikutega"
       },
@@ -509,7 +509,7 @@
         "options": {
           "image_location": {
             "description": "Esitaja vaikekujutiste kohandatud failitee. Sisseehitatud vaikeseadete kasutamiseks jätke tühjaks",
-            "heading": "Kohandatud Esineja Pilditee"
+            "heading": "Kohandatud Esinejate Pilditee"
           }
         }
       },
@@ -706,10 +706,10 @@
       "video_previews_tooltip": "Video eelvaated, mis esitatakse kursorit stseeni kohal hoides"
     },
     "scenes_found": "Leiti {count} stseeni",
-    "scrape_entity_query": "{entity_type} Detailide Otsingu Päring",
-    "scrape_entity_title": "{entity_type} Detailide Otsingu Tulemused",
+    "scrape_entity_query": "{entity_type} Kraapija Päring",
+    "scrape_entity_title": "{entity_type} Kraapija Tulemused",
     "scrape_results_existing": "Eksisteeriv",
-    "scrape_results_scraped": "Leitud",
+    "scrape_results_scraped": "Kraabitud",
     "set_image_url_title": "Pildi URL",
     "unsaved_changes": "Salvestamata muudatused. Kas soovid kindlasti lahkuda?"
   },
