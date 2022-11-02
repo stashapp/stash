@@ -10,7 +10,7 @@ interface ICue extends TextTrackCue {
   _endTime?: number;
 }
 
-function offsetMiddleware() {
+function offsetMiddleware(player: VideoJsPlayer) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- allow access to private tech methods
   let tech: any;
   let source: ISource;
@@ -148,11 +148,14 @@ function offsetMiddleware() {
       srcUrl.searchParams.set("start", seconds.toString());
       source.src = srcUrl.toString();
 
+      const poster = player.poster();
       const playbackRate = tech.playbackRate();
       seeking = tech.paused() ? 1 : 2;
+      player.poster("");
       tech.setSource(source);
       tech.setPlaybackRate(playbackRate);
       tech.one("canplay", () => {
+        player.poster(poster);
         if (seeking === 1) {
           tech.pause();
         }
