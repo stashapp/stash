@@ -2,6 +2,7 @@ package tag
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -23,7 +24,10 @@ const (
 	errParentsID  = 6
 )
 
-const tagName = "testTag"
+const (
+	tagName     = "testTag"
+	description = "description"
+)
 
 var (
 	autoTagIgnored = true
@@ -33,8 +37,12 @@ var (
 
 func createTag(id int) models.Tag {
 	return models.Tag{
-		ID:            id,
-		Name:          tagName,
+		ID:   id,
+		Name: tagName,
+		Description: sql.NullString{
+			String: description,
+			Valid:  true,
+		},
 		IgnoreAutoTag: autoTagIgnored,
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
@@ -48,6 +56,7 @@ func createTag(id int) models.Tag {
 func createJSONTag(aliases []string, image string, parents []string) *jsonschema.Tag {
 	return &jsonschema.Tag{
 		Name:          tagName,
+		Description:   description,
 		Aliases:       aliases,
 		IgnoreAutoTag: autoTagIgnored,
 		CreatedAt: json.JSONTime{

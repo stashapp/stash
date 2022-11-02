@@ -169,7 +169,7 @@ func PathToPerformers(ctx context.Context, path string, reader PerformerAutoTagQ
 	var ret []*models.Performer
 	for _, p := range performers {
 		// TODO - commenting out alias handling until both sides work correctly
-		if nameMatchesPath(p.Name.String, path) != -1 { // || nameMatchesPath(p.Aliases.String, path) {
+		if nameMatchesPath(p.Name, path) != -1 { // || nameMatchesPath(p.Aliases.String, path) {
 			ret = append(ret, p)
 		}
 	}

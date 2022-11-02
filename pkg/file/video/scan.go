@@ -55,3 +55,26 @@ func (d *Decorator) Decorate(ctx context.Context, fs file.FS, f file.File) (file
 		Interactive: interactive,
 	}, nil
 }
+
+func (d *Decorator) IsMissingMetadata(ctx context.Context, fs file.FS, f file.File) bool {
+	const (
+		unsetString = "unset"
+		unsetNumber = -1
+	)
+
+	vf, ok := f.(*file.VideoFile)
+	if !ok {
+		return true
+	}
+
+	interactive := false
+	if _, err := fs.Lstat(GetFunscriptPath(vf.Base().Path)); err == nil {
+		interactive = true
+	}
+
+	return vf.VideoCodec == unsetString || vf.AudioCodec == unsetString ||
+		vf.Format == unsetString || vf.Width == unsetNumber ||
+		vf.Height == unsetNumber || vf.FrameRate == unsetNumber ||
+		vf.Duration == unsetNumber ||
+		vf.BitRate == unsetNumber || interactive != vf.Interactive
+}

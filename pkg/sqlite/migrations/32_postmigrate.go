@@ -187,6 +187,10 @@ func (m *schema32Migrator) migrateFiles(ctx context.Context) error {
 					if err != nil {
 						return fmt.Errorf("migrating file %s: %w", p, err)
 					}
+				} else {
+					// if we don't reassign from the placeholder, it will fail
+					// so log a warning at least here
+					logger.Warnf("Unable to migrate invalid path: %s", p)
 				}
 
 				lastID = id

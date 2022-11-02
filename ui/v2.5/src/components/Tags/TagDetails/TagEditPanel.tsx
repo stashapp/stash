@@ -47,6 +47,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
+    description: yup.string().optional().nullable(),
     aliases: yup
       .array(yup.string().required())
       .optional()
@@ -65,6 +66,7 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
 
   const initialValues = {
     name: tag?.name,
+    description: tag?.description,
     aliases: tag?.aliases,
     parent_ids: (tag?.parents ?? []).map((t) => t.id),
     child_ids: (tag?.children ?? []).map((t) => t.id),
@@ -163,6 +165,20 @@ export const TagEditPanel: React.FC<ITagEditPanel> = ({
               value={formik.values.aliases ?? []}
               setValue={(value) => formik.setFieldValue("aliases", value)}
               errors={formik.errors.aliases}
+            />
+          </Col>
+        </Form.Group>
+
+        <Form.Group controlId="description" as={Row}>
+          {FormUtils.renderLabel({
+            title: intl.formatMessage({ id: "description" }),
+          })}
+          <Col xs={9}>
+            <Form.Control
+              as="textarea"
+              className="text-input"
+              placeholder={intl.formatMessage({ id: "description" })}
+              {...formik.getFieldProps("description")}
             />
           </Col>
         </Form.Group>

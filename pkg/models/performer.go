@@ -135,7 +135,6 @@ type PerformerReader interface {
 	Find(ctx context.Context, id int) (*Performer, error)
 	PerformerFinder
 	FindBySceneID(ctx context.Context, sceneID int) ([]*Performer, error)
-	FindNamesBySceneID(ctx context.Context, sceneID int) ([]*Performer, error)
 	FindByImageID(ctx context.Context, imageID int) ([]*Performer, error)
 	FindByGalleryID(ctx context.Context, galleryID int) ([]*Performer, error)
 	FindByNames(ctx context.Context, names []string, nocase bool) ([]*Performer, error)
@@ -154,9 +153,9 @@ type PerformerReader interface {
 }
 
 type PerformerWriter interface {
-	Create(ctx context.Context, newPerformer Performer) (*Performer, error)
-	Update(ctx context.Context, updatedPerformer PerformerPartial) (*Performer, error)
-	UpdateFull(ctx context.Context, updatedPerformer Performer) (*Performer, error)
+	Create(ctx context.Context, newPerformer *Performer) error
+	UpdatePartial(ctx context.Context, id int, updatedPerformer PerformerPartial) (*Performer, error)
+	Update(ctx context.Context, updatedPerformer *Performer) error
 	Destroy(ctx context.Context, id int) error
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
 	DestroyImage(ctx context.Context, performerID int) error

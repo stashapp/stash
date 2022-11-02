@@ -586,10 +586,20 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 	table := qb.table()
 	folderTable := folderTableMgr.table
 
-	q := qb.selectDataset().Prepared(true).Where(
-		folderTable.Col("path").Like(dirName),
-		table.Col("basename").Like(basename),
-	)
+	// like uses case-insensitive matching. Only use like if wildcards are used
+	q := qb.selectDataset().Prepared(true)
+
+	if strings.Contains(basename, "%") || strings.Contains(dirName, "%") {
+		q = q.Where(
+			folderTable.Col("path").Like(dirName),
+			table.Col("basename").Like(basename),
+		)
+	} else {
+		q = q.Where(
+			folderTable.Col("path").Eq(dirName),
+			table.Col("basename").Eq(basename),
+		)
+	}
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -686,6 +696,40 @@ func (qb *FileStore) FindByZipFileID(ctx context.Context, zipFileID file.ID) ([]
 	return qb.getMany(ctx, q)
 }
 
+func (qb *FileStore) IsPrimary(ctx context.Context, fileID file.ID) (bool, error) {
+	joinTables := []exp.IdentifierExpression{
+		scenesFilesJoinTable,
+		galleriesFilesJoinTable,
+		imagesFilesJoinTable,
+	}
+
+	var sq *goqu.SelectDataset
+
+	for _, t := range joinTables {
+		qq := dialect.From(t).Select(t.Col(fileIDColumn)).Where(
+			t.Col(fileIDColumn).Eq(fileID),
+			t.Col("primary").Eq(1),
+		)
+
+		if sq == nil {
+			sq = qq
+		} else {
+			sq = sq.Union(qq)
+		}
+	}
+
+	q := dialect.Select(goqu.COUNT("*").As("count")).Prepared(true).From(
+		sq,
+	)
+
+	var ret int
+	if err := querySimple(ctx, q, &ret); err != nil {
+		return false, err
+	}
+
+	return ret > 0, nil
+}
+
 func (qb *FileStore) validateFilter(fileFilter *models.FileFilterType) error {
 	const and = "AND"
 	const or = "OR"
@@ -752,7 +796,8 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 	distinctIDs(&query, fileTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"folders.path", "files.basename"}
+		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		searchColumns := []string{filepathColumn}
 		query.parseQueryString(searchColumns, *q)
 	}
 

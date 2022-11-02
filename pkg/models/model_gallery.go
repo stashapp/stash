@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -130,7 +131,7 @@ func (g Gallery) GetTitle() string {
 		return g.Title
 	}
 
-	return g.Path
+	return filepath.Base(g.Path)
 }
 
 // DisplayName returns a display name for the scene for logging purposes.

@@ -47,6 +47,7 @@ import { CaptionCriterion } from "./captions";
 import { RatingCriterion } from "./rating";
 import React from "react";
 import { ConfigurationContext } from "../../../hooks/Config";
+import { CountryCriterion } from "./country";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -152,8 +153,9 @@ export function makeCriteria(type: CriterionType = "none") {
       return new StringCriterion(PhashCriterionOption);
     case "duplicated":
       return new DuplicatedCriterion();
-    case "ethnicity":
     case "country":
+      return new CountryCriterion();
+    case "ethnicity":
     case "hair_color":
     case "eye_color":
     case "height":
@@ -169,6 +171,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "title":
     case "director":
     case "synopsis":
+    case "description":
       return new StringCriterion(new StringCriterionOption(type, type));
     case "interactive":
       return new InteractiveCriterion();

@@ -62,6 +62,8 @@ input GalleryUpdateInput {
   studio_id: ID
   tag_ids: [ID!]
   performer_ids: [ID!]
+
+  primary_file_id: ID
 }
 
 input BulkGalleryUpdateInput {

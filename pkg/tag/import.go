@@ -2,6 +2,7 @@ package tag
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -42,6 +43,7 @@ type Importer struct {
 func (i *Importer) PreImport(ctx context.Context) error {
 	i.tag = models.Tag{
 		Name:          i.Input.Name,
+		Description:   sql.NullString{String: i.Input.Description, Valid: true},
 		IgnoreAutoTag: i.Input.IgnoreAutoTag,
 		CreatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.CreatedAt.GetTime()},
 		UpdatedAt:     models.SQLiteTimestamp{Timestamp: i.Input.UpdatedAt.GetTime()},

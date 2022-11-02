@@ -746,7 +746,8 @@ func (qb *GalleryStore) makeQuery(ctx context.Context, galleryFilter *models.Gal
 		)
 
 		// add joins for files and checksum
-		searchColumns := []string{"galleries.title", "gallery_folder.path", "folders.path", "files.basename", "files_fingerprints.fingerprint"}
+		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		searchColumns := []string{"galleries.title", "gallery_folder.path", filepathColumn, "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -812,12 +813,12 @@ func (qb *GalleryStore) galleryPathCriterionHandler(c *models.StringCriterionInp
 			if modifier := c.Modifier; c.Modifier.IsValid() {
 				switch modifier {
 				case models.CriterionModifierIncludes:
-					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
+					clause := getPathSearchClauseMany(pathColumn, basenameColumn, c.Value, addWildcards, not)
 					clause2 := getStringSearchClause([]string{folderPathColumn}, c.Value, false)
 					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
 				case models.CriterionModifierExcludes:
 					not = true
-					clause := getPathSearchClause(pathColumn, basenameColumn, c.Value, addWildcards, not)
+					clause := getPathSearchClauseMany(pathColumn, basenameColumn, c.Value, addWildcards, not)
 					clause2 := getStringSearchClause([]string{folderPathColumn}, c.Value, true)
 					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
 				case models.CriterionModifierEquals:
@@ -836,22 +837,24 @@ func (qb *GalleryStore) galleryPathCriterionHandler(c *models.StringCriterionInp
 						f.setError(err)
 						return
 					}
-					clause := makeClause(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?) OR (%s IS NOT NULL AND %[2]s regexp ?)", pathColumn, basenameColumn), c.Value, c.Value)
-					clause2 := makeClause(fmt.Sprintf("(%s IS NOT NULL AND %[1]s regexp ?)", folderPathColumn), c.Value)
+					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
+					clause := makeClause(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %s regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
+					clause2 := makeClause(fmt.Sprintf("%s IS NOT NULL AND %[1]s regexp ?", folderPathColumn), c.Value)
 					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
 				case models.CriterionModifierNotMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
 						return
 					}
-					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?) AND (%s IS NULL OR %[2]s NOT regexp ?)", pathColumn, basenameColumn), c.Value, c.Value)
-					f.addWhere(fmt.Sprintf("(%s IS NULL OR %[1]s NOT regexp ?)", folderPathColumn), c.Value)
+					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %s NOT regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR %[1]s NOT regexp ?", folderPathColumn), c.Value)
 				case models.CriterionModifierIsNull:
-					f.whereClauses = append(f.whereClauses, makeClause(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = '')", pathColumn, basenameColumn)))
-					f.whereClauses = append(f.whereClauses, makeClause(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '')", folderPathColumn)))
+					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = ''", pathColumn, basenameColumn))
+					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = ''", folderPathColumn))
 				case models.CriterionModifierNotNull:
-					clause := makeClause(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != '')", pathColumn, basenameColumn))
-					clause2 := makeClause(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '')", folderPathColumn))
+					clause := makeClause(fmt.Sprintf("%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != ''", pathColumn, basenameColumn))
+					clause2 := makeClause(fmt.Sprintf("%s IS NOT NULL AND TRIM(%[1]s) != ''", folderPathColumn))
 					f.whereClauses = append(f.whereClauses, orClauses(clause, clause2))
 				default:
 					panic("unsupported string filter modifier")

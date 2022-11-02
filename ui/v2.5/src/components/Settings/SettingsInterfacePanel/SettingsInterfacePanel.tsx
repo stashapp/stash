@@ -111,6 +111,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="ru-RU">Русский (Россия) (Preview)</option>
           <option value="sv-SE">Svenska</option>
           <option value="tr-TR">Türkçe (Türkiye)</option>
+          <option value="uk-UA">Ukrainian</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>
@@ -136,6 +137,14 @@ export const SettingsInterfacePanel: React.FC = () => {
             onChange={(v) => saveInterface({ menuItems: v })}
           />
         </div>
+
+        <BooleanSetting
+          id="abbreviate-counters"
+          headingID="config.ui.abbreviate_counters.heading"
+          subHeadingID="config.ui.abbreviate_counters.description"
+          checked={ui.abbreviateCounters ?? undefined}
+          onChange={(v) => saveUI({ abbreviateCounters: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.desktop_integration.desktop_integration">
@@ -248,6 +257,13 @@ export const SettingsInterfacePanel: React.FC = () => {
         />
       </SettingSection>
       <SettingSection headingID="config.ui.tag_panel.heading">
+        <BooleanSetting
+          id="show-tag-card-on-hover"
+          headingID="config.ui.show_tag_card_on_hover.heading"
+          subHeadingID="config.ui.show_tag_card_on_hover.description"
+          checked={ui.showTagCardOnHover ?? true}
+          onChange={(v) => saveUI({ showTagCardOnHover: v })}
+        />
         <BooleanSetting
           id="show-child-tagged-content"
           headingID="config.ui.tag_panel.options.show_child_tagged_content.heading"

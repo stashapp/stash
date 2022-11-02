@@ -118,6 +118,7 @@ interface IScenePlayerProps {
   scene: GQL.SceneDataFragment | undefined | null;
   timestamp: number;
   autoplay?: boolean;
+  permitLoop?: boolean;
   onComplete?: () => void;
   onNext?: () => void;
   onPrevious?: () => void;
@@ -128,6 +129,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   autoplay,
   scene,
   timestamp,
+  permitLoop = true,
   onComplete,
   onNext,
   onPrevious,
@@ -161,6 +163,16 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const maxLoopDuration = config?.maximumLoopDuration ?? 0;
 
+  const looping = useMemo(
+    () =>
+      !!file &&
+      !!file.duration &&
+      permitLoop &&
+      maxLoopDuration !== 0 &&
+      file.duration < maxLoopDuration,
+    [file, permitLoop, maxLoopDuration]
+  );
+
   useEffect(() => {
     if (playerRef.current && timestamp >= 0) {
       const player = playerRef.current;
@@ -169,6 +181,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       });
     }
   }, [timestamp]);
+
+  useEffect(() => {
+    if (playerRef.current) {
+      const player = playerRef.current;
+      player.loop(looping);
+      interactiveClient.setLooping(looping);
+    }
+  }, [looping, interactiveClient]);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -311,10 +331,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     function handleOffset(player: VideoJsPlayer) {
       if (!scene || !file) return;
 
-      const currentSrc = player.currentSrc();
+      const currentSrc = new URL(player.currentSrc());
 
       const isDirect =
-        currentSrc.endsWith("/stream") || currentSrc.endsWith("/stream.m3u8");
+        currentSrc.pathname.endsWith("/stream") ||
+        currentSrc.pathname.endsWith("/stream.m3u8");
 
       const curTime = player.currentTime();
       if (!isDirect) {
@@ -553,10 +574,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     player.currentTime(0);
 
-    const looping =
-      !!file.duration &&
-      maxLoopDuration !== 0 &&
-      file.duration < maxLoopDuration;
     player.loop(looping);
     interactiveClient.setLooping(looping);
 
@@ -593,7 +610,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     scene,
     file,
     config?.autostartVideo,
-    maxLoopDuration,
+    looping,
     initialTimestamp,
     autoplay,
     interactiveClient,

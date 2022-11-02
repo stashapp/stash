@@ -728,7 +728,8 @@ func (qb *ImageStore) makeQuery(ctx context.Context, imageFilter *models.ImageFi
 			},
 		)
 
-		searchColumns := []string{"images.title", "folders.path", "files.basename", "files_fingerprints.fingerprint"}
+		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		searchColumns := []string{"images.title", filepathColumn, "files_fingerprints.fingerprint"}
 		query.parseQueryString(searchColumns, *q)
 	}
 

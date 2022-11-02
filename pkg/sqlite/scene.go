@@ -342,12 +342,6 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 }
 
 func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
-	// delete all related table rows
-	// TODO - this should be handled by a delete cascade
-	if err := qb.performersRepository().destroy(ctx, []int{id}); err != nil {
-		return err
-	}
-
 	// scene markers should be handled prior to calling destroy
 	// galleries should be handled prior to calling destroy
 
@@ -509,6 +503,20 @@ func (qb *SceneStore) FindByFileID(ctx context.Context, fileID file.ID) ([]*mode
 	ret, err := qb.findBySubquery(ctx, sq)
 	if err != nil {
 		return nil, fmt.Errorf("getting scenes by file id %d: %w", fileID, err)
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneStore) FindByPrimaryFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error) {
+	sq := dialect.From(scenesFilesJoinTable).Select(scenesFilesJoinTable.Col(sceneIDColumn)).Where(
+		scenesFilesJoinTable.Col(fileIDColumn).Eq(fileID),
+		scenesFilesJoinTable.Col("primary").Eq(1),
+	)
+
+	ret, err := qb.findBySubquery(ctx, sq)
+	if err != nil {
+		return nil, fmt.Errorf("getting scenes by primary file id %d: %w", fileID, err)
 	}
 
 	return ret, nil
@@ -946,7 +954,8 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 			},
 		)
 
-		searchColumns := []string{"scenes.title", "scenes.details", "folders.path", "files.basename", "files_fingerprints.fingerprint", "scene_markers.title"}
+		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		searchColumns := []string{"scenes.title", "scenes.details", filepathColumn, "files_fingerprints.fingerprint", "scene_markers.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 

@@ -638,3 +638,23 @@ input[type="range"].blue-slider {
     margin-bottom: 0;
   }
 }
+
+.scene-table {
+  table,
+  tr,
+  td,
+  label,
+  input {
+    height: 100%;
+  }
+
+  td:first-child {
+    padding: 0;
+  }
+
+  label {
+    display: block;
+    margin: 0;
+    padding: 0.5rem;
+  }
+}

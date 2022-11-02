@@ -31,6 +31,10 @@ fragment SlimSceneData on Scene {
     id
     title
     seconds
+    primary_tag {
+      id
+      name
+    }
   }
 
   galleries {

@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { TagLink } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { TextUtils, getStashboxBase } from "src/utils";
+import { TextUtils, getStashboxBase, getCountryByISO } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
 
 interface IPerformerDetails {
@@ -114,7 +114,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       <TextField id="ethnicity" value={performer.ethnicity} />
       <TextField id="hair_color" value={performer.hair_color} />
       <TextField id="eye_color" value={performer.eye_color} />
-      <TextField id="country" value={performer.country} />
+      <TextField
+        id="country"
+        value={
+          getCountryByISO(performer.country, intl.locale) ?? performer.country
+        }
+      />
       <TextField id="height" value={formatHeight(performer.height)} />
       <TextField id="weight" value={formatWeight(performer.weight)} />
       <TextField id="measurements" value={performer.measurements} />

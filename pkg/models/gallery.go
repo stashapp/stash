@@ -66,6 +66,7 @@ type GalleryUpdateInput struct {
 	StudioID         *string  `json:"studio_id"`
 	TagIds           []string `json:"tag_ids"`
 	PerformerIds     []string `json:"performer_ids"`
+	PrimaryFileID    *string  `json:"primary_file_id"`
 }
 
 type GalleryDestroyInput struct {

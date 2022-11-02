@@ -3,7 +3,9 @@ package stashbox
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -227,8 +229,9 @@ func (c Client) SubmitStashBoxFingerprints(ctx context.Context, sceneIDs []strin
 		qb := c.repository.Scene
 
 		for _, sceneID := range ids {
+			// TODO - Find should return an appropriate not found error
 			scene, err := qb.Find(ctx, sceneID)
-			if err != nil {
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return err
 			}
 
@@ -376,7 +379,7 @@ func (c Client) FindStashBoxPerformersByNames(ctx context.Context, performerIDs 
 				return fmt.Errorf("performer with id %d not found", performerID)
 			}
 
-			if performer.Name.Valid {
+			if performer.Name != "" {
 				performers = append(performers, performer)
 			}
 		}
@@ -410,7 +413,7 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 				return fmt.Errorf("performer with id %d not found", performerID)
 			}
 
-			if performer.Name.Valid {
+			if performer.Name != "" {
 				performers = append(performers, performer)
 			}
 		}
@@ -436,8 +439,8 @@ func (c Client) FindStashBoxPerformersByPerformerNames(ctx context.Context, perf
 func (c Client) findStashBoxPerformersByNames(ctx context.Context, performers []*models.Performer) ([]*StashBoxPerformerQueryResult, error) {
 	var ret []*StashBoxPerformerQueryResult
 	for _, performer := range performers {
-		if performer.Name.Valid {
-			performerResults, err := c.queryStashBoxPerformer(ctx, performer.Name.String)
+		if performer.Name != "" {
+			performerResults, err := c.queryStashBoxPerformer(ctx, performer.Name)
 			if err != nil {
 				return nil, err
 			}
@@ -491,6 +494,8 @@ func translateGender(gender *graphql.GenderEnum) *string {
 		res = models.GenderEnumTransgenderFemale
 	case graphql.GenderEnumTransgenderMale:
 		res = models.GenderEnumTransgenderMale
+	case graphql.GenderEnumNonBinary:
+		res = models.GenderEnumNonBinary
 	}
 
 	if res != "" {
@@ -862,7 +867,7 @@ func (c Client) SubmitSceneDraft(ctx context.Context, scene *models.Scene, endpo
 	performers := []*graphql.DraftEntityInput{}
 	for _, p := range scenePerformers {
 		performerDraft := graphql.DraftEntityInput{
-			Name: p.Name.String,
+			Name: p.Name,
 		}
 
 		stashIDs, err := pqb.GetStashIDs(ctx, p.ID)
@@ -942,55 +947,57 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 		image = bytes.NewReader(img)
 	}
 
-	if performer.Name.Valid {
-		draft.Name = performer.Name.String
+	if performer.Name != "" {
+		draft.Name = performer.Name
 	}
-	if performer.Birthdate.Valid {
-		draft.Birthdate = &performer.Birthdate.String
+	if performer.Birthdate != nil {
+		d := performer.Birthdate.String()
+		draft.Birthdate = &d
 	}
-	if performer.Country.Valid {
-		draft.Country = &performer.Country.String
+	if performer.Country != "" {
+		draft.Country = &performer.Country
 	}
-	if performer.Ethnicity.Valid {
-		draft.Ethnicity = &performer.Ethnicity.String
+	if performer.Ethnicity != "" {
+		draft.Ethnicity = &performer.Ethnicity
 	}
-	if performer.EyeColor.Valid {
-		draft.EyeColor = &performer.EyeColor.String
+	if performer.EyeColor != "" {
+		draft.EyeColor = &performer.EyeColor
 	}
-	if performer.FakeTits.Valid {
-		draft.BreastType = &performer.FakeTits.String
+	if performer.FakeTits != "" {
+		draft.BreastType = &performer.FakeTits
 	}
-	if performer.Gender.Valid {
-		draft.Gender = &performer.Gender.String
+	if performer.Gender.IsValid() {
+		v := performer.Gender.String()
+		draft.Gender = &v
 	}
-	if performer.HairColor.Valid {
-		draft.HairColor = &performer.HairColor.String
+	if performer.HairColor != "" {
+		draft.HairColor = &performer.HairColor
 	}
-	if performer.Height.Valid {
-		draft.Height = &performer.Height.String
+	if performer.Height != "" {
+		draft.Height = &performer.Height
 	}
-	if performer.Measurements.Valid {
-		draft.Measurements = &performer.Measurements.String
+	if performer.Measurements != "" {
+		draft.Measurements = &performer.Measurements
 	}
-	if performer.Piercings.Valid {
-		draft.Piercings = &performer.Piercings.String
+	if performer.Piercings != "" {
+		draft.Piercings = &performer.Piercings
 	}
-	if performer.Tattoos.Valid {
-		draft.Tattoos = &performer.Tattoos.String
+	if performer.Tattoos != "" {
+		draft.Tattoos = &performer.Tattoos
 	}
-	if performer.Aliases.Valid {
-		draft.Aliases = &performer.Aliases.String
+	if performer.Aliases != "" {
+		draft.Aliases = &performer.Aliases
 	}
 
 	var urls []string
-	if len(strings.TrimSpace(performer.Twitter.String)) > 0 {
-		urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter.String))
+	if len(strings.TrimSpace(performer.Twitter)) > 0 {
+		urls = append(urls, "https://twitter.com/"+strings.TrimSpace(performer.Twitter))
 	}
-	if len(strings.TrimSpace(performer.Instagram.String)) > 0 {
-		urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram.String))
+	if len(strings.TrimSpace(performer.Instagram)) > 0 {
+		urls = append(urls, "https://instagram.com/"+strings.TrimSpace(performer.Instagram))
 	}
-	if len(strings.TrimSpace(performer.URL.String)) > 0 {
-		urls = append(urls, strings.TrimSpace(performer.URL.String))
+	if len(strings.TrimSpace(performer.URL)) > 0 {
+		urls = append(urls, strings.TrimSpace(performer.URL))
 	}
 	if len(urls) > 0 {
 		draft.Urls = urls

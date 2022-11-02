@@ -58,11 +58,11 @@ func (t *tagger) tagPerformers(ctx context.Context, performerReader match.Perfor
 		added, err := addFunc(t.ID, p.ID)
 
 		if err != nil {
-			return t.addError("performer", p.Name.String, err)
+			return t.addError("performer", p.Name, err)
 		}
 
 		if added {
-			t.addLog("performer", p.Name.String)
+			t.addLog("performer", p.Name)
 		}
 	}
 

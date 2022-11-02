@@ -1,13 +1,21 @@
-import React, { useMemo } from "react";
-import { Accordion, Card } from "react-bootstrap";
+import React, { useMemo, useState } from "react";
+import { Accordion, Button, Card } from "react-bootstrap";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { TruncatedText } from "src/components/Shared";
+import DeleteFilesDialog from "src/components/Shared/DeleteFilesDialog";
 import * as GQL from "src/core/generated-graphql";
+import { mutateSceneSetPrimaryFile } from "src/core/StashService";
+import { useToast } from "src/hooks";
 import { NavUtils, TextUtils, getStashboxBase } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
 
 interface IFileInfoPanelProps {
   file: GQL.VideoFileDataFragment;
+  primary?: boolean;
+  ofMany?: boolean;
+  onSetPrimaryFile?: () => void;
+  onDeleteFile?: () => void;
+  loading?: boolean;
 }
 
 const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
@@ -40,62 +48,90 @@ const FileInfoPanel: React.FC<IFileInfoPanelProps> = (
   const checksum = props.file.fingerprints.find((f) => f.type === "md5");
 
   return (
-    <dl className="container scene-file-info details-list">
-      <TextField id="media_info.hash" value={oshash?.value} truncate />
-      <TextField id="media_info.checksum" value={checksum?.value} truncate />
-      <URLField
-        id="media_info.phash"
-        abbr="Perceptual hash"
-        value={phash?.value}
-        url={NavUtils.makeScenesPHashMatchUrl(phash?.value)}
-        target="_self"
-        truncate
-        trusted
-      />
-      <URLField
-        id="path"
-        url={`file://${props.file.path}`}
-        value={`file://${props.file.path}`}
-        truncate
-      />
-      {renderFileSize()}
-      <TextField
-        id="duration"
-        value={TextUtils.secondsToTimestamp(props.file.duration ?? 0)}
-        truncate
-      />
-      <TextField
-        id="dimensions"
-        value={`${props.file.width} x ${props.file.height}`}
-        truncate
-      />
-      <TextField id="framerate">
-        <FormattedMessage
-          id="frames_per_second"
-          values={{ value: intl.formatNumber(props.file.frame_rate ?? 0) }}
+    <div>
+      <dl className="container scene-file-info details-list">
+        {props.primary && (
+          <>
+            <dt></dt>
+            <dd className="primary-file">
+              <FormattedMessage id="primary_file" />
+            </dd>
+          </>
+        )}
+        <TextField id="media_info.hash" value={oshash?.value} truncate />
+        <TextField id="media_info.checksum" value={checksum?.value} truncate />
+        <URLField
+          id="media_info.phash"
+          abbr="Perceptual hash"
+          value={phash?.value}
+          url={NavUtils.makeScenesPHashMatchUrl(phash?.value)}
+          target="_self"
+          truncate
+          trusted
         />
-      </TextField>
-      <TextField id="bitrate">
-        <FormattedMessage
-          id="megabits_per_second"
-          values={{
-            value: intl.formatNumber((props.file.bit_rate ?? 0) / 1000000, {
-              maximumFractionDigits: 2,
-            }),
-          }}
+        <URLField
+          id="path"
+          url={`file://${props.file.path}`}
+          value={`file://${props.file.path}`}
+          truncate
         />
-      </TextField>
-      <TextField
-        id="media_info.video_codec"
-        value={props.file.video_codec ?? ""}
-        truncate
-      />
-      <TextField
-        id="media_info.audio_codec"
-        value={props.file.audio_codec ?? ""}
-        truncate
-      />
-    </dl>
+        {renderFileSize()}
+        <TextField
+          id="duration"
+          value={TextUtils.secondsToTimestamp(props.file.duration ?? 0)}
+          truncate
+        />
+        <TextField
+          id="dimensions"
+          value={`${props.file.width} x ${props.file.height}`}
+          truncate
+        />
+        <TextField id="framerate">
+          <FormattedMessage
+            id="frames_per_second"
+            values={{ value: intl.formatNumber(props.file.frame_rate ?? 0) }}
+          />
+        </TextField>
+        <TextField id="bitrate">
+          <FormattedMessage
+            id="megabits_per_second"
+            values={{
+              value: intl.formatNumber((props.file.bit_rate ?? 0) / 1000000, {
+                maximumFractionDigits: 2,
+              }),
+            }}
+          />
+        </TextField>
+        <TextField
+          id="media_info.video_codec"
+          value={props.file.video_codec ?? ""}
+          truncate
+        />
+        <TextField
+          id="media_info.audio_codec"
+          value={props.file.audio_codec ?? ""}
+          truncate
+        />
+      </dl>
+      {props.ofMany && props.onSetPrimaryFile && !props.primary && (
+        <div>
+          <Button
+            className="edit-button"
+            disabled={props.loading}
+            onClick={props.onSetPrimaryFile}
+          >
+            <FormattedMessage id="actions.make_primary" />
+          </Button>
+          <Button
+            variant="danger"
+            disabled={props.loading}
+            onClick={props.onDeleteFile}
+          >
+            <FormattedMessage id="actions.delete_file" />
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -106,6 +142,13 @@ interface ISceneFileInfoPanelProps {
 export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   props: ISceneFileInfoPanelProps
 ) => {
+  const Toast = useToast();
+
+  const [loading, setLoading] = useState(false);
+  const [deletingFile, setDeletingFile] = useState<
+    GQL.VideoFileDataFragment | undefined
+  >();
+
   function renderStashIDs() {
     if (!props.scene.stash_ids.length) {
       return;
@@ -115,7 +158,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       <>
         <dt>StashIDs</dt>
         <dd>
-          <ul>
+          <dl>
             {props.scene.stash_ids.map((stashID) => {
               const base = getStashboxBase(stashID.endpoint);
               const link = base ? (
@@ -130,12 +173,12 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
                 stashID.stash_id
               );
               return (
-                <li key={stashID.stash_id} className="row no-gutters">
+                <dd key={stashID.stash_id} className="row no-gutters">
                   {link}
-                </li>
+                </dd>
               );
             })}
-          </ul>
+          </dl>
         </dd>
       </>
     );
@@ -173,23 +216,47 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return <FileInfoPanel file={props.scene.files[0]} />;
     }
 
+    async function onSetPrimaryFile(fileID: string) {
+      try {
+        setLoading(true);
+        await mutateSceneSetPrimaryFile(props.scene.id, fileID);
+      } catch (e) {
+        Toast.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     return (
-      <Accordion defaultActiveKey="0">
+      <Accordion defaultActiveKey={props.scene.files[0].id}>
+        {deletingFile && (
+          <DeleteFilesDialog
+            onClose={() => setDeletingFile(undefined)}
+            selected={[deletingFile]}
+          />
+        )}
         {props.scene.files.map((file, index) => (
-          <Card key={index} className="scene-file-card">
-            <Accordion.Toggle as={Card.Header} eventKey={index.toString()}>
+          <Card key={file.id} className="scene-file-card">
+            <Accordion.Toggle as={Card.Header} eventKey={file.id}>
               <TruncatedText text={TextUtils.fileNameFromPath(file.path)} />
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey={index.toString()}>
+            <Accordion.Collapse eventKey={file.id}>
               <Card.Body>
-                <FileInfoPanel file={file} />
+                <FileInfoPanel
+                  file={file}
+                  primary={index === 0}
+                  ofMany
+                  onSetPrimaryFile={() => onSetPrimaryFile(file.id)}
+                  onDeleteFile={() => setDeletingFile(file)}
+                  loading={loading}
+                />
               </Card.Body>
             </Accordion.Collapse>
           </Card>
         ))}
       </Accordion>
     );
-  }, [props.scene]);
+  }, [props.scene, loading, Toast, deletingFile]);
 
   return (
     <>

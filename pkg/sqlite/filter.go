@@ -454,17 +454,19 @@ func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, bas
 						f.setError(err)
 						return
 					}
-					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %[1]s || '%[3]s' || %[2]s regexp ?", pathColumn, basenameColumn, string(filepath.Separator)), c.Value)
+					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
+					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND %s IS NOT NULL AND %s regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
 				case models.CriterionModifierNotMatchesRegex:
 					if _, err := regexp.Compile(c.Value); err != nil {
 						f.setError(err)
 						return
 					}
-					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %[1]s || '%[3]s' || %[2]s NOT regexp ?", pathColumn, basenameColumn, string(filepath.Separator)), c.Value)
+					filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
+					f.addWhere(fmt.Sprintf("%s IS NULL OR %s IS NULL OR %s NOT regexp ?", pathColumn, basenameColumn, filepathColumn), c.Value)
 				case models.CriterionModifierIsNull:
-					f.addWhere(fmt.Sprintf("(%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = '')", pathColumn, basenameColumn))
+					f.addWhere(fmt.Sprintf("%s IS NULL OR TRIM(%[1]s) = '' OR %s IS NULL OR TRIM(%[2]s) = ''", pathColumn, basenameColumn))
 				case models.CriterionModifierNotNull:
-					f.addWhere(fmt.Sprintf("(%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != '')", pathColumn, basenameColumn))
+					f.addWhere(fmt.Sprintf("%s IS NOT NULL AND TRIM(%[1]s) != '' AND %s IS NOT NULL AND TRIM(%[2]s) != ''", pathColumn, basenameColumn))
 				default:
 					panic("unsupported string filter modifier")
 				}
@@ -474,46 +476,12 @@ func pathCriterionHandler(c *models.StringCriterionInput, pathColumn string, bas
 }
 
 func getPathSearchClause(pathColumn, basenameColumn, p string, addWildcards, not bool) sqlClause {
-	// if path value has slashes, then we're potentially searching directory only or
-	// directory plus basename
-	hasSlashes := strings.Contains(p, string(filepath.Separator))
-	trailingSlash := hasSlashes && p[len(p)-1] == filepath.Separator
-	const emptyDir = string(filepath.Separator)
-
-	// possible values:
-	// dir/basename
-	// dir1/subdir
-	// dir/
-	// /basename
-	// dirOrBasename
-
-	basename := filepath.Base(p)
-	dir := filepath.Dir(p)
-
 	if addWildcards {
 		p = "%" + p + "%"
-		basename += "%"
-		dir = "%" + dir
 	}
 
-	var ret sqlClause
-
-	switch {
-	case !hasSlashes:
-		// dir or basename
-		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %s LIKE ?", pathColumn, basenameColumn), p, p)
-	case dir != emptyDir && !trailingSlash:
-		// (path like %dir AND basename like basename%) OR path like %p%
-		c1 := makeClause(fmt.Sprintf("%s LIKE ? AND %s LIKE ?", pathColumn, basenameColumn), dir, basename)
-		c2 := makeClause(fmt.Sprintf("%s LIKE ?", pathColumn), p)
-		ret = orClauses(c1, c2)
-	case dir == emptyDir && !trailingSlash:
-		// path like %p% OR basename like basename%
-		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %s LIKE ?", pathColumn, basenameColumn), p, basename)
-	case dir != emptyDir && trailingSlash:
-		// path like %p% OR path like %dir
-		ret = makeClause(fmt.Sprintf("%s LIKE ? OR %[1]s LIKE ?", pathColumn), p, dir)
-	}
+	filepathColumn := fmt.Sprintf("%s || '%s' || %s", pathColumn, string(filepath.Separator), basenameColumn)
+	ret := makeClause(fmt.Sprintf("%s LIKE ?", filepathColumn), p)
 
 	if not {
 		ret = ret.not()
@@ -748,7 +716,7 @@ type stringListCriterionHandlerBuilder struct {
 
 func (m *stringListCriterionHandlerBuilder) handler(criterion *models.StringCriterionInput) criterionHandlerFunc {
 	return func(ctx context.Context, f *filterBuilder) {
-		if criterion != nil && len(criterion.Value) > 0 {
+		if criterion != nil {
 			m.addJoinTable(f)
 
 			stringCriterionHandler(criterion, m.joinTable+"."+m.stringColumn)(ctx, f)

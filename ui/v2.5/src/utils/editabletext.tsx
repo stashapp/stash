@@ -1,6 +1,7 @@
 import React from "react";
 import { Form } from "react-bootstrap";
-import { FilterSelect, DurationInput } from "src/components/Shared";
+import { DurationInput } from "src/components/Shared/DurationInput";
+import { FilterSelect } from "src/components/Shared";
 import { DurationUtils } from ".";
 
 const renderTextArea = (options: {

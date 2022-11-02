@@ -720,6 +720,7 @@ const SceneLoader: React.FC = () => {
           scene={scene}
           timestamp={timestamp}
           autoplay={autoplay}
+          permitLoop={!continuePlaylist}
           onComplete={onComplete}
           onNext={
             currentQueueIndex >= 0 && currentQueueIndex < queueScenes.length - 1
