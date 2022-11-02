@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -37,14 +38,17 @@ func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer
 }
 
 func (r *performerResolver) Tags(ctx context.Context, obj *models.Performer) (ret []*models.Tag, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		ret, err = r.repository.Tag.FindByPerformerID(ctx, obj.ID)
-		return err
-	}); err != nil {
-		return nil, err
+	if !obj.TagIDs.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadTagIDs(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
 	}
 
-	return ret, nil
+	var errs []error
+	ret, errs = loaders.From(ctx).TagByID.LoadAll(obj.TagIDs.List())
+	return ret, firstError(errs)
 }
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
@@ -95,16 +99,13 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (
 }
 
 func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer) ([]*models.StashID, error) {
-	var ret []models.StashID
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
-		var err error
-		ret, err = r.repository.Performer.GetStashIDs(ctx, obj.ID)
-		return err
+		return obj.LoadStashIDs(ctx, r.repository.Performer)
 	}); err != nil {
 		return nil, err
 	}
 
-	return stashIDsSliceToPtrSlice(ret), nil
+	return stashIDsSliceToPtrSlice(obj.StashIDs.List()), nil
 }
 
 func (r *performerResolver) DeathDate(ctx context.Context, obj *models.Performer) (*string, error) {

@@ -87,7 +87,7 @@ func TestImporterPreImportWithTag(t *testing.T) {
 
 	err := i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingTagID, i.tags[0].ID)
+	assert.Equal(t, existingTagID, i.performer.TagIDs.List()[0])
 
 	i.Input.Tags = []string{existingTagErr}
 	err = i.PreImport(testCtx)
@@ -124,7 +124,7 @@ func TestImporterPreImportWithMissingTag(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport(testCtx)
 	assert.Nil(t, err)
-	assert.Equal(t, existingTagID, i.tags[0].ID)
+	assert.Equal(t, existingTagID, i.performer.TagIDs.List()[0])
 
 	tagReaderWriter.AssertExpectations(t)
 }
@@ -202,32 +202,6 @@ func TestImporterFindExistingID(t *testing.T) {
 	i.Input.Name = performerNameErr
 	id, err = i.FindExistingID(testCtx)
 	assert.Nil(t, id)
-	assert.NotNil(t, err)
-
-	readerWriter.AssertExpectations(t)
-}
-
-func TestImporterPostImportUpdateTags(t *testing.T) {
-	readerWriter := &mocks.PerformerReaderWriter{}
-
-	i := Importer{
-		ReaderWriter: readerWriter,
-		tags: []*models.Tag{
-			{
-				ID: existingTagID,
-			},
-		},
-	}
-
-	updateErr := errors.New("UpdateTags error")
-
-	readerWriter.On("UpdateTags", testCtx, performerID, []int{existingTagID}).Return(nil).Once()
-	readerWriter.On("UpdateTags", testCtx, errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
-
-	err := i.PostImport(testCtx, performerID)
-	assert.Nil(t, err)
-
-	err = i.PostImport(testCtx, errTagsID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)

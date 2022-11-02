@@ -149,22 +149,21 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			if performer.URL != nil && !excluded["url"] {
 				partial.URL = models.NewOptionalString(*performer.URL)
 			}
-
-			txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-				r := instance.Repository
-				_, err := r.Performer.UpdatePartial(ctx, t.performer.ID, partial)
-
-				if !t.refresh {
-					err = r.Performer.UpdateStashIDs(ctx, t.performer.ID, []models.StashID{
+			if !t.refresh {
+				partial.StashIDs = &models.UpdateStashIDs{
+					StashIDs: []models.StashID{
 						{
 							Endpoint: t.box.Endpoint,
 							StashID:  *performer.RemoteSiteID,
 						},
-					})
-					if err != nil {
-						return err
-					}
+					},
+					Mode: models.RelationshipUpdateModeSet,
 				}
+			}
+
+			txnErr := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				r := instance.Repository
+				_, err := r.Performer.UpdatePartial(ctx, t.performer.ID, partial)
 
 				if len(performer.Images) > 0 && !excluded["image"] {
 					image, err := utils.ReadImageFromURL(ctx, performer.Images[0])
@@ -211,21 +210,18 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				Tattoos:      getString(performer.Tattoos),
 				Twitter:      getString(performer.Twitter),
 				URL:          getString(performer.URL),
-				UpdatedAt:    currentTime,
-			}
-			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
-				r := instance.Repository
-				err := r.Performer.Create(ctx, &newPerformer)
-				if err != nil {
-					return err
-				}
-
-				err = r.Performer.UpdateStashIDs(ctx, newPerformer.ID, []models.StashID{
+				StashIDs: models.NewRelatedStashIDs([]models.StashID{
 					{
 						Endpoint: t.box.Endpoint,
 						StashID:  *performer.RemoteSiteID,
 					},
-				})
+				}),
+				UpdatedAt: currentTime,
+			}
+
+			err := txn.WithTxn(ctx, instance.Repository, func(ctx context.Context) error {
+				r := instance.Repository
+				err := r.Performer.Create(ctx, &newPerformer)
 				if err != nil {
 					return err
 				}

@@ -183,6 +183,21 @@ var (
 		table:    goqu.T(performerTable),
 		idColumn: goqu.T(performerTable).Col(idColumn),
 	}
+
+	performersTagsTableMgr = &joinTable{
+		table: table{
+			table:    performersTagsJoinTable,
+			idColumn: performersTagsJoinTable.Col(performerIDColumn),
+		},
+		fkColumn: performersTagsJoinTable.Col(tagIDColumn),
+	}
+
+	performersStashIDsTableMgr = &stashIDTable{
+		table: table{
+			table:    performersStashIDsJoinTable,
+			idColumn: performersStashIDsJoinTable.Col(performerIDColumn),
+		},
+	}
 )
 
 var (

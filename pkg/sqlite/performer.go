@@ -180,6 +180,18 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performe
 		return err
 	}
 
+	if newObject.TagIDs.Loaded() {
+		if err := performersTagsTableMgr.insertJoins(ctx, id, newObject.TagIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if newObject.StashIDs.Loaded() {
+		if err := performersStashIDsTableMgr.insertJoins(ctx, id, newObject.StashIDs.List()); err != nil {
+			return err
+		}
+	}
+
 	updated, err := qb.Find(ctx, id)
 	if err != nil {
 		return fmt.Errorf("finding after create: %w", err)
@@ -190,17 +202,28 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performe
 	return nil
 }
 
-func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, updatedObject models.PerformerPartial) (*models.Performer, error) {
+func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial models.PerformerPartial) (*models.Performer, error) {
 	r := performerRowRecord{
 		updateRecord{
 			Record: make(exp.Record),
 		},
 	}
 
-	r.fromPartial(updatedObject)
+	r.fromPartial(partial)
 
 	if len(r.Record) > 0 {
 		if err := qb.tableMgr.updateByID(ctx, id, r.Record); err != nil {
+			return nil, err
+		}
+	}
+
+	if partial.TagIDs != nil {
+		if err := performersTagsTableMgr.modifyJoins(ctx, id, partial.TagIDs.IDs, partial.TagIDs.Mode); err != nil {
+			return nil, err
+		}
+	}
+	if partial.StashIDs != nil {
+		if err := performersStashIDsTableMgr.modifyJoins(ctx, id, partial.StashIDs.StashIDs, partial.StashIDs.Mode); err != nil {
 			return nil, err
 		}
 	}
@@ -214,6 +237,18 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Perf
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.TagIDs.Loaded() {
+		if err := performersTagsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.TagIDs.List()); err != nil {
+			return err
+		}
+	}
+
+	if updatedObject.StashIDs.Loaded() {
+		if err := performersStashIDsTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.StashIDs.List()); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -799,11 +834,6 @@ func (qb *PerformerStore) GetTagIDs(ctx context.Context, id int) ([]int, error) 
 	return qb.tagsRepository().getIDs(ctx, id)
 }
 
-func (qb *PerformerStore) UpdateTags(ctx context.Context, id int, tagIDs []int) error {
-	// Delete the existing joins and then create new ones
-	return qb.tagsRepository().replace(ctx, id, tagIDs)
-}
-
 func (qb *PerformerStore) imageRepository() *imageRepository {
 	return &imageRepository{
 		repository: repository{
@@ -839,10 +869,6 @@ func (qb *PerformerStore) stashIDRepository() *stashIDRepository {
 
 func (qb *PerformerStore) GetStashIDs(ctx context.Context, performerID int) ([]models.StashID, error) {
 	return qb.stashIDRepository().get(ctx, performerID)
-}
-
-func (qb *PerformerStore) UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error {
-	return qb.stashIDRepository().replace(ctx, performerID, stashIDs)
 }
 
 func (qb *PerformerStore) FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Performer, error) {

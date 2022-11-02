@@ -12,7 +12,6 @@ import (
 
 type PerformerCreator interface {
 	Create(ctx context.Context, newPerformer *models.Performer) error
-	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
 }
 
 func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer, createMissing bool) (*int, error) {
@@ -33,20 +32,18 @@ func getPerformerID(ctx context.Context, endpoint string, w PerformerCreator, p 
 
 func createMissingPerformer(ctx context.Context, endpoint string, w PerformerCreator, p *models.ScrapedPerformer) (*int, error) {
 	performerInput := scrapedToPerformerInput(p)
-	err := w.Create(ctx, &performerInput)
-	if err != nil {
-		return nil, fmt.Errorf("error creating performer: %w", err)
-	}
-
 	if endpoint != "" && p.RemoteSiteID != nil {
-		if err := w.UpdateStashIDs(ctx, performerInput.ID, []models.StashID{
+		performerInput.StashIDs = models.NewRelatedStashIDs([]models.StashID{
 			{
 				Endpoint: endpoint,
 				StashID:  *p.RemoteSiteID,
 			},
-		}); err != nil {
-			return nil, fmt.Errorf("error setting performer stash id: %w", err)
-		}
+		})
+	}
+
+	err := w.Create(ctx, &performerInput)
+	if err != nil {
+		return nil, fmt.Errorf("error creating performer: %w", err)
 	}
 
 	return &performerInput.ID, nil

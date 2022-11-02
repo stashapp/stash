@@ -18,9 +18,7 @@ import (
 type NameFinderCreatorUpdater interface {
 	NameFinderCreator
 	Update(ctx context.Context, updatedPerformer *models.Performer) error
-	UpdateTags(ctx context.Context, performerID int, tagIDs []int) error
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
-	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
 }
 
 type Importer struct {
@@ -32,8 +30,6 @@ type Importer struct {
 	ID        int
 	performer models.Performer
 	imageData []byte
-
-	tags []*models.Tag
 }
 
 func (i *Importer) PreImport(ctx context.Context) error {
@@ -62,7 +58,9 @@ func (i *Importer) populateTags(ctx context.Context) error {
 			return err
 		}
 
-		i.tags = tags
+		for _, p := range tags {
+			i.performer.TagIDs.Add(p.ID)
+		}
 	}
 
 	return nil
@@ -120,25 +118,9 @@ func createTags(ctx context.Context, tagWriter tag.NameFinderCreator, names []st
 }
 
 func (i *Importer) PostImport(ctx context.Context, id int) error {
-	if len(i.tags) > 0 {
-		var tagIDs []int
-		for _, t := range i.tags {
-			tagIDs = append(tagIDs, t.ID)
-		}
-		if err := i.ReaderWriter.UpdateTags(ctx, id, tagIDs); err != nil {
-			return fmt.Errorf("failed to associate tags: %v", err)
-		}
-	}
-
 	if len(i.imageData) > 0 {
 		if err := i.ReaderWriter.UpdateImage(ctx, id, i.imageData); err != nil {
 			return fmt.Errorf("error setting performer image: %v", err)
-		}
-	}
-
-	if len(i.Input.StashIDs) > 0 {
-		if err := i.ReaderWriter.UpdateStashIDs(ctx, id, i.Input.StashIDs); err != nil {
-			return fmt.Errorf("error setting stash id: %v", err)
 		}
 	}
 
@@ -210,6 +192,9 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		IgnoreAutoTag: performerJSON.IgnoreAutoTag,
 		CreatedAt:     performerJSON.CreatedAt.GetTime(),
 		UpdatedAt:     performerJSON.UpdatedAt.GetTime(),
+
+		TagIDs:   models.NewRelatedIDs([]int{}),
+		StashIDs: models.NewRelatedStashIDs(performerJSON.StashIDs),
 	}
 
 	if performerJSON.Birthdate != "" {

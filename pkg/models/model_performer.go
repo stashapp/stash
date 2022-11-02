@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"time"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
@@ -34,6 +35,33 @@ type Performer struct {
 	HairColor     string     `json:"hair_color"`
 	Weight        *int       `json:"weight"`
 	IgnoreAutoTag bool       `json:"ignore_auto_tag"`
+
+	TagIDs   RelatedIDs      `json:"tag_ids"`
+	StashIDs RelatedStashIDs `json:"stash_ids"`
+}
+
+func (s *Performer) LoadTagIDs(ctx context.Context, l TagIDLoader) error {
+	return s.TagIDs.load(func() ([]int, error) {
+		return l.GetTagIDs(ctx, s.ID)
+	})
+}
+
+func (s *Performer) LoadStashIDs(ctx context.Context, l StashIDLoader) error {
+	return s.StashIDs.load(func() ([]StashID, error) {
+		return l.GetStashIDs(ctx, s.ID)
+	})
+}
+
+func (s *Performer) LoadRelationships(ctx context.Context, l PerformerReader) error {
+	if err := s.LoadTagIDs(ctx, l); err != nil {
+		return err
+	}
+
+	if err := s.LoadStashIDs(ctx, l); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // PerformerPartial represents part of a Performer object. It is used to update
@@ -66,6 +94,9 @@ type PerformerPartial struct {
 	HairColor     OptionalString
 	Weight        OptionalInt
 	IgnoreAutoTag OptionalBool
+
+	TagIDs   *UpdateIDs
+	StashIDs *UpdateStashIDs
 }
 
 func NewPerformer(name string) *Performer {

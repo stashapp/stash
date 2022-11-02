@@ -97,6 +97,10 @@ func createFullPerformer(id int, name string) *models.Performer {
 		HairColor:     hairColor,
 		Weight:        &weight,
 		IgnoreAutoTag: autoTagIgnored,
+		TagIDs:        models.NewRelatedIDs([]int{}),
+		StashIDs: models.NewRelatedStashIDs([]models.StashID{
+			stashID,
+		}),
 	}
 }
 
