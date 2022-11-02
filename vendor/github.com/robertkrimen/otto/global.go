@@ -90,7 +90,7 @@ func (self *_object) hasPrimitive() bool {
 }
 
 func (runtime *_runtime) newObject() *_object {
-	self := runtime.newClassObject("Object")
+	self := runtime.newClassObject(classObject)
 	self.prototype = runtime.global.ObjectPrototype
 	return self
 }
@@ -134,7 +134,7 @@ func (runtime *_runtime) newRegExp(patternValue Value, flagsValue Value) *_objec
 
 	pattern := ""
 	flags := ""
-	if object := patternValue._object(); object != nil && object.class == "RegExp" {
+	if object := patternValue._object(); object != nil && object.class == classRegExp {
 		if flagsValue.IsDefined() {
 			panic(runtime.panicTypeError("Cannot supply flags when constructing one RegExp from another"))
 		}

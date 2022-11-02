@@ -38,6 +38,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoDomstorage(in *jlexer.Lexer, 
 		switch key {
 		case "securityOrigin":
 			out.SecurityOrigin = string(in.String())
+		case "storageKey":
+			out.StorageKey = SerializedStorageKey(in.String())
 		case "isLocalStorage":
 			out.IsLocalStorage = bool(in.Bool())
 		default:
@@ -54,14 +56,30 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoDomstorage(out *jwriter.Write
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.SecurityOrigin != "" {
 		const prefix string = ",\"securityOrigin\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.SecurityOrigin))
 	}
+	if in.StorageKey != "" {
+		const prefix string = ",\"storageKey\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.StorageKey))
+	}
 	{
 		const prefix string = ",\"isLocalStorage\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.Bool(bool(in.IsLocalStorage))
 	}
 	out.RawByte('}')

@@ -245,11 +245,11 @@ func initContextBrowser(ctx context.Context) (*Context, error) {
 		return nil, ErrInvalidContext
 	}
 	if c.Browser == nil {
-		browser, err := c.Allocator.Allocate(ctx, c.browserOpts...)
+		b, err := c.Allocator.Allocate(ctx, c.browserOpts...)
 		if err != nil {
 			return nil, err
 		}
-		c.Browser = browser
+		c.Browser = b
 		c.Browser.listeners = append(c.Browser.listeners, c.browserListeners...)
 	}
 	return c, nil
@@ -318,7 +318,15 @@ func (c *Context) newTarget(ctx context.Context) error {
 		default:
 			return
 		}
-		if info.Type == "page" && info.URL == "about:blank" {
+		// In the following cases, the browser will start with a non-blank tab:
+		// 1. with the "--app" option (should disable headless mode);
+		// 2. URL other than "about:blank" is placed in the command line arguments.
+		// So we should not require that the URL to be "about:blank".
+		// See issue https://github.com/chromedp/chromedp/issues/1076
+		// In any cases that the browser starts with multiple tabs open,
+		// it should be okay to attach to any one of them (no matter whether it
+		// is blank).
+		if info.Type == "page" {
 			select {
 			case <-lctx.Done():
 			case ch <- info.TargetID:
@@ -327,7 +335,7 @@ func (c *Context) newTarget(ctx context.Context) error {
 		}
 	})
 
-	// wait for the first blank tab to appear
+	// wait for the first tab to appear
 	action := target.SetDiscoverTargets(true)
 	if err := action.Do(cdp.WithExecutor(ctx, c.Browser)); err != nil {
 		return err
@@ -464,7 +472,7 @@ func responseAction(resp **network.Response, actions ...Action) Action {
 		finished := false
 
 		// First, set up the function to handle events.
-		// We are listening for lifeycle events, so we will use those to
+		// We are listening for lifecycle events, so we will use those to
 		// make sure we grab the response for a request initiated by the
 		// loaderID that we want.
 
@@ -627,17 +635,38 @@ func (t Tasks) Do(ctx context.Context) error {
 // been able to be written/tested.
 func Sleep(d time.Duration) Action {
 	return ActionFunc(func(ctx context.Context) error {
-		// Don't use time.After, to avoid a temporary goroutine leak if
-		// ctx is cancelled before the timer fires.
-		t := time.NewTimer(d)
-		select {
-		case <-ctx.Done():
-			t.Stop()
-			return ctx.Err()
-		case <-t.C:
-		}
-		return nil
+		return sleepContext(ctx, d)
 	})
+}
+
+// sleepContext sleeps for the specified duration. It returns ctx.Err() immediately
+// if the context is cancelled.
+func sleepContext(ctx context.Context, d time.Duration) error {
+	timer := time.NewTimer(d)
+	select {
+	case <-ctx.Done():
+		if !timer.Stop() {
+			<-timer.C
+		}
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
+}
+
+// retryWithSleep reties the execution of the specified func until the func returns
+// true (means to stop) or a non-nil error.
+func retryWithSleep(ctx context.Context, d time.Duration, f func(ctx context.Context) (bool, error)) error {
+	for {
+		toStop, err := f(ctx)
+		if toStop || err != nil {
+			return err
+		}
+		err = sleepContext(ctx, d)
+		if err != nil {
+			return err
+		}
+	}
 }
 
 type cancelableListener struct {
@@ -652,7 +681,8 @@ type cancelableListener struct {
 //
 // Note that the function is called synchronously when handling events. The
 // function should avoid blocking at all costs. For example, any Actions must be
-// run via a separate goroutine.
+// run via a separate goroutine (otherwise, it could result in a deadlock if the
+// action sends CDP messages).
 func ListenBrowser(ctx context.Context, fn func(ev interface{})) {
 	c := FromContext(ctx)
 	if c == nil {
@@ -674,7 +704,8 @@ func ListenBrowser(ctx context.Context, fn func(ev interface{})) {
 //
 // Note that the function is called synchronously when handling events. The
 // function should avoid blocking at all costs. For example, any Actions must be
-// run via a separate goroutine.
+// run via a separate goroutine (otherwise, it could result in a deadlock if the
+// action sends CDP messages).
 func ListenTarget(ctx context.Context, fn func(ev interface{})) {
 	c := FromContext(ctx)
 	if c == nil {

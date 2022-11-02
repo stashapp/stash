@@ -73,7 +73,8 @@ type StartViolationsReportParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Log#method-startViolationsReport
 //
 // parameters:
-//   config - Configuration for violations.
+//
+//	config - Configuration for violations.
 func StartViolationsReport(config []*ViolationSetting) *StartViolationsReportParams {
 	return &StartViolationsReportParams{
 		Config: config,

@@ -6,7 +6,7 @@ type _constructFunction func(*_object, []Value) Value
 // 13.2.2 [[Construct]]
 func defaultConstruct(fn *_object, argumentList []Value) Value {
 	object := fn.runtime.newObject()
-	object.class = "Object"
+	object.class = classObject
 
 	prototype := fn.get("prototype")
 	if prototype.kind != valueObject {
@@ -38,7 +38,7 @@ type _nativeFunctionObject struct {
 }
 
 func (runtime *_runtime) _newNativeFunctionObject(name, file string, line int, native _nativeFunction, length int) *_object {
-	self := runtime.newClassObject("Function")
+	self := runtime.newClassObject(classFunction)
 	self.value = _nativeFunctionObject{
 		name:      name,
 		file:      file,
@@ -47,7 +47,7 @@ func (runtime *_runtime) _newNativeFunctionObject(name, file string, line int, n
 		construct: defaultConstruct,
 	}
 	self.defineProperty("name", toValue_string(name), 0000, false)
-	self.defineProperty("length", toValue_int(length), 0000, false)
+	self.defineProperty(propertyLength, toValue_int(length), 0000, false)
 	return self
 }
 
@@ -86,19 +86,19 @@ type _bindFunctionObject struct {
 }
 
 func (runtime *_runtime) newBoundFunctionObject(target *_object, this Value, argumentList []Value) *_object {
-	self := runtime.newClassObject("Function")
+	self := runtime.newClassObject(classFunction)
 	self.value = _bindFunctionObject{
 		target:       target,
 		this:         this,
 		argumentList: argumentList,
 	}
-	length := int(toInt32(target.get("length")))
+	length := int(toInt32(target.get(propertyLength)))
 	length -= len(argumentList)
 	if length < 0 {
 		length = 0
 	}
 	self.defineProperty("name", toValue_string("bound "+target.get("name").String()), 0000, false)
-	self.defineProperty("length", toValue_int(length), 0000, false)
+	self.defineProperty(propertyLength, toValue_int(length), 0000, false)
 	self.defineProperty("caller", Value{}, 0000, false)    // TODO Should throw a TypeError
 	self.defineProperty("arguments", Value{}, 0000, false) // TODO Should throw a TypeError
 	return self
@@ -127,13 +127,13 @@ type _nodeFunctionObject struct {
 }
 
 func (runtime *_runtime) newNodeFunctionObject(node *_nodeFunctionLiteral, stash _stash) *_object {
-	self := runtime.newClassObject("Function")
+	self := runtime.newClassObject(classFunction)
 	self.value = _nodeFunctionObject{
 		node:  node,
 		stash: stash,
 	}
 	self.defineProperty("name", toValue_string(node.name), 0000, false)
-	self.defineProperty("length", toValue_int(len(node.parameterList)), 0000, false)
+	self.defineProperty(propertyLength, toValue_int(len(node.parameterList)), 0000, false)
 	self.defineOwnProperty("caller", _property{
 		value: _propertyGetSet{
 			runtime.newNativeFunction("get", "internal", 0, func(fc FunctionCall) Value {

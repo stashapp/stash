@@ -10,7 +10,7 @@ func builtinRegExp(call FunctionCall) Value {
 	pattern := call.Argument(0)
 	flags := call.Argument(1)
 	if object := pattern._object(); object != nil {
-		if object.class == "RegExp" && flags.IsUndefined() {
+		if object.class == classRegExp && flags.IsUndefined() {
 			return pattern
 		}
 	}

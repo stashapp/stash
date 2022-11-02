@@ -455,7 +455,6 @@ func (self *_parser) parseWithStatement() ast.Statement {
 	self.expect(token.RIGHT_PARENTHESIS)
 
 	if self.mode&StoreComments != 0 {
-		//comments = append(comments, self.comments.FetchAll()...)
 		self.comments.CommentMap.AddComments(node, comments, ast.LEADING)
 		self.comments.CommentMap.AddComments(node, withComments, ast.WITH)
 	}
@@ -774,7 +773,6 @@ func (self *_parser) parseIfStatement() ast.Statement {
 
 func (self *_parser) parseSourceElement() ast.Statement {
 	statement := self.parseStatement()
-	//self.comments.Unset()
 	return statement
 }
 

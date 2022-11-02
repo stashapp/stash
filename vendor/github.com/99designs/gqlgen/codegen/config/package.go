@@ -12,6 +12,7 @@ import (
 type PackageConfig struct {
 	Filename string `yaml:"filename,omitempty"`
 	Package  string `yaml:"package,omitempty"`
+	Version  int    `yaml:"version,omitempty"`
 }
 
 func (c *PackageConfig) ImportPath() string {

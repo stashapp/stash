@@ -6,14 +6,14 @@ import (
 
 func (runtime *_runtime) newArrayObject(length uint32) *_object {
 	self := runtime.newObject()
-	self.class = "Array"
-	self.defineProperty("length", toValue_uint32(length), 0100, false)
+	self.class = classArray
+	self.defineProperty(propertyLength, toValue_uint32(length), 0100, false)
 	self.objectClass = _classArray
 	return self
 }
 
 func isArray(object *_object) bool {
-	return object != nil && (object.class == "Array" || object.class == "GoArray")
+	return object != nil && (object.class == classArray || object.class == classGoArray)
 }
 
 func objectLength(object *_object) uint32 {
@@ -21,12 +21,12 @@ func objectLength(object *_object) uint32 {
 		return 0
 	}
 	switch object.class {
-	case "Array":
-		return object.get("length").value.(uint32)
-	case "String":
-		return uint32(object.get("length").value.(int))
-	case "GoArray":
-		return uint32(object.get("length").value.(int))
+	case classArray:
+		return object.get(propertyLength).value.(uint32)
+	case classString:
+		return uint32(object.get(propertyLength).value.(int))
+	case classGoArray:
+		return uint32(object.get(propertyLength).value.(int))
 	}
 	return 0
 }
@@ -41,13 +41,13 @@ func arrayUint32(rt *_runtime, value Value) uint32 {
 }
 
 func arrayDefineOwnProperty(self *_object, name string, descriptor _property, throw bool) bool {
-	lengthProperty := self.getOwnProperty("length")
+	lengthProperty := self.getOwnProperty(propertyLength)
 	lengthValue, valid := lengthProperty.value.(Value)
 	if !valid {
 		panic("Array.length != Value{}")
 	}
 	length := lengthValue.value.(uint32)
-	if name == "length" {
+	if name == propertyLength {
 		if descriptor.value == nil {
 			return objectDefineOwnProperty(self, name, descriptor, throw)
 		}
@@ -96,7 +96,7 @@ func arrayDefineOwnProperty(self *_object, name string, descriptor _property, th
 		}
 		if index >= int64(length) {
 			lengthProperty.value = toValue_uint32(uint32(index + 1))
-			objectDefineOwnProperty(self, "length", *lengthProperty, false)
+			objectDefineOwnProperty(self, propertyLength, *lengthProperty, false)
 			return true
 		}
 	}

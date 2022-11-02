@@ -72,7 +72,7 @@ const (
 // 8.12.8
 func (self *_object) DefaultValue(hint _defaultValueHint) Value {
 	if hint == defaultValueNoHint {
-		if self.class == "Date" {
+		if self.class == classDate {
 			// Date exception
 			hint = defaultValueHintString
 		} else {

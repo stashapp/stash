@@ -7,6 +7,7 @@
 {{ reserveImport "sync/atomic" }}
 {{ reserveImport "errors"  }}
 {{ reserveImport "bytes"  }}
+{{ reserveImport "embed"  }}
 
 {{ reserveImport "github.com/vektah/gqlparser/v2" "gqlparser" }}
 {{ reserveImport "github.com/vektah/gqlparser/v2/ast" }}
@@ -135,6 +136,13 @@
 	func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		rc := graphql.GetOperationContext(ctx)
 		ec := executionContext{rc, e}
+		inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+			{{- range $input := .Inputs -}}
+				{{ if not $input.HasUnmarshal }}
+					ec.unmarshalInput{{ $input.Name }},
+				{{- end }}
+			{{- end }}
+		)
 		first := true
 
 		switch rc.Operation.Operation {
@@ -142,6 +150,7 @@
 			return func(ctx context.Context) *graphql.Response {
 				if !first { return nil }
 				first = false
+				ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
 				{{ if .Directives.LocationDirectives "QUERY" -}}
 					data := ec._queryMiddleware(ctx, rc.Operation, func(ctx context.Context) (interface{}, error){
 						return ec._{{.QueryRoot.Name}}(ctx, rc.Operation.SelectionSet), nil
@@ -162,6 +171,7 @@
 			return func(ctx context.Context) *graphql.Response {
 				if !first { return nil }
 				first = false
+				ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
 				{{ if .Directives.LocationDirectives "MUTATION" -}}
 					data := ec._mutationMiddleware(ctx, rc.Operation, func(ctx context.Context) (interface{}, error){
 						return ec._{{.MutationRoot.Name}}(ctx, rc.Operation.SelectionSet), nil
@@ -190,7 +200,7 @@
 			var buf bytes.Buffer
 			return func(ctx context.Context) *graphql.Response {
 				buf.Reset()
-				data := next()
+				data := next(ctx)
 
 				if data == nil {
 					return nil
@@ -226,9 +236,22 @@
 		return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 	}
 
+	{{if .HasEmbeddableSources }}
+	//go:embed{{- range $source := .AugmentedSources }}{{if $source.Embeddable}} {{$source.RelativePath|quote}}{{end}}{{- end }}
+	var sourcesFS embed.FS
+
+	func sourceData(filename string) string {
+		data, err := sourcesFS.ReadFile(filename)
+		if err != nil {
+			panic(fmt.Sprintf("codegen problem: %s not available", filename))
+		}
+		return string(data)
+	}
+	{{- end }}
+
 	var sources = []*ast.Source{
-	{{- range $source := .Config.Sources }}
-		{Name: {{$source.Name|quote}}, Input: {{$source.Input|rawQuote}}, BuiltIn: {{$source.BuiltIn}}},
+	{{- range $source := .AugmentedSources }}
+		{Name: {{$source.RelativePath|quote}}, Input: {{if (not $source.Embeddable)}}{{$source.Source|rawQuote}}{{else}}sourceData({{$source.RelativePath|quote}}){{end}}, BuiltIn: {{$source.BuiltIn}}},
 	{{- end }}
 	}
 	var parsedSchema = gqlparser.MustLoadSchema(sources...)

@@ -25,9 +25,9 @@ type ctxKey struct{}
 //     l.UpdateContext(func(c Context) Context {
 //         return c.Str("bar", "baz")
 //     })
-func (l *Logger) WithContext(ctx context.Context) context.Context {
+func (l Logger) WithContext(ctx context.Context) context.Context {
 	if lp, ok := ctx.Value(ctxKey{}).(*Logger); ok {
-		if lp == l {
+		if lp == &l {
 			// Do not store same logger.
 			return ctx
 		}
@@ -35,7 +35,7 @@ func (l *Logger) WithContext(ctx context.Context) context.Context {
 		// Do not store disabled logger.
 		return ctx
 	}
-	return context.WithValue(ctx, ctxKey{}, l)
+	return context.WithValue(ctx, ctxKey{}, &l)
 }
 
 // Ctx returns the Logger associated with the ctx. If no logger

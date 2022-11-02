@@ -20,7 +20,7 @@ func (runtime *_runtime) newArgumentsObject(indexOfParameterName []string, stash
 
 	self.prototype = runtime.global.ObjectPrototype
 
-	self.defineProperty("length", toValue_int(length), 0101, false)
+	self.defineProperty(propertyLength, toValue_int(length), 0101, false)
 
 	return self
 }

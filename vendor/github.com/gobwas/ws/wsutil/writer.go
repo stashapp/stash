@@ -290,7 +290,7 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 	var nn int
 	for len(p) > w.Available() && w.err == nil {
 		if w.noFlush {
-			w.Grow(len(p) - w.Available())
+			w.Grow(len(p))
 			continue
 		}
 		if w.Buffered() == 0 {
@@ -336,18 +336,42 @@ func ceilPowerOfTwo(n int) int {
 	return n
 }
 
+// Grow grows Writer's internal buffer capacity to guarantee space for another
+// n bytes of _payload_ -- that is, frame header is not included in n.
 func (w *Writer) Grow(n int) {
+	// NOTE: we must respect the possibility of header reserved bytes grow.
 	var (
-		offset = len(w.raw) - len(w.buf)
-		size   = ceilPowerOfTwo(offset + w.n + n)
+		size       = len(w.raw)
+		prevOffset = len(w.raw) - len(w.buf)
+		nextOffset = len(w.raw) - len(w.buf)
+		buffered   = w.Buffered()
 	)
-	if size <= len(w.raw) {
+	for cap := size - nextOffset - buffered; cap < n; {
+		// This loop runs twice only at split cases, when reservation of raw
+		// buffer space for the header shrinks capacity of new buffer such that
+		// it still less than n.
+		//
+		// Loop is safe here because:
+		// - (offset + buffered + n) is greater than size, otherwise (cap < n)
+		//   would be false:
+		//   size  = offset + buffered + freeSpace (cap)
+		//   size' = offset + buffered + wantSpace (n)
+		//   Since (cap < n) is true in the loop condition, size' is guaranteed
+		//   to be greater => no infinite loop.
+		size = ceilPowerOfTwo(nextOffset + buffered + n)
+		nextOffset = reserve(w.state, size)
+		cap = size - nextOffset - buffered
+	}
+	if size < len(w.raw) {
 		panic("wsutil: buffer grow leads to its reduce")
 	}
+	if size == len(w.raw) {
+		return
+	}
 	p := make([]byte, size)
-	copy(p, w.raw[:offset+w.n])
+	copy(p[nextOffset-prevOffset:], w.raw[:prevOffset+buffered])
 	w.raw = p
-	w.buf = w.raw[offset:]
+	w.buf = w.raw[nextOffset:]
 }
 
 // WriteThrough writes data bypassing the buffer.
@@ -546,12 +570,15 @@ func writeFrame(w io.Writer, s ws.State, op ws.OpCode, fin bool, p []byte) error
 	return ws.WriteFrame(w, frame)
 }
 
+// reserve calculates number of bytes need to be reserved for frame header.
+//
+// Note that instead of ws.HeaderSize() it does calculation based on the buffer
+// size, not the payload size.
 func reserve(state ws.State, n int) (offset int) {
 	var mask int
 	if state.ClientSide() {
 		mask = 4
 	}
-
 	switch {
 	case n <= int(len7)+mask+2:
 		return mask + 2

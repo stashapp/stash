@@ -364,6 +364,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLog4(in *jlexer.Lexer, out *E
 			(out.Level).UnmarshalEasyJSON(in)
 		case "text":
 			out.Text = string(in.String())
+		case "category":
+			(out.Category).UnmarshalEasyJSON(in)
 		case "timestamp":
 			if in.IsNull() {
 				in.Skip()
@@ -451,6 +453,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoLog4(out *jwriter.Writer, in 
 		const prefix string = ",\"text\":"
 		out.RawString(prefix)
 		out.String(string(in.Text))
+	}
+	if in.Category != "" {
+		const prefix string = ",\"category\":"
+		out.RawString(prefix)
+		(in.Category).MarshalEasyJSON(out)
 	}
 	{
 		const prefix string = ",\"timestamp\":"

@@ -36,10 +36,11 @@ type GetInfoReturns struct {
 // Do executes SystemInfo.getInfo against the provided context.
 //
 // returns:
-//   gpu - Information about the GPUs on the system.
-//   modelName - A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported.
-//   modelVersion - A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported.
-//   commandLine - The command line string used to launch the browser. Will be the empty string if not supported.
+//
+//	gpu - Information about the GPUs on the system.
+//	modelName - A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported.
+//	modelVersion - A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported.
+//	commandLine - The command line string used to launch the browser. Will be the empty string if not supported.
 func (p *GetInfoParams) Do(ctx context.Context) (gpu *GPUInfo, modelName string, modelVersion string, commandLine string, err error) {
 	// execute
 	var res GetInfoReturns
@@ -69,7 +70,8 @@ type GetProcessInfoReturns struct {
 // Do executes SystemInfo.getProcessInfo against the provided context.
 //
 // returns:
-//   processInfo - An array of process info blocks.
+//
+//	processInfo - An array of process info blocks.
 func (p *GetProcessInfoParams) Do(ctx context.Context) (processInfo []*ProcessInfo, err error) {
 	// execute
 	var res GetProcessInfoReturns

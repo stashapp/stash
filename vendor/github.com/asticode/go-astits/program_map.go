@@ -9,8 +9,8 @@ type programMap struct {
 }
 
 // newProgramMap creates a new program ids map
-func newProgramMap() programMap {
-	return programMap{
+func newProgramMap() *programMap {
+	return &programMap{
 		m: &sync.Mutex{},
 		p: make(map[uint16]uint16),
 	}

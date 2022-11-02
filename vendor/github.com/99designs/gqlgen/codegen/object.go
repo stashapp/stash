@@ -9,6 +9,8 @@ import (
 
 	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/vektah/gqlparser/v2/ast"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type GoFieldType int
@@ -38,7 +40,7 @@ func (b *builder) buildObject(typ *ast.Definition) (*Object, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", typ.Name, err)
 	}
-
+	caser := cases.Title(language.English, cases.NoLower)
 	obj := &Object{
 		Definition:         typ,
 		Root:               b.Schema.Query == typ || b.Schema.Mutation == typ || b.Schema.Subscription == typ,
@@ -46,7 +48,7 @@ func (b *builder) buildObject(typ *ast.Definition) (*Object, error) {
 		Stream:             typ == b.Schema.Subscription,
 		Directives:         dirs,
 		ResolverInterface: types.NewNamed(
-			types.NewTypeName(0, b.Config.Exec.Pkg(), strings.Title(typ.Name)+"Resolver", nil),
+			types.NewTypeName(0, b.Config.Exec.Pkg(), caser.String(typ.Name)+"Resolver", nil),
 			nil,
 			nil,
 		),

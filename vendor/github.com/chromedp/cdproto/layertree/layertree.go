@@ -26,7 +26,8 @@ type CompositingReasonsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/LayerTree#method-compositingReasons
 //
 // parameters:
-//   layerID - The id of the layer for which we want to get the reasons it was composited.
+//
+//	layerID - The id of the layer for which we want to get the reasons it was composited.
 func CompositingReasons(layerID LayerID) *CompositingReasonsParams {
 	return &CompositingReasonsParams{
 		LayerID: layerID,
@@ -35,14 +36,15 @@ func CompositingReasons(layerID LayerID) *CompositingReasonsParams {
 
 // CompositingReasonsReturns return values.
 type CompositingReasonsReturns struct {
-	CompositingReasonIds []string `json:"compositingReasonIds,omitempty"` // A list of strings specifying reason IDs for the given layer to become composited.
+	CompositingReasonIDs []string `json:"compositingReasonIds,omitempty"` // A list of strings specifying reason IDs for the given layer to become composited.
 }
 
 // Do executes LayerTree.compositingReasons against the provided context.
 //
 // returns:
-//   compositingReasonIds - A list of strings specifying reason IDs for the given layer to become composited.
-func (p *CompositingReasonsParams) Do(ctx context.Context) (compositingReasonIds []string, err error) {
+//
+//	compositingReasonIDs - A list of strings specifying reason IDs for the given layer to become composited.
+func (p *CompositingReasonsParams) Do(ctx context.Context) (compositingReasonIDs []string, err error) {
 	// execute
 	var res CompositingReasonsReturns
 	err = cdp.Execute(ctx, CommandCompositingReasons, p, &res)
@@ -50,7 +52,7 @@ func (p *CompositingReasonsParams) Do(ctx context.Context) (compositingReasonIds
 		return nil, err
 	}
 
-	return res.CompositingReasonIds, nil
+	return res.CompositingReasonIDs, nil
 }
 
 // DisableParams disables compositing tree inspection.
@@ -93,7 +95,8 @@ type LoadSnapshotParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/LayerTree#method-loadSnapshot
 //
 // parameters:
-//   tiles - An array of tiles composing the snapshot.
+//
+//	tiles - An array of tiles composing the snapshot.
 func LoadSnapshot(tiles []*PictureTile) *LoadSnapshotParams {
 	return &LoadSnapshotParams{
 		Tiles: tiles,
@@ -108,7 +111,8 @@ type LoadSnapshotReturns struct {
 // Do executes LayerTree.loadSnapshot against the provided context.
 //
 // returns:
-//   snapshotID - The id of the snapshot.
+//
+//	snapshotID - The id of the snapshot.
 func (p *LoadSnapshotParams) Do(ctx context.Context) (snapshotID SnapshotID, err error) {
 	// execute
 	var res LoadSnapshotReturns
@@ -130,7 +134,8 @@ type MakeSnapshotParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/LayerTree#method-makeSnapshot
 //
 // parameters:
-//   layerID - The id of the layer.
+//
+//	layerID - The id of the layer.
 func MakeSnapshot(layerID LayerID) *MakeSnapshotParams {
 	return &MakeSnapshotParams{
 		LayerID: layerID,
@@ -145,7 +150,8 @@ type MakeSnapshotReturns struct {
 // Do executes LayerTree.makeSnapshot against the provided context.
 //
 // returns:
-//   snapshotID - The id of the layer snapshot.
+//
+//	snapshotID - The id of the layer snapshot.
 func (p *MakeSnapshotParams) Do(ctx context.Context) (snapshotID SnapshotID, err error) {
 	// execute
 	var res MakeSnapshotReturns
@@ -170,7 +176,8 @@ type ProfileSnapshotParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/LayerTree#method-profileSnapshot
 //
 // parameters:
-//   snapshotID - The id of the layer snapshot.
+//
+//	snapshotID - The id of the layer snapshot.
 func ProfileSnapshot(snapshotID SnapshotID) *ProfileSnapshotParams {
 	return &ProfileSnapshotParams{
 		SnapshotID: snapshotID,
@@ -204,7 +211,8 @@ type ProfileSnapshotReturns struct {
 // Do executes LayerTree.profileSnapshot against the provided context.
 //
 // returns:
-//   timings - The array of paint profiles, one per run.
+//
+//	timings - The array of paint profiles, one per run.
 func (p *ProfileSnapshotParams) Do(ctx context.Context) (timings []PaintProfile, err error) {
 	// execute
 	var res ProfileSnapshotReturns
@@ -226,7 +234,8 @@ type ReleaseSnapshotParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/LayerTree#method-releaseSnapshot
 //
 // parameters:
-//   snapshotID - The id of the layer snapshot.
+//
+//	snapshotID - The id of the layer snapshot.
 func ReleaseSnapshot(snapshotID SnapshotID) *ReleaseSnapshotParams {
 	return &ReleaseSnapshotParams{
 		SnapshotID: snapshotID,
@@ -253,7 +262,8 @@ type ReplaySnapshotParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/LayerTree#method-replaySnapshot
 //
 // parameters:
-//   snapshotID - The id of the layer snapshot.
+//
+//	snapshotID - The id of the layer snapshot.
 func ReplaySnapshot(snapshotID SnapshotID) *ReplaySnapshotParams {
 	return &ReplaySnapshotParams{
 		SnapshotID: snapshotID,
@@ -288,7 +298,8 @@ type ReplaySnapshotReturns struct {
 // Do executes LayerTree.replaySnapshot against the provided context.
 //
 // returns:
-//   dataURL - A data: URL for resulting image.
+//
+//	dataURL - A data: URL for resulting image.
 func (p *ReplaySnapshotParams) Do(ctx context.Context) (dataURL string, err error) {
 	// execute
 	var res ReplaySnapshotReturns
@@ -311,7 +322,8 @@ type SnapshotCommandLogParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/LayerTree#method-snapshotCommandLog
 //
 // parameters:
-//   snapshotID - The id of the layer snapshot.
+//
+//	snapshotID - The id of the layer snapshot.
 func SnapshotCommandLog(snapshotID SnapshotID) *SnapshotCommandLogParams {
 	return &SnapshotCommandLogParams{
 		SnapshotID: snapshotID,
@@ -326,7 +338,8 @@ type SnapshotCommandLogReturns struct {
 // Do executes LayerTree.snapshotCommandLog against the provided context.
 //
 // returns:
-//   commandLog - The array of canvas function calls.
+//
+//	commandLog - The array of canvas function calls.
 func (p *SnapshotCommandLogParams) Do(ctx context.Context) (commandLog []easyjson.RawMessage, err error) {
 	// execute
 	var res SnapshotCommandLogReturns

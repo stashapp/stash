@@ -1,9 +1,5 @@
 package otto
 
-func toStringPrimitive(value Value) Value {
-	return _toPrimitive(value, defaultValueHintString)
-}
-
 func toNumberPrimitive(value Value) Value {
 	return _toPrimitive(value, defaultValueHintNumber)
 }
