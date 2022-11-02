@@ -2,7 +2,6 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createNullNumberCriterionOption,
-  createRatingCriterionOption,
   createStringCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";

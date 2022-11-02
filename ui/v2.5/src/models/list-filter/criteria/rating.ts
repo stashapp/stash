@@ -1,10 +1,18 @@
-import { ConvertFromRatingFormat, ConvertToRatingFormat } from "../../../components/Scenes/SceneDetails/RatingSystem";
-import { ConfigDataFragment, CriterionModifier, IntCriterionInput } from "../../../core/generated-graphql";
+import {
+  convertFromRatingFormat,
+  convertToRatingFormat,
+} from "../../../components/Scenes/SceneDetails/RatingSystem";
+import {
+  CriterionModifier,
+  IntCriterionInput,
+  RatingSystem,
+} from "../../../core/generated-graphql";
 import { INumberValue } from "../types";
 import { Criterion, CriterionOption } from "./criterion";
 
 export class RatingCriterion extends Criterion<INumberValue> {
-  config: ConfigDataFragment | undefined;
+  ratingSystem: RatingSystem;
+
   public get value(): INumberValue {
     return this._value;
   }
@@ -12,10 +20,9 @@ export class RatingCriterion extends Criterion<INumberValue> {
     // backwards compatibility - if this.value is a number, use that
     if (typeof newValue !== "object") {
       this._value = {
-        value: ConvertFromRatingFormat(newValue, this.config?.interface?.ratingSystem),
+        value: convertFromRatingFormat(newValue, this.ratingSystem),
         value2: undefined,
       };
-      //this._value.value = ConvertFromRatingFormat(this._value.value, );
     } else {
       this._value = newValue;
     }
@@ -35,14 +42,16 @@ export class RatingCriterion extends Criterion<INumberValue> {
       this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
     ) {
-      return `${ConvertToRatingFormat(value)}, ${ConvertToRatingFormat(value2 ?? 100) ?? 0}`;
+      return `${convertToRatingFormat(value, this.ratingSystem)}, ${
+        convertToRatingFormat(value2 ?? 100, this.ratingSystem) ?? 0
+      }`;
     } else {
-      return `${ConvertToRatingFormat(value)}`;
+      return `${convertToRatingFormat(value, this.ratingSystem)}`;
     }
   }
 
-  constructor(type: CriterionOption, config: ConfigDataFragment | undefined) {
+  constructor(type: CriterionOption, ratingSystem: RatingSystem) {
     super(type, { value: 0, value2: undefined });
-    this.config = config;
+    this.ratingSystem = ratingSystem;
   }
 }

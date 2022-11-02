@@ -1,5 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
@@ -30,6 +30,7 @@ import { OptionsFilter } from "./Filters/OptionsFilter";
 import { InputFilter } from "./Filters/InputFilter";
 import { CountryCriterion } from "src/models/list-filter/criteria/country";
 import { CountrySelect } from "../Shared";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IAddFilterProps {
   onAddCriterion: (
@@ -57,17 +58,18 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
   const { options, modifierOptions } = criterion.criterionOption;
 
   const valueStage = useRef<CriterionValue>(criterion.value);
+  const { configuration: config } = useContext(ConfigurationContext);
 
   const intl = useIntl();
 
   // Configure if we are editing an existing criterion
   useEffect(() => {
     if (!editingCriterion) {
-      setCriterion(makeCriteria());
+      setCriterion(makeCriteria(config));
     } else {
       setCriterion(editingCriterion);
     }
-  }, [editingCriterion]);
+  }, [config, editingCriterion]);
 
   useEffect(() => {
     valueStage.current = criterion.value;
@@ -75,7 +77,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
 
   function onChangedCriteriaType(event: React.ChangeEvent<HTMLSelectElement>) {
     const newCriterionType = event.target.value as CriterionType;
-    const newCriterion = makeCriteria(newCriterionType);
+    const newCriterion = makeCriteria(config, newCriterionType);
     setCriterion(newCriterion);
   }
 

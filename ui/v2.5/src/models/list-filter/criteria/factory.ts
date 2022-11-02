@@ -45,11 +45,13 @@ import { InteractiveCriterion } from "./interactive";
 import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 import { CaptionCriterion } from "./captions";
 import { RatingCriterion } from "./rating";
-import React from "react";
-import { ConfigurationContext } from "../../../hooks/Config";
 import { CountryCriterion } from "./country";
+import * as GQL from "src/core/generated-graphql";
 
-export function makeCriteria(type: CriterionType = "none") {
+export function makeCriteria(
+  config: GQL.ConfigDataFragment | undefined,
+  type: CriterionType = "none"
+) {
   switch (type) {
     case "none":
       return new NoneCriterion();
@@ -84,10 +86,10 @@ export function makeCriteria(type: CriterionType = "none") {
     case "rating":
       return new NumberCriterion(new NullNumberCriterionOption(type, type));
     case "rating100":
-      {
-        const { configuration: config } = React.useContext(ConfigurationContext);
-        return new RatingCriterion(new NullNumberCriterionOption(type, type), config);
-      }
+      return new RatingCriterion(
+        new NullNumberCriterionOption(type, type),
+        config?.interface.ratingSystem ?? GQL.RatingSystem.FiveStar
+      );
     case "resolution":
       return new ResolutionCriterion();
     case "average_resolution":
