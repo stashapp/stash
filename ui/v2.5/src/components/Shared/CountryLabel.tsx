@@ -8,10 +8,17 @@ interface IProps {
   showFlag?: boolean;
 }
 
-const CountryLabel: React.FC<IProps> = ({ country, showFlag = true }) => {
+const CountryLabel: React.FC<IProps> = ({
+  country,
+  showFlag = true,
+}) => {
   const { locale } = useIntl();
 
-  const fromISO = getCountryByISO(country, locale);
+  // #3063 - use alpha2 values only
+  const fromISO =
+    country?.length === 2
+      ? getCountryByISO(country, locale)
+      : undefined;
 
   return (
     <div>
