@@ -1297,16 +1297,18 @@ func createPerformers(ctx context.Context, n int, o int) error {
 		tids := indexesToIDs(tagIDs, performerTags[i])
 
 		performer := models.Performer{
-			Name:          getPerformerStringValue(index, name),
-			URL:           getPerformerNullStringValue(i, urlField),
-			Favorite:      getPerformerBoolValue(i),
-			Birthdate:     getPerformerBirthdate(i),
-			DeathDate:     getPerformerDeathDate(i),
-			Details:       getPerformerStringValue(i, "Details"),
-			Ethnicity:     getPerformerStringValue(i, "Ethnicity"),
-			Rating:        getIntPtr(getRating(i)),
-			IgnoreAutoTag: getIgnoreAutoTag(i),
-			TagIDs:        models.NewRelatedIDs(tids),
+			Name:           getPerformerStringValue(index, name),
+			Disambiguation: getPerformerStringValue(index, "disambiguation"),
+			Aliases:        models.NewRelatedStrings([]string{getPerformerStringValue(index, "alias")}),
+			URL:            getPerformerNullStringValue(i, urlField),
+			Favorite:       getPerformerBoolValue(i),
+			Birthdate:      getPerformerBirthdate(i),
+			DeathDate:      getPerformerDeathDate(i),
+			Details:        getPerformerStringValue(i, "Details"),
+			Ethnicity:      getPerformerStringValue(i, "Ethnicity"),
+			Rating:         getIntPtr(getRating(i)),
+			IgnoreAutoTag:  getIgnoreAutoTag(i),
+			TagIDs:         models.NewRelatedIDs(tids),
 		}
 
 		careerLength := getPerformerCareerLength(i)

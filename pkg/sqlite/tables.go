@@ -25,6 +25,7 @@ var (
 	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
 	scenesMoviesJoinTable     = goqu.T(moviesScenesTable)
 
+	performersAliasesJoinTable  = goqu.T(performersAliasesTable)
 	performersTagsJoinTable     = goqu.T(performersTagsTable)
 	performersStashIDsJoinTable = goqu.T("performer_stash_ids")
 )
@@ -182,6 +183,14 @@ var (
 	performerTableMgr = &table{
 		table:    goqu.T(performerTable),
 		idColumn: goqu.T(performerTable).Col(idColumn),
+	}
+
+	performersAliasesTableMgr = &stringTable{
+		table: table{
+			table:    performersAliasesJoinTable,
+			idColumn: performersAliasesJoinTable.Col(performerIDColumn),
+		},
+		stringColumn: performersAliasesJoinTable.Col(performerAliasColumn),
 	}
 
 	performersTagsTableMgr = &joinTable{

@@ -17,14 +17,19 @@ import (
 	"gopkg.in/guregu/null.v4/zero"
 )
 
-const performerTable = "performers"
-const performerIDColumn = "performer_id"
-const performersTagsTable = "performers_tags"
-const performersImageTable = "performers_image" // performer cover image
+const (
+	performerTable         = "performers"
+	performerIDColumn      = "performer_id"
+	performersAliasesTable = "performer_aliases"
+	performerAliasColumn   = "alias"
+	performersTagsTable    = "performers_tags"
+	performersImageTable   = "performers_image" // performer cover image
+)
 
 type performerRow struct {
 	ID            int                    `db:"id" goqu:"skipinsert"`
 	Name          string                 `db:"name"`
+	Disambigation zero.String            `db:"disambiguation"`
 	Gender        zero.String            `db:"gender"`
 	URL           zero.String            `db:"url"`
 	Twitter       zero.String            `db:"twitter"`
@@ -39,7 +44,6 @@ type performerRow struct {
 	CareerLength  zero.String            `db:"career_length"`
 	Tattoos       zero.String            `db:"tattoos"`
 	Piercings     zero.String            `db:"piercings"`
-	Aliases       zero.String            `db:"aliases"`
 	Favorite      sql.NullBool           `db:"favorite"`
 	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
 	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
@@ -54,6 +58,7 @@ type performerRow struct {
 func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
 	r.Name = o.Name
+	r.Disambigation = zero.StringFrom(o.Disambiguation)
 	if o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
@@ -72,7 +77,6 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.CareerLength = zero.StringFrom(o.CareerLength)
 	r.Tattoos = zero.StringFrom(o.Tattoos)
 	r.Piercings = zero.StringFrom(o.Piercings)
-	r.Aliases = zero.StringFrom(o.Aliases)
 	r.Favorite = sql.NullBool{Bool: o.Favorite, Valid: true}
 	r.CreatedAt = models.SQLiteTimestamp{Timestamp: o.CreatedAt}
 	r.UpdatedAt = models.SQLiteTimestamp{Timestamp: o.UpdatedAt}
@@ -88,32 +92,32 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 
 func (r *performerRow) resolve() *models.Performer {
 	ret := &models.Performer{
-		ID:            r.ID,
-		Name:          r.Name,
-		Gender:        models.GenderEnum(r.Gender.String),
-		URL:           r.URL.String,
-		Twitter:       r.Twitter.String,
-		Instagram:     r.Instagram.String,
-		Birthdate:     r.Birthdate.DatePtr(),
-		Ethnicity:     r.Ethnicity.String,
-		Country:       r.Country.String,
-		EyeColor:      r.EyeColor.String,
-		Height:        nullIntPtr(r.Height),
-		Measurements:  r.Measurements.String,
-		FakeTits:      r.FakeTits.String,
-		CareerLength:  r.CareerLength.String,
-		Tattoos:       r.Tattoos.String,
-		Piercings:     r.Piercings.String,
-		Aliases:       r.Aliases.String,
-		Favorite:      r.Favorite.Bool,
-		CreatedAt:     r.CreatedAt.Timestamp,
-		UpdatedAt:     r.UpdatedAt.Timestamp,
-		Rating:        nullIntPtr(r.Rating),
-		Details:       r.Details.String,
-		DeathDate:     r.DeathDate.DatePtr(),
-		HairColor:     r.HairColor.String,
-		Weight:        nullIntPtr(r.Weight),
-		IgnoreAutoTag: r.IgnoreAutoTag,
+		ID:             r.ID,
+		Name:           r.Name,
+		Disambiguation: r.Disambigation.String,
+		Gender:         models.GenderEnum(r.Gender.String),
+		URL:            r.URL.String,
+		Twitter:        r.Twitter.String,
+		Instagram:      r.Instagram.String,
+		Birthdate:      r.Birthdate.DatePtr(),
+		Ethnicity:      r.Ethnicity.String,
+		Country:        r.Country.String,
+		EyeColor:       r.EyeColor.String,
+		Height:         nullIntPtr(r.Height),
+		Measurements:   r.Measurements.String,
+		FakeTits:       r.FakeTits.String,
+		CareerLength:   r.CareerLength.String,
+		Tattoos:        r.Tattoos.String,
+		Piercings:      r.Piercings.String,
+		Favorite:       r.Favorite.Bool,
+		CreatedAt:      r.CreatedAt.Timestamp,
+		UpdatedAt:      r.UpdatedAt.Timestamp,
+		Rating:         nullIntPtr(r.Rating),
+		Details:        r.Details.String,
+		DeathDate:      r.DeathDate.DatePtr(),
+		HairColor:      r.HairColor.String,
+		Weight:         nullIntPtr(r.Weight),
+		IgnoreAutoTag:  r.IgnoreAutoTag,
 	}
 
 	return ret
@@ -125,6 +129,7 @@ type performerRowRecord struct {
 
 func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setString("name", o.Name)
+	r.setNullString("disambiguation", o.Disambiguation)
 	r.setNullString("gender", o.Gender)
 	r.setNullString("url", o.URL)
 	r.setNullString("twitter", o.Twitter)
@@ -139,7 +144,6 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("career_length", o.CareerLength)
 	r.setNullString("tattoos", o.Tattoos)
 	r.setNullString("piercings", o.Piercings)
-	r.setNullString("aliases", o.Aliases)
 	r.setBool("favorite", o.Favorite)
 	r.setSQLiteTimestamp("created_at", o.CreatedAt)
 	r.setSQLiteTimestamp("updated_at", o.UpdatedAt)
@@ -174,6 +178,12 @@ func (qb *PerformerStore) Create(ctx context.Context, newObject *models.Performe
 	id, err := qb.tableMgr.insertID(ctx, r)
 	if err != nil {
 		return err
+	}
+
+	if newObject.Aliases.Loaded() {
+		if err := performersAliasesTableMgr.insertJoins(ctx, id, newObject.Aliases.List()); err != nil {
+			return err
+		}
 	}
 
 	if newObject.TagIDs.Loaded() {
@@ -213,6 +223,12 @@ func (qb *PerformerStore) UpdatePartial(ctx context.Context, id int, partial mod
 		}
 	}
 
+	if partial.Aliases != nil {
+		if err := performersAliasesTableMgr.modifyJoins(ctx, id, partial.Aliases.Values, partial.Aliases.Mode); err != nil {
+			return nil, err
+		}
+	}
+
 	if partial.TagIDs != nil {
 		if err := performersTagsTableMgr.modifyJoins(ctx, id, partial.TagIDs.IDs, partial.TagIDs.Mode); err != nil {
 			return nil, err
@@ -233,6 +249,12 @@ func (qb *PerformerStore) Update(ctx context.Context, updatedObject *models.Perf
 
 	if err := qb.tableMgr.updateByID(ctx, updatedObject.ID, r); err != nil {
 		return err
+	}
+
+	if updatedObject.Aliases.Loaded() {
+		if err := performersAliasesTableMgr.replaceJoins(ctx, updatedObject.ID, updatedObject.Aliases.List()); err != nil {
+			return err
+		}
 	}
 
 	if updatedObject.TagIDs.Loaded() {
@@ -561,8 +583,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 		}
 	}))
 
-	// TODO - need better handling of aliases
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Aliases, tableName+".aliases"))
+	query.handleCriterion(ctx, performerAliasCriterionHandler(qb, filter.Aliases))
 
 	query.handleCriterion(ctx, performerTagsCriterionHandler(qb, filter.Tags))
 
@@ -588,7 +609,8 @@ func (qb *PerformerStore) Query(ctx context.Context, performerFilter *models.Per
 	distinctIDs(&query, performerTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"performers.name", "performers.aliases"}
+		query.join(performersAliasesTable, "", "performer_aliases.performer_id = performers.id")
+		searchColumns := []string{"performers.name", "performer_aliases.alias"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -652,6 +674,18 @@ func performerAgeFilterCriterionHandler(age *models.IntCriterionInput) criterion
 			f.addWhere(clause, args...)
 		}
 	}
+}
+
+func performerAliasCriterionHandler(qb *PerformerStore, alias *models.StringCriterionInput) criterionHandlerFunc {
+	h := stringListCriterionHandlerBuilder{
+		joinTable:    performersAliasesTable,
+		stringColumn: performerAliasColumn,
+		addJoinTable: func(f *filterBuilder) {
+			performersAliasesTableMgr.join(f, "", "tags.id")
+		},
+	}
+
+	return h.handler(alias)
 }
 
 func performerTagsCriterionHandler(qb *PerformerStore, tags *models.HierarchicalMultiCriterionInput) criterionHandlerFunc {
@@ -851,6 +885,10 @@ func (qb *PerformerStore) UpdateImage(ctx context.Context, performerID int, imag
 
 func (qb *PerformerStore) DestroyImage(ctx context.Context, performerID int) error {
 	return qb.imageRepository().destroy(ctx, []int{performerID})
+}
+
+func (qb *PerformerStore) GetAliases(ctx context.Context, performerID int) ([]string, error) {
+	return performersAliasesTableMgr.get(ctx, performerID)
 }
 
 func (qb *PerformerStore) GetStashIDs(ctx context.Context, performerID int) ([]models.StashID, error) {

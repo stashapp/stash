@@ -179,7 +179,7 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		CareerLength:  performerJSON.CareerLength,
 		Tattoos:       performerJSON.Tattoos,
 		Piercings:     performerJSON.Piercings,
-		Aliases:       performerJSON.Aliases,
+		Aliases:       models.NewRelatedStrings(performerJSON.Aliases),
 		Twitter:       performerJSON.Twitter,
 		Instagram:     performerJSON.Instagram,
 		Details:       performerJSON.Details,

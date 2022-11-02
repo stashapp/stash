@@ -23,7 +23,6 @@ const (
 const (
 	performerName = "testPerformer"
 	url           = "url"
-	aliases       = "aliases"
 	careerLength  = "careerLength"
 	country       = "country"
 	ethnicity     = "ethnicity"
@@ -42,9 +41,10 @@ const (
 )
 
 var (
-	rating = 5
-	height = 123
-	weight = 60
+	aliases = []string{"alias1", "alias2"}
+	rating  = 5
+	height  = 123
+	weight  = 60
 )
 
 var imageBytes = []byte("imageBytes")
@@ -72,7 +72,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 		ID:            id,
 		Name:          name,
 		URL:           url,
-		Aliases:       aliases,
+		Aliases:       models.NewRelatedStrings(aliases),
 		Birthdate:     &birthDate,
 		CareerLength:  careerLength,
 		Country:       country,
@@ -96,9 +96,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 		Weight:        &weight,
 		IgnoreAutoTag: autoTagIgnored,
 		TagIDs:        models.NewRelatedIDs([]int{}),
-		StashIDs: models.NewRelatedStashIDs([]models.StashID{
-			stashID,
-		}),
+		StashIDs:      models.NewRelatedStashIDs(stashIDs),
 	}
 }
 
@@ -107,6 +105,9 @@ func createEmptyPerformer(id int) models.Performer {
 		ID:        id,
 		CreatedAt: createTime,
 		UpdatedAt: updateTime,
+		Aliases:   models.NewRelatedStrings([]string{}),
+		TagIDs:    models.NewRelatedIDs([]int{}),
+		StashIDs:  models.NewRelatedStashIDs([]models.StashID{}),
 	}
 }
 
@@ -135,21 +136,21 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		UpdatedAt: json.JSONTime{
 			Time: updateTime,
 		},
-		Rating:    rating,
-		Image:     image,
-		Details:   details,
-		DeathDate: deathDate.String(),
-		HairColor: hairColor,
-		Weight:    weight,
-		StashIDs: []models.StashID{
-			stashID,
-		},
+		Rating:        rating,
+		Image:         image,
+		Details:       details,
+		DeathDate:     deathDate.String(),
+		HairColor:     hairColor,
+		Weight:        weight,
+		StashIDs:      stashIDs,
 		IgnoreAutoTag: autoTagIgnored,
 	}
 }
 
 func createEmptyJSONPerformer() *jsonschema.Performer {
 	return &jsonschema.Performer{
+		Aliases:  []string{},
+		StashIDs: []models.StashID{},
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
@@ -197,9 +198,6 @@ func TestToJSON(t *testing.T) {
 	mockPerformerReader.On("GetImage", testCtx, performerID).Return(imageBytes, nil).Once()
 	mockPerformerReader.On("GetImage", testCtx, noImageID).Return(nil, nil).Once()
 	mockPerformerReader.On("GetImage", testCtx, errImageID).Return(nil, imageErr).Once()
-
-	mockPerformerReader.On("GetStashIDs", testCtx, performerID).Return(stashIDs, nil).Once()
-	mockPerformerReader.On("GetStashIDs", testCtx, noImageID).Return(nil, nil).Once()
 
 	for i, s := range scenarios {
 		tag := s.input

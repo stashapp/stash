@@ -104,8 +104,10 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 	if input.Piercings != nil {
 		newPerformer.Piercings = *input.Piercings
 	}
-	if input.Aliases != nil {
-		newPerformer.Aliases = *input.Aliases
+	if input.AliasList != nil {
+		newPerformer.Aliases = models.NewRelatedStrings(input.AliasList)
+	} else if input.Aliases != nil {
+		newPerformer.Aliases = models.NewRelatedStrings(stringslice.FromString(*input.Aliases, ","))
 	}
 	if input.Twitter != nil {
 		newPerformer.Twitter = *input.Twitter
@@ -216,7 +218,6 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
-	updatedPerformer.Aliases = translator.optionalString(input.Aliases, "aliases")
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
@@ -226,6 +227,18 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
 	updatedPerformer.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+
+	if translator.hasField("alias_list") {
+		updatedPerformer.Aliases = &models.UpdateStrings{
+			Values: input.AliasList,
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	} else if translator.hasField("aliases") {
+		updatedPerformer.Aliases = &models.UpdateStrings{
+			Values: stringslice.FromString(*input.Aliases, ","),
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if translator.hasField("tag_ids") {
 		updatedPerformer.TagIDs, err = translateUpdateIDs(input.TagIds, models.RelationshipUpdateModeSet)
@@ -321,7 +334,6 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
 	updatedPerformer.Tattoos = translator.optionalString(input.Tattoos, "tattoos")
 	updatedPerformer.Piercings = translator.optionalString(input.Piercings, "piercings")
-	updatedPerformer.Aliases = translator.optionalString(input.Aliases, "aliases")
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
@@ -331,6 +343,18 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
 	updatedPerformer.Weight = translator.optionalInt(input.Weight, "weight")
 	updatedPerformer.IgnoreAutoTag = translator.optionalBool(input.IgnoreAutoTag, "ignore_auto_tag")
+
+	if translator.hasField("alias_list") {
+		updatedPerformer.Aliases = &models.UpdateStrings{
+			Values: input.AliasList.Values,
+			Mode:   input.AliasList.Mode,
+		}
+	} else if translator.hasField("aliases") {
+		updatedPerformer.Aliases = &models.UpdateStrings{
+			Values: stringslice.FromString(*input.Aliases, ","),
+			Mode:   models.RelationshipUpdateModeSet,
+		}
+	}
 
 	if translator.hasField("gender") {
 		if input.Gender != nil {

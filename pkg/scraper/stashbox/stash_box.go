@@ -43,6 +43,7 @@ type PerformerReader interface {
 	match.PerformerFinder
 	Find(ctx context.Context, id int) (*models.Performer, error)
 	FindBySceneID(ctx context.Context, sceneID int) ([]*models.Performer, error)
+	models.AliasLoader
 	models.StashIDLoader
 	GetImage(ctx context.Context, performerID int) ([]byte, error)
 }
@@ -944,6 +945,15 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	draft := graphql.PerformerDraftInput{}
 	var image io.Reader
 	pqb := c.repository.Performer
+
+	if err := performer.LoadAliases(ctx, pqb); err != nil {
+		return nil, err
+	}
+
+	if err := performer.LoadStashIDs(ctx, pqb); err != nil {
+		return nil, err
+	}
+
 	img, _ := pqb.GetImage(ctx, performer.ID)
 	if img != nil {
 		image = bytes.NewReader(img)
@@ -988,8 +998,9 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.Tattoos != "" {
 		draft.Tattoos = &performer.Tattoos
 	}
-	if performer.Aliases != "" {
-		draft.Aliases = &performer.Aliases
+	if len(performer.Aliases.List()) > 0 {
+		aliases := strings.Join(performer.Aliases.List(), ",")
+		draft.Aliases = &aliases
 	}
 
 	var urls []string

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 )
 
 type PerformerCreator interface {
@@ -106,7 +107,7 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 		ret.Piercings = *performer.Piercings
 	}
 	if performer.Aliases != nil {
-		ret.Aliases = *performer.Aliases
+		ret.Aliases = models.NewRelatedStrings(stringslice.FromString(*performer.Aliases, ","))
 	}
 	if performer.Twitter != nil {
 		ret.Twitter = *performer.Twitter

@@ -11,6 +11,7 @@ type Performer {
   id: ID!
   checksum: String @deprecated(reason: "Not used") 
   name: String!
+  disambiguation: String
   url: String
   gender: GenderEnum
   twitter: String
@@ -26,7 +27,8 @@ type Performer {
   career_length: String
   tattoos: String
   piercings: String
-  aliases: String
+  aliases: String @deprecated(reason: "Use alias_list")
+  alias_list: [String!]
   favorite: Boolean!
   tags: [Tag!]!
   ignore_auto_tag: Boolean!
@@ -50,6 +52,7 @@ type Performer {
 
 input PerformerCreateInput {
   name: String!
+  disambiguation: String
   url: String
   gender: GenderEnum
   birthdate: String
@@ -64,7 +67,8 @@ input PerformerCreateInput {
   career_length: String
   tattoos: String
   piercings: String
-  aliases: String
+  aliases: String @deprecated(reason: "Use alias_list")
+  alias_list: [String!]
   twitter: String
   instagram: String
   favorite: Boolean
@@ -83,6 +87,7 @@ input PerformerCreateInput {
 input PerformerUpdateInput {
   id: ID!
   name: String
+  disambiguation: String
   url: String
   gender: GenderEnum
   birthdate: String
@@ -97,7 +102,8 @@ input PerformerUpdateInput {
   career_length: String
   tattoos: String
   piercings: String
-  aliases: String
+  aliases: String @deprecated(reason: "Use alias_list")
+  alias_list: [String!]
   twitter: String
   instagram: String
   favorite: Boolean
@@ -111,6 +117,11 @@ input PerformerUpdateInput {
   hair_color: String
   weight: Int
   ignore_auto_tag: Boolean
+}
+
+input BulkUpdateStrings {
+  values: [String!]
+  mode: BulkUpdateIdMode!
 }
 
 input BulkPerformerUpdateInput {
@@ -130,7 +141,8 @@ input BulkPerformerUpdateInput {
   career_length: String
   tattoos: String
   piercings: String
-  aliases: String
+  aliases: String @deprecated(reason: "Use alias_list")
+  alias_list: BulkUpdateStrings
   twitter: String
   instagram: String
   favorite: Boolean

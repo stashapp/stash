@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
+	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
 	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -89,7 +90,10 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			partial := models.NewPerformerPartial()
 
 			if performer.Aliases != nil && !excluded["aliases"] {
-				partial.Aliases = models.NewOptionalString(*performer.Aliases)
+				partial.Aliases = &models.UpdateStrings{
+					Values: stringslice.FromString(*performer.Aliases, ","),
+					Mode:   models.RelationshipUpdateModeSet,
+				}
 			}
 			if performer.Birthdate != nil && *performer.Birthdate != "" && !excluded["birthdate"] {
 				value := getDate(performer.Birthdate)
@@ -188,7 +192,7 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 		} else if t.name != nil && performer.Name != nil {
 			currentTime := time.Now()
 			newPerformer := models.Performer{
-				Aliases:      getString(performer.Aliases),
+				Aliases:      models.NewRelatedStrings(stringslice.FromString(*performer.Aliases, ",")),
 				Birthdate:    getDate(performer.Birthdate),
 				CareerLength: getString(performer.CareerLength),
 				Country:      getString(performer.Country),

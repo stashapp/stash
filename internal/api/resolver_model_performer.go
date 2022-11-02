@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/internal/api/loaders"
 	"github.com/stashapp/stash/internal/api/urlbuilders"
@@ -14,6 +15,31 @@ import (
 // Checksum is deprecated
 func (r *performerResolver) Checksum(ctx context.Context, obj *models.Performer) (*string, error) {
 	return nil, nil
+}
+
+func (r *performerResolver) Aliases(ctx context.Context, obj *models.Performer) (*string, error) {
+	if !obj.Aliases.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadAliases(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	ret := strings.Join(obj.Aliases.List(), ", ")
+	return &ret, nil
+}
+
+func (r *performerResolver) AliasList(ctx context.Context, obj *models.Performer) ([]string, error) {
+	if !obj.Aliases.Loaded() {
+		if err := r.withTxn(ctx, func(ctx context.Context) error {
+			return obj.LoadAliases(ctx, r.repository.Performer)
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.Aliases.List(), nil
 }
 
 func (r *performerResolver) Height(ctx context.Context, obj *models.Performer) (*string, error) {

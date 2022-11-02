@@ -271,7 +271,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				CareerLength: *nextVal(),
 				Tattoos:      *nextVal(),
 				Piercings:    *nextVal(),
-				Aliases:      *nextVal(),
+				Aliases:      models.NewRelatedStrings([]string{*nextVal()}),
 				Twitter:      *nextVal(),
 				Instagram:    *nextVal(),
 			},
