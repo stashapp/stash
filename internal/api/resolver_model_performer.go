@@ -11,6 +11,11 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+// Checksum is deprecated
+func (r *performerResolver) Checksum(ctx context.Context, obj *models.Performer) (*string, error) {
+	return nil, nil
+}
+
 func (r *performerResolver) Height(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.Height != nil {
 		ret := strconv.Itoa(*obj.Height)

@@ -14,14 +14,14 @@ func (r *updateRecord) set(destField string, v interface{}) {
 	r.Record[destField] = v
 }
 
-// func (r *updateRecord) setString(destField string, v models.OptionalString) {
-// 	if v.Set {
-// 		if v.Null {
-// 			panic("null value not allowed in optional string")
-// 		}
-// 		r.set(destField, v.Value)
-// 	}
-// }
+func (r *updateRecord) setString(destField string, v models.OptionalString) {
+	if v.Set {
+		if v.Null {
+			panic("null value not allowed in optional string")
+		}
+		r.set(destField, v.Value)
+	}
+}
 
 func (r *updateRecord) setNullString(destField string, v models.OptionalString) {
 	if v.Set {

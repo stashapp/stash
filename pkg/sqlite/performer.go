@@ -24,8 +24,7 @@ const performersImageTable = "performers_image" // performer cover image
 
 type performerRow struct {
 	ID            int                    `db:"id" goqu:"skipinsert"`
-	Checksum      string                 `db:"checksum"`
-	Name          zero.String            `db:"name"`
+	Name          string                 `db:"name"`
 	Gender        zero.String            `db:"gender"`
 	URL           zero.String            `db:"url"`
 	Twitter       zero.String            `db:"twitter"`
@@ -54,8 +53,7 @@ type performerRow struct {
 
 func (r *performerRow) fromPerformer(o models.Performer) {
 	r.ID = o.ID
-	r.Checksum = o.Checksum
-	r.Name = zero.StringFrom(o.Name)
+	r.Name = o.Name
 	if o.Gender.IsValid() {
 		r.Gender = zero.StringFrom(o.Gender.String())
 	}
@@ -91,8 +89,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 func (r *performerRow) resolve() *models.Performer {
 	ret := &models.Performer{
 		ID:            r.ID,
-		Checksum:      r.Checksum,
-		Name:          r.Name.String,
+		Name:          r.Name,
 		Gender:        models.GenderEnum(r.Gender.String),
 		URL:           r.URL.String,
 		Twitter:       r.Twitter.String,
@@ -127,8 +124,7 @@ type performerRowRecord struct {
 }
 
 func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
-	r.setNullString("checksum", o.Checksum)
-	r.setNullString("name", o.Name)
+	r.setString("name", o.Name)
 	r.setNullString("gender", o.Gender)
 	r.setNullString("url", o.URL)
 	r.setNullString("twitter", o.Twitter)
@@ -560,7 +556,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, intCriterionHandler(filter.Weight, tableName+".weight", nil))
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if filter.StashID != nil {
-			qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
+			performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
 			stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
 		}
 	}))
@@ -628,7 +624,7 @@ func performerIsMissingCriterionHandler(qb *PerformerStore, isMissing *string) c
 				f.addLeftJoin(performersImageTable, "image_join", "image_join.performer_id = performers.id")
 				f.addWhere("image_join.performer_id IS NULL")
 			case "stash_id":
-				qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
+				performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
 				f.addWhere("performer_stash_ids.performer_id IS NULL")
 			default:
 				f.addWhere("(performers." + *isMissing + " IS NULL OR TRIM(performers." + *isMissing + ") = '')")
@@ -857,18 +853,8 @@ func (qb *PerformerStore) DestroyImage(ctx context.Context, performerID int) err
 	return qb.imageRepository().destroy(ctx, []int{performerID})
 }
 
-func (qb *PerformerStore) stashIDRepository() *stashIDRepository {
-	return &stashIDRepository{
-		repository{
-			tx:        qb.tx,
-			tableName: "performer_stash_ids",
-			idColumn:  performerIDColumn,
-		},
-	}
-}
-
 func (qb *PerformerStore) GetStashIDs(ctx context.Context, performerID int) ([]models.StashID, error) {
-	return qb.stashIDRepository().get(ctx, performerID)
+	return performersStashIDsTableMgr.get(ctx, performerID)
 }
 
 func (qb *PerformerStore) FindByStashID(ctx context.Context, stashID models.StashID) ([]*models.Performer, error) {

@@ -3,13 +3,10 @@ package models
 import (
 	"context"
 	"time"
-
-	"github.com/stashapp/stash/pkg/hash/md5"
 )
 
 type Performer struct {
 	ID            int        `json:"id"`
-	Checksum      string     `json:"checksum"`
 	Name          string     `json:"name"`
 	Gender        GenderEnum `json:"gender"`
 	URL           string     `json:"url"`
@@ -68,7 +65,6 @@ func (s *Performer) LoadRelationships(ctx context.Context, l PerformerReader) er
 // the database entry.
 type PerformerPartial struct {
 	ID            int
-	Checksum      OptionalString
 	Name          OptionalString
 	Gender        OptionalString
 	URL           OptionalString
@@ -102,7 +98,6 @@ type PerformerPartial struct {
 func NewPerformer(name string) *Performer {
 	currentTime := time.Now()
 	return &Performer{
-		Checksum:  md5.FromString(name),
 		Name:      name,
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,

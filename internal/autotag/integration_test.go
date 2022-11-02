@@ -86,8 +86,7 @@ func TestMain(m *testing.M) {
 func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 	// create the performer
 	performer := models.Performer{
-		Checksum: testName,
-		Name:     testName,
+		Name: testName,
 	}
 
 	err := pqb.Create(ctx, &performer)

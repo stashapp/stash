@@ -9,8 +9,8 @@ enum GenderEnum {
 
 type Performer {
   id: ID!
-  checksum: String!
-  name: String
+  checksum: String @deprecated(reason: "Not used") 
+  name: String!
   url: String
   gender: GenderEnum
   twitter: String

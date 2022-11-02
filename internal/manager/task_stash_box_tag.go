@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox"
@@ -134,8 +133,6 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 			}
 			if excluded["name"] && performer.Name != nil {
 				partial.Name = models.NewOptionalString(*performer.Name)
-				checksum := md5.FromString(*performer.Name)
-				partial.Checksum = models.NewOptionalString(checksum)
 			}
 			if performer.Piercings != nil && !excluded["piercings"] {
 				partial.Piercings = models.NewOptionalString(*performer.Piercings)
@@ -194,7 +191,6 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				Aliases:      getString(performer.Aliases),
 				Birthdate:    getDate(performer.Birthdate),
 				CareerLength: getString(performer.CareerLength),
-				Checksum:     md5.FromString(*performer.Name),
 				Country:      getString(performer.Country),
 				CreatedAt:    currentTime,
 				Ethnicity:    getString(performer.Ethnicity),

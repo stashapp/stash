@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -168,11 +167,8 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 }
 
 func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Performer {
-	checksum := md5.FromString(performerJSON.Name)
-
 	newPerformer := models.Performer{
 		Name:          performerJSON.Name,
-		Checksum:      checksum,
 		Gender:        models.GenderEnum(performerJSON.Gender),
 		URL:           performerJSON.URL,
 		Ethnicity:     performerJSON.Ethnicity,

@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -53,7 +52,6 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 	currentTime := time.Now()
 	ret := models.Performer{
 		Name:      *performer.Name,
-		Checksum:  md5.FromString(*performer.Name),
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}

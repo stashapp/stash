@@ -1298,7 +1298,6 @@ func createPerformers(ctx context.Context, n int, o int) error {
 
 		performer := models.Performer{
 			Name:          getPerformerStringValue(index, name),
-			Checksum:      getPerformerStringValue(i, checksumField),
 			URL:           getPerformerNullStringValue(i, urlField),
 			Favorite:      getPerformerBoolValue(i),
 			Birthdate:     getPerformerBirthdate(i),

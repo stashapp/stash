@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/plugin"
@@ -36,9 +35,6 @@ func stashIDPtrSliceToSlice(v []*models.StashID) []models.StashID {
 }
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerCreateInput) (*models.Performer, error) {
-	// generate checksum from performer name rather than image
-	checksum := md5.FromString(input.Name)
-
 	var imageData []byte
 	var err error
 
@@ -59,7 +55,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 	currentTime := time.Now()
 	newPerformer := models.Performer{
 		Name:      input.Name,
-		Checksum:  checksum,
 		TagIDs:    models.NewRelatedIDs(tagIDs),
 		StashIDs:  models.NewRelatedStashIDs(stashIDPtrSliceToSlice(input.StashIds)),
 		CreatedAt: currentTime,
@@ -191,14 +186,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 		}
 	}
 
-	if input.Name != nil {
-		// generate checksum from performer name rather than image
-		checksum := md5.FromString(*input.Name)
-
-		updatedPerformer.Name = models.NewOptionalString(*input.Name)
-		updatedPerformer.Checksum = models.NewOptionalString(checksum)
-	}
-
+	updatedPerformer.Name = translator.optionalString(input.Name, "name")
 	updatedPerformer.URL = translator.optionalString(input.URL, "url")
 
 	if translator.hasField("gender") {

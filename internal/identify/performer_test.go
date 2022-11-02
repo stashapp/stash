@@ -205,7 +205,6 @@ func Test_createMissingPerformer(t *testing.T) {
 
 func Test_scrapedToPerformerInput(t *testing.T) {
 	name := "name"
-	md5 := "b068931cc450442b63f5b3d276ea4297"
 
 	var stringValues []string
 	for i := 0; i < 17; i++ {
@@ -258,7 +257,6 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 			},
 			models.Performer{
 				Name:         name,
-				Checksum:     md5,
 				Birthdate:    dateToDatePtr(models.NewDate(*nextVal())),
 				DeathDate:    dateToDatePtr(models.NewDate(*nextVal())),
 				Gender:       models.GenderEnum(*nextVal()),
@@ -284,8 +282,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Name: &name,
 			},
 			models.Performer{
-				Name:     name,
-				Checksum: md5,
+				Name: name,
 			},
 		},
 	}

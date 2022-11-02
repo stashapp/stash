@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +35,6 @@ func Test_PerformerStore_Create(t *testing.T) {
 	var (
 		name          = "name"
 		gender        = models.GenderEnumFemale
-		checksum      = "checksum"
 		details       = "details"
 		url           = "url"
 		twitter       = "twitter"
@@ -76,7 +74,6 @@ func Test_PerformerStore_Create(t *testing.T) {
 			"full",
 			models.Performer{
 				Name:          name,
-				Checksum:      checksum,
 				Gender:        gender,
 				URL:           url,
 				Twitter:       twitter,
@@ -118,9 +115,8 @@ func Test_PerformerStore_Create(t *testing.T) {
 		{
 			"invalid tag id",
 			models.Performer{
-				Name:     name,
-				Checksum: checksum,
-				TagIDs:   models.NewRelatedIDs([]int{invalidID}),
+				Name:   name,
+				TagIDs: models.NewRelatedIDs([]int{invalidID}),
 			},
 			true,
 		},
@@ -181,7 +177,6 @@ func Test_PerformerStore_Update(t *testing.T) {
 	var (
 		name          = "name"
 		gender        = models.GenderEnumFemale
-		checksum      = "checksum"
 		details       = "details"
 		url           = "url"
 		twitter       = "twitter"
@@ -222,7 +217,6 @@ func Test_PerformerStore_Update(t *testing.T) {
 			&models.Performer{
 				ID:            performerIDs[performerIdxWithGallery],
 				Name:          name,
-				Checksum:      checksum,
 				Gender:        gender,
 				URL:           url,
 				Twitter:       twitter,
@@ -355,7 +349,6 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 	var (
 		name          = "name"
 		gender        = models.GenderEnumFemale
-		checksum      = "checksum"
 		details       = "details"
 		url           = "url"
 		twitter       = "twitter"
@@ -398,7 +391,6 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			performerIDs[performerIdxWithDupName],
 			models.PerformerPartial{
 				Name:          models.NewOptionalString(name),
-				Checksum:      models.NewOptionalString(checksum),
 				Gender:        models.NewOptionalString(gender.String()),
 				URL:           models.NewOptionalString(url),
 				Twitter:       models.NewOptionalString(twitter),
@@ -444,7 +436,6 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			models.Performer{
 				ID:            performerIDs[performerIdxWithDupName],
 				Name:          name,
-				Checksum:      checksum,
 				Gender:        gender,
 				URL:           url,
 				Twitter:       twitter,
@@ -490,7 +481,6 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 			models.Performer{
 				ID:       performerIDs[performerIdxWithTwoTags],
 				Name:     getPerformerStringValue(performerIdxWithTwoTags, "Name"),
-				Checksum: getPerformerStringValue(performerIdxWithTwoTags, checksumField),
 				Favorite: true,
 				TagIDs:   models.NewRelatedIDs([]int{}),
 				StashIDs: models.NewRelatedStashIDs([]models.StashID{}),
@@ -904,8 +894,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 		// create performer to test against
 		const name = "TestPerformerUpdatePerformerImage"
 		performer := models.Performer{
-			Name:     name,
-			Checksum: md5.FromString(name),
+			Name: name,
 		}
 		err := qb.Create(ctx, &performer)
 		if err != nil {
@@ -944,8 +933,7 @@ func TestPerformerDestroyPerformerImage(t *testing.T) {
 		// create performer to test against
 		const name = "TestPerformerDestroyPerformerImage"
 		performer := models.Performer{
-			Name:     name,
-			Checksum: md5.FromString(name),
+			Name: name,
 		}
 		err := qb.Create(ctx, &performer)
 		if err != nil {

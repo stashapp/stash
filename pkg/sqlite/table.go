@@ -129,6 +129,15 @@ func (t *table) destroy(ctx context.Context, ids []int) error {
 	return nil
 }
 
+func (t *table) join(j joiner, as string, parentIDCol string) {
+	tableName := t.table.GetTable()
+	tt := tableName
+	if as != "" {
+		tt = as
+	}
+	j.addLeftJoin(tableName, as, fmt.Sprintf("%s.%s = %s", tt, t.idColumn.GetCol(), parentIDCol))
+}
+
 // func (t *table) get(ctx context.Context, q *goqu.SelectDataset, dest interface{}) error {
 // 	tx, err := getTx(ctx)
 // 	if err != nil {
@@ -258,18 +267,18 @@ type stashIDRow struct {
 	Endpoint null.String `db:"endpoint"`
 }
 
-func (r *stashIDRow) resolve() *models.StashID {
-	return &models.StashID{
+func (r *stashIDRow) resolve() models.StashID {
+	return models.StashID{
 		StashID:  r.StashID.String,
 		Endpoint: r.Endpoint.String,
 	}
 }
 
-func (t *stashIDTable) get(ctx context.Context, id int) ([]*models.StashID, error) {
+func (t *stashIDTable) get(ctx context.Context, id int) ([]models.StashID, error) {
 	q := dialect.Select("endpoint", "stash_id").From(t.table.table).Where(t.idColumn.Eq(id))
 
 	const single = false
-	var ret []*models.StashID
+	var ret []models.StashID
 	if err := queryFunc(ctx, q, single, func(rows *sqlx.Rows) error {
 		var v stashIDRow
 		if err := rows.StructScan(&v); err != nil {

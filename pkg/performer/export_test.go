@@ -4,7 +4,6 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
@@ -72,7 +71,6 @@ func createFullPerformer(id int, name string) *models.Performer {
 	return &models.Performer{
 		ID:            id,
 		Name:          name,
-		Checksum:      md5.FromString(name),
 		URL:           url,
 		Aliases:       aliases,
 		Birthdate:     &birthDate,
