@@ -36,13 +36,16 @@ function round(value: number, step: number) {
     denom = 1.0;
   }
   const inv = 1.0 / denom;
-  return Math.round(value * inv) / denom;
+  return Math.round(value * inv) / inv;
 }
 
 export function convertToRatingFormat(
-  rating: number,
+  rating: number | undefined,
   ratingSystem: GQL.RatingSystem
 ) {
+  if (!rating) {
+    return null;
+  }
   let toReturn;
   switch (ratingSystem) {
     case GQL.RatingSystem.TenStar:

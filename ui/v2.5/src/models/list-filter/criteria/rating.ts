@@ -43,7 +43,7 @@ export class RatingCriterion extends Criterion<INumberValue> {
       this.modifier === CriterionModifier.NotBetween
     ) {
       return `${convertToRatingFormat(value, this.ratingSystem)}, ${
-        convertToRatingFormat(value2 ?? 100, this.ratingSystem) ?? 0
+        convertToRatingFormat(value2, this.ratingSystem) ?? 0
       }`;
     } else {
       return `${convertToRatingFormat(value, this.ratingSystem)}`;
