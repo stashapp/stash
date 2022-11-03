@@ -1,6 +1,7 @@
 fragment SlimPerformerData on Performer {
   id
   name
+  disambiguation
   gender
   url
   twitter

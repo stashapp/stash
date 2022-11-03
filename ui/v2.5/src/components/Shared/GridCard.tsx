@@ -10,7 +10,7 @@ interface ICardProps {
   thumbnailSectionClassName?: string;
   url: string;
   pretitleIcon?: JSX.Element;
-  title: string;
+  title: JSX.Element | string;
   image: JSX.Element;
   details?: JSX.Element;
   overlays?: JSX.Element;

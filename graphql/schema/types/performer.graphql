@@ -28,7 +28,7 @@ type Performer {
   tattoos: String
   piercings: String
   aliases: String @deprecated(reason: "Use alias_list")
-  alias_list: [String!]
+  alias_list: [String!]!
   favorite: Boolean!
   tags: [Tag!]!
   ignore_auto_tag: Boolean!
@@ -127,6 +127,7 @@ input BulkUpdateStrings {
 input BulkPerformerUpdateInput {
   clientMutationId: String
   ids: [ID!]
+  disambiguation: String
   url: String
   gender: GenderEnum
   birthdate: String

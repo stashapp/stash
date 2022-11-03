@@ -67,7 +67,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
           <h5>{performer.name}</h5>
         </Link>
       </td>
-      <td>{performer.aliases ? performer.aliases : ""}</td>
+      <td>{performer.alias_list ? performer.alias_list.join(", ") : ""}</td>
       <td>
         {performer.favorite && (
           <Button disabled className="favorite">

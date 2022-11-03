@@ -296,13 +296,13 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   }
 
   function maybeRenderAliases() {
-    if (performer?.aliases) {
+    if (performer?.alias_list?.length) {
       return (
         <div>
           <span className="alias-head">
             <FormattedMessage id="also_known_as" />{" "}
           </span>
-          <span className="alias">{performer.aliases}</span>
+          <span className="alias">{performer.alias_list?.join(", ")}</span>
         </div>
       );
     }
@@ -425,7 +425,12 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
                 className="gender-icon mr-2 flag-icon"
               />
               <CountryFlag country={performer.country} className="mr-2" />
-              {performer.name}
+              <span className="performer-name">{performer.name}</span>
+              {performer.disambiguation && (
+                <span className="performer-disambiguation">
+                  {` (${performer.disambiguation})`}
+                </span>
+              )}
               {renderClickableIcons()}
             </h2>
             <RatingStars

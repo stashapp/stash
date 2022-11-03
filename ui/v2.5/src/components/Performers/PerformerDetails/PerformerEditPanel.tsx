@@ -42,6 +42,7 @@ import {
   faSyncAlt,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import { StringListInput } from "src/components/Shared/StringListInput";
 
 const isScraper = (
   scraper: GQL.Scraper | GQL.StashBox
@@ -100,7 +101,18 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const schema = yup.object({
     name: yup.string().required(),
-    aliases: yup.string().optional(),
+    disambiguation: yup.string().optional(),
+    alias_list: yup
+      .array(yup.string().required())
+      .optional()
+      .test({
+        name: "unique",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        test: (value: any) => {
+          return (value ?? []).length === new Set(value).size;
+        },
+        message: intl.formatMessage({ id: "dialogs.aliases_must_be_unique" }),
+      }),
     gender: yup.string().optional().oneOf(genderOptions),
     birthdate: yup.string().optional(),
     ethnicity: yup.string().optional(),
@@ -127,7 +139,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   const initialValues = {
     name: performer.name ?? "",
-    aliases: performer.aliases ?? "",
+    disambiguation: performer.disambiguation ?? "",
+    alias_list: performer.alias_list,
     gender: genderToString(performer.gender ?? undefined),
     birthdate: performer.birthdate ?? "",
     ethnicity: performer.ethnicity ?? "",
@@ -262,9 +275,12 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.name) {
       formik.setFieldValue("name", state.name);
     }
-
+    // disambiguation
     if (state.aliases) {
-      formik.setFieldValue("aliases", state.aliases);
+      formik.setFieldValue(
+        "alias_list",
+        state.aliases.split(",").map((a) => a.trim())
+      );
     }
     if (state.birthdate) {
       formik.setFieldValue("birthdate", state.birthdate);
@@ -856,16 +872,32 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
+        <Form.Group controlId="disambiguation" as={Row}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
+            <FormattedMessage id="disambiguation" />
+          </Form.Label>
+          <Col xs={fieldXS} xl={fieldXL}>
+            <Form.Control
+              className="text-input"
+              placeholder={intl.formatMessage({ id: "disambiguation" })}
+              {...formik.getFieldProps("disambiguation")}
+              isInvalid={!!formik.errors.disambiguation}
+            />
+            <Form.Control.Feedback type="invalid">
+              {formik.errors.disambiguation}
+            </Form.Control.Feedback>
+          </Col>
+        </Form.Group>
+
         <Form.Group controlId="aliases" as={Row}>
-          <Form.Label column sm={labelXS} xl={labelXL}>
+          <Form.Label column xs={labelXS} xl={labelXL}>
             <FormattedMessage id="aliases" />
           </Form.Label>
-          <Col sm={fieldXS} xl={fieldXL}>
-            <Form.Control
-              as="textarea"
-              className="text-input"
-              placeholder={intl.formatMessage({ id: "aliases" })}
-              {...formik.getFieldProps("aliases")}
+          <Col xs={fieldXS} xl={fieldXL}>
+            <StringListInput
+              value={formik.values.alias_list ?? []}
+              setValue={(value) => formik.setFieldValue("alias_list", value)}
+              errors={formik.errors.alias_list}
             />
           </Col>
         </Form.Group>

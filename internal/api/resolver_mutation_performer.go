@@ -60,6 +60,9 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
+	if input.Disambiguation != nil {
+		newPerformer.Disambiguation = *input.Disambiguation
+	}
 	if input.URL != nil {
 		newPerformer.URL = *input.URL
 	}
@@ -189,6 +192,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	}
 
 	updatedPerformer.Name = translator.optionalString(input.Name, "name")
+	updatedPerformer.Disambiguation = translator.optionalString(input.Disambiguation, "disambiguation")
 	updatedPerformer.URL = translator.optionalString(input.URL, "url")
 
 	if translator.hasField("gender") {
@@ -314,6 +318,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 
 	updatedPerformer := models.NewPerformerPartial()
 
+	updatedPerformer.Disambiguation = translator.optionalString(input.Disambiguation, "disambiguation")
 	updatedPerformer.URL = translator.optionalString(input.URL, "url")
 	updatedPerformer.Birthdate = translator.optionalDate(input.Birthdate, "birthdate")
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
