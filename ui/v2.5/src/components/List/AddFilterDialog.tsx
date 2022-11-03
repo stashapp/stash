@@ -32,6 +32,7 @@ import { CountryCriterion } from "src/models/list-filter/criteria/country";
 import { CountrySelect } from "../Shared";
 import { ConfigurationContext } from "src/hooks/Config";
 import { RatingCriterion } from "../../models/list-filter/criteria/rating";
+import { RatingFilter } from "./Filters/RatingFilter";
 
 interface IAddFilterProps {
   onAddCriterion: (
@@ -134,6 +135,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       ) {
         return;
       }
+      const { configuration: config } = useContext(ConfigurationContext);
 
       if (criterion instanceof ILabeledIdCriterion) {
         return (
@@ -180,7 +182,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       }
       if (criterion instanceof RatingCriterion) {
         return (
-          <NumberFilter criterion={criterion} onValueChanged={onValueChanged} />
+          <RatingFilter criterion={criterion} onValueChanged={onValueChanged} configuration={config} />
         );
       }
       if (
