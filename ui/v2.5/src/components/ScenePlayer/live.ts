@@ -161,13 +161,11 @@ function offsetMiddleware(player: VideoJsPlayer) {
         }
         seeking = 0;
       });
+      tech.trigger("timeupdate");
+      tech.trigger("pause");
       tech.play();
 
       return 0;
-    },
-    paused(paused: boolean) {
-      if (seeking) return false;
-      return paused;
     },
     callPlay() {
       if (seeking) {
