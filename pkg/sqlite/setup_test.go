@@ -1053,16 +1053,9 @@ func makeImage(i int) *models.Image {
 	pids := indexesToIDs(performerIDs, imagePerformers[i])
 	tids := indexesToIDs(tagIDs, imageTags[i])
 
-	rating100 := getRating(i)
-	rating5 := rating100
-	if rating5.Valid {
-		rating5.Int64 = int64(models.Rating100To5(int(rating5.Int64)))
-	}
-
 	return &models.Image{
 		Title:        title,
-		Rating100:    getIntPtr(rating100),
-		Rating:       getIntPtr(rating5),
+		Rating:		  getIntPtr(getRating(i)),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
@@ -1143,17 +1136,10 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	pids := indexesToIDs(performerIDs, galleryPerformers[i])
 	tids := indexesToIDs(tagIDs, galleryTags[i])
 
-	rating100 := getRating(i)
-	rating5 := rating100
-	if rating5.Valid {
-		rating5.Int64 = int64(models.Rating100To5(int(rating5.Int64)))
-	}
-
 	ret := &models.Gallery{
 		Title:        getGalleryStringValue(i, titleField),
 		URL:          getGalleryNullStringValue(i, urlField).String,
-		Rating100:    getIntPtr(rating100),
-		Rating:       getIntPtr(rating5),
+		Rating:		  getIntPtr(getRating(i)),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
 		PerformerIDs: models.NewRelatedIDs(pids),

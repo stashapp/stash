@@ -75,14 +75,7 @@ func (r *sceneRow) fromScene(o models.Scene) {
 		_ = r.Date.Scan(o.Date.Time)
 	}
 
-	// prefer rating100 over rating
-	if o.Rating100 != nil {
-		r.Rating = intFromPtr(o.Rating100)
-	} else if o.Rating != nil {
-		rating100 := models.Rating5To100(*o.Rating)
-		r.Rating = null.IntFrom(int64(rating100))
-	}
-
+	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.OCounter = o.OCounter
 	r.StudioID = intFromPtr(o.StudioID)
@@ -106,7 +99,7 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		Details:   r.Details.String,
 		URL:       r.URL.String,
 		Date:      r.Date.DatePtr(),
-		Rating100: nullIntPtr(r.Rating),
+		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
 		OCounter:  r.OCounter,
 		StudioID:  nullIntPtr(r.StudioID),
@@ -123,11 +116,6 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
 	}
 
-	if r.Rating.Valid {
-		rating5 := models.Rating100To5(int(r.Rating.Int64))
-		ret.Rating = &rating5
-	}
-
 	return ret
 }
 
@@ -140,18 +128,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("details", o.Details)
 	r.setNullString("url", o.URL)
 	r.setSQLiteDate("date", o.Date)
-
-	// prefer rating100 over rating
-	if o.Rating100.Set {
-		r.setNullInt("rating", o.Rating100)
-	} else if o.Rating.Set {
-		v := o.Rating
-		if v.Value != 0 {
-			v.Value = models.Rating5To100(v.Value)
-		}
-		r.setNullInt("rating", v)
-	}
-
+	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setInt("o_counter", o.OCounter)
 	r.setNullInt("studio_id", o.StudioID)

@@ -353,11 +353,6 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 		if validateRating(rating) {
 			h.result.Rating = &rating
 		}
-	case "rating100":
-		rating, _ := strconv.Atoi(value.(string))
-		if validateRating100(rating) {
-			h.result.Rating100 = &rating
-		}
 	case "performer":
 		// add performer to list
 		h.performers = append(h.performers, value.(string))
@@ -714,9 +709,6 @@ func (p *SceneFilenameParser) setParserResult(ctx context.Context, repo SceneFil
 
 	if h.result.Rating != nil {
 		result.Rating = h.result.Rating
-	}
-	if h.result.Rating100 != nil {
-		result.Rating100 = h.result.Rating100
 	}
 
 	if len(h.performers) > 0 {

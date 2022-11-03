@@ -17,7 +17,6 @@ type Gallery struct {
 	Date      *Date  `json:"date"`
 	Details   string `json:"details"`
 	Rating    *int   `json:"rating"`
-	Rating100 *int   `json:"rating100"`
 	Organized bool   `json:"organized"`
 	StudioID  *int   `json:"studio_id"`
 
@@ -104,7 +103,6 @@ type GalleryPartial struct {
 	Date      OptionalDate
 	Details   OptionalString
 	Rating    OptionalInt
-	Rating100 OptionalInt
 	Organized OptionalBool
 	StudioID  OptionalInt
 	// FileModTime OptionalTime

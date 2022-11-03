@@ -223,16 +223,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.optionalInt(input.Rating100, "rating100")
-	if !updatedPerformer.Rating.Set {
-		legacyRating := translator.optionalInt(input.Rating, "rating")
-		if legacyRating.Set {
-			if !legacyRating.Null {
-				legacyRating.Value = models.Rating5To100(legacyRating.Value)
-			}
-			updatedPerformer.Rating = legacyRating
-		}
-	}
+	updatedPerformer.Rating = translator.ratingConversionOptional(input.Rating, "rating", input.Rating100, "rating100")
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
 	updatedPerformer.DeathDate = translator.optionalDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
@@ -336,17 +327,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.optionalInt(input.Rating100, "rating100")
-	if !updatedPerformer.Rating.Set {
-		legacyRating := translator.optionalInt(input.Rating, "rating")
-		if legacyRating.Set {
-			if !legacyRating.Null {
-				legacyRating.Value = models.Rating5To100(legacyRating.Value)
-			}
-			updatedPerformer.Rating = legacyRating
-		}
-	}
-
+	updatedPerformer.Rating = translator.ratingConversionOptional(input.Rating, "rating", input.Rating100, "rating100")
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
 	updatedPerformer.DeathDate = translator.optionalDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")

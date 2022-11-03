@@ -43,13 +43,7 @@ func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
 
-	// prefer rating100 over rating
-	if i.Rating100 != nil {
-		r.Rating = intFromPtr(i.Rating100)
-	} else if i.Rating != nil {
-		rating100 := models.Rating5To100(*i.Rating)
-		r.Rating = null.IntFrom(int64(rating100))
-	}
+	r.Rating = intFromPtr(i.Rating)
 
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
@@ -70,7 +64,7 @@ func (r *imageQueryRow) resolve() *models.Image {
 	ret := &models.Image{
 		ID:        r.ID,
 		Title:     r.Title.String,
-		Rating100:    nullIntPtr(r.Rating),
+		Rating:    nullIntPtr(r.Rating),
 		Organized: r.Organized,
 		OCounter:  r.OCounter,
 		StudioID:  nullIntPtr(r.StudioID),
@@ -86,11 +80,6 @@ func (r *imageQueryRow) resolve() *models.Image {
 		ret.Path = filepath.Join(r.PrimaryFileFolderPath.String, r.PrimaryFileBasename.String)
 	}
 
-	if r.Rating.Valid {
-		rating5 := models.Rating100To5(int(r.Rating.Int64))
-		ret.Rating = &rating5
-	}
-
 	return ret
 }
 
@@ -100,18 +89,7 @@ type imageRowRecord struct {
 
 func (r *imageRowRecord) fromPartial(i models.ImagePartial) {
 	r.setNullString("title", i.Title)
-
-	// prefer rating100 over rating
-	if i.Rating100.Set {
-		r.setNullInt("rating", i.Rating100)
-	} else if i.Rating.Set {
-		v := i.Rating
-		if v.Value != 0 {
-			v.Value = models.Rating5To100(v.Value)
-		}
-		r.setNullInt("rating", v)
-	}
-
+	r.setNullInt("rating", i.Rating)
 	r.setBool("organized", i.Organized)
 	r.setInt("o_counter", i.OCounter)
 	r.setNullInt("studio_id", i.StudioID)

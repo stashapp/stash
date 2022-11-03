@@ -18,7 +18,6 @@ type Scene struct {
 	URL       string `json:"url"`
 	Date      *Date  `json:"date"`
 	Rating    *int   `json:"rating"`
-	Rating100 *int   `json:"rating100"`
 	Organized bool   `json:"organized"`
 	OCounter  int    `json:"o_counter"`
 	StudioID  *int   `json:"studio_id"`
@@ -138,7 +137,6 @@ type ScenePartial struct {
 	URL       OptionalString
 	Date      OptionalDate
 	Rating    OptionalInt
-	Rating100 OptionalInt
 	Organized OptionalBool
 	OCounter  OptionalInt
 	StudioID  OptionalInt
@@ -207,7 +205,6 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 		URL:     s.URL.Ptr(),
 		Date:    dateStr,
 		Rating:  s.Rating.Ptr(),
-		// TODO Rating100
 		Organized:    s.Organized.Ptr(),
 		StudioID:     s.StudioID.StringPtr(),
 		GalleryIds:   s.GalleryIDs.IDStrings(),

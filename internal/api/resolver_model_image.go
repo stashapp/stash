@@ -144,6 +144,15 @@ func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret [
 	return ret, firstError(errs)
 }
 
+func (r *imageResolver) Rating(ctx context.Context, obj *models.Image) (*int, error) {
+	rating := models.Rating100To5(*obj.Rating)
+	return &rating, nil
+}
+
+func (r *imageResolver) Rating100(ctx context.Context, obj *models.Image) (*int, error) {
+	return obj.Rating, nil
+}
+
 func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *models.Studio, err error) {
 	if obj.StudioID == nil {
 		return nil, nil

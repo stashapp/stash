@@ -143,6 +143,26 @@ func (t changesetTranslator) nullInt64(value *int, field string) *sql.NullInt64 
 	return ret
 }
 
+func (t changesetTranslator) ratingConversion(value *int, field string, value2 *int, field2 string) *sql.NullInt64 {
+	legacyRating := t.nullInt64(value, field)
+	if legacyRating != nil {
+		if legacyRating.Valid {
+			legacyRating.Int64 = int64(models.Rating5To100(int(legacyRating.Int64)))
+		}
+		return legacyRating
+	}
+	return t.nullInt64(value2, field2)
+}
+
+func (t changesetTranslator) ratingConversionOptional(value *int, field string, value2 *int, field2 string) models.OptionalInt {
+	legacyRating := t.optionalInt(value, field)
+	if legacyRating.Set && !(legacyRating.Null) {
+		legacyRating.Value = int(models.Rating5To100(int(legacyRating.Value)))
+		return legacyRating
+	}
+	return t.optionalInt(value2, field2)
+}
+
 func (t changesetTranslator) optionalInt(value *int, field string) models.OptionalInt {
 	if !t.hasField(field) {
 		return models.OptionalInt{}

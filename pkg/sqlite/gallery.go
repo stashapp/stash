@@ -53,13 +53,7 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 	}
 	r.Details = zero.StringFrom(o.Details)
 
-	// prefer rating100 over rating
-	if o.Rating100 != nil {
-		r.Rating = intFromPtr(o.Rating100)
-	} else if o.Rating != nil {
-		rating100 := models.Rating5To100(*o.Rating)
-		r.Rating = null.IntFrom(int64(rating100))
-	}
+	r.Rating = intFromPtr(o.Rating)
 
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
@@ -84,7 +78,7 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		URL:           r.URL.String,
 		Date:          r.Date.DatePtr(),
 		Details:       r.Details.String,
-		Rating100:     nullIntPtr(r.Rating),
+		Rating:        nullIntPtr(r.Rating),
 		Organized:     r.Organized,
 		StudioID:      nullIntPtr(r.StudioID),
 		FolderID:      nullIntFolderIDPtr(r.FolderID),
@@ -99,11 +93,6 @@ func (r *galleryQueryRow) resolve() *models.Gallery {
 		ret.Path = r.FolderPath.String
 	}
 
-	if r.Rating.Valid {
-		rating5 := models.Rating100To5(int(r.Rating.Int64))
-		ret.Rating = &rating5
-	}
-
 	return ret
 }
 
@@ -116,18 +105,7 @@ func (r *galleryRowRecord) fromPartial(o models.GalleryPartial) {
 	r.setNullString("url", o.URL)
 	r.setSQLiteDate("date", o.Date)
 	r.setNullString("details", o.Details)
-
-	// prefer rating100 over rating	
-	if o.Rating100.Set {
-		r.setNullInt("rating", o.Rating100)
-	} else if o.Rating.Set {
-		v := o.Rating
-		if v.Value != 0 {
-			v.Value = models.Rating5To100(v.Value)
-		}
-		r.setNullInt("rating", v)
-	}
-
+	r.setNullInt("rating", o.Rating)
 	r.setBool("organized", o.Organized)
 	r.setNullInt("studio_id", o.StudioID)
 	r.setSQLiteTimestamp("created_at", o.CreatedAt)
