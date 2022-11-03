@@ -66,7 +66,7 @@ func (m *schema39Migrator) migrate(ctx context.Context) error {
 					aliases string
 				)
 
-				err := rows.Scan(id, aliases)
+				err := rows.Scan(&id, &aliases)
 				if err != nil {
 					return err
 				}
