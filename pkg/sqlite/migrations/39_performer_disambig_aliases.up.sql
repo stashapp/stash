@@ -13,4 +13,5 @@ DROP INDEX `performers_checksum_unique`;
 ALTER TABLE `performers` DROP COLUMN `checksum`;
 ALTER TABLE `performers` ADD COLUMN `disambiguation` varchar(255);
 
-CREATE UNIQUE INDEX `performers_name_disambiguation` on `performers` (`name`, `disambiguation`);
+CREATE UNIQUE INDEX `performers_name_disambiguation_unique` on `performers` (`name`, `disambiguation`) WHERE `disambiguation` IS NOT NULL;
+CREATE UNIQUE INDEX `performers_name_unique` on `performers` (`name`) WHERE `disambiguation` IS NULL;
