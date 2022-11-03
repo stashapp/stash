@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/stashapp/stash/pkg/file"
@@ -33,17 +34,12 @@ const (
 
 	segmentLength = 2
 
-	maxSegmentWait       = 15 * time.Second
-	segmentCheckInterval = 100 * time.Millisecond
-	monitorInterval      = 5 * time.Second
+	maxSegmentWait  = 15 * time.Second
+	monitorInterval = 200 * time.Millisecond
 
 	// segment gap before counting a request as a seek and
 	// restarting the transcode process at the requested segment
-	segmentSeekGap = 5
-
-	// minimum number of segments to generate
-	// ahead of the currently streaming segment
-	minSegmentBuffer = 3
+	maxSegmentGap = 5
 
 	// maximum number of segments to generate
 	// ahead of the currently streaming segment
@@ -57,41 +53,59 @@ const (
 	cancelTimeout = 3 * time.Second
 )
 
-// StreamType represents a transcode stream codec.
-
 type StreamType string
+type SegmentType string
 
 const (
-	StreamTypeDASHVideo StreamType = "dash-v"
-	StreamTypeDASHAudio StreamType = "dash-a"
-	StreamTypeHLS       StreamType = "hls"
-	StreamTypeHLSCopy   StreamType = "hls-copy"
+	StreamTypeDASH    StreamType = "dash"
+	StreamTypeHLS     StreamType = "hls"
+	StreamTypeHLSCopy StreamType = "hls-copy"
+
+	SegmentTypeWEBMVideo SegmentType = "webm-v"
+	SegmentTypeWEBMAudio SegmentType = "webm-a"
+	SegmentTypeTS        SegmentType = "mpegts"
 )
 
 var ErrInvalidSegment = errors.New("invalid segment")
 
 // TranscodeStreamOptions represents options for live transcoding a video file.
 type TranscodeStreamOptions struct {
-	Type StreamType
-
-	VideoFile        *file.VideoFile
-	Hash             string
-	MaxTranscodeSize int
+	StreamType  StreamType
+	SegmentType SegmentType
+	VideoFile   *file.VideoFile
+	Hash        string
+	Resolution  string
 }
 
 type transcodeProcess struct {
-	cmd       *exec.Cmd
-	context   context.Context
-	cancel    context.CancelFunc
-	cancelled bool
+	cmd          *exec.Cmd
+	context      context.Context
+	cancel       context.CancelFunc
+	cancelled    bool
+	startSegment int
+}
+
+type waitingSegment struct {
+	segmentType SegmentType
+	idx         int
+	file        string
+	path        string
+	accessed    time.Time
+	available   chan error
+	done        atomic.Bool
 }
 
 type runningStream struct {
-	active       bool
-	lastAccessed time.Time
-	segment      int
-	options      *TranscodeStreamOptions
-	tp           *transcodeProcess
+	dir              string
+	streamType       StreamType
+	vf               *file.VideoFile
+	maxTranscodeSize int
+	outputDir        string
+
+	waitingSegments []*waitingSegment
+	tp              *transcodeProcess
+	lastAccessed    time.Time
+	lastSegment     int
 }
 
 type StreamManager struct {
@@ -113,48 +127,19 @@ type StreamManagerConfig interface {
 	GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum
 }
 
-type transcodedSegment struct {
-	name string
-	time time.Time
-}
-
-func (c StreamType) String() string {
-	switch c {
-	case StreamTypeDASHVideo, StreamTypeDASHAudio:
-		return "dash"
-	case StreamTypeHLS:
-		return "hls"
-	case StreamTypeHLSCopy:
-		return "hls-copy"
-	}
-	return string(c)
-}
-
-func (c StreamType) MimeType() string {
-	switch c {
-	case StreamTypeDASHVideo:
-		return MimeMp4Video
-	case StreamTypeDASHAudio:
-		return MimeMp4Audio
+func (t StreamType) MainSegmentType() SegmentType {
+	switch t {
+	case StreamTypeDASH:
+		return SegmentTypeWEBMVideo
 	case StreamTypeHLS, StreamTypeHLSCopy:
-		return MimeMpegTS
+		return SegmentTypeTS
 	}
 	return ""
 }
 
-func (c StreamType) WriteManifest(sm *StreamManager, w io.Writer, vf *file.VideoFile, baseURL, resolution string) error {
-	switch c {
-	case StreamTypeDASHVideo, StreamTypeDASHAudio:
-		return sm.WriteDASHManifest(w, vf, baseURL, resolution)
-	case StreamTypeHLS, StreamTypeHLSCopy:
-		return sm.WriteHLSManifest(w, vf, baseURL, resolution)
-	}
-	return fmt.Errorf("invalid stream type %s", string(c))
-}
-
-func (c StreamType) ManifestMimeType() string {
-	switch c {
-	case StreamTypeDASHVideo, StreamTypeDASHAudio:
+func (t StreamType) MimeType() string {
+	switch t {
+	case StreamTypeDASH:
 		return MimeDASH
 	case StreamTypeHLS, StreamTypeHLSCopy:
 		return MimeHLS
@@ -162,7 +147,17 @@ func (c StreamType) ManifestMimeType() string {
 	return ""
 }
 
-func (c StreamType) Args(vf *file.VideoFile, maxScale, segment int, outputDir string) (args Args) {
+func (t StreamType) WriteManifest(sm *StreamManager, w io.Writer, vf *file.VideoFile, baseURL, resolution string) error {
+	switch t {
+	case StreamTypeDASH:
+		return sm.WriteDASHManifest(w, vf, baseURL, resolution)
+	case StreamTypeHLS, StreamTypeHLSCopy:
+		return sm.WriteHLSManifest(w, vf, baseURL, resolution)
+	}
+	return fmt.Errorf("invalid stream type %s", t)
+}
+
+func (t StreamType) Args(vf *file.VideoFile, maxScale, segment int, outputDir string) (args Args) {
 	args = append(args, "-hide_banner")
 	args = args.LogLevel(LogLevelError)
 
@@ -177,8 +172,8 @@ func (c StreamType) Args(vf *file.VideoFile, maxScale, segment int, outputDir st
 	var videoFilter VideoFilter
 	videoFilter = videoFilter.ScaleMax(vf.Width, vf.Height, maxScale)
 
-	switch c {
-	case StreamTypeDASHVideo, StreamTypeDASHAudio:
+	switch t {
+	case StreamTypeDASH:
 		args = append(args, []string{
 			"-c:v", "libvpx-vp9",
 			"-pix_fmt", "yuv420p",
@@ -277,9 +272,29 @@ func (c StreamType) Args(vf *file.VideoFile, maxScale, segment int, outputDir st
 	return
 }
 
-func (c StreamType) Segment(str string) (segment int, err error) {
-	switch c {
-	case StreamTypeDASHVideo, StreamTypeDASHAudio:
+func (t StreamType) FileDir(hash string, maxTranscodeSize int) string {
+	if maxTranscodeSize == 0 {
+		return fmt.Sprintf("%s_%s", hash, t)
+	} else {
+		return fmt.Sprintf("%s_%s_%d", hash, t, maxTranscodeSize)
+	}
+}
+
+func (t SegmentType) MimeType() string {
+	switch t {
+	case SegmentTypeWEBMVideo:
+		return MimeMp4Video
+	case SegmentTypeWEBMAudio:
+		return MimeMp4Audio
+	case SegmentTypeTS:
+		return MimeMpegTS
+	}
+	return ""
+}
+
+func (t SegmentType) Segment(str string) (segment int, err error) {
+	switch t {
+	case SegmentTypeWEBMVideo, SegmentTypeWEBMAudio:
 		if str == "init" {
 			segment = -1
 		} else {
@@ -288,7 +303,7 @@ func (c StreamType) Segment(str string) (segment int, err error) {
 				err = ErrInvalidSegment
 			}
 		}
-	case StreamTypeHLS, StreamTypeHLSCopy:
+	case SegmentTypeTS:
 		segment, err = strconv.Atoi(str)
 		if err != nil || segment < 0 {
 			err = ErrInvalidSegment
@@ -297,74 +312,41 @@ func (c StreamType) Segment(str string) (segment int, err error) {
 	return
 }
 
-func (c StreamType) FileName(segment int) string {
-	switch c {
-	case StreamTypeDASHVideo:
+func (t SegmentType) FileName(segment int) string {
+	switch t {
+	case SegmentTypeWEBMVideo:
 		if segment == -1 {
 			return "init_v.webm"
 		} else {
 			return fmt.Sprintf("%d_v.webm", segment)
 		}
-	case StreamTypeDASHAudio:
+	case SegmentTypeWEBMAudio:
 		if segment == -1 {
 			return "init_a.webm"
 		} else {
 			return fmt.Sprintf("%d_a.webm", segment)
 		}
-	case StreamTypeHLS, StreamTypeHLSCopy:
+	case SegmentTypeTS:
 		return fmt.Sprintf("%d.ts", segment)
 	}
 	return ""
 }
 
-func (c StreamType) FileSegment(filename string, segment *int) bool {
-	switch c {
-	case StreamTypeDASHVideo:
-		n, _ := fmt.Sscanf(filename, "%d_v.webm", segment)
-		if n != 0 {
-			return true
-		}
-		if filename == "init_v.webm" {
-			*segment = -1
-			return true
-		}
-	case StreamTypeDASHAudio:
-		n, _ := fmt.Sscanf(filename, "%d_a.webm", segment)
-		if n != 0 {
-			return true
-		}
-		if filename == "init_a.webm" {
-			*segment = -1
-			return true
-		}
-	case StreamTypeHLS, StreamTypeHLSCopy:
-		n, _ := fmt.Sscanf(filename, "%d.ts", segment)
-		if n != 0 {
-			return true
-		}
-	}
-	return false
+func (s *runningStream) Args(segment int) Args {
+	return s.streamType.Args(s.vf, s.maxTranscodeSize, segment, s.outputDir)
 }
 
-func (o *TranscodeStreamOptions) StreamArgs(segment int, outputDir string) Args {
-	return o.Type.Args(o.VideoFile, o.MaxTranscodeSize, segment, outputDir)
+func lastSegment(vf *file.VideoFile) int {
+	return int(math.Ceil(vf.Duration/segmentLength)) - 1
 }
 
-func (o *TranscodeStreamOptions) FileDir() string {
-	resolution := o.MaxTranscodeSize
-	if resolution == 0 {
-		return fmt.Sprintf("%s_%s", o.Hash, o.Type)
-	} else {
-		return fmt.Sprintf("%s_%s_%d", o.Hash, o.Type, resolution)
-	}
+func segmentExists(path string) bool {
+	exists, _ := fsutil.FileExists(path)
+	return exists
 }
 
-func (o *TranscodeStreamOptions) FilePath(segment int) string {
-	return filepath.Join(o.FileDir(), o.Type.FileName(segment))
-}
-
-func (o *TranscodeStreamOptions) LastSegment() int {
-	return int(math.Ceil(o.VideoFile.Duration/segmentLength)) - 1
+func segmentToTime(segment int) float64 {
+	return float64(segment * segmentLength)
 }
 
 func NewStreamManager(cacheDir string, encoder FFMpeg, ffprobe FFProbe, config StreamManagerConfig, lockManager *fsutil.ReadLockManager) *StreamManager {
@@ -385,7 +367,17 @@ func NewStreamManager(cacheDir string, encoder FFMpeg, ffprobe FFProbe, config S
 		runningStreams: make(map[string]*runningStream),
 	}
 
-	go ret.monitorStreams()
+	go func() {
+		for {
+			select {
+			case <-time.After(monitorInterval):
+				ret.monitorStreams()
+			case <-ctx.Done():
+				ret.stopAndRemoveAll()
+				return
+			}
+		}
+	}()
 
 	return ret
 }
@@ -512,92 +504,29 @@ func (sm *StreamManager) WriteDASHManifest(w io.Writer, vf *file.VideoFile, base
 	return m.Write(w)
 }
 
-func segmentExists(path string) bool {
-	exists, _ := fsutil.FileExists(path)
-	return exists
-}
-
-func segmentToTime(segment int) float64 {
-	return float64(segment * segmentLength)
-}
-
-func (sm *StreamManager) transcodedSegments(options *TranscodeStreamOptions) map[int]*transcodedSegment {
-	ret := make(map[int]*transcodedSegment)
-
-	files, _ := os.ReadDir(filepath.Join(sm.cacheDir, options.FileDir()))
-
-	for _, f := range files {
-		segment := 0
-		if !options.Type.FileSegment(f.Name(), &segment) {
-			continue
-		}
-
-		fileInfo, err := f.Info()
-		if err != nil {
-			continue
-		}
-		ret[segment] = &transcodedSegment{
-			name: f.Name(),
-			time: fileInfo.ModTime(),
-		}
-	}
-
-	return ret
-}
-
-func (sm *StreamManager) streamSegmentFunc(stream *runningStream, options *TranscodeStreamOptions, segment int) http.HandlerFunc {
-	file := options.FilePath(segment)
-	path := filepath.Join(sm.cacheDir, file)
-
+func (sm *StreamManager) streamSegmentFunc(segment *waitingSegment) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		go func() {
-			<-r.Context().Done()
-
-			sm.streamsMutex.Lock()
-			if stream.options == options {
-				stream.active = false
-				stream.lastAccessed = time.Now()
-			}
-			sm.streamsMutex.Unlock()
-		}()
-
-		started := time.Now()
-		for {
-			select {
-			case <-r.Context().Done():
-				return
-			case <-time.After(segmentCheckInterval):
-				now := time.Now()
-				switch {
-				case segmentExists(path):
-					logger.Tracef("[transcode] streaming segment file %s", file)
-					w.Header().Set("Content-Type", options.Type.MimeType())
-					// Prevent caching as segments are generated on the fly
-					w.Header().Add("Cache-Control", "no-cache")
-					http.ServeFile(w, r, path)
-					return
-				case started.Add(maxSegmentWait).Before(now):
-					sm.streamsMutex.Lock()
-					if stream.options == options {
-						stream.active = false
-					}
-					sm.streamsMutex.Unlock()
-
-					logger.Warnf("[transcode] timed out waiting for segment file %s to be generated", file)
-					http.Error(w, "timed out waiting for segment file to be generated", http.StatusInternalServerError)
-					return
-				}
+		select {
+		case <-r.Context().Done():
+			break
+		case err := <-segment.available:
+			if err == nil {
+				logger.Tracef("[transcode] streaming segment file %s", segment.file)
+				w.Header().Set("Content-Type", segment.segmentType.MimeType())
+				// Prevent caching as segments are generated on the fly
+				w.Header().Add("Cache-Control", "no-cache")
+				http.ServeFile(w, r, segment.path)
+			} else if !errors.Is(err, context.Canceled) {
+				logger.Errorf("[transcode] %v", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 		}
+		segment.done.Store(true)
 	}
 }
 
 // StreamSegment returns a http.HandlerFunc that streams a segment.
-// If the segment exists in the cache directory, then it is streamed.
-// Otherwise, a transcode process will be started for the provided segment. If
-// a transcode process is running already, then it will be killed before the new
-// process is started.
-func (sm *StreamManager) StreamSegment(options *TranscodeStreamOptions, segmentStr string) http.HandlerFunc {
+func (sm *StreamManager) StreamSegment(options TranscodeStreamOptions, segmentStr string) http.HandlerFunc {
 	if sm.cacheDir == "" {
 		logger.Error("[transcode] cannot live transcode files because cache dir is empty")
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -611,98 +540,80 @@ func (sm *StreamManager) StreamSegment(options *TranscodeStreamOptions, segmentS
 		}
 	}
 
-	segment, err := options.Type.Segment(segmentStr)
+	segment, err := options.SegmentType.Segment(segmentStr)
 	// error if segment is past the end of the video
-	if err != nil || segment > options.LastSegment() {
+	if err != nil || segment > lastSegment(options.VideoFile) {
 		return func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "invalid segment", http.StatusBadRequest)
 		}
 	}
 
-	onTranscodeError := func(err error) http.HandlerFunc {
-		errStr := fmt.Sprintf("error starting transcode process: %v", err)
-		logger.Errorf("[transcode] %s", errStr)
-
-		return func(w http.ResponseWriter, r *http.Request) {
-			http.Error(w, errStr, http.StatusInternalServerError)
-		}
+	maxTranscodeSize := sm.config.GetMaxStreamingTranscodeSize().GetMaxResolution()
+	if options.Resolution != "" {
+		maxTranscodeSize = models.StreamingResolutionEnum(options.Resolution).GetMaxResolution()
 	}
 
-	dir := options.FileDir()
+	dir := options.StreamType.FileDir(options.Hash, maxTranscodeSize)
+	outputDir := filepath.Join(sm.cacheDir, dir)
+
+	name := options.SegmentType.FileName(segment)
+	file := filepath.Join(dir, name)
 
 	sm.streamsMutex.Lock()
 
 	stream := sm.runningStreams[dir]
 	if stream == nil {
-		stream = &runningStream{}
+		stream = &runningStream{
+			dir:              dir,
+			streamType:       options.StreamType,
+			vf:               options.VideoFile,
+			maxTranscodeSize: maxTranscodeSize,
+			outputDir:        outputDir,
+
+			// initialize to cap 10 to avoid reallocations
+			waitingSegments: make([]*waitingSegment, 0, 10),
+		}
 		sm.runningStreams[dir] = stream
 	}
 
-	stream.active = true
-	stream.lastAccessed = time.Now()
-	stream.options = options
-
+	now := time.Now()
+	stream.lastAccessed = now
 	if segment != -1 {
-		// this is a seek if the requested segment is more than
-		// segmentSeekGap away from the previously requested segment
-		segmentGap := segment - stream.segment
-		if segmentGap < 0 || segmentGap > segmentSeekGap {
-			logger.Debugf("[transcode] seeking stream for %s to segment #%d", dir, segment)
-			stream.stopTranscode()
-		}
-
-		stream.segment = segment
+		stream.lastSegment = segment
 	}
 
-	// if the transcode process is already running, just wait for the segment
-	if stream.tp != nil {
-		sm.streamsMutex.Unlock()
-		return sm.streamSegmentFunc(stream, options, segment)
+	waitingSegment := &waitingSegment{
+		segmentType: options.SegmentType,
+		idx:         segment,
+		file:        file,
+		path:        filepath.Join(sm.cacheDir, file),
+		accessed:    now,
+		available:   make(chan error, 1),
 	}
+	stream.waitingSegments = append(stream.waitingSegments, waitingSegment)
 
-	segments := sm.transcodedSegments(options)
-
-	// if any segments up to minSegmentBuffer are missing, start transcode there
-	for i := segment; i <= segment+minSegmentBuffer; i++ {
-		if segments[i] == nil {
-			stream.stopTranscode()
-			err := sm.startTranscode(stream, i)
-			if err != nil {
-				stream.active = false
-				sm.streamsMutex.Unlock()
-				return onTranscodeError(err)
-			}
-
-			sm.streamsMutex.Unlock()
-			return sm.streamSegmentFunc(stream, options, segment)
-		}
-	}
-
-	// segment should exist, just stream it
 	sm.streamsMutex.Unlock()
-	return sm.streamSegmentFunc(stream, options, segment)
+
+	return sm.streamSegmentFunc(waitingSegment)
 }
 
 // assume lock is held
-func (sm *StreamManager) startTranscode(stream *runningStream, segment int) error {
-	options := stream.options
-
+func (sm *StreamManager) startTranscode(stream *runningStream, segment int, done chan<- error) {
 	// generate segment 0 if init segment requested
 	if segment == -1 {
 		segment = 0
 	}
 
-	dir := options.FileDir()
-	logger.Debugf("[transcode] starting transcode for %s at segment #%d", dir, segment)
+	logger.Debugf("[transcode] starting transcode for %s at segment #%d", stream.dir, segment)
 
-	outputDir := filepath.Join(sm.cacheDir, dir)
-	if err := os.MkdirAll(outputDir, os.ModePerm); err != nil {
-		return err
+	if err := os.MkdirAll(stream.outputDir, os.ModePerm); err != nil {
+		done <- err
+		return
 	}
 
-	lockCtx := sm.lockManager.ReadLock(sm.context, options.VideoFile.Path)
+	lockCtx := sm.lockManager.ReadLock(sm.context, stream.vf.Path)
 
-	args := options.StreamArgs(segment, outputDir)
+	args := stream.Args(segment)
 	cmd := sm.encoder.Command(lockCtx, args)
 
 	stderr, err := cmd.StderrPipe()
@@ -718,13 +629,15 @@ func (sm *StreamManager) startTranscode(stream *runningStream, segment int) erro
 	logger.Tracef("[transcode] running %s", cmd)
 	if err := cmd.Start(); err != nil {
 		lockCtx.Cancel()
-		return err
+		done <- fmt.Errorf("error starting transcode process: %w", err)
+		return
 	}
 
 	tp := &transcodeProcess{
-		cmd:     cmd,
-		context: lockCtx,
-		cancel:  lockCtx.Cancel,
+		cmd:          cmd,
+		context:      lockCtx,
+		cancel:       lockCtx.Cancel,
+		startSegment: segment,
 	}
 	stream.tp = tp
 
@@ -732,21 +645,25 @@ func (sm *StreamManager) startTranscode(stream *runningStream, segment int) erro
 		errStr, _ := io.ReadAll(stderr)
 		outStr, _ := io.ReadAll(stdout)
 
-		err := cmd.Wait()
+		errCmd := cmd.Wait()
+
+		var err error
 
 		// don't log error if cancelled
-		if !tp.cancelled && err != nil {
+		if !tp.cancelled {
 			e := string(errStr)
 			if e == "" {
 				e = string(outStr)
-
-				if e == "" {
-					e = err.Error()
-				}
+			}
+			if e != "" {
+				err = errors.New(e)
+			} else {
+				err = errCmd
 			}
 
-			// error message should be in the stderr stream
-			logger.Errorf("[transcode] ffmpeg error when running command <%s>: %s", strings.Join(cmd.Args, " "), e)
+			if err != nil {
+				err = fmt.Errorf("[transcode] ffmpeg error when running command <%s>: %w", strings.Join(cmd.Args, " "), err)
+			}
 		}
 
 		sm.streamsMutex.Lock()
@@ -759,13 +676,12 @@ func (sm *StreamManager) startTranscode(stream *runningStream, segment int) erro
 
 		sm.streamsMutex.Unlock()
 
+		done <- err
 	}()
-
-	return nil
 }
 
 // assume lock is held
-func (stream *runningStream) stopTranscode() {
+func (sm *StreamManager) stopTranscode(stream *runningStream) {
 	tp := stream.tp
 	if tp != nil {
 		go func() {
@@ -786,51 +702,98 @@ func (stream *runningStream) stopTranscode() {
 	}
 }
 
-// monitorStreams checks for stale streams and removes them. When the manager context
-// is cancelled, stopAndRemoveAll will be called. Should be called in its own goroutine.
-func (sm *StreamManager) monitorStreams() {
-	for {
-		select {
-		case <-time.After(monitorInterval):
-			sm.removeStaleFiles()
-		case <-sm.context.Done():
-			sm.stopAndRemoveAll()
-			return
-		}
+func (s *waitingSegment) checkAvailable(now time.Time) bool {
+	if segmentExists(s.path) {
+		s.available <- nil
+		return true
+	} else if s.accessed.Add(maxSegmentWait).Before(now) {
+		s.available <- fmt.Errorf("timed out waiting for segment file %s to be generated", s.file)
+		return true
 	}
+	return false
 }
 
-// check for the last time a stream was accessed
-// and remove anything over a certain age
-func (sm *StreamManager) removeStaleFiles() {
+// ensureTranscode will start a new transcode process if the transcode
+// is more than maxSegmentGap behind the requested segment
+func (sm *StreamManager) ensureTranscode(stream *runningStream, segment *waitingSegment) bool {
+	segmentIdx := segment.idx
+	tp := stream.tp
+	if tp == nil {
+		sm.startTranscode(stream, segmentIdx, segment.available)
+		return true
+	} else {
+		segmentType := segment.segmentType
+		bufStart := tp.startSegment
+		var bufEnd int
+		for i := bufStart + 1; ; i++ {
+			if !segmentExists(filepath.Join(stream.outputDir, segmentType.FileName(i))) {
+				bufEnd = i - 1
+				break
+			}
+		}
+		if segmentIdx < bufStart || bufEnd+maxSegmentGap < segmentIdx {
+			sm.stopTranscode(stream)
+			sm.startTranscode(stream, segmentIdx, segment.available)
+			return true
+		}
+	}
+	return false
+}
+
+func (sm *StreamManager) monitorStreams() {
 	sm.streamsMutex.Lock()
 	defer sm.streamsMutex.Unlock()
 
 	now := time.Now()
-outer:
+
 	for dir, stream := range sm.runningStreams {
-		if !stream.active && stream.lastAccessed.Add(maxIdleTime).Before(now) {
-			// Stream expired. Cancel the transcode process and delete the files
-			logger.Debugf("[transcode] stream for %s not accessed recently. Cancelling transcode and removing files", dir)
-
-			stream.stopTranscode()
-			sm.removeTranscodeFiles(stream.options)
-
-			delete(sm.runningStreams, dir)
-		} else if stream.tp != nil {
-			// if all segments up to maxSegmentBuffer exist, stop transcode
-			segment := stream.segment
-			segments := sm.transcodedSegments(stream.options)
-			lastSegment := stream.options.LastSegment()
-			for i := segment; i < segment+maxSegmentBuffer && i <= lastSegment; i++ {
-				if segments[i] == nil {
-					continue outer
-				}
+		transcodeStarted := false
+		temp := stream.waitingSegments[:0]
+		for _, segment := range stream.waitingSegments {
+			var remove bool
+			if segment.done.Load() || segment.checkAvailable(now) {
+				remove = true
+			} else if !transcodeStarted {
+				transcodeStarted = sm.ensureTranscode(stream, segment)
 			}
-
-			logger.Debugf("[transcode] stopping transcode for %s, buffer is full", dir)
-			stream.stopTranscode()
+			if !remove {
+				temp = append(temp, segment)
+			}
 		}
+		stream.waitingSegments = temp
+
+		if !transcodeStarted {
+			if len(stream.waitingSegments) == 0 && stream.lastAccessed.Add(maxIdleTime).Before(now) {
+				// Stream expired. Cancel the transcode process and delete the files
+				logger.Debugf("[transcode] stream for %s not accessed recently. Cancelling transcode and removing files", dir)
+
+				sm.stopTranscode(stream)
+				sm.removeTranscodeFiles(stream)
+
+				delete(sm.runningStreams, dir)
+			}
+			if stream.tp != nil {
+				segmentType := stream.streamType.MainSegmentType()
+				segment := stream.lastSegment
+				// if all segments up to maxSegmentBuffer exist, stop transcode
+				for i := segment; i < segment+maxSegmentBuffer; i++ {
+					if !segmentExists(filepath.Join(stream.outputDir, segmentType.FileName(i))) {
+						return
+					}
+				}
+
+				logger.Debugf("[transcode] stopping transcode for %s, buffer is full", dir)
+				sm.stopTranscode(stream)
+			}
+		}
+	}
+}
+
+// assume lock is held
+func (sm *StreamManager) removeTranscodeFiles(stream *runningStream) {
+	path := stream.outputDir
+	if err := os.RemoveAll(path); err != nil {
+		logger.Warnf("[transcode] error removing segment directory %s: %v", path, err)
 	}
 }
 
@@ -840,18 +803,15 @@ func (sm *StreamManager) stopAndRemoveAll() {
 	defer sm.streamsMutex.Unlock()
 
 	for _, stream := range sm.runningStreams {
-		stream.stopTranscode()
-		sm.removeTranscodeFiles(stream.options)
+		for _, segment := range stream.waitingSegments {
+			if len(segment.available) == 0 {
+				segment.available <- context.Canceled
+			}
+		}
+		sm.stopTranscode(stream)
+		sm.removeTranscodeFiles(stream)
 	}
 
 	// ensure nothing else can use the map
 	sm.runningStreams = nil
-}
-
-// assume lock is held
-func (sm *StreamManager) removeTranscodeFiles(options *TranscodeStreamOptions) {
-	path := filepath.Join(sm.cacheDir, options.FileDir())
-	if err := os.RemoveAll(path); err != nil {
-		logger.Warnf("[transcode] error removing segment directory %s: %v", path, err)
-	}
 }

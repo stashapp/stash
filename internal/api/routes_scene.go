@@ -95,7 +95,7 @@ func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) StreamDASH(w http.ResponseWriter, r *http.Request) {
-	rs.streamManifest(w, r, ffmpeg.StreamTypeDASHVideo, "DASH")
+	rs.streamManifest(w, r, ffmpeg.StreamTypeDASH, "DASH")
 }
 
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +126,7 @@ func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, str
 
 	resolution := r.Form.Get("resolution")
 
-	w.Header().Set("Content-Type", streamType.ManifestMimeType())
+	w.Header().Set("Content-Type", streamType.MimeType())
 	var str strings.Builder
 
 	baseUrl := *r.URL
@@ -154,22 +154,22 @@ func (rs sceneRoutes) streamManifest(w http.ResponseWriter, r *http.Request, str
 }
 
 func (rs sceneRoutes) StreamDASHVideoSegment(w http.ResponseWriter, r *http.Request) {
-	rs.streamSegment(w, r, ffmpeg.StreamTypeDASHVideo)
+	rs.streamSegment(w, r, ffmpeg.StreamTypeDASH, ffmpeg.SegmentTypeWEBMVideo)
 }
 
 func (rs sceneRoutes) StreamDASHAudioSegment(w http.ResponseWriter, r *http.Request) {
-	rs.streamSegment(w, r, ffmpeg.StreamTypeDASHAudio)
+	rs.streamSegment(w, r, ffmpeg.StreamTypeDASH, ffmpeg.SegmentTypeWEBMAudio)
 }
 
 func (rs sceneRoutes) StreamHLSSegment(w http.ResponseWriter, r *http.Request) {
-	rs.streamSegment(w, r, ffmpeg.StreamTypeHLS)
+	rs.streamSegment(w, r, ffmpeg.StreamTypeHLS, ffmpeg.SegmentTypeTS)
 }
 
 func (rs sceneRoutes) StreamMKVSegment(w http.ResponseWriter, r *http.Request) {
-	rs.streamSegment(w, r, ffmpeg.StreamTypeHLSCopy)
+	rs.streamSegment(w, r, ffmpeg.StreamTypeHLSCopy, ffmpeg.SegmentTypeTS)
 }
 
-func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, streamType ffmpeg.StreamType) {
+func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, streamType ffmpeg.StreamType, segmentType ffmpeg.SegmentType) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
 	streamManager := manager.GetInstance().StreamManager
@@ -191,22 +191,17 @@ func (rs sceneRoutes) streamSegment(w http.ResponseWriter, r *http.Request, stre
 	hash := scene.GetHash(fileNamingAlgo)
 
 	segment := chi.URLParam(r, "segment")
-	requestedSize := r.Form.Get("resolution")
+	resolution := r.Form.Get("resolution")
 
 	options := ffmpeg.TranscodeStreamOptions{
-		Type: streamType,
-
-		VideoFile: f,
-		Hash:      hash,
-
-		MaxTranscodeSize: config.GetInstance().GetMaxStreamingTranscodeSize().GetMaxResolution(),
+		StreamType:  streamType,
+		SegmentType: segmentType,
+		VideoFile:   f,
+		Hash:        hash,
+		Resolution:  resolution,
 	}
 
-	if requestedSize != "" {
-		options.MaxTranscodeSize = models.StreamingResolutionEnum(requestedSize).GetMaxResolution()
-	}
-
-	handler := streamManager.StreamSegment(&options, segment)
+	handler := streamManager.StreamSegment(options, segment)
 
 	handler(w, r)
 }
