@@ -39,7 +39,6 @@ const sortByOptions = [
   "interactive",
   "interactive_speed",
   "perceptual_similarity",
-  "code",
   ...MediaSortByOptions,
 ].map(ListFilterOptions.createSortBy);
 
@@ -52,7 +51,7 @@ const displayModeOptions = [
 
 const criterionOptions = [
   createStringCriterionOption("title"),
-  createStringCriterionOption("code"),
+  createStringCriterionOption("scene_code"),
   createMandatoryStringCriterionOption("path"),
   createStringCriterionOption("details"),
   createStringCriterionOption("director"),
