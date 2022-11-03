@@ -91,6 +91,7 @@ interface ISelectProps<T extends boolean> {
 }
 interface IFilterComponentProps extends IFilterProps {
   items: Array<ValidTypes>;
+  toOption?: (item: ValidTypes) => Option;
   onCreate?: (name: string) => Promise<{ item: ValidTypes; message: string }>;
 }
 interface IFilterSelectProps<T extends boolean>
@@ -268,10 +269,15 @@ const FilterSelectComponent = <T extends boolean>(
   const selectedIds = ids ?? [];
   const Toast = useToast();
 
-  const options = items.map((i) => ({
-    value: i.id,
-    label: i.name ?? "",
-  }));
+  const options = items.map((i) => {
+    if (props.toOption) {
+      return props.toOption(i);
+    }
+    return {
+      value: i.id,
+      label: i.name ?? "",
+    };
+  });
 
   const selected = options.filter((option) =>
     selectedIds.includes(option.value)
@@ -473,6 +479,20 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
 
   const performers = data?.allPerformers ?? [];
 
+  type performerType = {
+    id: string;
+    name: string;
+    disambiguation?: string;
+  };
+
+  const toOption = (p: ValidTypes) => ({
+    value: p.id,
+    label: `${p.name}${
+      (p as performerType).disambiguation &&
+      ` (${(p as performerType).disambiguation})`
+    }`,
+  });
+
   const onCreate = async (name: string) => {
     const result = await createPerformer({
       variables: { input: { name } },
@@ -486,6 +506,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   return (
     <FilterSelectComponent
       {...props}
+      toOption={toOption}
       isMulti={props.isMulti ?? false}
       creatable={props.creatable ?? defaultCreatable}
       onCreate={onCreate}

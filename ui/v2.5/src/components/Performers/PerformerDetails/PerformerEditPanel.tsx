@@ -275,7 +275,9 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     if (state.name) {
       formik.setFieldValue("name", state.name);
     }
-    // disambiguation
+    if (state.disambiguation) {
+      formik.setFieldValue("disambiguation", state.disambiguation);
+    }
     if (state.aliases) {
       formik.setFieldValue(
         "alias_list",

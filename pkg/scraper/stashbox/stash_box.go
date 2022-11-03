@@ -587,15 +587,16 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		images = append(images, image.URL)
 	}
 	sp := &models.ScrapedPerformer{
-		Name:         &p.Name,
-		Country:      p.Country,
-		Measurements: formatMeasurements(p.Measurements),
-		CareerLength: formatCareerLength(p.CareerStartYear, p.CareerEndYear),
-		Tattoos:      formatBodyModifications(p.Tattoos),
-		Piercings:    formatBodyModifications(p.Piercings),
-		Twitter:      findURL(p.Urls, "TWITTER"),
-		RemoteSiteID: &id,
-		Images:       images,
+		Name:           &p.Name,
+		Disambiguation: p.Disambiguation,
+		Country:        p.Country,
+		Measurements:   formatMeasurements(p.Measurements),
+		CareerLength:   formatCareerLength(p.CareerStartYear, p.CareerEndYear),
+		Tattoos:        formatBodyModifications(p.Tattoos),
+		Piercings:      formatBodyModifications(p.Piercings),
+		Twitter:        findURL(p.Urls, "TWITTER"),
+		RemoteSiteID:   &id,
+		Images:         images,
 		// TODO - tags not currently supported
 		// graphql schema change to accommodate this. Leave off for now.
 	}
@@ -962,6 +963,10 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.Name != "" {
 		draft.Name = performer.Name
 	}
+	// stash-box does not support Disambiguation currently
+	// if performer.Disambiguation != "" {
+	// 	draft.Disambiguation = performer.Disambiguation
+	// }
 	if performer.Birthdate != nil {
 		d := performer.Birthdate.String()
 		draft.Birthdate = &d
