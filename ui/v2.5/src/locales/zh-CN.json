@@ -350,7 +350,7 @@
       "auto_tagging": "自动标签",
       "backing_up_database": "自动备份数据中",
       "backup_and_download": "备份数据库并下载其文件.",
-      "backup_database": "将数据库备份到与数据库相同的目录，文件名格式为 {filename_format}",
+      "backup_database": "将数据库备份到backups目录，文件名格式为 {filename_format}",
       "cleanup_desc": "检查缺失的文件并将它们的数据从数据库中删除。 注意，这是一个破坏性的动作。",
       "data_management": "数据管理",
       "defaults_set": "预设值已经设定好，将会在按下任务页面里的{action}按钮后生效.",
