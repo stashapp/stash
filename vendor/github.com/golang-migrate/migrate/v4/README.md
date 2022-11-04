@@ -1,9 +1,9 @@
-[![CircleCI - Build Status](https://img.shields.io/circleci/build/github/golang-migrate/migrate/master)](https://circleci.com/gh/golang-migrate/migrate)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/golang-migrate/migrate/CI/master)](https://github.com/golang-migrate/migrate/actions/workflows/ci.yaml?query=branch%3Amaster)
 [![GoDoc](https://pkg.go.dev/badge/github.com/golang-migrate/migrate)](https://pkg.go.dev/github.com/golang-migrate/migrate/v4)
 [![Coverage Status](https://img.shields.io/coveralls/github/golang-migrate/migrate/master.svg)](https://coveralls.io/github/golang-migrate/migrate?branch=master)
 [![packagecloud.io](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/golang-migrate/migrate?filter=debs)
 [![Docker Pulls](https://img.shields.io/docker/pulls/migrate/migrate.svg)](https://hub.docker.com/r/migrate/migrate/)
-![Supported Go Versions](https://img.shields.io/badge/Go-1.15%2C%201.16-lightgrey.svg)
+![Supported Go Versions](https://img.shields.io/badge/Go-1.16%2C%201.17-lightgrey.svg)
 [![GitHub Release](https://img.shields.io/github/release/golang-migrate/migrate.svg)](https://github.com/golang-migrate/migrate/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/golang-migrate/migrate)](https://goreportcard.com/report/github.com/golang-migrate/migrate)
 
@@ -68,7 +68,9 @@ $
 Source drivers read migrations from local or remote sources. [Add a new source?](source/driver.go)
 
 * [Filesystem](source/file) - read from filesystem
+* [io/fs](source/iofs) - read from a Go [io/fs](https://pkg.go.dev/io/fs#FS)
 * [Go-Bindata](source/go_bindata) - read from embedded binary data ([jteeuwen/go-bindata](https://github.com/jteeuwen/go-bindata))
+* [pkger](source/pkger) - read from embedded binary data ([markbates/pkger](https://github.com/markbates/pkger))
 * [GitHub](source/github) - read from remote GitHub repositories
 * [GitHub Enterprise](source/github_ee) - read from remote GitHub Enterprise repositories
 * [Bitbucket](source/bitbucket) - read from remote Bitbucket repositories
@@ -140,7 +142,7 @@ func main() {
     m, err := migrate.NewWithDatabaseInstance(
         "file:///migrations",
         "postgres", driver)
-    m.Steps(2)
+    m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
 }
 ```
 

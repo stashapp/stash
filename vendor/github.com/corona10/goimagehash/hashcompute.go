@@ -7,6 +7,7 @@ package goimagehash
 import (
 	"errors"
 	"image"
+	"sync"
 
 	"github.com/corona10/goimagehash/etcs"
 	"github.com/corona10/goimagehash/transforms"
@@ -71,17 +72,31 @@ func PerceptionHash(img image.Image) (*ImageHash, error) {
 
 	phash := NewImageHash(0, PHash)
 	resized := resize.Resize(64, 64, img, resize.Bilinear)
-	pixels := transforms.Rgb2Gray(resized)
-	dct := transforms.DCT2D(pixels, 64, 64)
-	flattens := transforms.FlattenPixels(dct, 8, 8)
-	median := etcs.MedianOfPixels(flattens)
+
+	pixels := pixelPool64.Get().(*[]float64)
+
+	transforms.Rgb2GrayFast(resized, pixels)
+	transforms.DCT2DFast64(pixels)
+	flattens := transforms.FlattenPixelsFast64(*pixels, 8, 8)
+
+	pixelPool64.Put(pixels)
+
+	median := etcs.MedianOfPixelsFast64(flattens)
 
 	for idx, p := range flattens {
 		if p > median {
-			phash.leftShiftSet(len(flattens) - idx - 1)
+			phash.leftShiftSet(64 - idx - 1) // leftShiftSet
 		}
 	}
+
 	return phash, nil
+}
+
+var pixelPool64 = sync.Pool{
+	New: func() interface{} {
+		p := make([]float64, 4096)
+		return &p
+	},
 }
 
 // ExtPerceptionHash function returns phash of which the size can be set larger than uint64

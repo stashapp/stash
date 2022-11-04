@@ -6,7 +6,7 @@ import (
 
 func (runtime *_runtime) newGoMapObject(value reflect.Value) *_object {
 	self := runtime.newObject()
-	self.class = "Object" // TODO Should this be something else?
+	self.class = classObject // TODO Should this be something else?
 	self.objectClass = _classGoMap
 	self.value = _newGoMapObject(value)
 	return self

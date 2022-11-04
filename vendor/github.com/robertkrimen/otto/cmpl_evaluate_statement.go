@@ -259,6 +259,17 @@ resultBreak:
 				break
 			}
 		}
+
+		// this is to prevent for cycles with no body from running forever
+		if len(body) == 0 && self.otto.Interrupt != nil {
+			runtime.Gosched()
+			select {
+			case value := <-self.otto.Interrupt:
+				value()
+			default:
+			}
+		}
+
 		for _, node := range body {
 			value := self.cmpl_evaluate_nodeStatement(node)
 			switch value.kind {

@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -116,7 +115,7 @@ var path2regex = strings.NewReplacer(
 // LoadConfig loads and parses the config gqlgenc config
 func LoadConfig(filename string) (*Config, error) {
 	var cfg Config
-	b, err := ioutil.ReadFile(filename)
+	b, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read config: %w", err)
 	}
@@ -188,7 +187,7 @@ func LoadConfig(filename string) (*Config, error) {
 		filename = filepath.ToSlash(filename)
 		var err error
 		var schemaRaw []byte
-		schemaRaw, err = ioutil.ReadFile(filename)
+		schemaRaw, err = os.ReadFile(filename)
 		if err != nil {
 			return nil, fmt.Errorf("unable to open schema: %w", err)
 		}
@@ -269,7 +268,7 @@ func (c *Config) loadRemoteSchema(ctx context.Context) (*ast.Schema, error) {
 func (c *Config) loadLocalSchema() (*ast.Schema, error) {
 	schema, err := gqlparser.LoadSchema(c.GQLConfig.Sources...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("loadLocalSchema: %w", err)
 	}
 
 	return schema, nil

@@ -24,7 +24,8 @@ type BindParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Tethering#method-bind
 //
 // parameters:
-//   port - Port number to bind.
+//
+//	port - Port number to bind.
 func Bind(port int64) *BindParams {
 	return &BindParams{
 		Port: port,
@@ -46,7 +47,8 @@ type UnbindParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Tethering#method-unbind
 //
 // parameters:
-//   port - Port number to unbind.
+//
+//	port - Port number to unbind.
 func Unbind(port int64) *UnbindParams {
 	return &UnbindParams{
 		Port: port,

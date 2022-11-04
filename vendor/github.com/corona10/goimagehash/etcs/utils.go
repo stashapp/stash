@@ -30,6 +30,16 @@ func MedianOfPixels(pixels []float64) float64 {
 	return v
 }
 
+// MedianOfPixelsFast64 function returns a median value of pixels.
+// It uses quick selection algorithm.
+func MedianOfPixelsFast64(pixels []float64) float64 {
+	tmp := [64]float64{}
+	copy(tmp[:], pixels)
+	l := len(tmp)
+	pos := l / 2
+	return quickSelectMedian(tmp[:], 0, l-1, pos)
+}
+
 func quickSelectMedian(sequence []float64, low int, hi int, k int) float64 {
 	if low == hi {
 		return sequence[k]

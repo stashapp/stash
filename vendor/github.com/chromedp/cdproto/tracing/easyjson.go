@@ -39,6 +39,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoTracing(in *jlexer.Lexer, out
 		switch key {
 		case "recordMode":
 			(out.RecordMode).UnmarshalEasyJSON(in)
+		case "traceBufferSizeInKb":
+			out.TraceBufferSizeInKb = float64(in.Float64())
 		case "enableSampling":
 			out.EnableSampling = bool(in.Bool())
 		case "enableSystrace":
@@ -143,6 +145,16 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoTracing(out *jwriter.Writer, 
 		first = false
 		out.RawString(prefix[1:])
 		(in.RecordMode).MarshalEasyJSON(out)
+	}
+	if in.TraceBufferSizeInKb != 0 {
+		const prefix string = ",\"traceBufferSizeInKb\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Float64(float64(in.TraceBufferSizeInKb))
 	}
 	if in.EnableSampling {
 		const prefix string = ",\"enableSampling\":"

@@ -3,81 +3,81 @@ Package otto is a JavaScript parser and interpreter written natively in Go.
 
 http://godoc.org/github.com/robertkrimen/otto
 
-    import (
-        "github.com/robertkrimen/otto"
-    )
+	import (
+	    "github.com/robertkrimen/otto"
+	)
 
 Run something in the VM
 
-    vm := otto.New()
-    vm.Run(`
-        abc = 2 + 2;
-    	console.log("The value of abc is " + abc); // 4
-    `)
+	vm := otto.New()
+	vm.Run(`
+	    abc = 2 + 2;
+		console.log("The value of abc is " + abc); // 4
+	`)
 
 Get a value out of the VM
 
-    value, err := vm.Get("abc")
-    	value, _ := value.ToInteger()
-    }
+	value, err := vm.Get("abc")
+		value, _ := value.ToInteger()
+	}
 
 Set a number
 
-    vm.Set("def", 11)
-    vm.Run(`
-    	console.log("The value of def is " + def);
-    	// The value of def is 11
-    `)
+	vm.Set("def", 11)
+	vm.Run(`
+		console.log("The value of def is " + def);
+		// The value of def is 11
+	`)
 
 Set a string
 
-    vm.Set("xyzzy", "Nothing happens.")
-    vm.Run(`
-    	console.log(xyzzy.length); // 16
-    `)
+	vm.Set("xyzzy", "Nothing happens.")
+	vm.Run(`
+		console.log(xyzzy.length); // 16
+	`)
 
 Get the value of an expression
 
-    value, _ = vm.Run("xyzzy.length")
-    {
-    	// value is an int64 with a value of 16
-    	value, _ := value.ToInteger()
-    }
+	value, _ = vm.Run("xyzzy.length")
+	{
+		// value is an int64 with a value of 16
+		value, _ := value.ToInteger()
+	}
 
 An error happens
 
-    value, err = vm.Run("abcdefghijlmnopqrstuvwxyz.length")
-    if err != nil {
-    	// err = ReferenceError: abcdefghijlmnopqrstuvwxyz is not defined
-    	// If there is an error, then value.IsUndefined() is true
-    	...
-    }
+	value, err = vm.Run("abcdefghijlmnopqrstuvwxyz.length")
+	if err != nil {
+		// err = ReferenceError: abcdefghijlmnopqrstuvwxyz is not defined
+		// If there is an error, then value.IsUndefined() is true
+		...
+	}
 
 Set a Go function
 
-    vm.Set("sayHello", func(call otto.FunctionCall) otto.Value {
-        fmt.Printf("Hello, %s.\n", call.Argument(0).String())
-        return otto.Value{}
-    })
+	vm.Set("sayHello", func(call otto.FunctionCall) otto.Value {
+	    fmt.Printf("Hello, %s.\n", call.Argument(0).String())
+	    return otto.Value{}
+	})
 
 Set a Go function that returns something useful
 
-    vm.Set("twoPlus", func(call otto.FunctionCall) otto.Value {
-        right, _ := call.Argument(0).ToInteger()
-        result, _ := vm.ToValue(2 + right)
-        return result
-    })
+	vm.Set("twoPlus", func(call otto.FunctionCall) otto.Value {
+	    right, _ := call.Argument(0).ToInteger()
+	    result, _ := vm.ToValue(2 + right)
+	    return result
+	})
 
 Use the functions in JavaScript
 
-    result, _ = vm.Run(`
-        sayHello("Xyzzy");      // Hello, Xyzzy.
-        sayHello();             // Hello, undefined
+	result, _ = vm.Run(`
+	    sayHello("Xyzzy");      // Hello, Xyzzy.
+	    sayHello();             // Hello, undefined
 
-        result = twoPlus(2.0); // 4
-    `)
+	    result = twoPlus(2.0); // 4
+	`)
 
-Parser
+# Parser
 
 A separate parser is available in the parser package if you're just interested in building an AST.
 
@@ -85,23 +85,23 @@ http://godoc.org/github.com/robertkrimen/otto/parser
 
 Parse and return an AST
 
-    filename := "" // A filename is optional
-    src := `
-        // Sample xyzzy example
-        (function(){
-            if (3.14159 > 0) {
-                console.log("Hello, World.");
-                return;
-            }
+	filename := "" // A filename is optional
+	src := `
+	    // Sample xyzzy example
+	    (function(){
+	        if (3.14159 > 0) {
+	            console.log("Hello, World.");
+	            return;
+	        }
 
-            var xyzzy = NaN;
-            console.log("Nothing happens.");
-            return xyzzy;
-        })();
-    `
+	        var xyzzy = NaN;
+	        console.log("Nothing happens.");
+	        return xyzzy;
+	    })();
+	`
 
-    // Parse some JavaScript, yielding a *ast.Program and/or an ErrorList
-    program, err := parser.ParseFile(nil, filename, src, 0)
+	// Parse some JavaScript, yielding a *ast.Program and/or an ErrorList
+	program, err := parser.ParseFile(nil, filename, src, 0)
 
 otto
 
@@ -126,24 +126,24 @@ Optionally include the JavaScript utility-belt library, underscore, with this im
 
 For more information: http://github.com/robertkrimen/otto/tree/master/underscore
 
-Caveat Emptor
+# Caveat Emptor
 
 The following are some limitations with otto:
 
-    * "use strict" will parse, but does nothing.
-    * The regular expression engine (re2/regexp) is not fully compatible with the ECMA5 specification.
-    * Otto targets ES5. ES6 features (eg: Typed Arrays) are not supported.
+  - "use strict" will parse, but does nothing.
+  - The regular expression engine (re2/regexp) is not fully compatible with the ECMA5 specification.
+  - Otto targets ES5. ES6 features (eg: Typed Arrays) are not supported.
 
-Regular Expression Incompatibility
+# Regular Expression Incompatibility
 
 Go translates JavaScript-style regular expressions into something that is "regexp" compatible via `parser.TransformRegExp`.
 Unfortunately, RegExp requires backtracking for some patterns, and backtracking is not supported by the standard Go engine: https://code.google.com/p/re2/wiki/Syntax
 
 Therefore, the following syntax is incompatible:
 
-    (?=)  // Lookahead (positive), currently a parsing error
-    (?!)  // Lookahead (backhead), currently a parsing error
-    \1    // Backreference (\1, \2, \3, ...), currently a parsing error
+	(?=)  // Lookahead (positive), currently a parsing error
+	(?!)  // Lookahead (backhead), currently a parsing error
+	\1    // Backreference (\1, \2, \3, ...), currently a parsing error
 
 A brief discussion of these limitations: "Regexp (?!re)" https://groups.google.com/forum/?fromgroups=#%21topic/golang-nuts/7qgSDWPIh_E
 
@@ -152,57 +152,57 @@ More information about re2: https://code.google.com/p/re2/
 In addition to the above, re2 (Go) has a different definition for \s: [\t\n\f\r ].
 The JavaScript definition, on the other hand, also includes \v, Unicode "Separator, Space", etc.
 
-Halting Problem
+# Halting Problem
 
 If you want to stop long running executions (like third-party code), you can use the interrupt channel to do this:
 
-    package main
+	package main
 
-    import (
-        "errors"
-        "fmt"
-        "os"
-        "time"
+	import (
+	    "errors"
+	    "fmt"
+	    "os"
+	    "time"
 
-        "github.com/robertkrimen/otto"
-    )
+	    "github.com/robertkrimen/otto"
+	)
 
-    var halt = errors.New("Stahp")
+	var halt = errors.New("Stahp")
 
-    func main() {
-        runUnsafe(`var abc = [];`)
-        runUnsafe(`
-        while (true) {
-            // Loop forever
-        }`)
-    }
+	func main() {
+	    runUnsafe(`var abc = [];`)
+	    runUnsafe(`
+	    while (true) {
+	        // Loop forever
+	    }`)
+	}
 
-    func runUnsafe(unsafe string) {
-        start := time.Now()
-        defer func() {
-            duration := time.Since(start)
-            if caught := recover(); caught != nil {
-                if caught == halt {
-                    fmt.Fprintf(os.Stderr, "Some code took to long! Stopping after: %v\n", duration)
-                    return
-                }
-                panic(caught) // Something else happened, repanic!
-            }
-            fmt.Fprintf(os.Stderr, "Ran code successfully: %v\n", duration)
-        }()
+	func runUnsafe(unsafe string) {
+	    start := time.Now()
+	    defer func() {
+	        duration := time.Since(start)
+	        if caught := recover(); caught != nil {
+	            if caught == halt {
+	                fmt.Fprintf(os.Stderr, "Some code took to long! Stopping after: %v\n", duration)
+	                return
+	            }
+	            panic(caught) // Something else happened, repanic!
+	        }
+	        fmt.Fprintf(os.Stderr, "Ran code successfully: %v\n", duration)
+	    }()
 
-        vm := otto.New()
-        vm.Interrupt = make(chan func(), 1) // The buffer prevents blocking
+	    vm := otto.New()
+	    vm.Interrupt = make(chan func(), 1) // The buffer prevents blocking
 
-        go func() {
-            time.Sleep(2 * time.Second) // Stop after two seconds
-            vm.Interrupt <- func() {
-                panic(halt)
-            }
-        }()
+	    go func() {
+	        time.Sleep(2 * time.Second) // Stop after two seconds
+	        vm.Interrupt <- func() {
+	            panic(halt)
+	        }
+	    }()
 
-        vm.Run(unsafe) // Here be dragons (risky code)
-    }
+	    vm.Run(unsafe) // Here be dragons (risky code)
+	}
 
 Where is setTimeout/setInterval?
 
@@ -220,11 +220,11 @@ Here is some more discussion of the issue:
 * http://en.wikipedia.org/wiki/Reentrancy_%28computing%29
 
 * http://aaroncrane.co.uk/2009/02/perl_safe_signals/
-
 */
 package otto
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -273,7 +273,6 @@ func (otto *Otto) clone() *Otto {
 // src may also be a Script.
 //
 // src may also be a Program, but if the AST has been modified, then runtime behavior is undefined.
-//
 func Run(src interface{}) (*Otto, Value, error) {
 	otto := New()
 	value, err := otto.Run(src) // This already does safety checking
@@ -290,7 +289,6 @@ func Run(src interface{}) (*Otto, Value, error) {
 // src may also be a Script.
 //
 // src may also be a Program, but if the AST has been modified, then runtime behavior is undefined.
-//
 func (self Otto) Run(src interface{}) (Value, error) {
 	value, err := self.runtime.cmpl_run(src, nil)
 	if !value.safe() {
@@ -524,16 +522,15 @@ func (self Otto) ContextSkip(limit int, skipNative bool) (ctx Context) {
 // Call will invoke the function constructor rather than performing a function call.
 // In this case, the this argument has no effect.
 //
-//      // value is a String object
-//      value, _ := vm.Call("Object", nil, "Hello, World.")
+//	// value is a String object
+//	value, _ := vm.Call("Object", nil, "Hello, World.")
 //
-//      // Likewise...
-//      value, _ := vm.Call("new Object", nil, "Hello, World.")
+//	// Likewise...
+//	value, _ := vm.Call("new Object", nil, "Hello, World.")
 //
-//      // This will perform a concat on the given array and return the result
-//      // value is [ 1, 2, 3, undefined, 4, 5, 6, 7, "abc" ]
-//      value, _ := vm.Call(`[ 1, 2, 3, undefined, 4 ].concat`, nil, 5, 6, 7, "abc")
-//
+//	// This will perform a concat on the given array and return the result
+//	// value is [ 1, 2, 3, undefined, 4, 5, 6, 7, "abc" ]
+//	value, _ := vm.Call(`[ 1, 2, 3, undefined, 4 ].concat`, nil, 5, 6, 7, "abc")
 func (self Otto) Call(source string, this interface{}, argumentList ...interface{}) (Value, error) {
 
 	thisValue := Value{}
@@ -602,16 +599,16 @@ func (self Otto) Call(source string, this interface{}, argumentList ...interface
 //
 // For example, accessing an existing object:
 //
-//		object, _ := vm.Object(`Number`)
+//	object, _ := vm.Object(`Number`)
 //
 // Or, creating a new object:
 //
-//		object, _ := vm.Object(`({ xyzzy: "Nothing happens." })`)
+//	object, _ := vm.Object(`({ xyzzy: "Nothing happens." })`)
 //
 // Or, creating and assigning an object:
 //
-//		object, _ := vm.Object(`xyzzy = {}`)
-//		object.Set("volume", 11)
+//	object, _ := vm.Object(`xyzzy = {}`)
+//	object.Set("volume", 11)
 //
 // If there is an error (like the source does not result in an object), then
 // nil and an error is returned.
@@ -667,15 +664,14 @@ func _newObject(object *_object, value Value) *Object {
 //
 // It is essentially equivalent to:
 //
-//		var method, _ := object.Get(name)
-//		method.Call(object, argumentList...)
+//	var method, _ := object.Get(name)
+//	method.Call(object, argumentList...)
 //
 // An undefined value and an error will result if:
 //
-//		1. There is an error during conversion of the argument list
-//		2. The property is not actually a function
-//		3. An (uncaught) exception is thrown
-//
+//  1. There is an error during conversion of the argument list
+//  2. The property is not actually a function
+//  3. An (uncaught) exception is thrown
 func (self Object) Call(name string, argumentList ...interface{}) (Value, error) {
 	// TODO: Insert an example using JavaScript below...
 	// e.g., Object("JSON").Call("stringify", ...)
@@ -756,15 +752,40 @@ func (self Object) KeysByParent() [][]string {
 //
 // The return value will (generally) be one of:
 //
-//		Object
-//		Function
-//		Array
-//		String
-//		Number
-//		Boolean
-//		Date
-//		RegExp
-//
+//	Object
+//	Function
+//	Array
+//	String
+//	Number
+//	Boolean
+//	Date
+//	RegExp
 func (self Object) Class() string {
 	return self.object.class
+}
+
+func (self Object) MarshalJSON() ([]byte, error) {
+	var goValue interface{}
+	switch value := self.object.value.(type) {
+	case *_goStructObject:
+		goValue = value.value.Interface()
+	case *_goMapObject:
+		goValue = value.value.Interface()
+	case *_goArrayObject:
+		goValue = value.value.Interface()
+	case *_goSliceObject:
+		goValue = value.value.Interface()
+	default:
+		// It's a JS object; pass it to JSON.stringify:
+		var result []byte
+		err := catchPanic(func() {
+			resultVal := builtinJSON_stringify(FunctionCall{
+				runtime:      self.object.runtime,
+				ArgumentList: []Value{self.value},
+			})
+			result = []byte(resultVal.String())
+		})
+		return result, err
+	}
+	return json.Marshal(goValue)
 }

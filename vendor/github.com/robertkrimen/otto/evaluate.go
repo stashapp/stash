@@ -140,23 +140,6 @@ func (self *_runtime) calculateBinaryExpression(operator token.Token, left Value
 	panic(hereBeDragons(operator))
 }
 
-func valueKindDispatchKey(left _valueKind, right _valueKind) int {
-	return (int(left) << 2) + int(right)
-}
-
-var equalDispatch map[int](func(Value, Value) bool) = makeEqualDispatch()
-
-func makeEqualDispatch() map[int](func(Value, Value) bool) {
-	key := valueKindDispatchKey
-	return map[int](func(Value, Value) bool){
-
-		key(valueNumber, valueObject): func(x Value, y Value) bool { return x.float64() == y.float64() },
-		key(valueString, valueObject): func(x Value, y Value) bool { return x.float64() == y.float64() },
-		key(valueObject, valueNumber): func(x Value, y Value) bool { return x.float64() == y.float64() },
-		key(valueObject, valueString): func(x Value, y Value) bool { return x.float64() == y.float64() },
-	}
-}
-
 type _lessThanResult int
 
 const (
@@ -166,10 +149,7 @@ const (
 )
 
 func calculateLessThan(left Value, right Value, leftFirst bool) _lessThanResult {
-
-	x := Value{}
-	y := x
-
+	var x, y Value
 	if leftFirst {
 		x = toNumberPrimitive(left)
 		y = toNumberPrimitive(right)
@@ -178,7 +158,7 @@ func calculateLessThan(left Value, right Value, leftFirst bool) _lessThanResult 
 		x = toNumberPrimitive(left)
 	}
 
-	result := false
+	var result bool
 	if x.kind != valueString || y.kind != valueString {
 		x, y := x.float64(), y.float64()
 		if math.IsNaN(x) || math.IsNaN(y) {

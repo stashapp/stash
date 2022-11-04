@@ -307,6 +307,26 @@ lexes block strings:
         end: 36
         value: "spans\n  multiple\n    lines"
 
+  - name: records correct line and column after block string
+    input: |
+      """
+      
+      some
+      description
+      
+      """ foo
+    tokens:
+      -
+        kind: BLOCK_STRING
+        value: "some\ndescription"
+      -
+        kind: NAME
+        start: 27
+        end: 30
+        line: 6
+        column: 5
+        value: 'foo'
+
 lex reports useful block string errors:
   - name: unterminated string
     input: '"""'

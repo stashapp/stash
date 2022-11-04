@@ -85,37 +85,17 @@ func (value Value) float64() float64 {
 }
 
 const (
-	float_2_64   float64 = 18446744073709551616.0
-	float_2_63   float64 = 9223372036854775808.0
-	float_2_32   float64 = 4294967296.0
-	float_2_31   float64 = 2147483648.0
-	float_2_16   float64 = 65536.0
-	integer_2_32 int64   = 4294967296
-	integer_2_31 int64   = 2146483648
-	sqrt1_2      float64 = math.Sqrt2 / 2
+	float_2_32 float64 = 4294967296.0
+	float_2_31 float64 = 2147483648.0
+	float_2_16 float64 = 65536.0
+	sqrt1_2    float64 = math.Sqrt2 / 2
 )
 
 const (
-	maxInt8   = math.MaxInt8
-	minInt8   = math.MinInt8
-	maxInt16  = math.MaxInt16
-	minInt16  = math.MinInt16
-	maxInt32  = math.MaxInt32
-	minInt32  = math.MinInt32
-	maxInt64  = math.MaxInt64
-	minInt64  = math.MinInt64
-	maxUint8  = math.MaxUint8
-	maxUint16 = math.MaxUint16
 	maxUint32 = math.MaxUint32
-	maxUint64 = math.MaxUint64
-	maxUint   = ^uint(0)
-	minUint   = 0
 	maxInt    = int(^uint(0) >> 1)
-	minInt    = -maxInt - 1
 
 	// int64
-	int64_maxInt    int64 = int64(maxInt)
-	int64_minInt    int64 = int64(minInt)
 	int64_maxInt8   int64 = math.MaxInt8
 	int64_minInt8   int64 = math.MinInt8
 	int64_maxInt16  int64 = math.MaxInt16
@@ -129,9 +109,7 @@ const (
 	// float64
 	float_maxInt    float64 = float64(int(^uint(0) >> 1))
 	float_minInt    float64 = float64(int(-maxInt - 1))
-	float_minUint   float64 = float64(0)
 	float_maxUint   float64 = float64(uint(^uint(0)))
-	float_minUint64 float64 = float64(0)
 	float_maxUint64 float64 = math.MaxUint64
 	float_maxInt64  float64 = math.MaxInt64
 	float_minInt64  float64 = math.MinInt64
@@ -220,7 +198,7 @@ func (value Value) number() (number _number) {
 		return
 	}
 
-	integer := float64(0)
+	var integer float64
 	if float > 0 {
 		integer = math.Floor(float)
 	} else {
@@ -321,4 +299,63 @@ func toUint16(value Value) uint16 {
 		remainder = math.Ceil(remainder) + float_2_16
 	}
 	return uint16(remainder)
+}
+
+// toIntSign returns sign of a number converted to -1, 0 ,1
+func toIntSign(value Value) int {
+	switch value := value.value.(type) {
+	case int8:
+		if int8(value) > 0 {
+			return 1
+		} else if int8(value) < 0 {
+			return -1
+		}
+
+		return 0
+	case int16:
+		if int16(value) > 0 {
+			return 1
+		} else if int16(value) < 0 {
+			return -1
+		}
+
+		return 0
+	case int32:
+		if int32(value) > 0 {
+			return 1
+		} else if int32(value) < 0 {
+			return -1
+		}
+
+		return 0
+	case uint8:
+		if uint8(value) > 0 {
+			return 1
+		}
+
+		return 0
+	case uint16:
+		if uint16(value) > 0 {
+			return 1
+		}
+
+		return 0
+	case uint32:
+		if uint32(value) > 0 {
+			return 1
+		}
+
+		return 0
+	}
+	floatValue := value.float64()
+	switch {
+	case math.IsNaN(floatValue), math.IsInf(floatValue, 0):
+		return 0
+	case floatValue == 0:
+		return 0
+	case floatValue > 0:
+		return 1
+	default:
+		return -1
+	}
 }

@@ -414,14 +414,14 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) (reflect.Val
 		}
 	case reflect.Slice:
 		if o := v._object(); o != nil {
-			if lv := o.get("length"); lv.IsNumber() {
+			if lv := o.get(propertyLength); lv.IsNumber() {
 				l := lv.number().int64
 
 				s := reflect.MakeSlice(t, int(l), int(l))
 
 				tt := t.Elem()
 
-				if o.class == "Array" {
+				if o.class == classArray {
 					for i := int64(0); i < l; i++ {
 						p, ok := o.property[strconv.FormatInt(i, 10)]
 						if !ok {
@@ -440,7 +440,7 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) (reflect.Val
 
 						s.Index(int(i)).Set(ev)
 					}
-				} else if o.class == "GoArray" {
+				} else if o.class == classGoArray {
 					var gslice bool
 					switch o.value.(type) {
 					case *_goSliceObject:
@@ -504,7 +504,7 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) (reflect.Val
 			return reflect.Zero(t), fmt.Errorf("converting JavaScript values to Go functions with more than one return value is currently not supported")
 		}
 
-		if o := v._object(); o != nil && o.class == "Function" {
+		if o := v._object(); o != nil && o.class == classFunction {
 			return reflect.MakeFunc(t, func(args []reflect.Value) []reflect.Value {
 				l := make([]interface{}, len(args))
 				for i, a := range args {
@@ -531,7 +531,7 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) (reflect.Val
 			}), nil
 		}
 	case reflect.Struct:
-		if o := v._object(); o != nil && o.class == "Object" {
+		if o := v._object(); o != nil && o.class == classObject {
 			s := reflect.New(t)
 
 			for _, k := range o.propertyOrder {
@@ -620,7 +620,7 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) (reflect.Val
 		s = v.Class()
 	}
 
-	return reflect.Zero(t), fmt.Errorf("can't convert from %s to %s", s, t)
+	return reflect.Zero(t), fmt.Errorf("can't convert from %q to %q", s, t)
 }
 
 func (self *_runtime) toValue(value interface{}) Value {

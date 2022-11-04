@@ -14,9 +14,10 @@ import (
 
 // ClearObjectStoreParams clears all entries from an object store.
 type ClearObjectStoreParams struct {
-	SecurityOrigin  string `json:"securityOrigin"`  // Security origin.
-	DatabaseName    string `json:"databaseName"`    // Database name.
-	ObjectStoreName string `json:"objectStoreName"` // Object store name.
+	SecurityOrigin  string `json:"securityOrigin,omitempty"` // At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	StorageKey      string `json:"storageKey,omitempty"`     // Storage key.
+	DatabaseName    string `json:"databaseName"`             // Database name.
+	ObjectStoreName string `json:"objectStoreName"`          // Object store name.
 }
 
 // ClearObjectStore clears all entries from an object store.
@@ -24,15 +25,27 @@ type ClearObjectStoreParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#method-clearObjectStore
 //
 // parameters:
-//   securityOrigin - Security origin.
-//   databaseName - Database name.
-//   objectStoreName - Object store name.
-func ClearObjectStore(securityOrigin string, databaseName string, objectStoreName string) *ClearObjectStoreParams {
+//
+//	databaseName - Database name.
+//	objectStoreName - Object store name.
+func ClearObjectStore(databaseName string, objectStoreName string) *ClearObjectStoreParams {
 	return &ClearObjectStoreParams{
-		SecurityOrigin:  securityOrigin,
 		DatabaseName:    databaseName,
 		ObjectStoreName: objectStoreName,
 	}
+}
+
+// WithSecurityOrigin at least and at most one of securityOrigin, storageKey
+// must be specified. Security origin.
+func (p ClearObjectStoreParams) WithSecurityOrigin(securityOrigin string) *ClearObjectStoreParams {
+	p.SecurityOrigin = securityOrigin
+	return &p
+}
+
+// WithStorageKey storage key.
+func (p ClearObjectStoreParams) WithStorageKey(storageKey string) *ClearObjectStoreParams {
+	p.StorageKey = storageKey
+	return &p
 }
 
 // Do executes IndexedDB.clearObjectStore against the provided context.
@@ -42,8 +55,9 @@ func (p *ClearObjectStoreParams) Do(ctx context.Context) (err error) {
 
 // DeleteDatabaseParams deletes a database.
 type DeleteDatabaseParams struct {
-	SecurityOrigin string `json:"securityOrigin"` // Security origin.
-	DatabaseName   string `json:"databaseName"`   // Database name.
+	SecurityOrigin string `json:"securityOrigin,omitempty"` // At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	StorageKey     string `json:"storageKey,omitempty"`     // Storage key.
+	DatabaseName   string `json:"databaseName"`             // Database name.
 }
 
 // DeleteDatabase deletes a database.
@@ -51,13 +65,25 @@ type DeleteDatabaseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#method-deleteDatabase
 //
 // parameters:
-//   securityOrigin - Security origin.
-//   databaseName - Database name.
-func DeleteDatabase(securityOrigin string, databaseName string) *DeleteDatabaseParams {
+//
+//	databaseName - Database name.
+func DeleteDatabase(databaseName string) *DeleteDatabaseParams {
 	return &DeleteDatabaseParams{
-		SecurityOrigin: securityOrigin,
-		DatabaseName:   databaseName,
+		DatabaseName: databaseName,
 	}
+}
+
+// WithSecurityOrigin at least and at most one of securityOrigin, storageKey
+// must be specified. Security origin.
+func (p DeleteDatabaseParams) WithSecurityOrigin(securityOrigin string) *DeleteDatabaseParams {
+	p.SecurityOrigin = securityOrigin
+	return &p
+}
+
+// WithStorageKey storage key.
+func (p DeleteDatabaseParams) WithStorageKey(storageKey string) *DeleteDatabaseParams {
+	p.StorageKey = storageKey
+	return &p
 }
 
 // Do executes IndexedDB.deleteDatabase against the provided context.
@@ -68,7 +94,8 @@ func (p *DeleteDatabaseParams) Do(ctx context.Context) (err error) {
 // DeleteObjectStoreEntriesParams delete a range of entries from an object
 // store.
 type DeleteObjectStoreEntriesParams struct {
-	SecurityOrigin  string    `json:"securityOrigin"`
+	SecurityOrigin  string    `json:"securityOrigin,omitempty"` // At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	StorageKey      string    `json:"storageKey,omitempty"`     // Storage key.
 	DatabaseName    string    `json:"databaseName"`
 	ObjectStoreName string    `json:"objectStoreName"`
 	KeyRange        *KeyRange `json:"keyRange"` // Range of entry keys to delete
@@ -79,17 +106,29 @@ type DeleteObjectStoreEntriesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#method-deleteObjectStoreEntries
 //
 // parameters:
-//   securityOrigin
-//   databaseName
-//   objectStoreName
-//   keyRange - Range of entry keys to delete
-func DeleteObjectStoreEntries(securityOrigin string, databaseName string, objectStoreName string, keyRange *KeyRange) *DeleteObjectStoreEntriesParams {
+//
+//	databaseName
+//	objectStoreName
+//	keyRange - Range of entry keys to delete
+func DeleteObjectStoreEntries(databaseName string, objectStoreName string, keyRange *KeyRange) *DeleteObjectStoreEntriesParams {
 	return &DeleteObjectStoreEntriesParams{
-		SecurityOrigin:  securityOrigin,
 		DatabaseName:    databaseName,
 		ObjectStoreName: objectStoreName,
 		KeyRange:        keyRange,
 	}
+}
+
+// WithSecurityOrigin at least and at most one of securityOrigin, storageKey
+// must be specified. Security origin.
+func (p DeleteObjectStoreEntriesParams) WithSecurityOrigin(securityOrigin string) *DeleteObjectStoreEntriesParams {
+	p.SecurityOrigin = securityOrigin
+	return &p
+}
+
+// WithStorageKey storage key.
+func (p DeleteObjectStoreEntriesParams) WithStorageKey(storageKey string) *DeleteObjectStoreEntriesParams {
+	p.StorageKey = storageKey
+	return &p
 }
 
 // Do executes IndexedDB.deleteObjectStoreEntries against the provided context.
@@ -129,13 +168,14 @@ func (p *EnableParams) Do(ctx context.Context) (err error) {
 
 // RequestDataParams requests data from object store or index.
 type RequestDataParams struct {
-	SecurityOrigin  string    `json:"securityOrigin"`     // Security origin.
-	DatabaseName    string    `json:"databaseName"`       // Database name.
-	ObjectStoreName string    `json:"objectStoreName"`    // Object store name.
-	IndexName       string    `json:"indexName"`          // Index name, empty string for object store data requests.
-	SkipCount       int64     `json:"skipCount"`          // Number of records to skip.
-	PageSize        int64     `json:"pageSize"`           // Number of records to fetch.
-	KeyRange        *KeyRange `json:"keyRange,omitempty"` // Key range.
+	SecurityOrigin  string    `json:"securityOrigin,omitempty"` // At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	StorageKey      string    `json:"storageKey,omitempty"`     // Storage key.
+	DatabaseName    string    `json:"databaseName"`             // Database name.
+	ObjectStoreName string    `json:"objectStoreName"`          // Object store name.
+	IndexName       string    `json:"indexName"`                // Index name, empty string for object store data requests.
+	SkipCount       int64     `json:"skipCount"`                // Number of records to skip.
+	PageSize        int64     `json:"pageSize"`                 // Number of records to fetch.
+	KeyRange        *KeyRange `json:"keyRange,omitempty"`       // Key range.
 }
 
 // RequestData requests data from object store or index.
@@ -143,21 +183,33 @@ type RequestDataParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#method-requestData
 //
 // parameters:
-//   securityOrigin - Security origin.
-//   databaseName - Database name.
-//   objectStoreName - Object store name.
-//   indexName - Index name, empty string for object store data requests.
-//   skipCount - Number of records to skip.
-//   pageSize - Number of records to fetch.
-func RequestData(securityOrigin string, databaseName string, objectStoreName string, indexName string, skipCount int64, pageSize int64) *RequestDataParams {
+//
+//	databaseName - Database name.
+//	objectStoreName - Object store name.
+//	indexName - Index name, empty string for object store data requests.
+//	skipCount - Number of records to skip.
+//	pageSize - Number of records to fetch.
+func RequestData(databaseName string, objectStoreName string, indexName string, skipCount int64, pageSize int64) *RequestDataParams {
 	return &RequestDataParams{
-		SecurityOrigin:  securityOrigin,
 		DatabaseName:    databaseName,
 		ObjectStoreName: objectStoreName,
 		IndexName:       indexName,
 		SkipCount:       skipCount,
 		PageSize:        pageSize,
 	}
+}
+
+// WithSecurityOrigin at least and at most one of securityOrigin, storageKey
+// must be specified. Security origin.
+func (p RequestDataParams) WithSecurityOrigin(securityOrigin string) *RequestDataParams {
+	p.SecurityOrigin = securityOrigin
+	return &p
+}
+
+// WithStorageKey storage key.
+func (p RequestDataParams) WithStorageKey(storageKey string) *RequestDataParams {
+	p.StorageKey = storageKey
+	return &p
 }
 
 // WithKeyRange key range.
@@ -175,8 +227,9 @@ type RequestDataReturns struct {
 // Do executes IndexedDB.requestData against the provided context.
 //
 // returns:
-//   objectStoreDataEntries - Array of object store data entries.
-//   hasMore - If true, there are more entries to fetch in the given range.
+//
+//	objectStoreDataEntries - Array of object store data entries.
+//	hasMore - If true, there are more entries to fetch in the given range.
 func (p *RequestDataParams) Do(ctx context.Context) (objectStoreDataEntries []*DataEntry, hasMore bool, err error) {
 	// execute
 	var res RequestDataReturns
@@ -190,9 +243,10 @@ func (p *RequestDataParams) Do(ctx context.Context) (objectStoreDataEntries []*D
 
 // GetMetadataParams gets metadata of an object store.
 type GetMetadataParams struct {
-	SecurityOrigin  string `json:"securityOrigin"`  // Security origin.
-	DatabaseName    string `json:"databaseName"`    // Database name.
-	ObjectStoreName string `json:"objectStoreName"` // Object store name.
+	SecurityOrigin  string `json:"securityOrigin,omitempty"` // At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	StorageKey      string `json:"storageKey,omitempty"`     // Storage key.
+	DatabaseName    string `json:"databaseName"`             // Database name.
+	ObjectStoreName string `json:"objectStoreName"`          // Object store name.
 }
 
 // GetMetadata gets metadata of an object store.
@@ -200,15 +254,27 @@ type GetMetadataParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#method-getMetadata
 //
 // parameters:
-//   securityOrigin - Security origin.
-//   databaseName - Database name.
-//   objectStoreName - Object store name.
-func GetMetadata(securityOrigin string, databaseName string, objectStoreName string) *GetMetadataParams {
+//
+//	databaseName - Database name.
+//	objectStoreName - Object store name.
+func GetMetadata(databaseName string, objectStoreName string) *GetMetadataParams {
 	return &GetMetadataParams{
-		SecurityOrigin:  securityOrigin,
 		DatabaseName:    databaseName,
 		ObjectStoreName: objectStoreName,
 	}
+}
+
+// WithSecurityOrigin at least and at most one of securityOrigin, storageKey
+// must be specified. Security origin.
+func (p GetMetadataParams) WithSecurityOrigin(securityOrigin string) *GetMetadataParams {
+	p.SecurityOrigin = securityOrigin
+	return &p
+}
+
+// WithStorageKey storage key.
+func (p GetMetadataParams) WithStorageKey(storageKey string) *GetMetadataParams {
+	p.StorageKey = storageKey
+	return &p
 }
 
 // GetMetadataReturns return values.
@@ -220,8 +286,9 @@ type GetMetadataReturns struct {
 // Do executes IndexedDB.getMetadata against the provided context.
 //
 // returns:
-//   entriesCount - the entries count
-//   keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
+//
+//	entriesCount - the entries count
+//	keyGeneratorValue - the current value of key generator, to become the next inserted key into the object store. Valid if objectStore.autoIncrement is true.
 func (p *GetMetadataParams) Do(ctx context.Context) (entriesCount float64, keyGeneratorValue float64, err error) {
 	// execute
 	var res GetMetadataReturns
@@ -235,8 +302,9 @@ func (p *GetMetadataParams) Do(ctx context.Context) (entriesCount float64, keyGe
 
 // RequestDatabaseParams requests database with given name in given frame.
 type RequestDatabaseParams struct {
-	SecurityOrigin string `json:"securityOrigin"` // Security origin.
-	DatabaseName   string `json:"databaseName"`   // Database name.
+	SecurityOrigin string `json:"securityOrigin,omitempty"` // At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	StorageKey     string `json:"storageKey,omitempty"`     // Storage key.
+	DatabaseName   string `json:"databaseName"`             // Database name.
 }
 
 // RequestDatabase requests database with given name in given frame.
@@ -244,13 +312,25 @@ type RequestDatabaseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#method-requestDatabase
 //
 // parameters:
-//   securityOrigin - Security origin.
-//   databaseName - Database name.
-func RequestDatabase(securityOrigin string, databaseName string) *RequestDatabaseParams {
+//
+//	databaseName - Database name.
+func RequestDatabase(databaseName string) *RequestDatabaseParams {
 	return &RequestDatabaseParams{
-		SecurityOrigin: securityOrigin,
-		DatabaseName:   databaseName,
+		DatabaseName: databaseName,
 	}
+}
+
+// WithSecurityOrigin at least and at most one of securityOrigin, storageKey
+// must be specified. Security origin.
+func (p RequestDatabaseParams) WithSecurityOrigin(securityOrigin string) *RequestDatabaseParams {
+	p.SecurityOrigin = securityOrigin
+	return &p
+}
+
+// WithStorageKey storage key.
+func (p RequestDatabaseParams) WithStorageKey(storageKey string) *RequestDatabaseParams {
+	p.StorageKey = storageKey
+	return &p
 }
 
 // RequestDatabaseReturns return values.
@@ -261,7 +341,8 @@ type RequestDatabaseReturns struct {
 // Do executes IndexedDB.requestDatabase against the provided context.
 //
 // returns:
-//   databaseWithObjectStores - Database with an array of object stores.
+//
+//	databaseWithObjectStores - Database with an array of object stores.
 func (p *RequestDatabaseParams) Do(ctx context.Context) (databaseWithObjectStores *DatabaseWithObjectStores, err error) {
 	// execute
 	var res RequestDatabaseReturns
@@ -276,7 +357,8 @@ func (p *RequestDatabaseParams) Do(ctx context.Context) (databaseWithObjectStore
 // RequestDatabaseNamesParams requests database names for given security
 // origin.
 type RequestDatabaseNamesParams struct {
-	SecurityOrigin string `json:"securityOrigin"` // Security origin.
+	SecurityOrigin string `json:"securityOrigin,omitempty"` // At least and at most one of securityOrigin, storageKey must be specified. Security origin.
+	StorageKey     string `json:"storageKey,omitempty"`     // Storage key.
 }
 
 // RequestDatabaseNames requests database names for given security origin.
@@ -284,11 +366,21 @@ type RequestDatabaseNamesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IndexedDB#method-requestDatabaseNames
 //
 // parameters:
-//   securityOrigin - Security origin.
-func RequestDatabaseNames(securityOrigin string) *RequestDatabaseNamesParams {
-	return &RequestDatabaseNamesParams{
-		SecurityOrigin: securityOrigin,
-	}
+func RequestDatabaseNames() *RequestDatabaseNamesParams {
+	return &RequestDatabaseNamesParams{}
+}
+
+// WithSecurityOrigin at least and at most one of securityOrigin, storageKey
+// must be specified. Security origin.
+func (p RequestDatabaseNamesParams) WithSecurityOrigin(securityOrigin string) *RequestDatabaseNamesParams {
+	p.SecurityOrigin = securityOrigin
+	return &p
+}
+
+// WithStorageKey storage key.
+func (p RequestDatabaseNamesParams) WithStorageKey(storageKey string) *RequestDatabaseNamesParams {
+	p.StorageKey = storageKey
+	return &p
 }
 
 // RequestDatabaseNamesReturns return values.
@@ -299,7 +391,8 @@ type RequestDatabaseNamesReturns struct {
 // Do executes IndexedDB.requestDatabaseNames against the provided context.
 //
 // returns:
-//   databaseNames - Database names for origin.
+//
+//	databaseNames - Database names for origin.
 func (p *RequestDatabaseNamesParams) Do(ctx context.Context) (databaseNames []string, err error) {
 	// execute
 	var res RequestDatabaseNamesReturns

@@ -7,7 +7,7 @@ import (
 
 func (runtime *_runtime) newGoSliceObject(value reflect.Value) *_object {
 	self := runtime.newObject()
-	self.class = "GoArray" // TODO GoSlice?
+	self.class = classGoArray // TODO GoSlice?
 	self.objectClass = _classGoSlice
 	self.value = _newGoSliceObject(value)
 	return self
@@ -46,7 +46,7 @@ func (self _goSliceObject) setValue(index int64, value Value) bool {
 
 func goSliceGetOwnProperty(self *_object, name string) *_property {
 	// length
-	if name == "length" {
+	if name == propertyLength {
 		return &_property{
 			value: toValue(self.value.(*_goSliceObject).value.Len()),
 			mode:  0,
@@ -93,7 +93,7 @@ func goSliceEnumerate(self *_object, all bool, each func(string) bool) {
 }
 
 func goSliceDefineOwnProperty(self *_object, name string, descriptor _property, throw bool) bool {
-	if name == "length" {
+	if name == propertyLength {
 		return self.runtime.typeErrorResult(throw)
 	} else if index := stringToArrayIndex(name); index >= 0 {
 		if self.value.(*_goSliceObject).setValue(index, descriptor.value.(Value)) {

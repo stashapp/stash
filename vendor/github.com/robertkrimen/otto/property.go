@@ -9,7 +9,6 @@ const (
 	modeEnumerateMask               = 0070
 	modeConfigureMask               = 0007
 	modeOnMask                      = 0111
-	modeOffMask                     = 0000
 	modeSetMask                     = 0222 // If value is 2, then mode is neither "On" nor "Off"
 )
 

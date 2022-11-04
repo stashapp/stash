@@ -5,11 +5,11 @@ import (
 )
 
 func builtinError(call FunctionCall) Value {
-	return toValue_object(call.runtime.newError("Error", call.Argument(0), 1))
+	return toValue_object(call.runtime.newError(classError, call.Argument(0), 1))
 }
 
 func builtinNewError(self *_object, argumentList []Value) Value {
-	return toValue_object(self.runtime.newError("Error", valueOfArrayIndex(argumentList, 0), 0))
+	return toValue_object(self.runtime.newError(classError, valueOfArrayIndex(argumentList, 0), 0))
 }
 
 func builtinError_toString(call FunctionCall) Value {
@@ -18,7 +18,7 @@ func builtinError_toString(call FunctionCall) Value {
 		panic(call.runtime.panicTypeError())
 	}
 
-	name := "Error"
+	name := classError
 	nameValue := thisObject.get("name")
 	if nameValue.IsDefined() {
 		name = nameValue.string()

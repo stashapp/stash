@@ -180,8 +180,6 @@ func isTwoInitialisms(word string) (string, string, bool) {
 // Only add entries that are highly unlikely to be non-initialisms.
 // For instance, "ID" is fine (Freudian code is rare), but "AND" is not.
 var initialisms = map[string]struct{}{
-	// These are the common initialisms from golint. Keep them in sync
-	// with https://gotools.org/github.com/golang/lint#commonInitialisms.
 	"ACL":   {},
 	"API":   {},
 	"ASCII": {},
@@ -201,6 +199,7 @@ var initialisms = map[string]struct{}{
 	"RAM":   {},
 	"RHS":   {},
 	"RPC":   {},
+	"RSS":   {},
 	"SLA":   {},
 	"SMTP":  {},
 	"SQL":   {},
@@ -211,18 +210,15 @@ var initialisms = map[string]struct{}{
 	"UDP":   {},
 	"UI":    {},
 	"UID":   {},
-	"UUID":  {},
 	"URI":   {},
 	"URL":   {},
 	"UTF8":  {},
+	"UUID":  {},
 	"VM":    {},
 	"XML":   {},
 	"XMPP":  {},
 	"XSRF":  {},
 	"XSS":   {},
-
-	// Additional common initialisms.
-	"RSS": {},
 }
 
 // isBrand reports whether word is a brand.
@@ -237,4 +233,9 @@ func isBrand(word string) (string, bool) {
 // Only add entries that are highly unlikely to be non-brands.
 var brands = map[string]string{
 	"github": "GitHub",
+	"gitlab": "GitLab",
+	"devops": "DevOps", // For https://en.wikipedia.org/wiki/DevOps.
+	// For https://docs.github.com/en/graphql/reference/enums#fundingplatform.
+	"issuehunt": "IssueHunt",
+	"lfx":       "LFX",
 }

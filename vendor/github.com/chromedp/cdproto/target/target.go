@@ -24,7 +24,8 @@ type ActivateTargetParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-activateTarget
 //
 // parameters:
-//   targetID
+//
+//	targetID
 func ActivateTarget(targetID ID) *ActivateTargetParams {
 	return &ActivateTargetParams{
 		TargetID: targetID,
@@ -47,7 +48,8 @@ type AttachToTargetParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-attachToTarget
 //
 // parameters:
-//   targetID
+//
+//	targetID
 func AttachToTarget(targetID ID) *AttachToTargetParams {
 	return &AttachToTargetParams{
 		TargetID: targetID,
@@ -70,7 +72,8 @@ type AttachToTargetReturns struct {
 // Do executes Target.attachToTarget against the provided context.
 //
 // returns:
-//   sessionID - Id assigned to the session.
+//
+//	sessionID - Id assigned to the session.
 func (p *AttachToTargetParams) Do(ctx context.Context) (sessionID SessionID, err error) {
 	// execute
 	var res AttachToTargetReturns
@@ -102,7 +105,8 @@ type AttachToBrowserTargetReturns struct {
 // Do executes Target.attachToBrowserTarget against the provided context.
 //
 // returns:
-//   sessionID - Id assigned to the session.
+//
+//	sessionID - Id assigned to the session.
 func (p *AttachToBrowserTargetParams) Do(ctx context.Context) (sessionID SessionID, err error) {
 	// execute
 	var res AttachToBrowserTargetReturns
@@ -126,7 +130,8 @@ type CloseTargetParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-closeTarget
 //
 // parameters:
-//   targetID
+//
+//	targetID
 func CloseTarget(targetID ID) *CloseTargetParams {
 	return &CloseTargetParams{
 		TargetID: targetID,
@@ -159,7 +164,8 @@ type ExposeDevToolsProtocolParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-exposeDevToolsProtocol
 //
 // parameters:
-//   targetID
+//
+//	targetID
 func ExposeDevToolsProtocol(targetID ID) *ExposeDevToolsProtocolParams {
 	return &ExposeDevToolsProtocolParams{
 		TargetID: targetID,
@@ -180,9 +186,10 @@ func (p *ExposeDevToolsProtocolParams) Do(ctx context.Context) (err error) {
 // CreateBrowserContextParams creates a new empty BrowserContext. Similar to
 // an incognito profile but you can have more than one.
 type CreateBrowserContextParams struct {
-	DisposeOnDetach bool   `json:"disposeOnDetach,omitempty"` // If specified, disposes this context when debugging session disconnects.
-	ProxyServer     string `json:"proxyServer,omitempty"`     // Proxy server, similar to the one passed to --proxy-server
-	ProxyBypassList string `json:"proxyBypassList,omitempty"` // Proxy bypass list, similar to the one passed to --proxy-bypass-list
+	DisposeOnDetach                   bool     `json:"disposeOnDetach,omitempty"`                   // If specified, disposes this context when debugging session disconnects.
+	ProxyServer                       string   `json:"proxyServer,omitempty"`                       // Proxy server, similar to the one passed to --proxy-server
+	ProxyBypassList                   string   `json:"proxyBypassList,omitempty"`                   // Proxy bypass list, similar to the one passed to --proxy-bypass-list
+	OriginsWithUniversalNetworkAccess []string `json:"originsWithUniversalNetworkAccess,omitempty"` // An optional list of origins to grant unlimited cross-origin access to. Parts of the URL other than those constituting origin are ignored.
 }
 
 // CreateBrowserContext creates a new empty BrowserContext. Similar to an
@@ -215,6 +222,14 @@ func (p CreateBrowserContextParams) WithProxyBypassList(proxyBypassList string) 
 	return &p
 }
 
+// WithOriginsWithUniversalNetworkAccess an optional list of origins to grant
+// unlimited cross-origin access to. Parts of the URL other than those
+// constituting origin are ignored.
+func (p CreateBrowserContextParams) WithOriginsWithUniversalNetworkAccess(originsWithUniversalNetworkAccess []string) *CreateBrowserContextParams {
+	p.OriginsWithUniversalNetworkAccess = originsWithUniversalNetworkAccess
+	return &p
+}
+
 // CreateBrowserContextReturns return values.
 type CreateBrowserContextReturns struct {
 	BrowserContextID cdp.BrowserContextID `json:"browserContextId,omitempty"` // The id of the context created.
@@ -223,7 +238,8 @@ type CreateBrowserContextReturns struct {
 // Do executes Target.createBrowserContext against the provided context.
 //
 // returns:
-//   browserContextID - The id of the context created.
+//
+//	browserContextID - The id of the context created.
 func (p *CreateBrowserContextParams) Do(ctx context.Context) (browserContextID cdp.BrowserContextID, err error) {
 	// execute
 	var res CreateBrowserContextReturns
@@ -249,14 +265,15 @@ func GetBrowserContexts() *GetBrowserContextsParams {
 
 // GetBrowserContextsReturns return values.
 type GetBrowserContextsReturns struct {
-	BrowserContextIds []cdp.BrowserContextID `json:"browserContextIds,omitempty"` // An array of browser context ids.
+	BrowserContextIDs []cdp.BrowserContextID `json:"browserContextIds,omitempty"` // An array of browser context ids.
 }
 
 // Do executes Target.getBrowserContexts against the provided context.
 //
 // returns:
-//   browserContextIds - An array of browser context ids.
-func (p *GetBrowserContextsParams) Do(ctx context.Context) (browserContextIds []cdp.BrowserContextID, err error) {
+//
+//	browserContextIDs - An array of browser context ids.
+func (p *GetBrowserContextsParams) Do(ctx context.Context) (browserContextIDs []cdp.BrowserContextID, err error) {
 	// execute
 	var res GetBrowserContextsReturns
 	err = cdp.Execute(ctx, CommandGetBrowserContexts, nil, &res)
@@ -264,7 +281,7 @@ func (p *GetBrowserContextsParams) Do(ctx context.Context) (browserContextIds []
 		return nil, err
 	}
 
-	return res.BrowserContextIds, nil
+	return res.BrowserContextIDs, nil
 }
 
 // CreateTargetParams creates a new page.
@@ -283,7 +300,8 @@ type CreateTargetParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-createTarget
 //
 // parameters:
-//   url - The initial URL the page will be navigated to. An empty string indicates about:blank.
+//
+//	url - The initial URL the page will be navigated to. An empty string indicates about:blank.
 func CreateTarget(url string) *CreateTargetParams {
 	return &CreateTargetParams{
 		URL: url,
@@ -338,7 +356,8 @@ type CreateTargetReturns struct {
 // Do executes Target.createTarget against the provided context.
 //
 // returns:
-//   targetID - The id of the page opened.
+//
+//	targetID - The id of the page opened.
 func (p *CreateTargetParams) Do(ctx context.Context) (targetID ID, err error) {
 	// execute
 	var res CreateTargetReturns
@@ -387,7 +406,8 @@ type DisposeBrowserContextParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-disposeBrowserContext
 //
 // parameters:
-//   browserContextID
+//
+//	browserContextID
 func DisposeBrowserContext(browserContextID cdp.BrowserContextID) *DisposeBrowserContextParams {
 	return &DisposeBrowserContextParams{
 		BrowserContextID: browserContextID,
@@ -427,7 +447,8 @@ type GetTargetInfoReturns struct {
 // Do executes Target.getTargetInfo against the provided context.
 //
 // returns:
-//   targetInfo
+//
+//	targetInfo
 func (p *GetTargetInfoParams) Do(ctx context.Context) (targetInfo *Info, err error) {
 	// execute
 	var res GetTargetInfoReturns
@@ -440,13 +461,25 @@ func (p *GetTargetInfoParams) Do(ctx context.Context) (targetInfo *Info, err err
 }
 
 // GetTargetsParams retrieves a list of available targets.
-type GetTargetsParams struct{}
+type GetTargetsParams struct {
+	Filter Filter `json:"filter,omitempty"` // Only targets matching filter will be reported. If filter is not specified and target discovery is currently enabled, a filter used for target discovery is used for consistency.
+}
 
 // GetTargets retrieves a list of available targets.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-getTargets
+//
+// parameters:
 func GetTargets() *GetTargetsParams {
 	return &GetTargetsParams{}
+}
+
+// WithFilter only targets matching filter will be reported. If filter is not
+// specified and target discovery is currently enabled, a filter used for target
+// discovery is used for consistency.
+func (p GetTargetsParams) WithFilter(filter Filter) *GetTargetsParams {
+	p.Filter = filter
+	return &p
 }
 
 // GetTargetsReturns return values.
@@ -457,11 +490,12 @@ type GetTargetsReturns struct {
 // Do executes Target.getTargets against the provided context.
 //
 // returns:
-//   targetInfos - The list of targets.
+//
+//	targetInfos - The list of targets.
 func (p *GetTargetsParams) Do(ctx context.Context) (targetInfos []*Info, err error) {
 	// execute
 	var res GetTargetsReturns
-	err = cdp.Execute(ctx, CommandGetTargets, nil, &res)
+	err = cdp.Execute(ctx, CommandGetTargets, p, &res)
 	if err != nil {
 		return nil, err
 	}
@@ -472,23 +506,29 @@ func (p *GetTargetsParams) Do(ctx context.Context) (targetInfos []*Info, err err
 // SetAutoAttachParams controls whether to automatically attach to new
 // targets which are considered to be related to this one. When turned on,
 // attaches to all existing related targets as well. When turned off,
-// automatically detaches from all currently attached targets.
+// automatically detaches from all currently attached targets. This also clears
+// all targets added by autoAttachRelated from the list of targets to watch for
+// creation of related targets.
 type SetAutoAttachParams struct {
-	AutoAttach             bool `json:"autoAttach"`             // Whether to auto-attach to related targets.
-	WaitForDebuggerOnStart bool `json:"waitForDebuggerOnStart"` // Whether to pause new targets when attaching to them. Use Runtime.runIfWaitingForDebugger to run paused targets.
-	Flatten                bool `json:"flatten,omitempty"`      // Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
+	AutoAttach             bool   `json:"autoAttach"`             // Whether to auto-attach to related targets.
+	WaitForDebuggerOnStart bool   `json:"waitForDebuggerOnStart"` // Whether to pause new targets when attaching to them. Use Runtime.runIfWaitingForDebugger to run paused targets.
+	Flatten                bool   `json:"flatten,omitempty"`      // Enables "flat" access to the session via specifying sessionId attribute in the commands. We plan to make this the default, deprecate non-flattened mode, and eventually retire it. See crbug.com/991325.
+	Filter                 Filter `json:"filter,omitempty"`       // Only targets matching filter will be attached.
 }
 
 // SetAutoAttach controls whether to automatically attach to new targets
 // which are considered to be related to this one. When turned on, attaches to
 // all existing related targets as well. When turned off, automatically detaches
-// from all currently attached targets.
+// from all currently attached targets. This also clears all targets added by
+// autoAttachRelated from the list of targets to watch for creation of related
+// targets.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-setAutoAttach
 //
 // parameters:
-//   autoAttach - Whether to auto-attach to related targets.
-//   waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use Runtime.runIfWaitingForDebugger to run paused targets.
+//
+//	autoAttach - Whether to auto-attach to related targets.
+//	waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use Runtime.runIfWaitingForDebugger to run paused targets.
 func SetAutoAttach(autoAttach bool, waitForDebuggerOnStart bool) *SetAutoAttachParams {
 	return &SetAutoAttachParams{
 		AutoAttach:             autoAttach,
@@ -504,15 +544,65 @@ func (p SetAutoAttachParams) WithFlatten(flatten bool) *SetAutoAttachParams {
 	return &p
 }
 
+// WithFilter only targets matching filter will be attached.
+func (p SetAutoAttachParams) WithFilter(filter Filter) *SetAutoAttachParams {
+	p.Filter = filter
+	return &p
+}
+
 // Do executes Target.setAutoAttach against the provided context.
 func (p *SetAutoAttachParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetAutoAttach, p, nil)
 }
 
+// AutoAttachRelatedParams adds the specified target to the list of targets
+// that will be monitored for any related target creation (such as child frames,
+// child workers and new versions of service worker) and reported through
+// attachedToTarget. The specified target is also auto-attached. This cancels
+// the effect of any previous setAutoAttach and is also cancelled by subsequent
+// setAutoAttach. Only available at the Browser target.
+type AutoAttachRelatedParams struct {
+	TargetID               ID     `json:"targetId"`
+	WaitForDebuggerOnStart bool   `json:"waitForDebuggerOnStart"` // Whether to pause new targets when attaching to them. Use Runtime.runIfWaitingForDebugger to run paused targets.
+	Filter                 Filter `json:"filter,omitempty"`       // Only targets matching filter will be attached.
+}
+
+// AutoAttachRelated adds the specified target to the list of targets that
+// will be monitored for any related target creation (such as child frames,
+// child workers and new versions of service worker) and reported through
+// attachedToTarget. The specified target is also auto-attached. This cancels
+// the effect of any previous setAutoAttach and is also cancelled by subsequent
+// setAutoAttach. Only available at the Browser target.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-autoAttachRelated
+//
+// parameters:
+//
+//	targetID
+//	waitForDebuggerOnStart - Whether to pause new targets when attaching to them. Use Runtime.runIfWaitingForDebugger to run paused targets.
+func AutoAttachRelated(targetID ID, waitForDebuggerOnStart bool) *AutoAttachRelatedParams {
+	return &AutoAttachRelatedParams{
+		TargetID:               targetID,
+		WaitForDebuggerOnStart: waitForDebuggerOnStart,
+	}
+}
+
+// WithFilter only targets matching filter will be attached.
+func (p AutoAttachRelatedParams) WithFilter(filter Filter) *AutoAttachRelatedParams {
+	p.Filter = filter
+	return &p
+}
+
+// Do executes Target.autoAttachRelated against the provided context.
+func (p *AutoAttachRelatedParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandAutoAttachRelated, p, nil)
+}
+
 // SetDiscoverTargetsParams controls whether to discover available targets
 // and notify via targetCreated/targetInfoChanged/targetDestroyed events.
 type SetDiscoverTargetsParams struct {
-	Discover bool `json:"discover"` // Whether to discover available targets.
+	Discover bool   `json:"discover"`         // Whether to discover available targets.
+	Filter   Filter `json:"filter,omitempty"` // Only targets matching filter will be attached. If discover is false, filter must be omitted or empty.
 }
 
 // SetDiscoverTargets controls whether to discover available targets and
@@ -521,11 +611,19 @@ type SetDiscoverTargetsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-setDiscoverTargets
 //
 // parameters:
-//   discover - Whether to discover available targets.
+//
+//	discover - Whether to discover available targets.
 func SetDiscoverTargets(discover bool) *SetDiscoverTargetsParams {
 	return &SetDiscoverTargetsParams{
 		Discover: discover,
 	}
+}
+
+// WithFilter only targets matching filter will be attached. If discover is
+// false, filter must be omitted or empty.
+func (p SetDiscoverTargetsParams) WithFilter(filter Filter) *SetDiscoverTargetsParams {
+	p.Filter = filter
+	return &p
 }
 
 // Do executes Target.setDiscoverTargets against the provided context.
@@ -545,7 +643,8 @@ type SetRemoteLocationsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#method-setRemoteLocations
 //
 // parameters:
-//   locations - List of remote locations.
+//
+//	locations - List of remote locations.
 func SetRemoteLocations(locations []*RemoteLocation) *SetRemoteLocationsParams {
 	return &SetRemoteLocationsParams{
 		Locations: locations,
@@ -572,6 +671,7 @@ const (
 	CommandGetTargetInfo          = "Target.getTargetInfo"
 	CommandGetTargets             = "Target.getTargets"
 	CommandSetAutoAttach          = "Target.setAutoAttach"
+	CommandAutoAttachRelated      = "Target.autoAttachRelated"
 	CommandSetDiscoverTargets     = "Target.setDiscoverTargets"
 	CommandSetRemoteLocations     = "Target.setRemoteLocations"
 )

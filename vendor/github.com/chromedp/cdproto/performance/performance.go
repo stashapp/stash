@@ -71,7 +71,8 @@ type GetMetricsReturns struct {
 // Do executes Performance.getMetrics against the provided context.
 //
 // returns:
-//   metrics - Current values for run-time metrics.
+//
+//	metrics - Current values for run-time metrics.
 func (p *GetMetricsParams) Do(ctx context.Context) (metrics []*Metric, err error) {
 	// execute
 	var res GetMetricsReturns

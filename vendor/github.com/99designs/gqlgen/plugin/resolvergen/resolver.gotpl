@@ -19,6 +19,7 @@
 {{ end }}
 
 {{ range $resolver := .Resolvers -}}
+    // {{ $resolver.Comment }}
 	func (r *{{lcFirst $resolver.Object.Name}}{{ucFirst $.ResolverType}}) {{$resolver.Field.GoFieldName}}{{ $resolver.Field.ShortResolverDeclaration }} {
 		{{ $resolver.Implementation }}
 	}

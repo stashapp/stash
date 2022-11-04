@@ -399,6 +399,8 @@ log.Logger = log.With().Str("foo", "bar").Logger()
 
 ### Add file and line number to log
 
+Equivalent of `Llongfile`:
+
 ```go
 log.Logger = log.With().Caller().Logger()
 log.Info().Msg("hello world")
@@ -406,10 +408,29 @@ log.Info().Msg("hello world")
 // Output: {"level": "info", "message": "hello world", "caller": "/go/src/your_project/some_file:21"}
 ```
 
+Equivalent of `Lshortfile`:
+
+```go
+zerolog.CallerMarshalFunc = func(file string, line int) string {
+    short := file
+    for i := len(file) - 1; i > 0; i-- {
+        if file[i] == '/' {
+            short = file[i+1:]
+            break
+        }
+    }
+    file = short
+    return file + ":" + strconv.Itoa(line)
+}
+log.Logger = log.With().Caller().Logger()
+log.Info().Msg("hello world")
+
+// Output: {"level": "info", "message": "hello world", "caller": "some_file:21"}
+```
 
 ### Thread-safe, lock-free, non-blocking writer
 
-If your writer might be slow or not thread-safe and you need your log producers to never get slowed down by a slow writer, you can use a `diode.Writer` as follow:
+If your writer might be slow or not thread-safe and you need your log producers to never get slowed down by a slow writer, you can use a `diode.Writer` as follows:
 
 ```go
 wr := diode.NewWriter(os.Stdout, 1000, 10*time.Millisecond, func(missed int) {
@@ -560,11 +581,11 @@ func main() {
 // Output (Line 1: Console; Line 2: Stdout)
 // 12:36PM INF Hello World!
 // {"level":"info","time":"2019-11-07T12:36:38+03:00","message":"Hello World!"}
-``` 
+```
 
 ## Global Settings
 
-Some settings can be changed and will by applied to all loggers:
+Some settings can be changed and will be applied to all loggers:
 
 * `log.Logger`: You can set this value to customize the global logger (the one used by package level methods).
 * `zerolog.SetGlobalLevel`: Can raise the minimum level of all loggers. Call this with `zerolog.Disabled` to disable logging altogether (quiet mode).
@@ -604,7 +625,7 @@ Most fields are also available in the slice format (`Strs` for `[]string`, `Errs
 
 ## Binary Encoding
 
-In addition to the default JSON encoding, `zerolog` can produce binary logs using [CBOR](http://cbor.io) encoding. The choice of encoding can be decided at compile time using the build tag `binary_log` as follows:
+In addition to the default JSON encoding, `zerolog` can produce binary logs using [CBOR](https://cbor.io) encoding. The choice of encoding can be decided at compile time using the build tag `binary_log` as follows:
 
 ```bash
 go build -tags binary_log .

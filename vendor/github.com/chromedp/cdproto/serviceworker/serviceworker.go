@@ -24,9 +24,10 @@ type DeliverPushMessageParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-deliverPushMessage
 //
 // parameters:
-//   origin
-//   registrationID
-//   data
+//
+//	origin
+//	registrationID
+//	data
 func DeliverPushMessage(origin string, registrationID RegistrationID, data string) *DeliverPushMessageParams {
 	return &DeliverPushMessageParams{
 		Origin:         origin,
@@ -68,10 +69,11 @@ type DispatchSyncEventParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-dispatchSyncEvent
 //
 // parameters:
-//   origin
-//   registrationID
-//   tag
-//   lastChance
+//
+//	origin
+//	registrationID
+//	tag
+//	lastChance
 func DispatchSyncEvent(origin string, registrationID RegistrationID, tag string, lastChance bool) *DispatchSyncEventParams {
 	return &DispatchSyncEventParams{
 		Origin:         origin,
@@ -98,9 +100,10 @@ type DispatchPeriodicSyncEventParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-dispatchPeriodicSyncEvent
 //
 // parameters:
-//   origin
-//   registrationID
-//   tag
+//
+//	origin
+//	registrationID
+//	tag
 func DispatchPeriodicSyncEvent(origin string, registrationID RegistrationID, tag string) *DispatchPeriodicSyncEventParams {
 	return &DispatchPeriodicSyncEventParams{
 		Origin:         origin,
@@ -139,7 +142,8 @@ type InspectWorkerParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-inspectWorker
 //
 // parameters:
-//   versionID
+//
+//	versionID
 func InspectWorker(versionID string) *InspectWorkerParams {
 	return &InspectWorkerParams{
 		VersionID: versionID,
@@ -161,7 +165,8 @@ type SetForceUpdateOnPageLoadParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-setForceUpdateOnPageLoad
 //
 // parameters:
-//   forceUpdateOnPageLoad
+//
+//	forceUpdateOnPageLoad
 func SetForceUpdateOnPageLoad(forceUpdateOnPageLoad bool) *SetForceUpdateOnPageLoadParams {
 	return &SetForceUpdateOnPageLoadParams{
 		ForceUpdateOnPageLoad: forceUpdateOnPageLoad,
@@ -183,7 +188,8 @@ type SkipWaitingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-skipWaiting
 //
 // parameters:
-//   scopeURL
+//
+//	scopeURL
 func SkipWaiting(scopeURL string) *SkipWaitingParams {
 	return &SkipWaitingParams{
 		ScopeURL: scopeURL,
@@ -205,7 +211,8 @@ type StartWorkerParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-startWorker
 //
 // parameters:
-//   scopeURL
+//
+//	scopeURL
 func StartWorker(scopeURL string) *StartWorkerParams {
 	return &StartWorkerParams{
 		ScopeURL: scopeURL,
@@ -242,7 +249,8 @@ type StopWorkerParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-stopWorker
 //
 // parameters:
-//   versionID
+//
+//	versionID
 func StopWorker(versionID string) *StopWorkerParams {
 	return &StopWorkerParams{
 		VersionID: versionID,
@@ -264,7 +272,8 @@ type UnregisterParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-unregister
 //
 // parameters:
-//   scopeURL
+//
+//	scopeURL
 func Unregister(scopeURL string) *UnregisterParams {
 	return &UnregisterParams{
 		ScopeURL: scopeURL,
@@ -286,7 +295,8 @@ type UpdateRegistrationParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/ServiceWorker#method-updateRegistration
 //
 // parameters:
-//   scopeURL
+//
+//	scopeURL
 func UpdateRegistration(scopeURL string) *UpdateRegistrationParams {
 	return &UpdateRegistrationParams{
 		ScopeURL: scopeURL,

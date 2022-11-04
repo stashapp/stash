@@ -66,7 +66,7 @@ func builtinObject_propertyIsEnumerable(call FunctionCall) Value {
 }
 
 func builtinObject_toString(call FunctionCall) Value {
-	result := ""
+	var result string
 	if call.This.IsUndefined() {
 		result = "[object Undefined]"
 	} else if call.This.IsNull() {

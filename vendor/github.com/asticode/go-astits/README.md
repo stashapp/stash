@@ -12,6 +12,10 @@ WARNING: this library is not yet production ready. Use at your own risks!
 To install the library use the following:
 
     go get -u github.com/asticode/go-astits/...
+
+To install the executables use the following:
+
+    go install github.com/asticode/go-astits/cmd
     
 # Before looking at the code...
 

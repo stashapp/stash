@@ -54,15 +54,6 @@ func (self *_propertyReference) delete() bool {
 	return self.base.delete(self.name, self.strict)
 }
 
-// ArgumentReference
-
-func newArgumentReference(runtime *_runtime, base *_object, name string, strict bool, at _at) *_propertyReference {
-	if base == nil {
-		panic(hereBeDragons())
-	}
-	return newPropertyReference(runtime, base, name, strict, at)
-}
-
 type _stashReference struct {
 	name   string
 	strict bool

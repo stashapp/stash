@@ -145,7 +145,7 @@ func hasPESOptionalHeader(streamID uint8) bool {
 	return streamID != StreamIDPaddingStream && streamID != StreamIDPrivateStream2
 }
 
-// parsePESData parses a PES header
+// parsePESHeader parses a PES header
 func parsePESHeader(i *astikit.BytesIterator) (h *PESHeader, dataStart, dataEnd int, err error) {
 	// Create header
 	h = &PESHeader{}

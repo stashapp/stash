@@ -32,8 +32,9 @@ type GetEncodedResponseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#method-getEncodedResponse
 //
 // parameters:
-//   requestID - Identifier of the network request to get content for.
-//   encoding - The encoding to use.
+//
+//	requestID - Identifier of the network request to get content for.
+//	encoding - The encoding to use.
 func GetEncodedResponse(requestID network.RequestID, encoding GetEncodedResponseEncoding) *GetEncodedResponseParams {
 	return &GetEncodedResponseParams{
 		RequestID: requestID,
@@ -64,9 +65,10 @@ type GetEncodedResponseReturns struct {
 // Do executes Audits.getEncodedResponse against the provided context.
 //
 // returns:
-//   body - The encoded body as a base64 string. Omitted if sizeOnly is true.
-//   originalSize - Size before re-encoding.
-//   encodedSize - Size after re-encoding.
+//
+//	body - The encoded body as a base64 string. Omitted if sizeOnly is true.
+//	originalSize - Size before re-encoding.
+//	encodedSize - Size after re-encoding.
 func (p *GetEncodedResponseParams) Do(ctx context.Context) (body []byte, originalSize int64, encodedSize int64, err error) {
 	// execute
 	var res GetEncodedResponseReturns

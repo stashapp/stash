@@ -32,6 +32,7 @@ const (
 	StreamTypeAC3Audio                   StreamType = 0x81
 	StreamTypeDTSAudio                   StreamType = 0x82
 	StreamTypeTRUEHDAudio                StreamType = 0x83
+	StreamTypeSCTE35                     StreamType = 0x86
 	StreamTypeEAC3Audio                  StreamType = 0x87
 )
 
@@ -231,6 +232,8 @@ func (t StreamType) String() string {
 		return "DTS Audio"
 	case StreamTypeTRUEHDAudio:
 		return "TRUEHD Audio"
+	case StreamTypeSCTE35:
+		return "SCTE 35"
 	case StreamTypeEAC3Audio:
 		return "EAC3 Audio"
 	}

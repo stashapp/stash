@@ -1,34 +1,21 @@
 {{- range $object := .Objects }}{{- range $field := $object.Fields }}
 
-func (ec *executionContext) _{{$object.Name}}_{{$field.Name}}(ctx context.Context, field graphql.CollectedField{{ if not $object.Root }}, obj {{$object.Reference | ref}}{{end}}) (ret {{ if $object.Stream }}func(){{ end }}graphql.Marshaler) {
+func (ec *executionContext) _{{$object.Name}}_{{$field.Name}}(ctx context.Context, field graphql.CollectedField{{ if not $object.Root }}, obj {{$object.Reference | ref}}{{end}}) (ret {{ if $object.Stream }}func(ctx context.Context){{ end }}graphql.Marshaler) {
 	{{- $null := "graphql.Null" }}
 	{{- if $object.Stream }}
 		{{- $null = "nil" }}
 	{{- end }}
+	fc, err := ec.{{ $field.FieldContextFunc }}(ctx, field)
+	if err != nil {
+		return {{ $null }}
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
 	defer func () {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
 			ret = {{ $null }}
 		}
 	}()
-	fc := &graphql.FieldContext{
-		Object: {{$object.Name|quote}},
-		Field: field,
-		Args:  nil,
-		IsMethod: {{or $field.IsMethod $field.IsResolver}},
-		IsResolver: {{ $field.IsResolver }},
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	{{- if $field.Args }}
-		rawArgs := field.ArgumentMap(ec.Variables)
-		args, err := ec.{{ $field.ArgsFunc }}(ctx,rawArgs)
-		if err != nil {
-			ec.Error(ctx, err)
-			return {{ $null }}
-		}
-		fc.Args = args
-	{{- end }}
 	{{- if  $.AllDirectives.LocationDirectives "FIELD" }}
 		resTmp := ec._fieldMiddleware(ctx, {{if $object.Root}}nil{{else}}obj{{end}}, func(rctx context.Context) (interface{}, error) {
 			{{ template "field" $field }}
@@ -51,24 +38,66 @@ func (ec *executionContext) _{{$object.Name}}_{{$field.Name}}(ctx context.Contex
 		return {{ $null }}
 	}
 	{{- if $object.Stream }}
-		return func() graphql.Marshaler {
-			res, ok := <-resTmp.(<-chan {{$field.TypeReference.GO | ref}})
-			if !ok {
+		return func(ctx context.Context) graphql.Marshaler {
+			select {
+			case res, ok := <-resTmp.(<-chan {{$field.TypeReference.GO | ref}}):
+				if !ok {
+					return nil
+				}
+				return graphql.WriterFunc(func(w io.Writer) {
+					w.Write([]byte{'{'})
+					graphql.MarshalString(field.Alias).MarshalGQL(w)
+					w.Write([]byte{':'})
+					ec.{{ $field.TypeReference.MarshalFunc }}(ctx, field.Selections, res).MarshalGQL(w)
+					w.Write([]byte{'}'})
+				})
+			case <-ctx.Done():
 				return nil
 			}
-			return graphql.WriterFunc(func(w io.Writer) {
-				w.Write([]byte{'{'})
-				graphql.MarshalString(field.Alias).MarshalGQL(w)
-				w.Write([]byte{':'})
-				ec.{{ $field.TypeReference.MarshalFunc }}(ctx, field.Selections, res).MarshalGQL(w)
-				w.Write([]byte{'}'})
-			})
 		}
 	{{- else }}
 		res := resTmp.({{$field.TypeReference.GO | ref}})
 		fc.Result = res
 		return ec.{{ $field.TypeReference.MarshalFunc }}(ctx, field.Selections, res)
 	{{- end }}
+}
+
+func (ec *executionContext) {{ $field.FieldContextFunc }}(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object: {{quote $field.Object.Name}},
+		Field: field,
+		IsMethod: {{or $field.IsMethod $field.IsResolver}},
+		IsResolver: {{ $field.IsResolver }},
+		Child: func (ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			{{- if not $field.TypeReference.Definition.Fields }}
+				return nil, errors.New("field of type {{ $field.TypeReference.Definition.Name }} does not have child fields")
+			{{- else if ne $field.TypeReference.Definition.Kind "OBJECT" }}
+				return nil, errors.New("FieldContext.Child cannot be called on type {{ $field.TypeReference.Definition.Kind }}")
+			{{- else }}
+				switch field.Name {
+					{{- range $f := $field.TypeReference.Definition.Fields }}
+						case "{{ $f.Name }}":
+							return ec.{{ $field.ChildFieldContextFunc $f.Name }}(ctx, field)
+					{{- end }}
+				}
+				return nil, fmt.Errorf("no field named %q was found under type {{ $field.TypeReference.Definition.Name }}", field.Name)
+			{{- end }}
+		},
+	}
+	{{- if $field.Args }}
+		defer func () {
+			if r := recover(); r != nil {
+				err = ec.Recover(ctx, r)
+				ec.Error(ctx, err)
+			}
+		}()
+		ctx = graphql.WithFieldContext(ctx, fc)
+		if fc.Args, err = ec.{{ $field.ArgsFunc }}(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+			ec.Error(ctx, err)
+			return
+		}
+	{{- end }}
+	return fc, nil
 }
 
 {{- end }}{{- end}}
