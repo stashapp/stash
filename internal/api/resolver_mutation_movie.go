@@ -166,7 +166,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedMovie.Aliases = translator.nullString(input.Aliases, "aliases")
 	updatedMovie.Duration = translator.nullInt64(input.Duration, "duration")
 	updatedMovie.Date = translator.sqliteDate(input.Date, "date")
-	updatedMovie.Rating = translator.ratingConversion(input.Rating, "rating", input.Rating100, "rating100")
+	updatedMovie.Rating = translator.ratingConversion(input.Rating, input.Rating100)
 	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedMovie.Director = translator.nullString(input.Director, "director")
 	updatedMovie.Synopsis = translator.nullString(input.Synopsis, "synopsis")
@@ -239,7 +239,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
 
-	updatedMovie.Rating = translator.ratingConversion(input.Rating, "rating", input.Rating100, "rating100")
+	updatedMovie.Rating = translator.ratingConversion(input.Rating, input.Rating100)
 	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedMovie.Director = translator.nullString(input.Director, "director")
 

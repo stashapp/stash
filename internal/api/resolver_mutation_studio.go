@@ -150,7 +150,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input StudioUpdateI
 	updatedStudio.URL = translator.nullString(input.URL, "url")
 	updatedStudio.Details = translator.nullString(input.Details, "details")
 	updatedStudio.ParentID = translator.nullInt64FromString(input.ParentID, "parent_id")
-	updatedStudio.Rating = translator.ratingConversion(input.Rating, "rating", input.Rating100, "rating100")
+	updatedStudio.Rating = translator.ratingConversion(input.Rating, input.Rating100)
 	updatedStudio.IgnoreAutoTag = input.IgnoreAutoTag
 
 	// Start the transaction and save the studio
