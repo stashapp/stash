@@ -12,14 +12,15 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 	)
 
 	var (
-		title       = "title"
-		details     = "details"
-		url         = "url"
-		date        = "2001-02-03"
-		rating      = 4
-		organized   = true
-		studioID    = 2
-		studioIDStr = "2"
+		title        = "title"
+		details      = "details"
+		url          = "url"
+		date         = "2001-02-03"
+		ratingLegacy = 4
+		rating100    = 80
+		organized    = true
+		studioID     = 2
+		studioIDStr  = "2"
 	)
 
 	dateObj := NewDate(date)
@@ -38,7 +39,7 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 				Details:   NewOptionalString(details),
 				URL:       NewOptionalString(url),
 				Date:      NewOptionalDate(dateObj),
-				Rating:    NewOptionalInt(rating),
+				Rating:    NewOptionalInt(rating100),
 				Organized: NewOptionalBool(organized),
 				StudioID:  NewOptionalInt(studioID),
 			},
@@ -48,7 +49,8 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 				Details:   &details,
 				URL:       &url,
 				Date:      &date,
-				Rating:    &rating,
+				Rating:    &ratingLegacy,
+				Rating100: &rating100,
 				Organized: &organized,
 				StudioID:  &studioIDStr,
 			},

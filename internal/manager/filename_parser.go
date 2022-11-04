@@ -351,6 +351,13 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 	case "rating":
 		rating, _ := strconv.Atoi(value.(string))
 		if validateRating(rating) {
+			// convert to 1-100 scale
+			rating = models.Rating5To100(rating)
+			h.result.Rating = &rating
+		}
+	case "rating100":
+		rating, _ := strconv.Atoi(value.(string))
+		if validateRating100(rating) {
 			h.result.Rating = &rating
 		}
 	case "performer":

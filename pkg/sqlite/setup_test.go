@@ -967,18 +967,13 @@ func makeScene(i int) *models.Scene {
 		}
 	}
 
-	rating100 := getRating(i)
-	rating5 := rating100
-	if rating5.Valid {
-		rating5.Int64 = int64(models.Rating100To5(int(rating5.Int64)))
-	}
+	rating := getRating(i)
 
 	return &models.Scene{
 		Title:        title,
 		Details:      details,
 		URL:          getSceneEmptyString(i, urlField),
-		Rating100:    getIntPtr(rating100),
-		Rating:       getIntPtr(rating5),
+		Rating:       getIntPtr(rating),
 		OCounter:     getOCounter(i),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
@@ -1055,7 +1050,7 @@ func makeImage(i int) *models.Image {
 
 	return &models.Image{
 		Title:        title,
-		Rating:		  getIntPtr(getRating(i)),
+		Rating:       getIntPtr(getRating(i)),
 		OCounter:     getOCounter(i),
 		StudioID:     studioID,
 		GalleryIDs:   models.NewRelatedIDs(gids),
@@ -1139,7 +1134,7 @@ func makeGallery(i int, includeScenes bool) *models.Gallery {
 	ret := &models.Gallery{
 		Title:        getGalleryStringValue(i, titleField),
 		URL:          getGalleryNullStringValue(i, urlField).String,
-		Rating:		  getIntPtr(getRating(i)),
+		Rating:       getIntPtr(getRating(i)),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
 		PerformerIDs: models.NewRelatedIDs(pids),
@@ -1410,7 +1405,7 @@ func getTagChildCount(id int) int {
 	return 0
 }
 
-//createTags creates n tags with plain Name and o tags with camel cased NaMe included
+// createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(ctx context.Context, tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"

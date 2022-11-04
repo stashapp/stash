@@ -27,11 +27,10 @@ const (
 )
 
 type imageRow struct {
-	ID        int                    `db:"id" goqu:"skipinsert"`
-	Title     zero.String            `db:"title"`
+	ID    int         `db:"id" goqu:"skipinsert"`
+	Title zero.String `db:"title"`
 	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
-	Rating100 null.Int               `db:"rating100"`
 	Organized bool                   `db:"organized"`
 	OCounter  int                    `db:"o_counter"`
 	StudioID  null.Int               `db:"studio_id,omitempty"`

@@ -22,33 +22,34 @@ const performersTagsTable = "performers_tags"
 const performersImageTable = "performers_image" // performer cover image
 
 type performerRow struct {
-	ID            int                    `db:"id" goqu:"skipinsert"`
-	Checksum      string                 `db:"checksum"`
-	Name          zero.String            `db:"name"`
-	Gender        zero.String            `db:"gender"`
-	URL           zero.String            `db:"url"`
-	Twitter       zero.String            `db:"twitter"`
-	Instagram     zero.String            `db:"instagram"`
-	Birthdate     models.SQLiteDate      `db:"birthdate"`
-	Ethnicity     zero.String            `db:"ethnicity"`
-	Country       zero.String            `db:"country"`
-	EyeColor      zero.String            `db:"eye_color"`
-	Height        zero.String            `db:"height"`
-	Measurements  zero.String            `db:"measurements"`
-	FakeTits      zero.String            `db:"fake_tits"`
-	CareerLength  zero.String            `db:"career_length"`
-	Tattoos       zero.String            `db:"tattoos"`
-	Piercings     zero.String            `db:"piercings"`
-	Aliases       zero.String            `db:"aliases"`
-	Favorite      sql.NullBool           `db:"favorite"`
-	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
-	Rating        null.Int               `db:"rating"`
-	Details       zero.String            `db:"details"`
-	DeathDate     models.SQLiteDate      `db:"death_date"`
-	HairColor     zero.String            `db:"hair_color"`
-	Weight        null.Int               `db:"weight"`
-	IgnoreAutoTag bool                   `db:"ignore_auto_tag"`
+	ID           int                    `db:"id" goqu:"skipinsert"`
+	Checksum     string                 `db:"checksum"`
+	Name         zero.String            `db:"name"`
+	Gender       zero.String            `db:"gender"`
+	URL          zero.String            `db:"url"`
+	Twitter      zero.String            `db:"twitter"`
+	Instagram    zero.String            `db:"instagram"`
+	Birthdate    models.SQLiteDate      `db:"birthdate"`
+	Ethnicity    zero.String            `db:"ethnicity"`
+	Country      zero.String            `db:"country"`
+	EyeColor     zero.String            `db:"eye_color"`
+	Height       zero.String            `db:"height"`
+	Measurements zero.String            `db:"measurements"`
+	FakeTits     zero.String            `db:"fake_tits"`
+	CareerLength zero.String            `db:"career_length"`
+	Tattoos      zero.String            `db:"tattoos"`
+	Piercings    zero.String            `db:"piercings"`
+	Aliases      zero.String            `db:"aliases"`
+	Favorite     sql.NullBool           `db:"favorite"`
+	CreatedAt    models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt    models.SQLiteTimestamp `db:"updated_at"`
+	// expressed as 1-100
+	Rating        null.Int          `db:"rating"`
+	Details       zero.String       `db:"details"`
+	DeathDate     models.SQLiteDate `db:"death_date"`
+	HairColor     zero.String       `db:"hair_color"`
+	Weight        null.Int          `db:"weight"`
+	IgnoreAutoTag bool              `db:"ignore_auto_tag"`
 }
 
 func (r *performerRow) fromPerformer(o models.Performer) {
@@ -89,27 +90,28 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 
 func (r *performerRow) resolve() *models.Performer {
 	ret := &models.Performer{
-		ID:            r.ID,
-		Checksum:      r.Checksum,
-		Name:          r.Name.String,
-		Gender:        models.GenderEnum(r.Gender.String),
-		URL:           r.URL.String,
-		Twitter:       r.Twitter.String,
-		Instagram:     r.Instagram.String,
-		Birthdate:     r.Birthdate.DatePtr(),
-		Ethnicity:     r.Ethnicity.String,
-		Country:       r.Country.String,
-		EyeColor:      r.EyeColor.String,
-		Height:        r.Height.String,
-		Measurements:  r.Measurements.String,
-		FakeTits:      r.FakeTits.String,
-		CareerLength:  r.CareerLength.String,
-		Tattoos:       r.Tattoos.String,
-		Piercings:     r.Piercings.String,
-		Aliases:       r.Aliases.String,
-		Favorite:      r.Favorite.Bool,
-		CreatedAt:     r.CreatedAt.Timestamp,
-		UpdatedAt:     r.UpdatedAt.Timestamp,
+		ID:           r.ID,
+		Checksum:     r.Checksum,
+		Name:         r.Name.String,
+		Gender:       models.GenderEnum(r.Gender.String),
+		URL:          r.URL.String,
+		Twitter:      r.Twitter.String,
+		Instagram:    r.Instagram.String,
+		Birthdate:    r.Birthdate.DatePtr(),
+		Ethnicity:    r.Ethnicity.String,
+		Country:      r.Country.String,
+		EyeColor:     r.EyeColor.String,
+		Height:       r.Height.String,
+		Measurements: r.Measurements.String,
+		FakeTits:     r.FakeTits.String,
+		CareerLength: r.CareerLength.String,
+		Tattoos:      r.Tattoos.String,
+		Piercings:    r.Piercings.String,
+		Aliases:      r.Aliases.String,
+		Favorite:     r.Favorite.Bool,
+		CreatedAt:    r.CreatedAt.Timestamp,
+		UpdatedAt:    r.UpdatedAt.Timestamp,
+		// expressed as 1-100
 		Rating:        nullIntPtr(r.Rating),
 		Details:       r.Details.String,
 		DeathDate:     r.DeathDate.DatePtr(),

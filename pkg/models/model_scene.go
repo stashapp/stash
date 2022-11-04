@@ -172,7 +172,7 @@ type SceneUpdateInput struct {
 	Details          *string `json:"details"`
 	URL              *string `json:"url"`
 	Date             *string `json:"date"`
-	// Deprecated: Rating expressed in 1-5 scale
+	// Rating expressed in 1-5 scale
 	Rating *int `json:"rating"`
 	// Rating expressed in 1-100 scale
 	Rating100    *int               `json:"rating100"`

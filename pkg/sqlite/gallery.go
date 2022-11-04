@@ -30,11 +30,11 @@ const (
 )
 
 type galleryRow struct {
-	ID        int                    `db:"id" goqu:"skipinsert"`
-	Title     zero.String            `db:"title"`
-	URL       zero.String            `db:"url"`
-	Date      models.SQLiteDate      `db:"date"`
-	Details   zero.String            `db:"details"`
+	ID      int               `db:"id" goqu:"skipinsert"`
+	Title   zero.String       `db:"title"`
+	URL     zero.String       `db:"url"`
+	Date    models.SQLiteDate `db:"date"`
+	Details zero.String       `db:"details"`
 	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
 	Organized bool                   `db:"organized"`
