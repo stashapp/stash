@@ -41,9 +41,7 @@ type imageRow struct {
 func (r *imageRow) fromImage(i models.Image) {
 	r.ID = i.ID
 	r.Title = zero.StringFrom(i.Title)
-
 	r.Rating = intFromPtr(i.Rating)
-
 	r.Organized = i.Organized
 	r.OCounter = i.OCounter
 	r.StudioID = intFromPtr(i.StudioID)

@@ -74,7 +74,6 @@ func (r *sceneRow) fromScene(o models.Scene) {
 	if o.Date != nil {
 		_ = r.Date.Scan(o.Date.Time)
 	}
-
 	r.Rating = intFromPtr(o.Rating)
 	r.Organized = o.Organized
 	r.OCounter = o.OCounter

@@ -52,9 +52,7 @@ func (r *galleryRow) fromGallery(o models.Gallery) {
 		_ = r.Date.Scan(o.Date.Time)
 	}
 	r.Details = zero.StringFrom(o.Details)
-
 	r.Rating = intFromPtr(o.Rating)
-
 	r.Organized = o.Organized
 	r.StudioID = intFromPtr(o.StudioID)
 	r.FolderID = nullIntFromFolderIDPtr(o.FolderID)
