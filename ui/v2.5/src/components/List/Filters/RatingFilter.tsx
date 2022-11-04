@@ -4,10 +4,7 @@ import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
-import {
-  convertFromRatingFormat,
-  convertToRatingFormat,
-} from "../../../components/Scenes/SceneDetails/RatingSystem";
+import { convertFromRatingFormat } from "src/utils/rating";
 import * as GQL from "src/core/generated-graphql";
 
 interface IDurationFilterProps {

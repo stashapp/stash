@@ -1,7 +1,4 @@
-import {
-  convertFromRatingFormat,
-  convertToRatingFormat,
-} from "../../../components/Scenes/SceneDetails/RatingSystem";
+import { convertFromRatingFormat, convertToRatingFormat } from "src/utils/rating";
 import {
   CriterionModifier,
   IntCriterionInput,

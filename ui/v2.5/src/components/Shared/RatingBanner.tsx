@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { FormattedMessage } from "react-intl";
-import { convertToRatingFormat } from "src/components/Scenes/SceneDetails/RatingSystem";
+import { convertToRatingFormat } from "src/utils/rating";
 import { RatingSystem } from "src/core/generated-graphql";
 import { ConfigurationContext } from "src/hooks/Config";
 
