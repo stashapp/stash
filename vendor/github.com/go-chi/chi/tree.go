@@ -331,7 +331,7 @@ func (n *node) getEdge(ntyp nodeTyp, label, tail byte, prefix string) *node {
 func (n *node) setEndpoint(method methodTyp, handler http.Handler, pattern string) {
 	// Set the handler for the method type on the node
 	if n.endpoints == nil {
-		n.endpoints = make(endpoints, 0)
+		n.endpoints = make(endpoints)
 	}
 
 	paramKeys := patParamKeys(pattern)
@@ -433,7 +433,7 @@ func (n *node) findRoute(rctx *Context, method methodTyp, path string) *node {
 				}
 
 				if ntyp == ntRegexp && xn.rex != nil {
-					if xn.rex.Match([]byte(xsearch[:p])) == false {
+					if !xn.rex.Match([]byte(xsearch[:p])) {
 						continue
 					}
 				} else if strings.IndexByte(xsearch[:p], '/') != -1 {
@@ -441,10 +441,36 @@ func (n *node) findRoute(rctx *Context, method methodTyp, path string) *node {
 					continue
 				}
 
+				prevlen := len(rctx.routeParams.Values)
 				rctx.routeParams.Values = append(rctx.routeParams.Values, xsearch[:p])
 				xsearch = xsearch[p:]
-				break
+
+				if len(xsearch) == 0 {
+					if xn.isLeaf() {
+						h := xn.endpoints[method]
+						if h != nil && h.handler != nil {
+							rctx.routeParams.Keys = append(rctx.routeParams.Keys, h.paramKeys...)
+							return xn
+						}
+
+						// flag that the routing context found a route, but not a corresponding
+						// supported method
+						rctx.methodNotAllowed = true
+					}
+				}
+
+				// recursively find the next node on this branch
+				fin := xn.findRoute(rctx, method, xsearch)
+				if fin != nil {
+					return fin
+				}
+
+				// not found on this branch, reset vars
+				rctx.routeParams.Values = rctx.routeParams.Values[:prevlen]
+				xsearch = search
 			}
+
+			rctx.routeParams.Values = append(rctx.routeParams.Values, "")
 
 		default:
 			// catch-all nodes
@@ -460,7 +486,7 @@ func (n *node) findRoute(rctx *Context, method methodTyp, path string) *node {
 		// did we find it yet?
 		if len(xsearch) == 0 {
 			if xn.isLeaf() {
-				h, _ := xn.endpoints[method]
+				h := xn.endpoints[method]
 				if h != nil && h.handler != nil {
 					rctx.routeParams.Keys = append(rctx.routeParams.Keys, h.paramKeys...)
 					return xn
@@ -518,15 +544,6 @@ func (n *node) findEdge(ntyp nodeTyp, label byte) *node {
 	}
 }
 
-func (n *node) isEmpty() bool {
-	for _, nds := range n.children {
-		if len(nds) > 0 {
-			return false
-		}
-	}
-	return true
-}
-
 func (n *node) isLeaf() bool {
 	return n.endpoints != nil
 }
@@ -582,7 +599,7 @@ func (n *node) routes() []Route {
 		}
 
 		// Group methodHandlers by unique patterns
-		pats := make(map[string]endpoints, 0)
+		pats := make(map[string]endpoints)
 
 		for mt, h := range eps {
 			if h.pattern == "" {
@@ -597,7 +614,7 @@ func (n *node) routes() []Route {
 		}
 
 		for p, mh := range pats {
-			hs := make(map[string]http.Handler, 0)
+			hs := make(map[string]http.Handler)
 			if mh[mALL] != nil && mh[mALL].handler != nil {
 				hs["*"] = mh[mALL].handler
 			}
@@ -698,7 +715,7 @@ func patNextSegment(pattern string) (nodeTyp, string, string, byte, int, int) {
 				rexpat = "^" + rexpat
 			}
 			if rexpat[len(rexpat)-1] != '$' {
-				rexpat = rexpat + "$"
+				rexpat += "$"
 			}
 		}
 
@@ -795,6 +812,7 @@ func (ns nodes) findEdge(label byte) *node {
 }
 
 // Route describes the details of a routing handler.
+// Handlers map key is an HTTP method
 type Route struct {
 	Pattern   string
 	Handlers  map[string]http.Handler
@@ -829,6 +847,7 @@ func walk(r Routes, walkFn WalkFunc, parentRoute string, parentMw ...func(http.H
 			}
 
 			fullRoute := parentRoute + route.Pattern
+			fullRoute = strings.Replace(fullRoute, "/*/", "/", -1)
 
 			if chain, ok := handler.(*ChainHandler); ok {
 				if err := walkFn(method, fullRoute, chain.Endpoint, append(mws, chain.Middlewares...)...); err != nil {

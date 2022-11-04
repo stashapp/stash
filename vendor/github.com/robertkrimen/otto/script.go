@@ -12,7 +12,6 @@ var scriptVersion = "2014-04-13/1"
 
 // Script is a handle for some (reusable) JavaScript.
 // Passing a Script value to a run method will evaluate the JavaScript.
-//
 type Script struct {
 	version  string
 	program  *_nodeProgram
@@ -23,9 +22,8 @@ type Script struct {
 // Compile will parse the given source and return a Script value or nil and
 // an error if there was a problem during compilation.
 //
-//      script, err := vm.Compile("", `var abc; if (!abc) abc = 0; abc += 2; abc;`)
-//      vm.Run(script)
-//
+//	script, err := vm.Compile("", `var abc; if (!abc) abc = 0; abc += 2; abc;`)
+//	vm.Run(script)
 func (self *Otto) Compile(filename string, src interface{}) (*Script, error) {
 	return self.CompileWithSourceMap(filename, src, nil)
 }
@@ -58,7 +56,6 @@ func (self *Script) String() string {
 // that is later unmarshalled can be executed on the same version of the otto runtime.
 //
 // The binary format can change at any time and should be considered unspecified and opaque.
-//
 func (self *Script) marshalBinary() ([]byte, error) {
 	var bfr bytes.Buffer
 	encoder := gob.NewEncoder(&bfr)
@@ -86,34 +83,27 @@ func (self *Script) marshalBinary() ([]byte, error) {
 // will return an error.
 //
 // The binary format can change at any time and should be considered unspecified and opaque.
-//
-func (self *Script) unmarshalBinary(data []byte) error {
+func (self *Script) unmarshalBinary(data []byte) (err error) {
 	decoder := gob.NewDecoder(bytes.NewReader(data))
-	err := decoder.Decode(&self.version)
-	if err != nil {
-		goto error
+	defer func() {
+		if err != nil {
+			self.version = ""
+			self.program = nil
+			self.filename = ""
+			self.src = ""
+		}
+	}()
+	if err = decoder.Decode(&self.version); err != nil {
+		return err
 	}
 	if self.version != scriptVersion {
-		err = ErrVersion
-		goto error
+		return ErrVersion
 	}
-	err = decoder.Decode(&self.program)
-	if err != nil {
-		goto error
+	if err = decoder.Decode(&self.program); err != nil {
+		return err
 	}
-	err = decoder.Decode(&self.filename)
-	if err != nil {
-		goto error
+	if err = decoder.Decode(&self.filename); err != nil {
+		return err
 	}
-	err = decoder.Decode(&self.src)
-	if err != nil {
-		goto error
-	}
-	return nil
-error:
-	self.version = ""
-	self.program = nil
-	self.filename = ""
-	self.src = ""
-	return err
+	return decoder.Decode(&self.src)
 }

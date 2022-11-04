@@ -73,11 +73,15 @@ func (b *builder) buildArg(obj *Object, arg *ast.ArgumentDefinition) (*FieldArgu
 	return &newArg, nil
 }
 
-func (b *builder) bindArgs(field *Field, params *types.Tuple) ([]*FieldArgument, error) {
-	var newArgs []*FieldArgument
-
+func (b *builder) bindArgs(field *Field, sig *types.Signature, params *types.Tuple) ([]*FieldArgument, error) {
+	n := params.Len()
+	newArgs := make([]*FieldArgument, 0, len(field.Args))
+	// Accept variadic methods (i.e. have optional parameters).
+	if params.Len() > len(field.Args) && sig.Variadic() {
+		n = len(field.Args)
+	}
 nextArg:
-	for j := 0; j < params.Len(); j++ {
+	for j := 0; j < n; j++ {
 		param := params.At(j)
 		for _, oldArg := range field.Args {
 			if strings.EqualFold(oldArg.Name, param.Name()) {

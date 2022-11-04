@@ -8,7 +8,7 @@ func (e Encoder) AppendStrings(dst []byte, vals []string) []byte {
 	l := len(vals)
 	if l <= additionalMax {
 		lb := byte(l)
-		dst = append(dst, byte(major|lb))
+		dst = append(dst, major|lb)
 	} else {
 		dst = appendCborTypePrefix(dst, major, uint64(l))
 	}
@@ -25,7 +25,7 @@ func (Encoder) AppendString(dst []byte, s string) []byte {
 	l := len(s)
 	if l <= additionalMax {
 		lb := byte(l)
-		dst = append(dst, byte(major|lb))
+		dst = append(dst, major|lb)
 	} else {
 		dst = appendCborTypePrefix(dst, majorTypeUtf8String, uint64(l))
 	}
@@ -64,7 +64,7 @@ func (Encoder) AppendBytes(dst, s []byte) []byte {
 	l := len(s)
 	if l <= additionalMax {
 		lb := byte(l)
-		dst = append(dst, byte(major|lb))
+		dst = append(dst, major|lb)
 	} else {
 		dst = appendCborTypePrefix(dst, major, uint64(l))
 	}
@@ -77,7 +77,7 @@ func AppendEmbeddedJSON(dst, s []byte) []byte {
 	minor := additionalTypeEmbeddedJSON
 
 	// Append the TAG to indicate this is Embedded JSON.
-	dst = append(dst, byte(major|additionalTypeIntUint16))
+	dst = append(dst, major|additionalTypeIntUint16)
 	dst = append(dst, byte(minor>>8))
 	dst = append(dst, byte(minor&0xff))
 
@@ -87,7 +87,7 @@ func AppendEmbeddedJSON(dst, s []byte) []byte {
 	l := len(s)
 	if l <= additionalMax {
 		lb := byte(l)
-		dst = append(dst, byte(major|lb))
+		dst = append(dst, major|lb)
 	} else {
 		dst = appendCborTypePrefix(dst, major, uint64(l))
 	}

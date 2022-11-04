@@ -29,6 +29,13 @@ resolver:
 # Optional: turn on to use []Thing instead of []*Thing
 # omit_slice_element_pointers: false
 
+# Optional: turn off to make struct-type struct fields not use pointers
+# e.g. type Thing struct { FieldA OtherThing } instead of { FieldA *OtherThing }
+# struct_fields_always_pointers: true
+
+# Optional: turn off to make resolvers return values instead of pointers for structs
+# resolvers_always_return_pointers: true
+
 # Optional: set to speed up generation time by not performing a final validation pass.
 # skip_validation: true
 

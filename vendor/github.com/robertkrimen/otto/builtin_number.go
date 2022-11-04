@@ -24,7 +24,7 @@ func builtinNewNumber(self *_object, argumentList []Value) Value {
 
 func builtinNumber_toString(call FunctionCall) Value {
 	// Will throw a TypeError if ThisObject is not a Number
-	value := call.thisClassObject("Number").primitiveValue()
+	value := call.thisClassObject(classNumber).primitiveValue()
 	radix := 10
 	radixArgument := call.Argument(0)
 	if radixArgument.IsDefined() {
@@ -41,7 +41,7 @@ func builtinNumber_toString(call FunctionCall) Value {
 }
 
 func builtinNumber_valueOf(call FunctionCall) Value {
-	return call.thisClassObject("Number").primitiveValue()
+	return call.thisClassObject(classNumber).primitiveValue()
 }
 
 func builtinNumber_toFixed(call FunctionCall) Value {

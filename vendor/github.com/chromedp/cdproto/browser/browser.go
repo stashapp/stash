@@ -28,8 +28,9 @@ type SetPermissionParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-setPermission
 //
 // parameters:
-//   permission - Descriptor of permission to override.
-//   setting - Setting of the permission.
+//
+//	permission - Descriptor of permission to override.
+//	setting - Setting of the permission.
 func SetPermission(permission *PermissionDescriptor, setting PermissionSetting) *SetPermissionParams {
 	return &SetPermissionParams{
 		Permission: permission,
@@ -69,7 +70,8 @@ type GrantPermissionsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-grantPermissions
 //
 // parameters:
-//   permissions
+//
+//	permissions
 func GrantPermissions(permissions []PermissionType) *GrantPermissionsParams {
 	return &GrantPermissionsParams{
 		Permissions: permissions,
@@ -133,7 +135,8 @@ type SetDownloadBehaviorParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-setDownloadBehavior
 //
 // parameters:
-//   behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their dowmload guids.
+//
+//	behavior - Whether to allow all or deny all download requests, or use default Chrome behavior if available (otherwise deny). |allowAndName| allows download and names files according to their dowmload guids.
 func SetDownloadBehavior(behavior SetDownloadBehaviorBehavior) *SetDownloadBehaviorParams {
 	return &SetDownloadBehaviorParams{
 		Behavior: behavior,
@@ -176,7 +179,8 @@ type CancelDownloadParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-cancelDownload
 //
 // parameters:
-//   guid - Global unique identifier of the download.
+//
+//	guid - Global unique identifier of the download.
 func CancelDownload(guid string) *CancelDownloadParams {
 	return &CancelDownloadParams{
 		GUID: guid,
@@ -262,11 +266,12 @@ type GetVersionReturns struct {
 // Do executes Browser.getVersion against the provided context.
 //
 // returns:
-//   protocolVersion - Protocol version.
-//   product - Product name.
-//   revision - Product revision.
-//   userAgent - User-Agent.
-//   jsVersion - V8 version.
+//
+//	protocolVersion - Protocol version.
+//	product - Product name.
+//	revision - Product revision.
+//	userAgent - User-Agent.
+//	jsVersion - V8 version.
 func (p *GetVersionParams) Do(ctx context.Context) (protocolVersion string, product string, revision string, userAgent string, jsVersion string, err error) {
 	// execute
 	var res GetVersionReturns
@@ -298,7 +303,8 @@ type GetBrowserCommandLineReturns struct {
 // Do executes Browser.getBrowserCommandLine against the provided context.
 //
 // returns:
-//   arguments - Commandline parameters
+//
+//	arguments - Commandline parameters
 func (p *GetBrowserCommandLineParams) Do(ctx context.Context) (arguments []string, err error) {
 	// execute
 	var res GetBrowserCommandLineReturns
@@ -347,7 +353,8 @@ type GetHistogramsReturns struct {
 // Do executes Browser.getHistograms against the provided context.
 //
 // returns:
-//   histograms - Histograms.
+//
+//	histograms - Histograms.
 func (p *GetHistogramsParams) Do(ctx context.Context) (histograms []*Histogram, err error) {
 	// execute
 	var res GetHistogramsReturns
@@ -370,7 +377,8 @@ type GetHistogramParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-getHistogram
 //
 // parameters:
-//   name - Requested histogram name.
+//
+//	name - Requested histogram name.
 func GetHistogram(name string) *GetHistogramParams {
 	return &GetHistogramParams{
 		Name: name,
@@ -391,7 +399,8 @@ type GetHistogramReturns struct {
 // Do executes Browser.getHistogram against the provided context.
 //
 // returns:
-//   histogram - Histogram.
+//
+//	histogram - Histogram.
 func (p *GetHistogramParams) Do(ctx context.Context) (histogram *Histogram, err error) {
 	// execute
 	var res GetHistogramReturns
@@ -413,7 +422,8 @@ type GetWindowBoundsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-getWindowBounds
 //
 // parameters:
-//   windowID - Browser window id.
+//
+//	windowID - Browser window id.
 func GetWindowBounds(windowID WindowID) *GetWindowBoundsParams {
 	return &GetWindowBoundsParams{
 		WindowID: windowID,
@@ -428,7 +438,8 @@ type GetWindowBoundsReturns struct {
 // Do executes Browser.getWindowBounds against the provided context.
 //
 // returns:
-//   bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
+//
+//	bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
 func (p *GetWindowBoundsParams) Do(ctx context.Context) (bounds *Bounds, err error) {
 	// execute
 	var res GetWindowBoundsReturns
@@ -472,8 +483,9 @@ type GetWindowForTargetReturns struct {
 // Do executes Browser.getWindowForTarget against the provided context.
 //
 // returns:
-//   windowID - Browser window id.
-//   bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
+//
+//	windowID - Browser window id.
+//	bounds - Bounds information of the window. When window state is 'minimized', the restored window position and size are returned.
 func (p *GetWindowForTargetParams) Do(ctx context.Context) (windowID WindowID, bounds *Bounds, err error) {
 	// execute
 	var res GetWindowForTargetReturns
@@ -496,8 +508,9 @@ type SetWindowBoundsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-setWindowBounds
 //
 // parameters:
-//   windowID - Browser window id.
-//   bounds - New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
+//
+//	windowID - Browser window id.
+//	bounds - New window bounds. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined with 'left', 'top', 'width' or 'height'. Leaves unspecified fields unchanged.
 func SetWindowBounds(windowID WindowID, bounds *Bounds) *SetWindowBoundsParams {
 	return &SetWindowBoundsParams{
 		WindowID: windowID,
@@ -553,7 +566,8 @@ type ExecuteBrowserCommandParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Browser#method-executeBrowserCommand
 //
 // parameters:
-//   commandID
+//
+//	commandID
 func ExecuteBrowserCommand(commandID CommandID) *ExecuteBrowserCommandParams {
 	return &ExecuteBrowserCommandParams{
 		CommandID: commandID,

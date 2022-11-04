@@ -58,7 +58,8 @@ type GetRealtimeDataParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAudio#method-getRealtimeData
 //
 // parameters:
-//   contextID
+//
+//	contextID
 func GetRealtimeData(contextID GraphObjectID) *GetRealtimeDataParams {
 	return &GetRealtimeDataParams{
 		ContextID: contextID,
@@ -73,7 +74,8 @@ type GetRealtimeDataReturns struct {
 // Do executes WebAudio.getRealtimeData against the provided context.
 //
 // returns:
-//   realtimeData
+//
+//	realtimeData
 func (p *GetRealtimeDataParams) Do(ctx context.Context) (realtimeData *ContextRealtimeData, err error) {
 	// execute
 	var res GetRealtimeDataReturns

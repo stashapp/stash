@@ -56,7 +56,8 @@ type SetIgnoreCertificateErrorsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Security#method-setIgnoreCertificateErrors
 //
 // parameters:
-//   ignore - If true, all certificate errors will be ignored.
+//
+//	ignore - If true, all certificate errors will be ignored.
 func SetIgnoreCertificateErrors(ignore bool) *SetIgnoreCertificateErrorsParams {
 	return &SetIgnoreCertificateErrorsParams{
 		Ignore: ignore,

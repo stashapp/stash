@@ -278,7 +278,7 @@ func (Encoder) AppendUints32(dst []byte, vals []uint32) []byte {
 // AppendUint64 converts the input uint64 to a string and
 // appends the encoded string to the input byte slice.
 func (Encoder) AppendUint64(dst []byte, val uint64) []byte {
-	return strconv.AppendUint(dst, uint64(val), 10)
+	return strconv.AppendUint(dst, val, 10)
 }
 
 // AppendUints64 encodes the input uint64s to json and
@@ -300,7 +300,7 @@ func (Encoder) AppendUints64(dst []byte, vals []uint64) []byte {
 
 func appendFloat(dst []byte, val float64, bitSize int) []byte {
 	// JSON does not permit NaN or Infinity. A typical JSON encoder would fail
-	// with an error, but a logging library wants the data to get thru so we
+	// with an error, but a logging library wants the data to get through so we
 	// make a tradeoff and store those types as string.
 	switch {
 	case math.IsNaN(val):

@@ -27,7 +27,8 @@ type EnableParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/PerformanceTimeline#method-enable
 //
 // parameters:
-//   eventTypes - The types of event to report, as specified in https://w3c.github.io/performance-timeline/#dom-performanceentry-entrytype The specified filter overrides any previous filters, passing empty filter disables recording. Note that not all types exposed to the web platform are currently supported.
+//
+//	eventTypes - The types of event to report, as specified in https://w3c.github.io/performance-timeline/#dom-performanceentry-entrytype The specified filter overrides any previous filters, passing empty filter disables recording. Note that not all types exposed to the web platform are currently supported.
 func Enable(eventTypes []string) *EnableParams {
 	return &EnableParams{
 		EventTypes: eventTypes,

@@ -37,6 +37,10 @@ linters:
     - scopelint # deprecated
     - ifshort # too many false positives
     - golint # deprecated
+    - varnamelen
+    - tagliatelle
+    - errname
+    - ireturn
 
 issues:
   exclude-use-default: false

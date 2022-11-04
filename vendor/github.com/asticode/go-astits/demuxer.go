@@ -27,7 +27,7 @@ type Demuxer struct {
 	optPacketsParser PacketsParser
 	packetBuffer     *packetBuffer
 	packetPool       *packetPool
-	programMap       programMap
+	programMap       *programMap
 	r                io.Reader
 }
 
@@ -40,10 +40,10 @@ func NewDemuxer(ctx context.Context, r io.Reader, opts ...func(*Demuxer)) (d *De
 	// Init
 	d = &Demuxer{
 		ctx:        ctx,
-		packetPool: newPacketPool(),
 		programMap: newProgramMap(),
 		r:          r,
 	}
+	d.packetPool = newPacketPool(d.optPacketsParser, d.programMap)
 
 	// Apply options
 	for _, opt := range opts {
@@ -119,7 +119,8 @@ func (dmx *Demuxer) NextData() (d *DemuxerData, err error) {
 					}
 
 					// Parse data
-					if ds, err = parseData(ps, dmx.optPacketsParser, dmx.programMap); err != nil {
+					var errParseData error
+					if ds, errParseData = parseData(ps, dmx.optPacketsParser, dmx.programMap); errParseData != nil {
 						// We need to silence this error as there may be some incomplete data here
 						// We still want to try to parse all packets, in case final data is complete
 						continue
@@ -127,6 +128,7 @@ func (dmx *Demuxer) NextData() (d *DemuxerData, err error) {
 
 					// Update data
 					if d = dmx.updateData(ds); d != nil {
+						err = nil
 						return
 					}
 				}
@@ -180,7 +182,7 @@ func (dmx *Demuxer) updateData(ds []*DemuxerData) (d *DemuxerData) {
 func (dmx *Demuxer) Rewind() (n int64, err error) {
 	dmx.dataBuffer = []*DemuxerData{}
 	dmx.packetBuffer = nil
-	dmx.packetPool = newPacketPool()
+	dmx.packetPool = newPacketPool(dmx.optPacketsParser, dmx.programMap)
 	if n, err = rewind(dmx.r); err != nil {
 		err = fmt.Errorf("astits: rewinding reader failed: %w", err)
 		return

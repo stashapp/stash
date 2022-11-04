@@ -2,7 +2,6 @@ package otto
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"unicode"
 
@@ -30,8 +29,6 @@ func argumentList2parameterList(argumentList []Value) []string {
 	return parameterList
 }
 
-var matchIdentifier = regexp.MustCompile(`^[$_\p{L}][$_\p{L}\d}]*$`)
-
 func builtinNewFunctionNative(runtime *_runtime, argumentList []Value) *_object {
 	var parameterList, body string
 	count := len(argumentList)
@@ -54,7 +51,7 @@ func builtinNewFunctionNative(runtime *_runtime, argumentList []Value) *_object 
 }
 
 func builtinFunction_toString(call FunctionCall) Value {
-	object := call.thisClassObject("Function") // Should throw a TypeError unless Function
+	object := call.thisClassObject(classFunction) // Should throw a TypeError unless Function
 	switch fn := object.value.(type) {
 	case _nativeFunctionObject:
 		return toValue_string(fmt.Sprintf("function %s() { [native code] }", fn.name))
@@ -87,7 +84,7 @@ func builtinFunction_apply(call FunctionCall) Value {
 
 	arrayObject := argumentList._object()
 	thisObject := call.thisObject()
-	length := int64(toUint32(arrayObject.get("length")))
+	length := int64(toUint32(arrayObject.get(propertyLength)))
 	valueArray := make([]Value, length)
 	for index := int64(0); index < length; index++ {
 		valueArray[index] = arrayObject.get(arrayIndexToString(index))

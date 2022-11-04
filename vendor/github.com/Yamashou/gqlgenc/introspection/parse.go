@@ -2,6 +2,7 @@ package introspection
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -12,6 +13,7 @@ func ParseIntrospectionQuery(url string, query Query) *ast.SchemaDocument {
 			Name:    "remote",
 			BuiltIn: false,
 		}},
+		typeMap: query.Schema.Types.NameMap(),
 	}
 
 	if url != "" {
@@ -22,22 +24,26 @@ func ParseIntrospectionQuery(url string, query Query) *ast.SchemaDocument {
 }
 
 type parser struct {
-	sharedPosition *ast.Position
+	sharedPosition                *ast.Position
+	typeMap                       map[string]*FullType
+	deprecatedDirectiveDefinition *ast.DirectiveDefinition
 }
 
 func (p parser) parseIntrospectionQuery(query Query) *ast.SchemaDocument {
 	var doc ast.SchemaDocument
-	typeMap := query.Schema.Types.NameMap()
 
-	doc.Schema = append(doc.Schema, p.parseSchemaDefinition(query, typeMap))
+	doc.Schema = append(doc.Schema, p.parseSchemaDefinition(query, p.typeMap))
 	doc.Position = p.sharedPosition
 
-	for _, typeVale := range typeMap {
-		doc.Definitions = append(doc.Definitions, p.parseTypeSystemDefinition(typeVale))
-	}
-
+	// parseDirectiveDefinition before parseTypeSystemDefinition
+	// Because SystemDefinition depends on DirectiveDefinition
 	for _, directiveValue := range query.Schema.Directives {
 		doc.Directives = append(doc.Directives, p.parseDirectiveDefinition(directiveValue))
+	}
+	p.deprecatedDirectiveDefinition = doc.Directives.ForName("deprecated")
+
+	for _, typeVale := range p.typeMap {
+		doc.Definitions = append(doc.Definitions, p.parseTypeSystemDefinition(typeVale))
 	}
 
 	return &doc
@@ -116,6 +122,7 @@ func (p parser) parseObjectFields(typeVale *FullType) ast.FieldList {
 			Arguments:   args,
 			Type:        typ,
 			Position:    p.sharedPosition,
+			Directives:  p.buildDeprecatedDirective(field),
 		}
 		fieldList = append(fieldList, fieldDefinition)
 	}
@@ -164,7 +171,7 @@ func (p parser) parseObjectTypeDefinition(typeVale *FullType) *ast.Definition {
 		Fields:      fieldList,
 		EnumValues:  enums,
 		Position:    p.sharedPosition,
-		BuiltIn:     true,
+		BuiltIn:     builtInObject(typeVale),
 	}
 }
 
@@ -182,7 +189,7 @@ func (p parser) parseInterfaceTypeDefinition(typeVale *FullType) *ast.Definition
 		Interfaces:  interfaces,
 		Fields:      fieldList,
 		Position:    p.sharedPosition,
-		BuiltIn:     true,
+		BuiltIn:     false,
 	}
 }
 
@@ -200,7 +207,7 @@ func (p parser) parseInputObjectTypeDefinition(typeVale *FullType) *ast.Definiti
 		Interfaces:  interfaces,
 		Fields:      fieldList,
 		Position:    p.sharedPosition,
-		BuiltIn:     true,
+		BuiltIn:     false,
 	}
 }
 
@@ -216,7 +223,7 @@ func (p parser) parseUnionTypeDefinition(typeVale *FullType) *ast.Definition {
 		Name:        pointerString(typeVale.Name),
 		Types:       unions,
 		Position:    p.sharedPosition,
-		BuiltIn:     true,
+		BuiltIn:     false,
 	}
 }
 
@@ -237,7 +244,7 @@ func (p parser) parseEnumTypeDefinition(typeVale *FullType) *ast.Definition {
 		Name:        pointerString(typeVale.Name),
 		EnumValues:  enums,
 		Position:    p.sharedPosition,
-		BuiltIn:     true,
+		BuiltIn:     builtInEnum(typeVale),
 	}
 }
 
@@ -247,7 +254,7 @@ func (p parser) parseScalarTypeExtension(typeVale *FullType) *ast.Definition {
 		Description: pointerString(typeVale.Description),
 		Name:        pointerString(typeVale.Name),
 		Position:    p.sharedPosition,
-		BuiltIn:     true,
+		BuiltIn:     builtInScalar(typeVale),
 	}
 }
 
@@ -279,7 +286,7 @@ func (p parser) buildInputValue(input *InputValue) *ast.ArgumentDefinition {
 	if input.DefaultValue != nil {
 		defaultValue = &ast.Value{
 			Raw:      pointerString(input.DefaultValue),
-			Kind:     ast.Variable,
+			Kind:     p.parseValueKind(typ),
 			Position: p.sharedPosition,
 		}
 	}
@@ -317,10 +324,96 @@ func (p parser) getType(typeRef *TypeRef) *ast.Type {
 	return ast.NamedType(pointerString(typeRef.Name), p.sharedPosition)
 }
 
+func (p parser) buildDeprecatedDirective(field *FieldValue) ast.DirectiveList {
+	var directives ast.DirectiveList
+	if field.IsDeprecated {
+		var arguments ast.ArgumentList
+		if field.DeprecationReason != nil {
+			arguments = append(arguments, &ast.Argument{
+				Name: "reason",
+				Value: &ast.Value{
+					Raw:      *field.DeprecationReason,
+					Kind:     ast.StringValue,
+					Position: p.sharedPosition,
+				},
+				Position: p.sharedPosition,
+			})
+		}
+		deprecatedDirective := &ast.Directive{
+			Name:             "deprecated",
+			Arguments:        arguments,
+			Position:         p.sharedPosition,
+			ParentDefinition: nil,
+			Definition:       p.deprecatedDirectiveDefinition,
+			Location:         ast.LocationVariableDefinition,
+		}
+		directives = append(directives, deprecatedDirective)
+	}
+
+	return directives
+}
+
+func (p parser) parseValueKind(typ *ast.Type) ast.ValueKind {
+	typName := typ.Name()
+
+	if fullType, ok := p.typeMap[typName]; ok {
+		switch fullType.Kind {
+		case TypeKindEnum:
+			return ast.EnumValue
+		case TypeKindInputObject, TypeKindObject, TypeKindUnion, TypeKindInterface:
+			return ast.ObjectValue
+		case TypeKindList:
+			return ast.ListValue
+		case TypeKindNonNull:
+			panic(fmt.Sprintf("parseValueKind not match Type Name: %s", typ.Name()))
+		case TypeKindScalar:
+			switch typName {
+			case "Int":
+				return ast.IntValue
+			case "Float":
+				return ast.FloatValue
+			case "Boolean":
+				return ast.BooleanValue
+			case "String", "ID":
+				return ast.StringValue
+			default:
+				return ast.StringValue
+			}
+		}
+	}
+
+	panic(fmt.Sprintf("parseValueKind not match Type Name: %s", typ.Name()))
+}
+
 func pointerString(s *string) string {
 	if s == nil {
 		return ""
 	}
 
 	return *s
+}
+
+func builtInScalar(fullType *FullType) bool {
+	name := pointerString(fullType.Name)
+	if strings.HasPrefix(name, "__") {
+		return true
+	}
+	switch name {
+	case "String", "Int", "Float", "Boolean", "ID":
+		return true
+	}
+
+	return false
+}
+
+func builtInEnum(fullType *FullType) bool {
+	name := pointerString(fullType.Name)
+
+	return strings.HasPrefix(name, "__")
+}
+
+func builtInObject(fullType *FullType) bool {
+	name := pointerString(fullType.Name)
+
+	return strings.HasPrefix(name, "__")
 }

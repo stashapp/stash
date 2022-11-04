@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // SSHSession represents an SSH Session
@@ -27,6 +28,9 @@ func SSHCopyFileFunc(fn SSHSessionFunc) CopyFileFunc {
 			return
 		}
 
+		// Escape dir path
+		d := strings.ReplaceAll(filepath.Dir(dst), " ", "\\ ")
+
 		// Using local closure allows better readibility for the defer c.Close() since it
 		// isolates the use of the ssh session
 		if err = func() (err error) {
@@ -40,7 +44,7 @@ func SSHCopyFileFunc(fn SSHSessionFunc) CopyFileFunc {
 			defer c.Close()
 
 			// Create the destination folder
-			if err = s.Run("mkdir -p " + filepath.Dir(dst)); err != nil {
+			if err = s.Run("mkdir -p " + d); err != nil {
 				err = fmt.Errorf("astikit: creating %s failed: %w", filepath.Dir(dst), err)
 				return
 			}
@@ -70,7 +74,7 @@ func SSHCopyFileFunc(fn SSHSessionFunc) CopyFileFunc {
 			defer stdin.Close()
 
 			// Use "scp" command
-			if err = s.Start("scp -qt \"" + filepath.Dir(dst) + "\""); err != nil {
+			if err = s.Start("scp -qt " + d); err != nil {
 				err = fmt.Errorf("astikit: scp to %s failed: %w", dst, err)
 				return
 			}

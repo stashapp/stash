@@ -5,6 +5,7 @@ Package `chromedp` is a faster, simpler way to drive browsers supporting the
 
 [![Unit Tests][chromedp-ci-status]][chromedp-ci]
 [![Go Reference][goref-chromedp-status]][goref-chromedp]
+[![Releases][release-status]][releases]
 
 ## Installing
 
@@ -51,7 +52,7 @@ for an example.
 Wrap it with an `ActionFunc`:
 
 ```go
-ctx, cancel := chromedp.NewContext()
+ctx, cancel := chromedp.NewContext(context.Background())
 defer cancel()
 chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
 	_, err := domain.SomeAction().Do(ctx)
@@ -89,3 +90,5 @@ to find out of the box.
 [goref-chromedp-exec-allocator]: https://pkg.go.dev/github.com/chromedp/chromedp#example-ExecAllocator
 [goref-chromedp]: https://pkg.go.dev/github.com/chromedp/chromedp
 [goref-chromedp-status]: https://pkg.go.dev/badge/github.com/chromedp/chromedp.svg
+[release-status]: https://img.shields.io/github/v/release/chromedp/chromedp?display_name=tag&sort=semver (Latest Release)
+[releases]: https://github.com/chromedp/chromedp/releases (Releases)

@@ -17,19 +17,32 @@ import (
 
 // EnableParams enable the WebAuthn domain and start intercepting credential
 // storage and retrieval with a virtual authenticator.
-type EnableParams struct{}
+type EnableParams struct {
+	EnableUI bool `json:"enableUI,omitempty"` // Whether to enable the WebAuthn user interface. Enabling the UI is recommended for debugging and demo purposes, as it is closer to the real experience. Disabling the UI is recommended for automated testing. Supported at the embedder's discretion if UI is available. Defaults to false.
+}
 
 // Enable enable the WebAuthn domain and start intercepting credential
 // storage and retrieval with a virtual authenticator.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-enable
+//
+// parameters:
 func Enable() *EnableParams {
 	return &EnableParams{}
 }
 
+// WithEnableUI whether to enable the WebAuthn user interface. Enabling the
+// UI is recommended for debugging and demo purposes, as it is closer to the
+// real experience. Disabling the UI is recommended for automated testing.
+// Supported at the embedder's discretion if UI is available. Defaults to false.
+func (p EnableParams) WithEnableUI(enableUI bool) *EnableParams {
+	p.EnableUI = enableUI
+	return &p
+}
+
 // Do executes WebAuthn.enable against the provided context.
 func (p *EnableParams) Do(ctx context.Context) (err error) {
-	return cdp.Execute(ctx, CommandEnable, nil, nil)
+	return cdp.Execute(ctx, CommandEnable, p, nil)
 }
 
 // DisableParams disable the WebAuthn domain.
@@ -57,7 +70,8 @@ type AddVirtualAuthenticatorParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-addVirtualAuthenticator
 //
 // parameters:
-//   options
+//
+//	options
 func AddVirtualAuthenticator(options *VirtualAuthenticatorOptions) *AddVirtualAuthenticatorParams {
 	return &AddVirtualAuthenticatorParams{
 		Options: options,
@@ -72,7 +86,8 @@ type AddVirtualAuthenticatorReturns struct {
 // Do executes WebAuthn.addVirtualAuthenticator against the provided context.
 //
 // returns:
-//   authenticatorID
+//
+//	authenticatorID
 func (p *AddVirtualAuthenticatorParams) Do(ctx context.Context) (authenticatorID AuthenticatorID, err error) {
 	// execute
 	var res AddVirtualAuthenticatorReturns
@@ -94,7 +109,8 @@ type RemoveVirtualAuthenticatorParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-removeVirtualAuthenticator
 //
 // parameters:
-//   authenticatorID
+//
+//	authenticatorID
 func RemoveVirtualAuthenticator(authenticatorID AuthenticatorID) *RemoveVirtualAuthenticatorParams {
 	return &RemoveVirtualAuthenticatorParams{
 		AuthenticatorID: authenticatorID,
@@ -117,8 +133,9 @@ type AddCredentialParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-addCredential
 //
 // parameters:
-//   authenticatorID
-//   credential
+//
+//	authenticatorID
+//	credential
 func AddCredential(authenticatorID AuthenticatorID, credential *Credential) *AddCredentialParams {
 	return &AddCredentialParams{
 		AuthenticatorID: authenticatorID,
@@ -144,8 +161,9 @@ type GetCredentialParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-getCredential
 //
 // parameters:
-//   authenticatorID
-//   credentialID
+//
+//	authenticatorID
+//	credentialID
 func GetCredential(authenticatorID AuthenticatorID, credentialID string) *GetCredentialParams {
 	return &GetCredentialParams{
 		AuthenticatorID: authenticatorID,
@@ -161,7 +179,8 @@ type GetCredentialReturns struct {
 // Do executes WebAuthn.getCredential against the provided context.
 //
 // returns:
-//   credential
+//
+//	credential
 func (p *GetCredentialParams) Do(ctx context.Context) (credential *Credential, err error) {
 	// execute
 	var res GetCredentialReturns
@@ -185,7 +204,8 @@ type GetCredentialsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-getCredentials
 //
 // parameters:
-//   authenticatorID
+//
+//	authenticatorID
 func GetCredentials(authenticatorID AuthenticatorID) *GetCredentialsParams {
 	return &GetCredentialsParams{
 		AuthenticatorID: authenticatorID,
@@ -200,7 +220,8 @@ type GetCredentialsReturns struct {
 // Do executes WebAuthn.getCredentials against the provided context.
 //
 // returns:
-//   credentials
+//
+//	credentials
 func (p *GetCredentialsParams) Do(ctx context.Context) (credentials []*Credential, err error) {
 	// execute
 	var res GetCredentialsReturns
@@ -223,8 +244,9 @@ type RemoveCredentialParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-removeCredential
 //
 // parameters:
-//   authenticatorID
-//   credentialID
+//
+//	authenticatorID
+//	credentialID
 func RemoveCredential(authenticatorID AuthenticatorID, credentialID string) *RemoveCredentialParams {
 	return &RemoveCredentialParams{
 		AuthenticatorID: authenticatorID,
@@ -248,7 +270,8 @@ type ClearCredentialsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-clearCredentials
 //
 // parameters:
-//   authenticatorID
+//
+//	authenticatorID
 func ClearCredentials(authenticatorID AuthenticatorID) *ClearCredentialsParams {
 	return &ClearCredentialsParams{
 		AuthenticatorID: authenticatorID,
@@ -273,8 +296,9 @@ type SetUserVerifiedParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-setUserVerified
 //
 // parameters:
-//   authenticatorID
-//   isUserVerified
+//
+//	authenticatorID
+//	isUserVerified
 func SetUserVerified(authenticatorID AuthenticatorID, isUserVerified bool) *SetUserVerifiedParams {
 	return &SetUserVerifiedParams{
 		AuthenticatorID: authenticatorID,
@@ -302,8 +326,9 @@ type SetAutomaticPresenceSimulationParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/WebAuthn#method-setAutomaticPresenceSimulation
 //
 // parameters:
-//   authenticatorID
-//   enabled
+//
+//	authenticatorID
+//	enabled
 func SetAutomaticPresenceSimulation(authenticatorID AuthenticatorID, enabled bool) *SetAutomaticPresenceSimulationParams {
 	return &SetAutomaticPresenceSimulationParams{
 		AuthenticatorID: authenticatorID,

@@ -67,7 +67,8 @@ type CaptureSnapshotParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMSnapshot#method-captureSnapshot
 //
 // parameters:
-//   computedStyles - Whitelist of computed styles to return.
+//
+//	computedStyles - Whitelist of computed styles to return.
 func CaptureSnapshot(computedStyles []string) *CaptureSnapshotParams {
 	return &CaptureSnapshotParams{
 		ComputedStyles: computedStyles,
@@ -115,8 +116,9 @@ type CaptureSnapshotReturns struct {
 // Do executes DOMSnapshot.captureSnapshot against the provided context.
 //
 // returns:
-//   documents - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
-//   strings - Shared string table that all string properties refer to with indexes.
+//
+//	documents - The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
+//	strings - Shared string table that all string properties refer to with indexes.
 func (p *CaptureSnapshotParams) Do(ctx context.Context) (documents []*DocumentSnapshot, strings []string, err error) {
 	// execute
 	var res CaptureSnapshotReturns

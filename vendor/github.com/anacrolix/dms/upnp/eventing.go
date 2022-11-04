@@ -5,10 +5,11 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"log"
 	"net/url"
 	"regexp"
 	"time"
+
+	"github.com/anacrolix/log"
 )
 
 // TODO: Why use namespace prefixes in PropertySet et al? Because the spec

@@ -45,7 +45,7 @@ type EventChildNodeCountUpdated struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#event-childNodeInserted
 type EventChildNodeInserted struct {
 	ParentNodeID   cdp.NodeID `json:"parentNodeId"`   // Id of the node that has changed.
-	PreviousNodeID cdp.NodeID `json:"previousNodeId"` // If of the previous siblint.
+	PreviousNodeID cdp.NodeID `json:"previousNodeId"` // Id of the previous sibling.
 	Node           *cdp.Node  `json:"node"`           // Inserted node data.
 }
 
@@ -76,7 +76,7 @@ type EventDocumentUpdated struct{}
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#event-inlineStyleInvalidated
 type EventInlineStyleInvalidated struct {
-	NodeIds []cdp.NodeID `json:"nodeIds"` // Ids of the nodes for which the inline styles have been invalidated.
+	NodeIDs []cdp.NodeID `json:"nodeIds"` // Ids of the nodes for which the inline styles have been invalidated.
 }
 
 // EventPseudoElementAdded called when a pseudo element is added to an
@@ -87,6 +87,11 @@ type EventPseudoElementAdded struct {
 	ParentID      cdp.NodeID `json:"parentId"`      // Pseudo element's parent element id.
 	PseudoElement *cdp.Node  `json:"pseudoElement"` // The added pseudo element.
 }
+
+// EventTopLayerElementsUpdated called when top layer elements are changed.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#event-topLayerElementsUpdated
+type EventTopLayerElementsUpdated struct{}
 
 // EventPseudoElementRemoved called when a pseudo element is removed from an
 // element.

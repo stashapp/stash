@@ -1,7 +1,9 @@
 package resolvergen
 
 import (
+	_ "embed"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -12,7 +14,12 @@ import (
 	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/99designs/gqlgen/internal/rewrite"
 	"github.com/99designs/gqlgen/plugin"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
+
+//go:embed resolver.gotpl
+var resolverTemplate string
 
 func New() plugin.Plugin {
 	return &Plugin{}
@@ -58,7 +65,7 @@ func (m *Plugin) generateSingleFile(data *codegen.Data) error {
 				continue
 			}
 
-			resolver := Resolver{o, f, `panic("not implemented")`}
+			resolver := Resolver{o, f, "// foo", `panic("not implemented")`}
 			file.Resolvers = append(file.Resolvers, &resolver)
 		}
 	}
@@ -76,6 +83,7 @@ func (m *Plugin) generateSingleFile(data *codegen.Data) error {
 		Filename:    data.Config.Resolver.Filename,
 		Data:        resolverBuild,
 		Packages:    data.Config.Packages,
+		Template:    resolverTemplate,
 	})
 }
 
@@ -98,8 +106,9 @@ func (m *Plugin) generatePerSchema(data *codegen.Data) error {
 				files[fn] = &File{}
 			}
 
+			caser := cases.Title(language.English, cases.NoLower)
 			rewriter.MarkStructCopied(templates.LcFirst(o.Name) + templates.UcFirst(data.Config.Resolver.Type))
-			rewriter.GetMethodBody(data.Config.Resolver.Type, strings.Title(o.Name))
+			rewriter.GetMethodBody(data.Config.Resolver.Type, caser.String(o.Name))
 			files[fn].Objects = append(files[fn].Objects, o)
 		}
 		for _, f := range o.Fields {
@@ -109,11 +118,15 @@ func (m *Plugin) generatePerSchema(data *codegen.Data) error {
 
 			structName := templates.LcFirst(o.Name) + templates.UcFirst(data.Config.Resolver.Type)
 			implementation := strings.TrimSpace(rewriter.GetMethodBody(structName, f.GoFieldName))
+			comment := strings.TrimSpace(strings.TrimLeft(rewriter.GetMethodComment(structName, f.GoFieldName), `\`))
 			if implementation == "" {
-				implementation = `panic(fmt.Errorf("not implemented"))`
+				implementation = fmt.Sprintf("panic(fmt.Errorf(\"not implemented: %v - %v\"))", f.GoFieldName, f.Name)
+			}
+			if comment == "" {
+				comment = fmt.Sprintf("%v is the resolver for the %v field.", f.GoFieldName, f.Name)
 			}
 
-			resolver := Resolver{o, f, implementation}
+			resolver := Resolver{o, f, comment, implementation}
 			fn := gqlToResolverName(data.Config.Resolver.Dir(), f.Position.Src.Name, data.Config.Resolver.FilenameTemplate)
 			if files[fn] == nil {
 				files[fn] = &File{}
@@ -143,6 +156,7 @@ func (m *Plugin) generatePerSchema(data *codegen.Data) error {
 			Filename: filename,
 			Data:     resolverBuild,
 			Packages: data.Config.Packages,
+			Template: resolverTemplate,
 		})
 		if err != nil {
 			return err
@@ -198,6 +212,7 @@ func (f *File) Imports() string {
 type Resolver struct {
 	Object         *codegen.Object
 	Field          *codegen.Field
+	Comment        string
 	Implementation string
 }
 

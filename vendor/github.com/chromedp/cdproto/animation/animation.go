@@ -53,7 +53,8 @@ type GetCurrentTimeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Animation#method-getCurrentTime
 //
 // parameters:
-//   id - Id of animation.
+//
+//	id - Id of animation.
 func GetCurrentTime(id string) *GetCurrentTimeParams {
 	return &GetCurrentTimeParams{
 		ID: id,
@@ -68,7 +69,8 @@ type GetCurrentTimeReturns struct {
 // Do executes Animation.getCurrentTime against the provided context.
 //
 // returns:
-//   currentTime - Current time of the page.
+//
+//	currentTime - Current time of the page.
 func (p *GetCurrentTimeParams) Do(ctx context.Context) (currentTime float64, err error) {
 	// execute
 	var res GetCurrentTimeReturns
@@ -98,7 +100,8 @@ type GetPlaybackRateReturns struct {
 // Do executes Animation.getPlaybackRate against the provided context.
 //
 // returns:
-//   playbackRate - Playback rate for animations on page.
+//
+//	playbackRate - Playback rate for animations on page.
 func (p *GetPlaybackRateParams) Do(ctx context.Context) (playbackRate float64, err error) {
 	// execute
 	var res GetPlaybackRateReturns
@@ -122,7 +125,8 @@ type ReleaseAnimationsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Animation#method-releaseAnimations
 //
 // parameters:
-//   animations - List of animation ids to seek.
+//
+//	animations - List of animation ids to seek.
 func ReleaseAnimations(animations []string) *ReleaseAnimationsParams {
 	return &ReleaseAnimationsParams{
 		Animations: animations,
@@ -144,7 +148,8 @@ type ResolveAnimationParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Animation#method-resolveAnimation
 //
 // parameters:
-//   animationID - Animation id.
+//
+//	animationID - Animation id.
 func ResolveAnimation(animationID string) *ResolveAnimationParams {
 	return &ResolveAnimationParams{
 		AnimationID: animationID,
@@ -159,7 +164,8 @@ type ResolveAnimationReturns struct {
 // Do executes Animation.resolveAnimation against the provided context.
 //
 // returns:
-//   remoteObject - Corresponding remote object.
+//
+//	remoteObject - Corresponding remote object.
 func (p *ResolveAnimationParams) Do(ctx context.Context) (remoteObject *runtime.RemoteObject, err error) {
 	// execute
 	var res ResolveAnimationReturns
@@ -184,8 +190,9 @@ type SeekAnimationsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Animation#method-seekAnimations
 //
 // parameters:
-//   animations - List of animation ids to seek.
-//   currentTime - Set the current time of each animation.
+//
+//	animations - List of animation ids to seek.
+//	currentTime - Set the current time of each animation.
 func SeekAnimations(animations []string, currentTime float64) *SeekAnimationsParams {
 	return &SeekAnimationsParams{
 		Animations:  animations,
@@ -209,8 +216,9 @@ type SetPausedParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Animation#method-setPaused
 //
 // parameters:
-//   animations - Animations to set the pause state of.
-//   paused - Paused state to set to.
+//
+//	animations - Animations to set the pause state of.
+//	paused - Paused state to set to.
 func SetPaused(animations []string, paused bool) *SetPausedParams {
 	return &SetPausedParams{
 		Animations: animations,
@@ -233,7 +241,8 @@ type SetPlaybackRateParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Animation#method-setPlaybackRate
 //
 // parameters:
-//   playbackRate - Playback rate for animations on page
+//
+//	playbackRate - Playback rate for animations on page
 func SetPlaybackRate(playbackRate float64) *SetPlaybackRateParams {
 	return &SetPlaybackRateParams{
 		PlaybackRate: playbackRate,
@@ -257,9 +266,10 @@ type SetTimingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Animation#method-setTiming
 //
 // parameters:
-//   animationID - Animation id.
-//   duration - Duration of the animation.
-//   delay - Delay of the animation.
+//
+//	animationID - Animation id.
+//	duration - Duration of the animation.
+//	delay - Delay of the animation.
 func SetTiming(animationID string, duration float64, delay float64) *SetTimingParams {
 	return &SetTimingParams{
 		AnimationID: animationID,

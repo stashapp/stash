@@ -30,6 +30,25 @@ type FieldContext struct {
 	IsMethod bool
 	// IsResolver indicates if the field has a user-specified resolver
 	IsResolver bool
+	// Child allows getting a child FieldContext by its field collection description.
+	// Note that, the returned child FieldContext represents the context as it was
+	// before the execution of the field resolver. For example:
+	//
+	//	srv.AroundFields(func(ctx context.Context, next graphql.Resolver) (interface{}, error) {
+	//		fc := graphql.GetFieldContext(ctx)
+	//		op := graphql.GetOperationContext(ctx)
+	//		collected := graphql.CollectFields(opCtx, fc.Field.Selections, []string{"User"})
+	//
+	//		child, err := fc.Child(ctx, collected[0])
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//		fmt.Println("child context %q with args: %v", child.Field.Name, child.Args)
+	//
+	//		return next(ctx)
+	//	})
+	//
+	Child func(context.Context, CollectedField) (*FieldContext, error)
 }
 
 type FieldStats struct {

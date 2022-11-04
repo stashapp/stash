@@ -45,7 +45,8 @@ type GetCategoriesReturns struct {
 // Do executes Tracing.getCategories against the provided context.
 //
 // returns:
-//   categories - A list of supported tracing categories.
+//
+//	categories - A list of supported tracing categories.
 func (p *GetCategoriesParams) Do(ctx context.Context) (categories []string, err error) {
 	// execute
 	var res GetCategoriesReturns
@@ -67,7 +68,8 @@ type RecordClockSyncMarkerParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Tracing#method-recordClockSyncMarker
 //
 // parameters:
-//   syncID - The ID of this clock sync marker
+//
+//	syncID - The ID of this clock sync marker
 func RecordClockSyncMarker(syncID string) *RecordClockSyncMarkerParams {
 	return &RecordClockSyncMarkerParams{
 		SyncID: syncID,
@@ -117,8 +119,9 @@ type RequestMemoryDumpReturns struct {
 // Do executes Tracing.requestMemoryDump against the provided context.
 //
 // returns:
-//   dumpGUID - GUID of the resulting global memory dump.
-//   success - True iff the global memory dump succeeded.
+//
+//	dumpGUID - GUID of the resulting global memory dump.
+//	success - True iff the global memory dump succeeded.
 func (p *RequestMemoryDumpParams) Do(ctx context.Context) (dumpGUID string, success bool, err error) {
 	// execute
 	var res RequestMemoryDumpReturns

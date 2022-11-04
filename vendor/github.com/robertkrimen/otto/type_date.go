@@ -84,12 +84,6 @@ func (self *_dateObject) SetTime(time Time.Time) {
 	self.Set(timeToEpoch(time))
 }
 
-func epoch2dateObject(epoch float64) _dateObject {
-	date := _dateObject{}
-	date.Set(epoch)
-	return date
-}
-
 func (self *_dateObject) Set(epoch float64) {
 	// epoch
 	self.epoch = epochToInteger(epoch)
@@ -135,7 +129,7 @@ func timeToEpoch(time Time.Time) float64 {
 
 func (runtime *_runtime) newDateObject(epoch float64) *_object {
 	self := runtime.newObject()
-	self.class = "Date"
+	self.class = classDate
 
 	// FIXME This is ugly...
 	date := _dateObject{}
@@ -150,7 +144,7 @@ func (self *_object) dateValue() _dateObject {
 }
 
 func dateObjectOf(rt *_runtime, _dateObject *_object) _dateObject {
-	if _dateObject == nil || _dateObject.class != "Date" {
+	if _dateObject == nil || _dateObject.class != classDate {
 		panic(rt.panicTypeError())
 	}
 	return _dateObject.dateValue()
@@ -163,11 +157,6 @@ func dateToGoMonth(month int) Time.Month {
 
 func dateFromGoMonth(month Time.Month) int {
 	return int(month) - 1
-}
-
-// Both JavaScript & Go are 0-based (Sunday == 0)
-func dateToGoDay(day int) Time.Weekday {
-	return Time.Weekday(day)
 }
 
 func dateFromGoDay(day Time.Weekday) int {

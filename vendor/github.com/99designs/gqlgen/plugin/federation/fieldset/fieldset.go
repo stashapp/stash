@@ -11,15 +11,12 @@ import (
 
 // Set represents a FieldSet that is used in federation directives @key and @requires.
 // Would be happier to reuse FieldSet parsing from gqlparser, but this suits for now.
-//
 type Set []Field
 
 // Field represents a single field in a FieldSet
-//
 type Field []string
 
 // New parses a FieldSet string into a TinyFieldSet.
-//
 func New(raw string, prefix []string) Set {
 	if !strings.Contains(raw, "{") {
 		return parseUnnestedKeyFieldSet(raw, prefix)
@@ -48,7 +45,6 @@ func New(raw string, prefix []string) Set {
 }
 
 // FieldDefinition looks up a field in the type.
-//
 func (f Field) FieldDefinition(schemaType *ast.Definition, schema *ast.Schema) *ast.FieldDefinition {
 	objType := schemaType
 	def := objType.Fields.ForName(f[0])
@@ -74,7 +70,6 @@ func (f Field) FieldDefinition(schemaType *ast.Definition, schema *ast.Schema) *
 }
 
 // TypeReference looks up the type of a field.
-//
 func (f Field) TypeReference(obj *codegen.Object, objects codegen.Objects) *codegen.Field {
 	var def *codegen.Field
 
@@ -89,7 +84,6 @@ func (f Field) TypeReference(obj *codegen.Object, objects codegen.Objects) *code
 }
 
 // ToGo converts a (possibly nested) field into a proper public Go name.
-//
 func (f Field) ToGo() string {
 	var ret string
 
@@ -100,7 +94,6 @@ func (f Field) ToGo() string {
 }
 
 // ToGoPrivate converts a (possibly nested) field into a proper private Go name.
-//
 func (f Field) ToGoPrivate() string {
 	var ret string
 
@@ -115,13 +108,11 @@ func (f Field) ToGoPrivate() string {
 }
 
 // Join concatenates the field parts with a string separator between. Useful in templates.
-//
 func (f Field) Join(str string) string {
 	return strings.Join(f, str)
 }
 
 // JoinGo concatenates the Go name of field parts with a string separator between. Useful in templates.
-//
 func (f Field) JoinGo(str string) string {
 	strs := []string{}
 
@@ -138,7 +129,6 @@ func (f Field) LastIndex() int {
 // local functions
 
 // parseUnnestedKeyFieldSet // handles simple case where none of the fields are nested.
-//
 func parseUnnestedKeyFieldSet(raw string, prefix []string) Set {
 	ret := Set{}
 
@@ -150,7 +140,6 @@ func parseUnnestedKeyFieldSet(raw string, prefix []string) Set {
 }
 
 // extractSubs splits out and trims sub-expressions from before, inside, and after "{}".
-//
 func extractSubs(str string) (string, string, string) {
 	start := strings.Index(str, "{")
 	end := matchingBracketIndex(str, start)
@@ -162,7 +151,6 @@ func extractSubs(str string) (string, string, string) {
 }
 
 // matchingBracketIndex returns the index of the closing bracket, assuming an open bracket at start.
-//
 func matchingBracketIndex(str string, start int) int {
 	if start < 0 || len(str) <= start+1 {
 		return -1
