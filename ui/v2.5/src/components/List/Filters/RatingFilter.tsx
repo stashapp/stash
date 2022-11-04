@@ -6,7 +6,8 @@ import { INumberValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
 import { ConfigurationContext } from "../../../hooks/Config";
 import {
-  convertFromRatingFormat
+  convertFromRatingFormat,
+  convertToRatingFormat,
 } from "../../../components/Scenes/SceneDetails/RatingSystem";
 import * as GQL from "src/core/generated-graphql";
 
@@ -19,7 +20,7 @@ interface IDurationFilterProps {
 export const RatingFilter: React.FC<IDurationFilterProps> = ({
   criterion,
   onValueChanged,
-  configuration
+  configuration,
 }) => {
   const intl = useIntl();
 
@@ -30,7 +31,9 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
     property: "value" | "value2"
   ) {
     const value = parseInt(event.target.value, 10);
-    valueStage.current[property] = !Number.isNaN(value) ? convertFromRatingFormat(value, configuration?.interface.ratingSystem) : 0;
+    valueStage.current[property] = !Number.isNaN(value)
+      ? convertFromRatingFormat(value, configuration?.interface.ratingSystem)
+      : 0;
   }
 
   function onBlurInput() {
@@ -51,7 +54,12 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
             onChanged(e, "value")
           }
           onBlur={onBlurInput}
-          defaultValue={criterion.value?.value ?? ""}
+          defaultValue={
+            convertToRatingFormat(
+              criterion.value?.value,
+              configuration?.interface.ratingSystem
+            ) ?? ""
+          }
           placeholder={intl.formatMessage({ id: "criterion.value" })}
         />
       </Form.Group>
@@ -73,7 +81,12 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
             onChanged(e, "value")
           }
           onBlur={onBlurInput}
-          defaultValue={criterion.value?.value ?? ""}
+          defaultValue={
+            convertToRatingFormat(
+              criterion.value?.value,
+              configuration?.interface.ratingSystem
+            ) ?? ""
+          }
           placeholder={intl.formatMessage({ id: "criterion.greater_than" })}
         />
       </Form.Group>
@@ -101,9 +114,12 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
           }
           onBlur={onBlurInput}
           defaultValue={
-            (criterion.modifier === CriterionModifier.LessThan
-              ? criterion.value?.value
-              : criterion.value?.value2) ?? ""
+            convertToRatingFormat(
+              criterion.modifier === CriterionModifier.LessThan
+                ? criterion.value?.value
+                : criterion.value?.value2,
+              configuration?.interface.ratingSystem
+            ) ?? ""
           }
           placeholder={intl.formatMessage({ id: "criterion.less_than" })}
         />

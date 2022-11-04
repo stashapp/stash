@@ -41,7 +41,7 @@ function round(value: number, step: number) {
 
 export function convertToRatingFormat(
   rating: number | undefined,
-  ratingSystem: GQL.RatingSystem
+  ratingSystem: Maybe<GQL.RatingSystem> | undefined
 ) {
   if (!rating) {
     return null;

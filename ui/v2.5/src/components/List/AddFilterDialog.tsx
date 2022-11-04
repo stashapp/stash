@@ -182,7 +182,11 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       }
       if (criterion instanceof RatingCriterion) {
         return (
-          <RatingFilter criterion={criterion} onValueChanged={onValueChanged} configuration={config} />
+          <RatingFilter
+            criterion={criterion}
+            onValueChanged={onValueChanged}
+            configuration={config}
+          />
         );
       }
       if (
