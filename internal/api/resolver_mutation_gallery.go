@@ -68,7 +68,13 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input GalleryCreat
 		d := models.NewDate(*input.Date)
 		newGallery.Date = &d
 	}
-	newGallery.Rating = input.Rating
+
+	if input.Rating100 != nil {
+		newGallery.Rating = input.Rating100
+	} else if input.Rating != nil {
+		rating := models.Rating5To100(*input.Rating)
+		newGallery.Rating = &rating
+	}
 
 	if input.StudioID != nil {
 		studioID, _ := strconv.Atoi(*input.StudioID)

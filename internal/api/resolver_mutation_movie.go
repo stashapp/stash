@@ -76,9 +76,11 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		newMovie.Date = models.SQLiteDate{String: *input.Date, Valid: true}
 	}
 
-	if input.Rating != nil {
-		rating := int64(*input.Rating)
-		newMovie.Rating = sql.NullInt64{Int64: rating, Valid: true}
+	if input.Rating100 != nil {
+		newMovie.Rating = sql.NullInt64{Int64: int64(*input.Rating100), Valid: true}
+	} else if input.Rating != nil {
+		rating := models.Rating5To100(*input.Rating)
+		newMovie.Rating = sql.NullInt64{Int64: int64(rating), Valid: true}
 	}
 
 	if input.StudioID != nil {
