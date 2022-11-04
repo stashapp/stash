@@ -75,7 +75,7 @@ const criterionOptions = [
   TagsCriterionOption,
   StudiosCriterionOption,
   createStringCriterionOption("url"),
-  createNullNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating100"),
   createMandatoryNumberCriterionOption("tag_count"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),

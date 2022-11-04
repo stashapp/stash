@@ -4,7 +4,6 @@ import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
-import { ConfigurationContext } from "../../../hooks/Config";
 import {
   convertFromRatingFormat,
   convertToRatingFormat,

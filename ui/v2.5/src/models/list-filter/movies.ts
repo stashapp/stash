@@ -28,7 +28,7 @@ const criterionOptions = [
   createStringCriterionOption("director"),
   createStringCriterionOption("synopsis"),
   createMandatoryNumberCriterionOption("duration"),
-  createNullNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating100"),
   PerformersCriterionOption,
 ];
 

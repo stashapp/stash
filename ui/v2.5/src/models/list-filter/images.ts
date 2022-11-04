@@ -36,7 +36,7 @@ const criterionOptions = [
   ResolutionCriterionOption,
   ImageIsMissingCriterionOption,
   TagsCriterionOption,
-  createNullNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating100"),
   createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,

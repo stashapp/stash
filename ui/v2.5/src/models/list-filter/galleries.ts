@@ -46,7 +46,7 @@ const criterionOptions = [
     "media_info.checksum",
     "checksum"
   ),
-  createNullNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating100"),
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,

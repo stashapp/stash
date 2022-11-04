@@ -34,7 +34,7 @@ const criterionOptions = [
   createStringCriterionOption("details"),
   ParentStudiosCriterionOption,
   StudioIsMissingCriterionOption,
-  createNullNumberCriterionOption("rating"),
+  createNullNumberCriterionOption("rating100"),
   createBooleanCriterionOption("ignore_auto_tag"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
