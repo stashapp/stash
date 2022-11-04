@@ -12,13 +12,14 @@ import (
 type Gallery struct {
 	ID int `json:"id"`
 
-	Title     string `json:"title"`
-	URL       string `json:"url"`
-	Date      *Date  `json:"date"`
-	Details   string `json:"details"`
-	Rating    *int   `json:"rating"`
-	Organized bool   `json:"organized"`
-	StudioID  *int   `json:"studio_id"`
+	Title   string `json:"title"`
+	URL     string `json:"url"`
+	Date    *Date  `json:"date"`
+	Details string `json:"details"`
+	// Rating expressed in 1-100 scale
+	Rating    *int `json:"rating"`
+	Organized bool `json:"organized"`
+	StudioID  *int `json:"studio_id"`
 
 	// transient - not persisted
 	Files RelatedFiles
@@ -98,10 +99,11 @@ type GalleryPartial struct {
 	// Path        OptionalString
 	// Checksum    OptionalString
 	// Zip         OptionalBool
-	Title     OptionalString
-	URL       OptionalString
-	Date      OptionalDate
-	Details   OptionalString
+	Title   OptionalString
+	URL     OptionalString
+	Date    OptionalDate
+	Details OptionalString
+	// Rating expressed in 1-100 scale
 	Rating    OptionalInt
 	Organized OptionalBool
 	StudioID  OptionalInt

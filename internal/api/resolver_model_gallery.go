@@ -198,10 +198,7 @@ func (r *galleryResolver) Rating(ctx context.Context, obj *models.Gallery) (*int
 }
 
 func (r *galleryResolver) Rating100(ctx context.Context, obj *models.Gallery) (*int, error) {
-	if obj.Rating != nil {
-		return obj.Rating, nil
-	}
-	return nil, nil
+	return obj.Rating, nil
 }
 
 func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret []*models.Scene, err error) {

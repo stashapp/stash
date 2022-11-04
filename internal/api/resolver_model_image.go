@@ -153,10 +153,7 @@ func (r *imageResolver) Rating(ctx context.Context, obj *models.Image) (*int, er
 }
 
 func (r *imageResolver) Rating100(ctx context.Context, obj *models.Image) (*int, error) {
-	if obj.Rating != nil {
-		return obj.Rating, nil
-	}
-	return nil, nil
+	return obj.Rating, nil
 }
 
 func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *models.Studio, err error) {

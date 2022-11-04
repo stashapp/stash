@@ -148,10 +148,7 @@ func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, er
 }
 
 func (r *sceneResolver) Rating100(ctx context.Context, obj *models.Scene) (*int, error) {
-	if obj.Rating != nil {
-		return obj.Rating, nil
-	}
-	return nil, nil
+	return obj.Rating, nil
 }
 
 func resolveFingerprints(f *file.BaseFile) []*Fingerprint {
