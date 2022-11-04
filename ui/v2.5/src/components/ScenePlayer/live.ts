@@ -163,6 +163,7 @@ function offsetMiddleware(player: VideoJsPlayer) {
       });
       tech.trigger("timeupdate");
       tech.trigger("pause");
+      tech.trigger("seeking");
       tech.play();
 
       return 0;
