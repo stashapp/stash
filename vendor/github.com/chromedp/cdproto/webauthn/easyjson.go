@@ -50,6 +50,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoWebauthn(in *jlexer.Lexer, ou
 			out.HasLargeBlob = bool(in.Bool())
 		case "hasCredBlob":
 			out.HasCredBlob = bool(in.Bool())
+		case "hasMinPinLength":
+			out.HasMinPinLength = bool(in.Bool())
 		case "automaticPresenceSimulation":
 			out.AutomaticPresenceSimulation = bool(in.Bool())
 		case "isUserVerified":
@@ -102,6 +104,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoWebauthn(out *jwriter.Writer,
 		const prefix string = ",\"hasCredBlob\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.HasCredBlob))
+	}
+	if in.HasMinPinLength {
+		const prefix string = ",\"hasMinPinLength\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.HasMinPinLength))
 	}
 	if in.AutomaticPresenceSimulation {
 		const prefix string = ",\"automaticPresenceSimulation\":"
@@ -766,6 +773,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoWebauthn9(in *jlexer.Lexer, o
 			continue
 		}
 		switch key {
+		case "enableUI":
+			out.EnableUI = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -780,6 +789,12 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoWebauthn9(out *jwriter.Writer
 	out.RawByte('{')
 	first := true
 	_ = first
+	if in.EnableUI {
+		const prefix string = ",\"enableUI\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.Bool(bool(in.EnableUI))
+	}
 	out.RawByte('}')
 }
 

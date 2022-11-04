@@ -352,7 +352,7 @@ func (self *_parser) parseArrayLiteral() ast.Expression {
 	for self.token != token.RIGHT_BRACKET && self.token != token.EOF {
 		if self.token == token.COMMA {
 			// This kind of comment requires a special empty expression node.
-			empty := &ast.EmptyExpression{self.idx, self.idx}
+			empty := &ast.EmptyExpression{Begin: self.idx, End: self.idx}
 
 			if self.mode&StoreComments != 0 {
 				self.comments.SetExpression(empty)

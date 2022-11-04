@@ -1,22 +1,25 @@
 package astits
 
 type wrappingCounter struct {
-	wrapAt int
 	value  int
+	wrapAt int
 }
 
 func newWrappingCounter(wrapAt int) wrappingCounter {
 	return wrappingCounter{
+		value:  wrapAt + 1,
 		wrapAt: wrapAt,
 	}
 }
 
-// returns current counter state and increments internal value
 func (c *wrappingCounter) get() int {
-	ret := c.value
+	return c.value
+}
+
+func (c *wrappingCounter) inc() int {
 	c.value++
 	if c.value > c.wrapAt {
 		c.value = 0
 	}
-	return ret
+	return c.value
 }

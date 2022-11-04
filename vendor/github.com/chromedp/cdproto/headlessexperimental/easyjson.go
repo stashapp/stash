@@ -40,6 +40,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoHeadlessexperimental(in *jlex
 			(out.Format).UnmarshalEasyJSON(in)
 		case "quality":
 			out.Quality = int64(in.Int64())
+		case "optimizeForSpeed":
+			out.OptimizeForSpeed = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -69,6 +71,16 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoHeadlessexperimental(out *jwr
 			out.RawString(prefix)
 		}
 		out.Int64(int64(in.Quality))
+	}
+	if in.OptimizeForSpeed {
+		const prefix string = ",\"optimizeForSpeed\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.OptimizeForSpeed))
 	}
 	out.RawByte('}')
 }

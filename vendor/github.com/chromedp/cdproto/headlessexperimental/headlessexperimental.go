@@ -20,7 +20,7 @@ import (
 // frame was completed. Optionally captures a screenshot from the resulting
 // frame. Requires that the target was created with enabled BeginFrameControl.
 // Designed for use with --run-all-compositor-stages-before-draw, see also
-// https://goo.gl/3zHXhB for more background.
+// https://goo.gle/chrome-headless-rendering for more background.
 type BeginFrameParams struct {
 	FrameTimeTicks   float64           `json:"frameTimeTicks,omitempty"`   // Timestamp of this BeginFrame in Renderer TimeTicks (milliseconds of uptime). If not set, the current time will be used.
 	Interval         float64           `json:"interval,omitempty"`         // The interval between BeginFrames that is reported to the compositor, in milliseconds. Defaults to a 60 frames/second interval, i.e. about 16.666 milliseconds.
@@ -32,7 +32,7 @@ type BeginFrameParams struct {
 // completed. Optionally captures a screenshot from the resulting frame.
 // Requires that the target was created with enabled BeginFrameControl. Designed
 // for use with --run-all-compositor-stages-before-draw, see also
-// https://goo.gl/3zHXhB for more background.
+// https://goo.gle/chrome-headless-rendering for more background.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/HeadlessExperimental#method-beginFrame
 //
@@ -83,8 +83,9 @@ type BeginFrameReturns struct {
 // Do executes HeadlessExperimental.beginFrame against the provided context.
 //
 // returns:
-//   hasDamage - Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the display. Reported for diagnostic uses, may be removed in the future.
-//   screenshotData - Base64-encoded image data of the screenshot, if one was requested and successfully taken.
+//
+//	hasDamage - Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the display. Reported for diagnostic uses, may be removed in the future.
+//	screenshotData - Base64-encoded image data of the screenshot, if one was requested and successfully taken.
 func (p *BeginFrameParams) Do(ctx context.Context) (hasDamage bool, screenshotData []byte, err error) {
 	// execute
 	var res BeginFrameReturns

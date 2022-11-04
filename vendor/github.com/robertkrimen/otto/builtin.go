@@ -41,22 +41,6 @@ func builtinGlobal_isFinite(call FunctionCall) Value {
 	return toValue_bool(!math.IsNaN(value) && !math.IsInf(value, 0))
 }
 
-// radix 3 => 2 (ASCII 50) +47
-// radix 11 => A/a (ASCII 65/97) +54/+86
-var parseInt_alphabetTable = func() []string {
-	table := []string{"", "", "01"}
-	for radix := 3; radix <= 36; radix += 1 {
-		alphabet := table[radix-1]
-		if radix <= 10 {
-			alphabet += string(radix + 47)
-		} else {
-			alphabet += string(radix+54) + string(radix+86)
-		}
-		table = append(table, alphabet)
-	}
-	return table
-}()
-
 func digitValue(chr rune) int {
 	switch {
 	case '0' <= chr && chr <= '9':
@@ -129,7 +113,7 @@ func builtinGlobal_parseInt(call FunctionCall) Value {
 			for _, chr := range input {
 				digit := float64(digitValue(chr))
 				if digit >= base {
-					goto error
+					return NaNValue()
 				}
 				value = value*base + digit
 			}
@@ -138,7 +122,6 @@ func builtinGlobal_parseInt(call FunctionCall) Value {
 			}
 			return toValue_float64(value)
 		}
-	error:
 		return NaNValue()
 	}
 	if negative {

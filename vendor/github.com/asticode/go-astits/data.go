@@ -35,7 +35,7 @@ type MuxerData struct {
 }
 
 // parseData parses a payload spanning over multiple packets and returns a set of data
-func parseData(ps []*Packet, prs PacketsParser, pm programMap) (ds []*DemuxerData, err error) {
+func parseData(ps []*Packet, prs PacketsParser, pm *programMap) (ds []*DemuxerData, err error) {
 	// Use custom parser first
 	if prs != nil {
 		var skip bool
@@ -99,7 +99,7 @@ func parseData(ps []*Packet, prs PacketsParser, pm programMap) (ds []*DemuxerDat
 }
 
 // isPSIPayload checks whether the payload is a PSI one
-func isPSIPayload(pid uint16, pm programMap) bool {
+func isPSIPayload(pid uint16, pm *programMap) bool {
 	return pid == PIDPAT || // PAT
 		pm.exists(pid) || // PMT
 		((pid >= 0x10 && pid <= 0x14) || (pid >= 0x1e && pid <= 0x1f)) //DVB

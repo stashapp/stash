@@ -628,14 +628,14 @@ func parseNumberLiteral(literal string) (value interface{}, err error) {
 	// TODO Is Uint okay? What about -MAX_UINT
 	value, err = strconv.ParseInt(literal, 0, 64)
 	if err == nil {
-		return
+		return value, nil
 	}
 
 	parseIntErr := err // Save this first error, just in case
 
 	value, err = strconv.ParseFloat(literal, 64)
 	if err == nil {
-		return
+		return value, nil
 	} else if err.(*strconv.NumError).Err == strconv.ErrRange {
 		// Infinity, etc.
 		return value, nil
@@ -651,7 +651,7 @@ func parseNumberLiteral(literal string) (value interface{}, err error) {
 			for _, chr := range literal {
 				digit := digitValue(chr)
 				if digit >= 16 {
-					goto error
+					return nil, errors.New("Illegal numeric literal")
 				}
 				value = value*16 + float64(digit)
 			}
@@ -659,7 +659,6 @@ func parseNumberLiteral(literal string) (value interface{}, err error) {
 		}
 	}
 
-error:
 	return nil, errors.New("Illegal numeric literal")
 }
 

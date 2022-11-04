@@ -643,4 +643,4 @@ fuzzer:
     input: "\"\"\"\r"
     error:
       message: 'Unexpected <Invalid>'
-      locations: [{ line: 1, column: 5 }]
+      locations: [{ line: 2, column: 1 }]

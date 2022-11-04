@@ -25,7 +25,8 @@ type CloseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IO#method-close
 //
 // parameters:
-//   handle - Handle of the stream to close.
+//
+//	handle - Handle of the stream to close.
 func Close(handle StreamHandle) *CloseParams {
 	return &CloseParams{
 		Handle: handle,
@@ -49,7 +50,8 @@ type ReadParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IO#method-read
 //
 // parameters:
-//   handle - Handle of the stream to read.
+//
+//	handle - Handle of the stream to read.
 func Read(handle StreamHandle) *ReadParams {
 	return &ReadParams{
 		Handle: handle,
@@ -81,8 +83,9 @@ type ReadReturns struct {
 // Do executes IO.read against the provided context.
 //
 // returns:
-//   data - Data that were read.
-//   eof - Set if the end-of-file condition occurred while reading.
+//
+//	data - Data that were read.
+//	eof - Set if the end-of-file condition occurred while reading.
 func (p *ReadParams) Do(ctx context.Context) (data string, eof bool, err error) {
 	// execute
 	var res ReadReturns
@@ -105,7 +108,8 @@ type ResolveBlobParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/IO#method-resolveBlob
 //
 // parameters:
-//   objectID - Object id of a Blob object wrapper.
+//
+//	objectID - Object id of a Blob object wrapper.
 func ResolveBlob(objectID runtime.RemoteObjectID) *ResolveBlobParams {
 	return &ResolveBlobParams{
 		ObjectID: objectID,
@@ -120,7 +124,8 @@ type ResolveBlobReturns struct {
 // Do executes IO.resolveBlob against the provided context.
 //
 // returns:
-//   uuid - UUID of the specified Blob.
+//
+//	uuid - UUID of the specified Blob.
 func (p *ResolveBlobParams) Do(ctx context.Context) (uuid string, err error) {
 	// execute
 	var res ResolveBlobReturns

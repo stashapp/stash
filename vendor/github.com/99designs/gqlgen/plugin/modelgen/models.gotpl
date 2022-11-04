@@ -14,74 +14,88 @@
 
 {{- range $model := .Interfaces }}
 	{{ with .Description }} {{.|prefixLines "// "}} {{ end }}
-	type {{.Name|go }} interface {
+	type {{ goModelName .Name }} interface {
 		{{- range $impl := .Implements }}
-			{{ $impl|go }}
+			Is{{ goModelName $impl }}()
 		{{- end }}
-		Is{{.Name|go }}()
+		Is{{ goModelName .Name }}()
+		{{- range $field := .Fields }}
+			{{- with .Description }}
+				{{.|prefixLines "// "}}
+			{{- end}}
+			Get{{ $field.GoName }}() {{ $field.Type | ref }}
+		{{- end }}
 	}
 {{- end }}
 
 {{ range $model := .Models }}
 	{{with .Description }} {{.|prefixLines "// "}} {{end}}
-	type {{ .Name|go }} struct {
+	type {{ goModelName .Name }} struct {
 		{{- range $field := .Fields }}
 			{{- with .Description }}
 				{{.|prefixLines "// "}}
 			{{- end}}
-			{{ $field.Name|go }} {{$field.Type | ref}} `{{$field.Tag}}`
+			{{ $field.GoName }} {{$field.Type | ref}} `{{$field.Tag}}`
 		{{- end }}
 	}
 
-	{{- range $iface := .Implements }}
-		func ({{ $model.Name|go }}) Is{{ $iface|go }}() {}
-	{{- end }}
+	{{ range .Implements }}
+		func ({{ goModelName $model.Name }}) Is{{ goModelName . }}() {}
+		{{- with getInterfaceByName . }}
+			{{- range .Fields }}
+				{{- with .Description }}
+					{{.|prefixLines "// "}}
+				{{- end}}
+				{{ generateGetter $model . }}
+			{{- end }}
+		{{- end }}
+	{{ end }}
 {{- end}}
 
 {{ range $enum := .Enums }}
 	{{ with .Description }} {{.|prefixLines "// "}} {{end}}
-	type {{.Name|go }} string
+	type {{ goModelName .Name }} string
 	const (
 	{{- range $value := .Values}}
 		{{- with .Description}}
 			{{.|prefixLines "// "}}
 		{{- end}}
-		{{ $enum.Name|go }}{{ .Name|go }} {{$enum.Name|go }} = {{.Name|quote}}
+		{{ goModelName $enum.Name .Name }} {{ goModelName $enum.Name }} = {{ .Name|quote }}
 	{{- end }}
 	)
 
-	var All{{.Name|go }} = []{{ .Name|go }}{
+	var All{{ goModelName .Name }} = []{{ goModelName .Name }}{
 	{{- range $value := .Values}}
-		{{$enum.Name|go }}{{ .Name|go }},
+		{{ goModelName $enum.Name .Name }},
 	{{- end }}
 	}
 
-	func (e {{.Name|go }}) IsValid() bool {
+	func (e {{ goModelName .Name }}) IsValid() bool {
 		switch e {
-		case {{ range $index, $element := .Values}}{{if $index}},{{end}}{{ $enum.Name|go }}{{ $element.Name|go }}{{end}}:
+		case {{ range $index, $element := .Values}}{{if $index}},{{end}}{{ goModelName $enum.Name $element.Name }}{{end}}:
 			return true
 		}
 		return false
 	}
 
-	func (e {{.Name|go }}) String() string {
+	func (e {{ goModelName .Name }}) String() string {
 		return string(e)
 	}
 
-	func (e *{{.Name|go }}) UnmarshalGQL(v interface{}) error {
+	func (e *{{ goModelName .Name }}) UnmarshalGQL(v interface{}) error {
 		str, ok := v.(string)
 		if !ok {
 			return fmt.Errorf("enums must be strings")
 		}
 
-		*e = {{ .Name|go }}(str)
+		*e = {{ goModelName .Name }}(str)
 		if !e.IsValid() {
 			return fmt.Errorf("%s is not a valid {{ .Name }}", str)
 		}
 		return nil
 	}
 
-	func (e {{.Name|go }}) MarshalGQL(w io.Writer) {
+	func (e {{ goModelName .Name }}) MarshalGQL(w io.Writer) {
 		fmt.Fprint(w, strconv.Quote(e.String()))
 	}
 

@@ -14,7 +14,7 @@ func builtinBoolean_toString(call FunctionCall) Value {
 	value := call.This
 	if !value.IsBoolean() {
 		// Will throw a TypeError if ThisObject is not a Boolean
-		value = call.thisClassObject("Boolean").primitiveValue()
+		value = call.thisClassObject(classBoolean).primitiveValue()
 	}
 	return toValue_string(value.string())
 }
@@ -22,7 +22,7 @@ func builtinBoolean_toString(call FunctionCall) Value {
 func builtinBoolean_valueOf(call FunctionCall) Value {
 	value := call.This
 	if !value.IsBoolean() {
-		value = call.thisClassObject("Boolean").primitiveValue()
+		value = call.thisClassObject(classBoolean).primitiveValue()
 	}
 	return value
 }

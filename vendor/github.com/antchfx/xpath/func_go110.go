@@ -11,6 +11,6 @@ func round(f float64) int {
 	return int(math.Round(f))
 }
 
-func newStringBuilder() stringBuilder{ 
+func newStringBuilder() stringBuilder {
 	return &strings.Builder{}
 }

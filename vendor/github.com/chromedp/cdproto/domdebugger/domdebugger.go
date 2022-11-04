@@ -29,7 +29,8 @@ type GetEventListenersParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-getEventListeners
 //
 // parameters:
-//   objectID - Identifier of the object to return listeners for.
+//
+//	objectID - Identifier of the object to return listeners for.
 func GetEventListeners(objectID runtime.RemoteObjectID) *GetEventListenersParams {
 	return &GetEventListenersParams{
 		ObjectID: objectID,
@@ -60,7 +61,8 @@ type GetEventListenersReturns struct {
 // Do executes DOMDebugger.getEventListeners against the provided context.
 //
 // returns:
-//   listeners - Array of relevant listeners.
+//
+//	listeners - Array of relevant listeners.
 func (p *GetEventListenersParams) Do(ctx context.Context) (listeners []*EventListener, err error) {
 	// execute
 	var res GetEventListenersReturns
@@ -85,8 +87,9 @@ type RemoveDOMBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-removeDOMBreakpoint
 //
 // parameters:
-//   nodeID - Identifier of the node to remove breakpoint from.
-//   type - Type of the breakpoint to remove.
+//
+//	nodeID - Identifier of the node to remove breakpoint from.
+//	type - Type of the breakpoint to remove.
 func RemoveDOMBreakpoint(nodeID cdp.NodeID, typeVal DOMBreakpointType) *RemoveDOMBreakpointParams {
 	return &RemoveDOMBreakpointParams{
 		NodeID: nodeID,
@@ -111,7 +114,8 @@ type RemoveEventListenerBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-removeEventListenerBreakpoint
 //
 // parameters:
-//   eventName - Event name.
+//
+//	eventName - Event name.
 func RemoveEventListenerBreakpoint(eventName string) *RemoveEventListenerBreakpointParams {
 	return &RemoveEventListenerBreakpointParams{
 		EventName: eventName,
@@ -141,7 +145,8 @@ type RemoveInstrumentationBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-removeInstrumentationBreakpoint
 //
 // parameters:
-//   eventName - Instrumentation name to stop on.
+//
+//	eventName - Instrumentation name to stop on.
 func RemoveInstrumentationBreakpoint(eventName string) *RemoveInstrumentationBreakpointParams {
 	return &RemoveInstrumentationBreakpointParams{
 		EventName: eventName,
@@ -163,7 +168,8 @@ type RemoveXHRBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-removeXHRBreakpoint
 //
 // parameters:
-//   url - Resource URL substring.
+//
+//	url - Resource URL substring.
 func RemoveXHRBreakpoint(url string) *RemoveXHRBreakpointParams {
 	return &RemoveXHRBreakpointParams{
 		URL: url,
@@ -185,7 +191,8 @@ type SetBreakOnCSPViolationParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-setBreakOnCSPViolation
 //
 // parameters:
-//   violationTypes - CSP Violations to stop upon.
+//
+//	violationTypes - CSP Violations to stop upon.
 func SetBreakOnCSPViolation(violationTypes []CSPViolationType) *SetBreakOnCSPViolationParams {
 	return &SetBreakOnCSPViolationParams{
 		ViolationTypes: violationTypes,
@@ -208,8 +215,9 @@ type SetDOMBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-setDOMBreakpoint
 //
 // parameters:
-//   nodeID - Identifier of the node to set breakpoint on.
-//   type - Type of the operation to stop upon.
+//
+//	nodeID - Identifier of the node to set breakpoint on.
+//	type - Type of the operation to stop upon.
 func SetDOMBreakpoint(nodeID cdp.NodeID, typeVal DOMBreakpointType) *SetDOMBreakpointParams {
 	return &SetDOMBreakpointParams{
 		NodeID: nodeID,
@@ -233,7 +241,8 @@ type SetEventListenerBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-setEventListenerBreakpoint
 //
 // parameters:
-//   eventName - DOM Event name to stop on (any DOM event will do).
+//
+//	eventName - DOM Event name to stop on (any DOM event will do).
 func SetEventListenerBreakpoint(eventName string) *SetEventListenerBreakpointParams {
 	return &SetEventListenerBreakpointParams{
 		EventName: eventName,
@@ -263,7 +272,8 @@ type SetInstrumentationBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-setInstrumentationBreakpoint
 //
 // parameters:
-//   eventName - Instrumentation name to stop on.
+//
+//	eventName - Instrumentation name to stop on.
 func SetInstrumentationBreakpoint(eventName string) *SetInstrumentationBreakpointParams {
 	return &SetInstrumentationBreakpointParams{
 		EventName: eventName,
@@ -285,7 +295,8 @@ type SetXHRBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMDebugger#method-setXHRBreakpoint
 //
 // parameters:
-//   url - Resource URL substring. All XHRs having this substring in the URL will get stopped upon.
+//
+//	url - Resource URL substring. All XHRs having this substring in the URL will get stopped upon.
 func SetXHRBreakpoint(url string) *SetXHRBreakpointParams {
 	return &SetXHRBreakpointParams{
 		URL: url,

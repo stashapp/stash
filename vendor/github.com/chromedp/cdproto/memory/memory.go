@@ -32,9 +32,10 @@ type GetDOMCountersReturns struct {
 // Do executes Memory.getDOMCounters against the provided context.
 //
 // returns:
-//   documents
-//   nodes
-//   jsEventListeners
+//
+//	documents
+//	nodes
+//	jsEventListeners
 func (p *GetDOMCountersParams) Do(ctx context.Context) (documents int64, nodes int64, jsEventListeners int64, err error) {
 	// execute
 	var res GetDOMCountersReturns
@@ -90,7 +91,8 @@ type SetPressureNotificationsSuppressedParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Memory#method-setPressureNotificationsSuppressed
 //
 // parameters:
-//   suppressed - If true, memory pressure notifications will be suppressed.
+//
+//	suppressed - If true, memory pressure notifications will be suppressed.
 func SetPressureNotificationsSuppressed(suppressed bool) *SetPressureNotificationsSuppressedParams {
 	return &SetPressureNotificationsSuppressedParams{
 		Suppressed: suppressed,
@@ -114,7 +116,8 @@ type SimulatePressureNotificationParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Memory#method-simulatePressureNotification
 //
 // parameters:
-//   level - Memory pressure level of the notification.
+//
+//	level - Memory pressure level of the notification.
 func SimulatePressureNotification(level PressureLevel) *SimulatePressureNotificationParams {
 	return &SimulatePressureNotificationParams{
 		Level: level,
@@ -193,7 +196,8 @@ type GetAllTimeSamplingProfileReturns struct {
 // Do executes Memory.getAllTimeSamplingProfile against the provided context.
 //
 // returns:
-//   profile
+//
+//	profile
 func (p *GetAllTimeSamplingProfileParams) Do(ctx context.Context) (profile *SamplingProfile, err error) {
 	// execute
 	var res GetAllTimeSamplingProfileReturns
@@ -225,7 +229,8 @@ type GetBrowserSamplingProfileReturns struct {
 // Do executes Memory.getBrowserSamplingProfile against the provided context.
 //
 // returns:
-//   profile
+//
+//	profile
 func (p *GetBrowserSamplingProfileParams) Do(ctx context.Context) (profile *SamplingProfile, err error) {
 	// execute
 	var res GetBrowserSamplingProfileReturns
@@ -257,7 +262,8 @@ type GetSamplingProfileReturns struct {
 // Do executes Memory.getSamplingProfile against the provided context.
 //
 // returns:
-//   profile
+//
+//	profile
 func (p *GetSamplingProfileParams) Do(ctx context.Context) (profile *SamplingProfile, err error) {
 	// execute
 	var res GetSamplingProfileReturns

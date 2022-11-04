@@ -7,7 +7,7 @@ import (
 
 func (runtime *_runtime) newGoArrayObject(value reflect.Value) *_object {
 	self := runtime.newObject()
-	self.class = "GoArray"
+	self.class = classGoArray
 	self.objectClass = _classGoArray
 	self.value = _newGoArrayObject(value)
 	return self
@@ -72,7 +72,7 @@ func (self _goArrayObject) setValue(index int64, value Value) bool {
 
 func goArrayGetOwnProperty(self *_object, name string) *_property {
 	// length
-	if name == "length" {
+	if name == propertyLength {
 		return &_property{
 			value: toValue(reflect.Indirect(self.value.(*_goArrayObject).value).Len()),
 			mode:  0,
@@ -118,7 +118,7 @@ func goArrayEnumerate(self *_object, all bool, each func(string) bool) {
 }
 
 func goArrayDefineOwnProperty(self *_object, name string, descriptor _property, throw bool) bool {
-	if name == "length" {
+	if name == propertyLength {
 		return self.runtime.typeErrorResult(throw)
 	} else if index := stringToArrayIndex(name); index >= 0 {
 		object := self.value.(*_goArrayObject)
@@ -134,7 +134,7 @@ func goArrayDefineOwnProperty(self *_object, name string, descriptor _property, 
 
 func goArrayDelete(self *_object, name string, throw bool) bool {
 	// length
-	if name == "length" {
+	if name == propertyLength {
 		return self.runtime.typeErrorResult(throw)
 	}
 

@@ -15,7 +15,7 @@ import (
 
 func (runtime *_runtime) newGoStructObject(value reflect.Value) *_object {
 	self := runtime.newObject()
-	self.class = "Object" // TODO Should this be something else?
+	self.class = classObject // TODO Should this be something else?
 	self.objectClass = _classGoStruct
 	self.value = _newGoStructObject(value)
 	return self

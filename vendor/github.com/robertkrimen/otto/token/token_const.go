@@ -74,7 +74,7 @@ const (
 	COLON             // :
 	QUESTION_MARK     // ?
 
-	firstKeyword
+	firstKeyword //nolint: deadcode
 	IF
 	IN
 	DO
@@ -108,7 +108,7 @@ const (
 	DEBUGGER
 
 	INSTANCEOF
-	lastKeyword
+	lastKeyword //nolint: deadcode
 )
 
 var token2string = [...]string{

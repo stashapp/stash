@@ -76,7 +76,8 @@ type SetSinkToUseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Cast#method-setSinkToUse
 //
 // parameters:
-//   sinkName
+//
+//	sinkName
 func SetSinkToUse(sinkName string) *SetSinkToUseParams {
 	return &SetSinkToUseParams{
 		SinkName: sinkName,
@@ -86,6 +87,29 @@ func SetSinkToUse(sinkName string) *SetSinkToUseParams {
 // Do executes Cast.setSinkToUse against the provided context.
 func (p *SetSinkToUseParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandSetSinkToUse, p, nil)
+}
+
+// StartDesktopMirroringParams starts mirroring the desktop to the sink.
+type StartDesktopMirroringParams struct {
+	SinkName string `json:"sinkName"`
+}
+
+// StartDesktopMirroring starts mirroring the desktop to the sink.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Cast#method-startDesktopMirroring
+//
+// parameters:
+//
+//	sinkName
+func StartDesktopMirroring(sinkName string) *StartDesktopMirroringParams {
+	return &StartDesktopMirroringParams{
+		SinkName: sinkName,
+	}
+}
+
+// Do executes Cast.startDesktopMirroring against the provided context.
+func (p *StartDesktopMirroringParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandStartDesktopMirroring, p, nil)
 }
 
 // StartTabMirroringParams starts mirroring the tab to the sink.
@@ -98,7 +122,8 @@ type StartTabMirroringParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Cast#method-startTabMirroring
 //
 // parameters:
-//   sinkName
+//
+//	sinkName
 func StartTabMirroring(sinkName string) *StartTabMirroringParams {
 	return &StartTabMirroringParams{
 		SinkName: sinkName,
@@ -120,7 +145,8 @@ type StopCastingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Cast#method-stopCasting
 //
 // parameters:
-//   sinkName
+//
+//	sinkName
 func StopCasting(sinkName string) *StopCastingParams {
 	return &StopCastingParams{
 		SinkName: sinkName,
@@ -134,9 +160,10 @@ func (p *StopCastingParams) Do(ctx context.Context) (err error) {
 
 // Command names.
 const (
-	CommandEnable            = "Cast.enable"
-	CommandDisable           = "Cast.disable"
-	CommandSetSinkToUse      = "Cast.setSinkToUse"
-	CommandStartTabMirroring = "Cast.startTabMirroring"
-	CommandStopCasting       = "Cast.stopCasting"
+	CommandEnable                = "Cast.enable"
+	CommandDisable               = "Cast.disable"
+	CommandSetSinkToUse          = "Cast.setSinkToUse"
+	CommandStartDesktopMirroring = "Cast.startDesktopMirroring"
+	CommandStartTabMirroring     = "Cast.startTabMirroring"
+	CommandStopCasting           = "Cast.stopCasting"
 )

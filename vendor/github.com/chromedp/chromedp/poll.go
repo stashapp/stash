@@ -2,7 +2,6 @@ package chromedp
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -36,78 +35,51 @@ func (p *pollTask) Do(ctx context.Context) error {
 		return ErrInvalidTarget
 	}
 	var (
-		root    *cdp.Node
 		execCtx runtime.ExecutionContextID
 		ok      bool
 	)
-	for !ok {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(5 * time.Millisecond):
+
+	for {
+		_, _, execCtx, ok = t.ensureFrame()
+		if ok {
+			break
 		}
-		_, root, execCtx, ok = t.ensureFrame()
+		if err := sleepContext(ctx, 5*time.Millisecond); err != nil {
+			return err
+		}
 	}
 
-	fromNode := p.frame
-	if fromNode == nil {
-		fromNode = root
-	} else {
+	if p.frame != nil {
 		t.frameMu.RLock()
-		frameID := t.enclosingFrame(fromNode)
+		frameID := t.enclosingFrame(p.frame)
 		execCtx = t.execContexts[frameID]
 		t.frameMu.RUnlock()
 	}
 
-	ea := &errAppender{args: make([]*runtime.CallArgument, 0, len(p.args)+3)}
-	ea.append(p.predicate)
+	args := make([]interface{}, 0, len(p.args)+3)
+	args = append(args, p.predicate)
 	if p.interval > 0 {
-		ea.append(p.interval.Milliseconds())
+		args = append(args, p.interval.Milliseconds())
 	} else {
-		ea.append(p.polling)
+		args = append(args, p.polling)
 	}
-	ea.append(p.timeout.Milliseconds())
-	for _, arg := range p.args {
-		ea.append(arg)
-	}
-	if ea.err != nil {
-		return ea.err
-	}
+	args = append(args, p.timeout.Milliseconds())
+	args = append(args, p.args...)
 
-	v, exp, err := runtime.CallFunctionOn(waitForPredicatePageFunction).
-		WithExecutionContextID(execCtx).
-		WithReturnByValue(false).
-		WithAwaitPromise(true).
-		WithUserGesture(true).
-		WithArguments(ea.args).
-		Do(ctx)
-	if err != nil {
-		return err
-	}
-	if exp != nil {
-		return exp
-	}
+	undefined, err := callFunctionOn(ctx, waitForPredicatePageFunction, p.res,
+		func(p *runtime.CallFunctionOnParams) *runtime.CallFunctionOnParams {
+			return p.WithExecutionContextID(execCtx).
+				WithAwaitPromise(true).
+				WithUserGesture(true)
+		},
+		args...,
+	)
 
-	if v.Type == "undefined" {
+	if undefined {
 		return ErrPollingTimeout
 	}
 
-	// it's okay to discard the result.
-	if p.res == nil {
-		return nil
-	}
-
-	switch x := p.res.(type) {
-	case **runtime.RemoteObject:
-		*x = v
-		return nil
-
-	case *[]byte:
-		*x = v.Value
-		return nil
-	default:
-		return json.Unmarshal(v.Value, p.res)
-	}
+	return err
 }
 
 // Poll is a poll action that will wait for a general Javascript predicate.
@@ -206,24 +178,4 @@ func WithPollingArgs(args ...interface{}) PollOption {
 	return func(w *pollTask) {
 		w.args = args
 	}
-}
-
-// errAppender is to help accumulating the arguments and simplifying error checks.
-//
-// see https://blog.golang.org/errors-are-values
-type errAppender struct {
-	args []*runtime.CallArgument
-	err  error
-}
-
-// append method calls the json.Marshal method to marshal the value and appends it to the slice.
-// It records the first error for future reference.
-// As soon as an error occurs, the append method becomes a no-op but the error value is saved.
-func (ea *errAppender) append(v interface{}) {
-	if ea.err != nil {
-		return
-	}
-	var b []byte
-	b, ea.err = json.Marshal(v)
-	ea.args = append(ea.args, &runtime.CallArgument{Value: b})
 }

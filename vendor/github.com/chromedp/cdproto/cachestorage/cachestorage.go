@@ -22,7 +22,8 @@ type DeleteCacheParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CacheStorage#method-deleteCache
 //
 // parameters:
-//   cacheID - Id of cache for deletion.
+//
+//	cacheID - Id of cache for deletion.
 func DeleteCache(cacheID CacheID) *DeleteCacheParams {
 	return &DeleteCacheParams{
 		CacheID: cacheID,
@@ -45,8 +46,9 @@ type DeleteEntryParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CacheStorage#method-deleteEntry
 //
 // parameters:
-//   cacheID - Id of cache where the entry will be deleted.
-//   request - URL spec of the request.
+//
+//	cacheID - Id of cache where the entry will be deleted.
+//	request - URL spec of the request.
 func DeleteEntry(cacheID CacheID, request string) *DeleteEntryParams {
 	return &DeleteEntryParams{
 		CacheID: cacheID,
@@ -69,7 +71,8 @@ type RequestCacheNamesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CacheStorage#method-requestCacheNames
 //
 // parameters:
-//   securityOrigin - Security origin.
+//
+//	securityOrigin - Security origin.
 func RequestCacheNames(securityOrigin string) *RequestCacheNamesParams {
 	return &RequestCacheNamesParams{
 		SecurityOrigin: securityOrigin,
@@ -84,7 +87,8 @@ type RequestCacheNamesReturns struct {
 // Do executes CacheStorage.requestCacheNames against the provided context.
 //
 // returns:
-//   caches - Caches for the security origin.
+//
+//	caches - Caches for the security origin.
 func (p *RequestCacheNamesParams) Do(ctx context.Context) (caches []*Cache, err error) {
 	// execute
 	var res RequestCacheNamesReturns
@@ -108,9 +112,10 @@ type RequestCachedResponseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CacheStorage#method-requestCachedResponse
 //
 // parameters:
-//   cacheID - Id of cache that contains the entry.
-//   requestURL - URL spec of the request.
-//   requestHeaders - headers of the request.
+//
+//	cacheID - Id of cache that contains the entry.
+//	requestURL - URL spec of the request.
+//	requestHeaders - headers of the request.
 func RequestCachedResponse(cacheID CacheID, requestURL string, requestHeaders []*Header) *RequestCachedResponseParams {
 	return &RequestCachedResponseParams{
 		CacheID:        cacheID,
@@ -127,7 +132,8 @@ type RequestCachedResponseReturns struct {
 // Do executes CacheStorage.requestCachedResponse against the provided context.
 //
 // returns:
-//   response - Response read from the cache.
+//
+//	response - Response read from the cache.
 func (p *RequestCachedResponseParams) Do(ctx context.Context) (response *CachedResponse, err error) {
 	// execute
 	var res RequestCachedResponseReturns
@@ -152,7 +158,8 @@ type RequestEntriesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CacheStorage#method-requestEntries
 //
 // parameters:
-//   cacheID - ID of cache to get entries from.
+//
+//	cacheID - ID of cache to get entries from.
 func RequestEntries(cacheID CacheID) *RequestEntriesParams {
 	return &RequestEntriesParams{
 		CacheID: cacheID,
@@ -187,8 +194,9 @@ type RequestEntriesReturns struct {
 // Do executes CacheStorage.requestEntries against the provided context.
 //
 // returns:
-//   cacheDataEntries - Array of object store data entries.
-//   returnCount - Count of returned entries from this storage. If pathFilter is empty, it is the count of all entries from this storage.
+//
+//	cacheDataEntries - Array of object store data entries.
+//	returnCount - Count of returned entries from this storage. If pathFilter is empty, it is the count of all entries from this storage.
 func (p *RequestEntriesParams) Do(ctx context.Context) (cacheDataEntries []*DataEntry, returnCount float64, err error) {
 	// execute
 	var res RequestEntriesReturns

@@ -99,6 +99,7 @@
 package zerolog
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -187,6 +188,21 @@ func ParseLevel(levelStr string) (Level, error) {
 		return NoLevel, fmt.Errorf("Out-Of-Bounds Level: '%d', defaulting to NoLevel", i)
 	}
 	return Level(i), nil
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler to allow for easy reading from toml/yaml/json formats
+func (l *Level) UnmarshalText(text []byte) error {
+	if l == nil {
+		return errors.New("can't unmarshal a nil *Level")
+	}
+	var err error
+	*l, err = ParseLevel(string(text))
+	return err
+}
+
+// MarshalText implements encoding.TextMarshaler to allow for easy writing into toml/yaml/json formats
+func (l Level) MarshalText() ([]byte, error) {
+	return []byte(LevelFieldMarshalFunc(l)), nil
 }
 
 // A Logger represents an active logging object that generates lines
@@ -361,7 +377,7 @@ func (l *Logger) Panic() *Event {
 
 // WithLevel starts a new message with level. Unlike Fatal and Panic
 // methods, WithLevel does not terminate the program or stop the ordinary
-// flow of a gourotine when used with their respective levels.
+// flow of a goroutine when used with their respective levels.
 //
 // You must call Msg on the returned event in order to send the event.
 func (l *Logger) WithLevel(level Level) *Event {
@@ -428,6 +444,9 @@ func (l Logger) Write(p []byte) (n int, err error) {
 func (l *Logger) newEvent(level Level, done func(string)) *Event {
 	enabled := l.should(level)
 	if !enabled {
+		if done != nil {
+			done("")
+		}
 		return nil
 	}
 	e := newEvent(l.w, level)

@@ -45,7 +45,6 @@ func Compress(level int, types ...string) func(next http.Handler) http.Handler {
 
 // Compressor represents a set of encoding configurations.
 type Compressor struct {
-	level int // The compression level.
 	// The mapping of encoder names to encoder functions.
 	encoders map[string]EncoderFunc
 	// The mapping of pooled encoders to pools.
@@ -55,6 +54,7 @@ type Compressor struct {
 	allowedWildcards map[string]struct{}
 	// The list of encoders in order of decreasing precedence.
 	encodingPrecedence []string
+	level              int // The compression level.
 }
 
 // NewCompressor creates a new Compressor that will handle encoding responses.
@@ -115,7 +115,7 @@ func NewCompressor(level int, types ...string) *Compressor {
 	// https://web.archive.org/web/20120321182910/http://www.vervestudios.co/projects/compression-tests/results
 	//
 	// That's why we prefer gzip over deflate. It's just more reliable
-	// and not significantly slower than gzip.
+	// and not significantly slower than deflate.
 	c.SetEncoder("deflate", encoderDeflate)
 
 	// TODO: Exception for old MSIE browsers that can't handle non-HTML?
@@ -271,9 +271,9 @@ type compressResponseWriter struct {
 	// The streaming encoder writer to be used if there is one. Otherwise,
 	// this is just the normal writer.
 	w                io.Writer
-	encoding         string
 	contentTypes     map[string]struct{}
 	contentWildcards map[string]struct{}
+	encoding         string
 	wroteHeader      bool
 	compressable     bool
 }

@@ -216,7 +216,6 @@ func (t *TypeReference) IsPtr() bool {
 }
 
 // fix for https://github.com/golang/go/issues/31103 may make it possible to remove this (may still be useful)
-//
 func (t *TypeReference) IsPtrToPtr() bool {
 	if p, isPtr := t.GO.(*types.Pointer); isPtr {
 		_, isPtr := p.Elem().(*types.Pointer)

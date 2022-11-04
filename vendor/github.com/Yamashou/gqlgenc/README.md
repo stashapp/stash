@@ -48,6 +48,9 @@ endpoint:
     Authorization: "Bearer ${ANNICT_KEY}" # support environment variables
 query:
   - "./query/*.graphql" # Where are all the query files located?
+generate:
+  clientV2: true # Generate a Client that provides a new signature
+  clientInterfaceName: "GithubGraphQLClient"　# Determine the name of the generated client interface
 ```
 
 Load a schema from a local file:
@@ -68,6 +71,9 @@ schema:
   - "schema/**/*.graphql" # Where are all the schema files located?
 query:
   - "./query/*.graphql" # Where are all the query files located?
+generate:
+  clientV2: true # Generate a Client that provides a new signature
+  clientInterfaceName: "GithubGraphQLClient"　# Determine the name of the generated client interface
 ```
 
 Execute the following command on same directory for .gqlgenc.yml

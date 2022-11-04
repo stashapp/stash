@@ -3,7 +3,7 @@
 var {{ $object.Name|lcFirst}}Implementors = {{$object.Implementors}}
 
 {{- if .Stream }}
-func (ec *executionContext) _{{$object.Name}}(ctx context.Context, sel ast.SelectionSet) func() graphql.Marshaler {
+func (ec *executionContext) _{{$object.Name}}(ctx context.Context, sel ast.SelectionSet) func(ctx context.Context) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, {{$object.Name|lcFirst}}Implementors)
 	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
 		Object: {{$object.Name|quote}},
@@ -80,13 +80,12 @@ func (ec *executionContext) _{{$object.Name}}(ctx context.Context, sel ast.Selec
                     {{end}}
                 })
             {{- else }}
-                innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-                    return ec._{{$object.Name}}_{{$field.Name}}(ctx, field{{if not $object.Root}}, obj{{end}})
-                }
                 {{if $object.Root}}
-                    out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+                    out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+                        return ec._{{$object.Name}}_{{$field.Name}}(ctx, field)
+                    })
                 {{else}}
-                    out.Values[i] = innerFunc(ctx)
+                    out.Values[i] = ec._{{$object.Name}}_{{$field.Name}}(ctx, field, obj)
                 {{end}}
 
                 {{- if $field.TypeReference.GQL.NonNull }}

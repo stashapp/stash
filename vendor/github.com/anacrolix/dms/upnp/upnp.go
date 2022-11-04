@@ -4,21 +4,23 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/anacrolix/log"
 )
 
-var serviceURNRegexp *regexp.Regexp = regexp.MustCompile(`^urn:schemas-upnp-org:service:(\w+):(\d+)$`)
+var serviceURNRegexp *regexp.Regexp = regexp.MustCompile(`^urn:(.*):service:(\w+):(\d+)$`)
 
 type ServiceURN struct {
+	Auth    string
 	Type    string
 	Version uint64
 }
 
 func (me ServiceURN) String() string {
-	return fmt.Sprintf("urn:schemas-upnp-org:service:%s:%d", me.Type, me.Version)
+	return fmt.Sprintf("urn:%s:service:%s:%d", me.Auth, me.Type, me.Version)
 }
 
 func ParseServiceType(s string) (ret ServiceURN, err error) {
@@ -27,11 +29,12 @@ func ParseServiceType(s string) (ret ServiceURN, err error) {
 		err = errors.New(s)
 		return
 	}
-	if len(matches) != 3 {
-		log.Panicf("Invalid serviceURNRegexp ?")
+	if len(matches) != 4 {
+		log.Panicf("Invalid serviceURNRegexp?")
 	}
-	ret.Type = matches[1]
-	ret.Version, err = strconv.ParseUint(matches[2], 0, 0)
+	ret.Auth = matches[1]
+	ret.Type = matches[2]
+	ret.Version, err = strconv.ParseUint(matches[3], 0, 0)
 	return
 }
 
@@ -80,17 +83,21 @@ type Service struct {
 }
 
 type Device struct {
-	DeviceType   string `xml:"deviceType"`
-	FriendlyName string `xml:"friendlyName"`
-	Manufacturer string `xml:"manufacturer"`
-	ModelName    string `xml:"modelName"`
-	UDN          string
-	IconList     []Icon    `xml:"iconList>icon"`
-	ServiceList  []Service `xml:"serviceList>service"`
+	DeviceType      string `xml:"deviceType"`
+	FriendlyName    string `xml:"friendlyName"`
+	Manufacturer    string `xml:"manufacturer"`
+	ModelName       string `xml:"modelName"`
+	UDN             string
+	VendorXML       string    `xml:",innerxml"`
+	IconList        []Icon    `xml:"iconList>icon"`
+	ServiceList     []Service `xml:"serviceList>service"`
+	PresentationURL string    `xml:"presentationURL,omitempty"`
 }
 
 type DeviceDesc struct {
 	XMLName     xml.Name    `xml:"urn:schemas-upnp-org:device-1-0 root"`
+	NSDLNA      string      `xml:"xmlns:dlna,attr"`
+	NSSEC       string      `xml:"xmlns:sec,attr"`
 	SpecVersion SpecVersion `xml:"specVersion"`
 	Device      Device      `xml:"device"`
 }

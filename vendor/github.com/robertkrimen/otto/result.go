@@ -1,11 +1,9 @@
 package otto
 
-import ()
-
 type _resultKind int
 
 const (
-	resultNormal _resultKind = iota
+	_ _resultKind = iota
 	resultReturn
 	resultBreak
 	resultContinue
