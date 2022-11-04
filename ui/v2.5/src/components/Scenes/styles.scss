@@ -482,6 +482,7 @@ input[type="range"].blue-slider {
     font-size: inherit;
     margin-right: 1px;
     padding: 0;
+    position: relative;
 
     &:hover {
       background-color: inherit;
@@ -490,6 +491,11 @@ input[type="range"].blue-slider {
     &:disabled {
       background-color: inherit;
       opacity: inherit;
+    }
+
+    .filled-star {
+      overflow: hidden;
+      position: absolute;
     }
   }
 

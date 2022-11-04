@@ -1,4 +1,7 @@
-import { convertFromRatingFormat, convertToRatingFormat } from "src/utils/rating";
+import {
+  convertFromRatingFormat,
+  convertToRatingFormat,
+} from "src/utils/rating";
 import {
   CriterionModifier,
   IntCriterionInput,

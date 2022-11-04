@@ -1,13 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { ConfigurationContext } from "src/hooks/Config";
-import Box from "@mui/material/Box";
-import StarIcon from "@mui/icons-material/Star";
-import StarBorderIcon from "@mui/icons-material/StarOutline";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Col, Form, Row } from "react-bootstrap";
 import { FormUtils } from "src/utils";
-import { Maybe } from "src/core/generated-graphql";
 import { RatingStars } from "./RatingStars";
 
 export interface IRatingSystemProps {
@@ -130,199 +126,34 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
   }
 };
 
-export const RatingStarsNew: React.FC<IRatingStarsProps> = (
-  props: IRatingStarsProps
-) => {
-  const disabled = props.disabled || !props.onSetRating;
-  const EmptyIcon = StarBorderIcon;
-  const FilledIcon = StarIcon;
-  const ratingContainerRef = useRef<HTMLInputElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-  const realMaxRating = 100;
-  const [activeStar, setActiveStar] = useState(
-    props.value != null && props.value != undefined
-      ? convertFromBigScale(props.value)
-      : -1
-  );
-  const [hoverActiveStar, setHoverActiveStar] = useState(-1);
-
-  function setRating(rating: number) {
-    if (!props.onSetRating) {
-      return;
-    }
-
-    let newRating: number | undefined = rating;
-
-    // unset if we're clicking on the current rating
-    if (activeStar === rating) {
-      newRating = undefined;
-      setActiveStar(-1);
-    }
-    let temp = convertToBigScale(newRating);
-    props.onSetRating(temp);
-  }
-
-  function convertFromBigScale(bigRating: number) {
-    return (
-      Math.round(
-        (1 / props.precision) * (bigRating / realMaxRating) * props.maxRating
-      ) /
-      (1 / props.precision)
-    );
-  }
-
-  function convertToBigScale(smallRating: number | undefined) {
-    return smallRating == undefined
-      ? undefined
-      : Math.round((smallRating / props.maxRating) * realMaxRating);
-  }
-
-  function calculateRating(e: React.MouseEvent<Element, MouseEvent>) {
-    if (ratingContainerRef != null && ratingContainerRef.current != null) {
-      const {
-        width,
-        left,
-      } = ratingContainerRef.current.getBoundingClientRect();
-      let percent = (e.clientX - left) / width;
-      const numberInStars = percent * props.maxRating;
-      const nearestNumber =
-        Math.round((numberInStars + props.precision / 2) / props.precision) *
-        props.precision;
-
-      return Number(
-        nearestNumber.toFixed(
-          props.precision.toString().split(".")[1]?.length || 0
-        )
-      );
-    } else {
-      return -1;
-    }
-  }
-
-  function handleClick(e: React.MouseEvent<Element, MouseEvent>) {
-    if (disabled) return;
-    setIsHovered(false);
-    let calculatedRating = calculateRating(e);
-    setActiveStar(calculatedRating);
-    setRating(calculatedRating);
-  }
-
-  function handleMouseMove(e: React.MouseEvent<Element, MouseEvent>) {
-    if (disabled) return;
-    setIsHovered(true);
-    setHoverActiveStar(calculateRating(e));
-  }
-
-  function handleMouseLeave() {
-    if (disabled) return;
-    setHoverActiveStar(-1);
-    setIsHovered(false);
-  }
-
-  return (
-    <Box
-      sx={{
-        display: "inline-flex",
-        position: "relative",
-        cursor: "pointer",
-        textAlign: "left",
-      }}
-      onClick={(e: React.MouseEvent<HTMLElement>) => handleClick(e)}
-      onMouseMove={(e: React.MouseEvent<HTMLElement>) => handleMouseMove(e)}
-      onMouseLeave={() => handleMouseLeave()}
-      ref={ratingContainerRef}
-    >
-      {[...new Array(props.maxRating)].map((arr, index) => {
-        const activeState = isHovered ? hoverActiveStar : activeStar;
-
-        const showEmptyIcon = activeState === -1 || activeState < index + 1;
-
-        const isActiveRating = activeState !== 1;
-        const isRatingWithPrecision = activeState % 1 !== 0;
-        const isRatingEqualToIndex = Math.ceil(activeState) === index + 1;
-        const showRatingWithPrecision =
-          isActiveRating && isRatingWithPrecision && isRatingEqualToIndex;
-
-        return (
-          <Box
-            position={"relative"}
-            sx={{
-              cursor: "pointer",
-              transform: disabled ? "" : "translateY(25%)",
-            }}
-            key={index}
-          >
-            <Box
-              sx={{
-                width: showRatingWithPrecision
-                  ? `${
-                      (activeState % 1 == 0.25
-                        ? 0.35
-                        : activeState % 1 == 0.75
-                        ? 0.6
-                        : activeState % 1) * 100
-                    }%`
-                  : "0%",
-                overflow: "hidden",
-                position: "fixed",
-              }}
-            >
-              <FilledIcon sx={{ color: "gold" }} />
-            </Box>
-            <Box
-              sx={{
-                color: showEmptyIcon ? "gold" : "inherit",
-              }}
-            >
-              {showEmptyIcon ? (
-                <EmptyIcon className="unsetting" />
-              ) : (
-                <FilledIcon className="set" sx={{ color: "gold" }} />
-              )}
-            </Box>
-          </Box>
-        );
-      })}
-    </Box>
-  );
-};
-
 export const RatingSystem: React.FC<IRatingSystemProps> = (
   props: IRatingSystemProps
 ) => {
-  function getRatingStars(maxRating: number, precision: number) {
+  const { configuration: config } = React.useContext(ConfigurationContext);
+
+  function getRatingStars() {
     return (
       <RatingStars
         value={props.value}
         onSetRating={props.onSetRating}
         disabled={props.disabled}
-        precision={precision}
-        max={maxRating}
+        ratingSystem={
+          config?.interface.ratingSystem ?? GQL.RatingSystem.FiveStar
+        }
       />
     );
   }
 
-  const { configuration: config } = React.useContext(ConfigurationContext);
   let toReturn;
   const intl = useIntl();
   switch (config?.interface?.ratingSystem) {
     case GQL.RatingSystem.TenStar:
-      toReturn = getRatingStars(10, 1);
-      break;
     case GQL.RatingSystem.TenPointFiveStar:
-      toReturn = getRatingStars(10, 0.5);
-      break;
     case GQL.RatingSystem.TenPointTwoFiveStar:
-      toReturn = getRatingStars(10, 0.25);
-      break;
     case GQL.RatingSystem.FiveStar:
-      toReturn = getRatingStars(5, 1);
-      break;
     case GQL.RatingSystem.FivePointFiveStar:
-      toReturn = getRatingStars(5, 0.5);
-      break;
     case GQL.RatingSystem.FivePointTwoFiveStar:
-      toReturn = getRatingStars(5, 0.25);
+      toReturn = getRatingStars();
       break;
     case GQL.RatingSystem.TenPointDecimal:
       toReturn = (
@@ -334,7 +165,7 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
       );
       break;
     default:
-      toReturn = getRatingStars(5, 1);
+      toReturn = getRatingStars();
       break;
   }
 

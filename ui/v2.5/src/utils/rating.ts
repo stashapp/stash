@@ -9,6 +9,41 @@ function round(value: number, step: number) {
   return Math.round(value * inv) / inv;
 }
 
+export function getMaxStars(ratingSystem: GQL.RatingSystem) {
+  switch (ratingSystem) {
+    case GQL.RatingSystem.TenStar:
+    case GQL.RatingSystem.TenPointFiveStar:
+    case GQL.RatingSystem.TenPointTwoFiveStar:
+      return 10;
+    case GQL.RatingSystem.FiveStar:
+    case GQL.RatingSystem.FivePointFiveStar:
+    case GQL.RatingSystem.FivePointTwoFiveStar:
+      return 5;
+    case GQL.RatingSystem.TenPointDecimal:
+      return 0;
+    default:
+      return 5;
+  }
+}
+
+export function getRatingPrecision(ratingSystem: GQL.RatingSystem) {
+  switch (ratingSystem) {
+    case GQL.RatingSystem.TenStar:
+    case GQL.RatingSystem.FiveStar:
+      return 0;
+    case GQL.RatingSystem.TenPointFiveStar:
+    case GQL.RatingSystem.FivePointFiveStar:
+      return 0.5;
+    case GQL.RatingSystem.TenPointTwoFiveStar:
+    case GQL.RatingSystem.FivePointTwoFiveStar:
+      return 0.25;
+    case GQL.RatingSystem.TenPointDecimal:
+      return 0.1;
+    default:
+      return 0;
+  }
+}
+
 export function convertToRatingFormat(
   rating: number | undefined,
   ratingSystem: GQL.RatingSystem

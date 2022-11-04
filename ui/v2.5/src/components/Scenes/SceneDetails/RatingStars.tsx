@@ -3,89 +3,98 @@ import { Button } from "react-bootstrap";
 import Icon from "src/components/Shared/Icon";
 import { faStar as fasStar } from "@fortawesome/free-solid-svg-icons";
 import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
+import {
+  convertFromRatingFormat,
+  convertToRatingFormat,
+  getMaxStars,
+  getRatingPrecision,
+} from "src/utils/rating";
+import * as GQL from "src/core/generated-graphql";
+import { useIntl } from "react-intl";
 
 export interface IRatingStarsProps {
   value?: number;
   onSetRating?: (value?: number) => void;
   disabled?: boolean;
-  precision: number;
-  max: number;
+  ratingSystem: GQL.RatingSystem;
 }
-
-const maxRating = 100;
 
 export const RatingStars: React.FC<IRatingStarsProps> = (
   props: IRatingStarsProps
 ) => {
+  const intl = useIntl();
   const [hoverRating, setHoverRating] = useState<number | undefined>();
   const disabled = props.disabled || !props.onSetRating;
 
-  const stars = props.value ? convertFrom100(props.value) : 0;
+  const rating = convertToRatingFormat(props.value, props.ratingSystem);
+  const stars = rating ? Math.floor(rating) : 0;
+  const fraction = rating ? rating % 1 : 0;
 
-  function convertFrom100(rating100: number) {
-    return (
-      Math.round(
-        (1 / props.precision) * (rating100 / maxRating) * props.max
-      ) /
-      (1 / props.precision)
-    );
+  const max = getMaxStars(props.ratingSystem);
+  const precision = getRatingPrecision(props.ratingSystem);
+
+  function newToggleFraction() {
+    if (precision > 0) {
+      if (fraction !== precision) {
+        if (fraction == 0) {
+          return 1 - precision;
+        }
+
+        return fraction - precision;
+      }
+    }
   }
 
-  function convertTo100(rating: number | undefined) {
-    return rating == undefined
-      ? undefined
-      : Math.round((rating / props.max) * maxRating);
-  }
-
-  function setRating(rating: number) {
+  function setRating(thisStar: number) {
     if (!props.onSetRating) {
       return;
     }
 
-    let newRating: number | undefined = rating;
+    let newRating: number | undefined = thisStar;
 
-    // unset if we're clicking on the current rating
-    if (stars === rating) {
-      newRating = undefined;
+    // toggle rating fraction if we're clicking on the current rating
+    if (
+      (stars === thisStar && !fraction) ||
+      (stars + 1 === thisStar && fraction)
+    ) {
+      const f = newToggleFraction();
+      if (!f) {
+        newRating = undefined;
+      } else if (fraction) {
+        // we're toggling from an existing fraction so use the stars value
+        newRating = stars + f;
+      } else {
+        // we're toggling from a whole value, so decrement from current rating
+        newRating = stars - 1 + f;
+      }
     }
 
     // set the hover rating to undefined so that it doesn't immediately clear
     // the stars
     setHoverRating(undefined);
 
-    props.onSetRating(convertTo100(newRating));
-  }
-
-  function getIcon(rating: number) {
-    if (hoverRating && hoverRating >= rating) {
-      if (hoverRating === stars) {
-        return farStar;
-      }
-
-      return fasStar;
+    if (!newRating) {
+      props.onSetRating(undefined);
+      return;
     }
 
-    if (!hoverRating && stars && stars >= rating) {
-      return fasStar;
-    }
-
-    return farStar;
+    props.onSetRating(convertFromRatingFormat(newRating, props.ratingSystem));
   }
 
-  function onMouseOver(rating: number) {
+  function onMouseOver(thisStar: number) {
     if (!disabled) {
-      setHoverRating(rating);
+      setHoverRating(thisStar);
     }
   }
 
-  function onMouseOut(rating: number) {
-    if (!disabled && hoverRating === rating) {
+  function onMouseOut(thisStar: number) {
+    if (!disabled && hoverRating === thisStar) {
       setHoverRating(undefined);
     }
   }
 
-  function getClassName(rating: number) {
-    if (hoverRating && hoverRating >= rating) {
+  function getClassName(thisStar: number) {
+    if (hoverRating && hoverRating >= thisStar) {
       if (hoverRating === stars) {
         return "unsetting";
       }
@@ -93,44 +102,115 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
       return "setting";
     }
 
-    if (stars && stars >= rating) {
+    if (stars && stars >= thisStar) {
       return "set";
     }
 
     return "unset";
   }
 
-  function getTooltip(rating: number) {
-    if (disabled && stars) {
+  function getTooltip(thisStar: number) {
+    if (disabled && rating) {
       // always return current rating for disabled control
-      return stars.toString();
+      return rating.toString();
     }
 
     if (!disabled) {
-      return rating.toString();
+      // adjust tooltip to use fractions
+      if (thisStar === stars && !fraction) {
+        const f = newToggleFraction();
+        if (!f) {
+          return intl.formatMessage({ id: "actions.unset" });
+        }
+        return (thisStar - 1 + (f ?? 0)).toString();
+      } else if (thisStar === stars + 1 && fraction) {
+        const f = newToggleFraction();
+        if (!f) {
+          return intl.formatMessage({ id: "actions.unset" });
+        }
+        return (thisStar + (f ?? 0)).toString();
+      }
+
+      return thisStar.toString();
     }
   }
 
-  const renderRatingButton = (rating: number) => (
+  function getStyle(thisStar: number) {
+    let r: number = hoverRating ? hoverRating : stars;
+    let f: number | undefined = fraction;
+
+    if (hoverRating) {
+      if (hoverRating === stars && !precision) {
+        // unsetting
+        return { width: 0 };
+      }
+      if (hoverRating === stars + 1 && fraction && fraction === precision) {
+        // unsetting
+        return { width: 0 };
+      }
+
+      if (hoverRating === thisStar) {
+        if (f && hoverRating === stars + 1) {
+          f = newToggleFraction();
+          r--;
+        } else if (!f && hoverRating === stars) {
+          f = newToggleFraction();
+          r--;
+        }
+      } else {
+        f = 0;
+      }
+    }
+
+    return { width: `${getStarWidth(thisStar, r, f ?? 0)}%` };
+  }
+
+  function getStarWidth(
+    thisRating: number,
+    currentStars: number,
+    currentFraction: number
+  ) {
+    if (thisRating > currentStars + 1) {
+      return 0;
+    }
+
+    if (thisRating <= currentStars) {
+      return 100;
+    }
+
+    let w = currentFraction * 100;
+    // adjust width for 1/4 and 3/4
+    if (w == 25) w = 35;
+    if (w == 75) w = 65;
+
+    return w;
+  }
+
+  const renderRatingButton = (thisStar: number) => (
     <Button
       disabled={disabled}
       className="minimal"
-      onClick={() => setRating(rating)}
+      onClick={() => setRating(thisStar)}
       variant="secondary"
-      onMouseOver={() => onMouseOver(rating)}
-      onMouseOut={() => onMouseOut(rating)}
-      onFocus={() => onMouseOver(rating)}
-      onBlur={() => onMouseOut(rating)}
-      title={getTooltip(rating)}
-      key={`star-${rating}`}
+      onMouseEnter={() => onMouseOver(thisStar)}
+      onMouseLeave={() => onMouseOut(thisStar)}
+      onFocus={() => onMouseOver(thisStar)}
+      onBlur={() => onMouseOut(thisStar)}
+      title={getTooltip(thisStar)}
+      key={`star-${thisStar}`}
     >
-      <Icon icon={getIcon(rating)} className={getClassName(rating)} />
+      <div className="filled-star" style={getStyle(thisStar)}>
+        <Icon icon={fasStar} className="set" />
+      </div>
+      <div>
+        <Icon icon={farStar} className={getClassName(thisStar)} />
+      </div>
     </Button>
   );
 
   return (
     <div className="rating-stars align-middle">
-      {Array.from(Array(props.max)).map((value, index) =>
+      {Array.from(Array(max)).map((value, index) =>
         renderRatingButton(index + 1)
       )}
     </div>

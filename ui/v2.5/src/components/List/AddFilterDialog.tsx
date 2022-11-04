@@ -135,7 +135,6 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       ) {
         return;
       }
-      const { configuration: config } = useContext(ConfigurationContext);
 
       if (criterion instanceof ILabeledIdCriterion) {
         return (
