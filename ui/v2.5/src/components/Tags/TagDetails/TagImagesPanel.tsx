@@ -8,6 +8,6 @@ interface ITagImagesPanel {
 }
 
 export const TagImagesPanel: React.FC<ITagImagesPanel> = ({ tag }) => {
-  const tagFilterHook = useTagFilterHook(tag);
-  return <ImageList filterHook={tagFilterHook} />;
+  const filterHook = useTagFilterHook(tag);
+  return <ImageList filterHook={filterHook} />;
 };

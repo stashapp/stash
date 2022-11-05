@@ -8,6 +8,6 @@ interface ITagPerformersPanel {
 }
 
 export const TagPerformersPanel: React.FC<ITagPerformersPanel> = ({ tag }) => {
-  const tagFilterHook = useTagFilterHook(tag);
-  return <PerformerList filterHook={tagFilterHook} />;
+  const filterHook = useTagFilterHook(tag);
+  return <PerformerList filterHook={filterHook} />;
 };

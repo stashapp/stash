@@ -8,6 +8,6 @@ interface ITagScenesPanel {
 }
 
 export const TagScenesPanel: React.FC<ITagScenesPanel> = ({ tag }) => {
-  const tagFilterHook = useTagFilterHook(tag);
-  return <SceneList filterHook={tagFilterHook} />;
+  const filterHook = useTagFilterHook(tag);
+  return <SceneList filterHook={filterHook} />;
 };
