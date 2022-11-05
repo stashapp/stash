@@ -54,6 +54,7 @@
     "import": "Импорт…",
     "import_from_file": "Импорт из файла",
     "logout": "Выйти",
+    "make_primary": "Сделать основным",
     "merge": "Слияние",
     "merge_from": "Слияние из",
     "merge_into": "Слияние в",
@@ -189,6 +190,7 @@
     },
     "categories": {
       "about": "О программе",
+      "changelog": "Список изменений",
       "interface": "Интерфейс",
       "logs": "Журнал",
       "metadata_providers": "Источники метадаты",
@@ -242,6 +244,10 @@
         "stash-box_integration": "Stash-box интеграция",
         "username": "Имя пользователя",
         "username_desc": "Имя для доступа к Stash. Оставьте пустым для отключения аутентификации"
+      },
+      "backup_directory_path": {
+        "description": "Местоположение каталога для резервных копий базы данных SQLite",
+        "heading": "Путь к резервному каталогу"
       },
       "cache_location": "Папка для расположения кэша",
       "cache_path_head": "Путь кэша",
@@ -401,6 +407,9 @@
       },
       "funscript_offset": {
         "description": "Смещение времени в миллисекундах для воспроизведения интерактивных скриптов."
+      },
+      "handy_connection": {
+        "connect": "Подключить"
       },
       "images": {
         "heading": "Изображения",
@@ -765,6 +774,7 @@
   "rating": "Рейтинг",
   "recently_added_objects": "Недавно добавленные {objects}",
   "recently_released_objects": "Недавно выпущенные {objects}",
+  "release_notes": "Информация о сборке",
   "resolution": "Разрешение",
   "scene": "Сцена",
   "sceneTagger": "Пометка сцен тэгами",
@@ -893,5 +903,6 @@
   "videos": "Видео",
   "view_all": "Показать все",
   "weight": "Вес",
-  "years_old": "Возраст"
+  "years_old": "Возраст",
+  "zip_file_count": "Количество zip-файлов"
 }
