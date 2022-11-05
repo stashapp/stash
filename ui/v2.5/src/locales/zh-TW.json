@@ -606,7 +606,7 @@
   "criterion_modifier": {
     "between": "與 ... 之間",
     "equals": "是",
-    "excludes": "屏除",
+    "excludes": "排除",
     "format_string": "{criterion}{modifierString}{valueString}",
     "greater_than": "大於",
     "includes": "包含",
