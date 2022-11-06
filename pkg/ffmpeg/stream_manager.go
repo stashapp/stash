@@ -215,10 +215,10 @@ func (sm *StreamManager) streamTSFunc(hashResolution string, segment int) http.H
 				now := time.Now()
 				switch {
 				case sm.segmentExists(fn):
-					logger.Tracef("streaming segment %d hashResolution %s", segment, hashResolution)
-					sm.streamNotify(r.Context(), hashResolution, segment)
-					w.Header().Set("Content-Type", "video/mp2t")
-					http.ServeFile(w, r, fn)
+						logger.Tracef("streaming segment %d hashResolution %s", segment, hashResolution)
+						sm.streamNotify(r.Context(), hashResolution, segment)
+						w.Header().Set("Content-Type", "video/mp2t")
+						http.ServeFile(w, r, fn)
 				case started.Add(maxSegmentWait).Before(now):
 					logger.Warnf("timed out waiting for segment file %q to be generated", fn)
 					http.Error(w, "timed out waiting for segment file to be generated", http.StatusInternalServerError)
@@ -227,7 +227,7 @@ func (sm *StreamManager) streamTSFunc(hashResolution string, segment int) http.H
 					sm.streamNotify(r.Context(), hashResolution, segment)
 					continue
 				}
-				return
+					return
 			}
 		}
 	}
@@ -427,22 +427,20 @@ func (sm *StreamManager) startTranscode(src string, hash string, resolution stri
 func (sm *StreamManager) stopTranscode(hashResolution string) {
 	p := sm.runningTranscodes[hashResolution]
 	if p != nil {
-		go func() {
-			// Windows doesn't support Interrupt
-			if runtime.GOOS != "windows" {
-				_ = p.cmd.Process.Signal(os.Interrupt)
-				select {
-				case <-p.context.Done():
-					logger.Trace("ffmpeg process exited cleanly")
-					break
-				case <-time.After(cancelTimeout):
-					logger.Warn("ffmpeg process exited uncleanly")
-					break
-				}
-			}
-			p.cancel()
-		}()
 		p.cancelled = true
+		// Windows doesn't support Interrupt
+		if runtime.GOOS != "windows" {
+			_ = p.cmd.Process.Signal(os.Interrupt)
+			select {
+			case <-p.context.Done():
+				logger.Trace("ffmpeg process exited cleanly")
+				break
+			case <-time.After(cancelTimeout):
+				logger.Warn("ffmpeg process exited uncleanly")
+				break
+			}
+		}
+		p.cancel()
 		delete(sm.runningTranscodes, hashResolution)
 	}
 }
