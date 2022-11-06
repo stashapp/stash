@@ -142,8 +142,8 @@
       "query_mode_metadata_desc": "Utilise uniquement les métadonnées",
       "query_mode_path": "Chemin",
       "query_mode_path_desc": "Utilise le chemin complet du fichier",
-      "set_cover_desc": "Remplacer la couverture de la scène si une est trouvée.",
-      "set_cover_label": "Définir la couverture de la scène",
+      "set_cover_desc": "Remplacer la vignette de la scène si une est trouvée.",
+      "set_cover_label": "Définir la vignette de la scène",
       "set_tag_desc": "Attache des étiquettes à la scène, en écrasant ou en fusionnant avec des étiquettes existantes.",
       "set_tag_label": "Définir les étiquettes",
       "show_male_desc": "Cocher si les performeurs masculins seront disponibles pour le marquage.",
@@ -384,7 +384,7 @@
         "identifying_from_paths": "Identifier des scènes à partir des chemins suivants",
         "identifying_scenes": "Identifier {num} {scene}",
         "include_male_performers": "Inclure les performeurs masculins",
-        "set_cover_images": "Définir les images de couverture",
+        "set_cover_images": "Définir les vignettes",
         "set_organized": "Définir le drapeau organisé",
         "source": "Source",
         "source_options": "Options pour {source}",
@@ -596,7 +596,7 @@
     "tags": "{count, plural, one {Étiquette} other {Étiquettes}}"
   },
   "country": "Pays",
-  "cover_image": "Image de couverture",
+  "cover_image": "Vignette",
   "created_at": "Créé le",
   "criterion": {
     "greater_than": "Supérieur à",
