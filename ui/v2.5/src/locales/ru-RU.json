@@ -144,9 +144,9 @@
       "query_mode_path_desc": "Используя полный путь до файла",
       "set_cover_desc": "Заменить обложку сцены, если она будет найдена.",
       "set_cover_label": "Выставить обложку для данной сцены",
-      "set_tag_desc": "Прикрепите теги к сцене, либо перезаписав их, либо объединив с существующими тегами в сцене.",
+      "set_tag_desc": "Прикрепить теги к сцене, перезаписав или соединив с существующими тегами на сцене.",
       "set_tag_label": "Установить теги",
-      "show_male_desc": "Переключите, будут ли актеры-мужчины доступны для пометки тегами.",
+      "show_male_desc": "Включить или выключить доступность пометки тегами мужских актёров.",
       "show_male_label": "Показывать актеров мужского пола",
       "source": "Источник"
     },
@@ -164,9 +164,9 @@
       "phash_matches": "{count} PHashes совпадают",
       "unnamed": "Безымянный"
     },
-    "verb_match_fp": "Сопоставить отпечаток файла",
+    "verb_match_fp": "Сопоставить отпечатки файла",
     "verb_matched": "Совпавший",
-    "verb_scrape_all": "Скрейпить всё",
+    "verb_scrape_all": "Убрать всё",
     "verb_submit_fp": "Отправить {fpCount, plural, one{# Совпадение} other{# совпадения}}",
     "verb_toggle_config": "{toggle} {configuration}",
     "verb_toggle_unmatched": "{toggle} не назначенные сцены"
@@ -204,8 +204,8 @@
     },
     "dlna": {
       "allow_temp_ip": "Разрешить {tempIP}",
-      "allowed_ip_addresses": "Разрешенные IP адреса",
-      "allowed_ip_temporarily": "Временно разрешенные IP",
+      "allowed_ip_addresses": "Разрешенные IP-адреса",
+      "allowed_ip_temporarily": "Временно разрешенные IP-адреса",
       "default_ip_whitelist": "Белый список IP по умолчанию",
       "default_ip_whitelist_desc": "Разрешенные IP адреса для доступа к DLNA. Используйте {wildcard}, чтобы разрешить все IP-адреса.",
       "disabled_dlna_temporarily": "DLNA временно отключен",
