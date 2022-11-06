@@ -4,7 +4,10 @@ import { useIntl } from "react-intl";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { INumberValue } from "../../../models/list-filter/types";
 import { Criterion } from "../../../models/list-filter/criteria/criterion";
-import { convertFromRatingFormat } from "src/utils/rating";
+import {
+  convertFromRatingFormat,
+  convertToRatingFormat,
+} from "src/utils/rating";
 import * as GQL from "src/core/generated-graphql";
 
 interface IDurationFilterProps {
@@ -19,6 +22,8 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
   configuration,
 }) => {
   const intl = useIntl();
+  const ratingSystem =
+    configuration?.interface.ratingSystem ?? GQL.RatingSystem.FiveStar;
 
   const valueStage = useRef<INumberValue>(criterion.value);
 
@@ -51,10 +56,7 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
           }
           onBlur={onBlurInput}
           defaultValue={
-            convertToRatingFormat(
-              criterion.value?.value,
-              configuration?.interface.ratingSystem
-            ) ?? ""
+            convertToRatingFormat(criterion.value?.value, ratingSystem) ?? ""
           }
           placeholder={intl.formatMessage({ id: "criterion.value" })}
         />
@@ -78,10 +80,7 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
           }
           onBlur={onBlurInput}
           defaultValue={
-            convertToRatingFormat(
-              criterion.value?.value,
-              configuration?.interface.ratingSystem
-            ) ?? ""
+            convertToRatingFormat(criterion.value?.value, ratingSystem) ?? ""
           }
           placeholder={intl.formatMessage({ id: "criterion.greater_than" })}
         />
@@ -114,7 +113,7 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
               criterion.modifier === CriterionModifier.LessThan
                 ? criterion.value?.value
                 : criterion.value?.value2,
-              configuration?.interface.ratingSystem
+              ratingSystem
             ) ?? ""
           }
           placeholder={intl.formatMessage({ id: "criterion.less_than" })}
