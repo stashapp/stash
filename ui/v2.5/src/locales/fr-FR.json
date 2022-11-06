@@ -320,7 +320,7 @@
     "scraping": {
       "entity_metadata": "Métadonnées {entityType}",
       "entity_scrapers": "Extracteurs de {entityType}s",
-      "excluded_tag_patterns_desc": "Expressions régulières de noms d'étiquettes à exclure des résultats de scraping",
+      "excluded_tag_patterns_desc": "Expressions régulières de noms d'étiquettes à exclure des résultats de l'extraction",
       "excluded_tag_patterns_head": "Modèles d'étiquette excluse",
       "scraper": "Extracteur",
       "scrapers": "Extracteurs",
@@ -427,7 +427,7 @@
     },
     "ui": {
       "abbreviate_counters": {
-        "description": "Abréger les compteurs dans les fiches et pages de vue des détails, par exemple \"1831\" sera formaté en \"1.8K\".",
+        "description": "Abréger les compteurs sur les fiches et pages de détails, par exemple \"1831\" sera formaté en \"1.8K\".",
         "heading": "Abréger les compteurs"
       },
       "basic_settings": "Paramètres de base",
@@ -437,9 +437,9 @@
         "option_label": "Activer le CSS personnalisé"
       },
       "custom_locales": {
-        "description": "Remplacer individuellement des chaines linguistiques. Voir https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json pour la liste principale. La page doit être rechargée pour que les changements prennent effet.",
+        "description": "Remplacer individuellement des chaines linguistiques. Voir https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/fr-FR.json pour la liste principale. La page doit être rechargée pour que les changements prennent effet.",
         "heading": "Traduction personnalisée",
-        "option_label": "Traduction personnalisée activée"
+        "option_label": "Activer la traduction personnalisée"
       },
       "delete_options": {
         "description": "Réglages par défaut lors de la suppression d'images, galeries, et scènes.",
@@ -452,7 +452,7 @@
       "desktop_integration": {
         "desktop_integration": "Intégration au bureau",
         "notifications_enabled": "Activer les notifications",
-        "send_desktop_notifications_for_events": "Envoyer des notifications au bureau en cas d'événements",
+        "send_desktop_notifications_for_events": "Envoyer des notifications sur le bureau en cas d'événements",
         "skip_opening_browser": "Ne pas ouvrir de navigateur",
         "skip_opening_browser_on_startup": "Ignorer l'ouverture automatique du navigateur lors du démarrage"
       },
@@ -509,7 +509,7 @@
         "options": {
           "image_location": {
             "description": "Emplacement personnalisé pour les images de performeurs par défaut. Laisser vide pour utiliser les réglages intégrés par défaut",
-            "heading": "Chemin de l'image du performeur personnalisé"
+            "heading": "Chemin de l'image personnalisée du performeur"
           }
         }
       },
@@ -523,13 +523,13 @@
         }
       },
       "scene_list": {
-        "heading": "Liste de scène",
+        "heading": "Liste de scènes",
         "options": {
           "show_studio_as_text": "Afficher les studios sous format texte"
         }
       },
       "scene_player": {
-        "heading": "Lecteur de scène",
+        "heading": "Lecteur de scènes",
         "options": {
           "auto_start_video": "Démarrer automatiquement la vidéo",
           "auto_start_video_on_play_selected": {
@@ -555,28 +555,28 @@
         "heading": "Tentatives de défilement avant transition"
       },
       "show_tag_card_on_hover": {
-        "description": "Afficher la fiche d'identification lors du survol des badges d'étiquettes",
-        "heading": "Infobulles de la fiche d'identification"
+        "description": "Afficher une fiche d'identification lors du survol des badges d'étiquettes",
+        "heading": "Infobulles d'identification"
       },
       "slideshow_delay": {
         "description": "Le diaporama est disponible dans galerie en mode de vue mural",
         "heading": "Délai du diaporama (secondes)"
       },
       "studio_panel": {
-        "heading": "Vue studio",
+        "heading": "Vue studios",
         "options": {
           "show_child_studio_content": {
-            "description": "Dans la vue studio, afficher également le contenu des studios affiliés",
+            "description": "Dans la vue studios, afficher également le contenu des studios affiliés",
             "heading": "Afficher le contenu des studios affiliés"
           }
         }
       },
       "tag_panel": {
-        "heading": "Vue étiquette",
+        "heading": "Vue étiquettes",
         "options": {
           "show_child_tagged_content": {
-            "description": "Dans la vue étiquette, afficher également le contenu des sous-étiquettes",
-            "heading": "Afficher le contenu des sous-étiquettes"
+            "description": "Dans la vue étiquettes, afficher également le contenu des étiquettes affiliées",
+            "heading": "Afficher le contenu des étiquettes affiliées"
           }
         }
       },
@@ -814,7 +814,7 @@
   "images": "Images",
   "include_parent_tags": "Inclure les étiquettes parentes",
   "include_sub_studios": "Inclure les studios affiliés",
-  "include_sub_tags": "Inclure les sous-étiquettes",
+  "include_sub_tags": "Inclure les étiquettes affiliées",
   "instagram": "Instagram",
   "interactive": "Interactif",
   "interactive_speed": "Vitesse interactive",
@@ -864,12 +864,12 @@
   "part_of": "Fait partie de {parent}",
   "path": "Chemin",
   "perceptual_similarity": "Similitude perceptuelle (empreinte)",
-  "performer": "Performeur",
+  "performer": "Performeurs",
   "performerTags": "Étiquettes de performeur",
   "performer_age": "Âge du performeur",
   "performer_count": "Nombre de performeurs",
   "performer_favorite": "Performeur favori",
-  "performer_image": "Photo du performeur",
+  "performer_image": "Image du performeur",
   "performer_tagger": {
     "add_new_performers": "Ajouter de nouveaux performeurs",
     "any_names_entered_will_be_queried": "Tout nom saisi sera demandé à l'instance distante StashBox et ajouté si trouvé. Seules les correspondances exactes seront considérées comme équivalentes.",
@@ -1029,12 +1029,12 @@
   "studio": "Studio",
   "studio_depth": "Niveaux (vides pour tous)",
   "studios": "Studios",
-  "sub_tag_count": "Nombre de sous-étiquettes",
-  "sub_tag_of": "Sous-étiquette de {parent}",
-  "sub_tags": "Sous-étiquettes",
+  "sub_tag_count": "Nombre d'étiquettes affiliées",
+  "sub_tag_of": "Étiquette affiliée de {parent}",
+  "sub_tags": "Étiquettes affiliées",
   "subsidiary_studios": "Studios affiliés",
   "synopsis": "Résumé",
-  "tag": "Étiquette",
+  "tag": "Étiquettes",
   "tag_count": "Nombre d'étiquettes",
   "tags": "Étiquettes",
   "tattoos": "Tatouages",
