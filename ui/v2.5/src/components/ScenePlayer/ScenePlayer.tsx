@@ -10,8 +10,9 @@ import React, {
 import VideoJS, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import "videojs-vtt-thumbnails-freetube";
 import "videojs-seek-buttons";
-import "videojs-landscape-fullscreen";
 import "./live";
+import "./full-screen";
+import "./seek-handler";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
@@ -54,6 +55,7 @@ function handleHotkeys(player: VideoJsPlayer, event: VideoJS.KeyboardEvent) {
     case 13: // enter
       if (player.paused()) player.play();
       else player.pause();
+      event.preventDefault();
       break;
     case 77: // m
       player.muted(!player.muted());
@@ -134,7 +136,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   onNext,
   onPrevious,
 }) => {
-  const { configuration } = useContext(ConfigurationContext);
+  const { isTouch, configuration } = useContext(ConfigurationContext);
   const config = configuration?.interface;
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<VideoJsPlayer | undefined>();
@@ -212,6 +214,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           const player = this as VideoJsPlayer;
           handleHotkeys(player, event);
         },
+        // prevents touch from triggering play/pause in weird circumstances
+        // @ts-ignore click isn't defined for some reason
+        click: function () {
+          if (isTouch) {
+            return;
+          }
+          const player = this as VideoJsPlayer;
+          if (player.paused()) {
+            player.play()?.catch(() => {});
+          } else {
+            player.pause();
+          }
+        },
+        doubleClick: isTouch ? false : true,
       },
     };
 
@@ -226,13 +242,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     (player as any).markers();
     (player as any).offset();
+    player.seekHandler();
     (player as any).sourceSelector();
     (player as any).persistVolume();
-    (player as any).bigButtons();
+    player.bigButtons();
+    player.touchControls();
 
     player.focus();
     playerRef.current = player;
-  }, []);
+  }, [isTouch]);
 
   useEffect(() => {
     if (scene?.interactive && interactiveInitialised) {
@@ -529,14 +547,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const isLandscape = file.height && file.width && file.width > file.height;
 
     if (isLandscape) {
-      (player as any).landscapeFullscreen({
-        fullscreen: {
-          enterOnRotate: true,
-          exitOnRotate: true,
-          alwaysInLandscapeMode: true,
-          iOS: false,
-        },
-      });
+      player.fullscreenLock();
     }
 
     // clear the offset before loading anything new.

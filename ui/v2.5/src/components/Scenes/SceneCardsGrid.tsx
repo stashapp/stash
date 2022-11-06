@@ -2,6 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { SceneQueue } from "src/models/sceneQueue";
 import { SceneCard } from "./SceneCard";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface ISceneCardsGrid {
   scenes: GQL.SlimSceneDataFragment[];
@@ -18,6 +19,9 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
   zoomIndex,
   onSelectChange,
 }) => {
+  const [touchPreviewActive, setTouchPreviewActive] = React.useState("");
+  const { isTouch } = React.useContext(ConfigurationContext);
+
   return (
     <div className="row justify-content-center">
       {scenes.map((scene, index) => (
@@ -32,6 +36,10 @@ export const SceneCardsGrid: React.FC<ISceneCardsGrid> = ({
           onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
             onSelectChange(scene.id, selected, shiftKey)
           }
+          isTouchPreviewActive={isTouch && touchPreviewActive === scene.id}
+          onTouchPreview={() => {
+            setTouchPreviewActive(scene.id);
+          }}
         />
       ))}
     </div>

@@ -16,6 +16,7 @@ import { ScenePreview } from "src/components/Scenes/SceneCard";
 import { TaggerStateContext } from "../context";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { objectPath, objectTitle } from "src/core/files";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface ITaggerSceneDetails {
   scene: GQL.SlimSceneDataFragment;
@@ -100,6 +101,9 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
   const { config } = useContext(TaggerStateContext);
   const [queryString, setQueryString] = useState<string>("");
   const [queryLoading, setQueryLoading] = useState(false);
+
+  const [touchPreviewActive, setTouchPreviewActive] = React.useState("");
+  const { isTouch } = React.useContext(ConfigurationContext);
 
   const { paths, file: basename } = parsePath(objectPath(scene));
   const defaultQueryString = prepareQueryString(
@@ -199,6 +203,12 @@ export const TaggerScene: React.FC<PropsWithChildren<ITaggerScene>> = ({
                 video={scene.paths.preview ?? undefined}
                 isPortrait={isPortrait}
                 soundActive={false}
+                isTouchPreviewActive={
+                  isTouch && touchPreviewActive === scene.id
+                }
+                onTouchPreview={() => {
+                  setTouchPreviewActive(scene.id);
+                }}
               />
             </Link>
           </div>

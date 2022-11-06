@@ -2,6 +2,14 @@ $scrubberHeight: 120px;
 $menuHeight: 4rem;
 $sceneTabWidth: 450px;
 
+// Copied from https://github.com/videojs/video.js/blob/main/src/css/components/_control-bar.scss#L24
+@mixin hide-player-controls {
+  opacity: 0;
+  pointer-events: none;
+  transition: visibility 1s, opacity 1s;
+  visibility: visible;
+}
+
 .VideoPlayer {
   display: flex;
   flex-direction: column;
@@ -41,6 +49,7 @@ $sceneTabWidth: 450px;
     height: 80px;
     justify-content: space-around;
     opacity: 0;
+    pointer-events: none;
     position: absolute;
     top: calc(50% - 40px);
     width: 100%;
@@ -53,6 +62,34 @@ $sceneTabWidth: 450px;
       .vjs-icon-placeholder::before {
         height: 100%;
         line-height: 80px;
+      }
+
+      @at-root {
+        .VideoPlayer
+          .vjs-has-started.vjs-user-inactive.vjs-playing
+          .vjs-big-button-group
+          .vjs-button.vjs-big-play-pause-button,
+        .VideoPlayer
+          .vjs-has-started.vjs-user-inactive.vjs-paused
+          .vjs-big-button-group
+          .vjs-button.vjs-big-play-pause-button {
+          @include hide-player-controls;
+        }
+      }
+
+      &.vjs-big-play-pause-button {
+        pointer-events: auto;
+      }
+
+      &.vjs-seek-button {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s cubic-bezier(0.62, 0, 0.95, 0.04) 0s;
+
+        &.visible {
+          opacity: 1;
+          transition: opacity 0.1s ease-in 0s;
+        }
       }
     }
   }
@@ -94,7 +131,11 @@ $sceneTabWidth: 450px;
   }
 
   // make controls a little more compact on smaller screens
-  @media (max-width: 576px) {
+  @media (max-height: 449px), (max-width: 576px) {
+    div.vjs-control-bar::before {
+      height: 5rem;
+    }
+
     .vjs-control-bar {
       .vjs-control:not(.vjs-progress-control) {
         width: 2.5em;
@@ -145,6 +186,12 @@ $sceneTabWidth: 450px;
       height: 10rem;
       position: absolute;
       width: 100%;
+    }
+
+    @at-root {
+      .video-js.vjs-has-started.vjs-user-inactive.vjs-paused .vjs-control-bar {
+        @include hide-player-controls;
+      }
     }
   }
 
@@ -449,6 +496,23 @@ $sceneTabWidth: 450px;
   .vjs-button > .vjs-icon-placeholder::before {
     content: "\f110";
     font-family: VideoJS;
+  }
+}
+
+.vjs-menu-button-popup .vjs-menu {
+  @media (max-width: 576px) {
+    left: -5em;
+  }
+
+  .vjs-menu-content {
+    z-index: 1;
+
+    @media (max-width: 480px) {
+      max-height: 10em;
+    }
+    @media (min-width: 576px) and (max-width: 767px) {
+      max-height: 14em;
+    }
   }
 }
 

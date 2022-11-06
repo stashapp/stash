@@ -64,6 +64,10 @@ const intlFormats: CustomFormats = {
 
 const defaultLocale = "en-GB";
 
+function isTouchEnabled() {
+  return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+}
+
 function languageMessageString(language: string) {
   return language.replace(/-/, "");
 }
@@ -230,6 +234,7 @@ export const App: React.FC = () => {
           <ConfigurationProvider
             configuration={config.data?.configuration}
             loading={config.loading}
+            isTouch={isTouchEnabled()}
           >
             {maybeRenderReleaseNotes()}
             <ToastProvider>

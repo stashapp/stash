@@ -66,7 +66,7 @@ export const GridCard: React.FC<ICardProps> = (props: ICardProps) => {
         <Form.Control
           type="checkbox"
           // #2750 - add mousetrap class to ensure keyboard shortcuts work
-          className="card-check mousetrap"
+          className="card-check touch-active mousetrap"
           checked={props.selected}
           onChange={() => props.onSelectedChanged!(!props.selected, shiftKey)}
           onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {

@@ -19,6 +19,7 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
 ) => {
   const result = useFindScenes(props.filter);
   const cardCount = result.data?.findScenes.count;
+  const [touchPreviewActive, setTouchPreviewActive] = React.useState("");
 
   const queue = useMemo(() => {
     return SceneQueue.fromListFilterModel(props.filter);
@@ -55,6 +56,12 @@ export const SceneRecommendationRow: FunctionComponent<IProps> = (
                 queue={queue}
                 index={index}
                 zoomIndex={1}
+                isTouchPreviewActive={
+                  props.isTouch && touchPreviewActive === scene.id
+                }
+                onTouchPreview={() => {
+                  setTouchPreviewActive(scene.id);
+                }}
               />
             ))}
       </Slider>

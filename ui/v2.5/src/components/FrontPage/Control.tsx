@@ -15,6 +15,7 @@ import { PerformerRecommendationRow } from "../Performers/PerformerRecommendatio
 import { SceneRecommendationRow } from "../Scenes/SceneRecommendationRow";
 import { StudioRecommendationRow } from "../Studios/StudioRecommendationRow";
 import { TagRecommendationRow } from "../Tags/TagRecommendationRow";
+import { ConfigurationContext } from "src/hooks/Config";
 
 interface IFilter {
   mode: GQL.FilterMode;
@@ -23,11 +24,7 @@ interface IFilter {
 }
 
 const RecommendationRow: React.FC<IFilter> = ({ mode, filter, header }) => {
-  function isTouchEnabled() {
-    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
-  }
-
-  const isTouch = isTouchEnabled();
+  const { isTouch } = React.useContext(ConfigurationContext);
 
   switch (mode) {
     case GQL.FilterMode.Scenes:
