@@ -161,7 +161,7 @@
       "match_failed_already_tagged": "短片先前已標記完畢",
       "match_failed_no_result": "未找到結果",
       "match_success": "已成功標記短片",
-      "phash_matches": "{count} 個 PHash 匹配",
+      "phash_matches": "{count} 個 PHash 符合",
       "unnamed": "未命名"
     },
     "verb_match_fp": "特徵碼辨別",
@@ -265,14 +265,14 @@
       "excluded_image_gallery_patterns_head": "圖片/圖庫排除規則",
       "excluded_video_patterns_desc": "要從掃描中排除，並會被『清理』功能所移除的影片檔案/路徑的正則表達式",
       "excluded_video_patterns_head": "影片排除規則",
-      "gallery_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將被視為圖庫或圖包。",
+      "gallery_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將視為圖庫或圖包。",
       "gallery_ext_head": "圖庫 ZIP 檔副檔名",
       "generated_file_naming_hash_desc": "使用 MD5 或 oshash 生成檔案命名。更改此設定後，所有短片則須有先對應的 MD5/oshash 雜湊值。因此，之前已經生成的檔案可能需要重新遷移或重新生成。請參閱『遷移』設定。",
       "generated_file_naming_hash_head": "生成檔案名所使用的雜湊演算法",
       "generated_files_location": "生成文件的檔案位置（短片標記、短片預覽、預覽圖等）",
       "generated_path_head": "生成檔案儲存路徑",
       "hashing": "雜湊值設定",
-      "image_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將被視為圖片。",
+      "image_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將視為圖片。",
       "image_ext_head": "圖片副檔名",
       "include_audio_desc": "產生預覽檔案時，順便產生音訊預覽。",
       "include_audio_head": "包含音訊",
@@ -301,7 +301,7 @@
       },
       "scraping": "爬蟲設定",
       "sqlite_location": "SQLite 資料庫的位置（需重新啟動）",
-      "video_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將被視為影片。",
+      "video_ext_desc": "以逗號分隔的副檔名名稱，這些檔案將視為影片。",
       "video_ext_head": "影片副檔名",
       "video_head": "影片設定"
     },
@@ -433,13 +433,13 @@
       "basic_settings": "一般設定",
       "custom_css": {
         "description": "如需套用，請重新整理頁面。",
-        "heading": "自定義 CSS",
-        "option_label": "啟用自定義 CSS"
+        "heading": "自訂 CSS",
+        "option_label": "啟用自訂 CSS"
       },
       "custom_locales": {
         "description": "強制使用特定翻譯字串。主列表請參閱 https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json。必須重新整理頁面才能使更改生效。",
-        "heading": "自定義本土化",
-        "option_label": "啟用自定義本土化"
+        "heading": "自訂翻譯",
+        "option_label": "啟用自訂翻譯"
       },
       "delete_options": {
         "description": "刪除圖片、圖庫及短片時的預設設定。",
