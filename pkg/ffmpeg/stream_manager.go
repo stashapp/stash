@@ -37,6 +37,9 @@ const (
 	// before we restart the transcode process
 	maxSegmentRestartGap = 15
 
+	// time to after segement generation delay before serving
+	segmentCreationDelay = 1 * time.Second
+
 	maxIdleTime     = 30 * time.Second
 	monitorInterval = 2 * time.Second
 
@@ -212,22 +215,29 @@ func (sm *StreamManager) streamTSFunc(hashResolution string, segment int) http.H
 				logger.Trace("exiting streamTSFunc because context is done")
 				return
 			case <-time.After(segmentCheckInterval):
+				// notify that we're still waiting so it doesn't get cleaned up
+				sm.streamNotify(r.Context(), hashResolution, segment)
 				now := time.Now()
 				switch {
 				case sm.segmentExists(fn):
+					fi, err := os.Stat(fn)
+					switch {
+					case err != nil:
+						logger.Warnf("error getting file info for %s: %s", fn, err)
+					case now.Add(segmentCreationDelay).After(fi.ModTime()):
 						logger.Tracef("streaming segment %d hashResolution %s", segment, hashResolution)
 						sm.streamNotify(r.Context(), hashResolution, segment)
 						w.Header().Set("Content-Type", "video/mp2t")
 						http.ServeFile(w, r, fn)
+						return
+					default:
+						logger.Tracef("segment %d hashResolution %s is still being created", segment, hashResolution)
+					}
 				case started.Add(maxSegmentWait).Before(now):
 					logger.Warnf("timed out waiting for segment file %q to be generated", fn)
 					http.Error(w, "timed out waiting for segment file to be generated", http.StatusInternalServerError)
-				default:
-					// notify that we're still waiting so it doesn't get cleaned up
-					sm.streamNotify(r.Context(), hashResolution, segment)
-					continue
-				}
 					return
+				}
 			}
 		}
 	}
