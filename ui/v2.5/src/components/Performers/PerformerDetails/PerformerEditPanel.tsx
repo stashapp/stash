@@ -445,7 +445,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return {
       ...values,
       gender: stringToGender(values.gender) ?? null,
-      weight: Number(values.weight),
+      height_cm: values.height_cm ? Number(values.height_cm) : null,
+      weight: values.weight ? Number(values.weight) : null,
       id: performer.id ?? "",
     };
   }
@@ -454,7 +455,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return {
       ...values,
       gender: stringToGender(values.gender),
-      weight: Number(values.weight),
+      height_cm: values.height_cm ? Number(values.height_cm) : null,
+      weight: values.weight ? Number(values.weight) : null,
     };
   }
 
@@ -799,20 +801,24 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
 
   function renderField(
     field: string,
-    title: string,
-    type?: string,
-    placeholder?: string
+    props?: {
+      messageID?: string;
+      placeholder?: string;
+      type?: string;
+    }
   ) {
+    const title = intl.formatMessage({ id: props?.messageID ?? field });
+
     return (
       <Form.Group controlId={field} as={Row}>
         <Form.Label column xs={labelXS} xl={labelXL}>
-          <FormattedMessage id={field} defaultMessage={title} />
+          {title}
         </Form.Label>
         <Col xs={fieldXS} xl={fieldXL}>
           <Form.Control
+            type={props?.type ?? "text"}
             className="text-input"
-            type={type || "text"}
-            placeholder={placeholder ?? title}
+            placeholder={props?.placeholder ?? title}
             {...formik.getFieldProps(field)}
             isInvalid={!!formik.getFieldMeta(field).error}
           />
@@ -883,8 +889,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderField("birthdate", "Birthdate", "YYYY-MM-DD")}
-        {renderField("death_date", "Death Date", "YYYY-MM-DD")}
+        {renderField("birthdate", { placeholder: "YYYY-MM-DD" })}
+        {renderField("death_date", { placeholder: "YYYY-MM-DD" })}
 
         <Form.Group as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
@@ -898,13 +904,20 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderField("ethnicity", "Ethnicity")}
-        {renderField("hair_color", "Hair Color")}
-        {renderField("eye_color", "Eye Color")}
-        {renderField("height_cm", "Height (cm)", "number")}
-        {renderField("weight", "Weight (kg)", "number")}
-        {renderField("measurements", "Measurements")}
-        {renderField("fake_tits", "Fake Tits")}
+        {renderField("ethnicity")}
+        {renderField("hair_color")}
+        {renderField("eye_color")}
+        {renderField("height_cm", {
+          type: "number",
+          messageID: "height",
+          placeholder: intl.formatMessage({ id: "height_cm" }),
+        })}
+        {renderField("weight", {
+          type: "number",
+          placeholder: intl.formatMessage({ id: "weight_kg" }),
+        })}
+        {renderField("measurements")}
+        {renderField("fake_tits")}
 
         <Form.Group controlId="tattoos" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
@@ -934,7 +947,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderField("career_length", "Career Length")}
+        {renderField("career_length")}
 
         <Form.Group controlId="url" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
@@ -949,8 +962,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderField("twitter", "Twitter")}
-        {renderField("instagram", "Instagram")}
+        {renderField("twitter")}
+        {renderField("instagram")}
         <Form.Group controlId="details" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
             <FormattedMessage id="details" />
