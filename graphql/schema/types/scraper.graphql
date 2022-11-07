@@ -61,7 +61,9 @@ type ScrapedTag {
 
 type ScrapedScene {
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
 
@@ -82,7 +84,9 @@ type ScrapedScene {
 
 input ScrapedSceneInput {
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
 

@@ -1,7 +1,9 @@
 fragment SlimSceneData on Scene {
   id
   title
+  code
   details
+  director
   url
   date
   rating

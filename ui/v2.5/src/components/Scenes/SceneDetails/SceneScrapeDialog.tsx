@@ -248,11 +248,17 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   const [title, setTitle] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.title, scraped.title)
   );
+  const [code, setCode] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(scene.code, scraped.code)
+  );
   const [url, setURL] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.url, scraped.url)
   );
   const [date, setDate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.date, scraped.date)
+  );
+  const [director, setDirector] = useState<ScrapeResult<string>>(
+    new ScrapeResult<string>(scene.director, scraped.director)
   );
   const [studio, setStudio] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.studio_id, scraped.studio?.stored_id)
@@ -339,6 +345,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   const [details, setDetails] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.details, scraped.details)
   );
+
   const [image, setImage] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(scene.cover_image, scraped.image)
   );
@@ -355,8 +362,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
   if (
     [
       title,
+      code,
       url,
       date,
+      director,
       studio,
       performers,
       movies,
@@ -521,8 +530,10 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
 
     return {
       title: title.getNewValue(),
+      code: code.getNewValue(),
       url: url.getNewValue(),
       date: date.getNewValue(),
+      director: director.getNewValue(),
       studio: newStudioValue
         ? {
             stored_id: newStudioValue,
@@ -562,6 +573,11 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           onChange={(value) => setTitle(value)}
         />
         <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "scene_code" })}
+          result={code}
+          onChange={(value) => setCode(value)}
+        />
+        <ScrapedInputGroupRow
           title={intl.formatMessage({ id: "url" })}
           result={url}
           onChange={(value) => setURL(value)}
@@ -571,6 +587,11 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = ({
           placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
+        />
+        <ScrapedInputGroupRow
+          title={intl.formatMessage({ id: "director" })}
+          result={director}
+          onChange={(value) => setDirector(value)}
         />
         {renderScrapedStudioRow(
           intl.formatMessage({ id: "studios" }),
