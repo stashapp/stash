@@ -72,7 +72,11 @@ func (w *BitsWriter) Write(i interface{}) error {
 			}
 		}
 	case []byte:
-		return w.writeByteSlice(a)
+		for _, b := range a {
+			if err := w.writeFullByte(b); err != nil {
+				return err
+			}
+		}
 	case bool:
 		if a {
 			return w.writeBit(1)
@@ -98,21 +102,17 @@ func (w *BitsWriter) Write(i interface{}) error {
 // Writes first n bytes of bs if len(bs) > n
 // Pads with padByte at the end if len(bs) < n
 func (w *BitsWriter) WriteBytesN(bs []byte, n int, padByte uint8) error {
-	if n == 0 {
-		return nil
-	}
-
 	if len(bs) >= n {
-		return w.writeByteSlice(bs[:n])
+		return w.Write(bs[:n])
 	}
 
-	if err := w.writeByteSlice(bs); err != nil {
+	if err := w.Write(bs); err != nil {
 		return err
 	}
 
 	// no bytes.Repeat here to avoid allocation
 	for i := 0; i < n-len(bs); i++ {
-		if err := w.writeFullByte(padByte); err != nil {
+		if err := w.Write(padByte); err != nil {
 			return err
 		}
 	}
@@ -120,42 +120,17 @@ func (w *BitsWriter) WriteBytesN(bs []byte, n int, padByte uint8) error {
 	return nil
 }
 
-func (w *BitsWriter) writeByteSlice(in []byte) error {
-	if len(in) == 0 {
-		return nil
-	}
-
-	if w.cacheLen != 0 {
-		for _, b := range in {
-			if err := w.writeFullByte(b); err != nil {
+func (w *BitsWriter) writeFullInt(in uint64, len int) error {
+	if w.bo == binary.BigEndian {
+		for i := len - 1; i >= 0; i-- {
+			err := w.writeFullByte(byte((in >> (i * 8)) & 0xff))
+			if err != nil {
 				return err
 			}
 		}
 	} else {
-		return w.write(in)
-	}
-
-	return nil
-}
-
-func (w *BitsWriter) write(b []byte) error {
-	if _, err := w.w.Write(b); err != nil {
-		return err
-	}
-	if w.writeCb != nil {
-		for i := range b {
-			w.writeCb(b[i : i+1])
-		}
-	}
-	return nil
-}
-
-func (w *BitsWriter) writeFullInt(in uint64, len int) error {
-	if w.bo == binary.BigEndian {
-		return w.writeBitsN(in, len*8)
-	} else {
 		for i := 0; i < len; i++ {
-			err := w.writeFullByte(byte(in >> (i * 8)))
+			err := w.writeFullByte(byte((in >> (i * 8)) & 0xff))
 			if err != nil {
 				return err
 			}
@@ -166,7 +141,15 @@ func (w *BitsWriter) writeFullInt(in uint64, len int) error {
 }
 
 func (w *BitsWriter) flushBsCache() error {
-	return w.write(w.bsCache)
+	if _, err := w.w.Write(w.bsCache); err != nil {
+		return err
+	}
+
+	if w.writeCb != nil {
+		w.writeCb(w.bsCache)
+	}
+
+	return nil
 }
 
 func (w *BitsWriter) writeFullByte(b byte) error {
@@ -180,9 +163,7 @@ func (w *BitsWriter) writeFullByte(b byte) error {
 }
 
 func (w *BitsWriter) writeBit(bit byte) error {
-	if bit != 0 {
-		w.cache |= 1 << (7 - w.cacheLen)
-	}
+	w.cache = w.cache | (bit)<<(7-w.cacheLen)
 	w.cacheLen++
 	if w.cacheLen == 8 {
 		w.bsCache[0] = w.cache
@@ -194,53 +175,6 @@ func (w *BitsWriter) writeBit(bit byte) error {
 		w.cache = 0
 	}
 	return nil
-}
-
-func (w *BitsWriter) writeBitsN(toWrite uint64, n int) (err error) {
-	toWrite &= ^uint64(0) >> (64 - n)
-
-	for n > 0 {
-		if w.cacheLen == 0 {
-			if n >= 8 {
-				n -= 8
-				w.bsCache[0] = byte(toWrite >> n)
-				if err = w.flushBsCache(); err != nil {
-					return
-				}
-			} else {
-				w.cacheLen = uint8(n)
-				w.cache = byte(toWrite << (8 - w.cacheLen))
-				n = 0
-			}
-		} else {
-			free := int(8 - w.cacheLen)
-			m := n
-			if m >= free {
-				m = free
-			}
-
-			if n <= free {
-				w.cache |= byte(toWrite << (free - m))
-			} else {
-				w.cache |= byte(toWrite >> (n - m))
-			}
-
-			n -= m
-			w.cacheLen += uint8(m)
-
-			if w.cacheLen == 8 {
-				w.bsCache[0] = w.cache
-				if err = w.flushBsCache(); err != nil {
-					return err
-				}
-
-				w.cacheLen = 0
-				w.cache = 0
-			}
-		}
-	}
-
-	return
 }
 
 // WriteN writes the input into n bits
@@ -259,7 +193,13 @@ func (w *BitsWriter) WriteN(i interface{}, n int) error {
 		return errors.New("astikit: invalid type")
 	}
 
-	return w.writeBitsN(toWrite, n)
+	for i := n - 1; i >= 0; i-- {
+		err := w.writeBit(byte(toWrite>>i) & 0x1)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // BitsWriterBatch allows to chain multiple Write* calls and check for error only once

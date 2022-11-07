@@ -536,8 +536,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCdp4(in *jlexer.Lexer, out *N
 			out.Value = string(in.String())
 		case "pseudoType":
 			(out.PseudoType).UnmarshalEasyJSON(in)
-		case "pseudoIdentifier":
-			out.PseudoIdentifier = string(in.String())
 		case "shadowRootType":
 			(out.ShadowRootType).UnmarshalEasyJSON(in)
 		case "frameId":
@@ -659,16 +657,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCdp4(in *jlexer.Lexer, out *N
 			out.IsSVG = bool(in.Bool())
 		case "compatibilityMode":
 			(out.CompatibilityMode).UnmarshalEasyJSON(in)
-		case "assignedSlot":
-			if in.IsNull() {
-				in.Skip()
-				out.AssignedSlot = nil
-			} else {
-				if out.AssignedSlot == nil {
-					out.AssignedSlot = new(BackendNode)
-				}
-				(*out.AssignedSlot).UnmarshalEasyJSON(in)
-			}
 		default:
 			in.SkipRecursive()
 		}
@@ -800,11 +788,6 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoCdp4(out *jwriter.Writer, in 
 		out.RawString(prefix)
 		(in.PseudoType).MarshalEasyJSON(out)
 	}
-	if in.PseudoIdentifier != "" {
-		const prefix string = ",\"pseudoIdentifier\":"
-		out.RawString(prefix)
-		out.String(string(in.PseudoIdentifier))
-	}
 	if in.ShadowRootType != "" {
 		const prefix string = ",\"shadowRootType\":"
 		out.RawString(prefix)
@@ -888,11 +871,6 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoCdp4(out *jwriter.Writer, in 
 		const prefix string = ",\"compatibilityMode\":"
 		out.RawString(prefix)
 		(in.CompatibilityMode).MarshalEasyJSON(out)
-	}
-	if in.AssignedSlot != nil {
-		const prefix string = ",\"assignedSlot\":"
-		out.RawString(prefix)
-		(*in.AssignedSlot).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
@@ -996,6 +974,37 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCdp5(in *jlexer.Lexer, out *F
 				}
 				in.Delim(']')
 			}
+		case "originTrials":
+			if in.IsNull() {
+				in.Skip()
+				out.OriginTrials = nil
+			} else {
+				in.Delim('[')
+				if out.OriginTrials == nil {
+					if !in.IsDelim(']') {
+						out.OriginTrials = make([]*OriginTrial, 0, 8)
+					} else {
+						out.OriginTrials = []*OriginTrial{}
+					}
+				} else {
+					out.OriginTrials = (out.OriginTrials)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v20 *OriginTrial
+					if in.IsNull() {
+						in.Skip()
+						v20 = nil
+					} else {
+						if v20 == nil {
+							v20 = new(OriginTrial)
+						}
+						(*v20).UnmarshalEasyJSON(in)
+					}
+					out.OriginTrials = append(out.OriginTrials, v20)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1082,11 +1091,29 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoCdp5(out *jwriter.Writer, in 
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v20, v21 := range in.GatedAPIFeatures {
-				if v20 > 0 {
+			for v21, v22 := range in.GatedAPIFeatures {
+				if v21 > 0 {
 					out.RawByte(',')
 				}
-				(v21).MarshalEasyJSON(out)
+				(v22).MarshalEasyJSON(out)
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.OriginTrials) != 0 {
+		const prefix string = ",\"originTrials\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v23, v24 := range in.OriginTrials {
+				if v23 > 0 {
+					out.RawByte(',')
+				}
+				if v24 == nil {
+					out.RawString("null")
+				} else {
+					(*v24).MarshalEasyJSON(out)
+				}
 			}
 			out.RawByte(']')
 		}
@@ -1234,9 +1261,9 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoCdp7(in *jlexer.Lexer, out *A
 					out.Explanations = (out.Explanations)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v22 AdFrameExplanation
-					(v22).UnmarshalEasyJSON(in)
-					out.Explanations = append(out.Explanations, v22)
+					var v25 AdFrameExplanation
+					(v25).UnmarshalEasyJSON(in)
+					out.Explanations = append(out.Explanations, v25)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1265,11 +1292,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoCdp7(out *jwriter.Writer, in 
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v23, v24 := range in.Explanations {
-				if v23 > 0 {
+			for v26, v27 := range in.Explanations {
+				if v26 > 0 {
 					out.RawByte(',')
 				}
-				(v24).MarshalEasyJSON(out)
+				(v27).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}

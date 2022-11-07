@@ -135,8 +135,7 @@ cross-compile-linux-arm32v6: build-release-static
 
 cross-compile-all:
 	make cross-compile-windows
-	make cross-compile-macos-intel
-	make cross-compile-macos-applesilicon
+	make cross-compile-macos
 	make cross-compile-linux
 	make cross-compile-linux-arm64v8
 	make cross-compile-linux-arm32v7

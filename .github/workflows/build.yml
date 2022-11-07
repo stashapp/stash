@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:7
+  COMPILER_IMAGE: stashapp/compiler:6
 
 jobs:
   build:
@@ -27,7 +27,7 @@ jobs:
       run: docker pull $COMPILER_IMAGE
 
     - name: Cache node modules
-      uses: actions/cache@v3
+      uses: actions/cache@v2
       env:
         cache-name: cache-node_modules
       with:
@@ -35,7 +35,7 @@ jobs:
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock') }}
 
     - name: Cache UI build
-      uses: actions/cache@v3
+      uses: actions/cache@v2
       id: cache-ui
       env:
         cache-name: cache-ui
@@ -44,7 +44,7 @@ jobs:
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
 
     - name: Cache go build
-      uses: actions/cache@v3
+      uses: actions/cache@v2
       env:
         # increment the number suffix to bump the cache
         cache-name: cache-go-cache-1

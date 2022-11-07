@@ -165,28 +165,15 @@ func cmpNodeSetString(t iterator, op string, m, n interface{}) bool {
 func cmpNodeSetNodeSet(t iterator, op string, m, n interface{}) bool {
 	a := m.(query)
 	b := n.(query)
-	for {
-		x := a.Select(t)
-		if x == nil {
-			return false
-		}
-
-		y := b.Select(t)
-		if y == nil {
-			return false
-		}
-
-		for {
-			if cmpStringStringF(op, x.Value(), y.Value()) {
-				return true
-			}
-			if y = b.Select(t); y == nil {
-				break
-			}
-		}
-		// reset
-		b.Evaluate(t)
+	x := a.Select(t)
+	if x == nil {
+		return false
 	}
+	y := b.Select(t)
+	if y == nil {
+		return false
+	}
+	return cmpStringStringF(op, x.Value(), y.Value())
 }
 
 func cmpStringNumeric(t iterator, op string, m, n interface{}) bool {

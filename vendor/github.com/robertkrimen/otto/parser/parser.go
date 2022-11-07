@@ -1,34 +1,35 @@
 /*
 Package parser implements a parser for JavaScript.
 
-	import (
-	    "github.com/robertkrimen/otto/parser"
-	)
+    import (
+        "github.com/robertkrimen/otto/parser"
+    )
 
 Parse and return an AST
 
-	filename := "" // A filename is optional
-	src := `
-	    // Sample xyzzy example
-	    (function(){
-	        if (3.14159 > 0) {
-	            console.log("Hello, World.");
-	            return;
-	        }
+    filename := "" // A filename is optional
+    src := `
+        // Sample xyzzy example
+        (function(){
+            if (3.14159 > 0) {
+                console.log("Hello, World.");
+                return;
+            }
 
-	        var xyzzy = NaN;
-	        console.log("Nothing happens.");
-	        return xyzzy;
-	    })();
-	`
+            var xyzzy = NaN;
+            console.log("Nothing happens.");
+            return xyzzy;
+        })();
+    `
 
-	// Parse some JavaScript, yielding a *ast.Program and/or an ErrorList
-	program, err := parser.ParseFile(nil, filename, src, 0)
+    // Parse some JavaScript, yielding a *ast.Program and/or an ErrorList
+    program, err := parser.ParseFile(nil, filename, src, 0)
 
-# Warning
+Warning
 
 The parser and AST interfaces are still works-in-progress (particularly where
 node types are concerned) and may change in the future.
+
 */
 package parser
 
@@ -130,7 +131,7 @@ func ReadSource(filename string, src interface{}) ([]byte, error) {
 
 func ReadSourceMap(filename string, src interface{}) (*sourcemap.Consumer, error) {
 	if src == nil {
-		return nil, nil //nolint: nilnil
+		return nil, nil
 	}
 
 	switch src := src.(type) {
@@ -202,8 +203,9 @@ func ParseFileWithSourceMap(fileSet *file.FileSet, filename string, javascriptSo
 //
 // src may be a string, a byte slice, a bytes.Buffer, or an io.Reader, but it MUST always be in UTF-8.
 //
-//	// Parse some JavaScript, yielding a *ast.Program and/or an ErrorList
-//	program, err := parser.ParseFile(nil, "", `if (abc > 1) {}`, 0)
+//      // Parse some JavaScript, yielding a *ast.Program and/or an ErrorList
+//      program, err := parser.ParseFile(nil, "", `if (abc > 1) {}`, 0)
+//
 func ParseFile(fileSet *file.FileSet, filename string, src interface{}, mode Mode) (*ast.Program, error) {
 	return ParseFileWithSourceMap(fileSet, filename, src, nil, mode)
 }
@@ -212,6 +214,7 @@ func ParseFile(fileSet *file.FileSet, filename string, src interface{}, mode Mod
 // corresponding ast.FunctionLiteral node.
 //
 // The parameter list, if any, should be a comma-separated list of identifiers.
+//
 func ParseFunction(parameterList, body string) (*ast.FunctionLiteral, error) {
 
 	src := "(function(" + parameterList + ") {\n" + body + "\n})"

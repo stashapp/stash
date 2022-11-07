@@ -24,8 +24,7 @@ type StartObservingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/BackgroundService#method-startObserving
 //
 // parameters:
-//
-//	service
+//   service
 func StartObserving(service ServiceName) *StartObservingParams {
 	return &StartObservingParams{
 		Service: service,
@@ -47,8 +46,7 @@ type StopObservingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/BackgroundService#method-stopObserving
 //
 // parameters:
-//
-//	service
+//   service
 func StopObserving(service ServiceName) *StopObservingParams {
 	return &StopObservingParams{
 		Service: service,
@@ -71,9 +69,8 @@ type SetRecordingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/BackgroundService#method-setRecording
 //
 // parameters:
-//
-//	shouldRecord
-//	service
+//   shouldRecord
+//   service
 func SetRecording(shouldRecord bool, service ServiceName) *SetRecordingParams {
 	return &SetRecordingParams{
 		ShouldRecord: shouldRecord,
@@ -96,8 +93,7 @@ type ClearEventsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/BackgroundService#method-clearEvents
 //
 // parameters:
-//
-//	service
+//   service
 func ClearEvents(service ServiceName) *ClearEventsParams {
 	return &ClearEventsParams{
 		Service: service,

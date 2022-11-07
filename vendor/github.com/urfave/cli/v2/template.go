@@ -22,16 +22,11 @@ AUTHOR{{with $length := len .Authors}}{{if ne 1 $length}}S{{end}}{{end}}:
 COMMANDS:{{range .VisibleCategories}}{{if .Name}}
    {{.Name}}:{{range .VisibleCommands}}
      {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{else}}{{range .VisibleCommands}}
-   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlagCategories}}
-
-GLOBAL OPTIONS:{{range .VisibleFlagCategories}}
-   {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}
-   {{end}}{{end}}{{else}}{{if .VisibleFlags}}
+   {{join .Names ", "}}{{"\t"}}{{.Usage}}{{end}}{{end}}{{end}}{{end}}{{if .VisibleFlags}}
 
 GLOBAL OPTIONS:
    {{range $index, $option := .VisibleFlags}}{{if $index}}
-   {{end}}{{$option}}{{end}}{{end}}{{end}}{{if .Copyright}}
+   {{end}}{{$option}}{{end}}{{end}}{{if .Copyright}}
 
 COPYRIGHT:
    {{.Copyright}}{{end}}
@@ -50,16 +45,11 @@ CATEGORY:
    {{.Category}}{{end}}{{if .Description}}
 
 DESCRIPTION:
-   {{.Description | nindent 3 | trim}}{{end}}{{if .VisibleFlagCategories}}
-
-OPTIONS:{{range .VisibleFlagCategories}}
-   {{if .Name}}{{.Name}}
-   {{end}}{{range .Flags}}{{.}}
-   {{end}}{{end}}{{else}}{{if .VisibleFlags}}
+   {{.Description | nindent 3 | trim}}{{end}}{{if .VisibleFlags}}
 
 OPTIONS:
    {{range .VisibleFlags}}{{.}}
-   {{end}}{{end}}{{end}}
+   {{end}}{{end}}
 `
 
 // SubcommandHelpTemplate is the text template for the subcommand help topic.

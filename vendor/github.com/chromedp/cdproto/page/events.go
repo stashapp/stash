@@ -19,9 +19,9 @@ type EventDomContentEventFired struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-fileChooserOpened
 type EventFileChooserOpened struct {
-	FrameID       cdp.FrameID           `json:"frameId"`                 // Id of the frame containing input node.
-	Mode          FileChooserOpenedMode `json:"mode"`                    // Input mode.
-	BackendNodeID cdp.BackendNodeID     `json:"backendNodeId,omitempty"` // Input node id. Only present for file choosers opened via an <input type="file"> element.
+	FrameID       cdp.FrameID           `json:"frameId"`       // Id of the frame containing input node.
+	BackendNodeID cdp.BackendNodeID     `json:"backendNodeId"` // Input node id.
+	Mode          FileChooserOpenedMode `json:"mode"`          // Input mode.
 }
 
 // EventFrameAttached fired when frame has been attached to its parent.
@@ -137,21 +137,9 @@ type EventLifecycleEvent struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-backForwardCacheNotUsed
 type EventBackForwardCacheNotUsed struct {
-	LoaderID                    cdp.LoaderID                                `json:"loaderId"`                              // The loader id for the associated navgation.
-	FrameID                     cdp.FrameID                                 `json:"frameId"`                               // The frame id of the associated frame.
-	NotRestoredExplanations     []*BackForwardCacheNotRestoredExplanation   `json:"notRestoredExplanations"`               // Array of reasons why the page could not be cached. This must not be empty.
-	NotRestoredExplanationsTree *BackForwardCacheNotRestoredExplanationTree `json:"notRestoredExplanationsTree,omitempty"` // Tree structure of reasons why the page could not be cached for each frame.
-}
-
-// EventPrerenderAttemptCompleted fired when a prerender attempt is
-// completed.
-//
-// See: https://chromedevtools.github.io/devtools-protocol/tot/Page#event-prerenderAttemptCompleted
-type EventPrerenderAttemptCompleted struct {
-	InitiatingFrameID   cdp.FrameID          `json:"initiatingFrameId"` // The frame id of the frame initiating prerendering.
-	PrerenderingURL     string               `json:"prerenderingUrl"`
-	FinalStatus         PrerenderFinalStatus `json:"finalStatus"`
-	DisallowedAPIMethod string               `json:"disallowedApiMethod,omitempty"` // This is used to give users more information about the name of the API call that is incompatible with prerender and has caused the cancellation of the attempt
+	LoaderID                cdp.LoaderID                              `json:"loaderId"`                // The loader id for the associated navgation.
+	FrameID                 cdp.FrameID                               `json:"frameId"`                 // The frame id of the associated frame.
+	NotRestoredExplanations []*BackForwardCacheNotRestoredExplanation `json:"notRestoredExplanations"` // Array of reasons why the page could not be cached. This must not be empty.
 }
 
 // EventLoadEventFired [no description].

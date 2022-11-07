@@ -4,6 +4,7 @@
 	{{ reserveImport "encoding/json" }}
 	{{ reserveImport "fmt" }}
 	{{ reserveImport "io" }}
+	{{ reserveImport "io/ioutil" }}
 	{{ reserveImport "net/http" }}
 	{{ reserveImport "net/url" }}
 	{{ reserveImport "path" }}

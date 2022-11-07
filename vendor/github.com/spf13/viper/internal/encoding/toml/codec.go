@@ -1,6 +1,3 @@
-//go:build viper_toml1
-// +build viper_toml1
-
 package toml
 
 import (
@@ -10,30 +7,39 @@ import (
 // Codec implements the encoding.Encoder and encoding.Decoder interfaces for TOML encoding.
 type Codec struct{}
 
-func (Codec) Encode(v map[string]interface{}) ([]byte, error) {
-	t, err := toml.TreeFromMap(v)
-	if err != nil {
-		return nil, err
+func (Codec) Encode(v interface{}) ([]byte, error) {
+	if m, ok := v.(map[string]interface{}); ok {
+		t, err := toml.TreeFromMap(m)
+		if err != nil {
+			return nil, err
+		}
+
+		s, err := t.ToTomlString()
+		if err != nil {
+			return nil, err
+		}
+
+		return []byte(s), nil
 	}
 
-	s, err := t.ToTomlString()
-	if err != nil {
-		return nil, err
-	}
-
-	return []byte(s), nil
+	return toml.Marshal(v)
 }
 
-func (Codec) Decode(b []byte, v map[string]interface{}) error {
+func (Codec) Decode(b []byte, v interface{}) error {
 	tree, err := toml.LoadBytes(b)
 	if err != nil {
 		return err
 	}
 
-	tmap := tree.ToMap()
-	for key, value := range tmap {
-		v[key] = value
+	if m, ok := v.(*map[string]interface{}); ok {
+		vmap := *m
+		tmap := tree.ToMap()
+		for k, v := range tmap {
+			vmap[k] = v
+		}
+
+		return nil
 	}
 
-	return nil
+	return tree.Unmarshal(v)
 }
