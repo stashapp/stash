@@ -105,7 +105,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const schema = yup.object({
     title: yup.string().optional().nullable(),
+    code: yup.string().optional().nullable(),
     details: yup.string().optional().nullable(),
+    director: yup.string().optional().nullable(),
     url: yup.string().optional().nullable(),
     date: yup.string().optional().nullable(),
     rating100: yup.number().optional().nullable(),
@@ -127,7 +129,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
   const initialValues = useMemo(
     () => ({
       title: scene.title ?? "",
+      code: scene.code ?? "",
       details: scene.details ?? "",
+      director: scene.director ?? "",
       url: scene.url ?? "",
       date: scene.date ?? "",
       rating100: scene.rating100 ?? null,
@@ -337,7 +341,9 @@ export const SceneEditPanel: React.FC<IProps> = ({
     try {
       const input: GQL.ScrapedSceneInput = {
         date: fragment.date,
+        code: fragment.code,
         details: fragment.details,
+        director: fragment.director,
         remote_site_id: fragment.remote_site_id,
         title: fragment.title,
         url: fragment.url,
@@ -536,8 +542,16 @@ export const SceneEditPanel: React.FC<IProps> = ({
       formik.setFieldValue("title", updatedScene.title);
     }
 
+    if (updatedScene.code) {
+      formik.setFieldValue("code", updatedScene.code);
+    }
+
     if (updatedScene.details) {
       formik.setFieldValue("details", updatedScene.details);
+    }
+
+    if (updatedScene.director) {
+      formik.setFieldValue("director", updatedScene.director);
     }
 
     if (updatedScene.date) {
@@ -696,6 +710,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
         <div className="form-container row px-3">
           <div className="col-12 col-lg-7 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
+            {renderTextField("code", intl.formatMessage({ id: "scene_code" }))}
             <Form.Group controlId="url" as={Row}>
               <Col xs={3} className="pr-0 url-label">
                 <Form.Label className="col-form-label">
@@ -716,11 +731,15 @@ export const SceneEditPanel: React.FC<IProps> = ({
               intl.formatMessage({ id: "date" }),
               "YYYY-MM-DD"
             )}
+            {renderTextField(
+              "director",
+              intl.formatMessage({ id: "director" })
+            )}
             <RatingSystem
-              value={formik.values.rating100 ?? undefined}
-              onSetRating={(value) =>
-                formik.setFieldValue("rating100", value ?? null)
-              }
+                value={formik.values.rating100 ?? undefined}
+                onSetRating={(value) =>
+                    formik.setFieldValue("rating100", value ?? null)
+                }
             />
             <Form.Group controlId="galleries" as={Row}>
               {FormUtils.renderLabel({

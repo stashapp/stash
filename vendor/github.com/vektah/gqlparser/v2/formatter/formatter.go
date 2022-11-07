@@ -15,30 +15,14 @@ type Formatter interface {
 	FormatQueryDocument(doc *ast.QueryDocument)
 }
 
-type FormatterOption func(*formatter)
-
-func WithIndent(indent string) FormatterOption {
-	return func(f *formatter) {
-		f.indent = indent
-	}
-}
-
-func NewFormatter(w io.Writer, options ...FormatterOption) Formatter {
-	f := &formatter{
-		indent: "\t",
-		writer: w,
-	}
-	for _, opt := range options {
-		opt(f)
-	}
-	return f
+func NewFormatter(w io.Writer) Formatter {
+	return &formatter{writer: w}
 }
 
 type formatter struct {
 	writer io.Writer
 
-	indent      string
-	indentSize  int
+	indent      int
 	emitBuiltin bool
 
 	padNext  bool
@@ -51,7 +35,7 @@ func (f *formatter) writeString(s string) {
 
 func (f *formatter) writeIndent() *formatter {
 	if f.lineHead {
-		f.writeString(strings.Repeat(f.indent, f.indentSize))
+		f.writeString(strings.Repeat("\t", f.indent))
 	}
 	f.lineHead = false
 	f.padNext = false
@@ -98,14 +82,11 @@ func (f *formatter) WriteDescription(s string) *formatter {
 		return f
 	}
 
-	f.WriteString(`"""`)
-	if ss := strings.Split(s, "\n"); len(ss) > 1 {
-		f.WriteNewline()
-		for _, s := range ss {
-			f.WriteString(s).WriteNewline()
-		}
-	} else {
-		f.WriteString(s)
+	f.WriteString(`"""`).WriteNewline()
+
+	ss := strings.Split(s, "\n")
+	for _, s := range ss {
+		f.WriteString(s).WriteNewline()
 	}
 
 	f.WriteString(`"""`).WriteNewline()
@@ -114,11 +95,11 @@ func (f *formatter) WriteDescription(s string) *formatter {
 }
 
 func (f *formatter) IncrementIndent() {
-	f.indentSize++
+	f.indent++
 }
 
 func (f *formatter) DecrementIndent() {
-	f.indentSize--
+	f.indent--
 }
 
 func (f *formatter) NoPadding() *formatter {
@@ -299,9 +280,7 @@ func (f *formatter) FormatArgumentDefinitionList(lists ast.ArgumentDefinitionLis
 	for idx, arg := range lists {
 		f.FormatArgumentDefinition(arg)
 
-		// Skip emitting (insignificant) comma in case it is the
-		// last argument, or we printed a new line in its definition.
-		if idx != len(lists)-1 && arg.Description == "" {
+		if idx != len(lists)-1 {
 			f.NoPadding().WriteWord(",")
 		}
 	}
@@ -321,8 +300,6 @@ func (f *formatter) FormatArgumentDefinition(def *ast.ArgumentDefinition) {
 		f.WriteWord("=")
 		f.FormatValue(def.DefaultValue)
 	}
-
-	f.NeedPadding().FormatDirectiveList(def.Directives)
 
 	if def.Description != "" {
 		f.DecrementIndent()

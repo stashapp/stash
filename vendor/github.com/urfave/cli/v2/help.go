@@ -10,39 +10,34 @@ import (
 	"unicode/utf8"
 )
 
-const (
-	helpName  = "help"
-	helpAlias = "h"
-)
-
 var helpCommand = &Command{
-	Name:      helpName,
-	Aliases:   []string{helpAlias},
+	Name:      "help",
+	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
-	Action: func(cCtx *Context) error {
-		args := cCtx.Args()
+	Action: func(c *Context) error {
+		args := c.Args()
 		if args.Present() {
-			return ShowCommandHelp(cCtx, args.First())
+			return ShowCommandHelp(c, args.First())
 		}
 
-		_ = ShowAppHelp(cCtx)
+		_ = ShowAppHelp(c)
 		return nil
 	},
 }
 
 var helpSubcommand = &Command{
-	Name:      helpName,
-	Aliases:   []string{helpAlias},
+	Name:      "help",
+	Aliases:   []string{"h"},
 	Usage:     "Shows a list of commands or help for one command",
 	ArgsUsage: "[command]",
-	Action: func(cCtx *Context) error {
-		args := cCtx.Args()
+	Action: func(c *Context) error {
+		args := c.Args()
 		if args.Present() {
-			return ShowCommandHelp(cCtx, args.First())
+			return ShowCommandHelp(c, args.First())
 		}
 
-		return ShowSubcommandHelp(cCtx)
+		return ShowSubcommandHelp(c)
 	},
 }
 
@@ -76,30 +71,30 @@ func ShowAppHelpAndExit(c *Context, exitCode int) {
 }
 
 // ShowAppHelp is an action that displays the help.
-func ShowAppHelp(cCtx *Context) error {
-	tpl := cCtx.App.CustomAppHelpTemplate
+func ShowAppHelp(c *Context) error {
+	tpl := c.App.CustomAppHelpTemplate
 	if tpl == "" {
 		tpl = AppHelpTemplate
 	}
 
-	if cCtx.App.ExtraInfo == nil {
-		HelpPrinter(cCtx.App.Writer, tpl, cCtx.App)
+	if c.App.ExtraInfo == nil {
+		HelpPrinter(c.App.Writer, tpl, c.App)
 		return nil
 	}
 
 	customAppData := func() map[string]interface{} {
 		return map[string]interface{}{
-			"ExtraInfo": cCtx.App.ExtraInfo,
+			"ExtraInfo": c.App.ExtraInfo,
 		}
 	}
-	HelpPrinterCustom(cCtx.App.Writer, tpl, cCtx.App, customAppData())
+	HelpPrinterCustom(c.App.Writer, tpl, c.App, customAppData())
 
 	return nil
 }
 
 // DefaultAppComplete prints the list of subcommands as the default app completion method
-func DefaultAppComplete(cCtx *Context) {
-	DefaultCompleteWithFlags(nil)(cCtx)
+func DefaultAppComplete(c *Context) {
+	DefaultCompleteWithFlags(nil)(c)
 }
 
 func printCommandSuggestions(commands []*Command, writer io.Writer) {
@@ -107,7 +102,7 @@ func printCommandSuggestions(commands []*Command, writer io.Writer) {
 		if command.Hidden {
 			continue
 		}
-		if strings.HasSuffix(os.Getenv("SHELL"), "zsh") {
+		if os.Getenv("_CLI_ZSH_AUTOCOMPLETE_HACK") == "1" {
 			for _, name := range command.Names() {
 				_, _ = fmt.Fprintf(writer, "%s:%s\n", name, command.Usage)
 			}
@@ -164,30 +159,23 @@ func printFlagSuggestions(lastArg string, flags []Flag, writer io.Writer) {
 	}
 }
 
-func DefaultCompleteWithFlags(cmd *Command) func(cCtx *Context) {
-	return func(cCtx *Context) {
+func DefaultCompleteWithFlags(cmd *Command) func(c *Context) {
+	return func(c *Context) {
 		if len(os.Args) > 2 {
 			lastArg := os.Args[len(os.Args)-2]
-
 			if strings.HasPrefix(lastArg, "-") {
+				printFlagSuggestions(lastArg, c.App.Flags, c.App.Writer)
 				if cmd != nil {
-					printFlagSuggestions(lastArg, cmd.Flags, cCtx.App.Writer)
-
-					return
+					printFlagSuggestions(lastArg, cmd.Flags, c.App.Writer)
 				}
-
-				printFlagSuggestions(lastArg, cCtx.App.Flags, cCtx.App.Writer)
-
 				return
 			}
 		}
-
 		if cmd != nil {
-			printCommandSuggestions(cmd.Subcommands, cCtx.App.Writer)
-			return
+			printCommandSuggestions(cmd.Subcommands, c.App.Writer)
+		} else {
+			printCommandSuggestions(c.App.Commands, c.App.Writer)
 		}
-
-		printCommandSuggestions(cCtx.App.Commands, cCtx.App.Writer)
 	}
 }
 
@@ -219,13 +207,7 @@ func ShowCommandHelp(ctx *Context, command string) error {
 	}
 
 	if ctx.App.CommandNotFound == nil {
-		errMsg := fmt.Sprintf("No help topic for '%v'", command)
-		if ctx.App.Suggest {
-			if suggestion := SuggestCommand(ctx.App.Commands, command); suggestion != "" {
-				errMsg += ". " + suggestion
-			}
-		}
-		return Exit(errMsg, 3)
+		return Exit(fmt.Sprintf("No help topic for '%v'", command), 3)
 	}
 
 	ctx.App.CommandNotFound(ctx, command)
@@ -239,32 +221,32 @@ func ShowSubcommandHelpAndExit(c *Context, exitCode int) {
 }
 
 // ShowSubcommandHelp prints help for the given subcommand
-func ShowSubcommandHelp(cCtx *Context) error {
-	if cCtx == nil {
+func ShowSubcommandHelp(c *Context) error {
+	if c == nil {
 		return nil
 	}
 
-	if cCtx.Command != nil {
-		return ShowCommandHelp(cCtx, cCtx.Command.Name)
+	if c.Command != nil {
+		return ShowCommandHelp(c, c.Command.Name)
 	}
 
-	return ShowCommandHelp(cCtx, "")
+	return ShowCommandHelp(c, "")
 }
 
 // ShowVersion prints the version number of the App
-func ShowVersion(cCtx *Context) {
-	VersionPrinter(cCtx)
+func ShowVersion(c *Context) {
+	VersionPrinter(c)
 }
 
-func printVersion(cCtx *Context) {
-	_, _ = fmt.Fprintf(cCtx.App.Writer, "%v version %v\n", cCtx.App.Name, cCtx.App.Version)
+func printVersion(c *Context) {
+	_, _ = fmt.Fprintf(c.App.Writer, "%v version %v\n", c.App.Name, c.App.Version)
 }
 
 // ShowCompletions prints the lists of commands within a given context
-func ShowCompletions(cCtx *Context) {
-	a := cCtx.App
+func ShowCompletions(c *Context) {
+	a := c.App
 	if a != nil && a.BashComplete != nil {
-		a.BashComplete(cCtx)
+		a.BashComplete(c)
 	}
 }
 
@@ -315,20 +297,20 @@ func printHelp(out io.Writer, templ string, data interface{}) {
 	HelpPrinterCustom(out, templ, data, nil)
 }
 
-func checkVersion(cCtx *Context) bool {
+func checkVersion(c *Context) bool {
 	found := false
 	for _, name := range VersionFlag.Names() {
-		if cCtx.Bool(name) {
+		if c.Bool(name) {
 			found = true
 		}
 	}
 	return found
 }
 
-func checkHelp(cCtx *Context) bool {
+func checkHelp(c *Context) bool {
 	found := false
 	for _, name := range HelpFlag.Names() {
-		if cCtx.Bool(name) {
+		if c.Bool(name) {
 			found = true
 		}
 	}
@@ -344,9 +326,9 @@ func checkCommandHelp(c *Context, name string) bool {
 	return false
 }
 
-func checkSubcommandHelp(cCtx *Context) bool {
-	if cCtx.Bool("h") || cCtx.Bool("help") {
-		_ = ShowSubcommandHelp(cCtx)
+func checkSubcommandHelp(c *Context) bool {
+	if c.Bool("h") || c.Bool("help") {
+		_ = ShowSubcommandHelp(c)
 		return true
 	}
 
@@ -368,20 +350,20 @@ func checkShellCompleteFlag(a *App, arguments []string) (bool, []string) {
 	return true, arguments[:pos]
 }
 
-func checkCompletions(cCtx *Context) bool {
-	if !cCtx.shellComplete {
+func checkCompletions(c *Context) bool {
+	if !c.shellComplete {
 		return false
 	}
 
-	if args := cCtx.Args(); args.Present() {
+	if args := c.Args(); args.Present() {
 		name := args.First()
-		if cmd := cCtx.App.Command(name); cmd != nil {
+		if cmd := c.App.Command(name); cmd != nil {
 			// let the command handle the completion
 			return false
 		}
 	}
 
-	ShowCompletions(cCtx)
+	ShowCompletions(c)
 	return true
 }
 

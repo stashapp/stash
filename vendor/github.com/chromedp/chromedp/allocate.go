@@ -37,8 +37,7 @@ type Allocator interface {
 // to create the allocator without the unnecessary context layer.
 func setupExecAllocator(opts ...ExecAllocatorOption) *ExecAllocator {
 	ep := &ExecAllocator{
-		initFlags:        make(map[string]interface{}),
-		wsURLReadTimeout: 20 * time.Second,
+		initFlags: make(map[string]interface{}),
 	}
 	for _, o := range opts {
 		o(ep)
@@ -106,16 +105,11 @@ type ExecAllocator struct {
 	initFlags map[string]interface{}
 	initEnv   []string
 
-	// Chrome will sometimes fail to print the websocket, or run for a long
-	// time, without properly exiting. To avoid blocking forever in those
-	// cases, give up after a specified timeout.
-	wsURLReadTimeout time.Duration
-
-	modifyCmdFunc func(cmd *exec.Cmd)
-
 	wg sync.WaitGroup
 
 	combinedOutputWriter io.Writer
+
+	modifyCmdFunc func(cmd *exec.Cmd)
 }
 
 // allocTempDir is used to group all ExecAllocator temporary user data dirs in
@@ -222,11 +216,6 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 
 		// Then delete the temporary user data directory, if needed.
 		if removeDir {
-			// Sometimes files/directories are still created in the user data
-			// directory at this point. I can not reproduce it with strace, so
-			// the reason is unknown yet. As a workaround, we will just wait a
-			// little while before removing the directory.
-			<-time.After(10 * time.Millisecond)
 			if err := os.RemoveAll(dataDir); c.cancelErr == nil {
 				c.cancelErr = err
 			}
@@ -234,6 +223,11 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 		a.wg.Done()
 		close(c.allocated)
 	}()
+
+	// Chrome will sometimes fail to print the websocket, or run for a long
+	// time, without properly exiting. To avoid blocking forever in those
+	// cases, give up after twenty seconds.
+	const wsURLReadTimeout = 20 * time.Second
 
 	var wsURL string
 	wsURLChan := make(chan struct{}, 1)
@@ -243,7 +237,7 @@ func (a *ExecAllocator) Allocate(ctx context.Context, opts ...BrowserOption) (*B
 	}()
 	select {
 	case <-wsURLChan:
-	case <-time.After(a.wsURLReadTimeout):
+	case <-time.After(wsURLReadTimeout):
 		err = errors.New("websocket url timeout reached")
 	}
 	if err != nil {
@@ -362,7 +356,6 @@ func findExecPath() string {
 			`C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`,
 			`C:\Program Files\Google\Chrome\Application\chrome.exe`,
 			filepath.Join(os.Getenv("USERPROFILE"), `AppData\Local\Google\Chrome\Application\chrome.exe`),
-			filepath.Join(os.Getenv("USERPROFILE"), `AppData\Local\Chromium\Application\chrome.exe`),
 		}
 	default:
 		locations = []string{
@@ -376,9 +369,6 @@ func findExecPath() string {
 			"google-chrome-beta",
 			"google-chrome-unstable",
 			"/usr/bin/google-chrome",
-			"/usr/local/bin/chrome",
-			"/snap/bin/chromium",
-			"chrome",
 		}
 	}
 
@@ -435,13 +425,6 @@ func ProxyServer(proxy string) ExecAllocatorOption {
 	return Flag("proxy-server", proxy)
 }
 
-// IgnoreCertErrors is the command line option to ignore certificate-related
-// errors. This options is useful when you need to access an HTTPS website
-// through a proxy.
-func IgnoreCertErrors(a *ExecAllocator) {
-	Flag("ignore-certificate-errors", true)(a)
-}
-
 // WindowSize is the command line option to set the initial window size.
 func WindowSize(width, height int) ExecAllocatorOption {
 	return Flag("window-size", fmt.Sprintf("%d,%d", width, height))
@@ -453,18 +436,18 @@ func UserAgent(userAgent string) ExecAllocatorOption {
 	return Flag("user-agent", userAgent)
 }
 
-// NoSandbox is the Chrome command line option to disable the sandbox.
+// NoSandbox is the Chrome comamnd line option to disable the sandbox.
 func NoSandbox(a *ExecAllocator) {
 	Flag("no-sandbox", true)(a)
 }
 
-// NoFirstRun is the Chrome command line option to disable the first run
+// NoFirstRun is the Chrome comamnd line option to disable the first run
 // dialog.
 func NoFirstRun(a *ExecAllocator) {
 	Flag("no-first-run", true)(a)
 }
 
-// NoDefaultBrowserCheck is the Chrome command line option to disable the
+// NoDefaultBrowserCheck is the Chrome comamnd line option to disable the
 // default browser check.
 func NoDefaultBrowserCheck(a *ExecAllocator) {
 	Flag("no-default-browser-check", true)(a)
@@ -480,14 +463,6 @@ func Headless(a *ExecAllocator) {
 }
 
 // DisableGPU is the command line option to disable the GPU process.
-//
-// The --disable-gpu option is a temporary workaround for a few bugs
-// in headless mode. According to the references below, it's no longer required:
-// - https://bugs.chromium.org/p/chromium/issues/detail?id=737678
-// - https://github.com/puppeteer/puppeteer/pull/2908
-// - https://github.com/puppeteer/puppeteer/pull/4523
-// But according to this reported issue, it's still required in some cases:
-// - https://github.com/chromedp/chromedp/issues/904
 func DisableGPU(a *ExecAllocator) {
 	Flag("disable-gpu", true)(a)
 }
@@ -497,14 +472,6 @@ func DisableGPU(a *ExecAllocator) {
 func CombinedOutput(w io.Writer) ExecAllocatorOption {
 	return func(a *ExecAllocator) {
 		a.combinedOutputWriter = w
-	}
-}
-
-// WSURLReadTimeout sets the waiting time for reading the WebSocket URL.
-// The default value is 20 seconds.
-func WSURLReadTimeout(t time.Duration) ExecAllocatorOption {
-	return func(a *ExecAllocator) {
-		a.wsURLReadTimeout = t
 	}
 }
 

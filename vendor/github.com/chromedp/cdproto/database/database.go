@@ -58,9 +58,8 @@ type ExecuteSQLParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Database#method-executeSQL
 //
 // parameters:
-//
-//	databaseID
-//	query
+//   databaseID
+//   query
 func ExecuteSQL(databaseID ID, query string) *ExecuteSQLParams {
 	return &ExecuteSQLParams{
 		DatabaseID: databaseID,
@@ -78,10 +77,9 @@ type ExecuteSQLReturns struct {
 // Do executes Database.executeSQL against the provided context.
 //
 // returns:
-//
-//	columnNames
-//	values
-//	sqlError
+//   columnNames
+//   values
+//   sqlError
 func (p *ExecuteSQLParams) Do(ctx context.Context) (columnNames []string, values []easyjson.RawMessage, sqlError *Error, err error) {
 	// execute
 	var res ExecuteSQLReturns
@@ -103,8 +101,7 @@ type GetDatabaseTableNamesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Database#method-getDatabaseTableNames
 //
 // parameters:
-//
-//	databaseID
+//   databaseID
 func GetDatabaseTableNames(databaseID ID) *GetDatabaseTableNamesParams {
 	return &GetDatabaseTableNamesParams{
 		DatabaseID: databaseID,
@@ -119,8 +116,7 @@ type GetDatabaseTableNamesReturns struct {
 // Do executes Database.getDatabaseTableNames against the provided context.
 //
 // returns:
-//
-//	tableNames
+//   tableNames
 func (p *GetDatabaseTableNamesParams) Do(ctx context.Context) (tableNames []string, err error) {
 	// execute
 	var res GetDatabaseTableNamesReturns

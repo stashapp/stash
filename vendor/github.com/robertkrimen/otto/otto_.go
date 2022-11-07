@@ -5,6 +5,7 @@ import (
 	"regexp"
 	runtime_ "runtime"
 	"strconv"
+	"strings"
 )
 
 var isIdentifier_Regexp *regexp.Regexp = regexp.MustCompile(`^[a-zA-Z\$][a-zA-Z0-9\$]*$`)
@@ -133,8 +134,16 @@ func rangeStartLength(source []Value, size int64) (start, length int64) {
 	return
 }
 
+func boolFields(input string) (result map[string]bool) {
+	result = map[string]bool{}
+	for _, word := range strings.Fields(input) {
+		result[word] = true
+	}
+	return result
+}
+
 func hereBeDragons(arguments ...interface{}) string {
-	pc, _, _, _ := runtime_.Caller(1) //nolint: dogsled
+	pc, _, _, _ := runtime_.Caller(1)
 	name := runtime_.FuncForPC(pc).Name()
 	message := fmt.Sprintf("Here be dragons -- %s", name)
 	if len(arguments) > 0 {
@@ -149,4 +158,21 @@ func hereBeDragons(arguments ...interface{}) string {
 		message += "."
 	}
 	return message
+}
+
+func throwHereBeDragons(arguments ...interface{}) {
+	panic(hereBeDragons(arguments...))
+}
+
+func eachPair(list []interface{}, fn func(_0, _1 interface{})) {
+	for len(list) > 0 {
+		var _0, _1 interface{}
+		_0 = list[0]
+		list = list[1:] // Pop off first
+		if len(list) > 0 {
+			_1 = list[0]
+			list = list[1:] // Pop off second
+		}
+		fn(_0, _1)
+	}
 }

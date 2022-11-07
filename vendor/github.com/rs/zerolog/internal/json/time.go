@@ -7,10 +7,9 @@ import (
 
 const (
 	// Import from zerolog/global.go
-	timeFormatUnix      = ""
-	timeFormatUnixMs    = "UNIXMS"
+	timeFormatUnix   = ""
+	timeFormatUnixMs = "UNIXMS"
 	timeFormatUnixMicro = "UNIXMICRO"
-	timeFormatUnixNano  = "UNIXNANO"
 )
 
 // AppendTime formats the input time with the given format
@@ -23,8 +22,6 @@ func (e Encoder) AppendTime(dst []byte, t time.Time, format string) []byte {
 		return e.AppendInt64(dst, t.UnixNano()/1000000)
 	case timeFormatUnixMicro:
 		return e.AppendInt64(dst, t.UnixNano()/1000)
-	case timeFormatUnixNano:
-		return e.AppendInt64(dst, t.UnixNano())
 	}
 	return append(t.AppendFormat(append(dst, '"'), format), '"')
 }
@@ -36,11 +33,7 @@ func (Encoder) AppendTimes(dst []byte, vals []time.Time, format string) []byte {
 	case timeFormatUnix:
 		return appendUnixTimes(dst, vals)
 	case timeFormatUnixMs:
-		return appendUnixNanoTimes(dst, vals, 1000000)
-	case timeFormatUnixMicro:
-		return appendUnixNanoTimes(dst, vals, 1000)
-	case timeFormatUnixNano:
-		return appendUnixNanoTimes(dst, vals, 1)
+		return appendUnixMsTimes(dst, vals)
 	}
 	if len(vals) == 0 {
 		return append(dst, '[', ']')
@@ -71,15 +64,15 @@ func appendUnixTimes(dst []byte, vals []time.Time) []byte {
 	return dst
 }
 
-func appendUnixNanoTimes(dst []byte, vals []time.Time, div int64) []byte {
+func appendUnixMsTimes(dst []byte, vals []time.Time) []byte {
 	if len(vals) == 0 {
 		return append(dst, '[', ']')
 	}
 	dst = append(dst, '[')
-	dst = strconv.AppendInt(dst, vals[0].UnixNano()/div, 10)
+	dst = strconv.AppendInt(dst, vals[0].UnixNano()/1000000, 10)
 	if len(vals) > 1 {
 		for _, t := range vals[1:] {
-			dst = strconv.AppendInt(append(dst, ','), t.UnixNano()/div, 10)
+			dst = strconv.AppendInt(append(dst, ','), t.UnixNano()/1000000, 10)
 		}
 	}
 	dst = append(dst, ']')

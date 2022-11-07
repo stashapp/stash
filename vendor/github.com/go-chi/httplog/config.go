@@ -11,14 +11,12 @@ import (
 )
 
 var DefaultOptions = Options{
-	LogLevel:        "info",
-	LevelFieldName:  "level",
-	JSON:            false,
-	Concise:         false,
-	Tags:            nil,
-	SkipHeaders:     nil,
-	TimeFieldFormat: time.RFC3339Nano,
-	TimeFieldName:   "timestamp",
+	LogLevel:       "info",
+	LevelFieldName: "level",
+	JSON:           false,
+	Concise:        false,
+	Tags:           nil,
+	SkipHeaders:    nil,
 }
 
 type Options struct {
@@ -39,7 +37,7 @@ type Options struct {
 	JSON bool
 
 	// Concise mode includes fewer log details during the request flow. For example
-	// excluding details like request content length, user-agent and other details.
+	// exluding details like request content length, user-agent and other details.
 	// This is useful if during development your console is too noisy.
 	Concise bool
 
@@ -50,14 +48,6 @@ type Options struct {
 
 	// SkipHeaders are additional headers which are redacted from the logs
 	SkipHeaders []string
-
-	// TimeFieldFormat defines the time format of the Time field, defaulting to "time.RFC3339Nano" see options at:
-	// https://pkg.go.dev/time#pkg-constants
-	TimeFieldFormat string
-
-	// TimeFieldName sets the field name for the time field.
-	// Some providers parse and search for different field names.
-	TimeFieldName string
 }
 
 // Configure will set new global/default options for the httplog and behaviour
@@ -69,14 +59,6 @@ func Configure(opts Options) {
 
 	if opts.LevelFieldName == "" {
 		opts.LevelFieldName = "level"
-	}
-
-	if opts.TimeFieldFormat == "" {
-		opts.TimeFieldFormat = time.RFC3339Nano
-	}
-
-	if opts.TimeFieldName == "" {
-		opts.TimeFieldName = "timestamp"
 	}
 
 	// Pre-downcase all SkipHeaders
@@ -95,10 +77,10 @@ func Configure(opts Options) {
 	zerolog.SetGlobalLevel(logLevel)
 
 	zerolog.LevelFieldName = strings.ToLower(opts.LevelFieldName)
-	zerolog.TimestampFieldName = strings.ToLower(opts.TimeFieldName)
-	zerolog.TimeFieldFormat = opts.TimeFieldFormat
+	zerolog.TimestampFieldName = "timestamp"
+	zerolog.TimeFieldFormat = time.RFC3339Nano
 
 	if !opts.JSON {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: opts.TimeFieldFormat})
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
 	}
 }

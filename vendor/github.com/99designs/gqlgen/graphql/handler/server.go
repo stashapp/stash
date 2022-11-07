@@ -102,8 +102,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err := recover(); err != nil {
 			err := s.exec.PresentRecoveredError(r.Context(), err)
-			gqlErr, _ := err.(*gqlerror.Error)
-			resp := &graphql.Response{Errors: []*gqlerror.Error{gqlErr}}
+			resp := &graphql.Response{Errors: []*gqlerror.Error{err}}
 			b, _ := json.Marshal(resp)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			w.Write(b)

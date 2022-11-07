@@ -18,19 +18,14 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"github.com/spf13/afero/internal/common"
 )
 
 const FilePathSeparator = string(filepath.Separator)
-
-var _ fs.ReadDirFile = &File{}
 
 type File struct {
 	// atomic requires 64-bit alignment for struct field access
@@ -188,23 +183,10 @@ func (f *File) Readdirnames(n int) (names []string, err error) {
 	return names, err
 }
 
-// Implements fs.ReadDirFile
-func (f *File) ReadDir(n int) ([]fs.DirEntry, error) {
-	fi, err := f.Readdir(n)
-	if err != nil {
-		return nil, err
-	}
-	di := make([]fs.DirEntry, len(fi))
-	for i, f := range fi {
-		di[i] = common.FileInfoDirEntry{FileInfo: f}
-	}
-	return di, nil
-}
-
 func (f *File) Read(b []byte) (n int, err error) {
 	f.fileData.Lock()
 	defer f.fileData.Unlock()
-	if f.closed {
+	if f.closed == true {
 		return 0, ErrFileClosed
 	}
 	if len(b) > 0 && int(f.at) == len(f.fileData.data) {
@@ -232,7 +214,7 @@ func (f *File) ReadAt(b []byte, off int64) (n int, err error) {
 }
 
 func (f *File) Truncate(size int64) error {
-	if f.closed {
+	if f.closed == true {
 		return ErrFileClosed
 	}
 	if f.readOnly {
@@ -254,7 +236,7 @@ func (f *File) Truncate(size int64) error {
 }
 
 func (f *File) Seek(offset int64, whence int) (int64, error) {
-	if f.closed {
+	if f.closed == true {
 		return 0, ErrFileClosed
 	}
 	switch whence {
@@ -269,7 +251,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 }
 
 func (f *File) Write(b []byte) (n int, err error) {
-	if f.closed {
+	if f.closed == true {
 		return 0, ErrFileClosed
 	}
 	if f.readOnly {
@@ -348,8 +330,8 @@ func (s *FileInfo) Size() int64 {
 
 var (
 	ErrFileClosed        = errors.New("File is closed")
-	ErrOutOfRange        = errors.New("out of range")
-	ErrTooLarge          = errors.New("too large")
+	ErrOutOfRange        = errors.New("Out of range")
+	ErrTooLarge          = errors.New("Too large")
 	ErrFileNotFound      = os.ErrNotExist
 	ErrFileExists        = os.ErrExist
 	ErrDestinationExists = os.ErrExist

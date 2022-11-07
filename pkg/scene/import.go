@@ -82,7 +82,9 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene := models.Scene{
 		// Path:    i.Path,
 		Title:        sceneJSON.Title,
+		Code:         sceneJSON.Code,
 		Details:      sceneJSON.Details,
+		Director:     sceneJSON.Director,
 		URL:          sceneJSON.URL,
 		PerformerIDs: models.NewRelatedIDs([]int{}),
 		TagIDs:       models.NewRelatedIDs([]int{}),

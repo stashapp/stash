@@ -146,17 +146,12 @@ func (d *Decoder) decode() error {
 
 			// We've just consumed the current token, which was the key.
 			// Read the next token, which should be the value.
-			// If it's of json.RawMessage or map type, decode the value.
-			switch matchingFieldValue.Type() {
-			case reflect.TypeOf(json.RawMessage{}):
+			// If it's of json.RawMessage type, decode the value.
+			if matchingFieldValue.Type() == reflect.TypeOf(json.RawMessage{}) {
 				var data json.RawMessage
 				err = d.jsonDecoder.Decode(&data)
 				tok = data
-			case reflect.TypeOf(map[string]interface{}{}):
-				var data map[string]interface{}
-				err = d.jsonDecoder.Decode(&data)
-				tok = data
-			default:
+			} else {
 				tok, err = d.jsonDecoder.Token()
 			}
 
@@ -188,7 +183,7 @@ func (d *Decoder) decode() error {
 		}
 
 		switch tok := tok.(type) {
-		case string, json.Number, bool, nil, json.RawMessage, map[string]interface{}:
+		case string, json.Number, bool, nil, json.RawMessage:
 			// Value.
 
 			for i := range d.vs {

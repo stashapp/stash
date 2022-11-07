@@ -175,6 +175,8 @@ export function makeCriteria(
     case "synopsis":
     case "description":
       return new StringCriterion(new StringCriterionOption(type, type));
+    case "scene_code":
+      return new StringCriterion(new StringCriterionOption(type, type, "code"));
     case "interactive":
       return new InteractiveCriterion();
     case "captions":

@@ -75,7 +75,7 @@ func (b *basicWriter) WriteHeader(code int) {
 }
 
 func (b *basicWriter) Write(buf []byte) (int, error) {
-	b.maybeWriteHeader()
+	b.WriteHeader(http.StatusOK)
 	n, err := b.ResponseWriter.Write(buf)
 	if b.tee != nil {
 		_, err2 := b.tee.Write(buf[:n])
@@ -116,6 +116,7 @@ type flushWriter struct {
 
 func (f *flushWriter) Flush() {
 	f.wroteHeader = true
+
 	fl := f.basicWriter.ResponseWriter.(http.Flusher)
 	fl.Flush()
 }
@@ -132,6 +133,7 @@ type httpFancyWriter struct {
 
 func (f *httpFancyWriter) Flush() {
 	f.wroteHeader = true
+
 	fl := f.basicWriter.ResponseWriter.(http.Flusher)
 	fl.Flush()
 }
@@ -173,6 +175,7 @@ type http2FancyWriter struct {
 
 func (f *http2FancyWriter) Flush() {
 	f.wroteHeader = true
+
 	fl := f.basicWriter.ResponseWriter.(http.Flusher)
 	fl.Flush()
 }

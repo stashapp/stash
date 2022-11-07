@@ -1,8 +1,8 @@
 package config
 
 import (
-	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -12,28 +12,25 @@ import (
 	"github.com/99designs/gqlgen/internal/code"
 	"github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	SchemaFilename                StringList                 `yaml:"schema,omitempty"`
-	Exec                          ExecConfig                 `yaml:"exec"`
-	Model                         PackageConfig              `yaml:"model,omitempty"`
-	Federation                    PackageConfig              `yaml:"federation,omitempty"`
-	Resolver                      ResolverConfig             `yaml:"resolver,omitempty"`
-	AutoBind                      []string                   `yaml:"autobind"`
-	Models                        TypeMap                    `yaml:"models,omitempty"`
-	StructTag                     string                     `yaml:"struct_tag,omitempty"`
-	Directives                    map[string]DirectiveConfig `yaml:"directives,omitempty"`
-	OmitSliceElementPointers      bool                       `yaml:"omit_slice_element_pointers,omitempty"`
-	OmitGetters                   bool                       `yaml:"omit_getters,omitempty"`
-	StructFieldsAlwaysPointers    bool                       `yaml:"struct_fields_always_pointers,omitempty"`
-	ResolversAlwaysReturnPointers bool                       `yaml:"resolvers_always_return_pointers,omitempty"`
-	SkipValidation                bool                       `yaml:"skip_validation,omitempty"`
-	SkipModTidy                   bool                       `yaml:"skip_mod_tidy,omitempty"`
-	Sources                       []*ast.Source              `yaml:"-"`
-	Packages                      *code.Packages             `yaml:"-"`
-	Schema                        *ast.Schema                `yaml:"-"`
+	SchemaFilename           StringList                 `yaml:"schema,omitempty"`
+	Exec                     ExecConfig                 `yaml:"exec"`
+	Model                    PackageConfig              `yaml:"model,omitempty"`
+	Federation               PackageConfig              `yaml:"federation,omitempty"`
+	Resolver                 ResolverConfig             `yaml:"resolver,omitempty"`
+	AutoBind                 []string                   `yaml:"autobind"`
+	Models                   TypeMap                    `yaml:"models,omitempty"`
+	StructTag                string                     `yaml:"struct_tag,omitempty"`
+	Directives               map[string]DirectiveConfig `yaml:"directives,omitempty"`
+	OmitSliceElementPointers bool                       `yaml:"omit_slice_element_pointers,omitempty"`
+	SkipValidation           bool                       `yaml:"skip_validation,omitempty"`
+	SkipModTidy              bool                       `yaml:"skip_mod_tidy,omitempty"`
+	Sources                  []*ast.Source              `yaml:"-"`
+	Packages                 *code.Packages             `yaml:"-"`
+	Schema                   *ast.Schema                `yaml:"-"`
 
 	// Deprecated: use Federation instead. Will be removed next release
 	Federated bool `yaml:"federated,omitempty"`
@@ -44,13 +41,11 @@ var cfgFilenames = []string{".gqlgen.yml", "gqlgen.yml", "gqlgen.yaml"}
 // DefaultConfig creates a copy of the default config
 func DefaultConfig() *Config {
 	return &Config{
-		SchemaFilename:                StringList{"schema.graphql"},
-		Model:                         PackageConfig{Filename: "models_gen.go"},
-		Exec:                          ExecConfig{Filename: "generated.go"},
-		Directives:                    map[string]DirectiveConfig{},
-		Models:                        TypeMap{},
-		StructFieldsAlwaysPointers:    true,
-		ResolversAlwaysReturnPointers: true,
+		SchemaFilename: StringList{"schema.graphql"},
+		Model:          PackageConfig{Filename: "models_gen.go"},
+		Exec:           ExecConfig{Filename: "generated.go"},
+		Directives:     map[string]DirectiveConfig{},
+		Models:         TypeMap{},
 	}
 }
 
@@ -62,7 +57,7 @@ func LoadDefaultConfig() (*Config, error) {
 		filename = filepath.ToSlash(filename)
 		var err error
 		var schemaRaw []byte
-		schemaRaw, err = os.ReadFile(filename)
+		schemaRaw, err = ioutil.ReadFile(filename)
 		if err != nil {
 			return nil, fmt.Errorf("unable to open schema: %w", err)
 		}
@@ -99,15 +94,12 @@ var path2regex = strings.NewReplacer(
 func LoadConfig(filename string) (*Config, error) {
 	config := DefaultConfig()
 
-	b, err := os.ReadFile(filename)
+	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read config: %w", err)
 	}
 
-	dec := yaml.NewDecoder(bytes.NewReader(b))
-	dec.KnownFields(true)
-
-	if err := dec.Decode(config); err != nil {
+	if err := yaml.UnmarshalStrict(b, config); err != nil {
 		return nil, fmt.Errorf("unable to parse config: %w", err)
 	}
 
@@ -181,7 +173,7 @@ func CompleteConfig(config *Config) error {
 		filename = filepath.ToSlash(filename)
 		var err error
 		var schemaRaw []byte
-		schemaRaw, err = os.ReadFile(filename)
+		schemaRaw, err = ioutil.ReadFile(filename)
 		if err != nil {
 			return fmt.Errorf("unable to open schema: %w", err)
 		}

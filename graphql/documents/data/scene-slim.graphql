@@ -1,7 +1,9 @@
 fragment SlimSceneData on Scene {
   id
   title
+  code
   details
+  director
   url
   date
   rating100
@@ -20,7 +22,6 @@ fragment SlimSceneData on Scene {
     stream
     webp
     vtt
-    chapters_vtt
     sprite
     funscript
     interactive_heatmap

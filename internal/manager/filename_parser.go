@@ -26,7 +26,9 @@ type SceneParserInput struct {
 type SceneParserResult struct {
 	Scene        *models.Scene   `json:"scene"`
 	Title        *string         `json:"title"`
+	Code         *string         `json:"code"`
 	Details      *string         `json:"details"`
+	Director     *string         `json:"director"`
 	URL          *string         `json:"url"`
 	Date         *string         `json:"date"`
 	Rating       *int            `json:"rating"`

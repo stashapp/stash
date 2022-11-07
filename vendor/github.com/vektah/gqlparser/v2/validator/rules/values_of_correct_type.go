@@ -16,13 +16,6 @@ func init() {
 				return
 			}
 
-			if value.Kind == ast.NullValue && value.ExpectedType.NonNull {
-				addError(
-					Message(`Expected value of type "%s", found %s.`, value.ExpectedType.String(), value.String()),
-					At(value.Position),
-				)
-			}
-
 			if value.Definition.Kind == ast.Scalar {
 				// Skip custom validating scalars
 				if !value.Definition.OneOf("Int", "Float", "String", "Boolean", "ID") {
@@ -44,7 +37,13 @@ func init() {
 
 			switch value.Kind {
 			case ast.NullValue:
-				return
+				if value.ExpectedType.NonNull {
+					addError(
+						Message(`Expected value of type "%s", found %s.`, value.ExpectedType.String(), value.String()),
+						At(value.Position),
+					)
+				}
+
 			case ast.ListValue:
 				if value.ExpectedType.Elem == nil {
 					unexpectedTypeMessage(addError, value)

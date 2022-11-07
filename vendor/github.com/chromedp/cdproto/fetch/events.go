@@ -22,10 +22,8 @@ type EventRequestPaused struct {
 	ResourceType        network.ResourceType `json:"resourceType"`                  // How the requested resource will be used.
 	ResponseErrorReason network.ErrorReason  `json:"responseErrorReason,omitempty"` // Response error if intercepted at response stage.
 	ResponseStatusCode  int64                `json:"responseStatusCode,omitempty"`  // Response code if intercepted at response stage.
-	ResponseStatusText  string               `json:"responseStatusText,omitempty"`  // Response status text if intercepted at response stage.
 	ResponseHeaders     []*HeaderEntry       `json:"responseHeaders,omitempty"`     // Response headers if intercepted at the response stage.
-	NetworkID           network.RequestID    `json:"networkId,omitempty"`           // If the intercepted request had a corresponding Network.requestWillBeSent event fired for it, then this networkId will be the same as the requestId present in the requestWillBeSent event.
-	RedirectedRequestID RequestID            `json:"redirectedRequestId,omitempty"` // If the request is due to a redirect response from the server, the id of the request that has caused the redirect.
+	NetworkID           RequestID            `json:"networkId,omitempty"`           // If the intercepted request had a corresponding Network.requestWillBeSent event fired for it, then this networkId will be the same as the requestId present in the requestWillBeSent event.
 }
 
 // EventAuthRequired issued when the domain is enabled with

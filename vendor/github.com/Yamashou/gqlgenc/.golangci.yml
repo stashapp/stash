@@ -44,13 +44,9 @@ linters:
     - varnamelen
     - nilnil
     - structcheck
-    - exhaustruct
-    - nonamedreturns
   fast: false
 
 issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
   exclude-rules:
     # Test
     - path: _test\.go
@@ -61,7 +57,6 @@ issues:
       linters:
         - unused
         - structcheck
-        - forcetypeassert
     - path: introspection/type.go
       linters:
         - structcheck # These types fits IntrospectionQuery

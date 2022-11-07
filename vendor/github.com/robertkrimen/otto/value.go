@@ -1,7 +1,6 @@
 package otto
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -88,20 +87,24 @@ func (value Value) IsNull() bool {
 // ---
 
 func (value Value) isCallable() bool {
-	v, ok := value.value.(*_object)
-	return ok && v.isCall()
+	switch value := value.value.(type) {
+	case *_object:
+		return value.isCall()
+	}
+	return false
 }
 
 // Call the value as a function with the given this value and argument list and
 // return the result of invocation. It is essentially equivalent to:
 //
-//	value.apply(thisValue, argumentList)
+//		value.apply(thisValue, argumentList)
 //
 // An undefined value and an error will result if:
 //
-//  1. There is an error during conversion of the argument list
-//  2. The value is not actually a function
-//  3. An (uncaught) exception is thrown
+//		1. There is an error during conversion of the argument list
+//		2. The value is not actually a function
+//		3. An (uncaught) exception is thrown
+//
 func (value Value) Call(this Value, argumentList ...interface{}) (Value, error) {
 	result := Value{}
 	err := catchPanic(func() {
@@ -115,7 +118,8 @@ func (value Value) Call(this Value, argumentList ...interface{}) (Value, error) 
 }
 
 func (value Value) call(rt *_runtime, this Value, argumentList ...interface{}) Value {
-	if function, ok := value.value.(*_object); ok {
+	switch function := value.value.(type) {
+	case *_object:
 		return function.call(this, function.runtime.toValueArray(argumentList...), false, nativeFrame)
 	}
 	if rt == nil {
@@ -133,7 +137,8 @@ func (value Value) constructSafe(rt *_runtime, this Value, argumentList ...inter
 }
 
 func (value Value) construct(rt *_runtime, this Value, argumentList ...interface{}) Value {
-	if fn, ok := value.value.(*_object); ok {
+	switch fn := value.value.(type) {
+	case *_object:
 		return fn.construct(fn.runtime.toValueArray(argumentList...))
 	}
 	if rt == nil {
@@ -188,21 +193,22 @@ func (value Value) IsFunction() bool {
 	if value.kind != valueObject {
 		return false
 	}
-	return value.value.(*_object).class == classFunction
+	return value.value.(*_object).class == "Function"
 }
 
 // Class will return the class string of the value or the empty string if value is not an object.
 //
 // The return value will (generally) be one of:
 //
-//	Object
-//	Function
-//	Array
-//	String
-//	Number
-//	Boolean
-//	Date
-//	RegExp
+//		Object
+//		Function
+//		Array
+//		String
+//		Number
+//		Boolean
+//		Date
+//		RegExp
+//
 func (value Value) Class() string {
 	if value.kind != valueObject {
 		return ""
@@ -221,42 +227,42 @@ func (value Value) isStringObject() bool {
 	if value.kind != valueObject {
 		return false
 	}
-	return value.value.(*_object).class == classString
+	return value.value.(*_object).class == "String"
 }
 
 func (value Value) isBooleanObject() bool {
 	if value.kind != valueObject {
 		return false
 	}
-	return value.value.(*_object).class == classBoolean
+	return value.value.(*_object).class == "Boolean"
 }
 
 func (value Value) isNumberObject() bool {
 	if value.kind != valueObject {
 		return false
 	}
-	return value.value.(*_object).class == classNumber
+	return value.value.(*_object).class == "Number"
 }
 
 func (value Value) isDate() bool {
 	if value.kind != valueObject {
 		return false
 	}
-	return value.value.(*_object).class == classDate
+	return value.value.(*_object).class == "Date"
 }
 
 func (value Value) isRegExp() bool {
 	if value.kind != valueObject {
 		return false
 	}
-	return value.value.(*_object).class == classRegExp
+	return value.value.(*_object).class == "RegExp"
 }
 
 func (value Value) isError() bool {
 	if value.kind != valueObject {
 		return false
 	}
-	return value.value.(*_object).class == classError
+	return value.value.(*_object).class == "Error"
 }
 
 // ---
@@ -385,11 +391,11 @@ func (value Value) String() string {
 
 // ToBoolean will convert the value to a boolean (bool).
 //
-//	ToValue(0).ToBoolean() => false
-//	ToValue("").ToBoolean() => false
-//	ToValue(true).ToBoolean() => true
-//	ToValue(1).ToBoolean() => true
-//	ToValue("Nothing happens").ToBoolean() => true
+//		ToValue(0).ToBoolean() => false
+//		ToValue("").ToBoolean() => false
+//		ToValue(true).ToBoolean() => true
+//		ToValue(1).ToBoolean() => true
+//		ToValue("Nothing happens").ToBoolean() => true
 //
 // If there is an error during the conversion process (like an uncaught exception), then the result will be false and an error.
 func (value Value) ToBoolean() (bool, error) {
@@ -409,9 +415,9 @@ func (value Value) numberValue() Value {
 
 // ToFloat will convert the value to a number (float64).
 //
-//	ToValue(0).ToFloat() => 0.
-//	ToValue(1.1).ToFloat() => 1.1
-//	ToValue("11").ToFloat() => 11.
+//		ToValue(0).ToFloat() => 0.
+//		ToValue(1.1).ToFloat() => 1.1
+//		ToValue("11").ToFloat() => 11.
 //
 // If there is an error during the conversion process (like an uncaught exception), then the result will be 0 and an error.
 func (value Value) ToFloat() (float64, error) {
@@ -424,9 +430,9 @@ func (value Value) ToFloat() (float64, error) {
 
 // ToInteger will convert the value to a number (int64).
 //
-//	ToValue(0).ToInteger() => 0
-//	ToValue(1.1).ToInteger() => 1
-//	ToValue("11").ToInteger() => 11
+//		ToValue(0).ToInteger() => 0
+//		ToValue(1.1).ToInteger() => 1
+//		ToValue("11").ToInteger() => 11
 //
 // If there is an error during the conversion process (like an uncaught exception), then the result will be 0 and an error.
 func (value Value) ToInteger() (int64, error) {
@@ -439,11 +445,11 @@ func (value Value) ToInteger() (int64, error) {
 
 // ToString will convert the value to a string (string).
 //
-//	ToValue(0).ToString() => "0"
-//	ToValue(false).ToString() => "false"
-//	ToValue(1.1).ToString() => "1.1"
-//	ToValue("11").ToString() => "11"
-//	ToValue('Nothing happens.').ToString() => "Nothing happens."
+//		ToValue(0).ToString() => "0"
+//		ToValue(false).ToString() => "false"
+//		ToValue(1.1).ToString() => "1.1"
+//		ToValue("11").ToString() => "11"
+//		ToValue('Nothing happens.').ToString() => "Nothing happens."
 //
 // If there is an error during the conversion process (like an uncaught exception), then the result will be the empty string ("") and an error.
 func (value Value) ToString() (string, error) {
@@ -455,8 +461,9 @@ func (value Value) ToString() (string, error) {
 }
 
 func (value Value) _object() *_object {
-	if v, ok := value.value.(*_object); ok {
-		return v
+	switch value := value.value.(type) {
+	case *_object:
+		return value
 	}
 	return nil
 }
@@ -465,21 +472,24 @@ func (value Value) _object() *_object {
 //
 // This method will not do any implicit conversion. For example, calling this method on a string primitive value will not return a String object.
 func (value Value) Object() *Object {
-	if object, ok := value.value.(*_object); ok {
+	switch object := value.value.(type) {
+	case *_object:
 		return _newObject(object, value)
 	}
 	return nil
 }
 
 func (value Value) reference() _reference {
-	if value, ok := value.value.(_reference); ok {
+	switch value := value.value.(type) {
+	case _reference:
 		return value
 	}
 	return nil
 }
 
 func (value Value) resolve() Value {
-	if value, ok := value.value.(_reference); ok {
+	switch value := value.value.(type) {
+	case _reference:
 		return value.getValue()
 	}
 	return value
@@ -493,6 +503,14 @@ var (
 	__NegativeZero__     float64 = math.Float64frombits(0 | (1 << 63))
 )
 
+func positiveInfinity() float64 {
+	return __PositiveInfinity__
+}
+
+func negativeInfinity() float64 {
+	return __NegativeInfinity__
+}
+
 func positiveZero() float64 {
 	return __PositiveZero__
 }
@@ -505,7 +523,8 @@ func negativeZero() float64 {
 //
 // It is equivalent to:
 //
-//	ToValue(math.NaN())
+//		ToValue(math.NaN())
+//
 func NaNValue() Value {
 	return Value{valueNumber, __NaN__}
 }
@@ -530,7 +549,8 @@ func negativeZeroValue() Value {
 //
 // It is equivalent to:
 //
-//	ToValue(true)
+//		ToValue(true)
+//
 func TrueValue() Value {
 	return Value{valueBoolean, true}
 }
@@ -539,7 +559,8 @@ func TrueValue() Value {
 //
 // It is equivalent to:
 //
-//	ToValue(false)
+//		ToValue(false)
+//
 func FalseValue() Value {
 	return Value{valueBoolean, false}
 }
@@ -548,60 +569,62 @@ func sameValue(x Value, y Value) bool {
 	if x.kind != y.kind {
 		return false
 	}
-
+	result := false
 	switch x.kind {
 	case valueUndefined, valueNull:
-		return true
+		result = true
 	case valueNumber:
 		x := x.float64()
 		y := y.float64()
 		if math.IsNaN(x) && math.IsNaN(y) {
-			return true
-		}
-
-		if x == y {
-			if x == 0 {
+			result = true
+		} else {
+			result = x == y
+			if result && x == 0 {
 				// Since +0 != -0
-				return math.Signbit(x) == math.Signbit(y)
+				result = math.Signbit(x) == math.Signbit(y)
 			}
-			return true
 		}
-		return false
 	case valueString:
-		return x.string() == y.string()
+		result = x.string() == y.string()
 	case valueBoolean:
-		return x.bool() == y.bool()
+		result = x.bool() == y.bool()
 	case valueObject:
-		return x._object() == y._object()
+		result = x._object() == y._object()
 	default:
 		panic(hereBeDragons())
 	}
+
+	return result
 }
 
 func strictEqualityComparison(x Value, y Value) bool {
 	if x.kind != y.kind {
 		return false
 	}
-
+	result := false
 	switch x.kind {
 	case valueUndefined, valueNull:
-		return true
+		result = true
 	case valueNumber:
 		x := x.float64()
 		y := y.float64()
 		if math.IsNaN(x) && math.IsNaN(y) {
-			return false
+			result = false
+		} else {
+			result = x == y
 		}
-		return x == y
 	case valueString:
-		return x.string() == y.string()
+		result = x.string() == y.string()
 	case valueBoolean:
-		return x.bool() == y.bool()
+		result = x.bool() == y.bool()
 	case valueObject:
-		return x._object() == y._object()
+		result = x._object() == y._object()
 	default:
 		panic(hereBeDragons())
 	}
+
+	return result
 }
 
 // Export will attempt to convert the value to a Go representation
@@ -613,13 +636,14 @@ func strictEqualityComparison(x Value, y Value) bool {
 // If a reasonable conversion is not possible, then the original
 // value is returned.
 //
-//	undefined   -> nil (FIXME?: Should be Value{})
-//	null        -> nil
-//	boolean     -> bool
-//	number      -> A number type (int, float32, uint64, ...)
-//	string      -> string
-//	Array       -> []interface{}
-//	Object      -> map[string]interface{}
+//      undefined   -> nil (FIXME?: Should be Value{})
+//      null        -> nil
+//      boolean     -> bool
+//      number      -> A number type (int, float32, uint64, ...)
+//      string      -> string
+//      Array       -> []interface{}
+//      Object      -> map[string]interface{}
+//
 func (self Value) Export() (interface{}, error) {
 	return self.export(), nil
 }
@@ -652,13 +676,11 @@ func (self Value) export() interface{} {
 		case *_goSliceObject:
 			return value.value.Interface()
 		}
-		if object.class == classArray {
+		if object.class == "Array" {
 			result := make([]interface{}, 0)
-			lengthValue := object.get(propertyLength)
+			lengthValue := object.get("length")
 			length := lengthValue.value.(uint32)
 			kind := reflect.Invalid
-			keyKind := reflect.Invalid
-			elemKind := reflect.Invalid
 			state := 0
 			var t reflect.Type
 			for index := uint32(0); index < length; index += 1 {
@@ -670,24 +692,15 @@ func (self Value) export() interface{} {
 
 				t = reflect.TypeOf(value)
 
-				var k, kk, ek reflect.Kind
+				var k reflect.Kind
 				if t != nil {
 					k = t.Kind()
-					switch k {
-					case reflect.Map:
-						kk = t.Key().Kind()
-						fallthrough
-					case reflect.Array, reflect.Chan, reflect.Ptr, reflect.Slice:
-						ek = t.Elem().Kind()
-					}
 				}
 
 				if state == 0 {
 					kind = k
-					keyKind = kk
-					elemKind = ek
 					state = 1
-				} else if state == 1 && (kind != k || keyKind != kk || elemKind != ek) {
+				} else if state == 1 && kind != k {
 					state = 2
 				}
 
@@ -1017,18 +1030,4 @@ func stringToReflectValue(value string, kind reflect.Kind) (reflect.Value, error
 
 	// FIXME This should end up as a TypeError?
 	panic(fmt.Errorf("invalid conversion of %q to reflect.Kind: %v", value, kind))
-}
-
-func (self Value) MarshalJSON() ([]byte, error) {
-	switch self.kind {
-	case valueUndefined, valueNull:
-		return []byte("null"), nil
-	case valueBoolean, valueNumber:
-		return json.Marshal(self.value)
-	case valueString:
-		return json.Marshal(self.string())
-	case valueObject:
-		return self.Object().MarshalJSON()
-	}
-	return nil, fmt.Errorf("invalid type %v", self.kind)
 }

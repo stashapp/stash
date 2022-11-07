@@ -48,7 +48,7 @@ func (hpd *httpProxyDialer) Dial(network string, addr string) (net.Conn, error) 
 	}
 
 	connectReq := &http.Request{
-		Method: http.MethodConnect,
+		Method: "CONNECT",
 		URL:    &url.URL{Opaque: addr},
 		Host:   addr,
 		Header: connectHeader,

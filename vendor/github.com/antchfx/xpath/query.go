@@ -820,8 +820,6 @@ func (b *booleanQuery) Select(t iterator) NodeNavigator {
 }
 
 func (b *booleanQuery) Evaluate(t iterator) interface{} {
-	n := t.Current().Copy()
-
 	m := b.Left.Evaluate(t)
 	left := asBool(t, m)
 	if b.IsOr && left {
@@ -829,8 +827,6 @@ func (b *booleanQuery) Evaluate(t iterator) interface{} {
 	} else if !b.IsOr && !left {
 		return false
 	}
-
-	t.Current().MoveTo(n)
 	m = b.Right.Evaluate(t)
 	return asBool(t, m)
 }

@@ -24,6 +24,7 @@ package clientgen
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -93,7 +94,7 @@ func LoadQuerySources(queryFileNames []string) ([]*ast.Source, error) {
 		filename = filepath.ToSlash(filename)
 		var err error
 		var schemaRaw []byte
-		schemaRaw, err = os.ReadFile(filename)
+		schemaRaw, err = ioutil.ReadFile(filename)
 		if err != nil {
 			return nil, fmt.Errorf("unable to open schema: %w", err)
 		}

@@ -280,9 +280,10 @@ func hasGraphQLName(f reflect.StructField, name string) bool {
 		// GraphQL fragment. It doesn't have a name.
 		return false
 	}
-	// Cut off anything that follows the field name,
-	// such as field arguments, aliases, directives.
-	if i := strings.IndexAny(value, "(:@"); i != -1 {
+	if i := strings.Index(value, "("); i != -1 {
+		value = value[:i]
+	}
+	if i := strings.Index(value, ":"); i != -1 {
 		value = value[:i]
 	}
 	return strings.TrimSpace(value) == name

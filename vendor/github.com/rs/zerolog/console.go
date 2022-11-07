@@ -12,8 +12,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/mattn/go-colorable"
 )
 
 const (
@@ -63,9 +61,6 @@ type ConsoleWriter struct {
 	// PartsExclude defines parts to not display in output.
 	PartsExclude []string
 
-	// FieldsExclude defines contextual fields to not display in output.
-	FieldsExclude []string
-
 	FormatTimestamp     Formatter
 	FormatLevel         Formatter
 	FormatCaller        Formatter
@@ -74,8 +69,6 @@ type ConsoleWriter struct {
 	FormatFieldValue    Formatter
 	FormatErrFieldName  Formatter
 	FormatErrFieldValue Formatter
-
-	FormatExtra func(map[string]interface{}, *bytes.Buffer) error
 }
 
 // NewConsoleWriter creates and initializes a new ConsoleWriter.
@@ -90,21 +83,11 @@ func NewConsoleWriter(options ...func(w *ConsoleWriter)) ConsoleWriter {
 		opt(&w)
 	}
 
-	// Fix color on Windows
-	if w.Out == os.Stdout || w.Out == os.Stderr {
-		w.Out = colorable.NewColorable(w.Out.(*os.File))
-	}
-
 	return w
 }
 
 // Write transforms the JSON input with formatters and appends to w.Out.
 func (w ConsoleWriter) Write(p []byte) (n int, err error) {
-	// Fix color on Windows
-	if w.Out == os.Stdout || w.Out == os.Stderr {
-		w.Out = colorable.NewColorable(w.Out.(*os.File))
-	}
-
 	if w.PartsOrder == nil {
 		w.PartsOrder = consoleDefaultPartsOrder()
 	}
@@ -130,18 +113,10 @@ func (w ConsoleWriter) Write(p []byte) (n int, err error) {
 
 	w.writeFields(evt, buf)
 
-	if w.FormatExtra != nil {
-		err = w.FormatExtra(evt, buf)
-		if err != nil {
-			return n, err
-		}
-	}
-
 	err = buf.WriteByte('\n')
 	if err != nil {
 		return n, err
 	}
-
 	_, err = buf.WriteTo(w.Out)
 	return len(p), err
 }
@@ -150,17 +125,6 @@ func (w ConsoleWriter) Write(p []byte) (n int, err error) {
 func (w ConsoleWriter) writeFields(evt map[string]interface{}, buf *bytes.Buffer) {
 	var fields = make([]string, 0, len(evt))
 	for field := range evt {
-		var isExcluded bool
-		for _, excluded := range w.FieldsExclude {
-			if field == excluded {
-				isExcluded = true
-				break
-			}
-		}
-		if isExcluded {
-			continue
-		}
-
 		switch field {
 		case LevelFieldName, TimestampFieldName, MessageFieldName, CallerFieldName:
 			continue
@@ -169,8 +133,7 @@ func (w ConsoleWriter) writeFields(evt map[string]interface{}, buf *bytes.Buffer
 	}
 	sort.Strings(fields)
 
-	// Write space only if something has already been written to the buffer, and if there are fields.
-	if buf.Len() > 0 && len(fields) > 0 {
+	if len(fields) > 0 {
 		buf.WriteByte(' ')
 	}
 
@@ -231,7 +194,7 @@ func (w ConsoleWriter) writeFields(evt map[string]interface{}, buf *bytes.Buffer
 		case json.Number:
 			buf.WriteString(fv(fValue))
 		default:
-			b, err := InterfaceMarshalFunc(fValue)
+			b, err := json.Marshal(fValue)
 			if err != nil {
 				fmt.Fprintf(buf, colorize("[error: %v]", colorRed, w.NoColor), err)
 			} else {
@@ -293,10 +256,10 @@ func (w ConsoleWriter) writePart(buf *bytes.Buffer, evt map[string]interface{}, 
 	var s = f(evt[p])
 
 	if len(s) > 0 {
-		if buf.Len() > 0 {
-			buf.WriteByte(' ') // Write space only if not the first part
-		}
 		buf.WriteString(s)
+		if p != w.PartsOrder[len(w.PartsOrder)-1] { // Skip space for last part
+			buf.WriteByte(' ')
+		}
 	}
 }
 
@@ -341,7 +304,7 @@ func consoleDefaultFormatTimestamp(timeFormat string, noColor bool) Formatter {
 			if err != nil {
 				t = tt
 			} else {
-				t = ts.Local().Format(timeFormat)
+				t = ts.Format(timeFormat)
 			}
 		case json.Number:
 			i, err := tt.Int64()
@@ -357,7 +320,7 @@ func consoleDefaultFormatTimestamp(timeFormat string, noColor bool) Formatter {
 					nsec = int64(time.Duration(i) * time.Microsecond)
 					sec = 0
 				}
-				ts := time.Unix(sec, nsec)
+				ts := time.Unix(sec, nsec).UTC()
 				t = ts.Format(timeFormat)
 			}
 		}

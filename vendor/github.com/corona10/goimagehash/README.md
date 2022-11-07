@@ -56,9 +56,6 @@ func main() {
 ```
 
 ## Release Note
-### v1.1.0
-- The performance of Perceptionhash is enhanced.
-
 ### v1.0.3
 - Add workflow for GithubAction
 - Fix typo on the GoDoc for LoadImageHash

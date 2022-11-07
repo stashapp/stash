@@ -20,9 +20,8 @@ type Stater struct {
 
 // StatOptions represents stat options
 type StatOptions struct {
+	Handler  StatHandler
 	Metadata *StatMetadata
-	// Either a StatValuer or StatValuerOverTime
-	Valuer interface{}
 }
 
 // StatsHandleFunc is a method that can handle stat values
@@ -36,13 +35,10 @@ type StatMetadata struct {
 	Unit        string
 }
 
-// StatValuer represents a stat valuer
-type StatValuer interface {
-	Value() interface{}
-}
-
-// StatValuerOverTime represents a stat valuer over time
-type StatValuerOverTime interface {
+// StatHandler represents a stat handler
+type StatHandler interface {
+	Start()
+	Stop()
 	Value(delta time.Duration) interface{}
 }
 
@@ -100,21 +96,10 @@ func (s *Stater) Start(ctx context.Context) {
 				// Loop through stats
 				var stats []StatValue
 				s.m.Lock()
-				for _, o := range s.ss {
-					// Get value
-					var v interface{}
-					if h, ok := o.Valuer.(StatValuer); ok {
-						v = h.Value()
-					} else if h, ok := o.Valuer.(StatValuerOverTime); ok {
-						v = h.Value(delta)
-					} else {
-						continue
-					}
-
-					// Append
+				for _, v := range s.ss {
 					stats = append(stats, StatValue{
-						StatMetadata: o.Metadata,
-						Value:        v,
+						StatMetadata: v.Metadata,
+						Value:        v.Handler.Value(delta),
 					})
 				}
 				s.m.Unlock()
@@ -153,34 +138,41 @@ func (s *Stater) DelStats(os ...StatOptions) {
 	}
 }
 
-type durationStatOverTime struct {
-	d           time.Duration
-	fn          func(d, delta time.Duration) interface{}
-	m           *sync.Mutex // Locks isStarted
-	lastBeginAt time.Time
+type durationStat struct {
+	d         time.Duration
+	fn        func(d, delta time.Duration) interface{}
+	isStarted bool
+	m         *sync.Mutex // Locks isStarted
+	startedAt time.Time
 }
 
-func newDurationStatOverTime(fn func(d, delta time.Duration) interface{}) *durationStatOverTime {
-	return &durationStatOverTime{
+func newDurationStat(fn func(d, delta time.Duration) interface{}) *durationStat {
+	return &durationStat{
 		fn: fn,
 		m:  &sync.Mutex{},
 	}
 }
 
-func (s *durationStatOverTime) Begin() {
+func (s *durationStat) Begin() {
 	s.m.Lock()
 	defer s.m.Unlock()
-	s.lastBeginAt = now()
+	if !s.isStarted {
+		return
+	}
+	s.startedAt = now()
 }
 
-func (s *durationStatOverTime) End() {
+func (s *durationStat) End() {
 	s.m.Lock()
 	defer s.m.Unlock()
-	s.d += now().Sub(s.lastBeginAt)
-	s.lastBeginAt = time.Time{}
+	if !s.isStarted {
+		return
+	}
+	s.d += now().Sub(s.startedAt)
+	s.startedAt = time.Time{}
 }
 
-func (s *durationStatOverTime) Value(delta time.Duration) (o interface{}) {
+func (s *durationStat) Value(delta time.Duration) (o interface{}) {
 	// Lock
 	s.m.Lock()
 	defer s.m.Unlock()
@@ -190,9 +182,9 @@ func (s *durationStatOverTime) Value(delta time.Duration) (o interface{}) {
 	d := s.d
 
 	// Recording is still in process
-	if !s.lastBeginAt.IsZero() {
-		d += n.Sub(s.lastBeginAt)
-		s.lastBeginAt = n
+	if !s.startedAt.IsZero() {
+		d += n.Sub(s.startedAt)
+		s.startedAt = n
 	}
 
 	// Compute stat
@@ -201,14 +193,27 @@ func (s *durationStatOverTime) Value(delta time.Duration) (o interface{}) {
 	return
 }
 
+func (s *durationStat) Start() {
+	s.m.Lock()
+	defer s.m.Unlock()
+	s.d = 0
+	s.isStarted = true
+}
+
+func (s *durationStat) Stop() {
+	s.m.Lock()
+	defer s.m.Unlock()
+	s.isStarted = false
+}
+
 // DurationPercentageStat is an object capable of computing the percentage of time some work is taking per second
 type DurationPercentageStat struct {
-	*durationStatOverTime
+	*durationStat
 }
 
 // NewDurationPercentageStat creates a new duration percentage stat
 func NewDurationPercentageStat() *DurationPercentageStat {
-	return &DurationPercentageStat{durationStatOverTime: newDurationStatOverTime(func(d, delta time.Duration) interface{} {
+	return &DurationPercentageStat{durationStat: newDurationStat(func(d, delta time.Duration) interface{} {
 		if delta == 0 {
 			return 0
 		}
@@ -216,28 +221,46 @@ func NewDurationPercentageStat() *DurationPercentageStat {
 	})}
 }
 
-type counterStatOverTime struct {
-	c  float64
-	fn func(c, t float64, delta time.Duration) interface{}
-	m  *sync.Mutex // Locks isStarted
-	t  float64
+type counterStat struct {
+	c         float64
+	fn        func(c, t float64, delta time.Duration) interface{}
+	isStarted bool
+	m         *sync.Mutex // Locks isStarted
+	t         float64
 }
 
-func newCounterStatOverTime(fn func(c, t float64, delta time.Duration) interface{}) *counterStatOverTime {
-	return &counterStatOverTime{
+func newCounterStat(fn func(c, t float64, delta time.Duration) interface{}) *counterStat {
+	return &counterStat{
 		fn: fn,
 		m:  &sync.Mutex{},
 	}
 }
 
-func (s *counterStatOverTime) Add(delta float64) {
+func (s *counterStat) Add(delta float64) {
 	s.m.Lock()
 	defer s.m.Unlock()
+	if !s.isStarted {
+		return
+	}
 	s.c += delta
 	s.t++
 }
 
-func (s *counterStatOverTime) Value(delta time.Duration) interface{} {
+func (s *counterStat) Start() {
+	s.m.Lock()
+	defer s.m.Unlock()
+	s.c = 0
+	s.isStarted = true
+	s.t = 0
+}
+
+func (s *counterStat) Stop() {
+	s.m.Lock()
+	defer s.m.Unlock()
+	s.isStarted = true
+}
+
+func (s *counterStat) Value(delta time.Duration) interface{} {
 	s.m.Lock()
 	defer s.m.Unlock()
 	c := s.c
@@ -249,12 +272,12 @@ func (s *counterStatOverTime) Value(delta time.Duration) interface{} {
 
 // CounterAvgStat is an object capable of computing the average value of a counter
 type CounterAvgStat struct {
-	*counterStatOverTime
+	*counterStat
 }
 
 // NewCounterAvgStat creates a new counter avg stat
 func NewCounterAvgStat() *CounterAvgStat {
-	return &CounterAvgStat{counterStatOverTime: newCounterStatOverTime(func(c, t float64, delta time.Duration) interface{} {
+	return &CounterAvgStat{counterStat: newCounterStat(func(c, t float64, delta time.Duration) interface{} {
 		if t == 0 {
 			return 0
 		}
@@ -264,38 +287,15 @@ func NewCounterAvgStat() *CounterAvgStat {
 
 // CounterRateStat is an object capable of computing the average value of a counter per second
 type CounterRateStat struct {
-	*counterStatOverTime
+	*counterStat
 }
 
 // NewCounterRateStat creates a new counter rate stat
 func NewCounterRateStat() *CounterRateStat {
-	return &CounterRateStat{counterStatOverTime: newCounterStatOverTime(func(c, t float64, delta time.Duration) interface{} {
+	return &CounterRateStat{counterStat: newCounterStat(func(c, t float64, delta time.Duration) interface{} {
 		if delta.Seconds() == 0 {
 			return 0
 		}
 		return c / delta.Seconds()
 	})}
-}
-
-// CounterStat is an object capable of computing a counter that never gets reset
-type CounterStat struct {
-	c float64
-	m *sync.Mutex
-}
-
-// NewCounterStat creates a new counter stat
-func NewCounterStat() *CounterStat {
-	return &CounterStat{m: &sync.Mutex{}}
-}
-
-func (s *CounterStat) Add(delta float64) {
-	s.m.Lock()
-	defer s.m.Unlock()
-	s.c += delta
-}
-
-func (s *CounterStat) Value() interface{} {
-	s.m.Lock()
-	defer s.m.Unlock()
-	return s.c
 }

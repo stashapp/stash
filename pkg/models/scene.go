@@ -13,11 +13,13 @@ type PHashDuplicationCriterionInput struct {
 }
 
 type SceneFilterType struct {
-	And     *SceneFilterType      `json:"AND"`
-	Or      *SceneFilterType      `json:"OR"`
-	Not     *SceneFilterType      `json:"NOT"`
-	Title   *StringCriterionInput `json:"title"`
-	Details *StringCriterionInput `json:"details"`
+	And      *SceneFilterType      `json:"AND"`
+	Or       *SceneFilterType      `json:"OR"`
+	Not      *SceneFilterType      `json:"NOT"`
+	Title    *StringCriterionInput `json:"title"`
+	Code     *StringCriterionInput `json:"code"`
+	Details  *StringCriterionInput `json:"details"`
+	Director *StringCriterionInput `json:"director"`
 	// Filter by file oshash
 	Oshash *StringCriterionInput `json:"oshash"`
 	// Filter by file checksum
