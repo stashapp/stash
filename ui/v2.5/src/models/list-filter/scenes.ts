@@ -51,8 +51,10 @@ const displayModeOptions = [
 
 const criterionOptions = [
   createStringCriterionOption("title"),
+  createStringCriterionOption("scene_code"),
   createMandatoryStringCriterionOption("path"),
   createStringCriterionOption("details"),
+  createStringCriterionOption("director"),
   createMandatoryStringCriterionOption("oshash", "media_info.hash"),
   createStringCriterionOption(
     "sceneChecksum",

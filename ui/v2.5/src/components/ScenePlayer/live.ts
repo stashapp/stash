@@ -1,83 +1,180 @@
 import videojs, { VideoJsPlayer } from "video.js";
 
-const offset = function (this: VideoJsPlayer) {
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const Player = this.constructor as any;
+export interface ISource extends videojs.Tech.SourceObject {
+  offset?: boolean;
+  duration?: number;
+}
 
-  if (!Player.__super__ || !Player.__super__.__offsetInit) {
-    Player.__super__ = {
-      __offsetInit: true,
-      duration: Player.prototype.duration,
-      currentTime: Player.prototype.currentTime,
-      remainingTime: Player.prototype.remainingTime,
-      getCache: Player.prototype.getCache,
-    };
+interface ICue extends TextTrackCue {
+  _startTime?: number;
+  _endTime?: number;
+}
 
-    Player.prototype.clearOffsetDuration = function () {
-      this._offsetDuration = undefined;
-      this._offsetStart = undefined;
-    };
+function offsetMiddleware(player: VideoJsPlayer) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- allow access to private tech methods
+  let tech: any;
+  let source: ISource;
+  let offsetStart: number | undefined;
+  let seeking = 0;
 
-    Player.prototype.setOffsetDuration = function (duration: number) {
-      this._offsetDuration = duration;
-    };
+  function initCues(cues: TextTrackCueList) {
+    const offset = offsetStart ?? 0;
+    for (let j = 0; j < cues.length; j++) {
+      const cue = cues[j] as ICue;
+      cue._startTime = cue.startTime;
+      cue.startTime = cue._startTime - offset;
+      cue._endTime = cue.endTime;
+      cue.endTime = cue._endTime - offset;
+    }
+  }
 
-    Player.prototype.duration = function () {
-      if (this._offsetDuration !== undefined) {
-        return this._offsetDuration;
-      }
-      return Player.__super__.duration.apply(this, arguments);
-    };
+  function updateOffsetStart(offset: number | undefined) {
+    offsetStart = offset;
 
-    Player.prototype.currentTime = function (seconds: number) {
-      if (seconds !== undefined && this._offsetDuration !== undefined) {
-        this._offsetStart = seconds;
+    if (!tech) return;
+    offset = offset ?? 0;
 
-        const srcUrl = new URL(this.src());
-        srcUrl.searchParams.delete("start");
-        srcUrl.searchParams.append("start", seconds.toString());
-        const currentSrc = this.currentSource();
-        const newSources = this.currentSources().map(
-          (source: videojs.Tech.SourceObject) => {
-            return {
-              ...source,
-              src:
-                source.src === currentSrc.src ? srcUrl.toString() : source.src,
-            };
+    const tracks = tech.remoteTextTracks();
+    for (let i = 0; i < tracks.length; i++) {
+      const { cues } = tracks[i];
+      if (cues) {
+        for (let j = 0; j < cues.length; j++) {
+          const cue = cues[j] as ICue;
+          if (cue._startTime === undefined || cue._endTime === undefined) {
+            continue;
           }
-        );
-        this.src(newSources);
-        this.play();
+          cue.startTime = cue._startTime - offset;
+          cue.endTime = cue._endTime - offset;
+        }
+      }
+    }
+  }
 
+  return {
+    setTech(newTech: videojs.Tech) {
+      tech = newTech;
+
+      const _addRemoteTextTrack = tech.addRemoteTextTrack.bind(tech);
+      function addRemoteTextTrack(
+        this: VideoJsPlayer,
+        options: videojs.TextTrackOptions,
+        manualCleanup: boolean
+      ) {
+        const textTrack = _addRemoteTextTrack(options, manualCleanup);
+        textTrack.addEventListener("load", () => {
+          const { cues } = textTrack.track;
+          if (cues) {
+            initCues(cues);
+          }
+        });
+
+        return textTrack;
+      }
+      tech.addRemoteTextTrack = addRemoteTextTrack;
+
+      const trackEls: HTMLTrackElement[] = tech.remoteTextTrackEls();
+      for (let i = 0; i < trackEls.length; i++) {
+        const trackEl = trackEls[i];
+        const { track } = trackEl;
+        if (track.cues) {
+          initCues(track.cues);
+        } else {
+          trackEl.addEventListener("load", () => {
+            if (track.cues) {
+              initCues(track.cues);
+            }
+          });
+        }
+      }
+    },
+    setSource(
+      srcObj: ISource,
+      next: (err: unknown, src: videojs.Tech.SourceObject) => void
+    ) {
+      if (srcObj.offset && srcObj.duration) {
+        updateOffsetStart(0);
+      } else {
+        updateOffsetStart(undefined);
+      }
+      source = srcObj;
+      next(null, srcObj);
+    },
+    duration(seconds: number) {
+      if (source.duration) {
+        return source.duration;
+      } else {
         return seconds;
       }
-      return (
-        (this._offsetStart ?? 0) +
-        Player.__super__.currentTime.apply(this, arguments)
-      );
-    };
-
-    Player.prototype.getCache = function () {
-      const cache = Player.__super__.getCache.apply(this);
-      if (this._offsetDuration !== undefined)
-        return {
-          ...cache,
-          currentTime:
-            (this._offsetStart ?? 0) + Player.__super__.currentTime.apply(this),
-        };
-      return cache;
-    };
-
-    Player.prototype.remainingTime = function () {
-      if (this._offsetDuration !== undefined) {
-        return this._offsetDuration - this.currentTime();
+    },
+    buffered(buffers: TimeRanges) {
+      if (offsetStart === undefined) {
+        return buffers;
       }
-      return this.duration() - this.currentTime();
-    };
-  }
-};
 
-// Register the plugin with video.js.
-videojs.registerPlugin("offset", offset);
+      const timeRanges: number[][] = [];
+      for (let i = 0; i < buffers.length; i++) {
+        const start = buffers.start(i) + offsetStart;
+        const end = buffers.end(i) + offsetStart;
 
-export default offset;
+        timeRanges.push([start, end]);
+      }
+
+      // types for createTimeRanges are incorrect, should be number[][] not TimeRange[]
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return videojs.createTimeRanges(timeRanges as any);
+    },
+    currentTime(seconds: number) {
+      return (offsetStart ?? 0) + seconds;
+    },
+    setCurrentTime(seconds: number) {
+      if (offsetStart === undefined) {
+        return seconds;
+      }
+
+      const offsetSeconds = seconds - offsetStart;
+      const buffers = tech.buffered() as TimeRanges;
+      for (let i = 0; i < buffers.length; i++) {
+        const start = buffers.start(i);
+        const end = buffers.end(i);
+        // seek point is in buffer, just seek normally
+        if (start <= offsetSeconds && offsetSeconds <= end) {
+          return offsetSeconds;
+        }
+      }
+
+      updateOffsetStart(seconds);
+
+      const srcUrl = new URL(source.src);
+      srcUrl.searchParams.set("start", seconds.toString());
+      source.src = srcUrl.toString();
+
+      const poster = player.poster();
+      const playbackRate = tech.playbackRate();
+      seeking = tech.paused() ? 1 : 2;
+      player.poster("");
+      tech.setSource(source);
+      tech.setPlaybackRate(playbackRate);
+      tech.one("canplay", () => {
+        player.poster(poster);
+        if (seeking === 1) {
+          tech.pause();
+        }
+        seeking = 0;
+      });
+      tech.trigger("timeupdate");
+      tech.trigger("pause");
+      tech.trigger("seeking");
+      tech.play();
+
+      return 0;
+    },
+    callPlay() {
+      if (seeking) {
+        seeking = 2;
+        return videojs.middleware.TERMINATOR;
+      }
+    },
+  };
+}
+
+videojs.use("*", offsetMiddleware);

@@ -88,8 +88,8 @@ type DraftEntity struct {
 	ID   *string `json:"id,omitempty"`
 }
 
-func (DraftEntity) IsSceneDraftStudio()    {}
 func (DraftEntity) IsSceneDraftTag()       {}
+func (DraftEntity) IsSceneDraftStudio()    {}
 func (DraftEntity) IsSceneDraftPerformer() {}
 
 type DraftEntityInput struct {
@@ -339,8 +339,8 @@ type Performer struct {
 	Updated         time.Time           `json:"updated"`
 }
 
-func (Performer) IsSceneDraftPerformer() {}
 func (Performer) IsEditTarget()          {}
+func (Performer) IsSceneDraftPerformer() {}
 
 type PerformerAppearance struct {
 	Performer *Performer `json:"performer,omitempty"`
