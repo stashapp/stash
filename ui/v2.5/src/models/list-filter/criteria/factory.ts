@@ -87,7 +87,7 @@ export function makeCriteria(
       return new NumberCriterion(new NullNumberCriterionOption(type, type));
     case "rating100":
       return new RatingCriterion(
-        new NullNumberCriterionOption(type, type),
+        new NullNumberCriterionOption("rating", type),
         config?.interface.ratingSystem ?? GQL.RatingSystem.FiveStar
       );
     case "resolution":

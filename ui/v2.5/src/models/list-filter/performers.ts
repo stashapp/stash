@@ -3,7 +3,7 @@ import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
   createBooleanCriterionOption,
-  createNullNumberCriterionOption,
+  NullNumberCriterionOption,
 } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
@@ -75,7 +75,7 @@ const criterionOptions = [
   TagsCriterionOption,
   StudiosCriterionOption,
   createStringCriterionOption("url"),
-  createNullNumberCriterionOption("rating100"),
+  new NullNumberCriterionOption("rating", "rating100"),
   createMandatoryNumberCriterionOption("tag_count"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),

@@ -13,7 +13,7 @@ export const RatingBanner: React.FC<IProps> = ({ rating }) => {
 
   return rating ? (
     <div className={`rating-banner rating-${Math.trunc(rating / 5)}`}>
-      <FormattedMessage id="rating100" />:{" "}
+      <FormattedMessage id="rating" />:{" "}
       {convertToRatingFormat(
         rating,
         config?.interface.ratingSystem ?? RatingSystem.FiveStar

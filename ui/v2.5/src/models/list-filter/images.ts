@@ -1,8 +1,8 @@
 import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
-  createNullNumberCriterionOption,
   createStringCriterionOption,
+  NullNumberCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
@@ -36,7 +36,7 @@ const criterionOptions = [
   ResolutionCriterionOption,
   ImageIsMissingCriterionOption,
   TagsCriterionOption,
-  createNullNumberCriterionOption("rating100"),
+  new NullNumberCriterionOption("rating", "rating100"),
   createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,

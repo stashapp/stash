@@ -736,10 +736,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
               intl.formatMessage({ id: "director" })
             )}
             <RatingSystem
-                value={formik.values.rating100 ?? undefined}
-                onSetRating={(value) =>
-                    formik.setFieldValue("rating100", value ?? null)
-                }
+              value={formik.values.rating100 ?? undefined}
+              onSetRating={(value) =>
+                formik.setFieldValue("rating100", value ?? null)
+              }
             />
             <Form.Group controlId="galleries" as={Row}>
               {FormUtils.renderLabel({

@@ -9,7 +9,7 @@ interface ISortByOption {
 export const MediaSortByOptions = [
   "title",
   "path",
-  "rating100",
+  "rating",
   "file_mod_time",
   "tag_count",
   "performer_count",
