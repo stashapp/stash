@@ -15,7 +15,6 @@ type ScenePathsType {
   stream: String # Resolver
   webp: String # Resolver
   vtt: String # Resolver
-  chapters_vtt: String # Resolver
   sprite: String # Resolver
   funscript: String # Resolver
   interactive_heatmap: String # Resolver
@@ -37,7 +36,9 @@ type Scene {
   checksum: String @deprecated(reason: "Use files.fingerprints")
   oshash: String @deprecated(reason: "Use files.fingerprints")
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
   rating: Int
@@ -77,7 +78,9 @@ input SceneUpdateInput {
   clientMutationId: String
   id: ID!
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
   rating: Int
@@ -109,7 +112,9 @@ input BulkSceneUpdateInput {
   clientMutationId: String
   ids: [ID!]
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
   rating: Int
@@ -157,7 +162,9 @@ type SceneMovieID {
 type SceneParserResult {
   scene: Scene!
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
   rating: Int

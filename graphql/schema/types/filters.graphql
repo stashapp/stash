@@ -124,7 +124,9 @@ input SceneFilterType {
   NOT: SceneFilterType
 
   title: StringCriterionInput
+  code: StringCriterionInput
   details: StringCriterionInput
+  director: StringCriterionInput
 
   """Filter by file oshash"""
   oshash: StringCriterionInput

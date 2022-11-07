@@ -52,7 +52,9 @@ query ParseSceneFilenames($filter: FindFilterType!, $config: SceneParserInput!) 
         ...SlimSceneData
       }
       title
+      code
       details
+      director
       url
       date
       rating

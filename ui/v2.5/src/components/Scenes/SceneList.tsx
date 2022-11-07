@@ -13,7 +13,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import Tagger from "src/components/Tagger";
-import { SceneQueue } from "src/models/sceneQueue";
+import { IPlaySceneOptions, SceneQueue } from "src/models/sceneQueue";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
@@ -108,6 +108,14 @@ export const SceneList: React.FC<ISceneList> = ({
     persistState,
   });
 
+  function playScene(
+    queue: SceneQueue,
+    sceneID: string,
+    options: IPlaySceneOptions
+  ) {
+    history.push(queue.makeLink(sceneID, options));
+  }
+
   async function playSelected(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
@@ -118,9 +126,7 @@ export const SceneList: React.FC<ISceneList> = ({
     const queue = SceneQueue.fromSceneIDList(sceneIDs);
     const autoPlay =
       config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
-    const cont =
-      config.configuration?.interface.continuePlaylistDefault ?? false;
-    queue.playScene(history, sceneIDs[0], { autoPlay, continue: cont });
+    playScene(queue, sceneIDs[0], { autoPlay });
   }
 
   async function playRandom(
@@ -142,18 +148,12 @@ export const SceneList: React.FC<ISceneList> = ({
       filterCopy.sortBy = "random";
       const queryResults = await queryFindScenes(filterCopy);
       if (queryResults.data.findScenes.scenes.length > index) {
-        const { id } = queryResults!.data!.findScenes!.scenes[index];
+        const { id } = queryResults.data.findScenes.scenes[index];
         // navigate to the image player page
         const queue = SceneQueue.fromListFilterModel(filterCopy);
         const autoPlay =
           config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
-        const cont =
-          config.configuration?.interface.continuePlaylistDefault ?? false;
-        queue.playScene(history, id, {
-          sceneIndex: index,
-          autoPlay,
-          continue: cont,
-        });
+        playScene(queue, id, { sceneIndex: index, autoPlay });
       }
     }
   }

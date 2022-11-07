@@ -126,4 +126,5 @@ export type CriterionType =
   | "duplicated"
   | "ignore_auto_tag"
   | "file_count"
-  | "description";
+  | "description"
+  | "scene_code";
