@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -156,7 +155,7 @@ func (s *HTTPSender) SendWithTimeout(req *http.Request, timeout time.Duration) (
 		s.l.Debugf("astikit: sending %s", nr)
 		if resp, err = s.client.Do(req); err != nil {
 			// Retry if error is temporary, stop here otherwise
-			if netError, ok := err.(net.Error); !ok || !netError.Timeout() {
+			if netError, ok := err.(net.Error); !ok || !netError.Temporary() {
 				err = fmt.Errorf("astikit: sending %s failed: %w", nr, err)
 				return
 			}
@@ -185,20 +184,14 @@ func (s *HTTPSender) SendWithTimeout(req *http.Request, timeout time.Duration) (
 	return
 }
 
-type HTTPSenderHeaderFunc func(h http.Header)
-
-type HTTPSenderStatusCodeFunc func(code int) error
-
 // HTTPSendJSONOptions represents SendJSON options
 type HTTPSendJSONOptions struct {
-	BodyError      interface{}
-	BodyIn         interface{}
-	BodyOut        interface{}
-	HeadersIn      map[string]string
-	HeadersOut     HTTPSenderHeaderFunc
-	Method         string
-	StatusCodeFunc HTTPSenderStatusCodeFunc
-	URL            string
+	BodyError interface{}
+	BodyIn    interface{}
+	BodyOut   interface{}
+	Headers   map[string]string
+	Method    string
+	URL       string
 }
 
 // SendJSON sends a new JSON HTTP request
@@ -222,7 +215,7 @@ func (s *HTTPSender) SendJSON(o HTTPSendJSONOptions) (err error) {
 	}
 
 	// Add headers
-	for k, v := range o.HeadersIn {
+	for k, v := range o.Headers {
 		req.Header.Set(k, v)
 	}
 
@@ -234,17 +227,8 @@ func (s *HTTPSender) SendJSON(o HTTPSendJSONOptions) (err error) {
 	}
 	defer resp.Body.Close()
 
-	// Process headers
-	if o.HeadersOut != nil {
-		o.HeadersOut(resp.Header)
-	}
-
 	// Process status code
-	fn := HTTPSenderDefaultStatusCodeFunc
-	if o.StatusCodeFunc != nil {
-		fn = o.StatusCodeFunc
-	}
-	if err = fn(resp.StatusCode); err != nil {
+	if code := resp.StatusCode; code < 200 || code > 299 {
 		// Try unmarshaling error
 		if o.BodyError != nil {
 			if err2 := json.NewDecoder(resp.Body).Decode(o.BodyError); err2 == nil {
@@ -254,33 +238,18 @@ func (s *HTTPSender) SendJSON(o HTTPSendJSONOptions) (err error) {
 		}
 
 		// Default error
-		err = fmt.Errorf("astikit: validating status code %d failed: %w", resp.StatusCode, err)
+		err = fmt.Errorf("astikit: invalid status code %d", code)
 		return
 	}
 
 	// Unmarshal body out
 	if o.BodyOut != nil {
-		// Read all
-		var b []byte
-		if b, err = ioutil.ReadAll(resp.Body); err != nil {
-			err = fmt.Errorf("astikit: reading all failed: %w", err)
-			return
-		}
-
-		// Unmarshal
-		if err = json.Unmarshal(b, o.BodyOut); err != nil {
-			err = fmt.Errorf("astikit: unmarshaling failed: %w (json: %s)", err, b)
+		if err = json.NewDecoder(resp.Body).Decode(o.BodyOut); err != nil {
+			err = fmt.Errorf("astikit: unmarshaling failed: %w", err)
 			return
 		}
 	}
 	return
-}
-
-func HTTPSenderDefaultStatusCodeFunc(code int) error {
-	if code < 200 || code > 299 {
-		return errors.New("astikit: status code should be between 200 and 299")
-	}
-	return nil
 }
 
 // HTTPResponseFunc is a func that can process an $http.Response
@@ -411,7 +380,6 @@ func (d *HTTPDownloader) download(ctx context.Context, srcs []HTTPDownloaderSrc,
 			}
 
 			// Do
-			//nolint:errcheck
 			d.l.Do(func() {
 				// Task is done
 				defer wg.Done()

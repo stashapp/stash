@@ -50,8 +50,8 @@ type Server struct {
 }
 
 const (
-	// minSizeToEncode is minimal file size to apply encoding in runtime, 0.5KiB.
-	minSizeToEncode = 512
+	// minSizeToEncode is minimal file size to apply encoding in runtime, 1KiB.
+	minSizeToEncode = 1024
 
 	// minCompressionRatio is a minimal compression ratio to serve encoded data, 97%.
 	minCompressionRatio = 0.97
@@ -62,10 +62,7 @@ var SkipCompressionExt = []string{".gz", ".br", ".gif", ".jpg", ".png", ".webp"}
 
 // FileServer creates an instance of Server from file system.
 //
-// This function indexes provided file system to optimize further serving,
-// so it is not recommended running it in the loop (for example for each request).
-//
-// Typically, file system would be an embed.FS.
+// Typically file system would be an embed.FS.
 //
 //   //go:embed *.png *.br
 //	 var FS embed.FS
@@ -207,8 +204,7 @@ func (s *Server) reader(fn string, info fileInfo) (io.Reader, error) {
 }
 
 func (s *Server) serve(rw http.ResponseWriter, req *http.Request, fn, suf, enc string, info fileInfo,
-	decompress func(r io.Reader) (io.Reader, error),
-) {
+	decompress func(r io.Reader) (io.Reader, error)) {
 	if m := req.Header.Get("If-None-Match"); m == info.hash {
 		rw.WriteHeader(http.StatusNotModified)
 

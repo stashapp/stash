@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"io"
-
 	"github.com/asticode/go-astikit"
+	"io"
 )
 
 const (
@@ -29,15 +28,11 @@ type Muxer struct {
 	packetSize             int
 	tablesRetransmitPeriod int // period in PES packets
 
-	pm         *programMap // pid -> programNumber
-	pmUpdated  bool
+	pm         programMap // pid -> programNumber
 	pmt        PMTData
-	pmtUpdated bool
 	nextPID    uint16
 	patVersion wrappingCounter
 	pmtVersion wrappingCounter
-	patCC      wrappingCounter
-	pmtCC      wrappingCounter
 
 	patBytes bytes.Buffer
 	pmtBytes bytes.Buffer
@@ -87,9 +82,6 @@ func NewMuxer(ctx context.Context, w io.Writer, opts ...func(*Muxer)) *Muxer {
 		patVersion: newWrappingCounter(0b11111),
 		pmtVersion: newWrappingCounter(0b11111),
 
-		patCC: newWrappingCounter(0b1111),
-		pmtCC: newWrappingCounter(0b1111),
-
 		esContexts: map[uint16]*esContext{},
 	}
 
@@ -98,7 +90,6 @@ func NewMuxer(ctx context.Context, w io.Writer, opts ...func(*Muxer)) *Muxer {
 
 	// TODO multiple programs support
 	m.pm.set(pmtStartPID, programNumberStart)
-	m.pmUpdated = true
 
 	for _, opt := range opts {
 		opt(m)
@@ -128,7 +119,6 @@ func (m *Muxer) AddElementaryStream(es PMTElementaryStream) error {
 	m.esContexts[es.ElementaryPID] = newEsContext(&es)
 	// invalidate pmt cache
 	m.pmtBytes.Reset()
-	m.pmtUpdated = true
 	return nil
 }
 
@@ -148,14 +138,12 @@ func (m *Muxer) RemoveElementaryStream(pid uint16) error {
 	m.pmt.ElementaryStreams = append(m.pmt.ElementaryStreams[:foundIdx], m.pmt.ElementaryStreams[foundIdx+1:]...)
 	delete(m.esContexts, pid)
 	m.pmtBytes.Reset()
-	m.pmtUpdated = true
 	return nil
 }
 
 // SetPCRPID marks pid as one to look PCRs in
 func (m *Muxer) SetPCRPID(pid uint16) {
 	m.pmt.PCRPID = pid
-	m.pmtUpdated = true
 }
 
 // WriteData writes MuxerData to TS stream
@@ -187,7 +175,7 @@ func (m *Muxer) WriteData(d *MuxerData) (int, error) {
 		pktLen := 1 + mpegTsPacketHeaderSize // sync byte + header
 		pkt := Packet{
 			Header: &PacketHeader{
-				ContinuityCounter:         uint8(ctx.cc.inc()),
+				ContinuityCounter:         uint8(ctx.cc.get()),
 				HasAdaptationField:        writeAf,
 				HasPayload:                false,
 				PayloadUnitStartIndicator: false,
@@ -296,12 +284,16 @@ func (m *Muxer) retransmitTables(force bool) (int, error) {
 func (m *Muxer) WriteTables() (int, error) {
 	bytesWritten := 0
 
-	if err := m.generatePAT(); err != nil {
-		return bytesWritten, err
+	if m.patBytes.Len() != m.packetSize {
+		if err := m.generatePAT(); err != nil {
+			return bytesWritten, err
+		}
 	}
 
-	if err := m.generatePMT(); err != nil {
-		return bytesWritten, err
+	if m.pmtBytes.Len() != m.packetSize {
+		if err := m.generatePMT(); err != nil {
+			return bytesWritten, err
+		}
 	}
 
 	n, err := m.w.Write(m.patBytes.Bytes())
@@ -321,12 +313,6 @@ func (m *Muxer) WriteTables() (int, error) {
 
 func (m *Muxer) generatePAT() error {
 	d := m.pm.toPATData()
-
-	versionNumber := m.patVersion.get()
-	if m.pmUpdated {
-		versionNumber = m.patVersion.inc()
-	}
-
 	syntax := &PSISectionSyntax{
 		Data: &PSISectionSyntaxData{PAT: d},
 		Header: &PSISectionSyntaxHeader{
@@ -335,7 +321,7 @@ func (m *Muxer) generatePAT() error {
 			//LastSectionNumber:    0,
 			//SectionNumber:        0,
 			TableIDExtension: d.TransportStreamID,
-			VersionNumber:    uint8(versionNumber),
+			VersionNumber:    uint8(m.patVersion.get()),
 		},
 	}
 	section := PSISection{
@@ -364,7 +350,6 @@ func (m *Muxer) generatePAT() error {
 			HasPayload:                true,
 			PayloadUnitStartIndicator: true,
 			PID:                       PIDPAT,
-			ContinuityCounter:         uint8(m.patCC.inc()),
 		},
 		Payload: m.buf.Bytes(),
 	}
@@ -372,8 +357,6 @@ func (m *Muxer) generatePAT() error {
 		// FIXME save old PAT and rollback to it here maybe?
 		return err
 	}
-
-	m.pmUpdated = false
 
 	return nil
 }
@@ -390,11 +373,6 @@ func (m *Muxer) generatePMT() error {
 		return ErrPCRPIDInvalid
 	}
 
-	versionNumber := m.pmtVersion.get()
-	if m.pmtUpdated {
-		versionNumber = m.pmtVersion.inc()
-	}
-
 	syntax := &PSISectionSyntax{
 		Data: &PSISectionSyntaxData{PMT: &m.pmt},
 		Header: &PSISectionSyntaxHeader{
@@ -403,7 +381,7 @@ func (m *Muxer) generatePMT() error {
 			//LastSectionNumber:    0,
 			//SectionNumber:        0,
 			TableIDExtension: m.pmt.ProgramNumber,
-			VersionNumber:    uint8(versionNumber),
+			VersionNumber:    uint8(m.pmtVersion.get()),
 		},
 	}
 	section := PSISection{
@@ -432,7 +410,6 @@ func (m *Muxer) generatePMT() error {
 			HasPayload:                true,
 			PayloadUnitStartIndicator: true,
 			PID:                       pmtStartPID, // FIXME multiple programs support
-			ContinuityCounter:         uint8(m.pmtCC.inc()),
 		},
 		Payload: m.buf.Bytes(),
 	}
@@ -440,8 +417,6 @@ func (m *Muxer) generatePMT() error {
 		// FIXME save old PMT and rollback to it here maybe?
 		return err
 	}
-
-	m.pmtUpdated = false
 
 	return nil
 }

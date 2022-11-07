@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMPILER_CONTAINER="stashapp/compiler:7"
+COMPILER_CONTAINER="stashapp/compiler:6"
 
 BUILD_DATE=`go run -mod=vendor scripts/getDate.go`
 GITHASH=`git rev-parse --short HEAD`

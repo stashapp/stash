@@ -209,13 +209,13 @@ func (c *Chan) Stats() []StatOptions {
 	}
 	return []StatOptions{
 		{
+			Handler: c.statWorkRatio,
 			Metadata: &StatMetadata{
 				Description: "Percentage of time doing work",
 				Label:       "Work ratio",
 				Name:        StatNameWorkRatio,
 				Unit:        "%",
 			},
-			Valuer: c.statWorkRatio,
 		},
 	}
 }

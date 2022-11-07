@@ -33,14 +33,3 @@ func GetSigningMethod(alg string) (method SigningMethod) {
 	}
 	return
 }
-
-// GetAlgorithms returns a list of registered "alg" names
-func GetAlgorithms() (algs []string) {
-	signingMethodLock.RLock()
-	defer signingMethodLock.RUnlock()
-
-	for alg := range signingMethods {
-		algs = append(algs, alg)
-	}
-	return
-}

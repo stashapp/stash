@@ -164,10 +164,6 @@ func readKeyName(delimiters string, in []byte) (string, int, error) {
 	if endIdx < 0 {
 		return "", -1, ErrDelimiterNotFound{line}
 	}
-	if endIdx == 0 {
-		return "", -1, ErrEmptyKeyName{line}
-	}
-
 	return strings.TrimSpace(line[0:endIdx]), endIdx + 1, nil
 }
 
@@ -467,9 +463,8 @@ func (f *File) parse(reader io.Reader) (err error) {
 
 		kname, offset, err := readKeyName(f.options.KeyValueDelimiters, line)
 		if err != nil {
-			switch {
 			// Treat as boolean key when desired, and whole line is key name.
-			case IsErrDelimiterNotFound(err):
+			if IsErrDelimiterNotFound(err) {
 				switch {
 				case f.options.AllowBooleanKeys:
 					kname, err := p.readValue(line, parserBufferSize)
@@ -487,8 +482,6 @@ func (f *File) parse(reader io.Reader) (err error) {
 				case f.options.SkipUnrecognizableLines:
 					continue
 				}
-			case IsErrEmptyKeyName(err) && f.options.SkipUnrecognizableLines:
-				continue
 			}
 			return err
 		}

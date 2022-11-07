@@ -114,8 +114,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIndexeddb1(in *jlexer.Lexer, 
 		switch key {
 		case "securityOrigin":
 			out.SecurityOrigin = string(in.String())
-		case "storageKey":
-			out.StorageKey = string(in.String())
 		case "databaseName":
 			out.DatabaseName = string(in.String())
 		default:
@@ -132,30 +130,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoIndexeddb1(out *jwriter.Write
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.SecurityOrigin != "" {
+	{
 		const prefix string = ",\"securityOrigin\":"
-		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.SecurityOrigin))
 	}
-	if in.StorageKey != "" {
-		const prefix string = ",\"storageKey\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.StorageKey))
-	}
 	{
 		const prefix string = ",\"databaseName\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.DatabaseName))
 	}
 	out.RawByte('}')
@@ -302,8 +284,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIndexeddb3(in *jlexer.Lexer, 
 		switch key {
 		case "securityOrigin":
 			out.SecurityOrigin = string(in.String())
-		case "storageKey":
-			out.StorageKey = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -318,21 +298,10 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoIndexeddb3(out *jwriter.Write
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.SecurityOrigin != "" {
+	{
 		const prefix string = ",\"securityOrigin\":"
-		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.SecurityOrigin))
-	}
-	if in.StorageKey != "" {
-		const prefix string = ",\"storageKey\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.StorageKey))
 	}
 	out.RawByte('}')
 }
@@ -502,8 +471,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIndexeddb5(in *jlexer.Lexer, 
 		switch key {
 		case "securityOrigin":
 			out.SecurityOrigin = string(in.String())
-		case "storageKey":
-			out.StorageKey = string(in.String())
 		case "databaseName":
 			out.DatabaseName = string(in.String())
 		case "objectStoreName":
@@ -538,30 +505,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoIndexeddb5(out *jwriter.Write
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.SecurityOrigin != "" {
+	{
 		const prefix string = ",\"securityOrigin\":"
-		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.SecurityOrigin))
 	}
-	if in.StorageKey != "" {
-		const prefix string = ",\"storageKey\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.StorageKey))
-	}
 	{
 		const prefix string = ",\"databaseName\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.DatabaseName))
 	}
 	{
@@ -1317,8 +1268,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIndexeddb12(in *jlexer.Lexer,
 		switch key {
 		case "securityOrigin":
 			out.SecurityOrigin = string(in.String())
-		case "storageKey":
-			out.StorageKey = string(in.String())
 		case "databaseName":
 			out.DatabaseName = string(in.String())
 		case "objectStoreName":
@@ -1337,30 +1286,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoIndexeddb12(out *jwriter.Writ
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.SecurityOrigin != "" {
+	{
 		const prefix string = ",\"securityOrigin\":"
-		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.SecurityOrigin))
 	}
-	if in.StorageKey != "" {
-		const prefix string = ",\"storageKey\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.StorageKey))
-	}
 	{
 		const prefix string = ",\"databaseName\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.DatabaseName))
 	}
 	{
@@ -1533,8 +1466,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIndexeddb15(in *jlexer.Lexer,
 		switch key {
 		case "securityOrigin":
 			out.SecurityOrigin = string(in.String())
-		case "storageKey":
-			out.StorageKey = string(in.String())
 		case "databaseName":
 			out.DatabaseName = string(in.String())
 		case "objectStoreName":
@@ -1563,30 +1494,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoIndexeddb15(out *jwriter.Writ
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.SecurityOrigin != "" {
+	{
 		const prefix string = ",\"securityOrigin\":"
-		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.SecurityOrigin))
 	}
-	if in.StorageKey != "" {
-		const prefix string = ",\"storageKey\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.StorageKey))
-	}
 	{
 		const prefix string = ",\"databaseName\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.DatabaseName))
 	}
 	{
@@ -1650,8 +1565,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIndexeddb16(in *jlexer.Lexer,
 		switch key {
 		case "securityOrigin":
 			out.SecurityOrigin = string(in.String())
-		case "storageKey":
-			out.StorageKey = string(in.String())
 		case "databaseName":
 			out.DatabaseName = string(in.String())
 		default:
@@ -1668,30 +1581,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoIndexeddb16(out *jwriter.Writ
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.SecurityOrigin != "" {
+	{
 		const prefix string = ",\"securityOrigin\":"
-		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.SecurityOrigin))
 	}
-	if in.StorageKey != "" {
-		const prefix string = ",\"storageKey\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.StorageKey))
-	}
 	{
 		const prefix string = ",\"databaseName\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.DatabaseName))
 	}
 	out.RawByte('}')
@@ -1981,8 +1878,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoIndexeddb19(in *jlexer.Lexer,
 		switch key {
 		case "securityOrigin":
 			out.SecurityOrigin = string(in.String())
-		case "storageKey":
-			out.StorageKey = string(in.String())
 		case "databaseName":
 			out.DatabaseName = string(in.String())
 		case "objectStoreName":
@@ -2001,30 +1896,14 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoIndexeddb19(out *jwriter.Writ
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.SecurityOrigin != "" {
+	{
 		const prefix string = ",\"securityOrigin\":"
-		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.SecurityOrigin))
 	}
-	if in.StorageKey != "" {
-		const prefix string = ",\"storageKey\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.StorageKey))
-	}
 	{
 		const prefix string = ",\"databaseName\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.DatabaseName))
 	}
 	{

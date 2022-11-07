@@ -40,10 +40,9 @@ type SetDeviceOrientationOverrideParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DeviceOrientation#method-setDeviceOrientationOverride
 //
 // parameters:
-//
-//	alpha - Mock alpha
-//	beta - Mock beta
-//	gamma - Mock gamma
+//   alpha - Mock alpha
+//   beta - Mock beta
+//   gamma - Mock gamma
 func SetDeviceOrientationOverride(alpha float64, beta float64, gamma float64) *SetDeviceOrientationOverrideParams {
 	return &SetDeviceOrientationOverrideParams{
 		Alpha: alpha,

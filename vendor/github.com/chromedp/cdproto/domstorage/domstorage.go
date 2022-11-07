@@ -24,8 +24,7 @@ type ClearParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMStorage#method-clear
 //
 // parameters:
-//
-//	storageID
+//   storageID
 func Clear(storageID *StorageID) *ClearParams {
 	return &ClearParams{
 		StorageID: storageID,
@@ -81,8 +80,7 @@ type GetDOMStorageItemsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMStorage#method-getDOMStorageItems
 //
 // parameters:
-//
-//	storageID
+//   storageID
 func GetDOMStorageItems(storageID *StorageID) *GetDOMStorageItemsParams {
 	return &GetDOMStorageItemsParams{
 		StorageID: storageID,
@@ -97,8 +95,7 @@ type GetDOMStorageItemsReturns struct {
 // Do executes DOMStorage.getDOMStorageItems against the provided context.
 //
 // returns:
-//
-//	entries
+//   entries
 func (p *GetDOMStorageItemsParams) Do(ctx context.Context) (entries []Item, err error) {
 	// execute
 	var res GetDOMStorageItemsReturns
@@ -121,9 +118,8 @@ type RemoveDOMStorageItemParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMStorage#method-removeDOMStorageItem
 //
 // parameters:
-//
-//	storageID
-//	key
+//   storageID
+//   key
 func RemoveDOMStorageItem(storageID *StorageID, key string) *RemoveDOMStorageItemParams {
 	return &RemoveDOMStorageItemParams{
 		StorageID: storageID,
@@ -148,10 +144,9 @@ type SetDOMStorageItemParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOMStorage#method-setDOMStorageItem
 //
 // parameters:
-//
-//	storageID
-//	key
-//	value
+//   storageID
+//   key
+//   value
 func SetDOMStorageItem(storageID *StorageID, key string, value string) *SetDOMStorageItemParams {
 	return &SetDOMStorageItemParams{
 		StorageID: storageID,

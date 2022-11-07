@@ -1796,22 +1796,22 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoLayertree19(in *jlexer.Lexer,
 		case "compositingReasonIds":
 			if in.IsNull() {
 				in.Skip()
-				out.CompositingReasonIDs = nil
+				out.CompositingReasonIds = nil
 			} else {
 				in.Delim('[')
-				if out.CompositingReasonIDs == nil {
+				if out.CompositingReasonIds == nil {
 					if !in.IsDelim(']') {
-						out.CompositingReasonIDs = make([]string, 0, 4)
+						out.CompositingReasonIds = make([]string, 0, 4)
 					} else {
-						out.CompositingReasonIDs = []string{}
+						out.CompositingReasonIds = []string{}
 					}
 				} else {
-					out.CompositingReasonIDs = (out.CompositingReasonIDs)[:0]
+					out.CompositingReasonIds = (out.CompositingReasonIds)[:0]
 				}
 				for !in.IsDelim(']') {
 					var v22 string
 					v22 = string(in.String())
-					out.CompositingReasonIDs = append(out.CompositingReasonIDs, v22)
+					out.CompositingReasonIds = append(out.CompositingReasonIds, v22)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1830,13 +1830,13 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoLayertree19(out *jwriter.Writ
 	out.RawByte('{')
 	first := true
 	_ = first
-	if len(in.CompositingReasonIDs) != 0 {
+	if len(in.CompositingReasonIds) != 0 {
 		const prefix string = ",\"compositingReasonIds\":"
 		first = false
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('[')
-			for v23, v24 := range in.CompositingReasonIDs {
+			for v23, v24 := range in.CompositingReasonIds {
 				if v23 > 0 {
 					out.RawByte(',')
 				}

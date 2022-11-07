@@ -112,9 +112,9 @@ func (hr HeaderRouter) Handler(next http.Handler) http.Handler {
 }
 
 type HeaderRoute struct {
-	Middleware func(next http.Handler) http.Handler
-	MatchOne   Pattern
 	MatchAny   []Pattern
+	MatchOne   Pattern
+	Middleware func(next http.Handler) http.Handler
 }
 
 func (r HeaderRoute) IsMatch(value string) bool {

@@ -333,8 +333,7 @@ func (t *Target) pageEvent(ev interface{}) {
 		*page.EventNavigatedWithinDocument,
 		*page.EventScreencastFrame,
 		*page.EventScreencastVisibilityChanged,
-		*page.EventWindowOpen,
-		*page.EventBackForwardCacheNotUsed:
+		*page.EventWindowOpen:
 		return
 
 	default:
@@ -379,11 +378,11 @@ func (t *Target) domEvent(ctx context.Context, ev interface{}) {
 		id, op = e.NodeID, attributeRemoved(e.Name)
 
 	case *dom.EventInlineStyleInvalidated:
-		if len(e.NodeIDs) == 0 {
+		if len(e.NodeIds) == 0 {
 			return
 		}
 
-		id, op = e.NodeIDs[0], inlineStyleInvalidated(e.NodeIDs[1:])
+		id, op = e.NodeIds[0], inlineStyleInvalidated(e.NodeIds[1:])
 
 	case *dom.EventCharacterDataModified:
 		id, op = e.NodeID, characterDataModified(e.CharacterData)

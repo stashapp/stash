@@ -1,7 +1,6 @@
 package api
 
 import (
-	"compress/flate"
 	"context"
 	"crypto/tls"
 	"errors"
@@ -62,7 +61,8 @@ func Start() error {
 		r.Use(httplog.RequestLogger(httpLogger))
 	}
 	r.Use(SecurityHeadersMiddleware)
-	r.Use(middleware.Compress(flate.DefaultCompression))
+	r.Use(middleware.DefaultCompress)
+	r.Use(middleware.StripSlashes)
 	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
 

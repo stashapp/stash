@@ -122,19 +122,17 @@ func asNumber(t iterator, o interface{}) float64 {
 		return typ
 	case string:
 		v, err := strconv.ParseFloat(typ, 64)
-		if err == nil {
-			return v
+		if err != nil {
+			panic(errors.New("ceiling() function argument type must be a node-set or number"))
 		}
+		return v
 	}
-	return math.NaN()
+	return 0
 }
 
 // ceilingFunc is a XPath Node Set functions ceiling(node-set).
 func ceilingFunc(q query, t iterator) interface{} {
 	val := asNumber(t, functionArgs(q).Evaluate(t))
-	// if math.IsNaN(val) {
-	// 	panic(errors.New("ceiling() function argument type must be a valid number"))
-	// }
 	return math.Ceil(val)
 }
 

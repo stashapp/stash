@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/binary"
-	"errors"
 	"image"
 	"io"
 	"sort"
@@ -339,8 +338,6 @@ func Encode(w io.Writer, m image.Image, opt *Options) error {
 		}
 	case cDeflate:
 		dst = zlib.NewWriter(&buf)
-	default:
-		return errors.New("tiff: unsupported compression")
 	}
 
 	pr := uint32(prNone)

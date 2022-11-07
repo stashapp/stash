@@ -13,7 +13,6 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 	"unicode/utf8"
@@ -400,12 +399,6 @@ func (c *Conn) write(frameType int, deadline time.Time, buf0, buf1 []byte) error
 		c.writeFatal(ErrCloseSent)
 	}
 	return nil
-}
-
-func (c *Conn) writeBufs(bufs ...[]byte) error {
-	b := net.Buffers(bufs)
-	_, err := b.WriteTo(c.conn)
-	return err
 }
 
 // WriteControl writes a control message with the given deadline. The allowed
@@ -801,69 +794,47 @@ func (c *Conn) advanceFrame() (int, error) {
 	}
 
 	// 2. Read and parse first two bytes of frame header.
-	// To aid debugging, collect and report all errors in the first two bytes
-	// of the header.
-
-	var errors []string
 
 	p, err := c.read(2)
 	if err != nil {
 		return noFrame, err
 	}
 
-	frameType := int(p[0] & 0xf)
 	final := p[0]&finalBit != 0
-	rsv1 := p[0]&rsv1Bit != 0
-	rsv2 := p[0]&rsv2Bit != 0
-	rsv3 := p[0]&rsv3Bit != 0
+	frameType := int(p[0] & 0xf)
 	mask := p[1]&maskBit != 0
 	c.setReadRemaining(int64(p[1] & 0x7f))
 
 	c.readDecompress = false
-	if rsv1 {
-		if c.newDecompressionReader != nil {
-			c.readDecompress = true
-		} else {
-			errors = append(errors, "RSV1 set")
-		}
+	if c.newDecompressionReader != nil && (p[0]&rsv1Bit) != 0 {
+		c.readDecompress = true
+		p[0] &^= rsv1Bit
 	}
 
-	if rsv2 {
-		errors = append(errors, "RSV2 set")
-	}
-
-	if rsv3 {
-		errors = append(errors, "RSV3 set")
+	if rsv := p[0] & (rsv1Bit | rsv2Bit | rsv3Bit); rsv != 0 {
+		return noFrame, c.handleProtocolError("unexpected reserved bits 0x" + strconv.FormatInt(int64(rsv), 16))
 	}
 
 	switch frameType {
 	case CloseMessage, PingMessage, PongMessage:
 		if c.readRemaining > maxControlFramePayloadSize {
-			errors = append(errors, "len > 125 for control")
+			return noFrame, c.handleProtocolError("control frame length > 125")
 		}
 		if !final {
-			errors = append(errors, "FIN not set on control")
+			return noFrame, c.handleProtocolError("control frame not final")
 		}
 	case TextMessage, BinaryMessage:
 		if !c.readFinal {
-			errors = append(errors, "data before FIN")
+			return noFrame, c.handleProtocolError("message start before final message frame")
 		}
 		c.readFinal = final
 	case continuationFrame:
 		if c.readFinal {
-			errors = append(errors, "continuation after FIN")
+			return noFrame, c.handleProtocolError("continuation after final message frame")
 		}
 		c.readFinal = final
 	default:
-		errors = append(errors, "bad opcode "+strconv.Itoa(frameType))
-	}
-
-	if mask != c.isServer {
-		errors = append(errors, "bad MASK")
-	}
-
-	if len(errors) > 0 {
-		return noFrame, c.handleProtocolError(strings.Join(errors, ", "))
+		return noFrame, c.handleProtocolError("unknown opcode " + strconv.Itoa(frameType))
 	}
 
 	// 3. Read and parse frame length as per
@@ -900,6 +871,10 @@ func (c *Conn) advanceFrame() (int, error) {
 	}
 
 	// 4. Handle frame masking.
+
+	if mask != c.isServer {
+		return noFrame, c.handleProtocolError("incorrect mask flag")
+	}
 
 	if mask {
 		c.readMaskPos = 0
@@ -960,7 +935,7 @@ func (c *Conn) advanceFrame() (int, error) {
 		if len(payload) >= 2 {
 			closeCode = int(binary.BigEndian.Uint16(payload))
 			if !isValidReceivedCloseCode(closeCode) {
-				return noFrame, c.handleProtocolError("bad close code " + strconv.Itoa(closeCode))
+				return noFrame, c.handleProtocolError("invalid close code")
 			}
 			closeText = string(payload[2:])
 			if !utf8.ValidString(closeText) {
@@ -977,11 +952,7 @@ func (c *Conn) advanceFrame() (int, error) {
 }
 
 func (c *Conn) handleProtocolError(message string) error {
-	data := FormatCloseMessage(CloseProtocolError, message)
-	if len(data) > maxControlFramePayloadSize {
-		data = data[:maxControlFramePayloadSize]
-	}
-	c.WriteControl(CloseMessage, data, time.Now().Add(writeWait))
+	c.WriteControl(CloseMessage, FormatCloseMessage(CloseProtocolError, message), time.Now().Add(writeWait))
 	return errors.New("websocket: " + message)
 }
 
