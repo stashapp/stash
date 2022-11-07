@@ -640,19 +640,6 @@ func (s *Subtitles) Unfragment() {
 	}
 }
 
-// ApplyLinearCorrection applies linear correction
-func (s *Subtitles) ApplyLinearCorrection(actual1, desired1, actual2, desired2 time.Duration) {
-	// Get parameters
-	a := float64(desired2-desired1) / float64(actual2-actual1)
-	b := time.Duration(float64(desired1) - a*float64(actual1))
-
-	// Loop through items
-	for idx := range s.Items {
-		s.Items[idx].EndAt = time.Duration(a*float64(s.Items[idx].EndAt)) + b
-		s.Items[idx].StartAt = time.Duration(a*float64(s.Items[idx].StartAt)) + b
-	}
-}
-
 // Write writes subtitles to a file
 func (s Subtitles) Write(dst string) (err error) {
 	// Create the file

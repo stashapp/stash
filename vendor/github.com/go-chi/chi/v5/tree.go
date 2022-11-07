@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-type methodTyp uint
+type methodTyp int
 
 const (
 	mSTUB methodTyp = 1 << iota
@@ -72,8 +72,17 @@ const (
 )
 
 type node struct {
-	// subroutes on the leaf node
-	subroutes Routes
+	// node type: static, regexp, param, catchAll
+	typ nodeTyp
+
+	// first byte of the prefix
+	label byte
+
+	// first byte of the child prefix
+	tail byte
+
+	// prefix is the common prefix we ignore
+	prefix string
 
 	// regexp matcher for regexp nodes
 	rex *regexp.Regexp
@@ -81,21 +90,12 @@ type node struct {
 	// HTTP handler endpoints on the leaf node
 	endpoints endpoints
 
-	// prefix is the common prefix we ignore
-	prefix string
+	// subroutes on the leaf node
+	subroutes Routes
 
 	// child nodes should be stored in-order for iteration,
 	// in groups of the node type.
 	children [ntCatchAll + 1]nodes
-
-	// first byte of the child prefix
-	tail byte
-
-	// node type: static, regexp, param, catchAll
-	typ nodeTyp
-
-	// first byte of the prefix
-	label byte
 }
 
 // endpoints is a mapping of http method constants to handlers
@@ -631,7 +631,7 @@ func (n *node) routes() []Route {
 				hs[m] = h.handler
 			}
 
-			rt := Route{subroutes, hs, p}
+			rt := Route{p, hs, subroutes}
 			rts = append(rts, rt)
 		}
 
@@ -815,9 +815,9 @@ func (ns nodes) findEdge(label byte) *node {
 // Route describes the details of a routing handler.
 // Handlers map key is an HTTP method
 type Route struct {
-	SubRoutes Routes
-	Handlers  map[string]http.Handler
 	Pattern   string
+	Handlers  map[string]http.Handler
+	SubRoutes Routes
 }
 
 // WalkFunc is the type of the function called for each method and route visited by Walk.

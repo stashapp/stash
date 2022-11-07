@@ -1,10 +1,8 @@
 package assert
 
 import (
-	"bytes"
 	"fmt"
 	"reflect"
-	"time"
 )
 
 type CompareType int
@@ -32,9 +30,6 @@ var (
 	float64Type = reflect.TypeOf(float64(1))
 
 	stringType = reflect.TypeOf("")
-
-	timeType  = reflect.TypeOf(time.Time{})
-	bytesType = reflect.TypeOf([]byte{})
 )
 
 func compare(obj1, obj2 interface{}, kind reflect.Kind) (CompareType, bool) {
@@ -304,47 +299,6 @@ func compare(obj1, obj2 interface{}, kind reflect.Kind) (CompareType, bool) {
 				return compareLess, true
 			}
 		}
-	// Check for known struct types we can check for compare results.
-	case reflect.Struct:
-		{
-			// All structs enter here. We're not interested in most types.
-			if !canConvert(obj1Value, timeType) {
-				break
-			}
-
-			// time.Time can compared!
-			timeObj1, ok := obj1.(time.Time)
-			if !ok {
-				timeObj1 = obj1Value.Convert(timeType).Interface().(time.Time)
-			}
-
-			timeObj2, ok := obj2.(time.Time)
-			if !ok {
-				timeObj2 = obj2Value.Convert(timeType).Interface().(time.Time)
-			}
-
-			return compare(timeObj1.UnixNano(), timeObj2.UnixNano(), reflect.Int64)
-		}
-	case reflect.Slice:
-		{
-			// We only care about the []byte type.
-			if !canConvert(obj1Value, bytesType) {
-				break
-			}
-
-			// []byte can be compared!
-			bytesObj1, ok := obj1.([]byte)
-			if !ok {
-				bytesObj1 = obj1Value.Convert(bytesType).Interface().([]byte)
-
-			}
-			bytesObj2, ok := obj2.([]byte)
-			if !ok {
-				bytesObj2 = obj2Value.Convert(bytesType).Interface().([]byte)
-			}
-
-			return CompareType(bytes.Compare(bytesObj1, bytesObj2)), true
-		}
 	}
 
 	return compareEqual, false
@@ -356,10 +310,7 @@ func compare(obj1, obj2 interface{}, kind reflect.Kind) (CompareType, bool) {
 //    assert.Greater(t, float64(2), float64(1))
 //    assert.Greater(t, "b", "a")
 func Greater(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-	return compareTwoValues(t, e1, e2, []CompareType{compareGreater}, "\"%v\" is not greater than \"%v\"", msgAndArgs...)
+	return compareTwoValues(t, e1, e2, []CompareType{compareGreater}, "\"%v\" is not greater than \"%v\"", msgAndArgs)
 }
 
 // GreaterOrEqual asserts that the first element is greater than or equal to the second
@@ -369,10 +320,7 @@ func Greater(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface
 //    assert.GreaterOrEqual(t, "b", "a")
 //    assert.GreaterOrEqual(t, "b", "b")
 func GreaterOrEqual(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-	return compareTwoValues(t, e1, e2, []CompareType{compareGreater, compareEqual}, "\"%v\" is not greater than or equal to \"%v\"", msgAndArgs...)
+	return compareTwoValues(t, e1, e2, []CompareType{compareGreater, compareEqual}, "\"%v\" is not greater than or equal to \"%v\"", msgAndArgs)
 }
 
 // Less asserts that the first element is less than the second
@@ -381,10 +329,7 @@ func GreaterOrEqual(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...in
 //    assert.Less(t, float64(1), float64(2))
 //    assert.Less(t, "a", "b")
 func Less(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-	return compareTwoValues(t, e1, e2, []CompareType{compareLess}, "\"%v\" is not less than \"%v\"", msgAndArgs...)
+	return compareTwoValues(t, e1, e2, []CompareType{compareLess}, "\"%v\" is not less than \"%v\"", msgAndArgs)
 }
 
 // LessOrEqual asserts that the first element is less than or equal to the second
@@ -394,10 +339,7 @@ func Less(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface{})
 //    assert.LessOrEqual(t, "a", "b")
 //    assert.LessOrEqual(t, "b", "b")
 func LessOrEqual(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
-	return compareTwoValues(t, e1, e2, []CompareType{compareLess, compareEqual}, "\"%v\" is not less than or equal to \"%v\"", msgAndArgs...)
+	return compareTwoValues(t, e1, e2, []CompareType{compareLess, compareEqual}, "\"%v\" is not less than or equal to \"%v\"", msgAndArgs)
 }
 
 // Positive asserts that the specified element is positive
@@ -405,11 +347,8 @@ func LessOrEqual(t TestingT, e1 interface{}, e2 interface{}, msgAndArgs ...inter
 //    assert.Positive(t, 1)
 //    assert.Positive(t, 1.23)
 func Positive(t TestingT, e interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
 	zero := reflect.Zero(reflect.TypeOf(e))
-	return compareTwoValues(t, e, zero.Interface(), []CompareType{compareGreater}, "\"%v\" is not positive", msgAndArgs...)
+	return compareTwoValues(t, e, zero.Interface(), []CompareType{compareGreater}, "\"%v\" is not positive", msgAndArgs)
 }
 
 // Negative asserts that the specified element is negative
@@ -417,11 +356,8 @@ func Positive(t TestingT, e interface{}, msgAndArgs ...interface{}) bool {
 //    assert.Negative(t, -1)
 //    assert.Negative(t, -1.23)
 func Negative(t TestingT, e interface{}, msgAndArgs ...interface{}) bool {
-	if h, ok := t.(tHelper); ok {
-		h.Helper()
-	}
 	zero := reflect.Zero(reflect.TypeOf(e))
-	return compareTwoValues(t, e, zero.Interface(), []CompareType{compareLess}, "\"%v\" is not negative", msgAndArgs...)
+	return compareTwoValues(t, e, zero.Interface(), []CompareType{compareLess}, "\"%v\" is not negative", msgAndArgs)
 }
 
 func compareTwoValues(t TestingT, e1 interface{}, e2 interface{}, allowedComparesResults []CompareType, failMessage string, msgAndArgs ...interface{}) bool {

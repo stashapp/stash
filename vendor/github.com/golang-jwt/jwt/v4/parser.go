@@ -8,36 +8,14 @@ import (
 )
 
 type Parser struct {
-	// If populated, only these methods will be considered valid.
-	//
-	// Deprecated: In future releases, this field will not be exported anymore and should be set with an option to NewParser instead.
-	ValidMethods []string
-
-	// Use JSON Number format in JSON decoder.
-	//
-	// Deprecated: In future releases, this field will not be exported anymore and should be set with an option to NewParser instead.
-	UseJSONNumber bool
-
-	// Skip claims validation during token parsing.
-	//
-	// Deprecated: In future releases, this field will not be exported anymore and should be set with an option to NewParser instead.
-	SkipClaimsValidation bool
+	ValidMethods         []string // If populated, only these methods will be considered valid
+	UseJSONNumber        bool     // Use JSON Number format in JSON decoder
+	SkipClaimsValidation bool     // Skip claims validation during token parsing
 }
 
-// NewParser creates a new Parser with the specified options
-func NewParser(options ...ParserOption) *Parser {
-	p := &Parser{}
-
-	// loop through our parsing options and apply them
-	for _, option := range options {
-		option(p)
-	}
-
-	return p
-}
-
-// Parse parses, validates, verifies the signature and returns the parsed token.
+// Parse parses, validates, and returns a token.
 // keyFunc will receive the parsed token and should return the key for validating.
+// If everything is kosher, err will be nil
 func (p *Parser) Parse(tokenString string, keyFunc Keyfunc) (*Token, error) {
 	return p.ParseWithClaims(tokenString, MapClaims{}, keyFunc)
 }

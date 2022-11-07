@@ -8,21 +8,22 @@
 package socket
 
 import (
-	"net"
 	"os"
 )
 
 func (c *Conn) recvMsg(m *Message, flags int) error {
 	m.raceWrite()
-	var (
-		operr     error
-		n         int
-		oobn      int
-		recvflags int
-		from      net.Addr
-	)
+	var h msghdr
+	vs := make([]iovec, len(m.Buffers))
+	var sa []byte
+	if c.network != "tcp" {
+		sa = make([]byte, sizeofSockaddrInet6)
+	}
+	h.pack(vs, m.Buffers, m.OOB, sa)
+	var operr error
+	var n int
 	fn := func(s uintptr) bool {
-		n, oobn, recvflags, from, operr = recvmsg(s, m.Buffers, m.OOB, flags, c.network)
+		n, operr = recvmsg(s, &h, flags)
 		return ioComplete(flags, operr)
 	}
 	if err := c.c.Read(fn); err != nil {
@@ -31,21 +32,34 @@ func (c *Conn) recvMsg(m *Message, flags int) error {
 	if operr != nil {
 		return os.NewSyscallError("recvmsg", operr)
 	}
-	m.Addr = from
+	if c.network != "tcp" {
+		var err error
+		m.Addr, err = parseInetAddr(sa[:], c.network)
+		if err != nil {
+			return err
+		}
+	}
 	m.N = n
-	m.NN = oobn
-	m.Flags = recvflags
+	m.NN = h.controllen()
+	m.Flags = h.flags()
 	return nil
 }
 
 func (c *Conn) sendMsg(m *Message, flags int) error {
 	m.raceRead()
-	var (
-		operr error
-		n     int
-	)
+	var h msghdr
+	vs := make([]iovec, len(m.Buffers))
+	var sa []byte
+	if m.Addr != nil {
+		var a [sizeofSockaddrInet6]byte
+		n := marshalInetAddr(m.Addr, a[:])
+		sa = a[:n]
+	}
+	h.pack(vs, m.Buffers, m.OOB, sa)
+	var operr error
+	var n int
 	fn := func(s uintptr) bool {
-		n, operr = sendmsg(s, m.Buffers, m.OOB, m.Addr, flags)
+		n, operr = sendmsg(s, &h, flags)
 		return ioComplete(flags, operr)
 	}
 	if err := c.c.Write(fn); err != nil {

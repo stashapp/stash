@@ -91,12 +91,11 @@ func AdjustContrast(img image.Image, percentage float64) *image.NRGBA {
 
 	v := (100.0 + percentage) / 100.0
 	for i := 0; i < 256; i++ {
-		switch {
-		case 0 <= v && v <= 1:
+		if 0 <= v && v <= 1 {
 			lut[i] = clamp((0.5 + (float64(i)/255.0-0.5)*v) * 255.0)
-		case 1 < v && v < 2:
+		} else if 1 < v && v < 2 {
 			lut[i] = clamp((0.5 + (float64(i)/255.0-0.5)*(1/(2.0-v))) * 255.0)
-		default:
+		} else {
 			lut[i] = uint8(float64(i)/255.0+0.5) * 255
 		}
 	}

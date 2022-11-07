@@ -11,6 +11,7 @@ import (
 const (
 	err_UnexpectedToken      = "Unexpected token %v"
 	err_UnexpectedEndOfInput = "Unexpected end of input"
+	err_UnexpectedEscape     = "Unexpected escape"
 )
 
 //    UnexpectedNumber:  'Unexpected number',
@@ -69,7 +70,7 @@ func (self Error) Error() string {
 }
 
 func (self *_parser) error(place interface{}, msg string, msgValues ...interface{}) *Error {
-	var idx file.Idx
+	idx := file.Idx(0)
 	switch place := place.(type) {
 	case int:
 		idx = self.idxOf(place)
@@ -119,7 +120,8 @@ func (self *_parser) errorUnexpectedToken(tkn token.Token) error {
 }
 
 // ErrorList is a list of *Errors.
-type ErrorList []*Error //nolint: errname
+//
+type ErrorList []*Error
 
 // Add adds an Error with given position and message to an ErrorList.
 func (self *ErrorList) Add(position file.Position, msg string) {

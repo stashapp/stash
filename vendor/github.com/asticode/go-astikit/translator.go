@@ -7,42 +7,32 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
-	"strconv"
 	"strings"
 	"sync"
 )
 
 // Translator represents an object capable of translating stuff
 type Translator struct {
-	defaultLanguage string
-	m               *sync.RWMutex // Lock p
-	p               map[string]string
-	validLanguages  map[string]bool
+	m *sync.RWMutex // Lock p
+	o TranslatorOptions
+	p map[string]string
 }
 
 // TranslatorOptions represents Translator options
 type TranslatorOptions struct {
 	DefaultLanguage string
-	ValidLanguages  []string
 }
 
 // NewTranslator creates a new Translator
-func NewTranslator(o TranslatorOptions) (t *Translator) {
-	t = &Translator{
-		defaultLanguage: o.DefaultLanguage,
-		m:               &sync.RWMutex{},
-		p:               make(map[string]string),
-		validLanguages:  make(map[string]bool),
+func NewTranslator(o TranslatorOptions) *Translator {
+	return &Translator{
+		m: &sync.RWMutex{},
+		o: o,
+		p: make(map[string]string),
 	}
-	for _, l := range o.ValidLanguages {
-		t.validLanguages[l] = true
-	}
-	return
 }
 
 // ParseDir adds translations located in ".json" files in the specified dir
-// If ".json" files are located in child dirs, keys will be prefixed with their paths
 func (t *Translator) ParseDir(dirPath string) (err error) {
 	// Default dir path
 	if dirPath == "" {
@@ -60,8 +50,11 @@ func (t *Translator) ParseDir(dirPath string) (err error) {
 			return
 		}
 
-		// Only process files
+		// Only process first level files
 		if info.IsDir() {
+			if path != dirPath {
+				err = filepath.SkipDir
+			}
 			return
 		}
 
@@ -71,7 +64,7 @@ func (t *Translator) ParseDir(dirPath string) (err error) {
 		}
 
 		// Parse file
-		if err = t.ParseFile(dirPath, path); err != nil {
+		if err = t.ParseFile(path); err != nil {
 			err = fmt.Errorf("astikit: parsing %s failed: %w", path, err)
 			return
 		}
@@ -84,7 +77,7 @@ func (t *Translator) ParseDir(dirPath string) (err error) {
 }
 
 // ParseFile adds translation located in the provided path
-func (t *Translator) ParseFile(dirPath, path string) (err error) {
+func (t *Translator) ParseFile(path string) (err error) {
 	// Lock
 	t.m.Lock()
 	defer t.m.Unlock()
@@ -104,26 +97,8 @@ func (t *Translator) ParseFile(dirPath, path string) (err error) {
 		return
 	}
 
-	// Get language
-	language := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
-
-	// Update valid languages
-	t.validLanguages[language] = true
-
-	// Get prefix
-	prefix := language
-	if dp := filepath.Dir(path); dp != dirPath {
-		var fs []string
-		for _, v := range strings.Split(strings.TrimPrefix(dp, dirPath), string(os.PathSeparator)) {
-			if v != "" {
-				fs = append(fs, v)
-			}
-		}
-		prefix += "." + strings.Join(fs, ".")
-	}
-
 	// Parse
-	t.parse(p, prefix)
+	t.parse(p, strings.TrimSuffix(filepath.Base(path), filepath.Ext(path)))
 	return
 }
 
@@ -148,7 +123,7 @@ func (t *Translator) HTTPMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		// Store language in context
 		if l := r.Header.Get("Accept-Language"); l != "" {
-			*r = *r.WithContext(contextWithTranslatorLanguage(r.Context(), t.parseAcceptLanguage(l)))
+			*r = *r.WithContext(contextWithTranslatorLanguage(r.Context(), l))
 		}
 
 		// Next handler
@@ -156,56 +131,7 @@ func (t *Translator) HTTPMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-func (t *Translator) parseAcceptLanguage(h string) string {
-	// Split on comma
-	var qs []float64
-	ls := make(map[float64][]string)
-	for _, c := range strings.Split(strings.TrimSpace(h), ",") {
-		// Empty
-		c = strings.TrimSpace(c)
-		if c == "" {
-			continue
-		}
-
-		// Split on semi colon
-		ss := strings.Split(c, ";")
-
-		// Parse coefficient
-		q := float64(1)
-		if len(ss) > 1 {
-			s := strings.TrimSpace(ss[1])
-			if strings.HasPrefix(s, "q=") {
-				var err error
-				if q, err = strconv.ParseFloat(strings.TrimPrefix(s, "q="), 64); err != nil {
-					q = 1
-				}
-			}
-		}
-
-		// Add
-		if _, ok := ls[q]; !ok {
-			qs = append(qs, q)
-		}
-		ls[q] = append(ls[q], strings.TrimSpace(ss[0]))
-	}
-
-	// Order coefficients
-	sort.Float64s(qs)
-
-	// Loop through coefficients in reverse order
-	for idx := len(qs) - 1; idx >= 0; idx-- {
-		for _, l := range ls[qs[idx]] {
-			if _, ok := t.validLanguages[l]; ok {
-				return l
-			}
-		}
-	}
-	return ""
-}
-
-const contextKeyTranslatorLanguage = contextKey("astikit.translator.language")
-
-type contextKey string
+const contextKeyTranslatorLanguage = "astikit.translator.language"
 
 func contextWithTranslatorLanguage(ctx context.Context, language string) context.Context {
 	return context.WithValue(ctx, contextKeyTranslatorLanguage, language)
@@ -221,7 +147,7 @@ func translatorLanguageFromContext(ctx context.Context) string {
 
 func (t *Translator) language(language string) string {
 	if language == "" {
-		return t.defaultLanguage
+		return t.o.DefaultLanguage
 	}
 	return language
 }
@@ -245,28 +171,14 @@ func (t *Translator) Translate(language, key string) string {
 	}
 
 	// Default translation
-	k2 := t.key(t.defaultLanguage, key)
+	k2 := t.key(t.o.DefaultLanguage, key)
 	if v, ok = t.p[k2]; ok {
 		return v
 	}
 	return k1
 }
 
-// Translatef translates a key into a specific language with optional formatting args
-func (t *Translator) Translatef(language, key string, args ...interface{}) string {
-	return fmt.Sprintf(t.Translate(language, key), args...)
-}
-
-// TranslateCtx is an alias for TranslateC
+// TranslateCtx translates a key using the language specified in the context
 func (t *Translator) TranslateCtx(ctx context.Context, key string) string {
-	return t.TranslateC(ctx, key)
-}
-
-// TranslateC translates a key using the language specified in the context
-func (t *Translator) TranslateC(ctx context.Context, key string) string {
 	return t.Translate(translatorLanguageFromContext(ctx), key)
-}
-
-func (t *Translator) TranslateCf(ctx context.Context, key string, args ...interface{}) string {
-	return t.Translatef(translatorLanguageFromContext(ctx), key, args...)
 }

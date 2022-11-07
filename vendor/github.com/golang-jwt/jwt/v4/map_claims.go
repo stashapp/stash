@@ -3,7 +3,6 @@ package jwt
 import (
 	"encoding/json"
 	"errors"
-	"time"
 	// "fmt"
 )
 
@@ -32,81 +31,37 @@ func (m MapClaims) VerifyAudience(cmp string, req bool) bool {
 	return verifyAud(aud, cmp, req)
 }
 
-// VerifyExpiresAt compares the exp claim against cmp (cmp <= exp).
-// If req is false, it will return true, if exp is unset.
+// VerifyExpiresAt compares the exp claim against cmp.
+// If required is false, this method will return true if the value matches or is unset
 func (m MapClaims) VerifyExpiresAt(cmp int64, req bool) bool {
-	cmpTime := time.Unix(cmp, 0)
-
-	v, ok := m["exp"]
+	exp, ok := m["exp"]
 	if !ok {
 		return !req
 	}
-
-	switch exp := v.(type) {
+	switch expType := exp.(type) {
 	case float64:
-		if exp == 0 {
-			return verifyExp(nil, cmpTime, req)
-		}
-
-		return verifyExp(&newNumericDateFromSeconds(exp).Time, cmpTime, req)
+		return verifyExp(int64(expType), cmp, req)
 	case json.Number:
-		v, _ := exp.Float64()
-
-		return verifyExp(&newNumericDateFromSeconds(v).Time, cmpTime, req)
+		v, _ := expType.Int64()
+		return verifyExp(v, cmp, req)
 	}
-
 	return false
 }
 
-// VerifyIssuedAt compares the exp claim against cmp (cmp >= iat).
-// If req is false, it will return true, if iat is unset.
+// VerifyIssuedAt compares the iat claim against cmp.
+// If required is false, this method will return true if the value matches or is unset
 func (m MapClaims) VerifyIssuedAt(cmp int64, req bool) bool {
-	cmpTime := time.Unix(cmp, 0)
-
-	v, ok := m["iat"]
+	iat, ok := m["iat"]
 	if !ok {
 		return !req
 	}
-
-	switch iat := v.(type) {
+	switch iatType := iat.(type) {
 	case float64:
-		if iat == 0 {
-			return verifyIat(nil, cmpTime, req)
-		}
-
-		return verifyIat(&newNumericDateFromSeconds(iat).Time, cmpTime, req)
+		return verifyIat(int64(iatType), cmp, req)
 	case json.Number:
-		v, _ := iat.Float64()
-
-		return verifyIat(&newNumericDateFromSeconds(v).Time, cmpTime, req)
+		v, _ := iatType.Int64()
+		return verifyIat(v, cmp, req)
 	}
-
-	return false
-}
-
-// VerifyNotBefore compares the nbf claim against cmp (cmp >= nbf).
-// If req is false, it will return true, if nbf is unset.
-func (m MapClaims) VerifyNotBefore(cmp int64, req bool) bool {
-	cmpTime := time.Unix(cmp, 0)
-
-	v, ok := m["nbf"]
-	if !ok {
-		return !req
-	}
-
-	switch nbf := v.(type) {
-	case float64:
-		if nbf == 0 {
-			return verifyNbf(nil, cmpTime, req)
-		}
-
-		return verifyNbf(&newNumericDateFromSeconds(nbf).Time, cmpTime, req)
-	case json.Number:
-		v, _ := nbf.Float64()
-
-		return verifyNbf(&newNumericDateFromSeconds(v).Time, cmpTime, req)
-	}
-
 	return false
 }
 
@@ -117,7 +72,24 @@ func (m MapClaims) VerifyIssuer(cmp string, req bool) bool {
 	return verifyIss(iss, cmp, req)
 }
 
-// Valid validates time based claims "exp, iat, nbf".
+// VerifyNotBefore compares the nbf claim against cmp.
+// If required is false, this method will return true if the value matches or is unset
+func (m MapClaims) VerifyNotBefore(cmp int64, req bool) bool {
+	nbf, ok := m["nbf"]
+	if !ok {
+		return !req
+	}
+	switch nbfType := nbf.(type) {
+	case float64:
+		return verifyNbf(int64(nbfType), cmp, req)
+	case json.Number:
+		v, _ := nbfType.Int64()
+		return verifyNbf(v, cmp, req)
+	}
+	return false
+}
+
+// Valid calidates time based claims "exp, iat, nbf".
 // There is no accounting for clock skew.
 // As well, if any of the above claims are not in the token, it will still
 // be considered a valid claim.
@@ -126,19 +98,16 @@ func (m MapClaims) Valid() error {
 	now := TimeFunc().Unix()
 
 	if !m.VerifyExpiresAt(now, false) {
-		// TODO(oxisto): this should be replaced with ErrTokenExpired
 		vErr.Inner = errors.New("Token is expired")
 		vErr.Errors |= ValidationErrorExpired
 	}
 
 	if !m.VerifyIssuedAt(now, false) {
-		// TODO(oxisto): this should be replaced with ErrTokenUsedBeforeIssued
 		vErr.Inner = errors.New("Token used before issued")
 		vErr.Errors |= ValidationErrorIssuedAt
 	}
 
 	if !m.VerifyNotBefore(now, false) {
-		// TODO(oxisto): this should be replaced with ErrTokenNotValidYet
 		vErr.Inner = errors.New("Token is not valid yet")
 		vErr.Errors |= ValidationErrorNotValidYet
 	}

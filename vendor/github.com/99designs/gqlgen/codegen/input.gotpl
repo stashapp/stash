@@ -14,12 +14,7 @@
 			{{- end}}
 		{{- end }}
 
-		fieldsInOrder := [...]string{ {{ range .Fields }}{{ quote .Name }},{{ end }} }
-		for _, k := range fieldsInOrder {
-			v, ok := asMap[k]
-			if !ok {
-				continue
-			}
+		for k, v := range asMap {
 			switch k {
 			{{- range $field := .Fields }}
 			case {{$field.Name|quote}}:

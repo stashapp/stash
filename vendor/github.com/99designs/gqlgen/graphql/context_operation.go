@@ -3,7 +3,6 @@ package graphql
 import (
 	"context"
 	"errors"
-	"net/http"
 
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -16,7 +15,6 @@ type OperationContext struct {
 	Variables     map[string]interface{}
 	OperationName string
 	Doc           *ast.QueryDocument
-	Headers       http.Header
 
 	Operation              *ast.OperationDefinition
 	DisableIntrospection   bool

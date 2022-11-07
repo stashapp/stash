@@ -2,10 +2,11 @@ package parser
 
 import (
 	. "github.com/vektah/gqlparser/v2/ast"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 	"github.com/vektah/gqlparser/v2/lexer"
 )
 
-func ParseSchema(source *Source) (*SchemaDocument, error) {
+func ParseSchema(source *Source) (*SchemaDocument, *gqlerror.Error) {
 	p := parser{
 		lexer: lexer.New(source),
 	}
@@ -24,7 +25,7 @@ func ParseSchema(source *Source) (*SchemaDocument, error) {
 	return ast, nil
 }
 
-func ParseSchemas(inputs ...*Source) (*SchemaDocument, error) {
+func ParseSchemas(inputs ...*Source) (*SchemaDocument, *gqlerror.Error) {
 	ast := &SchemaDocument{}
 	for _, input := range inputs {
 		inputAst, err := ParseSchema(input)

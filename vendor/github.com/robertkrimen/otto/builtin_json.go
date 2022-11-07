@@ -123,8 +123,8 @@ func builtinJSON_stringify(call FunctionCall) Value {
 				switch value.kind {
 				case valueObject:
 					switch value.value.(*_object).class {
-					case classString:
-					case classNumber:
+					case "String":
+					case "Number":
 					default:
 						continue
 					}
@@ -142,7 +142,7 @@ func builtinJSON_stringify(call FunctionCall) Value {
 				propertyList[index] = name
 			}
 			ctx.propertyList = propertyList[0:length]
-		} else if replacer.class == classFunction {
+		} else if replacer.class == "Function" {
 			value := toValue_object(replacer)
 			ctx.replacerFunction = &value
 		}
@@ -150,9 +150,9 @@ func builtinJSON_stringify(call FunctionCall) Value {
 	if spaceValue, exists := call.getArgument(2); exists {
 		if spaceValue.kind == valueObject {
 			switch spaceValue.value.(*_object).class {
-			case classString:
+			case "String":
 				spaceValue = toValue_string(spaceValue.string())
-			case classNumber:
+			case "Number":
 				spaceValue = spaceValue.numberValue()
 			}
 		}
@@ -211,16 +211,16 @@ func builtinJSON_stringifyWalk(ctx _builtinJSON_stringifyContext, key string, ho
 	}
 
 	if ctx.replacerFunction != nil {
-		value = ctx.replacerFunction.call(ctx.call.runtime, toValue_object(holder), key, value)
+		value = (*ctx.replacerFunction).call(ctx.call.runtime, toValue_object(holder), key, value)
 	}
 
 	if value.kind == valueObject {
 		switch value.value.(*_object).class {
-		case classBoolean:
+		case "Boolean":
 			value = value._object().value.(Value)
-		case classString:
+		case "String":
 			value = toValue_string(value.string())
-		case classNumber:
+		case "Number":
 			value = value.numberValue()
 		}
 	}
@@ -255,7 +255,7 @@ func builtinJSON_stringifyWalk(ctx _builtinJSON_stringifyContext, key string, ho
 		}
 		if isArray(holder) {
 			var length uint32
-			switch value := holder.get(propertyLength).value.(type) {
+			switch value := holder.get("length").value.(type) {
 			case uint32:
 				length = value
 			case int:
@@ -272,7 +272,7 @@ func builtinJSON_stringifyWalk(ctx _builtinJSON_stringifyContext, key string, ho
 				array[index] = value
 			}
 			return array, true
-		} else if holder.class != classFunction {
+		} else if holder.class != "Function" {
 			object := map[string]interface{}{}
 			if ctx.propertyList != nil {
 				for _, name := range ctx.propertyList {

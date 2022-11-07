@@ -49,24 +49,7 @@ type (
 
 var errReadTimeout = errors.New("read timeout")
 
-type WebsocketError struct {
-	Err error
-
-	// IsReadError flags whether the error occurred on read or write to the websocket
-	IsReadError bool
-}
-
-func (e WebsocketError) Error() string {
-	if e.IsReadError {
-		return fmt.Sprintf("websocket read: %v", e.Err)
-	}
-	return fmt.Sprintf("websocket write: %v", e.Err)
-}
-
-var (
-	_ graphql.Transport = Websocket{}
-	_ error             = WebsocketError{}
-)
+var _ graphql.Transport = Websocket{}
 
 func (t Websocket) Supports(r *http.Request) bool {
 	return r.Header.Get("Upgrade") != ""
@@ -111,12 +94,9 @@ func (t Websocket) Do(w http.ResponseWriter, r *http.Request, exec graphql.Graph
 	conn.run()
 }
 
-func (c *wsConnection) handlePossibleError(err error, isReadError bool) {
+func (c *wsConnection) handlePossibleError(err error) {
 	if c.ErrorFunc != nil && err != nil {
-		c.ErrorFunc(c.ctx, WebsocketError{
-			Err:         err,
-			IsReadError: isReadError,
-		})
+		c.ErrorFunc(c.ctx, err)
 	}
 }
 
@@ -201,7 +181,7 @@ func (c *wsConnection) init() bool {
 
 func (c *wsConnection) write(msg *message) {
 	c.mu.Lock()
-	c.handlePossibleError(c.me.Send(msg), false)
+	c.handlePossibleError(c.me.Send(msg))
 	c.mu.Unlock()
 }
 
@@ -247,7 +227,7 @@ func (c *wsConnection) run() {
 		if err != nil {
 			// If the connection got closed by us, don't report the error
 			if !errors.Is(err, net.ErrClosed) {
-				c.handlePossibleError(err, true)
+				c.handlePossibleError(err)
 			}
 			return
 		}
@@ -378,8 +358,12 @@ func (c *wsConnection) subscribe(start time.Time, msg *message) {
 
 			c.sendResponse(msg.id, response)
 		}
+		c.complete(msg.id)
 
-		// complete and context cancel comes from the defer
+		c.mu.Lock()
+		delete(c.active, msg.id)
+		c.mu.Unlock()
+		cancel()
 	}()
 }
 
