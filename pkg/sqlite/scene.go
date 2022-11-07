@@ -53,21 +53,21 @@ ORDER BY files.size DESC
 `
 
 type sceneRow struct {
-	ID           int                    `db:"id" goqu:"skipinsert"`
-	Title        zero.String            `db:"title"`
-	Details      zero.String            `db:"details"`
-	URL          zero.String            `db:"url"`
-	Date         models.SQLiteDate      `db:"date"`
-	Rating       null.Int               `db:"rating"`
-	Organized    bool                   `db:"organized"`
-	OCounter     int                    `db:"o_counter"`
-	StudioID     null.Int               `db:"studio_id,omitempty"`
-	CreatedAt    models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt    models.SQLiteTimestamp `db:"updated_at"`
-	LastPlayedAt models.SQLiteTimestamp `db:"last_played_at"`
-	ResumeTime   float64                `db:"resume_time"`
-	PlayDuration float64                `db:"play_duration"`
-	PlayCount    int                    `db:"play_count"`
+	ID           int                        `db:"id" goqu:"skipinsert"`
+	Title        zero.String                `db:"title"`
+	Details      zero.String                `db:"details"`
+	URL          zero.String                `db:"url"`
+	Date         models.SQLiteDate          `db:"date"`
+	Rating       null.Int                   `db:"rating"`
+	Organized    bool                       `db:"organized"`
+	OCounter     int                        `db:"o_counter"`
+	StudioID     null.Int                   `db:"studio_id,omitempty"`
+	CreatedAt    models.SQLiteTimestamp     `db:"created_at"`
+	UpdatedAt    models.SQLiteTimestamp     `db:"updated_at"`
+	LastPlayedAt models.NullSQLiteTimestamp `db:"last_played_at"`
+	ResumeTime   float64                    `db:"resume_time"`
+	PlayDuration float64                    `db:"play_duration"`
+	PlayCount    int                        `db:"play_count"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -1494,24 +1494,9 @@ func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime float
 	}
 
 	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"resume_time": resumeTime,
-	}); err != nil {
-		return 0, err
-	}
-
-	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"play_duration": goqu.L("play_duration + ?", playDuration),
-	}); err != nil {
-		return 0, err
-	}
-
-	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"play_count": goqu.L("play_count + 1"),
-	}); err != nil {
-		return 0, err
-	}
-
-	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+		"resume_time":    resumeTime,
+		"play_duration":  goqu.L("play_duration + ?", playDuration),
+		"play_count":     goqu.L("play_count + 1"),
 		"last_played_at": time.Now(),
 	}); err != nil {
 		return 0, err

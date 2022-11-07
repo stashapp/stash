@@ -95,6 +95,10 @@ input SceneUpdateInput {
   cover_image: String
   stash_ids: [StashIDInput!]
 
+  resume_time: Float
+  play_duration: Float
+  play_count: Int
+
   primary_file_id: ID
 }
 

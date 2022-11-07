@@ -175,7 +175,7 @@ type Mutation {
   """Resets the o-counter for a scene to 0. Returns the new value"""
   sceneResetO(id: ID!): Int!
 
-  """Updates resume time"""
+  """Update resume time as well as play count and play duration"""
   sceneSaveActivity(id: ID!, resume_time: Float!, playDuration: Float!): Int!
 
   """Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"""
