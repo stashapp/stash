@@ -284,18 +284,6 @@ func (r *mutationResolver) sceneUpdate(ctx context.Context, input models.SceneUp
 		if f == nil {
 			return nil, fmt.Errorf("file with id %d not associated with scene", newPrimaryFileID)
 		}
-
-		fileNamingAlgorithm := config.GetInstance().GetVideoFileNamingAlgorithm()
-		oldHash := scene.GetHash(s.Files.Primary(), fileNamingAlgorithm)
-		newHash := scene.GetHash(f, fileNamingAlgorithm)
-
-		if oldHash != "" && newHash != "" && oldHash != newHash {
-			// perform migration after commit
-			txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
-				scene.MigrateHash(manager.GetInstance().Paths, oldHash, newHash)
-				return nil
-			})
-		}
 	}
 
 	if input.CoverImage != nil && *input.CoverImage != "" {
