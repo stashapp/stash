@@ -74,7 +74,11 @@ INSERT INTO `performers_new`
     `ethnicity`,
     `country`,
     `eye_color`,
-    CAST(`height` as int),
+    CASE `height`
+      WHEN '' THEN NULL
+      WHEN NULL THEN NULL
+      ELSE CAST(`height` as int)
+    END,
     `measurements`,
     `fake_tits`,
     `career_length`,
