@@ -38,11 +38,12 @@ func autotagMatchPerformers(ctx context.Context, path string, performerReader ma
 		id := strconv.Itoa(pp.ID)
 
 		sp := &models.ScrapedPerformer{
-			Name:     &pp.Name.String,
+			Name:     &pp.Name,
 			StoredID: &id,
 		}
-		if pp.Gender.Valid {
-			sp.Gender = &pp.Gender.String
+		if pp.Gender.IsValid() {
+			v := pp.Gender.String()
+			sp.Gender = &v
 		}
 
 		ret = append(ret, sp)

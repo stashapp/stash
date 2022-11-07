@@ -1,11 +1,11 @@
 package identify
 
 import (
-	"database/sql"
 	"errors"
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
@@ -24,9 +24,10 @@ func Test_getPerformerID(t *testing.T) {
 	name := "name"
 
 	mockPerformerReaderWriter := mocks.PerformerReaderWriter{}
-	mockPerformerReaderWriter.On("Create", testCtx, mock.Anything).Return(&models.Performer{
-		ID: validStoredID,
-	}, nil)
+	mockPerformerReaderWriter.On("Create", testCtx, mock.Anything).Run(func(args mock.Arguments) {
+		p := args.Get(1).(*models.Performer)
+		p.ID = validStoredID
+	}).Return(nil)
 
 	type args struct {
 		endpoint      string
@@ -132,14 +133,16 @@ func Test_createMissingPerformer(t *testing.T) {
 	performerID := 1
 
 	mockPerformerReaderWriter := mocks.PerformerReaderWriter{}
-	mockPerformerReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Performer) bool {
-		return p.Name.String == validName
-	})).Return(&models.Performer{
-		ID: performerID,
-	}, nil)
-	mockPerformerReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p models.Performer) bool {
-		return p.Name.String == invalidName
-	})).Return(nil, errors.New("error creating performer"))
+	mockPerformerReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Performer) bool {
+		return p.Name == validName
+	})).Run(func(args mock.Arguments) {
+		p := args.Get(1).(*models.Performer)
+		p.ID = performerID
+	}).Return(nil)
+
+	mockPerformerReaderWriter.On("Create", testCtx, mock.MatchedBy(func(p *models.Performer) bool {
+		return p.Name == invalidName
+	})).Return(errors.New("error creating performer"))
 
 	mockPerformerReaderWriter.On("UpdateStashIDs", testCtx, performerID, []models.StashID{
 		{
@@ -241,6 +244,10 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 		return &ret
 	}
 
+	dateToDatePtr := func(d models.Date) *models.Date {
+		return &d
+	}
+
 	tests := []struct {
 		name      string
 		performer *models.ScrapedPerformer
@@ -268,34 +275,24 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Instagram:    nextVal(),
 			},
 			models.Performer{
-				Name:     models.NullString(name),
-				Checksum: md5,
-				Favorite: sql.NullBool{
-					Bool:  false,
-					Valid: true,
-				},
-				Birthdate: models.SQLiteDate{
-					String: *nextVal(),
-					Valid:  true,
-				},
-				DeathDate: models.SQLiteDate{
-					String: *nextVal(),
-					Valid:  true,
-				},
-				Gender:       models.NullString(*nextVal()),
-				Ethnicity:    models.NullString(*nextVal()),
-				Country:      models.NullString(*nextVal()),
-				EyeColor:     models.NullString(*nextVal()),
-				HairColor:    models.NullString(*nextVal()),
-				Height:       models.NullString(*nextVal()),
-				Measurements: models.NullString(*nextVal()),
-				FakeTits:     models.NullString(*nextVal()),
-				CareerLength: models.NullString(*nextVal()),
-				Tattoos:      models.NullString(*nextVal()),
-				Piercings:    models.NullString(*nextVal()),
-				Aliases:      models.NullString(*nextVal()),
-				Twitter:      models.NullString(*nextVal()),
-				Instagram:    models.NullString(*nextVal()),
+				Name:         name,
+				Checksum:     md5,
+				Birthdate:    dateToDatePtr(models.NewDate(*nextVal())),
+				DeathDate:    dateToDatePtr(models.NewDate(*nextVal())),
+				Gender:       models.GenderEnum(*nextVal()),
+				Ethnicity:    *nextVal(),
+				Country:      *nextVal(),
+				EyeColor:     *nextVal(),
+				HairColor:    *nextVal(),
+				Height:       *nextVal(),
+				Measurements: *nextVal(),
+				FakeTits:     *nextVal(),
+				CareerLength: *nextVal(),
+				Tattoos:      *nextVal(),
+				Piercings:    *nextVal(),
+				Aliases:      *nextVal(),
+				Twitter:      *nextVal(),
+				Instagram:    *nextVal(),
 			},
 		},
 		{
@@ -304,12 +301,8 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 				Name: &name,
 			},
 			models.Performer{
-				Name:     models.NullString(name),
+				Name:     name,
 				Checksum: md5,
-				Favorite: sql.NullBool{
-					Bool:  false,
-					Valid: true,
-				},
 			},
 		},
 	}
@@ -318,7 +311,7 @@ func Test_scrapedToPerformerInput(t *testing.T) {
 			got := scrapedToPerformerInput(tt.performer)
 
 			// clear created/updated dates
-			got.CreatedAt = models.SQLiteTimestamp{}
+			got.CreatedAt = time.Time{}
 			got.UpdatedAt = got.CreatedAt
 
 			if !reflect.DeepEqual(got, tt.want) {

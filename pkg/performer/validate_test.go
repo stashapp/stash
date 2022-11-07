@@ -16,26 +16,17 @@ func TestValidateDeathDate(t *testing.T) {
 	date4 := "2004-01-01"
 	empty := ""
 
+	md2 := models.NewDate(date2)
+	md3 := models.NewDate(date3)
+
 	emptyPerformer := models.Performer{}
 	invalidPerformer := models.Performer{
-		Birthdate: models.SQLiteDate{
-			String: date3,
-			Valid:  true,
-		},
-		DeathDate: models.SQLiteDate{
-			String: date2,
-			Valid:  true,
-		},
+		Birthdate: &md3,
+		DeathDate: &md2,
 	}
 	validPerformer := models.Performer{
-		Birthdate: models.SQLiteDate{
-			String: date2,
-			Valid:  true,
-		},
-		DeathDate: models.SQLiteDate{
-			String: date3,
-			Valid:  true,
-		},
+		Birthdate: &md2,
+		DeathDate: &md3,
 	}
 
 	// nil values should always return nil
