@@ -221,11 +221,15 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
 	// prefer height_cm over height
-	updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
-	if err != nil {
-		return nil, err
+	if translator.hasField("height_cm") {
+		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
+	} else if translator.hasField("height") {
+		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
+		if err != nil {
+			return nil, err
+		}
 	}
-	updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
+
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
@@ -330,11 +334,15 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
 	// prefer height_cm over height
-	updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
-	if err != nil {
-		return nil, err
+	if translator.hasField("height_cm") {
+		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
+	} else if translator.hasField("height") {
+		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
+		if err != nil {
+			return nil, err
+		}
 	}
-	updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
+
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
