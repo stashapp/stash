@@ -5,10 +5,10 @@ import React from "react";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "./config";
 
-export const studioFilterHook = (studio: GQL.StudioDataFragment) => {
+export const useStudioFilterHook = (studio: GQL.StudioDataFragment) => {
+  const config = React.useContext(ConfigurationContext);
   return (filter: ListFilterModel) => {
     const studioValue = { id: studio.id, label: studio.name };
-    const config = React.useContext(ConfigurationContext);
     // if studio is already present, then we modify it, otherwise add
     let studioCriterion = filter.criteria.find((c) => {
       return c.criterionOption.type === "studios";
