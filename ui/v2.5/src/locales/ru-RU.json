@@ -918,6 +918,7 @@
   "scene": "Сцена",
   "sceneTagger": "Пометка сцен тэгами",
   "sceneTags": "Тэги сцен",
+  "scene_code": "Идентификатор сцены",
   "scene_count": "Количество сцен",
   "scene_id": "ID сцены",
   "scenes": "Сцены",
