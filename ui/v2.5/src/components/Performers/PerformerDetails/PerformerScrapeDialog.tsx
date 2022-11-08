@@ -196,7 +196,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     new ScrapeResult<string>(props.performer.eye_color, props.scraped.eye_color)
   );
   const [height, setHeight] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.height, props.scraped.height)
+    new ScrapeResult<string>(
+      props.performer.height_cm?.toString(),
+      props.scraped.height
+    )
   );
   const [weight, setWeight] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(

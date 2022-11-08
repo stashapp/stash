@@ -975,8 +975,9 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.HairColor != "" {
 		draft.HairColor = &performer.HairColor
 	}
-	if performer.Height != "" {
-		draft.Height = &performer.Height
+	if performer.Height != nil {
+		v := strconv.Itoa(*performer.Height)
+		draft.Height = &v
 	}
 	if performer.Measurements != "" {
 		draft.Measurements = &performer.Measurements

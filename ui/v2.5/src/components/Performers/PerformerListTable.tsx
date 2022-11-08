@@ -58,7 +58,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
         </Link>
       </td>
       <td>{performer.birthdate}</td>
-      <td>{performer.height}</td>
+      <td>{performer.height_cm}</td>
     </tr>
   );
 

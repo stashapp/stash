@@ -71,11 +71,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  const formatHeight = (height?: string | null) => {
+  const formatHeight = (height?: number | null) => {
     if (!height) {
       return "";
     }
-    return intl.formatNumber(Number.parseInt(height, 10), {
+    return intl.formatNumber(height, {
       style: "unit",
       unit: "centimeter",
       unitDisplay: "narrow",
@@ -120,7 +120,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           getCountryByISO(performer.country, intl.locale) ?? performer.country
         }
       />
-      <TextField id="height" value={formatHeight(performer.height)} />
+      <TextField id="height" value={formatHeight(performer.height_cm)} />
       <TextField id="weight" value={formatWeight(performer.weight)} />
       <TextField id="measurements" value={performer.measurements} />
       <TextField id="fake_tits" value={performer.fake_tits} />
