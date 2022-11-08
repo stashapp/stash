@@ -14,7 +14,7 @@ export const RatingBanner: React.FC<IProps> = ({ rating }) => {
   return rating ? (
     <div className={config?.interface.ratingSystem == RatingSystem.FiveStar ? `rating-banner rating-${convertToRatingFormat(rating,
       config?.interface.ratingSystem)}` : `rating-banner rating100-${Math.trunc(rating / 5)}`}>
-      <FormattedMessage id="rating100" />:{" "}
+      <FormattedMessage id="rating" />:{" "}
       {convertToRatingFormat(
         rating,
         config?.interface.ratingSystem ?? RatingSystem.FiveStar

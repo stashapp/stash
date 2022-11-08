@@ -176,19 +176,17 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
   if (props.disabled) {
     return (
       <h6>
-        <FormattedMessage id="rating100" />: {toReturn}
+        <FormattedMessage id="rating" />: {toReturn}
       </h6>
     );
   } else {
     return (
-      <>
-        <Form.Group controlId="rating" as={Row}>
-          {FormUtils.renderLabel({
-            title: intl.formatMessage({ id: "rating100" }),
-          })}
-          <Col xs={9}>{toReturn}</Col>
-        </Form.Group>
-      </>
+      <Form.Group controlId="rating" as={Row}>
+        {FormUtils.renderLabel({
+          title: intl.formatMessage({ id: "rating" }),
+        })}
+        <Col xs={9}>{toReturn}</Col>
+      </Form.Group>
     );
   }
 };

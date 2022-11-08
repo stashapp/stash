@@ -358,7 +358,7 @@ export const SceneFilenameParser: React.FC = () => {
                   onSelectAllDateSet
                 )}
                 {renderHeader(
-                  intl.formatMessage({ id: "rating100" }),
+                  intl.formatMessage({ id: "rating" }),
                   allRatingSet,
                   onSelectAllRatingSet
                 )}

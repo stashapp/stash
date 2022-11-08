@@ -1,8 +1,8 @@
 import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
-  createNullNumberCriterionOption,
   createStringCriterionOption,
+  NullNumberCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
@@ -64,7 +64,7 @@ const criterionOptions = [
   PhashCriterionOption,
   DuplicatedCriterionOption,
   OrganizedCriterionOption,
-  createNullNumberCriterionOption("rating100"),
+  new NullNumberCriterionOption("rating", "rating100"),
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   createMandatoryNumberCriterionOption("duration"),
