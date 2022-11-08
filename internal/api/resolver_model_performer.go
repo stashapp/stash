@@ -2,12 +2,25 @@ package api
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/stashapp/stash/internal/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+func (r *performerResolver) Height(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.Height != nil {
+		ret := strconv.Itoa(*obj.Height)
+		return &ret, nil
+	}
+	return nil, nil
+}
+
+func (r *performerResolver) HeightCm(ctx context.Context, obj *models.Performer) (*int, error) {
+	return obj.Height, nil
+}
 
 func (r *performerResolver) Birthdate(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.Birthdate != nil {

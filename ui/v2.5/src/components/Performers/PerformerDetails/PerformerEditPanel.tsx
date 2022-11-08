@@ -106,7 +106,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ethnicity: yup.string().optional(),
     eye_color: yup.string().optional(),
     country: yup.string().optional(),
-    height: yup.string().optional(),
+    height_cm: yup.number().optional(),
     measurements: yup.string().optional(),
     fake_tits: yup.string().optional(),
     career_length: yup.string().optional(),
@@ -133,7 +133,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     ethnicity: performer.ethnicity ?? "",
     eye_color: performer.eye_color ?? "",
     country: performer.country ?? "",
-    height: performer.height ?? "",
+    height_cm: performer.height_cm ?? undefined,
     measurements: performer.measurements ?? "",
     fake_tits: performer.fake_tits ?? "",
     career_length: performer.career_length ?? "",
@@ -279,7 +279,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
       formik.setFieldValue("eye_color", state.eye_color);
     }
     if (state.height) {
-      formik.setFieldValue("height", state.height);
+      formik.setFieldValue("height_cm", parseInt(state.height, 10));
     }
     if (state.measurements) {
       formik.setFieldValue("measurements", state.measurements);
@@ -445,7 +445,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return {
       ...values,
       gender: stringToGender(values.gender) ?? null,
-      weight: Number(values.weight),
+      height_cm: values.height_cm ? Number(values.height_cm) : null,
+      weight: values.weight ? Number(values.weight) : null,
       id: performer.id ?? "",
     };
   }
@@ -454,7 +455,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return {
       ...values,
       gender: stringToGender(values.gender),
-      weight: Number(values.weight),
+      height_cm: values.height_cm ? Number(values.height_cm) : null,
+      weight: values.weight ? Number(values.weight) : null,
     };
   }
 
@@ -797,16 +799,26 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  function renderTextField(field: string, title: string, placeholder?: string) {
+  function renderField(
+    field: string,
+    props?: {
+      messageID?: string;
+      placeholder?: string;
+      type?: string;
+    }
+  ) {
+    const title = intl.formatMessage({ id: props?.messageID ?? field });
+
     return (
       <Form.Group controlId={field} as={Row}>
         <Form.Label column xs={labelXS} xl={labelXL}>
-          <FormattedMessage id={field} defaultMessage={title} />
+          {title}
         </Form.Label>
         <Col xs={fieldXS} xl={fieldXL}>
           <Form.Control
+            type={props?.type ?? "text"}
             className="text-input"
-            placeholder={placeholder ?? title}
+            placeholder={props?.placeholder ?? title}
             {...formik.getFieldProps(field)}
             isInvalid={!!formik.getFieldMeta(field).error}
           />
@@ -877,8 +889,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("birthdate", "Birthdate", "YYYY-MM-DD")}
-        {renderTextField("death_date", "Death Date", "YYYY-MM-DD")}
+        {renderField("birthdate", { placeholder: "YYYY-MM-DD" })}
+        {renderField("death_date", { placeholder: "YYYY-MM-DD" })}
 
         <Form.Group as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
@@ -892,13 +904,20 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("ethnicity", "Ethnicity")}
-        {renderTextField("hair_color", "Hair Color")}
-        {renderTextField("eye_color", "Eye Color")}
-        {renderTextField("height", "Height (cm)")}
-        {renderTextField("weight", "Weight (kg)")}
-        {renderTextField("measurements", "Measurements")}
-        {renderTextField("fake_tits", "Fake Tits")}
+        {renderField("ethnicity")}
+        {renderField("hair_color")}
+        {renderField("eye_color")}
+        {renderField("height_cm", {
+          type: "number",
+          messageID: "height",
+          placeholder: intl.formatMessage({ id: "height_cm" }),
+        })}
+        {renderField("weight", {
+          type: "number",
+          placeholder: intl.formatMessage({ id: "weight_kg" }),
+        })}
+        {renderField("measurements")}
+        {renderField("fake_tits")}
 
         <Form.Group controlId="tattoos" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
@@ -928,7 +947,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("career_length", "Career Length")}
+        {renderField("career_length")}
 
         <Form.Group controlId="url" as={Row}>
           <Form.Label column xs={labelXS} xl={labelXL}>
@@ -943,8 +962,8 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
           </Col>
         </Form.Group>
 
-        {renderTextField("twitter", "Twitter")}
-        {renderTextField("instagram", "Instagram")}
+        {renderField("twitter")}
+        {renderField("instagram")}
         <Form.Group controlId="details" as={Row}>
           <Form.Label column sm={labelXS} xl={labelXL}>
             <FormattedMessage id="details" />

@@ -77,8 +77,15 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 	if input.EyeColor != nil {
 		newPerformer.EyeColor = *input.EyeColor
 	}
-	if input.Height != nil {
-		newPerformer.Height = *input.Height
+	// prefer height_cm over height
+	if input.HeightCm != nil {
+		newPerformer.Height = input.HeightCm
+	} else if input.Height != nil {
+		h, err := strconv.Atoi(*input.Height)
+		if err != nil {
+			return nil, fmt.Errorf("invalid height: %s", *input.Height)
+		}
+		newPerformer.Height = &h
 	}
 	if input.Measurements != nil {
 		newPerformer.Measurements = *input.Measurements
@@ -213,7 +220,16 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
-	updatedPerformer.Height = translator.optionalString(input.Height, "height")
+	// prefer height_cm over height
+	if translator.hasField("height_cm") {
+		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
+	} else if translator.hasField("height") {
+		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
@@ -317,7 +333,16 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Ethnicity = translator.optionalString(input.Ethnicity, "ethnicity")
 	updatedPerformer.Country = translator.optionalString(input.Country, "country")
 	updatedPerformer.EyeColor = translator.optionalString(input.EyeColor, "eye_color")
-	updatedPerformer.Height = translator.optionalString(input.Height, "height")
+	// prefer height_cm over height
+	if translator.hasField("height_cm") {
+		updatedPerformer.Height = translator.optionalInt(input.HeightCm, "height_cm")
+	} else if translator.hasField("height") {
+		updatedPerformer.Height, err = translator.optionalIntFromString(input.Height, "height")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	updatedPerformer.Measurements = translator.optionalString(input.Measurements, "measurements")
 	updatedPerformer.FakeTits = translator.optionalString(input.FakeTits, "fake_tits")
 	updatedPerformer.CareerLength = translator.optionalString(input.CareerLength, "career_length")
