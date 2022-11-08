@@ -406,88 +406,108 @@ div.dropdown-menu {
   margin: 0 10px;
 }
 
-.rating-20 {
+.rating100-20 {
   background: #f00;
 }
 
-.rating-19 {
+.rating100-19 {
   background: #ff2409;
 }
 
-.rating-18 {
+.rating100-18 {
   background: #ff4812;
 }
 
-.rating-17 {
+.rating100-17 {
   background: #ff6a07;
 }
 
-.rating-16 {
+.rating100-16 {
   background: #ff8000;
 }
 
-.rating-15 {
+.rating100-15 {
   background: #fa8804;
 }
 
-.rating-14 {
+.rating100-14 {
   background: #f39409;
 }
 
-.rating-13 {
+.rating100-13 {
   background: #eca00e;
 }
 
-.rating-12 {
+.rating100-12 {
   background: #e7a811;
 }
 
-.rating-11 {
+.rating100-11 {
   background: #dfb617;
 }
 
-.rating-10 {
+.rating100-10 {
   background: #d2ca20;
 }
 
-.rating-9 {
+.rating100-9 {
   background: #cbb526;
 }
 
-.rating-8 {
+.rating100-8 {
   background: #c39f2b;
 }
 
-.rating-7 {
+.rating100-7 {
   background: #bd8e2f;
 }
 
-.rating-6 {
+.rating100-6 {
   background: #b47435;
 }
 
-.rating-5 {
+.rating100-5 {
   background: #af7944;
 }
 
-.rating-4 {
+.rating100-4 {
   background: #a7805b;
 }
 
-.rating-3 {
+.rating199-3 {
   background: #a48363;
 }
 
-.rating-2 {
+.rating100-2 {
   background: #9e8974;
 }
 
-.rating-1 {
+.rating100-1 {
   background: #9b8c7d;
 }
 
-.rating-0 {
+.rating100-0 {
   background: #939393;
+}
+
+.rating-5 {
+  background: #ff2f39;
+}
+
+.rating-4 {
+  background: $red1;
+}
+
+.rating-3 {
+  background: $orange1;
+}
+
+.rating-2 {
+  background: $sepia1;
+}
+
+.rating-1 {
+  background: $dark-gray5;
 }
 
 .rating-banner {

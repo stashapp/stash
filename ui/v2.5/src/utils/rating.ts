@@ -11,10 +11,10 @@ function round(value: number, step: number) {
 
 export function getMaxStars(ratingSystem: GQL.RatingSystem) {
   switch (ratingSystem) {
-    case GQL.RatingSystem.TenStar:
-    case GQL.RatingSystem.TenPointFiveStar:
-    case GQL.RatingSystem.TenPointTwoFiveStar:
-      return 10;
+    //case GQL.RatingSystem.TenStar:
+    //case GQL.RatingSystem.TenPointFiveStar:
+    //case GQL.RatingSystem.TenPointTwoFiveStar:
+    //  return 10;
     case GQL.RatingSystem.FiveStar:
     case GQL.RatingSystem.FivePointFiveStar:
     case GQL.RatingSystem.FivePointTwoFiveStar:
@@ -28,13 +28,13 @@ export function getMaxStars(ratingSystem: GQL.RatingSystem) {
 
 export function getRatingPrecision(ratingSystem: GQL.RatingSystem) {
   switch (ratingSystem) {
-    case GQL.RatingSystem.TenStar:
+    //case GQL.RatingSystem.TenStar:
     case GQL.RatingSystem.FiveStar:
       return 0;
-    case GQL.RatingSystem.TenPointFiveStar:
+    //case GQL.RatingSystem.TenPointFiveStar:
     case GQL.RatingSystem.FivePointFiveStar:
       return 0.5;
-    case GQL.RatingSystem.TenPointTwoFiveStar:
+    //case GQL.RatingSystem.TenPointTwoFiveStar:
     case GQL.RatingSystem.FivePointTwoFiveStar:
       return 0.25;
     case GQL.RatingSystem.TenPointDecimal:
@@ -53,15 +53,15 @@ export function convertToRatingFormat(
   }
   let toReturn;
   switch (ratingSystem) {
-    case GQL.RatingSystem.TenStar:
-      toReturn = round(rating / 10, 1);
-      break;
-    case GQL.RatingSystem.TenPointFiveStar:
-      toReturn = round(rating / 10, 0.5);
-      break;
-    case GQL.RatingSystem.TenPointTwoFiveStar:
-      toReturn = round(rating / 10, 0.25);
-      break;
+    //case GQL.RatingSystem.TenStar:
+    //  toReturn = round(rating / 10, 1);
+    //  break;
+    //case GQL.RatingSystem.TenPointFiveStar:
+    //  toReturn = round(rating / 10, 0.5);
+    //  break;
+    //case GQL.RatingSystem.TenPointTwoFiveStar:
+    //  toReturn = round(rating / 10, 0.25);
+    //  break;
     case GQL.RatingSystem.FiveStar:
       toReturn = round(rating / 20, 1);
       break;
@@ -87,15 +87,15 @@ export function convertFromRatingFormat(
 ) {
   let toReturn;
   switch (ratingSystem) {
-    case GQL.RatingSystem.TenStar:
-      toReturn = Math.round(rating * 10);
-      break;
-    case GQL.RatingSystem.TenPointFiveStar:
-      toReturn = Math.round(rating * 10);
-      break;
-    case GQL.RatingSystem.TenPointTwoFiveStar:
-      toReturn = Math.round(rating * 10);
-      break;
+    //case GQL.RatingSystem.TenStar:
+    //  toReturn = Math.round(rating * 10);
+    //  break;
+    //case GQL.RatingSystem.TenPointFiveStar:
+    //  toReturn = Math.round(rating * 10);
+    //  break;
+    //case GQL.RatingSystem.TenPointTwoFiveStar:
+    //  toReturn = Math.round(rating * 10);
+    //  break;
     case GQL.RatingSystem.FiveStar:
       toReturn = Math.round(rating * 20);
       break;

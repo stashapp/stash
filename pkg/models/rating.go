@@ -13,15 +13,16 @@ const (
 	FiveStar             = "FiveStar"
 	FivePointFiveStar    = "FivePointFiveStar"
 	FivePointTwoFiveStar = "FivePointTwoFiveStar"
-	TenStar              = "TenStar"
-	TenPointFiveStar     = "TenPointFiveStar"
-	TenPointTwoFiveStar  = "TenPointTwoFiveStar"
+	//TenStar              = "TenStar"
+	//TenPointFiveStar     = "TenPointFiveStar"
+	//TenPointTwoFiveStar  = "TenPointTwoFiveStar"
 	TenPointDecimal      = "TenPointDecimal"
 )
 
 func (e RatingSystem) IsValid() bool {
 	switch e {
-	case FiveStar, FivePointFiveStar, FivePointTwoFiveStar, TenStar, TenPointFiveStar, TenPointTwoFiveStar, TenPointDecimal:
+	//case FiveStar, FivePointFiveStar, FivePointTwoFiveStar, TenStar, TenPointFiveStar, TenPointTwoFiveStar, TenPointDecimal:
+	case FiveStar, FivePointFiveStar, FivePointTwoFiveStar, TenPointDecimal:
 		return true
 	}
 	return false

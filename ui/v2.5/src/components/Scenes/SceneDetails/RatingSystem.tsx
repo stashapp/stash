@@ -147,9 +147,9 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
   let toReturn;
   const intl = useIntl();
   switch (config?.interface?.ratingSystem) {
-    case GQL.RatingSystem.TenStar:
-    case GQL.RatingSystem.TenPointFiveStar:
-    case GQL.RatingSystem.TenPointTwoFiveStar:
+    //case GQL.RatingSystem.TenStar:
+    //case GQL.RatingSystem.TenPointFiveStar:
+    //case GQL.RatingSystem.TenPointTwoFiveStar:
     case GQL.RatingSystem.FiveStar:
     case GQL.RatingSystem.FivePointFiveStar:
     case GQL.RatingSystem.FivePointTwoFiveStar:

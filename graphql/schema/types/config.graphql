@@ -219,9 +219,9 @@ enum RatingSystem {
   FivePointFiveStar
   FiveStar
   FivePointTwoFiveStar
-  TenStar
-  TenPointFiveStar
-  TenPointTwoFiveStar
+  # ... TenStar
+  # ... TenPointFiveStar
+  # ... TenPointTwoFiveStar
   TenPointDecimal
 }
 
