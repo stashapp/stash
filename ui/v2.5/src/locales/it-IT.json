@@ -807,6 +807,7 @@
   },
   "hasMarkers": "Ha Marcatori",
   "height": "Altezza",
+  "height_cm": "Altezza (cm)",
   "help": "Aiuto",
   "ignore_auto_tag": "Ignora Auto Tag",
   "image": "Immagine",
@@ -1065,6 +1066,7 @@
   "videos": "Video",
   "view_all": "Vedi Tutto",
   "weight": "Peso",
+  "weight_kg": "Peso (kg)",
   "years_old": "anni",
   "zip_file_count": "Numero File Zip"
 }
