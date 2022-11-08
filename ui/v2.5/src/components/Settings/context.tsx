@@ -46,6 +46,8 @@ export interface ISettingsContextState {
   saveScraping: (input: Partial<GQL.ConfigScrapingInput>) => void;
   saveDLNA: (input: Partial<GQL.ConfigDlnaInput>) => void;
   saveUI: (input: Partial<IUIConfig>) => void;
+
+  refetch: () => void;
 }
 
 export const SettingStateContext = React.createContext<ISettingsContextState>({
@@ -64,12 +66,13 @@ export const SettingStateContext = React.createContext<ISettingsContextState>({
   saveScraping: () => {},
   saveDLNA: () => {},
   saveUI: () => {},
+  refetch: () => {},
 });
 
 export const SettingsContext: React.FC = ({ children }) => {
   const Toast = useToast();
 
-  const { data, error, loading } = useConfiguration();
+  const { data, error, loading, refetch } = useConfiguration();
   const initialRef = useRef(false);
 
   const [general, setGeneral] = useState<GQL.ConfigGeneralInput>({});
@@ -125,9 +128,14 @@ export const SettingsContext: React.FC = ({ children }) => {
   }, [saveError, Toast]);
 
   useEffect(() => {
+    if (!data?.configuration || error) return;
+
+    // always set api key
+    setApiKey(data.configuration.general.apiKey);
+
     // only initialise once - assume we have control over these settings and
     // they aren't modified elsewhere
-    if (!data?.configuration || error || initialRef.current) return;
+    if (initialRef.current) return;
     initialRef.current = true;
 
     setGeneral({ ...withoutTypename(data.configuration.general) });
@@ -136,7 +144,6 @@ export const SettingsContext: React.FC = ({ children }) => {
     setScraping({ ...withoutTypename(data.configuration.scraping) });
     setDLNA({ ...withoutTypename(data.configuration.dlna) });
     setUI(data.configuration.ui);
-    setApiKey(data.configuration.general.apiKey);
   }, [data, error]);
 
   const resetSuccess = useMemo(
@@ -509,6 +516,7 @@ export const SettingsContext: React.FC = ({ children }) => {
         saveScraping,
         saveDLNA,
         saveUI,
+        refetch,
       }}
     >
       {maybeRenderLoadingIndicator()}
