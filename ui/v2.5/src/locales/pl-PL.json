@@ -807,6 +807,7 @@
   },
   "hasMarkers": "Ma znaczniki",
   "height": "Wzrost",
+  "height_cm": "Wzrost (cm)",
   "help": "Help",
   "ignore_auto_tag": "Ignoruj automatyczne tagowanie",
   "image": "Obraz",
@@ -1065,6 +1066,7 @@
   "videos": "Filmy wideo",
   "view_all": "Pokaż wszystko",
   "weight": "Waga",
+  "weight_kg": "Waga (kg)",
   "years_old": "lat(a)",
   "zip_file_count": "Liczba plików zip"
 }
