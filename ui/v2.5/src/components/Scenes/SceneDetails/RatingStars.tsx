@@ -209,7 +209,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
   );
 
   return (
-    <div className="rating-stars align-middle">
+    <div className="rating-stars">
       {Array.from(Array(max)).map((value, index) =>
         renderRatingButton(index + 1)
       )}
