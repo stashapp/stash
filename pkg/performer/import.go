@@ -3,9 +3,11 @@ package performer
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -194,7 +196,6 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 		Ethnicity:     performerJSON.Ethnicity,
 		Country:       performerJSON.Country,
 		EyeColor:      performerJSON.EyeColor,
-		Height:        performerJSON.Height,
 		Measurements:  performerJSON.Measurements,
 		FakeTits:      performerJSON.FakeTits,
 		CareerLength:  performerJSON.CareerLength,
@@ -233,6 +234,15 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 
 	if performerJSON.Weight != 0 {
 		newPerformer.Weight = &performerJSON.Weight
+	}
+
+	if performerJSON.Height != "" {
+		h, err := strconv.Atoi(performerJSON.Height)
+		if err == nil {
+			newPerformer.Height = &h
+		} else {
+			logger.Warnf("error parsing height %q: %v", performerJSON.Height, err)
+		}
 	}
 
 	return newPerformer

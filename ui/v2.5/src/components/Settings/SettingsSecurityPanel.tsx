@@ -71,9 +71,14 @@ export const SettingsSecurityPanel: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
 
-  const { general, apiKey, loading, error, saveGeneral } = React.useContext(
-    SettingStateContext
-  );
+  const {
+    general,
+    apiKey,
+    loading,
+    error,
+    saveGeneral,
+    refetch,
+  } = React.useContext(SettingStateContext);
 
   const [generateAPIKey] = useGenerateAPIKey();
 
@@ -84,6 +89,7 @@ export const SettingsSecurityPanel: React.FC = () => {
           input: {},
         },
       });
+      refetch();
     } catch (e) {
       Toast.error(e);
     }
@@ -98,6 +104,7 @@ export const SettingsSecurityPanel: React.FC = () => {
           },
         },
       });
+      refetch();
     } catch (e) {
       Toast.error(e);
     }

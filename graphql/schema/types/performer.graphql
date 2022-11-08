@@ -19,7 +19,8 @@ type Performer {
   ethnicity: String
   country: String
   eye_color: String
-  height: String
+  height: String @deprecated(reason: "Use height_cm")
+  height_cm: Int
   measurements: String
   fake_tits: String
   career_length: String
@@ -58,7 +59,9 @@ input PerformerCreateInput {
   ethnicity: String
   country: String
   eye_color: String
-  height: String
+  # height must be parsable into an integer
+  height: String @deprecated(reason: "Use height_cm")
+  height_cm: Int
   measurements: String
   fake_tits: String
   career_length: String
@@ -92,7 +95,9 @@ input PerformerUpdateInput {
   ethnicity: String
   country: String
   eye_color: String
-  height: String
+  # height must be parsable into an integer
+  height: String @deprecated(reason: "Use height_cm")
+  height_cm: Int
   measurements: String
   fake_tits: String
   career_length: String
@@ -126,7 +131,9 @@ input BulkPerformerUpdateInput {
   ethnicity: String
   country: String
   eye_color: String
-  height: String
+  # height must be parsable into an integer
+  height: String @deprecated(reason: "Use height_cm")
+  height_cm: Int
   measurements: String
   fake_tits: String
   career_length: String

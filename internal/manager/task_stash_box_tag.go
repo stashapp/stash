@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
@@ -114,7 +115,16 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				partial.Gender = models.NewOptionalString(*performer.Gender)
 			}
 			if performer.Height != nil && !excluded["height"] {
-				partial.Height = models.NewOptionalString(*performer.Height)
+				h, err := strconv.Atoi(*performer.Height)
+				if err == nil {
+					partial.Height = models.NewOptionalInt(h)
+				}
+			}
+			if performer.Weight != nil && !excluded["weight"] {
+				w, err := strconv.Atoi(*performer.Weight)
+				if err == nil {
+					partial.Weight = models.NewOptionalInt(w)
+				}
 			}
 			if performer.Instagram != nil && !excluded["instagram"] {
 				partial.Instagram = models.NewOptionalString(*performer.Instagram)
@@ -192,7 +202,8 @@ func (t *StashBoxPerformerTagTask) stashBoxPerformerTag(ctx context.Context) {
 				EyeColor:     getString(performer.EyeColor),
 				FakeTits:     getString(performer.FakeTits),
 				Gender:       models.GenderEnum(getString(performer.Gender)),
-				Height:       getString(performer.Height),
+				Height:       getIntPtr(performer.Height),
+				Weight:       getIntPtr(performer.Weight),
 				Instagram:    getString(performer.Instagram),
 				Measurements: getString(performer.Measurements),
 				Name:         *performer.Name,
@@ -259,5 +270,18 @@ func getString(val *string) string {
 		return ""
 	} else {
 		return *val
+	}
+}
+
+func getIntPtr(val *string) *int {
+	if val == nil {
+		return nil
+	} else {
+		v, err := strconv.Atoi(*val)
+		if err != nil {
+			return nil
+		}
+
+		return &v
 	}
 }

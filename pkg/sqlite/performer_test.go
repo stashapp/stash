@@ -30,7 +30,7 @@ func Test_PerformerStore_Update(t *testing.T) {
 		ethnicity     = "ethnicity"
 		country       = "country"
 		eyeColor      = "eyeColor"
-		height        = "height"
+		height        = 134
 		measurements  = "measurements"
 		fakeTits      = "fakeTits"
 		careerLength  = "careerLength"
@@ -67,7 +67,7 @@ func Test_PerformerStore_Update(t *testing.T) {
 				Ethnicity:     ethnicity,
 				Country:       country,
 				EyeColor:      eyeColor,
-				Height:        height,
+				Height:        &height,
 				Measurements:  measurements,
 				FakeTits:      fakeTits,
 				CareerLength:  careerLength,
@@ -133,7 +133,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 		ethnicity     = "ethnicity"
 		country       = "country"
 		eyeColor      = "eyeColor"
-		height        = "height"
+		height        = 143
 		measurements  = "measurements"
 		fakeTits      = "fakeTits"
 		careerLength  = "careerLength"
@@ -172,7 +172,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Ethnicity:     models.NewOptionalString(ethnicity),
 				Country:       models.NewOptionalString(country),
 				EyeColor:      models.NewOptionalString(eyeColor),
-				Height:        models.NewOptionalString(height),
+				Height:        models.NewOptionalInt(height),
 				Measurements:  models.NewOptionalString(measurements),
 				FakeTits:      models.NewOptionalString(fakeTits),
 				CareerLength:  models.NewOptionalString(careerLength),
@@ -201,7 +201,7 @@ func Test_PerformerStore_UpdatePartial(t *testing.T) {
 				Ethnicity:     ethnicity,
 				Country:       country,
 				EyeColor:      eyeColor,
-				Height:        height,
+				Height:        &height,
 				Measurements:  measurements,
 				FakeTits:      fakeTits,
 				CareerLength:  careerLength,
@@ -509,29 +509,62 @@ func TestPerformerIllegalQuery(t *testing.T) {
 		},
 	}
 
-	performerFilter := &models.PerformerFilterType{
-		And: &subFilter,
-		Or:  &subFilter,
+	tests := []struct {
+		name   string
+		filter models.PerformerFilterType
+	}{
+		{
+			// And and Or in the same filter
+			"AndOr",
+			models.PerformerFilterType{
+				And: &subFilter,
+				Or:  &subFilter,
+			},
+		},
+		{
+			// And and Not in the same filter
+			"AndNot",
+			models.PerformerFilterType{
+				And: &subFilter,
+				Not: &subFilter,
+			},
+		},
+		{
+			// Or and Not in the same filter
+			"OrNot",
+			models.PerformerFilterType{
+				Or:  &subFilter,
+				Not: &subFilter,
+			},
+		},
+		{
+			"invalid height modifier",
+			models.PerformerFilterType{
+				Height: &models.StringCriterionInput{
+					Modifier: models.CriterionModifierMatchesRegex,
+					Value:    "123",
+				},
+			},
+		},
+		{
+			"invalid height value",
+			models.PerformerFilterType{
+				Height: &models.StringCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    "foo",
+				},
+			},
+		},
 	}
 
-	withTxn(func(ctx context.Context) error {
-		sqb := db.Performer
+	sqb := db.Performer
 
-		_, _, err := sqb.Query(ctx, performerFilter, nil)
-		assert.NotNil(err)
-
-		performerFilter.Or = nil
-		performerFilter.Not = &subFilter
-		_, _, err = sqb.Query(ctx, performerFilter, nil)
-		assert.NotNil(err)
-
-		performerFilter.And = nil
-		performerFilter.Or = &subFilter
-		_, _, err = sqb.Query(ctx, performerFilter, nil)
-		assert.NotNil(err)
-
-		return nil
-	})
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			_, _, err := sqb.Query(ctx, &tt.filter, nil)
+			assert.NotNil(err)
+		})
+	}
 }
 
 func TestPerformerQueryIgnoreAutoTag(t *testing.T) {

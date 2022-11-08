@@ -89,6 +89,7 @@ export type CriterionType =
   | "hair_color"
   | "eye_color"
   | "height"
+  | "height_cm"
   | "weight"
   | "measurements"
   | "fake_tits"

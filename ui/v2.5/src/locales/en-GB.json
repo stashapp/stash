@@ -820,6 +820,7 @@
   },
   "hasMarkers": "Has Markers",
   "height": "Height",
+  "height_cm": "Height (cm)",
   "help": "Help",
   "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
@@ -1078,6 +1079,7 @@
   "videos": "Videos",
   "view_all": "View All",
   "weight": "Weight",
+  "weight_kg": "Weight (kg)",
   "years_old": "years old",
   "zip_file_count": "Zip File Count"
 }

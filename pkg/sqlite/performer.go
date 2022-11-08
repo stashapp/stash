@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
@@ -22,34 +23,34 @@ const performersTagsTable = "performers_tags"
 const performersImageTable = "performers_image" // performer cover image
 
 type performerRow struct {
-	ID           int                    `db:"id" goqu:"skipinsert"`
-	Checksum     string                 `db:"checksum"`
-	Name         zero.String            `db:"name"`
-	Gender       zero.String            `db:"gender"`
-	URL          zero.String            `db:"url"`
-	Twitter      zero.String            `db:"twitter"`
-	Instagram    zero.String            `db:"instagram"`
-	Birthdate    models.SQLiteDate      `db:"birthdate"`
-	Ethnicity    zero.String            `db:"ethnicity"`
-	Country      zero.String            `db:"country"`
-	EyeColor     zero.String            `db:"eye_color"`
-	Height       zero.String            `db:"height"`
-	Measurements zero.String            `db:"measurements"`
-	FakeTits     zero.String            `db:"fake_tits"`
-	CareerLength zero.String            `db:"career_length"`
-	Tattoos      zero.String            `db:"tattoos"`
-	Piercings    zero.String            `db:"piercings"`
-	Aliases      zero.String            `db:"aliases"`
-	Favorite     sql.NullBool           `db:"favorite"`
-	CreatedAt    models.SQLiteTimestamp `db:"created_at"`
-	UpdatedAt    models.SQLiteTimestamp `db:"updated_at"`
+	ID            int                    `db:"id" goqu:"skipinsert"`
+	Checksum      string                 `db:"checksum"`
+	Name          zero.String            `db:"name"`
+	Gender        zero.String            `db:"gender"`
+	URL           zero.String            `db:"url"`
+	Twitter       zero.String            `db:"twitter"`
+	Instagram     zero.String            `db:"instagram"`
+	Birthdate     models.SQLiteDate      `db:"birthdate"`
+	Ethnicity     zero.String            `db:"ethnicity"`
+	Country       zero.String            `db:"country"`
+	EyeColor      zero.String            `db:"eye_color"`
+	Height        null.Int               `db:"height"`
+	Measurements  zero.String            `db:"measurements"`
+	FakeTits      zero.String            `db:"fake_tits"`
+	CareerLength  zero.String            `db:"career_length"`
+	Tattoos       zero.String            `db:"tattoos"`
+	Piercings     zero.String            `db:"piercings"`
+	Aliases       zero.String            `db:"aliases"`
+	Favorite      sql.NullBool           `db:"favorite"`
+	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
+	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
 	// expressed as 1-100
-	Rating        null.Int          `db:"rating"`
-	Details       zero.String       `db:"details"`
-	DeathDate     models.SQLiteDate `db:"death_date"`
-	HairColor     zero.String       `db:"hair_color"`
-	Weight        null.Int          `db:"weight"`
-	IgnoreAutoTag bool              `db:"ignore_auto_tag"`
+	Rating        null.Int               `db:"rating"`
+	Details       zero.String            `db:"details"`
+	DeathDate     models.SQLiteDate      `db:"death_date"`
+	HairColor     zero.String            `db:"hair_color"`
+	Weight        null.Int               `db:"weight"`
+	IgnoreAutoTag bool                   `db:"ignore_auto_tag"`
 }
 
 func (r *performerRow) fromPerformer(o models.Performer) {
@@ -68,7 +69,7 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 	r.Ethnicity = zero.StringFrom(o.Ethnicity)
 	r.Country = zero.StringFrom(o.Country)
 	r.EyeColor = zero.StringFrom(o.EyeColor)
-	r.Height = zero.StringFrom(o.Height)
+	r.Height = intFromPtr(o.Height)
 	r.Measurements = zero.StringFrom(o.Measurements)
 	r.FakeTits = zero.StringFrom(o.FakeTits)
 	r.CareerLength = zero.StringFrom(o.CareerLength)
@@ -90,27 +91,27 @@ func (r *performerRow) fromPerformer(o models.Performer) {
 
 func (r *performerRow) resolve() *models.Performer {
 	ret := &models.Performer{
-		ID:           r.ID,
-		Checksum:     r.Checksum,
-		Name:         r.Name.String,
-		Gender:       models.GenderEnum(r.Gender.String),
-		URL:          r.URL.String,
-		Twitter:      r.Twitter.String,
-		Instagram:    r.Instagram.String,
-		Birthdate:    r.Birthdate.DatePtr(),
-		Ethnicity:    r.Ethnicity.String,
-		Country:      r.Country.String,
-		EyeColor:     r.EyeColor.String,
-		Height:       r.Height.String,
-		Measurements: r.Measurements.String,
-		FakeTits:     r.FakeTits.String,
-		CareerLength: r.CareerLength.String,
-		Tattoos:      r.Tattoos.String,
-		Piercings:    r.Piercings.String,
-		Aliases:      r.Aliases.String,
-		Favorite:     r.Favorite.Bool,
-		CreatedAt:    r.CreatedAt.Timestamp,
-		UpdatedAt:    r.UpdatedAt.Timestamp,
+		ID:            r.ID,
+		Checksum:      r.Checksum,
+		Name:          r.Name.String,
+		Gender:        models.GenderEnum(r.Gender.String),
+		URL:           r.URL.String,
+		Twitter:       r.Twitter.String,
+		Instagram:     r.Instagram.String,
+		Birthdate:     r.Birthdate.DatePtr(),
+		Ethnicity:     r.Ethnicity.String,
+		Country:       r.Country.String,
+		EyeColor:      r.EyeColor.String,
+		Height:        nullIntPtr(r.Height),
+		Measurements:  r.Measurements.String,
+		FakeTits:      r.FakeTits.String,
+		CareerLength:  r.CareerLength.String,
+		Tattoos:       r.Tattoos.String,
+		Piercings:     r.Piercings.String,
+		Aliases:       r.Aliases.String,
+		Favorite:      r.Favorite.Bool,
+		CreatedAt:     r.CreatedAt.Timestamp,
+		UpdatedAt:     r.UpdatedAt.Timestamp,
 		// expressed as 1-100
 		Rating:        nullIntPtr(r.Rating),
 		Details:       r.Details.String,
@@ -138,7 +139,7 @@ func (r *performerRowRecord) fromPartial(o models.PerformerPartial) {
 	r.setNullString("ethnicity", o.Ethnicity)
 	r.setNullString("country", o.Country)
 	r.setNullString("eye_color", o.EyeColor)
-	r.setNullString("height", o.Height)
+	r.setNullInt("height", o.Height)
 	r.setNullString("measurements", o.Measurements)
 	r.setNullString("fake_tits", o.FakeTits)
 	r.setNullString("career_length", o.CareerLength)
@@ -447,6 +448,22 @@ func (qb *PerformerStore) validateFilter(filter *models.PerformerFilterType) err
 		return qb.validateFilter(filter.Not)
 	}
 
+	// if legacy height filter used, ensure only supported modifiers are used
+	if filter.Height != nil {
+		// treat as an int filter
+		intCrit := &models.IntCriterionInput{
+			Modifier: filter.Height.Modifier,
+		}
+		if !intCrit.ValidModifier() {
+			return fmt.Errorf("invalid height modifier: %s", filter.Height.Modifier)
+		}
+
+		// ensure value is a valid number
+		if _, err := strconv.Atoi(filter.Height.Value); err != nil {
+			return fmt.Errorf("invalid height value: %s", filter.Height.Value)
+		}
+	}
+
 	return nil
 }
 
@@ -485,7 +502,19 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Ethnicity, tableName+".ethnicity"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Country, tableName+".country"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.EyeColor, tableName+".eye_color"))
-	query.handleCriterion(ctx, stringCriterionHandler(filter.Height, tableName+".height"))
+
+	// special handler for legacy height filter
+	heightCmCrit := filter.HeightCm
+	if heightCmCrit == nil && filter.Height != nil {
+		heightCm, _ := strconv.Atoi(filter.Height.Value) // already validated
+		heightCmCrit = &models.IntCriterionInput{
+			Value:    heightCm,
+			Modifier: filter.Height.Modifier,
+		}
+	}
+
+	query.handleCriterion(ctx, intCriterionHandler(heightCmCrit, tableName+".height", nil))
+
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Measurements, tableName+".measurements"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.FakeTits, tableName+".fake_tits"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.CareerLength, tableName+".career_length"))

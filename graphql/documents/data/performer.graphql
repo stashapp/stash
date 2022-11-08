@@ -10,7 +10,7 @@ fragment PerformerData on Performer {
   ethnicity
   country
   eye_color
-  height
+  height_cm
   measurements
   fake_tits
   career_length

@@ -157,10 +157,14 @@ export function makeCriteria(
       return new DuplicatedCriterion();
     case "country":
       return new CountryCriterion();
+    case "height":
+    case "height_cm":
+      return new NumberCriterion(
+        new NumberCriterionOption("height", "height_cm", type)
+      );
     case "ethnicity":
     case "hair_color":
     case "eye_color":
-    case "height":
     case "measurements":
     case "fake_tits":
     case "career_length":

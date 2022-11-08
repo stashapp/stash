@@ -79,8 +79,10 @@ type PerformerFilterType struct {
 	Country *StringCriterionInput `json:"country"`
 	// Filter by eye color
 	EyeColor *StringCriterionInput `json:"eye_color"`
-	// Filter by height
+	// Filter by height - deprecated: use height_cm instead
 	Height *StringCriterionInput `json:"height"`
+	// Filter by height in centimeters
+	HeightCm *IntCriterionInput `json:"height_cm"`
 	// Filter by measurements
 	Measurements *StringCriterionInput `json:"measurements"`
 	// Filter by fake tits value
