@@ -12,8 +12,16 @@ export const RatingBanner: React.FC<IProps> = ({ rating }) => {
   const { configuration: config } = useContext(ConfigurationContext);
 
   return rating ? (
-    <div className={config?.interface.ratingSystem == RatingSystem.FiveStar ? `rating-banner rating-${convertToRatingFormat(rating,
-      config?.interface.ratingSystem)}` : `rating-banner ratinghundred-${Math.trunc(rating / 5)}`}>
+    <div
+      className={
+        config?.interface.ratingSystem == RatingSystem.FiveStar
+          ? `rating-banner rating-${convertToRatingFormat(
+              rating,
+              config?.interface.ratingSystem
+            )}`
+          : `rating-banner ratinghundred-${Math.trunc(rating / 5)}`
+      }
+    >
       <FormattedMessage id="rating" />:{" "}
       {convertToRatingFormat(
         rating,
