@@ -12,17 +12,17 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 	)
 
 	var (
-		title       = "title"
-		code        = "1337"
-		details     = "details"
-		director    = "director"
-		url         = "url"
-		date        = "2001-02-03"
+		title        = "title"
+		code         = "1337"
+		details      = "details"
+		director     = "director"
+		url          = "url"
+		date         = "2001-02-03"
 		ratingLegacy = 4
 		rating100    = 80
-		organized   = true
-		studioID    = 2
-		studioIDStr = "2"
+		organized    = true
+		studioID     = 2
+		studioIDStr  = "2"
 	)
 
 	dateObj := NewDate(date)
