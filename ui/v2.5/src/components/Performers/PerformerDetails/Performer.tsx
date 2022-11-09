@@ -431,7 +431,6 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
             <RatingSystem
               value={performer.rating100 ?? undefined}
               onSetRating={(value) => setRating(value ?? null)}
-              excludeLabel
             />
             {maybeRenderAliases()}
             {maybeRenderAge()}

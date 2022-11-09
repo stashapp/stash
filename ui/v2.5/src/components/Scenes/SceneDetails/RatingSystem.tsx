@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { ConfigurationContext } from "src/hooks/Config";
-import { FormattedMessage, useIntl } from "react-intl";
-import { Col, Form, Row } from "react-bootstrap";
-import { FormUtils } from "src/utils";
 import { RatingStars } from "./RatingStars";
 
 export interface IRatingSystemProps {

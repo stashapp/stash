@@ -433,7 +433,7 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
           })}
           <Col xs={9}>
             <RatingSystem
-              value={formik.values.rating100}
+              value={formik.values.rating100 ?? undefined}
               onSetRating={(value) =>
                 formik.setFieldValue("rating100", value ?? null)
               }
