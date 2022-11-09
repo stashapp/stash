@@ -909,12 +909,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
         {renderField("eye_color")}
         {renderField("height_cm", {
           type: "number",
-          messageID: "height",
-          placeholder: intl.formatMessage({ id: "height_cm" }),
         })}
         {renderField("weight", {
           type: "number",
-          placeholder: intl.formatMessage({ id: "weight_kg" }),
+          messageID: "weight_kg",
         })}
         {renderField("measurements")}
         {renderField("fake_tits")}
