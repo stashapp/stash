@@ -367,7 +367,7 @@
       "generate_previews_during_scan": "Создавать превью в виде анимированных изображений",
       "generate_previews_during_scan_tooltip": "Создавать анимированные WebP превью, необходимы если тип предпросмотра выбран - Анимированные изображения.",
       "generate_sprites_during_scan": "Генерировать спрайты для полосы перемотки видео",
-      "generate_thumbnails_during_scan": "Создание миниатюр для изображений",
+      "generate_thumbnails_during_scan": "Создать миниатюры для изображений",
       "generate_video_previews_during_scan": "Создавать превью",
       "generate_video_previews_during_scan_tooltip": "Создавать превью видео, которые воспроизводятся при наведении курсора на сцену",
       "generated_content": "Сгенерированный контент",
