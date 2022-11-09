@@ -807,6 +807,7 @@
   },
   "hasMarkers": "Dispose de marqueurs",
   "height": "Taille",
+  "height_cm": "Taille (cm)",
   "help": "Aide",
   "ignore_auto_tag": "Ignorer l'étiquetage automatique",
   "image": "Image",
@@ -918,6 +919,7 @@
   "scene": "Scène",
   "sceneTagger": "Étiqueteuse de scènes",
   "sceneTags": "Étiquettes de scène",
+  "scene_code": "Code du studio",
   "scene_count": "Nombre de scènes",
   "scene_id": "ID de scène",
   "scenes": "Scènes",
@@ -1064,6 +1066,7 @@
   "videos": "Vidéos",
   "view_all": "Tout voir",
   "weight": "Poids",
+  "weight_kg": "Poids (kg)",
   "years_old": "ans",
   "zip_file_count": "Nombre de fichiers Zip"
 }
