@@ -6,6 +6,8 @@ import Select, {
   components as reactSelectComponents,
   GroupedOptionsType,
   OptionsType,
+  MenuListComponentProps,
+  GroupTypeBase,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import debounce from "lodash-es/debounce";
@@ -113,6 +115,55 @@ const getSelectedItems = (selectedItems: ValueType<Option, boolean>) =>
 const getSelectedValues = (selectedItems: ValueType<Option, boolean>) =>
   getSelectedItems(selectedItems).map((item) => item.value);
 
+const LimitedSelectMenu = <T extends boolean>(
+  props: MenuListComponentProps<Option, T, GroupTypeBase<Option>>
+) => {
+  const maxOptionsShown = 200;
+  const [hiddenCount, setHiddenCount] = useState<number>(0);
+  const hiddenCountStyle = {
+    padding: "8px 12px",
+    opacity: "50%",
+  };
+  const menuChildren = useMemo(() => {
+    if (Array.isArray(props.children)) {
+      // limit the number of select options showing in the select dropdowns
+      // always showing the 'Create "..."' option when it exists
+      let creationOptionIndex = (props.children as React.ReactNodeArray).findIndex(
+        (child: React.ReactNode) => {
+          let maybeCreatableOption = child as React.ReactElement<
+            OptionProps<
+              Option & { __isNew__: boolean },
+              T,
+              GroupTypeBase<Option & { __isNew__: boolean }>
+            >,
+            ""
+          >;
+          return maybeCreatableOption?.props?.data?.__isNew__;
+        }
+      );
+      if (creationOptionIndex >= maxOptionsShown) {
+        setHiddenCount(props.children.length - maxOptionsShown - 1);
+        return props.children
+          .slice(0, maxOptionsShown - 1)
+          .concat([props.children[creationOptionIndex]]);
+      } else {
+        setHiddenCount(Math.max(props.children.length - maxOptionsShown, 0));
+        return props.children.slice(0, maxOptionsShown);
+      }
+    }
+    setHiddenCount(0);
+    return props.children;
+  }, [props.children]);
+  return (
+    <reactSelectComponents.MenuList {...props}>
+      {menuChildren}
+      {hiddenCount > 0 && (
+        <div style={hiddenCountStyle}>{hiddenCount} Options Hidden</div>
+      )}
+    </reactSelectComponents.MenuList>
+  );
+};
+
 const SelectComponent = <T extends boolean>({
   type,
   initialIds,
@@ -188,6 +239,7 @@ const SelectComponent = <T extends boolean>({
     menuPortalTarget,
     components: {
       ...components,
+      MenuList: LimitedSelectMenu,
       IndicatorSeparator: () => null,
       ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),
       ...(isDisabled && { MultiValueRemove: () => null }),

@@ -687,8 +687,10 @@ func (c Client) sceneFragmentToScrapedScene(ctx context.Context, s *graphql.Scen
 	stashID := s.ID
 	ss := &scraper.ScrapedScene{
 		Title:        s.Title,
+		Code:         s.Code,
 		Date:         s.Date,
 		Details:      s.Details,
+		Director:     s.Director,
 		URL:          findURL(s.Urls, "STUDIO"),
 		Duration:     s.Duration,
 		RemoteSiteID: &stashID,
@@ -993,8 +995,9 @@ func (c Client) SubmitPerformerDraft(ctx context.Context, performer *models.Perf
 	if performer.HairColor != "" {
 		draft.HairColor = &performer.HairColor
 	}
-	if performer.Height != "" {
-		draft.Height = &performer.Height
+	if performer.Height != nil {
+		v := strconv.Itoa(*performer.Height)
+		draft.Height = &v
 	}
 	if performer.Measurements != "" {
 		draft.Measurements = &performer.Measurements

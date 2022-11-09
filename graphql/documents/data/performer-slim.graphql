@@ -13,7 +13,7 @@ fragment SlimPerformerData on Performer {
   ethnicity
   hair_color
   eye_color
-  height
+  height_cm
   fake_tits
   career_length
   tattoos

@@ -40,6 +40,7 @@ type SceneMovie struct {
 
 type Scene struct {
 	Title      string           `json:"title,omitempty"`
+	Code       string           `json:"code,omitempty"`
 	Studio     string           `json:"studio,omitempty"`
 	URL        string           `json:"url,omitempty"`
 	Date       string           `json:"date,omitempty"`
@@ -47,6 +48,7 @@ type Scene struct {
 	Organized  bool             `json:"organized,omitempty"`
 	OCounter   int              `json:"o_counter,omitempty"`
 	Details    string           `json:"details,omitempty"`
+	Director   string           `json:"director,omitempty"`
 	Galleries  []GalleryRef     `json:"galleries,omitempty"`
 	Performers []string         `json:"performers,omitempty"`
 	Movies     []SceneMovie     `json:"movies,omitempty"`

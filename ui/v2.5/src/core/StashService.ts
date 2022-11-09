@@ -1251,7 +1251,7 @@ export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
     ethnicity: toCreate.ethnicity,
     country: toCreate.country,
     eye_color: toCreate.eye_color,
-    height: toCreate.height,
+    height_cm: toCreate.height ? Number(toCreate.height) : undefined,
     measurements: toCreate.measurements,
     fake_tits: toCreate.fake_tits,
     career_length: toCreate.career_length,

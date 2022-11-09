@@ -3,6 +3,7 @@ package performer
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
@@ -24,7 +25,6 @@ func ToJSON(ctx context.Context, reader ImageStashIDGetter, performer *models.Pe
 		Ethnicity:     performer.Ethnicity,
 		Country:       performer.Country,
 		EyeColor:      performer.EyeColor,
-		Height:        performer.Height,
 		Measurements:  performer.Measurements,
 		FakeTits:      performer.FakeTits,
 		CareerLength:  performer.CareerLength,
@@ -50,6 +50,11 @@ func ToJSON(ctx context.Context, reader ImageStashIDGetter, performer *models.Pe
 	if performer.DeathDate != nil {
 		newPerformerJSON.DeathDate = performer.DeathDate.String()
 	}
+
+	if performer.Height != nil {
+		newPerformerJSON.Height = strconv.Itoa(*performer.Height)
+	}
+
 	if performer.Weight != nil {
 		newPerformerJSON.Weight = *performer.Weight
 	}

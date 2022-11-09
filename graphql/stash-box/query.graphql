@@ -94,7 +94,9 @@ fragment FingerprintFragment on Fingerprint {
 fragment SceneFragment on Scene {
   id
   title
+  code
   details
+  director
   duration
   date
   urls {

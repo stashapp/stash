@@ -14,7 +14,9 @@ import (
 type Scene struct {
 	ID        int    `json:"id"`
 	Title     string `json:"title"`
+	Code      string `json:"code"`
 	Details   string `json:"details"`
+	Director  string `json:"director"`
 	URL       string `json:"url"`
 	Date      *Date  `json:"date"`
 	Rating    *int   `json:"rating"`
@@ -133,7 +135,9 @@ func (s *Scene) LoadRelationships(ctx context.Context, l SceneReader) error {
 // the database entry.
 type ScenePartial struct {
 	Title     OptionalString
+	Code      OptionalString
 	Details   OptionalString
+	Director  OptionalString
 	URL       OptionalString
 	Date      OptionalDate
 	Rating    OptionalInt
@@ -167,7 +171,9 @@ type SceneUpdateInput struct {
 	ClientMutationID *string            `json:"clientMutationId"`
 	ID               string             `json:"id"`
 	Title            *string            `json:"title"`
+	Code             *string            `json:"code"`
 	Details          *string            `json:"details"`
+	Director         *string            `json:"director"`
 	URL              *string            `json:"url"`
 	Date             *string            `json:"date"`
 	Rating           *int               `json:"rating"`
@@ -201,7 +207,9 @@ func (s ScenePartial) UpdateInput(id int) SceneUpdateInput {
 	return SceneUpdateInput{
 		ID:           strconv.Itoa(id),
 		Title:        s.Title.Ptr(),
+		Code:         s.Code.Ptr(),
 		Details:      s.Details.Ptr(),
+		Director:     s.Director.Ptr(),
 		URL:          s.URL.Ptr(),
 		Date:         dateStr,
 		Rating:       s.Rating.Ptr(),

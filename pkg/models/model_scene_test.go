@@ -13,7 +13,9 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 
 	var (
 		title       = "title"
+		code        = "1337"
 		details     = "details"
+		director    = "director"
 		url         = "url"
 		date        = "2001-02-03"
 		rating      = 4
@@ -35,7 +37,9 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 			id,
 			ScenePartial{
 				Title:     NewOptionalString(title),
+				Code:      NewOptionalString(code),
 				Details:   NewOptionalString(details),
+				Director:  NewOptionalString(director),
 				URL:       NewOptionalString(url),
 				Date:      NewOptionalDate(dateObj),
 				Rating:    NewOptionalInt(rating),
@@ -45,7 +49,9 @@ func TestScenePartial_UpdateInput(t *testing.T) {
 			SceneUpdateInput{
 				ID:        idStr,
 				Title:     &title,
+				Code:      &code,
 				Details:   &details,
+				Director:  &director,
 				URL:       &url,
 				Date:      &date,
 				Rating:    &rating,

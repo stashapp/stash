@@ -84,7 +84,16 @@ func scrapedToPerformerInput(performer *models.ScrapedPerformer) models.Performe
 		ret.HairColor = *performer.HairColor
 	}
 	if performer.Height != nil {
-		ret.Height = *performer.Height
+		h, err := strconv.Atoi(*performer.Height) // height is stored as an int
+		if err == nil {
+			ret.Height = &h
+		}
+	}
+	if performer.Weight != nil {
+		h, err := strconv.Atoi(*performer.Weight)
+		if err == nil {
+			ret.Weight = &h
+		}
 	}
 	if performer.Measurements != nil {
 		ret.Measurements = *performer.Measurements
