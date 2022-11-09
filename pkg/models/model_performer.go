@@ -18,7 +18,7 @@ type Performer struct {
 	Ethnicity     string     `json:"ethnicity"`
 	Country       string     `json:"country"`
 	EyeColor      string     `json:"eye_color"`
-	Height        string     `json:"height"`
+	Height        *int       `json:"height"`
 	Measurements  string     `json:"measurements"`
 	FakeTits      string     `json:"fake_tits"`
 	CareerLength  string     `json:"career_length"`
@@ -50,7 +50,7 @@ type PerformerPartial struct {
 	Ethnicity     OptionalString
 	Country       OptionalString
 	EyeColor      OptionalString
-	Height        OptionalString
+	Height        OptionalInt
 	Measurements  OptionalString
 	FakeTits      OptionalString
 	CareerLength  OptionalString

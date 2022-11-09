@@ -397,8 +397,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const sourceSelector = player.sourceSelector();
     sourceSelector.setSources(
       scene.sceneStreams.map((stream) => {
+        const src = new URL(stream.url);
         const isDirect =
-          stream.url.endsWith("/stream") || stream.url.endsWith("/stream.m3u8");
+          src.pathname.endsWith("/stream") ||
+          src.pathname.endsWith("/stream.m3u8");
 
         return {
           src: stream.url,

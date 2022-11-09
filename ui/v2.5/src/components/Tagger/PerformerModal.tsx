@@ -133,7 +133,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
       ethnicity: performer.ethnicity,
       eye_color: performer.eye_color,
       country: performer.country,
-      height: performer.height,
+      height_cm: Number.parseFloat(performer.height ?? "") ?? undefined,
       measurements: performer.measurements,
       fake_tits: performer.fake_tits,
       career_length: performer.career_length,
@@ -151,6 +151,10 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
 
     if (Number.isNaN(performerData.weight ?? 0)) {
       performerData.weight = undefined;
+    }
+
+    if (Number.isNaN(performerData.height ?? 0)) {
+      performerData.height = undefined;
     }
 
     if (performer.tags) {

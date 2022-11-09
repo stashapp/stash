@@ -85,10 +85,28 @@ type StringCriterionInput struct {
 	Modifier CriterionModifier `json:"modifier"`
 }
 
+func (i StringCriterionInput) ValidModifier() bool {
+	switch i.Modifier {
+	case CriterionModifierEquals, CriterionModifierNotEquals, CriterionModifierIncludes, CriterionModifierExcludes, CriterionModifierMatchesRegex, CriterionModifierNotMatchesRegex,
+		CriterionModifierIsNull, CriterionModifierNotNull:
+		return true
+	}
+
+	return false
+}
+
 type IntCriterionInput struct {
 	Value    int               `json:"value"`
 	Value2   *int              `json:"value2"`
 	Modifier CriterionModifier `json:"modifier"`
+}
+
+func (i IntCriterionInput) ValidModifier() bool {
+	switch i.Modifier {
+	case CriterionModifierEquals, CriterionModifierNotEquals, CriterionModifierGreaterThan, CriterionModifierLessThan, CriterionModifierIsNull, CriterionModifierNotNull, CriterionModifierBetween, CriterionModifierNotBetween:
+		return true
+	}
+	return false
 }
 
 type ResolutionCriterionInput struct {

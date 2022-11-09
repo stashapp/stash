@@ -2,6 +2,7 @@ package performer
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
@@ -30,7 +31,6 @@ const (
 	eyeColor      = "eyeColor"
 	fakeTits      = "fakeTits"
 	gender        = "gender"
-	height        = "height"
 	instagram     = "instagram"
 	measurements  = "measurements"
 	piercings     = "piercings"
@@ -44,6 +44,7 @@ const (
 
 var (
 	rating = 5
+	height = 123
 	weight = 60
 )
 
@@ -82,7 +83,7 @@ func createFullPerformer(id int, name string) *models.Performer {
 		FakeTits:      fakeTits,
 		Favorite:      true,
 		Gender:        gender,
-		Height:        height,
+		Height:        &height,
 		Instagram:     instagram,
 		Measurements:  measurements,
 		Piercings:     piercings,
@@ -120,7 +121,7 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		FakeTits:     fakeTits,
 		Favorite:     true,
 		Gender:       gender,
-		Height:       height,
+		Height:       strconv.Itoa(height),
 		Instagram:    instagram,
 		Measurements: measurements,
 		Piercings:    piercings,
