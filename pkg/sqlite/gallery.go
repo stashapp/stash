@@ -624,6 +624,7 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 		query.not(qb.makeFilter(ctx, galleryFilter.Not))
 	}
 
+	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.ID, "galleries.id", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Title, "galleries.title"))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.Details, "galleries.details"))
 

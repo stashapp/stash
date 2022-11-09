@@ -806,6 +806,7 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 		query.not(qb.makeFilter(ctx, sceneFilter.Not))
 	}
 
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.ID, "scenes.id", nil))
 	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, sceneFileCountCriterionHandler(qb, sceneFilter.FileCount))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Title, "scenes.title"))
