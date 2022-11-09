@@ -119,11 +119,18 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
         isRunning={isUpdating}
       >
         <Form>
-          <RatingSystem
-            value={rating100}
-            onSetRating={(value) => setRating(value)}
-            disabled={isUpdating}
-          />
+          <Form.Group controlId="rating" as={Row}>
+            {FormUtils.renderLabel({
+              title: intl.formatMessage({ id: "rating" }),
+            })}
+            <Col xs={9}>
+              <RatingSystem
+                value={rating100}
+                onSetRating={(value) => setRating(value)}
+                disabled={isUpdating}
+              />
+            </Col>
+          </Form.Group>
           <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
               title: intl.formatMessage({ id: "studio" }),

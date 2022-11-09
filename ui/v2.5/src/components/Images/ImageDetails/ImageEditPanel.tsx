@@ -189,14 +189,19 @@ export const ImageEditPanel: React.FC<IProps> = ({
         <div className="form-container row px-3">
           <div className="col-12 col-lg-6 col-xl-12">
             {renderTextField("title", intl.formatMessage({ id: "title" }))}
-
-            <RatingSystem
-              value={formik.values.rating100 ?? undefined}
-              onSetRating={(value) =>
-                formik.setFieldValue("rating100", value ?? null)
-              }
-            />
-
+            <Form.Group controlId="rating" as={Row}>
+              {FormUtils.renderLabel({
+                title: intl.formatMessage({ id: "rating" }),
+              })}
+              <Col xs={9}>
+                <RatingSystem
+                  value={formik.values.rating100 ?? undefined}
+                  onSetRating={(value) =>
+                    formik.setFieldValue("rating100", value ?? null)
+                  }
+                />
+              </Col>
+            </Form.Group>
             <Form.Group controlId="studio" as={Row}>
               {FormUtils.renderLabel({
                 title: intl.formatMessage({ id: "studio" }),

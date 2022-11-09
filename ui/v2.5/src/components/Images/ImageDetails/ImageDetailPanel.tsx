@@ -91,7 +91,14 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
               <TruncatedText text={objectTitle(props.image)} />
             </h3>
           </div>
-          <RatingSystem value={props.image.rating100 ?? undefined} disabled />
+          {props.image.rating100 ? (
+            <h6>
+              <FormattedMessage id="rating" />:{" "}
+              <RatingSystem value={props.image.rating100} disabled />
+            </h6>
+          ) : (
+            ""
+          )}
           {renderGalleries()}
           {file?.width && file?.height ? (
             <h6>

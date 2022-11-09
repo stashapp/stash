@@ -23,6 +23,7 @@ import {
   mutateImageIncrementO,
   mutateImageDecrementO,
   mutateImageResetO,
+  useImageUpdate,
 } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { useInterfaceLocalForage } from "../LocalForage";
@@ -40,6 +41,7 @@ import {
   faSearchMinus,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { RatingSystem } from "../../components/Scenes/SceneDetails/RatingSystem";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;
@@ -87,6 +89,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   pageCallback,
   hide,
 }) => {
+  const [updateImage] = useImageUpdate();
+
   const [index, setIndex] = useState<number | null>(null);
   const [movingLeft, setMovingLeft] = useState(false);
   const oldIndex = useRef<number | null>(null);
@@ -574,6 +578,19 @@ export const LightboxComponent: React.FC<IProps> = ({
 
   const currentImage: ILightboxImage | undefined = images[currentIndex];
 
+  function setRating(v: number | null) {
+    if (currentImage?.id) {
+      updateImage({
+        variables: {
+          input: {
+            id: currentImage.id,
+            rating100: v,
+          },
+        },
+      });
+    }
+  }
+
   async function onIncrementClick() {
     if (currentImage?.id === undefined) return;
     try {
@@ -779,6 +796,12 @@ export const LightboxComponent: React.FC<IProps> = ({
             </>
           )}
         </div>
+        <RatingSystem
+          value={currentImage?.rating ?? undefined}
+          onSetRating={(v) => {
+            setRating(v ?? null);
+          }}
+        />
         <div>
           {currentImage?.title && (
             <Link to={`/images/${currentImage.id}`} onClick={() => close()}>

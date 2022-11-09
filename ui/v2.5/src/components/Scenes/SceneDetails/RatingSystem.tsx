@@ -180,13 +180,6 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
       </h6>
     );
   } else {
-    return (
-      <Form.Group controlId="rating" as={Row}>
-        {FormUtils.renderLabel({
-          title: intl.formatMessage({ id: "rating" }),
-        })}
-        <Col xs={9}>{toReturn}</Col>
-      </Form.Group>
-    );
+    return <div>{toReturn}</div>;
   }
 };

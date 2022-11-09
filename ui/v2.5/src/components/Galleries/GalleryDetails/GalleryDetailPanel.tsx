@@ -94,7 +94,14 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = ({
               />
             </h5>
           ) : undefined}
-          <RatingSystem value={gallery.rating100 ?? undefined} disabled />
+          {gallery.rating100 ? (
+            <h6>
+              <FormattedMessage id="rating" />:{" "}
+              <RatingSystem value={gallery.rating100} disabled />
+            </h6>
+          ) : (
+            ""
+          )}
           <h6>
             <FormattedMessage id="created_at" />:{" "}
             {TextUtils.formatDateTime(intl, gallery.created_at)}{" "}

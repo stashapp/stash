@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Form } from "react-bootstrap";
+import { Col, Form, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useBulkPerformerUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -20,6 +20,7 @@ import {
 import { IndeterminateCheckbox } from "../Shared/IndeterminateCheckbox";
 import { BulkUpdateTextInput } from "../Shared/BulkUpdateTextInput";
 import { faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import { FormUtils } from "../../utils";
 
 interface IListOperationProps {
   selected: GQL.SlimPerformerDataFragment[];
@@ -199,11 +200,18 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
         }}
         isRunning={isUpdating}
       >
-        <RatingSystem
-          value={updateInput.rating100 ?? undefined}
-          onSetRating={(value) => setUpdateField({ rating100: value })}
-          disabled={isUpdating}
-        />
+        <Form.Group controlId="rating" as={Row}>
+          {FormUtils.renderLabel({
+            title: intl.formatMessage({ id: "rating" }),
+          })}
+          <Col xs={9}>
+            <RatingSystem
+              value={updateInput.rating100 ?? undefined}
+              onSetRating={(value) => setUpdateField({ rating100: value })}
+              disabled={isUpdating}
+            />
+          </Col>
+        </Form.Group>
         <Form>
           <Form.Group controlId="favorite">
             <IndeterminateCheckbox

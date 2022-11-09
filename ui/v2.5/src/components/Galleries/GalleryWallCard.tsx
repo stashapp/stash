@@ -6,6 +6,7 @@ import { TruncatedText } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useGalleryLightbox } from "src/hooks";
 import { galleryTitle } from "src/core/galleries";
+import { RatingSystem } from "../Scenes/SceneDetails/RatingSystem";
 
 const CLASSNAME = "GalleryWallCard";
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;
@@ -45,6 +46,7 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         role="button"
         tabIndex={0}
       >
+        <RatingSystem value={gallery.rating100 ?? undefined} disabled />
         <img src={cover} alt="" className={CLASSNAME_IMG} />
         <footer className={CLASSNAME_FOOTER}>
           <Link

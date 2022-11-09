@@ -427,13 +427,19 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
 
         {renderTextField("director", intl.formatMessage({ id: "director" }))}
 
-        <RatingSystem
-          value={formik.values.rating100 ?? undefined}
-          onSetRating={(value) =>
-            formik.setFieldValue("rating100", value ?? null)
-          }
-        />
-
+        <Form.Group controlId="rating" as={Row}>
+          {FormUtils.renderLabel({
+            title: intl.formatMessage({ id: "rating" }),
+          })}
+          <Col xs={9}>
+            <RatingSystem
+              value={formik.values.rating100}
+              onSetRating={(value) =>
+                formik.setFieldValue("rating100", value ?? null)
+              }
+            />
+          </Col>
+        </Form.Group>
         <Form.Group controlId="url" as={Row}>
           {FormUtils.renderLabel({
             title: intl.formatMessage({ id: "url" }),
