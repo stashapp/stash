@@ -10,7 +10,6 @@ export interface IRatingSystemProps {
   value?: number;
   onSetRating?: (value?: number) => void;
   disabled?: boolean;
-  excludeLabel?: boolean;
 }
 
 export interface IRatingStarsProps {
@@ -145,7 +144,6 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
   }
 
   let toReturn;
-  const intl = useIntl();
   switch (config?.interface?.ratingSystem) {
     // case GQL.RatingSystem.TenStar:
     // case GQL.RatingSystem.TenPointFiveStar:
@@ -169,17 +167,5 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
       break;
   }
 
-  if (props.excludeLabel) {
-    return toReturn;
-  }
-
-  if (props.disabled) {
-    return (
-      <h6>
-        <FormattedMessage id="rating" />: {toReturn}
-      </h6>
-    );
-  } else {
-    return <div>{toReturn}</div>;
-  }
+  return <div>{toReturn}</div>;
 };
