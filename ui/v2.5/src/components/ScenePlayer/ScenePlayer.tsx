@@ -508,14 +508,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     auto.current =
       autoplay || (config?.autostartVideo ?? false) || _initialTimestamp > 0;
 
-    var startPositition = _initialTimestamp
+    var startPositition = _initialTimestamp;
     if (!alwaysStartFromBeginning && file.duration > scene.resume_time!) {
       startPositition = scene.resume_time!;
     }
 
     initialTimestamp.current = startPositition;
     setTime(startPositition);
-    playDurationRef.current = 0
+    playDurationRef.current = 0;
 
     player.load();
     player.focus();
