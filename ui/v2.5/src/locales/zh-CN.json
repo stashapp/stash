@@ -807,6 +807,7 @@
   },
   "hasMarkers": "含有章节标记",
   "height": "身高",
+  "height_cm": "高(cm)",
   "help": "说明",
   "ignore_auto_tag": "忽略自动标签",
   "image": "图片",
@@ -1064,6 +1065,7 @@
   "videos": "视频",
   "view_all": "查看全部",
   "weight": "体重",
+  "weight_kg": "重量(kg)",
   "years_old": "岁",
   "zip_file_count": "压缩文件数量"
 }
