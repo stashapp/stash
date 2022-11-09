@@ -793,15 +793,15 @@ export const LightboxComponent: React.FC<IProps> = ({
                   value={currentImage?.o_counter ?? 0}
                 />
               </div>
+              <RatingSystem
+                value={currentImage?.rating100 ?? undefined}
+                onSetRating={(v) => {
+                  setRating(v ?? null);
+                }}
+              />
             </>
           )}
         </div>
-        <RatingSystem
-          value={currentImage?.rating ?? undefined}
-          onSetRating={(v) => {
-            setRating(v ?? null);
-          }}
-        />
         <div>
           {currentImage?.title && (
             <Link to={`/images/${currentImage.id}`} onClick={() => close()}>

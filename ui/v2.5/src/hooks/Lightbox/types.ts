@@ -8,7 +8,7 @@ interface IImagePaths {
 export interface ILightboxImage {
   id?: string;
   title?: GQL.Maybe<string>;
-  rating?: GQL.Maybe<number>;
+  rating100?: GQL.Maybe<number>;
   o_counter?: GQL.Maybe<number>;
   paths: IImagePaths;
 }
