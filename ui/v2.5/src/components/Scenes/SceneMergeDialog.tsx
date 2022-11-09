@@ -133,7 +133,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       setLoading(false);
     }
 
-    const all = [dest, ...sources];
+    // append dest to all so that if dest has stash_ids with the same
+    // endpoint, then it will be excluded first
+    const all = sources.concat(dest);
 
     setTitle(
       new ScrapeResult(
@@ -212,14 +214,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           .map((s) => s.stash_ids)
           .flat()
           .filter((s, index, a) => {
-            // remove duplicates
-            return (
-              index ===
-              a.findIndex(
-                (ss) => ss.endpoint === s.endpoint && ss.stash_id === s.stash_id
-              )
-            );
-          })
+            // remove entries with duplicate endpoints
+            return index === a.findIndex((ss) => ss.endpoint === s.endpoint);
+          }),
+        !dest.stash_ids.length
       )
     );
 
