@@ -4,6 +4,7 @@ import { TagLink } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils, getStashboxBase, getCountryByISO } from "src/utils";
 import { TextField, URLField } from "src/utils/field";
+import { cmToImperial, kgToLbs } from "src/utils/units";
 
 interface IPerformerDetails {
   performer: GQL.PerformerDataFragment;
@@ -75,22 +76,59 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     if (!height) {
       return "";
     }
-    return intl.formatNumber(height, {
-      style: "unit",
-      unit: "centimeter",
-      unitDisplay: "narrow",
-    });
+
+    const [feet, inches] = cmToImperial(height);
+
+    return (
+      <span className="performer-height">
+        <span className="height-metric">
+          {intl.formatNumber(height, {
+            style: "unit",
+            unit: "centimeter",
+            unitDisplay: "short",
+          })}
+        </span>
+        <span className="height-imperial">
+          {intl.formatNumber(feet, {
+            style: "unit",
+            unit: "foot",
+            unitDisplay: "narrow",
+          })}
+          {intl.formatNumber(inches, {
+            style: "unit",
+            unit: "inch",
+            unitDisplay: "narrow",
+          })}
+        </span>
+      </span>
+    );
   };
 
   const formatWeight = (weight?: number | null) => {
     if (!weight) {
       return "";
     }
-    return intl.formatNumber(weight, {
-      style: "unit",
-      unit: "kilogram",
-      unitDisplay: "narrow",
-    });
+
+    const lbs = kgToLbs(weight);
+
+    return (
+      <span className="performer-weight">
+        <span className="weight-metric">
+          {intl.formatNumber(weight, {
+            style: "unit",
+            unit: "kilogram",
+            unitDisplay: "short",
+          })}
+        </span>
+        <span className="weight-imperial">
+          {intl.formatNumber(lbs, {
+            style: "unit",
+            unit: "pound",
+            unitDisplay: "short",
+          })}
+        </span>
+      </span>
+    );
   };
 
   return (
@@ -120,8 +158,25 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           getCountryByISO(performer.country, intl.locale) ?? performer.country
         }
       />
-      <TextField id="height" value={formatHeight(performer.height_cm)} />
-      <TextField id="weight" value={formatWeight(performer.weight)} />
+
+      {!!performer.height_cm && (
+        <>
+          <dt>
+            <FormattedMessage id="height" />
+          </dt>
+          <dd>{formatHeight(performer.height_cm)}</dd>
+        </>
+      )}
+
+      {!!performer.weight && (
+        <>
+          <dt>
+            <FormattedMessage id="weight" />
+          </dt>
+          <dd>{formatWeight(performer.weight)}</dd>
+        </>
+      )}
+
       <TextField id="measurements" value={performer.measurements} />
       <TextField id="fake_tits" value={performer.fake_tits} />
       <TextField id="career_length" value={performer.career_length} />
