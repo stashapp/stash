@@ -87,11 +87,10 @@ func createPerformer(ctx context.Context, pqb models.PerformerWriter) error {
 	// create the performer
 	performer := models.Performer{
 		Checksum: testName,
-		Name:     sql.NullString{Valid: true, String: testName},
-		Favorite: sql.NullBool{Valid: true, Bool: false},
+		Name:     testName,
 	}
 
-	_, err := pqb.Create(ctx, performer)
+	err := pqb.Create(ctx, &performer)
 	if err != nil {
 		return err
 	}

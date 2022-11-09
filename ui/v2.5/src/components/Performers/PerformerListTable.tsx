@@ -8,6 +8,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Icon } from "src/components/Shared";
 import { NavUtils } from "src/utils";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import { cmToImperial } from "src/utils/units";
 
 interface IPerformerListTableProps {
   performers: GQL.PerformerDataFragment[];
@@ -17,6 +18,38 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   props: IPerformerListTableProps
 ) => {
   const intl = useIntl();
+
+  const formatHeight = (height?: number | null) => {
+    if (!height) {
+      return "";
+    }
+
+    const [feet, inches] = cmToImperial(height);
+
+    return (
+      <span className="performer-height">
+        <span className="height-metric">
+          {intl.formatNumber(height, {
+            style: "unit",
+            unit: "centimeter",
+            unitDisplay: "short",
+          })}
+        </span>
+        <span className="height-imperial">
+          {intl.formatNumber(feet, {
+            style: "unit",
+            unit: "foot",
+            unitDisplay: "narrow",
+          })}
+          {intl.formatNumber(inches, {
+            style: "unit",
+            unit: "inch",
+            unitDisplay: "narrow",
+          })}
+        </span>
+      </span>
+    );
+  };
 
   const renderPerformerRow = (performer: GQL.PerformerDataFragment) => (
     <tr key={performer.id}>
@@ -58,7 +91,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
         </Link>
       </td>
       <td>{performer.birthdate}</td>
-      <td>{performer.height}</td>
+      <td>{!!performer.height_cm && formatHeight(performer.height_cm)}</td>
     </tr>
   );
 

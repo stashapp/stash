@@ -2,11 +2,12 @@ package performer
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/jsonschema"
 	"github.com/stashapp/stash/pkg/sliceutil/stringslice"
@@ -16,7 +17,7 @@ import (
 
 type NameFinderCreatorUpdater interface {
 	NameFinderCreator
-	UpdateFull(ctx context.Context, updatedPerformer models.Performer) (*models.Performer, error)
+	Update(ctx context.Context, updatedPerformer *models.Performer) error
 	UpdateTags(ctx context.Context, performerID int, tagIDs []int) error
 	UpdateImage(ctx context.Context, performerID int, image []byte) error
 	UpdateStashIDs(ctx context.Context, performerID int, stashIDs []models.StashID) error
@@ -164,19 +165,19 @@ func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
 }
 
 func (i *Importer) Create(ctx context.Context) (*int, error) {
-	created, err := i.ReaderWriter.Create(ctx, i.performer)
+	err := i.ReaderWriter.Create(ctx, &i.performer)
 	if err != nil {
 		return nil, fmt.Errorf("error creating performer: %v", err)
 	}
 
-	id := created.ID
+	id := i.performer.ID
 	return &id, nil
 }
 
 func (i *Importer) Update(ctx context.Context, id int) error {
 	performer := i.performer
 	performer.ID = id
-	_, err := i.ReaderWriter.UpdateFull(ctx, performer)
+	err := i.ReaderWriter.Update(ctx, &performer)
 	if err != nil {
 		return fmt.Errorf("error updating existing performer: %v", err)
 	}
@@ -188,75 +189,60 @@ func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Perform
 	checksum := md5.FromString(performerJSON.Name)
 
 	newPerformer := models.Performer{
+		Name:          performerJSON.Name,
 		Checksum:      checksum,
-		Favorite:      sql.NullBool{Bool: performerJSON.Favorite, Valid: true},
+		Gender:        models.GenderEnum(performerJSON.Gender),
+		URL:           performerJSON.URL,
+		Ethnicity:     performerJSON.Ethnicity,
+		Country:       performerJSON.Country,
+		EyeColor:      performerJSON.EyeColor,
+		Measurements:  performerJSON.Measurements,
+		FakeTits:      performerJSON.FakeTits,
+		CareerLength:  performerJSON.CareerLength,
+		Tattoos:       performerJSON.Tattoos,
+		Piercings:     performerJSON.Piercings,
+		Aliases:       performerJSON.Aliases,
+		Twitter:       performerJSON.Twitter,
+		Instagram:     performerJSON.Instagram,
+		Details:       performerJSON.Details,
+		HairColor:     performerJSON.HairColor,
+		Favorite:      performerJSON.Favorite,
 		IgnoreAutoTag: performerJSON.IgnoreAutoTag,
-		CreatedAt:     models.SQLiteTimestamp{Timestamp: performerJSON.CreatedAt.GetTime()},
-		UpdatedAt:     models.SQLiteTimestamp{Timestamp: performerJSON.UpdatedAt.GetTime()},
+		CreatedAt:     performerJSON.CreatedAt.GetTime(),
+		UpdatedAt:     performerJSON.UpdatedAt.GetTime(),
 	}
 
-	if performerJSON.Name != "" {
-		newPerformer.Name = sql.NullString{String: performerJSON.Name, Valid: true}
-	}
-	if performerJSON.Gender != "" {
-		newPerformer.Gender = sql.NullString{String: performerJSON.Gender, Valid: true}
-	}
-	if performerJSON.URL != "" {
-		newPerformer.URL = sql.NullString{String: performerJSON.URL, Valid: true}
-	}
 	if performerJSON.Birthdate != "" {
-		newPerformer.Birthdate = models.SQLiteDate{String: performerJSON.Birthdate, Valid: true}
-	}
-	if performerJSON.Ethnicity != "" {
-		newPerformer.Ethnicity = sql.NullString{String: performerJSON.Ethnicity, Valid: true}
-	}
-	if performerJSON.Country != "" {
-		newPerformer.Country = sql.NullString{String: performerJSON.Country, Valid: true}
-	}
-	if performerJSON.EyeColor != "" {
-		newPerformer.EyeColor = sql.NullString{String: performerJSON.EyeColor, Valid: true}
-	}
-	if performerJSON.Height != "" {
-		newPerformer.Height = sql.NullString{String: performerJSON.Height, Valid: true}
-	}
-	if performerJSON.Measurements != "" {
-		newPerformer.Measurements = sql.NullString{String: performerJSON.Measurements, Valid: true}
-	}
-	if performerJSON.FakeTits != "" {
-		newPerformer.FakeTits = sql.NullString{String: performerJSON.FakeTits, Valid: true}
-	}
-	if performerJSON.CareerLength != "" {
-		newPerformer.CareerLength = sql.NullString{String: performerJSON.CareerLength, Valid: true}
-	}
-	if performerJSON.Tattoos != "" {
-		newPerformer.Tattoos = sql.NullString{String: performerJSON.Tattoos, Valid: true}
-	}
-	if performerJSON.Piercings != "" {
-		newPerformer.Piercings = sql.NullString{String: performerJSON.Piercings, Valid: true}
-	}
-	if performerJSON.Aliases != "" {
-		newPerformer.Aliases = sql.NullString{String: performerJSON.Aliases, Valid: true}
-	}
-	if performerJSON.Twitter != "" {
-		newPerformer.Twitter = sql.NullString{String: performerJSON.Twitter, Valid: true}
-	}
-	if performerJSON.Instagram != "" {
-		newPerformer.Instagram = sql.NullString{String: performerJSON.Instagram, Valid: true}
+		d, err := utils.ParseDateStringAsTime(performerJSON.Birthdate)
+		if err == nil {
+			newPerformer.Birthdate = &models.Date{
+				Time: d,
+			}
+		}
 	}
 	if performerJSON.Rating != 0 {
-		newPerformer.Rating = sql.NullInt64{Int64: int64(performerJSON.Rating), Valid: true}
-	}
-	if performerJSON.Details != "" {
-		newPerformer.Details = sql.NullString{String: performerJSON.Details, Valid: true}
+		newPerformer.Rating = &performerJSON.Rating
 	}
 	if performerJSON.DeathDate != "" {
-		newPerformer.DeathDate = models.SQLiteDate{String: performerJSON.DeathDate, Valid: true}
+		d, err := utils.ParseDateStringAsTime(performerJSON.DeathDate)
+		if err == nil {
+			newPerformer.DeathDate = &models.Date{
+				Time: d,
+			}
+		}
 	}
-	if performerJSON.HairColor != "" {
-		newPerformer.HairColor = sql.NullString{String: performerJSON.HairColor, Valid: true}
-	}
+
 	if performerJSON.Weight != 0 {
-		newPerformer.Weight = sql.NullInt64{Int64: int64(performerJSON.Weight), Valid: true}
+		newPerformer.Weight = &performerJSON.Weight
+	}
+
+	if performerJSON.Height != "" {
+		h, err := strconv.Atoi(performerJSON.Height)
+		if err == nil {
+			newPerformer.Height = &h
+		} else {
+			logger.Warnf("error parsing height %q: %v", performerJSON.Height, err)
+		}
 	}
 
 	return newPerformer

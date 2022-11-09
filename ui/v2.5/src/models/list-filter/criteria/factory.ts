@@ -150,10 +150,14 @@ export function makeCriteria(type: CriterionType = "none") {
       return new DuplicatedCriterion();
     case "country":
       return new CountryCriterion();
+    case "height":
+    case "height_cm":
+      return new NumberCriterion(
+        new NumberCriterionOption("height", "height_cm", type)
+      );
     case "ethnicity":
     case "hair_color":
     case "eye_color":
-    case "height":
     case "measurements":
     case "fake_tits":
     case "career_length":
@@ -168,6 +172,8 @@ export function makeCriteria(type: CriterionType = "none") {
     case "synopsis":
     case "description":
       return new StringCriterion(new StringCriterionOption(type, type));
+    case "scene_code":
+      return new StringCriterion(new StringCriterionOption(type, type, "code"));
     case "interactive":
       return new InteractiveCriterion();
     case "captions":

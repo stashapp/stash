@@ -1,28 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import VideoJS, { VideoJsPlayer } from "video.js";
+import videojs, { VideoJsPlayer } from "video.js";
 
-const Button = VideoJS.getComponent("Button");
-
-interface ControlOptions extends VideoJS.ComponentOptions {
+interface ControlOptions extends videojs.ComponentOptions {
   direction: "forward" | "back";
   parent: SkipButtonPlugin;
 }
 
-/**
- * A video.js plugin.
- *
- * In the plugin function, the value of `this` is a video.js `Player`
- * instance. You cannot rely on the player being in a "ready" state here,
- * depending on how the plugin is invoked. This may or may not be important
- * to you; if not, remove the wait for "ready"!
- *
- * @function skipButtons
- * @param    {Object} [options={}]
- *           An object of options left to the plugin author to define.
- */
-class SkipButtonPlugin extends VideoJS.getPlugin("plugin") {
-  onNext?: () => void | undefined;
-  onPrevious?: () => void | undefined;
+class SkipButtonPlugin extends videojs.getPlugin("plugin") {
+  onNext?: () => void;
+  onPrevious?: () => void;
 
   constructor(player: VideoJsPlayer) {
     super(player);
@@ -74,7 +60,7 @@ class SkipButtonPlugin extends VideoJS.getPlugin("plugin") {
   }
 }
 
-class SkipButton extends Button {
+class SkipButton extends videojs.getComponent("button") {
   private parentPlugin: SkipButtonPlugin;
   private direction: "forward" | "back";
 
@@ -107,12 +93,15 @@ class SkipButton extends Button {
   }
 }
 
-VideoJS.registerComponent("SkipButton", SkipButton);
-VideoJS.registerPlugin("skipButtons", SkipButtonPlugin);
+videojs.registerComponent("SkipButton", SkipButton);
+videojs.registerPlugin("skipButtons", SkipButtonPlugin);
 
 declare module "video.js" {
   interface VideoJsPlayer {
-    skipButtons: () => void | SkipButtonPlugin;
+    skipButtons: () => SkipButtonPlugin;
+  }
+  interface VideoJsPlayerPluginOptions {
+    skipButtons?: {};
   }
 }
 

@@ -1,8 +1,8 @@
 package performer
 
 import (
-	"database/sql"
 	"errors"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/models"
@@ -22,26 +22,30 @@ const (
 )
 
 const (
-	performerName  = "testPerformer"
-	url            = "url"
-	aliases        = "aliases"
-	careerLength   = "careerLength"
-	country        = "country"
-	ethnicity      = "ethnicity"
-	eyeColor       = "eyeColor"
-	fakeTits       = "fakeTits"
-	gender         = "gender"
-	height         = "height"
-	instagram      = "instagram"
-	measurements   = "measurements"
-	piercings      = "piercings"
-	tattoos        = "tattoos"
-	twitter        = "twitter"
-	rating         = 5
-	details        = "details"
-	hairColor      = "hairColor"
-	weight         = 60
+	performerName = "testPerformer"
+	url           = "url"
+	aliases       = "aliases"
+	careerLength  = "careerLength"
+	country       = "country"
+	ethnicity     = "ethnicity"
+	eyeColor      = "eyeColor"
+	fakeTits      = "fakeTits"
+	gender        = "gender"
+	instagram     = "instagram"
+	measurements  = "measurements"
+	piercings     = "piercings"
+	tattoos       = "tattoos"
+	twitter       = "twitter"
+	details       = "details"
+	hairColor     = "hairColor"
+
 	autoTagIgnored = true
+)
+
+var (
+	rating = 5
+	height = 123
+	weight = 60
 )
 
 var imageBytes = []byte("imageBytes")
@@ -56,14 +60,8 @@ var stashIDs = []models.StashID{
 
 const image = "aW1hZ2VCeXRlcw=="
 
-var birthDate = models.SQLiteDate{
-	String: "2001-01-01",
-	Valid:  true,
-}
-var deathDate = models.SQLiteDate{
-	String: "2021-02-02",
-	Valid:  true,
-}
+var birthDate = models.NewDate("2001-01-01")
+var deathDate = models.NewDate("2021-02-02")
 
 var (
 	createTime = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
@@ -72,55 +70,41 @@ var (
 
 func createFullPerformer(id int, name string) *models.Performer {
 	return &models.Performer{
-		ID:           id,
-		Name:         models.NullString(name),
-		Checksum:     md5.FromString(name),
-		URL:          models.NullString(url),
-		Aliases:      models.NullString(aliases),
-		Birthdate:    birthDate,
-		CareerLength: models.NullString(careerLength),
-		Country:      models.NullString(country),
-		Ethnicity:    models.NullString(ethnicity),
-		EyeColor:     models.NullString(eyeColor),
-		FakeTits:     models.NullString(fakeTits),
-		Favorite: sql.NullBool{
-			Bool:  true,
-			Valid: true,
-		},
-		Gender:       models.NullString(gender),
-		Height:       models.NullString(height),
-		Instagram:    models.NullString(instagram),
-		Measurements: models.NullString(measurements),
-		Piercings:    models.NullString(piercings),
-		Tattoos:      models.NullString(tattoos),
-		Twitter:      models.NullString(twitter),
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
-		Rating:    models.NullInt64(rating),
-		Details:   models.NullString(details),
-		DeathDate: deathDate,
-		HairColor: models.NullString(hairColor),
-		Weight: sql.NullInt64{
-			Int64: weight,
-			Valid: true,
-		},
+		ID:            id,
+		Name:          name,
+		Checksum:      md5.FromString(name),
+		URL:           url,
+		Aliases:       aliases,
+		Birthdate:     &birthDate,
+		CareerLength:  careerLength,
+		Country:       country,
+		Ethnicity:     ethnicity,
+		EyeColor:      eyeColor,
+		FakeTits:      fakeTits,
+		Favorite:      true,
+		Gender:        gender,
+		Height:        &height,
+		Instagram:     instagram,
+		Measurements:  measurements,
+		Piercings:     piercings,
+		Tattoos:       tattoos,
+		Twitter:       twitter,
+		CreatedAt:     createTime,
+		UpdatedAt:     updateTime,
+		Rating:        &rating,
+		Details:       details,
+		DeathDate:     &deathDate,
+		HairColor:     hairColor,
+		Weight:        &weight,
 		IgnoreAutoTag: autoTagIgnored,
 	}
 }
 
 func createEmptyPerformer(id int) models.Performer {
 	return models.Performer{
-		ID: id,
-		CreatedAt: models.SQLiteTimestamp{
-			Timestamp: createTime,
-		},
-		UpdatedAt: models.SQLiteTimestamp{
-			Timestamp: updateTime,
-		},
+		ID:        id,
+		CreatedAt: createTime,
+		UpdatedAt: updateTime,
 	}
 }
 
@@ -129,7 +113,7 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		Name:         name,
 		URL:          url,
 		Aliases:      aliases,
-		Birthdate:    birthDate.String,
+		Birthdate:    birthDate.String(),
 		CareerLength: careerLength,
 		Country:      country,
 		Ethnicity:    ethnicity,
@@ -137,7 +121,7 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		FakeTits:     fakeTits,
 		Favorite:     true,
 		Gender:       gender,
-		Height:       height,
+		Height:       strconv.Itoa(height),
 		Instagram:    instagram,
 		Measurements: measurements,
 		Piercings:    piercings,
@@ -152,7 +136,7 @@ func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 		Rating:    rating,
 		Image:     image,
 		Details:   details,
-		DeathDate: deathDate.String,
+		DeathDate: deathDate.String(),
 		HairColor: hairColor,
 		Weight:    weight,
 		StashIDs: []models.StashID{

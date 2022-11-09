@@ -36,9 +36,11 @@ func queryURLParametersFromScrapedScene(scene ScrapedSceneInput) queryURLParamet
 	}
 
 	setField("title", scene.Title)
+	setField("code", scene.Code)
 	setField("url", scene.URL)
 	setField("date", scene.Date)
 	setField("details", scene.Details)
+	setField("director", scene.Director)
 	setField("remote_site_id", scene.RemoteSiteID)
 	return ret
 }

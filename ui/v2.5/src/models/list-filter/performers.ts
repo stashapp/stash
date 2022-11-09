@@ -3,6 +3,7 @@ import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
   createBooleanCriterionOption,
+  NumberCriterionOption,
 } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
@@ -58,7 +59,6 @@ const stringCriteria: CriterionType[] = [
   "country",
   "hair_color",
   "eye_color",
-  "height",
   "measurements",
   "fake_tits",
   "career_length",
@@ -81,6 +81,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
   createBooleanCriterionOption("ignore_auto_tag"),
+  new NumberCriterionOption("height", "height_cm", "height_cm"),
   ...numberCriteria.map((c) => createNumberCriterionOption(c)),
   ...stringCriteria.map((c) => createStringCriterionOption(c)),
 ];

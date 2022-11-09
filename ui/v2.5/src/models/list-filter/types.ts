@@ -88,6 +88,7 @@ export type CriterionType =
   | "hair_color"
   | "eye_color"
   | "height"
+  | "height_cm"
   | "weight"
   | "measurements"
   | "fake_tits"
@@ -128,4 +129,5 @@ export type CriterionType =
   | "duplicated"
   | "ignore_auto_tag"
   | "file_count"
-  | "description";
+  | "description"
+  | "scene_code";

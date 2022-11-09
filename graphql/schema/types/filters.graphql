@@ -60,7 +60,9 @@ input PerformerFilterType {
   """Filter by eye color"""
   eye_color: StringCriterionInput
   """Filter by height"""
-  height: StringCriterionInput
+  height: StringCriterionInput @deprecated(reason: "Use height_cm instead") 
+  """Filter by height in cm""" 
+  height_cm: IntCriterionInput
   """Filter by measurements"""
   measurements: StringCriterionInput
   """Filter by fake tits value"""
@@ -122,7 +124,9 @@ input SceneFilterType {
   NOT: SceneFilterType
 
   title: StringCriterionInput
+  code: StringCriterionInput
   details: StringCriterionInput
+  director: StringCriterionInput
 
   """Filter by file oshash"""
   oshash: StringCriterionInput

@@ -1011,7 +1011,7 @@ func TestTagMerge(t *testing.T) {
 		assert.Contains(g.TagIDs.List(), destID)
 
 		// ensure performer points to new tag
-		performerTagIDs, err := sqlite.PerformerReaderWriter.GetTagIDs(ctx, performerIDs[performerIdxWithTwoTags])
+		performerTagIDs, err := db.Performer.GetTagIDs(ctx, performerIDs[performerIdxWithTwoTags])
 		if err != nil {
 			return err
 		}

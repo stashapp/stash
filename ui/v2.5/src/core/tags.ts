@@ -10,9 +10,9 @@ import React from "react";
 import { ConfigurationContext } from "src/hooks/Config";
 import { IUIConfig } from "./config";
 
-export const tagFilterHook = (tag: GQL.TagDataFragment) => {
+export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
+  const config = React.useContext(ConfigurationContext);
   return (filter: ListFilterModel) => {
-    const config = React.useContext(ConfigurationContext);
     const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
     let tagCriterion = filter.criteria.find((c) => {

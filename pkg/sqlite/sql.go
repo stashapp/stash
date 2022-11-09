@@ -178,7 +178,7 @@ func getIntWhereClause(column string, modifier models.CriterionModifier, value i
 		return fmt.Sprintf("%s > ?", column), args
 	}
 
-	panic("unsupported int modifier type")
+	panic("unsupported int modifier type " + modifier)
 }
 
 // returns where clause and having clause
