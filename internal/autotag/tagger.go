@@ -23,7 +23,13 @@ import (
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/txn"
 )
+
+type Tagger struct {
+	TxnManager txn.Manager
+	Cache      *match.Cache
+}
 
 type tagger struct {
 	ID      int

@@ -8,7 +8,11 @@ import (
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/txn"
 )
+
+// the following functions aren't used in Tagger because they assume
+// use within a transaction
 
 func addSceneStudio(ctx context.Context, sceneWriter scene.PartialUpdater, o *models.Scene, studioID int) (bool, error) {
 	// don't set if already set
@@ -86,12 +90,28 @@ type SceneFinderUpdater interface {
 }
 
 // StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.
-func StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw SceneFinderUpdater, cache *match.Cache) error {
-	t := getStudioTagger(p, aliases, cache)
+func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw SceneFinderUpdater) error {
+	t := getStudioTagger(p, aliases, tagger.Cache)
 
 	for _, tt := range t {
 		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
-			return addSceneStudio(ctx, rw, o, p.ID)
+			// don't set if already set
+			if o.StudioID != nil {
+				return false, nil
+			}
+
+			// set the studio id
+			scenePartial := models.ScenePartial{
+				StudioID: models.NewOptionalInt(p.ID),
+			}
+
+			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				_, err := rw.UpdatePartial(ctx, o.ID, scenePartial)
+				return err
+			}); err != nil {
+				return false, err
+			}
+			return true, nil
 		}); err != nil {
 			return err
 		}
@@ -107,12 +127,28 @@ type ImageFinderUpdater interface {
 }
 
 // StudioImages searches for images whose path matches the provided studio name and tags the image with the studio, if studio is not already set on the image.
-func StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw ImageFinderUpdater, cache *match.Cache) error {
-	t := getStudioTagger(p, aliases, cache)
+func (tagger *Tagger) StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw ImageFinderUpdater) error {
+	t := getStudioTagger(p, aliases, tagger.Cache)
 
 	for _, tt := range t {
 		if err := tt.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
-			return addImageStudio(ctx, rw, i, p.ID)
+			// don't set if already set
+			if i.StudioID != nil {
+				return false, nil
+			}
+
+			// set the studio id
+			imagePartial := models.ImagePartial{
+				StudioID: models.NewOptionalInt(p.ID),
+			}
+
+			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				_, err := rw.UpdatePartial(ctx, i.ID, imagePartial)
+				return err
+			}); err != nil {
+				return false, err
+			}
+			return true, nil
 		}); err != nil {
 			return err
 		}
@@ -128,12 +164,28 @@ type GalleryFinderUpdater interface {
 }
 
 // StudioGalleries searches for galleries whose path matches the provided studio name and tags the gallery with the studio, if studio is not already set on the gallery.
-func StudioGalleries(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw GalleryFinderUpdater, cache *match.Cache) error {
-	t := getStudioTagger(p, aliases, cache)
+func (tagger *Tagger) StudioGalleries(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw GalleryFinderUpdater) error {
+	t := getStudioTagger(p, aliases, tagger.Cache)
 
 	for _, tt := range t {
 		if err := tt.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
-			return addGalleryStudio(ctx, rw, o, p.ID)
+			// don't set if already set
+			if o.StudioID != nil {
+				return false, nil
+			}
+
+			// set the studio id
+			galleryPartial := models.GalleryPartial{
+				StudioID: models.NewOptionalInt(p.ID),
+			}
+
+			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				_, err := rw.UpdatePartial(ctx, o.ID, galleryPartial)
+				return err
+			}); err != nil {
+				return false, err
+			}
+			return true, nil
 		}); err != nil {
 			return err
 		}

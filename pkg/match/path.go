@@ -315,10 +315,6 @@ func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReade
 			return fmt.Errorf("error querying scenes with regex '%s': %s", regex, err.Error())
 		}
 
-		if len(scenes) == 0 {
-			break
-		}
-
 		// paths may have unicode characters
 		const useUnicode = true
 
@@ -329,6 +325,10 @@ func PathToScenesFn(ctx context.Context, name string, paths []string, sceneReade
 					return fmt.Errorf("processing scene %s: %w", p.GetTitle(), err)
 				}
 			}
+		}
+
+		if len(scenes) < pp {
+			break
 		}
 
 		lastID = scenes[len(scenes)-1].ID
@@ -374,10 +374,6 @@ func PathToImagesFn(ctx context.Context, name string, paths []string, imageReade
 			return fmt.Errorf("error querying images with regex '%s': %s", regex, err.Error())
 		}
 
-		if len(images) == 0 {
-			break
-		}
-
 		// paths may have unicode characters
 		const useUnicode = true
 
@@ -388,6 +384,10 @@ func PathToImagesFn(ctx context.Context, name string, paths []string, imageReade
 					return fmt.Errorf("processing image %s: %w", p.GetTitle(), err)
 				}
 			}
+		}
+
+		if len(images) < pp {
+			break
 		}
 
 		lastID = images[len(images)-1].ID
@@ -433,10 +433,6 @@ func PathToGalleriesFn(ctx context.Context, name string, paths []string, gallery
 			return fmt.Errorf("error querying galleries with regex '%s': %s", regex, err.Error())
 		}
 
-		if len(galleries) == 0 {
-			break
-		}
-
 		// paths may have unicode characters
 		const useUnicode = true
 
@@ -448,6 +444,10 @@ func PathToGalleriesFn(ctx context.Context, name string, paths []string, gallery
 					return fmt.Errorf("processing gallery %s: %w", p.GetTitle(), err)
 				}
 			}
+		}
+
+		if len(galleries) < pp {
+			break
 		}
 
 		lastID = galleries[len(galleries)-1].ID
