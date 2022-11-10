@@ -1,6 +1,5 @@
 .rating-stars {
   display: inline-flex;
-
   vertical-align: middle;
 
   button {
@@ -55,4 +54,8 @@
   .set {
     color: gold;
   }
+}
+
+.rating-number.disabled {
+  display: inline-block;
 }

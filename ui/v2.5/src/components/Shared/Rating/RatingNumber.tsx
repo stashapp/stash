@@ -78,12 +78,16 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
   }
 
   if (props.disabled) {
-    return <text>{Number((props.value ?? 0) / 10).toFixed(1)}</text>;
+    return (
+      <div className="rating-number disabled">
+        <span>{Number((props.value ?? 0) / 10).toFixed(1)}</span>
+      </div>
+    );
   } else {
     return (
-      <div>
+      <div className="rating-number">
         <input
-          className="text-input"
+          className="text-input form-control"
           type="number"
           onMouseDown={stepChange}
           onKeyDown={nonStepChange}
@@ -97,7 +101,6 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
           min="0.0"
           step="0.1"
           max="10"
-          style={{ fontSize: "22px", padding: "4px" }}
           placeholder="0.0"
         />
       </div>
