@@ -44,6 +44,9 @@ github.com/anacrolix/dms/soap
 github.com/anacrolix/dms/ssdp
 github.com/anacrolix/dms/upnp
 github.com/anacrolix/dms/upnpav
+# github.com/andybalholm/brotli v1.0.3
+## explicit; go 1.12
+github.com/andybalholm/brotli
 # github.com/antchfx/htmlquery v1.2.5-0.20211125074323-810ee8082758
 ## explicit; go 1.14
 github.com/antchfx/htmlquery
@@ -377,6 +380,7 @@ github.com/urfave/cli/v2
 # github.com/vearutop/statigz v1.1.6
 ## explicit; go 1.16
 github.com/vearutop/statigz
+github.com/vearutop/statigz/brotli
 # github.com/vektah/dataloaden v0.3.0
 ## explicit
 github.com/vektah/dataloaden

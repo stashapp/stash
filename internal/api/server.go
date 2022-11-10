@@ -23,6 +23,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/gorilla/websocket"
 	"github.com/vearutop/statigz"
+	"github.com/vearutop/statigz/brotli"
 
 	"github.com/go-chi/httplog"
 	"github.com/rs/cors"
@@ -231,7 +232,7 @@ func Start() error {
 	}
 
 	customUILocation := c.GetCustomUILocation()
-	static := statigz.FileServer(uiBox)
+	static := statigz.FileServer(uiBox, brotli.AddEncoding)
 
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
