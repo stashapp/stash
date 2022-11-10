@@ -469,6 +469,13 @@ export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
 };
 
 export const PerformerSelect: React.FC<IFilterProps> = (props) => {
+  const [performerAliases, setPerformerAliases] = useState<
+    Record<string, string[]>
+  >({});
+  const [performerDisambiguations, setPerformerDisambiguations] = useState<
+    Record<string, string>
+  >({});
+  const [allAliases, setAllAliases] = useState<string[]>([]);
   const { data, loading } = useAllPerformersForFilter();
   const [createPerformer] = usePerformerCreate();
 
@@ -477,21 +484,103 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const defaultCreatable =
     !configuration?.interface.disableDropdownCreate.performer ?? true;
 
-  const performers = data?.allPerformers ?? [];
+  const performers = useMemo(() => data?.allPerformers ?? [], [
+    data?.allPerformers,
+  ]);
 
-  type performerType = {
-    id: string;
-    name: string;
-    disambiguation?: string;
+  useEffect(() => {
+    // build the tag aliases map
+    const newAliases: Record<string, string[]> = {};
+    const newDisambiguations: Record<string, string> = {};
+    const newAll: string[] = [];
+    performers.forEach((t) => {
+      if (t.alias_list.length) {
+        newAliases[t.id] = t.alias_list;
+      }
+      newAll.push(...t.alias_list);
+      if (t.disambiguation) {
+        newDisambiguations[t.id] = t.disambiguation;
+      }
+    });
+    setPerformerAliases(newAliases);
+    setAllAliases(newAll);
+    setPerformerDisambiguations(newDisambiguations);
+  }, [performers]);
+
+  const PerformerOption: React.FC<OptionProps<Option, boolean>> = (
+    optionProps
+  ) => {
+    const { inputValue } = optionProps.selectProps;
+
+    let thisOptionProps = optionProps;
+
+    let { label } = optionProps.data;
+    const id = Number(optionProps.data.value);
+
+    if (id && performerDisambiguations[id]) {
+      label += ` (${performerDisambiguations[id]})`;
+    }
+
+    if (
+      inputValue &&
+      !optionProps.label.toLowerCase().includes(inputValue.toLowerCase())
+    ) {
+      // must be alias
+      label += " (alias)";
+    }
+
+    if (label != optionProps.data.label) {
+      thisOptionProps = {
+        ...optionProps,
+        children: label,
+      };
+    }
+
+    return <reactSelectComponents.Option {...thisOptionProps} />;
   };
 
-  const toOption = (p: ValidTypes) => ({
-    value: p.id,
-    label: `${p.name}${
-      (p as performerType).disambiguation &&
-      ` (${(p as performerType).disambiguation})`
-    }`,
-  });
+  const filterOption = (option: Option, rawInput: string): boolean => {
+    if (!rawInput) {
+      return true;
+    }
+
+    const input = rawInput.toLowerCase();
+    const optionVal = option.label.toLowerCase();
+
+    if (optionVal.includes(input)) {
+      return true;
+    }
+
+    // search for performer aliases
+    const aliases = performerAliases[option.value];
+    return aliases && aliases.some((a) => a.toLowerCase().includes(input));
+  };
+
+  const isValidNewOption = (
+    inputValue: string,
+    value: ValueType<Option, boolean>,
+    options: OptionsType<Option> | GroupedOptionsType<Option>
+  ) => {
+    if (!inputValue) {
+      return false;
+    }
+
+    if (
+      (options as OptionsType<Option>).some((o: Option) => {
+        return o.label.toLowerCase() === inputValue.toLowerCase();
+      })
+    ) {
+      return false;
+    }
+
+    if (
+      allAliases.some((a) => a.toLowerCase().includes(inputValue.toLowerCase()))
+    ) {
+      return false;
+    }
+
+    return true;
+  };
 
   const onCreate = async (name: string) => {
     const result = await createPerformer({
@@ -506,7 +595,9 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   return (
     <FilterSelectComponent
       {...props}
-      toOption={toOption}
+      filterOption={filterOption}
+      isValidNewOption={isValidNewOption}
+      components={{ Option: PerformerOption }}
       isMulti={props.isMulti ?? false}
       creatable={props.creatable ?? defaultCreatable}
       onCreate={onCreate}

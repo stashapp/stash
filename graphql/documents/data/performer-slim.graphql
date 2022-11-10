@@ -19,6 +19,7 @@ fragment SlimPerformerData on Performer {
   career_length
   tattoos
   piercings
+  alias_list
   tags {
     id
     name
