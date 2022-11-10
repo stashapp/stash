@@ -1492,14 +1492,36 @@ func (qb *SceneStore) getPlayCount(ctx context.Context, id int) (int, error) {
 	return ret, nil
 }
 
-func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime float64, playDuration float64) (int, error) {
+func (qb *SceneStore) SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error) {
+	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
+		return false, err
+	}
+
+	if resumeTime != nil {
+		if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+			"play_duration": goqu.L("play_duration + ?", playDuration),
+		}); err != nil {
+			return false, err
+		}
+	}
+
+	if playDuration != nil {
+		if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
+			"resume_time": resumeTime,
+		}); err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
+func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, error) {
 	if err := qb.tableMgr.checkIDExists(ctx, id); err != nil {
 		return 0, err
 	}
 
 	if err := qb.tableMgr.updateByID(ctx, id, goqu.Record{
-		"resume_time":    resumeTime,
-		"play_duration":  goqu.L("play_duration + ?", playDuration),
 		"play_count":     goqu.L("play_count + 1"),
 		"last_played_at": time.Now(),
 	}); err != nil {

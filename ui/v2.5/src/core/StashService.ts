@@ -830,7 +830,15 @@ export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
     update: deleteCache(tagMutationImpactedQueries),
   });
 
-export const useSceneSaveActivity = () => GQL.useSceneSaveActivityMutation();
+export const useSceneSaveActivity = () =>
+  GQL.useSceneSaveActivityMutation({
+    update: deleteCache(sceneMutationImpactedQueries),
+  });
+
+export const useSceneIncrementWatchCount = () =>
+  GQL.useSceneIncrementWatchCountMutation({
+    update: deleteCache(sceneMutationImpactedQueries),
+  });
 
 export const savedFilterMutationImpactedQueries = [
   GQL.FindSavedFiltersDocument,

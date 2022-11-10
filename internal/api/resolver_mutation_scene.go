@@ -683,7 +683,25 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 	return sceneMarker, nil
 }
 
-func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, resumeTime float64, playDuration float64) (ret int, err error) {
+func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, resumeTime *float64, playDuration *float64) (ret bool, err error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return false, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		ret, err = qb.SaveActivity(ctx, sceneID, resumeTime, playDuration)
+		return err
+	}); err != nil {
+		return false, err
+	}
+
+	return ret, nil
+}
+
+func (r *mutationResolver) SceneIncrementWatchCount(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, err
@@ -692,7 +710,7 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	if err := r.withTxn(ctx, func(ctx context.Context) error {
 		qb := r.repository.Scene
 
-		ret, err = qb.SaveActivity(ctx, sceneID, resumeTime, playDuration)
+		ret, err = qb.IncrementWatchCount(ctx, sceneID)
 		return err
 	}); err != nil {
 		return 0, err

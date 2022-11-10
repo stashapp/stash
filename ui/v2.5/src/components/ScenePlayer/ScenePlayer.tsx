@@ -17,7 +17,10 @@ import "./markers";
 import "./vtt-thumbnails";
 import "./big-buttons";
 import cx from "classnames";
-import { useSceneSaveActivity } from "src/core/StashService";
+import {
+  useSceneSaveActivity,
+  useSceneIncrementWatchCount,
+} from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
@@ -144,6 +147,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const playerRef = useRef<VideoJsPlayer>();
   const sceneId = useRef<string>();
   const [sceneSaveActivity] = useSceneSaveActivity();
+  const [sceneIncrementWatchCount] = useSceneIncrementWatchCount();
 
   const [time, setTime] = useState(0);
   const [ready, setReady] = useState(false);
@@ -166,6 +170,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const playDurationRef = useRef(0);
   const trackTime = useRef(false);
+  const recordedActivity = useRef(false);
+  const [updatePlayDuration, setUpdatePlayDuration] = useState(false);
 
   const ignoreInterval = config?.ignoreInterval ?? 0;
   const trackActivity = config?.trackActivity ?? false;
@@ -213,6 +219,32 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
   }, [sendSetTimestamp]);
 
+  useEffect(() => {
+    const id = sceneId.current;
+    if (trackActivity && updatePlayDuration && id && playerRef.current) {
+      const playDuration = playDurationRef.current;
+      const resume_time = playerRef.current.currentTime()!;
+        sceneSaveActivity({
+          variables: {
+            id,
+            resume_time,
+            playDuration,
+          },
+        });
+
+      const videoDuration = playerRef.current.duration();
+      const percentPlayed = (100 / videoDuration) * playDuration;
+      if (!recordedActivity.current && percentPlayed >= ignoreInterval) {
+        sceneIncrementWatchCount({
+          variables: {
+            id,
+          },
+        });
+        recordedActivity.current = true;
+      }
+    }
+  }, [updatePlayDuration, ignoreInterval, sceneIncrementWatchCount, sceneSaveActivity, trackActivity]);
+
   // Initialize VideoJS player
   useEffect(() => {
     const options: VideoJsPlayerOptions = {
@@ -253,6 +285,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     var playDurationHandler = window.setInterval(() => {
       if (trackTime.current) {
         playDurationRef.current++;
+        if(playDurationRef.current % 10 == 0) {
+          setUpdatePlayDuration(true);
+        } else {
+          setUpdatePlayDuration(false);
+        }
       }
     }, 1000); // when scene is playing incrememt playDuration every second
 
@@ -274,9 +311,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         if (trackActivity) {
           const id = sceneId.current;
           const playDuration = playDurationRef.current;
-          const videoDuration = playerRef.current.duration();
-          const percentPlayed = (100 / videoDuration) * playDuration;
-          if (id && percentPlayed >= ignoreInterval) {
+          if (id) {
             const resume_time = playerRef.current.currentTime()!;
             sceneSaveActivity({
               variables: {
@@ -407,23 +442,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // don't re-initialise the player unless the scene has changed
     if (!scene || !file || scene.id === sceneId.current) return;
 
+    // if new scene was picked from playlist
     if (playerRef.current && sceneId.current) {
       if (trackActivity) {
-        const id = sceneId.current;
-        const playDuration = playDurationRef.current;
-        const videoDuration = playerRef.current.duration();
-        const percentPlayed = (100 / videoDuration) * playDuration;
-        if (id && percentPlayed >= ignoreInterval) {
-          const resume_time = 0;
-          sceneSaveActivity({
-            variables: {
-              id,
-              resume_time,
-              playDuration,
-            },
-          });
-        }
         playDurationRef.current = 0;
+        recordedActivity.current = false;
       }
     }
 
@@ -557,6 +580,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     file,
     scene,
     interactiveClient,
+    trackActivity,
     autoplay,
     config?.autostartVideo,
     config?.alwaysStartFromBeginning,

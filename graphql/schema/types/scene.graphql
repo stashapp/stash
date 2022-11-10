@@ -98,8 +98,11 @@ input SceneUpdateInput {
   cover_image: String
   stash_ids: [StashIDInput!]
 
+  """The time index a scene was left at"""
   resume_time: Float
+  """The total time a scene has spent playing"""
   play_duration: Float
+  """The number ot times a scene has been played"""
   play_count: Int
 
   primary_file_id: ID
