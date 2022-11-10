@@ -224,14 +224,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (trackActivity && updatePlayDuration && id && playerRef.current) {
       const playDuration = playDurationRef.current;
       const resume_time = playerRef.current.currentTime()!;
-      sceneSaveActivity({
-        variables: {
-          id,
-          resume_time,
-          playDuration,
-        },
-      });
-
       const videoDuration = playerRef.current.duration();
       const percentPlayed = (100 / videoDuration) * playDuration;
       if (!recordedActivity.current && percentPlayed >= ignoreInterval) {
@@ -242,6 +234,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         });
         recordedActivity.current = true;
       }
+
+      sceneSaveActivity({
+        variables: {
+          id,
+          resume_time,
+          playDuration,
+        },
+      });
     }
   }, [
     updatePlayDuration,
