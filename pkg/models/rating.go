@@ -16,7 +16,7 @@ const (
 	// TenStar              = "TenStar"
 	// TenPointFiveStar     = "TenPointFiveStar"
 	// TenPointTwoFiveStar  = "TenPointTwoFiveStar"
-	TenPointDecimal      = "TenPointDecimal"
+	TenPointDecimal = "TenPointDecimal"
 )
 
 func (e RatingSystem) IsValid() bool {
