@@ -45,6 +45,7 @@ input PerformerFilterType {
   NOT: PerformerFilterType
 
   name: StringCriterionInput
+  disambiguation: StringCriterionInput
   details: StringCriterionInput
 
   """Filter by favorite"""

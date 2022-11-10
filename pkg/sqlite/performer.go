@@ -536,6 +536,7 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 
 	const tableName = performerTable
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Name, tableName+".name"))
+	query.handleCriterion(ctx, stringCriterionHandler(filter.Disambiguation, tableName+".disambiguation"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Details, tableName+".details"))
 
 	query.handleCriterion(ctx, boolCriterionHandler(filter.FilterFavorites, tableName+".favorite", nil))

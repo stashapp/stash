@@ -62,11 +62,12 @@ type GenderCriterionInput struct {
 }
 
 type PerformerFilterType struct {
-	And     *PerformerFilterType  `json:"AND"`
-	Or      *PerformerFilterType  `json:"OR"`
-	Not     *PerformerFilterType  `json:"NOT"`
-	Name    *StringCriterionInput `json:"name"`
-	Details *StringCriterionInput `json:"details"`
+	And            *PerformerFilterType  `json:"AND"`
+	Or             *PerformerFilterType  `json:"OR"`
+	Not            *PerformerFilterType  `json:"NOT"`
+	Name           *StringCriterionInput `json:"name"`
+	Disambiguation *StringCriterionInput `json:"disambiguation"`
+	Details        *StringCriterionInput `json:"details"`
 	// Filter by favorite
 	FilterFavorites *bool `json:"filter_favorites"`
 	// Filter by birth year
