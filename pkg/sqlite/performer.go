@@ -389,7 +389,8 @@ func (qb *PerformerStore) Count(ctx context.Context) (int, error) {
 }
 
 func (qb *PerformerStore) All(ctx context.Context) ([]*models.Performer, error) {
-	return qb.getMany(ctx, qb.selectDataset())
+	table := qb.table()
+	return qb.getMany(ctx, qb.selectDataset().Order(table.Col("name").Asc()))
 }
 
 func (qb *PerformerStore) QueryForAutoTag(ctx context.Context, words []string) ([]*models.Performer, error) {
