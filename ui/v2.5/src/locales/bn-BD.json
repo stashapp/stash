@@ -150,6 +150,107 @@
       "show_male_label": "পুরুষ প্রদর্শনকারী দেখান",
       "source": "উৎস"
     },
-    "noun_query": "কুয়েরি"
+    "noun_query": "কুয়েরি",
+    "results": {
+      "duration_off": "{নাম্বারে} হলেও চলনকাল বন্ধ",
+      "duration_unknown": "চলনকাল অজানা",
+      "fp_found": "{fpCount, plural, =0 {কোনো নতুন আঙ্গুলেরছাপ পাওয়া যায়নি } অন্যান্য {নতুন অঙ্গুলেরছাপের মিল পাওয়া গেছে}}",
+      "fp_matches": "চলনকাল একটি মিল",
+      "fp_matches_multi": "চলনকাল মেলে {matchCount}/{durationLength}আঙ্গুলেরছাপ(গুলো)",
+      "hash_matches": "{হ্যাশ_ধরন} হলো একটা মিল",
+      "match_failed_already_tagged": "দৃশ্য আগে থেকেই ট্যাগকৃত",
+      "match_failed_no_result": "কোনো ফলাফল পাওয়া যায়নি",
+      "match_success": "দৃশ্য সফলভাবে ট্যাগ করা হয়েছে",
+      "phash_matches": "{গণনা} পিহ্যাশগুলোর মিল",
+      "unnamed": "বেনামী"
+    },
+    "verb_match_fp": "আঙ্গুলেরছাপ মিল করুন",
+    "verb_matched": "মিলিত",
+    "verb_scrape_all": "সবগুলোকে উঠান",
+    "verb_submit_fp": "জমান {এফপিগণনা,বহু,একক{# আঙ্গুলেরছাপ } অন্য { # আঙ্গুলেরছাপ }",
+    "verb_toggle_config": "{ নাড়ান} { কনফিগারেশন }",
+    "verb_toggle_unmatched": "{ নাড়ান } অমিলিত দৃশ্যগুলো"
+  },
+  "config": {
+    "about": {
+      "build_hash": "হ্যাশ নির্মাণ:",
+      "build_time": "নির্মাণের সময়:",
+      "check_for_new_version": "নতুন সংস্করণ যাচাই করুন",
+      "latest_version": "সর্বশেষ সংস্করণ",
+      "latest_version_build_hash": "সর্বশেষ সংস্করণের হ্যাশ নির্মাণ:",
+      "new_version_notice": "{ নতুন }",
+      "stash_discord": "আমাদের {url} চ্যানেলে যুক্ত থাকুন",
+      "stash_home": "স্টাস এর হোম {url} তে",
+      "stash_open_collective": "{url} এর মাধ্যমে আমাদের সাহায্য করুন",
+      "stash_wiki": "স্টাস {url} এর পাতা",
+      "version": "সংস্করণ"
+    },
+    "application_paths": {
+      "heading": "অ্যাপ্লিকেশন এর পথ"
+    },
+    "categories": {
+      "about": "সমন্ধে",
+      "changelog": "পরিবর্তনের লগ",
+      "interface": "ইন্টারফেস",
+      "logs": "লগগুলো",
+      "metadata_providers": "মেটাতথ্য প্রদানকারীরা",
+      "plugins": "সংযোজকসমূহ",
+      "scraping": "উঠান",
+      "security": "নিরাপত্তা",
+      "services": "সেবাসমূহ",
+      "system": "সিস্টেম",
+      "tasks": "কাজ",
+      "tools": "সরঞ্জামগুলো"
+    },
+    "dlna": {
+      "allow_temp_ip": "অনুমোদন {tempIP}",
+      "allowed_ip_addresses": "আইপি ঠিকানা অনুমোদিত",
+      "allowed_ip_temporarily": "আইপি অস্থায়ীভাবে অনুমোদিত",
+      "default_ip_whitelist": "ডিফল্ট আইপি সাদাতালিকা",
+      "default_ip_whitelist_desc": "ডিফল্ট আইপি ঠিকানাগুলো DLNA একসেস করার অনুমতি দিন। সব আইপি থিকানাগুলোকে অনুমোদন করতে {wildcard} ব্যাবহার করুন।",
+      "disabled_dlna_temporarily": "DLNA অস্থায়ীভাবে অচল করুন",
+      "disallowed_ip": "আইপি অননুমোদিত",
+      "enabled_by_default": "প্রাথমিকভাবে সচলকৃত",
+      "enabled_dlna_temporarily": "DLNA অস্থায়ীভাবে সচল",
+      "network_interfaces": "ইন্টারফেসগুলো",
+      "network_interfaces_desc": "DLNA সার্ভার অন ফাঁস করে দেওয়ার ইন্টারফেস। একটা খালি তালিকা সবগুলো ইন্টারফেসে চলন ঘটায়। পরিবর্তন করতে পর DLNA পুনরায় শুরুর দরকার হয়।",
+      "recent_ip_addresses": "সাম্প্রতিক আইপি ঠিকানাগুলো",
+      "server_display_name": "সার্ভার প্রদর্শনের নাম",
+      "server_display_name_desc": "DLNA সার্ভারটার প্রদর্শিত নাম। প্রাথমিকভাবে {server_name} যদি ফাঁকা থাকে।",
+      "successfully_cancelled_temporary_behaviour": "অস্থায়ী আচার সফলভাবে বাতিল করা হয়েছে",
+      "until_restart": "পুনরায় শুরুর করা পর্যন্ত"
+    },
+    "general": {
+      "auth": {
+        "api_key": "এপিআই চাবি",
+        "api_key_desc": "বাইরের সিস্টেমের জন্যে এপিআই চাবি। শুধুমাত্র যখন বাভারকারিনাম/পাসশব্দ কনফিগারকৃত তখনই প্রয়োজন। ব্যাবহারকারীনাম অবশ্যই এপিআই চাবি উৎপাদনের আগে সংরক্ষিত হতে হবে।",
+        "authentication": "অ্যাথনিটিকেশন",
+        "clear_api_key": "এপিআই চাবি পরিষ্কার করুন",
+        "credentials": {
+          "description": "স্টাস থেকে বরখাস্ত করতে দস্তাবেজসমূহ।",
+          "heading": "দস্তাবেজসমূহ"
+        },
+        "generate_api_key": "এপিআই চাবি উৎপাদন",
+        "log_file": "লগ ফাইল",
+        "log_file_desc": "যেখানে আউটপুট লগ হয় সেখানের ফাইল পথ। ফাইল লগ করতে খালি। পুনরায় শুরুর প্রয়োজন।",
+        "log_http": "http অ্যাকসেস লগ করুন",
+        "log_http_desc": "টার্মিনাল এ http অ্যাকসেস লগ করুন। পুনরায় শুরুর প্রয়োজন।",
+        "log_to_terminal": "টার্মিনালে লগ করুন",
+        "log_to_terminal_desc": "একটা ফাইলে সংযোজন হিসেবে টার্মিনালে লগ করে। সবসময় সত্য যদি ফাইল লগ করা অচল থাকে। পুনরায় শুরুর প্রয়োজন।",
+        "maximum_session_age": "সর্বোচ্চ সেশন এর বয়স",
+        "maximum_session_age_desc": "লগ ইন সেশনের মেয়াদ শেষ হওয়ার আগের সর্বোচ্চ অলস সময়, সেকেন্ড এ।",
+        "password": "পাসশব্দ",
+        "password_desc": "স্ট্যাস অ্যাকসেস করার পাসশব্দ। ব্যাবহারকারী  অথনিটিকেশিন অচল করতে খালি রাখুন",
+        "stash-box_integration": "স্ট্যাস-বক্স ইন্টিগ্রেশন",
+        "username": "ব্যাবহারকারীনাম",
+        "username_desc": "স্ট্যাস অ্যাকসেস করার ব্যাবহারকারীনাম। ব্যাবহাকারী অথনিটিকেশন অচল করতে খালি রাখুন"
+      },
+      "backup_directory_path": {
+        "description": "SQLite ডেটাবেস ফাইল জমানোর ডিরেক্টরির অবস্থান",
+        "heading": "জমা রাখা ডিরেক্টরির পথ"
+      },
+      "cache_location": "ক্যাশে ডিরেক্টরির অবস্থান",
+      "cache_path_head": "ক্যাশের পথ"
+    }
   }
 }
