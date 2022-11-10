@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef } from "react";
 
 export interface IRatingNumberProps {
   value?: number;
@@ -9,30 +9,46 @@ export interface IRatingNumberProps {
 export const RatingNumber: React.FC<IRatingNumberProps> = (
   props: IRatingNumberProps
 ) => {
-  const [input, setInput] = useState<string | "0.0">();
-  const [previous, setPrevious] = useState<string | "0.0">();
-  const [useValidation, setValidation] = useState<boolean | true>();
+  const text = ((props.value ?? 0) / 10).toFixed(1);
+  const useValidation = useRef(true);
+
   function stepChange() {
-    setValidation(false);
+    useValidation.current = false;
   }
 
   function nonStepChange() {
-    setValidation(true);
+    useValidation.current = true;
+  }
+
+  function setCursorPosition(
+    target: HTMLInputElement,
+    pos: number,
+    endPos?: number
+  ) {
+    // This is a workaround to a missing feature where you can't set cursor position in input numbers.
+    // See https://stackoverflow.com/questions/33406169/failed-to-execute-setselectionrange-on-htmlinputelement-the-input-elements
+    target.type = "text";
+
+    target.setSelectionRange(pos, endPos ?? pos);
+    target.type = "number";
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    let val = e.target.value;
-    if (!useValidation && props.onSetRating != null) {
-      e.target.value = Number(val).toFixed(1);
-      setInput(Number(val).toFixed(1));
-      setPrevious(Number(val).toFixed(1));
-      let tempVal = Number(val) * 10;
-      props.onSetRating(tempVal != 0 ? tempVal : undefined);
-      setValidation(true);
+    if (!props.onSetRating) {
       return;
     }
+
+    let val = e.target.value;
+    if (!useValidation.current) {
+      e.target.value = Number(val).toFixed(1);
+      const tempVal = Number(val) * 10;
+      props.onSetRating(tempVal != 0 ? tempVal : undefined);
+      useValidation.current = true;
+      return;
+    }
+
     const match = /(\d?)(\d?)(.?)((\d)?)/g.exec(val);
-    const matchOld = /(\d?)(\d?)(.?)((\d{0,2})?)/g.exec(previous ?? "");
+    const matchOld = /(\d?)(\d?)(.?)((\d{0,2})?)/g.exec(text ?? "");
 
     if (match == null || props.onSetRating == null) {
       return;
@@ -44,21 +60,18 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
     if (match[4] == null || match[4] == "") {
       match[4] = "0";
     }
+
     let value = match[1] + match[2] + "." + match[4];
     e.target.value = value;
+
     if (val.length > 0) {
       if (Number(value) > 10) {
         value = "10.0";
       }
       e.target.value = Number(value).toFixed(1);
-      setInput(Number(value).toFixed(1));
-      setPrevious(Number(value).toFixed(1));
       let tempVal = Number(value) * 10;
       props.onSetRating(tempVal != 0 ? tempVal : undefined);
 
-      // This is a workaround to a missing feature where you can't set cursor position in input numbers.
-      // See https://stackoverflow.com/questions/33406169/failed-to-execute-setselectionrange-on-htmlinputelement-the-input-elements
-      e.target.type = "text";
       let cursorPosition = 0;
       if (match[2] && !match[4]) {
         cursorPosition = 3;
@@ -72,8 +85,8 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       ) {
         cursorPosition = 2;
       }
-      e.target.setSelectionRange(cursorPosition, cursorPosition);
-      e.target.type = "number";
+
+      setCursorPosition(e.target, cursorPosition);
     }
   }
 
@@ -92,12 +105,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
           onMouseDown={stepChange}
           onKeyDown={nonStepChange}
           onChange={handleChange}
-          value={input}
-          defaultValue={
-            props.value == null || props.value == undefined
-              ? "0.0"
-              : Number(props.value / 10).toFixed(1)
-          }
+          value={text}
           min="0.0"
           step="0.1"
           max="10"
