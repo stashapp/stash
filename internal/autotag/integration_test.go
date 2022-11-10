@@ -539,6 +539,9 @@ func TestParsePerformerScenes(t *testing.T) {
 
 	for _, p := range performers {
 		if err := withTxn(func(ctx context.Context) error {
+			if err := p.LoadAliases(ctx, r.Performer); err != nil {
+				return err
+			}
 			return PerformerScenes(ctx, p, nil, r.Scene, nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
@@ -694,6 +697,9 @@ func TestParsePerformerImages(t *testing.T) {
 
 	for _, p := range performers {
 		if err := withTxn(func(ctx context.Context) error {
+			if err := p.LoadAliases(ctx, r.Performer); err != nil {
+				return err
+			}
 			return PerformerImages(ctx, p, nil, r.Image, nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
@@ -851,6 +857,9 @@ func TestParsePerformerGalleries(t *testing.T) {
 
 	for _, p := range performers {
 		if err := withTxn(func(ctx context.Context) error {
+			if err := p.LoadAliases(ctx, r.Performer); err != nil {
+				return err
+			}
 			return PerformerGalleries(ctx, p, nil, r.Gallery, nil)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
