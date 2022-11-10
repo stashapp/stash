@@ -164,5 +164,5 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
       break;
   }
 
-  return <>{toReturn}</>;
+  return toReturn;
 };

@@ -109,104 +109,98 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     return "unset";
   }
 
-  function getTooltip(thisStar: number) {
-    if (disabled && rating) {
-      // always return current rating for disabled control
-      return rating.toString();
-    }
-
-    if (!disabled) {
-      // adjust tooltip to use fractions
-      if (thisStar === stars && !fraction) {
-        const f = newToggleFraction();
-        if (!f) {
-          return intl.formatMessage({ id: "actions.unset" });
-        }
-        return (thisStar - 1 + (f ?? 0)).toString();
-      } else if (thisStar === stars + 1 && fraction) {
-        const f = newToggleFraction();
-        if (!f) {
-          return intl.formatMessage({ id: "actions.unset" });
-        }
-        return (thisStar + (f ?? 0)).toString();
+  function getTooltip(thisStar: number, current: RatingFraction | undefined) {
+    if (disabled) {
+      if (rating) {
+        // always return current rating for disabled control
+        return rating.toString();
       }
 
-      return thisStar.toString();
+      return undefined;
     }
+
+    // adjust tooltip to use fractions
+    if (!current) {
+      return intl.formatMessage({ id: "actions.unset" });
+    }
+
+    return (current.rating + current.fraction).toString();
   }
 
-  function getStyle(thisStar: number) {
+  type RatingFraction = {
+    rating: number;
+    fraction: number;
+  };
+
+  function getCurrentSelectedRating(): RatingFraction | undefined {
     let r: number = hoverRating ? hoverRating : stars;
     let f: number | undefined = fraction;
 
     if (hoverRating) {
       if (hoverRating === stars && !precision) {
         // unsetting
-        return { width: 0 };
+        return undefined;
       }
       if (hoverRating === stars + 1 && fraction && fraction === precision) {
         // unsetting
-        return { width: 0 };
+        return undefined;
       }
 
-      if (hoverRating === thisStar) {
-        if (f && hoverRating === stars + 1) {
-          f = newToggleFraction();
-          r--;
-        } else if (!f && hoverRating === stars) {
-          f = newToggleFraction();
-          r--;
-        }
+      if (f && hoverRating === stars + 1) {
+        f = newToggleFraction();
+        r--;
+      } else if (!f && hoverRating === stars) {
+        f = newToggleFraction();
+        r--;
       } else {
         f = 0;
       }
     }
 
-    return { width: `${getStarWidth(thisStar, r, f ?? 0)}%` };
+    return { rating: r, fraction: f ?? 0 };
   }
 
-  function getStarWidth(
-    thisRating: number,
-    currentStars: number,
-    currentFraction: number
+  function getButtonClassName(
+    thisStar: number,
+    current: RatingFraction | undefined
   ) {
-    if (thisRating > currentStars + 1) {
-      return 0;
+    if (!current || thisStar > current.rating + 1) {
+      return "star-fill-0";
     }
 
-    if (thisRating <= currentStars) {
-      return 100;
+    if (thisStar <= current.rating) {
+      return "star-fill-100";
     }
 
-    let w = currentFraction * 100;
-    // adjust width for 1/4 and 3/4
-    if (w == 25) w = 35;
-    if (w == 75) w = 65;
-
-    return w;
+    let w = current.fraction * 100;
+    return `star-fill-${w}`;
   }
 
-  const renderRatingButton = (thisStar: number) => (
-    <Button
-      disabled={disabled}
-      className="minimal"
-      onClick={() => setRating(thisStar)}
-      variant="secondary"
-      onMouseEnter={() => onMouseOver(thisStar)}
-      onMouseLeave={() => onMouseOut(thisStar)}
-      onFocus={() => onMouseOver(thisStar)}
-      onBlur={() => onMouseOut(thisStar)}
-      title={getTooltip(thisStar)}
-      key={`star-${thisStar}`}
-    >
-      <div className="filled-star" style={getStyle(thisStar)}>
-        <Icon icon={fasStar} className="set" />
-      </div>
-      <div>
-        <Icon icon={farStar} className={getClassName(thisStar)} />
-      </div>
-    </Button>
-  );
+  const renderRatingButton = (thisStar: number) => {
+    const ratingFraction = getCurrentSelectedRating();
+
+    return (
+      <Button
+        disabled={disabled}
+        className={`minimal ${getButtonClassName(thisStar, ratingFraction)}`}
+        onClick={() => setRating(thisStar)}
+        variant="secondary"
+        onMouseEnter={() => onMouseOver(thisStar)}
+        onMouseLeave={() => onMouseOut(thisStar)}
+        onFocus={() => onMouseOver(thisStar)}
+        onBlur={() => onMouseOut(thisStar)}
+        title={getTooltip(thisStar, ratingFraction)}
+        key={`star-${thisStar}`}
+      >
+        <div className="filled-star">
+          <Icon icon={fasStar} className="set" />
+        </div>
+        <div className="unfilled-star">
+          <Icon icon={farStar} className={getClassName(thisStar)} />
+        </div>
+      </Button>
+    );
+  };
 
   return (
     <div className="rating-stars">

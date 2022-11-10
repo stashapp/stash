@@ -478,10 +478,7 @@ input[type="range"].blue-slider {
 .rating-stars {
   display: inline-flex;
 
-  padding-bottom: 0.375rem;
-  padding-top: 0.375rem;
   vertical-align: middle;
-  width: 100%;
 
   button {
     font-size: inherit;
@@ -496,6 +493,26 @@ input[type="range"].blue-slider {
     &:disabled {
       background-color: inherit;
       opacity: inherit;
+    }
+
+    &.star-fill-0 .filled-star {
+      width: 0;
+    }
+
+    &.star-fill-25 .filled-star {
+      width: 35%;
+    }
+
+    &.star-fill-50 .filled-star {
+      width: 50%;
+    }
+
+    &.star-fill-75 .filled-star {
+      width: 65%;
+    }
+
+    &.star-fill-100 .filled-star {
+      width: 100%;
     }
 
     .filled-star {
