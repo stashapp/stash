@@ -101,6 +101,7 @@ export const RatingNumber: React.FC<IRatingNumberProps> = (
       <div className="rating-number">
         <input
           className="text-input form-control"
+          name="ratingnumber"
           type="number"
           onMouseDown={stepChange}
           onKeyDown={nonStepChange}
