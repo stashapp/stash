@@ -127,4 +127,5 @@ export type CriterionType =
   | "ignore_auto_tag"
   | "file_count"
   | "description"
-  | "scene_code";
+  | "scene_code"
+  | "disambiguation";
