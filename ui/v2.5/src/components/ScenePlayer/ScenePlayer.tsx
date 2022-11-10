@@ -530,7 +530,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       autoplay || (config?.autostartVideo ?? false) || _initialTimestamp > 0;
 
     var startPositition = _initialTimestamp;
-    if (!(alwaysStartFromBeginning || auto.current) && file.duration > scene.resume_time!) {
+    if (
+      !(alwaysStartFromBeginning || auto.current) &&
+      file.duration > scene.resume_time!
+    ) {
       startPositition = scene.resume_time!;
     }
 
