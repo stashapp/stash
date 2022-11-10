@@ -355,7 +355,7 @@
       "data_management": "資料管理",
       "defaults_set": "已設定預設值；以後按下「{action}」按鈕時將會使用這些設定。",
       "dont_include_file_extension_as_part_of_the_title": "不要在標題中附上檔案副檔名",
-      "empty_queue": "目前尚無任何執行中的排程。",
+      "empty_queue": "尚無排程執行中。",
       "export_to_json": "將資料庫中的 Metadata 匯出為 JSON 檔。",
       "generate": {
         "generating_from_paths": "為以下路徑之短片生成檔案中",
