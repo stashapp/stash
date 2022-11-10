@@ -224,13 +224,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     if (trackActivity && updatePlayDuration && id && playerRef.current) {
       const playDuration = playDurationRef.current;
       const resume_time = playerRef.current.currentTime()!;
-        sceneSaveActivity({
-          variables: {
-            id,
-            resume_time,
-            playDuration,
-          },
-        });
+      sceneSaveActivity({
+        variables: {
+          id,
+          resume_time,
+          playDuration,
+        },
+      });
 
       const videoDuration = playerRef.current.duration();
       const percentPlayed = (100 / videoDuration) * playDuration;
@@ -243,7 +243,13 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         recordedActivity.current = true;
       }
     }
-  }, [updatePlayDuration, ignoreInterval, sceneIncrementWatchCount, sceneSaveActivity, trackActivity]);
+  }, [
+    updatePlayDuration,
+    ignoreInterval,
+    sceneIncrementWatchCount,
+    sceneSaveActivity,
+    trackActivity,
+  ]);
 
   // Initialize VideoJS player
   useEffect(() => {
@@ -285,7 +291,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     var playDurationHandler = window.setInterval(() => {
       if (trackTime.current) {
         playDurationRef.current++;
-        if(playDurationRef.current % 10 == 0) {
+        if (playDurationRef.current % 10 == 0) {
           setUpdatePlayDuration(true);
         } else {
           setUpdatePlayDuration(false);
