@@ -573,9 +573,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
       return false;
     }
 
-    if (
-      allAliases.some((a) => a.toLowerCase().includes(inputValue.toLowerCase()))
-    ) {
+    if (allAliases.some((a) => a.toLowerCase() === inputValue.toLowerCase())) {
       return false;
     }
 
