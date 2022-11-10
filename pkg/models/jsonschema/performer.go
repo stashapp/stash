@@ -34,15 +34,16 @@ func (s *StringOrStringList) UnmarshalJSON(data []byte) error {
 }
 
 type Performer struct {
-	Name      string `json:"name,omitempty"`
-	Gender    string `json:"gender,omitempty"`
-	URL       string `json:"url,omitempty"`
-	Twitter   string `json:"twitter,omitempty"`
-	Instagram string `json:"instagram,omitempty"`
-	Birthdate string `json:"birthdate,omitempty"`
-	Ethnicity string `json:"ethnicity,omitempty"`
-	Country   string `json:"country,omitempty"`
-	EyeColor  string `json:"eye_color,omitempty"`
+	Name           string `json:"name,omitempty"`
+	Disambiguation string `json:"disambiguation,omitempty"`
+	Gender         string `json:"gender,omitempty"`
+	URL            string `json:"url,omitempty"`
+	Twitter        string `json:"twitter,omitempty"`
+	Instagram      string `json:"instagram,omitempty"`
+	Birthdate      string `json:"birthdate,omitempty"`
+	Ethnicity      string `json:"ethnicity,omitempty"`
+	Country        string `json:"country,omitempty"`
+	EyeColor       string `json:"eye_color,omitempty"`
 	// this should be int, but keeping string for backwards compatibility
 	Height        string             `json:"height,omitempty"`
 	Measurements  string             `json:"measurements,omitempty"`
@@ -66,7 +67,11 @@ type Performer struct {
 }
 
 func (s Performer) Filename() string {
-	return fsutil.SanitiseBasename(s.Name) + ".json"
+	name := s.Name
+	if s.Disambiguation != "" {
+		name += "_" + s.Disambiguation
+	}
+	return fsutil.SanitiseBasename(name) + ".json"
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

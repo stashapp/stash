@@ -179,14 +179,28 @@ func TestImporterFindExistingID(t *testing.T) {
 		},
 	}
 
+	pp := 1
+	findFilter := &models.FindFilterType{
+		PerPage: &pp,
+	}
+
+	performerFilter := func(name string) *models.PerformerFilterType {
+		return &models.PerformerFilterType{
+			Name: &models.StringCriterionInput{
+				Value:    name,
+				Modifier: models.CriterionModifierEquals,
+			},
+		}
+	}
+
 	errFindByNames := errors.New("FindByNames error")
-	readerWriter.On("FindByNames", testCtx, []string{performerName}, false).Return(nil, nil).Once()
-	readerWriter.On("FindByNames", testCtx, []string{existingPerformerName}, false).Return([]*models.Performer{
+	readerWriter.On("Query", testCtx, performerFilter(performerName), findFilter).Return(nil, 0, nil).Once()
+	readerWriter.On("Query", testCtx, performerFilter(existingPerformerName), findFilter).Return([]*models.Performer{
 		{
 			ID: existingPerformerID,
 		},
-	}, nil).Once()
-	readerWriter.On("FindByNames", testCtx, []string{performerNameErr}, false).Return(nil, errFindByNames).Once()
+	}, 1, nil).Once()
+	readerWriter.On("Query", testCtx, performerFilter(performerNameErr), findFilter).Return(nil, 0, errFindByNames).Once()
 
 	id, err := i.FindExistingID(testCtx)
 	assert.Nil(t, id)

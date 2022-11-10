@@ -131,8 +131,27 @@ func (i *Importer) Name() string {
 }
 
 func (i *Importer) FindExistingID(ctx context.Context) (*int, error) {
-	const nocase = false
-	existing, err := i.ReaderWriter.FindByNames(ctx, []string{i.Name()}, nocase)
+	// use disambiguation as well
+	performerFilter := models.PerformerFilterType{
+		Name: &models.StringCriterionInput{
+			Value:    i.Input.Name,
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	if i.Input.Disambiguation != "" {
+		performerFilter.Disambiguation = &models.StringCriterionInput{
+			Value:    i.Input.Disambiguation,
+			Modifier: models.CriterionModifierEquals,
+		}
+	}
+
+	pp := 1
+	findFilter := models.FindFilterType{
+		PerPage: &pp,
+	}
+
+	existing, _, err := i.ReaderWriter.Query(ctx, &performerFilter, &findFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -168,26 +187,27 @@ func (i *Importer) Update(ctx context.Context, id int) error {
 
 func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Performer {
 	newPerformer := models.Performer{
-		Name:          performerJSON.Name,
-		Gender:        models.GenderEnum(performerJSON.Gender),
-		URL:           performerJSON.URL,
-		Ethnicity:     performerJSON.Ethnicity,
-		Country:       performerJSON.Country,
-		EyeColor:      performerJSON.EyeColor,
-		Measurements:  performerJSON.Measurements,
-		FakeTits:      performerJSON.FakeTits,
-		CareerLength:  performerJSON.CareerLength,
-		Tattoos:       performerJSON.Tattoos,
-		Piercings:     performerJSON.Piercings,
-		Aliases:       models.NewRelatedStrings(performerJSON.Aliases),
-		Twitter:       performerJSON.Twitter,
-		Instagram:     performerJSON.Instagram,
-		Details:       performerJSON.Details,
-		HairColor:     performerJSON.HairColor,
-		Favorite:      performerJSON.Favorite,
-		IgnoreAutoTag: performerJSON.IgnoreAutoTag,
-		CreatedAt:     performerJSON.CreatedAt.GetTime(),
-		UpdatedAt:     performerJSON.UpdatedAt.GetTime(),
+		Name:           performerJSON.Name,
+		Disambiguation: performerJSON.Disambiguation,
+		Gender:         models.GenderEnum(performerJSON.Gender),
+		URL:            performerJSON.URL,
+		Ethnicity:      performerJSON.Ethnicity,
+		Country:        performerJSON.Country,
+		EyeColor:       performerJSON.EyeColor,
+		Measurements:   performerJSON.Measurements,
+		FakeTits:       performerJSON.FakeTits,
+		CareerLength:   performerJSON.CareerLength,
+		Tattoos:        performerJSON.Tattoos,
+		Piercings:      performerJSON.Piercings,
+		Aliases:        models.NewRelatedStrings(performerJSON.Aliases),
+		Twitter:        performerJSON.Twitter,
+		Instagram:      performerJSON.Instagram,
+		Details:        performerJSON.Details,
+		HairColor:      performerJSON.HairColor,
+		Favorite:       performerJSON.Favorite,
+		IgnoreAutoTag:  performerJSON.IgnoreAutoTag,
+		CreatedAt:      performerJSON.CreatedAt.GetTime(),
+		UpdatedAt:      performerJSON.UpdatedAt.GetTime(),
 
 		TagIDs:   models.NewRelatedIDs([]int{}),
 		StashIDs: models.NewRelatedStashIDs(performerJSON.StashIDs),

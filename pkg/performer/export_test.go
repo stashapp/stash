@@ -21,21 +21,22 @@ const (
 )
 
 const (
-	performerName = "testPerformer"
-	url           = "url"
-	careerLength  = "careerLength"
-	country       = "country"
-	ethnicity     = "ethnicity"
-	eyeColor      = "eyeColor"
-	fakeTits      = "fakeTits"
-	gender        = "gender"
-	instagram     = "instagram"
-	measurements  = "measurements"
-	piercings     = "piercings"
-	tattoos       = "tattoos"
-	twitter       = "twitter"
-	details       = "details"
-	hairColor     = "hairColor"
+	performerName  = "testPerformer"
+	disambiguation = "disambiguation"
+	url            = "url"
+	careerLength   = "careerLength"
+	country        = "country"
+	ethnicity      = "ethnicity"
+	eyeColor       = "eyeColor"
+	fakeTits       = "fakeTits"
+	gender         = "gender"
+	instagram      = "instagram"
+	measurements   = "measurements"
+	piercings      = "piercings"
+	tattoos        = "tattoos"
+	twitter        = "twitter"
+	details        = "details"
+	hairColor      = "hairColor"
 
 	autoTagIgnored = true
 )
@@ -69,34 +70,35 @@ var (
 
 func createFullPerformer(id int, name string) *models.Performer {
 	return &models.Performer{
-		ID:            id,
-		Name:          name,
-		URL:           url,
-		Aliases:       models.NewRelatedStrings(aliases),
-		Birthdate:     &birthDate,
-		CareerLength:  careerLength,
-		Country:       country,
-		Ethnicity:     ethnicity,
-		EyeColor:      eyeColor,
-		FakeTits:      fakeTits,
-		Favorite:      true,
-		Gender:        gender,
-		Height:        &height,
-		Instagram:     instagram,
-		Measurements:  measurements,
-		Piercings:     piercings,
-		Tattoos:       tattoos,
-		Twitter:       twitter,
-		CreatedAt:     createTime,
-		UpdatedAt:     updateTime,
-		Rating:        &rating,
-		Details:       details,
-		DeathDate:     &deathDate,
-		HairColor:     hairColor,
-		Weight:        &weight,
-		IgnoreAutoTag: autoTagIgnored,
-		TagIDs:        models.NewRelatedIDs([]int{}),
-		StashIDs:      models.NewRelatedStashIDs(stashIDs),
+		ID:             id,
+		Name:           name,
+		Disambiguation: disambiguation,
+		URL:            url,
+		Aliases:        models.NewRelatedStrings(aliases),
+		Birthdate:      &birthDate,
+		CareerLength:   careerLength,
+		Country:        country,
+		Ethnicity:      ethnicity,
+		EyeColor:       eyeColor,
+		FakeTits:       fakeTits,
+		Favorite:       true,
+		Gender:         gender,
+		Height:         &height,
+		Instagram:      instagram,
+		Measurements:   measurements,
+		Piercings:      piercings,
+		Tattoos:        tattoos,
+		Twitter:        twitter,
+		CreatedAt:      createTime,
+		UpdatedAt:      updateTime,
+		Rating:         &rating,
+		Details:        details,
+		DeathDate:      &deathDate,
+		HairColor:      hairColor,
+		Weight:         &weight,
+		IgnoreAutoTag:  autoTagIgnored,
+		TagIDs:         models.NewRelatedIDs([]int{}),
+		StashIDs:       models.NewRelatedStashIDs(stashIDs),
 	}
 }
 
@@ -113,23 +115,24 @@ func createEmptyPerformer(id int) models.Performer {
 
 func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 	return &jsonschema.Performer{
-		Name:         name,
-		URL:          url,
-		Aliases:      aliases,
-		Birthdate:    birthDate.String(),
-		CareerLength: careerLength,
-		Country:      country,
-		Ethnicity:    ethnicity,
-		EyeColor:     eyeColor,
-		FakeTits:     fakeTits,
-		Favorite:     true,
-		Gender:       gender,
-		Height:       strconv.Itoa(height),
-		Instagram:    instagram,
-		Measurements: measurements,
-		Piercings:    piercings,
-		Tattoos:      tattoos,
-		Twitter:      twitter,
+		Name:           name,
+		Disambiguation: disambiguation,
+		URL:            url,
+		Aliases:        aliases,
+		Birthdate:      birthDate.String(),
+		CareerLength:   careerLength,
+		Country:        country,
+		Ethnicity:      ethnicity,
+		EyeColor:       eyeColor,
+		FakeTits:       fakeTits,
+		Favorite:       true,
+		Gender:         gender,
+		Height:         strconv.Itoa(height),
+		Instagram:      instagram,
+		Measurements:   measurements,
+		Piercings:      piercings,
+		Tattoos:        tattoos,
+		Twitter:        twitter,
 		CreatedAt: json.JSONTime{
 			Time: createTime,
 		},
