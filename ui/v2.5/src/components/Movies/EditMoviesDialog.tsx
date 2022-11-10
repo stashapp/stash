@@ -6,7 +6,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Modal, StudioSelect } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
-import { RatingSystem } from "../Scenes/SceneDetails/RatingSystem";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
   getAggregateRating,

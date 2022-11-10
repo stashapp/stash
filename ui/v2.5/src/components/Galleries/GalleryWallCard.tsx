@@ -6,7 +6,7 @@ import { TruncatedText } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useGalleryLightbox } from "src/hooks";
 import { galleryTitle } from "src/core/galleries";
-import { RatingSystem } from "../Scenes/SceneDetails/RatingSystem";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 
 const CLASSNAME = "GalleryWallCard";
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;

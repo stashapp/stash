@@ -8,7 +8,7 @@ import { StudioSelect, Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
-import { RatingSystem } from "../Scenes/SceneDetails/RatingSystem";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputIDs,
   getAggregateInputValue,

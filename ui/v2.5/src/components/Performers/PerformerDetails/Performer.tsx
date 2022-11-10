@@ -23,7 +23,7 @@ import {
 import { useLightbox, useToast } from "src/hooks";
 import { ConfigurationContext } from "src/hooks/Config";
 import { TextUtils } from "src/utils";
-import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";

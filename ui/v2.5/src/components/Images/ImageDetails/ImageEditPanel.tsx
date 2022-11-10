@@ -15,7 +15,7 @@ import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
-import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 
 interface IProps {
   image: GQL.ImageDataFragment;

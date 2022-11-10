@@ -6,7 +6,7 @@ import Mousetrap from "mousetrap";
 import { Icon, StudioSelect, DetailsEditNavbar } from "src/components/Shared";
 import { Button, Form, Col, Row } from "react-bootstrap";
 import { FormUtils, ImageUtils, getStashIDs } from "src/utils";
-import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { useFormik } from "formik";
 import { Prompt } from "react-router-dom";
 import { StringListInput } from "../../Shared/StringListInput";

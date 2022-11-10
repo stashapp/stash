@@ -6,7 +6,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import MultiSet from "../Shared/MultiSet";
-import { RatingSystem } from "../Scenes/SceneDetails/RatingSystem";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
   getAggregateState,

@@ -41,7 +41,7 @@ import {
   faSearchMinus,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import { RatingSystem } from "../../components/Scenes/SceneDetails/RatingSystem";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 
 const CLASSNAME = "Lightbox";
 const CLASSNAME_HEADER = `${CLASSNAME}-header`;

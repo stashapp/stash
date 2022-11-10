@@ -38,7 +38,7 @@ import { Prompt } from "react-router-dom";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
-import { RatingSystem } from "./RatingSystem";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import {
   faSearch,
   faSyncAlt,

@@ -4,7 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
-import { RatingSystem } from "src/components/Scenes/SceneDetails/RatingSystem";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { sortPerformers } from "src/core/performers";
 import { FormattedMessage, useIntl } from "react-intl";
 import { objectTitle } from "src/core/files";
