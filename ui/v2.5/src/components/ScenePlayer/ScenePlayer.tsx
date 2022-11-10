@@ -406,6 +406,27 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // don't re-initialise the player unless the scene has changed
     if (!scene || !file || scene.id === sceneId.current) return;
+
+    if (playerRef.current && sceneId.current) {
+      if (trackActivity) {
+        const id = sceneId.current;
+        const playDuration = playDurationRef.current;
+        const videoDuration = playerRef.current.duration();
+        const percentPlayed = (100 / videoDuration) * playDuration;
+        if (id && percentPlayed >= ignoreInterval) {
+          const resume_time = 0;
+          sceneSaveActivity({
+            variables: {
+              id,
+              resume_time,
+              playDuration,
+            },
+          });
+        }
+        playDurationRef.current = 0;
+      }
+    }
+
     sceneId.current = scene.id;
 
     setReady(false);
@@ -509,13 +530,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       autoplay || (config?.autostartVideo ?? false) || _initialTimestamp > 0;
 
     var startPositition = _initialTimestamp;
-    if (!alwaysStartFromBeginning && file.duration > scene.resume_time!) {
+    if (!(alwaysStartFromBeginning || auto.current) && file.duration > scene.resume_time!) {
       startPositition = scene.resume_time!;
     }
 
     initialTimestamp.current = startPositition;
     setTime(startPositition);
-    playDurationRef.current = 0;
 
     player.load();
     player.focus();
