@@ -57,6 +57,7 @@ type Scene struct {
 	Cover        string           `json:"cover,omitempty"`
 	CreatedAt    json.JSONTime    `json:"created_at,omitempty"`
 	UpdatedAt    json.JSONTime    `json:"updated_at,omitempty"`
+	LastPlayedAt json.JSONTime    `json:"last_played_at,omitempty"`
 	ResumeTime   float64          `json:"resume_time,omitempty"`
 	PlayCount    int              `json:"play_count,omitempty"`
 	PlayDuration float64          `json:"play_duration,omitempty"`

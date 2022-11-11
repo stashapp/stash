@@ -105,6 +105,10 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 	newScene.OCounter = sceneJSON.OCounter
 	newScene.CreatedAt = sceneJSON.CreatedAt.GetTime()
 	newScene.UpdatedAt = sceneJSON.UpdatedAt.GetTime()
+	newScene.LastPlayedAt = sceneJSON.LastPlayedAt.GetTime()
+	newScene.ResumeTime = sceneJSON.ResumeTime
+	newScene.PlayDuration = sceneJSON.PlayDuration
+	newScene.PlayCount = sceneJSON.PlayCount
 
 	return newScene
 }
