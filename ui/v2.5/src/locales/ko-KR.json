@@ -1024,7 +1024,7 @@
       "your_system_has_been_created": "성공했습니다! 시스템이 생성되었습니다!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash에서는 설정 파일을 현재 폴더에서 먼저 찾아보고, 없다면 <code>%USERPROFILE%\\.stash\\config.yml</code>을 찾습니다 (윈도우가 아닌 운영체제에서는 <code>$HOME/.stash/config.yml</code>을 찾습니다). 또는 Stash를 <code>-c <설정 파일 경로></code> 또는 <code>--config <설정 파일 경로></code> 옵션을 사용해 실행시켜 특정한 설정 파일을 읽도록 할 수 있습니다.",
+      "config_path_logic_explained": "Stash에서는 설정 파일을 현재 폴더에서 먼저 찾아보고, 없다면 <code>%USERPROFILE%\\.stash\\config.yml</code>을 찾습니다 (윈도우가 아닌 운영체제에서는 <code>$HOME/.stash/config.yml</code>을 찾습니다). 또는 Stash를 <code>-c '<설정 파일 경로>'</code> 또는 <code>--config '<설정 파일 경로>'</code> 옵션을 사용해 실행시켜 특정한 설정 파일을 읽도록 할 수 있습니다.",
       "in_current_stash_directory": "<code>$HOME/.stash</code> 폴더 안",
       "in_the_current_working_directory": "현재 폴더 안",
       "next_step": "그 모든 것을 제외하고, 새로운 시스템 설정을 시작할 준비가 되었다면, 어디에 설정 파일을 저장할지 선택한 뒤 '다음' 버튼을 누르세요.",

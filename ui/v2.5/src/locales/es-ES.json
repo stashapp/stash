@@ -929,7 +929,7 @@
       "your_system_has_been_created": "¡Todo correcto! ¡Tu entorno ha sido creado!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash intenta encontrar primero su archivo de configuración (<code>config.yml</code>) en el directorio actual de trabajo y, en caso de no encontrarlo, lo intenta en <code>$HOME/.stash/config.yml</code> (en Windows será <code>%USERPROFILE%\\.stash\\config.yml</code>). También puedes hacer que Stash obtenga su configuración de un archivo de configuración lanzando la aplicación con las opciones <code>-c <ruta personalizada al archivo de configuración></code> o <code>--config <ruta personalizada al archivo de configuración></code>.",
+      "config_path_logic_explained": "Stash intenta encontrar primero su archivo de configuración (<code>config.yml</code>) en el directorio actual de trabajo y, en caso de no encontrarlo, lo intenta en <code>$HOME/.stash/config.yml</code> (en Windows será <code>%USERPROFILE%\\.stash\\config.yml</code>). También puedes hacer que Stash obtenga su configuración de un archivo de configuración lanzando la aplicación con las opciones <code>-c '<ruta personalizada al archivo de configuración>'</code> o <code>--config '<ruta personalizada al archivo de configuración>'</code>.",
       "in_current_stash_directory": "En el directorio <code>$HOME/.stash</code>",
       "in_the_current_working_directory": "En el directorio de trabajo actual",
       "next_step": "Si estás listo para crear un nuevo entorno, por favor, selecciona donde quieres guardar tu archivo de configuración y haz clic en siguiente.",

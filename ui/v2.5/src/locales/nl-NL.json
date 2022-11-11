@@ -932,7 +932,7 @@
       "your_system_has_been_created": "Succes! Uw systeem is aangemaakt!"
     },
     "welcome": {
-      "config_path_logic_explained": "Stash probeert eerst zijn configuratiebestand (<code>config.yml</code>) uit de huidige werkdirectory te vinden, en als het daar niet gevonden wordt, valt het terug naar <code>$HOME/.stash/config. yml</code> (in Windows is dit <code>%USERPROFILE%\\.stash\\config.yml</code>). Je kunt Stash ook laten lezen uit een specifiek configuratiebestand door het uit te voeren met de opties <code>-c <pad naar configuratie bestand></code> of <code>--config <pad naar configuratie bestand></code>.",
+      "config_path_logic_explained": "Stash probeert eerst zijn configuratiebestand (<code>config.yml</code>) uit de huidige werkdirectory te vinden, en als het daar niet gevonden wordt, valt het terug naar <code>$HOME/.stash/config. yml</code> (in Windows is dit <code>%USERPROFILE%\\.stash\\config.yml</code>). Je kunt Stash ook laten lezen uit een specifiek configuratiebestand door het uit te voeren met de opties <code>-c '<pad naar configuratie bestand>'</code> of <code>--config '<pad naar configuratie bestand>'</code>.",
       "in_current_stash_directory": "In de <code>$HOME/.stash</code> map",
       "in_the_current_working_directory": "In de huidige werkdirectory",
       "next_step": "Met dat alles uit de weg, als u klaar bent om door te gaan met het opzetten van een nieuw systeem, kiest u waar u uw configuratiebestand wilt opslaan en klikt u op Volgende.",
