@@ -58,6 +58,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     if (!this.markerTooltip) return;
 
     this.markerTooltip.innerText = title;
+    this.markerTooltip.style.right = `${-this.markerTooltip.clientWidth / 2}px`;
     this.markerTooltip.style.visibility = "visible";
 
     // hide default tooltip
@@ -76,7 +77,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
     markerDiv.className = "vjs-marker";
 
     const duration = this.player.duration();
-    markerDiv.style.position = `${(marker.time / duration) * 100}%`;
+    markerDiv.style.left = `${(marker.time / duration) * 100}%`;
 
     // bind click event to seek to marker time
     markerDiv.addEventListener("click", () =>

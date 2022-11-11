@@ -35,6 +35,18 @@ import { VIDEO_PLAYER_ID } from "./util";
 import { IUIConfig } from "src/core/config";
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
+  function seekStep(step: number) {
+    const time = player.currentTime() + step;
+    const duration = player.duration();
+    if (time < 0) {
+      player.currentTime(0);
+    } else if (time < duration) {
+      player.currentTime(time);
+    } else {
+      player.currentTime(duration);
+    }
+  }
+
   function seekPercent(percent: number) {
     const duration = player.duration();
     const time = duration * percent;
@@ -47,6 +59,27 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     const time = currentTime + duration * percent;
     if (time > duration) return;
     player.currentTime(time);
+  }
+
+  let seekFactor = 10;
+  if (event.shiftKey) {
+    seekFactor = 5;
+  } else if (event.ctrlKey || event.altKey) {
+    seekFactor = 1;
+  }
+  switch (event.which) {
+    case 39: // right arrow
+      seekStep(seekFactor);
+      break;
+    case 37: // left arrow
+      seekStep(-seekFactor);
+      break;
+    case 221: // ]
+      seekPercentRelative(seekFactor * 0.01);
+      break;
+    case 219: // [
+      seekPercentRelative(-seekFactor * 0.01);
+      break;
   }
 
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
@@ -65,12 +98,6 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
     case 70: // f
       if (player.isFullscreen()) player.exitFullscreen();
       else player.requestFullscreen();
-      break;
-    case 39: // right arrow
-      player.currentTime(Math.min(player.duration(), player.currentTime() + 5));
-      break;
-    case 37: // left arrow
-      player.currentTime(Math.max(0, player.currentTime() - 5));
       break;
     case 38: // up arrow
       player.volume(player.volume() + 0.1);
@@ -107,12 +134,6 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
       break;
     case 57: // 9
       seekPercent(0.9);
-      break;
-    case 221: // ]
-      seekPercentRelative(0.1);
-      break;
-    case 219: // [
-      seekPercentRelative(-0.1);
       break;
   }
 }
@@ -450,15 +471,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       })
     );
 
-    const markers = player.markers();
-    markers.clearMarkers();
-    for (const marker of scene.scene_markers) {
-      markers.addMarker({
-        title: getMarkerTitle(marker),
-        time: marker.seconds,
-      });
-    }
-
     function getDefaultLanguageCode() {
       let languageCode = window.navigator.language;
 
@@ -500,12 +512,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           false
         );
       }
-    }
-
-    if (scene.paths.screenshot) {
-      player.poster(scene.paths.screenshot);
-    } else {
-      player.poster("");
     }
 
     auto.current =
@@ -553,6 +559,26 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     uiConfig?.alwaysStartFromBeginning,
     _initialTimestamp,
   ]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player || !scene) return;
+
+    const markers = player.markers();
+    markers.clearMarkers();
+    for (const marker of scene.scene_markers) {
+      markers.addMarker({
+        title: getMarkerTitle(marker),
+        time: marker.seconds,
+      });
+    }
+
+    if (scene.paths.screenshot) {
+      player.poster(scene.paths.screenshot);
+    } else {
+      player.poster("");
+    }
+  }, [scene]);
 
   useEffect(() => {
     const player = playerRef.current;
