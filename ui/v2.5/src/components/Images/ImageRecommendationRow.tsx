@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from "react";
 import { useFindImages } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
 import { RecommendationRow } from "../FrontPage/RecommendationRow";

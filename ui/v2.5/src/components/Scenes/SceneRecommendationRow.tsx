@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useMemo } from "react";
 import { useFindScenes } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { SceneCard } from "./SceneCard";
 import { SceneQueue } from "src/models/sceneQueue";
 import { ListFilterModel } from "src/models/list-filter/filter";

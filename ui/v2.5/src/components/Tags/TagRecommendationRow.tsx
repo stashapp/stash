@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from "react";
 import { useFindTags } from "src/core/StashService";
-import Slider from "react-slick";
+import Slider from "@ant-design/react-slick";
 import { TagCard } from "./TagCard";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { getSlickSliderSettings } from "src/core/recommendations";
