@@ -18,7 +18,7 @@ import { ManualStateContext } from "./Help/context";
 import { SettingsButton } from "./SettingsButton";
 import {
   faBars,
-  faChartBar,
+  faChartColumn,
   faFilm,
   faHeart,
   faImage,
@@ -296,7 +296,7 @@ export const MainNavbar: React.FC = () => {
             className="minimal d-flex align-items-center h-100"
             title={intl.formatMessage({ id: "statistics" })}
           >
-            <Icon icon={faChartBar} />
+            <Icon icon={faChartColumn} />
           </Button>
         </NavLink>
         <NavLink
