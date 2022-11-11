@@ -1576,10 +1576,17 @@
   resolved "https://registry.npmjs.org/@types/unist/-/unist-2.0.3.tgz"
   integrity sha512-FvUupuM3rlRsRtCN+fDudtmytGO6iHJuuRKS1Ss0pG5z8oX0diNEw94UEL7hgDbpN94rgaK5R7sWm6RrSkZuAQ==
 
-"@types/video.js@*", "@types/video.js@^7.3.28":
-  version "7.3.28"
-  resolved "https://registry.yarnpkg.com/@types/video.js/-/video.js-7.3.28.tgz#9acb8c46db3984d556ee7321483ef834bf0a43a2"
-  integrity sha512-vUxgGAQN+tAOx6OVu8wiSKGfvXJXvX++B5xKJTRpWfPHOV8y1VcJxqhIMb9nLfhIz0Pw3R69pWq2DzlOoxOn8Q==
+"@types/video.js@*", "@types/video.js@^7.3.49":
+  version "7.3.49"
+  resolved "https://registry.yarnpkg.com/@types/video.js/-/video.js-7.3.49.tgz#33fbc421a02827c90935afbf7dcaac77170b6cda"
+  integrity sha512-GtBMH+rm7yyw5DAK7ycQeEd35x/EYoLK/49op+CqDDoNUm9XJEVOfb+EARKKe4TwP5jkaikjWqf5RFjmw8yHoQ==
+
+"@types/videojs-mobile-ui@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@types/videojs-mobile-ui/-/videojs-mobile-ui-0.5.0.tgz#66934b140fd437fda361986f8e7e87b01dc39138"
+  integrity sha512-wqeapTB35qpLfERxvL5mZGoexf5bA2TreDpFgc3zyCdr7Acf86VItvo9oTclFeUc11wOo7W7/4ueZZAEYmlTaA==
+  dependencies:
+    "@types/video.js" "*"
 
 "@types/videojs-seek-buttons@^2.1.0":
   version "2.1.0"
@@ -7886,7 +7893,7 @@ vfile@^5.0.0:
     unist-util-stringify-position "^3.0.0"
     vfile-message "^3.0.0"
 
-"video.js@^6 || ^7", video.js@^7.20.3:
+"video.js@^6 || ^7", video.js@^7, video.js@^7.20.3:
   version "7.20.3"
   resolved "https://registry.yarnpkg.com/video.js/-/video.js-7.20.3.tgz#5694741346dc683255993e5069daa15d4bacb646"
   integrity sha512-JMspxaK74LdfWcv69XWhX4rILywz/eInOVPdKefpQiZJSMD5O8xXYueqACP2Q5yqKstycgmmEKlJzZ+kVmDciw==
@@ -7910,20 +7917,20 @@ videojs-font@3.2.0:
   resolved "https://registry.yarnpkg.com/videojs-font/-/videojs-font-3.2.0.tgz#212c9d3f4e4ec3fa7345167d64316add35e92232"
   integrity sha512-g8vHMKK2/JGorSfqAZQUmYYNnXmfec4MLhwtEFS+mMs2IDY398GLysy6BH6K+aS1KMNu/xWZ8Sue/X/mdQPliA==
 
-videojs-landscape-fullscreen@^11.33.0:
-  version "11.33.0"
-  resolved "https://registry.yarnpkg.com/videojs-landscape-fullscreen/-/videojs-landscape-fullscreen-11.33.0.tgz#4033100b3a97399c994426e825662860dfc232e0"
-  integrity sha512-Eex5ovlvIipHHif9LEhVL63zxxmOEQQi6Bt1P+EaA0QpjJAPF+CocWfhMItfGF1GcFQeP1ZFGCPTGw60n7vyUg==
+videojs-mobile-ui@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/videojs-mobile-ui/-/videojs-mobile-ui-0.7.0.tgz#cbac7ded4f51bf4ed45f4e59d01cf577d38a7c6c"
+  integrity sha512-cfctMUsu+EJ8IYPfAHR6ZTr2fbJWL3Af9QpvTS7JFvEkrGSMLLpuH62uatQ3pxUs4MISs8kgb8/PUqROpfh7MQ==
   dependencies:
     global "^4.4.0"
+    video.js "^7"
 
-videojs-seek-buttons@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/videojs-seek-buttons/-/videojs-seek-buttons-2.2.0.tgz#50b8da1178a5718ee5a7649fbb90a64a518103f7"
-  integrity sha512-yjCA6ntq+8fRKgZi/H6QJlghQWgA1x9oSRl6wfLODAcujhynDXetwMgRKGgl4NlV5af2bKY6erNtJ0kOBko/nQ==
+videojs-seek-buttons@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/videojs-seek-buttons/-/videojs-seek-buttons-3.0.1.tgz#cc2adc23a6372e8aa6c2e9fd0fe7e7831a46747f"
+  integrity sha512-scVWOqCMqHajlbwYZIzJ5nBYkDXTAhEpWjfcdCu8ykksA1barrKnEKdQvS84TtDWOx6UXDD/e/x0acYEZCDMEQ==
   dependencies:
     global "^4.4.0"
-    video.js "^6 || ^7"
 
 videojs-vtt.js@^0.15.4:
   version "0.15.4"

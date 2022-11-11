@@ -7,15 +7,14 @@ import React, {
   useState,
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
+import "videojs-mobile-ui";
 import "videojs-seek-buttons";
-import "videojs-landscape-fullscreen";
 import "./live";
 import "./PlaylistButtons";
 import "./source-selector";
 import "./persist-volume";
 import "./markers";
 import "./vtt-thumbnails";
-import "./big-buttons";
 import "./track-activity";
 import cx from "classnames";
 import {
@@ -263,13 +262,24 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         markers: {},
         sourceSelector: {},
         persistVolume: {},
-        bigButtons: {},
         seekButtons: {
           forward: 10,
           back: 10,
         },
         skipButtons: {},
         trackActivity: {},
+        mobileUi: {
+          fullscreen: {
+            enterOnRotate: true,
+            exitOnRotate: true,
+            lockOnRotate: true,
+          },
+          touchControls: {
+            seekSeconds: 10,
+            tapTimeout: 500,
+            disableOnEnd: false,
+          },
+        },
       },
     };
 
@@ -421,21 +431,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     interactiveClient.pause();
     interactiveReady.current = false;
 
-    const alwaysStartFromBeginning =
-      uiConfig?.alwaysStartFromBeginning ?? false;
-    const isLandscape = file.height && file.width && file.width > file.height;
-
-    if (isLandscape) {
-      player.landscapeFullscreen({
-        fullscreen: {
-          enterOnRotate: true,
-          exitOnRotate: true,
-          alwaysInLandscapeMode: true,
-          iOS: false,
-        },
-      });
-    }
-
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
     sourceSelector.setSources(
@@ -518,17 +513,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       (interfaceConfig?.autostartVideo ?? false) ||
       _initialTimestamp > 0;
 
-    let startPositition = _initialTimestamp;
+    const alwaysStartFromBeginning =
+      uiConfig?.alwaysStartFromBeginning ?? false;
+
+    let startPosition = _initialTimestamp;
     if (
-      !startPositition &&
+      !startPosition &&
       !(alwaysStartFromBeginning || sessionInitialised) &&
       file.duration > scene.resume_time!
     ) {
-      startPositition = scene.resume_time!;
+      startPosition = scene.resume_time!;
     }
 
-    initialTimestamp.current = startPositition;
-    setTime(startPositition);
+    initialTimestamp.current = startPosition;
+    setTime(startPosition);
     setSessionInitialised(true);
 
     player.load();
