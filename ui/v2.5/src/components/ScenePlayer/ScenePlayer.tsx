@@ -408,6 +408,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     function pause(this: VideoJsPlayer) {
       trackTime.current = false;
       interactiveClient.pause();
+
+      const id = sceneId.current;
+      if (id) {
+        const playDuration = playDurationRef.current;
+        const resume_time = this.currentTime()!;
+
+        sceneSaveActivity({
+          variables: {
+            id,
+            resume_time,
+            playDuration,
+          },
+        });
+      }
     }
 
     function seeking(this: VideoJsPlayer) {
@@ -439,7 +453,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       player.off("seeking", seeking);
       player.off("timeupdate", timeupdate);
     };
-  }, [interactiveClient, scene]);
+  }, [interactiveClient, scene, sceneSaveActivity]);
 
   useEffect(() => {
     const player = playerRef.current;
