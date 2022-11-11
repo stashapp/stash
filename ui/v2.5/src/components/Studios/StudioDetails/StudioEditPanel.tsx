@@ -33,7 +33,7 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
 }) => {
   const intl = useIntl();
 
-  const isNew = !studio || !studio.id;
+  const isNew = studio.id === undefined;
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 

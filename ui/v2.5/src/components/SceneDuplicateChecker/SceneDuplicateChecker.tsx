@@ -12,7 +12,6 @@ import {
 } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
-import querystring from "query-string";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -47,20 +46,13 @@ const CLASSNAME = "duplicate-checker";
 export const SceneDuplicateChecker: React.FC = () => {
   const intl = useIntl();
   const history = useHistory();
-  const { page, size, distance } = querystring.parse(history.location.search);
-  const currentPage = Number.parseInt(
-    Array.isArray(page) ? page[0] : page ?? "1",
-    10
-  );
-  const pageSize = Number.parseInt(
-    Array.isArray(size) ? size[0] : size ?? "20",
-    10
-  );
+
+  const query = new URLSearchParams(history.location.search);
+  const currentPage = Number.parseInt(query.get("page") ?? "1", 10);
+  const pageSize = Number.parseInt(query.get("size") ?? "20", 10);
+  const hashDistance = Number.parseInt(query.get("distance") ?? "0", 10);
+
   const [currentPageSize, setCurrentPageSize] = useState(pageSize);
-  const hashDistance = Number.parseInt(
-    Array.isArray(distance) ? distance[0] : distance ?? "0",
-    10
-  );
   const [isMultiDelete, setIsMultiDelete] = useState(false);
   const [deletingScenes, setDeletingScenes] = useState(false);
   const [editingScenes, setEditingScenes] = useState(false);
@@ -107,12 +99,16 @@ export const SceneDuplicateChecker: React.FC = () => {
   ).length;
 
   const setQuery = (q: Record<string, string | number | undefined>) => {
-    history.push({
-      search: querystring.stringify({
-        ...querystring.parse(history.location.search),
-        ...q,
-      }),
-    });
+    const newQuery = new URLSearchParams(query);
+    for (const key of Object.keys(q)) {
+      const value = q[key];
+      if (value !== undefined) {
+        newQuery.set(key, String(value));
+      } else {
+        newQuery.delete(key);
+      }
+    }
+    history.push({ search: newQuery.toString() });
   };
 
   function onDeleteDialogClosed(deleted: boolean) {
@@ -504,7 +500,7 @@ export const SceneDuplicateChecker: React.FC = () => {
                     page: undefined,
                   })
                 }
-                defaultValue={distance ?? 0}
+                defaultValue={hashDistance}
                 className="input-control ml-4"
               >
                 <option value={0}>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
 import * as GQL from "src/core/generated-graphql";
@@ -11,15 +11,13 @@ import { TagEditPanel } from "./TagEditPanel";
 
 const TagCreate: React.FC = () => {
   const history = useHistory();
+  const location = useLocation();
   const Toast = useToast();
 
-  function useQuery() {
-    const { search } = useLocation();
-    return React.useMemo(() => new URLSearchParams(search), [search]);
-  }
-
-  const query = useQuery();
-  const nameQuery = query.get("name");
+  const query = useMemo(() => new URLSearchParams(location.search), [location]);
+  const tag = {
+    name: query.get("q") ?? undefined,
+  };
 
   // Editing tag state
   const [image, setImage] = useState<string | null>();
@@ -86,7 +84,7 @@ const TagCreate: React.FC = () => {
           )}
         </div>
         <TagEditPanel
-          tag={{ name: nameQuery ?? "" }}
+          tag={tag}
           onSubmit={onSave}
           onCancel={() => history.push("/tags")}
           onDelete={() => {}}

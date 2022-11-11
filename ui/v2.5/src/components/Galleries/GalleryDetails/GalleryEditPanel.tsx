@@ -38,23 +38,16 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { galleryTitle } from "src/core/galleries";
 
 interface IProps {
+  gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
   onDelete: () => void;
 }
 
-interface INewProps {
-  isNew: true;
-  gallery?: Partial<GQL.GalleryDataFragment>;
-}
-
-interface IExistingProps {
-  isNew: false;
-  gallery: GQL.GalleryDataFragment;
-}
-
-export const GalleryEditPanel: React.FC<
-  IProps & (INewProps | IExistingProps)
-> = ({ gallery, isNew, isVisible, onDelete }) => {
+export const GalleryEditPanel: React.FC<IProps> = ({
+  gallery,
+  isVisible,
+  onDelete,
+}) => {
   const intl = useIntl();
   const Toast = useToast();
   const history = useHistory();
@@ -64,6 +57,8 @@ export const GalleryEditPanel: React.FC<
       title: galleryTitle(s),
     }))
   );
+
+  const isNew = gallery.id === undefined;
 
   const Scrapers = useListGalleryScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);

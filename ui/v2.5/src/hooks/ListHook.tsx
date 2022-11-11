@@ -1,7 +1,6 @@
 import clone from "lodash-es/clone";
 import cloneDeep from "lodash-es/cloneDeep";
 import isEqual from "lodash-es/isEqual";
-import queryString from "query-string";
 import React, {
   useCallback,
   useRef,
@@ -617,18 +616,18 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         if (!prevState.queryConfig) {
           prevState.queryConfig = {};
         }
+
+        const oldFilter = prevState.queryConfig[persistanceKey]?.filter ?? "";
+        const newFilter = new URLSearchParams(oldFilter);
+        newFilter.set("disp", String(updatedFilter.displayMode));
+
         return {
           ...prevState,
           queryConfig: {
             ...prevState.queryConfig,
             [persistanceKey]: {
               ...prevState.queryConfig[persistanceKey],
-              filter: queryString.stringify({
-                ...queryString.parse(
-                  prevState.queryConfig[persistanceKey]?.filter ?? ""
-                ),
-                disp: updatedFilter.displayMode,
-              }),
+              filter: newFilter.toString(),
             },
           },
         };
@@ -692,10 +691,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
       const storedQuery = interfaceState.data?.queryConfig?.[persistanceKey];
       if (options.persistState === PersistanceLevel.VIEW && storedQuery) {
-        const storedFilter = queryString.parse(storedQuery.filter);
-        if (storedFilter.disp !== undefined) {
-          const displayMode = Number.parseInt(storedFilter.disp as string, 10);
-          newFilter.displayMode = displayMode;
+        const displayMode = new URLSearchParams(storedQuery.filter).get("disp");
+        if (displayMode) {
+          newFilter.displayMode = Number.parseInt(displayMode, 10);
         }
       }
     }
