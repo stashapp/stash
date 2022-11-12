@@ -4,10 +4,9 @@ import { Modal } from "src/components/Shared";
 import { faCogs } from "@fortawesome/free-solid-svg-icons";
 import { useIntl } from "react-intl";
 import { MarkdownPage } from "../Shared/MarkdownPage";
-import { Module } from "src/docs/en/ReleaseNotes";
 
 interface IReleaseNotesDialog {
-  notes: Module[];
+  notes: string[];
   onClose: () => void;
 }
 

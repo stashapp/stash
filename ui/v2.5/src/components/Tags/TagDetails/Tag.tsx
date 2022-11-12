@@ -87,7 +87,9 @@ const TagPage: React.FC<IProps> = ({ tag }) => {
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("e", () => setIsEditing(true));
-    Mousetrap.bind("d d", () => onDelete());
+    Mousetrap.bind("d d", () => {
+      onDelete();
+    });
 
     return () => {
       if (isEditing) {

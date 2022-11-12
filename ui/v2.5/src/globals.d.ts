@@ -1,12 +1,11 @@
 // eslint-disable-next-line no-var
 declare var STASH_BASE_URL: string;
-declare module "*.md";
-declare module "string.prototype.replaceall";
-declare module "mousetrap-pause";
-declare module "hamming-distance";
-declare module "@formatjs/intl-pluralrules/locale-data/en";
-declare module "@formatjs/intl-numberformat/locale-data/en";
-declare module "@formatjs/intl-numberformat/locale-data/en-GB";
+declare module "intersection-observer";
+
+declare module "*.md" {
+  const src: string;
+  export default src;
+}
 
 /* eslint-disable  @typescript-eslint/naming-convention */
 interface ImportMetaEnv extends Readonly<Record<string, string>> {
