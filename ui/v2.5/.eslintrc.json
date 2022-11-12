@@ -17,6 +17,7 @@
       "airbnb-typescript",
       "airbnb/hooks",
       "plugin:react/recommended",
+      "plugin:react/jsx-runtime",
       "plugin:import/recommended",
       "prettier",
       "prettier/prettier"

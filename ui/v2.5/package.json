@@ -76,9 +76,6 @@
     "videojs-mobile-ui": "^0.8.0",
     "videojs-seek-buttons": "^3.0.1",
     "videojs-vtt.js": "^0.15.4",
-    "vite": "^2.9.13",
-    "vite-plugin-compression": "^0.3.5",
-    "vite-tsconfig-paths": "^3.3.17",
     "yup": "^0.32.11"
   },
   "devDependencies": {
@@ -103,6 +100,7 @@
     "@types/videojs-seek-buttons": "^2.1.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
+    "@vitejs/plugin-react": "^3.0.1",
     "eslint": "^7.32.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-airbnb-typescript": "^14.0.1",
@@ -118,6 +116,9 @@
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-order": "^4.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "~4.4.4"
+    "typescript": "~4.8.4",
+    "vite": "^4.0.4",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-tsconfig-paths": "^4.0.5"
   }
 }
