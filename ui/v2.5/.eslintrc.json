@@ -27,6 +27,7 @@
       "version": "detect"
     }
   },
+  "ignorePatterns": ["node_modules/", "src/core/generated-graphql.tsx"],
   "rules": {
       "@typescript-eslint/no-explicit-any": 2,
       "@typescript-eslint/naming-convention": [
