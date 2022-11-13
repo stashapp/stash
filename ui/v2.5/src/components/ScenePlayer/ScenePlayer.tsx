@@ -151,6 +151,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
   const [time, setTime] = useState(0);
   const [ready, setReady] = useState(false);
+  const [sessionInitialised, setSessionInitialised] = useState(false); // tracks play session. This is reset whenever ScenePlayer page is exited
 
   const {
     interactive: interactiveClient,
@@ -169,7 +170,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const interactiveReady = useRef(false);
 
   const playDurationRef = useRef(0);
-  const trackTime = useRef(false);
+  const playing = useRef(false);
   const recordedActivity = useRef(false);
   const [updatePlayDuration, setUpdatePlayDuration] = useState(false);
 
@@ -293,7 +294,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     const player = videojs(videoRef.current!, options);
     var playDurationHandler = window.setInterval(() => {
-      if (trackTime.current) {
+      if (playing.current) {
         playDurationRef.current++;
         if (playDurationRef.current % 10 == 0) {
           setUpdatePlayDuration(true);
@@ -407,7 +408,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
   useEffect(() => {
     function onplay(this: VideoJsPlayer) {
-      trackTime.current = true;
+      playing.current = true;
       this.persistVolume().enabled = true;
       if (scene?.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
@@ -415,7 +416,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     function pause(this: VideoJsPlayer) {
-      trackTime.current = false;
+      playing.current = false;
       interactiveClient.pause();
 
       const id = sceneId.current;
@@ -587,7 +588,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     var startPositition = _initialTimestamp;
     if (
-      !(alwaysStartFromBeginning || auto.current) &&
+      !(alwaysStartFromBeginning || sessionInitialised) &&
       file.duration > scene.resume_time!
     ) {
       startPositition = scene.resume_time!;
@@ -595,6 +596,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     initialTimestamp.current = startPositition;
     setTime(startPositition);
+    setSessionInitialised(true);
 
     player.load();
     player.focus();
