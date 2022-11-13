@@ -170,7 +170,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const interactiveReady = useRef(false);
 
   const playDurationRef = useRef(0);
-  const playing = useRef(false);
+  const trackTime = useRef(false);
   const recordedActivity = useRef(false);
   const [updatePlayDuration, setUpdatePlayDuration] = useState(false);
 
@@ -294,7 +294,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     const player = videojs(videoRef.current!, options);
     var playDurationHandler = window.setInterval(() => {
-      if (playing.current) {
+      if (trackTime.current) {
         playDurationRef.current++;
         if (playDurationRef.current % 10 == 0) {
           setUpdatePlayDuration(true);
@@ -408,7 +408,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
   useEffect(() => {
     function onplay(this: VideoJsPlayer) {
-      playing.current = true;
+      trackTime.current = true;
       this.persistVolume().enabled = true;
       if (scene?.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
@@ -416,7 +416,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     function pause(this: VideoJsPlayer) {
-      playing.current = false;
+      trackTime.current = false;
       interactiveClient.pause();
 
       const id = sceneId.current;
@@ -615,6 +615,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     file,
     scene,
     interactiveClient,
+    sessionInitialised,
     trackActivity,
     autoplay,
     config?.autostartVideo,
