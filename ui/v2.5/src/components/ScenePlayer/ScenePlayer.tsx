@@ -223,9 +223,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     const id = sceneId.current;
     if (trackActivity && updatePlayDuration && id && playerRef.current) {
       const playDuration = playDurationRef.current;
-      const resume_time = playerRef.current.currentTime()!;
+      let resume_time = playerRef.current.currentTime()!;
       const videoDuration = playerRef.current.duration();
       const percentPlayed = (100 / videoDuration) * playDuration;
+      const percentCompleted = (100 / videoDuration) * resume_time;
       if (!recordedActivity.current && percentPlayed >= ignoreInterval) {
         sceneIncrementWatchCount({
           variables: {
@@ -235,6 +236,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         recordedActivity.current = true;
       }
 
+      if (percentCompleted >= 98) {
+        resume_time = 0;
+      }
       sceneSaveActivity({
         variables: {
           id,
@@ -316,9 +320,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         clearInterval(playDurationHandler);
         if (trackActivity) {
           const id = sceneId.current;
-          const playDuration = playDurationRef.current;
           if (id) {
-            const resume_time = playerRef.current.currentTime()!;
+            let resume_time = playerRef.current.currentTime()!;
+            const playDuration = playDurationRef.current;
+            const videoDuration = playerRef.current.duration();
+            const percentCompleted = (100 / videoDuration) * resume_time;
+            if (percentCompleted >= 98) {
+              resume_time = 0;
+            }
             sceneSaveActivity({
               variables: {
                 id,
@@ -412,8 +421,12 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       const id = sceneId.current;
       if (id) {
         const playDuration = playDurationRef.current;
-        const resume_time = this.currentTime()!;
-
+        let resume_time = this.currentTime()!;
+        const videoDuration = this.duration();
+        const percentCompleted = (100 / videoDuration) * resume_time;
+        if (percentCompleted >= 98) {
+          resume_time = 0;
+        }
         sceneSaveActivity({
           variables: {
             id,
