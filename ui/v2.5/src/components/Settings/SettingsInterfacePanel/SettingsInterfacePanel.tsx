@@ -17,7 +17,6 @@ import * as GQL from "src/core/generated-graphql";
 import {
   imageLightboxDisplayModeIntlMap,
   imageLightboxScrollModeIntlMap,
-  ratingSystemIntlMap,
 } from "src/core/enums";
 import { useInterfaceLocalForage } from "src/hooks";
 import {
@@ -25,6 +24,15 @@ import {
   connectionStateLabel,
   InteractiveContext,
 } from "src/hooks/Interactive/context";
+import {
+  defaultRatingStarPrecision,
+  defaultRatingSystemOptions,
+  defaultRatingSystemType,
+  RatingStarPrecision,
+  ratingStarPrecisionIntlMap,
+  ratingSystemIntlMap,
+  RatingSystemType,
+} from "src/utils/rating";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -77,6 +85,24 @@ export const SettingsInterfacePanel: React.FC = () => {
       imageLightbox: {
         ...iface.imageLightbox,
         ...v,
+      },
+    });
+  }
+
+  function saveRatingSystemType(t: RatingSystemType) {
+    saveUI({
+      ratingSystemOptions: {
+        ...ui.ratingSystemOptions,
+        type: t,
+      },
+    });
+  }
+
+  function saveRatingSystemStarPrecision(p: RatingStarPrecision) {
+    saveUI({
+      ratingSystemOptions: {
+        ...(ui.ratingSystemOptions ?? defaultRatingSystemOptions),
+        starPrecision: p,
       },
     });
   }
@@ -417,12 +443,10 @@ export const SettingsInterfacePanel: React.FC = () => {
           />
         </div>
         <SelectSetting
-          id="editing_rating_system"
-          headingID="config.ui.editing.rating_system.label"
-          value={iface.ratingSystem ?? GQL.RatingSystem.FivePointFiveStar}
-          onChange={(v) =>
-            saveInterface({ ratingSystem: v as GQL.RatingSystem })
-          }
+          id="rating_system"
+          headingID="config.ui.editing.rating_system.type.label"
+          value={ui.ratingSystemOptions?.type ?? defaultRatingSystemType}
+          onChange={(v) => saveRatingSystemType(v as RatingSystemType)}
         >
           {Array.from(ratingSystemIntlMap.entries()).map((v) => (
             <option key={v[0]} value={v[0]}>
@@ -432,6 +456,28 @@ export const SettingsInterfacePanel: React.FC = () => {
             </option>
           ))}
         </SelectSetting>
+        {(ui.ratingSystemOptions?.type ?? defaultRatingSystemType) ===
+          RatingSystemType.Stars && (
+          <SelectSetting
+            id="rating_system_star_precision"
+            headingID="config.ui.editing.rating_system.star_precision.label"
+            value={
+              ui.ratingSystemOptions?.starPrecision ??
+              defaultRatingStarPrecision
+            }
+            onChange={(v) =>
+              saveRatingSystemStarPrecision(v as RatingStarPrecision)
+            }
+          >
+            {Array.from(ratingStarPrecisionIntlMap.entries()).map((v) => (
+              <option key={v[0]} value={v[0]}>
+                {intl.formatMessage({
+                  id: v[1],
+                })}
+              </option>
+            ))}
+          </SelectSetting>
+        )}
       </SettingSection>
 
       <SettingSection headingID="config.ui.custom_css.heading">

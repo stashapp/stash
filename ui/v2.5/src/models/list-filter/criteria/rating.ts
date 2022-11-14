@@ -1,17 +1,17 @@
 import {
   convertFromRatingFormat,
   convertToRatingFormat,
+  RatingSystemOptions,
 } from "src/utils/rating";
 import {
   CriterionModifier,
   IntCriterionInput,
-  RatingSystem,
 } from "../../../core/generated-graphql";
 import { INumberValue } from "../types";
 import { Criterion, CriterionOption } from "./criterion";
 
 export class RatingCriterion extends Criterion<INumberValue> {
-  ratingSystem: RatingSystem;
+  ratingSystem: RatingSystemOptions;
 
   public get value(): INumberValue {
     return this._value;
@@ -20,7 +20,7 @@ export class RatingCriterion extends Criterion<INumberValue> {
     // backwards compatibility - if this.value is a number, use that
     if (typeof newValue !== "object") {
       this._value = {
-        value: convertFromRatingFormat(newValue, this.ratingSystem),
+        value: convertFromRatingFormat(newValue, this.ratingSystem.type),
         value2: undefined,
       };
     } else {
@@ -50,7 +50,7 @@ export class RatingCriterion extends Criterion<INumberValue> {
     }
   }
 
-  constructor(type: CriterionOption, ratingSystem: RatingSystem) {
+  constructor(type: CriterionOption, ratingSystem: RatingSystemOptions) {
     super(type, { value: 0, value2: undefined });
     this.ratingSystem = ratingSystem;
   }

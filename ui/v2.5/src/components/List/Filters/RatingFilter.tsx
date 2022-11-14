@@ -7,8 +7,10 @@ import { Criterion } from "../../../models/list-filter/criteria/criterion";
 import {
   convertFromRatingFormat,
   convertToRatingFormat,
+  defaultRatingSystemOptions,
 } from "src/utils/rating";
 import * as GQL from "src/core/generated-graphql";
+import { IUIConfig } from "src/core/config";
 
 interface IDurationFilterProps {
   criterion: Criterion<INumberValue>;
@@ -23,7 +25,8 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
 }) => {
   const intl = useIntl();
   const ratingSystem =
-    configuration?.interface.ratingSystem ?? GQL.RatingSystem.FiveStar;
+    (configuration?.ui as IUIConfig)?.ratingSystemOptions ??
+    defaultRatingSystemOptions;
 
   const valueStage = useRef<INumberValue>(criterion.value);
 
@@ -33,7 +36,7 @@ export const RatingFilter: React.FC<IDurationFilterProps> = ({
   ) {
     const value = parseInt(event.target.value, 10);
     valueStage.current[property] = !Number.isNaN(value)
-      ? convertFromRatingFormat(value, configuration?.interface.ratingSystem)
+      ? convertFromRatingFormat(value, ratingSystem.type)
       : 0;
   }
 

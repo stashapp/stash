@@ -47,6 +47,8 @@ import { CaptionCriterion } from "./captions";
 import { RatingCriterion } from "./rating";
 import { CountryCriterion } from "./country";
 import * as GQL from "src/core/generated-graphql";
+import { IUIConfig } from "src/core/config";
+import { defaultRatingSystemOptions } from "src/utils/rating";
 
 export function makeCriteria(
   config: GQL.ConfigDataFragment | undefined,
@@ -88,7 +90,8 @@ export function makeCriteria(
     case "rating100":
       return new RatingCriterion(
         new NullNumberCriterionOption("rating", type),
-        config?.interface.ratingSystem ?? GQL.RatingSystem.FiveStar
+        (config?.ui as IUIConfig)?.ratingSystemOptions ??
+          defaultRatingSystemOptions
       );
     case "resolution":
       return new ResolutionCriterion();

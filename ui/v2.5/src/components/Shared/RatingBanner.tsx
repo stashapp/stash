@@ -1,8 +1,13 @@
 import React, { useContext } from "react";
 import { FormattedMessage } from "react-intl";
-import { convertToRatingFormat } from "src/utils/rating";
-import { RatingSystem } from "src/core/generated-graphql";
+import {
+  convertToRatingFormat,
+  defaultRatingSystemOptions,
+  RatingStarPrecision,
+  RatingSystemType,
+} from "src/utils/rating";
 import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "src/core/config";
 
 interface IProps {
   rating?: number | null;
@@ -10,23 +15,27 @@ interface IProps {
 
 export const RatingBanner: React.FC<IProps> = ({ rating }) => {
   const { configuration: config } = useContext(ConfigurationContext);
+  const ratingSystemOptions =
+    (config?.ui as IUIConfig)?.ratingSystemOptions ??
+    defaultRatingSystemOptions;
+  const isLegacy =
+    ratingSystemOptions.type === RatingSystemType.Stars &&
+    ratingSystemOptions.starPrecision === RatingStarPrecision.Full;
+
+  const convertedRating = convertToRatingFormat(
+    rating ?? undefined,
+    ratingSystemOptions
+  );
 
   return rating ? (
     <div
       className={
-        config?.interface.ratingSystem == RatingSystem.FiveStar
-          ? `rating-banner rating-${convertToRatingFormat(
-              rating,
-              config?.interface.ratingSystem
-            )}`
+        isLegacy
+          ? `rating-banner rating-${convertedRating}`
           : `rating-banner rating-100-${Math.trunc(rating / 5)}`
       }
     >
-      <FormattedMessage id="rating" />:{" "}
-      {convertToRatingFormat(
-        rating,
-        config?.interface.ratingSystem ?? RatingSystem.FiveStar
-      )}
+      <FormattedMessage id="rating" />: {convertedRating}
     </div>
   ) : (
     <></>

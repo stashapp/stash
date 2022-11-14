@@ -1,6 +1,11 @@
 import React from "react";
-import * as GQL from "src/core/generated-graphql";
+import { IUIConfig } from "src/core/config";
 import { ConfigurationContext } from "src/hooks/Config";
+import {
+  defaultRatingStarPrecision,
+  defaultRatingSystemOptions,
+  RatingSystemType,
+} from "src/utils/rating";
 import { RatingNumber } from "./RatingNumber";
 import { RatingStars } from "./RatingStars";
 
@@ -14,6 +19,9 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
   props: IRatingSystemProps
 ) => {
   const { configuration: config } = React.useContext(ConfigurationContext);
+  const ratingSystemOptions =
+    (config?.ui as IUIConfig)?.ratingSystemOptions ??
+    defaultRatingSystemOptions;
 
   function getRatingStars() {
     return (
@@ -21,36 +29,22 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
         value={props.value}
         onSetRating={props.onSetRating}
         disabled={props.disabled}
-        ratingSystem={
-          config?.interface.ratingSystem ?? GQL.RatingSystem.FiveStar
+        precision={
+          ratingSystemOptions.starPrecision ?? defaultRatingStarPrecision
         }
       />
     );
   }
 
-  let toReturn;
-  switch (config?.interface?.ratingSystem) {
-    // case GQL.RatingSystem.TenStar:
-    // case GQL.RatingSystem.TenPointFiveStar:
-    // case GQL.RatingSystem.TenPointTwoFiveStar:
-    case GQL.RatingSystem.FiveStar:
-    case GQL.RatingSystem.FivePointFiveStar:
-    case GQL.RatingSystem.FivePointTwoFiveStar:
-      toReturn = getRatingStars();
-      break;
-    case GQL.RatingSystem.TenPointDecimal:
-      toReturn = (
-        <RatingNumber
-          value={props.value}
-          onSetRating={props.onSetRating}
-          disabled={props.disabled}
-        />
-      );
-      break;
-    default:
-      toReturn = getRatingStars();
-      break;
+  if (ratingSystemOptions.type === RatingSystemType.Stars) {
+    return getRatingStars();
+  } else {
+    return (
+      <RatingNumber
+        value={props.value}
+        onSetRating={props.onSetRating}
+        disabled={props.disabled}
+      />
+    );
   }
-
-  return toReturn;
 };

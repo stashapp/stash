@@ -6,17 +6,17 @@ import { faStar as farStar } from "@fortawesome/free-regular-svg-icons";
 import {
   convertFromRatingFormat,
   convertToRatingFormat,
-  getMaxStars,
   getRatingPrecision,
+  RatingStarPrecision,
+  RatingSystemType,
 } from "src/utils/rating";
-import * as GQL from "src/core/generated-graphql";
 import { useIntl } from "react-intl";
 
 export interface IRatingStarsProps {
   value?: number;
   onSetRating?: (value?: number) => void;
   disabled?: boolean;
-  ratingSystem: GQL.RatingSystem;
+  precision: RatingStarPrecision;
 }
 
 export const RatingStars: React.FC<IRatingStarsProps> = (
@@ -26,15 +26,18 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
   const [hoverRating, setHoverRating] = useState<number | undefined>();
   const disabled = props.disabled || !props.onSetRating;
 
-  const rating = convertToRatingFormat(props.value, props.ratingSystem);
+  const rating = convertToRatingFormat(props.value, {
+    type: RatingSystemType.Stars,
+    starPrecision: props.precision,
+  });
   const stars = rating ? Math.floor(rating) : 0;
   const fraction = rating ? rating % 1 : 0;
 
-  const max = getMaxStars(props.ratingSystem);
-  const precision = getRatingPrecision(props.ratingSystem);
+  const max = 5;
+  const precision = getRatingPrecision(props.precision);
 
   function newToggleFraction() {
-    if (precision > 0) {
+    if (precision !== 1) {
       if (fraction !== precision) {
         if (fraction == 0) {
           return 1 - precision;
@@ -78,7 +81,9 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
       return;
     }
 
-    props.onSetRating(convertFromRatingFormat(newRating, props.ratingSystem));
+    props.onSetRating(
+      convertFromRatingFormat(newRating, RatingSystemType.Stars)
+    );
   }
 
   function onMouseOver(thisStar: number) {
