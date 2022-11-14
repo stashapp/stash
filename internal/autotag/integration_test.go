@@ -479,6 +479,10 @@ func withTxn(f func(ctx context.Context) error) error {
 	return txn.WithTxn(context.TODO(), db, f)
 }
 
+func withDB(f func(ctx context.Context) error) error {
+	return txn.WithDatabase(context.TODO(), db, f)
+}
+
 func populateDB() error {
 	if err := withTxn(func(ctx context.Context) error {
 		err := createPerformer(ctx, r.Performer)
@@ -538,9 +542,13 @@ func TestParsePerformerScenes(t *testing.T) {
 		return
 	}
 
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
 	for _, p := range performers {
-		if err := withTxn(func(ctx context.Context) error {
-			return PerformerScenes(ctx, p, nil, r.Scene, nil)
+		if err := withDB(func(ctx context.Context) error {
+			return tagger.PerformerScenes(ctx, p, nil, r.Scene)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -585,14 +593,18 @@ func TestParseStudioScenes(t *testing.T) {
 		return
 	}
 
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
 	for _, s := range studios {
-		if err := withTxn(func(ctx context.Context) error {
+		if err := withDB(func(ctx context.Context) error {
 			aliases, err := r.Studio.GetAliases(ctx, s.ID)
 			if err != nil {
 				return err
 			}
 
-			return StudioScenes(ctx, s, nil, aliases, r.Scene, nil)
+			return tagger.StudioScenes(ctx, s, nil, aliases, r.Scene)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -641,14 +653,18 @@ func TestParseTagScenes(t *testing.T) {
 		return
 	}
 
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
 	for _, s := range tags {
-		if err := withTxn(func(ctx context.Context) error {
+		if err := withDB(func(ctx context.Context) error {
 			aliases, err := r.Tag.GetAliases(ctx, s.ID)
 			if err != nil {
 				return err
 			}
 
-			return TagScenes(ctx, s, nil, aliases, r.Scene, nil)
+			return tagger.TagScenes(ctx, s, nil, aliases, r.Scene)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -693,9 +709,13 @@ func TestParsePerformerImages(t *testing.T) {
 		return
 	}
 
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
 	for _, p := range performers {
-		if err := withTxn(func(ctx context.Context) error {
-			return PerformerImages(ctx, p, nil, r.Image, nil)
+		if err := withDB(func(ctx context.Context) error {
+			return tagger.PerformerImages(ctx, p, nil, r.Image)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -741,14 +761,18 @@ func TestParseStudioImages(t *testing.T) {
 		return
 	}
 
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
 	for _, s := range studios {
-		if err := withTxn(func(ctx context.Context) error {
+		if err := withDB(func(ctx context.Context) error {
 			aliases, err := r.Studio.GetAliases(ctx, s.ID)
 			if err != nil {
 				return err
 			}
 
-			return StudioImages(ctx, s, nil, aliases, r.Image, nil)
+			return tagger.StudioImages(ctx, s, nil, aliases, r.Image)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -797,14 +821,18 @@ func TestParseTagImages(t *testing.T) {
 		return
 	}
 
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
 	for _, s := range tags {
-		if err := withTxn(func(ctx context.Context) error {
+		if err := withDB(func(ctx context.Context) error {
 			aliases, err := r.Tag.GetAliases(ctx, s.ID)
 			if err != nil {
 				return err
 			}
 
-			return TagImages(ctx, s, nil, aliases, r.Image, nil)
+			return tagger.TagImages(ctx, s, nil, aliases, r.Image)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -850,9 +878,13 @@ func TestParsePerformerGalleries(t *testing.T) {
 		return
 	}
 
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
 	for _, p := range performers {
-		if err := withTxn(func(ctx context.Context) error {
-			return PerformerGalleries(ctx, p, nil, r.Gallery, nil)
+		if err := withDB(func(ctx context.Context) error {
+			return tagger.PerformerGalleries(ctx, p, nil, r.Gallery)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -898,14 +930,18 @@ func TestParseStudioGalleries(t *testing.T) {
 		return
 	}
 
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
 	for _, s := range studios {
-		if err := withTxn(func(ctx context.Context) error {
+		if err := withDB(func(ctx context.Context) error {
 			aliases, err := r.Studio.GetAliases(ctx, s.ID)
 			if err != nil {
 				return err
 			}
 
-			return StudioGalleries(ctx, s, nil, aliases, r.Gallery, nil)
+			return tagger.StudioGalleries(ctx, s, nil, aliases, r.Gallery)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}
@@ -954,14 +990,18 @@ func TestParseTagGalleries(t *testing.T) {
 		return
 	}
 
+	tagger := Tagger{
+		TxnManager: db,
+	}
+
 	for _, s := range tags {
-		if err := withTxn(func(ctx context.Context) error {
+		if err := withDB(func(ctx context.Context) error {
 			aliases, err := r.Tag.GetAliases(ctx, s.ID)
 			if err != nil {
 				return err
 			}
 
-			return TagGalleries(ctx, s, nil, aliases, r.Gallery, nil)
+			return tagger.TagGalleries(ctx, s, nil, aliases, r.Gallery)
 		}); err != nil {
 			t.Errorf("Error auto-tagging performers: %s", err)
 		}

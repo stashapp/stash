@@ -619,6 +619,7 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 		query.not(qb.makeFilter(ctx, imageFilter.Not))
 	}
 
+	query.handleCriterion(ctx, intCriterionHandler(imageFilter.ID, "images.id", nil))
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if imageFilter.Checksum != nil {
 			qb.addImagesFilesTable(f)

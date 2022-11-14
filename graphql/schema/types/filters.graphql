@@ -123,6 +123,7 @@ input SceneFilterType {
   OR: SceneFilterType
   NOT: SceneFilterType
 
+  id: IntCriterionInput
   title: StringCriterionInput
   code: StringCriterionInput
   details: StringCriterionInput
@@ -238,6 +239,7 @@ input GalleryFilterType {
   OR: GalleryFilterType
   NOT: GalleryFilterType
 
+  id: IntCriterionInput
   title: StringCriterionInput
   details: StringCriterionInput
 
@@ -334,6 +336,8 @@ input ImageFilterType {
 
   title: StringCriterionInput
 
+  """ Filter by image id"""
+  id: IntCriterionInput
   """Filter by file checksum"""
   checksum: StringCriterionInput
   """Filter by path"""
