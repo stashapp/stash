@@ -278,7 +278,7 @@ input ConfigInterfaceInput {
   
   """Set to true to disable creating new objects via the dropdown menus"""
   disableDropdownCreate: ConfigDisableDropdownCreateInput
-
+  
   """Handy Connection Key"""
   handyKey: String
   """Funscript Time Offset"""
