@@ -79,7 +79,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStrea
 
 	pf := scene.Files.Primary()
 	if pf == nil {
-		return nil, fmt.Errorf("nil file")
+		return nil, nil
 	}
 
 	var ret []*SceneStreamEndpoint

@@ -182,6 +182,7 @@ type SceneUpdateInput struct {
 	Rating *int `json:"rating"`
 	// Rating expressed in 1-100 scale
 	Rating100    *int               `json:"rating100"`
+	OCounter     *int               `json:"o_counter"`
 	Organized    *bool              `json:"organized"`
 	StudioID     *string            `json:"studio_id"`
 	GalleryIds   []string           `json:"gallery_ids"`

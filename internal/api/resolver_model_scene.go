@@ -29,6 +29,8 @@ func (r *sceneResolver) getPrimaryFile(ctx context.Context, obj *models.Scene) (
 		obj.Files.SetPrimary(ret)
 
 		return ret, nil
+	} else {
+		_ = obj.LoadPrimaryFile(ctx, r.repository.File)
 	}
 
 	return nil, nil
