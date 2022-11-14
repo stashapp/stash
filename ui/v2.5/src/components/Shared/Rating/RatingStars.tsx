@@ -142,7 +142,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     let f: number | undefined = fraction;
 
     if (hoverRating) {
-      if (hoverRating === stars && !precision) {
+      if (hoverRating === stars && precision === 1) {
         // unsetting
         return undefined;
       }
