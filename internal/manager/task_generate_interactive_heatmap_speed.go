@@ -58,7 +58,7 @@ func (t *GenerateInteractiveHeatmapSpeedTask) shouldGenerate() bool {
 		return false
 	}
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
-	return !t.doesHeatmapExist(sceneHash) || t.Overwrite
+	return !t.doesHeatmapExist(sceneHash) || primaryFile.InteractiveSpeed == nil || t.Overwrite
 }
 
 func (t *GenerateInteractiveHeatmapSpeedTask) doesHeatmapExist(sceneChecksum string) bool {

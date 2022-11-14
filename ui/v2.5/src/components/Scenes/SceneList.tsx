@@ -25,6 +25,8 @@ import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { ConfigurationContext } from "src/hooks/Config";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
+import { SceneMergeModal } from "./SceneMergeDialog";
+import { objectTitle } from "src/core/files";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -41,6 +43,9 @@ export const SceneList: React.FC<ISceneList> = ({
   const history = useHistory();
   const config = React.useContext(ConfigurationContext);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const [mergeScenes, setMergeScenes] = useState<
+    { id: string; title: string }[] | undefined
+  >(undefined);
   const [isIdentifyDialogOpen, setIsIdentifyDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -64,6 +69,11 @@ export const SceneList: React.FC<ISceneList> = ({
     {
       text: `${intl.formatMessage({ id: "actions.identify" })}…`,
       onClick: identify,
+      isDisplayed: showWhenSelected,
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.merge" })}…`,
+      onClick: merge,
       isDisplayed: showWhenSelected,
     },
     {
@@ -166,6 +176,24 @@ export const SceneList: React.FC<ISceneList> = ({
     setIsIdentifyDialogOpen(true);
   }
 
+  async function merge(
+    result: FindScenesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) {
+    const selected =
+      result.data?.findScenes.scenes
+        .filter((s) => selectedIds.has(s.id))
+        .map((s) => {
+          return {
+            id: s.id,
+            title: objectTitle(s),
+          };
+        }) ?? [];
+
+    setMergeScenes(selected);
+  }
+
   async function onExport() {
     setIsExportAll(false);
     setIsExportDialogOpen(true);
@@ -237,6 +265,23 @@ export const SceneList: React.FC<ISceneList> = ({
     );
   }
 
+  function renderMergeDialog() {
+    if (mergeScenes) {
+      return (
+        <SceneMergeModal
+          scenes={mergeScenes}
+          onClose={(mergedID?: string) => {
+            setMergeScenes(undefined);
+            if (mergedID) {
+              history.push(`/scenes/${mergedID}`);
+            }
+          }}
+          show
+        />
+      );
+    }
+  }
+
   function renderScenes(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
@@ -293,6 +338,7 @@ export const SceneList: React.FC<ISceneList> = ({
         {maybeRenderSceneGenerateDialog(selectedIds)}
         {maybeRenderSceneIdentifyDialog(selectedIds)}
         {maybeRenderSceneExportDialog(selectedIds)}
+        {renderMergeDialog()}
         {renderScenes(result, filter, selectedIds)}
       </>
     );

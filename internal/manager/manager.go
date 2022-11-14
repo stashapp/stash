@@ -169,6 +169,9 @@ func initialize() error {
 
 	db := sqlite.NewDatabase()
 
+	// start with empty paths
+	emptyPaths := paths.Paths{}
+
 	instance = &Manager{
 		Config:          cfg,
 		Logger:          l,
@@ -178,14 +181,18 @@ func initialize() error {
 
 		Database:   db,
 		Repository: sqliteRepository(db),
+		Paths:      &emptyPaths,
 
 		scanSubs: &subscriptionManager{},
 	}
 
 	instance.SceneService = &scene.Service{
-		File:            db.File,
-		Repository:      db.Scene,
-		MarkerDestroyer: instance.Repository.SceneMarker,
+		File:             db.File,
+		Repository:       db.Scene,
+		MarkerRepository: instance.Repository.SceneMarker,
+		PluginCache:      instance.PluginCache,
+		Paths:            instance.Paths,
+		Config:           cfg,
 	}
 
 	instance.ImageService = &image.Service{
@@ -444,7 +451,7 @@ func (s *Manager) PostInit(ctx context.Context) error {
 		logger.Warnf("could not set initial configuration: %v", err)
 	}
 
-	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	s.RefreshConfig()
 	s.SessionStore = session.NewStore(s.Config)
 	s.PluginCache.RegisterSessionStore(s.SessionStore)
@@ -518,7 +525,7 @@ func (s *Manager) initScraperCache() *scraper.Cache {
 }
 
 func (s *Manager) RefreshConfig() {
-	s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
+	*s.Paths = paths.NewPaths(s.Config.GetGeneratedPath())
 	config := s.Config
 	if config.Validate() == nil {
 		if err := fsutil.EnsureDir(s.Paths.Generated.Screenshots); err != nil {
