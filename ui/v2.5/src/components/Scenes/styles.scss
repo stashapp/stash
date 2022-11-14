@@ -240,6 +240,10 @@ textarea.scene-description {
 .scene-card.card {
   overflow: hidden;
   padding: 0;
+
+  &.fileless {
+    background-color: darken($card-bg, 5%);
+  }
 }
 
 .scene-cover {
@@ -476,7 +480,7 @@ input[type="range"].blue-slider {
 }
 
 .rating-stars {
-  display: inline-block;
+  display: inline-flex;
 
   button {
     font-size: inherit;

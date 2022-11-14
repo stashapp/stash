@@ -747,7 +747,7 @@ func (qb *ImageStore) queryGroupedFields(ctx context.Context, options models.Ima
 	aggregateQuery := qb.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(temp.id) as total")
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
 	// TODO - this doesn't work yet

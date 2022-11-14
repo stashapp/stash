@@ -23,6 +23,9 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 	scenePath := t.Scene.Path
 
 	videoFile := t.Scene.Files.Primary()
+	if videoFile == nil {
+		return
+	}
 
 	var at float64
 	if t.ScreenshotAt == nil {

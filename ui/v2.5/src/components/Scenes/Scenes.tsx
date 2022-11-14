@@ -8,6 +8,7 @@ import { PersistanceLevel } from "src/hooks/ListHook";
 const SceneList = lazy(() => import("./SceneList"));
 const SceneMarkerList = lazy(() => import("./SceneMarkerList"));
 const Scene = lazy(() => import("./SceneDetails/Scene"));
+const SceneCreate = lazy(() => import("./SceneDetails/SceneCreate"));
 
 const Scenes: React.FC = () => {
   const intl = useIntl();
@@ -30,6 +31,7 @@ const Scenes: React.FC = () => {
           )}
         />
         <Route exact path="/scenes/markers" component={SceneMarkerList} />
+        <Route exact path="/scenes/new" component={SceneCreate} />
         <Route path="/scenes/:id" component={Scene} />
       </Switch>
     </>

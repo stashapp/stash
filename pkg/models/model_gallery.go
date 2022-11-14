@@ -37,6 +37,12 @@ type Gallery struct {
 	PerformerIDs RelatedIDs `json:"performer_ids"`
 }
 
+// IsUserCreated returns true if the gallery was created by the user.
+// This is determined by whether the gallery has a primary file or folder.
+func (g *Gallery) IsUserCreated() bool {
+	return g.PrimaryFileID == nil && g.FolderID == nil
+}
+
 func (g *Gallery) LoadFiles(ctx context.Context, l FileLoader) error {
 	return g.Files.load(func() ([]file.File, error) {
 		return l.GetFiles(ctx, g.ID)

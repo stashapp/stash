@@ -3,6 +3,7 @@ package jsonschema
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stashapp/stash/pkg/fsutil"
@@ -60,7 +61,7 @@ type Scene struct {
 	StashIDs   []models.StashID `json:"stash_ids,omitempty"`
 }
 
-func (s Scene) Filename(basename string, hash string) string {
+func (s Scene) Filename(id int, basename string, hash string) string {
 	ret := fsutil.SanitiseBasename(s.Title)
 	if ret == "" {
 		ret = basename
@@ -68,6 +69,9 @@ func (s Scene) Filename(basename string, hash string) string {
 
 	if hash != "" {
 		ret += "." + hash
+	} else {
+		// scenes may have no file and therefore no hash
+		ret += "." + strconv.Itoa(id)
 	}
 
 	return ret + ".json"
