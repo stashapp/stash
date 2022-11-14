@@ -66,7 +66,9 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 
 	newScene := models.Scene{
 		Title:        translator.string(input.Title, "title"),
+		Code:         translator.string(input.Code, "code"),
 		Details:      translator.string(input.Details, "details"),
+		Director:     translator.string(input.Director, "director"),
 		URL:          translator.string(input.URL, "url"),
 		Date:         translator.datePtr(input.Date, "date"),
 		Rating:       input.Rating,

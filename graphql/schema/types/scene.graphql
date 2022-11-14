@@ -76,7 +76,9 @@ input SceneMovieInput {
 
 input SceneCreateInput {
   title: String
+  code: String
   details: String
+  director: String
   url: String
   date: String
   rating: Int
