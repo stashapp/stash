@@ -79,8 +79,13 @@ export const GalleryEditPanel: React.FC<
   const [createGallery] = useGalleryCreate();
   const [updateGallery] = useGalleryUpdate();
 
+  const titleRequired =
+    isNew || (gallery?.files?.length === 0 && !gallery?.folder);
+
   const schema = yup.object({
-    title: yup.string().required(),
+    title: titleRequired
+      ? yup.string().required()
+      : yup.string().optional().nullable(),
     details: yup.string().optional().nullable(),
     url: yup.string().optional().nullable(),
     date: yup.string().optional().nullable(),
