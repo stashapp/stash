@@ -163,8 +163,6 @@ const (
 	DisableDropdownCreatePerformer = "disable_dropdown_create.performer"
 	DisableDropdownCreateStudio    = "disable_dropdown_create.studio"
 	DisableDropdownCreateTag       = "disable_dropdown_create.tag"
-	RatingSystem                   = "rating_system"
-	defaultRatingSystem            = "FiveStar"
 
 	HandyKey        = "handy_key"
 	FunscriptOffset = "funscript_offset"
@@ -931,19 +929,6 @@ func (i *Instance) GetWallPlayback() string {
 	}
 
 	return ret
-}
-
-func (i *Instance) GetRatingSystem() models.RatingSystem {
-	i.RLock()
-	defer i.RUnlock()
-
-	ret := defaultRatingSystem
-	v := i.viper(RatingSystem)
-	if v.IsSet(RatingSystem) {
-		ret = v.GetString(RatingSystem)
-	}
-
-	return models.RatingSystem(ret)
 }
 
 func (i *Instance) GetShowScrubber() bool {

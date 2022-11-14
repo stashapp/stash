@@ -79,7 +79,6 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
     tag
     studio
   }
-  ratingSystem
   handyKey
   funscriptOffset
 }
