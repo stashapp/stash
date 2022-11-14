@@ -16,7 +16,7 @@ type schema40Migrator struct {
 }
 
 func post40(ctx context.Context, db *sqlx.DB) error {
-	logger.Info("Running post-migration for schema version 39")
+	logger.Info("Running post-migration for schema version 40")
 
 	m := schema40Migrator{
 		migrator: migrator{
@@ -103,8 +103,10 @@ func (m *schema40Migrator) migrate(ctx context.Context) error {
 }
 
 func (m *schema40Migrator) migratePerformerAliases(id int, aliases string) error {
-	// split aliases by comma
-	aliasList := strings.Split(aliases, ",")
+	// split aliases by , or /
+	aliasList := strings.FieldsFunc(aliases, func(r rune) bool {
+		return strings.ContainsRune(",/", r)
+	})
 
 	// trim whitespace from each alias
 	for i, alias := range aliasList {
