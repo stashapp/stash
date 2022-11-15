@@ -4,6 +4,7 @@ import {
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
   NullNumberCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
 import { ParentStudiosCriterionOption } from "./criteria/studios";
@@ -42,6 +43,8 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   createStringCriterionOption("stash_id"),
   createStringCriterionOption("aliases"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 
 export const StudioListFilterOptions = new ListFilterOptions(

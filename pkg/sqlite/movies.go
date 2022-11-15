@@ -155,6 +155,9 @@ func (qb *movieQueryBuilder) makeFilter(ctx context.Context, movieFilter *models
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.URL, "movies.url"))
 	query.handleCriterion(ctx, movieStudioCriterionHandler(qb, movieFilter.Studios))
 	query.handleCriterion(ctx, moviePerformersCriterionHandler(qb, movieFilter.Performers))
+	query.handleCriterion(ctx, dateCriterionHandler(movieFilter.Date, "movies.date"))
+	query.handleCriterion(ctx, timestampCriterionHandler(movieFilter.CreatedAt, "movies.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(movieFilter.UpdatedAt, "movies.updated_at"))
 
 	return query
 }

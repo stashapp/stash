@@ -3,6 +3,8 @@ import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
   createBooleanCriterionOption,
+  createDateCriterionOption,
+  createMandatoryTimestampCriterionOption,
   NumberCriterionOption,
   NullNumberCriterionOption,
 } from "./criteria/criterion";
@@ -84,6 +86,10 @@ const criterionOptions = [
   new NumberCriterionOption("height", "height_cm", "height_cm"),
   ...numberCriteria.map((c) => createNumberCriterionOption(c)),
   ...stringCriteria.map((c) => createStringCriterionOption(c)),
+  createDateCriterionOption("birthdate"),
+  createDateCriterionOption("death_date"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 export const PerformerListFilterOptions = new ListFilterOptions(
   defaultSortBy,

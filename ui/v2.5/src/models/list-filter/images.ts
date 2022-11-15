@@ -3,6 +3,7 @@ import {
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
   NullNumberCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
@@ -45,6 +46,8 @@ const criterionOptions = [
   PerformerFavoriteCriterionOption,
   StudiosCriterionOption,
   createMandatoryNumberCriterionOption("file_count"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 export const ImageListFilterOptions = new ListFilterOptions(
   defaultSortBy,
