@@ -140,7 +140,7 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
   const initialValues = {
     name: performer.name ?? "",
     disambiguation: performer.disambiguation ?? "",
-    alias_list: performer.alias_list,
+    alias_list: performer.alias_list?.slice().sort(),
     gender: genderToString(performer.gender ?? undefined),
     birthdate: performer.birthdate ?? "",
     ethnicity: performer.ethnicity ?? "",
