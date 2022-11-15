@@ -45,6 +45,7 @@ import { RatingCriterionOption } from "./rating";
 import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 import { CaptionCriterion } from "./captions";
 import { CountryCriterion } from "./country";
+import { StashIDCriterion } from "./stash-ids";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -152,6 +153,10 @@ export function makeCriteria(type: CriterionType = "none") {
       return new NumberCriterion(
         new NumberCriterionOption("height", "height_cm", type)
       );
+    // stash_id is deprecated
+    case "stash_id":
+    case "stash_id_endpoint":
+      return new StashIDCriterion();
     case "ethnicity":
     case "hair_color":
     case "eye_color":
@@ -162,8 +167,6 @@ export function makeCriteria(type: CriterionType = "none") {
     case "piercings":
     case "aliases":
     case "url":
-    case "stash_id":
-    case "stash_id_endpoint":
     case "details":
     case "title":
     case "director":

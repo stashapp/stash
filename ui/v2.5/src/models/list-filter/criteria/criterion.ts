@@ -17,6 +17,7 @@ import {
   ILabeledValue,
   INumberValue,
   IOptionType,
+  IStashIDValue,
 } from "../types";
 
 export type Option = string | number | IOptionType;
@@ -24,7 +25,8 @@ export type CriterionValue =
   | string
   | ILabeledId[]
   | IHierarchicalLabelValue
-  | INumberValue;
+  | INumberValue
+  | IStashIDValue;
 
 const modifierMessageIDs = {
   [CriterionModifier.Equals]: "criterion_modifier.equals",

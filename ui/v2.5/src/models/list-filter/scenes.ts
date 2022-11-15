@@ -24,6 +24,7 @@ import {
 } from "./criteria/phash";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { CaptionsCriterionOption } from "./criteria/captions";
+import { StashIDCriterionOption } from "./criteria/stash-ids";
 
 const defaultSortBy = "date";
 const sortByOptions = [
@@ -80,8 +81,7 @@ const criterionOptions = [
   StudiosCriterionOption,
   MoviesCriterionOption,
   createStringCriterionOption("url"),
-  createStringCriterionOption("stash_id"),
-  createStringCriterionOption("stash_id_endpoint"),
+  StashIDCriterionOption,
   InteractiveCriterionOption,
   CaptionsCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),

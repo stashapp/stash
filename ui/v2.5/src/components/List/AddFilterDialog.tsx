@@ -20,6 +20,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   criterionIsNumberValue,
+  criterionIsStashIDValue,
   CriterionType,
 } from "src/models/list-filter/types";
 import { DurationFilter } from "./Filters/DurationFilter";
@@ -30,6 +31,8 @@ import { OptionsFilter } from "./Filters/OptionsFilter";
 import { InputFilter } from "./Filters/InputFilter";
 import { CountryCriterion } from "src/models/list-filter/criteria/country";
 import { CountrySelect } from "../Shared";
+import { StashIDCriterion } from "src/models/list-filter/criteria/stash-ids";
+import { StashIDFilter } from "./Filters/StashIDFilter";
 
 interface IAddFilterProps {
   onAddCriterion: (
@@ -124,6 +127,16 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     }
 
     function renderSelect() {
+      // always show stashID filter
+      if (criterion instanceof StashIDCriterion) {
+        return (
+          <StashIDFilter
+            criterion={criterion}
+            onValueChanged={onValueChanged}
+          />
+        );
+      }
+
       // Hide the value select if the modifier is "IsNull" or "NotNull"
       if (
         criterion.modifier === CriterionModifier.IsNull ||
@@ -152,6 +165,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
         options &&
         !criterionIsHierarchicalLabelValue(criterion.value) &&
         !criterionIsNumberValue(criterion.value) &&
+        !criterionIsStashIDValue(criterion.value) &&
         !Array.isArray(criterion.value)
       ) {
         defaultValue.current = criterion.value;

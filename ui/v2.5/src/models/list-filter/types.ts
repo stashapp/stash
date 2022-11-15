@@ -33,6 +33,11 @@ export interface IPHashDuplicationValue {
   distance?: number; // currently not implemented
 }
 
+export interface IStashIDValue {
+  endpoint: string;
+  stashID: string;
+}
+
 export function criterionIsHierarchicalLabelValue(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
@@ -45,6 +50,13 @@ export function criterionIsNumberValue(
   value: any
 ): value is INumberValue {
   return typeof value === "object" && "value" in value && "value2" in value;
+}
+
+export function criterionIsStashIDValue(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any
+): value is IStashIDValue {
+  return typeof value === "object" && "endpoint" in value && "stashID" in value;
 }
 
 export interface IOptionType {
