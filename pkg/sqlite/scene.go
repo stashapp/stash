@@ -54,7 +54,9 @@ ORDER BY files.size DESC
 type sceneRow struct {
 	ID        int                    `db:"id" goqu:"skipinsert"`
 	Title     zero.String            `db:"title"`
+	Code      zero.String            `db:"code"`
 	Details   zero.String            `db:"details"`
+	Director  zero.String            `db:"director"`
 	URL       zero.String            `db:"url"`
 	Date      models.SQLiteDate      `db:"date"`
 	Rating    null.Int               `db:"rating"`
@@ -68,7 +70,9 @@ type sceneRow struct {
 func (r *sceneRow) fromScene(o models.Scene) {
 	r.ID = o.ID
 	r.Title = zero.StringFrom(o.Title)
+	r.Code = zero.StringFrom(o.Code)
 	r.Details = zero.StringFrom(o.Details)
+	r.Director = zero.StringFrom(o.Director)
 	r.URL = zero.StringFrom(o.URL)
 	if o.Date != nil {
 		_ = r.Date.Scan(o.Date.Time)
@@ -94,7 +98,9 @@ func (r *sceneQueryRow) resolve() *models.Scene {
 	ret := &models.Scene{
 		ID:        r.ID,
 		Title:     r.Title.String,
+		Code:      r.Code.String,
 		Details:   r.Details.String,
+		Director:  r.Director.String,
 		URL:       r.URL.String,
 		Date:      r.Date.DatePtr(),
 		Rating:    nullIntPtr(r.Rating),
@@ -123,7 +129,9 @@ type sceneRowRecord struct {
 
 func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 	r.setNullString("title", o.Title)
+	r.setNullString("code", o.Code)
 	r.setNullString("details", o.Details)
+	r.setNullString("director", o.Director)
 	r.setNullString("url", o.URL)
 	r.setSQLiteDate("date", o.Date)
 	r.setNullInt("rating", o.Rating)
@@ -317,12 +325,6 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 }
 
 func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
-	// delete all related table rows
-	// TODO - this should be handled by a delete cascade
-	if err := qb.performersRepository().destroy(ctx, []int{id}); err != nil {
-		return err
-	}
-
 	// scene markers should be handled prior to calling destroy
 	// galleries should be handled prior to calling destroy
 
@@ -804,10 +806,13 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 		query.not(qb.makeFilter(ctx, sceneFilter.Not))
 	}
 
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.ID, "scenes.id", nil))
 	query.handleCriterion(ctx, pathCriterionHandler(sceneFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, sceneFileCountCriterionHandler(qb, sceneFilter.FileCount))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Title, "scenes.title"))
+	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Code, "scenes.code"))
 	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Details, "scenes.details"))
+	query.handleCriterion(ctx, stringCriterionHandler(sceneFilter.Director, "scenes.director"))
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
 		if sceneFilter.Oshash != nil {
 			qb.addSceneFilesTable(f)
@@ -947,7 +952,8 @@ func (qb *SceneStore) Query(ctx context.Context, options models.SceneQueryOption
 			},
 		)
 
-		searchColumns := []string{"scenes.title", "scenes.details", "folders.path", "files.basename", "files_fingerprints.fingerprint", "scene_markers.title"}
+		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		searchColumns := []string{"scenes.title", "scenes.details", filepathColumn, "files_fingerprints.fingerprint", "scene_markers.title"}
 		query.parseQueryString(searchColumns, *q)
 	}
 
@@ -984,7 +990,7 @@ func (qb *SceneStore) queryGroupedFields(ctx context.Context, options models.Sce
 	aggregateQuery := qb.newQuery()
 
 	if options.Count {
-		aggregateQuery.addColumn("COUNT(temp.id) as total")
+		aggregateQuery.addColumn("COUNT(DISTINCT temp.id) as total")
 	}
 
 	if options.TotalDuration {
@@ -1439,6 +1445,22 @@ func (qb *SceneStore) UpdateCover(ctx context.Context, sceneID int, image []byte
 
 func (qb *SceneStore) DestroyCover(ctx context.Context, sceneID int) error {
 	return qb.imageRepository().destroy(ctx, []int{sceneID})
+}
+
+func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []file.ID) error {
+	// assuming a file can only be assigned to a single scene
+	if err := scenesFilesTableMgr.destroyJoins(ctx, fileIDs); err != nil {
+		return err
+	}
+
+	// assign primary only if destination has no files
+	existingFileIDs, err := qb.filesRepository().get(ctx, sceneID)
+	if err != nil {
+		return err
+	}
+
+	firstPrimary := len(existingFileIDs) == 0
+	return scenesFilesTableMgr.insertJoins(ctx, sceneID, firstPrimary, fileIDs)
 }
 
 func (qb *SceneStore) moviesRepository() *repository {

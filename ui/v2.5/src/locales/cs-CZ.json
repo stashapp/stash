@@ -601,11 +601,45 @@
     "delete_object_desc": "Jste si jisti, že chcete smazat {count, plural, one {tuto {singularEntity}} other {tyto {pluralEntity}}}?",
     "delete_object_overflow": "…a {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Smazat {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Skrýt do příští aktualizace",
     "edit_entity_title": "Upravit {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Zahrnout související objekty do exportu",
     "export_title": "Exportovat",
     "lightbox": {
-      "delay": "Zpoždění (sekundy)"
+      "delay": "Zpoždění (sekundy)",
+      "display_mode": {
+        "fit_horizontally": "Seřídit horizontálně",
+        "fit_to_screen": "Seřídit na velikost obrazovky",
+        "label": "Mód zobrazení",
+        "original": "Originál"
+      },
+      "options": "Možnosti",
+      "reset_zoom_on_nav": "Resetovat zoom po změně obrázku",
+      "scale_up": {
+        "description": "Škálovat menší obrázky tak, aby vyplnily obrazovku",
+        "label": "Zvětšit, aby se vešly"
+      },
+      "scroll_mode": {
+        "description": "Držet shift pro dočasné použití druhého módu.",
+        "label": "Rolovací mód",
+        "pan_y": "Náklon Y",
+        "zoom": "Zvětšit"
+      }
+    },
+    "merge_tags": {
+      "destination": "Cíl",
+      "source": "Zdroj"
+    },
+    "overwrite_filter_confirm": "JSte si jisti, že chcete přepsat aktuálně uložený dotaz {entityName}?",
+    "scene_gen": {
+      "force_transcodes": "Vynutit generování Transkódu",
+      "force_transcodes_tooltip": "Ve výchozím nastavení, transkódy jsou generovány pouze tehdy, když video soubor není podporován prohlížečem. V případě aktivování, transkódy budou generovány i v ostatních případech.",
+      "image_previews": "Animované náhledy obrázků",
+      "image_previews_tooltip": "Animobané WebP náhledy, vyžadovány pouze pokud Typ náhledu je nastaven na \"Animovaný obrázek\".",
+      "interactive_heatmap_speed": "Generovat heatmapy a rychlosti pro interaktivní scény",
+      "marker_image_previews": "Animované náhledy markerů",
+      "marker_image_previews_tooltip": "Animované WebP náhledy markerů, nezbytné pouze tehdy, pokud je Typ náhledu nastaven na \"Animovaný obrázek\".",
+      "marker_screenshots": "Screenshoty markerů"
     }
   }
 }

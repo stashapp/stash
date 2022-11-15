@@ -91,13 +91,15 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
 	const defaultSceneImage = "scene/scene.svg"
 
-	filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	if scene.Path != "" {
+		filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 
-	// fall back to the scene image blob if the file isn't present
-	screenshotExists, _ := fsutil.FileExists(filepath)
-	if screenshotExists {
-		http.ServeFile(w, r, filepath)
-		return
+		// fall back to the scene image blob if the file isn't present
+		screenshotExists, _ := fsutil.FileExists(filepath)
+		if screenshotExists {
+			http.ServeFile(w, r, filepath)
+			return
+		}
 	}
 
 	var cover []byte

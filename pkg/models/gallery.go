@@ -10,6 +10,7 @@ type GalleryFilterType struct {
 	And     *GalleryFilterType    `json:"AND"`
 	Or      *GalleryFilterType    `json:"OR"`
 	Not     *GalleryFilterType    `json:"NOT"`
+	ID      *IntCriterionInput    `json:"id"`
 	Title   *StringCriterionInput `json:"title"`
 	Details *StringCriterionInput `json:"details"`
 	// Filter by file checksum

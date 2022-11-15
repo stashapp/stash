@@ -48,8 +48,8 @@ func oshash(size int64, head []byte, tail []byte) (string, error) {
 
 // FromFilePath calculates the hash reading from src.
 func FromReader(src io.ReadSeeker, fileSize int64) (string, error) {
-	if fileSize == 0 {
-		return "", nil
+	if fileSize <= 0 {
+		return "", fmt.Errorf("cannot calculate oshash for empty file (size %d)", fileSize)
 	}
 
 	fileChunkSize := chunkSize

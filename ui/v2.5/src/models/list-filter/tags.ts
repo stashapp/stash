@@ -44,6 +44,7 @@ const criterionOptions = [
   createMandatoryStringCriterionOption("name"),
   TagIsMissingCriterionOption,
   createStringCriterionOption("aliases"),
+  createStringCriterionOption("description"),
   createBooleanCriterionOption("ignore_auto_tag"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),

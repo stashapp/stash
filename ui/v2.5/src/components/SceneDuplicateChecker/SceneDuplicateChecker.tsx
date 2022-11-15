@@ -38,6 +38,8 @@ import {
   faTag,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { SceneMergeModal } from "../Scenes/SceneMergeDialog";
+import { objectTitle } from "src/core/files";
 
 const CLASSNAME = "duplicate-checker";
 
@@ -75,6 +77,10 @@ export const SceneDuplicateChecker: React.FC = () => {
       },
       scene_filter: {
         is_missing: "phash",
+        file_count: {
+          modifier: GQL.CriterionModifier.GreaterThan,
+          value: 0,
+        },
       },
     },
   });
@@ -82,6 +88,10 @@ export const SceneDuplicateChecker: React.FC = () => {
   const [selectedScenes, setSelectedScenes] = useState<
     GQL.SlimSceneDataFragment[] | null
   >(null);
+
+  const [mergeScenes, setMergeScenes] = useState<
+    { id: string; title: string }[] | undefined
+  >(undefined);
 
   if (loading) return <LoadingIndicator />;
   if (!data) return <ErrorMessage error="Error searching for duplicates." />;
@@ -390,8 +400,58 @@ export const SceneDuplicateChecker: React.FC = () => {
     );
   }
 
+  function renderMergeDialog() {
+    if (mergeScenes) {
+      return (
+        <SceneMergeModal
+          scenes={mergeScenes}
+          onClose={(mergedID?: string) => {
+            setMergeScenes(undefined);
+            if (mergedID) {
+              // refresh
+              refetch();
+            }
+          }}
+          show
+        />
+      );
+    }
+  }
+
+  function onMergeClicked(
+    sceneGroup: GQL.SlimSceneDataFragment[],
+    scene: GQL.SlimSceneDataFragment
+  ) {
+    const selected = scenes.flat().filter((s) => checkedScenes[s.id]);
+
+    // if scenes in this group other than this scene are selected, then only
+    // the selected scenes will be selected as source. Otherwise all other
+    // scenes will be source
+    let srcScenes =
+      selected.filter((s) => {
+        if (s === scene) return false;
+        return sceneGroup.includes(s);
+      }) ?? [];
+
+    if (!srcScenes.length) {
+      srcScenes = sceneGroup.filter((s) => s !== scene);
+    }
+
+    // insert subject scene to the front so that it is considered the destination
+    srcScenes.unshift(scene);
+
+    setMergeScenes(
+      srcScenes.map((s) => {
+        return {
+          id: s.id,
+          title: objectTitle(s),
+        };
+      })
+    );
+  }
+
   return (
-    <Card id="scene-duplicate-checker" className="col col-xl-10 mx-auto">
+    <Card id="scene-duplicate-checker" className="col col-xl-12 mx-auto">
       <div className={CLASSNAME}>
         {deletingScenes && selectedScenes && (
           <DeleteScenesDialog
@@ -399,6 +459,7 @@ export const SceneDuplicateChecker: React.FC = () => {
             onClose={onDeleteDialogClosed}
           />
         )}
+        {renderMergeDialog()}
         {maybeRenderEdit()}
         <h4>
           <FormattedMessage id="dupe_check.title" />
@@ -547,6 +608,12 @@ export const SceneDuplicateChecker: React.FC = () => {
                           onClick={() => handleDeleteScene(scene)}
                         >
                           <FormattedMessage id="actions.delete" />
+                        </Button>
+                        <Button
+                          className="edit-button"
+                          onClick={() => onMergeClicked(group, scene)}
+                        >
+                          <FormattedMessage id="actions.merge" />
                         </Button>
                       </td>
                     </tr>

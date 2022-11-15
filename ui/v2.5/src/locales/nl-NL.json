@@ -344,7 +344,7 @@
       "auto_tagging": "Automatisch taggen",
       "backing_up_database": "Database back-uppen",
       "backup_and_download": "Voert een backup uit van de database en download het backup bestand.",
-      "backup_database": "Voert een backup uit naar hetzelfde pad als de database, met het bestandsformaat {filename_format}",
+      "backup_database": "Voert een backup van de database uit naar de backup map, met het bestandsformaat {filename_format}",
       "cleanup_desc": "Controleer op missende bestanden en verwijder deze uit de database. Dit is een destructieve handeling.",
       "data_management": "Opslagbeheer",
       "defaults_set": "Standaarden zijn ingesteld en zullen gebruikt worden wanneer de {action} knop op de Taken pagina ingedrukt wordt.",

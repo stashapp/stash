@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/internal/static"
 	"github.com/stashapp/stash/pkg/hash"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type imageBox struct {
@@ -86,7 +87,7 @@ func initialiseCustomImages() {
 	}
 }
 
-func getRandomPerformerImageUsingName(name, gender, customPath string) ([]byte, error) {
+func getRandomPerformerImageUsingName(name string, gender models.GenderEnum, customPath string) ([]byte, error) {
 	var box *imageBox
 
 	// If we have a custom path, we should return a new box in the given path.
@@ -95,10 +96,10 @@ func getRandomPerformerImageUsingName(name, gender, customPath string) ([]byte, 
 	}
 
 	if box == nil {
-		switch strings.ToUpper(gender) {
-		case "FEMALE":
+		switch gender {
+		case models.GenderEnumFemale:
 			box = performerBox
-		case "MALE":
+		case models.GenderEnumMale:
 			box = performerBoxMale
 		default:
 			box = performerBox

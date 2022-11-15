@@ -21,4 +21,7 @@ export { default as DeleteEntityDialog } from "./DeleteEntityDialog";
 export { IndeterminateCheckbox } from "./IndeterminateCheckbox";
 export { OperationButton } from "./OperationButton";
 export { URLField } from "./URLField";
+export { default as CountrySelect } from "./CountrySelect";
+export { default as CountryLabel } from "./CountryLabel";
+
 export const TITLE_SUFFIX = " | Stash";

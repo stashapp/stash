@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type testTagCase struct {
@@ -111,7 +112,9 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	}
 
 	organized := false
-	perPage := models.PerPageAll
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
 
 	expectedSceneFilter := &models.SceneFilterType{
 		Organized: &organized,
@@ -122,7 +125,9 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 	}
 
 	expectedFindFilter := &models.FindFilterType{
-		PerPage: &perPage,
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
 	}
 
 	// if alias provided, then don't find by name
@@ -140,13 +145,13 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockSceneReader.On("Query", mock.Anything, scene.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, models.ScenePartial{
 			TagIDs: &models.UpdateIDs{
 				IDs:  []int{tagID},
 				Mode: models.RelationshipUpdateModeAdd,
@@ -154,7 +159,11 @@ func testTagScenes(t *testing.T, tc testTagCase) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := TagScenes(testCtx, &tag, nil, aliases, mockSceneReader, nil)
+	tagger := Tagger{
+		TxnManager: &mocks.TxnManager{},
+	}
+
+	err := tagger.TagScenes(testCtx, &tag, nil, aliases, mockSceneReader)
 
 	assert := assert.New(t)
 
@@ -204,7 +213,9 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	}
 
 	organized := false
-	perPage := models.PerPageAll
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
 
 	expectedImageFilter := &models.ImageFilterType{
 		Organized: &organized,
@@ -215,7 +226,9 @@ func testTagImages(t *testing.T, tc testTagCase) {
 	}
 
 	expectedFindFilter := &models.FindFilterType{
-		PerPage: &perPage,
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
 	}
 
 	// if alias provided, then don't find by name
@@ -233,14 +246,14 @@ func testTagImages(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockImageReader.On("Query", testCtx, image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
+		mockImageReader.On("Query", mock.Anything, image.QueryOptions(expectedAliasFilter, expectedFindFilter, false)).
 			Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		imageID := i + 1
 
-		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+		mockImageReader.On("UpdatePartial", mock.Anything, imageID, models.ImagePartial{
 			TagIDs: &models.UpdateIDs{
 				IDs:  []int{tagID},
 				Mode: models.RelationshipUpdateModeAdd,
@@ -248,7 +261,11 @@ func testTagImages(t *testing.T, tc testTagCase) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := TagImages(testCtx, &tag, nil, aliases, mockImageReader, nil)
+	tagger := Tagger{
+		TxnManager: &mocks.TxnManager{},
+	}
+
+	err := tagger.TagImages(testCtx, &tag, nil, aliases, mockImageReader)
 
 	assert := assert.New(t)
 
@@ -299,7 +316,9 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	}
 
 	organized := false
-	perPage := models.PerPageAll
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
 
 	expectedGalleryFilter := &models.GalleryFilterType{
 		Organized: &organized,
@@ -310,7 +329,9 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 	}
 
 	expectedFindFilter := &models.FindFilterType{
-		PerPage: &perPage,
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
 	}
 
 	// if alias provided, then don't find by name
@@ -328,13 +349,13 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 			},
 		}
 
-		mockGalleryReader.On("Query", testCtx, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+		mockGalleryReader.On("Query", mock.Anything, expectedAliasFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
 	}
 
 	for i := range matchingPaths {
 		galleryID := i + 1
 
-		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, models.GalleryPartial{
 			TagIDs: &models.UpdateIDs{
 				IDs:  []int{tagID},
 				Mode: models.RelationshipUpdateModeAdd,
@@ -343,7 +364,11 @@ func testTagGalleries(t *testing.T, tc testTagCase) {
 
 	}
 
-	err := TagGalleries(testCtx, &tag, nil, aliases, mockGalleryReader, nil)
+	tagger := Tagger{
+		TxnManager: &mocks.TxnManager{},
+	}
+
+	err := tagger.TagGalleries(testCtx, &tag, nil, aliases, mockGalleryReader)
 
 	assert := assert.New(t)
 

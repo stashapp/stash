@@ -128,7 +128,7 @@ type MarkerDestroyer interface {
 // Destroy deletes a scene and its associated relationships from the
 // database.
 func (s *Service) Destroy(ctx context.Context, scene *models.Scene, fileDeleter *FileDeleter, deleteGenerated, deleteFile bool) error {
-	mqb := s.MarkerDestroyer
+	mqb := s.MarkerRepository
 	markers, err := mqb.FindBySceneID(ctx, scene.ID)
 	if err != nil {
 		return err

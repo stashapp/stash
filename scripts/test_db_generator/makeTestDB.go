@@ -227,20 +227,16 @@ func makePerformers(n int) {
 		if err := retry(100, func() error {
 			return withTxn(func(ctx context.Context) error {
 				name := generatePerformerName()
-				performer := models.Performer{
-					Name:     sql.NullString{String: name, Valid: true},
+				performer := &models.Performer{
+					Name:     name,
 					Checksum: md5.FromString(name),
-					Favorite: sql.NullBool{
-						Bool:  false,
-						Valid: true,
-					},
 				}
 
 				// TODO - set tags
 
-				_, err := repo.Performer.Create(ctx, performer)
+				err := repo.Performer.Create(ctx, performer)
 				if err != nil {
-					err = fmt.Errorf("error creating performer with name: %s: %s", performer.Name.String, err.Error())
+					err = fmt.Errorf("error creating performer with name: %s: %s", performer.Name, err.Error())
 				}
 				return err
 			})
@@ -444,8 +440,8 @@ func makeGalleries(n int) {
 			for ; i < batch && i < n; i++ {
 				gallery := generateGallery(i)
 				gallery.StudioID = getRandomStudioID(ctx)
-				gallery.TagIDs = getRandomTags(ctx, 0, 15)
-				gallery.PerformerIDs = getRandomPerformers(ctx)
+				gallery.TagIDs = models.NewRelatedIDs(getRandomTags(ctx, 0, 15))
+				gallery.PerformerIDs = models.NewRelatedIDs(getRandomPerformers(ctx))
 
 				path := md5.FromString("gallery/" + strconv.Itoa(i))
 				f, err := makeZipFile(ctx, path)
@@ -564,10 +560,10 @@ func getRandomStudioID(ctx context.Context) *int {
 
 func makeSceneRelationships(ctx context.Context, s *models.Scene) {
 	// add tags
-	s.TagIDs = getRandomTags(ctx, 0, 15)
+	s.TagIDs = models.NewRelatedIDs(getRandomTags(ctx, 0, 15))
 
 	// add performers
-	s.PerformerIDs = getRandomPerformers(ctx)
+	s.PerformerIDs = models.NewRelatedIDs(getRandomPerformers(ctx))
 }
 
 func makeImageRelationships(ctx context.Context, i *models.Image) {
@@ -576,12 +572,12 @@ func makeImageRelationships(ctx context.Context, i *models.Image) {
 
 	// add tags
 	if rand.Intn(100) == 0 {
-		i.TagIDs = getRandomTags(ctx, 1, 15)
+		i.TagIDs = models.NewRelatedIDs(getRandomTags(ctx, 1, 15))
 	}
 
 	// add performers
 	if rand.Intn(100) <= 1 {
-		i.PerformerIDs = getRandomPerformers(ctx)
+		i.PerformerIDs = models.NewRelatedIDs(getRandomPerformers(ctx))
 	}
 }
 

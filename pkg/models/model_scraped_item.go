@@ -79,7 +79,9 @@ func (ScrapedMovie) IsScrapedContent() {}
 type ScrapedItem struct {
 	ID              int             `db:"id" json:"id"`
 	Title           sql.NullString  `db:"title" json:"title"`
+	Code            sql.NullString  `db:"code" json:"code"`
 	Description     sql.NullString  `db:"description" json:"description"`
+	Director        sql.NullString  `db:"director" json:"director"`
 	URL             sql.NullString  `db:"url" json:"url"`
 	Date            SQLiteDate      `db:"date" json:"date"`
 	Rating          sql.NullString  `db:"rating" json:"rating"`

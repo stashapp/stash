@@ -507,6 +507,63 @@ export const mutateSceneSetPrimaryFile = (id: string, fileID: string) =>
     update: deleteCache(sceneMutationImpactedQueries),
   });
 
+export const mutateSceneAssignFile = (sceneID: string, fileID: string) =>
+  client.mutate<GQL.SceneAssignFileMutation>({
+    mutation: GQL.SceneAssignFileDocument,
+    variables: {
+      input: {
+        scene_id: sceneID,
+        file_id: fileID,
+      },
+    },
+    update: deleteCache([
+      ...sceneMutationImpactedQueries,
+      GQL.FindSceneDocument,
+    ]),
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+  });
+
+export const mutateSceneMerge = (
+  destination: string,
+  source: string[],
+  values: GQL.SceneUpdateInput
+) =>
+  client.mutate<GQL.SceneMergeMutation>({
+    mutation: GQL.SceneMergeDocument,
+    variables: {
+      input: {
+        source,
+        destination,
+        values,
+      },
+    },
+    update: (cache) => {
+      // evict the merged scenes from the cache so that they are reloaded
+      cache.evict({
+        id: cache.identify({ __typename: "Scene", id: destination }),
+      });
+      source.forEach((id) =>
+        cache.evict({ id: cache.identify({ __typename: "Scene", id }) })
+      );
+      cache.gc();
+
+      deleteCache([...sceneMutationImpactedQueries, GQL.FindSceneDocument])(
+        cache
+      );
+    },
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+  });
+
+export const mutateCreateScene = (input: GQL.SceneCreateInput) =>
+  client.mutate<GQL.SceneCreateMutation>({
+    mutation: GQL.SceneCreateDocument,
+    variables: {
+      input,
+    },
+    update: deleteCache(sceneMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+  });
+
 const imageMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
@@ -1194,7 +1251,7 @@ export const makePerformerCreateInput = (toCreate: GQL.ScrapedPerformer) => {
     ethnicity: toCreate.ethnicity,
     country: toCreate.country,
     eye_color: toCreate.eye_color,
-    height: toCreate.height,
+    height_cm: toCreate.height ? Number(toCreate.height) : undefined,
     measurements: toCreate.measurements,
     fake_tits: toCreate.fake_tits,
     career_length: toCreate.career_length,

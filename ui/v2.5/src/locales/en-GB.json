@@ -67,6 +67,7 @@
     "play_selected": "Play selected",
     "preview": "Preview",
     "previous_action": "Back",
+    "reassign": "Reassign",
     "refresh": "Refresh",
     "reload_plugins": "Reload plugins",
     "reload_scrapers": "Reload scrapers",
@@ -98,11 +99,13 @@
     "set_image": "Set image…",
     "show": "Show",
     "show_configuration": "Show Configuration",
+    "split": "Split",
     "skip": "Skip",
     "stop": "Stop",
     "submit": "Submit",
     "submit_stash_box": "Submit to Stash-Box",
     "submit_update": "Submit update",
+    "swap": "Swap",
     "tasks": {
       "clean_confirm_message": "Are you sure you want to Clean? This will delete database information and generated content for all scenes and galleries that are no longer found in the filesystem.",
       "dry_mode_selected": "Dry Mode selected. No actual deleting will take place, only logging.",
@@ -630,6 +633,7 @@
   "developmentVersion": "Development Version",
   "dialogs": {
     "aliases_must_be_unique": "aliases must be unique",
+    "create_new_entity": "Create new {entity}",
     "delete_alert": "The following {count, plural, one {{singularEntity}} other {{pluralEntity}}} will be deleted permanently:",
     "delete_confirm": "Are you sure you want to delete {entityName}?",
     "delete_entity_desc": "{count, plural, one {Are you sure you want to delete this {singularEntity}? Unless the file is also deleted, this {singularEntity} will be re-added when scan is performed.} other {Are you sure you want to delete these {pluralEntity}? Unless the files are also deleted, these {pluralEntity} will be re-added when scan is performed.}}",
@@ -665,11 +669,20 @@
         "zoom": "Zoom"
       }
     },
+    "merge": {
+      "destination": "Destination",
+      "empty_results": "Destination field values will be unchanged.",
+      "source": "Source"
+    },
     "merge_tags": {
       "destination": "Destination",
       "source": "Source"
     },
     "overwrite_filter_confirm": "Are you sure you want to overwrite existing saved query {entityName}?",
+    "reassign_entity_title": "{count, plural, one {Reassign {singularEntity}} other {Reassign {pluralEntity}}}",
+    "reassign_files": {
+      "destination": "Reassign to"
+    },
     "scene_gen": {
       "force_transcodes": "Force Transcode generation",
       "force_transcodes_tooltip": "By default, transcodes are only generated when the video file is not supported in the browser. When enabled, transcodes will be generated even when the video file appears to be supported in the browser.",
@@ -807,6 +820,7 @@
   },
   "hasMarkers": "Has Markers",
   "height": "Height",
+  "height_cm": "Height (cm)",
   "help": "Help",
   "ignore_auto_tag": "Ignore Auto Tag",
   "image": "Image",
@@ -918,6 +932,7 @@
   "scene": "Scene",
   "sceneTagger": "Scene Tagger",
   "sceneTags": "Scene Tags",
+  "scene_code": "Studio Code",
   "scene_count": "Scene Count",
   "scene_id": "Scene ID",
   "scenes": "Scenes",
@@ -1047,8 +1062,10 @@
     "default_filter_set": "Default filter set",
     "delete_past_tense": "Deleted {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Generating screenshot…",
+    "merged_scenes": "Merged scenes",
     "merged_tags": "Merged tags",
     "rescanning_entity": "Rescanning {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
+    "reassign_past_tense": "File reassigned",
     "removed_entity": "Removed {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "saved_entity": "Saved {entity}",
     "started_auto_tagging": "Started auto tagging",
@@ -1065,6 +1082,7 @@
   "videos": "Videos",
   "view_all": "View All",
   "weight": "Weight",
+  "weight_kg": "Weight (kg)",
   "years_old": "years old",
   "zip_file_count": "Zip File Count"
 }

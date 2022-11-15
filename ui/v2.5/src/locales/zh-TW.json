@@ -189,6 +189,7 @@
     },
     "categories": {
       "about": "關於",
+      "changelog": "更新日誌",
       "interface": "介面",
       "logs": "日誌",
       "metadata_providers": "Metadata 來源",
@@ -242,6 +243,10 @@
         "stash-box_integration": "整合 Stash-box",
         "username": "用戶名",
         "username_desc": "使用 Stash 時所需的用戶名，留空以關閉身份驗證"
+      },
+      "backup_directory_path": {
+        "description": "SQLite 資料庫備份的檔案位置",
+        "heading": "備份目錄位置"
       },
       "cache_location": "快取的檔案位置",
       "cache_path_head": "快取路徑",
@@ -426,6 +431,11 @@
         "heading": "自定義 CSS",
         "option_label": "啟用自定義 CSS"
       },
+      "custom_locales": {
+        "description": "強制使用特定翻譯字串。主列表請參閱 https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json。必須重新整理頁面才能使更改生效。",
+        "heading": "自定義本土化",
+        "option_label": "啟用自定義本土化"
+      },
       "delete_options": {
         "description": "刪除圖片、圖庫及短片時的預設設定。",
         "heading": "刪除選項",
@@ -437,8 +447,8 @@
       "desktop_integration": {
         "desktop_integration": "桌面整合",
         "notifications_enabled": "開啟通知",
-        "send_desktop_notifications_for_events": "當事件發生時，傳送瀏覽器通知",
-        "skip_opening_browser": "關閉瀏覽器自動開啟",
+        "send_desktop_notifications_for_events": "當事件發生時發送通知",
+        "skip_opening_browser": "停用自動開啟瀏覽器",
         "skip_opening_browser_on_startup": "伺服器啟動時，不要自動開啟瀏覽器"
       },
       "editing": {
@@ -518,7 +528,7 @@
         "options": {
           "auto_start_video": "自動播放",
           "auto_start_video_on_play_selected": {
-            "description": "開啟所選短片或隨機播放時，自動開始播放影片",
+            "description": "開啟隊列中或所選短片、或隨機播放時，自動開始播放影片",
             "heading": "自動播放所選短片"
           },
           "continue_playlist_default": {
@@ -542,6 +552,13 @@
       "slideshow_delay": {
         "description": "幻燈片功能僅適用於「圖庫」種類下的預覽牆模式",
         "heading": "幻燈片延遲 (秒)"
+      },
+      "studio_panel": {
+        "options": {
+          "show_child_studio_content": {
+            "heading": "顯示子工作室內容"
+          }
+        }
       },
       "title": "使用者介面"
     }
@@ -601,6 +618,7 @@
     "delete_object_desc": "你確定要刪除{count, plural, =1 {這個{singularEntity}} other {這些{pluralEntity}}}嗎?",
     "delete_object_overflow": "…以及 {count} 個其他 {count, plural, =1 {{singularEntity}} other {{pluralEntity}}}。",
     "delete_object_title": "刪除{count, plural, =1 {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "下次更新前不顯示",
     "edit_entity_title": "編輯{pluralEntity}",
     "export_include_related_objects": "匯出所有相關物件",
     "export_title": "匯出",
@@ -726,6 +744,7 @@
   "false": "否",
   "favourite": "收藏",
   "file": "檔案",
+  "file_count": "檔案數量",
   "file_info": "檔案資訊",
   "file_mod_time": "檔案修改於",
   "files": "檔案",
@@ -733,8 +752,15 @@
   "filter": "過濾",
   "filter_name": "過濾條件名稱",
   "filters": "過濾條件",
+  "folder": "資料夾",
   "framerate": "幀率",
   "frames_per_second": "{value} 幀/秒",
+  "front_page": {
+    "types": {
+      "premade_filter": "預製過濾條件",
+      "saved_filter": "已儲存過濾條件"
+    }
+  },
   "galleries": "圖庫",
   "gallery": "圖庫",
   "gallery_count": "圖庫數量",
@@ -864,6 +890,7 @@
   "rating": "評比",
   "recently_added_objects": "最近新增的{objects}",
   "recently_released_objects": "最近釋出的{objects}",
+  "release_notes": "更新日誌",
   "resolution": "解析度",
   "scene": "短片",
   "sceneTagger": "短片標籤器",
@@ -913,9 +940,10 @@
       "migration_failed_error": "遷移資料庫時遇到以下錯誤：",
       "migration_failed_help": "請進行所需的更正並重試。否則，請在 {githubLink} 上提出問題或在 {discordLink} 中尋求協助。",
       "migration_irreversible_warning": "架構遷移是不可逆的過程。遷移後，您的資料庫將無法與先前的 Stash 版本相容。",
+      "migration_notes": "遷移說明",
       "migration_required": "需要遷移",
       "perform_schema_migration": "執行架構遷移",
-      "schema_too_old": "您當前的資料庫版本為 <strong>{databaseSchema}</strong>，需要遷移至版本 <strong>{appSchema}</strong>。如果不進行資料庫遷移，此版本的 Stash 將無法運行。"
+      "schema_too_old": "您當前的資料庫版本為 <strong>{databaseSchema}</strong>，需要遷移至版本 <strong>{appSchema}</strong>。若不進行資料庫遷移，此版本的 Stash 將無法運行；若您仍不想進行資料庫遷移，您則需降級至與此資料庫版本相符的 Stash 版本。"
     },
     "paths": {
       "database_filename_empty_for_default": "資料庫檔案名稱（留空以使用預設）",
@@ -996,6 +1024,7 @@
     "delete_past_tense": "已刪除{singularEntity}",
     "generating_screenshot": "產生截圖中…",
     "merged_tags": "已合併的標籤",
+    "removed_entity": "已刪除{singularEntity}",
     "rescanning_entity": "重新掃描{singularEntity}中…",
     "saved_entity": "已儲存{entity}",
     "started_auto_tagging": "自動套用標籤中",
@@ -1010,7 +1039,8 @@
   "updated_at": "更新於",
   "url": "連結",
   "videos": "影片",
-  "view_all": "檢視所有",
+  "view_all": "顯示全部",
   "weight": "體重",
-  "years_old": "歲"
+  "years_old": "歲",
+  "zip_file_count": "壓縮檔內容數量"
 }

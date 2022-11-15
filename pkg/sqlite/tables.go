@@ -24,6 +24,9 @@ var (
 	scenesPerformersJoinTable = goqu.T(performersScenesTable)
 	scenesStashIDsJoinTable   = goqu.T("scene_stash_ids")
 	scenesMoviesJoinTable     = goqu.T(moviesScenesTable)
+
+	performersTagsJoinTable     = goqu.T(performersTagsTable)
+	performersStashIDsJoinTable = goqu.T("performer_stash_ids")
 )
 
 var (

@@ -177,8 +177,8 @@ func (r *mutationResolver) galleryUpdate(ctx context.Context, input models.Galle
 
 	if input.Title != nil {
 		// ensure title is not empty
-		if *input.Title == "" {
-			return nil, errors.New("title must not be empty")
+		if *input.Title == "" && originalGallery.IsUserCreated() {
+			return nil, errors.New("title must not be empty for user-created galleries")
 		}
 
 		updatedGallery.Title = models.NewOptionalString(*input.Title)
