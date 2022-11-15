@@ -77,6 +77,12 @@ type SceneFilterType struct {
 	InteractiveSpeed *IntCriterionInput `json:"interactive_speed"`
 
 	Captions *StringCriterionInput `json:"captions"`
+	// Filter by date
+	Date *DateCriterionInput `json:"date"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type SceneQueryOptions struct {

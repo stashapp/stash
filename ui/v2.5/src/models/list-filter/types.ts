@@ -38,6 +38,16 @@ export interface IStashIDValue {
   stashID: string;
 }
 
+export interface IDateValue {
+  value: string;
+  value2: string | undefined;
+}
+
+export interface ITimestampValue {
+  value: string;
+  value2: string | undefined;
+}
+
 export function criterionIsHierarchicalLabelValue(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
@@ -57,6 +67,20 @@ export function criterionIsStashIDValue(
   value: any
 ): value is IStashIDValue {
   return typeof value === "object" && "endpoint" in value && "stashID" in value;
+}
+
+export function criterionIsDateValue(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any
+): value is IDateValue {
+  return typeof value === "object" && "value" in value && "value2" in value;
+}
+
+export function criterionIsTimestampValue(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any
+): value is ITimestampValue {
+  return typeof value === "object" && "value" in value && "value2" in value;
 }
 
 export interface IOptionType {
@@ -139,5 +163,13 @@ export type CriterionType =
   | "ignore_auto_tag"
   | "file_count"
   | "stash_id_endpoint"
+  | "date"
+  | "created_at"
+  | "updated_at"
+  | "birthdate"
+  | "death_date"
+  | "scene_date"
+  | "scene_created_at"
+  | "scene_updated_at"
   | "description"
   | "scene_code";

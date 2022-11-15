@@ -3,6 +3,7 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
 import { RatingCriterionOption } from "./criteria/rating";
@@ -43,6 +44,8 @@ const criterionOptions = [
   createStringCriterionOption("url"),
   StashIDCriterionOption,
   createStringCriterionOption("aliases"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 
 export const StudioListFilterOptions = new ListFilterOptions(
