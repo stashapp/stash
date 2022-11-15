@@ -61,7 +61,6 @@ import { objectPath, objectTitle } from "src/core/files";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
-  refetch: () => void;
   setTimestamp: (num: number) => void;
   queueScenes: QueuedScene[];
   onQueueNext: () => void;
@@ -81,7 +80,6 @@ interface IProps {
 
 const ScenePage: React.FC<IProps> = ({
   scene,
-  refetch,
   setTimestamp,
   queueScenes,
   onQueueNext,
@@ -260,13 +258,15 @@ const ScenePage: React.FC<IProps> = ({
         <Icon icon={faEllipsisV} />
       </Dropdown.Toggle>
       <Dropdown.Menu className="bg-secondary text-white">
-        <Dropdown.Item
-          key="rescan"
-          className="bg-secondary text-white"
-          onClick={() => onRescan()}
-        >
-          <FormattedMessage id="actions.rescan" />
-        </Dropdown.Item>
+        {!!scene.files.length && (
+          <Dropdown.Item
+            key="rescan"
+            className="bg-secondary text-white"
+            onClick={() => onRescan()}
+          >
+            <FormattedMessage id="actions.rescan" />
+          </Dropdown.Item>
+        )}
         <Dropdown.Item
           key="generate"
           className="bg-secondary text-white"
@@ -449,7 +449,6 @@ const ScenePage: React.FC<IProps> = ({
             isVisible={activeTabKey === "scene-edit-panel"}
             scene={scene}
             onDelete={() => setIsDeleteAlertOpen(true)}
-            onUpdate={refetch}
           />
         </Tab.Pane>
       </Tab.Content>
@@ -511,7 +510,7 @@ const SceneLoader: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const { configuration } = useContext(ConfigurationContext);
-  const { data, loading, refetch } = useFindScene(id ?? "");
+  const { data, loading } = useFindScene(id ?? "");
 
   const queryParams = useMemo(
     () => queryString.parse(location.search, { decode: false }),
@@ -732,7 +731,6 @@ const SceneLoader: React.FC = () => {
       {!loading && scene ? (
         <ScenePage
           scene={scene}
-          refetch={refetch}
           setTimestamp={setTimestamp}
           queueScenes={queueScenes ?? []}
           queueStart={queueStart}

@@ -82,6 +82,29 @@ input SceneMovieInput {
   scene_index: Int
 }
 
+input SceneCreateInput {
+  title: String
+  code: String
+  details: String
+  director: String
+  url: String
+  date: String
+  rating: Int
+  organized: Boolean
+  studio_id: ID
+  gallery_ids: [ID!]
+  performer_ids: [ID!]
+  movies: [SceneMovieInput!]
+  tag_ids: [ID!]
+  """This should be a URL or a base64 encoded data URL"""
+  cover_image: String
+  stash_ids: [StashIDInput!]
+
+  """The first id will be assigned as primary. Files will be reassigned from
+  existing scenes if applicable. Files must not already be primary for another scene"""
+  file_ids: [ID!]
+}
+
 input SceneUpdateInput {
   clientMutationId: String
   id: ID!
@@ -92,6 +115,7 @@ input SceneUpdateInput {
   url: String
   date: String
   rating: Int
+  o_counter: Int
   organized: Boolean
   studio_id: ID
   gallery_ids: [ID!]
@@ -204,4 +228,18 @@ type SceneStreamEndpoint {
   url: String!
   mime_type: String
   label: String
+}
+
+input AssignSceneFileInput {
+  scene_id: ID!
+  file_id: ID!
+}
+
+input SceneMergeInput {
+  """If destination scene has no files, then the primary file of the
+  first source scene will be assigned as primary"""
+  source: [ID!]!
+  destination: ID!
+  # values defined here will override values in the destination
+  values: SceneUpdateInput
 }

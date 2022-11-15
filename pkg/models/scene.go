@@ -16,6 +16,7 @@ type SceneFilterType struct {
 	And      *SceneFilterType      `json:"AND"`
 	Or       *SceneFilterType      `json:"OR"`
 	Not      *SceneFilterType      `json:"NOT"`
+	ID       *IntCriterionInput    `json:"id"`
 	Title    *StringCriterionInput `json:"title"`
 	Code     *StringCriterionInput `json:"code"`
 	Details  *StringCriterionInput `json:"details"`
@@ -80,6 +81,12 @@ type SceneFilterType struct {
 	PlayCount *IntCriterionInput `json:"play_count"`
 	// Filter by play duration (in seconds)
 	PlayDuration *IntCriterionInput `json:"play_duration"`
+	// Filter by date
+	Date *DateCriterionInput `json:"date"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type SceneQueryOptions struct {

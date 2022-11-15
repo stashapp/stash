@@ -138,6 +138,19 @@ func (r *RelatedMovies) Add(movies ...MoviesScenes) {
 	r.list = append(r.list, movies...)
 }
 
+// ForID returns the MoviesScenes object for the given movie ID. Returns nil if not found.
+func (r *RelatedMovies) ForID(id int) *MoviesScenes {
+	r.mustLoaded()
+
+	for _, v := range r.list {
+		if v.MovieID == id {
+			return &v
+		}
+	}
+
+	return nil
+}
+
 func (r *RelatedMovies) load(fn func() ([]MoviesScenes, error)) error {
 	if r.Loaded() {
 		return nil

@@ -13,13 +13,13 @@ type Paths struct {
 	SceneMarkers *sceneMarkerPaths
 }
 
-func NewPaths(generatedPath string) *Paths {
+func NewPaths(generatedPath string) Paths {
 	p := Paths{}
 	p.Generated = newGeneratedPaths(generatedPath)
 
 	p.Scene = newScenePaths(p)
 	p.SceneMarkers = newSceneMarkerPaths(p)
-	return &p
+	return p
 }
 
 func GetStashHomeDirectory() string {

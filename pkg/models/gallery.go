@@ -10,6 +10,7 @@ type GalleryFilterType struct {
 	And     *GalleryFilterType    `json:"AND"`
 	Or      *GalleryFilterType    `json:"OR"`
 	Not     *GalleryFilterType    `json:"NOT"`
+	ID      *IntCriterionInput    `json:"id"`
 	Title   *StringCriterionInput `json:"title"`
 	Details *StringCriterionInput `json:"details"`
 	// Filter by file checksum
@@ -48,6 +49,12 @@ type GalleryFilterType struct {
 	ImageCount *IntCriterionInput `json:"image_count"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
+	// Filter by date
+	Date *DateCriterionInput `json:"date"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type GalleryUpdateInput struct {

@@ -53,8 +53,22 @@ const usePasteImage = (
   return false;
 };
 
+const imageToDataURL = async (url: string) => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result as string);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
 const Image = {
   onImageChange,
   usePasteImage,
+  imageToDataURL,
 };
 export default Image;

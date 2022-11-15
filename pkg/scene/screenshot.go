@@ -32,6 +32,10 @@ type PathsCoverSetter struct {
 }
 
 func (ss *PathsCoverSetter) SetScreenshot(scene *models.Scene, imageData []byte) error {
+	// don't set where scene has no file
+	if scene.Path == "" {
+		return nil
+	}
 	checksum := scene.GetHash(ss.FileNamingAlgorithm)
 	return SetScreenshot(ss.Paths, checksum, imageData)
 }
