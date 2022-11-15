@@ -133,7 +133,7 @@ class MarkersPlugin extends videojs.getPlugin("plugin") {
   }
 
   clearMarkers() {
-    this.removeMarkers(this.markers);
+    this.removeMarkers([...this.markers]);
   }
 }
 
