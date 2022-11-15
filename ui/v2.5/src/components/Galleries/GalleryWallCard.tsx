@@ -2,10 +2,11 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { RatingStars, TruncatedText } from "src/components/Shared";
+import { TruncatedText } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useGalleryLightbox } from "src/hooks";
 import { galleryTitle } from "src/core/galleries";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 
 const CLASSNAME = "GalleryWallCard";
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;
@@ -45,7 +46,7 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         role="button"
         tabIndex={0}
       >
-        <RatingStars rating={gallery.rating} />
+        <RatingSystem value={gallery.rating100 ?? undefined} disabled />
         <img src={cover} alt="" className={CLASSNAME_IMG} />
         <footer className={CLASSNAME_FOOTER}>
           <Link

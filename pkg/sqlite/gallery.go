@@ -30,11 +30,12 @@ const (
 )
 
 type galleryRow struct {
-	ID        int                    `db:"id" goqu:"skipinsert"`
-	Title     zero.String            `db:"title"`
-	URL       zero.String            `db:"url"`
-	Date      models.SQLiteDate      `db:"date"`
-	Details   zero.String            `db:"details"`
+	ID      int               `db:"id" goqu:"skipinsert"`
+	Title   zero.String       `db:"title"`
+	URL     zero.String       `db:"url"`
+	Date    models.SQLiteDate `db:"date"`
+	Details zero.String       `db:"details"`
+	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
 	Organized bool                   `db:"organized"`
 	StudioID  null.Int               `db:"studio_id,omitempty"`
@@ -651,7 +652,9 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 
 	query.handleCriterion(ctx, qb.galleryPathCriterionHandler(galleryFilter.Path))
 	query.handleCriterion(ctx, galleryFileCountCriterionHandler(qb, galleryFilter.FileCount))
-	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating, "galleries.rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(galleryFilter.Rating100, "galleries.rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(galleryFilter.Rating, "galleries.rating", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(galleryFilter.URL, "galleries.url"))
 	query.handleCriterion(ctx, boolCriterionHandler(galleryFilter.Organized, "galleries.organized", nil))
 	query.handleCriterion(ctx, galleryIsMissingCriterionHandler(qb, galleryFilter.IsMissing))

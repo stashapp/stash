@@ -41,7 +41,10 @@ type Scene {
   director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean!
   o_counter: Int
   path: String! @deprecated(reason: "Use files.path")
@@ -106,7 +109,10 @@ input SceneUpdateInput {
   director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   o_counter: Int
   organized: Boolean
   studio_id: ID
@@ -141,7 +147,10 @@ input BulkSceneUpdateInput {
   director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean
   studio_id: ID
   gallery_ids: BulkUpdateIds
@@ -191,7 +200,10 @@ type SceneParserResult {
   director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   studio_id: ID
   gallery_ids: [ID!]
   performer_ids: [ID!]

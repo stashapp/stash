@@ -90,6 +90,7 @@ export class SceneQueue {
       const decoded = ListFilterModel.decodeQueryParameters(translated);
       const query = new ListFilterModel(
         FilterMode.Scenes,
+        undefined,
         SceneListFilterOptions.defaultSortBy
       );
       query.configureFromQueryParameters(decoded);

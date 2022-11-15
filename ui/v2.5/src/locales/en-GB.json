@@ -460,6 +460,23 @@
           "description": "Remove the ability to create new objects from the dropdown selectors",
           "heading": "Disable dropdown create"
         },
+        "rating_system": {
+          "type": {
+            "label": "Rating System Type",
+            "options": {
+              "stars": "Stars",
+              "decimal": "Decimal"
+            }
+          },
+          "star_precision": {
+            "label": "Rating Star Precision",
+            "options": {
+              "full": "Full",
+              "half": "Half",
+              "quarter": "Quarter"
+            }
+          }
+        },
         "heading": "Editing"
       },
       "abbreviate_counters": {

@@ -1,5 +1,6 @@
 import { IntlShape } from "react-intl";
 import { ITypename } from "src/utils";
+import { RatingSystemOptions } from "src/utils/rating";
 import { FilterMode, SortDirectionEnum } from "./generated-graphql";
 
 // NOTE: double capitals aren't converted correctly in the backend
@@ -32,6 +33,8 @@ export interface IUIConfig {
   showChildStudioContent?: boolean;
   showTagCardOnHover?: boolean;
   abbreviateCounters?: boolean;
+
+  ratingSystemOptions?: RatingSystemOptions;
 }
 
 function recentlyReleased(

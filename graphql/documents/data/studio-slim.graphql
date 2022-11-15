@@ -10,6 +10,6 @@ fragment SlimStudioData on Studio {
     id
   }
   details
-  rating
+  rating100
   aliases
 }

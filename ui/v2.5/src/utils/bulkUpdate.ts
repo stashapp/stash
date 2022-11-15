@@ -2,7 +2,7 @@ import * as GQL from "src/core/generated-graphql";
 import isEqual from "lodash-es/isEqual";
 
 interface IHasRating {
-  rating?: GQL.Maybe<number> | undefined;
+  rating100?: GQL.Maybe<number> | undefined;
 }
 
 export function getAggregateRating(state: IHasRating[]) {
@@ -11,9 +11,9 @@ export function getAggregateRating(state: IHasRating[]) {
 
   state.forEach((o) => {
     if (first) {
-      ret = o.rating ?? undefined;
+      ret = o.rating100 ?? undefined;
       first = false;
-    } else if (ret !== o.rating) {
+    } else if (ret !== o.rating100) {
       ret = undefined;
     }
   });

@@ -49,6 +49,14 @@ func (r *movieResolver) Date(ctx context.Context, obj *models.Movie) (*string, e
 
 func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, error) {
 	if obj.Rating.Valid {
+		rating := models.Rating100To5(int(obj.Rating.Int64))
+		return &rating, nil
+	}
+	return nil, nil
+}
+
+func (r *movieResolver) Rating100(ctx context.Context, obj *models.Movie) (*int, error) {
+	if obj.Rating.Valid {
 		rating := int(obj.Rating.Int64)
 		return &rating, nil
 	}

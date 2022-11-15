@@ -141,6 +141,18 @@ func (r *sceneResolver) Files(ctx context.Context, obj *models.Scene) ([]*VideoF
 	return ret, nil
 }
 
+func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, error) {
+	if obj.Rating != nil {
+		rating := models.Rating100To5(*obj.Rating)
+		return &rating, nil
+	}
+	return nil, nil
+}
+
+func (r *sceneResolver) Rating100(ctx context.Context, obj *models.Scene) (*int, error) {
+	return obj.Rating, nil
+}
+
 func resolveFingerprints(f *file.BaseFile) []*Fingerprint {
 	ret := make([]*Fingerprint, len(f.Fingerprints))
 

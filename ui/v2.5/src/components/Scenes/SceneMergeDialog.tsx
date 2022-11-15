@@ -31,7 +31,7 @@ import {
   ScrapedTagsRow,
 } from "./SceneDetails/SceneScrapeDialog";
 import { galleryTitle } from "src/core/galleries";
-import { RatingStars } from "./SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 
 interface IStashIDsField {
   values: GQL.StashId[];
@@ -66,7 +66,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
     new ScrapeResult<string>(dest.date)
   );
 
-  const [rating, setRating] = useState(new ScrapeResult<number>(dest.rating));
+  const [rating, setRating] = useState(
+    new ScrapeResult<number>(dest.rating100)
+  );
   const [oCounter, setOCounter] = useState(
     new ScrapeResult<number>(dest.o_counter)
   );
@@ -194,9 +196,9 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
 
     setRating(
       new ScrapeResult(
-        dest.rating,
-        sources.find((s) => s.rating)?.rating,
-        !dest.rating
+        dest.rating100,
+        sources.find((s) => s.rating100)?.rating100,
+        !dest.rating100
       )
     );
 
@@ -324,10 +326,10 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
           title={intl.formatMessage({ id: "rating" })}
           result={rating}
           renderOriginalField={() => (
-            <RatingStars value={rating.originalValue} disabled />
+            <RatingSystem value={rating.originalValue} disabled />
           )}
           renderNewField={() => (
-            <RatingStars value={rating.newValue} disabled />
+            <RatingSystem value={rating.newValue} disabled />
           )}
           onChange={(value) => setRating(value)}
         />
@@ -430,7 +432,7 @@ const SceneMergeDetails: React.FC<ISceneMergeDetailsProps> = ({
       title: title.getNewValue(),
       url: url.getNewValue(),
       date: date.getNewValue(),
-      rating: rating.getNewValue(),
+      rating100: rating.getNewValue(),
       o_counter: oCounter.getNewValue(),
       gallery_ids: galleries.getNewValue(),
       studio_id: studio.getNewValue(),
