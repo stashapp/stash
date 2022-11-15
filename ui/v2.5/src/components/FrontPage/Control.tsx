@@ -164,6 +164,10 @@ interface IProps {
 export const Control: React.FC<IProps> = ({ content }) => {
   switch (content.__typename) {
     case "SavedFilter":
+      if (!(content as ISavedFilterRow).savedFilterId) {
+        return <div>Error: missing savedFilterId</div>;
+      }
+
       return (
         <SavedFilterResults
           savedFilterID={(content as ISavedFilterRow).savedFilterId.toString()}
