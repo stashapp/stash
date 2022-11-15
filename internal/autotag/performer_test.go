@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestPerformerScenes(t *testing.T) {
@@ -65,7 +66,9 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	organized := false
-	perPage := models.PerPageAll
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
 
 	expectedSceneFilter := &models.SceneFilterType{
 		Organized: &organized,
@@ -76,15 +79,17 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	expectedFindFilter := &models.FindFilterType{
-		PerPage: &perPage,
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
 	}
 
-	mockSceneReader.On("Query", testCtx, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false)).
+	mockSceneReader.On("Query", mock.Anything, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false)).
 		Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("UpdatePartial", testCtx, sceneID, models.ScenePartial{
+		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, models.ScenePartial{
 			PerformerIDs: &models.UpdateIDs{
 				IDs:  []int{performerID},
 				Mode: models.RelationshipUpdateModeAdd,
@@ -92,7 +97,11 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := PerformerScenes(testCtx, &performer, nil, mockSceneReader, nil)
+	tagger := Tagger{
+		TxnManager: &mocks.TxnManager{},
+	}
+
+	err := tagger.PerformerScenes(testCtx, &performer, nil, mockSceneReader)
 
 	assert := assert.New(t)
 
@@ -146,7 +155,9 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	organized := false
-	perPage := models.PerPageAll
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
 
 	expectedImageFilter := &models.ImageFilterType{
 		Organized: &organized,
@@ -157,15 +168,17 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	expectedFindFilter := &models.FindFilterType{
-		PerPage: &perPage,
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
 	}
 
-	mockImageReader.On("Query", testCtx, image.QueryOptions(expectedImageFilter, expectedFindFilter, false)).
+	mockImageReader.On("Query", mock.Anything, image.QueryOptions(expectedImageFilter, expectedFindFilter, false)).
 		Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("UpdatePartial", testCtx, imageID, models.ImagePartial{
+		mockImageReader.On("UpdatePartial", mock.Anything, imageID, models.ImagePartial{
 			PerformerIDs: &models.UpdateIDs{
 				IDs:  []int{performerID},
 				Mode: models.RelationshipUpdateModeAdd,
@@ -173,7 +186,11 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := PerformerImages(testCtx, &performer, nil, mockImageReader, nil)
+	tagger := Tagger{
+		TxnManager: &mocks.TxnManager{},
+	}
+
+	err := tagger.PerformerImages(testCtx, &performer, nil, mockImageReader)
 
 	assert := assert.New(t)
 
@@ -228,7 +245,9 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	organized := false
-	perPage := models.PerPageAll
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
 
 	expectedGalleryFilter := &models.GalleryFilterType{
 		Organized: &organized,
@@ -239,14 +258,16 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	expectedFindFilter := &models.FindFilterType{
-		PerPage: &perPage,
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
 	}
 
-	mockGalleryReader.On("Query", testCtx, expectedGalleryFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+	mockGalleryReader.On("Query", mock.Anything, expectedGalleryFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("UpdatePartial", testCtx, galleryID, models.GalleryPartial{
+		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, models.GalleryPartial{
 			PerformerIDs: &models.UpdateIDs{
 				IDs:  []int{performerID},
 				Mode: models.RelationshipUpdateModeAdd,
@@ -254,7 +275,11 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 		}).Return(nil, nil).Once()
 	}
 
-	err := PerformerGalleries(testCtx, &performer, nil, mockGalleryReader, nil)
+	tagger := Tagger{
+		TxnManager: &mocks.TxnManager{},
+	}
+
+	err := tagger.PerformerGalleries(testCtx, &performer, nil, mockGalleryReader)
 
 	assert := assert.New(t)
 
