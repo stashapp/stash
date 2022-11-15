@@ -175,7 +175,10 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     )
   );
   const [aliases, setAliases] = useState<ScrapeResult<string>>(
-    new ScrapeResult<string>(props.performer.aliases, props.scraped.aliases)
+    new ScrapeResult<string>(
+      props.performer.alias_list?.join(", "),
+      props.scraped.aliases
+    )
   );
   const [birthdate, setBirthdate] = useState<ScrapeResult<string>>(
     new ScrapeResult<string>(props.performer.birthdate, props.scraped.birthdate)
