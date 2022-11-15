@@ -586,10 +586,20 @@ func (qb *FileStore) FindByPath(ctx context.Context, p string) (file.File, error
 	table := qb.table()
 	folderTable := folderTableMgr.table
 
-	q := qb.selectDataset().Prepared(true).Where(
-		folderTable.Col("path").Like(dirName),
-		table.Col("basename").Like(basename),
-	)
+	// like uses case-insensitive matching. Only use like if wildcards are used
+	q := qb.selectDataset().Prepared(true)
+
+	if strings.Contains(basename, "%") || strings.Contains(dirName, "%") {
+		q = q.Where(
+			folderTable.Col("path").Like(dirName),
+			table.Col("basename").Like(basename),
+		)
+	} else {
+		q = q.Where(
+			folderTable.Col("path").Eq(dirName),
+			table.Col("basename").Eq(basename),
+		)
+	}
 
 	ret, err := qb.get(ctx, q)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -786,7 +796,8 @@ func (qb *FileStore) Query(ctx context.Context, options models.FileQueryOptions)
 	distinctIDs(&query, fileTable)
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"folders.path", "files.basename"}
+		filepathColumn := "folders.path || '" + string(filepath.Separator) + "' || files.basename"
+		searchColumns := []string{filepathColumn}
 		query.parseQueryString(searchColumns, *q)
 	}
 

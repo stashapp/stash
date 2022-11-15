@@ -6,6 +6,7 @@ type ImageFilterType struct {
 	And   *ImageFilterType      `json:"AND"`
 	Or    *ImageFilterType      `json:"OR"`
 	Not   *ImageFilterType      `json:"NOT"`
+	ID    *IntCriterionInput    `json:"id"`
 	Title *StringCriterionInput `json:"title"`
 	// Filter by file checksum
 	Checksum *StringCriterionInput `json:"checksum"`

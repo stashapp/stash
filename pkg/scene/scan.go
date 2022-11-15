@@ -20,7 +20,7 @@ var (
 type CreatorUpdater interface {
 	FindByFileID(ctx context.Context, fileID file.ID) ([]*models.Scene, error)
 	FindByFingerprints(ctx context.Context, fp []file.Fingerprint) ([]*models.Scene, error)
-	Create(ctx context.Context, newScene *models.Scene, fileIDs []file.ID) error
+	Creator
 	UpdatePartial(ctx context.Context, id int, updatedScene models.ScenePartial) (*models.Scene, error)
 	AddFileID(ctx context.Context, id int, fileID file.ID) error
 	models.VideoFileLoader

@@ -1,4 +1,5 @@
 /* eslint-disable consistent-return */
+/* eslint @typescript-eslint/no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 
 import { IntlShape } from "react-intl";
 import {
@@ -67,7 +68,7 @@ export abstract class Criterion<V extends CriterionValue> {
     this._value = newValue;
   }
 
-  public abstract getLabelValue(): string;
+  public abstract getLabelValue(intl: IntlShape): string;
 
   constructor(type: CriterionOption, value: V) {
     this.criterionOption = type;
@@ -91,7 +92,7 @@ export abstract class Criterion<V extends CriterionValue> {
       this.modifier !== CriterionModifier.IsNull &&
       this.modifier !== CriterionModifier.NotNull
     ) {
-      valueString = this.getLabelValue();
+      valueString = this.getLabelValue(intl);
     }
 
     return intl.formatMessage(
@@ -221,7 +222,7 @@ export class StringCriterion extends Criterion<string> {
     super(type, "");
   }
 
-  public getLabelValue() {
+  public getLabelValue(_intl: IntlShape) {
     return this.value;
   }
 }
@@ -351,7 +352,7 @@ export class NumberCriterion extends Criterion<INumberValue> {
     };
   }
 
-  public getLabelValue() {
+  public getLabelValue(_intl: IntlShape) {
     const { value, value2 } = this.value;
     if (
       this.modifier === CriterionModifier.Between ||
@@ -399,7 +400,7 @@ export class ILabeledIdCriterionOption extends CriterionOption {
 }
 
 export class ILabeledIdCriterion extends Criterion<ILabeledId[]> {
-  public getLabelValue(): string {
+  public getLabelValue(_intl: IntlShape): string {
     return this.value.map((v) => v.label).join(", ");
   }
 
@@ -424,7 +425,7 @@ export class IHierarchicalLabeledIdCriterion extends Criterion<IHierarchicalLabe
     };
   }
 
-  public getLabelValue(): string {
+  public getLabelValue(_intl: IntlShape): string {
     const labels = (this.value.items ?? []).map((v) => v.label).join(", ");
 
     if (this.value.depth === 0) {
@@ -484,7 +485,7 @@ export class DurationCriterion extends Criterion<INumberValue> {
     };
   }
 
-  public getLabelValue() {
+  public getLabelValue(_intl: IntlShape) {
     return this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
       ? `${DurationUtils.secondsToString(

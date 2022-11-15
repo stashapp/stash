@@ -324,6 +324,8 @@ func (qb *tagQueryBuilder) makeFilter(ctx context.Context, tagFilter *models.Tag
 
 	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Name, tagTable+".name"))
 	query.handleCriterion(ctx, tagAliasCriterionHandler(qb, tagFilter.Aliases))
+
+	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Description, tagTable+".description"))
 	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.IgnoreAutoTag, tagTable+".ignore_auto_tag", nil))
 
 	query.handleCriterion(ctx, tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))

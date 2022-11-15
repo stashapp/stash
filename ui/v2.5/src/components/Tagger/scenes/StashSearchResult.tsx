@@ -365,6 +365,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       url: resolveField("url", stashScene.url, scene.url),
       tag_ids: tagIDs,
       stash_ids: stashScene.stash_ids ?? [],
+      code: resolveField("code", stashScene.code, scene.code),
+      director: resolveField("director", stashScene.director, scene.director),
     };
 
     const includeStashID = !excludedFieldList.includes("stash_ids");
@@ -427,6 +429,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     details: "details",
     studio: "studio",
     stash_ids: "stash_ids",
+    code: "code",
+    director: "director",
   };
 
   const maybeRenderCoverImage = () => {
@@ -510,6 +514,21 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     }
   };
 
+  const maybeRenderStudioCode = () => {
+    if (isActive && scene.code) {
+      return (
+        <h5>
+          <OptionalField
+            exclude={excludedFields[fields.code]}
+            setExclude={(v) => setExcludedField(fields.code, v)}
+          >
+            {scene.code}
+          </OptionalField>
+        </h5>
+      );
+    }
+  };
+
   const maybeRenderDateField = () => {
     if (isActive && scene.date) {
       return (
@@ -519,6 +538,21 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             setExclude={(v) => setExcludedField(fields.date, v)}
           >
             {scene.date}
+          </OptionalField>
+        </h5>
+      );
+    }
+  };
+
+  const maybeRenderDirector = () => {
+    if (scene.director) {
+      return (
+        <h5>
+          <OptionalField
+            exclude={excludedFields[fields.director]}
+            setExclude={(v) => setExcludedField(fields.director, v)}
+          >
+            <FormattedMessage id="director" />: {scene.director}
           </OptionalField>
         </h5>
       );
@@ -688,6 +722,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               </>
             )}
 
+            {maybeRenderStudioCode()}
             {maybeRenderDateField()}
             {getDurationStatus(scene, stashSceneFile?.duration)}
             {getFingerprintStatus(scene, stashScene)}
@@ -696,6 +731,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         {isActive && (
           <div className="d-flex flex-column">
             {maybeRenderStashBoxID()}
+            {maybeRenderDirector()}
             {maybeRenderURL()}
             {maybeRenderDetails()}
           </div>

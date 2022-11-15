@@ -31,7 +31,7 @@ export CGO_ENABLED = 1
 
 .PHONY: release pre-build
 
-release: generate ui build-release
+release: pre-ui generate ui build-release
 
 pre-build:
 ifndef BUILD_DATE
@@ -135,7 +135,8 @@ cross-compile-linux-arm32v6: build-release-static
 
 cross-compile-all:
 	make cross-compile-windows
-	make cross-compile-macos
+	make cross-compile-macos-intel
+	make cross-compile-macos-applesilicon
 	make cross-compile-linux
 	make cross-compile-linux-arm64v8
 	make cross-compile-linux-arm32v7

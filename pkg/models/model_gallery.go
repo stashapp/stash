@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -34,6 +35,12 @@ type Gallery struct {
 	SceneIDs     RelatedIDs `json:"scene_ids"`
 	TagIDs       RelatedIDs `json:"tag_ids"`
 	PerformerIDs RelatedIDs `json:"performer_ids"`
+}
+
+// IsUserCreated returns true if the gallery was created by the user.
+// This is determined by whether the gallery has a primary file or folder.
+func (g *Gallery) IsUserCreated() bool {
+	return g.PrimaryFileID == nil && g.FolderID == nil
 }
 
 func (g *Gallery) LoadFiles(ctx context.Context, l FileLoader) error {
@@ -128,7 +135,7 @@ func (g Gallery) GetTitle() string {
 		return g.Title
 	}
 
-	return g.Path
+	return filepath.Base(g.Path)
 }
 
 // DisplayName returns a display name for the scene for logging purposes.

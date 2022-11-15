@@ -112,6 +112,7 @@ export type CriterionType =
   | "hair_color"
   | "eye_color"
   | "height"
+  | "height_cm"
   | "weight"
   | "measurements"
   | "fake_tits"
@@ -156,4 +157,6 @@ export type CriterionType =
   | "death_date"
   | "scene_date"
   | "scene_created_at"
-  | "scene_updated_at";
+  | "scene_updated_at"
+  | "description"
+  | "scene_code";

@@ -10,6 +10,8 @@ type TagFilterType struct {
 	Name *StringCriterionInput `json:"name"`
 	// Filter by tag aliases
 	Aliases *StringCriterionInput `json:"aliases"`
+	// Filter by tag description
+	Description *StringCriterionInput `json:"description"`
 	// Filter to only include tags missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter by number of scenes with this tag

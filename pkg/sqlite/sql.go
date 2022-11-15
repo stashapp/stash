@@ -179,7 +179,7 @@ func getIntWhereClause(column string, modifier models.CriterionModifier, value i
 		return fmt.Sprintf("%s > ?", column), args
 	}
 
-	panic("unsupported int modifier type")
+	panic("unsupported int modifier type " + modifier)
 }
 
 func getDateCriterionWhereClause(column string, input models.DateCriterionInput) (string, []interface{}) {

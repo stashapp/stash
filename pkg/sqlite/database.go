@@ -22,7 +22,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-var appSchemaVersion uint = 36
+var appSchemaVersion uint = 39
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -61,11 +61,12 @@ func init() {
 }
 
 type Database struct {
-	File    *FileStore
-	Folder  *FolderStore
-	Image   *ImageStore
-	Gallery *GalleryStore
-	Scene   *SceneStore
+	File      *FileStore
+	Folder    *FolderStore
+	Image     *ImageStore
+	Gallery   *GalleryStore
+	Scene     *SceneStore
+	Performer *PerformerStore
 
 	db     *sqlx.DB
 	dbPath string
@@ -80,11 +81,12 @@ func NewDatabase() *Database {
 	folderStore := NewFolderStore()
 
 	ret := &Database{
-		File:    fileStore,
-		Folder:  folderStore,
-		Scene:   NewSceneStore(fileStore),
-		Image:   NewImageStore(fileStore),
-		Gallery: NewGalleryStore(fileStore, folderStore),
+		File:      fileStore,
+		Folder:    folderStore,
+		Scene:     NewSceneStore(fileStore),
+		Image:     NewImageStore(fileStore),
+		Gallery:   NewGalleryStore(fileStore, folderStore),
+		Performer: NewPerformerStore(),
 	}
 
 	return ret

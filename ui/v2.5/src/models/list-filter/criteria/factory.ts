@@ -48,6 +48,7 @@ import { InteractiveCriterion } from "./interactive";
 import { RatingCriterionOption } from "./rating";
 import { DuplicatedCriterion, PhashCriterionOption } from "./phash";
 import { CaptionCriterion } from "./captions";
+import { CountryCriterion } from "./country";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -148,11 +149,16 @@ export function makeCriteria(type: CriterionType = "none") {
       return new StringCriterion(PhashCriterionOption);
     case "duplicated":
       return new DuplicatedCriterion();
-    case "ethnicity":
     case "country":
+      return new CountryCriterion();
+    case "height":
+    case "height_cm":
+      return new NumberCriterion(
+        new NumberCriterionOption("height", "height_cm", type)
+      );
+    case "ethnicity":
     case "hair_color":
     case "eye_color":
-    case "height":
     case "measurements":
     case "fake_tits":
     case "career_length":
@@ -165,7 +171,10 @@ export function makeCriteria(type: CriterionType = "none") {
     case "title":
     case "director":
     case "synopsis":
+    case "description":
       return new StringCriterion(new StringCriterionOption(type, type));
+    case "scene_code":
+      return new StringCriterion(new StringCriterionOption(type, type, "code"));
     case "interactive":
       return new InteractiveCriterion();
     case "captions":
