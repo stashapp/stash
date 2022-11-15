@@ -9,6 +9,8 @@ import {
   IHierarchicalLabeledIdCriterion,
   NumberCriterion,
   ILabeledIdCriterion,
+  DateCriterion,
+  TimestampCriterion,
 } from "src/models/list-filter/criteria/criterion";
 import {
   NoneCriterion,
@@ -20,6 +22,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   criterionIsNumberValue,
+  criterionIsDateValue,
+  criterionIsTimestampValue,
   CriterionType,
 } from "src/models/list-filter/types";
 import { DurationFilter } from "./Filters/DurationFilter";
@@ -28,6 +32,8 @@ import { LabeledIdFilter } from "./Filters/LabeledIdFilter";
 import { HierarchicalLabelValueFilter } from "./Filters/HierarchicalLabelValueFilter";
 import { OptionsFilter } from "./Filters/OptionsFilter";
 import { InputFilter } from "./Filters/InputFilter";
+import { DateFilter } from "./Filters/DateFilter";
+import { TimestampFilter } from "./Filters/TimestampFilter";
 import { CountryCriterion } from "src/models/list-filter/criteria/country";
 import { CountrySelect } from "../Shared";
 
@@ -152,6 +158,8 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
         options &&
         !criterionIsHierarchicalLabelValue(criterion.value) &&
         !criterionIsNumberValue(criterion.value) &&
+        !criterionIsDateValue(criterion.value) &&
+        !criterionIsTimestampValue(criterion.value) &&
         !Array.isArray(criterion.value)
       ) {
         defaultValue.current = criterion.value;
@@ -165,6 +173,19 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       if (criterion instanceof DurationCriterion) {
         return (
           <DurationFilter
+            criterion={criterion}
+            onValueChanged={onValueChanged}
+          />
+        );
+      }
+      if (criterion instanceof DateCriterion) {
+        return (
+          <DateFilter criterion={criterion} onValueChanged={onValueChanged} />
+        );
+      }
+      if (criterion instanceof TimestampCriterion) {
+        return (
+          <TimestampFilter
             criterion={criterion}
             onValueChanged={onValueChanged}
           />

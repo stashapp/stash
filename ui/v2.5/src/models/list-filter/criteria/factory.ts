@@ -10,6 +10,10 @@ import {
   ILabeledIdCriterion,
   BooleanCriterion,
   BooleanCriterionOption,
+  DateCriterion,
+  DateCriterionOption,
+  TimestampCriterion,
+  MandatoryTimestampCriterionOption,
 } from "./criterion";
 import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion, PerformerFavoriteCriterion } from "./favorite";
@@ -193,5 +197,17 @@ export function makeCriteria(type: CriterionType = "none") {
       );
     case "ignore_auto_tag":
       return new BooleanCriterion(new BooleanCriterionOption(type, type));
+    case "date":
+    case "birthdate":
+    case "death_date":
+    case "scene_date":
+      return new DateCriterion(new DateCriterionOption(type, type));
+    case "created_at":
+    case "updated_at":
+    case "scene_created_at":
+    case "scene_updated_at":
+      return new TimestampCriterion(
+        new MandatoryTimestampCriterionOption(type, type)
+      );
   }
 }

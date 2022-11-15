@@ -125,6 +125,14 @@ type PerformerFilterType struct {
 	Studios *HierarchicalMultiCriterionInput `json:"studios"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
+	// Filter by birthdate
+	Birthdate *DateCriterionInput `json:"birth_date"`
+	// Filter by death date
+	DeathDate *DateCriterionInput `json:"death_date"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type PerformerFinder interface {

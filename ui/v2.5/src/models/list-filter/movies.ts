@@ -1,6 +1,8 @@
 import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
+  createDateCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
 import { RatingCriterionOption } from "./criteria/rating";
@@ -30,6 +32,9 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("duration"),
   RatingCriterionOption,
   PerformersCriterionOption,
+  createDateCriterionOption("date"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 
 export const MovieListFilterOptions = new ListFilterOptions(

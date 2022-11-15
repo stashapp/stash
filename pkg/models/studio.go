@@ -28,6 +28,10 @@ type StudioFilterType struct {
 	Aliases *StringCriterionInput `json:"aliases"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type StudioFinder interface {

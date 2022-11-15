@@ -665,6 +665,9 @@ func (qb *GalleryStore) makeFilter(ctx context.Context, galleryFilter *models.Ga
 	query.handleCriterion(ctx, galleryImageCountCriterionHandler(qb, galleryFilter.ImageCount))
 	query.handleCriterion(ctx, galleryPerformerFavoriteCriterionHandler(galleryFilter.PerformerFavorite))
 	query.handleCriterion(ctx, galleryPerformerAgeCriterionHandler(galleryFilter.PerformerAge))
+	query.handleCriterion(ctx, dateCriterionHandler(galleryFilter.Date, "galleries.date"))
+	query.handleCriterion(ctx, timestampCriterionHandler(galleryFilter.CreatedAt, "galleries.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(galleryFilter.UpdatedAt, "galleries.updated_at"))
 
 	return query
 }

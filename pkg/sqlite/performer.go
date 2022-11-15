@@ -541,6 +541,10 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, performerSceneCountCriterionHandler(qb, filter.SceneCount))
 	query.handleCriterion(ctx, performerImageCountCriterionHandler(qb, filter.ImageCount))
 	query.handleCriterion(ctx, performerGalleryCountCriterionHandler(qb, filter.GalleryCount))
+	query.handleCriterion(ctx, dateCriterionHandler(filter.Birthdate, tableName+".birthdate"))
+	query.handleCriterion(ctx, dateCriterionHandler(filter.DeathDate, tableName+".death_date"))
+	query.handleCriterion(ctx, timestampCriterionHandler(filter.CreatedAt, tableName+".created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(filter.UpdatedAt, tableName+".updated_at"))
 
 	return query
 }
