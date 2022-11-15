@@ -13,7 +13,7 @@ type StudioFilterType struct {
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
-	StashIDEndpoint *StringCriterionInput `json:"stash_id_endpoint"`
+	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter to only include studios missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter by rating

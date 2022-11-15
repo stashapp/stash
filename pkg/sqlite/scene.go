@@ -861,20 +861,12 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 			stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
 		}
 	}))
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if sceneFilter.StashIDEndpoint != nil {
-			qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
-			endpoint := sceneFilter.StashIDEndpoint.Value
-			switch sceneFilter.StashIDEndpoint.Modifier {
-			case models.CriterionModifierExcludes:
-				f.addWhere(fmt.Sprintf("scenes.id NOT IN (SELECT scene_id FROM scene_stash_ids WHERE endpoint LIKE \"%%%s%%\")", endpoint))
-			case models.CriterionModifierNotEquals:
-				f.addWhere(fmt.Sprintf("scenes.id NOT IN (SELECT scene_id FROM scene_stash_ids WHERE endpoint = \"%s\")", endpoint))
-			default:
-				stringCriterionHandler(sceneFilter.StashIDEndpoint, "scene_stash_ids.endpoint")(ctx, f)
-			}
-		}
-	}))
+	query.handleCriterion(ctx, &stashIDCriterionHandler{
+		c:                 sceneFilter.StashIDEndpoint,
+		stashIDRepository: qb.stashIDRepository(),
+		stashIDTableAs:    "scene_stash_ids",
+		parentIDCol:       "scenes.id",
+	})
 
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Interactive, "video_files.interactive", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.InteractiveSpeed, "video_files.interactive_speed", qb.addVideoFilesTable))

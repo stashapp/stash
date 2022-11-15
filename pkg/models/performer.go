@@ -112,7 +112,7 @@ type PerformerFilterType struct {
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
 	// Filter by StashID Endpoint
-	StashIDEndpoint *StringCriterionInput `json:"stash_id_endpoint"`
+	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter by rating
 	Rating *IntCriterionInput `json:"rating"`
 	// Filter by url

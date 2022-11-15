@@ -529,20 +529,12 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 			stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
 		}
 	}))
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if filter.StashIDEndpoint != nil {
-			qb.stashIDRepository().join(f, "performer_stash_ids", "performers.id")
-			endpoint := filter.StashIDEndpoint.Value
-			switch filter.StashIDEndpoint.Modifier {
-			case models.CriterionModifierExcludes:
-				f.addWhere(fmt.Sprintf("performers.id NOT IN (SELECT performer_id FROM performer_stash_ids WHERE endpoint LIKE \"%%%s%%\")", endpoint))
-			case models.CriterionModifierNotEquals:
-				f.addWhere(fmt.Sprintf("performers.id NOT IN (SELECT performer_id FROM performer_stash_ids WHERE endpoint = \"%s\")", endpoint))
-			default:
-				stringCriterionHandler(filter.StashIDEndpoint, "performer_stash_ids.endpoint")(ctx, f)
-			}
-		}
-	}))
+	query.handleCriterion(ctx, &stashIDCriterionHandler{
+		c:                 filter.StashIDEndpoint,
+		stashIDRepository: qb.stashIDRepository(),
+		stashIDTableAs:    "performer_stash_ids",
+		parentIDCol:       "performers.id",
+	})
 
 	// TODO - need better handling of aliases
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Aliases, tableName+".aliases"))

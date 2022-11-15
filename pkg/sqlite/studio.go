@@ -243,20 +243,12 @@ func (qb *studioQueryBuilder) makeFilter(ctx context.Context, studioFilter *mode
 			stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
 		}
 	}))
-	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
-		if studioFilter.StashIDEndpoint != nil {
-			qb.stashIDRepository().join(f, "studio_stash_ids", "studios.id")
-			endpoint := studioFilter.StashIDEndpoint.Value
-			switch studioFilter.StashIDEndpoint.Modifier {
-			case models.CriterionModifierExcludes:
-				f.addWhere(fmt.Sprintf("studios.id NOT IN (SELECT studio_id FROM studio_stash_ids WHERE endpoint LIKE \"%%%s%%\")", endpoint))
-			case models.CriterionModifierNotEquals:
-				f.addWhere(fmt.Sprintf("studios.id NOT IN (SELECT studio_id FROM studio_stash_ids WHERE endpoint = \"%s\")", endpoint))
-			default:
-				stringCriterionHandler(studioFilter.StashIDEndpoint, "studio_stash_ids.endpoint")(ctx, f)
-			}
-		}
-	}))
+	query.handleCriterion(ctx, &stashIDCriterionHandler{
+		c:                 studioFilter.StashIDEndpoint,
+		stashIDRepository: qb.stashIDRepository(),
+		stashIDTableAs:    "studio_stash_ids",
+		parentIDCol:       "studios.id",
+	})
 
 	query.handleCriterion(ctx, studioIsMissingCriterionHandler(qb, studioFilter.IsMissing))
 	query.handleCriterion(ctx, studioSceneCountCriterionHandler(qb, studioFilter.SceneCount))
