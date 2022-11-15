@@ -234,7 +234,9 @@ func (qb *studioQueryBuilder) makeFilter(ctx context.Context, studioFilter *mode
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Name, studioTable+".name"))
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Details, studioTable+".details"))
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.URL, studioTable+".url"))
-	query.handleCriterion(ctx, intCriterionHandler(studioFilter.Rating, studioTable+".rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(studioFilter.Rating100, studioTable+".rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(studioFilter.Rating, studioTable+".rating", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag", nil))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {

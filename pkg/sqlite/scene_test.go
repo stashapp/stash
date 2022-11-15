@@ -77,7 +77,7 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 		details     = "details"
 		director    = "director"
 		url         = "url"
-		rating      = 3
+		rating      = 60
 		ocounter    = 5
 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -304,7 +304,7 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 		details     = "details"
 		director    = "director"
 		url         = "url"
-		rating      = 3
+		rating      = 60
 		ocounter    = 5
 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -512,7 +512,7 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 		details     = "details"
 		director    = "director"
 		url         = "url"
-		rating      = 3
+		rating      = 60
 		ocounter    = 5
 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -2393,7 +2393,7 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 			Modifier: models.CriterionModifierEquals,
 		},
 		And: &models.SceneFilterType{
-			Rating: &models.IntCriterionInput{
+			Rating100: &models.IntCriterionInput{
 				Value:    sceneRating,
 				Modifier: models.CriterionModifierEquals,
 			},
@@ -2433,7 +2433,7 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 	sceneFilter := models.SceneFilterType{
 		Path: &pathCriterion,
 		Not: &models.SceneFilterType{
-			Rating: &ratingCriterion,
+			Rating100: &ratingCriterion,
 		},
 	}
 
@@ -2620,29 +2620,74 @@ func TestSceneQueryRating(t *testing.T) {
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 }
 
-func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+func verifyScenesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Rating: &ratingCriterion,
+		}
+
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
+
+		// convert criterion value to the 100 value
+		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
+
+		for _, scene := range scenes {
+			verifyIntPtr(t, scene.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestSceneQueryRating100(t *testing.T) {
+	const rating = 60
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyScenesRating100(t, ratingCriterion)
+}
+
+func verifyScenesRating100(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		sceneFilter := models.SceneFilterType{
+			Rating100: &ratingCriterion,
 		}
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)

@@ -77,7 +77,7 @@ export const SceneFilenameParser: React.FC = () => {
       ParserField.fullDateFields.some((f) => {
         return pattern.includes(`{${f.field}}`);
       });
-    const ratingSet = pattern.includes("{rating}");
+    const ratingSet = pattern.includes("{rating100}");
     const performerSet = pattern.includes("{performer}");
     const tagSet = pattern.includes("{tag}");
     const studioSet = pattern.includes("{studio}");

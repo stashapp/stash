@@ -157,7 +157,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
               </div>
             ) : undefined}
           </div>
-          <RatingBanner rating={props.image.rating} />
+          <RatingBanner rating={props.image.rating100} />
         </>
       }
       popovers={maybeRenderPopoverButtonGroup()}

@@ -54,7 +54,7 @@ export class SceneParserResult {
     this.filename = objectTitle(this.scene);
     this.title.setOriginalValue(this.scene.title ?? undefined);
     this.date.setOriginalValue(this.scene.date ?? undefined);
-    this.rating.setOriginalValue(this.scene.rating ?? undefined);
+    this.rating.setOriginalValue(this.scene.rating100 ?? undefined);
     this.performers.setOriginalValue(this.scene.performers.map((p) => p.id));
     this.tags.setOriginalValue(this.scene.tags.map((t) => t.id));
     this.studio.setOriginalValue(this.scene.studio?.id);

@@ -93,6 +93,7 @@ export type CriterionType =
   | "none"
   | "path"
   | "rating"
+  | "rating100"
   | "organized"
   | "o_counter"
   | "resolution"

@@ -27,8 +27,9 @@ const (
 )
 
 type imageRow struct {
-	ID        int                    `db:"id" goqu:"skipinsert"`
-	Title     zero.String            `db:"title"`
+	ID    int         `db:"id" goqu:"skipinsert"`
+	Title zero.String `db:"title"`
+	// expressed as 1-100
 	Rating    null.Int               `db:"rating"`
 	Organized bool                   `db:"organized"`
 	OCounter  int                    `db:"o_counter"`
@@ -632,7 +633,9 @@ func (qb *ImageStore) makeFilter(ctx context.Context, imageFilter *models.ImageF
 
 	query.handleCriterion(ctx, pathCriterionHandler(imageFilter.Path, "folders.path", "files.basename", qb.addFoldersTable))
 	query.handleCriterion(ctx, imageFileCountCriterionHandler(qb, imageFilter.FileCount))
-	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating, "images.rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(imageFilter.Rating100, "images.rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(imageFilter.Rating, "images.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(imageFilter.OCounter, "images.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(imageFilter.Organized, "images.organized", nil))
 

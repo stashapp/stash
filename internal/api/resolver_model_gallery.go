@@ -189,6 +189,18 @@ func (r *galleryResolver) Checksum(ctx context.Context, obj *models.Gallery) (st
 	return obj.PrimaryChecksum(), nil
 }
 
+func (r *galleryResolver) Rating(ctx context.Context, obj *models.Gallery) (*int, error) {
+	if obj.Rating != nil {
+		rating := models.Rating100To5(*obj.Rating)
+		return &rating, nil
+	}
+	return nil, nil
+}
+
+func (r *galleryResolver) Rating100(ctx context.Context, obj *models.Gallery) (*int, error) {
+	return obj.Rating, nil
+}
+
 func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret []*models.Scene, err error) {
 	if !obj.SceneIDs.Loaded() {
 		if err := r.withTxn(ctx, func(ctx context.Context) error {

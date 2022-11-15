@@ -55,6 +55,10 @@ func (b SceneURLBuilder) GetScreenshotURL(updateTime time.Time) string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/screenshot?" + strconv.FormatInt(updateTime.Unix(), 10)
 }
 
+func (b SceneURLBuilder) GetChaptersVTTURL() string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/vtt/chapter"
+}
+
 func (b SceneURLBuilder) GetSceneMarkerStreamURL(sceneMarkerID int) string {
 	return b.BaseURL + "/scene/" + b.SceneID + "/scene_marker/" + strconv.Itoa(sceneMarkerID) + "/stream"
 }
