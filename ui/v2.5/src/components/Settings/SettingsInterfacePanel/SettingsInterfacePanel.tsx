@@ -250,22 +250,22 @@ export const SettingsInterfacePanel: React.FC = () => {
         <BooleanSetting
           id="always-start-from-beginning"
           headingID="config.ui.scene_player.options.always_start_from_beginning"
-          checked={iface.alwaysStartFromBeginning ?? undefined}
-          onChange={(v) => saveInterface({ alwaysStartFromBeginning: v })}
+          checked={ui.alwaysStartFromBeginning ?? undefined}
+          onChange={(v) => saveUI({ alwaysStartFromBeginning: v })}
         />
         <BooleanSetting
           id="track-activity"
           headingID="config.ui.scene_player.options.track_activity"
-          checked={iface.trackActivity ?? undefined}
-          onChange={(v) => saveInterface({ trackActivity: v })}
+          checked={ui.trackActivity ?? undefined}
+          onChange={(v) => saveUI({ trackActivity: v })}
         />
         <ModalSetting<number>
           id="ignore-interval"
           headingID="config.ui.ignore_interval.heading"
           subHeadingID="config.ui.ignore_interval.description"
-          value={iface.ignoreInterval ?? 0}
-          onChange={(v) => saveInterface({ ignoreInterval: v })}
-          disabled={!iface.trackActivity}
+          value={ui.ignoreInterval ?? 0}
+          onChange={(v) => saveUI({ ignoreInterval: v })}
+          disabled={!ui.trackActivity}
           renderField={(value, setValue) => (
             <PercentInput
               numericValue={value}
