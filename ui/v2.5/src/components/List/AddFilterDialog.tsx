@@ -216,11 +216,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       }
       if (criterion instanceof RatingCriterion) {
         return (
-          <RatingFilter
-            criterion={criterion}
-            onValueChanged={onValueChanged}
-            configuration={config}
-          />
+          <RatingFilter criterion={criterion} onValueChanged={onValueChanged} />
         );
       }
       if (
@@ -307,12 +303,32 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     );
   }
 
+  function isValid() {
+    if (criterion.criterionOption.type === "none") {
+      return false;
+    }
+
+    if (criterion instanceof RatingCriterion) {
+      switch (criterion.modifier) {
+        case CriterionModifier.Equals:
+        case CriterionModifier.NotEquals:
+        case CriterionModifier.LessThan:
+          return !!criterion.value.value;
+        case CriterionModifier.Between:
+        case CriterionModifier.NotBetween:
+          return criterion.value.value < (criterion.value.value2 ?? 0);
+      }
+    }
+
+    return true;
+  }
+
   const title = !editingCriterion
     ? intl.formatMessage({ id: "search_filter.add_filter" })
     : intl.formatMessage({ id: "search_filter.update_filter" });
   return (
     <>
-      <Modal show onHide={() => onCancel()}>
+      <Modal show onHide={() => onCancel()} className="add-filter-dialog">
         <Modal.Header>{title}</Modal.Header>
         <Modal.Body>
           <div className="dialog-content">
@@ -322,10 +338,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            onClick={onAddFilter}
-            disabled={criterion.criterionOption.type === "none"}
-          >
+          <Button onClick={onAddFilter} disabled={!isValid()}>
             {title}
           </Button>
         </Modal.Footer>

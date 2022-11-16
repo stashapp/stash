@@ -342,7 +342,7 @@ export class NullNumberCriterionOption extends CriterionOption {
         CriterionModifier.IsNull,
         CriterionModifier.NotNull,
       ],
-      defaultModifier: CriterionModifier.GreaterThan,
+      defaultModifier: CriterionModifier.Equals,
       inputType: "number",
     });
   }
