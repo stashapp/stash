@@ -8,12 +8,6 @@ import React, {
 } from "react";
 import videojs, { VideoJsPlayer, VideoJsPlayerOptions } from "video.js";
 import useScript from "src/hooks/useScript";
-// @ts-ignore
-import airplay from "@silvermine/videojs-airplay";
-// @ts-ignore
-import chromecast from "@silvermine/videojs-chromecast";
-import "@silvermine/videojs-chromecast/dist/silvermine-videojs-chromecast.css";
-import "@silvermine/videojs-airplay/dist/silvermine-videojs-airplay.css";
 import "videojs-seek-buttons";
 import "videojs-landscape-fullscreen";
 import "./live";
@@ -24,6 +18,12 @@ import "./markers";
 import "./vtt-thumbnails";
 import "./big-buttons";
 import cx from "classnames";
+// @ts-ignore
+import airplay from "@silvermine/videojs-airplay";
+// @ts-ignore
+import chromecast from "@silvermine/videojs-chromecast";
+import "@silvermine/videojs-chromecast/dist/silvermine-videojs-chromecast.css";
+import "@silvermine/videojs-airplay/dist/silvermine-videojs-airplay.css";
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
@@ -231,10 +231,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       nativeControlsForTouch: false,
       playbackRates: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
       inactivityTimeout: 2000,
-      plugins: {
-        airPlay: {},
-        chromecast: {},
-      },
       preload: "none",
       techOrder: ["chromecast", "html5"],
       userActions: {
@@ -243,6 +239,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
       },
       plugins: {
+        airPlay: {},
+        chromecast: {},
         vttThumbnails: {
           showTimestamp: true,
         },
