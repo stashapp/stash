@@ -11,14 +11,14 @@ import (
 	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-type schema40Migrator struct {
+type schema41Migrator struct {
 	migrator
 }
 
-func post40(ctx context.Context, db *sqlx.DB) error {
-	logger.Info("Running post-migration for schema version 40")
+func post41(ctx context.Context, db *sqlx.DB) error {
+	logger.Info("Running post-migration for schema version 41")
 
-	m := schema40Migrator{
+	m := schema41Migrator{
 		migrator: migrator{
 			db: db,
 		},
@@ -31,7 +31,7 @@ func post40(ctx context.Context, db *sqlx.DB) error {
 	return nil
 }
 
-func (m *schema40Migrator) migrate(ctx context.Context) error {
+func (m *schema41Migrator) migrate(ctx context.Context) error {
 	logger.Info("Migrating performer aliases")
 
 	const (
@@ -102,7 +102,7 @@ func (m *schema40Migrator) migrate(ctx context.Context) error {
 	return nil
 }
 
-func (m *schema40Migrator) migratePerformerAliases(id int, aliases string) error {
+func (m *schema41Migrator) migratePerformerAliases(id int, aliases string) error {
 	// split aliases by , or /
 	aliasList := strings.FieldsFunc(aliases, func(r rune) bool {
 		return strings.ContainsRune(",/", r)
@@ -128,5 +128,5 @@ func (m *schema40Migrator) migratePerformerAliases(id int, aliases string) error
 }
 
 func init() {
-	sqlite.RegisterPostMigration(40, post40)
+	sqlite.RegisterPostMigration(41, post41)
 }

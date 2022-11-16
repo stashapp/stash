@@ -6,11 +6,11 @@ import {
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
   NumberCriterionOption,
+  NullNumberCriterionOption,
 } from "./criteria/criterion";
 import { FavoriteCriterionOption } from "./criteria/favorite";
 import { GenderCriterionOption } from "./criteria/gender";
 import { PerformerIsMissingCriterionOption } from "./criteria/is-missing";
-import { RatingCriterionOption } from "./criteria/rating";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { TagsCriterionOption } from "./criteria/tags";
 import { ListFilterOptions } from "./filter-options";
@@ -76,9 +76,9 @@ const criterionOptions = [
   GenderCriterionOption,
   PerformerIsMissingCriterionOption,
   TagsCriterionOption,
-  RatingCriterionOption,
   StudiosCriterionOption,
   createStringCriterionOption("url"),
+  new NullNumberCriterionOption("rating", "rating100"),
   createMandatoryNumberCriterionOption("tag_count"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import {
@@ -18,6 +18,7 @@ import {
 import { PopoverCountButton } from "../Shared/PopoverCountButton";
 import GenderIcon from "./GenderIcon";
 import { faHeart, faTag } from "@fortawesome/free-solid-svg-icons";
+import { RatingBanner } from "../Shared/RatingBanner";
 
 export interface IPerformerCardExtraCriteria {
   scenes: Criterion<CriterionValue>[];
@@ -167,18 +168,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderRatingBanner() {
-    if (!performer.rating) {
+    if (!performer.rating100) {
       return;
     }
-    return (
-      <div
-        className={`rating-banner ${
-          performer.rating ? `rating-${performer.rating}` : ""
-        }`}
-      >
-        <FormattedMessage id="rating" />: {performer.rating}
-      </div>
-    );
+    return <RatingBanner rating={performer.rating100} />;
   }
 
   function maybeRenderFlag() {

@@ -1,11 +1,11 @@
 import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
+  NullNumberCriterionOption,
   createDateCriterionOption,
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { MovieIsMissingCriterionOption } from "./criteria/is-missing";
-import { RatingCriterionOption } from "./criteria/rating";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { PerformersCriterionOption } from "./criteria/performers";
 import { ListFilterOptions } from "./filter-options";
@@ -30,7 +30,7 @@ const criterionOptions = [
   createStringCriterionOption("director"),
   createStringCriterionOption("synopsis"),
   createMandatoryNumberCriterionOption("duration"),
-  RatingCriterionOption,
+  new NullNumberCriterionOption("rating", "rating100"),
   PerformersCriterionOption,
   createDateCriterionOption("date"),
   createMandatoryTimestampCriterionOption("created_at"),

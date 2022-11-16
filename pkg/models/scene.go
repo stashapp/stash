@@ -31,8 +31,10 @@ type SceneFilterType struct {
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
 	FileCount *IntCriterionInput `json:"file_count"`
-	// Filter by rating
+	// Filter by rating expressed as 1-5
 	Rating *IntCriterionInput `json:"rating"`
+	// Filter by rating expressed as 1-100
+	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by organized
 	Organized *bool `json:"organized"`
 	// Filter by o-counter

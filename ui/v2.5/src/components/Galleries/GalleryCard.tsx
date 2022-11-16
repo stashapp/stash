@@ -160,7 +160,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
               src={`${props.gallery.cover.paths.thumbnail}`}
             />
           ) : undefined}
-          <RatingBanner rating={props.gallery.rating} />
+          <RatingBanner rating={props.gallery.rating100} />
         </>
       }
       overlays={maybeRenderSceneStudioOverlay()}

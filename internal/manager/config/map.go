@@ -32,15 +32,19 @@ func toSnakeCase(v string) string {
 
 func fromSnakeCase(v string) string {
 	var buf bytes.Buffer
+	leadingUnderscore := true
 	capvar := false
 	for i, c := range v {
 		switch {
-		case c == '_' && i > 0:
+		case c == '_' && !leadingUnderscore && i > 0:
 			capvar = true
+		case c == '_' && leadingUnderscore:
+			buf.WriteRune(c)
 		case capvar:
 			buf.WriteRune(unicode.ToUpper(c))
 			capvar = false
 		default:
+			leadingUnderscore = false
 			buf.WriteRune(c)
 		}
 	}
@@ -54,7 +58,13 @@ func toSnakeCaseMap(m map[string]interface{}) map[string]interface{} {
 
 	for key, val := range m {
 		adjKey := toSnakeCase(key)
-		nm[adjKey] = val
+
+		switch v := val.(type) {
+		case map[string]interface{}:
+			nm[adjKey] = toSnakeCaseMap(v)
+		default:
+			nm[adjKey] = val
+		}
 	}
 
 	return nm
@@ -68,13 +78,15 @@ func convertMapValue(val interface{}) interface{} {
 	case map[interface{}]interface{}:
 		ret := cast.ToStringMap(v)
 		for k, vv := range ret {
-			ret[k] = convertMapValue(vv)
+			adjKey := fromSnakeCase(k)
+			ret[adjKey] = convertMapValue(vv)
 		}
 		return ret
 	case map[string]interface{}:
 		ret := make(map[string]interface{})
 		for k, vv := range v {
-			ret[k] = convertMapValue(vv)
+			adjKey := fromSnakeCase(k)
+			ret[adjKey] = convertMapValue(vv)
 		}
 		return ret
 	case []interface{}:

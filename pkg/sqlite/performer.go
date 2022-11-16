@@ -47,12 +47,13 @@ type performerRow struct {
 	Favorite      sql.NullBool           `db:"favorite"`
 	CreatedAt     models.SQLiteTimestamp `db:"created_at"`
 	UpdatedAt     models.SQLiteTimestamp `db:"updated_at"`
-	Rating        null.Int               `db:"rating"`
-	Details       zero.String            `db:"details"`
-	DeathDate     models.SQLiteDate      `db:"death_date"`
-	HairColor     zero.String            `db:"hair_color"`
-	Weight        null.Int               `db:"weight"`
-	IgnoreAutoTag bool                   `db:"ignore_auto_tag"`
+	// expressed as 1-100
+	Rating        null.Int          `db:"rating"`
+	Details       zero.String       `db:"details"`
+	DeathDate     models.SQLiteDate `db:"death_date"`
+	HairColor     zero.String       `db:"hair_color"`
+	Weight        null.Int          `db:"weight"`
+	IgnoreAutoTag bool              `db:"ignore_auto_tag"`
 }
 
 func (r *performerRow) fromPerformer(o models.Performer) {
@@ -112,12 +113,13 @@ func (r *performerRow) resolve() *models.Performer {
 		Favorite:       r.Favorite.Bool,
 		CreatedAt:      r.CreatedAt.Timestamp,
 		UpdatedAt:      r.UpdatedAt.Timestamp,
-		Rating:         nullIntPtr(r.Rating),
-		Details:        r.Details.String,
-		DeathDate:      r.DeathDate.DatePtr(),
-		HairColor:      r.HairColor.String,
-		Weight:         nullIntPtr(r.Weight),
-		IgnoreAutoTag:  r.IgnoreAutoTag,
+		// expressed as 1-100
+		Rating:        nullIntPtr(r.Rating),
+		Details:       r.Details.String,
+		DeathDate:     r.DeathDate.DatePtr(),
+		HairColor:     r.HairColor.String,
+		Weight:        nullIntPtr(r.Weight),
+		IgnoreAutoTag: r.IgnoreAutoTag,
 	}
 
 	return ret
@@ -575,7 +577,9 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 	query.handleCriterion(ctx, stringCriterionHandler(filter.CareerLength, tableName+".career_length"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Tattoos, tableName+".tattoos"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Piercings, tableName+".piercings"))
-	query.handleCriterion(ctx, intCriterionHandler(filter.Rating, tableName+".rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(filter.Rating100, tableName+".rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(filter.Rating, tableName+".rating", nil))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.HairColor, tableName+".hair_color"))
 	query.handleCriterion(ctx, stringCriterionHandler(filter.URL, tableName+".url"))
 	query.handleCriterion(ctx, intCriterionHandler(filter.Weight, tableName+".weight", nil))

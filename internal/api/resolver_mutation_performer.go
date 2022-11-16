@@ -121,8 +121,11 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input PerformerC
 	if input.Favorite != nil {
 		newPerformer.Favorite = *input.Favorite
 	}
-	if input.Rating != nil {
-		newPerformer.Rating = input.Rating
+	if input.Rating100 != nil {
+		newPerformer.Rating = input.Rating100
+	} else if input.Rating != nil {
+		rating := models.Rating5To100(*input.Rating)
+		newPerformer.Rating = &rating
 	}
 	if input.Details != nil {
 		newPerformer.Details = *input.Details
@@ -225,7 +228,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input PerformerU
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedPerformer.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
 	updatedPerformer.DeathDate = translator.optionalDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")
@@ -342,7 +345,7 @@ func (r *mutationResolver) BulkPerformerUpdate(ctx context.Context, input BulkPe
 	updatedPerformer.Twitter = translator.optionalString(input.Twitter, "twitter")
 	updatedPerformer.Instagram = translator.optionalString(input.Instagram, "instagram")
 	updatedPerformer.Favorite = translator.optionalBool(input.Favorite, "favorite")
-	updatedPerformer.Rating = translator.optionalInt(input.Rating, "rating")
+	updatedPerformer.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedPerformer.Details = translator.optionalString(input.Details, "details")
 	updatedPerformer.DeathDate = translator.optionalDate(input.DeathDate, "death_date")
 	updatedPerformer.HairColor = translator.optionalString(input.HairColor, "hair_color")

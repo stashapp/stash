@@ -112,8 +112,10 @@ type PerformerFilterType struct {
 	GalleryCount *IntCriterionInput `json:"gallery_count"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
-	// Filter by rating
+	// Filter by rating expressed as 1-5
 	Rating *IntCriterionInput `json:"rating"`
+	// Filter by rating expressed as 1-100
+	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
 	// Filter by hair color

@@ -26,12 +26,13 @@ type Performer struct {
 	Favorite       bool       `json:"favorite"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
-	Rating         *int       `json:"rating"`
-	Details        string     `json:"details"`
-	DeathDate      *Date      `json:"death_date"`
-	HairColor      string     `json:"hair_color"`
-	Weight         *int       `json:"weight"`
-	IgnoreAutoTag  bool       `json:"ignore_auto_tag"`
+	// Rating expressed in 1-100 scale
+	Rating        *int   `json:"rating"`
+	Details       string `json:"details"`
+	DeathDate     *Date  `json:"death_date"`
+	HairColor     string `json:"hair_color"`
+	Weight        *int   `json:"weight"`
+	IgnoreAutoTag bool   `json:"ignore_auto_tag"`
 
 	Aliases  RelatedStrings  `json:"aliases"`
 	TagIDs   RelatedIDs      `json:"tag_ids"`
@@ -95,12 +96,13 @@ type PerformerPartial struct {
 	Favorite       OptionalBool
 	CreatedAt      OptionalTime
 	UpdatedAt      OptionalTime
-	Rating         OptionalInt
-	Details        OptionalString
-	DeathDate      OptionalDate
-	HairColor      OptionalString
-	Weight         OptionalInt
-	IgnoreAutoTag  OptionalBool
+	// Rating expressed in 1-100 scale
+	Rating        OptionalInt
+	Details       OptionalString
+	DeathDate     OptionalDate
+	HairColor     OptionalString
+	Weight        OptionalInt
+	IgnoreAutoTag OptionalBool
 
 	Aliases  *UpdateStrings
 	TagIDs   *UpdateIDs
