@@ -71,7 +71,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		Director:     translator.string(input.Director, "director"),
 		URL:          translator.string(input.URL, "url"),
 		Date:         translator.datePtr(input.Date, "date"),
-		Rating:       input.Rating,
+		Rating:       translator.ratingConversionInt(input.Rating, input.Rating100),
 		Organized:    translator.bool(input.Organized, "organized"),
 		PerformerIDs: models.NewRelatedIDs(performerIDs),
 		TagIDs:       models.NewRelatedIDs(tagIDs),
