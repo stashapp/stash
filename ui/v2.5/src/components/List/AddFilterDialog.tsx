@@ -202,11 +202,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
       }
       if (criterion instanceof RatingCriterion) {
         return (
-          <RatingFilter
-            criterion={criterion}
-            onValueChanged={onValueChanged}
-            configuration={config}
-          />
+          <RatingFilter criterion={criterion} onValueChanged={onValueChanged} />
         );
       }
       if (
@@ -298,7 +294,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     : intl.formatMessage({ id: "search_filter.update_filter" });
   return (
     <>
-      <Modal show onHide={() => onCancel()}>
+      <Modal show onHide={() => onCancel()} className="add-filter-dialog">
         <Modal.Header>{title}</Modal.Header>
         <Modal.Body>
           <div className="dialog-content">
