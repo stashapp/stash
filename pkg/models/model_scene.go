@@ -38,10 +38,10 @@ type Scene struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	LastPlayedAt time.Time `json:"last_played_at"`
-	ResumeTime   float64   `json:"resume_time"`
-	PlayDuration float64   `json:"play_duration"`
-	PlayCount    int       `json:"play_count"`
+	LastPlayedAt *time.Time `json:"last_played_at"`
+	ResumeTime   float64    `json:"resume_time"`
+	PlayDuration float64    `json:"play_duration"`
+	PlayCount    int        `json:"play_count"`
 
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`

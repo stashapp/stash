@@ -72,21 +72,25 @@ func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *
 
 func Test_sceneQueryBuilder_Create(t *testing.T) {
 	var (
-		title       = "title"
-		code        = "1337"
-		details     = "details"
-		director    = "director"
-		url         = "url"
-		rating      = 60
-		ocounter    = 5
-		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		sceneIndex  = 123
-		sceneIndex2 = 234
-		endpoint1   = "endpoint1"
-		endpoint2   = "endpoint2"
-		stashID1    = "stashid1"
-		stashID2    = "stashid2"
+		title        = "title"
+		code         = "1337"
+		details      = "details"
+		director     = "director"
+		url          = "url"
+		rating       = 60
+		ocounter     = 5
+		lastPlayedAt = time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC)
+		resumeTime   = 10.0
+		playCount    = 3
+		playDuration = 34.0
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex   = 123
+		sceneIndex2  = 234
+		endpoint1    = "endpoint1"
+		endpoint2    = "endpoint2"
+		stashID1     = "stashid1"
+		stashID2     = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 
@@ -136,6 +140,10 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
+				LastPlayedAt: &lastPlayedAt,
+				ResumeTime:   float64(resumeTime),
+				PlayCount:    playCount,
+				PlayDuration: playDuration,
 			},
 			false,
 		},
@@ -180,6 +188,10 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
+				LastPlayedAt: &lastPlayedAt,
+				ResumeTime:   resumeTime,
+				PlayCount:    playCount,
+				PlayDuration: playDuration,
 			},
 			false,
 		},
@@ -299,21 +311,25 @@ func makeSceneFileWithID(i int) *file.VideoFile {
 
 func Test_sceneQueryBuilder_Update(t *testing.T) {
 	var (
-		title       = "title"
-		code        = "1337"
-		details     = "details"
-		director    = "director"
-		url         = "url"
-		rating      = 60
-		ocounter    = 5
-		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		sceneIndex  = 123
-		sceneIndex2 = 234
-		endpoint1   = "endpoint1"
-		endpoint2   = "endpoint2"
-		stashID1    = "stashid1"
-		stashID2    = "stashid2"
+		title        = "title"
+		code         = "1337"
+		details      = "details"
+		director     = "director"
+		url          = "url"
+		rating       = 60
+		ocounter     = 5
+		lastPlayedAt = time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC)
+		resumeTime   = 10.0
+		playCount    = 3
+		playDuration = 34.0
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex   = 123
+		sceneIndex2  = 234
+		endpoint1    = "endpoint1"
+		endpoint2    = "endpoint2"
+		stashID1     = "stashid1"
+		stashID2     = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 	)
@@ -362,6 +378,10 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
+				LastPlayedAt: &lastPlayedAt,
+				ResumeTime:   resumeTime,
+				PlayCount:    playCount,
+				PlayDuration: playDuration,
 			},
 			false,
 		},
@@ -507,21 +527,25 @@ func clearScenePartial() models.ScenePartial {
 
 func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
-		title       = "title"
-		code        = "1337"
-		details     = "details"
-		director    = "director"
-		url         = "url"
-		rating      = 60
-		ocounter    = 5
-		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
-		sceneIndex  = 123
-		sceneIndex2 = 234
-		endpoint1   = "endpoint1"
-		endpoint2   = "endpoint2"
-		stashID1    = "stashid1"
-		stashID2    = "stashid2"
+		title        = "title"
+		code         = "1337"
+		details      = "details"
+		director     = "director"
+		url          = "url"
+		rating       = 60
+		ocounter     = 5
+		lastPlayedAt = time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC)
+		resumeTime   = 10.0
+		playCount    = 3
+		playDuration = 34.0
+		createdAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		updatedAt    = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
+		sceneIndex   = 123
+		sceneIndex2  = 234
+		endpoint1    = "endpoint1"
+		endpoint2    = "endpoint2"
+		stashID1     = "stashid1"
+		stashID2     = "stashid2"
 
 		date = models.NewDate("2003-02-01")
 	)
@@ -587,6 +611,10 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					},
 					Mode: models.RelationshipUpdateModeSet,
 				},
+				LastPlayedAt: models.NewOptionalTime(lastPlayedAt),
+				ResumeTime:   models.NewOptionalFloat64(resumeTime),
+				PlayCount:    models.NewOptionalInt(playCount),
+				PlayDuration: models.NewOptionalFloat64(playDuration),
 			},
 			models.Scene{
 				ID: sceneIDs[sceneIdxWithSpacedName],
@@ -628,6 +656,10 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 						Endpoint: endpoint2,
 					},
 				}),
+				LastPlayedAt: &lastPlayedAt,
+				ResumeTime:   resumeTime,
+				PlayCount:    playCount,
+				PlayDuration: playDuration,
 			},
 			false,
 		},
@@ -2089,6 +2121,84 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 	scenes = queryScene(ctx, t, sqb, nil, &filter)
 
 	assert.Len(t, scenes, totalScenes)
+}
+
+func TestSceneQuery(t *testing.T) {
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.SceneFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"specific resume time",
+			nil,
+			&models.SceneFilterType{
+				ResumeTime: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    int(getSceneResumeTime(sceneIdxWithGallery)),
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			[]int{sceneIdxWithMovie},
+			false,
+		},
+		{
+			"specific play duration",
+			nil,
+			&models.SceneFilterType{
+				PlayDuration: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    int(getScenePlayDuration(sceneIdxWithGallery)),
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			[]int{sceneIdxWithMovie},
+			false,
+		},
+		{
+			"specific play count",
+			nil,
+			&models.SceneFilterType{
+				PlayCount: &models.IntCriterionInput{
+					Modifier: models.CriterionModifierEquals,
+					Value:    getScenePlayCount(sceneIdxWithGallery),
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			[]int{sceneIdxWithMovie},
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			results, err := db.Scene.Query(ctx, models.SceneQueryOptions{
+				SceneFilter: tt.filter,
+				QueryOptions: models.QueryOptions{
+					FindFilter: tt.findFilter,
+				},
+			})
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			include := indexesToIDs(performerIDs, tt.includeIdxs)
+			exclude := indexesToIDs(performerIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(results.IDs, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(results.IDs, e)
+			}
+		})
+	}
 }
 
 func TestSceneQueryPath(t *testing.T) {
@@ -3614,6 +3724,34 @@ func TestSceneQuerySorting(t *testing.T) {
 			"perceptual_similarity",
 			models.SortDirectionEnumDesc,
 			-1,
+			-1,
+		},
+		{
+			"play_count",
+			"play_count",
+			models.SortDirectionEnumDesc,
+			sceneIDs[sceneIdx1WithPerformer],
+			-1,
+		},
+		{
+			"last_played_at",
+			"last_played_at",
+			models.SortDirectionEnumDesc,
+			sceneIDs[sceneIdx1WithPerformer],
+			-1,
+		},
+		{
+			"resume_time",
+			"resume_time",
+			models.SortDirectionEnumDesc,
+			sceneIDs[sceneIdx1WithPerformer],
+			-1,
+		},
+		{
+			"play_duration",
+			"play_duration",
+			models.SortDirectionEnumDesc,
+			sceneIDs[sceneIdx1WithPerformer],
 			-1,
 		},
 	}
