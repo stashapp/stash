@@ -6,7 +6,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Modal, StudioSelect } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils } from "src/utils";
-import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 import {
   getAggregateInputValue,
   getAggregateRating,
@@ -24,7 +24,7 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
 ) => {
   const intl = useIntl();
   const Toast = useToast();
-  const [rating, setRating] = useState<number | undefined>();
+  const [rating100, setRating] = useState<number | undefined>();
   const [studioId, setStudioId] = useState<string | undefined>();
   const [director, setDirector] = useState<string | undefined>();
 
@@ -42,7 +42,7 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
     };
 
     // if rating is undefined
-    movieInput.rating = getAggregateInputValue(rating, aggregateRating);
+    movieInput.rating100 = getAggregateInputValue(rating100, aggregateRating);
     movieInput.studio_id = getAggregateInputValue(studioId, aggregateStudioId);
 
     return movieInput;
@@ -77,11 +77,11 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
     state.forEach((movie: GQL.MovieDataFragment) => {
       if (first) {
         first = false;
-        updateRating = movie.rating ?? undefined;
+        updateRating = movie.rating100 ?? undefined;
         updateStudioId = movie.studio?.id ?? undefined;
         updateDirector = movie.director ?? undefined;
       } else {
-        if (movie.rating !== updateRating) {
+        if (movie.rating100 !== updateRating) {
           updateRating = undefined;
         }
         if (movie.studio?.id !== updateStudioId) {
@@ -124,8 +124,8 @@ export const EditMoviesDialog: React.FC<IListOperationProps> = (
               title: intl.formatMessage({ id: "rating" }),
             })}
             <Col xs={9}>
-              <RatingStars
-                value={rating}
+              <RatingSystem
+                value={rating100}
                 onSetRating={(value) => setRating(value)}
                 disabled={isUpdating}
               />

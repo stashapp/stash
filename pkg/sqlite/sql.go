@@ -60,7 +60,7 @@ func getSort(sort string, direction string, tableName string) string {
 	const randomSeedPrefix = "random_"
 
 	switch {
-	case sort != "play_count" && strings.HasSuffix(sort, "_count"):
+	case strings.HasSuffix(sort, "_count"):
 		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction

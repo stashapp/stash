@@ -204,16 +204,25 @@ $galleryTabWidth: 450px;
     }
   }
 
-  .RatingStars {
+  .rating-stars,
+  .rating-number {
     position: absolute;
     right: 1rem;
     top: 1rem;
+  }
 
-    &-unfilled {
+  .rating-stars {
+    .star-fill-0 .unfilled-star {
       display: none;
     }
 
-    &-filled {
+    .star-fill-25 .unfilled-star,
+    .star-fill-50 .unfilled-star,
+    .star-fill-75 .unfilled-star {
+      visibility: hidden;
+    }
+
+    .filled-star {
       filter: drop-shadow(1px 1px 1px #222);
     }
   }

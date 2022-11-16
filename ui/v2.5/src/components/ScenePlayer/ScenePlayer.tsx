@@ -32,6 +32,7 @@ import {
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
+import { IUIConfig } from "src/core/config";
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   function seekPercent(percent: number) {
@@ -142,7 +143,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   onPrevious,
 }) => {
   const { configuration } = useContext(ConfigurationContext);
-  const config = configuration?.interface;
+  const interfaceConfig = configuration?.interface;
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<VideoJsPlayer>();
   const sceneId = useRef<string>();
@@ -174,15 +176,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const recordedActivity = useRef(false);
   const [updatePlayDuration, setUpdatePlayDuration] = useState(false);
 
-  const ignoreInterval = config?.ignoreInterval ?? 0;
-  const trackActivity = config?.trackActivity ?? false;
+  const ignoreInterval = uiConfig?.ignoreInterval ?? 0;
+  const trackActivity = uiConfig?.trackActivity ?? false;
 
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
     [scene]
   );
 
-  const maxLoopDuration = config?.maximumLoopDuration ?? 0;
+  const maxLoopDuration = interfaceConfig?.maximumLoopDuration ?? 0;
   const looping = useMemo(
     () =>
       !!file?.duration &&
@@ -494,7 +496,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     interactiveClient.pause();
     interactiveReady.current = false;
 
-    const alwaysStartFromBeginning = config?.alwaysStartFromBeginning ?? false;
+    const alwaysStartFromBeginning =
+      uiConfig?.alwaysStartFromBeginning ?? false;
     const isLandscape = file.height && file.width && file.width > file.height;
 
     if (isLandscape) {
@@ -586,7 +589,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     auto.current =
-      autoplay || (config?.autostartVideo ?? false) || _initialTimestamp > 0;
+      autoplay ||
+      (interfaceConfig?.autostartVideo ?? false) ||
+      _initialTimestamp > 0;
 
     var startPositition = _initialTimestamp;
     if (
@@ -620,8 +625,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     sessionInitialised,
     trackActivity,
     autoplay,
-    config?.autostartVideo,
-    config?.alwaysStartFromBeginning,
+    interfaceConfig?.autostartVideo,
+    uiConfig?.alwaysStartFromBeginning,
     _initialTimestamp,
   ]);
 

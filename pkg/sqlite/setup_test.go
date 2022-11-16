@@ -823,7 +823,7 @@ func getSceneTitle(index int) string {
 
 func getRating(index int) sql.NullInt64 {
 	rating := index % 6
-	return sql.NullInt64{Int64: int64(rating), Valid: rating > 0}
+	return sql.NullInt64{Int64: int64(rating * 20), Valid: rating > 0}
 }
 
 func getIntPtr(r sql.NullInt64) *int {
@@ -944,6 +944,35 @@ func makeSceneFile(i int) *file.VideoFile {
 	}
 }
 
+func getScenePlayCount(index int) int {
+	return index % 5
+}
+
+func getScenePlayDuration(index int) float64 {
+	if index%5 == 0 {
+		return 0
+	}
+
+	return float64(index%5) * 123.4
+}
+
+func getSceneResumeTime(index int) float64 {
+	if index%5 == 0 {
+		return 0
+	}
+
+	return float64(index%5) * 1.2
+}
+
+func getSceneLastPlayed(index int) *time.Time {
+	if index%5 == 0 {
+		return nil
+	}
+
+	t := time.Date(2020, 1, index%5, 1, 2, 3, 0, time.UTC)
+	return &t
+}
+
 func makeScene(i int) *models.Scene {
 	title := getSceneTitle(i)
 	details := getSceneStringValue(i, "Details")
@@ -967,11 +996,13 @@ func makeScene(i int) *models.Scene {
 		}
 	}
 
+	rating := getRating(i)
+
 	return &models.Scene{
 		Title:        title,
 		Details:      details,
 		URL:          getSceneEmptyString(i, urlField),
-		Rating:       getIntPtr(getRating(i)),
+		Rating:       getIntPtr(rating),
 		OCounter:     getOCounter(i),
 		Date:         getObjectDateObject(i),
 		StudioID:     studioID,
@@ -982,6 +1013,10 @@ func makeScene(i int) *models.Scene {
 		StashIDs: models.NewRelatedStashIDs([]models.StashID{
 			sceneStashID(i),
 		}),
+		PlayCount:    getScenePlayCount(i),
+		PlayDuration: getScenePlayDuration(i),
+		LastPlayedAt: getSceneLastPlayed(i),
+		ResumeTime:   getSceneResumeTime(i),
 	}
 }
 

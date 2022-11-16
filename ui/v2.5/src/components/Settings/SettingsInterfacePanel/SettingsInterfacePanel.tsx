@@ -28,6 +28,15 @@ import {
   connectionStateLabel,
   InteractiveContext,
 } from "src/hooks/Interactive/context";
+import {
+  defaultRatingStarPrecision,
+  defaultRatingSystemOptions,
+  defaultRatingSystemType,
+  RatingStarPrecision,
+  ratingStarPrecisionIntlMap,
+  ratingSystemIntlMap,
+  RatingSystemType,
+} from "src/utils/rating";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -80,6 +89,24 @@ export const SettingsInterfacePanel: React.FC = () => {
       imageLightbox: {
         ...iface.imageLightbox,
         ...v,
+      },
+    });
+  }
+
+  function saveRatingSystemType(t: RatingSystemType) {
+    saveUI({
+      ratingSystemOptions: {
+        ...ui.ratingSystemOptions,
+        type: t,
+      },
+    });
+  }
+
+  function saveRatingSystemStarPrecision(p: RatingStarPrecision) {
+    saveUI({
+      ratingSystemOptions: {
+        ...(ui.ratingSystemOptions ?? defaultRatingSystemOptions),
+        starPrecision: p,
       },
     });
   }
@@ -223,22 +250,22 @@ export const SettingsInterfacePanel: React.FC = () => {
         <BooleanSetting
           id="always-start-from-beginning"
           headingID="config.ui.scene_player.options.always_start_from_beginning"
-          checked={iface.alwaysStartFromBeginning ?? undefined}
-          onChange={(v) => saveInterface({ alwaysStartFromBeginning: v })}
+          checked={ui.alwaysStartFromBeginning ?? undefined}
+          onChange={(v) => saveUI({ alwaysStartFromBeginning: v })}
         />
         <BooleanSetting
           id="track-activity"
           headingID="config.ui.scene_player.options.track_activity"
-          checked={iface.trackActivity ?? undefined}
-          onChange={(v) => saveInterface({ trackActivity: v })}
+          checked={ui.trackActivity ?? undefined}
+          onChange={(v) => saveUI({ trackActivity: v })}
         />
         <ModalSetting<number>
           id="ignore-interval"
           headingID="config.ui.ignore_interval.heading"
           subHeadingID="config.ui.ignore_interval.description"
-          value={iface.ignoreInterval ?? 0}
-          onChange={(v) => saveInterface({ ignoreInterval: v })}
-          disabled={!iface.trackActivity}
+          value={ui.ignoreInterval ?? 0}
+          onChange={(v) => saveUI({ ignoreInterval: v })}
+          disabled={!ui.trackActivity}
           renderField={(value, setValue) => (
             <PercentInput
               numericValue={value}
@@ -454,6 +481,42 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
         </div>
+        <SelectSetting
+          id="rating_system"
+          headingID="config.ui.editing.rating_system.type.label"
+          value={ui.ratingSystemOptions?.type ?? defaultRatingSystemType}
+          onChange={(v) => saveRatingSystemType(v as RatingSystemType)}
+        >
+          {Array.from(ratingSystemIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
+        {(ui.ratingSystemOptions?.type ?? defaultRatingSystemType) ===
+          RatingSystemType.Stars && (
+          <SelectSetting
+            id="rating_system_star_precision"
+            headingID="config.ui.editing.rating_system.star_precision.label"
+            value={
+              ui.ratingSystemOptions?.starPrecision ??
+              defaultRatingStarPrecision
+            }
+            onChange={(v) =>
+              saveRatingSystemStarPrecision(v as RatingStarPrecision)
+            }
+          >
+            {Array.from(ratingStarPrecisionIntlMap.entries()).map((v) => (
+              <option key={v[0]} value={v[0]}>
+                {intl.formatMessage({
+                  id: v[1],
+                })}
+              </option>
+            ))}
+          </SelectSetting>
+        )}
       </SettingSection>
 
       <SettingSection headingID="config.ui.custom_css.heading">

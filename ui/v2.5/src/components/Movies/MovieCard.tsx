@@ -82,7 +82,7 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
             alt={props.movie.name ?? ""}
             src={props.movie.front_image_path ?? ""}
           />
-          <RatingBanner rating={props.movie.rating} />
+          <RatingBanner rating={props.movie.rating100} />
         </>
       }
       details={

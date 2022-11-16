@@ -7,7 +7,7 @@ import { TagLink } from "src/components/Shared/TagLink";
 import TruncatedText from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
-import { RatingStars } from "./RatingStars";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { objectTitle } from "src/core/files";
 
 interface ISceneDetailProps {
@@ -99,10 +99,10 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               />
             </h5>
           ) : undefined}
-          {props.scene.rating ? (
+          {props.scene.rating100 ? (
             <h6>
               <FormattedMessage id="rating" />:{" "}
-              <RatingStars value={props.scene.rating} />
+              <RatingSystem value={props.scene.rating100} disabled />
             </h6>
           ) : (
             ""

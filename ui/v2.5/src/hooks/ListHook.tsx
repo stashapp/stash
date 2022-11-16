@@ -8,6 +8,7 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useContext,
 } from "react";
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
@@ -62,6 +63,7 @@ import {
 import { AddFilterDialog } from "src/components/List/AddFilterDialog";
 import { TextUtils } from "src/utils";
 import { FormattedNumber } from "react-intl";
+import { ConfigurationContext } from "./Config";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -582,6 +584,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const location = useLocation();
   const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
   const [filterInitialised, setFilterInitialised] = useState(false);
+  const { configuration: config } = useContext(ConfigurationContext);
   // Store initial pathname to prevent hooks from operating outside this page
   const originalPathName = useRef(location.pathname);
   const persistanceKey = options.persistanceKey ?? options.filterMode;
@@ -591,6 +594,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const createNewFilter = useCallback(() => {
     const filter = new ListFilterModel(
       options.filterMode,
+      config,
       defaultSort,
       defaultDisplayMode,
       options.defaultZoomIndex
@@ -599,6 +603,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     return filter;
   }, [
     options.filterMode,
+    config,
     history,
     defaultSort,
     defaultDisplayMode,

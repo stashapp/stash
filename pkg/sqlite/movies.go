@@ -147,8 +147,10 @@ func (qb *movieQueryBuilder) makeFilter(ctx context.Context, movieFilter *models
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Name, "movies.name"))
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Director, "movies.director"))
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.Synopsis, "movies.synopsis"))
-	query.handleCriterion(ctx, intCriterionHandler(movieFilter.Rating, "movies.rating", nil))
-	query.handleCriterion(ctx, durationCriterionHandler(movieFilter.Duration, "movies.duration", nil))
+	query.handleCriterion(ctx, intCriterionHandler(movieFilter.Rating100, "movies.rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(movieFilter.Rating, "movies.rating", nil))
+	query.handleCriterion(ctx, floatIntCriterionHandler(movieFilter.Duration, "movies.duration", nil))
 	query.handleCriterion(ctx, movieIsMissingCriterionHandler(qb, movieFilter.IsMissing))
 	query.handleCriterion(ctx, stringCriterionHandler(movieFilter.URL, "movies.url"))
 	query.handleCriterion(ctx, movieStudioCriterionHandler(qb, movieFilter.Studios))

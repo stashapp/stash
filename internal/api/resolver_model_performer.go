@@ -107,6 +107,18 @@ func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer)
 	return stashIDsSliceToPtrSlice(ret), nil
 }
 
+func (r *performerResolver) Rating(ctx context.Context, obj *models.Performer) (*int, error) {
+	if obj.Rating != nil {
+		rating := models.Rating100To5(*obj.Rating)
+		return &rating, nil
+	}
+	return nil, nil
+}
+
+func (r *performerResolver) Rating100(ctx context.Context, obj *models.Performer) (*int, error) {
+	return obj.Rating, nil
+}
+
 func (r *performerResolver) DeathDate(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.DeathDate != nil {
 		ret := obj.DeathDate.String()

@@ -90,7 +90,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
             <h5>{title}</h5>
           </Link>
         </td>
-        <td>{scene.rating ? scene.rating : ""}</td>
+        <td>{scene.rating100 ? scene.rating100 : ""}</td>
         <td>{file?.duration && TextUtils.secondsToTimestamp(file.duration)}</td>
         <td>{renderTags(scene.tags)}</td>
         <td>{renderPerformers(scene.performers)}</td>

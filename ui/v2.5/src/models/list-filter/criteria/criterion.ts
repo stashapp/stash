@@ -324,8 +324,34 @@ export class NumberCriterionOption extends CriterionOption {
   }
 }
 
+export class NullNumberCriterionOption extends CriterionOption {
+  constructor(messageID: string, value: CriterionType, parameterName?: string) {
+    super({
+      messageID,
+      type: value,
+      parameterName,
+      modifierOptions: [
+        CriterionModifier.Equals,
+        CriterionModifier.NotEquals,
+        CriterionModifier.GreaterThan,
+        CriterionModifier.LessThan,
+        CriterionModifier.Between,
+        CriterionModifier.NotBetween,
+        CriterionModifier.IsNull,
+        CriterionModifier.NotNull,
+      ],
+      defaultModifier: CriterionModifier.GreaterThan,
+      inputType: "number",
+    });
+  }
+}
+
 export function createNumberCriterionOption(value: CriterionType) {
   return new NumberCriterionOption(value, value, value);
+}
+
+export function createNullNumberCriterionOption(value: CriterionType) {
+  return new NullNumberCriterionOption(value, value, value);
 }
 
 export class NumberCriterion extends Criterion<INumberValue> {

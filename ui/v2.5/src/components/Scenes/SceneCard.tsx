@@ -403,7 +403,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             isPortrait={isPortrait()}
             soundActive={configuration?.interface?.soundOnPreview ?? false}
           />
-          <RatingBanner rating={props.scene.rating} />
+          <RatingBanner rating={props.scene.rating100} />
           {maybeRenderSceneSpecsOverlay()}
           {maybeRenderInteractiveSpeedOverlay()}
         </>
