@@ -245,6 +245,12 @@ func (qb *studioQueryBuilder) makeFilter(ctx context.Context, studioFilter *mode
 			stringCriterionHandler(studioFilter.StashID, "studio_stash_ids.stash_id")(ctx, f)
 		}
 	}))
+	query.handleCriterion(ctx, &stashIDCriterionHandler{
+		c:                 studioFilter.StashIDEndpoint,
+		stashIDRepository: qb.stashIDRepository(),
+		stashIDTableAs:    "studio_stash_ids",
+		parentIDCol:       "studios.id",
+	})
 
 	query.handleCriterion(ctx, studioIsMissingCriterionHandler(qb, studioFilter.IsMissing))
 	query.handleCriterion(ctx, studioSceneCountCriterionHandler(qb, studioFilter.SceneCount))

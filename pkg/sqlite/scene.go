@@ -864,6 +864,12 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 			stringCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id")(ctx, f)
 		}
 	}))
+	query.handleCriterion(ctx, &stashIDCriterionHandler{
+		c:                 sceneFilter.StashIDEndpoint,
+		stashIDRepository: qb.stashIDRepository(),
+		stashIDTableAs:    "scene_stash_ids",
+		parentIDCol:       "scenes.id",
+	})
 
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Interactive, "video_files.interactive", qb.addVideoFilesTable))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.InteractiveSpeed, "video_files.interactive_speed", qb.addVideoFilesTable))

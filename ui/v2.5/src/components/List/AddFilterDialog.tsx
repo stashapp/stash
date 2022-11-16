@@ -22,6 +22,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   criterionIsNumberValue,
+  criterionIsStashIDValue,
   criterionIsDateValue,
   criterionIsTimestampValue,
   CriterionType,
@@ -36,6 +37,8 @@ import { DateFilter } from "./Filters/DateFilter";
 import { TimestampFilter } from "./Filters/TimestampFilter";
 import { CountryCriterion } from "src/models/list-filter/criteria/country";
 import { CountrySelect } from "../Shared";
+import { StashIDCriterion } from "src/models/list-filter/criteria/stash-ids";
+import { StashIDFilter } from "./Filters/StashIDFilter";
 import { ConfigurationContext } from "src/hooks/Config";
 import { RatingCriterion } from "../../models/list-filter/criteria/rating";
 import { RatingFilter } from "./Filters/RatingFilter";
@@ -134,6 +137,16 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
     }
 
     function renderSelect() {
+      // always show stashID filter
+      if (criterion instanceof StashIDCriterion) {
+        return (
+          <StashIDFilter
+            criterion={criterion}
+            onValueChanged={onValueChanged}
+          />
+        );
+      }
+
       // Hide the value select if the modifier is "IsNull" or "NotNull"
       if (
         criterion.modifier === CriterionModifier.IsNull ||
@@ -162,6 +175,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
         options &&
         !criterionIsHierarchicalLabelValue(criterion.value) &&
         !criterionIsNumberValue(criterion.value) &&
+        !criterionIsStashIDValue(criterion.value) &&
         !criterionIsDateValue(criterion.value) &&
         !criterionIsTimestampValue(criterion.value) &&
         !Array.isArray(criterion.value)

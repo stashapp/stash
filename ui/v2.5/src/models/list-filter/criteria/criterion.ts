@@ -19,6 +19,7 @@ import {
   ILabeledValue,
   INumberValue,
   IOptionType,
+  IStashIDValue,
   IDateValue,
   ITimestampValue,
 } from "../types";
@@ -29,6 +30,7 @@ export type CriterionValue =
   | ILabeledId[]
   | IHierarchicalLabelValue
   | INumberValue
+  | IStashIDValue
   | IDateValue
   | ITimestampValue;
 

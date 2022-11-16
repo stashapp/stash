@@ -1060,6 +1060,7 @@
     "submit_update": "Already exists in {endpoint_name}"
   },
   "statistics": "Statistics",
+  "stash_id_endpoint": "Stash ID Endpoint",
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",
