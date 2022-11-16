@@ -4302,5 +4302,154 @@ func TestSceneStore_AssignFiles(t *testing.T) {
 	}
 }
 
+func TestSceneStore_IncrementWatchCount(t *testing.T) {
+	tests := []struct {
+		name          string
+		sceneID       int
+		expectedCount int
+		wantErr       bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdx1WithPerformer],
+			getScenePlayCount(sceneIdx1WithPerformer) + 1,
+			false,
+		},
+		{
+			"invalid scene id",
+			invalidID,
+			0,
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withRollbackTxn(func(ctx context.Context) error {
+				newVal, err := qb.IncrementWatchCount(ctx, tt.sceneID)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("SceneStore.IncrementWatchCount() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				if err != nil {
+					return nil
+				}
+
+				assert := assert.New(t)
+				assert.Equal(tt.expectedCount, newVal)
+
+				// find the scene and check the count
+				scene, err := qb.Find(ctx, tt.sceneID)
+				if err != nil {
+					t.Errorf("SceneStore.Find() error = %v", err)
+				}
+
+				assert.Equal(tt.expectedCount, scene.PlayCount)
+				assert.True(scene.LastPlayedAt.After(time.Now().Add(-1 * time.Minute)))
+
+				return nil
+			})
+		})
+	}
+}
+
+func TestSceneStore_SaveActivity(t *testing.T) {
+	var (
+		resumeTime   = 111.2
+		playDuration = 98.7
+	)
+
+	tests := []struct {
+		name         string
+		sceneIdx     int
+		resumeTime   *float64
+		playDuration *float64
+		wantErr      bool
+	}{
+		{
+			"both",
+			sceneIdx1WithPerformer,
+			&resumeTime,
+			&playDuration,
+			false,
+		},
+		{
+			"resumeTime only",
+			sceneIdx1WithPerformer,
+			&resumeTime,
+			nil,
+			false,
+		},
+		{
+			"playDuration only",
+			sceneIdx1WithPerformer,
+			nil,
+			&playDuration,
+			false,
+		},
+		{
+			"none",
+			sceneIdx1WithPerformer,
+			nil,
+			nil,
+			false,
+		},
+		{
+			"invalid scene id",
+			-1,
+			&resumeTime,
+			&playDuration,
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withRollbackTxn(func(ctx context.Context) error {
+				id := -1
+				if tt.sceneIdx != -1 {
+					id = sceneIDs[tt.sceneIdx]
+				}
+
+				_, err := qb.SaveActivity(ctx, id, tt.resumeTime, tt.playDuration)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("SceneStore.SaveActivity() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				if err != nil {
+					return nil
+				}
+
+				assert := assert.New(t)
+
+				// find the scene and check the values
+				scene, err := qb.Find(ctx, id)
+				if err != nil {
+					t.Errorf("SceneStore.Find() error = %v", err)
+				}
+
+				expectedResumeTime := getSceneResumeTime(tt.sceneIdx)
+				expectedPlayDuration := getScenePlayDuration(tt.sceneIdx)
+
+				if tt.resumeTime != nil {
+					expectedResumeTime = *tt.resumeTime
+				}
+				if tt.playDuration != nil {
+					expectedPlayDuration += *tt.playDuration
+				}
+
+				assert.Equal(expectedResumeTime, scene.ResumeTime)
+				assert.Equal(expectedPlayDuration, scene.PlayDuration)
+
+				return nil
+			})
+		})
+	}
+}
+
 // TODO Count
 // TODO SizeCount
