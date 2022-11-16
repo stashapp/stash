@@ -1,6 +1,7 @@
 import queryString, { ParsedQuery } from "query-string";
 import clone from "lodash-es/clone";
 import {
+  ConfigDataFragment,
   FilterMode,
   FindFilterType,
   SortDirectionEnum,
@@ -30,6 +31,7 @@ const DEFAULT_PARAMS = {
 // TODO: handle customCriteria
 export class ListFilterModel {
   public mode: FilterMode;
+  private config: ConfigDataFragment | undefined;
   public searchTerm?: string;
   public currentPage = DEFAULT_PARAMS.currentPage;
   public itemsPerPage = DEFAULT_PARAMS.itemsPerPage;
@@ -43,11 +45,13 @@ export class ListFilterModel {
 
   public constructor(
     mode: FilterMode,
+    config: ConfigDataFragment | undefined,
     defaultSort?: string,
     defaultDisplayMode?: DisplayMode,
     defaultZoomIndex?: number
   ) {
     this.mode = mode;
+    this.config = config;
     this.sortBy = defaultSort;
     if (defaultDisplayMode !== undefined) this.displayMode = defaultDisplayMode;
     if (defaultZoomIndex !== undefined) {
@@ -57,7 +61,7 @@ export class ListFilterModel {
   }
 
   public clone() {
-    return Object.assign(new ListFilterModel(this.mode), this);
+    return Object.assign(new ListFilterModel(this.mode, this.config), this);
   }
 
   // Does not decode any URL-encoding in parameters
@@ -104,7 +108,7 @@ export class ListFilterModel {
       params.c.forEach((jsonString) => {
         try {
           const encodedCriterion = JSON.parse(jsonString);
-          const criterion = makeCriteria(encodedCriterion.type);
+          const criterion = makeCriteria(this.config, encodedCriterion.type);
           // it's possible that we have unsupported criteria. Just skip if so.
           if (criterion) {
             if (encodedCriterion.value !== undefined) {

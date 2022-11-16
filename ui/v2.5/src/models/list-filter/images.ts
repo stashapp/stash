@@ -2,13 +2,13 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
+  NullNumberCriterionOption,
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { ImageIsMissingCriterionOption } from "./criteria/is-missing";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
-import { RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
@@ -32,12 +32,12 @@ const criterionOptions = [
   createStringCriterionOption("title"),
   createMandatoryStringCriterionOption("checksum", "media_info.checksum"),
   createMandatoryStringCriterionOption("path"),
-  RatingCriterionOption,
   OrganizedCriterionOption,
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   ImageIsMissingCriterionOption,
   TagsCriterionOption,
+  new NullNumberCriterionOption("rating", "rating100"),
   createMandatoryNumberCriterionOption("tag_count"),
   PerformerTagsCriterionOption,
   PerformersCriterionOption,

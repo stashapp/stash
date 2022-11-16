@@ -440,7 +440,7 @@ func TestPerformerQueryEthnicityAndRating(t *testing.T) {
 			Modifier: models.CriterionModifierEquals,
 		},
 		And: &models.PerformerFilterType{
-			Rating: &models.IntCriterionInput{
+			Rating100: &models.IntCriterionInput{
 				Value:    performerRating,
 				Modifier: models.CriterionModifierEquals,
 			},
@@ -450,7 +450,10 @@ func TestPerformerQueryEthnicityAndRating(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		performers := queryPerformers(ctx, t, &performerFilter, nil)
 
-		assert.Len(t, performers, 1)
+		if !assert.Len(t, performers, 1) {
+			return nil
+		}
+
 		assert.Equal(t, performerEth, performers[0].Ethnicity)
 		if assert.NotNil(t, performers[0].Rating) {
 			assert.Equal(t, performerRating, *performers[0].Rating)
@@ -478,7 +481,7 @@ func TestPerformerQueryEthnicityNotRating(t *testing.T) {
 	performerFilter := models.PerformerFilterType{
 		Ethnicity: &ethCriterion,
 		Not: &models.PerformerFilterType{
-			Rating: &ratingCriterion,
+			Rating100: &ratingCriterion,
 		},
 	}
 
@@ -1173,35 +1176,79 @@ func TestPerformerStashIDs(t *testing.T) {
 		t.Error(err.Error())
 	}
 }
-func TestPerformerQueryRating(t *testing.T) {
+func TestPerformerQueryLegacyRating(t *testing.T) {
 	const rating = 3
 	ratingCriterion := models.IntCriterionInput{
 		Value:    rating,
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	verifyPerformersRating(t, ratingCriterion)
+	verifyPerformersLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyPerformersRating(t, ratingCriterion)
+	verifyPerformersLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyPerformersRating(t, ratingCriterion)
+	verifyPerformersLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyPerformersRating(t, ratingCriterion)
+	verifyPerformersLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyPerformersRating(t, ratingCriterion)
+	verifyPerformersLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyPerformersRating(t, ratingCriterion)
+	verifyPerformersLegacyRating(t, ratingCriterion)
 }
 
-func verifyPerformersRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+func verifyPerformersLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
 		performerFilter := models.PerformerFilterType{
 			Rating: &ratingCriterion,
+		}
+
+		performers := queryPerformers(ctx, t, &performerFilter, nil)
+
+		// convert criterion value to the 100 value
+		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
+
+		for _, performer := range performers {
+			verifyIntPtr(t, performer.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestPerformerQueryRating100(t *testing.T) {
+	const rating = 60
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformersRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformersRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyPerformersRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyPerformersRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyPerformersRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyPerformersRating100(t, ratingCriterion)
+}
+
+func verifyPerformersRating100(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		performerFilter := models.PerformerFilterType{
+			Rating100: &ratingCriterion,
 		}
 
 		performers := queryPerformers(ctx, t, &performerFilter, nil)

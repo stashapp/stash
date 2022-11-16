@@ -53,13 +53,14 @@ ORDER BY files.size DESC
 `
 
 type sceneRow struct {
-	ID           int                        `db:"id" goqu:"skipinsert"`
-	Title        zero.String                `db:"title"`
-	Code         zero.String                `db:"code"`
-	Details      zero.String                `db:"details"`
-	Director     zero.String                `db:"director"`
-	URL          zero.String                `db:"url"`
-	Date         models.SQLiteDate          `db:"date"`
+	ID       int               `db:"id" goqu:"skipinsert"`
+	Title    zero.String       `db:"title"`
+	Code     zero.String       `db:"code"`
+	Details  zero.String       `db:"details"`
+	Director zero.String       `db:"director"`
+	URL      zero.String       `db:"url"`
+	Date     models.SQLiteDate `db:"date"`
+	// expressed as 1-100
 	Rating       null.Int                   `db:"rating"`
 	Organized    bool                       `db:"organized"`
 	OCounter     int                        `db:"o_counter"`
@@ -861,7 +862,9 @@ func (qb *SceneStore) makeFilter(ctx context.Context, sceneFilter *models.SceneF
 		}
 	}))
 
-	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating, "scenes.rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.Rating100, "scenes.rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(sceneFilter.Rating, "scenes.rating", nil))
 	query.handleCriterion(ctx, intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(sceneFilter.Organized, "scenes.organized", nil))
 

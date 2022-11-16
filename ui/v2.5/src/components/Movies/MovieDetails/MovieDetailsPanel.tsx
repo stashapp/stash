@@ -2,7 +2,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { DurationUtils, TextUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { TextField, URLField } from "src/utils/field";
 
 interface IMovieDetailsPanel {
@@ -27,7 +27,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
   }
 
   function renderRatingField() {
-    if (!movie.rating) {
+    if (!movie.rating100) {
       return;
     }
 
@@ -35,7 +35,7 @@ export const MovieDetailsPanel: React.FC<IMovieDetailsPanel> = ({ movie }) => {
       <>
         <dt>{intl.formatMessage({ id: "rating" })}</dt>
         <dd>
-          <RatingStars value={movie.rating} disabled />
+          <RatingSystem value={movie.rating100} disabled />
         </dd>
       </>
     );

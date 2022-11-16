@@ -23,8 +23,10 @@ type GalleryFilterType struct {
 	IsMissing *string `json:"is_missing"`
 	// Filter to include/exclude galleries that were created from zip
 	IsZip *bool `json:"is_zip"`
-	// Filter by rating
+	// Filter by rating expressed as 1-5
 	Rating *IntCriterionInput `json:"rating"`
+	// Filter by rating expressed as 1-100
+	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by organized
 	Organized *bool `json:"organized"`
 	// Filter by average image resolution
@@ -65,6 +67,7 @@ type GalleryUpdateInput struct {
 	Date             *string  `json:"date"`
 	Details          *string  `json:"details"`
 	Rating           *int     `json:"rating"`
+	Rating100        *int     `json:"rating100"`
 	Organized        *bool    `json:"organized"`
 	SceneIds         []string `json:"scene_ids"`
 	StudioID         *string  `json:"studio_id"`

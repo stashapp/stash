@@ -76,9 +76,11 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input MovieCreateInp
 		newMovie.Date = models.SQLiteDate{String: *input.Date, Valid: true}
 	}
 
-	if input.Rating != nil {
-		rating := int64(*input.Rating)
-		newMovie.Rating = sql.NullInt64{Int64: rating, Valid: true}
+	if input.Rating100 != nil {
+		newMovie.Rating = sql.NullInt64{Int64: int64(*input.Rating100), Valid: true}
+	} else if input.Rating != nil {
+		rating := models.Rating5To100(*input.Rating)
+		newMovie.Rating = sql.NullInt64{Int64: int64(rating), Valid: true}
 	}
 
 	if input.StudioID != nil {
@@ -166,7 +168,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input MovieUpdateInp
 	updatedMovie.Aliases = translator.nullString(input.Aliases, "aliases")
 	updatedMovie.Duration = translator.nullInt64(input.Duration, "duration")
 	updatedMovie.Date = translator.sqliteDate(input.Date, "date")
-	updatedMovie.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedMovie.Rating = translator.ratingConversion(input.Rating, input.Rating100)
 	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedMovie.Director = translator.nullString(input.Director, "director")
 	updatedMovie.Synopsis = translator.nullString(input.Synopsis, "synopsis")
@@ -239,7 +241,7 @@ func (r *mutationResolver) BulkMovieUpdate(ctx context.Context, input BulkMovieU
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
 
-	updatedMovie.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedMovie.Rating = translator.ratingConversion(input.Rating, input.Rating100)
 	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedMovie.Director = translator.nullString(input.Director, "director")
 

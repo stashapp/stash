@@ -40,7 +40,7 @@ import queryString from "query-string";
 import { ConfigurationContext } from "src/hooks/Config";
 import { stashboxDisplayName } from "src/utils/stashbox";
 import { SceneMovieTable } from "./SceneMovieTable";
-import { RatingStars } from "./RatingStars";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import {
   faSearch,
   faSyncAlt,
@@ -123,7 +123,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
     director: yup.string().optional().nullable(),
     url: yup.string().optional().nullable(),
     date: yup.string().optional().nullable(),
-    rating: yup.number().optional().nullable(),
+    rating100: yup.number().optional().nullable(),
     gallery_ids: yup.array(yup.string().required()).optional().nullable(),
     studio_id: yup.string().optional().nullable(),
     performer_ids: yup.array(yup.string().required()).optional().nullable(),
@@ -147,7 +147,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
       director: scene.director ?? "",
       url: scene.url ?? "",
       date: scene.date ?? "",
-      rating: scene.rating ?? null,
+      rating100: scene.rating100 ?? null,
       gallery_ids: (scene.galleries ?? []).map((g) => g.id),
       studio_id: scene.studio?.id,
       performer_ids: (scene.performers ?? []).map((p) => p.id),
@@ -171,7 +171,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
   });
 
   function setRating(v: number) {
-    formik.setFieldValue("rating", v);
+    formik.setFieldValue("rating100", v);
   }
 
   interface IGallerySelectValue {
@@ -206,11 +206,11 @@ export const SceneEditPanel: React.FC<IProps> = ({
         }
 
         Mousetrap.bind("0", () => setRating(NaN));
-        Mousetrap.bind("1", () => setRating(1));
-        Mousetrap.bind("2", () => setRating(2));
-        Mousetrap.bind("3", () => setRating(3));
-        Mousetrap.bind("4", () => setRating(4));
-        Mousetrap.bind("5", () => setRating(5));
+        Mousetrap.bind("1", () => setRating(20));
+        Mousetrap.bind("2", () => setRating(40));
+        Mousetrap.bind("3", () => setRating(60));
+        Mousetrap.bind("4", () => setRating(80));
+        Mousetrap.bind("5", () => setRating(100));
 
         setTimeout(() => {
           Mousetrap.unbind("0");
@@ -287,7 +287,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
             input: {
               ...updateValues,
               id: scene.id!,
-              rating: input.rating ?? null,
+              rating100: input.rating100 ?? null,
             },
           },
         });
@@ -799,10 +799,10 @@ export const SceneEditPanel: React.FC<IProps> = ({
                 title: intl.formatMessage({ id: "rating" }),
               })}
               <Col xs={9}>
-                <RatingStars
-                  value={formik.values.rating ?? undefined}
+                <RatingSystem
+                  value={formik.values.rating100 ?? undefined}
                   onSetRating={(value) =>
-                    formik.setFieldValue("rating", value ?? null)
+                    formik.setFieldValue("rating100", value ?? null)
                   }
                 />
               </Col>
