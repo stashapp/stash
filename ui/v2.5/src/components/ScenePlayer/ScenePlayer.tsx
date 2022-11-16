@@ -238,7 +238,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         });
         recordedActivity.current = true;
       }
-      // if video is 98% or more complete then reset the resume index
+      // if video is 98% or more complete then reset resume_time
       if (percentCompleted >= 98) {
         resume_time = 0;
       }
@@ -329,7 +329,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
             if (playDuration > 0) {
               const videoDuration = playerRef.current.duration();
               const percentCompleted = (100 / videoDuration) * resume_time;
-              // if video is 98% or more complete then reset the resume index
+              // if video is 98% or more complete then reset resume_time
               if (percentCompleted >= 98) {
                 resume_time = 0;
               }
@@ -430,7 +430,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         let resume_time = this.currentTime()!;
         const videoDuration = this.duration();
         const percentCompleted = (100 / videoDuration) * resume_time;
-        // if video is 98% or more complete then reset the resume index
+        // if video is 98% or more complete then reset resume_time
         if (percentCompleted >= 98) {
           resume_time = 0;
         }
