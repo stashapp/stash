@@ -42,11 +42,11 @@ export class RatingCriterion extends Criterion<INumberValue> {
       this.modifier === CriterionModifier.Between ||
       this.modifier === CriterionModifier.NotBetween
     ) {
-      return `${convertToRatingFormat(value, this.ratingSystem)}, ${
+      return `${convertToRatingFormat(value, this.ratingSystem) ?? 0}, ${
         convertToRatingFormat(value2, this.ratingSystem) ?? 0
       }`;
     } else {
-      return `${convertToRatingFormat(value, this.ratingSystem)}`;
+      return `${convertToRatingFormat(value, this.ratingSystem) ?? 0}`;
     }
   }
 

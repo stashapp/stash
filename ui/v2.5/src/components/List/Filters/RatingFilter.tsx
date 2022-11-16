@@ -39,11 +39,6 @@ export const RatingFilter: React.FC<IRatingFilterProps> = ({
     criterion.modifier === CriterionModifier.GreaterThan ||
     criterion.modifier === CriterionModifier.LessThan
   ) {
-    // ensure value is set
-    if (!criterion.value.value) {
-      onValueChanged({ value: 100, value2: undefined });
-    }
-
     return getRatingSystem("value");
   }
 
@@ -51,11 +46,6 @@ export const RatingFilter: React.FC<IRatingFilterProps> = ({
     criterion.modifier === CriterionModifier.Between ||
     criterion.modifier === CriterionModifier.NotBetween
   ) {
-    // ensure values are set
-    if (!criterion.value.value || !criterion.value.value2) {
-      onValueChanged({ value: 20, value2: 100 });
-    }
-
     return (
       <div className="rating-filter">
         {getRatingSystem("value")}
