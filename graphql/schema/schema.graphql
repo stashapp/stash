@@ -180,8 +180,8 @@ type Mutation {
   """Sets the resume time point (if provided) and adds the provided duration to the scene's play duration"""
   sceneSaveActivity(id: ID!, resume_time: Float, playDuration: Float): Boolean!
 
-  """Increments the watch count for the scene. Returns the new watch count value."""
-  sceneIncrementWatchCount(id: ID!): Int!
+  """Increments the play count for the scene. Returns the new play count value."""
+  sceneIncrementPlayCount(id: ID!): Int!
 
   """Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"""
   sceneGenerateScreenshot(id: ID!, at: Float): String!

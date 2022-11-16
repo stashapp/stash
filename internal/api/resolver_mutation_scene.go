@@ -874,7 +874,7 @@ func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, res
 	return ret, nil
 }
 
-func (r *mutationResolver) SceneIncrementWatchCount(ctx context.Context, id string) (ret int, err error) {
+func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string) (ret int, err error) {
 	sceneID, err := strconv.Atoi(id)
 	if err != nil {
 		return 0, err

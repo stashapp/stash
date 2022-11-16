@@ -19,7 +19,7 @@ import "./big-buttons";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
-  useSceneIncrementWatchCount,
+  useSceneIncrementPlayCount,
 } from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
@@ -147,7 +147,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const playerRef = useRef<VideoJsPlayer>();
   const sceneId = useRef<string>();
   const [sceneSaveActivity] = useSceneSaveActivity();
-  const [sceneIncrementWatchCount] = useSceneIncrementWatchCount();
+  const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
 
   const [time, setTime] = useState(0);
   const [ready, setReady] = useState(false);
@@ -229,7 +229,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       const percentPlayed = (100 / videoDuration) * playDuration;
       const percentCompleted = (100 / videoDuration) * resume_time;
       if (!recordedActivity.current && percentPlayed >= ignoreInterval) {
-        sceneIncrementWatchCount({
+        sceneIncrementPlayCount({
           variables: {
             id,
           },
@@ -251,7 +251,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, [
     updatePlayDuration,
     ignoreInterval,
-    sceneIncrementWatchCount,
+    sceneIncrementPlayCount,
     sceneSaveActivity,
     trackActivity,
   ]);
@@ -324,18 +324,20 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           if (id) {
             let resume_time = playerRef.current.currentTime()!;
             const playDuration = playDurationRef.current;
-            const videoDuration = playerRef.current.duration();
-            const percentCompleted = (100 / videoDuration) * resume_time;
-            if (percentCompleted >= 98) {
-              resume_time = 0;
+            if (playDuration > 0) {
+              const videoDuration = playerRef.current.duration();
+              const percentCompleted = (100 / videoDuration) * resume_time;
+              if (percentCompleted >= 98) {
+                resume_time = 0;
+              }
+              sceneSaveActivity({
+                variables: {
+                  id,
+                  resume_time,
+                  playDuration,
+                },
+              });
             }
-            sceneSaveActivity({
-              variables: {
-                id,
-                resume_time,
-                playDuration,
-              },
-            });
           }
         }
       }

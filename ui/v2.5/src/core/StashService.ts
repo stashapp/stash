@@ -892,8 +892,8 @@ export const useSceneSaveActivity = () =>
     update: deleteCache(sceneMutationImpactedQueries),
   });
 
-export const useSceneIncrementWatchCount = () =>
-  GQL.useSceneIncrementWatchCountMutation({
+export const useSceneIncrementPlayCount = () =>
+  GQL.useSceneIncrementPlayCountMutation({
     update: deleteCache(sceneMutationImpactedQueries),
   });
 
