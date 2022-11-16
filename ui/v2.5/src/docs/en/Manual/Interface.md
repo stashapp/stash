@@ -28,7 +28,7 @@ The stash UI can be customised using custom CSS. See [here](https://github.com/s
 
 ## Custom Javascript
 
-The stash support the inject of custom javascript. Be aware thet bad Javascript could break the UI.
+Stash supports the injection of custom javascript to assist with theming or adding additional functionality. Be aware that bad Javascript could break the UI or worse.
 
 ## Custom Locales
 
