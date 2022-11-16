@@ -33,6 +33,16 @@ export interface IPHashDuplicationValue {
   distance?: number; // currently not implemented
 }
 
+export interface IDateValue {
+  value: string;
+  value2: string | undefined;
+}
+
+export interface ITimestampValue {
+  value: string;
+  value2: string | undefined;
+}
+
 export function criterionIsHierarchicalLabelValue(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any
@@ -47,6 +57,20 @@ export function criterionIsNumberValue(
   return typeof value === "object" && "value" in value && "value2" in value;
 }
 
+export function criterionIsDateValue(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any
+): value is IDateValue {
+  return typeof value === "object" && "value" in value && "value2" in value;
+}
+
+export function criterionIsTimestampValue(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any
+): value is ITimestampValue {
+  return typeof value === "object" && "value" in value && "value2" in value;
+}
+
 export interface IOptionType {
   id: string;
   name?: string;
@@ -57,6 +81,7 @@ export type CriterionType =
   | "none"
   | "path"
   | "rating"
+  | "rating100"
   | "organized"
   | "o_counter"
   | "resolution"
@@ -88,6 +113,7 @@ export type CriterionType =
   | "hair_color"
   | "eye_color"
   | "height"
+  | "height_cm"
   | "weight"
   | "measurements"
   | "fake_tits"
@@ -124,4 +150,14 @@ export type CriterionType =
   | "performer_age"
   | "duplicated"
   | "ignore_auto_tag"
-  | "file_count";
+  | "file_count"
+  | "date"
+  | "created_at"
+  | "updated_at"
+  | "birthdate"
+  | "death_date"
+  | "scene_date"
+  | "scene_created_at"
+  | "scene_updated_at"
+  | "description"
+  | "scene_code";

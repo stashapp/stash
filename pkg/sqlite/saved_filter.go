@@ -100,7 +100,7 @@ func (qb *savedFilterQueryBuilder) FindMany(ctx context.Context, ids []int, igno
 func (qb *savedFilterQueryBuilder) FindByMode(ctx context.Context, mode models.FilterMode) ([]*models.SavedFilter, error) {
 	// exclude empty-named filters - these are the internal default filters
 
-	query := fmt.Sprintf(`SELECT * FROM %s WHERE mode = ? AND name != ?`, savedFilterTable)
+	query := fmt.Sprintf(`SELECT * FROM %s WHERE mode = ? AND name != ? ORDER BY name ASC`, savedFilterTable)
 
 	var ret models.SavedFilters
 	if err := qb.query(ctx, query, []interface{}{mode, savedFilterDefaultName}, &ret); err != nil {

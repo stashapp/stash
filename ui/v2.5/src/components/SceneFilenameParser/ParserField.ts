@@ -13,7 +13,7 @@ export class ParserField {
 
   static Title = new ParserField("title");
   static Ext = new ParserField("ext", "File extension");
-  static Rating = new ParserField("rating");
+  static Rating = new ParserField("rating100");
 
   static I = new ParserField("i", "Matches any ignored word");
   static D = new ParserField("d", "Matches any delimiter (.-_)");

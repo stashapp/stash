@@ -1,5 +1,5 @@
 import cloneDeep from "lodash-es/cloneDeep";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
@@ -9,6 +9,8 @@ import {
   IHierarchicalLabeledIdCriterion,
   NumberCriterion,
   ILabeledIdCriterion,
+  DateCriterion,
+  TimestampCriterion,
 } from "src/models/list-filter/criteria/criterion";
 import {
   NoneCriterion,
@@ -20,6 +22,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import {
   criterionIsHierarchicalLabelValue,
   criterionIsNumberValue,
+  criterionIsDateValue,
+  criterionIsTimestampValue,
   CriterionType,
 } from "src/models/list-filter/types";
 import { DurationFilter } from "./Filters/DurationFilter";
@@ -28,6 +32,13 @@ import { LabeledIdFilter } from "./Filters/LabeledIdFilter";
 import { HierarchicalLabelValueFilter } from "./Filters/HierarchicalLabelValueFilter";
 import { OptionsFilter } from "./Filters/OptionsFilter";
 import { InputFilter } from "./Filters/InputFilter";
+import { DateFilter } from "./Filters/DateFilter";
+import { TimestampFilter } from "./Filters/TimestampFilter";
+import { CountryCriterion } from "src/models/list-filter/criteria/country";
+import { CountrySelect } from "../Shared";
+import { ConfigurationContext } from "src/hooks/Config";
+import { RatingCriterion } from "../../models/list-filter/criteria/rating";
+import { RatingFilter } from "./Filters/RatingFilter";
 
 interface IAddFilterProps {
   onAddCriterion: (
@@ -55,17 +66,18 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
   const { options, modifierOptions } = criterion.criterionOption;
 
   const valueStage = useRef<CriterionValue>(criterion.value);
+  const { configuration: config } = useContext(ConfigurationContext);
 
   const intl = useIntl();
 
   // Configure if we are editing an existing criterion
   useEffect(() => {
     if (!editingCriterion) {
-      setCriterion(makeCriteria());
+      setCriterion(makeCriteria(config));
     } else {
       setCriterion(editingCriterion);
     }
-  }, [editingCriterion]);
+  }, [config, editingCriterion]);
 
   useEffect(() => {
     valueStage.current = criterion.value;
@@ -73,7 +85,7 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
 
   function onChangedCriteriaType(event: React.ChangeEvent<HTMLSelectElement>) {
     const newCriterionType = event.target.value as CriterionType;
-    const newCriterion = makeCriteria(newCriterionType);
+    const newCriterion = makeCriteria(config, newCriterionType);
     setCriterion(newCriterion);
   }
 
@@ -150,6 +162,8 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
         options &&
         !criterionIsHierarchicalLabelValue(criterion.value) &&
         !criterionIsNumberValue(criterion.value) &&
+        !criterionIsDateValue(criterion.value) &&
+        !criterionIsTimestampValue(criterion.value) &&
         !Array.isArray(criterion.value)
       ) {
         defaultValue.current = criterion.value;
@@ -168,9 +182,43 @@ export const AddFilterDialog: React.FC<IAddFilterProps> = ({
           />
         );
       }
+      if (criterion instanceof DateCriterion) {
+        return (
+          <DateFilter criterion={criterion} onValueChanged={onValueChanged} />
+        );
+      }
+      if (criterion instanceof TimestampCriterion) {
+        return (
+          <TimestampFilter
+            criterion={criterion}
+            onValueChanged={onValueChanged}
+          />
+        );
+      }
       if (criterion instanceof NumberCriterion) {
         return (
           <NumberFilter criterion={criterion} onValueChanged={onValueChanged} />
+        );
+      }
+      if (criterion instanceof RatingCriterion) {
+        return (
+          <RatingFilter
+            criterion={criterion}
+            onValueChanged={onValueChanged}
+            configuration={config}
+          />
+        );
+      }
+      if (
+        criterion instanceof CountryCriterion &&
+        (criterion.modifier === CriterionModifier.Equals ||
+          criterion.modifier === CriterionModifier.NotEquals)
+      ) {
+        return (
+          <CountrySelect
+            value={criterion.value}
+            onChange={(v) => onValueChanged(v)}
+          />
         );
       }
       return (

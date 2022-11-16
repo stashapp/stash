@@ -13,11 +13,14 @@ type PHashDuplicationCriterionInput struct {
 }
 
 type SceneFilterType struct {
-	And     *SceneFilterType      `json:"AND"`
-	Or      *SceneFilterType      `json:"OR"`
-	Not     *SceneFilterType      `json:"NOT"`
-	Title   *StringCriterionInput `json:"title"`
-	Details *StringCriterionInput `json:"details"`
+	And      *SceneFilterType      `json:"AND"`
+	Or       *SceneFilterType      `json:"OR"`
+	Not      *SceneFilterType      `json:"NOT"`
+	ID       *IntCriterionInput    `json:"id"`
+	Title    *StringCriterionInput `json:"title"`
+	Code     *StringCriterionInput `json:"code"`
+	Details  *StringCriterionInput `json:"details"`
+	Director *StringCriterionInput `json:"director"`
 	// Filter by file oshash
 	Oshash *StringCriterionInput `json:"oshash"`
 	// Filter by file checksum
@@ -28,8 +31,10 @@ type SceneFilterType struct {
 	Path *StringCriterionInput `json:"path"`
 	// Filter by file count
 	FileCount *IntCriterionInput `json:"file_count"`
-	// Filter by rating
+	// Filter by rating expressed as 1-5
 	Rating *IntCriterionInput `json:"rating"`
+	// Filter by rating expressed as 1-100
+	Rating100 *IntCriterionInput `json:"rating100"`
 	// Filter by organized
 	Organized *bool `json:"organized"`
 	// Filter by o-counter
@@ -72,6 +77,12 @@ type SceneFilterType struct {
 	InteractiveSpeed *IntCriterionInput `json:"interactive_speed"`
 
 	Captions *StringCriterionInput `json:"captions"`
+	// Filter by date
+	Date *DateCriterionInput `json:"date"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type SceneQueryOptions struct {

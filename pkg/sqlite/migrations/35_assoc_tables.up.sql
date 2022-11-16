@@ -15,7 +15,8 @@ INSERT INTO `performers_image_new`
   SELECT 
     `performer_id`,
     `image`
-  FROM `performers_image`;
+  FROM `performers_image` WHERE
+  `performer_id` IS NOT NULL;
 
 DROP TABLE `performers_image`;
 ALTER TABLE `performers_image_new` rename to `performers_image`;
@@ -38,7 +39,8 @@ INSERT INTO `studios_image_new`
   SELECT 
     `studio_id`,
     `image`
-  FROM `studios_image`;
+  FROM `studios_image` WHERE
+  `studio_id` IS NOT NULL;
 
 DROP TABLE `studios_image`;
 ALTER TABLE `studios_image_new` rename to `studios_image`;
@@ -64,7 +66,8 @@ INSERT INTO `movies_images_new`
     `movie_id`,
     `front_image`,
     `back_image`
-  FROM `movies_images`;
+  FROM `movies_images` WHERE
+  `movie_id` IS NOT NULL;
 
 DROP TABLE `movies_images`;
 ALTER TABLE `movies_images_new` rename to `movies_images`;
@@ -87,7 +90,8 @@ INSERT INTO `tags_image_new`
   SELECT 
     `tag_id`,
     `image`
-  FROM `tags_image`;
+  FROM `tags_image` WHERE
+  `tag_id` IS NOT NULL;
 
 DROP TABLE `tags_image`;
 ALTER TABLE `tags_image_new` rename to `tags_image`;
@@ -112,7 +116,8 @@ INSERT INTO `performers_scenes_new`
   SELECT 
     `performer_id`,
     `scene_id`
-  FROM `performers_scenes` WHERE true
+  FROM `performers_scenes` WHERE 
+  `performer_id` IS NOT NULL AND `scene_id` IS NOT NULL
   ON CONFLICT (`scene_id`, `performer_id`) DO NOTHING;
 
 DROP TABLE `performers_scenes`;
@@ -140,7 +145,8 @@ INSERT INTO `scene_markers_tags_new`
   SELECT 
     `scene_marker_id`,
     `tag_id`
-  FROM `scene_markers_tags` WHERE true
+  FROM `scene_markers_tags` WHERE 
+  `scene_marker_id` IS NOT NULL AND `tag_id` IS NOT NULL
   ON CONFLICT (`scene_marker_id`, `tag_id`) DO NOTHING;
 
 DROP TABLE `scene_markers_tags`;
@@ -168,7 +174,8 @@ INSERT INTO `scenes_tags_new`
   SELECT 
     `scene_id`,
     `tag_id`
-  FROM `scenes_tags` WHERE true
+  FROM `scenes_tags` WHERE 
+  `scene_id` IS NOT NULL AND `tag_id` IS NOT NULL
   ON CONFLICT (`scene_id`, `tag_id`) DO NOTHING;
 
 DROP TABLE `scenes_tags`;
@@ -199,7 +206,8 @@ INSERT INTO `movies_scenes_new`
     `movie_id`,
     `scene_id`,
     `scene_index`
-  FROM `movies_scenes` WHERE true
+  FROM `movies_scenes` WHERE 
+  `movie_id` IS NOT NULL AND `scene_id` IS NOT NULL
   ON CONFLICT (`movie_id`, `scene_id`) DO NOTHING;
 
 DROP TABLE `movies_scenes`;
@@ -225,7 +233,8 @@ INSERT INTO `scenes_cover_new`
   SELECT 
     `scene_id`,
     `cover`
-  FROM `scenes_cover`;
+  FROM `scenes_cover` WHERE
+  `scene_id` IS NOT NULL;
 
 DROP TABLE `scenes_cover`;
 ALTER TABLE `scenes_cover_new` rename to `scenes_cover`;
@@ -250,7 +259,8 @@ INSERT INTO `performers_images_new`
   SELECT 
     `performer_id`,
     `image_id`
-  FROM `performers_images` WHERE true
+  FROM `performers_images` WHERE 
+  `performer_id` IS NOT NULL AND `image_id` IS NOT NULL
   ON CONFLICT (`image_id`, `performer_id`) DO NOTHING;
 
 DROP TABLE `performers_images`;
@@ -278,7 +288,8 @@ INSERT INTO `images_tags_new`
   SELECT 
     `image_id`,
     `tag_id`
-  FROM `images_tags` WHERE true
+  FROM `images_tags` WHERE 
+  `image_id` IS NOT NULL AND `tag_id` IS NOT NULL
   ON CONFLICT (`image_id`, `tag_id`) DO NOTHING;
 
 DROP TABLE `images_tags`;
@@ -308,7 +319,8 @@ INSERT INTO `scene_stash_ids_new`
     `scene_id`,
     `endpoint`,
     `stash_id`
-  FROM `scene_stash_ids`;
+  FROM `scene_stash_ids` WHERE
+  `scene_id` IS NOT NULL AND `endpoint` IS NOT NULL AND `stash_id` IS NOT NULL;
 
 DROP TABLE `scene_stash_ids`;
 ALTER TABLE `scene_stash_ids_new` rename to `scene_stash_ids`;
@@ -333,7 +345,8 @@ INSERT INTO `scenes_galleries_new`
   SELECT 
     `scene_id`,
     `gallery_id`
-  FROM `scenes_galleries` WHERE true
+  FROM `scenes_galleries` WHERE 
+  `scene_id` IS NOT NULL AND `gallery_id` IS NOT NULL
   ON CONFLICT (`scene_id`, `gallery_id`) DO NOTHING;
 
 DROP TABLE `scenes_galleries`;
@@ -361,7 +374,8 @@ INSERT INTO `galleries_images_new`
   SELECT 
     `gallery_id`,
     `image_id`
-  FROM `galleries_images` WHERE true
+  FROM `galleries_images` WHERE 
+  `image_id` IS NOT NULL AND `gallery_id` IS NOT NULL
   ON CONFLICT (`gallery_id`, `image_id`) DO NOTHING;
 
 DROP TABLE `galleries_images`;
@@ -389,7 +403,8 @@ INSERT INTO `performers_galleries_new`
   SELECT 
     `performer_id`,
     `gallery_id`
-  FROM `performers_galleries` WHERE true
+  FROM `performers_galleries` WHERE
+  `performer_id` IS NOT NULL AND `gallery_id` IS NOT NULL
   ON CONFLICT (`gallery_id`, `performer_id`) DO NOTHING;
 
 DROP TABLE `performers_galleries`;
@@ -417,7 +432,8 @@ INSERT INTO `galleries_tags_new`
   SELECT 
     `gallery_id`,
     `tag_id`
-  FROM `galleries_tags` WHERE true
+  FROM `galleries_tags` WHERE 
+  `tag_id` IS NOT NULL AND `gallery_id` IS NOT NULL
   ON CONFLICT (`gallery_id`, `tag_id`) DO NOTHING;
 
 DROP TABLE `galleries_tags`;

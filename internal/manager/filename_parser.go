@@ -26,10 +26,13 @@ type SceneParserInput struct {
 type SceneParserResult struct {
 	Scene        *models.Scene   `json:"scene"`
 	Title        *string         `json:"title"`
+	Code         *string         `json:"code"`
 	Details      *string         `json:"details"`
+	Director     *string         `json:"director"`
 	URL          *string         `json:"url"`
 	Date         *string         `json:"date"`
 	Rating       *int            `json:"rating"`
+	Rating100    *int            `json:"rating100"`
 	StudioID     *string         `json:"studio_id"`
 	GalleryIds   []string        `json:"gallery_ids"`
 	PerformerIds []string        `json:"performer_ids"`
@@ -111,6 +114,7 @@ func initParserFields() {
 
 	ret["d"] = newParserField("d", `(?:\.|-|_)`, false)
 	ret["rating"] = newParserField("rating", `\d`, true)
+	ret["rating100"] = newParserField("rating100", `\d`, true)
 	ret["performer"] = newParserField("performer", ".*", true)
 	ret["studio"] = newParserField("studio", ".*", true)
 	ret["movie"] = newParserField("movie", ".*", true)
@@ -254,6 +258,10 @@ func validateRating(rating int) bool {
 	return rating >= 1 && rating <= 5
 }
 
+func validateRating100(rating100 int) bool {
+	return rating100 >= 1 && rating100 <= 100
+}
+
 func validateDate(dateStr string) bool {
 	splits := strings.Split(dateStr, "-")
 	if len(splits) != 3 {
@@ -345,6 +353,13 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 	case "rating":
 		rating, _ := strconv.Atoi(value.(string))
 		if validateRating(rating) {
+			// convert to 1-100 scale
+			rating = models.Rating5To100(rating)
+			h.result.Rating = &rating
+		}
+	case "rating100":
+		rating, _ := strconv.Atoi(value.(string))
+		if validateRating100(rating) {
 			h.result.Rating = &rating
 		}
 	case "performer":

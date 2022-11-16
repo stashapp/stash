@@ -112,6 +112,14 @@ export function prepareQueryString(
 }
 
 export const parsePath = (filePath: string) => {
+  if (!filePath) {
+    return {
+      paths: [],
+      file: "",
+      ext: "",
+    };
+  }
+
   const path = filePath.toLowerCase();
   const isWin = /^([a-z]:|\\\\)/.test(path);
   const normalizedPath = isWin

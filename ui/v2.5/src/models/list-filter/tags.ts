@@ -4,6 +4,7 @@ import {
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
   MandatoryNumberCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { TagIsMissingCriterionOption } from "./criteria/is-missing";
 import { ListFilterOptions } from "./filter-options";
@@ -44,6 +45,7 @@ const criterionOptions = [
   createMandatoryStringCriterionOption("name"),
   TagIsMissingCriterionOption,
   createStringCriterionOption("aliases"),
+  createStringCriterionOption("description"),
   createBooleanCriterionOption("ignore_auto_tag"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
@@ -62,6 +64,8 @@ const criterionOptions = [
     "child_tag_count",
     "child_count"
   ),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 
 export const TagListFilterOptions = new ListFilterOptions(

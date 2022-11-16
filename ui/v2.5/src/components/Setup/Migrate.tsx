@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button, Card, Container, Form } from "react-bootstrap";
 import { useIntl, FormattedMessage } from "react-intl";
+import { getBaseURL } from "src/core/createClient";
 import * as GQL from "src/core/generated-graphql";
 import { useSystemStatus, mutateMigrate } from "src/core/StashService";
 import { migrationNotes } from "src/docs/en/MigrationNotes";
@@ -115,7 +116,7 @@ export const Migrate: React.FC = () => {
         backupPath: backupPath ?? "",
       });
 
-      const newURL = new URL("/", window.location.toString());
+      const newURL = new URL("", window.location.origin + getBaseURL());
       window.location.href = newURL.toString();
     } catch (e) {
       if (e instanceof Error) setMigrateError(e.message ?? e.toString());

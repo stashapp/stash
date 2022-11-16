@@ -39,8 +39,10 @@ type TagFinder interface {
 func ToBasicJSON(ctx context.Context, reader CoverGetter, scene *models.Scene) (*jsonschema.Scene, error) {
 	newSceneJSON := jsonschema.Scene{
 		Title:     scene.Title,
+		Code:      scene.Code,
 		URL:       scene.URL,
 		Details:   scene.Details,
+		Director:  scene.Director,
 		CreatedAt: json.JSONTime{Time: scene.CreatedAt},
 		UpdatedAt: json.JSONTime{Time: scene.UpdatedAt},
 	}

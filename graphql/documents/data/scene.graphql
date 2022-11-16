@@ -1,10 +1,12 @@
 fragment SceneData on Scene {
   id
   title
+  code
   details
+  director
   url
   date
-  rating
+  rating100
   o_counter
   organized
   interactive
@@ -26,7 +28,6 @@ fragment SceneData on Scene {
     stream
     webp
     vtt
-    chapters_vtt
     sprite
     funscript
     interactive_heatmap

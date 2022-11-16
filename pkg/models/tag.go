@@ -10,6 +10,8 @@ type TagFilterType struct {
 	Name *StringCriterionInput `json:"name"`
 	// Filter by tag aliases
 	Aliases *StringCriterionInput `json:"aliases"`
+	// Filter by tag description
+	Description *StringCriterionInput `json:"description"`
 	// Filter to only include tags missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter by number of scenes with this tag
@@ -32,6 +34,10 @@ type TagFilterType struct {
 	ChildCount *IntCriterionInput `json:"child_count"`
 	// Filter by autotag ignore value
 	IgnoreAutoTag *bool `json:"ignore_auto_tag"`
+	// Filter by created at
+	CreatedAt *TimestampCriterionInput `json:"created_at"`
+	// Filter by updated at
+	UpdatedAt *TimestampCriterionInput `json:"updated_at"`
 }
 
 type TagFinder interface {

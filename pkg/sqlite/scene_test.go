@@ -73,9 +73,11 @@ func loadSceneRelationships(ctx context.Context, expected models.Scene, actual *
 func Test_sceneQueryBuilder_Create(t *testing.T) {
 	var (
 		title       = "title"
+		code        = "1337"
 		details     = "details"
+		director    = "director"
 		url         = "url"
-		rating      = 3
+		rating      = 60
 		ocounter    = 5
 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -100,7 +102,9 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 			"full",
 			models.Scene{
 				Title:        title,
+				Code:         code,
 				Details:      details,
+				Director:     director,
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
@@ -139,7 +143,9 @@ func Test_sceneQueryBuilder_Create(t *testing.T) {
 			"with file",
 			models.Scene{
 				Title:     title,
+				Code:      code,
 				Details:   details,
+				Director:  director,
 				URL:       url,
 				Date:      &date,
 				Rating:    &rating,
@@ -294,9 +300,11 @@ func makeSceneFileWithID(i int) *file.VideoFile {
 func Test_sceneQueryBuilder_Update(t *testing.T) {
 	var (
 		title       = "title"
+		code        = "1337"
 		details     = "details"
+		director    = "director"
 		url         = "url"
-		rating      = 3
+		rating      = 60
 		ocounter    = 5
 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -320,7 +328,9 @@ func Test_sceneQueryBuilder_Update(t *testing.T) {
 			&models.Scene{
 				ID:           sceneIDs[sceneIdxWithGallery],
 				Title:        title,
+				Code:         code,
 				Details:      details,
+				Director:     director,
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
@@ -481,7 +491,9 @@ func clearScenePartial() models.ScenePartial {
 	// leave mandatory fields
 	return models.ScenePartial{
 		Title:        models.OptionalString{Set: true, Null: true},
+		Code:         models.OptionalString{Set: true, Null: true},
 		Details:      models.OptionalString{Set: true, Null: true},
+		Director:     models.OptionalString{Set: true, Null: true},
 		URL:          models.OptionalString{Set: true, Null: true},
 		Date:         models.OptionalDate{Set: true, Null: true},
 		Rating:       models.OptionalInt{Set: true, Null: true},
@@ -496,9 +508,11 @@ func clearScenePartial() models.ScenePartial {
 func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 	var (
 		title       = "title"
+		code        = "1337"
 		details     = "details"
+		director    = "director"
 		url         = "url"
-		rating      = 3
+		rating      = 60
 		ocounter    = 5
 		createdAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
 		updatedAt   = time.Date(2001, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -524,7 +538,9 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 			sceneIDs[sceneIdxWithSpacedName],
 			models.ScenePartial{
 				Title:     models.NewOptionalString(title),
+				Code:      models.NewOptionalString(code),
 				Details:   models.NewOptionalString(details),
+				Director:  models.NewOptionalString(director),
 				URL:       models.NewOptionalString(url),
 				Date:      models.NewOptionalDate(date),
 				Rating:    models.NewOptionalInt(rating),
@@ -578,7 +594,9 @@ func Test_sceneQueryBuilder_UpdatePartial(t *testing.T) {
 					makeSceneFile(sceneIdxWithSpacedName),
 				}),
 				Title:        title,
+				Code:         code,
 				Details:      details,
+				Director:     director,
 				URL:          url,
 				Date:         &date,
 				Rating:       &rating,
@@ -2098,42 +2116,6 @@ func TestSceneQueryPath(t *testing.T) {
 			[]int{otherSceneIdx},
 		},
 		{
-			"equals folder name",
-			models.StringCriterionInput{
-				Value:    folder,
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
-			"equals folder name trailing slash",
-			models.StringCriterionInput{
-				Value:    folder + string(filepath.Separator),
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
-			"equals base name",
-			models.StringCriterionInput{
-				Value:    basename,
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
-			"equals base name leading slash",
-			models.StringCriterionInput{
-				Value:    string(filepath.Separator) + basename,
-				Modifier: models.CriterionModifierEquals,
-			},
-			[]int{sceneIdx},
-			nil,
-		},
-		{
 			"equals full path wildcard",
 			models.StringCriterionInput{
 				Value:    filepath.Join(folder, "scene_0001_%"),
@@ -2149,24 +2131,6 @@ func TestSceneQueryPath(t *testing.T) {
 				Modifier: models.CriterionModifierNotEquals,
 			},
 			[]int{otherSceneIdx},
-			[]int{sceneIdx},
-		},
-		{
-			"not equals folder name",
-			models.StringCriterionInput{
-				Value:    folder,
-				Modifier: models.CriterionModifierNotEquals,
-			},
-			nil,
-			[]int{sceneIdx},
-		},
-		{
-			"not equals basename",
-			models.StringCriterionInput{
-				Value:    basename,
-				Modifier: models.CriterionModifierNotEquals,
-			},
-			nil,
 			[]int{sceneIdx},
 		},
 		{
@@ -2331,7 +2295,7 @@ func TestSceneQueryPathAndRating(t *testing.T) {
 			Modifier: models.CriterionModifierEquals,
 		},
 		And: &models.SceneFilterType{
-			Rating: &models.IntCriterionInput{
+			Rating100: &models.IntCriterionInput{
 				Value:    sceneRating,
 				Modifier: models.CriterionModifierEquals,
 			},
@@ -2371,7 +2335,7 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 	sceneFilter := models.SceneFilterType{
 		Path: &pathCriterion,
 		Not: &models.SceneFilterType{
-			Rating: &ratingCriterion,
+			Rating100: &ratingCriterion,
 		},
 	}
 
@@ -2558,29 +2522,74 @@ func TestSceneQueryRating(t *testing.T) {
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierLessThan
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierIsNull
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 
 	ratingCriterion.Modifier = models.CriterionModifierNotNull
-	verifyScenesRating(t, ratingCriterion)
+	verifyScenesLegacyRating(t, ratingCriterion)
 }
 
-func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+func verifyScenesLegacyRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
 	withTxn(func(ctx context.Context) error {
 		sqb := db.Scene
 		sceneFilter := models.SceneFilterType{
 			Rating: &ratingCriterion,
+		}
+
+		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
+
+		// convert criterion value to the 100 value
+		ratingCriterion.Value = models.Rating5To100(ratingCriterion.Value)
+
+		for _, scene := range scenes {
+			verifyIntPtr(t, scene.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
+func TestSceneQueryRating100(t *testing.T) {
+	const rating = 60
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyScenesRating100(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyScenesRating100(t, ratingCriterion)
+}
+
+func verifyScenesRating100(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	withTxn(func(ctx context.Context) error {
+		sqb := db.Scene
+		sceneFilter := models.SceneFilterType{
+			Rating100: &ratingCriterion,
 		}
 
 		scenes := queryScene(ctx, t, sqb, &sceneFilter, nil)
@@ -4111,6 +4120,48 @@ func TestSceneStore_FindDuplicates(t *testing.T) {
 
 		return nil
 	})
+}
+
+func TestSceneStore_AssignFiles(t *testing.T) {
+	tests := []struct {
+		name    string
+		sceneID int
+		fileID  file.ID
+		wantErr bool
+	}{
+		{
+			"valid",
+			sceneIDs[sceneIdx1WithPerformer],
+			sceneFileIDs[sceneIdx1WithStudio],
+			false,
+		},
+		{
+			"invalid file id",
+			sceneIDs[sceneIdx1WithPerformer],
+			invalidFileID,
+			true,
+		},
+		{
+			"invalid scene id",
+			invalidID,
+			sceneFileIDs[sceneIdx1WithStudio],
+			true,
+		},
+	}
+
+	qb := db.Scene
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			withRollbackTxn(func(ctx context.Context) error {
+				if err := qb.AssignFiles(ctx, tt.sceneID, []file.ID{tt.fileID}); (err != nil) != tt.wantErr {
+					t.Errorf("SceneStore.AssignFiles() error = %v, wantErr %v", err, tt.wantErr)
+				}
+
+				return nil
+			})
+		})
+	}
 }
 
 // TODO Count

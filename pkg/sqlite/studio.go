@@ -234,7 +234,9 @@ func (qb *studioQueryBuilder) makeFilter(ctx context.Context, studioFilter *mode
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Name, studioTable+".name"))
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.Details, studioTable+".details"))
 	query.handleCriterion(ctx, stringCriterionHandler(studioFilter.URL, studioTable+".url"))
-	query.handleCriterion(ctx, intCriterionHandler(studioFilter.Rating, studioTable+".rating", nil))
+	query.handleCriterion(ctx, intCriterionHandler(studioFilter.Rating100, studioTable+".rating", nil))
+	// legacy rating handler
+	query.handleCriterion(ctx, rating5CriterionHandler(studioFilter.Rating, studioTable+".rating", nil))
 	query.handleCriterion(ctx, boolCriterionHandler(studioFilter.IgnoreAutoTag, studioTable+".ignore_auto_tag", nil))
 
 	query.handleCriterion(ctx, criterionHandlerFunc(func(ctx context.Context, f *filterBuilder) {
@@ -250,6 +252,8 @@ func (qb *studioQueryBuilder) makeFilter(ctx context.Context, studioFilter *mode
 	query.handleCriterion(ctx, studioGalleryCountCriterionHandler(qb, studioFilter.GalleryCount))
 	query.handleCriterion(ctx, studioParentCriterionHandler(qb, studioFilter.Parents))
 	query.handleCriterion(ctx, studioAliasCriterionHandler(qb, studioFilter.Aliases))
+	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.CreatedAt, "studios.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(studioFilter.UpdatedAt, "studios.updated_at"))
 
 	return query
 }

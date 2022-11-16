@@ -2,6 +2,7 @@ package manager
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/stashapp/stash/internal/manager/config"
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -58,22 +59,27 @@ type SceneStreamEndpoint struct {
 	Label    *string `json:"label"`
 }
 
-func makeStreamEndpoint(streamURL string, streamingResolution models.StreamingResolutionEnum, mimeType, label string) *SceneStreamEndpoint {
+func makeStreamEndpoint(streamURL *url.URL, streamingResolution models.StreamingResolutionEnum, mimeType, label string) *SceneStreamEndpoint {
+	urlCopy := *streamURL
+	v := urlCopy.Query()
+	v.Set("resolution", streamingResolution.String())
+	urlCopy.RawQuery = v.Encode()
+
 	return &SceneStreamEndpoint{
-		URL:      fmt.Sprintf("%s?resolution=%s", streamURL, streamingResolution.String()),
+		URL:      urlCopy.String(),
 		MimeType: &mimeType,
 		Label:    &label,
 	}
 }
 
-func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreamingTranscodeSize models.StreamingResolutionEnum) ([]*SceneStreamEndpoint, error) {
+func GetSceneStreamPaths(scene *models.Scene, directStreamURL *url.URL, maxStreamingTranscodeSize models.StreamingResolutionEnum) ([]*SceneStreamEndpoint, error) {
 	if scene == nil {
 		return nil, fmt.Errorf("nil scene")
 	}
 
 	pf := scene.Files.Primary()
 	if pf == nil {
-		return nil, fmt.Errorf("nil file")
+		return nil, nil
 	}
 
 	var ret []*SceneStreamEndpoint
@@ -93,10 +99,16 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	// don't care if we can't get the container
 	container, _ := GetVideoFileContainer(pf)
 
+	replaceSuffix := func(suffix string) *url.URL {
+		urlCopy := *directStreamURL
+		urlCopy.Path += suffix
+		return &urlCopy
+	}
+
 	if HasTranscode(scene, config.GetInstance().GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
 		label := "Direct stream"
 		ret = append(ret, &SceneStreamEndpoint{
-			URL:      directStreamURL,
+			URL:      directStreamURL.String(),
 			MimeType: &mimeMp4,
 			Label:    &label,
 		})
@@ -106,7 +118,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	if container == ffmpeg.Matroska {
 		label := "mkv"
 		ret = append(ret, &SceneStreamEndpoint{
-			URL: directStreamURL + ".mkv",
+			URL: replaceSuffix(".mkv").String(),
 			// set mkv to mp4 to trick the client, since many clients won't try mkv
 			MimeType: &mimeMp4,
 			Label:    &label,
@@ -131,8 +143,8 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	var webmStreams []*SceneStreamEndpoint
 	var mp4Streams []*SceneStreamEndpoint
 
-	webmURL := directStreamURL + ".webm"
-	mp4URL := directStreamURL + ".mp4"
+	webmURL := replaceSuffix(".webm")
+	mp4URL := replaceSuffix(".mp4")
 
 	if includeSceneStreamPath(pf, models.StreamingResolutionEnumFourK, maxStreamingTranscodeSize) {
 		webmStreams = append(webmStreams, makeStreamEndpoint(webmURL, models.StreamingResolutionEnumFourK, mimeMp4, webmLabelFourK))
@@ -164,7 +176,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 
 	defaultStreams := []*SceneStreamEndpoint{
 		{
-			URL:      directStreamURL + ".webm",
+			URL:      replaceSuffix(".webm").String(),
 			MimeType: &mimeWebm,
 			Label:    &labelWebm,
 		},
@@ -173,7 +185,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string, maxStreami
 	ret = append(ret, defaultStreams...)
 
 	hls := SceneStreamEndpoint{
-		URL:      directStreamURL + ".m3u8",
+		URL:      replaceSuffix(".m3u8").String(),
 		MimeType: &mimeHLS,
 		Label:    &labelHLS,
 	}

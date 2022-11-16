@@ -13,7 +13,7 @@ fragment SlimPerformerData on Performer {
   ethnicity
   hair_color
   eye_color
-  height
+  height_cm
   fake_tits
   career_length
   tattoos
@@ -26,7 +26,7 @@ fragment SlimPerformerData on Performer {
     endpoint
     stash_id
   }
-  rating
+  rating100
   death_date
   weight
 }

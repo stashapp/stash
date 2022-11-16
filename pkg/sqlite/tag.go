@@ -324,6 +324,8 @@ func (qb *tagQueryBuilder) makeFilter(ctx context.Context, tagFilter *models.Tag
 
 	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Name, tagTable+".name"))
 	query.handleCriterion(ctx, tagAliasCriterionHandler(qb, tagFilter.Aliases))
+
+	query.handleCriterion(ctx, stringCriterionHandler(tagFilter.Description, tagTable+".description"))
 	query.handleCriterion(ctx, boolCriterionHandler(tagFilter.IgnoreAutoTag, tagTable+".ignore_auto_tag", nil))
 
 	query.handleCriterion(ctx, tagIsMissingCriterionHandler(qb, tagFilter.IsMissing))
@@ -336,6 +338,8 @@ func (qb *tagQueryBuilder) makeFilter(ctx context.Context, tagFilter *models.Tag
 	query.handleCriterion(ctx, tagChildrenCriterionHandler(qb, tagFilter.Children))
 	query.handleCriterion(ctx, tagParentCountCriterionHandler(qb, tagFilter.ParentCount))
 	query.handleCriterion(ctx, tagChildCountCriterionHandler(qb, tagFilter.ChildCount))
+	query.handleCriterion(ctx, timestampCriterionHandler(tagFilter.CreatedAt, "tags.created_at"))
+	query.handleCriterion(ctx, timestampCriterionHandler(tagFilter.UpdatedAt, "tags.updated_at"))
 
 	return query
 }
@@ -600,7 +604,7 @@ func (qb *tagQueryBuilder) getTagSort(query *queryBuilder, findFilter *models.Fi
 		case "scenes_count":
 			return getCountSort(tagTable, scenesTagsTable, tagIDColumn, direction)
 		case "scene_markers_count":
-			return getCountSort(tagTable, "scene_markers_tags", tagIDColumn, direction)
+			return fmt.Sprintf(" ORDER BY (SELECT COUNT(*) FROM scene_markers_tags WHERE tags.id = scene_markers_tags.tag_id)+(SELECT COUNT(*) FROM scene_markers WHERE tags.id = scene_markers.primary_tag_id) %s", getSortDirection(direction))
 		case "images_count":
 			return getCountSort(tagTable, imagesTagsTable, tagIDColumn, direction)
 		case "galleries_count":

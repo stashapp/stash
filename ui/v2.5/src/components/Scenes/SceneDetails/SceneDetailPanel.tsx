@@ -7,7 +7,7 @@ import { TagLink } from "src/components/Shared/TagLink";
 import TruncatedText from "src/components/Shared/TruncatedText";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { sortPerformers } from "src/core/performers";
-import { RatingStars } from "./RatingStars";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { objectTitle } from "src/core/files";
 
 interface ISceneDetailProps {
@@ -27,7 +27,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     return (
       <>
         <h6>
-          <FormattedMessage id="details" />
+          <FormattedMessage id="details" />:{" "}
         </h6>
         <p className="pre">{props.scene.details}</p>
       </>
@@ -99,10 +99,10 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
               />
             </h5>
           ) : undefined}
-          {props.scene.rating ? (
+          {props.scene.rating100 ? (
             <h6>
               <FormattedMessage id="rating" />:{" "}
-              <RatingStars value={props.scene.rating} />
+              <RatingSystem value={props.scene.rating100} disabled />
             </h6>
           ) : (
             ""
@@ -121,6 +121,16 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <FormattedMessage id="updated_at" />:{" "}
             {TextUtils.formatDateTime(intl, props.scene.updated_at)}{" "}
           </h6>
+          {props.scene.code && (
+            <h6>
+              <FormattedMessage id="scene_code" />: {props.scene.code}{" "}
+            </h6>
+          )}
+          {props.scene.director && (
+            <h6>
+              <FormattedMessage id="director" />: {props.scene.director}{" "}
+            </h6>
+          )}
         </div>
         {props.scene.studio && (
           <div className="col-3 d-xl-none">

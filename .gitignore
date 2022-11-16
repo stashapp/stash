@@ -23,6 +23,12 @@ ui/v2.5/src/core/generated-*.tsx
 # Jetbrains
 ####
 
+
+####
+# Visual Studio
+####
+/.vs
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml

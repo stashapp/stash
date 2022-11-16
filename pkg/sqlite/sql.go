@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -178,7 +179,77 @@ func getIntWhereClause(column string, modifier models.CriterionModifier, value i
 		return fmt.Sprintf("%s > ?", column), args
 	}
 
-	panic("unsupported int modifier type")
+	panic("unsupported int modifier type " + modifier)
+}
+
+func getDateCriterionWhereClause(column string, input models.DateCriterionInput) (string, []interface{}) {
+	return getDateWhereClause(column, input.Modifier, input.Value, input.Value2)
+}
+
+func getDateWhereClause(column string, modifier models.CriterionModifier, value string, upper *string) (string, []interface{}) {
+	if upper == nil {
+		u := time.Now().AddDate(0, 0, 1).Format(time.RFC3339)
+		upper = &u
+	}
+
+	args := []interface{}{value}
+	betweenArgs := []interface{}{value, *upper}
+
+	switch modifier {
+	case models.CriterionModifierIsNull:
+		return fmt.Sprintf("(%s IS NULL OR %s = '')", column, column), nil
+	case models.CriterionModifierNotNull:
+		return fmt.Sprintf("(%s IS NOT NULL AND %s != '')", column, column), nil
+	case models.CriterionModifierEquals:
+		return fmt.Sprintf("%s = ?", column), args
+	case models.CriterionModifierNotEquals:
+		return fmt.Sprintf("%s != ?", column), args
+	case models.CriterionModifierBetween:
+		return fmt.Sprintf("%s BETWEEN ? AND ?", column), betweenArgs
+	case models.CriterionModifierNotBetween:
+		return fmt.Sprintf("%s NOT BETWEEN ? AND ?", column), betweenArgs
+	case models.CriterionModifierLessThan:
+		return fmt.Sprintf("%s < ?", column), args
+	case models.CriterionModifierGreaterThan:
+		return fmt.Sprintf("%s > ?", column), args
+	}
+
+	panic("unsupported date modifier type")
+}
+
+func getTimestampCriterionWhereClause(column string, input models.TimestampCriterionInput) (string, []interface{}) {
+	return getTimestampWhereClause(column, input.Modifier, input.Value, input.Value2)
+}
+
+func getTimestampWhereClause(column string, modifier models.CriterionModifier, value string, upper *string) (string, []interface{}) {
+	if upper == nil {
+		u := time.Now().AddDate(0, 0, 1).Format(time.RFC3339)
+		upper = &u
+	}
+
+	args := []interface{}{value}
+	betweenArgs := []interface{}{value, *upper}
+
+	switch modifier {
+	case models.CriterionModifierIsNull:
+		return fmt.Sprintf("%s IS NULL", column), nil
+	case models.CriterionModifierNotNull:
+		return fmt.Sprintf("%s IS NOT NULL", column), nil
+	case models.CriterionModifierEquals:
+		return fmt.Sprintf("%s = ?", column), args
+	case models.CriterionModifierNotEquals:
+		return fmt.Sprintf("%s != ?", column), args
+	case models.CriterionModifierBetween:
+		return fmt.Sprintf("%s BETWEEN ? AND ?", column), betweenArgs
+	case models.CriterionModifierNotBetween:
+		return fmt.Sprintf("%s NOT BETWEEN ? AND ?", column), betweenArgs
+	case models.CriterionModifierLessThan:
+		return fmt.Sprintf("%s < ?", column), args
+	case models.CriterionModifierGreaterThan:
+		return fmt.Sprintf("%s > ?", column), args
+	}
+
+	panic("unsupported date modifier type")
 }
 
 // returns where clause and having clause

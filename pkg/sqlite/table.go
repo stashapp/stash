@@ -529,6 +529,17 @@ func (t *relatedFilesTable) replaceJoins(ctx context.Context, id int, fileIDs []
 	return t.insertJoins(ctx, id, firstPrimary, fileIDs)
 }
 
+// destroyJoins destroys all entries in the table with the provided fileIDs
+func (t *relatedFilesTable) destroyJoins(ctx context.Context, fileIDs []file.ID) error {
+	q := dialect.Delete(t.table.table).Where(t.table.table.Col("file_id").In(fileIDs))
+
+	if _, err := exec(ctx, q); err != nil {
+		return fmt.Errorf("destroying file joins in %s: %w", t.table.table.GetTable(), err)
+	}
+
+	return nil
+}
+
 func (t *relatedFilesTable) setPrimary(ctx context.Context, id int, fileID file.ID) error {
 	table := t.table.table
 

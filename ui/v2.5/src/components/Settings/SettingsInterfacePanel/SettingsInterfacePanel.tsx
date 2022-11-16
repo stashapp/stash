@@ -24,6 +24,15 @@ import {
   connectionStateLabel,
   InteractiveContext,
 } from "src/hooks/Interactive/context";
+import {
+  defaultRatingStarPrecision,
+  defaultRatingSystemOptions,
+  defaultRatingSystemType,
+  RatingStarPrecision,
+  ratingStarPrecisionIntlMap,
+  ratingSystemIntlMap,
+  RatingSystemType,
+} from "src/utils/rating";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -80,6 +89,24 @@ export const SettingsInterfacePanel: React.FC = () => {
     });
   }
 
+  function saveRatingSystemType(t: RatingSystemType) {
+    saveUI({
+      ratingSystemOptions: {
+        ...ui.ratingSystemOptions,
+        type: t,
+      },
+    });
+  }
+
+  function saveRatingSystemStarPrecision(p: RatingStarPrecision) {
+    saveUI({
+      ratingSystemOptions: {
+        ...(ui.ratingSystemOptions ?? defaultRatingSystemOptions),
+        starPrecision: p,
+      },
+    });
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (loading) return <LoadingIndicator />;
 
@@ -110,6 +137,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="ru-RU">Русский (Россия) (Preview)</option>
           <option value="sv-SE">Svenska</option>
           <option value="tr-TR">Türkçe (Türkiye)</option>
+          <option value="uk-UA">Ukrainian</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>
@@ -414,6 +442,42 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
         </div>
+        <SelectSetting
+          id="rating_system"
+          headingID="config.ui.editing.rating_system.type.label"
+          value={ui.ratingSystemOptions?.type ?? defaultRatingSystemType}
+          onChange={(v) => saveRatingSystemType(v as RatingSystemType)}
+        >
+          {Array.from(ratingSystemIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
+        {(ui.ratingSystemOptions?.type ?? defaultRatingSystemType) ===
+          RatingSystemType.Stars && (
+          <SelectSetting
+            id="rating_system_star_precision"
+            headingID="config.ui.editing.rating_system.star_precision.label"
+            value={
+              ui.ratingSystemOptions?.starPrecision ??
+              defaultRatingStarPrecision
+            }
+            onChange={(v) =>
+              saveRatingSystemStarPrecision(v as RatingStarPrecision)
+            }
+          >
+            {Array.from(ratingStarPrecisionIntlMap.entries()).map((v) => (
+              <option key={v[0]} value={v[0]}>
+                {intl.formatMessage({
+                  id: v[1],
+                })}
+              </option>
+            ))}
+          </SelectSetting>
+        )}
       </SettingSection>
 
       <SettingSection headingID="config.ui.custom_css.heading">

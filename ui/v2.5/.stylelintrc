@@ -61,7 +61,7 @@
     "no-descending-specificity": null,
     "no-invalid-double-slash-comments": true,
     "no-missing-end-of-source-newline": true,
-    "number-max-precision": 2,
+    "number-max-precision": 3,
     "number-no-trailing-zeros": true,
     "order/order": [
       "custom-properties",

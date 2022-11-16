@@ -1,10 +1,12 @@
 fragment SlimSceneData on Scene {
   id
   title
+  code
   details
+  director
   url
   date
-  rating
+  rating100
   o_counter
   organized
   interactive
@@ -20,7 +22,6 @@ fragment SlimSceneData on Scene {
     stream
     webp
     vtt
-    chapters_vtt
     sprite
     funscript
     interactive_heatmap
@@ -31,6 +32,10 @@ fragment SlimSceneData on Scene {
     id
     title
     seconds
+    primary_tag {
+      id
+      name
+    }
   }
 
   galleries {

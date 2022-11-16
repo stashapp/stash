@@ -147,7 +147,7 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 	performerReaderWriter.On("FindByNames", testCtx, []string{existingPerformerName}, false).Return([]*models.Performer{
 		{
 			ID:   existingPerformerID,
-			Name: models.NullString(existingPerformerName),
+			Name: existingPerformerName,
 		},
 	}, nil).Once()
 	performerReaderWriter.On("FindByNames", testCtx, []string{existingPerformerErr}, false).Return(nil, errors.New("FindByNames error")).Once()
@@ -177,9 +177,10 @@ func TestImporterPreImportWithMissingPerformer(t *testing.T) {
 	}
 
 	performerReaderWriter.On("FindByNames", testCtx, []string{missingPerformerName}, false).Return(nil, nil).Times(3)
-	performerReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Performer")).Return(&models.Performer{
-		ID: existingPerformerID,
-	}, nil)
+	performerReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Performer")).Run(func(args mock.Arguments) {
+		p := args.Get(1).(*models.Performer)
+		p.ID = existingPerformerID
+	}).Return(nil)
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)
@@ -210,7 +211,7 @@ func TestImporterPreImportWithMissingPerformerCreateErr(t *testing.T) {
 	}
 
 	performerReaderWriter.On("FindByNames", testCtx, []string{missingPerformerName}, false).Return(nil, nil).Once()
-	performerReaderWriter.On("Create", testCtx, mock.AnythingOfType("models.Performer")).Return(nil, errors.New("Create error"))
+	performerReaderWriter.On("Create", testCtx, mock.AnythingOfType("*models.Performer")).Return(errors.New("Create error"))
 
 	err := i.PreImport(testCtx)
 	assert.NotNil(t, err)

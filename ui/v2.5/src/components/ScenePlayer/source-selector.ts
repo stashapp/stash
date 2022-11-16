@@ -1,42 +1,70 @@
 import videojs, { VideoJsPlayer } from "video.js";
 
-interface ISource extends videojs.Tech.SourceObject {
+export interface ISource extends videojs.Tech.SourceObject {
   label?: string;
-  selected?: boolean;
-  sortIndex?: number;
 }
 
-const MenuButton = videojs.getComponent("MenuButton");
-const MenuItem = videojs.getComponent("MenuItem");
-
-class SourceMenuItem extends MenuItem {
-  private parent: SourceMenuButton;
+class SourceMenuItem extends videojs.getComponent("MenuItem") {
   public source: ISource;
-  public index: number;
+  public isSelected = false;
 
-  constructor(
-    parent: SourceMenuButton,
-    source: ISource,
-    index: number,
-    player: VideoJsPlayer,
-    options: videojs.MenuItemOptions
-  ) {
+  constructor(parent: SourceMenuButton, source: ISource) {
+    const options = {} as videojs.MenuItemOptions;
     options.selectable = true;
     options.multiSelectable = false;
+    options.label = source.label || source.type;
 
-    super(player, options);
+    super(parent.player(), options);
 
-    this.parent = parent;
     this.source = source;
-    this.index = index;
+
+    this.addClass("vjs-source-menu-item");
+  }
+
+  selected(selected: boolean): void {
+    super.selected(selected);
+    this.isSelected = selected;
   }
 
   handleClick() {
-    this.parent.trigger("selected", this);
+    if (this.isSelected) return;
+
+    this.trigger("selected");
   }
 }
 
-class SourceMenuButton extends MenuButton {
+class SourceMenuButton extends videojs.getComponent("MenuButton") {
+  private items: SourceMenuItem[] = [];
+  private selectedSource: ISource | null = null;
+
+  constructor(player: VideoJsPlayer) {
+    super(player);
+
+    player.on("loadstart", () => {
+      this.update();
+    });
+  }
+
+  public setSources(sources: ISource[]) {
+    this.selectedSource = null;
+
+    this.items = sources.map((source, i) => {
+      if (i === 0) {
+        this.selectedSource = source;
+      }
+
+      const item = new SourceMenuItem(this, source);
+
+      item.on("selected", () => {
+        this.selectedSource = source;
+
+        this.trigger("sourceselected", source);
+      });
+
+      return item;
+    });
+  }
+
   createEl() {
     return videojs.dom.createEl("div", {
       className:
@@ -45,106 +73,154 @@ class SourceMenuButton extends MenuButton {
   }
 
   createItems() {
-    const player = this.player();
-    const menuButton = this;
+    if (this.items === undefined) return [];
 
-    // slice so that we don't alter the order of the original array
-    const sources = player.currentSources().slice() as ISource[];
-
-    sources.sort((a, b) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0));
-
-    const hasSelected = sources.some((source) => source.selected);
-    if (!hasSelected && sources.length > 0) {
-      sources[0].selected = true;
+    for (const item of this.items) {
+      item.selected(item.source === this.selectedSource);
     }
 
-    menuButton.on("selected", function (e, selectedItem) {
-      // don't do anything if re-selecting the same source
-      if (selectedItem.source.selected) {
-        return;
-      }
-
-      // populate source sortIndex first if not present
-      const currentSources = (player.currentSources() as ISource[]).map(
-        (src, i) => {
-          return {
-            ...src,
-            sortIndex: src.sortIndex ?? i,
-            selected: false,
-          };
-        }
-      );
-
-      // put the selected source at the top of the list
-      const selectedIndex = currentSources.findIndex(
-        (src) => src.sortIndex === selectedItem.index
-      );
-      const selectedSrc = currentSources.splice(selectedIndex, 1)[0];
-      selectedSrc.selected = true;
-      currentSources.unshift(selectedSrc);
-
-      const currentTime = player.currentTime();
-
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      (player as any).clearOffsetDuration();
-      player.src(currentSources);
-      player.currentTime(currentTime);
-      player.play();
-    });
-
-    return sources.map((source, index) => {
-      const label = source.label || source.type;
-      const item = new SourceMenuItem(
-        menuButton,
-        source,
-        index,
-        this.player(),
-        {
-          label: label,
-          selected: source.selected || (!hasSelected && index === 0),
-        }
-      );
-
-      menuButton.on("selected", function (selectedItem) {
-        if (selectedItem !== item) {
-          item.selected(false);
-        }
-      });
-
-      item.addClass("vjs-source-menu-item");
-
-      return item;
-    });
+    return this.items;
   }
 }
 
-const sourceSelector = function (this: VideoJsPlayer) {
-  const player = this;
+class SourceSelectorPlugin extends videojs.getPlugin("plugin") {
+  private menu: SourceMenuButton;
+  private sources: ISource[] = [];
+  private selectedIndex = -1;
+  private cleanupTextTracks: HTMLTrackElement[] = [];
+  private manualTextTracks: HTMLTrackElement[] = [];
 
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  const PlayerConstructor = this.constructor as any;
-  if (!PlayerConstructor.__sourceSelector) {
-    PlayerConstructor.__sourceSelector = {
-      selectSource: PlayerConstructor.prototype.selectSource,
-    };
+  constructor(player: VideoJsPlayer) {
+    super(player);
+
+    this.menu = new SourceMenuButton(player);
+
+    this.menu.on("sourceselected", (_, source: ISource) => {
+      this.selectedIndex = this.sources.findIndex((src) => src === source);
+      if (this.selectedIndex === -1) return;
+
+      const currentTime = player.currentTime();
+
+      // put the selected source at the top of the list
+      const loadSources = [...this.sources];
+      const selectedSrc = loadSources.splice(this.selectedIndex, 1)[0];
+      loadSources.unshift(selectedSrc);
+
+      const paused = player.paused();
+      player.src(loadSources);
+      player.one("canplay", () => {
+        if (paused) {
+          player.pause();
+        }
+        player.currentTime(currentTime);
+      });
+      player.play();
+    });
+
+    player.on("ready", () => {
+      const { controlBar } = player;
+      const fullscreenToggle = controlBar.getChild("fullscreenToggle")!.el();
+      controlBar.addChild(this.menu);
+      controlBar.el().insertBefore(this.menu.el(), fullscreenToggle);
+    });
+
+    player.on("loadedmetadata", () => {
+      if (!player.videoWidth() && !player.videoHeight()) {
+        // Occurs during preload when videos with supported audio/unsupported video are preloaded.
+        // Treat this as a decoding error and try the next source without playing.
+        // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
+        if (player.error() !== null) return;
+        const currentSrc = player.currentSrc();
+        if (currentSrc !== null && !currentSrc.includes(".m3u8")) {
+          player.error(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED);
+          return;
+        }
+      }
+    });
+
+    player.on("error", () => {
+      const error = player.error();
+      if (!error) return;
+
+      // Only try next source if media was unsupported
+      if (error.code !== MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) return;
+
+      const currentSource = player.currentSource() as ISource;
+      console.log(`Source '${currentSource.label}' is unsupported`);
+
+      if (this.sources.length > 1) {
+        if (this.selectedIndex === -1) return;
+
+        this.sources.splice(this.selectedIndex, 1);
+        const newSource = this.sources[0];
+        console.log(`Trying next source in playlist: '${newSource.label}'`);
+        this.menu.setSources(this.sources);
+        this.selectedIndex = 0;
+        player.src(this.sources);
+        player.load();
+        player.play();
+      } else {
+        console.log("No more sources in playlist");
+      }
+    });
   }
 
-  videojs.registerComponent("SourceMenuButton", SourceMenuButton);
+  setSources(sources: ISource[]) {
+    const cleanupTracks = this.cleanupTextTracks.splice(0);
+    for (const track of cleanupTracks) {
+      this.player.removeRemoteTextTrack(track);
+    }
 
-  player.on("loadedmetadata", function () {
-    const { controlBar } = player;
-    const fullscreenToggle = controlBar.getChild("fullscreenToggle")!.el();
+    this.menu.setSources(sources);
+    if (sources.length !== 0) {
+      this.selectedIndex = 0;
+    } else {
+      this.selectedIndex = -1;
+    }
 
-    const existingMenuButton = controlBar.getChild("SourceMenuButton");
-    if (existingMenuButton) controlBar.removeChild(existingMenuButton);
+    this.sources = sources;
+    this.player.src(this.sources);
+  }
 
-    const menuButton = controlBar.addChild("SourceMenuButton");
+  get textTracks(): HTMLTrackElement[] {
+    return [...this.cleanupTextTracks, ...this.manualTextTracks];
+  }
 
-    controlBar.el().insertBefore(menuButton.el(), fullscreenToggle);
-  });
-};
+  addTextTrack(options: videojs.TextTrackOptions, manualCleanup: boolean) {
+    const track = this.player.addRemoteTextTrack(options, true);
+    if (manualCleanup) {
+      this.manualTextTracks.push(track);
+    } else {
+      this.cleanupTextTracks.push(track);
+    }
+    return track;
+  }
+
+  removeTextTrack(track: HTMLTrackElement) {
+    this.player.removeRemoteTextTrack(track);
+    let index = this.manualTextTracks.indexOf(track);
+    if (index != -1) {
+      this.manualTextTracks.splice(index, 1);
+    }
+    index = this.cleanupTextTracks.indexOf(track);
+    if (index != -1) {
+      this.cleanupTextTracks.splice(index, 1);
+    }
+  }
+}
 
 // Register the plugin with video.js.
-videojs.registerPlugin("sourceSelector", sourceSelector);
+videojs.registerComponent("SourceMenuButton", SourceMenuButton);
+videojs.registerPlugin("sourceSelector", SourceSelectorPlugin);
 
-export default sourceSelector;
+/* eslint-disable @typescript-eslint/naming-convention */
+declare module "video.js" {
+  interface VideoJsPlayer {
+    sourceSelector: () => SourceSelectorPlugin;
+  }
+  interface VideoJsPlayerPluginOptions {
+    sourceSelector?: {};
+  }
+}
+
+export default SourceSelectorPlugin;

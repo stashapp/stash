@@ -34,8 +34,21 @@ func (c *StreamRequestContext) Cancel() {
 	}
 
 	// hijack and close the connection
-	conn, _, _ := hj.Hijack()
+	conn, bw, _ := hj.Hijack()
 	if conn != nil {
+		if bw != nil {
+			// notify end of stream
+			_, err := bw.WriteString("0\r\n")
+			if err != nil {
+				logger.Warnf("unable to write end of stream: %v", err)
+			}
+			_, err = bw.WriteString("\r\n")
+			if err != nil {
+				logger.Warnf("unable to write end of stream: %v", err)
+			}
+			_ = bw.Flush()
+		}
+
 		conn.Close()
 	}
 }
@@ -78,13 +91,15 @@ func (s *SceneServer) StreamSceneDirect(scene *models.Scene, w http.ResponseWrit
 func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter, r *http.Request) {
 	const defaultSceneImage = "scene/scene.svg"
 
-	filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
+	if scene.Path != "" {
+		filepath := GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetInstance().GetVideoFileNamingAlgorithm()))
 
-	// fall back to the scene image blob if the file isn't present
-	screenshotExists, _ := fsutil.FileExists(filepath)
-	if screenshotExists {
-		http.ServeFile(w, r, filepath)
-		return
+		// fall back to the scene image blob if the file isn't present
+		screenshotExists, _ := fsutil.FileExists(filepath)
+		if screenshotExists {
+			http.ServeFile(w, r, filepath)
+			return
+		}
 	}
 
 	var cover []byte

@@ -8,12 +8,13 @@ import (
 )
 
 type Movie struct {
-	ID        int             `db:"id" json:"id"`
-	Checksum  string          `db:"checksum" json:"checksum"`
-	Name      sql.NullString  `db:"name" json:"name"`
-	Aliases   sql.NullString  `db:"aliases" json:"aliases"`
-	Duration  sql.NullInt64   `db:"duration" json:"duration"`
-	Date      SQLiteDate      `db:"date" json:"date"`
+	ID       int            `db:"id" json:"id"`
+	Checksum string         `db:"checksum" json:"checksum"`
+	Name     sql.NullString `db:"name" json:"name"`
+	Aliases  sql.NullString `db:"aliases" json:"aliases"`
+	Duration sql.NullInt64  `db:"duration" json:"duration"`
+	Date     SQLiteDate     `db:"date" json:"date"`
+	// Rating expressed in 1-100 scale
 	Rating    sql.NullInt64   `db:"rating" json:"rating"`
 	StudioID  sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
 	Director  sql.NullString  `db:"director" json:"director"`
@@ -24,12 +25,13 @@ type Movie struct {
 }
 
 type MoviePartial struct {
-	ID        int              `db:"id" json:"id"`
-	Checksum  *string          `db:"checksum" json:"checksum"`
-	Name      *sql.NullString  `db:"name" json:"name"`
-	Aliases   *sql.NullString  `db:"aliases" json:"aliases"`
-	Duration  *sql.NullInt64   `db:"duration" json:"duration"`
-	Date      *SQLiteDate      `db:"date" json:"date"`
+	ID       int             `db:"id" json:"id"`
+	Checksum *string         `db:"checksum" json:"checksum"`
+	Name     *sql.NullString `db:"name" json:"name"`
+	Aliases  *sql.NullString `db:"aliases" json:"aliases"`
+	Duration *sql.NullInt64  `db:"duration" json:"duration"`
+	Date     *SQLiteDate     `db:"date" json:"date"`
+	// Rating expressed in 1-100 scale
 	Rating    *sql.NullInt64   `db:"rating" json:"rating"`
 	StudioID  *sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
 	Director  *sql.NullString  `db:"director" json:"director"`

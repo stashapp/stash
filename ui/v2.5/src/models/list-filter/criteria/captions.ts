@@ -28,7 +28,7 @@ export const CaptionsCriterionOption = new CaptionsCriterionOptionType(
 
 export class CaptionCriterion extends StringCriterion {
   protected toCriterionInput() {
-    const value = valueToCode(this.value);
+    const value = valueToCode(this.value) ?? "";
 
     return {
       value,
