@@ -55,10 +55,12 @@ node_modules
 
 *.db
 
-/stash
 dist
 .DS_Store
 
+
+# Files to allow stash to run
+/stash
 /*.sqlite
 /config.yml
 /icon.png
