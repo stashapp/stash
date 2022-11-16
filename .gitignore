@@ -58,3 +58,9 @@ node_modules
 /stash
 dist
 .DS_Store
+
+/*.sqlite
+/config.yml
+/icon.png
+/scrapers
+/generated
