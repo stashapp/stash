@@ -8,6 +8,7 @@ import React, {
   useState,
   useEffect,
   useMemo,
+  useContext,
 } from "react";
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
@@ -62,6 +63,7 @@ import {
 import { AddFilterDialog } from "src/components/List/AddFilterDialog";
 import { TextUtils } from "src/utils";
 import { FormattedNumber } from "react-intl";
+import { ConfigurationContext } from "./Config";
 
 const getSelectedData = <I extends IDataItem>(
   result: I[],
@@ -94,7 +96,7 @@ export interface IListHookOperation<T> {
     result: T,
     filter: ListFilterModel,
     selectedIds: Set<string>
-  ) => void;
+  ) => Promise<void>;
   isDisplayed?: (
     result: T,
     filter: ListFilterModel,
@@ -160,20 +162,20 @@ interface IQueryResult {
 
 interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
   filterMode: FilterMode;
-  useData: (filter: ListFilterModel) => T;
+  useData: (filter?: ListFilterModel) => T;
   getData: (data: T) => T2[];
   getCount: (data: T) => number;
   getMetadataByline: (data: T) => React.ReactNode;
 }
 
 interface IRenderListProps {
-  filter: ListFilterModel;
+  filter?: ListFilterModel;
   filterOptions: ListFilterOptions;
   onChangePage: (page: number) => void;
   updateFilter: (filter: ListFilterModel) => void;
 }
 
-const RenderList = <
+const useRenderList = <
   QueryResult extends IQueryResult,
   QueryData extends IDataItem
 >({
@@ -200,31 +202,44 @@ const RenderList = <
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [lastClickedId, setLastClickedId] = useState<string | undefined>();
+  const [lastClickedId, setLastClickedId] = useState<string>();
 
   const [editingCriterion, setEditingCriterion] = useState<
-    Criterion<CriterionValue> | undefined
-  >(undefined);
+    Criterion<CriterionValue>
+  >();
   const [newCriterion, setNewCriterion] = useState(false);
 
   const result = useData(filter);
   const totalCount = getCount(result);
   const metadataByline = getMetadataByline(result);
   const items = getData(result);
-  const pages = Math.ceil(totalCount / filter.itemsPerPage);
 
   // handle case where page is more than there are pages
   useEffect(() => {
+    if (filter === undefined) return;
+
+    const pages = Math.ceil(totalCount / filter.itemsPerPage);
     if (pages > 0 && filter.currentPage > pages) {
       onChangePage(pages);
     }
-  }, [pages, filter.currentPage, onChangePage]);
+  }, [filter, onChangePage, totalCount]);
 
+  // set up hotkeys
   useEffect(() => {
+    if (filter === undefined) return;
+
     Mousetrap.bind("f", () => setNewCriterion(true));
+
+    return () => {
+      Mousetrap.unbind("f");
+    };
+  }, [filter]);
+  useEffect(() => {
+    if (filter === undefined) return;
+
+    const pages = Math.ceil(totalCount / filter.itemsPerPage);
     Mousetrap.bind("right", () => {
-      const maxPage = totalCount / filter.itemsPerPage;
-      if (filter.currentPage < maxPage) {
+      if (filter.currentPage < pages) {
         onChangePage(filter.currentPage + 1);
       }
     });
@@ -234,24 +249,17 @@ const RenderList = <
       }
     });
     Mousetrap.bind("shift+right", () => {
-      const maxPage = totalCount / filter.itemsPerPage + 1;
-      onChangePage(Math.min(maxPage, filter.currentPage + 10));
+      onChangePage(Math.min(pages, filter.currentPage + 10));
     });
     Mousetrap.bind("shift+left", () => {
       onChangePage(Math.max(1, filter.currentPage - 10));
     });
     Mousetrap.bind("ctrl+end", () => {
-      const maxPage = totalCount / filter.itemsPerPage + 1;
-      onChangePage(maxPage);
+      onChangePage(pages);
     });
     Mousetrap.bind("ctrl+home", () => {
       onChangePage(1);
     });
-
-    let unbindExtras: () => void;
-    if (addKeybinds) {
-      unbindExtras = addKeybinds(result, filter, selectedIds);
-    }
 
     return () => {
       Mousetrap.unbind("right");
@@ -260,12 +268,22 @@ const RenderList = <
       Mousetrap.unbind("shift+left");
       Mousetrap.unbind("ctrl+end");
       Mousetrap.unbind("ctrl+home");
-
-      if (unbindExtras) {
-        unbindExtras();
-      }
     };
-  });
+  }, [filter, onChangePage, totalCount]);
+  useEffect(() => {
+    if (filter === undefined) return;
+
+    if (addKeybinds) {
+      const unbindExtras = addKeybinds(result, filter, selectedIds);
+      return () => {
+        unbindExtras();
+      };
+    }
+  }, [addKeybinds, filter, result, selectedIds]);
+
+  // Don't continue if filter is undefined
+  // There are no hooks below this point so this is valid
+  if (filter === undefined) return;
 
   function singleSelect(id: string, selected: boolean) {
     setLastClickedId(id);
@@ -334,24 +352,24 @@ const RenderList = <
     setLastClickedId(undefined);
   }
 
-  function onSelectNone() {
+  const onSelectNone = () => {
     const newSelectedIds: Set<string> = new Set();
     setSelectedIds(newSelectedIds);
     setLastClickedId(undefined);
-  }
+  };
 
-  function onChangeZoom(newZoomIndex: number) {
+  const onChangeZoom = (newZoomIndex: number) => {
     const newFilter = cloneDeep(filter);
     newFilter.zoomIndex = newZoomIndex;
     updateFilter(newFilter);
-  }
+  };
 
-  function onOperationClicked(o: IListHookOperation<QueryResult>) {
-    o.onClick(result, filter, selectedIds);
+  const onOperationClicked = async (o: IListHookOperation<QueryResult>) => {
+    await o.onClick(result, filter, selectedIds);
     if (o.postRefetch) {
       result.refetch();
     }
-  }
+  };
 
   const operations =
     otherOperations &&
@@ -409,11 +427,12 @@ const RenderList = <
     />
   );
 
-  function maybeRenderContent() {
+  const maybeRenderContent = () => {
     if (result.loading || result.error) {
       return;
     }
 
+    const pages = Math.ceil(totalCount / filter.itemsPerPage);
     return (
       <>
         {renderPagination()}
@@ -433,18 +452,18 @@ const RenderList = <
         {renderPagination()}
       </>
     );
-  }
+  };
 
-  function onChangeDisplayMode(displayMode: DisplayMode) {
+  const onChangeDisplayMode = (displayMode: DisplayMode) => {
     const newFilter = cloneDeep(filter);
     newFilter.displayMode = displayMode;
     updateFilter(newFilter);
-  }
+  };
 
-  function onAddCriterion(
+  const onAddCriterion = (
     criterion: Criterion<CriterionValue>,
     oldId?: string
-  ) {
+  ) => {
     const newFilter = cloneDeep(filter);
 
     // Find if we are editing an existing criteria, then modify that.  Or create a new one.
@@ -468,22 +487,22 @@ const RenderList = <
     updateFilter(newFilter);
     setEditingCriterion(undefined);
     setNewCriterion(false);
-  }
+  };
 
-  function onRemoveCriterion(removedCriterion: Criterion<CriterionValue>) {
+  const onRemoveCriterion = (removedCriterion: Criterion<CriterionValue>) => {
     const newFilter = cloneDeep(filter);
     newFilter.criteria = newFilter.criteria.filter(
       (criterion) => criterion.getId() !== removedCriterion.getId()
     );
     newFilter.currentPage = 1;
     updateFilter(newFilter);
-  }
+  };
 
-  function updateCriteria(c: Criterion<CriterionValue>[]) {
+  const updateCriteria = (c: Criterion<CriterionValue>[]) => {
     const newFilter = cloneDeep(filter);
     newFilter.criteria = c.slice();
     setNewCriterion(false);
-  }
+  };
 
   function onCancelAddCriterion() {
     setEditingCriterion(undefined);
@@ -565,6 +584,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const location = useLocation();
   const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
   const [filterInitialised, setFilterInitialised] = useState(false);
+  const { configuration: config } = useContext(ConfigurationContext);
   // Store initial pathname to prevent hooks from operating outside this page
   const originalPathName = useRef(location.pathname);
   const persistanceKey = options.persistanceKey ?? options.filterMode;
@@ -572,15 +592,18 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const defaultSort = options.defaultSort ?? filterOptions.defaultSortBy;
   const defaultDisplayMode = filterOptions.displayModeOptions[0];
   const createNewFilter = useCallback(() => {
-    return new ListFilterModel(
+    const filter = new ListFilterModel(
       options.filterMode,
-      queryString.parse(history.location.search),
+      config,
       defaultSort,
       defaultDisplayMode,
       options.defaultZoomIndex
     );
+    filter.configureFromQueryString(history.location.search);
+    return filter;
   }, [
     options.filterMode,
+    config,
     history,
     defaultSort,
     defaultDisplayMode,
@@ -654,9 +677,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         if (defaultFilter?.findDefaultFilter) {
           newFilter.currentPage = 1;
           try {
-            newFilter.configureFromQueryParameters(
-              JSON.parse(defaultFilter.findDefaultFilter.filter)
-            );
+            newFilter.configureFromJSON(defaultFilter.findDefaultFilter.filter);
           } catch (err) {
             console.log(err);
             // ignore
@@ -713,9 +734,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     setFilter((prevFilter) => {
       let newFilter = prevFilter.clone();
-      newFilter.configureFromQueryParameters(
-        queryString.parse(location.search)
-      );
+      newFilter.configureFromQueryString(location.search);
       if (!isEqual(newFilter, prevFilter)) {
         return newFilter;
       } else {
@@ -735,10 +754,14 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   );
 
   const renderFilter = useMemo(() => {
-    return !options.filterHook ? filter : options.filterHook(cloneDeep(filter));
-  }, [filter, options]);
+    if (filterInitialised) {
+      return options.filterHook
+        ? options.filterHook(cloneDeep(filter))
+        : filter;
+    }
+  }, [filterInitialised, filter, options]);
 
-  const { contentTemplate, onSelectChange } = RenderList({
+  const renderList = useRenderList({
     ...options,
     filter: renderFilter,
     filterOptions,
@@ -746,11 +769,17 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     updateFilter,
   });
 
-  const template = !filterInitialised ? (
-    <LoadingIndicator />
+  const template = renderList ? (
+    renderList.contentTemplate
   ) : (
-    <>{contentTemplate}</>
+    <LoadingIndicator />
   );
+
+  function onSelectChange(id: string, selected: boolean, shiftKey: boolean) {
+    if (renderList) {
+      renderList.onSelectChange(id, selected, shiftKey);
+    }
+  }
 
   return {
     filter,

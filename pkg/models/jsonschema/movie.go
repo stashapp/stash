@@ -6,6 +6,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models/json"
 )
@@ -24,6 +25,10 @@ type Movie struct {
 	Studio     string        `json:"studio,omitempty"`
 	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
+}
+
+func (s Movie) Filename() string {
+	return fsutil.SanitiseBasename(s.Name) + ".json"
 }
 
 // Backwards Compatible synopsis for the movie

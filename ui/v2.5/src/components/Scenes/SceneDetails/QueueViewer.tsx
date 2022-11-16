@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import cx from "classnames";
-import * as GQL from "src/core/generated-graphql";
-import TextUtils from "src/utils/text";
 import { Button, Form, Spinner } from "react-bootstrap";
 import Icon from "src/components/Shared/Icon";
 import { useIntl } from "react-intl";
@@ -13,9 +11,11 @@ import {
   faStepBackward,
   faStepForward,
 } from "@fortawesome/free-solid-svg-icons";
+import { objectTitle } from "src/core/files";
+import { QueuedScene } from "src/models/sceneQueue";
 
 export interface IPlaylistViewer {
-  scenes?: GQL.SlimSceneDataFragment[];
+  scenes?: QueuedScene[];
   currentID?: string;
   start?: number;
   continue?: boolean;
@@ -54,7 +54,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     setMoreLoading(false);
   }, [scenes]);
 
-  function isCurrentScene(scene: GQL.SlimSceneDataFragment) {
+  function isCurrentScene(scene: QueuedScene) {
     return scene.id === currentID;
   }
 
@@ -76,7 +76,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
     onMoreScenes();
   }
 
-  function renderPlaylistEntry(scene: GQL.SlimSceneDataFragment) {
+  function renderPlaylistEntry(scene: QueuedScene) {
     return (
       <li
         className={cx("my-2", { current: isCurrentScene(scene) })}
@@ -92,7 +92,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
             </div>
             <div>
               <span className="align-middle text-break">
-                {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+                {objectTitle(scene)}
               </span>
             </div>
           </div>
@@ -106,6 +106,7 @@ export const QueueViewer: React.FC<IPlaylistViewer> = ({
       <div className="queue-controls">
         <div>
           <Form.Check
+            id="continue-checkbox"
             checked={continuePlaylist}
             label={intl.formatMessage({ id: "actions.continue" })}
             onChange={() => {

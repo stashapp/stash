@@ -54,6 +54,7 @@
     "import": "Importa…",
     "import_from_file": "Importa dal file",
     "logout": "Esci",
+    "make_primary": "Rendi Primario",
     "merge": "Unisci",
     "merge_from": "Unisci da",
     "merge_into": "Unisci in",
@@ -189,6 +190,7 @@
     },
     "categories": {
       "about": "Chi siamo",
+      "changelog": "Changelog",
       "interface": "Interfaccia",
       "logs": "Log",
       "metadata_providers": "Provider dei Metadata",
@@ -242,6 +244,10 @@
         "stash-box_integration": "Integrazione Stash-box",
         "username": "Nome Utente",
         "username_desc": "Nome Utente per accedere a Stash. Lasciare vuoto per disabilitare l'autenticazione"
+      },
+      "backup_directory_path": {
+        "description": "Percorso della directory per i file di backup del database SQLite",
+        "heading": "Percorso Directory di Backup"
       },
       "cache_location": "Percorso della Cartella cache",
       "cache_path_head": "Percorso Cache",
@@ -344,7 +350,7 @@
       "auto_tagging": "Tag Automatico",
       "backing_up_database": "Backup del database",
       "backup_and_download": "Esegue il backup del database e scarica il file risultante.",
-      "backup_database": "Esegue il backup del database nella stessa cartella del database, con il formato nome file {filename_format}",
+      "backup_database": "Esegue il backup del database nella cartella dei backup, nel formato {filename_format}",
       "cleanup_desc": "Controlla il database per file mancanti e li rimuove. Questa è un'azione distruttiva.",
       "data_management": "Gestione dati",
       "defaults_set": "I default sono stati scelti e saranno usati quando si clicca il bottone {action} nella pagina Attività.",
@@ -420,11 +426,20 @@
       "scene_tools": "Strumenti Scena"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Abbrevia i contatori nelle carte e dettagli delle pagine, per esempio \"1831\" sarà formattato in \"1.8K\".",
+        "heading": "Abbrevia contatori"
+      },
       "basic_settings": "Opzioni Base",
       "custom_css": {
         "description": "La pagina dev'essere ricaricata per applicare i cambiamenti.",
         "heading": "CSS Personalizzato",
         "option_label": "CSS Personalizzato Attivo"
+      },
+      "custom_locales": {
+        "description": "Sovrascrive stringhe individuali locali. Vedere https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json per la lista principale. La pagina dev'essere ricaricata per far sì che i cambiamenti abbiano effetto.",
+        "heading": "Localizzazione personalizzata",
+        "option_label": "Localizzazione personalizzata attiva"
       },
       "delete_options": {
         "description": "Opzioni predefinite quando si cancellano immagini, gallerie e scene.",
@@ -518,7 +533,7 @@
         "options": {
           "auto_start_video": "Inizia a Leggere Automaticamente il video",
           "auto_start_video_on_play_selected": {
-            "description": "Avvio automatico dei video \"Avvia selezionato\" o casuale dalla pagina Scene",
+            "description": "Avvio automatico dei video quando avviati dalla coda, quando \"Avvia selezionato\" o casuale dalla pagina Scene",
             "heading": "Avvio automatico del video 'Avvia selezionato'"
           },
           "continue_playlist_default": {
@@ -539,9 +554,31 @@
         "description": "Numero di tentativi di scorrimento prima di passare al prossimo/precedente oggetto. Si applica solo al modo di scorrimento Pan Y.",
         "heading": "Tentativi di scorrimento prima della transizione"
       },
+      "show_tag_card_on_hover": {
+        "description": "Mostra la carta della tag quando si passa il mouse sopra le badge tag",
+        "heading": "Carta tag popup"
+      },
       "slideshow_delay": {
         "description": "La presentazione è disponibile nelle gallerie quando in modalità muro",
         "heading": "Ritardo Presentazione (secondi)"
+      },
+      "studio_panel": {
+        "heading": "Vista Studio",
+        "options": {
+          "show_child_studio_content": {
+            "description": "Nella vista studio, visualizza anche il contenuto dei sub-studio",
+            "heading": "Visualizza contenuto sub-studio"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Vista Tag",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "Nella vista tag, visualizza anche il contenuto delle subtag",
+            "heading": "Visualizza contenuto subtag"
+          }
+        }
       },
       "title": "Interfaccia Utente"
     }
@@ -587,6 +624,7 @@
   "death_date": "Data Morte",
   "death_year": "Anno della Morte",
   "descending": "Discendente",
+  "description": "Descrizione",
   "detail": "Dettaglio",
   "details": "Dettagli",
   "developmentVersion": "Versione Sviluppo",
@@ -595,12 +633,14 @@
     "delete_alert": "Il seguente/I seguenti {count, plural, one {{singularEntity}} other {{pluralEntity}}} sarà/saranno cancellati permanentemente:",
     "delete_confirm": "Sei sicuro di voler cancellare {entityName}?",
     "delete_entity_desc": "{count, plural, one {Sei sicuro di voler cancellare questo/a {singularEntity}? A meno che anche il file venga cancellato, questo/a {singularEntity} sarà riaggiunto quando la scansione verrà effettuata.} other {Sei sicuro di voler cancellare questi/e {pluralEntity}? A meno che anche i file vengano cancellati, questi/e {pluralEntity} verranno riaggiunti quando la scansione verrà effettuata.}}",
+    "delete_entity_simple_desc": "{count, plural, one {Sei sicuro di voler cancellare questa/o {singularEntity}?} other {Sei sicuro di voler cancellare questi/e {pluralEntity}?}}",
     "delete_entity_title": "{count, plural, one {Cancellazione {singularEntity}} other {Cancellazione {pluralEntity}}}",
     "delete_galleries_extra": "...in più qualsiasi immagine non inclusa in nessun'altra galleria.",
     "delete_gallery_files": "Cancella gallerie cartella/zip e qualsiasi immagino non inclusa in altre gallerie.",
     "delete_object_desc": "Sei sicuro di voler cancellare {count, plural, one {questo/a {singularEntity}} other {questi/e {pluralEntity}}}?",
     "delete_object_overflow": "…e {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Cancellazione {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Non mostrare fino al prossimo aggiornamento",
     "edit_entity_title": "Modifica {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Include gli oggetti collegati nell'esportazione",
     "export_title": "Esportazione",
@@ -726,6 +766,7 @@
   "false": "Falso",
   "favourite": "Favorita",
   "file": "file",
+  "file_count": "Numero File",
   "file_info": "Informazioni File",
   "file_mod_time": "Tempo Modifica del File",
   "files": "file",
@@ -733,6 +774,7 @@
   "filter": "Filtro",
   "filter_name": "Nome Filtro",
   "filters": "Filtri",
+  "folder": "Cartella",
   "framerate": "Frequenza dei Fotogrammi",
   "frames_per_second": "{value} fotogrammi per secondo",
   "front_page": {
@@ -865,11 +907,13 @@
   },
   "performers": "Attori",
   "piercings": "Piercing",
+  "primary_file": "File primario",
   "queue": "Coda",
   "random": "Casuale",
   "rating": "Classif.",
   "recently_added_objects": "{objects} Aggiunto Recentemente",
   "recently_released_objects": "{objects} Recentemente Distribuito",
+  "release_notes": "Note Versione",
   "resolution": "Risoluzione",
   "scene": "Scena",
   "sceneTagger": "Tagger Scena",
@@ -919,9 +963,10 @@
       "migration_failed_error": "Il seguente errore è stato riscontrato mentre si migrava il database:",
       "migration_failed_help": "Per favore fate ogni correzione necessaria e provate di nuovo. Altrimenti, compilate un bug report su {githubLink} o cercate aiuto su {discordLink}.",
       "migration_irreversible_warning": "La migrazione 'schema' non è reversibile. Una volta attuata, il vostro database sarà incompatibile con le versioni precedenti di Stash.",
+      "migration_notes": "Note Migrazione",
       "migration_required": "Migrazione richiesta",
       "perform_schema_migration": "Esegue la migrazione 'schema'",
-      "schema_too_old": "Lo 'schema version' del tuo attuale database di Stash è <strong>{databaseSchema}</strong> e dev'essere migrato alla versione <strong>{appSchema}</strong>. Questa versione di Stash non funzionerà senza aver migrato il database."
+      "schema_too_old": "Lo 'schema version' del tuo attuale database di Stash è <strong>{databaseSchema}</strong> e dev'essere migrato alla versione <strong>{appSchema}</strong>. Questa versione di Stash non funzionerà senza aver migrato il database. Se non si desidera migrare, si dovrà fare il downgrade ad una versione che corrisponda allo schema attuale."
     },
     "paths": {
       "database_filename_empty_for_default": "nome file del database (vuoto per predefinito)",
@@ -995,14 +1040,14 @@
   "tattoos": "Tatuaggi",
   "title": "Titolo",
   "toast": {
-    "added_entity": "Aggiunto {entity}",
+    "added_entity": "Aggiunto {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "added_generation_job_to_queue": "Aggiunto lavoro di creazione alla coda",
     "created_entity": "Creato/a {entity}",
     "default_filter_set": "Filtro predefinito impostato",
-    "delete_entity": "Cancella {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Cancellato/a {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Sto creando la schermata…",
     "merged_tags": "Tag unite",
+    "removed_entity": "Rimosso {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "rescanning_entity": "Riscansionando {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "Salvato/a {entity}",
     "started_auto_tagging": "Inizato il tag automatico",
@@ -1019,5 +1064,6 @@
   "videos": "Video",
   "view_all": "Vedi Tutto",
   "weight": "Peso",
-  "years_old": "anni"
+  "years_old": "anni",
+  "zip_file_count": "Numero File Zip"
 }

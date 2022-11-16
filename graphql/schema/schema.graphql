@@ -162,7 +162,9 @@ type Mutation {
   setup(input: SetupInput!): Boolean!
   migrate(input: MigrateInput!): Boolean!
 
+  sceneCreate(input: SceneCreateInput!): Scene
   sceneUpdate(input: SceneUpdateInput!): Scene
+  sceneMerge(input: SceneMergeInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
   scenesDestroy(input: ScenesDestroyInput!): Boolean!
@@ -181,6 +183,8 @@ type Mutation {
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!
+
+  sceneAssignFile(input: AssignSceneFileInput!): Boolean!
 
   imageUpdate(input: ImageUpdateInput!): Image
   bulkImageUpdate(input: BulkImageUpdateInput!): [Image!]
@@ -226,6 +230,8 @@ type Mutation {
   tagDestroy(input: TagDestroyInput!): Boolean!
   tagsDestroy(ids: [ID!]!): Boolean!
   tagsMerge(input: TagsMergeInput!): Tag
+
+  deleteFiles(ids: [ID!]!): Boolean!
 
   # Saved filters
   saveFilter(input: SaveFilterInput!): SavedFilter!

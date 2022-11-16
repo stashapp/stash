@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ develop, master, files-refactor ]
+    branches: [ develop, master ]
   pull_request:
   release:
     types: [ published ]
@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COMPILER_IMAGE: stashapp/compiler:6
+  COMPILER_IMAGE: stashapp/compiler:7
 
 jobs:
   build:
@@ -27,7 +27,7 @@ jobs:
       run: docker pull $COMPILER_IMAGE
 
     - name: Cache node modules
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-node_modules
       with:
@@ -35,7 +35,7 @@ jobs:
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock') }}
 
     - name: Cache UI build
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: cache-ui
       env:
         cache-name: cache-ui
@@ -44,7 +44,7 @@ jobs:
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('ui/v2.5/yarn.lock', 'ui/v2.5/public/**', 'ui/v2.5/src/**', 'graphql/**/*.graphql') }}
 
     - name: Cache go build
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         # increment the number suffix to bump the cache
         cache-name: cache-go-cache-1
@@ -130,10 +130,6 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       run : git tag -f latest_develop; git push -f --tags
 
-    - name: Update files-refactor-release tag
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/files-refactor' }}
-      run : git tag -f files-refactor-release; git push -f --tags
-
     - name: Development Release
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
       uses: marvinpinto/action-automatic-releases@v1.1.2
@@ -170,24 +166,6 @@ jobs:
           dist/stash-linux-arm32v6
           CHECKSUMS_SHA1
         gzip: false
-
-    - name: Files refactor Release
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/files-refactor' }}
-      uses: softprops/action-gh-release@v1
-      with:
-        token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: true
-        tag_name: files-refactor-release
-        target_commitish: refs/heads/files-refactor
-        files: |
-          dist/stash-macos-intel
-          dist/stash-macos-applesilicon
-          dist/stash-win.exe
-          dist/stash-linux
-          dist/stash-linux-arm64v8
-          dist/stash-linux-arm32v7
-          dist/stash-linux-arm32v6
-          CHECKSUMS_SHA1
 
     - name: Development Docker
       if: ${{ github.repository == 'stashapp/stash' && github.event_name == 'push' && github.ref == 'refs/heads/develop' }}

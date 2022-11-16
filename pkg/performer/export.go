@@ -1,7 +1,9 @@
 package performer
 
 import (
+	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
@@ -9,82 +11,55 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type ImageStashIDGetter interface {
+	GetImage(ctx context.Context, performerID int) ([]byte, error)
+	models.StashIDLoader
+}
+
 // ToJSON converts a Performer object into its JSON equivalent.
-func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonschema.Performer, error) {
+func ToJSON(ctx context.Context, reader ImageStashIDGetter, performer *models.Performer) (*jsonschema.Performer, error) {
 	newPerformerJSON := jsonschema.Performer{
+		Name:          performer.Name,
+		Gender:        performer.Gender.String(),
+		URL:           performer.URL,
+		Ethnicity:     performer.Ethnicity,
+		Country:       performer.Country,
+		EyeColor:      performer.EyeColor,
+		Measurements:  performer.Measurements,
+		FakeTits:      performer.FakeTits,
+		CareerLength:  performer.CareerLength,
+		Tattoos:       performer.Tattoos,
+		Piercings:     performer.Piercings,
+		Aliases:       performer.Aliases,
+		Twitter:       performer.Twitter,
+		Instagram:     performer.Instagram,
+		Favorite:      performer.Favorite,
+		Details:       performer.Details,
+		HairColor:     performer.HairColor,
 		IgnoreAutoTag: performer.IgnoreAutoTag,
-		CreatedAt:     json.JSONTime{Time: performer.CreatedAt.Timestamp},
-		UpdatedAt:     json.JSONTime{Time: performer.UpdatedAt.Timestamp},
+		CreatedAt:     json.JSONTime{Time: performer.CreatedAt},
+		UpdatedAt:     json.JSONTime{Time: performer.UpdatedAt},
 	}
 
-	if performer.Name.Valid {
-		newPerformerJSON.Name = performer.Name.String
+	if performer.Birthdate != nil {
+		newPerformerJSON.Birthdate = performer.Birthdate.String()
 	}
-	if performer.Gender.Valid {
-		newPerformerJSON.Gender = performer.Gender.String
+	if performer.Rating != nil {
+		newPerformerJSON.Rating = *performer.Rating
 	}
-	if performer.URL.Valid {
-		newPerformerJSON.URL = performer.URL.String
-	}
-	if performer.Birthdate.Valid {
-		newPerformerJSON.Birthdate = utils.GetYMDFromDatabaseDate(performer.Birthdate.String)
-	}
-	if performer.Ethnicity.Valid {
-		newPerformerJSON.Ethnicity = performer.Ethnicity.String
-	}
-	if performer.Country.Valid {
-		newPerformerJSON.Country = performer.Country.String
-	}
-	if performer.EyeColor.Valid {
-		newPerformerJSON.EyeColor = performer.EyeColor.String
-	}
-	if performer.Height.Valid {
-		newPerformerJSON.Height = performer.Height.String
-	}
-	if performer.Measurements.Valid {
-		newPerformerJSON.Measurements = performer.Measurements.String
-	}
-	if performer.FakeTits.Valid {
-		newPerformerJSON.FakeTits = performer.FakeTits.String
-	}
-	if performer.CareerLength.Valid {
-		newPerformerJSON.CareerLength = performer.CareerLength.String
-	}
-	if performer.Tattoos.Valid {
-		newPerformerJSON.Tattoos = performer.Tattoos.String
-	}
-	if performer.Piercings.Valid {
-		newPerformerJSON.Piercings = performer.Piercings.String
-	}
-	if performer.Aliases.Valid {
-		newPerformerJSON.Aliases = performer.Aliases.String
-	}
-	if performer.Twitter.Valid {
-		newPerformerJSON.Twitter = performer.Twitter.String
-	}
-	if performer.Instagram.Valid {
-		newPerformerJSON.Instagram = performer.Instagram.String
-	}
-	if performer.Favorite.Valid {
-		newPerformerJSON.Favorite = performer.Favorite.Bool
-	}
-	if performer.Rating.Valid {
-		newPerformerJSON.Rating = int(performer.Rating.Int64)
-	}
-	if performer.Details.Valid {
-		newPerformerJSON.Details = performer.Details.String
-	}
-	if performer.DeathDate.Valid {
-		newPerformerJSON.DeathDate = utils.GetYMDFromDatabaseDate(performer.DeathDate.String)
-	}
-	if performer.HairColor.Valid {
-		newPerformerJSON.HairColor = performer.HairColor.String
-	}
-	if performer.Weight.Valid {
-		newPerformerJSON.Weight = int(performer.Weight.Int64)
+	if performer.DeathDate != nil {
+		newPerformerJSON.DeathDate = performer.DeathDate.String()
 	}
 
-	image, err := reader.GetImage(performer.ID)
+	if performer.Height != nil {
+		newPerformerJSON.Height = strconv.Itoa(*performer.Height)
+	}
+
+	if performer.Weight != nil {
+		newPerformerJSON.Weight = *performer.Weight
+	}
+
+	image, err := reader.GetImage(ctx, performer.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting performers image: %v", err)
 	}
@@ -93,7 +68,7 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 		newPerformerJSON.Image = utils.GetBase64StringFromData(image)
 	}
 
-	stashIDs, _ := reader.GetStashIDs(performer.ID)
+	stashIDs, _ := reader.GetStashIDs(ctx, performer.ID)
 	var ret []models.StashID
 	for _, stashID := range stashIDs {
 		newJoin := models.StashID{
@@ -120,8 +95,8 @@ func GetIDs(performers []*models.Performer) []int {
 func GetNames(performers []*models.Performer) []string {
 	var results []string
 	for _, performer := range performers {
-		if performer.Name.Valid {
-			results = append(results, performer.Name.String)
+		if performer.Name != "" {
+			results = append(results, performer.Name)
 		}
 	}
 

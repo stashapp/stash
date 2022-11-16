@@ -1,8 +1,12 @@
 import * as GQL from "src/core/generated-graphql";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { ListFilterModel } from "src/models/list-filter/filter";
+import React from "react";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "./config";
 
-export const studioFilterHook = (studio: GQL.StudioDataFragment) => {
+export const useStudioFilterHook = (studio: GQL.StudioDataFragment) => {
+  const config = React.useContext(ConfigurationContext);
   return (filter: ListFilterModel) => {
     const studioValue = { id: studio.id, label: studio.name };
     // if studio is already present, then we modify it, otherwise add
@@ -28,7 +32,9 @@ export const studioFilterHook = (studio: GQL.StudioDataFragment) => {
       studioCriterion = new StudiosCriterion();
       studioCriterion.value = {
         items: [studioValue],
-        depth: 0,
+        depth: (config?.configuration?.ui as IUIConfig)?.showChildStudioContent
+          ? -1
+          : 0,
       };
       filter.criteria.push(studioCriterion);
     }

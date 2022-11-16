@@ -2,9 +2,11 @@ import React from "react";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { RatingStars, TruncatedText } from "src/components/Shared";
+import { TruncatedText } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useGalleryLightbox } from "src/hooks";
+import { galleryTitle } from "src/core/galleries";
+import { RatingSystem } from "../Shared/Rating/RatingSystem";
 
 const CLASSNAME = "GalleryWallCard";
 const CLASSNAME_FOOTER = `${CLASSNAME}-footer`;
@@ -19,12 +21,16 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
   const showLightbox = useGalleryLightbox(gallery.id);
 
+  const coverFile = gallery?.cover?.files.length
+    ? gallery.cover.files[0]
+    : undefined;
+
   const orientation =
-    (gallery?.cover?.file.width ?? 0) > (gallery.cover?.file.height ?? 0)
+    (coverFile?.width ?? 0) > (coverFile?.height ?? 0)
       ? "landscape"
       : "portrait";
   const cover = gallery?.cover?.paths.thumbnail ?? "";
-  const title = gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? "");
+  const title = galleryTitle(gallery);
   const performerNames = gallery.performers.map((p) => p.name);
   const performers =
     performerNames.length >= 2
@@ -40,7 +46,7 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         role="button"
         tabIndex={0}
       >
-        <RatingStars rating={gallery.rating} />
+        <RatingSystem value={gallery.rating100 ?? undefined} disabled />
         <img src={cover} alt="" className={CLASSNAME_IMG} />
         <footer className={CLASSNAME_FOOTER}>
           <Link

@@ -14,11 +14,13 @@ func ValidateDeathDate(performer *models.Performer, birthdate *string, deathDate
 	}
 
 	if performer != nil {
-		if birthdate == nil && performer.Birthdate.Valid {
-			birthdate = &performer.Birthdate.String
+		if birthdate == nil && performer.Birthdate != nil {
+			s := performer.Birthdate.String()
+			birthdate = &s
 		}
-		if deathDate == nil && performer.DeathDate.Valid {
-			deathDate = &performer.DeathDate.String
+		if deathDate == nil && performer.DeathDate != nil {
+			s := performer.DeathDate.String()
+			deathDate = &s
 		}
 	}
 

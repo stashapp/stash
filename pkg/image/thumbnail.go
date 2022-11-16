@@ -5,13 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"image"
 	"os/exec"
 	"runtime"
 	"sync"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/ffmpeg/transcoder"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -26,6 +26,10 @@ var (
 	// ErrNotSupportedForThumbnail is returned if the image format is not supported for thumbnail generation
 	ErrNotSupportedForThumbnail = errors.New("unsupported image format for thumbnail")
 )
+
+type ThumbnailGenerator interface {
+	GenerateThumbnail(ctx context.Context, i *models.Image, f *file.ImageFile) error
+}
 
 type ThumbnailEncoder struct {
 	ffmpeg ffmpeg.FFMpeg
@@ -57,11 +61,12 @@ func NewThumbnailEncoder(ffmpegEncoder ffmpeg.FFMpeg) ThumbnailEncoder {
 // the provided max size. It resizes based on the largest X/Y direction.
 // It returns nil and an error if an error occurs reading, decoding or encoding
 // the image, or if the image is not suitable for thumbnails.
-func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte, error) {
-	reader, err := openSourceImage(img.Path)
+func (e *ThumbnailEncoder) GetThumbnail(f *file.ImageFile, maxSize int) ([]byte, error) {
+	reader, err := f.Open(&file.OsFS{})
 	if err != nil {
 		return nil, err
 	}
+	defer reader.Close()
 
 	buf := new(bytes.Buffer)
 	if _, err := buf.ReadFrom(reader); err != nil {
@@ -70,13 +75,8 @@ func (e *ThumbnailEncoder) GetThumbnail(img *models.Image, maxSize int) ([]byte,
 
 	data := buf.Bytes()
 
-	// use NewBufferString to copy the buffer, rather than reuse it
-	_, format, err := image.DecodeConfig(bytes.NewBufferString(string(data)))
-	if err != nil {
-		return nil, err
-	}
-
-	animated := format == formatGif
+	format := f.Format
+	animated := f.Format == formatGif
 
 	// #2266 - if image is webp, then determine if it is animated
 	if format == formatWebP {

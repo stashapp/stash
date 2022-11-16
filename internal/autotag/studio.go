@@ -1,79 +1,65 @@
 package autotag
 
 import (
-	"database/sql"
+	"context"
 
+	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/match"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
-func addSceneStudio(sceneWriter models.SceneReaderWriter, sceneID, studioID int) (bool, error) {
-	// don't set if already set
-	scene, err := sceneWriter.Find(sceneID)
-	if err != nil {
-		return false, err
-	}
+// the following functions aren't used in Tagger because they assume
+// use within a transaction
 
-	if scene.StudioID.Valid {
+func addSceneStudio(ctx context.Context, sceneWriter scene.PartialUpdater, o *models.Scene, studioID int) (bool, error) {
+	// don't set if already set
+	if o.StudioID != nil {
 		return false, nil
 	}
 
 	// set the studio id
-	s := sql.NullInt64{Int64: int64(studioID), Valid: true}
 	scenePartial := models.ScenePartial{
-		ID:       sceneID,
-		StudioID: &s,
+		StudioID: models.NewOptionalInt(studioID),
 	}
 
-	if _, err := sceneWriter.Update(scenePartial); err != nil {
+	if _, err := sceneWriter.UpdatePartial(ctx, o.ID, scenePartial); err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func addImageStudio(imageWriter models.ImageReaderWriter, imageID, studioID int) (bool, error) {
+func addImageStudio(ctx context.Context, imageWriter image.PartialUpdater, i *models.Image, studioID int) (bool, error) {
 	// don't set if already set
-	image, err := imageWriter.Find(imageID)
-	if err != nil {
-		return false, err
-	}
-
-	if image.StudioID.Valid {
+	if i.StudioID != nil {
 		return false, nil
 	}
 
 	// set the studio id
-	s := sql.NullInt64{Int64: int64(studioID), Valid: true}
 	imagePartial := models.ImagePartial{
-		ID:       imageID,
-		StudioID: &s,
+		StudioID: models.NewOptionalInt(studioID),
 	}
 
-	if _, err := imageWriter.Update(imagePartial); err != nil {
+	if _, err := imageWriter.UpdatePartial(ctx, i.ID, imagePartial); err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func addGalleryStudio(galleryWriter models.GalleryReaderWriter, galleryID, studioID int) (bool, error) {
+func addGalleryStudio(ctx context.Context, galleryWriter GalleryFinderUpdater, o *models.Gallery, studioID int) (bool, error) {
 	// don't set if already set
-	gallery, err := galleryWriter.Find(galleryID)
-	if err != nil {
-		return false, err
-	}
-
-	if gallery.StudioID.Valid {
+	if o.StudioID != nil {
 		return false, nil
 	}
 
 	// set the studio id
-	s := sql.NullInt64{Int64: int64(studioID), Valid: true}
 	galleryPartial := models.GalleryPartial{
-		ID:       galleryID,
-		StudioID: &s,
+		StudioID: models.NewOptionalInt(studioID),
 	}
 
-	if _, err := galleryWriter.UpdatePartial(galleryPartial); err != nil {
+	if _, err := galleryWriter.UpdatePartial(ctx, o.ID, galleryPartial); err != nil {
 		return false, err
 	}
 	return true, nil
@@ -98,28 +84,71 @@ func getStudioTagger(p *models.Studio, aliases []string, cache *match.Cache) []t
 	return ret
 }
 
+type SceneFinderUpdater interface {
+	scene.Queryer
+	scene.PartialUpdater
+}
+
 // StudioScenes searches for scenes whose path matches the provided studio name and tags the scene with the studio, if studio is not already set on the scene.
-func StudioScenes(p *models.Studio, paths []string, aliases []string, rw models.SceneReaderWriter, cache *match.Cache) error {
-	t := getStudioTagger(p, aliases, cache)
+func (tagger *Tagger) StudioScenes(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw SceneFinderUpdater) error {
+	t := getStudioTagger(p, aliases, tagger.Cache)
 
 	for _, tt := range t {
-		if err := tt.tagScenes(paths, rw, func(subjectID, otherID int) (bool, error) {
-			return addSceneStudio(rw, otherID, subjectID)
+		if err := tt.tagScenes(ctx, paths, rw, func(o *models.Scene) (bool, error) {
+			// don't set if already set
+			if o.StudioID != nil {
+				return false, nil
+			}
+
+			// set the studio id
+			scenePartial := models.ScenePartial{
+				StudioID: models.NewOptionalInt(p.ID),
+			}
+
+			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				_, err := rw.UpdatePartial(ctx, o.ID, scenePartial)
+				return err
+			}); err != nil {
+				return false, err
+			}
+			return true, nil
 		}); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+type ImageFinderUpdater interface {
+	image.Queryer
+	Find(ctx context.Context, id int) (*models.Image, error)
+	UpdatePartial(ctx context.Context, id int, partial models.ImagePartial) (*models.Image, error)
 }
 
 // StudioImages searches for images whose path matches the provided studio name and tags the image with the studio, if studio is not already set on the image.
-func StudioImages(p *models.Studio, paths []string, aliases []string, rw models.ImageReaderWriter, cache *match.Cache) error {
-	t := getStudioTagger(p, aliases, cache)
+func (tagger *Tagger) StudioImages(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw ImageFinderUpdater) error {
+	t := getStudioTagger(p, aliases, tagger.Cache)
 
 	for _, tt := range t {
-		if err := tt.tagImages(paths, rw, func(subjectID, otherID int) (bool, error) {
-			return addImageStudio(rw, otherID, subjectID)
+		if err := tt.tagImages(ctx, paths, rw, func(i *models.Image) (bool, error) {
+			// don't set if already set
+			if i.StudioID != nil {
+				return false, nil
+			}
+
+			// set the studio id
+			imagePartial := models.ImagePartial{
+				StudioID: models.NewOptionalInt(p.ID),
+			}
+
+			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				_, err := rw.UpdatePartial(ctx, i.ID, imagePartial)
+				return err
+			}); err != nil {
+				return false, err
+			}
+			return true, nil
 		}); err != nil {
 			return err
 		}
@@ -128,13 +157,35 @@ func StudioImages(p *models.Studio, paths []string, aliases []string, rw models.
 	return nil
 }
 
+type GalleryFinderUpdater interface {
+	gallery.Queryer
+	gallery.PartialUpdater
+	Find(ctx context.Context, id int) (*models.Gallery, error)
+}
+
 // StudioGalleries searches for galleries whose path matches the provided studio name and tags the gallery with the studio, if studio is not already set on the gallery.
-func StudioGalleries(p *models.Studio, paths []string, aliases []string, rw models.GalleryReaderWriter, cache *match.Cache) error {
-	t := getStudioTagger(p, aliases, cache)
+func (tagger *Tagger) StudioGalleries(ctx context.Context, p *models.Studio, paths []string, aliases []string, rw GalleryFinderUpdater) error {
+	t := getStudioTagger(p, aliases, tagger.Cache)
 
 	for _, tt := range t {
-		if err := tt.tagGalleries(paths, rw, func(subjectID, otherID int) (bool, error) {
-			return addGalleryStudio(rw, otherID, subjectID)
+		if err := tt.tagGalleries(ctx, paths, rw, func(o *models.Gallery) (bool, error) {
+			// don't set if already set
+			if o.StudioID != nil {
+				return false, nil
+			}
+
+			// set the studio id
+			galleryPartial := models.GalleryPartial{
+				StudioID: models.NewOptionalInt(p.ID),
+			}
+
+			if err := txn.WithTxn(ctx, tagger.TxnManager, func(ctx context.Context) error {
+				_, err := rw.UpdatePartial(ctx, o.ID, galleryPartial)
+				return err
+			}); err != nil {
+				return false, err
+			}
+			return true, nil
 		}); err != nil {
 			return err
 		}

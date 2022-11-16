@@ -10,3 +10,5 @@ scalar Timestamp
 scalar Map
 
 scalar Any
+
+scalar Int64

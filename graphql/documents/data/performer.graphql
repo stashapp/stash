@@ -10,7 +10,7 @@ fragment PerformerData on Performer {
   ethnicity
   country
   eye_color
-  height
+  height_cm
   measurements
   fake_tits
   career_length
@@ -33,7 +33,7 @@ fragment PerformerData on Performer {
     stash_id
     endpoint
   }
-  rating
+  rating100
   details
   death_date
   hair_color

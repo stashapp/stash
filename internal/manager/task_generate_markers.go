@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -13,7 +13,7 @@ import (
 )
 
 type GenerateMarkersTask struct {
-	TxnManager          models.TransactionManager
+	TxnManager          Repository
 	Scene               *models.Scene
 	Marker              *models.SceneMarker
 	Overwrite           bool
@@ -42,9 +42,13 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 
 	if t.Marker != nil {
 		var scene *models.Scene
-		if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 			var err error
-			scene, err = r.Scene().Find(int(t.Marker.SceneID.Int64))
+			scene, err = t.TxnManager.Scene.Find(ctx, int(t.Marker.SceneID.Int64))
+			if err == nil && scene != nil {
+				err = scene.LoadPrimaryFile(ctx, t.TxnManager.File)
+			}
+
 			return err
 		}); err != nil {
 			logger.Errorf("error finding scene for marker: %s", err.Error())
@@ -56,10 +60,10 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 			return
 		}
 
-		ffprobe := instance.FFProbe
-		videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
-		if err != nil {
-			logger.Errorf("error reading video file: %s", err.Error())
+		videoFile := scene.Files.Primary()
+
+		if videoFile == nil {
+			// nothing to do
 			return
 		}
 
@@ -69,23 +73,18 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 
 func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
 		var err error
-		sceneMarkers, err = r.SceneMarker().FindBySceneID(t.Scene.ID)
+		sceneMarkers, err = t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
 		return err
 	}); err != nil {
 		logger.Errorf("error getting scene markers: %s", err.Error())
 		return
 	}
 
-	if len(sceneMarkers) == 0 {
-		return
-	}
+	videoFile := t.Scene.Files.Primary()
 
-	ffprobe := instance.FFProbe
-	videoFile, err := ffprobe.NewVideoFile(t.Scene.Path)
-	if err != nil {
-		logger.Errorf("error reading video file: %s", err.Error())
+	if len(sceneMarkers) == 0 || videoFile == nil {
 		return
 	}
 
@@ -105,7 +104,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	}
 }
 
-func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene *models.Scene, sceneMarker *models.SceneMarker) {
+func (t *GenerateMarkersTask) generateMarker(videoFile *file.VideoFile, scene *models.Scene, sceneMarker *models.SceneMarker) {
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	seconds := int(sceneMarker.Seconds)
 
@@ -133,17 +132,13 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 
 func (t *GenerateMarkersTask) markersNeeded(ctx context.Context) int {
 	markers := 0
-	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		var err error
-		sceneMarkers, err = r.SceneMarker().FindBySceneID(t.Scene.ID)
-		return err
-	}); err != nil {
-		logger.Errorf("errror finding scene markers: %s", err.Error())
+	sceneMarkers, err := t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
+	if err != nil {
+		logger.Errorf("error finding scene markers: %s", err.Error())
 		return 0
 	}
 
-	if len(sceneMarkers) == 0 {
+	if len(sceneMarkers) == 0 || t.Scene.Files.Primary() == nil {
 		return 0
 	}
 

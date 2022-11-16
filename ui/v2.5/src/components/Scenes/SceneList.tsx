@@ -13,7 +13,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import Tagger from "src/components/Tagger";
-import { SceneQueue } from "src/models/sceneQueue";
+import { IPlaySceneOptions, SceneQueue } from "src/models/sceneQueue";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
@@ -25,6 +25,8 @@ import { TaggerContext } from "../Tagger/context";
 import { IdentifyDialog } from "../Dialogs/IdentifyDialog/IdentifyDialog";
 import { ConfigurationContext } from "src/hooks/Config";
 import { faPlay } from "@fortawesome/free-solid-svg-icons";
+import { SceneMergeModal } from "./SceneMergeDialog";
+import { objectTitle } from "src/core/files";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -41,6 +43,9 @@ export const SceneList: React.FC<ISceneList> = ({
   const history = useHistory();
   const config = React.useContext(ConfigurationContext);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const [mergeScenes, setMergeScenes] = useState<
+    { id: string; title: string }[] | undefined
+  >(undefined);
   const [isIdentifyDialogOpen, setIsIdentifyDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
@@ -64,6 +69,11 @@ export const SceneList: React.FC<ISceneList> = ({
     {
       text: `${intl.formatMessage({ id: "actions.identify" })}…`,
       onClick: identify,
+      isDisplayed: showWhenSelected,
+    },
+    {
+      text: `${intl.formatMessage({ id: "actions.merge" })}…`,
+      onClick: merge,
       isDisplayed: showWhenSelected,
     },
     {
@@ -108,6 +118,14 @@ export const SceneList: React.FC<ISceneList> = ({
     persistState,
   });
 
+  function playScene(
+    queue: SceneQueue,
+    sceneID: string,
+    options: IPlaySceneOptions
+  ) {
+    history.push(queue.makeLink(sceneID, options));
+  }
+
   async function playSelected(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
@@ -118,9 +136,7 @@ export const SceneList: React.FC<ISceneList> = ({
     const queue = SceneQueue.fromSceneIDList(sceneIDs);
     const autoPlay =
       config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
-    const cont =
-      config.configuration?.interface.continuePlaylistDefault ?? false;
-    queue.playScene(history, sceneIDs[0], { autoPlay, continue: cont });
+    playScene(queue, sceneIDs[0], { autoPlay });
   }
 
   async function playRandom(
@@ -142,18 +158,12 @@ export const SceneList: React.FC<ISceneList> = ({
       filterCopy.sortBy = "random";
       const queryResults = await queryFindScenes(filterCopy);
       if (queryResults.data.findScenes.scenes.length > index) {
-        const { id } = queryResults!.data!.findScenes!.scenes[index];
+        const { id } = queryResults.data.findScenes.scenes[index];
         // navigate to the image player page
         const queue = SceneQueue.fromListFilterModel(filterCopy);
         const autoPlay =
           config.configuration?.interface.autostartVideoOnPlaySelected ?? false;
-        const cont =
-          config.configuration?.interface.continuePlaylistDefault ?? false;
-        queue.playScene(history, id, {
-          sceneIndex: index,
-          autoPlay,
-          continue: cont,
-        });
+        playScene(queue, id, { sceneIndex: index, autoPlay });
       }
     }
   }
@@ -164,6 +174,24 @@ export const SceneList: React.FC<ISceneList> = ({
 
   async function identify() {
     setIsIdentifyDialogOpen(true);
+  }
+
+  async function merge(
+    result: FindScenesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) {
+    const selected =
+      result.data?.findScenes.scenes
+        .filter((s) => selectedIds.has(s.id))
+        .map((s) => {
+          return {
+            id: s.id,
+            title: objectTitle(s),
+          };
+        }) ?? [];
+
+    setMergeScenes(selected);
   }
 
   async function onExport() {
@@ -237,6 +265,23 @@ export const SceneList: React.FC<ISceneList> = ({
     );
   }
 
+  function renderMergeDialog() {
+    if (mergeScenes) {
+      return (
+        <SceneMergeModal
+          scenes={mergeScenes}
+          onClose={(mergedID?: string) => {
+            setMergeScenes(undefined);
+            if (mergedID) {
+              history.push(`/scenes/${mergedID}`);
+            }
+          }}
+          show
+        />
+      );
+    }
+  }
+
   function renderScenes(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
@@ -293,6 +338,7 @@ export const SceneList: React.FC<ISceneList> = ({
         {maybeRenderSceneGenerateDialog(selectedIds)}
         {maybeRenderSceneIdentifyDialog(selectedIds)}
         {maybeRenderSceneExportDialog(selectedIds)}
+        {renderMergeDialog()}
         {renderScenes(result, filter, selectedIds)}
       </>
     );

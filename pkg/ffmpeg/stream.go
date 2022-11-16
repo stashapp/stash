@@ -2,10 +2,12 @@ package ffmpeg
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/stashapp/stash/pkg/logger"
 )
@@ -35,8 +37,8 @@ func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) {
 	// process killing should be handled by command context
 
 	_, err := io.Copy(w, s.Stdout)
-	if err != nil {
-		logger.Errorf("[stream] error serving transcoded video file: %s", err.Error())
+	if err != nil && !errors.Is(err, syscall.EPIPE) {
+		logger.Errorf("[stream] error serving transcoded video file: %v", err)
 	}
 }
 

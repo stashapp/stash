@@ -1,7 +1,7 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { MovieList } from "src/components/Movies/MovieList";
-import { performerFilterHook } from "src/core/performers";
+import { usePerformerFilterHook } from "src/core/performers";
 
 interface IPerformerDetailsProps {
   performer: GQL.PerformerDataFragment;
@@ -10,5 +10,6 @@ interface IPerformerDetailsProps {
 export const PerformerMoviesPanel: React.FC<IPerformerDetailsProps> = ({
   performer,
 }) => {
-  return <MovieList filterHook={performerFilterHook(performer)} />;
+  const filterHook = usePerformerFilterHook(performer);
+  return <MovieList filterHook={filterHook} />;
 };

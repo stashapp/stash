@@ -6,8 +6,12 @@ import {
   TagsCriterionOption,
 } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
+import React from "react";
+import { ConfigurationContext } from "src/hooks/Config";
+import { IUIConfig } from "./config";
 
-export const tagFilterHook = (tag: GQL.TagDataFragment) => {
+export const useTagFilterHook = (tag: GQL.TagDataFragment) => {
+  const config = React.useContext(ConfigurationContext);
   return (filter: ListFilterModel) => {
     const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
@@ -35,7 +39,9 @@ export const tagFilterHook = (tag: GQL.TagDataFragment) => {
       tagCriterion = new TagsCriterion(TagsCriterionOption);
       tagCriterion.value = {
         items: [tagValue],
-        depth: 0,
+        depth: (config?.configuration?.ui as IUIConfig)?.showChildTagContent
+          ? -1
+          : 0,
       };
       filter.criteria.push(tagCriterion);
     }

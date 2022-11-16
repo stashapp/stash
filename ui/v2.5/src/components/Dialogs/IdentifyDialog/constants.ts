@@ -13,6 +13,8 @@ export const sceneFields = [
   "date",
   "details",
   "url",
+  "code",
+  "director",
   "studio",
   "performers",
   "tags",
@@ -25,3 +27,11 @@ export const multiValueSceneFields: SceneField[] = [
   "performers",
   "tags",
 ];
+
+export function sceneFieldMessageID(field: SceneField) {
+  if (field === "code") {
+    return "scene_code";
+  }
+
+  return field;
+}

@@ -3,7 +3,7 @@ import { Badge } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { TextField, URLField } from "src/utils/field";
 
 interface IStudioDetailsPanel {
@@ -14,9 +14,8 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
   studio,
 }) => {
   const intl = useIntl();
-
   function renderRatingField() {
-    if (!studio.rating) {
+    if (!studio.rating100) {
       return;
     }
 
@@ -24,7 +23,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
       <>
         <dt>{intl.formatMessage({ id: "rating" })}</dt>
         <dd>
-          <RatingStars value={studio.rating} disabled />
+          <RatingSystem value={studio.rating100} disabled />
         </dd>
       </>
     );
@@ -46,6 +45,43 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
               {a}
             </Badge>
           ))}
+        </dd>
+      </>
+    );
+  }
+
+  function renderStashIDs() {
+    if (!studio.stash_ids?.length) {
+      return;
+    }
+
+    return (
+      <>
+        <dt>
+          <FormattedMessage id="StashIDs" />
+        </dt>
+        <dd>
+          <ul className="pl-0">
+            {studio.stash_ids.map((stashID) => {
+              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+              const link = base ? (
+                <a
+                  href={`${base}studios/${stashID.stash_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {stashID.stash_id}
+                </a>
+              ) : (
+                stashID.stash_id
+              );
+              return (
+                <li key={stashID.stash_id} className="row no-gutters">
+                  {link}
+                </li>
+              );
+            })}
+          </ul>
         </dd>
       </>
     );
@@ -76,6 +112,7 @@ export const StudioDetailsPanel: React.FC<IStudioDetailsPanel> = ({
 
         {renderRatingField()}
         {renderTagsList()}
+        {renderStashIDs()}
       </dl>
     </div>
   );

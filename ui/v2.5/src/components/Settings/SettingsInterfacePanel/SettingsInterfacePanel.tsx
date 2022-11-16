@@ -24,6 +24,15 @@ import {
   connectionStateLabel,
   InteractiveContext,
 } from "src/hooks/Interactive/context";
+import {
+  defaultRatingStarPrecision,
+  defaultRatingSystemOptions,
+  defaultRatingSystemType,
+  RatingStarPrecision,
+  ratingStarPrecisionIntlMap,
+  ratingSystemIntlMap,
+  RatingSystemType,
+} from "src/utils/rating";
 
 const allMenuItems = [
   { id: "scenes", headingID: "scenes" },
@@ -39,9 +48,14 @@ const allMenuItems = [
 export const SettingsInterfacePanel: React.FC = () => {
   const intl = useIntl();
 
-  const { interface: iface, saveInterface, loading, error } = React.useContext(
-    SettingStateContext
-  );
+  const {
+    interface: iface,
+    saveInterface,
+    ui,
+    saveUI,
+    loading,
+    error,
+  } = React.useContext(SettingStateContext);
 
   const {
     interactive,
@@ -71,6 +85,24 @@ export const SettingsInterfacePanel: React.FC = () => {
       imageLightbox: {
         ...iface.imageLightbox,
         ...v,
+      },
+    });
+  }
+
+  function saveRatingSystemType(t: RatingSystemType) {
+    saveUI({
+      ratingSystemOptions: {
+        ...ui.ratingSystemOptions,
+        type: t,
+      },
+    });
+  }
+
+  function saveRatingSystemStarPrecision(p: RatingStarPrecision) {
+    saveUI({
+      ratingSystemOptions: {
+        ...(ui.ratingSystemOptions ?? defaultRatingSystemOptions),
+        starPrecision: p,
       },
     });
   }
@@ -105,6 +137,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="ru-RU">Русский (Россия) (Preview)</option>
           <option value="sv-SE">Svenska</option>
           <option value="tr-TR">Türkçe (Türkiye)</option>
+          <option value="uk-UA">Ukrainian</option>
           <option value="zh-TW">繁體中文 (台灣)</option>
           <option value="zh-CN">简体中文 (中国)</option>
         </SelectSetting>
@@ -130,6 +163,14 @@ export const SettingsInterfacePanel: React.FC = () => {
             onChange={(v) => saveInterface({ menuItems: v })}
           />
         </div>
+
+        <BooleanSetting
+          id="abbreviate-counters"
+          headingID="config.ui.abbreviate_counters.heading"
+          subHeadingID="config.ui.abbreviate_counters.description"
+          checked={ui.abbreviateCounters ?? undefined}
+          onChange={(v) => saveUI({ abbreviateCounters: v })}
+        />
       </SettingSection>
 
       <SettingSection headingID="config.ui.desktop_integration.desktop_integration">
@@ -239,6 +280,31 @@ export const SettingsInterfacePanel: React.FC = () => {
           renderValue={(v) => {
             return <span>{DurationUtils.secondsToString(v ?? 0)}</span>;
           }}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.tag_panel.heading">
+        <BooleanSetting
+          id="show-tag-card-on-hover"
+          headingID="config.ui.show_tag_card_on_hover.heading"
+          subHeadingID="config.ui.show_tag_card_on_hover.description"
+          checked={ui.showTagCardOnHover ?? true}
+          onChange={(v) => saveUI({ showTagCardOnHover: v })}
+        />
+        <BooleanSetting
+          id="show-child-tagged-content"
+          headingID="config.ui.tag_panel.options.show_child_tagged_content.heading"
+          subHeadingID="config.ui.tag_panel.options.show_child_tagged_content.description"
+          checked={ui.showChildTagContent ?? undefined}
+          onChange={(v) => saveUI({ showChildTagContent: v })}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.studio_panel.heading">
+        <BooleanSetting
+          id="show-child-studio-content"
+          headingID="config.ui.studio_panel.options.show_child_studio_content.heading"
+          subHeadingID="config.ui.studio_panel.options.show_child_studio_content.description"
+          checked={ui.showChildStudioContent ?? undefined}
+          onChange={(v) => saveUI({ showChildStudioContent: v })}
         />
       </SettingSection>
 
@@ -376,6 +442,42 @@ export const SettingsInterfacePanel: React.FC = () => {
             }
           />
         </div>
+        <SelectSetting
+          id="rating_system"
+          headingID="config.ui.editing.rating_system.type.label"
+          value={ui.ratingSystemOptions?.type ?? defaultRatingSystemType}
+          onChange={(v) => saveRatingSystemType(v as RatingSystemType)}
+        >
+          {Array.from(ratingSystemIntlMap.entries()).map((v) => (
+            <option key={v[0]} value={v[0]}>
+              {intl.formatMessage({
+                id: v[1],
+              })}
+            </option>
+          ))}
+        </SelectSetting>
+        {(ui.ratingSystemOptions?.type ?? defaultRatingSystemType) ===
+          RatingSystemType.Stars && (
+          <SelectSetting
+            id="rating_system_star_precision"
+            headingID="config.ui.editing.rating_system.star_precision.label"
+            value={
+              ui.ratingSystemOptions?.starPrecision ??
+              defaultRatingStarPrecision
+            }
+            onChange={(v) =>
+              saveRatingSystemStarPrecision(v as RatingStarPrecision)
+            }
+          >
+            {Array.from(ratingStarPrecisionIntlMap.entries()).map((v) => (
+              <option key={v[0]} value={v[0]}>
+                {intl.formatMessage({
+                  id: v[1],
+                })}
+              </option>
+            ))}
+          </SelectSetting>
+        )}
       </SettingSection>
 
       <SettingSection headingID="config.ui.custom_css.heading">
@@ -392,6 +494,66 @@ export const SettingsInterfacePanel: React.FC = () => {
           subHeadingID="config.ui.custom_css.description"
           value={iface.css ?? undefined}
           onChange={(v) => saveInterface({ css: v })}
+          renderField={(value, setValue) => (
+            <Form.Control
+              as="textarea"
+              value={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setValue(e.currentTarget.value)
+              }
+              rows={16}
+              className="text-input code"
+            />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.custom_javascript.heading">
+        <BooleanSetting
+          id="custom-javascript-enabled"
+          headingID="config.ui.custom_javascript.option_label"
+          checked={iface.javascriptEnabled ?? undefined}
+          onChange={(v) => saveInterface({ javascriptEnabled: v })}
+        />
+
+        <ModalSetting<string>
+          id="custom-javascript"
+          headingID="config.ui.custom_javascript.heading"
+          subHeadingID="config.ui.custom_javascript.description"
+          value={iface.javascript ?? undefined}
+          onChange={(v) => saveInterface({ javascript: v })}
+          renderField={(value, setValue) => (
+            <Form.Control
+              as="textarea"
+              value={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setValue(e.currentTarget.value)
+              }
+              rows={16}
+              className="text-input code"
+            />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.custom_locales.heading">
+        <BooleanSetting
+          id="custom-locales-enabled"
+          headingID="config.ui.custom_locales.option_label"
+          checked={iface.customLocalesEnabled ?? undefined}
+          onChange={(v) => saveInterface({ customLocalesEnabled: v })}
+        />
+
+        <ModalSetting<string>
+          id="custom-locales"
+          headingID="config.ui.custom_locales.heading"
+          subHeadingID="config.ui.custom_locales.description"
+          value={iface.customLocales ?? undefined}
+          onChange={(v) => saveInterface({ customLocales: v })}
           renderField={(value, setValue) => (
             <Form.Control
               as="textarea"

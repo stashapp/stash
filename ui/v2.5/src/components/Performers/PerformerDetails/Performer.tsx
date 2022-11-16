@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Button, Tabs, Tab, Badge, Col, Row } from "react-bootstrap";
+import { Button, Tabs, Tab, Col, Row } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useHistory } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -13,6 +13,7 @@ import {
   mutateMetadataAutoTag,
 } from "src/core/StashService";
 import {
+  Counter,
   CountryFlag,
   DetailsEditNavbar,
   ErrorMessage,
@@ -20,8 +21,9 @@ import {
   LoadingIndicator,
 } from "src/components/Shared";
 import { useLightbox, useToast } from "src/hooks";
+import { ConfigurationContext } from "src/hooks/Config";
 import { TextUtils } from "src/utils";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { RatingSystem } from "src/components/Shared/Rating/RatingSystem";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
@@ -36,6 +38,7 @@ import {
   faHeart,
   faLink,
 } from "@fortawesome/free-solid-svg-icons";
+import { IUIConfig } from "src/core/config";
 
 interface IProps {
   performer: GQL.PerformerDataFragment;
@@ -49,6 +52,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
   const history = useHistory();
   const intl = useIntl();
   const { tab = "details" } = useParams<IPerformerParams>();
+
+  // Configuration settings
+  const { configuration } = React.useContext(ConfigurationContext);
+  const abbreviateCounter =
+    (configuration?.ui as IUIConfig)?.abbreviateCounters ?? false;
 
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
@@ -119,11 +127,11 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
       }
 
       Mousetrap.bind("0", () => setRating(NaN));
-      Mousetrap.bind("1", () => setRating(1));
-      Mousetrap.bind("2", () => setRating(2));
-      Mousetrap.bind("3", () => setRating(3));
-      Mousetrap.bind("4", () => setRating(4));
-      Mousetrap.bind("5", () => setRating(5));
+      Mousetrap.bind("1", () => setRating(20));
+      Mousetrap.bind("2", () => setRating(40));
+      Mousetrap.bind("3", () => setRating(60));
+      Mousetrap.bind("4", () => setRating(80));
+      Mousetrap.bind("5", () => setRating(100));
 
       setTimeout(() => {
         Mousetrap.unbind("0");
@@ -195,9 +203,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "scenes" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.scene_count ?? 0)}
-              </Badge>
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.scene_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -208,9 +217,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "galleries" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.gallery_count ?? 0)}
-              </Badge>
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.gallery_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -221,9 +231,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "images" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.image_count ?? 0)}
-              </Badge>
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.image_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -234,9 +245,10 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
           title={
             <React.Fragment>
               {intl.formatMessage({ id: "movies" })}
-              <Badge className="left-spacing" pill variant="secondary">
-                {intl.formatNumber(performer.movie_count ?? 0)}
-              </Badge>
+              <Counter
+                abbreviateCounter={abbreviateCounter}
+                count={performer.movie_count ?? 0}
+              />
             </React.Fragment>
           }
         >
@@ -315,7 +327,7 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
         variables: {
           input: {
             id: performer.id,
-            rating: v,
+            rating100: v,
           },
         },
       });
@@ -416,8 +428,8 @@ const PerformerPage: React.FC<IProps> = ({ performer }) => {
               {performer.name}
               {renderClickableIcons()}
             </h2>
-            <RatingStars
-              value={performer.rating ?? undefined}
+            <RatingSystem
+              value={performer.rating100 ?? undefined}
               onSetRating={(value) => setRating(value ?? null)}
             />
             {maybeRenderAliases()}

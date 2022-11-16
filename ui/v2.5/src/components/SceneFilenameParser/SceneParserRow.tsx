@@ -11,8 +11,8 @@ import {
   TagSelect,
   StudioSelect,
 } from "src/components/Shared";
-import { TextUtils } from "src/utils";
 import cx from "classnames";
+import { objectTitle } from "src/core/files";
 
 class ParserResult<T> {
   public value?: T;
@@ -51,10 +51,10 @@ export class SceneParserResult {
     this.scene = result.scene;
 
     this.id = this.scene.id;
-    this.filename = TextUtils.fileNameFromPath(this.scene.path);
+    this.filename = objectTitle(this.scene);
     this.title.setOriginalValue(this.scene.title ?? undefined);
     this.date.setOriginalValue(this.scene.date ?? undefined);
-    this.rating.setOriginalValue(this.scene.rating ?? undefined);
+    this.rating.setOriginalValue(this.scene.rating100 ?? undefined);
     this.performers.setOriginalValue(this.scene.performers.map((p) => p.id));
     this.tags.setOriginalValue(this.scene.tags.map((t) => t.id));
     this.studio.setOriginalValue(this.scene.studio?.id);

@@ -2,13 +2,15 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
+  NullNumberCriterionOption,
+  createDateCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { HasMarkersCriterionOption } from "./criteria/has-markers";
 import { SceneIsMissingCriterionOption } from "./criteria/is-missing";
 import { MoviesCriterionOption } from "./criteria/movies";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
-import { RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterionOption } from "./criteria/studios";
 import { InteractiveCriterionOption } from "./criteria/interactive";
@@ -24,12 +26,14 @@ import {
 } from "./criteria/phash";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { CaptionsCriterionOption } from "./criteria/captions";
+import { StashIDCriterionOption } from "./criteria/stash-ids";
 
 const defaultSortBy = "date";
 const sortByOptions = [
   "organized",
   "o_counter",
   "date",
+  "file_count",
   "filesize",
   "duration",
   "framerate",
@@ -50,8 +54,10 @@ const displayModeOptions = [
 
 const criterionOptions = [
   createStringCriterionOption("title"),
+  createStringCriterionOption("scene_code"),
   createMandatoryStringCriterionOption("path"),
   createStringCriterionOption("details"),
+  createStringCriterionOption("director"),
   createMandatoryStringCriterionOption("oshash", "media_info.hash"),
   createStringCriterionOption(
     "sceneChecksum",
@@ -60,8 +66,8 @@ const criterionOptions = [
   ),
   PhashCriterionOption,
   DuplicatedCriterionOption,
-  RatingCriterionOption,
   OrganizedCriterionOption,
+  new NullNumberCriterionOption("rating", "rating100"),
   createMandatoryNumberCriterionOption("o_counter"),
   ResolutionCriterionOption,
   createMandatoryNumberCriterionOption("duration"),
@@ -77,10 +83,14 @@ const criterionOptions = [
   StudiosCriterionOption,
   MoviesCriterionOption,
   createStringCriterionOption("url"),
-  createStringCriterionOption("stash_id"),
+  StashIDCriterionOption,
   InteractiveCriterionOption,
   CaptionsCriterionOption,
   createMandatoryNumberCriterionOption("interactive_speed"),
+  createMandatoryNumberCriterionOption("file_count"),
+  createDateCriterionOption("date"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 
 export const SceneListFilterOptions = new ListFilterOptions(

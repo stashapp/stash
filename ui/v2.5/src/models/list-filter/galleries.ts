@@ -1,12 +1,14 @@
 import {
   createMandatoryNumberCriterionOption,
   createStringCriterionOption,
+  NullNumberCriterionOption,
+  createDateCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { PerformerFavoriteCriterionOption } from "./criteria/favorite";
 import { GalleryIsMissingCriterionOption } from "./criteria/is-missing";
 import { OrganizedCriterionOption } from "./criteria/organized";
 import { PerformersCriterionOption } from "./criteria/performers";
-import { RatingCriterionOption } from "./criteria/rating";
 import { AverageResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterionOption } from "./criteria/studios";
 import {
@@ -25,6 +27,10 @@ const sortByOptions = ["date", ...MediaSortByOptions]
       messageID: "image_count",
       value: "images_count",
     },
+    {
+      messageID: "zip_file_count",
+      value: "file_count",
+    },
   ]);
 
 const displayModeOptions = [
@@ -42,7 +48,7 @@ const criterionOptions = [
     "media_info.checksum",
     "checksum"
   ),
-  RatingCriterionOption,
+  new NullNumberCriterionOption("rating", "rating100"),
   OrganizedCriterionOption,
   AverageResolutionCriterionOption,
   GalleryIsMissingCriterionOption,
@@ -56,6 +62,10 @@ const criterionOptions = [
   createStringCriterionOption("image_count"),
   StudiosCriterionOption,
   createStringCriterionOption("url"),
+  createMandatoryNumberCriterionOption("file_count", "zip_file_count"),
+  createDateCriterionOption("date"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 
 export const GalleryListFilterOptions = new ListFilterOptions(

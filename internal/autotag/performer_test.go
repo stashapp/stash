@@ -1,6 +1,7 @@
 package autotag
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stashapp/stash/pkg/image"
@@ -8,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestPerformerScenes(t *testing.T) {
@@ -27,10 +29,14 @@ func TestPerformerScenes(t *testing.T) {
 			"performer + name",
 			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name(?:$|_|[^\p{L}\d])`,
 		},
-		{
+	}
+
+	// trailing backslash tests only work where filepath separator is not backslash
+	if filepath.Separator != '\\' {
+		performerNames = append(performerNames, test{
 			`performer + name\`,
 			`(?i)(?:^|_|[^\p{L}\d])performer[.\-_ ]*\+[.\-_ ]*name\\(?:$|_|[^\p{L}\d])`,
-		},
+		})
 	}
 
 	for _, p := range performerNames {
@@ -47,18 +53,21 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	matchingPaths, falsePaths := generateTestPaths(performerName, "mp4")
 	for i, p := range append(matchingPaths, falsePaths...) {
 		scenes = append(scenes, &models.Scene{
-			ID:   i + 1,
-			Path: p,
+			ID:           i + 1,
+			Path:         p,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
 	performer := models.Performer{
 		ID:   performerID,
-		Name: models.NullString(performerName),
+		Name: performerName,
 	}
 
 	organized := false
-	perPage := models.PerPageAll
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
 
 	expectedSceneFilter := &models.SceneFilterType{
 		Organized: &organized,
@@ -69,19 +78,29 @@ func testPerformerScenes(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	expectedFindFilter := &models.FindFilterType{
-		PerPage: &perPage,
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
 	}
 
-	mockSceneReader.On("Query", scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false)).
+	mockSceneReader.On("Query", mock.Anything, scene.QueryOptions(expectedSceneFilter, expectedFindFilter, false)).
 		Return(mocks.SceneQueryResult(scenes, len(scenes)), nil).Once()
 
 	for i := range matchingPaths {
 		sceneID := i + 1
-		mockSceneReader.On("GetPerformerIDs", sceneID).Return(nil, nil).Once()
-		mockSceneReader.On("UpdatePerformers", sceneID, []int{performerID}).Return(nil).Once()
+		mockSceneReader.On("UpdatePartial", mock.Anything, sceneID, models.ScenePartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
-	err := PerformerScenes(&performer, nil, mockSceneReader, nil)
+	tagger := Tagger{
+		TxnManager: &mocks.TxnManager{},
+	}
+
+	err := tagger.PerformerScenes(testCtx, &performer, nil, mockSceneReader)
 
 	assert := assert.New(t)
 
@@ -122,18 +141,21 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	matchingPaths, falsePaths := generateTestPaths(performerName, imageExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
 		images = append(images, &models.Image{
-			ID:   i + 1,
-			Path: p,
+			ID:           i + 1,
+			Path:         p,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
 	performer := models.Performer{
 		ID:   performerID,
-		Name: models.NullString(performerName),
+		Name: performerName,
 	}
 
 	organized := false
-	perPage := models.PerPageAll
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
 
 	expectedImageFilter := &models.ImageFilterType{
 		Organized: &organized,
@@ -144,19 +166,29 @@ func testPerformerImages(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	expectedFindFilter := &models.FindFilterType{
-		PerPage: &perPage,
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
 	}
 
-	mockImageReader.On("Query", image.QueryOptions(expectedImageFilter, expectedFindFilter, false)).
+	mockImageReader.On("Query", mock.Anything, image.QueryOptions(expectedImageFilter, expectedFindFilter, false)).
 		Return(mocks.ImageQueryResult(images, len(images)), nil).Once()
 
 	for i := range matchingPaths {
 		imageID := i + 1
-		mockImageReader.On("GetPerformerIDs", imageID).Return(nil, nil).Once()
-		mockImageReader.On("UpdatePerformers", imageID, []int{performerID}).Return(nil).Once()
+		mockImageReader.On("UpdatePartial", mock.Anything, imageID, models.ImagePartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
-	err := PerformerImages(&performer, nil, mockImageReader, nil)
+	tagger := Tagger{
+		TxnManager: &mocks.TxnManager{},
+	}
+
+	err := tagger.PerformerImages(testCtx, &performer, nil, mockImageReader)
 
 	assert := assert.New(t)
 
@@ -196,19 +228,23 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	var galleries []*models.Gallery
 	matchingPaths, falsePaths := generateTestPaths(performerName, galleryExt)
 	for i, p := range append(matchingPaths, falsePaths...) {
+		v := p
 		galleries = append(galleries, &models.Gallery{
-			ID:   i + 1,
-			Path: models.NullString(p),
+			ID:           i + 1,
+			Path:         v,
+			PerformerIDs: models.NewRelatedIDs([]int{}),
 		})
 	}
 
 	performer := models.Performer{
 		ID:   performerID,
-		Name: models.NullString(performerName),
+		Name: performerName,
 	}
 
 	organized := false
-	perPage := models.PerPageAll
+	perPage := 1000
+	sort := "id"
+	direction := models.SortDirectionEnumAsc
 
 	expectedGalleryFilter := &models.GalleryFilterType{
 		Organized: &organized,
@@ -219,18 +255,28 @@ func testPerformerGalleries(t *testing.T, performerName, expectedRegex string) {
 	}
 
 	expectedFindFilter := &models.FindFilterType{
-		PerPage: &perPage,
+		PerPage:   &perPage,
+		Sort:      &sort,
+		Direction: &direction,
 	}
 
-	mockGalleryReader.On("Query", expectedGalleryFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
+	mockGalleryReader.On("Query", mock.Anything, expectedGalleryFilter, expectedFindFilter).Return(galleries, len(galleries), nil).Once()
 
 	for i := range matchingPaths {
 		galleryID := i + 1
-		mockGalleryReader.On("GetPerformerIDs", galleryID).Return(nil, nil).Once()
-		mockGalleryReader.On("UpdatePerformers", galleryID, []int{performerID}).Return(nil).Once()
+		mockGalleryReader.On("UpdatePartial", mock.Anything, galleryID, models.GalleryPartial{
+			PerformerIDs: &models.UpdateIDs{
+				IDs:  []int{performerID},
+				Mode: models.RelationshipUpdateModeAdd,
+			},
+		}).Return(nil, nil).Once()
 	}
 
-	err := PerformerGalleries(&performer, nil, mockGalleryReader, nil)
+	tagger := Tagger{
+		TxnManager: &mocks.TxnManager{},
+	}
+
+	err := tagger.PerformerGalleries(testCtx, &performer, nil, mockGalleryReader)
 
 	assert := assert.New(t)
 

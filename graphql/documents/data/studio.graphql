@@ -25,6 +25,6 @@ fragment StudioData on Studio {
     endpoint
   }
   details
-  rating
+  rating100
   aliases
 }

@@ -3,27 +3,38 @@ package jsonschema
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
 type Gallery struct {
-	Path        string        `json:"path,omitempty"`
-	Checksum    string        `json:"checksum,omitempty"`
-	Zip         bool          `json:"zip,omitempty"`
-	Title       string        `json:"title,omitempty"`
-	URL         string        `json:"url,omitempty"`
-	Date        string        `json:"date,omitempty"`
-	Details     string        `json:"details,omitempty"`
-	Rating      int           `json:"rating,omitempty"`
-	Organized   bool          `json:"organized,omitempty"`
-	Studio      string        `json:"studio,omitempty"`
-	Performers  []string      `json:"performers,omitempty"`
-	Tags        []string      `json:"tags,omitempty"`
-	FileModTime json.JSONTime `json:"file_mod_time,omitempty"`
-	CreatedAt   json.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt   json.JSONTime `json:"updated_at,omitempty"`
+	ZipFiles   []string      `json:"zip_files,omitempty"`
+	FolderPath string        `json:"folder_path,omitempty"`
+	Title      string        `json:"title,omitempty"`
+	URL        string        `json:"url,omitempty"`
+	Date       string        `json:"date,omitempty"`
+	Details    string        `json:"details,omitempty"`
+	Rating     int           `json:"rating,omitempty"`
+	Organized  bool          `json:"organized,omitempty"`
+	Studio     string        `json:"studio,omitempty"`
+	Performers []string      `json:"performers,omitempty"`
+	Tags       []string      `json:"tags,omitempty"`
+	CreatedAt  json.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt  json.JSONTime `json:"updated_at,omitempty"`
+}
+
+func (s Gallery) Filename(basename string, hash string) string {
+	ret := fsutil.SanitiseBasename(basename)
+
+	if ret != "" {
+		ret += "."
+	}
+	ret += hash
+
+	return ret + ".json"
 }
 
 func LoadGalleryFile(filePath string) (*Gallery, error) {
@@ -47,4 +58,24 @@ func SaveGalleryFile(filePath string, gallery *Gallery) error {
 		return fmt.Errorf("gallery must not be nil")
 	}
 	return marshalToFile(filePath, gallery)
+}
+
+// GalleryRef is used to identify a Gallery.
+// Only one field should be populated.
+type GalleryRef struct {
+	ZipFiles   []string `json:"zip_files,omitempty"`
+	FolderPath string   `json:"folder_path,omitempty"`
+	// Title is used only if FolderPath and ZipPaths is empty
+	Title string `json:"title,omitempty"`
+}
+
+func (r GalleryRef) String() string {
+	switch {
+	case r.FolderPath != "":
+		return "{ folder: " + r.FolderPath + " }"
+	case len(r.ZipFiles) > 0:
+		return "{ zipFiles: [" + strings.Join(r.ZipFiles, ", ") + "] }"
+	default:
+		return "{ title: " + r.Title + " }"
+	}
 }

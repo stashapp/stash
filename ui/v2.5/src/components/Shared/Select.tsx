@@ -6,6 +6,8 @@ import Select, {
   components as reactSelectComponents,
   GroupedOptionsType,
   OptionsType,
+  MenuListComponentProps,
+  GroupTypeBase,
 } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import debounce from "lodash-es/debounce";
@@ -22,10 +24,12 @@ import {
   usePerformerCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { TextUtils } from "src/utils";
 import { SelectComponents } from "react-select/src/components";
 import { ConfigurationContext } from "src/hooks/Config";
 import { useIntl } from "react-intl";
+import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
+import { TagPopover } from "../Tags/TagPopover";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -92,16 +96,13 @@ interface IFilterComponentProps extends IFilterProps {
 interface IFilterSelectProps<T extends boolean>
   extends Omit<ISelectProps<T>, "onChange" | "items" | "onCreateOption"> {}
 
-type Gallery = { id: string; title: string };
-interface IGallerySelect {
-  galleries: Gallery[];
-  onSelect: (items: Gallery[]) => void;
-}
-
-type Scene = { id: string; title: string };
-interface ISceneSelect {
-  scenes: Scene[];
-  onSelect: (items: Scene[]) => void;
+type TitledObject = { id: string; title: string };
+interface ITitledSelect {
+  className?: string;
+  selected: TitledObject[];
+  onSelect: (items: TitledObject[]) => void;
+  isMulti?: boolean;
+  disabled?: boolean;
 }
 
 const getSelectedItems = (selectedItems: ValueType<Option, boolean>) =>
@@ -113,6 +114,55 @@ const getSelectedItems = (selectedItems: ValueType<Option, boolean>) =>
 
 const getSelectedValues = (selectedItems: ValueType<Option, boolean>) =>
   getSelectedItems(selectedItems).map((item) => item.value);
+
+const LimitedSelectMenu = <T extends boolean>(
+  props: MenuListComponentProps<Option, T, GroupTypeBase<Option>>
+) => {
+  const maxOptionsShown = 200;
+  const [hiddenCount, setHiddenCount] = useState<number>(0);
+  const hiddenCountStyle = {
+    padding: "8px 12px",
+    opacity: "50%",
+  };
+  const menuChildren = useMemo(() => {
+    if (Array.isArray(props.children)) {
+      // limit the number of select options showing in the select dropdowns
+      // always showing the 'Create "..."' option when it exists
+      let creationOptionIndex = (props.children as React.ReactNodeArray).findIndex(
+        (child: React.ReactNode) => {
+          let maybeCreatableOption = child as React.ReactElement<
+            OptionProps<
+              Option & { __isNew__: boolean },
+              T,
+              GroupTypeBase<Option & { __isNew__: boolean }>
+            >,
+            ""
+          >;
+          return maybeCreatableOption?.props?.data?.__isNew__;
+        }
+      );
+      if (creationOptionIndex >= maxOptionsShown) {
+        setHiddenCount(props.children.length - maxOptionsShown - 1);
+        return props.children
+          .slice(0, maxOptionsShown - 1)
+          .concat([props.children[creationOptionIndex]]);
+      } else {
+        setHiddenCount(Math.max(props.children.length - maxOptionsShown, 0));
+        return props.children.slice(0, maxOptionsShown);
+      }
+    }
+    setHiddenCount(0);
+    return props.children;
+  }, [props.children]);
+  return (
+    <reactSelectComponents.MenuList {...props}>
+      {menuChildren}
+      {hiddenCount > 0 && (
+        <div style={hiddenCountStyle}>{hiddenCount} Options Hidden</div>
+      )}
+    </reactSelectComponents.MenuList>
+  );
+};
 
 const SelectComponent = <T extends boolean>({
   type,
@@ -189,6 +239,7 @@ const SelectComponent = <T extends boolean>({
     menuPortalTarget,
     components: {
       ...components,
+      MenuList: LimitedSelectMenu,
       IndicatorSeparator: () => null,
       ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),
       ...(isDisabled && { MultiValueRemove: () => null }),
@@ -264,7 +315,7 @@ const FilterSelectComponent = <T extends boolean>(
   );
 };
 
-export const GallerySelect: React.FC<IGallerySelect> = (props) => {
+export const GallerySelect: React.FC<ITitledSelect> = (props) => {
   const [query, setQuery] = useState<string>("");
   const { data, loading } = GQL.useFindGalleriesQuery({
     skip: query === "",
@@ -277,7 +328,7 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
 
   const galleries = data?.findGalleries.galleries ?? [];
   const items = galleries.map((g) => ({
-    label: g.title ?? TextUtils.fileNameFromPath(g.path ?? ""),
+    label: galleryTitle(g),
     value: g.id,
   }));
 
@@ -295,13 +346,14 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
     );
   };
 
-  const options = props.galleries.map((g) => ({
+  const options = props.selected.map((g) => ({
     value: g.id,
     label: g.title ?? "Unknown",
   }));
 
   return (
     <SelectComponent
+      className={props.className}
       onChange={onChange}
       onInputChange={onInputChange}
       isLoading={loading}
@@ -315,7 +367,7 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
   );
 };
 
-export const SceneSelect: React.FC<ISceneSelect> = (props) => {
+export const SceneSelect: React.FC<ITitledSelect> = (props) => {
   const [query, setQuery] = useState<string>("");
   const { data, loading } = GQL.useFindScenesQuery({
     skip: query === "",
@@ -328,7 +380,7 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
 
   const scenes = data?.findScenes.scenes ?? [];
   const items = scenes.map((s) => ({
-    label: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
+    label: objectTitle(s),
     value: s.id,
   }));
 
@@ -336,7 +388,7 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItems: ValueType<Option, true>) => {
+  const onChange = (selectedItems: ValueType<Option, boolean>) => {
     const selected = getSelectedItems(selectedItems);
     props.onSelect(
       (selected ?? []).map((s) => ({
@@ -346,7 +398,7 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
     );
   };
 
-  const options = props.scenes.map((s) => ({
+  const options = props.selected.map((s) => ({
     value: s.id,
     label: s.title,
   }));
@@ -358,10 +410,63 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
       isLoading={loading}
       items={items}
       selectedOptions={options}
-      isMulti
+      isMulti={props.isMulti ?? false}
       placeholder="Search for scene..."
       noOptionsMessage={query === "" ? null : "No scenes found."}
       showDropdown={false}
+      isDisabled={props.disabled}
+    />
+  );
+};
+
+export const ImageSelect: React.FC<ITitledSelect> = (props) => {
+  const [query, setQuery] = useState<string>("");
+  const { data, loading } = GQL.useFindImagesQuery({
+    skip: query === "",
+    variables: {
+      filter: {
+        q: query,
+      },
+    },
+  });
+
+  const images = data?.findImages.images ?? [];
+  const items = images.map((s) => ({
+    label: objectTitle(s),
+    value: s.id,
+  }));
+
+  const onInputChange = debounce((input: string) => {
+    setQuery(input);
+  }, 500);
+
+  const onChange = (selectedItems: ValueType<Option, boolean>) => {
+    const selected = getSelectedItems(selectedItems);
+    props.onSelect(
+      (selected ?? []).map((s) => ({
+        id: s.value,
+        title: s.label,
+      }))
+    );
+  };
+
+  const options = props.selected.map((s) => ({
+    value: s.id,
+    label: s.title,
+  }));
+
+  return (
+    <SelectComponent
+      onChange={onChange}
+      onInputChange={onInputChange}
+      isLoading={loading}
+      items={items}
+      selectedOptions={options}
+      isMulti={props.isMulti ?? false}
+      placeholder="Search for image..."
+      noOptionsMessage={query === "" ? null : "No images found."}
+      showDropdown={false}
+      isDisabled={props.disabled}
     />
   );
 };
@@ -658,7 +763,11 @@ export const TagSelect: React.FC<IFilterProps & { excludeIds?: string[] }> = (
       };
     }
 
-    return <reactSelectComponents.Option {...thisOptionProps} />;
+    return (
+      <TagPopover id={optionProps.data.value}>
+        <reactSelectComponents.Option {...thisOptionProps} />
+      </TagPopover>
+    );
   };
 
   const filterOption = (option: Option, rawInput: string): boolean => {
@@ -746,3 +855,106 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
   ) : (
     <TagSelect {...props} creatable={false} />
   );
+
+interface IStringListSelect {
+  options?: string[];
+  value: string[];
+}
+
+export const StringListSelect: React.FC<IStringListSelect> = ({
+  options = [],
+  value,
+}) => {
+  const translatedOptions = useMemo(() => {
+    return options.map((o) => {
+      return { label: o, value: o };
+    });
+  }, [options]);
+  const translatedValue = useMemo(() => {
+    return value.map((o) => {
+      return { label: o, value: o };
+    });
+  }, [value]);
+
+  const styles: Partial<Styles<Option, true>> = {
+    option: (base) => ({
+      ...base,
+      color: "#000",
+    }),
+    container: (base, props) => ({
+      ...base,
+      zIndex: props.selectProps.isFocused ? 10 : base.zIndex,
+    }),
+    multiValueRemove: (base, props) => ({
+      ...base,
+      color: props.selectProps.isFocused ? base.color : "#333333",
+    }),
+  };
+
+  return (
+    <Select
+      classNamePrefix="react-select"
+      className="form-control react-select"
+      options={translatedOptions}
+      value={translatedValue}
+      isMulti
+      isDisabled
+      styles={styles}
+      components={{
+        IndicatorSeparator: () => null,
+        ...{ DropdownIndicator: () => null },
+        ...{ MultiValueRemove: () => null },
+      }}
+    />
+  );
+};
+
+interface IListSelect<T> {
+  options?: T[];
+  value: T[];
+  toOptionType: (v: T) => { label: string; value: string };
+  fromOptionType?: (o: { label: string; value: string }) => T;
+}
+
+export const ListSelect = <T extends {}>(props: IListSelect<T>) => {
+  const { options = [], value, toOptionType } = props;
+
+  const translatedOptions = useMemo(() => {
+    return options.map(toOptionType);
+  }, [options, toOptionType]);
+  const translatedValue = useMemo(() => {
+    return value.map(toOptionType);
+  }, [value, toOptionType]);
+
+  const styles: Partial<Styles<{ label: string; value: string }, true>> = {
+    option: (base) => ({
+      ...base,
+      color: "#000",
+    }),
+    container: (base, p) => ({
+      ...base,
+      zIndex: p.selectProps.isFocused ? 10 : base.zIndex,
+    }),
+    multiValueRemove: (base, p) => ({
+      ...base,
+      color: p.selectProps.isFocused ? base.color : "#333333",
+    }),
+  };
+
+  return (
+    <Select
+      classNamePrefix="react-select"
+      className="form-control react-select"
+      options={translatedOptions}
+      value={translatedValue}
+      isMulti
+      isDisabled
+      styles={styles}
+      components={{
+        IndicatorSeparator: () => null,
+        ...{ DropdownIndicator: () => null },
+        ...{ MultiValueRemove: () => null },
+      }}
+    />
+  );
+};

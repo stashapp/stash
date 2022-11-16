@@ -5,20 +5,22 @@ import (
 	"os"
 
 	jsoniter "github.com/json-iterator/go"
+	"github.com/stashapp/stash/pkg/fsutil"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/json"
 )
 
 type Performer struct {
-	Name          string           `json:"name,omitempty"`
-	Gender        string           `json:"gender,omitempty"`
-	URL           string           `json:"url,omitempty"`
-	Twitter       string           `json:"twitter,omitempty"`
-	Instagram     string           `json:"instagram,omitempty"`
-	Birthdate     string           `json:"birthdate,omitempty"`
-	Ethnicity     string           `json:"ethnicity,omitempty"`
-	Country       string           `json:"country,omitempty"`
-	EyeColor      string           `json:"eye_color,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Gender    string `json:"gender,omitempty"`
+	URL       string `json:"url,omitempty"`
+	Twitter   string `json:"twitter,omitempty"`
+	Instagram string `json:"instagram,omitempty"`
+	Birthdate string `json:"birthdate,omitempty"`
+	Ethnicity string `json:"ethnicity,omitempty"`
+	Country   string `json:"country,omitempty"`
+	EyeColor  string `json:"eye_color,omitempty"`
+	// this should be int, but keeping string for backwards compatibility
 	Height        string           `json:"height,omitempty"`
 	Measurements  string           `json:"measurements,omitempty"`
 	FakeTits      string           `json:"fake_tits,omitempty"`
@@ -38,6 +40,10 @@ type Performer struct {
 	Weight        int              `json:"weight,omitempty"`
 	StashIDs      []models.StashID `json:"stash_ids,omitempty"`
 	IgnoreAutoTag bool             `json:"ignore_auto_tag,omitempty"`
+}
+
+func (s Performer) Filename() string {
+	return fsutil.SanitiseBasename(s.Name) + ".json"
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

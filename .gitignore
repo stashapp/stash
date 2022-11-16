@@ -16,12 +16,18 @@
 *.out
 
 # GraphQL generated output
-pkg/models/generated_*.go
+internal/api/generated_*.go
 ui/v2.5/src/core/generated-*.tsx
 
 ####
 # Jetbrains
 ####
+
+
+####
+# Visual Studio
+####
+/.vs
 
 # User-specific stuff
 .idea/**/workspace.xml
@@ -57,7 +63,6 @@ node_modules
 
 dist
 .DS_Store
-
 
 # Files to allow stash to run
 /stash

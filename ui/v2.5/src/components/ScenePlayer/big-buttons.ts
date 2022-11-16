@@ -1,11 +1,11 @@
 import videojs, { VideoJsPlayer } from "video.js";
 
-const BigPlayButton = videojs.getComponent("BigPlayButton");
+// prettier-ignore
+const BigPlayButton = videojs.getComponent("BigPlayButton") as unknown as typeof videojs.BigPlayButton;
 
 class BigPlayPauseButton extends BigPlayButton {
   handleClick(event: videojs.EventTarget.Event) {
     if (this.player().paused()) {
-      // @ts-ignore for some reason handleClick isn't defined in BigPlayButton type. Not sure why
       super.handleClick(event);
     } else {
       this.player().pause();
@@ -18,9 +18,8 @@ class BigPlayPauseButton extends BigPlayButton {
 }
 
 class BigButtonGroup extends videojs.getComponent("Component") {
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  constructor(player: VideoJsPlayer, options: any) {
-    super(player, options);
+  constructor(player: VideoJsPlayer) {
+    super(player);
 
     this.addChild("seekButton", {
       direction: "back",
@@ -42,13 +41,29 @@ class BigButtonGroup extends videojs.getComponent("Component") {
   }
 }
 
-const bigButtons = function (this: VideoJsPlayer) {
-  this.addChild("BigButtonGroup");
-};
+class BigButtonsPlugin extends videojs.getPlugin("plugin") {
+  constructor(player: VideoJsPlayer) {
+    super(player);
+
+    player.ready(() => {
+      player.addChild("BigButtonGroup");
+    });
+  }
+}
 
 // Register the plugin with video.js.
 videojs.registerComponent("BigButtonGroup", BigButtonGroup);
 videojs.registerComponent("BigPlayPauseButton", BigPlayPauseButton);
-videojs.registerPlugin("bigButtons", bigButtons);
+videojs.registerPlugin("bigButtons", BigButtonsPlugin);
 
-export default bigButtons;
+/* eslint-disable @typescript-eslint/naming-convention */
+declare module "video.js" {
+  interface VideoJsPlayer {
+    bigButtons: () => BigButtonsPlugin;
+  }
+  interface VideoJsPlayerPluginOptions {
+    bigButtons?: {};
+  }
+}
+
+export default BigButtonsPlugin;

@@ -189,6 +189,7 @@
     },
     "categories": {
       "about": "Sobre",
+      "changelog": "Registro de alterações",
       "interface": "Interface",
       "logs": "Registros",
       "metadata_providers": "Provedores de Meta-dados",
@@ -518,7 +519,7 @@
         "options": {
           "auto_start_video": "Começar vídeos automaticamente",
           "auto_start_video_on_play_selected": {
-            "description": "Começar reprodução de vídeos de cenas automaticamente quando reproduzindo selecionado ou aleatório a partir da página de Cenas",
+            "description": "Começar reprodução de vídeos de cenas automaticamente quando reproduzindo da fila, reproduzindo o selecionado ou aleatório a partir da página de Cenas",
             "heading": "Começar vídeo automaticamente quando reproduzindo selecionado"
           },
           "continue_playlist_default": {
@@ -601,6 +602,7 @@
     "delete_object_desc": "Tem certeza de que deseja excluir {count, plural, one {este(a) {singularEntity}} other {estes(as) {pluralEntity}}}?",
     "delete_object_overflow": "…e {count} other {count, plural, one {{singularEntity}} other {{pluralEntity}}}.",
     "delete_object_title": "Excluir {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
+    "dont_show_until_updated": "Não mostrar novamente até a próxima atualização",
     "edit_entity_title": "Editar {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "export_include_related_objects": "Inclua objetos relacionados na exportação",
     "export_title": "Exportar",
@@ -726,6 +728,7 @@
   "false": "Falso",
   "favourite": "Favorito(a)",
   "file": "arquivo",
+  "file_count": "Contagem de arquivos",
   "file_info": "Informações do arquivo",
   "file_mod_time": "Tempo de modificação do arquivo",
   "files": "arquivos",
@@ -733,6 +736,7 @@
   "filter": "Filtro",
   "filter_name": "Nome do filtro",
   "filters": "Filtros",
+  "folder": "Diretório",
   "framerate": "Taxa de quadros",
   "frames_per_second": "{value} quadros por segundo",
   "front_page": {
@@ -870,6 +874,7 @@
   "rating": "Avaliação",
   "recently_added_objects": "{objects} Recentemente Adicionados",
   "recently_released_objects": "{objects} Recentemente Lançados",
+  "release_notes": "Notas de lançamento",
   "resolution": "Resolução",
   "scene": "Cena",
   "sceneTagger": "Etiquetador de cena",
@@ -919,9 +924,10 @@
       "migration_failed_error": "Foi encontrado o seguinte erro durante a migração do banco de dados:",
       "migration_failed_help": "Por favor, faça qualquer correção necessária e tente novamente. Caso contrário, reporte um bug em {githubLink} ou busque ajuda em {discordLink}.",
       "migration_irreversible_warning": "O processo de migração não é reversível. Uma vez que a migração seja concluída, seu banco de dados será incompatível com versões anteriores do Stash.",
+      "migration_notes": "Notas de migração",
       "migration_required": "Migração necessária",
       "perform_schema_migration": "Fazer migração",
-      "schema_too_old": "A versão atual de seu banco de dados é <strong>{databaseSchema}</strong> e necessita ser migrada para a versão <strong>{appSchema}</strong>. Esta versão do Stash não funcionará sem migrar o banco de dados."
+      "schema_too_old": "A versão atual de seu banco de dados é <strong>{databaseSchema}</strong> e necessita ser migrada para a versão <strong>{appSchema}</strong>. Esta versão do Stash não funcionará sem migrar o banco de dados. Se você não deseja efetuar a migração, você irá precisar rebaixar para uma versão do Stash que corresponde à sua versão do banco de dados."
     },
     "paths": {
       "database_filename_empty_for_default": "nome do arquivo do banco de dados (em branco para usar padrão)",
@@ -999,7 +1005,6 @@
     "added_generation_job_to_queue": "Trabalho de geração adicionado para fila",
     "created_entity": "Criar {entity}",
     "default_filter_set": "Filtragem padrão definada",
-    "delete_entity": "Excluir {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Excluída {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Gerando captura de tela…",
     "merged_tags": "Etiquetas mescladas",

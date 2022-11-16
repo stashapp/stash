@@ -19,7 +19,8 @@ type Performer {
   ethnicity: String
   country: String
   eye_color: String
-  height: String
+  height: String @deprecated(reason: "Use height_cm")
+  height_cm: Int
   measurements: String
   fake_tits: String
   career_length: String
@@ -36,7 +37,10 @@ type Performer {
   gallery_count: Int # Resolver
   scenes: [Scene!]!
   stash_ids: [StashID!]!
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   details: String
   death_date: String
   hair_color: String
@@ -55,7 +59,9 @@ input PerformerCreateInput {
   ethnicity: String
   country: String
   eye_color: String
-  height: String
+  # height must be parsable into an integer
+  height: String @deprecated(reason: "Use height_cm")
+  height_cm: Int
   measurements: String
   fake_tits: String
   career_length: String
@@ -69,7 +75,10 @@ input PerformerCreateInput {
   """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   details: String
   death_date: String
   hair_color: String
@@ -86,7 +95,9 @@ input PerformerUpdateInput {
   ethnicity: String
   country: String
   eye_color: String
-  height: String
+  # height must be parsable into an integer
+  height: String @deprecated(reason: "Use height_cm")
+  height_cm: Int
   measurements: String
   fake_tits: String
   career_length: String
@@ -100,7 +111,10 @@ input PerformerUpdateInput {
   """This should be a URL or a base64 encoded data URL"""
   image: String
   stash_ids: [StashIDInput!]
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   details: String
   death_date: String
   hair_color: String
@@ -117,7 +131,9 @@ input BulkPerformerUpdateInput {
   ethnicity: String
   country: String
   eye_color: String
-  height: String
+  # height must be parsable into an integer
+  height: String @deprecated(reason: "Use height_cm")
+  height_cm: Int
   measurements: String
   fake_tits: String
   career_length: String
@@ -128,7 +144,10 @@ input BulkPerformerUpdateInput {
   instagram: String
   favorite: Boolean
   tag_ids: BulkUpdateIds
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   details: String
   death_date: String
   hair_color: String

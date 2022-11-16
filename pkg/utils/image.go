@@ -5,11 +5,13 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"regexp"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -127,5 +129,11 @@ func ServeImage(image []byte, w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Etag", etag)
 	w.Header().Set("Cache-Control", "public, max-age=604800, immutable")
 	_, err := w.Write(image)
+	// Broken pipe errors are common when serving images and the remote
+	// connection closes the connection. Filter them out of the error
+	// messages, as they are benign.
+	if errors.Is(err, syscall.EPIPE) {
+		return nil
+	}
 	return err
 }

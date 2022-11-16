@@ -5,6 +5,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
     excludeImage
   }
   databasePath
+  backupDirectoryPath
   generatedPath
   metadataPath
   scrapersPath
@@ -62,6 +63,10 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   showStudioAsText
   css
   cssEnabled
+  javascript
+  javascriptEnabled
+  customLocales
+  customLocalesEnabled
   language
   imageLightbox {
     slideshowDelay

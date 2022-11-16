@@ -3,9 +3,11 @@ import {
   createMandatoryNumberCriterionOption,
   createMandatoryStringCriterionOption,
   createStringCriterionOption,
+  NullNumberCriterionOption,
+  createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
-import { RatingCriterionOption } from "./criteria/rating";
+import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { ParentStudiosCriterionOption } from "./criteria/studios";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
@@ -34,14 +36,16 @@ const criterionOptions = [
   createStringCriterionOption("details"),
   ParentStudiosCriterionOption,
   StudioIsMissingCriterionOption,
-  RatingCriterionOption,
+  new NullNumberCriterionOption("rating", "rating100"),
   createBooleanCriterionOption("ignore_auto_tag"),
   createMandatoryNumberCriterionOption("scene_count"),
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
   createStringCriterionOption("url"),
-  createStringCriterionOption("stash_id"),
+  StashIDCriterionOption,
   createStringCriterionOption("aliases"),
+  createMandatoryTimestampCriterionOption("created_at"),
+  createMandatoryTimestampCriterionOption("updated_at"),
 ];
 
 export const StudioListFilterOptions = new ListFilterOptions(

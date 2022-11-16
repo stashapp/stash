@@ -23,14 +23,18 @@
     "create_entity": "Maak {entityType}",
     "create_marker": "Maak Marker",
     "created_entity": "Aangemaakt {entity_type}: {entity_name}",
+    "customise": "Aanpassen",
     "delete": "Verwijder",
     "delete_entity": "Verwijder {entityType}",
     "delete_file": "Verwijder bestand",
+    "delete_file_and_funscript": "Verwijder bestand (en funscript)",
     "delete_generated_supporting_files": "Verwijder gegenereerde ondersteuningsbestanden",
+    "delete_stashid": "Verwijder StashID",
     "disallow": "Niet toestaan",
     "download": "Download",
     "download_backup": "Download Backup",
     "edit": "Bewerk",
+    "edit_entity": "Wijzig {entityType}",
     "export": "Exporteer…",
     "export_all": "Exporteer Alles…",
     "find": "Zoek",
@@ -44,15 +48,18 @@
     "generate_thumb_from_current": "Genereer thumbnail van huidige",
     "hash_migration": "hash migratie",
     "hide": "Verbergen",
+    "hide_configuration": "Verberg Configuratie",
     "identify": "Identificeer",
     "ignore": "Negeren",
     "import": "Importeren…",
     "import_from_file": "Importeer uit bestand",
+    "logout": "Log uit",
     "merge": "Samenvoegen",
     "merge_from": "Samenvoegen uit",
     "merge_into": "Samenvoegen tot",
     "next_action": "Volgende",
     "not_running": "Niet werkend",
+    "open_in_external_player": "Open in externe speler",
     "open_random": "Open Willekeurig",
     "overwrite": "Overschrijven",
     "play_random": "Speel Willekeurig",
@@ -63,6 +70,7 @@
     "reload_plugins": "Invoegtoepassingen opnieuw laden",
     "reload_scrapers": "Herlaad Scrapers",
     "remove": "Verwijderen",
+    "remove_from_gallery": "Verwijder van Galerij",
     "rename_gen_files": "Hernoem gegenereerde bestanden",
     "rescan": "Scan opnieuw",
     "reshuffle": "Herschudden",
@@ -77,6 +85,7 @@
     "scrape_with": "Schraap met…",
     "search": "Zoek",
     "select_all": "Selecteer Alles",
+    "select_entity": "Selecteer {entityType}",
     "select_folders": "Selecteer bestandsmappen",
     "select_none": "Selecteer Niets",
     "selective_auto_tag": "Selectieve automatische Tag",
@@ -87,8 +96,12 @@
     "set_front_image": "Voorgrond afbeelding…",
     "set_image": "Zet afbeelding…",
     "show": "Toon",
+    "show_configuration": "Toon Configuratie",
     "skip": "Overslaan",
     "stop": "Stop",
+    "submit": "Opslaan",
+    "submit_stash_box": "Opslaan naar Stash-Box",
+    "submit_update": "Update opslaan",
     "tasks": {
       "clean_confirm_message": "Weet je zeker dat je wil opschonen? Dit verwijderd database informatie en gegenereerde bestanden voor alle scènes en galerijen die niet langer meer op schijf gevonden kunnen worden.",
       "dry_mode_selected": "\"droog\" mode geselecteerd. Er zal niets verwijderd worden, er wordt alleen gelogd.",
@@ -96,6 +109,7 @@
     },
     "temp_disable": "Schakel tijdelijk uit…",
     "temp_enable": "Schakel tijdelijk in…",
+    "unset": "Uitgeschakeld",
     "use_default": "Gebruik standaard",
     "view_random": "Bekijk Willekeurig"
   },
@@ -109,6 +123,7 @@
   "birth_year": "Geboortejaar",
   "birthdate": "Geboortedatum",
   "bitrate": "Bitsnelheid",
+  "captions": "Bijschriften",
   "career_length": "Duur van carrière",
   "component_tagger": {
     "config": {
@@ -188,14 +203,19 @@
     "dlna": {
       "allow_temp_ip": "Toestaan {tempIP}",
       "allowed_ip_addresses": "Toegestane IP-adressen",
+      "allowed_ip_temporarily": "Tijdelijk toegestane IP",
       "default_ip_whitelist": "Standaard IP witte lijst",
       "default_ip_whitelist_desc": "Standaard IP-adressen staan toegang tot DLNA toe. Gebruik {wildcard} om alle IP-adressen toe te staan.",
+      "disabled_dlna_temporarily": "DLNA tijdelijk uitschakelen",
+      "disallowed_ip": "Niet-toegestane IP",
       "enabled_by_default": "Standaard ingeschakeld",
+      "enabled_dlna_temporarily": "DLNA tijdelijk toegestaan",
       "network_interfaces": "Gebruikersinterface",
       "network_interfaces_desc": "Interfaces om de DLNA-server aan bloot te stellen. Een lege lijst resulteert in uitvoering op alle interfaces. Vereist een herstart van DLNA na wijziging.",
       "recent_ip_addresses": "Recentelijk IP-adressen",
       "server_display_name": "Naam serverweergave",
       "server_display_name_desc": "Weergavenaam voor de DLNA-server. Wordt standaard ingesteld op {server_naam} indien leeg.",
+      "successfully_cancelled_temporary_behaviour": "Tijdelijk gedrag geannuleerd",
       "until_restart": "tot de herstart"
     },
     "general": {
@@ -263,6 +283,10 @@
       "number_of_parallel_task_for_scan_generation_head": "Aantal parallelle taken voor scannen/genereren",
       "parallel_scan_head": "Parallel scannen/genereren",
       "preview_generation": "Voorbeeld genereren",
+      "python_path": {
+        "description": "Locatie van Python executable. Gebruikt voor scriptschrapers en plug-ins. Indien leeg, wordt python opgelost vanuit de omgeving",
+        "heading": "Python pad"
+      },
       "scraper_user_agent": "User Agent van de schraper",
       "scraper_user_agent_desc": "User-agent gebruikt tijdens het schrapen van HTTP verzoeken",
       "scrapers_path": {
@@ -320,7 +344,7 @@
       "auto_tagging": "Automatisch taggen",
       "backing_up_database": "Database back-uppen",
       "backup_and_download": "Voert een backup uit van de database en download het backup bestand.",
-      "backup_database": "Voert een backup uit naar hetzelfde pad als de database, met het bestandsformaat {filename_format}",
+      "backup_database": "Voert een backup van de database uit naar de backup map, met het bestandsformaat {filename_format}",
       "cleanup_desc": "Controleer op missende bestanden en verwijder deze uit de database. Dit is een destructieve handeling.",
       "data_management": "Opslagbeheer",
       "defaults_set": "Standaarden zijn ingesteld en zullen gebruikt worden wanneer de {action} knop op de Taken pagina ingedrukt wordt.",
@@ -412,6 +436,8 @@
       },
       "desktop_integration": {
         "desktop_integration": "Desktop-integratie",
+        "notifications_enabled": "Meldingen inschakelen",
+        "send_desktop_notifications_for_events": "Desktop meldingen voor evenementen",
         "skip_opening_browser": "Sla het openen van een browser over",
         "skip_opening_browser_on_startup": "Sla het automatisch openen van een browser over tijdens het opstarten"
       },
@@ -426,9 +452,22 @@
         "description": "Time Offset in milliseconden voor het afspelen van interactieve scripts.",
         "heading": "Funscript Offset (ms)"
       },
+      "handy_connection": {
+        "connect": "Connecteer",
+        "server_offset": {
+          "heading": "Server-offset"
+        },
+        "status": {
+          "heading": "Handige verbindings status"
+        },
+        "sync": "Synchroniseer"
+      },
       "handy_connection_key": {
         "description": "Handy connection key om te gebruiken voor interactieve scènes. Instellen van deze sleutel staat Stash toe om uw huidige scène-informatie met HandyFeeling.com te delen",
         "heading": "Handy Connection Key"
+      },
+      "image_lightbox": {
+        "heading": "Afbeelding Lightbox"
       },
       "images": {
         "heading": "Afbeeldingen",
@@ -495,9 +534,13 @@
           "toggle_sound": "Geluid inschakelen"
         }
       },
+      "scroll_attempts_before_change": {
+        "description": "Aantal keren dat moet worden geprobeerd te bladeren voordat naar het volgende/vorige item wordt gegaan. Geldt alleen voor Pan Y scroll-modus.",
+        "heading": "Scrollpogingen voor de overgang"
+      },
       "slideshow_delay": {
         "description": "Diavoorstelling is beschikbaar in galerijen in de muurweergavemodus",
-        "heading": "Diavoorstellingsvertraging"
+        "heading": "Diavoorstellingsvertraging (in seconden)"
       },
       "title": "Gebruikers interface"
     }
@@ -598,6 +641,8 @@
       "marker_screenshots_tooltip": "Markeer statische JPG-afbeeldingen, alleen vereist als Voorbeeldtype is ingesteld op Statische afbeelding.",
       "markers": "Marker Voorbeelden",
       "markers_tooltip": "Video's van 20 seconden die beginnen op de opgegeven tijdcode.",
+      "override_preview_generation_options": "Opties voor het genereren van voorvertoningen overschrijven",
+      "override_preview_generation_options_desc": "Overschrijf opties voor het genereren van voorbeelden voor deze bewerking. De standaardwaarden worden ingesteld in Systeem -> Voorbeeld genereren.",
       "overwrite": "Bestaande gegenereerde bestanden overschrijven",
       "phash": "Perceptuele hashes (voor deduplicatie)",
       "preview_exclude_end_time_desc": "Sluit de laatste x seconden uit van scènevoorbeelden. Dit kan een waarde in seconden zijn, of een percentage (bijv. 2%) van de totale duur van de scène.",
@@ -649,6 +694,7 @@
     "search_accuracy_label": "Zoek accuraatheid",
     "title": "Dubbele Scènes"
   },
+  "duplicated_phash": "Gedupliceerd (phash)",
   "duration": "Looptijd",
   "effect_filters": {
     "aspect": "Aspect",
@@ -671,7 +717,9 @@
     "scale": "Schaal",
     "warmth": "Warmte"
   },
+  "empty_server": "Voeg enkele scènes toe aan uw server om aanbevelingen op deze pagina te bekijken.",
   "ethnicity": "Etniciteit",
+  "existing_value": "bestaande waarde",
   "eye_color": "Oogkleur",
   "fake_tits": "Neppe Tieten",
   "false": "Vals",
@@ -686,6 +734,12 @@
   "filters": "Filters",
   "framerate": "Frame snelheid",
   "frames_per_second": "{value} frames per seconde",
+  "front_page": {
+    "types": {
+      "premade_filter": "Vooraf gemaakte filter",
+      "saved_filter": "Opgeslagen Filter"
+    }
+  },
   "galleries": "Galerijen",
   "gallery": "Galerij",
   "gallery_count": "Galerij aantal",
@@ -699,9 +753,19 @@
     "TRANSGENDER_MALE": "Transgender Man"
   },
   "hair_color": "Haar kleur",
+  "handy_connection_status": {
+    "connecting": "Verbinden",
+    "disconnected": "Verbinding verbroken",
+    "error": "Fout bij het verbinden met Handy",
+    "missing": "Ontbrekend",
+    "ready": "Klaar",
+    "syncing": "Synchroniseren met server",
+    "uploading": "Script uploaden"
+  },
   "hasMarkers": "Heeft Markeringen",
   "height": "Hoogte",
   "help": "Help",
+  "ignore_auto_tag": "Negeer automatische tag",
   "image": "Afbeelding",
   "image_count": "Afbeelding aantal",
   "images": "Afbeeldingen",
@@ -756,10 +820,34 @@
   "parent_tags": "Bovenlagentlabels",
   "part_of": "Onderdeel van {parent}",
   "path": "Pad",
+  "perceptual_similarity": "Perceptuele gelijkenis (phash)",
   "performer": "Performer",
   "performerTags": "Peformer Labels",
+  "performer_age": "Leeftijd artiest",
   "performer_count": "Performer Aantal",
+  "performer_favorite": "Artiest favoriet",
   "performer_image": "Performer Afbeelding",
+  "performer_tagger": {
+    "add_new_performers": "Nieuwe artiesten toevoegen",
+    "any_names_entered_will_be_queried": "Alle ingevoerde namen worden opgevraagd vanuit de externe Stash-Box-instantie en toegevoegd als ze worden gevonden. Alleen exacte overeenkomsten worden als een overeenkomst beschouwd.",
+    "batch_add_performers": "Batch Artiesten toevoegen",
+    "batch_update_performers": "Artiesten in batch bewerken",
+    "config": {
+      "active_stash-box_instance": "Actieve stashbox-instantie:",
+      "edit_excluded_fields": "Uitgesloten velden bewerken",
+      "excluded_fields": "Uitgesloten velden:",
+      "no_fields_are_excluded": "Er zijn geen velden uitgesloten",
+      "no_instances_found": "Geen instanties gevonden",
+      "these_fields_will_not_be_changed_when_updating_performers": "Deze velden worden niet gewijzigd bij het updaten van artiesten."
+    },
+    "current_page": "Huidige pagina",
+    "failed_to_save_performer": "Kan artiest \"{performer}\" niet opslaan",
+    "name_already_exists": "Naam bestaat al",
+    "network_error": "Netwerkfout",
+    "no_results_found": "Geen resultaten gevonden.",
+    "number_of_performers_will_be_processed": "{performer_count} artiest(en) word(en) verwerkt",
+    "performer_already_tagged": "Artiest al getagd"
+  },
   "performers": "Performers",
   "piercings": "Piercings",
   "queue": "Wachtrij",
@@ -800,6 +888,9 @@
       "something_went_wrong": "Oh nee! Er is iets fout gegaan!",
       "something_went_wrong_description": "Als dit lijkt op een probleem met je invoer, ga je gang en klik je op Terug om ze op te lossen. Breng anders een bug aan op {githubLink} of zoek hulp in de {discordLink}.",
       "something_went_wrong_while_setting_up_your_system": "Er is iets misgegaan tijdens het instellen van uw systeem. Dit is de fout die we hebben ontvangen: {error}"
+    },
+    "folder": {
+      "up_dir": "Een directory omhoog"
     },
     "github_repository": "Github repository",
     "migrate": {
@@ -854,10 +945,7 @@
       "next_step": "Wanneer u klaar bent om door te gaan met het instellen van een nieuw systeem, klikt u op Volgende.",
       "unable_to_locate_specified_config": "Als je dit leest, kan Stash het opgegeven configuratiebestand op de opdrachtregel of in de omgeving niet vinden. Deze wizard leidt u door het proces van het opzetten van een nieuwe configuratiebestand."
     },
-    "welcome_to_stash": "Welkom bij Stash",
-    "folder": {
-      "up_dir": "Een directory omhoog"
-    }
+    "welcome_to_stash": "Welkom bij Stash"
   },
   "stash_id": "Stash ID",
   "stash_ids": "Stash IDs",
@@ -881,11 +969,10 @@
   "tattoos": "Tattoos",
   "title": "Titel",
   "toast": {
-    "added_entity": "Toegevoegd {entity}",
+    "added_entity": "Toegevoegd {count, plural, one {{singularEntity}} andere {{pluralEntity}}}",
     "added_generation_job_to_queue": "Generatietaak toegevoegd aan wachtrij",
     "created_entity": "{entity} Aangemaakt",
     "default_filter_set": "Standaard filterset",
-    "delete_entity": "Verwijder {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "delete_past_tense": "Verwijderd {count, plural, one {{singularEntity}} other {{pluralEntity}}}",
     "generating_screenshot": "Screenshot Genereren…",
     "merged_tags": "Samengevoegde Labels",
@@ -902,6 +989,7 @@
   "updated_at": "Bijgewerkt op",
   "url": "URL",
   "videos": "Video's",
+  "view_all": "Alles weergeven",
   "weight": "Gewicht",
   "years_old": "jaar oud"
 }

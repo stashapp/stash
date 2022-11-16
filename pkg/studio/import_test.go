@@ -1,6 +1,7 @@
 package studio
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -43,21 +44,22 @@ func TestImporterPreImport(t *testing.T) {
 			IgnoreAutoTag: autoTagIgnored,
 		},
 	}
+	ctx := context.Background()
 
-	err := i.PreImport()
+	err := i.PreImport(ctx)
 
 	assert.NotNil(t, err)
 
 	i.Input.Image = image
 
-	err = i.PreImport()
+	err = i.PreImport(ctx)
 
 	assert.Nil(t, err)
 
 	i.Input = *createFullJSONStudio(studioName, image, []string{"alias"})
 	i.Input.ParentStudio = ""
 
-	err = i.PreImport()
+	err = i.PreImport(ctx)
 
 	assert.Nil(t, err)
 	expectedStudio := createFullStudio(0, 0)
@@ -68,6 +70,7 @@ func TestImporterPreImport(t *testing.T) {
 
 func TestImporterPreImportWithParent(t *testing.T) {
 	readerWriter := &mocks.StudioReaderWriter{}
+	ctx := context.Background()
 
 	i := Importer{
 		ReaderWriter: readerWriter,
@@ -78,17 +81,17 @@ func TestImporterPreImportWithParent(t *testing.T) {
 		},
 	}
 
-	readerWriter.On("FindByName", existingParentStudioName, false).Return(&models.Studio{
+	readerWriter.On("FindByName", ctx, existingParentStudioName, false).Return(&models.Studio{
 		ID: existingStudioID,
 	}, nil).Once()
-	readerWriter.On("FindByName", existingParentStudioErr, false).Return(nil, errors.New("FindByName error")).Once()
+	readerWriter.On("FindByName", ctx, existingParentStudioErr, false).Return(nil, errors.New("FindByName error")).Once()
 
-	err := i.PreImport()
+	err := i.PreImport(ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(existingStudioID), i.studio.ParentID.Int64)
 
 	i.Input.ParentStudio = existingParentStudioErr
-	err = i.PreImport()
+	err = i.PreImport(ctx)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)
@@ -96,6 +99,7 @@ func TestImporterPreImportWithParent(t *testing.T) {
 
 func TestImporterPreImportWithMissingParent(t *testing.T) {
 	readerWriter := &mocks.StudioReaderWriter{}
+	ctx := context.Background()
 
 	i := Importer{
 		ReaderWriter: readerWriter,
@@ -107,20 +111,20 @@ func TestImporterPreImportWithMissingParent(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	readerWriter.On("FindByName", missingParentStudioName, false).Return(nil, nil).Times(3)
-	readerWriter.On("Create", mock.AnythingOfType("models.Studio")).Return(&models.Studio{
+	readerWriter.On("FindByName", ctx, missingParentStudioName, false).Return(nil, nil).Times(3)
+	readerWriter.On("Create", ctx, mock.AnythingOfType("models.Studio")).Return(&models.Studio{
 		ID: existingStudioID,
 	}, nil)
 
-	err := i.PreImport()
+	err := i.PreImport(ctx)
 	assert.NotNil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
-	err = i.PreImport()
+	err = i.PreImport(ctx)
 	assert.Nil(t, err)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
-	err = i.PreImport()
+	err = i.PreImport(ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(existingStudioID), i.studio.ParentID.Int64)
 
@@ -129,6 +133,7 @@ func TestImporterPreImportWithMissingParent(t *testing.T) {
 
 func TestImporterPreImportWithMissingParentCreateErr(t *testing.T) {
 	readerWriter := &mocks.StudioReaderWriter{}
+	ctx := context.Background()
 
 	i := Importer{
 		ReaderWriter: readerWriter,
@@ -140,15 +145,16 @@ func TestImporterPreImportWithMissingParentCreateErr(t *testing.T) {
 		MissingRefBehaviour: models.ImportMissingRefEnumCreate,
 	}
 
-	readerWriter.On("FindByName", missingParentStudioName, false).Return(nil, nil).Once()
-	readerWriter.On("Create", mock.AnythingOfType("models.Studio")).Return(nil, errors.New("Create error"))
+	readerWriter.On("FindByName", ctx, missingParentStudioName, false).Return(nil, nil).Once()
+	readerWriter.On("Create", ctx, mock.AnythingOfType("models.Studio")).Return(nil, errors.New("Create error"))
 
-	err := i.PreImport()
+	err := i.PreImport(ctx)
 	assert.NotNil(t, err)
 }
 
 func TestImporterPostImport(t *testing.T) {
 	readerWriter := &mocks.StudioReaderWriter{}
+	ctx := context.Background()
 
 	i := Importer{
 		ReaderWriter: readerWriter,
@@ -161,21 +167,21 @@ func TestImporterPostImport(t *testing.T) {
 	updateStudioImageErr := errors.New("UpdateImage error")
 	updateTagAliasErr := errors.New("UpdateAlias error")
 
-	readerWriter.On("UpdateImage", studioID, imageBytes).Return(nil).Once()
-	readerWriter.On("UpdateImage", errImageID, imageBytes).Return(updateStudioImageErr).Once()
-	readerWriter.On("UpdateImage", errAliasID, imageBytes).Return(nil).Once()
+	readerWriter.On("UpdateImage", ctx, studioID, imageBytes).Return(nil).Once()
+	readerWriter.On("UpdateImage", ctx, errImageID, imageBytes).Return(updateStudioImageErr).Once()
+	readerWriter.On("UpdateImage", ctx, errAliasID, imageBytes).Return(nil).Once()
 
-	readerWriter.On("UpdateAliases", studioID, i.Input.Aliases).Return(nil).Once()
-	readerWriter.On("UpdateAliases", errImageID, i.Input.Aliases).Return(nil).Maybe()
-	readerWriter.On("UpdateAliases", errAliasID, i.Input.Aliases).Return(updateTagAliasErr).Once()
+	readerWriter.On("UpdateAliases", ctx, studioID, i.Input.Aliases).Return(nil).Once()
+	readerWriter.On("UpdateAliases", ctx, errImageID, i.Input.Aliases).Return(nil).Maybe()
+	readerWriter.On("UpdateAliases", ctx, errAliasID, i.Input.Aliases).Return(updateTagAliasErr).Once()
 
-	err := i.PostImport(studioID)
+	err := i.PostImport(ctx, studioID)
 	assert.Nil(t, err)
 
-	err = i.PostImport(errImageID)
+	err = i.PostImport(ctx, errImageID)
 	assert.NotNil(t, err)
 
-	err = i.PostImport(errAliasID)
+	err = i.PostImport(ctx, errAliasID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)
@@ -183,6 +189,7 @@ func TestImporterPostImport(t *testing.T) {
 
 func TestImporterFindExistingID(t *testing.T) {
 	readerWriter := &mocks.StudioReaderWriter{}
+	ctx := context.Background()
 
 	i := Importer{
 		ReaderWriter: readerWriter,
@@ -192,23 +199,23 @@ func TestImporterFindExistingID(t *testing.T) {
 	}
 
 	errFindByName := errors.New("FindByName error")
-	readerWriter.On("FindByName", studioName, false).Return(nil, nil).Once()
-	readerWriter.On("FindByName", existingStudioName, false).Return(&models.Studio{
+	readerWriter.On("FindByName", ctx, studioName, false).Return(nil, nil).Once()
+	readerWriter.On("FindByName", ctx, existingStudioName, false).Return(&models.Studio{
 		ID: existingStudioID,
 	}, nil).Once()
-	readerWriter.On("FindByName", studioNameErr, false).Return(nil, errFindByName).Once()
+	readerWriter.On("FindByName", ctx, studioNameErr, false).Return(nil, errFindByName).Once()
 
-	id, err := i.FindExistingID()
+	id, err := i.FindExistingID(ctx)
 	assert.Nil(t, id)
 	assert.Nil(t, err)
 
 	i.Input.Name = existingStudioName
-	id, err = i.FindExistingID()
+	id, err = i.FindExistingID(ctx)
 	assert.Equal(t, existingStudioID, *id)
 	assert.Nil(t, err)
 
 	i.Input.Name = studioNameErr
-	id, err = i.FindExistingID()
+	id, err = i.FindExistingID(ctx)
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
@@ -217,6 +224,7 @@ func TestImporterFindExistingID(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	readerWriter := &mocks.StudioReaderWriter{}
+	ctx := context.Background()
 
 	studio := models.Studio{
 		Name: models.NullString(studioName),
@@ -232,17 +240,17 @@ func TestCreate(t *testing.T) {
 	}
 
 	errCreate := errors.New("Create error")
-	readerWriter.On("Create", studio).Return(&models.Studio{
+	readerWriter.On("Create", ctx, studio).Return(&models.Studio{
 		ID: studioID,
 	}, nil).Once()
-	readerWriter.On("Create", studioErr).Return(nil, errCreate).Once()
+	readerWriter.On("Create", ctx, studioErr).Return(nil, errCreate).Once()
 
-	id, err := i.Create()
+	id, err := i.Create(ctx)
 	assert.Equal(t, studioID, *id)
 	assert.Nil(t, err)
 
 	i.studio = studioErr
-	id, err = i.Create()
+	id, err = i.Create(ctx)
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
 
@@ -251,6 +259,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.StudioReaderWriter{}
+	ctx := context.Background()
 
 	studio := models.Studio{
 		Name: models.NullString(studioName),
@@ -269,18 +278,18 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	studio.ID = studioID
-	readerWriter.On("UpdateFull", studio).Return(nil, nil).Once()
+	readerWriter.On("UpdateFull", ctx, studio).Return(nil, nil).Once()
 
-	err := i.Update(studioID)
+	err := i.Update(ctx, studioID)
 	assert.Nil(t, err)
 
 	i.studio = studioErr
 
 	// need to set id separately
 	studioErr.ID = errImageID
-	readerWriter.On("UpdateFull", studioErr).Return(nil, errUpdate).Once()
+	readerWriter.On("UpdateFull", ctx, studioErr).Return(nil, errUpdate).Once()
 
-	err = i.Update(errImageID)
+	err = i.Update(ctx, errImageID)
 	assert.NotNil(t, err)
 
 	readerWriter.AssertExpectations(t)

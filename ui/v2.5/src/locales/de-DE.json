@@ -54,6 +54,7 @@
     "import": "Importieren…",
     "import_from_file": "Importieren aus Datei",
     "logout": "Ausloggen",
+    "make_primary": "Als Primärquelle festlegen",
     "merge": "Zusammenführen",
     "merge_from": "Zusammenführen aus",
     "merge_into": "Zusammenführen in",
@@ -189,6 +190,7 @@
     },
     "categories": {
       "about": "Über",
+      "changelog": "Änderungsprotokoll",
       "interface": "Oberfläche",
       "logs": "Protokoll",
       "metadata_providers": "Metadaten-Anbieter",
@@ -242,6 +244,10 @@
         "stash-box_integration": "Stash-box Einbindung",
         "username": "Benutzername",
         "username_desc": "Benutzername für den Zugriff auf Stash. Feld leer lassen, um Benutzerauthentifizierung zu deaktivieren"
+      },
+      "backup_directory_path": {
+        "description": "Verzeichnisspeicherort für SQLite-Datenbankdateisicherungen",
+        "heading": "Backup-Verzeichnispfad"
       },
       "cache_location": "Verzeichnis für den Cache",
       "cache_path_head": "Cache Pfad",
@@ -344,7 +350,7 @@
       "auto_tagging": "Automatisches Tagging",
       "backing_up_database": "Datenbank sichern",
       "backup_and_download": "Führt eine Sicherung der Datenbank durch und lädt die resultierende Datei herunter.",
-      "backup_database": "Führt eine Sicherung der Datenbank aus, welche im selben Verzeichnis wie die Datenbank mit dem Dateinamenformat {filename_format} gespeichert wird",
+      "backup_database": "Führt eine Sicherung der Datenbank in den Backup-Verzeichnispfad mit dem Dateiformat {filename_format} aus",
       "cleanup_desc": "Suche nach fehlenden Dateien und entfernen Sie diese aus der Datenbank. Dies ist eine destruktive Aktion.",
       "data_management": "Datenmanagement",
       "defaults_set": "Standardeinstellungen wurden eingestellt und werden genutzt, wenn {action} Button auf der Aufgabenseite geklickt wurde.",
@@ -420,11 +426,20 @@
       "scene_tools": "Szenen-Tools"
     },
     "ui": {
+      "abbreviate_counters": {
+        "description": "Verkürze Zähler in Karten und den Detail-Ansichten ab, zum Beispiel wird \"1831\" als \"1.8K\" abgekürzt.",
+        "heading": "Zähler verkürzen"
+      },
       "basic_settings": "Grundeinstellungen",
       "custom_css": {
         "description": "Die Seite muss neu geladen werden, damit die Änderungen wirksam werden.",
         "heading": "Benutzerdefinierte CSS",
         "option_label": "Benutzerdefiniertes CSS aktiviert"
+      },
+      "custom_locales": {
+        "description": "Überschreibe einzelne Locale-Strings. Siehe https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json für die Hauptliste. Die Seite muss neu geladen werden, damit die Änderungen wirksam werden.",
+        "heading": "Benutzerdefinierte Lokalisierung",
+        "option_label": "Benutzerdefinierte Lokalisierung aktiviert"
       },
       "delete_options": {
         "description": "Standardeinstellungen wenn Bilder, Galerien und Szenen gelöscht werden.",
@@ -518,7 +533,7 @@
         "options": {
           "auto_start_video": "Video automatisch starten",
           "auto_start_video_on_play_selected": {
-            "description": "Automatische Wiedergabe von ausgewählten oder zufälligen Szenenvideos von der Szenenseite",
+            "description": "Automatischer Start von Videos aus der Warteschlange oder bei einer Wiedergabe von ausgewählten oder zufälligen Videos von der Szenen-Seite",
             "heading": "Automatische Wiedergabe von ausgewählten Videos"
           },
           "continue_playlist_default": {
@@ -539,9 +554,30 @@
         "description": "Anzahl der Versuche, einen Bildlauf durchzuführen, bevor zum nächsten/vorherigen Element gewechselt wird. Gilt nur für den Bildlaufmodus Schwenkung Y.",
         "heading": "Anzahl Scroll-Versuche vor Übergang"
       },
+      "show_tag_card_on_hover": {
+        "description": "Tag-Karte anzeigen, wenn der Mauszeiger über Tag-Abzeichen bewegt wird",
+        "heading": "Tag-Karten-Tooltips"
+      },
       "slideshow_delay": {
         "description": "Die Diashow ist in Galerien in der Wandansicht verfügbar",
         "heading": "Verzögerung der Diashow (Sekunden)"
+      },
+      "studio_panel": {
+        "heading": "Studioansicht",
+        "options": {
+          "show_child_studio_content": {
+            "description": "In der Studioansicht, zeige auch Inhalte von Unterstudios"
+          }
+        }
+      },
+      "tag_panel": {
+        "heading": "Tag-Ansicht",
+        "options": {
+          "show_child_tagged_content": {
+            "description": "In der Tag-Ansicht, zeige auch Inhalte der Sub-Tags",
+            "heading": "Zeige Sub-Tag Inhalte"
+          }
+        }
       },
       "title": "Benutzeroberfläche"
     }
@@ -995,14 +1031,14 @@
   "tattoos": "Tätowierungen",
   "title": "Titel",
   "toast": {
-    "added_entity": "{entity} hinzugefügt",
+    "added_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} hinzugefügt",
     "added_generation_job_to_queue": "Generierungsaufgabe zur Warteschlange hinzugefügt",
     "created_entity": "{entity} erstellt",
     "default_filter_set": "Standardfiltersatz",
-    "delete_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} löschen",
     "delete_past_tense": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
     "generating_screenshot": "Screenshot wird erstellt…",
     "merged_tags": "Zusammengeführte Tags",
+    "removed_entity": "{count, plural, one {{singularEntity}} other {{pluralEntity}}} gelöscht",
     "rescanning_entity": "Erneutes Scannen von {count, plural, one {{singularEntity}} other {{pluralEntity}}}…",
     "saved_entity": "{entity} gespeichert",
     "started_auto_tagging": "Automatisches Tagging gestartet",
