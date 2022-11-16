@@ -435,6 +435,11 @@
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
       },
+      "custom_javascript": {
+        "description": "Page must be reloaded for changes to take effect.",
+        "heading": "Custom Javascript",
+        "option_label": "Custom Javascript enabled"
+      },
       "custom_locales": {
         "description": "Override individual locale strings. See https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json for the master list. Page must be reloaded for changes to take effect.",
         "heading": "Custom localisation",
