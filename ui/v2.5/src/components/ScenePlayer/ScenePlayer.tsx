@@ -112,6 +112,24 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   }
 }
 
+type MarkerFragment = Pick<GQL.SceneMarker, "title" | "seconds"> & {
+  primary_tag: Pick<GQL.Tag, "name">;
+  tags: Array<Pick<GQL.Tag, "name">>;
+};
+
+function getMarkerTitle(marker: MarkerFragment) {
+  if (marker.title) {
+    return marker.title;
+  }
+
+  let ret = marker.primary_tag.name;
+  if (marker.tags.length) {
+    ret += `, ${marker.tags.map((t) => t.name).join(", ")}`;
+  }
+
+  return ret;
+}
+
 interface IScenePlayerProps {
   className?: string;
   scene: GQL.SceneDataFragment | undefined | null;
@@ -416,7 +434,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     markers.clearMarkers();
     for (const marker of scene.scene_markers) {
       markers.addMarker({
-        title: marker.title,
+        title: getMarkerTitle(marker),
         time: marker.seconds,
       });
     }
