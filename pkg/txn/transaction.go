@@ -9,6 +9,7 @@ type Manager interface {
 	Begin(ctx context.Context) (context.Context, error)
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
+	Complete(ctx context.Context)
 
 	IsLocked(err error) bool
 }
@@ -37,6 +38,8 @@ func withTxn(ctx context.Context, m Manager, fn TxnFunc, execCompleteOnLocked bo
 	if err != nil {
 		return err
 	}
+
+	defer m.Complete(ctx)
 
 	defer func() {
 		if p := recover(); p != nil {

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/fvbommel/sortorder"
@@ -73,7 +72,7 @@ type Database struct {
 
 	schemaVersion uint
 
-	writeMu sync.Mutex
+	lockChan chan struct{}
 }
 
 func NewDatabase() *Database {
@@ -87,6 +86,7 @@ func NewDatabase() *Database {
 		Image:     NewImageStore(fileStore),
 		Gallery:   NewGalleryStore(fileStore, folderStore),
 		Performer: NewPerformerStore(),
+		lockChan:  make(chan struct{}, 1),
 	}
 
 	return ret
@@ -106,8 +106,8 @@ func (db *Database) Ready() error {
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
 func (db *Database) Open(dbPath string) error {
-	db.writeMu.Lock()
-	defer db.writeMu.Unlock()
+	db.lockNoCtx()
+	defer db.unlock()
 
 	db.dbPath = dbPath
 
@@ -152,9 +152,32 @@ func (db *Database) Open(dbPath string) error {
 	return nil
 }
 
+// lock locks the database for writing.
+// ctx is optional. If present it is used to abort the operation
+// if the context is cancelled.
+func (db *Database) lock(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case db.lockChan <- struct{}{}:
+		return nil
+	}
+}
+
+// lock locks the database for writing.
+// ctx is optional. If present it is used to abort the operation
+// if the context is cancelled.
+func (db *Database) lockNoCtx() {
+	db.lockChan <- struct{}{}
+}
+
+func (db *Database) unlock() {
+	<-db.lockChan
+}
+
 func (db *Database) Close() error {
-	db.writeMu.Lock()
-	defer db.writeMu.Unlock()
+	db.lockNoCtx()
+	defer db.unlock()
 
 	if db.db != nil {
 		if err := db.db.Close(); err != nil {

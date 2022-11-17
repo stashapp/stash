@@ -36,6 +36,10 @@ func (db *Database) Begin(ctx context.Context) (context.Context, error) {
 		return nil, fmt.Errorf("already in transaction")
 	}
 
+	if err := db.lock(ctx); err != nil {
+		return nil, err
+	}
+
 	tx, err := db.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("beginning transaction: %w", err)
@@ -68,6 +72,10 @@ func (db *Database) Rollback(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (db *Database) Complete(ctx context.Context) {
+	db.unlock()
 }
 
 func getTx(ctx context.Context) (*sqlx.Tx, error) {
