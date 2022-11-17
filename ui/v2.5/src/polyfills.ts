@@ -25,10 +25,10 @@ async function checkPolyfills() {
     await import("@formatjs/intl-pluralrules/locale-data/en");
   }
 
-  if (!('ResizeObserver' in window)) {
+  if (!("ResizeObserver" in window)) {
     const ResizeObserver = await import("resize-observer-polyfill");
     window.ResizeObserver = ResizeObserver.default;
-  } 
+  }
 }
 
 export const initPolyfills = async () => {
