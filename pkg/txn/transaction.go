@@ -17,6 +17,11 @@ type DatabaseProvider interface {
 	WithDatabase(ctx context.Context) (context.Context, error)
 }
 
+type DatabaseProviderManager interface {
+	DatabaseProvider
+	Manager
+}
+
 type TxnFunc func(ctx context.Context) error
 
 // WithTxn executes fn in a transaction. If fn returns an error then
