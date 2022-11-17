@@ -73,7 +73,7 @@ func (r *galleryResolver) Folder(ctx context.Context, obj *models.Gallery) (*Fol
 
 	var ret *file.Folder
 
-	if err := r.withDatabase(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
 
 		ret, err = r.repository.Folder.Find(ctx, *obj.FolderID)
@@ -124,7 +124,7 @@ func (r *galleryResolver) FileModTime(ctx context.Context, obj *models.Gallery) 
 }
 
 func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret []*models.Image, err error) {
-	if err := r.withDatabase(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
 
 		// #2376 - sort images by path
@@ -143,7 +143,7 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 }
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
-	if err := r.withDatabase(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		// doing this via Query is really slow, so stick with FindByGalleryID
 		imgs, err := r.repository.Image.FindByGalleryID(ctx, obj.ID)
 		if err != nil {
@@ -179,7 +179,7 @@ func (r *galleryResolver) Date(ctx context.Context, obj *models.Gallery) (*strin
 
 func (r *galleryResolver) Checksum(ctx context.Context, obj *models.Gallery) (string, error) {
 	if !obj.Files.PrimaryLoaded() {
-		if err := r.withDatabase(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadPrimaryFile(ctx, r.repository.File)
 		}); err != nil {
 			return "", err
@@ -203,7 +203,7 @@ func (r *galleryResolver) Rating100(ctx context.Context, obj *models.Gallery) (*
 
 func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret []*models.Scene, err error) {
 	if !obj.SceneIDs.Loaded() {
-		if err := r.withDatabase(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadSceneIDs(ctx, r.repository.Gallery)
 		}); err != nil {
 			return nil, err
@@ -225,7 +225,7 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret 
 
 func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []*models.Tag, err error) {
 	if !obj.TagIDs.Loaded() {
-		if err := r.withDatabase(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadTagIDs(ctx, r.repository.Gallery)
 		}); err != nil {
 			return nil, err
@@ -239,7 +239,7 @@ func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []
 
 func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (ret []*models.Performer, err error) {
 	if !obj.PerformerIDs.Loaded() {
-		if err := r.withDatabase(ctx, func(ctx context.Context) error {
+		if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 			return obj.LoadPerformerIDs(ctx, r.repository.Gallery)
 		}); err != nil {
 			return nil, err
@@ -252,7 +252,7 @@ func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (
 }
 
 func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (ret int, err error) {
-	if err := r.withDatabase(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		var err error
 		ret, err = r.repository.Image.CountByGalleryID(ctx, obj.ID)
 		return err

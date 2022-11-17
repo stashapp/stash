@@ -17,6 +17,7 @@ type key int
 const (
 	txnKey key = iota + 1
 	dbKey
+	exclusiveKey
 )
 
 func (db *Database) WithDatabase(ctx context.Context) (context.Context, error) {
@@ -28,7 +29,7 @@ func (db *Database) WithDatabase(ctx context.Context) (context.Context, error) {
 	return context.WithValue(ctx, dbKey, db.db), nil
 }
 
-func (db *Database) Begin(ctx context.Context) (context.Context, error) {
+func (db *Database) Begin(ctx context.Context, exclusive bool) (context.Context, error) {
 	if tx, _ := getTx(ctx); tx != nil {
 		// log the stack trace so we can see
 		logger.Error(string(debug.Stack()))
@@ -36,14 +37,18 @@ func (db *Database) Begin(ctx context.Context) (context.Context, error) {
 		return nil, fmt.Errorf("already in transaction")
 	}
 
-	if err := db.lock(ctx); err != nil {
-		return nil, err
+	if exclusive {
+		if err := db.lock(ctx); err != nil {
+			return nil, err
+		}
 	}
 
 	tx, err := db.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("beginning transaction: %w", err)
 	}
+
+	ctx = context.WithValue(ctx, exclusiveKey, exclusive)
 
 	return context.WithValue(ctx, txnKey, tx), nil
 }
@@ -75,7 +80,9 @@ func (db *Database) Rollback(ctx context.Context) error {
 }
 
 func (db *Database) Complete(ctx context.Context) {
-	db.unlock()
+	if _, exclusive := ctx.Value(exclusiveKey).(bool); exclusive {
+		db.unlock()
+	}
 }
 
 func getTx(ctx context.Context) (*sqlx.Tx, error) {

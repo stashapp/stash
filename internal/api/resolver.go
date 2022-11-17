@@ -31,7 +31,7 @@ type hookExecutor interface {
 }
 
 type Resolver struct {
-	txnManager     txn.DatabaseProviderManager
+	txnManager     txn.Manager
 	repository     manager.Repository
 	sceneService   manager.SceneService
 	imageService   manager.ImageService
@@ -91,16 +91,16 @@ type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
 
-func (r *Resolver) withDatabase(ctx context.Context, fn func(ctx context.Context) error) error {
-	return txn.WithDatabase(ctx, r.txnManager, fn)
-}
-
 func (r *Resolver) withTxn(ctx context.Context, fn func(ctx context.Context) error) error {
 	return txn.WithTxn(ctx, r.txnManager, fn)
 }
 
+func (r *Resolver) withReadTxn(ctx context.Context, fn func(ctx context.Context) error) error {
+	return txn.WithReadTxn(ctx, r.txnManager, fn)
+}
+
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*models.SceneMarker, err error) {
-	if err := r.withDatabase(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SceneMarker.Wall(ctx, q)
 		return err
 	}); err != nil {
@@ -110,7 +110,7 @@ func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*model
 }
 
 func (r *queryResolver) SceneWall(ctx context.Context, q *string) (ret []*models.Scene, err error) {
-	if err := r.withDatabase(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Scene.Wall(ctx, q)
 		return err
 	}); err != nil {
@@ -121,7 +121,7 @@ func (r *queryResolver) SceneWall(ctx context.Context, q *string) (ret []*models
 }
 
 func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *string) (ret []*models.MarkerStringsResultType, err error) {
-	if err := r.withDatabase(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SceneMarker.GetMarkerStrings(ctx, q, sort)
 		return err
 	}); err != nil {
@@ -133,7 +133,7 @@ func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *stri
 
 func (r *queryResolver) Stats(ctx context.Context) (*StatsResultType, error) {
 	var ret StatsResultType
-	if err := r.withDatabase(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		repo := r.repository
 		scenesQB := repo.Scene
 		imageQB := repo.Image
@@ -209,7 +209,7 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 	var keys []int
 	tags := make(map[int]*SceneMarkerTag)
 
-	if err := r.withDatabase(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		sceneMarkers, err := r.repository.SceneMarker.FindBySceneID(ctx, sceneID)
 		if err != nil {
 			return err
