@@ -19,6 +19,7 @@ import {
   ILabeledValue,
   INumberValue,
   IOptionType,
+  IStashIDValue,
   IDateValue,
   ITimestampValue,
 } from "../types";
@@ -29,6 +30,7 @@ export type CriterionValue =
   | ILabeledId[]
   | IHierarchicalLabelValue
   | INumberValue
+  | IStashIDValue
   | IDateValue
   | ITimestampValue;
 
@@ -340,7 +342,7 @@ export class NullNumberCriterionOption extends CriterionOption {
         CriterionModifier.IsNull,
         CriterionModifier.NotNull,
       ],
-      defaultModifier: CriterionModifier.GreaterThan,
+      defaultModifier: CriterionModifier.Equals,
       inputType: "number",
     });
   }

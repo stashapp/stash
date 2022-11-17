@@ -26,6 +26,10 @@ The stash UI can be customised using custom CSS. See [here](https://github.com/s
 
 [Stash Plex Theme](https://github.com/stashapp/stash/wiki/Theme-Plex) is a community created theme inspired by the popular Plex interface.
 
+## Custom Javascript
+
+Stash supports the injection of custom javascript to assist with theming or adding additional functionality. Be aware that bad Javascript could break the UI or worse.
+
 ## Custom Locales
 
 The localisation strings can be customised. The master list of default (en-GB) locale strings can be found [here](https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json). The custom locale format is the same as this json file.

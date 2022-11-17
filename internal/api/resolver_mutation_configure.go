@@ -365,6 +365,12 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input ConfigI
 
 	setBool(config.CSSEnabled, input.CSSEnabled)
 
+	if input.Javascript != nil {
+		c.SetJavascript(*input.Javascript)
+	}
+
+	setBool(config.JavascriptEnabled, input.JavascriptEnabled)
+
 	if input.CustomLocales != nil {
 		c.SetCustomLocales(*input.CustomLocales)
 	}
