@@ -71,7 +71,7 @@ type SceneCoverGetter interface {
 }
 
 type SceneServer struct {
-	TxnManager       txn.Manager
+	TxnManager       txn.DatabaseProvider
 	SceneCoverGetter SceneCoverGetter
 }
 
@@ -103,7 +103,7 @@ func (s *SceneServer) ServeScreenshot(scene *models.Scene, w http.ResponseWriter
 	}
 
 	var cover []byte
-	readTxnErr := txn.WithTxn(r.Context(), s.TxnManager, func(ctx context.Context) error {
+	readTxnErr := txn.WithDatabase(r.Context(), s.TxnManager, func(ctx context.Context) error {
 		cover, _ = s.SceneCoverGetter.GetCover(ctx, scene.ID)
 		return nil
 	})
