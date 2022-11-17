@@ -66,6 +66,7 @@
     "react-select": "^4.0.2",
     "react-slick": "^0.29.0",
     "remark-gfm": "^1.0.0",
+    "resize-observer-polyfill": "^1.5.1",
     "sass": "^1.32.5",
     "slick-carousel": "^1.8.1",
     "string.prototype.replaceall": "^1.0.4",
