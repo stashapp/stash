@@ -117,3 +117,68 @@ func TestConcurrentReadTxn(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestConcurrentExclusiveAndReadTxns(t *testing.T) {
+	const (
+		writeWorkers = 4
+		readWorkers  = 4
+		loops        = 200
+		innerLoops   = 10
+	)
+	ctx := context.Background()
+
+	var wg sync.WaitGroup
+	for k := 0; k < writeWorkers; k++ {
+		wg.Add(1)
+		go func(wk int) {
+			for l := 0; l < loops; l++ {
+				if err := txn.WithTxn(ctx, db, func(ctx context.Context) error {
+					for ll := 0; ll < innerLoops; ll++ {
+						scene := &models.Scene{
+							Title: "test",
+						}
+
+						if err := db.Scene.Create(ctx, scene, nil); err != nil {
+							return err
+						}
+
+						if err := db.Scene.Destroy(ctx, scene.ID); err != nil {
+							return err
+						}
+					}
+					time.Sleep(time.Millisecond * 1)
+
+					return nil
+				}); err != nil {
+					t.Errorf("write worker %d loop %d: %v", wk, l, err)
+				}
+			}
+
+			wg.Done()
+		}(k)
+	}
+
+	for k := 0; k < readWorkers; k++ {
+		wg.Add(1)
+		go func(wk int) {
+			for l := 0; l < loops; l++ {
+				if err := txn.WithReadTxn(ctx, db, func(ctx context.Context) error {
+					for ll := 0; ll < innerLoops; ll++ {
+						if _, err := db.Scene.Find(ctx, sceneIDs[ll%totalScenes]); err != nil {
+							return err
+						}
+					}
+					time.Sleep(time.Millisecond * 1)
+
+					return nil
+				}); err != nil {
+					t.Errorf("read worker %d loop %d: %v", wk, l, err)
+				}
+			}
+
+			wg.Done()
+		}(k)
+	}
+
+	wg.Wait()
+}
