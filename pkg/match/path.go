@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -76,7 +77,7 @@ func getPathWords(path string, trimExt bool) []string {
 	// remove any single letter words
 	var ret []string
 	for _, w := range words {
-		if len(w) > 1 {
+		if utf8.RuneCountInString(w) > 1 {
 			// #1450 - we need to open up the criteria for matching so that we
 			// can match where path has no space between subject names -
 			// ie name = "foo bar" - path = "foobar"
