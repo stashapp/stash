@@ -2124,6 +2124,11 @@ func sceneQueryQ(ctx context.Context, t *testing.T, sqb models.SceneReader, q st
 }
 
 func TestSceneQuery(t *testing.T) {
+	var (
+		endpoint = sceneStashID(sceneIdxWithGallery).Endpoint
+		stashID  = sceneStashID(sceneIdxWithGallery).StashID
+	)
+
 	tests := []struct {
 		name        string
 		findFilter  *models.FindFilterType
@@ -2169,6 +2174,60 @@ func TestSceneQuery(t *testing.T) {
 			},
 			[]int{sceneIdxWithGallery},
 			[]int{sceneIdxWithMovie},
+			false,
+		},
+		{
+			"stash id with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"exclude stash id with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"null stash id with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{sceneIdxWithGallery},
+			false,
+		},
+		{
+			"not null stash id with endpoint",
+			nil,
+			&models.SceneFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{sceneIdxWithGallery},
+			nil,
 			false,
 		},
 	}

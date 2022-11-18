@@ -942,3 +942,39 @@ func (m *joinedHierarchicalMultiCriterionHandlerBuilder) handler(criterion *mode
 		}
 	}
 }
+
+type stashIDCriterionHandler struct {
+	c                 *models.StashIDCriterionInput
+	stashIDRepository *stashIDRepository
+	stashIDTableAs    string
+	parentIDCol       string
+}
+
+func (h *stashIDCriterionHandler) handle(ctx context.Context, f *filterBuilder) {
+	if h.c == nil {
+		return
+	}
+
+	stashIDRepo := h.stashIDRepository
+	t := stashIDRepo.tableName
+	if h.stashIDTableAs != "" {
+		t = h.stashIDTableAs
+	}
+
+	joinClause := fmt.Sprintf("%s.%s = %s", t, stashIDRepo.idColumn, h.parentIDCol)
+	if h.c.Endpoint != nil && *h.c.Endpoint != "" {
+		joinClause += fmt.Sprintf(" AND %s.endpoint = '%s'", t, *h.c.Endpoint)
+	}
+
+	f.addLeftJoin(stashIDRepo.tableName, h.stashIDTableAs, joinClause)
+
+	v := ""
+	if h.c.StashID != nil {
+		v = *h.c.StashID
+	}
+
+	stringCriterionHandler(&models.StringCriterionInput{
+		Value:    v,
+		Modifier: h.c.Modifier,
+	}, t+".stash_id")(ctx, f)
+}

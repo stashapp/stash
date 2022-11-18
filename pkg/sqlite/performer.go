@@ -533,6 +533,12 @@ func (qb *PerformerStore) makeFilter(ctx context.Context, filter *models.Perform
 			stringCriterionHandler(filter.StashID, "performer_stash_ids.stash_id")(ctx, f)
 		}
 	}))
+	query.handleCriterion(ctx, &stashIDCriterionHandler{
+		c:                 filter.StashIDEndpoint,
+		stashIDRepository: qb.stashIDRepository(),
+		stashIDTableAs:    "performer_stash_ids",
+		parentIDCol:       "performers.id",
+	})
 
 	// TODO - need better handling of aliases
 	query.handleCriterion(ctx, stringCriterionHandler(filter.Aliases, tableName+".aliases"))

@@ -69,6 +69,8 @@ type SceneFilterType struct {
 	PerformerCount *IntCriterionInput `json:"performer_count"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
+	// Filter by StashID Endpoint
+	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter by url
 	URL *StringCriterionInput `json:"url"`
 	// Filter by interactive

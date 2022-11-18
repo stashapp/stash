@@ -549,6 +549,36 @@ export const SettingsInterfacePanel: React.FC = () => {
           }}
         />
       </SettingSection>
+      <SettingSection headingID="config.ui.custom_javascript.heading">
+        <BooleanSetting
+          id="custom-javascript-enabled"
+          headingID="config.ui.custom_javascript.option_label"
+          checked={iface.javascriptEnabled ?? undefined}
+          onChange={(v) => saveInterface({ javascriptEnabled: v })}
+        />
+
+        <ModalSetting<string>
+          id="custom-javascript"
+          headingID="config.ui.custom_javascript.heading"
+          subHeadingID="config.ui.custom_javascript.description"
+          value={iface.javascript ?? undefined}
+          onChange={(v) => saveInterface({ javascript: v })}
+          renderField={(value, setValue) => (
+            <Form.Control
+              as="textarea"
+              value={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setValue(e.currentTarget.value)
+              }
+              rows={16}
+              className="text-input code"
+            />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
+        />
+      </SettingSection>
       <SettingSection headingID="config.ui.custom_locales.heading">
         <BooleanSetting
           id="custom-locales-enabled"

@@ -127,6 +127,7 @@
   "birth_year": "Birth Year",
   "birthdate": "Birthdate",
   "bitrate": "Bit Rate",
+  "between_and": "and",
   "captions": "Captions",
   "career_length": "Career Length",
   "component_tagger": {
@@ -434,6 +435,11 @@
         "description": "Page must be reloaded for changes to take effect.",
         "heading": "Custom CSS",
         "option_label": "Custom CSS enabled"
+      },
+      "custom_javascript": {
+        "description": "Page must be reloaded for changes to take effect.",
+        "heading": "Custom Javascript",
+        "option_label": "Custom Javascript enabled"
       },
       "custom_locales": {
         "description": "Override individual locale strings. See https://github.com/stashapp/stash/blob/develop/ui/v2.5/src/locales/en-GB.json for the master list. Page must be reloaded for changes to take effect.",
@@ -1065,6 +1071,7 @@
     "submit_update": "Already exists in {endpoint_name}"
   },
   "statistics": "Statistics",
+  "stash_id_endpoint": "Stash ID Endpoint",
   "stats": {
     "image_size": "Images size",
     "scenes_duration": "Scenes duration",

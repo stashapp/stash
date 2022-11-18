@@ -264,6 +264,10 @@ input ConfigInterfaceInput {
   css: String
   cssEnabled: Boolean
 
+  """Custom Javascript"""
+  javascript: String
+  javascriptEnabled: Boolean
+
   """Custom Locales"""
   customLocales: String
   customLocalesEnabled: Boolean
@@ -329,6 +333,10 @@ type ConfigInterfaceResult {
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
+
+  """Custom Javascript"""
+  javascript: String
+  javascriptEnabled: Boolean
 
   """Custom Locales"""
   customLocales: String

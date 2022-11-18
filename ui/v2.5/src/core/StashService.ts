@@ -995,6 +995,12 @@ export const useLogs = () =>
     fetchPolicy: "no-cache",
   });
 
+export const queryLogs = () =>
+  client.query<GQL.LogsQuery>({
+    query: GQL.LogsDocument,
+    fetchPolicy: "no-cache",
+  });
+
 export const useJobQueue = () =>
   GQL.useJobQueueQuery({
     fetchPolicy: "no-cache",

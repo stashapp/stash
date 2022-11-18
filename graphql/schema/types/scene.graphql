@@ -93,7 +93,10 @@ input SceneCreateInput {
   director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean
   studio_id: ID
   gallery_ids: [ID!]

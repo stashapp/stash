@@ -255,6 +255,8 @@ func (h *ScanHandler) getOrCreateFolderBasedGallery(ctx context.Context, f file.
 		return nil, fmt.Errorf("creating folder based gallery: %w", err)
 	}
 
+	h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
+
 	// it's possible that there are other images in the folder that
 	// need to be added to the new gallery. Find and add them now.
 	if err := h.associateFolderImages(ctx, newGallery); err != nil {
@@ -310,6 +312,8 @@ func (h *ScanHandler) getOrCreateZipBasedGallery(ctx context.Context, zipFile fi
 	if err := h.GalleryFinder.Create(ctx, newGallery, []file.ID{zipFile.Base().ID}); err != nil {
 		return nil, fmt.Errorf("creating zip-based gallery: %w", err)
 	}
+
+	h.PluginCache.RegisterPostHooks(ctx, newGallery.ID, plugin.GalleryCreatePost, nil, nil)
 
 	return newGallery, nil
 }
