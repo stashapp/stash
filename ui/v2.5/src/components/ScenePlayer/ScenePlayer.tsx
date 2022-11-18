@@ -16,6 +16,7 @@ import "./persist-volume";
 import "./markers";
 import "./vtt-thumbnails";
 import "./big-buttons";
+import "./track-activity";
 import cx from "classnames";
 import {
   useSceneSaveActivity,
@@ -189,11 +190,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const auto = useRef(false);
   const interactiveReady = useRef(false);
 
-  const playDurationRef = useRef(0);
-  const trackTime = useRef(false);
-  const recordedActivity = useRef(false);
-  const [updatePlayDuration, setUpdatePlayDuration] = useState(false);
-
   const ignoreInterval = uiConfig?.ignoreInterval ?? 0;
   const trackActivity = uiConfig?.trackActivity ?? false;
 
@@ -240,42 +236,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     });
   }, [sendSetTimestamp]);
 
-  useEffect(() => {
-    const id = sceneId.current;
-    if (trackActivity && updatePlayDuration && id && playerRef.current) {
-      const playDuration = playDurationRef.current;
-      let resume_time = playerRef.current.currentTime()!;
-      const videoDuration = playerRef.current.duration();
-      const percentPlayed = (100 / videoDuration) * playDuration;
-      const percentCompleted = (100 / videoDuration) * resume_time;
-      if (!recordedActivity.current && percentPlayed >= ignoreInterval) {
-        sceneIncrementPlayCount({
-          variables: {
-            id,
-          },
-        });
-        recordedActivity.current = true;
-      }
-      // if video is 98% or more complete then reset resume_time
-      if (percentCompleted >= 98) {
-        resume_time = 0;
-      }
-      sceneSaveActivity({
-        variables: {
-          id,
-          resume_time,
-          playDuration,
-        },
-      });
-    }
-  }, [
-    updatePlayDuration,
-    ignoreInterval,
-    sceneIncrementPlayCount,
-    sceneSaveActivity,
-    trackActivity,
-  ]);
-
   // Initialize VideoJS player
   useEffect(() => {
     const options: VideoJsPlayerOptions = {
@@ -309,20 +269,11 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           back: 10,
         },
         skipButtons: {},
+        trackActivity: {},
       },
     };
 
     const player = videojs(videoRef.current!, options);
-    var playDurationHandler = window.setInterval(() => {
-      if (trackTime.current) {
-        playDurationRef.current++;
-        if (playDurationRef.current % 10 == 0) {
-          setUpdatePlayDuration(true);
-        } else {
-          setUpdatePlayDuration(false);
-        }
-      }
-    }, 1000); // when scene is playing incrememt playDuration every second
 
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const settings = (player as any).textTrackSettings;
@@ -337,35 +288,10 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // Video player destructor
     return () => {
-      if (playerRef.current) {
-        clearInterval(playDurationHandler);
-        if (trackActivity) {
-          const id = sceneId.current;
-          if (id) {
-            let resume_time = playerRef.current.currentTime()!;
-            const playDuration = playDurationRef.current;
-            if (playDuration > 0) {
-              const videoDuration = playerRef.current.duration();
-              const percentCompleted = (100 / videoDuration) * resume_time;
-              // if video is 98% or more complete then reset resume_time
-              if (percentCompleted >= 98) {
-                resume_time = 0;
-              }
-              sceneSaveActivity({
-                variables: {
-                  id,
-                  resume_time,
-                  playDuration,
-                },
-              });
-            }
-          }
-        }
-      }
       playerRef.current = undefined;
       player.dispose();
     };
-  }, [sceneSaveActivity, ignoreInterval, trackActivity]);
+  }, []);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -431,7 +357,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, []);
   useEffect(() => {
     function onplay(this: VideoJsPlayer) {
-      trackTime.current = true;
       this.persistVolume().enabled = true;
       if (scene?.interactive && interactiveReady.current) {
         interactiveClient.play(this.currentTime());
@@ -439,27 +364,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     function pause(this: VideoJsPlayer) {
-      trackTime.current = false;
       interactiveClient.pause();
-
-      const id = sceneId.current;
-      if (id) {
-        const playDuration = playDurationRef.current;
-        let resume_time = this.currentTime()!;
-        const videoDuration = this.duration();
-        const percentCompleted = (100 / videoDuration) * resume_time;
-        // if video is 98% or more complete then reset resume_time
-        if (percentCompleted >= 98) {
-          resume_time = 0;
-        }
-        sceneSaveActivity({
-          variables: {
-            id,
-            resume_time,
-            playDuration,
-          },
-        });
-      }
     }
 
     function seeking(this: VideoJsPlayer) {
@@ -491,7 +396,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       player.off("seeking", seeking);
       player.off("timeupdate", timeupdate);
     };
-  }, [interactiveClient, scene, sceneSaveActivity]);
+  }, [interactiveClient, scene]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -503,8 +408,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     // if new scene was picked from playlist
     if (playerRef.current && sceneId.current) {
       if (trackActivity) {
-        playDurationRef.current = 0;
-        recordedActivity.current = false;
+        playerRef.current.trackActivity().reset();
       }
     }
 
@@ -530,6 +434,37 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
       });
     }
+
+    async function saveActivity(resumeTime: number, playDuration: number) {
+      // console.log("saveActivity", resumeTime, playDuration);
+      if (!scene?.id) return;
+
+      await sceneSaveActivity({
+        variables: {
+          id: scene.id,
+          playDuration,
+          resume_time: resumeTime,
+        },
+      });
+    }
+
+    async function incrementPlayCount() {
+      // console.log("incrementPlayCount");
+
+      if (!scene?.id) return;
+
+      await sceneIncrementPlayCount({
+        variables: {
+          id: scene.id,
+        },
+      });
+    }
+
+    const activity = player.trackActivity();
+    activity.saveActivity = saveActivity;
+    activity.incrementPlayCount = incrementPlayCount;
+    activity.ignoreInterval = ignoreInterval;
+    activity.setEnabled(trackActivity);
 
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
@@ -644,6 +579,9 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     interactiveClient,
     sessionInitialised,
     trackActivity,
+    ignoreInterval,
+    sceneIncrementPlayCount,
+    sceneSaveActivity,
     autoplay,
     interfaceConfig?.autostartVideo,
     uiConfig?.alwaysStartFromBeginning,
