@@ -65,7 +65,7 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   if (event.shiftKey) {
     seekFactor = 5;
   } else if (event.ctrlKey || event.altKey) {
-    seekFactor = 1;
+    seekFactor = 60;
   }
   switch (event.which) {
     case 39: // right arrow
@@ -73,12 +73,6 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
       break;
     case 37: // left arrow
       seekStep(-seekFactor);
-      break;
-    case 221: // ]
-      seekPercentRelative(seekFactor * 0.01);
-      break;
-    case 219: // [
-      seekPercentRelative(-seekFactor * 0.01);
       break;
   }
 
@@ -134,6 +128,12 @@ function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
       break;
     case 57: // 9
       seekPercent(0.9);
+      break;
+    case 221: // ]
+      seekPercentRelative(0.1);
+      break;
+    case 219: // [
+      seekPercentRelative(-0.1);
       break;
   }
 }
