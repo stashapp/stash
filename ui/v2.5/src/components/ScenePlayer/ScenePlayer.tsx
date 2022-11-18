@@ -436,7 +436,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     async function saveActivity(resumeTime: number, playDuration: number) {
-      // console.log("saveActivity", resumeTime, playDuration);
       if (!scene?.id) return;
 
       await sceneSaveActivity({
@@ -449,8 +448,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     async function incrementPlayCount() {
-      // console.log("incrementPlayCount");
-
       if (!scene?.id) return;
 
       await sceneIncrementPlayCount({
