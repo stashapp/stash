@@ -28,13 +28,13 @@ type TxnFunc func(ctx context.Context) error
 // WithTxn executes fn in a transaction. If fn returns an error then
 // the transaction is rolled back. Otherwise it is committed.
 // Transaction is exclusive. Only one thread may run a transaction
-// using this function at a time. If function will wait until the
+// using this function at a time. This function will wait until the
 // lock is available before executing.
 // This function should be used for making changes to the database.
 func WithTxn(ctx context.Context, m Manager, fn TxnFunc) error {
 	const (
 		execComplete = true
-		exclusive    = false
+		exclusive    = true
 	)
 	return withTxn(ctx, m, fn, exclusive, execComplete)
 }

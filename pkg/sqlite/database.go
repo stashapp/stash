@@ -153,8 +153,7 @@ func (db *Database) Open(dbPath string) error {
 }
 
 // lock locks the database for writing.
-// ctx is optional. If present it is used to abort the operation
-// if the context is cancelled.
+// This method will block until the lock is acquired of the context is cancelled.
 func (db *Database) lock(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
@@ -164,15 +163,21 @@ func (db *Database) lock(ctx context.Context) error {
 	}
 }
 
-// lock locks the database for writing.
-// ctx is optional. If present it is used to abort the operation
-// if the context is cancelled.
+// lock locks the database for writing. This method will block until the lock is acquired.
 func (db *Database) lockNoCtx() {
 	db.lockChan <- struct{}{}
 }
 
+// unlock unlocks the database
 func (db *Database) unlock() {
-	<-db.lockChan
+	// will block the caller if the lock is not held, so check first
+	if db.isLocked() {
+		<-db.lockChan
+	}
+}
+
+func (db *Database) isLocked() bool {
+	return len(db.lockChan) > 0
 }
 
 func (db *Database) Close() error {
