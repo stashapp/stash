@@ -20,7 +20,7 @@ type TagFinder interface {
 }
 
 type tagRoutes struct {
-	txnManager txn.DatabaseProvider
+	txnManager txn.Manager
 	tagFinder  TagFinder
 }
 
@@ -41,7 +41,7 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		readTxnErr := txn.WithDatabase(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		readTxnErr := txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			image, _ = rs.tagFinder.GetImage(ctx, tag.ID)
 			return nil
 		})
@@ -71,7 +71,7 @@ func (rs tagRoutes) TagCtx(next http.Handler) http.Handler {
 		}
 
 		var tag *models.Tag
-		_ = txn.WithDatabase(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			var err error
 			tag, err = rs.tagFinder.Find(ctx, tagID)
 			return err

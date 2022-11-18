@@ -59,7 +59,7 @@ type Config interface {
 }
 
 type Service struct {
-	txnManager     txn.DatabaseProvider
+	txnManager     txn.Manager
 	repository     Repository
 	config         Config
 	sceneServer    sceneServer
@@ -194,7 +194,7 @@ func (s *Service) init() error {
 // }
 
 // NewService initialises and returns a new DLNA service.
-func NewService(txnManager txn.DatabaseProvider, repo Repository, cfg Config, sceneServer sceneServer) *Service {
+func NewService(txnManager txn.Manager, repo Repository, cfg Config, sceneServer sceneServer) *Service {
 	ret := &Service{
 		txnManager:  txnManager,
 		repository:  repo,

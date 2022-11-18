@@ -80,7 +80,7 @@ func (db *Database) Rollback(ctx context.Context) error {
 }
 
 func (db *Database) Complete(ctx context.Context) {
-	if _, exclusive := ctx.Value(exclusiveKey).(bool); exclusive {
+	if exclusive := ctx.Value(exclusiveKey).(bool); exclusive {
 		db.unlock()
 	}
 }

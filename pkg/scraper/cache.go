@@ -85,7 +85,7 @@ type Cache struct {
 	client       *http.Client
 	scrapers     map[string]scraper // Scraper ID -> Scraper
 	globalConfig GlobalConfig
-	txnManager   txn.DatabaseProvider
+	txnManager   txn.Manager
 
 	repository Repository
 }
@@ -116,7 +116,7 @@ func newClient(gc GlobalConfig) *http.Client {
 //
 // Scraper configurations are loaded from yml files in the provided scrapers
 // directory and any subdirectories.
-func NewCache(globalConfig GlobalConfig, txnManager txn.DatabaseProvider, repo Repository) (*Cache, error) {
+func NewCache(globalConfig GlobalConfig, txnManager txn.Manager, repo Repository) (*Cache, error) {
 	// HTTP Client setup
 	client := newClient(globalConfig)
 
@@ -350,7 +350,7 @@ func (c Cache) ScrapeID(ctx context.Context, scraperID string, id int, ty Scrape
 
 func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error) {
 	var ret *models.Scene
-	if err := txn.WithDatabase(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		var err error
 		ret, err = c.repository.SceneFinder.Find(ctx, sceneID)
 		return err
@@ -362,7 +362,7 @@ func (c Cache) getScene(ctx context.Context, sceneID int) (*models.Scene, error)
 
 func (c Cache) getGallery(ctx context.Context, galleryID int) (*models.Gallery, error) {
 	var ret *models.Gallery
-	if err := txn.WithDatabase(ctx, c.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, c.txnManager, func(ctx context.Context) error {
 		var err error
 		ret, err = c.repository.GalleryFinder.Find(ctx, galleryID)
 
