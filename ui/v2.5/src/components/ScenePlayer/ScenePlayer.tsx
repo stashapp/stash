@@ -355,6 +355,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       player.off("fullscreenchange", fullscreenchange);
     };
   }, []);
+
   useEffect(() => {
     function onplay(this: VideoJsPlayer) {
       this.persistVolume().enabled = true;
@@ -434,34 +435,6 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
         },
       });
     }
-
-    async function saveActivity(resumeTime: number, playDuration: number) {
-      if (!scene?.id) return;
-
-      await sceneSaveActivity({
-        variables: {
-          id: scene.id,
-          playDuration,
-          resume_time: resumeTime,
-        },
-      });
-    }
-
-    async function incrementPlayCount() {
-      if (!scene?.id) return;
-
-      await sceneIncrementPlayCount({
-        variables: {
-          id: scene.id,
-        },
-      });
-    }
-
-    const activity = player.trackActivity();
-    activity.saveActivity = saveActivity;
-    activity.incrementPlayCount = incrementPlayCount;
-    activity.ignoreInterval = ignoreInterval;
-    activity.setEnabled(trackActivity);
 
     const { duration } = file;
     const sourceSelector = player.sourceSelector();
@@ -573,16 +546,52 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, [
     file,
     scene,
+    trackActivity,
     interactiveClient,
     sessionInitialised,
-    trackActivity,
-    ignoreInterval,
-    sceneIncrementPlayCount,
-    sceneSaveActivity,
     autoplay,
     interfaceConfig?.autostartVideo,
     uiConfig?.alwaysStartFromBeginning,
     _initialTimestamp,
+  ]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    async function saveActivity(resumeTime: number, playDuration: number) {
+      if (!scene?.id) return;
+
+      await sceneSaveActivity({
+        variables: {
+          id: scene.id,
+          playDuration,
+          resume_time: resumeTime,
+        },
+      });
+    }
+
+    async function incrementPlayCount() {
+      if (!scene?.id) return;
+
+      await sceneIncrementPlayCount({
+        variables: {
+          id: scene.id,
+        },
+      });
+    }
+
+    const activity = player.trackActivity();
+    activity.saveActivity = saveActivity;
+    activity.incrementPlayCount = incrementPlayCount;
+    activity.ignoreInterval = ignoreInterval;
+    activity.setEnabled(trackActivity);
+  }, [
+    scene,
+    trackActivity,
+    ignoreInterval,
+    sceneIncrementPlayCount,
+    sceneSaveActivity,
   ]);
 
   useEffect(() => {
