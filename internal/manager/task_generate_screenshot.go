@@ -91,7 +91,7 @@ func (t *GenerateScreenshotTask) Start(ctx context.Context) {
 		}
 
 		return nil
-	}); err != nil {
+	}); err != nil && ctx.Err() == nil {
 		logger.Error(err.Error())
 	}
 }

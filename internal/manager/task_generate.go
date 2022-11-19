@@ -137,7 +137,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			}
 
 			return nil
-		}); err != nil {
+		}); err != nil && ctx.Err() == nil {
 			logger.Error(err.Error())
 			return
 		}
