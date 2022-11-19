@@ -171,13 +171,12 @@ func (db *Database) lockNoCtx() {
 // unlock unlocks the database
 func (db *Database) unlock() {
 	// will block the caller if the lock is not held, so check first
-	if db.isLocked() {
-		<-db.lockChan
+	select {
+	case <-db.lockChan:
+		return
+	default:
+		panic("database is not locked")
 	}
-}
-
-func (db *Database) isLocked() bool {
-	return len(db.lockChan) > 0
 }
 
 func (db *Database) Close() error {
