@@ -45,6 +45,10 @@ func (db *Database) Begin(ctx context.Context, exclusive bool) (context.Context,
 
 	tx, err := db.db.BeginTxx(ctx, nil)
 	if err != nil {
+		// begin failed, unlock
+		if exclusive {
+			db.unlock()
+		}
 		return nil, fmt.Errorf("beginning transaction: %w", err)
 	}
 
