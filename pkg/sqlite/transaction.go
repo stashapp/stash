@@ -59,6 +59,8 @@ func (db *Database) Commit(ctx context.Context) error {
 		return err
 	}
 
+	defer db.txnComplete(ctx)
+
 	if err := tx.Commit(); err != nil {
 		return err
 	}
@@ -72,6 +74,8 @@ func (db *Database) Rollback(ctx context.Context) error {
 		return err
 	}
 
+	defer db.txnComplete(ctx)
+
 	if err := tx.Rollback(); err != nil {
 		return err
 	}
@@ -79,7 +83,7 @@ func (db *Database) Rollback(ctx context.Context) error {
 	return nil
 }
 
-func (db *Database) Complete(ctx context.Context) {
+func (db *Database) txnComplete(ctx context.Context) {
 	if exclusive := ctx.Value(exclusiveKey).(bool); exclusive {
 		db.unlock()
 	}
