@@ -332,35 +332,49 @@ func (s *scanJob) processQueue(ctx context.Context) error {
 
 	wg := sizedwaitgroup.New(parallelTasks)
 
-	for f := range s.fileQueue {
-		if err := ctx.Err(); err != nil {
-			return err
+	if err := func() error {
+		defer wg.Wait()
+
+		for f := range s.fileQueue {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+
+			wg.Add()
+			ff := f
+			go func() {
+				defer wg.Done()
+				s.processQueueItem(ctx, ff)
+			}()
 		}
 
-		wg.Add()
-		ff := f
-		go func() {
-			defer wg.Done()
-			s.processQueueItem(ctx, ff)
-		}()
+		return nil
+	}(); err != nil {
+		return err
 	}
 
-	wg.Wait()
 	s.retrying = true
-	for _, f := range s.retryList {
-		if err := ctx.Err(); err != nil {
-			return err
+
+	if err := func() error {
+		defer wg.Wait()
+
+		for _, f := range s.retryList {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+
+			wg.Add()
+			ff := f
+			go func() {
+				defer wg.Done()
+				s.processQueueItem(ctx, ff)
+			}()
 		}
 
-		wg.Add()
-		ff := f
-		go func() {
-			defer wg.Done()
-			s.processQueueItem(ctx, ff)
-		}()
+		return nil
+	}(); err != nil {
+		return err
 	}
-
-	wg.Wait()
 
 	return nil
 }
