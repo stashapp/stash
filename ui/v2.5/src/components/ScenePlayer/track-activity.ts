@@ -62,6 +62,7 @@ class TrackActivityPlugin extends videojs.getPlugin("plugin") {
     this.stop();
     this.totalPlayDuration = 0;
     this.currentPlayDuration = 0;
+    this.playCountIncremented = false;
   }
 
   setEnabled(enabled: boolean) {
