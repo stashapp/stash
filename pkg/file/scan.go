@@ -85,7 +85,6 @@ type scanJob struct {
 
 	startTime      time.Time
 	fileQueue      chan scanFile
-	dbQueue        chan func(ctx context.Context) error
 	retryList      []scanFile
 	retrying       bool
 	folderPathToID sync.Map
@@ -148,9 +147,11 @@ func (s *scanJob) execute(ctx context.Context) {
 	s.startTime = time.Now()
 
 	s.fileQueue = make(chan scanFile, scanQueueSize)
-	s.dbQueue = make(chan func(ctx context.Context) error, scanQueueSize)
+	var wg sync.WaitGroup
+	wg.Add(1)
 
 	go func() {
+		defer wg.Done()
 		if err := s.queueFiles(ctx, paths); err != nil {
 			if errors.Is(err, context.Canceled) {
 				return
@@ -162,6 +163,8 @@ func (s *scanJob) execute(ctx context.Context) {
 
 		logger.Infof("Finished adding files to queue. %d files queued", s.count)
 	}()
+
+	defer wg.Wait()
 
 	if err := s.processQueue(ctx); err != nil {
 		if errors.Is(err, context.Canceled) {
@@ -329,37 +332,49 @@ func (s *scanJob) processQueue(ctx context.Context) error {
 
 	wg := sizedwaitgroup.New(parallelTasks)
 
-	for f := range s.fileQueue {
-		if err := ctx.Err(); err != nil {
-			return err
+	if err := func() error {
+		defer wg.Wait()
+
+		for f := range s.fileQueue {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+
+			wg.Add()
+			ff := f
+			go func() {
+				defer wg.Done()
+				s.processQueueItem(ctx, ff)
+			}()
 		}
 
-		wg.Add()
-		ff := f
-		go func() {
-			defer wg.Done()
-			s.processQueueItem(ctx, ff)
-		}()
+		return nil
+	}(); err != nil {
+		return err
 	}
 
-	wg.Wait()
 	s.retrying = true
-	for _, f := range s.retryList {
-		if err := ctx.Err(); err != nil {
-			return err
+
+	if err := func() error {
+		defer wg.Wait()
+
+		for _, f := range s.retryList {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+
+			wg.Add()
+			ff := f
+			go func() {
+				defer wg.Done()
+				s.processQueueItem(ctx, ff)
+			}()
 		}
 
-		wg.Add()
-		ff := f
-		go func() {
-			defer wg.Done()
-			s.processQueueItem(ctx, ff)
-		}()
+		return nil
+	}(); err != nil {
+		return err
 	}
-
-	wg.Wait()
-
-	close(s.dbQueue)
 
 	return nil
 }

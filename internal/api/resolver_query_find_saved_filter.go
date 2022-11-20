@@ -13,7 +13,7 @@ func (r *queryResolver) FindSavedFilter(ctx context.Context, id string) (ret *mo
 		return nil, err
 	}
 
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SavedFilter.Find(ctx, idInt)
 		return err
 	}); err != nil {
@@ -23,7 +23,7 @@ func (r *queryResolver) FindSavedFilter(ctx context.Context, id string) (ret *mo
 }
 
 func (r *queryResolver) FindSavedFilters(ctx context.Context, mode *models.FilterMode) (ret []*models.SavedFilter, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		if mode != nil {
 			ret, err = r.repository.SavedFilter.FindByMode(ctx, *mode)
 		} else {
@@ -37,7 +37,7 @@ func (r *queryResolver) FindSavedFilters(ctx context.Context, mode *models.Filte
 }
 
 func (r *queryResolver) FindDefaultFilter(ctx context.Context, mode models.FilterMode) (ret *models.SavedFilter, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.SavedFilter.FindDefault(ctx, mode)
 		return err
 	}); err != nil {

@@ -1398,18 +1398,15 @@ func Test_sceneQueryBuilder_Destroy(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			withRollbackTxn(func(ctx context.Context) error {
-				if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
-				}
+			if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-				// ensure cannot be found
-				i, err := qb.Find(ctx, tt.id)
+			// ensure cannot be found
+			i, err := qb.Find(ctx, tt.id)
 
-				assert.NotNil(err)
-				assert.Nil(i)
-				return nil
-			})
+			assert.NotNil(err)
+			assert.Nil(i)
 		})
 	}
 }
@@ -1477,26 +1474,23 @@ func Test_sceneQueryBuilder_Find(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.Find(ctx, tt.id)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
+			got, err := qb.Find(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.Find() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if got != nil {
+				// load relationships
+				if err := loadSceneRelationships(ctx, *tt.want, got); err != nil {
+					t.Errorf("loadSceneRelationships() error = %v", err)
+					return
 				}
 
-				if got != nil {
-					// load relationships
-					if err := loadSceneRelationships(ctx, *tt.want, got); err != nil {
-						t.Errorf("loadSceneRelationships() error = %v", err)
-						return nil
-					}
+				clearSceneFileIDs(got)
+			}
 
-					clearSceneFileIDs(got)
-				}
-
-				assert.Equal(tt.want, got)
-				return nil
-			})
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -1620,23 +1614,19 @@ func Test_sceneQueryBuilder_FindByChecksum(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			withTxn(func(ctx context.Context) error {
-				assert := assert.New(t)
-				got, err := qb.FindByChecksum(ctx, tt.checksum)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
+			assert := assert.New(t)
+			got, err := qb.FindByChecksum(ctx, tt.checksum)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindByChecksum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-				if err := postFindScenes(ctx, tt.want, got); err != nil {
-					t.Errorf("loadSceneRelationships() error = %v", err)
-					return nil
-				}
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
 
-				assert.Equal(tt.want, got)
-
-				return nil
-			})
+			assert.Equal(tt.want, got)
 		})
 	}
 }
@@ -1694,23 +1684,20 @@ func Test_sceneQueryBuilder_FindByOSHash(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			withTxn(func(ctx context.Context) error {
-				got, err := qb.FindByOSHash(ctx, tt.oshash)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.FindByOSHash() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
+			got, err := qb.FindByOSHash(ctx, tt.oshash)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindByOSHash() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-				if err := postFindScenes(ctx, tt.want, got); err != nil {
-					t.Errorf("loadSceneRelationships() error = %v", err)
-					return nil
-				}
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
 
-				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("sceneQueryBuilder.FindByOSHash() = %v, want %v", got, tt.want)
-				}
-				return nil
-			})
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("sceneQueryBuilder.FindByOSHash() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
@@ -1768,23 +1755,19 @@ func Test_sceneQueryBuilder_FindByPath(t *testing.T) {
 
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
-			withTxn(func(ctx context.Context) error {
-				assert := assert.New(t)
-				got, err := qb.FindByPath(ctx, tt.path)
-				if (err != nil) != tt.wantErr {
-					t.Errorf("sceneQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
-					return nil
-				}
+			assert := assert.New(t)
+			got, err := qb.FindByPath(ctx, tt.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("sceneQueryBuilder.FindByPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-				if err := postFindScenes(ctx, tt.want, got); err != nil {
-					t.Errorf("loadSceneRelationships() error = %v", err)
-					return nil
-				}
+			if err := postFindScenes(ctx, tt.want, got); err != nil {
+				t.Errorf("loadSceneRelationships() error = %v", err)
+				return
+			}
 
-				assert.Equal(tt.want, got)
-
-				return nil
-			})
+			assert.Equal(tt.want, got)
 		})
 	}
 }

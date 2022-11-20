@@ -9,7 +9,7 @@ import (
 
 type TxnManager struct{}
 
-func (*TxnManager) Begin(ctx context.Context) (context.Context, error) {
+func (*TxnManager) Begin(ctx context.Context, exclusive bool) (context.Context, error) {
 	return ctx, nil
 }
 
@@ -23,6 +23,9 @@ func (*TxnManager) Commit(ctx context.Context) error {
 
 func (*TxnManager) Rollback(ctx context.Context) error {
 	return nil
+}
+
+func (*TxnManager) Complete(ctx context.Context) {
 }
 
 func (*TxnManager) AddPostCommitHook(ctx context.Context, hook txn.TxnFunc) {

@@ -18,7 +18,7 @@ func (r *tagResolver) Description(ctx context.Context, obj *models.Tag) (*string
 }
 
 func (r *tagResolver) Parents(ctx context.Context, obj *models.Tag) (ret []*models.Tag, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Tag.FindByChildTagID(ctx, obj.ID)
 		return err
 	}); err != nil {
@@ -29,7 +29,7 @@ func (r *tagResolver) Parents(ctx context.Context, obj *models.Tag) (ret []*mode
 }
 
 func (r *tagResolver) Children(ctx context.Context, obj *models.Tag) (ret []*models.Tag, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Tag.FindByParentTagID(ctx, obj.ID)
 		return err
 	}); err != nil {
@@ -40,7 +40,7 @@ func (r *tagResolver) Children(ctx context.Context, obj *models.Tag) (ret []*mod
 }
 
 func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) (ret []string, err error) {
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		ret, err = r.repository.Tag.GetAliases(ctx, obj.ID)
 		return err
 	}); err != nil {
@@ -52,7 +52,7 @@ func (r *tagResolver) Aliases(ctx context.Context, obj *models.Tag) (ret []strin
 
 func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
 	var count int
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		count, err = r.repository.Scene.CountByTagID(ctx, obj.ID)
 		return err
 	}); err != nil {
@@ -64,7 +64,7 @@ func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret *int
 
 func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
 	var count int
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		count, err = r.repository.SceneMarker.CountByTagID(ctx, obj.ID)
 		return err
 	}); err != nil {
@@ -76,7 +76,7 @@ func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (re
 
 func (r *tagResolver) ImageCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
 	var res int
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		res, err = image.CountByTagID(ctx, r.repository.Image, obj.ID)
 		return err
 	}); err != nil {
@@ -88,7 +88,7 @@ func (r *tagResolver) ImageCount(ctx context.Context, obj *models.Tag) (ret *int
 
 func (r *tagResolver) GalleryCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
 	var res int
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		res, err = gallery.CountByTagID(ctx, r.repository.Gallery, obj.ID)
 		return err
 	}); err != nil {
@@ -100,7 +100,7 @@ func (r *tagResolver) GalleryCount(ctx context.Context, obj *models.Tag) (ret *i
 
 func (r *tagResolver) PerformerCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
 	var count int
-	if err := r.withTxn(ctx, func(ctx context.Context) error {
+	if err := r.withReadTxn(ctx, func(ctx context.Context) error {
 		count, err = r.repository.Performer.CountByTagID(ctx, obj.ID)
 		return err
 	}); err != nil {

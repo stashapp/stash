@@ -109,7 +109,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			Overwrite:   j.overwrite,
 		}
 
-		if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := j.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 			qb := j.txnManager.Scene
 			if len(j.input.SceneIDs) == 0 && len(j.input.MarkerIDs) == 0 {
 				totals = j.queueTasks(ctx, g, queue)
@@ -137,7 +137,7 @@ func (j *GenerateJob) Execute(ctx context.Context, progress *job.Progress) {
 			}
 
 			return nil
-		}); err != nil {
+		}); err != nil && ctx.Err() == nil {
 			logger.Error(err.Error())
 			return
 		}
