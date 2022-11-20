@@ -261,9 +261,8 @@ export const FieldOptionsList: React.FC<IFieldOptionsList> = ({
   allowSetDefault = true,
   defaultOptions,
 }) => {
-  const [localFieldOptions, setLocalFieldOptions] = useState<
-    GQL.IdentifyFieldOptions[]
-  >();
+  const [localFieldOptions, setLocalFieldOptions] =
+    useState<GQL.IdentifyFieldOptions[]>();
   const [editField, setEditField] = useState<string | undefined>();
 
   useEffect(() => {

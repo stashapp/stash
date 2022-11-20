@@ -30,13 +30,11 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   onLink,
   endpoint,
 }) => {
-  const {
-    data: performerData,
-    loading: stashLoading,
-  } = GQL.useFindPerformerQuery({
-    variables: { id: performer.stored_id ?? "" },
-    skip: !performer.stored_id,
-  });
+  const { data: performerData, loading: stashLoading } =
+    GQL.useFindPerformerQuery({
+      variables: { id: performer.stored_id ?? "" },
+      skip: !performer.stored_id,
+    });
 
   const matchedPerformer = performerData?.findPerformer;
   const matchedStashID = matchedPerformer?.stash_ids.some(

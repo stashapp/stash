@@ -153,7 +153,7 @@ export const BooleanSetting: React.FC<IBooleanSetting> = (props) => {
 };
 
 interface ISelectSetting extends ISetting {
-  value?: string | number | string[] | undefined;
+  value?: string | number | string[];
   onChange: (v: string) => void;
 }
 

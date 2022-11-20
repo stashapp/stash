@@ -97,14 +97,8 @@ interface IScrapedObjectsRow<T> {
 export const ScrapedObjectsRow = <T extends IHasName>(
   props: IScrapedObjectsRow<T>
 ) => {
-  const {
-    title,
-    result,
-    onChange,
-    newObjects,
-    onCreateNew,
-    renderObjects,
-  } = props;
+  const { title, result, onChange, newObjects, onCreateNew, renderObjects } =
+    props;
 
   return (
     <ScrapeDialogRow

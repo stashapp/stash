@@ -106,10 +106,10 @@ export const MovieEditPanel: React.FC<IMovieEditPanel> = ({
     setBackImage(formik.values.back_image);
   }, [formik.values.back_image, setBackImage]);
 
-  useEffect(() => onImageEncoding(encodingImage), [
-    onImageEncoding,
-    encodingImage,
-  ]);
+  useEffect(
+    () => onImageEncoding(encodingImage),
+    [onImageEncoding, encodingImage]
+  );
 
   function setRating(v: number) {
     formik.setFieldValue("rating100", v);

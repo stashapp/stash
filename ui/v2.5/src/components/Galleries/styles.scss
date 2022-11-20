@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .gallery-image {
   &:hover {
     cursor: pointer;
@@ -138,14 +140,14 @@ $galleryTabWidth: 450px;
   }
 
   @mixin galleryWidth($width) {
-    height: ($width / 3) * 2;
+    height: math.div($width, 3) * 2;
 
     &-landscape {
       width: $width;
     }
 
     &-portrait {
-      width: $width / 2;
+      width: math.div($width, 2);
     }
   }
 

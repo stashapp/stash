@@ -82,9 +82,8 @@ export const SceneDuplicateChecker: React.FC = () => {
     GQL.SlimSceneDataFragment[] | null
   >(null);
 
-  const [mergeScenes, setMergeScenes] = useState<
-    { id: string; title: string }[] | undefined
-  >(undefined);
+  const [mergeScenes, setMergeScenes] =
+    useState<{ id: string; title: string }[]>();
 
   if (loading) return <LoadingIndicator />;
   if (!data) return <ErrorMessage error="Error searching for duplicates." />;

@@ -36,7 +36,10 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   const renderMovies = (scene: GQL.SlimSceneDataFragment) =>
     scene.movies.map((sceneMovie) =>
       !sceneMovie.movie ? undefined : (
-        <Link to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}>
+        <Link
+          key={sceneMovie.movie.id}
+          to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}
+        >
           <h6>{sceneMovie.movie.name}</h6>
         </Link>
       )

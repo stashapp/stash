@@ -201,9 +201,8 @@ export const TaggerContext: React.FC = ({ children }) => {
     });
   }
 
-  const [
-    submitFingerprintsMutation,
-  ] = GQL.useSubmitStashBoxFingerprintsMutation();
+  const [submitFingerprintsMutation] =
+    GQL.useSubmitStashBoxFingerprintsMutation();
 
   async function submitFingerprints() {
     const endpoint = currentSource?.stashboxEndpoint;

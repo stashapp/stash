@@ -60,10 +60,8 @@ export const EditPerformersDialog: React.FC<IListOperationProps> = (
     mode: GQL.BulkUpdateIdMode.Add,
   });
   const [existingTagIds, setExistingTagIds] = useState<string[]>();
-  const [
-    aggregateState,
-    setAggregateState,
-  ] = useState<GQL.BulkPerformerUpdateInput>({});
+  const [aggregateState, setAggregateState] =
+    useState<GQL.BulkPerformerUpdateInput>({});
   // weight needs conversion to/from number
   const [weight, setWeight] = useState<string | undefined>();
   const [updateInput, setUpdateInput] = useState<GQL.BulkPerformerUpdateInput>(

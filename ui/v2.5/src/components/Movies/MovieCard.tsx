@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -20,7 +20,7 @@ interface IProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
+export const MovieCard: React.FC<IProps> = (props: IProps) => {
   function maybeRenderSceneNumber() {
     if (!props.sceneIndex) return;
 

@@ -442,10 +442,10 @@ export const PerformerEditPanel: React.FC<IPerformerDetails> = ({
     return () => onImageChange?.();
   }, [formik.values.image, onImageChange]);
 
-  useEffect(() => onImageEncoding?.(imageEncoding), [
-    onImageEncoding,
-    imageEncoding,
-  ]);
+  useEffect(
+    () => onImageEncoding?.(imageEncoding),
+    [onImageEncoding, imageEncoding]
+  );
 
   useEffect(() => {
     const newQueryableScrapers = (

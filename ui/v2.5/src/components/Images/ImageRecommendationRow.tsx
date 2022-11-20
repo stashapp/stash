@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
 import { useFindImages } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -13,9 +13,7 @@ interface IProps {
   header: string;
 }
 
-export const ImageRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
+export const ImageRecommendationRow: React.FC<IProps> = (props: IProps) => {
   const result = useFindImages(props.filter);
   const cardCount = result.data?.findImages.count;
 

@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
 import { useFindStudios } from "src/core/StashService";
 import Slider from "@ant-design/react-slick";
 import { StudioCard } from "./StudioCard";
@@ -13,9 +13,7 @@ interface IProps {
   header: string;
 }
 
-export const StudioRecommendationRow: FunctionComponent<IProps> = (
-  props: IProps
-) => {
+export const StudioRecommendationRow: React.FC<IProps> = (props) => {
   const result = useFindStudios(props.filter);
   const cardCount = result.data?.findStudios.count;
 

@@ -99,9 +99,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   );
 
   // studio image is missing if it uses the default
-  const missingStudioImage = props.scene.studio?.image_path?.endsWith(
-    "?default=true"
-  );
+  const missingStudioImage =
+    props.scene.studio?.image_path?.endsWith("?default=true");
   const showStudioAsText =
     missingStudioImage || (configuration?.interface.showStudioAsText ?? false);
 

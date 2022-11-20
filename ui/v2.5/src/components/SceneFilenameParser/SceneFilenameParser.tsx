@@ -40,9 +40,8 @@ export const SceneFilenameParser: React.FC = () => {
   const intl = useIntl();
   const Toast = useToast();
   const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
-  const [parserInput, setParserInput] = useState<IParserInput>(
-    initialParserInput
-  );
+  const [parserInput, setParserInput] =
+    useState<IParserInput>(initialParserInput);
   const prevParserInputRef = useRef<IParserInput>();
   const prevParserInput = prevParserInputRef.current;
 

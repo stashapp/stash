@@ -141,10 +141,10 @@ export const StudioEditPanel: React.FC<IStudioEditPanel> = ({
     return () => onImageChange?.();
   }, [formik.values.image, onImageChange]);
 
-  useEffect(() => onImageEncoding?.(imageEncoding), [
-    onImageEncoding,
-    imageEncoding,
-  ]);
+  useEffect(
+    () => onImageEncoding?.(imageEncoding),
+    [onImageEncoding, imageEncoding]
+  );
 
   function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);

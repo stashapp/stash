@@ -43,9 +43,8 @@ export const SceneList: React.FC<ISceneList> = ({
   const history = useHistory();
   const config = React.useContext(ConfigurationContext);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
-  const [mergeScenes, setMergeScenes] = useState<
-    { id: string; title: string }[] | undefined
-  >(undefined);
+  const [mergeScenes, setMergeScenes] =
+    useState<{ id: string; title: string }[]>();
   const [isIdentifyDialogOpen, setIsIdentifyDialogOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);

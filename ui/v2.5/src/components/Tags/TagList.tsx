@@ -33,10 +33,8 @@ interface ITagList {
 
 export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   const Toast = useToast();
-  const [
-    deletingTag,
-    setDeletingTag,
-  ] = useState<Partial<GQL.TagDataFragment> | null>(null);
+  const [deletingTag, setDeletingTag] =
+    useState<Partial<GQL.TagDataFragment> | null>(null);
 
   const [deleteTag] = useTagDestroy(getDeleteTagInput() as GQL.TagDestroyInput);
 

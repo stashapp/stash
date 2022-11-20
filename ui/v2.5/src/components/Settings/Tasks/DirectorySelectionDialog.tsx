@@ -17,12 +17,9 @@ interface IDirectorySelectionDialogProps {
   onClose: (paths?: string[]) => void;
 }
 
-export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> = ({
-  animation,
-  allowEmpty = false,
-  initialPaths = [],
-  onClose,
-}) => {
+export const DirectorySelectionDialog: React.FC<
+  IDirectorySelectionDialogProps
+> = ({ animation, allowEmpty = false, initialPaths = [], onClose }) => {
   const intl = useIntl();
   const { configuration } = React.useContext(ConfigurationContext);
 

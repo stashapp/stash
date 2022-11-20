@@ -1,4 +1,3 @@
-import React from "react";
 import { Form, Col, Row, ColProps, FormLabelProps } from "react-bootstrap";
 import EditableTextUtils from "./editabletext";
 

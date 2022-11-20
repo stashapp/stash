@@ -63,10 +63,8 @@ export const GalleryEditPanel: React.FC<IProps> = ({
   const Scrapers = useListGalleryScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [
-    scrapedGallery,
-    setScrapedGallery,
-  ] = useState<GQL.ScrapedGallery | null>();
+  const [scrapedGallery, setScrapedGallery] =
+    useState<GQL.ScrapedGallery | null>();
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);

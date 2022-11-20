@@ -1,4 +1,3 @@
-import React from "react";
 import EditableTextUtils from "./editabletext";
 
 const renderEditableTextTableRow = (options: {

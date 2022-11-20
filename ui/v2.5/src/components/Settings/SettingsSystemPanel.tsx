@@ -17,9 +17,8 @@ import {
 } from "./GeneratePreviewOptions";
 
 export const SettingsConfigurationPanel: React.FC = () => {
-  const { general, loading, error, saveGeneral } = React.useContext(
-    SettingStateContext
-  );
+  const { general, loading, error, saveGeneral } =
+    React.useContext(SettingStateContext);
 
   const transcodeQualities = [
     GQL.StreamingResolutionEnum.Low,

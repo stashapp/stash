@@ -291,9 +291,9 @@ const FilterSelectComponent = <T extends boolean>(
   const selected = options.filter((option) =>
     selectedIds.includes(option.value)
   );
-  const selectedOptions = (isMulti
-    ? selected
-    : selected[0] ?? null) as OnChangeValue<Option, T>;
+  const selectedOptions = (
+    isMulti ? selected : selected[0] ?? null
+  ) as OnChangeValue<Option, T>;
 
   const onChange = (selectedItems: OnChangeValue<Option, boolean>) => {
     const selectedValues = getSelectedValues(selectedItems);
@@ -548,9 +548,10 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const defaultCreatable =
     !configuration?.interface.disableDropdownCreate.performer ?? true;
 
-  const performers = useMemo(() => data?.allPerformers ?? [], [
-    data?.allPerformers,
-  ]);
+  const performers = useMemo(
+    () => data?.allPerformers ?? [],
+    [data?.allPerformers]
+  );
 
   useEffect(() => {
     // build the tag aliases map

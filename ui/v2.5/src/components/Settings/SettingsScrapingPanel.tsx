@@ -75,31 +75,17 @@ const URLList: React.FC<IURLList> = ({ urls }) => {
 export const SettingsScrapingPanel: React.FC = () => {
   const Toast = useToast();
   const intl = useIntl();
-  const {
-    data: performerScrapers,
-    loading: loadingPerformers,
-  } = useListPerformerScrapers();
-  const {
-    data: sceneScrapers,
-    loading: loadingScenes,
-  } = useListSceneScrapers();
-  const {
-    data: galleryScrapers,
-    loading: loadingGalleries,
-  } = useListGalleryScrapers();
-  const {
-    data: movieScrapers,
-    loading: loadingMovies,
-  } = useListMovieScrapers();
+  const { data: performerScrapers, loading: loadingPerformers } =
+    useListPerformerScrapers();
+  const { data: sceneScrapers, loading: loadingScenes } =
+    useListSceneScrapers();
+  const { data: galleryScrapers, loading: loadingGalleries } =
+    useListGalleryScrapers();
+  const { data: movieScrapers, loading: loadingMovies } =
+    useListMovieScrapers();
 
-  const {
-    general,
-    scraping,
-    loading,
-    error,
-    saveGeneral,
-    saveScraping,
-  } = React.useContext(SettingStateContext);
+  const { general, scraping, loading, error, saveGeneral, saveScraping } =
+    React.useContext(SettingStateContext);
 
   async function onReloadScrapers() {
     await mutateReloadScrapers().catch((e) => Toast.error(e));
