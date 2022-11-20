@@ -194,22 +194,22 @@ func (f *handlerRequiredFilter) Accept(ctx context.Context, ff file.File) bool {
 	}
 
 	if isVideoFile {
-		// check if the screenshot file exists
-		hash := scene.GetHash(ff, f.videoFileNamingAlgorithm)
-		ssPath := instance.Paths.Scene.GetScreenshotPath(hash)
-		if exists, _ := fsutil.FileExists(ssPath); !exists {
-			// if not, check if the file is a primary file for a scene
-			scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, ff.Base().ID)
-			if err != nil {
-				// just ignore
-				return false
-			}
+		// TODO - check if the cover exists
+		// hash := scene.GetHash(ff, f.videoFileNamingAlgorithm)
+		// ssPath := instance.Paths.Scene.GetScreenshotPath(hash)
+		// if exists, _ := fsutil.FileExists(ssPath); !exists {
+		// 	// if not, check if the file is a primary file for a scene
+		// 	scenes, err := f.SceneFinder.FindByPrimaryFileID(ctx, ff.Base().ID)
+		// 	if err != nil {
+		// 		// just ignore
+		// 		return false
+		// 	}
 
-			if len(scenes) > 0 {
-				// if it is, then it needs to be re-generated
-				return true
-			}
-		}
+		// 	if len(scenes) > 0 {
+		// 		// if it is, then it needs to be re-generated
+		// 		return true
+		// 	}
+		// }
 
 		// clean captions - scene handler handles this as well, but
 		// unchanged files aren't processed by the scene handler
@@ -349,7 +349,10 @@ func getScanHandlers(options ScanMetadataInput, taskQueue *job.TaskQueue, progre
 				CreatorUpdater: db.Scene,
 				PluginCache:    pluginCache,
 				CaptionUpdater: db.File,
-				CoverGenerator: &coverGenerator{},
+				CoverGenerator: &coverGenerator{
+					txnManager:   db,
+					coverUpdater: db.Scene,
+				},
 				ScanGenerator: &sceneGenerators{
 					input:     options,
 					taskQueue: taskQueue,

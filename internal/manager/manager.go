@@ -34,6 +34,7 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/session"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/txn"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stashapp/stash/ui"
 
@@ -291,6 +292,8 @@ func galleryFileFilter(ctx context.Context, f file.File) bool {
 }
 
 type coverGenerator struct {
+	txnManager   txn.Manager
+	coverUpdater scene.CoverUpdater
 }
 
 func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene, f *file.VideoFile) error {
@@ -301,7 +304,40 @@ func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene,
 		ScenePaths:   instance.Paths.Scene,
 	}
 
-	return gg.Screenshot(ctx, f.Path, scene.GetHash(instance.Config.GetVideoFileNamingAlgorithm()), f.Width, f.Duration, generate.ScreenshotOptions{})
+	hasCover := false
+	if err := txn.WithTxn(ctx, g.txnManager, func(ctx context.Context) error {
+		qb := g.coverUpdater
+		var err error
+		hasCover, err = qb.HasCover(ctx, scene.ID)
+		return err
+	}); err != nil {
+		return err
+	}
+
+	// nothing to do
+	if hasCover {
+		return nil
+	}
+
+	coverImageData, err := gg.Screenshot(ctx, f.Path, f.Width, f.Duration, generate.ScreenshotOptions{})
+	if err != nil {
+		return err
+	}
+
+	if err := txn.WithTxn(ctx, g.txnManager, func(ctx context.Context) error {
+		qb := g.coverUpdater
+
+		// update the scene cover table
+		if err := qb.UpdateCover(ctx, scene.ID, coverImageData); err != nil {
+			return fmt.Errorf("error setting screenshot: %v", err)
+		}
+
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
+	}
+
+	return nil
 }
 
 func makeScanner(db *sqlite.Database, pluginCache *plugin.Cache) *file.Scanner {

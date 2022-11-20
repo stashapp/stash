@@ -1538,6 +1538,10 @@ func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error)
 	return qb.GetImage(ctx, sceneID)
 }
 
+func (qb *SceneStore) HasCover(ctx context.Context, sceneID int) (bool, error) {
+	return qb.HasImage(ctx, sceneID)
+}
+
 func (qb *SceneStore) UpdateCover(ctx context.Context, sceneID int, image []byte) error {
 	return qb.UpdateImage(ctx, sceneID, image)
 }
