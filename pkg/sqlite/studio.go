@@ -32,7 +32,7 @@ func NewStudioReaderWriter(blobStore *BlobStore) *studioQueryBuilder {
 		blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: studioTable,
-			joinCol:   "image_checksum",
+			joinCol:   "image_blob",
 		},
 	}
 }

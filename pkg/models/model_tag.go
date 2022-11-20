@@ -11,9 +11,9 @@ type Tag struct {
 	Description   sql.NullString `db:"description" json:"description"`
 	IgnoreAutoTag bool           `db:"ignore_auto_tag" json:"ignore_auto_tag"`
 	// TODO - this is only here because of database code in the models package
-	ImageChecksum sql.NullString  `db:"image_checksum" json:"-"`
-	CreatedAt     SQLiteTimestamp `db:"created_at" json:"created_at"`
-	UpdatedAt     SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+	ImageBlob sql.NullString  `db:"image_blob" json:"-"`
+	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
+	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
 type TagPartial struct {

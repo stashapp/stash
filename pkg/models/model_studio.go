@@ -20,7 +20,7 @@ type Studio struct {
 	Details       sql.NullString `db:"details" json:"details"`
 	IgnoreAutoTag bool           `db:"ignore_auto_tag" json:"ignore_auto_tag"`
 	// TODO - this is only here because of database code in the models package
-	ImageChecksum sql.NullString `db:"image_checksum" json:"-"`
+	ImageBlob sql.NullString `db:"image_blob" json:"-"`
 }
 
 type StudioPartial struct {

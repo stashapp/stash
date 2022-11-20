@@ -29,7 +29,7 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 		joinIDCol:    "tag_id",
 		joinImageCol: "image",
 		destTable:    "tags",
-		destCol:      "image_checksum",
+		destCol:      "image_blob",
 	}); err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 		joinIDCol:    "studio_id",
 		joinImageCol: "image",
 		destTable:    "studios",
-		destCol:      "image_checksum",
+		destCol:      "image_blob",
 	}); err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 		joinIDCol:    "performer_id",
 		joinImageCol: "image",
 		destTable:    "performers",
-		destCol:      "image_checksum",
+		destCol:      "image_blob",
 	}); err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 		joinIDCol:    "scene_id",
 		joinImageCol: "cover",
 		destTable:    "scenes",
-		destCol:      "cover_checksum",
+		destCol:      "cover_blob",
 	}); err != nil {
 		return err
 	}

@@ -3,10 +3,10 @@ CREATE TABLE `blobs` (
     `blob` blob
 );
 
-ALTER TABLE `tags` ADD COLUMN `image_checksum` blob REFERENCES `blobs`(`checksum`);
-ALTER TABLE `studios` ADD COLUMN `image_checksum` blob REFERENCES `blobs`(`checksum`);
-ALTER TABLE `performers` ADD COLUMN `image_checksum` blob REFERENCES `blobs`(`checksum`);
-ALTER TABLE `scenes` ADD COLUMN `cover_checksum` blob REFERENCES `blobs`(`checksum`);
+ALTER TABLE `tags` ADD COLUMN `image_blob` varchar(255) REFERENCES `blobs`(`checksum`);
+ALTER TABLE `studios` ADD COLUMN `image_blob` varchar(255) REFERENCES `blobs`(`checksum`);
+ALTER TABLE `performers` ADD COLUMN `image_blob` varchar(255) REFERENCES `blobs`(`checksum`);
+ALTER TABLE `scenes` ADD COLUMN `cover_blob` varchar(255) REFERENCES `blobs`(`checksum`);
 
 -- ALTER TABLE `scenes` ADD COLUMN `cover_checksum` blob REFERENCES `blobs`(`checksum`);
 

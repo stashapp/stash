@@ -56,7 +56,7 @@ type performerRow struct {
 	IgnoreAutoTag bool              `db:"ignore_auto_tag"`
 
 	// not used for resolution
-	ImageChecksum zero.String `db:"image_checksum"`
+	ImageBlob zero.String `db:"image_blob"`
 }
 
 func (r *performerRow) fromPerformer(o models.Performer) {
@@ -176,7 +176,7 @@ func NewPerformerStore(blobStore *BlobStore) *PerformerStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: performerTable,
-			joinCol:   "image_checksum",
+			joinCol:   "image_blob",
 		},
 		tableMgr: performerTableMgr,
 	}
@@ -704,7 +704,7 @@ func performerIsMissingCriterionHandler(qb *PerformerStore, isMissing *string) c
 				f.addLeftJoin(performersScenesTable, "scenes_join", "scenes_join.performer_id = performers.id")
 				f.addWhere("scenes_join.scene_id IS NULL")
 			case "image":
-				f.addWhere("performers.image_checksum IS NULL")
+				f.addWhere("performers.image_blob IS NULL")
 			case "stash_id":
 				performersStashIDsTableMgr.join(f, "performer_stash_ids", "performers.id")
 				f.addWhere("performer_stash_ids.performer_id IS NULL")

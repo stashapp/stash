@@ -74,7 +74,7 @@ type sceneRow struct {
 	PlayCount    int                        `db:"play_count"`
 
 	// not used in resolutions or updates
-	CoverChecksum zero.String `db:"cover_checksum"`
+	CoverBlob zero.String `db:"cover_blob"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -192,7 +192,7 @@ func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 		blobJoinQueryBuilder: blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: sceneTable,
-			joinCol:   "cover_checksum",
+			joinCol:   "cover_blob",
 		},
 
 		tableMgr:        sceneTableMgr,

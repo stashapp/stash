@@ -32,7 +32,7 @@ func NewTagReaderWriter(blobStore *BlobStore) *tagQueryBuilder {
 		blobJoinQueryBuilder{
 			blobStore: blobStore,
 			joinTable: tagTable,
-			joinCol:   "image_checksum",
+			joinCol:   "image_blob",
 		},
 	}
 }
@@ -407,7 +407,7 @@ func tagIsMissingCriterionHandler(qb *tagQueryBuilder, isMissing *string) criter
 		if isMissing != nil && *isMissing != "" {
 			switch *isMissing {
 			case "image":
-				f.addWhere("tags.image_checksum IS NULL")
+				f.addWhere("tags.image_blob IS NULL")
 			default:
 				f.addWhere("(tags." + *isMissing + " IS NULL OR TRIM(tags." + *isMissing + ") = '')")
 			}
