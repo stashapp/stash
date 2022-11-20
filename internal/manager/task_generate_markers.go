@@ -42,7 +42,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 
 	if t.Marker != nil {
 		var scene *models.Scene
-		if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := t.TxnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
 			scene, err = t.TxnManager.Scene.Find(ctx, int(t.Marker.SceneID.Int64))
 			if err == nil && scene != nil {
@@ -73,7 +73,7 @@ func (t *GenerateMarkersTask) Start(ctx context.Context) {
 
 func (t *GenerateMarkersTask) generateSceneMarkers(ctx context.Context) {
 	var sceneMarkers []*models.SceneMarker
-	if err := t.TxnManager.WithTxn(ctx, func(ctx context.Context) error {
+	if err := t.TxnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 		var err error
 		sceneMarkers, err = t.TxnManager.SceneMarker.FindBySceneID(ctx, t.Scene.ID)
 		return err

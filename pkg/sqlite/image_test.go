@@ -929,18 +929,15 @@ func Test_imageQueryBuilder_Destroy(t *testing.T) {
 	for _, tt := range tests {
 		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
 			assert := assert.New(t)
-			withRollbackTxn(func(ctx context.Context) error {
-				if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
-					t.Errorf("imageQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
-				}
+			if err := qb.Destroy(ctx, tt.id); (err != nil) != tt.wantErr {
+				t.Errorf("imageQueryBuilder.Destroy() error = %v, wantErr %v", err, tt.wantErr)
+			}
 
-				// ensure cannot be found
-				i, err := qb.Find(ctx, tt.id)
+			// ensure cannot be found
+			i, err := qb.Find(ctx, tt.id)
 
-				assert.NotNil(err)
-				assert.Nil(i)
-				return nil
-			})
+			assert.NotNil(err)
+			assert.Nil(i)
 		})
 	}
 }
