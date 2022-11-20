@@ -345,7 +345,7 @@ SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
 }
 
 func (qb *blobJoinQueryBuilder) HasImage(ctx context.Context, id int) (bool, error) {
-	stmt := utils.StrFormat("SELECT COUNT(*) as count FROM (SELECT {joinCol} FROM {joinTable} WHERE id = ? LIMIT 1)", utils.StrFormatMap{
+	stmt := utils.StrFormat("SELECT COUNT(*) as count FROM (SELECT {joinCol} FROM {joinTable} WHERE id = ? AND {joinCol} IS NOT NULL LIMIT 1)", utils.StrFormatMap{
 		"joinTable": qb.joinTable,
 		"joinCol":   qb.joinCol,
 	})
