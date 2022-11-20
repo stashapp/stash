@@ -71,6 +71,7 @@ type Database struct {
 	Gallery   *GalleryStore
 	Scene     *SceneStore
 	Performer *PerformerStore
+	Tag       *tagQueryBuilder
 
 	db     *sqlx.DB
 	dbPath string
@@ -83,15 +84,17 @@ type Database struct {
 func NewDatabase() *Database {
 	fileStore := NewFileStore()
 	folderStore := NewFolderStore()
+	blobStore := NewBlobStore(BlobStoreOptions{})
 
 	ret := &Database{
-		Blobs:     NewBlobStore(BlobStoreOptions{}),
+		Blobs:     blobStore,
 		File:      fileStore,
 		Folder:    folderStore,
 		Scene:     NewSceneStore(fileStore),
 		Image:     NewImageStore(fileStore),
 		Gallery:   NewGalleryStore(fileStore, folderStore),
 		Performer: NewPerformerStore(),
+		Tag:       NewTagReaderWriter(blobStore),
 		lockChan:  make(chan struct{}, 1),
 	}
 
@@ -99,7 +102,7 @@ func NewDatabase() *Database {
 }
 
 func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
-	db.Blobs = NewBlobStore(options)
+	*db.Blobs = *NewBlobStore(options)
 }
 
 // Ready returns an error if the database is not ready to begin transactions.

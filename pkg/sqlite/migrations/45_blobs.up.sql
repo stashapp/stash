@@ -3,6 +3,8 @@ CREATE TABLE `blobs` (
     `blob` blob
 );
 
+ALTER TABLE `tags` ADD COLUMN `image_checksum` blob REFERENCES `blobs`(`checksum`);
+
 -- ALTER TABLE `scenes` ADD COLUMN `cover_checksum` blob REFERENCES `blobs`(`checksum`);
 
 -- TODO: migrate scenes_cover to cover_checksum - post-migrate
