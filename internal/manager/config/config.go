@@ -31,6 +31,7 @@ const (
 	BackupDirectoryPath = "backup_directory_path"
 	Generated           = "generated"
 	Metadata            = "metadata"
+	BlobsPath           = "blobs_path"
 	Downloads           = "downloads"
 	ApiKey              = "api_key"
 	Username            = "username"
@@ -549,6 +550,10 @@ func (i *Instance) GetCachePath() string {
 
 func (i *Instance) GetGeneratedPath() string {
 	return i.getString(Generated)
+}
+
+func (i *Instance) GetBlobsPath() string {
+	return i.getString(BlobsPath)
 }
 
 func (i *Instance) GetMetadataPath() string {

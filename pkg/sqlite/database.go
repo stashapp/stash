@@ -64,6 +64,7 @@ func (e *MismatchedSchemaVersionError) Error() string {
 }
 
 type Database struct {
+	Blobs     *BlobStore
 	File      *FileStore
 	Folder    *FolderStore
 	Image     *ImageStore
@@ -84,6 +85,7 @@ func NewDatabase() *Database {
 	folderStore := NewFolderStore()
 
 	ret := &Database{
+		Blobs:     NewBlobStore(),
 		File:      fileStore,
 		Folder:    folderStore,
 		Scene:     NewSceneStore(fileStore),
