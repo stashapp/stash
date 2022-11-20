@@ -11,9 +11,10 @@ const (
 )
 
 type hookManager struct {
-	postCommitHooks   []TxnFunc
-	postRollbackHooks []TxnFunc
-	postCompleteHooks []TxnFunc
+	preCommitHooks    []TxnFunc
+	postCommitHooks   []MustFunc
+	postRollbackHooks []MustFunc
+	postCompleteHooks []MustFunc
 }
 
 func (m *hookManager) register(ctx context.Context) context.Context {
@@ -28,39 +29,59 @@ func hookManagerCtx(ctx context.Context) *hookManager {
 	return m
 }
 
-func executeHooks(ctx context.Context, hooks []TxnFunc) {
+func executeHooks(ctx context.Context, hooks []TxnFunc) error {
+	// we need to return the first error
 	for _, h := range hooks {
-		// ignore errors
-		_ = h(ctx)
+		if err := h(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func executeMustHooks(ctx context.Context, hooks []MustFunc) {
+	for _, h := range hooks {
+		h(ctx)
 	}
 }
 
 func executePostCommitHooks(ctx context.Context, outerCtx context.Context) {
 	m := hookManagerCtx(ctx)
-	executeHooks(outerCtx, m.postCommitHooks)
+	executeMustHooks(outerCtx, m.postCommitHooks)
 }
 
 func executePostRollbackHooks(ctx context.Context, outerCtx context.Context) {
 	m := hookManagerCtx(ctx)
-	executeHooks(outerCtx, m.postRollbackHooks)
+	executeMustHooks(outerCtx, m.postRollbackHooks)
+}
+
+func executePreCommitHooks(ctx context.Context) error {
+	m := hookManagerCtx(ctx)
+	return executeHooks(ctx, m.preCommitHooks)
 }
 
 func executePostCompleteHooks(ctx context.Context, outerCtx context.Context) {
 	m := hookManagerCtx(ctx)
-	executeHooks(outerCtx, m.postCompleteHooks)
+	executeMustHooks(outerCtx, m.postCompleteHooks)
 }
 
-func AddPostCommitHook(ctx context.Context, hook TxnFunc) {
+func AddPreCommitHook(ctx context.Context, hook TxnFunc) {
+	m := hookManagerCtx(ctx)
+	m.preCommitHooks = append(m.preCommitHooks, hook)
+}
+
+func AddPostCommitHook(ctx context.Context, hook MustFunc) {
 	m := hookManagerCtx(ctx)
 	m.postCommitHooks = append(m.postCommitHooks, hook)
 }
 
-func AddPostRollbackHook(ctx context.Context, hook TxnFunc) {
+func AddPostRollbackHook(ctx context.Context, hook MustFunc) {
 	m := hookManagerCtx(ctx)
 	m.postRollbackHooks = append(m.postRollbackHooks, hook)
 }
 
-func AddPostCompleteHook(ctx context.Context, hook TxnFunc) {
+func AddPostCompleteHook(ctx context.Context, hook MustFunc) {
 	m := hookManagerCtx(ctx)
 	m.postCompleteHooks = append(m.postCompleteHooks, hook)
 }

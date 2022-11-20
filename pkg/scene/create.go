@@ -59,12 +59,10 @@ func (s *Service) Create(ctx context.Context, input *models.Scene, fileIDs []fil
 		// only update the cover image if provided and everything else was successful
 		// only do this if there is a file associated
 		if len(fileIDs) > 0 {
-			txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+			txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 				if err := SetScreenshot(s.Paths, ret.GetHash(s.Config.GetVideoFileNamingAlgorithm()), coverImage); err != nil {
 					logger.Errorf("Error setting screenshot: %v", err)
 				}
-
-				return nil
 			})
 		}
 	}

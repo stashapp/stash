@@ -17,12 +17,13 @@ type DatabaseProvider interface {
 	WithDatabase(ctx context.Context) (context.Context, error)
 }
 
-type DatabaseProviderManager interface {
-	DatabaseProvider
-	Manager
-}
-
+// TxnFunc is a function that is used in transaction hooks.
+// It should return an error if something went wrong.
 type TxnFunc func(ctx context.Context) error
+
+// MustFunc is a function that is used in transaction hooks.
+// It does not return an error.
+type MustFunc func(ctx context.Context)
 
 // WithTxn executes fn in a transaction. If fn returns an error then
 // the transaction is rolled back. Otherwise it is committed.
@@ -97,6 +98,10 @@ func begin(ctx context.Context, m Manager, exclusive bool) (context.Context, err
 }
 
 func commit(ctx context.Context, outerCtx context.Context, m Manager) error {
+	if err := executePreCommitHooks(ctx); err != nil {
+		return err
+	}
+
 	if err := m.Commit(ctx); err != nil {
 		return err
 	}
