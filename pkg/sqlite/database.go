@@ -91,7 +91,7 @@ func NewDatabase() *Database {
 		Blobs:     blobStore,
 		File:      fileStore,
 		Folder:    folderStore,
-		Scene:     NewSceneStore(fileStore),
+		Scene:     NewSceneStore(fileStore, blobStore),
 		Image:     NewImageStore(fileStore),
 		Gallery:   NewGalleryStore(fileStore, folderStore),
 		Performer: NewPerformerStore(blobStore),

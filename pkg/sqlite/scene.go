@@ -72,6 +72,9 @@ type sceneRow struct {
 	ResumeTime   float64                    `db:"resume_time"`
 	PlayDuration float64                    `db:"play_duration"`
 	PlayCount    int                        `db:"play_count"`
+
+	// not used in resolutions or updates
+	CoverChecksum zero.String `db:"cover_checksum"`
 }
 
 func (r *sceneRow) fromScene(o models.Scene) {
@@ -172,6 +175,7 @@ func (r *sceneRowRecord) fromPartial(o models.ScenePartial) {
 
 type SceneStore struct {
 	repository
+	blobJoinQueryBuilder
 
 	tableMgr *table
 	oCounterManager
@@ -179,11 +183,16 @@ type SceneStore struct {
 	fileStore *FileStore
 }
 
-func NewSceneStore(fileStore *FileStore) *SceneStore {
+func NewSceneStore(fileStore *FileStore, blobStore *BlobStore) *SceneStore {
 	return &SceneStore{
 		repository: repository{
 			tableName: sceneTable,
 			idColumn:  idColumn,
+		},
+		blobJoinQueryBuilder: blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: sceneTable,
+			joinCol:   "cover_checksum",
 		},
 
 		tableMgr:        sceneTableMgr,
@@ -353,6 +362,11 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 }
 
 func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
+	// must handle image checksums manually
+	if err := qb.DestroyImage(ctx, id); err != nil {
+		return err
+	}
+
 	// scene markers should be handled prior to calling destroy
 	// galleries should be handled prior to calling destroy
 
@@ -1464,17 +1478,6 @@ func (qb *SceneStore) setSceneSort(query *queryBuilder, findFilter *models.FindF
 	}
 }
 
-func (qb *SceneStore) imageRepository() *imageRepository {
-	return &imageRepository{
-		repository: repository{
-			tx:        qb.tx,
-			tableName: "scenes_cover",
-			idColumn:  sceneIDColumn,
-		},
-		imageColumn: "cover",
-	}
-}
-
 func (qb *SceneStore) getPlayCount(ctx context.Context, id int) (int, error) {
 	q := dialect.From(qb.tableMgr.table).Select("play_count").Where(goqu.Ex{"id": id})
 
@@ -1532,15 +1535,15 @@ func (qb *SceneStore) IncrementWatchCount(ctx context.Context, id int) (int, err
 }
 
 func (qb *SceneStore) GetCover(ctx context.Context, sceneID int) ([]byte, error) {
-	return qb.imageRepository().get(ctx, sceneID)
+	return qb.GetImage(ctx, sceneID)
 }
 
 func (qb *SceneStore) UpdateCover(ctx context.Context, sceneID int, image []byte) error {
-	return qb.imageRepository().replace(ctx, sceneID, image)
+	return qb.UpdateImage(ctx, sceneID, image)
 }
 
 func (qb *SceneStore) DestroyCover(ctx context.Context, sceneID int) error {
-	return qb.imageRepository().destroy(ctx, []int{sceneID})
+	return qb.DestroyImage(ctx, sceneID)
 }
 
 func (qb *SceneStore) AssignFiles(ctx context.Context, sceneID int, fileIDs []file.ID) error {

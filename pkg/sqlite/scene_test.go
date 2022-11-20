@@ -4102,9 +4102,16 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 
 		// set nil image
 		err = qb.UpdateCover(ctx, sceneID, nil)
-		if err == nil {
-			return fmt.Errorf("Expected error setting nil image")
+		if err != nil {
+			return fmt.Errorf("error setting nil image: %w", err)
 		}
+
+		// ensure image null
+		storedImage, err = qb.GetImage(ctx, sceneID)
+		if err != nil {
+			return fmt.Errorf("Error getting image: %s", err.Error())
+		}
+		assert.Nil(t, storedImage)
 
 		return nil
 	}); err != nil {

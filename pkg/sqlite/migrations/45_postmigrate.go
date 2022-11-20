@@ -54,6 +54,16 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 		return err
 	}
 
+	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
+		joinTable:    "scenes_cover",
+		joinIDCol:    "scene_id",
+		joinImageCol: "cover",
+		destTable:    "scenes",
+		destCol:      "cover_checksum",
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
