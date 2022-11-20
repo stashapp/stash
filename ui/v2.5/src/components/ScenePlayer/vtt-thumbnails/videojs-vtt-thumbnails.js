@@ -94,6 +94,12 @@ class vttThumbnailsPlugin {
     }
 
     if (this.progressBar) {
+      this.progressBar.removeEventListener('touchstart', this.registeredEvents.progressBarMouseEnter);
+      this.progressBar.removeEventListener('touchend', this.registeredEvents.progressBarMouseLeave);
+      this.progressBar.removeEventListener('touchmove', this.registeredEvents.progressBarMouseMove);
+      this.progressBarHolder.removeEventListener('touchstart', this.registeredEvents.progressBarMouseEnter);
+      this.progressBarHolder.removeEventListener('touchend', this.registeredEvents.progressBarMouseLeave);
+
       this.progressBar.removeEventListener('mouseenter', this.registeredEvents.progressBarMouseEnter);
       this.progressBar.removeEventListener('mouseleave', this.registeredEvents.progressBarMouseLeave);
       this.progressBar.removeEventListener('mousemove', this.registeredEvents.progressBarMouseMove);
@@ -207,15 +213,14 @@ class vttThumbnailsPlugin {
       return this.onBarMouseleave();
     };
 
-    this.progressBarHolder.addEventListener('touchstart', this.registeredEvents.progressBarMouseEnter, { passive: true });
-    this.progressBarHolder.addEventListener('mouseenter', this.registeredEvents.progressBarMouseEnter);
-    this.progressBarHolder.addEventListener('mouseleave', this.registeredEvents.progressBarMouseLeave);
-    this.progressBarHolder.addEventListener('touchend', this.registeredEvents.progressBarMouseLeave);
     this.progressBar.addEventListener('touchstart', this.registeredEvents.progressBarMouseEnter, { passive: true });
-    this.progressBar.addEventListener('mouseenter', this.registeredEvents.progressBarMouseEnter);
-    this.progressBar.addEventListener('mouseleave', this.registeredEvents.progressBarMouseLeave);
     this.progressBar.addEventListener('touchend', this.registeredEvents.progressBarMouseLeave);
-    
+    // required so touch events are fired
+    this.progressBarHolder.addEventListener('touchstart', this.registeredEvents.progressBarMouseEnter, { passive: true });
+    this.progressBarHolder.addEventListener('touchend', this.registeredEvents.progressBarMouseLeave);
+
+    this.progressBar.addEventListener('mouseenter', this.registeredEvents.progressBarMouseEnter);
+    this.progressBar.addEventListener('mouseleave', this.registeredEvents.progressBarMouseLeave);    
   }
 
   onBarMouseenter() {
@@ -224,8 +229,6 @@ class vttThumbnailsPlugin {
     };
 
     this.registeredEvents.progressBarMouseMove = this.mouseMoveCallback;
-    this.progressBarHolder.addEventListener('mousemove', this.registeredEvents.progressBarMouseMove);
-    this.progressBarHolder.addEventListener('touchmove', this.registeredEvents.progressBarMouseMove, { passive: true });
     this.progressBar.addEventListener('mousemove', this.registeredEvents.progressBarMouseMove);
     this.progressBar.addEventListener('touchmove', this.registeredEvents.progressBarMouseMove, { passive: true });
     this.showThumbnailHolder();
@@ -235,10 +238,8 @@ class vttThumbnailsPlugin {
     // ensure mouse leave runs after mouse move
     await new Promise(r => setTimeout(r, 100));
     if (this.registeredEvents.progressBarMouseMove) {
-      this.progressBarHolder.removeEventListener('mousemove', this.registeredEvents.progressBarMouseMove);
-      this.progressBarHolder.removeEventListener('touchmove', this.registeredEvents.progressBarMouseMove, { passive: true });
-      this.progressBar.addEventListener('mousemove', this.registeredEvents.progressBarMouseMove);
-      this.progressBar.addEventListener('touchmove', this.registeredEvents.progressBarMouseMove, { passive: true });
+      this.progressBar.removeEventListener('mousemove', this.registeredEvents.progressBarMouseMove);
+      this.progressBar.removeEventListener('touchmove', this.registeredEvents.progressBarMouseMove);
     }
 
     this.hideThumbnailHolder();
@@ -290,8 +291,13 @@ class vttThumbnailsPlugin {
   }
 
   updateThumbnailStyle(percent, width) {
-    const duration = this.player.duration();
-    const time = percent * duration;
+    let time = null;
+    if (this.player.scrubbing()) {
+      time = this.player.player_.cache_.scrubTime;
+    } else {
+      const duration = this.player.duration();
+      time = percent * duration;
+    }
     const currentStyle = this.getStyleForTime(time);
 
     if (!currentStyle) {

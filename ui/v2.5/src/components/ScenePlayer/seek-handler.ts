@@ -22,6 +22,8 @@ const seekHandler = function (this: VideoJsPlayer) {
         this.player_.currentTime(ct);
       } else {
         // hijack the player's time setting
+        this.player_.cache_.scrubTime = ct; // for thumbnails
+        // on timeupdate, the player revises the currentTime cache to the actual time
         this.player_.cache_.currentTime = ct;
         this.player_.trigger({
           type: "timeupdate",
