@@ -94,7 +94,7 @@ func NewDatabase() *Database {
 		Scene:     NewSceneStore(fileStore),
 		Image:     NewImageStore(fileStore),
 		Gallery:   NewGalleryStore(fileStore, folderStore),
-		Performer: NewPerformerStore(),
+		Performer: NewPerformerStore(blobStore),
 		Tag:       NewTagReaderWriter(blobStore),
 		Studio:    NewStudioReaderWriter(blobStore),
 		lockChan:  make(chan struct{}, 1),
