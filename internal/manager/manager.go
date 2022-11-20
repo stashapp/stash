@@ -305,7 +305,7 @@ func (g *coverGenerator) GenerateCover(ctx context.Context, scene *models.Scene,
 	}
 
 	hasCover := false
-	if err := txn.WithTxn(ctx, g.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, g.txnManager, func(ctx context.Context) error {
 		qb := g.coverUpdater
 		var err error
 		hasCover, err = qb.HasCover(ctx, scene.ID)

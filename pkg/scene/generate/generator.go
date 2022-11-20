@@ -104,7 +104,7 @@ func (g Generator) generateFile(lockCtx *fsutil.LockContext, p Paths, pattern st
 	return nil
 }
 
-// generateFile performs a generate operation by generating a temporary file using p and pattern, reads the contents, then deletes it.
+// generateBytes performs a generate operation by generating a temporary file using p and pattern, returns the contents, then deletes it.
 func (g Generator) generateBytes(lockCtx *fsutil.LockContext, p Paths, pattern string, generateFn generateFn) ([]byte, error) {
 	tmpFile, err := g.tempFile(p, pattern) // tmp output in case the process ends abruptly
 	if err != nil {

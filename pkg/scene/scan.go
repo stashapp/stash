@@ -132,7 +132,7 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 	}
 
 	// do this after the commit so that cover generation doesn't hold up the transaction
-	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) {
 		for _, s := range existing {
 			if err := h.CoverGenerator.GenerateCover(ctx, s, videoFile); err != nil {
 				// just log if cover generation fails. We can try again on rescan
@@ -144,8 +144,6 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 				logger.Errorf("Error generating content for %s: %v", videoFile.Path, err)
 			}
 		}
-
-		return nil
 	})
 
 	return nil
