@@ -46,24 +46,20 @@ func executeMustHooks(ctx context.Context, hooks []MustFunc) {
 	}
 }
 
-func executePostCommitHooks(ctx context.Context, outerCtx context.Context) {
-	m := hookManagerCtx(ctx)
-	executeMustHooks(outerCtx, m.postCommitHooks)
+func (m *hookManager) executePostCommitHooks(ctx context.Context) {
+	executeMustHooks(ctx, m.postCommitHooks)
 }
 
-func executePostRollbackHooks(ctx context.Context, outerCtx context.Context) {
-	m := hookManagerCtx(ctx)
-	executeMustHooks(outerCtx, m.postRollbackHooks)
+func (m *hookManager) executePostRollbackHooks(ctx context.Context) {
+	executeMustHooks(ctx, m.postRollbackHooks)
 }
 
-func executePreCommitHooks(ctx context.Context) error {
-	m := hookManagerCtx(ctx)
+func (m *hookManager) executePreCommitHooks(ctx context.Context) error {
 	return executeHooks(ctx, m.preCommitHooks)
 }
 
-func executePostCompleteHooks(ctx context.Context, outerCtx context.Context) {
-	m := hookManagerCtx(ctx)
-	executeMustHooks(outerCtx, m.postCompleteHooks)
+func (m *hookManager) executePostCompleteHooks(ctx context.Context) {
+	executeMustHooks(ctx, m.postCompleteHooks)
 }
 
 func AddPreCommitHook(ctx context.Context, hook TxnFunc) {
