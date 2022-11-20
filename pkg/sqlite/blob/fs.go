@@ -3,7 +3,6 @@ package blob
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -76,9 +75,6 @@ func (s *FilesystemStore) Read(ctx context.Context, checksum string) ([]byte, er
 	fn := s.checksumToPath(checksum)
 	f, err := s.fs.Open(fn)
 	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			return nil, ErrNotFound
-		}
 		return nil, fmt.Errorf("opening file %q: %w", fn, err)
 	}
 

@@ -17,7 +17,6 @@ import (
 	"github.com/stashapp/stash/internal/dlna"
 	"github.com/stashapp/stash/internal/log"
 	"github.com/stashapp/stash/internal/manager/config"
-	"github.com/stashapp/stash/pkg/blob"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/file"
 	file_image "github.com/stashapp/stash/pkg/file/image"
@@ -134,8 +133,6 @@ type Manager struct {
 	SceneService   SceneService
 	ImageService   ImageService
 	GalleryService GalleryService
-
-	BlobStore *blob.Service
 
 	Scanner *file.Scanner
 	Cleaner *file.Cleaner
@@ -470,12 +467,10 @@ func (s *Manager) PostInit(ctx context.Context) error {
 		logger.Errorf("Error reading plugin configs: %s", err.Error())
 	}
 
-	s.BlobStore = blob.NewService(blob.ServiceOptions{
+	s.Database.SetBlobStoreOptions(sqlite.BlobStoreOptions{
 		UseFilesystem: true,
 		UseDatabase:   true,
 		Path:          s.Paths.Blobs,
-		Database:      s.Database.Blobs,
-		FS:            &file.OsFS{},
 	})
 
 	s.ScraperCache = instance.initScraperCache()

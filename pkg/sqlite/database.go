@@ -85,7 +85,7 @@ func NewDatabase() *Database {
 	folderStore := NewFolderStore()
 
 	ret := &Database{
-		Blobs:     NewBlobStore(),
+		Blobs:     NewBlobStore(BlobStoreOptions{}),
 		File:      fileStore,
 		Folder:    folderStore,
 		Scene:     NewSceneStore(fileStore),
@@ -96,6 +96,10 @@ func NewDatabase() *Database {
 	}
 
 	return ret
+}
+
+func (db *Database) SetBlobStoreOptions(options BlobStoreOptions) {
+	db.Blobs = NewBlobStore(options)
 }
 
 // Ready returns an error if the database is not ready to begin transactions.

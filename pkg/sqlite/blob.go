@@ -5,25 +5,41 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io/fs"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/blob"
+	"github.com/mattn/go-sqlite3"
+	"github.com/stashapp/stash/pkg/file"
+	"github.com/stashapp/stash/pkg/hash/md5"
+	"github.com/stashapp/stash/pkg/sqlite/blob"
 )
-
-type BlobStore struct {
-	repository
-
-	tableMgr *table
-}
 
 const (
 	blobTable          = "blobs"
 	blobChecksumColumn = "checksum"
 )
 
-func NewBlobStore() *BlobStore {
+type BlobStoreOptions struct {
+	// UseFilesystem should be true if blob data should be stored in the filesystem
+	UseFilesystem bool
+	// UseDatabase should be true if blob data should be stored in the database
+	UseDatabase bool
+	// Path is the filesystem path to use for storing blobs
+	Path string
+}
+
+type BlobStore struct {
+	repository
+
+	tableMgr *table
+
+	fsStore *blob.FilesystemStore
+	options BlobStoreOptions
+}
+
+func NewBlobStore(options BlobStoreOptions) *BlobStore {
 	return &BlobStore{
 		repository: repository{
 			tableName: blobTable,
@@ -31,6 +47,8 @@ func NewBlobStore() *BlobStore {
 		},
 
 		tableMgr: blobTableMgr,
+
+		fsStore: blob.NewFilesystemStore(options.Path, &file.OsFS{}),
 	}
 }
 
@@ -43,7 +61,40 @@ func (qb *BlobStore) table() exp.IdentifierExpression {
 	return qb.tableMgr.table
 }
 
-func (qb *BlobStore) Write(ctx context.Context, checksum string, data []byte) error {
+// Write stores the data and its checksum in enabled stores.
+// Always writes at least the checksum to the database.
+func (qb *BlobStore) Write(ctx context.Context, data []byte) (string, error) {
+	if !qb.options.UseDatabase && !qb.options.UseFilesystem {
+		panic("no blob store configured")
+	}
+
+	if len(data) == 0 {
+		return "", fmt.Errorf("cannot write empty data")
+	}
+
+	checksum := md5.FromBytes(data)
+
+	// only write blob to the database if UseDatabase is true
+	// always at least write the checksum
+	var storedData []byte
+	if qb.options.UseDatabase {
+		storedData = data
+	}
+
+	if err := qb.write(ctx, checksum, storedData); err != nil {
+		return "", fmt.Errorf("writing to database: %w", err)
+	}
+
+	if qb.options.UseFilesystem {
+		if err := qb.fsStore.Write(ctx, checksum, data); err != nil {
+			return "", fmt.Errorf("writing to filesystem: %w", err)
+		}
+	}
+
+	return checksum, nil
+}
+
+func (qb *BlobStore) write(ctx context.Context, checksum string, data []byte) error {
 	table := qb.table()
 	q := dialect.Insert(table).Prepared(true).Rows(blobRow{
 		Checksum: checksum,
@@ -58,7 +109,65 @@ func (qb *BlobStore) Write(ctx context.Context, checksum string, data []byte) er
 	return nil
 }
 
+type ChecksumNotFoundError struct {
+	Checksum string
+}
+
+func (e *ChecksumNotFoundError) Error() string {
+	return fmt.Sprintf("checksum %s does not exist", e.Checksum)
+}
+
+type ChecksumFileNotExistError struct {
+	Checksum string
+}
+
+func (e *ChecksumFileNotExistError) Error() string {
+	return fmt.Sprintf("checksum %s does not exist in filesystem", e.Checksum)
+}
+
+// Read reads the data from the database or filesystem, depending on which is enabled.
 func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) {
+	if !qb.options.UseDatabase && !qb.options.UseFilesystem {
+		panic("no blob store configured")
+	}
+
+	// check the database first
+	ret, err := qb.read(ctx, checksum)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("reading from database: %w", err)
+		}
+
+		// not found in the database - does not exist
+		return nil, &ChecksumNotFoundError{
+			Checksum: checksum,
+		}
+	}
+
+	if qb.options.UseDatabase && ret != nil {
+		return ret, nil
+	}
+
+	if qb.options.UseFilesystem {
+		ret, err := qb.fsStore.Read(ctx, checksum)
+		if err != nil {
+			if !errors.Is(err, fs.ErrNotExist) {
+				return nil, fmt.Errorf("reading from filesystem: %w", err)
+			}
+
+			// not found in the filesystem - should not happen
+			return nil, &ChecksumFileNotExistError{
+				Checksum: checksum,
+			}
+		}
+
+		return ret, nil
+	}
+
+	return nil, fmt.Errorf("unexpected nil blob")
+}
+
+func (qb *BlobStore) read(ctx context.Context, checksum string) ([]byte, error) {
 	q := dialect.From(qb.table()).Select(qb.table().All()).Where(qb.tableMgr.byID(checksum))
 
 	var row blobRow
@@ -70,24 +179,51 @@ func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) 
 
 		return nil
 	}); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, blob.ErrNotFound
-		}
-
 		return nil, fmt.Errorf("querying %s: %w", qb.table(), err)
 	}
 
 	return row.Blob, nil
 }
 
+// Delete marks a checksum as no longer in use by a single reference.
+// If no references remain, the blob is deleted from the database and filesystem.
 func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
+	// try to delete the blob from the database
+	if err := qb.delete(ctx, checksum); err != nil {
+		if !qb.isConstraintError(err) {
+			// blob is still referenced - do not delete
+			return nil
+		}
+
+		// unexpected error
+		return fmt.Errorf("deleting from database: %w", err)
+	}
+
+	// blob was deleted from the database - delete from filesystem if enabled
+	if qb.options.UseFilesystem {
+		if err := qb.fsStore.Delete(ctx, checksum); err != nil {
+			return fmt.Errorf("deleting from filesystem: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (qb *BlobStore) isConstraintError(err error) bool {
+	var sqliteError sqlite3.Error
+	if errors.As(err, &sqliteError) {
+		return sqliteError.Code == sqlite3.ErrConstraint
+	}
+	return false
+}
+
+func (qb *BlobStore) delete(ctx context.Context, checksum string) error {
 	table := qb.table()
 
 	q := dialect.Delete(table).Where(goqu.C(blobChecksumColumn).Eq(checksum))
 
 	_, err := exec(ctx, q)
 	if err != nil {
-		// TODO - handle checksum in use error
 		return fmt.Errorf("deleting from %s: %w", table, err)
 	}
 
