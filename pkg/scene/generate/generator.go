@@ -142,5 +142,9 @@ func (g Generator) generateOutput(lockCtx *fsutil.LockContext, args []string) ([
 		return nil, fmt.Errorf("error running ffmpeg command <%s>: %w", strings.Join(args, " "), err)
 	}
 
+	if stdout.Len() == 0 {
+		return nil, fmt.Errorf("ffmpeg command produced no output: <%s>", strings.Join(args, " "))
+	}
+
 	return stdout.Bytes(), nil
 }
