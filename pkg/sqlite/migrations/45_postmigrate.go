@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type schema45Migrator struct {
@@ -23,15 +24,39 @@ func post45(ctx context.Context, db *sqlx.DB) error {
 		},
 	}
 
-	if err := m.migrateTagImages(ctx); err != nil {
+	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
+		joinTable:    "tags_image",
+		joinIDCol:    "tag_id",
+		joinImageCol: "image",
+		destTable:    "tags",
+		destCol:      "image_checksum",
+	}); err != nil {
+		return err
+	}
+
+	if err := m.migrateImagesTable(ctx, migrateImagesTableOptions{
+		joinTable:    "studios_image",
+		joinIDCol:    "studio_id",
+		joinImageCol: "image",
+		destTable:    "studios",
+		destCol:      "image_checksum",
+	}); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *schema45Migrator) migrateTagImages(ctx context.Context) error {
-	logger.Infof("Moving tag images to new table")
+type migrateImagesTableOptions struct {
+	joinTable    string
+	joinIDCol    string
+	joinImageCol string
+	destTable    string
+	destCol      string
+}
+
+func (m *schema45Migrator) migrateImagesTable(ctx context.Context, options migrateImagesTableOptions) error {
+	logger.Infof("Moving %s to blobs table", options.joinTable)
 
 	const (
 		limit    = 1000
@@ -44,7 +69,11 @@ func (m *schema45Migrator) migrateTagImages(ctx context.Context) error {
 		gotSome := false
 
 		if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
-			query := "SELECT `tags_image`.`tag_id`, `tags_image`.`image` FROM `tags_image`"
+			query := utils.StrFormat("SELECT `{joinTable}`.`{joinIDCol}`, `{joinTable}`.`{joinImageCol}` FROM `{joinTable}`", utils.StrFormatMap{
+				"joinTable":    options.joinTable,
+				"joinIDCol":    options.joinIDCol,
+				"joinImageCol": options.joinImageCol,
+			})
 
 			query += fmt.Sprintf(" LIMIT %d", limit)
 
@@ -74,7 +103,11 @@ func (m *schema45Migrator) migrateTagImages(ctx context.Context) error {
 				}
 
 				// set the tag image checksum
-				if _, err := m.db.Exec("UPDATE `tags` SET `image_checksum` = ? WHERE `id` = ?", checksum, id); err != nil {
+				updateSQL := utils.StrFormat("UPDATE `{destTable}` SET `{destCol}` = ? WHERE `id` = ?", utils.StrFormatMap{
+					"destTable": options.destTable,
+					"destCol":   options.destCol,
+				})
+				if _, err := m.db.Exec(updateSQL, checksum, id); err != nil {
 					return err
 				}
 			}
@@ -89,14 +122,14 @@ func (m *schema45Migrator) migrateTagImages(ctx context.Context) error {
 		}
 
 		if count%logEvery == 0 {
-			logger.Infof("Migrated %d folders", count)
+			logger.Infof("Migrated %d images", count)
 		}
 	}
 
 	if err := m.withTxn(ctx, func(tx *sqlx.Tx) error {
 		// drop the tags_image table
-		logger.Debugf("Dropping tags_image")
-		_, err := m.db.Exec("DROP TABLE `tags_image`")
+		logger.Debugf("Dropping %s", options.joinTable)
+		_, err := m.db.Exec(fmt.Sprintf("DROP TABLE `%s`", options.joinTable))
 		return err
 	}); err != nil {
 		return err

@@ -11,7 +11,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sliceutil/intslice"
-	"gopkg.in/guregu/null.v4"
 )
 
 const tagTable = "tags"
@@ -21,8 +20,7 @@ const tagAliasColumn = "alias"
 
 type tagQueryBuilder struct {
 	repository
-
-	blobStore *BlobStore
+	blobJoinQueryBuilder
 }
 
 func NewTagReaderWriter(blobStore *BlobStore) *tagQueryBuilder {
@@ -31,7 +29,11 @@ func NewTagReaderWriter(blobStore *BlobStore) *tagQueryBuilder {
 			tableName: tagTable,
 			idColumn:  idColumn,
 		},
-		blobStore,
+		blobJoinQueryBuilder{
+			blobStore: blobStore,
+			joinTable: tagTable,
+			joinCol:   "image_checksum",
+		},
 	}
 }
 
@@ -637,54 +639,6 @@ func (qb *tagQueryBuilder) queryTags(ctx context.Context, query string, args []i
 	}
 
 	return []*models.Tag(ret), nil
-}
-
-func (qb *tagQueryBuilder) GetImage(ctx context.Context, tagID int) ([]byte, error) {
-	sqlQuery := `
-SELECT blobs.checksum, blobs.blob FROM tags INNER JOIN blobs ON tags.image_checksum = blobs.checksum
-WHERE tags.id = ?
-`
-
-	ret, _, err := qb.blobStore.readSQL(ctx, sqlQuery, tagID)
-	return ret, err
-}
-
-func (qb *tagQueryBuilder) UpdateImage(ctx context.Context, tagID int, image []byte) error {
-	if len(image) == 0 {
-		return qb.DestroyImage(ctx, tagID)
-	}
-	checksum, err := qb.blobStore.Write(ctx, image)
-	if err != nil {
-		return err
-	}
-
-	sqlQuery := "UPDATE tags SET image_checksum = ? WHERE id = ?"
-	_, err = qb.tx.Exec(ctx, sqlQuery, checksum, tagID)
-	return err
-}
-
-func (qb *tagQueryBuilder) DestroyImage(ctx context.Context, tagID int) error {
-	sqlQuery := `
-SELECT tags.image_checksum FROM tags WHERE tags.id = ?
-`
-
-	var checksum null.String
-	err := qb.repository.querySimple(ctx, sqlQuery, []interface{}{tagID}, &checksum)
-	if err != nil {
-		return err
-	}
-
-	if !checksum.Valid {
-		// no image to delete
-		return nil
-	}
-
-	updateQuery := "UPDATE tags SET image_checksum = NULL WHERE id = ?"
-	if _, err = qb.tx.Exec(ctx, updateQuery, tagID); err != nil {
-		return err
-	}
-
-	return qb.blobStore.Delete(ctx, checksum.String)
 }
 
 func (qb *tagQueryBuilder) aliasRepository() *stringRepository {

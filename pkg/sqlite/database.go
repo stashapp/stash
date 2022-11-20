@@ -71,6 +71,7 @@ type Database struct {
 	Gallery   *GalleryStore
 	Scene     *SceneStore
 	Performer *PerformerStore
+	Studio    *studioQueryBuilder
 	Tag       *tagQueryBuilder
 
 	db     *sqlx.DB
@@ -95,6 +96,7 @@ func NewDatabase() *Database {
 		Gallery:   NewGalleryStore(fileStore, folderStore),
 		Performer: NewPerformerStore(),
 		Tag:       NewTagReaderWriter(blobStore),
+		Studio:    NewStudioReaderWriter(blobStore),
 		lockChan:  make(chan struct{}, 1),
 	}
 

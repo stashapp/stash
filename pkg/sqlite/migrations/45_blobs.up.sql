@@ -4,6 +4,7 @@ CREATE TABLE `blobs` (
 );
 
 ALTER TABLE `tags` ADD COLUMN `image_checksum` blob REFERENCES `blobs`(`checksum`);
+ALTER TABLE `studios` ADD COLUMN `image_checksum` blob REFERENCES `blobs`(`checksum`);
 
 -- ALTER TABLE `scenes` ADD COLUMN `cover_checksum` blob REFERENCES `blobs`(`checksum`);
 

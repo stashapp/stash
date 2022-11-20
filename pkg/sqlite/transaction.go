@@ -136,7 +136,7 @@ func (db *Database) TxnRepository() models.Repository {
 		Scene:          db.Scene,
 		SceneMarker:    SceneMarkerReaderWriter,
 		ScrapedItem:    ScrapedItemReaderWriter,
-		Studio:         StudioReaderWriter,
+		Studio:         db.Studio,
 		Tag:            db.Tag,
 		SavedFilter:    SavedFilterReaderWriter,
 	}

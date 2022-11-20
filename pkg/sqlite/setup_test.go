@@ -582,7 +582,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating performers: %s", err.Error())
 		}
 
-		if err := createStudios(ctx, sqlite.StudioReaderWriter, studiosNameCase, studiosNameNoCase); err != nil {
+		if err := createStudios(ctx, db.Studio, studiosNameCase, studiosNameNoCase); err != nil {
 			return fmt.Errorf("error creating studios: %s", err.Error())
 		}
 
@@ -610,7 +610,7 @@ func populateDB() error {
 			return fmt.Errorf("error linking movie studios: %s", err.Error())
 		}
 
-		if err := linkStudiosParent(ctx, sqlite.StudioReaderWriter); err != nil {
+		if err := linkStudiosParent(ctx, db.Studio); err != nil {
 			return fmt.Errorf("error linking studios parent: %s", err.Error())
 		}
 

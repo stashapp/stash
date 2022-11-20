@@ -14,6 +14,8 @@ import (
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/hash/md5"
 	"github.com/stashapp/stash/pkg/sqlite/blob"
+	"github.com/stashapp/stash/pkg/utils"
+	"gopkg.in/guregu/null.v4"
 )
 
 const (
@@ -240,7 +242,7 @@ func (qb *BlobStore) read(ctx context.Context, checksum string) ([]byte, error) 
 func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
 	// try to delete the blob from the database
 	if err := qb.delete(ctx, checksum); err != nil {
-		if !qb.isConstraintError(err) {
+		if qb.isConstraintError(err) {
 			// blob is still referenced - do not delete
 			return nil
 		}
@@ -278,4 +280,80 @@ func (qb *BlobStore) delete(ctx context.Context, checksum string) error {
 	}
 
 	return nil
+}
+
+type blobJoinQueryBuilder struct {
+	repository
+	blobStore *BlobStore
+
+	joinTable string
+	joinCol   string
+}
+
+func (qb *blobJoinQueryBuilder) GetImage(ctx context.Context, id int) ([]byte, error) {
+	sqlQuery := utils.StrFormat(`
+SELECT blobs.checksum, blobs.blob FROM {joinTable} INNER JOIN blobs ON {joinTable}.{joinCol} = blobs.checksum
+WHERE {joinTable}.id = ?
+`, utils.StrFormatMap{
+		"joinTable": qb.joinTable,
+		"joinCol":   qb.joinCol,
+	})
+
+	ret, _, err := qb.blobStore.readSQL(ctx, sqlQuery, id)
+	return ret, err
+}
+
+func (qb *blobJoinQueryBuilder) UpdateImage(ctx context.Context, id int, image []byte) error {
+	if len(image) == 0 {
+		return qb.DestroyImage(ctx, id)
+	}
+	checksum, err := qb.blobStore.Write(ctx, image)
+	if err != nil {
+		return err
+	}
+
+	sqlQuery := fmt.Sprintf("UPDATE %s SET %s = ? WHERE id = ?", qb.joinTable, qb.joinCol)
+	_, err = qb.tx.Exec(ctx, sqlQuery, checksum, id)
+	return err
+}
+
+func (qb *blobJoinQueryBuilder) DestroyImage(ctx context.Context, id int) error {
+	sqlQuery := utils.StrFormat(`
+SELECT {joinTable}.{joinCol} FROM {joinTable} WHERE {joinTable}.id = ?
+`, utils.StrFormatMap{
+		"joinTable": qb.joinTable,
+		"joinCol":   qb.joinCol,
+	})
+
+	var checksum null.String
+	err := qb.repository.querySimple(ctx, sqlQuery, []interface{}{id}, &checksum)
+	if err != nil {
+		return err
+	}
+
+	if !checksum.Valid {
+		// no image to delete
+		return nil
+	}
+
+	updateQuery := fmt.Sprintf("UPDATE %s SET %s = NULL WHERE id = ?", qb.joinTable, qb.joinCol)
+	if _, err = qb.tx.Exec(ctx, updateQuery, id); err != nil {
+		return err
+	}
+
+	return qb.blobStore.Delete(ctx, checksum.String)
+}
+
+func (qb *blobJoinQueryBuilder) HasImage(ctx context.Context, id int) (bool, error) {
+	stmt := utils.StrFormat("SELECT COUNT(*) as count FROM (SELECT {joinCol} FROM {joinTable} WHERE id = ? LIMIT 1)", utils.StrFormatMap{
+		"joinTable": qb.joinTable,
+		"joinCol":   qb.joinCol,
+	})
+
+	c, err := qb.runCountQuery(ctx, stmt, []interface{}{id})
+	if err != nil {
+		return false, err
+	}
+
+	return c == 1, nil
 }
