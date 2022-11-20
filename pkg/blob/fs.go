@@ -72,9 +72,9 @@ func (s *FilesystemStore) Write(ctx context.Context, checksum string, data []byt
 	return nil
 }
 
-func (s *FilesystemStore) Read(ctx context.Context, checksum string) (io.ReadCloser, error) {
+func (s *FilesystemStore) Read(ctx context.Context, checksum string) ([]byte, error) {
 	fn := s.checksumToPath(checksum)
-	ret, err := s.fs.Open(fn)
+	f, err := s.fs.Open(fn)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return nil, ErrNotFound
@@ -82,7 +82,9 @@ func (s *FilesystemStore) Read(ctx context.Context, checksum string) (io.ReadClo
 		return nil, fmt.Errorf("opening file %q: %w", fn, err)
 	}
 
-	return ret, nil
+	defer f.Close()
+
+	return io.ReadAll(f)
 }
 
 func (s *FilesystemStore) Delete(ctx context.Context, checksum string) error {

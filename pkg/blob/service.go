@@ -1,11 +1,9 @@
 package blob
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"io"
 
 	"github.com/stashapp/stash/pkg/hash/md5"
 )
@@ -15,9 +13,13 @@ var (
 	ErrBlobReferenced = errors.New("blob is referenced by another object")
 )
 
+type Reader interface {
+	Read(ctx context.Context, checksum string) ([]byte, error)
+}
+
 type Store interface {
+	Reader
 	Write(ctx context.Context, checksum string, data []byte) error
-	Read(ctx context.Context, checksum string) (io.ReadCloser, error)
 	Delete(ctx context.Context, checksum string) error
 }
 
@@ -33,15 +35,25 @@ type ServiceOptions struct {
 	Database Store
 }
 
-type Service struct {
+type Writer interface {
+	Write(ctx context.Context, data []byte) (string, error)
+}
+
+type Service interface {
+	Writer
+	Reader
+	Delete(ctx context.Context, checksum string) error
+}
+
+type service struct {
 	options ServiceOptions
 	fsStore Store
 	dbStore Store
 }
 
 // NewService
-func NewService(options ServiceOptions) *Service {
-	return &Service{
+func NewService(options ServiceOptions) Service {
+	return &service{
 		options: options,
 		fsStore: NewFilesystemStore(options.Path, options.FS),
 		dbStore: options.Database,
@@ -50,33 +62,30 @@ func NewService(options ServiceOptions) *Service {
 
 // Write stores the data and its checksum in enabled stores.
 // Always writes at least the checksum to the database.
-func (s *Service) Write(ctx context.Context, r io.Reader) (string, error) {
+func (s *service) Write(ctx context.Context, data []byte) (string, error) {
 	if !s.options.UseDatabase && !s.options.UseFilesystem {
 		panic("no blob store configured")
 	}
 
-	// calculate checksum and assign to byte slice
-	buf := bytes.Buffer{}
-	rr := io.TeeReader(r, &buf)
-
-	checksum, err := md5.FromReader(rr)
-	if err != nil {
-		return "", fmt.Errorf("calculating checksum: %w", err)
+	if len(data) == 0 {
+		return "", fmt.Errorf("cannot write empty data")
 	}
+
+	checksum := md5.FromBytes(data)
 
 	// only write blob to the database if UseDatabase is true
 	// always at least write the checksum
-	var data []byte
+	var storedData []byte
 	if s.options.UseDatabase {
-		data = buf.Bytes()
+		storedData = data
 	}
 
-	if err := s.options.Database.Write(ctx, checksum, data); err != nil {
+	if err := s.options.Database.Write(ctx, checksum, storedData); err != nil {
 		return "", fmt.Errorf("writing to database: %w", err)
 	}
 
 	if s.options.UseFilesystem {
-		if err := s.fsStore.Write(ctx, checksum, buf.Bytes()); err != nil {
+		if err := s.fsStore.Write(ctx, checksum, data); err != nil {
 			return "", fmt.Errorf("writing to filesystem: %w", err)
 		}
 	}
@@ -85,7 +94,7 @@ func (s *Service) Write(ctx context.Context, r io.Reader) (string, error) {
 }
 
 // Read reads the data from the database or filesystem, depending on which is enabled.
-func (s *Service) Read(ctx context.Context, checksum string) (io.ReadCloser, error) {
+func (s *service) Read(ctx context.Context, checksum string) ([]byte, error) {
 	if !s.options.UseDatabase && !s.options.UseFilesystem {
 		panic("no blob store configured")
 	}
@@ -114,7 +123,7 @@ func (s *Service) Read(ctx context.Context, checksum string) (io.ReadCloser, err
 
 // Delete marks a checksum as no longer in use by a single reference.
 // If no references remain, the blob is deleted from the database and filesystem.
-func (s *Service) Delete(ctx context.Context, checksum string) error {
+func (s *service) Delete(ctx context.Context, checksum string) error {
 	// try to delete the blob from the database
 	if err := s.options.Database.Delete(ctx, checksum); err != nil {
 		if errors.Is(err, ErrBlobReferenced) {

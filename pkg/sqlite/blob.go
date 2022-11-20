@@ -1,12 +1,10 @@
 package sqlite
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
@@ -60,7 +58,7 @@ func (qb *BlobStore) Write(ctx context.Context, checksum string, data []byte) er
 	return nil
 }
 
-func (qb *BlobStore) Read(ctx context.Context, checksum string) (io.ReadCloser, error) {
+func (qb *BlobStore) Read(ctx context.Context, checksum string) ([]byte, error) {
 	q := dialect.From(qb.table()).Select(qb.table().All()).Where(qb.tableMgr.byID(checksum))
 
 	var row blobRow
@@ -79,11 +77,7 @@ func (qb *BlobStore) Read(ctx context.Context, checksum string) (io.ReadCloser, 
 		return nil, fmt.Errorf("querying %s: %w", qb.table(), err)
 	}
 
-	if row.Blob == nil {
-		return nil, nil
-	}
-
-	return io.NopCloser(bytes.NewReader(row.Blob)), nil
+	return row.Blob, nil
 }
 
 func (qb *BlobStore) Delete(ctx context.Context, checksum string) error {
