@@ -3,25 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "homepage": "./",
-  "sideEffects": false,
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "build-ci": "yarn validate && yarn build",
-    "validate": "yarn lint && tsc --noEmit && yarn format-check",
-    "lint": "yarn lint:css && yarn lint:js",
-    "lint:js": "eslint --cache src/",
+    "build-ci": "yarn run validate && yarn run build",
+    "validate": "yarn run lint && yarn run check && yarn run format-check",
+    "lint": "yarn run lint:css && yarn run lint:js",
     "lint:css": "stylelint --cache \"src/**/*.scss\"",
-    "format": "prettier --write \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
-    "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
+    "lint:js": "eslint --cache src/",
+    "check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format-check": "prettier --check .",
     "gqlgen": "gql-gen --config codegen.yml",
     "extract": "NODE_ENV=development extract-messages -l=en,de -o src/locale -d en --flat false 'src/**/!(*.test).tsx'"
   },
   "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
+    ">0.5% and supports es6-module-dynamic-import"
   ],
   "dependencies": {
     "@ant-design/react-slick": "^1.0.0",
