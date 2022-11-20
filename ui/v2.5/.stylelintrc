@@ -3,6 +3,7 @@
     "stylelint-order"
   ],
   "extends": "stylelint-config-prettier",
+  "customSyntax": "postcss-scss",
   "rules": {
     "indentation": null,
     "at-rule-empty-line-before": [ "always", {
