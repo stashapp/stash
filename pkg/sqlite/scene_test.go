@@ -4088,32 +4088,7 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 
 		sceneID := sceneIDs[sceneIdxWithGallery]
 
-		image := []byte("image")
-		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
-			return fmt.Errorf("Error updating scene cover: %s", err.Error())
-		}
-
-		// ensure image set
-		storedImage, err := qb.GetCover(ctx, sceneID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Equal(t, storedImage, image)
-
-		// set nil image
-		err = qb.UpdateCover(ctx, sceneID, nil)
-		if err != nil {
-			return fmt.Errorf("error setting nil image: %w", err)
-		}
-
-		// ensure image null
-		storedImage, err = qb.GetCover(ctx, sceneID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
+		return testUpdateImage(t, ctx, sceneID, qb.UpdateCover, qb.GetCover)
 	}); err != nil {
 		t.Error(err.Error())
 	}

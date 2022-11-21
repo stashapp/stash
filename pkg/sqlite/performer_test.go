@@ -1029,33 +1029,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 			return fmt.Errorf("Error creating performer: %s", err.Error())
 		}
 
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, performer.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating performer image: %s", err.Error())
-		}
-
-		// ensure image set
-		storedImage, err := qb.GetImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Equal(t, storedImage, image)
-
-		// set nil image
-		err = qb.UpdateImage(ctx, performer.ID, nil)
-		if err != nil {
-			return fmt.Errorf("error setting nil image: %w", err)
-		}
-
-		// ensure image null
-		storedImage, err = qb.GetImage(ctx, performer.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
+		return testUpdateImage(t, ctx, performer.ID, qb.UpdateImage, qb.GetImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}

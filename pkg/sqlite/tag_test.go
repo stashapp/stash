@@ -810,33 +810,7 @@ func TestTagUpdateTagImage(t *testing.T) {
 			return fmt.Errorf("Error creating tag: %s", err.Error())
 		}
 
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, created.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating studio image: %s", err.Error())
-		}
-
-		// ensure image set
-		storedImage, err := qb.GetImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Equal(t, storedImage, image)
-
-		// set nil image
-		err = qb.UpdateImage(ctx, created.ID, nil)
-		if err != nil {
-			return fmt.Errorf("Error setting nil image: %w", err)
-		}
-
-		// ensure image null
-		storedImage, err = qb.GetImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
+		return testUpdateImage(t, ctx, created.ID, qb.UpdateImage, qb.GetImage)
 	}); err != nil {
 		t.Error(err.Error())
 	}
