@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/paths"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/txn"
 )
 
 var (
@@ -119,17 +120,22 @@ func (h *ScanHandler) Handle(ctx context.Context, f file.File, oldFile file.File
 		}
 	}
 
-	for _, s := range existing {
-		if err := h.CoverGenerator.GenerateCover(ctx, s, videoFile); err != nil {
-			// just log if cover generation fails. We can try again on rescan
-			logger.Errorf("Error generating cover for %s: %v", videoFile.Path, err)
+	// do this after the commit so that cover generation doesn't hold up the transaction
+	txn.AddPostCommitHook(ctx, func(ctx context.Context) error {
+		for _, s := range existing {
+			if err := h.CoverGenerator.GenerateCover(ctx, s, videoFile); err != nil {
+				// just log if cover generation fails. We can try again on rescan
+				logger.Errorf("Error generating cover for %s: %v", videoFile.Path, err)
+			}
+
+			if err := h.ScanGenerator.Generate(ctx, s, videoFile); err != nil {
+				// just log if cover generation fails. We can try again on rescan
+				logger.Errorf("Error generating content for %s: %v", videoFile.Path, err)
+			}
 		}
 
-		if err := h.ScanGenerator.Generate(ctx, s, videoFile); err != nil {
-			// just log if cover generation fails. We can try again on rescan
-			logger.Errorf("Error generating content for %s: %v", videoFile.Path, err)
-		}
-	}
+		return nil
+	})
 
 	return nil
 }

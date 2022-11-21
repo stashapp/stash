@@ -1,7 +1,11 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { FormattedMessage, useIntl } from "react-intl";
-import { DurationInput, LoadingIndicator } from "src/components/Shared";
+import {
+  DurationInput,
+  PercentInput,
+  LoadingIndicator,
+} from "src/components/Shared";
 import { CheckboxGroup } from "./CheckboxGroup";
 import { SettingSection } from "../SettingSection";
 import {
@@ -242,6 +246,41 @@ export const SettingsInterfacePanel: React.FC = () => {
           headingID="config.ui.scene_player.options.show_scrubber"
           checked={iface.showScrubber ?? undefined}
           onChange={(v) => saveInterface({ showScrubber: v })}
+        />
+        <BooleanSetting
+          id="always-start-from-beginning"
+          headingID="config.ui.scene_player.options.always_start_from_beginning"
+          checked={ui.alwaysStartFromBeginning ?? undefined}
+          onChange={(v) => saveUI({ alwaysStartFromBeginning: v })}
+        />
+        <BooleanSetting
+          id="track-activity"
+          headingID="config.ui.scene_player.options.track_activity"
+          checked={ui.trackActivity ?? undefined}
+          onChange={(v) => saveUI({ trackActivity: v })}
+        />
+        <ModalSetting<number>
+          id="ignore-interval"
+          headingID="config.ui.minimum_play_percent.heading"
+          subHeadingID="config.ui.minimum_play_percent.description"
+          value={ui.minimumPlayPercent ?? 0}
+          onChange={(v) => saveUI({ minimumPlayPercent: v })}
+          disabled={!ui.trackActivity}
+          renderField={(value, setValue) => (
+            <PercentInput
+              numericValue={value}
+              onValueChange={(interval) => setValue(interval ?? 0)}
+            />
+          )}
+          renderValue={(v) => {
+            return <span>{v}%</span>;
+          }}
+        />
+        <NumberSetting
+          headingID="config.ui.slideshow_delay.heading"
+          subHeadingID="config.ui.slideshow_delay.description"
+          value={iface.imageLightbox?.slideshowDelay ?? undefined}
+          onChange={(v) => saveLightboxSettings({ slideshowDelay: v })}
         />
         <BooleanSetting
           id="auto-start-video"
@@ -494,6 +533,36 @@ export const SettingsInterfacePanel: React.FC = () => {
           subHeadingID="config.ui.custom_css.description"
           value={iface.css ?? undefined}
           onChange={(v) => saveInterface({ css: v })}
+          renderField={(value, setValue) => (
+            <Form.Control
+              as="textarea"
+              value={value}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setValue(e.currentTarget.value)
+              }
+              rows={16}
+              className="text-input code"
+            />
+          )}
+          renderValue={() => {
+            return <></>;
+          }}
+        />
+      </SettingSection>
+      <SettingSection headingID="config.ui.custom_javascript.heading">
+        <BooleanSetting
+          id="custom-javascript-enabled"
+          headingID="config.ui.custom_javascript.option_label"
+          checked={iface.javascriptEnabled ?? undefined}
+          onChange={(v) => saveInterface({ javascriptEnabled: v })}
+        />
+
+        <ModalSetting<string>
+          id="custom-javascript"
+          headingID="config.ui.custom_javascript.heading"
+          subHeadingID="config.ui.custom_javascript.description"
+          value={iface.javascript ?? undefined}
+          onChange={(v) => saveInterface({ javascript: v })}
           renderField={(value, setValue) => (
             <Form.Control
               as="textarea"

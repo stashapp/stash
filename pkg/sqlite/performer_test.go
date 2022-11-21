@@ -585,6 +585,100 @@ func TestPerformerQueryIgnoreAutoTag(t *testing.T) {
 	})
 }
 
+func TestPerformerQuery(t *testing.T) {
+	var (
+		endpoint = performerStashID(performerIdxWithGallery).Endpoint
+		stashID  = performerStashID(performerIdxWithGallery).StashID
+	)
+
+	tests := []struct {
+		name        string
+		findFilter  *models.FindFilterType
+		filter      *models.PerformerFilterType
+		includeIdxs []int
+		excludeIdxs []int
+		wantErr     bool
+	}{
+		{
+			"stash id with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+		{
+			"exclude stash id with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					StashID:  &stashID,
+					Modifier: models.CriterionModifierNotEquals,
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery},
+			false,
+		},
+		{
+			"null stash id with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierIsNull,
+				},
+			},
+			nil,
+			[]int{performerIdxWithGallery},
+			false,
+		},
+		{
+			"not null stash id with endpoint",
+			nil,
+			&models.PerformerFilterType{
+				StashIDEndpoint: &models.StashIDCriterionInput{
+					Endpoint: &endpoint,
+					Modifier: models.CriterionModifierNotNull,
+				},
+			},
+			[]int{performerIdxWithGallery},
+			nil,
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		runWithRollbackTxn(t, tt.name, func(t *testing.T, ctx context.Context) {
+			assert := assert.New(t)
+
+			performers, _, err := db.Performer.Query(ctx, tt.filter, tt.findFilter)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("PerformerStore.Query() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ids := performersToIDs(performers)
+			include := indexesToIDs(performerIDs, tt.includeIdxs)
+			exclude := indexesToIDs(performerIDs, tt.excludeIdxs)
+
+			for _, i := range include {
+				assert.Contains(ids, i)
+			}
+			for _, e := range exclude {
+				assert.NotContains(ids, e)
+			}
+		})
+	}
+}
+
 func TestPerformerQueryForAutoTag(t *testing.T) {
 	withTxn(func(ctx context.Context) error {
 		tqb := db.Performer

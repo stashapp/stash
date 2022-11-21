@@ -1,8 +1,6 @@
 package models
 
 import (
-	"context"
-
 	"github.com/stashapp/stash/pkg/file"
 	"github.com/stashapp/stash/pkg/txn"
 )
@@ -28,8 +26,4 @@ type Repository struct {
 	Studio      StudioReaderWriter
 	Tag         TagReaderWriter
 	SavedFilter SavedFilterReaderWriter
-}
-
-func (r *Repository) WithTxn(ctx context.Context, fn txn.TxnFunc) error {
-	return txn.WithTxn(ctx, r, fn)
 }

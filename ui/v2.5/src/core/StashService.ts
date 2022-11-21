@@ -887,6 +887,16 @@ export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
     update: deleteCache(tagMutationImpactedQueries),
   });
 
+export const useSceneSaveActivity = () =>
+  GQL.useSceneSaveActivityMutation({
+    update: deleteCache([GQL.FindScenesDocument]),
+  });
+
+export const useSceneIncrementPlayCount = () =>
+  GQL.useSceneIncrementPlayCountMutation({
+    update: deleteCache([GQL.FindScenesDocument]),
+  });
+
 export const savedFilterMutationImpactedQueries = [
   GQL.FindSavedFiltersDocument,
 ];
@@ -982,6 +992,12 @@ export const useSystemStatus = () =>
 
 export const useLogs = () =>
   GQL.useLogsQuery({
+    fetchPolicy: "no-cache",
+  });
+
+export const queryLogs = () =>
+  client.query<GQL.LogsQuery>({
+    query: GQL.LogsDocument,
     fetchPolicy: "no-cache",
   });
 

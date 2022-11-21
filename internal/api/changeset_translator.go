@@ -205,6 +205,26 @@ func (t changesetTranslator) ratingConversion(legacyValue *int, rating100Value *
 	return t.nullInt64(rating100Value, rating100Field)
 }
 
+func (t changesetTranslator) ratingConversionInt(legacyValue *int, rating100Value *int) *int {
+	const (
+		legacyField    = "rating"
+		rating100Field = "rating100"
+	)
+
+	legacyRating := t.optionalInt(legacyValue, legacyField)
+	if legacyRating.Set && !(legacyRating.Null) {
+		ret := int(models.Rating5To100(int(legacyRating.Value)))
+		return &ret
+	}
+
+	o := t.optionalInt(rating100Value, rating100Field)
+	if o.Set && !(o.Null) {
+		return &o.Value
+	}
+
+	return nil
+}
+
 func (t changesetTranslator) ratingConversionOptional(legacyValue *int, rating100Value *int) models.OptionalInt {
 	const (
 		legacyField    = "rating"
@@ -275,4 +295,12 @@ func (t changesetTranslator) optionalBool(value *bool, field string) models.Opti
 	}
 
 	return models.NewOptionalBoolPtr(value)
+}
+
+func (t changesetTranslator) optionalFloat64(value *float64, field string) models.OptionalFloat64 {
+	if !t.hasField(field) {
+		return models.OptionalFloat64{}
+	}
+
+	return models.NewOptionalFloat64Ptr(value)
 }

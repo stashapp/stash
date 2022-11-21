@@ -63,6 +63,8 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   showStudioAsText
   css
   cssEnabled
+  javascript
+  javascriptEnabled
   customLocales
   customLocalesEnabled
   language

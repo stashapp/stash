@@ -86,6 +86,8 @@ func TestConcurrentConfigAccess(t *testing.T) {
 				i.Set(ImageLightboxSlideshowDelay, *i.GetImageLightboxOptions().SlideshowDelay)
 				i.GetCSSPath()
 				i.GetCSS()
+				i.GetJavascriptPath()
+				i.GetJavascript()
 				i.GetCustomLocalesPath()
 				i.GetCustomLocales()
 				i.Set(CSSEnabled, i.GetCSSEnabled())

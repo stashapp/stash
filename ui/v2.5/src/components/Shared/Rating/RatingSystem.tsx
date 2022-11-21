@@ -13,6 +13,7 @@ export interface IRatingSystemProps {
   value?: number;
   onSetRating?: (value?: number) => void;
   disabled?: boolean;
+  valueRequired?: boolean;
 }
 
 export const RatingSystem: React.FC<IRatingSystemProps> = (
@@ -32,6 +33,7 @@ export const RatingSystem: React.FC<IRatingSystemProps> = (
         precision={
           ratingSystemOptions.starPrecision ?? defaultRatingStarPrecision
         }
+        valueRequired={props.valueRequired}
       />
     );
   }

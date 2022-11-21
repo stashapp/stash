@@ -310,6 +310,16 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
           truncate
         />
         {renderStashIDs()}
+        <TextField
+          id="media_info.play_count"
+          value={(props.scene.play_count ?? 0).toString()}
+          truncate
+        />
+        <TextField
+          id="media_info.play_duration"
+          value={TextUtils.secondsToTimestamp(props.scene.play_duration ?? 0)}
+          truncate
+        />
       </dl>
 
       {filesPanel}

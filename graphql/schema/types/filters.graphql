@@ -39,6 +39,14 @@ input PHashDuplicationCriterionInput {
   distance: Int
 }
 
+input StashIDCriterionInput {
+  """If present, this value is treated as a predicate.
+  That is, it will filter based on stash_ids with the matching endpoint"""
+  endpoint: String
+  stash_id: String
+  modifier: CriterionModifier!
+}
+
 input PerformerFilterType {
   AND: PerformerFilterType
   OR: PerformerFilterType
@@ -90,7 +98,9 @@ input PerformerFilterType {
   """Filter by gallery count"""
   gallery_count: IntCriterionInput
   """Filter by StashID"""
-  stash_id: StringCriterionInput
+  stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
+  """Filter by StashID"""
+  stash_id_endpoint: StashIDCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput @deprecated(reason: "Use 1-100 range with rating100")
   # rating expressed as 1-100
@@ -196,7 +206,9 @@ input SceneFilterType {
   """Filter by performer count"""
   performer_count: IntCriterionInput
   """Filter by StashID"""
-  stash_id: StringCriterionInput
+  stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
+  """Filter by StashID"""
+  stash_id_endpoint: StashIDCriterionInput
   """Filter by url"""
   url: StringCriterionInput
   """Filter by interactive"""
@@ -205,6 +217,12 @@ input SceneFilterType {
   interactive_speed: IntCriterionInput
   """Filter by captions"""
   captions: StringCriterionInput
+  """Filter by resume time"""
+  resume_time: IntCriterionInput
+  """Filter by play count"""
+  play_count: IntCriterionInput
+  """Filter by play duration (in seconds)"""
+  play_duration: IntCriterionInput
   """Filter by date"""
   date: DateCriterionInput
   """Filter by creation time"""
@@ -251,7 +269,9 @@ input StudioFilterType {
   """Filter to only include studios with this parent studio"""
   parents: MultiCriterionInput
   """Filter by StashID"""
-  stash_id: StringCriterionInput
+  stash_id: StringCriterionInput @deprecated(reason: "Use stash_id_endpoint instead") 
+  """Filter by StashID"""
+  stash_id_endpoint: StashIDCriterionInput
   """Filter to only include studios missing this property"""
   is_missing: String
   """Filter by rating"""

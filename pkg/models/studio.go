@@ -12,6 +12,8 @@ type StudioFilterType struct {
 	Parents *MultiCriterionInput `json:"parents"`
 	// Filter by StashID
 	StashID *StringCriterionInput `json:"stash_id"`
+	// Filter by StashID Endpoint
+	StashIDEndpoint *StashIDCriterionInput `json:"stash_id_endpoint"`
 	// Filter to only include studios missing this property
 	IsMissing *string `json:"is_missing"`
 	// Filter by rating expressed as 1-5

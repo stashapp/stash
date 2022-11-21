@@ -56,6 +56,14 @@ type Scene {
   created_at: Time!
   updated_at: Time!
   file_mod_time: Time
+  """The last time play count was updated"""
+  last_played_at: Time
+  """The time index a scene was left at"""
+  resume_time: Float
+  """The total time a scene has spent playing"""
+  play_duration: Float
+  """The number ot times a scene has been played"""
+  play_count: Int
 
   file: SceneFileType! @deprecated(reason: "Use files")
   files: [VideoFile!]!
@@ -85,7 +93,10 @@ input SceneCreateInput {
   director: String
   url: String
   date: String
-  rating: Int
+  # rating expressed as 1-5
+  rating: Int @deprecated(reason: "Use 1-100 range with rating100")
+  # rating expressed as 1-100
+  rating100: Int
   organized: Boolean
   studio_id: ID
   gallery_ids: [ID!]
@@ -124,6 +135,13 @@ input SceneUpdateInput {
   """This should be a URL or a base64 encoded data URL"""
   cover_image: String
   stash_ids: [StashIDInput!]
+
+  """The time index a scene was left at"""
+  resume_time: Float
+  """The total time a scene has spent playing"""
+  play_duration: Float
+  """The number ot times a scene has been played"""
+  play_count: Int
 
   primary_file_id: ID
 }

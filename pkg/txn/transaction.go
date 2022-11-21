@@ -6,7 +6,7 @@ import (
 )
 
 type Manager interface {
-	Begin(ctx context.Context) (context.Context, error)
+	Begin(ctx context.Context, exclusive bool) (context.Context, error)
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
 
@@ -17,18 +17,43 @@ type DatabaseProvider interface {
 	WithDatabase(ctx context.Context) (context.Context, error)
 }
 
+type DatabaseProviderManager interface {
+	DatabaseProvider
+	Manager
+}
+
 type TxnFunc func(ctx context.Context) error
 
 // WithTxn executes fn in a transaction. If fn returns an error then
 // the transaction is rolled back. Otherwise it is committed.
+// Transaction is exclusive. Only one thread may run a transaction
+// using this function at a time. This function will wait until the
+// lock is available before executing.
+// This function should be used for making changes to the database.
 func WithTxn(ctx context.Context, m Manager, fn TxnFunc) error {
-	const execComplete = true
-	return withTxn(ctx, m, fn, execComplete)
+	const (
+		execComplete = true
+		exclusive    = true
+	)
+	return withTxn(ctx, m, fn, exclusive, execComplete)
 }
 
-func withTxn(ctx context.Context, m Manager, fn TxnFunc, execCompleteOnLocked bool) error {
+// WithReadTxn executes fn in a transaction. If fn returns an error then
+// the transaction is rolled back. Otherwise it is committed.
+// Transaction is not exclusive and does not enforce read-only restrictions.
+// Multiple threads can run transactions using this function concurrently,
+// but concurrent writes may result in locked database error.
+func WithReadTxn(ctx context.Context, m Manager, fn TxnFunc) error {
+	const (
+		execComplete = true
+		exclusive    = false
+	)
+	return withTxn(ctx, m, fn, exclusive, execComplete)
+}
+
+func withTxn(ctx context.Context, m Manager, fn TxnFunc, exclusive bool, execCompleteOnLocked bool) error {
 	var err error
-	ctx, err = begin(ctx, m)
+	ctx, err = begin(ctx, m, exclusive)
 	if err != nil {
 		return err
 	}
@@ -59,9 +84,9 @@ func withTxn(ctx context.Context, m Manager, fn TxnFunc, execCompleteOnLocked bo
 	return err
 }
 
-func begin(ctx context.Context, m Manager) (context.Context, error) {
+func begin(ctx context.Context, m Manager, exclusive bool) (context.Context, error) {
 	var err error
-	ctx, err = m.Begin(ctx)
+	ctx, err = m.Begin(ctx, exclusive)
 	if err != nil {
 		return nil, err
 	}
@@ -102,6 +127,9 @@ func WithDatabase(ctx context.Context, p DatabaseProvider, fn TxnFunc) error {
 	return fn(ctx)
 }
 
+// Retryer is a provides WithTxn function that retries the transaction
+// if it fails with a locked database error.
+// Transactions are run in exclusive mode.
 type Retryer struct {
 	Manager Manager
 	// use value < 0 to retry forever
@@ -113,8 +141,11 @@ func (r Retryer) WithTxn(ctx context.Context, fn TxnFunc) error {
 	var attempt int
 	var err error
 	for attempt = 1; attempt <= r.Retries || r.Retries < 0; attempt++ {
-		const execComplete = false
-		err = withTxn(ctx, r.Manager, fn, execComplete)
+		const (
+			execComplete = false
+			exclusive    = true
+		)
+		err = withTxn(ctx, r.Manager, fn, exclusive, execComplete)
 
 		if err == nil {
 			return nil

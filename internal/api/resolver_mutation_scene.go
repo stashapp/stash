@@ -71,7 +71,7 @@ func (r *mutationResolver) SceneCreate(ctx context.Context, input SceneCreateInp
 		Director:     translator.string(input.Director, "director"),
 		URL:          translator.string(input.URL, "url"),
 		Date:         translator.datePtr(input.Date, "date"),
-		Rating:       input.Rating,
+		Rating:       translator.ratingConversionInt(input.Rating, input.Rating100),
 		Organized:    translator.bool(input.Organized, "organized"),
 		PerformerIDs: models.NewRelatedIDs(performerIDs),
 		TagIDs:       models.NewRelatedIDs(tagIDs),
@@ -174,6 +174,8 @@ func scenePartialFromInput(input models.SceneUpdateInput, translator changesetTr
 	updatedScene.Date = translator.optionalDate(input.Date, "date")
 	updatedScene.Rating = translator.ratingConversionOptional(input.Rating, input.Rating100)
 	updatedScene.OCounter = translator.optionalInt(input.OCounter, "o_counter")
+	updatedScene.PlayCount = translator.optionalInt(input.PlayCount, "play_count")
+	updatedScene.PlayDuration = translator.optionalFloat64(input.PlayDuration, "play_duration")
 	var err error
 	updatedScene.StudioID, err = translator.optionalIntFromString(input.StudioID, "studio_id")
 	if err != nil {
@@ -854,6 +856,42 @@ func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, cha
 	// perform the post-commit actions
 	fileDeleter.Commit()
 	return sceneMarker, nil
+}
+
+func (r *mutationResolver) SceneSaveActivity(ctx context.Context, id string, resumeTime *float64, playDuration *float64) (ret bool, err error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return false, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		ret, err = qb.SaveActivity(ctx, sceneID, resumeTime, playDuration)
+		return err
+	}); err != nil {
+		return false, err
+	}
+
+	return ret, nil
+}
+
+func (r *mutationResolver) SceneIncrementPlayCount(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := r.withTxn(ctx, func(ctx context.Context) error {
+		qb := r.repository.Scene
+
+		ret, err = qb.IncrementWatchCount(ctx, sceneID)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }
 
 func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {

@@ -181,6 +181,21 @@ func Start() error {
 
 		http.ServeFile(w, r, fn)
 	})
+	r.HandleFunc("/javascript", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/javascript")
+		if !c.GetJavascriptEnabled() {
+			return
+		}
+
+		// search for custom.js in current directory, then $HOME/.stash
+		fn := c.GetJavascriptPath()
+		exists, _ := fsutil.FileExists(fn)
+		if !exists {
+			return
+		}
+
+		http.ServeFile(w, r, fn)
+	})
 	r.HandleFunc("/customlocales", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if c.GetCustomLocalesEnabled() {

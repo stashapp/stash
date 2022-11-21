@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/fvbommel/sortorder"
@@ -22,7 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-var appSchemaVersion uint = 40
+var appSchemaVersion uint = 41
 
 //go:embed migrations/*.sql
 var migrationsBox embed.FS
@@ -73,7 +72,7 @@ type Database struct {
 
 	schemaVersion uint
 
-	writeMu sync.Mutex
+	lockChan chan struct{}
 }
 
 func NewDatabase() *Database {
@@ -87,6 +86,7 @@ func NewDatabase() *Database {
 		Image:     NewImageStore(fileStore),
 		Gallery:   NewGalleryStore(fileStore, folderStore),
 		Performer: NewPerformerStore(),
+		lockChan:  make(chan struct{}, 1),
 	}
 
 	return ret
@@ -106,8 +106,8 @@ func (db *Database) Ready() error {
 // necessary migrations must be run separately using RunMigrations.
 // Returns true if the database is new.
 func (db *Database) Open(dbPath string) error {
-	db.writeMu.Lock()
-	defer db.writeMu.Unlock()
+	db.lockNoCtx()
+	defer db.unlock()
 
 	db.dbPath = dbPath
 
@@ -152,9 +152,36 @@ func (db *Database) Open(dbPath string) error {
 	return nil
 }
 
+// lock locks the database for writing.
+// This method will block until the lock is acquired of the context is cancelled.
+func (db *Database) lock(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case db.lockChan <- struct{}{}:
+		return nil
+	}
+}
+
+// lock locks the database for writing. This method will block until the lock is acquired.
+func (db *Database) lockNoCtx() {
+	db.lockChan <- struct{}{}
+}
+
+// unlock unlocks the database
+func (db *Database) unlock() {
+	// will block the caller if the lock is not held, so check first
+	select {
+	case <-db.lockChan:
+		return
+	default:
+		panic("database is not locked")
+	}
+}
+
 func (db *Database) Close() error {
-	db.writeMu.Lock()
-	defer db.writeMu.Unlock()
+	db.lockNoCtx()
+	defer db.unlock()
 
 	if db.db != nil {
 		if err := db.db.Close(); err != nil {

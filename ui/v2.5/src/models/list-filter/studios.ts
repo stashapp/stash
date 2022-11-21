@@ -7,6 +7,7 @@ import {
   createMandatoryTimestampCriterionOption,
 } from "./criteria/criterion";
 import { StudioIsMissingCriterionOption } from "./criteria/is-missing";
+import { StashIDCriterionOption } from "./criteria/stash-ids";
 import { ParentStudiosCriterionOption } from "./criteria/studios";
 import { ListFilterOptions } from "./filter-options";
 import { DisplayMode } from "./types";
@@ -41,7 +42,7 @@ const criterionOptions = [
   createMandatoryNumberCriterionOption("image_count"),
   createMandatoryNumberCriterionOption("gallery_count"),
   createStringCriterionOption("url"),
-  createStringCriterionOption("stash_id"),
+  StashIDCriterionOption,
   createStringCriterionOption("aliases"),
   createMandatoryTimestampCriterionOption("created_at"),
   createMandatoryTimestampCriterionOption("updated_at"),

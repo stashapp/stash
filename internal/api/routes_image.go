@@ -143,7 +143,7 @@ func (rs imageRoutes) ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		_ = txn.WithTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
+		_ = txn.WithReadTxn(r.Context(), rs.txnManager, func(ctx context.Context) error {
 			qb := rs.imageFinder
 			if imageID == 0 {
 				images, _ := qb.FindByChecksum(ctx, imageIdentifierQueryParam)

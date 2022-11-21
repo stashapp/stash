@@ -38,6 +38,11 @@ type Scene struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
+	LastPlayedAt *time.Time `json:"last_played_at"`
+	ResumeTime   float64    `json:"resume_time"`
+	PlayDuration float64    `json:"play_duration"`
+	PlayCount    int        `json:"play_count"`
+
 	GalleryIDs   RelatedIDs      `json:"gallery_ids"`
 	TagIDs       RelatedIDs      `json:"tag_ids"`
 	PerformerIDs RelatedIDs      `json:"performer_ids"`
@@ -142,12 +147,16 @@ type ScenePartial struct {
 	URL      OptionalString
 	Date     OptionalDate
 	// Rating expressed in 1-100 scale
-	Rating    OptionalInt
-	Organized OptionalBool
-	OCounter  OptionalInt
-	StudioID  OptionalInt
-	CreatedAt OptionalTime
-	UpdatedAt OptionalTime
+	Rating       OptionalInt
+	Organized    OptionalBool
+	OCounter     OptionalInt
+	StudioID     OptionalInt
+	CreatedAt    OptionalTime
+	UpdatedAt    OptionalTime
+	ResumeTime   OptionalFloat64
+	PlayDuration OptionalFloat64
+	PlayCount    OptionalInt
+	LastPlayedAt OptionalTime
 
 	GalleryIDs    *UpdateIDs
 	TagIDs        *UpdateIDs
@@ -192,6 +201,9 @@ type SceneUpdateInput struct {
 	// This should be a URL or a base64 encoded data URL
 	CoverImage    *string   `json:"cover_image"`
 	StashIds      []StashID `json:"stash_ids"`
+	ResumeTime    *float64  `json:"resume_time"`
+	PlayDuration  *float64  `json:"play_duration"`
+	PlayCount     *int      `json:"play_count"`
 	PrimaryFileID *string   `json:"primary_file_id"`
 }
 
