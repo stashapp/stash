@@ -199,6 +199,18 @@ func NewOptionalFloat64(v float64) OptionalFloat64 {
 	return OptionalFloat64{v, false, true}
 }
 
+// NewOptionalFloat64 returns a new OptionalFloat64 with the given value.
+func NewOptionalFloat64Ptr(v *float64) OptionalFloat64 {
+	if v == nil {
+		return OptionalFloat64{
+			Null: true,
+			Set:  true,
+		}
+	}
+
+	return OptionalFloat64{*v, false, true}
+}
+
 // OptionalDate represents an optional date argument that may be null. See OptionalString.
 type OptionalDate struct {
 	Value Date
