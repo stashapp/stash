@@ -10,7 +10,6 @@ import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render(
   <>
-    <link rel="stylesheet" type="text/css" href={`${getPlatformURL()}css`} />
     <BrowserRouter basename={getBaseURL()}>
       <ApolloProvider client={getClient()}>
         <App />
