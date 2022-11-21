@@ -83,6 +83,16 @@ func (g Generator) generateFile(lockCtx *fsutil.LockContext, p Paths, pattern st
 		return err
 	}
 
+	// check if generated empty file
+	stat, err := os.Stat(tmpFn)
+	if err != nil {
+		return fmt.Errorf("error getting file stat: %w", err)
+	}
+
+	if stat.Size() == 0 {
+		return fmt.Errorf("ffmpeg command produced no output")
+	}
+
 	if err := fsutil.SafeMove(tmpFn, output); err != nil {
 		return fmt.Errorf("moving %s to %s", tmpFn, output)
 	}
