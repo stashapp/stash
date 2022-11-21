@@ -16,7 +16,12 @@ import "./persist-volume";
 import "./markers";
 import "./vtt-thumbnails";
 import "./big-buttons";
+import "./track-activity";
 import cx from "classnames";
+import {
+  useSceneSaveActivity,
+  useSceneIncrementPlayCount,
+} from "src/core/StashService";
 
 import * as GQL from "src/core/generated-graphql";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
@@ -28,6 +33,7 @@ import {
 import { SceneInteractiveStatus } from "src/hooks/Interactive/status";
 import { languageMap } from "src/utils/caption";
 import { VIDEO_PLAYER_ID } from "./util";
+import { IUIConfig } from "src/core/config";
 
 function handleHotkeys(player: VideoJsPlayer, event: videojs.KeyboardEvent) {
   function seekPercent(percent: number) {
@@ -156,13 +162,17 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   onPrevious,
 }) => {
   const { configuration } = useContext(ConfigurationContext);
-  const config = configuration?.interface;
+  const interfaceConfig = configuration?.interface;
+  const uiConfig = configuration?.ui as IUIConfig | undefined;
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<VideoJsPlayer>();
   const sceneId = useRef<string>();
+  const [sceneSaveActivity] = useSceneSaveActivity();
+  const [sceneIncrementPlayCount] = useSceneIncrementPlayCount();
 
   const [time, setTime] = useState(0);
   const [ready, setReady] = useState(false);
+  const [sessionInitialised, setSessionInitialised] = useState(false); // tracks play session. This is reset whenever ScenePlayer page is exited
 
   const {
     interactive: interactiveClient,
@@ -180,12 +190,15 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   const auto = useRef(false);
   const interactiveReady = useRef(false);
 
+  const minimumPlayPercent = uiConfig?.minimumPlayPercent ?? 0;
+  const trackActivity = uiConfig?.trackActivity ?? false;
+
   const file = useMemo(
     () => ((scene?.files.length ?? 0) > 0 ? scene?.files[0] : undefined),
     [scene]
   );
 
-  const maxLoopDuration = config?.maximumLoopDuration ?? 0;
+  const maxLoopDuration = interfaceConfig?.maximumLoopDuration ?? 0;
   const looping = useMemo(
     () =>
       !!file?.duration &&
@@ -256,6 +269,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
           back: 10,
         },
         skipButtons: {},
+        trackActivity: {},
       },
     };
 
@@ -341,6 +355,7 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
       player.off("fullscreenchange", fullscreenchange);
     };
   }, []);
+
   useEffect(() => {
     function onplay(this: VideoJsPlayer) {
       this.persistVolume().enabled = true;
@@ -390,6 +405,14 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
 
     // don't re-initialise the player unless the scene has changed
     if (!scene || !file || scene.id === sceneId.current) return;
+
+    // if new scene was picked from playlist
+    if (playerRef.current && sceneId.current) {
+      if (trackActivity) {
+        playerRef.current.trackActivity().reset();
+      }
+    }
+
     sceneId.current = scene.id;
 
     setReady(false);
@@ -398,6 +421,8 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     interactiveClient.pause();
     interactiveReady.current = false;
 
+    const alwaysStartFromBeginning =
+      uiConfig?.alwaysStartFromBeginning ?? false;
     const isLandscape = file.height && file.width && file.width > file.height;
 
     if (isLandscape) {
@@ -489,10 +514,22 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
     }
 
     auto.current =
-      autoplay || (config?.autostartVideo ?? false) || _initialTimestamp > 0;
+      autoplay ||
+      (interfaceConfig?.autostartVideo ?? false) ||
+      _initialTimestamp > 0;
 
-    initialTimestamp.current = _initialTimestamp;
-    setTime(_initialTimestamp);
+    let startPositition = _initialTimestamp;
+    if (
+      !startPositition &&
+      !(alwaysStartFromBeginning || sessionInitialised) &&
+      file.duration > scene.resume_time!
+    ) {
+      startPositition = scene.resume_time!;
+    }
+
+    initialTimestamp.current = startPositition;
+    setTime(startPositition);
+    setSessionInitialised(true);
 
     player.load();
     player.focus();
@@ -510,10 +547,52 @@ export const ScenePlayer: React.FC<IScenePlayerProps> = ({
   }, [
     file,
     scene,
+    trackActivity,
     interactiveClient,
+    sessionInitialised,
     autoplay,
-    config?.autostartVideo,
+    interfaceConfig?.autostartVideo,
+    uiConfig?.alwaysStartFromBeginning,
     _initialTimestamp,
+  ]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    async function saveActivity(resumeTime: number, playDuration: number) {
+      if (!scene?.id) return;
+
+      await sceneSaveActivity({
+        variables: {
+          id: scene.id,
+          playDuration,
+          resume_time: resumeTime,
+        },
+      });
+    }
+
+    async function incrementPlayCount() {
+      if (!scene?.id) return;
+
+      await sceneIncrementPlayCount({
+        variables: {
+          id: scene.id,
+        },
+      });
+    }
+
+    const activity = player.trackActivity();
+    activity.saveActivity = saveActivity;
+    activity.incrementPlayCount = incrementPlayCount;
+    activity.minimumPlayPercent = minimumPlayPercent;
+    activity.setEnabled(trackActivity);
+  }, [
+    scene,
+    trackActivity,
+    minimumPlayPercent,
+    sceneIncrementPlayCount,
+    sceneSaveActivity,
   ]);
 
   useEffect(() => {

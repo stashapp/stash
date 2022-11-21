@@ -95,7 +95,7 @@ func (s autotagScraper) viaScene(ctx context.Context, _client *http.Client, scen
 	const trimExt = false
 
 	// populate performers, studio and tags based on scene path
-	if err := txn.WithTxn(ctx, s.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
 		path := scene.Path
 		if path == "" {
 			return nil
@@ -144,7 +144,7 @@ func (s autotagScraper) viaGallery(ctx context.Context, _client *http.Client, ga
 	var ret *ScrapedGallery
 
 	// populate performers, studio and tags based on scene path
-	if err := txn.WithTxn(ctx, s.txnManager, func(ctx context.Context) error {
+	if err := txn.WithReadTxn(ctx, s.txnManager, func(ctx context.Context) error {
 		path := gallery.Path
 		performers, err := autotagMatchPerformers(ctx, path, s.performerReader, trimExt)
 		if err != nil {

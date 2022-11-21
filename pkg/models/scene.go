@@ -77,8 +77,14 @@ type SceneFilterType struct {
 	Interactive *bool `json:"interactive"`
 	// Filter by InteractiveSpeed
 	InteractiveSpeed *IntCriterionInput `json:"interactive_speed"`
-
+	// Filter by captions
 	Captions *StringCriterionInput `json:"captions"`
+	// Filter by resume time
+	ResumeTime *IntCriterionInput `json:"resume_time"`
+	// Filter by play count
+	PlayCount *IntCriterionInput `json:"play_count"`
+	// Filter by play duration (in seconds)
+	PlayDuration *IntCriterionInput `json:"play_duration"`
 	// Filter by date
 	Date *DateCriterionInput `json:"date"`
 	// Filter by created at
@@ -179,6 +185,8 @@ type SceneWriter interface {
 	IncrementOCounter(ctx context.Context, id int) (int, error)
 	DecrementOCounter(ctx context.Context, id int) (int, error)
 	ResetOCounter(ctx context.Context, id int) (int, error)
+	SaveActivity(ctx context.Context, id int, resumeTime *float64, playDuration *float64) (bool, error)
+	IncrementWatchCount(ctx context.Context, id int) (int, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
 	DestroyCover(ctx context.Context, sceneID int) error

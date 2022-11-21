@@ -73,7 +73,7 @@ func (j *autoTagJob) autoTagSpecific(ctx context.Context, progress *job.Progress
 	studioCount := len(studioIds)
 	tagCount := len(tagIds)
 
-	if err := j.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+	if err := j.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 		r := j.txnManager
 		performerQuery := r.Performer
 		studioQuery := r.Studio
@@ -497,7 +497,7 @@ func (t *autoTagFilesTask) processScenes(ctx context.Context, r Repository) erro
 	more := true
 	for more {
 		var scenes []*models.Scene
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := t.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
 			scenes, err = scene.Query(ctx, r.Scene, sceneFilter, findFilter)
 			return err
@@ -554,7 +554,7 @@ func (t *autoTagFilesTask) processImages(ctx context.Context, r Repository) erro
 	more := true
 	for more {
 		var images []*models.Image
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := t.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
 			images, err = image.Query(ctx, r.Image, imageFilter, findFilter)
 			return err
@@ -611,7 +611,7 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context, r Repository) e
 	more := true
 	for more {
 		var galleries []*models.Gallery
-		if err := t.txnManager.WithTxn(ctx, func(ctx context.Context) error {
+		if err := t.txnManager.WithReadTxn(ctx, func(ctx context.Context) error {
 			var err error
 			galleries, _, err = r.Gallery.Query(ctx, galleryFilter, findFilter)
 			return err
@@ -657,7 +657,7 @@ func (t *autoTagFilesTask) processGalleries(ctx context.Context, r Repository) e
 
 func (t *autoTagFilesTask) process(ctx context.Context) {
 	r := t.txnManager
-	if err := r.WithTxn(ctx, func(ctx context.Context) error {
+	if err := r.WithReadTxn(ctx, func(ctx context.Context) error {
 		total, err := t.getCount(ctx, t.txnManager)
 		if err != nil {
 			return err
