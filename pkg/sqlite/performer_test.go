@@ -956,6 +956,19 @@ func TestPerformerQuery(t *testing.T) {
 			nil,
 			false,
 		},
+		{
+			"alias",
+			nil,
+			&models.PerformerFilterType{
+				Aliases: &models.StringCriterionInput{
+					Value:    getPerformerStringValue(performerIdxWithGallery, "alias"),
+					Modifier: models.CriterionModifierEquals,
+				},
+			},
+			[]int{performerIdxWithGallery},
+			[]int{performerIdxWithScene},
+			false,
+		},
 	}
 
 	for _, tt := range tests {

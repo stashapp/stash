@@ -692,7 +692,7 @@ func performerAliasCriterionHandler(qb *PerformerStore, alias *models.StringCrit
 		joinTable:    performersAliasesTable,
 		stringColumn: performerAliasColumn,
 		addJoinTable: func(f *filterBuilder) {
-			performersAliasesTableMgr.join(f, "", "tags.id")
+			performersAliasesTableMgr.join(f, "", "performers.id")
 		},
 	}
 
