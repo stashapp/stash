@@ -889,12 +889,12 @@ export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
 
 export const useSceneSaveActivity = () =>
   GQL.useSceneSaveActivityMutation({
-    update: deleteCache(sceneMutationImpactedQueries),
+    update: deleteCache([GQL.FindScenesDocument]),
   });
 
 export const useSceneIncrementPlayCount = () =>
   GQL.useSceneIncrementPlayCountMutation({
-    update: deleteCache(sceneMutationImpactedQueries),
+    update: deleteCache([GQL.FindScenesDocument]),
   });
 
 export const savedFilterMutationImpactedQueries = [
