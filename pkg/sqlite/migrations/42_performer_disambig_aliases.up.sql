@@ -7,11 +7,12 @@ CREATE TABLE `performer_aliases` (
 
 CREATE INDEX `performer_aliases_alias` on `performer_aliases` (`alias`);
 
--- `performers`.`aliases` will be dropped in the post-migration
-
 DROP INDEX `performers_checksum_unique`;
 ALTER TABLE `performers` DROP COLUMN `checksum`;
 ALTER TABLE `performers` ADD COLUMN `disambiguation` varchar(255);
 
-CREATE UNIQUE INDEX `performers_name_disambiguation_unique` on `performers` (`name`, `disambiguation`) WHERE `disambiguation` IS NOT NULL;
-CREATE UNIQUE INDEX `performers_name_unique` on `performers` (`name`) WHERE `disambiguation` IS NULL;
+-- these will be executed in the post-migration
+
+-- ALTER TABLE `performers` DROP COLUMN `aliases`
+-- CREATE UNIQUE INDEX `performers_name_disambiguation_unique` on `performers` (`name`, `disambiguation`) WHERE `disambiguation` IS NOT NULL;
+-- CREATE UNIQUE INDEX `performers_name_unique` on `performers` (`name`) WHERE `disambiguation` IS NULL;
