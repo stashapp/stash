@@ -69,7 +69,7 @@ func (qb *tagQueryBuilder) UpdateFull(ctx context.Context, updatedObject models.
 
 func (qb *tagQueryBuilder) Destroy(ctx context.Context, id int) error {
 	// must handle image checksums manually
-	if err := qb.DestroyImage(ctx, id); err != nil {
+	if err := qb.destroyImage(ctx, id); err != nil {
 		return err
 	}
 
@@ -652,7 +652,7 @@ func (qb *tagQueryBuilder) UpdateImage(ctx context.Context, tagID int, image []b
 	return qb.blobJoinQueryBuilder.UpdateImage(ctx, tagID, tagImageBlobColumn, image)
 }
 
-func (qb *tagQueryBuilder) DestroyImage(ctx context.Context, tagID int) error {
+func (qb *tagQueryBuilder) destroyImage(ctx context.Context, tagID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, tagID, tagImageBlobColumn)
 }
 

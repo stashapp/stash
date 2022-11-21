@@ -364,7 +364,7 @@ func (qb *SceneStore) Update(ctx context.Context, updatedObject *models.Scene) e
 
 func (qb *SceneStore) Destroy(ctx context.Context, id int) error {
 	// must handle image checksums manually
-	if err := qb.DestroyCover(ctx, id); err != nil {
+	if err := qb.destroyCover(ctx, id); err != nil {
 		return err
 	}
 
@@ -1547,7 +1547,7 @@ func (qb *SceneStore) UpdateCover(ctx context.Context, sceneID int, image []byte
 	return qb.UpdateImage(ctx, sceneID, sceneCoverBlobColumn, image)
 }
 
-func (qb *SceneStore) DestroyCover(ctx context.Context, sceneID int) error {
+func (qb *SceneStore) destroyCover(ctx context.Context, sceneID int) error {
 	return qb.DestroyImage(ctx, sceneID, sceneCoverBlobColumn)
 }
 

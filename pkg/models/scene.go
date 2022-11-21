@@ -189,7 +189,6 @@ type SceneWriter interface {
 	IncrementWatchCount(ctx context.Context, id int) (int, error)
 	Destroy(ctx context.Context, id int) error
 	UpdateCover(ctx context.Context, sceneID int, cover []byte) error
-	DestroyCover(ctx context.Context, sceneID int) error
 }
 
 type SceneReaderWriter interface {

@@ -816,44 +816,6 @@ func TestTagUpdateTagImage(t *testing.T) {
 	}
 }
 
-func TestTagDestroyTagImage(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Tag
-
-		// create performer to test against
-		const name = "TestTagDestroyTagImage"
-		tag := models.Tag{
-			Name: name,
-		}
-		created, err := qb.Create(ctx, tag)
-		if err != nil {
-			return fmt.Errorf("Error creating tag: %s", err.Error())
-		}
-
-		image := []byte("image")
-		err = qb.UpdateImage(ctx, created.ID, image)
-		if err != nil {
-			return fmt.Errorf("Error updating studio image: %s", err.Error())
-		}
-
-		err = qb.DestroyImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error destroying studio image: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetImage(ctx, created.ID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
 func TestTagUpdateAlias(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
 		qb := db.Tag

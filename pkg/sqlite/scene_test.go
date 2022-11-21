@@ -4094,34 +4094,6 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 	}
 }
 
-func TestSceneDestroySceneCover(t *testing.T) {
-	if err := withTxn(func(ctx context.Context) error {
-		qb := db.Scene
-
-		sceneID := sceneIDs[sceneIdxWithGallery]
-
-		image := []byte("image")
-		if err := qb.UpdateCover(ctx, sceneID, image); err != nil {
-			return fmt.Errorf("Error updating scene image: %s", err.Error())
-		}
-
-		if err := qb.DestroyCover(ctx, sceneID); err != nil {
-			return fmt.Errorf("Error destroying scene cover: %s", err.Error())
-		}
-
-		// image should be nil
-		storedImage, err := qb.GetCover(ctx, sceneID)
-		if err != nil {
-			return fmt.Errorf("Error getting image: %s", err.Error())
-		}
-		assert.Nil(t, storedImage)
-
-		return nil
-	}); err != nil {
-		t.Error(err.Error())
-	}
-}
-
 func TestSceneStashIDs(t *testing.T) {
 	if err := withTxn(func(ctx context.Context) error {
 		qb := db.Scene

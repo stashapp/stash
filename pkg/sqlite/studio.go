@@ -69,7 +69,7 @@ func (qb *studioQueryBuilder) UpdateFull(ctx context.Context, updatedObject mode
 
 func (qb *studioQueryBuilder) Destroy(ctx context.Context, id int) error {
 	// must handle image checksums manually
-	if err := qb.DestroyImage(ctx, id); err != nil {
+	if err := qb.destroyImage(ctx, id); err != nil {
 		return err
 	}
 
@@ -456,7 +456,7 @@ func (qb *studioQueryBuilder) UpdateImage(ctx context.Context, studioID int, ima
 	return qb.blobJoinQueryBuilder.UpdateImage(ctx, studioID, studioImageBlobColumn, image)
 }
 
-func (qb *studioQueryBuilder) DestroyImage(ctx context.Context, studioID int) error {
+func (qb *studioQueryBuilder) destroyImage(ctx context.Context, studioID int) error {
 	return qb.blobJoinQueryBuilder.DestroyImage(ctx, studioID, studioImageBlobColumn)
 }
 
